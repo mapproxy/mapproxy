@@ -1,0 +1,158 @@
+service:
+    md:
+        title: MapProxy WMS
+        abstract: This is MapProxy.
+
+layers:
+    'cite:BasicPolygons':
+        md:
+            title: 'cite:BasicPolygons'
+        param:
+            format: image/png
+            srs: EPSG:4326
+        sources:
+        - type: cache_wms
+          req:
+            url: http://demo.deegree.org/deegree-wms-ri-111/services
+            transparent: 'true'
+            layers: 'cite:BasicPolygons'
+
+
+    'cite:Bridges':
+        md:
+            title: 'cite:Bridges'
+        param:
+            format: image/png
+            srs: EPSG:4326
+        sources:
+        - type: cache_wms
+          req:
+            url: http://demo.deegree.org/deegree-wms-ri-111/services
+            transparent: 'true'
+            layers: 'cite:Bridges'
+
+
+    'cite:Buildings':
+        md:
+            title: 'cite:Buildings'
+        param:
+            format: image/png
+            srs: EPSG:4326
+        sources:
+        - type: cache_wms
+          req:
+            url: http://demo.deegree.org/deegree-wms-ri-111/services
+            transparent: 'true'
+            layers: 'cite:Buildings'
+
+
+    'cite:DividedRoutes':
+        md:
+            title: 'cite:DividedRoutes'
+        param:
+            format: image/png
+            srs: EPSG:4326
+        sources:
+        - type: cache_wms
+          req:
+            url: http://demo.deegree.org/deegree-wms-ri-111/services
+            transparent: 'true'
+            layers: 'cite:DividedRoutes'
+
+
+    'cite:Forests':
+        md:
+            title: 'cite:Forests'
+        param:
+            format: image/png
+            srs: EPSG:4326
+        sources:
+        - type: cache_wms
+          req:
+            url: http://demo.deegree.org/deegree-wms-ri-111/services
+            transparent: 'true'
+            layers: 'cite:Forests'
+
+
+    'cite:Lakes':
+        md:
+            title: 'cite:Lakes'
+        param:
+            format: image/png
+            srs: EPSG:4326
+        sources:
+        - type: cache_wms
+          req:
+            url: http://demo.deegree.org/deegree-wms-ri-111/services
+            transparent: 'true'
+            layers: 'cite:Lakes'
+
+
+    'cite:MapNeatline':
+        md:
+            title: 'cite:MapNeatline'
+        param:
+            format: image/png
+            srs: EPSG:4326
+        sources:
+        - type: cache_wms
+          req:
+            url: http://demo.deegree.org/deegree-wms-ri-111/services
+            transparent: 'true'
+            layers: 'cite:MapNeatline'
+
+
+    'cite:NamedPlaces':
+        md:
+            title: 'cite:NamedPlaces'
+        param:
+            format: image/png
+            srs: EPSG:4326
+        sources:
+        - type: cache_wms
+          req:
+            url: http://demo.deegree.org/deegree-wms-ri-111/services
+            transparent: 'true'
+            layers: 'cite:NamedPlaces'
+
+
+    'cite:Ponds':
+        md:
+            title: 'cite:Ponds'
+        param:
+            format: image/png
+            srs: EPSG:4326
+        sources:
+        - type: cache_wms
+          req:
+            url: http://demo.deegree.org/deegree-wms-ri-111/services
+            transparent: 'true'
+            layers: 'cite:Ponds'
+
+
+    'cite:RoadSegments':
+        md:
+            title: 'cite:RoadSegments'
+        param:
+            format: image/png
+            srs: EPSG:4326
+        sources:
+        - type: cache_wms
+          req:
+            url: http://demo.deegree.org/deegree-wms-ri-111/services
+            transparent: 'true'
+            layers: 'cite:RoadSegments'
+
+
+    'cite:Streams':
+        md:
+            title: 'cite:Streams'
+        param:
+            format: image/png
+            srs: EPSG:4326
+        sources:
+        - type: cache_wms
+          req:
+            url: http://demo.deegree.org/deegree-wms-ri-111/services
+            transparent: 'true'
+            layers: 'cite:Streams'

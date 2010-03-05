@@ -1,0 +1,9 @@
+# this is the configuration for the CITE TEAM Engine compliance test
+# http://cite.opengeospatial.org/teamengine/
+
+services_conf: 'tests/cite/cite_conf.yaml'
+
+cache:
+    base_dir: '/tmp/cite_cache_data'
+    meta_size: [1, 1]
+    meta_buffer: 0

@@ -1,0 +1,260 @@
+<?xml version='1.0' encoding="UTF-8" standalone="no" ?>
+<!-- The DTD (Document Type Definition) given here must correspond to the version number declared in the WMT_MS_Capabilities element below. -->
+<!DOCTYPE WMT_MS_Capabilities SYSTEM
+ "http://www.digitalearth.gov/wmt/xml/capabilities_1_0_7.dtd"
+ [
+
+ <!-- Output formats known to this server are defined here
+if necessary (only if a format not already listed in the WMT
+Capabilities DTD is needed).  To define a new format, place
+an entity definition for KnownFormats like the one below in
+the DOCTYPE declaration of your Capabilities XML, listing at
+minimum all of the formats you support and separating each
+by logical-OR (|) characters.  Then, define a new element
+for any formats not predefined by WMT.  For example, in the
+following list "SGI" is a server-specific format, while all
+the others are known WMT-wide.  Thus, SGI is included in the
+KnownFormats list and a new empty element <SGI/> is
+defined. -->
+<!ENTITY % KnownFormats " SGI | GIF | JPEG | PNG | WebCGM | SVG | GML.1
+ | WMS_XML | MIME | INIMAGE | PPM | BLANK " >
+<!ELEMENT SGI EMPTY> <!-- Silicon Graphics RGB Format -->
+
+ <!-- other vendor-specific elements defined here -->
+ <!ELEMENT VendorSpecificCapabilities EMPTY>
+
+ ]>  <!-- end of DOCTYPE declaration -->
+
+<!-- The version number listed in the WMT_MS_Capabilities element here must correspond to the DTD declared above.  See the WMT specification document for how to respond when a client requests a version number not implemented by the server. -->
+<WMT_MS_Capabilities version="1.0.7" updateSequence="0">
+<!-- Service Metadata -->
+<Service>
+  <!-- The WMT-defined name for this type of service -->
+  <Name>GetMap</Name>
+  <!-- Human-readable title for pick lists -->
+  <Title>Acme Corp. Map Server</Title>
+  <!-- Narrative description providing additional information -->
+  <Abstract>WMT Map Server maintained by Acme Corporation.  Contact: webmaster@wmt.acme.com.  High-quality maps showing roadrunner nests and possible ambush locations.</Abstract>
+  <KeywordList>
+    <Keyword>bird</Keyword>
+    <Keyword>roadrunner</Keyword>
+    <Keyword>ambush</Keyword>
+  </KeywordList>
+  <!-- Top-level web address of service or service provider.  See also OnlineResource
+  elements under <DCPType>. -->
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink"
+   xlink:href="http://hostname/" />
+  <!-- Contact information -->
+  <ContactInformation>
+    <ContactPersonPrimary>
+      <ContactPerson>Jeff deLaBeaujardiere</ContactPerson>
+      <ContactOrganization>NASA</ContactOrganization>
+    </ContactPersonPrimary>
+    <ContactPosition>Computer Scientist</ContactPosition>
+    <ContactAddress>
+      <AddressType>postal</AddressType>
+      <Address>NASA Goddard Space Flight Center, Code 933</Address>
+      <City>Greenbelt</City>
+      <StateOrProvince>MD</StateOrProvince>
+      <PostCode>20771</PostCode>
+      <Country>USA</Country>
+    </ContactAddress>
+    <ContactVoiceTelephone>+1 301 286-1569</ContactVoiceTelephone>
+    <ContactFacsimileTelephone>+1 301 286-1777</ContactFacsimileTelephone>
+    <ContactElectronicMailAddress>delabeau@iniki.gsfc.nasa.gov</ContactElectronicMailAddress>
+  </ContactInformation>
+  <!-- Fees or access constraints imposed. -->
+  <Fees>none</Fees>
+  <AccessConstraints>none</AccessConstraints>
+</Service>
+<Capability>
+  <Request>
+    <Map>
+      <Format>
+	<SGI />
+        <GIF />
+        <JPEG />
+        <PNG />
+        <GML.1 />
+      </Format>
+      <DCPType>
+        <HTTP>
+          <Get>
+            <!-- The URL here for invoking GetMap using HTTP GET includes
+            only the prefix before the '?' and the query string.  Clients are
+            expected to append '?WMTVER=nnn&request=map&etc' as described in
+            the WMS specification. -->
+            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink"
+             xlink:href="http://hostname:port/path" />
+          </Get>
+        </HTTP>
+      </DCPType>
+    </Map>
+    <DescribeLayer>
+      <Format>
+        <!-- what is a valid format? -->
+        <GML.1 />
+      </Format>
+      <DCPType>
+        <HTTP>
+          <Get>
+            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink"
+             xlink:href="http://hostname:port/path" />
+          </Get>
+        </HTTP>
+      </DCPType>
+    </DescribeLayer>
+    <Capabilities>
+      <Format>
+        <WMS_XML />
+      </Format>
+      <DCPType>
+        <HTTP>
+          <Get>
+            <!-- The URL here for invoking GetCapabilities using HTTP GET
+            includes only the prefix before the '?' and the query string.
+            Clients are expected to append '?WMTVER=nnn&request=capabilities'
+            as described in the WMS specification. -->
+            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink"
+             xlink:href="http://hostname:port/path" />
+          </Get>
+          <Post>
+            <!-- The URL here for invoking GetCapabilities using HTTP POST
+            includes the complete address to which a query would be sent in
+            XML format.  Not all Map Servers support POST. -->
+            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink"
+             xlink:href="http://hostname:port/path" />
+          </Post>
+        </HTTP>
+      </DCPType>
+    </Capabilities>
+    <FeatureInfo>
+      <Format>
+        <MIME />
+        <GML.1 />
+      </Format>
+      <DCPType>
+        <HTTP>
+          <Get>
+            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink"
+             xlink:href="http://hostname:port/path" />
+          </Get>
+        </HTTP>
+      </DCPType>
+    </FeatureInfo>
+  </Request>
+  <Exception>
+    <Format>
+      <BLANK />
+      <WMS_XML />
+    </Format>
+  </Exception>
+  <!-- Any text or markup is allowed here, as required to describe
+       vendor-specific capabilities.  Please define elements and attributes
+       in the DOCTYPE declaration at the start of the document. -->
+  <!-- This example is empty because no VSPs were defined in preamble -->
+  <VendorSpecificCapabilities />
+  <UserDefinedSymbolization SupportSLD="1" UserLayer="1" UserStyle="1"
+	RemoteWFS="1" />
+  <Layer>
+    <Title>Acme Corp. Map Server</Title>
+    <SRS>EPSG:4326</SRS> <!-- all layers are available in at least this SRS -->
+    <Layer>
+      <!-- This parent layer has a Name and can therefore be requested from a Map Server, yielding a map of all subsidiary layers. -->
+      <Name>ROADS_RIVERS</Name> 
+      <Title>Roads and Rivers</Title>
+      <!-- The following characteristics are inherited by subsidiary layers. -->
+      <SRS>EPSG:26986</SRS> <!-- An additional SRS for this layer --> 
+      <LatLonBoundingBox minx="-71.634696" miny="41.754149" maxx="-70.789798" maxy="42.908459"/>
+      <BoundingBox SRS="EPSG:26986" minx="189000" miny="834000" maxx="285000" maxy="962000"/>
+      <Attribution>
+        <Title>State College University</Title>
+        <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink"
+         xlink:href="http://www.university.edu/" />
+        <LogoURL width="100" height="100">http://www.university.edu/icons/logo.gif</LogoURL>
+      </Attribution>
+      <FeatureListURL format="GML.1">http://www.university.edu/data/roads_rivers.gml</FeatureListURL>
+      <Style>
+        <Name>USGS</Name>
+        <Title>USGS Topo Map Style</Title>
+        <Abstract>Features are shown in a style like that used in USGS topographic maps.</Abstract>
+        <!-- A picture of a legend for a Layer in this Style -->
+        <LegendURL format="GIF" width="72" height="72">http://www.university.edu/legends/usgs.gif</LegendURL>
+        <!-- An XML (GML) encoding of the legend for GML-enabled clients -->
+        <LegendURL format="GML.1">http://www.university.edu/legends/usgs.gml</LegendURL>
+        <!-- An XSL stylesheet for rendering this layer in this style when requested in GML format -->	
+        <StyleSheetURL format="XSL">http://www.university.edu/stylesheets/usgs.xsl</StyleSheetURL>
+      </Style>
+      <ScaleHint min="4000" max="35000"></ScaleHint>
+      <Layer queryable="1">
+	<Name>ROADS_1M</Name> 
+	<Title>Roads at 1:1M scale</Title>
+	<Abstract>Roads at a scale of 1 to 1 million.</Abstract>
+	<KeywordList>
+          <Keyword>road</Keyword>
+          <Keyword>transportation</Keyword>
+          <Keyword>atlas</Keyword>
+	</KeywordList>
+        <!-- Metadata specific to this particular layer.  The same FGDC metadata is offered in two formats. -->
+	<MetadataURL type="FGDC" format="TXT">http://www.university.edu/fgdc/clearinghouse/metadata/roads.txt</MetadataURL>
+	<MetadataURL type="FGDC" format="XML">http://www.university.edu/fgdc/clearinghouse/metadata/roads.xml</MetadataURL>
+        <!-- In addition to the Style specified in the parent Layer, this Layer is available in this style. -->
+	<Style>
+	  <Name>ATLAS</Name>
+	  <Title>Road atlas style</Title>
+	  <Abstract>Roads are shown in a style like that used in a commercial road atlas.</Abstract>
+        <LegendURL format="GIF" width="72" height="72">http://www.university.edu/legends/atlas.gif</LegendURL>
+	</Style>
+      </Layer>
+      <Layer queryable="1">
+	<Name>RIVERS_1M</Name>
+	<Title>Rivers at 1:1M scale</Title>
+	<Abstract>Rivers at a scale of 1 to 1 million.</Abstract>
+	<KeywordList>
+          <Keyword>river</Keyword>
+          <Keyword>canal</Keyword>
+          <Keyword>waterway</Keyword>
+	</KeywordList>
+      </Layer>
+    </Layer>
+    <Layer queryable="1">
+      <Title>Weather Forecast Data</Title>
+      <SRS>EPSG:4326</SRS> <!-- harmless repetition of common SRS -->
+      <LatLonBoundingBox minx="-180" miny="-90" maxx="180" maxy="90" />
+      <!-- These weather data are available daily from 1999-01-01 through
+           2000-08-22. -->
+      <Dimension name="time" units="ISO8601" />
+      <Extent name="time" default="2000-08-22">1999-01-01/2000-08-22/P1D</Extent>
+      <Layer>
+	<Name>Clouds</Name> 
+	<Title>Forecast cloud cover</Title>
+      </Layer>
+      <Layer>
+	<Name>Temperature</Name> 
+	<Title>Forecast temperature</Title>
+      </Layer>
+      <Layer>
+	<Name>Pressure</Name> 
+	<Title>Forecast barometric pressure</Title>
+        <!-- Pressure is available at several elevations.
+         EPSG:5030 is WGS 84 ellipsoid, units in metres.
+         Pressure is also available at several times.
+         NOTE: first list all Dimension elements, then all Extent elements. -->
+         <Dimension name="time" units="ISO8601" />
+         <Dimension name="elevation" units="EPSG:5030" />
+         <Extent name="time" default="2000-08-22">1999-01-01/2000-08-22/P1D</Extent>
+         <Extent name="elevation" default="0">0,1000,3000,5000,10000</Extent>
+      </Layer>
+    </Layer>
+    <!-- Example of a layer which is a static map of fixed
+         size which the server cannot subset or make transparent -->
+    <Layer opaque="1" noSubsets="1" fixedWidth="512" fixedHeight="256">
+      <Name>ozone_image</Name>
+      <Title>Global ozone distribution (1992)</Title>
+      <LatLonBoundingBox minx="-180" miny="-90" maxx="180" maxy="90" />
+      <Extent name="time" default="1992">1992</Extent>
+    </Layer>
+  </Layer>
+</Capability>
+</WMT_MS_Capabilities>
+

@@ -1,0 +1,4 @@
+<?xml version="1.0" ?>
+<TileMapServerError>
+    <Message>{{exception}}</Message>
+</TileMapServerError>

@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding="UTF-8" standalone="no" ?>
+<!-- The DTD (Document Type Definition) given here must correspond to the version number declared in the WMT_MS_Capabilities element below. -->
+<!DOCTYPE WMT_MS_Capabilities SYSTEM
+ "http://www.digitalearth.gov/wmt/xml/capabilities_1_0_0.dtd"
+ [
+
+ <!-- Output formats known to this server are defined here
+if necessary (only if a format not already listed in the WMT
+Capabilities DTD is needed).  To define a new format, place
+an entity definition for KnownFormats like the one below in
+the DOCTYPE declaration of your Capabilities XML, listing at
+minimum all of the formats you support and separating each
+by logical-OR (|) characters.  Then, define a new element
+for any formats not predefined by WMT.  For example, in the
+following list "SGI" is a server-specific format, while all
+the others are known WMT-wide.  Thus, SGI is included in the
+KnownFormats list and a new empty element <SGI/> is
+defined. -->
+<!ENTITY % KnownFormats " SGI | GIF | JPEG | PNG | WebCGM | SVG | GML.1
+ | WMS_XML | MIME | INIMAGE | PPM | BLANK " >
+<!ELEMENT SGI EMPTY> <!-- Silicon Graphics RGB Format -->
+
+ <!-- other vendor-specific elements defined here -->
+ <!ELEMENT VendorSpecificCapabilities (YMD)>
+ <!ELEMENT YMD (Title, Abstract)>
+ <!ATTLIST YMD required (0 | 1) "0">
+
+ ]>  <!-- end of DOCTYPE declaration -->
+
+<!-- The version number listed in the WMT_MS_Capabilities element here must correspond to the DTD declared above.  See the WMT specification document for how to respond when a client requests a version number not implemented by the server. -->
+<WMT_MS_Capabilities version="1.0.0" updateSequence="0">
+<!-- Service Metadata -->
+<Service>
+  <!-- The WMT-defined name for this type of service -->
+  <Name>GetMap</Name>
+  <!-- Human-readable title for pick lists -->
+  <Title>Acme Corp. Map Server</Title>
+  <!-- Narrative description providing additional information -->
+  <Abstract>WMT Map Server maintained by Acme Corporation.  Contact: webmaster@wmt.acme.com.  High-quality maps showing roadrunner nests and possible ambush locations.</Abstract>
+  <Keywords>bird roadrunner ambush</Keywords>
+  <!-- Top-level address of service or service provider.  See also onlineResource attributes of <DCPType> children. -->
+  <OnlineResource>http://hostname:port/path/</OnlineResource>
+  <!-- Fees or access constraints imposed. -->
+  <Fees>none</Fees>
+  <AccessConstraints>none</AccessConstraints>
+</Service>
+<Capability>
+  <Request>
+    <Map>
+      <Format>
+	<SGI />
+        <GIF />
+        <JPEG />
+        <PNG />
+        <WebCGM />
+        <SVG />
+      </Format>
+      <DCPType>
+        <HTTP>
+	  <!-- The URL here for HTTP GET requests includes only the prefix before the '?' and the query string.  Clients are expected to append '?WMTVER=nnn&etc' as described in the Web Map interface specification. -->
+          <Get onlineResource="http://hostname:port/path/mapserver.cgi" />
+          <Post onlineResource="http://hostname:port/path/mapserver.cgi" />
+        </HTTP>
+      </DCPType>
+    </Map>
+    <Capabilities>
+      <Format>
+        <WMS_XML />
+      </Format>
+      <DCPType>
+        <HTTP>
+	  <!-- The URL here for HTTP GET requests includes only the prefix before the '?' and the query string.  Clients are expected to append '?WMTVER=nnn&etc' as described in the Web Map interface specification. -->
+          <Get onlineResource="http://hostname:port/path/mapserver.cgi" />
+        </HTTP>
+      </DCPType>
+    </Capabilities>
+    <FeatureInfo>
+      <Format>
+        <MIME />
+        <GML.1 />
+      </Format>
+      <DCPType>
+        <HTTP>
+	  <!-- The URL here for HTTP GET requests includes only the prefix before the '?' and the query string.  Clients are expected to append '?WMTVER=nnn&etc' as described in the Web Map interface specification. -->
+          <Get onlineResource="http://hostname:port/path/mapserver.cgi" />
+        </HTTP>
+      </DCPType>
+    </FeatureInfo>
+  </Request>
+  <Exception>
+    <Format>
+      <BLANK />
+      <WMS_XML />
+    </Format>
+  </Exception>
+  <!-- Any text or markup is allowed here, as required to describe
+       server-specific options.  Please define elements and attributes
+       in the DOCTYPE declaration at the start of the document. -->
+  <VendorSpecificCapabilities>
+    <YMD required="0">
+      <Title>Date in YYYYMMDD format</Title>
+      <Abstract>8-digit date in YYYYMMDD format.  If absent,
+         the latest available date (usually today, but not for
+         non-daily measurements) is sent.</Abstract>
+    </YMD>
+  </VendorSpecificCapabilities>
+  <Layer>
+    <Title>Acme Corp. Map Server</Title>
+    <SRS>EPSG:4326</SRS> <!-- all layers are available in at least this SRS -->
+    <Layer queryable="0">
+      <Name>wmt_graticule</Name> 
+      <Title>Alignment test grid</Title>
+      <Abstract>The WMT Graticule is a 10-degree grid suitable for testing alignment among Map Servers.</Abstract>
+      <Keywords>graticule test</Keywords>
+      <LatLonBoundingBox minx="-180" miny="-90" maxx="180" maxy="90" />
+      <Style>
+	<Name>on</Name>
+	<Title>Show test grid</Title>
+	<Abstract>The "on" style for the WMT Graticule causes that layer to be displayed.</Abstract>
+      </Style>
+      <Style>
+	<Name>off</Name>
+	<Title>Hide test grid</Title>
+	<Abstract>The "off" style for the WMT Graticule causes that layer to be hidden even though it was requested from the Map Server.  Style=off is the same as not requesting the graticule at all.</Abstract>
+      </Style>
+    </Layer>
+    <Layer>
+      <!-- This parent layer has a Name and can therefore be requested from a Map Server, yielding a map of all subsidiary layers. -->
+      <Name>ROADS_RIVERS</Name> 
+      <Title>Roads and Rivers</Title>
+      <!-- The following characteristics are inherited by subsidiary layers. -->
+      <SRS>EPSG:26986</SRS> <!-- An additional SRS for this layer --> 
+      <LatLonBoundingBox minx="-71.634696" miny="41.754149" maxx="-70.789798" maxy="42.908459"/>
+      <BoundingBox SRS="EPSG:26986" minx="189000" miny="834000" maxx="285000" maxy="962000"/>
+      <Style>
+        <Name>USGS Topo</Name>
+        <Title>Topo map style</Title>
+        <Abstract>Features are shown in a style like that used in USGS topographic maps.</Abstract>
+        <StyleURL></StyleURL>
+      </Style>
+      <ScaleHint min="4000" max="35000"></ScaleHint>
+      <Layer queryable="1">
+	<Name>ROADS_1M</Name> 
+	<Title>Roads at 1:1M scale</Title>
+	<Abstract>Roads at a scale of 1 to 1 million.</Abstract>
+	<Keywords>road transportation atlas</Keywords>
+	<DataURL>http://www.opengis.org?roads.xml</DataURL>
+        <!-- In addition to the Style specified in the parent Layer, this Layer is available in this style. -->
+	<Style>
+	  <Name>Rand McNally</Name>
+	  <Title>Road atlas style</Title>
+	  <Abstract>Roads are shown in a style like that used in a Rand McNally road atlas.</Abstract>
+	</Style>
+      </Layer>
+      <Layer queryable="1">
+	<Name>RIVERS_1M</Name>
+	<Title>Rivers at 1:1M scale</Title>
+	<Abstract>Rivers at a scale of 1 to 1 million.</Abstract>
+	<Keywords>river canal water</Keywords>
+	<DataURL>http://www.opengis.org?rivers.xml</DataURL>
+      </Layer>
+    </Layer>
+    <Layer queryable="1">
+      <Title>Weather Data</Title>
+      <SRS>EPSG:4326</SRS> <!-- harmless repetition of common SRS -->
+      <LatLonBoundingBox minx="-180" miny="-90" maxx="180" maxy="90" />
+      <Style>
+        <Name>default</Name>
+        <Title>Default style</Title>
+        <Abstract>Weather Data are only available in a single default style.</Abstract>
+      </Style>
+      <Layer>
+	<Name>Clouds</Name> 
+	<Title>Forecast cloud cover</Title>
+       </Layer>
+      <Layer>
+	<Name>Temperature</Name> 
+	<Title>Forecast temperature</Title>
+       </Layer>
+      <Layer>
+	<Name>Pressure</Name> 
+	<Title>Forecast barometric pressure</Title>
+       </Layer>
+    </Layer>
+  </Layer>
+</Capability>
+</WMT_MS_Capabilities>
+

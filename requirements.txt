@@ -1,0 +1,12 @@
+ConcurrentLogHandler==0.8.4
+Jinja2==2.1.1
+PyYAML==3.06
+WebTest==1.1
+flup==1.0.3.dev-20100221
+pyproj==1.8.5
+http://effbot.org/downloads/Imaging-1.1.7.tar.gz#egg=PIL-1.1.7
+Paste==1.7.2
+PasteDeploy==1.3.3
+PasteScript==1.7.3
+WebOb==0.9.7
+WSGIUtils==0.7

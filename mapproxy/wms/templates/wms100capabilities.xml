@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE WMT_MS_Capabilities SYSTEM "http://schemas.opengis.net/wms/1.0.0/WMS_MS_Capabilities.dtd"
+ [
+ <!ELEMENT VendorSpecificCapabilities EMPTY>
+ ]>  <!-- end of DOCTYPE declaration -->
+<WMT_MS_Capabilities version="1.0.0">
+<Service>
+  <Name>OGC:WMS</Name>
+  <Title>{{service.title}}</Title>
+  <Abstract>{{service.abstract}}</Abstract>
+  <OnlineResource>{{service.online_resource}}</OnlineResource>
+  <Fees>{{service.fees|default('none')}}</Fees>
+  <AccessConstraints>{{service.access_constraints|default('none')}}</AccessConstraints>
+</Service>
+
+<Capability>
+  <Request>
+    <Capabilities>
+      <Format>
+        <WMS_XML/>
+      </Format>
+      <DCPType>
+        <HTTP>
+          <Get onlineResource="{{service.url}}?"/>
+        </HTTP>
+      </DCPType>
+    </Capabilities>
+    <Map>
+      <Format>
+{% for format in formats %}
+{% if format is wms100format %}
+        <{{format|wms100format}}/>
+{% endif %}
+{% endfor %}
+      </Format>
+      <DCPType>
+        <HTTP>
+          <Get onlineResource="{{service.url}}?"/>
+        </HTTP>
+      </DCPType>
+    </Map>
+    <FeatureInfo>
+      <Format>
+        <MIME/>
+        <GML.1/>
+      </Format>
+      <DCPType>
+        <HTTP>
+          <Get onlineResource="{{service.url}}?"/>
+        </HTTP>
+      </DCPType>
+    </FeatureInfo>
+  </Request>
+  <Exception>
+    <Format>
+      <INIMAGE/>
+      <BLANK/>
+      <WMS_XML/>
+    </Format>
+  </Exception>
+  <Layer>
+    <Title>{{service.title}}</Title>
+    <SRS>{% for s in srs %}{{s}} {% endfor %}</SRS>
+    <LatLonBoundingBox minx="-180" miny="-80" maxx="180" maxy="80" />
+{% for layer in layers %}
+  <Layer{% if layer.has_info() %} queryable="1"{% endif %}>
+      <Name>{{ layer.md.name }}</Name>
+      <Title>{{ layer.md.title }}</Title>
+      <LatLonBoundingBox minx="{{ layer.llbbox[0] }}" miny="{{ layer.llbbox[1] }}" maxx="{{ layer.llbbox[2] }}" maxy="{{ layer.llbbox[3] }}" />
+      <BoundingBox SRS="EPSG:4326" minx="{{ layer.llbbox[0] }}" miny="{{ layer.llbbox[1] }}" maxx="{{ layer.llbbox[2] }}" maxy="{{ layer.llbbox[3] }}" />
+    </Layer>
+{% endfor %}
+  </Layer>
+</Capability>
+</WMT_MS_Capabilities>

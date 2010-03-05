@@ -1,0 +1,8 @@
+include setup.py
+include script.py
+include scriptine.zip
+include setup.cfg
+include LICENSE
+
+recursive-include mapproxy *.*
+recursive-exclude mapproxy *.pyc

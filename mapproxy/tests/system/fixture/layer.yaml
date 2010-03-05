@@ -1,0 +1,104 @@
+service:
+    md:
+        title: MapProxy test fixture
+        abstract: This is MapProxy.
+        online_resource: http://mapproxy.org/
+        contact:
+            person: Oliver Tonnhofer
+            position: Technical Director
+            organization: Omniscale
+            address: Nadorster Str. 60
+            city: Oldenburg
+            postcode: 26123
+            country: Germany
+            phone: +49(0)441-9392774-0
+            fax: +49(0)441-9392774-9
+            email: info@omniscale.de
+        access_constraints:
+            This service is intended for private and evaluation use only.
+            The data is licensed as Creative Commons Attribution-Share Alike 2.0
+            (http://creativecommons.org/licenses/by-sa/2.0/)
+
+layers:
+    direct:
+        md:
+            title: Direct Layer
+        sources:
+        - req:
+            url: http://localhost:42423/service
+          type: direct
+          layers: bar
+    wms_cache:
+        md:
+            title: WMS Cache Layer
+        param:
+            format: image/jpeg
+        sources:
+        - type: cache_wms
+          wms_opts:
+            featureinfo: True
+          req:
+            url: http://localhost:42423/service
+            layers: foo,bar
+    wms_cache_100:
+        md:
+            title: WMS Cache Layer
+        param:
+            format: image/jpeg
+        sources:
+        - type: cache_wms
+          wms_opts:
+            version: '1.0.0'
+            featureinfo: True
+          req:
+            url: http://localhost:42423/service
+            layers: foo,bar
+    wms_cache_130:
+        md:
+            title: WMS Cache Layer
+        param:
+            format: image/jpeg
+        sources:
+        - type: cache_wms
+          wms_opts:
+            version: '1.3.0'
+            featureinfo: True
+          req:
+            url: http://localhost:42423/service
+            layers: foo,bar
+    wms_cache_multi:
+        md:
+            title: WMS Cache Multi Layer
+        param:
+            format: image/jpeg
+            srs: ['EPSG:4326', 'EPSG:900913']
+        sources:
+        - type: cache_wms
+          wms_opts:
+            version: '1.3.0'
+          req:
+            url: http://localhost:42423/service
+            layers: foo,bar
+    wms_merge:
+        md:
+            title: WMS Cache + Direct Layer
+        cache_dir: wms
+        param:
+            format: image/png
+            bbox: 5.40731,46.8447,15.5072,55.4314
+            srs: ['EPSG:4326', 'EPSG:900913']
+        sources:
+        - type: direct
+          req:
+            url: http://localhost:42423/service
+            layers: buz
+        - type: cache_wms
+          req:
+            url: http://localhost:42423/service2
+            layer: bar
+    tms_cache:
+        md:
+            title: TMS Cache Layer
+        cache_dir: wms
+        sources:
+        - type: cache_tms

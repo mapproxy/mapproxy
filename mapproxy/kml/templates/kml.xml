@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+    <Document>
+{% if initial_level %}
+        <name>{{layer.md.name}}</name>
+{% else %}
+        <name>{{layer.md.name}} - {{tile.coord}}</name>
+{% endif %}
+        <Region>
+            <LatLonAltBox>
+                <north>{{tile.bbox[3]}}</north><south>{{tile.bbox[1]}}</south>
+                <east>{{tile.bbox[2]}}</east><west>{{tile.bbox[0]}}</west>
+            </LatLonAltBox>
+            <Lod>
+                <minLodPixels>100</minLodPixels>
+{% if initial_level %}
+                <maxLodPixels>-1</maxLodPixels>
+{% else %}
+                <maxLodPixels>256</maxLodPixels>
+{% endif %}
+                <minFadeExtent>20</minFadeExtent>
+                <maxFadeExtent>10</maxFadeExtent>
+            </Lod>
+        </Region>
+{% for subtile in subtiles %}
+        <NetworkLink>
+            <name>{{layer.md.name}} - {{subtile.coord}}</name>
+            <Region>
+                <LatLonAltBox>
+                    <north>{{subtile.bbox[3]}}</north><south>{{subtile.bbox[1]}}</south>
+                    <east>{{subtile.bbox[2]}}</east><west>{{subtile.bbox[0]}}</west>
+                </LatLonAltBox>
+                <Lod>
+                    <minLodPixels>128</minLodPixels>
+                    <maxLodPixels>-1</maxLodPixels>
+                </Lod>
+            </Region>
+            <Link>
+                <href>{{service.url}}/kml/{{layer.md.name_path|join('/')}}/{{subtile.coord[2]}}/{{subtile.coord[0]}}/{{subtile.coord[1]}}.kml</href>
+                <viewRefreshMode>onRegion</viewRefreshMode>
+                <viewFormat/>
+            </Link>
+        </NetworkLink>
+{% endfor %}
+        <GroundOverlay>
+            <name>{{tile.coord}}</name>
+            <drawOrder>{{tile.coord[2]}}</drawOrder>
+            <Icon>
+                <href>{{service.url}}/kml/{{layer.md.name_path|join('/')}}/{{tile.coord[2]}}/{{tile.coord[0]}}/{{tile.coord[1]}}.{{layer.format}}</href>
+            </Icon>
+            <LatLonBox>
+                <north>{{tile.bbox[3]}}</north><south>{{tile.bbox[1]}}</south>
+                <east>{{tile.bbox[2]}}</east><west>{{tile.bbox[0]}}</west>
+            </LatLonBox>
+        </GroundOverlay>
+    </Document>
+</kml>

@@ -1,0 +1,524 @@
+<!-- NOTE: comments in this Document Type Definition impose additional
+constraints beyond those codified in the DTD syntax.  A conformant Web Map
+Server must provide Capabilities XML that (1) validates against the DTD and
+(2) does not violate the constraints stated in comments herein. -->
+
+<!-- The parent element of the Capabilities document includes as children a
+Service element with general information about the server and a Capability
+element with specific information about the kinds of functionality offered by
+the server. -->
+<!ELEMENT WMT_MS_Capabilities (Service, Capability) >
+
+<!-- The version attribute specifies the specification revision to which this
+DTD applies.  Its format is one, two or three integers separated by periods:
+"x", or "x.y", or "x.y.z", with the most significant number appearing first.
+Future revisions are guaranteed to be numbered in monotonically increasing
+fashion, though gaps may appear in the sequence.  All known versions may
+be found at http://www.digitalearth.gov/wmt/xml/ -->
+<!-- The updateSequence attribute is a sequence number for managing
+propagation of the contents of this document.  For example, if a Map Server
+adds some data layers it can increment the update sequence to inform catalog
+servers that their previously cached versions are now stale.  The format is a
+positive integer. -->
+<!ATTLIST WMT_MS_Capabilities
+	  version CDATA #FIXED "1.0.7"
+	  updateSequence CDATA "0">
+
+<!-- This WMT-wide list of possible output formats can be redefined by
+individual servers; see the sample XML. -->
+<!ENTITY % KnownFormats " GIF | JPEG | PNG | WebCGM | SVG | HDF-EOS
+              | GML.1 | GML.2 | GML.3 | WBMP
+              | WMS_XML | MIME | INIMAGE | TIFF | GeoTIFF | PPM | BLANK " >
+
+<!-- The Service element provides metadata for the service as a whole. -->
+<!ELEMENT Service (Name, Title, Abstract?, KeywordList?, OnlineResource,
+                   ContactInformation, Fees?, AccessConstraints?) >
+
+<!-- A service name defined within the Web Mapping Specification namespace.
+Currently only the name "GetMap" is defined. -->
+<!ELEMENT Name (#PCDATA) >
+
+<!-- A human-readable title to briefly identify this server in menus. -->
+<!ELEMENT Title (#PCDATA) >
+
+<!-- A descriptive narrative for more information about this server. -->
+<!ELEMENT Abstract (#PCDATA) > 
+
+<!-- List of keywords or keyword phrases to help catalog searching.
+Currently, no controlled vocabulary has been defined. -->
+<!ELEMENT KeywordList (Keyword*) >
+
+<!-- A single keyword or phrase. -->
+<!ELEMENT Keyword (#PCDATA) >
+
+<!-- An HTTP URL of a service.  This may appear in several places:
+- The Service element describing the service as a whole (in which case the
+  OnlineResource may be, for example, the top-level "home page" of the service
+  provider).
+- The URLs for HTTP GET and POST requests of the specific interfaces offered
+  by the service (e.g., the URL to use for a GetMap request).
+- The Attribution information for Layer(s).
+The use of an xlink:href attribute implies the HTTP Distributed Computing Platform;
+currently, no non-HTTP platforms have been specified. -->
+<!ELEMENT OnlineResource EMPTY>
+<!ATTLIST OnlineResource xlink:href CDATA #REQUIRED
+                         xmlns:xlink CDATA #FIXED "http://www.w3.org/1999/xlink" >
+
+<!ELEMENT ContactInformation  (ContactPersonPrimary?, ContactPosition?,
+                               ContactAddress?, ContactVoiceTelephone?,
+                               ContactFacsimileTelephone?,
+                               ContactElectronicMailAddress?) >
+
+<!--The primary contact person.-->
+<!ELEMENT ContactPersonPrimary  (ContactPerson, ContactOrganization) >
+
+<!--The person to contact.-->
+<!ELEMENT ContactPerson  (#PCDATA) >
+
+<!--The organization supplying the service.-->
+<!ELEMENT ContactOrganization  (#PCDATA) >
+
+<!ELEMENT ContactPosition  (#PCDATA) >
+
+<!--The address for the contact supplying the service.-->
+<!ELEMENT ContactAddress  (AddressType,Address,City,StateOrProvince,PostCode,
+               Country) >
+
+<!--The type of address.-->
+<!ELEMENT AddressType  (#PCDATA) >
+
+<!--The street address.-->
+<!ELEMENT Address  (#PCDATA) >
+
+<!--The address city.-->
+<!ELEMENT City  (#PCDATA) >
+
+<!--The state or province.-->
+<!ELEMENT StateOrProvince  (#PCDATA) >
+
+<!--The zip or postal code.-->
+<!ELEMENT PostCode  (#PCDATA) >
+
+<!--The address country.-->
+<!ELEMENT Country  (#PCDATA) >
+
+<!--Contact telephone number.-->
+<!ELEMENT ContactVoiceTelephone  (#PCDATA) >
+
+<!--The contact fax number.-->
+<!ELEMENT ContactFacsimileTelephone  (#PCDATA) >
+
+<!--The e-mail address for the contact.-->
+<!ELEMENT ContactElectronicMailAddress  (#PCDATA) >
+
+
+
+<!-- Elements indicating what fees or access constraints are imposed.
+The reserved word "none" indicates no constraint exists. -->
+<!ELEMENT Fees (#PCDATA)>
+<!ELEMENT AccessConstraints (#PCDATA)>
+
+<!-- A Capability lists available request types, how exceptions
+may be reported, and whether any vendor-specific capabilities are defined.  It
+also includes an optional list of map layers available from this server. -->
+
+<!-- The optional VendorSpecificCapabilities element lists any capabilities
+unique to a particular Map Server.  Because the information is not known a
+priori, it cannot be constrained by this particular DTD.  A vendor-specific
+DTD fragment must be supplied at the start of the XML Capabilities document,
+after the reference to the general WMT_MS_Capabilities DTD.  See the sample
+XML for further information. -->
+
+<!ELEMENT Capability 
+          (Request, Exception?, VendorSpecificCapabilities?,
+	   UserDefinedSymbolization?, Layer?) >
+
+<!-- Available WMT-defined request types are listed here.
+At least one of the values is required, but more than one
+may be given. -->
+<!ELEMENT Request (Map | Coverage | Capabilities | FeatureInfo | DescribeLayer)+ >
+
+<!-- For each request method offered by the server, list the
+available output formats and the supported distributed
+computing platforms (DCPs).  (The xmlns:xlink attribute is a
+required XML namespace declaration; leave it as-is.)  Example:
+    <Map>
+      <Format><PNG /><JPEG /><GML.1 /></Format>
+      <DCPType><HTTP><Get>
+        <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink"
+         xlink:href="URL" />
+      </Get></HTTP></DCPType>
+    </Map>
+ -->
+
+<!-- GetMap interface: Presence of the Map element means this server can
+generate a map of a specified area, either as a picture or a feature
+collection -->
+<!ELEMENT Map (Format, DCPType+)>
+
+<!-- GetCoverage interface: Presence of the Coverage element means this server can
+serve numeric values representing gridded coverage data over a specified area -->
+<!ELEMENT Coverage (Format, DCPType+)>
+
+<!-- GetCapabilities interface: Presence of the Capabilities element means
+this server can generate a description of its abilities and holdings formatted
+in XML that complies with this DTD. -->
+<!ELEMENT Capabilities (Format, DCPType+)>
+
+<!-- GetFeatureInfo interface: Presence of the FeatureInfo element means this
+server can return information about a specific feature given a valid map
+request and a location on that map. -->
+<!ELEMENT FeatureInfo (Format, DCPType+)>
+
+<!-- DescribeLayer interface: Presence of the DescribeLayer
+element means this server can return describe a layer
+according to the SLD spec [help me out with the right
+verbiage here - no chance to plumb SLD just now] -->
+<!ELEMENT DescribeLayer (Format, DCPType+)>
+
+<!-- Available Distributed Computing Platforms (DCPs) are
+listed here.  At present, only HTTP is defined. -->
+<!ELEMENT DCPType (HTTP) >
+
+<!-- Available HTTP request methods. -->
+<!ELEMENT HTTP (Get | Post)+ >
+
+<!-- HTTP request methods.  The onlineResource attribute indicates the URL
+prefix for HTTP GET requests (everything before the question mark and query
+string: http://hostname[:port]/path/scriptname); for HTTP POST requests,
+onlineResource is the complete URL.  The HTTP GET syntax for Map, Capabilities
+and FeatureInfo requests has been well defined and is described in the OGC
+Web Map Server Interface Specification.  The POST formalism, wherein GetMap
+arguments are encoded in XML and POSTed to the server, has not yet been fully
+developed. -->
+<!ELEMENT Get (OnlineResource) >
+<!ELEMENT Post (OnlineResource) >
+
+<!-- Available formats.  Not all formats are relevant to all requests.
+Individual servers MAY add new formats as shown in the sample XML accompanying
+this DTD. -->
+<!ELEMENT Format ( %KnownFormats; )+ >
+<!ELEMENT GIF EMPTY> <!-- Graphics Interchange Format -->
+<!ELEMENT JPEG EMPTY> <!-- Joint Photographics Expert Group -->
+<!ELEMENT PNG EMPTY> <!-- Portable Network Graphics -->
+<!ELEMENT PPM EMPTY> <!-- Portable PixMap -->
+<!ELEMENT TIFF EMPTY> <!-- Tagged Image File Format -->
+<!ELEMENT GeoTIFF EMPTY> <!-- Geographic TIFF -->
+<!ELEMENT HDF-EOS EMPTY> <!-- Hierarchical Data Format for Earth Observing System -->
+<!ELEMENT WebCGM EMPTY> <!-- Web Computer Graphics Metafile -->
+<!ELEMENT SVG EMPTY>  <!-- Scalable Vector Graphics -->
+<!ELEMENT WMS_XML EMPTY> <!-- eXtensible Markup Language -->
+<!ELEMENT GML.1 EMPTY> <!-- Geography Markup Language, profile 1 -->
+<!ELEMENT GML.2 EMPTY> <!-- Geography Markup Language, profile 2 -->
+<!ELEMENT GML.3 EMPTY> <!-- Geography Markup Language, profile 3 -->
+<!ELEMENT WBMP EMPTY> <!-- Wireless Access Protocol (WAP) Bitmap -->
+<!ELEMENT MIME EMPTY> <!-- Multipurpose Internet Mail Extensions -->
+<!ELEMENT INIMAGE EMPTY> <!-- display text in the returned image -->
+<!ELEMENT BLANK EMPTY> <!-- return an image with all pixels transparent if
+                            supported by the image format, otherwise all
+                            pixels set to the BGCOLOR if present, otherwise
+                            all pixels set to the same (arbitrary) value -->
+
+<!-- An Exception element indicates which output formats are supported
+for reporting problems encountered when executing a request.  Available
+Exception formats MUST include one or more of WMS_XML, INIMAGE, or BLANK.
+Example: <Exception><Format><INIMAGE /><WMS_XML /></Format></Exception>. -->
+<!ELEMENT Exception (Format)>
+
+<!-- Optional user-defined symbolization -->
+<!ELEMENT UserDefinedSymbolization EMPTY >
+<!ATTLIST UserDefinedSymbolization
+          SupportSLD (0 | 1) "1"
+          UserLayer (0 | 1) "1"
+          UserStyle (0 | 1) "1"
+          RemoteWFS (0 | 1) "1" >
+
+<!-- Nested list of zero or more map Layers offered by this server.  The Layer
+element can be omitted if the server has no layers (for example, if it offers
+only geoprocessing services but no actual data). -->
+
+<!-- A Layer element has two functions: it either refers to a map layer which
+can be requested by Name in the LAYERS parameter of a GetMap request, or it is
+a category Title for all the layers nested within.  In the latter case, the
+category itself MAY include a Name by which all of the nested layers can be
+requested at once.  For example, a parent layer "Roads" may have children
+"Interstates" and "County Roads" and allow the user to request either child
+individually or both together. -->
+
+<!-- A Map Server which advertises a Layer containing a Name element MUST be
+able to accept that Name as the value of LAYERS argument in a GetMap request
+and return the corresponding map.  A Viewer Client MUST NOT attempt to request
+a Layer that has a Title but no Name. -->
+
+<!-- A Map Server MUST include at least one <Layer> element for each map layer
+offered.  If desired, data layers MAY be repeated in different categories when
+relevant.  A Layer element MAY state the Name by which a map of the layer is
+requested, MUST give a Title to be used in human-readable menus, and MAY
+include: a human-readable Abstract containing further description, available
+Spatial Reference Systems (SRS), bounding boxes in Lat/Lon and SRS-specific
+coordinates indicating the available geographic coverage, styles in which the
+layer is available, a URL for more information about the data, and a hint
+concerning appropriate map scales for displaying this layer.  Use of the
+nesting hierarchy is optional.  -->
+
+<!-- The following table specifies the number and source of the various
+elements (and one attribute) describing a Layer that has a Name.  Without a
+Name, the Layer is merely a category title and all other elements are
+optional; if present, some of those elements may be inherited by children as
+described in the table.
+
+                       inherit
+                        from
+element         number parent?  comments
+=======         ====== =======  ========
+Name              1      -      this table only applies to Named Layers
+                                (those which can be requested in a GetMap call)
+                                no default
+
+Title             1      -      required in each Layer; no default
+
+Abstract          0/1    -      optional; no default
+
+KeywordList       0/1    -      optional; no default
+
+SRS               1     add     one list is required; default from parent;
+                                list may include multiple whitespace-separated
+                                values
+
+LatLonBoundingBox 1    replace  exactly one is required; default from parent
+
+BoundingBox       0+   replace  one is required per SRS other than EPSG:4326;
+                                default from parent
+
+Dimension         0+    add     optional; default from parent
+
+Extent            0+   replace  optional; default from parent; no more than one per
+                                declared Dimension
+
+Attribution       0/1  replace  optional; default from parent
+
+MetadataURL       0+     -      optional; no default
+
+DataURL           0/1    -      optional; no default
+
+FeatureListURL    0/1    -      optional; no default
+
+Style             0+    add     optional; default from parent
+
+ScaleHint         0/1  replace  optional; default from parent
+
+Layer             0+     -      optional; no default;
+                                if present, each is a "child" of the enclosing
+                                Layer and inherits some default values as
+                                described in this table
+
+queryable         1    replace  optional; default is "0" (not queryable)
+(attribute)                     or parent value if present
+
+
+-->
+
+<!ELEMENT Layer ( Name?, Title, Abstract?, KeywordList?, SRS?,
+                  LatLonBoundingBox?, BoundingBox*, Dimension*, Extent*,
+                  Attribution?, MetadataURL*, DataURL?, FeatureListURL?,
+                  Style*, ScaleHint?, Layer* ) >
+
+<!-- Layer attributes (default=0):
+* If queryable=1, then WMS implements the GetFeatureInfo
+  operation on this Layer.
+* If opaque=1, then this layer is an area-filling coverage
+  with significant areas that cannot be made transparent.
+* If noSubsets=1, then this layer cannot be displayed using a
+  bounding box values different than the ones declared in this XML.
+* If fixedWidth and fixedHeight are nonzero, then the Layer is
+  only available in a single size.
+-->
+<!ATTLIST Layer queryable (0 | 1) "0"
+                opaque (0 | 1) "0"
+                noSubsets (0 | 1) "0"
+                fixedWidth CDATA #IMPLIED
+                fixedHeight CDATA #IMPLIED >
+          
+<!-- Listing of available Spatial Reference Systems (SRS).
+* The root Layer element must include a list of all SRSes which
+  are common to *all* subsidiary layers.  This allows clients
+  to quickly determine that a server cannot possibly satisfy a
+  request for a particular SRS.  Use an empty element if there
+  is no common SRS.
+* Layer-specific SRS: Optionally, layers may add to the global SRS list, or to
+  the list inherited from a parent layer as described above.
+  Any duplication should be ignored by clients.  That is, a particular
+  layer may list all of its SRSes, even if it repeats
+  information in the top-level SRS.
+
+The content of the SRS element is a free-text list of SRS names separated by
+whitespace.  A name includes a namespace prefix, a colon, and one or more
+parameter values.  Currently defined namespaces are:
+
+prefix  parameters    comment
+======  ==========    =======
+EPSG    EPSG code     European Petroleum Survey Group geodesy parameters
+                      http://www.petroconsultants.com/products/geodetic.html
+                      Examples: 'EPSG:4326' is WGS84 lat/lon,
+                      'EPSG:26986' is NAD83 / Massachusetts Mainland.
+
+AUTO	WMT code,     WMT list of "automatic" projections.  WMT code:
+        EPSG units,   an integer identifier assigned by WMT (see
+        Longitude,    http://www.digitalearth.gov/wmt/auto.html). EPSG units:
+        Latitude      one of the EPSG codes for identifying units,
+                      indicating what units are to be used in Bounding Boxes.
+                      Longitude: central meridian of the projection (degrees).
+                      Latitude: central latitude of the projection (degrees).
+                      Example: 'AUTO:42003,9001,-100,45' is auto orthographic
+                      projection, bbox units in meters, center at 100W 45N.
+                      The bounding box is measured in a plane perpendicular to
+                      the line of sight, *not* directly on the Earth.
+-->
+
+<!ELEMENT SRS (#PCDATA) >
+
+<!-- The LatLonBoundingBox attributes indicate the edges of the enclosing
+rectangle in latitude/longitude decimal degrees (as in SRS EPSG:4326 [WGS1984
+lat/lon]).  LatLonBoundingBox MUST be supplied regardless of what SRS the map
+server may support, but it MAY be approximate if EPSG:4326 is not supported.
+Its purpose is to facilitate geographic searches without requiring coordinate
+transformations by the search engine. -->
+<!ELEMENT LatLonBoundingBox EMPTY>
+<!ATTLIST LatLonBoundingBox 
+          minx CDATA #REQUIRED
+          miny CDATA #REQUIRED
+          maxx CDATA #REQUIRED
+          maxy CDATA #REQUIRED>
+
+<!-- The BoundingBox attributes indicate the edges of the bounding box
+in units of the specified spatial reference system. -->
+<!ELEMENT BoundingBox EMPTY>
+<!ATTLIST BoundingBox 
+          SRS CDATA #REQUIRED
+          minx CDATA #REQUIRED
+          miny CDATA #REQUIRED
+          maxx CDATA #REQUIRED
+          maxy CDATA #REQUIRED>
+
+<!-- The Dimension element declares the _existence_ of a dimension in an
+abstract sense for the enclosed Layer(s).  See
+http://www.digitalearth.gov/wmt/md/ for details. -->
+<!ELEMENT Dimension EMPTY >
+<!ATTLIST Dimension
+          name CDATA #REQUIRED
+          units CDATA #REQUIRED
+          unitSymbol CDATA #IMPLIED>
+
+<!-- The Extent element indicates what _values_ along a dimension are
+appropriate for the enclosed Layer(s).  See
+http://www.digitalearth.gov/wmt/md/ for details.  The 'name' attribute must
+have been defined within a Dimension element.  The 'name' can be used
+case-insensitively in a GetMap request so that Clients can request a specific
+value.  The 'default' attribute indicates what value will be used if none is
+specified by the Client.  A 'default' is strongly recommended but optional.
+If there is no declared default the Server MUST NOT send a default map;
+instead, the Server MUST raise an Exception to indicate that a value was
+required. -->
+<!ELEMENT Extent (#PCDATA) >
+<!ATTLIST Extent
+          name CDATA #REQUIRED
+          default CDATA #IMPLIED>
+
+<!-- A Map Server MAY use Attribution to indicate and give credit to the
+provider of a Layer or collection of Layers.  The provider's URL, descriptive
+title string, and/or logo image URL may be supplied.  Client applications may
+choose to display one or more of these items.  The LogoURL width and height
+assist client applications in laying out space to display the logo. -->
+<!ELEMENT Attribution ( Title?, OnlineResource?, LogoURL? )>
+<!ELEMENT LogoURL (#PCDATA) >
+<!ATTLIST LogoURL
+          width NMTOKEN #REQUIRED
+          height NMTOKEN #REQUIRED>
+
+<!-- A Map Server MAY use zero or more MetadataURL elements to offer detailed,
+standardized metadata about the data underneath a particular layer. The type
+attribute indicates the standard to which the metadata complies; the format
+attribute indicates how the metadata is structured.  Two types are defined at
+present: 'TC211' = ISO TC211 19115; 'FGDC' = FGDC CSDGM. -->
+<!ELEMENT MetadataURL (#PCDATA) >
+<!ATTLIST MetadataURL
+          type ( TC211 | FGDC ) #REQUIRED
+          format ( XML | SGML | TXT ) #REQUIRED>
+
+<!-- A Map Server MAY use DataURL to offer more information about the data
+underneath a particular layer. While the semantics are not well-defined, as
+long as the results of an HTTP GET request against the DataURL are properly
+MIME-typed, Viewer Clients and Cascading Map Servers can make use of this. -->
+<!ELEMENT DataURL (#PCDATA) >
+
+<!-- A Map Server MAY use FeatureListURL to point to a GML-encoded enumeration
+of the features represented in a Layer.  An attribute indicates the format
+of the feature list. -->
+<!ELEMENT FeatureListURL (#PCDATA) >
+<!ATTLIST FeatureListURL
+          format ( %KnownFormats; ) #REQUIRED>
+
+<!-- A Style element lists the name by which a style is requested and a
+human-readable title for pick lists, optionally (and ideally) provides a
+human-readable description, and optionally gives a style URL.  If a Layer is
+offered in only a single Style, the Map Server MAY choose not to give it a
+name.  Nevertheless, when handling a GetMap request a server MUST accept ''
+(null) and 'default' in the STYLES parameter as synonyms for the default (or
+only) style. -->
+<!ELEMENT Style ( Name, Title, Abstract?,
+                  LegendURL*, StyleSheetURL?, StyleURL? ) >
+
+<!-- A Map Server MAY use zero or more LegendURL elements to provide an
+image(s) of a legend, or a legend encoded as GML, relevant to each Style of a
+Layer.  An attribute indicates the media type of the legend; optional width
+and height are encouraged for image types to assist client applications in
+laying out space to display the legend. -->
+<!ELEMENT LegendURL (#PCDATA) >
+<!ATTLIST LegendURL
+          format ( %KnownFormats; ) #REQUIRED
+          width NMTOKEN #IMPLIED
+          height NMTOKEN #IMPLIED>
+
+<!-- A Map Server MAY use StyleSheeetURL to provide symbology information for
+each Style of a Layer encoded as XML (e.g., in GML format).  An attribute
+indicates the type of stylesheet at the specified URL; only XSL is presently
+defined. -->
+<!ELEMENT StyleSheetURL (#PCDATA) >
+<!ATTLIST StyleSheetURL
+          format ( XSL ) #REQUIRED>
+
+<!-- A Map Server MAY use StyleURL to offer more information about the data or
+symbology underlying a particular Style. While the semantics are not
+well-defined, as long as the results of an HTTP GET request against the
+StyleURL are properly MIME-typed, Viewer Clients and Cascading Map Servers can
+make use of this. A possible use could be to allow a Map Server to provide
+legend information. -->
+<!ELEMENT StyleURL (#PCDATA) >
+
+<!-- Minimum and maximum scale hints for which it is appropriate to
+display this layer. It is STRONGLY RECOMMENDED that for Picture Case
+return formats the min and max values be expressed as ground distance
+in meters of a southwest to northeast diagonal of the pixel whose X
+coordinate is floor(width/2) and whose Y coordinate is floor(height/2).
+
+In the figure below, the X is in the pixel whose diagonal measurement
+is used.
+
+   +===+===+===+      +===+===+===+===+
+   |   |   |   |      |   |   |   |   |
+   +===+===+===+      +===+===+===+===+
+   |   | X |   |      |   | X |   |   |
+   +===+===+===+      +===+===+===+===+
+   |   |   |   |      |   |   |   |   |
+   +===+===+===+      +===+===+===+===+
+                      |   |   |   |   |
+                      +===+===+===+===+
+
+It is understood that this definition is not geodetically precise, but
+at the same time the hope is that by including it, conventions will
+develop around its use which can be later specified more clearly.  -->
+<!ELEMENT ScaleHint EMPTY>
+<!ATTLIST ScaleHint min CDATA #REQUIRED max CDATA #REQUIRED>
+
+
+

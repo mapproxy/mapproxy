@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE WMT_MS_Capabilities SYSTEM "http://schemas.opengis.net/wms/1.1.1/WMS_MS_Capabilities.dtd"
+ [
+ <!ELEMENT VendorSpecificCapabilities EMPTY>
+ ]>  <!-- end of DOCTYPE declaration -->
+<WMT_MS_Capabilities version="1.1.1">
+<Service>
+  <Name>OGC:WMS</Name>
+  <Title>{{service.title}}</Title>
+  <Abstract>{{service.abstract}}</Abstract>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.online_resource}}"/>
+{% if service.contact is defined %}
+  <ContactInformation>
+      <ContactPersonPrimary>
+        <ContactPerson>{{service.contact.person}}</ContactPerson>
+        <ContactOrganization>{{service.contact.organization}}</ContactOrganization>
+      </ContactPersonPrimary>
+      <ContactPosition>{{service.contact.position}}</ContactPosition>
+      <ContactAddress>
+        <AddressType>{{service.contact.address_type|default('postal')}}</AddressType>
+        <Address>{{service.contact.address}}</Address>
+        <City>{{service.contact.city}}</City>
+        <StateOrProvince>{{service.contact.state}}</StateOrProvince>
+        <PostCode>{{service.contact.postcode}}</PostCode>
+        <Country>{{service.contact.country}}</Country>
+      </ContactAddress>
+      <ContactVoiceTelephone>{{service.contact.phone}}</ContactVoiceTelephone>
+      <ContactFacsimileTelephone>{{service.contact.fax}}</ContactFacsimileTelephone>
+      <ContactElectronicMailAddress>{{service.contact.email}}</ContactElectronicMailAddress>
+  </ContactInformation>
+{% endif %}
+  <Fees>{{service.fees|default('none')}}</Fees>
+  <AccessConstraints>{{service.access_constraints|default('none')}}</AccessConstraints>
+</Service>
+
+<Capability>
+  <Request>
+    <GetCapabilities>
+      <Format>application/vnd.ogc.wms_xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.url}}?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetCapabilities>
+    <GetMap>
+{% for format in formats %}
+        <Format>{{format}}</Format>
+{% endfor %}
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.url}}?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetMap>
+    <GetFeatureInfo>
+      <Format>text/plain</Format>
+      <Format>text/html</Format>
+      <Format>application/vnd.ogc.gml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.url}}?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetFeatureInfo>
+  </Request>
+  <Exception>
+    <Format>application/vnd.ogc.se_xml</Format>
+    <Format>application/vnd.ogc.se_inimage</Format>
+    <Format>application/vnd.ogc.se_blank</Format>
+  </Exception>
+  <Layer>
+    <Title>{{service.title}}</Title>
+{% for s in srs %}
+    <SRS>{{s}}</SRS>
+{% endfor %}
+    <LatLonBoundingBox minx="-180" miny="-80" maxx="180" maxy="80" />
+{% for layer in layers %}
+    <Layer{% if layer.has_info() %} queryable="1"{% endif %}>
+      <Name>{{ layer.md.name }}</Name>
+      <Title>{{ layer.md.title }}</Title>
+      <LatLonBoundingBox minx="{{ layer.llbbox[0] }}" miny="{{ layer.llbbox[1] }}" maxx="{{ layer.llbbox[2] }}" maxy="{{ layer.llbbox[3] }}" />
+      <BoundingBox SRS="EPSG:4326" minx="{{ layer.llbbox[0] }}" miny="{{ layer.llbbox[1] }}" maxx="{{ layer.llbbox[2] }}" maxy="{{ layer.llbbox[3] }}" />
+    </Layer>
+{% endfor %}
+  </Layer>
+</Capability>
+</WMT_MS_Capabilities>

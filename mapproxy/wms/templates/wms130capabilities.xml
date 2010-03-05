@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WMS_Capabilities xmlns="http://www.opengis.net/wms" xmlns:sld="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.3.0" xsi:schemaLocation="http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd">
+<Service>
+  <Name>WMS</Name>
+  <Title>{{service.title}}</Title>
+  <Abstract>{{service.abstract}}</Abstract>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.online_resource}}"/>
+{% if service.contact is defined %}
+  <ContactInformation>
+      <ContactPersonPrimary>
+        <ContactPerson>{{service.contact.person}}</ContactPerson>
+        <ContactOrganization>{{service.contact.organization}}</ContactOrganization>
+      </ContactPersonPrimary>
+      <ContactPosition>{{service.contact.position}}</ContactPosition>
+      <ContactAddress>
+        <AddressType>{{service.contact.address_type|default('postal')}}</AddressType>
+        <Address>{{service.contact.address}}</Address>
+        <City>{{service.contact.city}}</City>
+        <StateOrProvince>{{service.contact.state}}</StateOrProvince>
+        <PostCode>{{service.contact.postcode}}</PostCode>
+        <Country>{{service.contact.country}}</Country>
+      </ContactAddress>
+      <ContactVoiceTelephone>{{service.contact.phone}}</ContactVoiceTelephone>
+      <ContactFacsimileTelephone>{{service.contact.fax}}</ContactFacsimileTelephone>
+      <ContactElectronicMailAddress>{{service.contact.email}}</ContactElectronicMailAddress>
+  </ContactInformation>
+{% endif %}
+  <Fees>{{service.fees|default('none')}}</Fees>
+  <AccessConstraints>{{service.access_constraints|default('none')}}</AccessConstraints>
+</Service>
+
+<Capability>
+  <Request>
+    <GetCapabilities>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="{{service.url}}?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetCapabilities>
+    <GetMap>
+{% for format in formats %}
+        <Format>{{format}}</Format>
+{% endfor %}
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="{{service.url}}?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetMap>
+    <GetFeatureInfo>
+      <Format>text/plain</Format>
+      <Format>text/html</Format>
+      <Format>application/vnd.ogc.gml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="{{service.url}}?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetFeatureInfo>
+  </Request>
+  <Exception>
+    <Format>XML</Format>
+    <Format>INIMAGE</Format>
+    <Format>BLANK</Format>
+  </Exception>
+  <Layer>
+    <Title>{{service.title}}</Title>
+{% for s in srs %}
+    <CRS>{{s}}</CRS>
+{% endfor %}
+    <EX_GeographicBoundingBox>
+      <westBoundLongitude>-180</westBoundLongitude>
+      <eastBoundLongitude>180</eastBoundLongitude>
+      <southBoundLatitude>-90</southBoundLatitude>
+      <northBoundLatitude>90</northBoundLatitude>
+    </EX_GeographicBoundingBox>
+{% for layer in layers %}
+  <Layer{% if layer.has_info() %} queryable="1"{% endif %}>
+      <Name>{{ layer.md.name }}</Name>
+      <Title>{{ layer.md.title }}</Title>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>{{ layer.llbbox[0] }}</westBoundLongitude>
+        <eastBoundLongitude>{{ layer.llbbox[2] }}</eastBoundLongitude>
+        <southBoundLatitude>{{ layer.llbbox[1] }}</southBoundLatitude>
+        <northBoundLatitude>{{ layer.llbbox[3] }}</northBoundLatitude>
+       </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="{{ layer.llbbox[0] }}" miny="{{ layer.llbbox[1] }}" maxx="{{ layer.llbbox[2] }}" maxy="{{ layer.llbbox[3] }}" />
+    </Layer>
+{% endfor %}
+  </Layer>
+</Capability>
+</WMS_Capabilities>

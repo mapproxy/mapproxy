@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+    <TileMapService version="1.0.0">
+    <Title>{{service.title}}</Title>
+    <Abstract>{{service.abstract}}</Abstract>
+    <TileMaps>
+{% for layer in layers.values()%}
+        <TileMap title="{{layer.md.title}}"
+                 srs="{{layer.grid.srs_name}}"
+                 profile="{{layer.grid.profile}}"
+                 href="{{service.url}}{{layer.md.name_path|join('/')}}" />
+{% endfor %}
+    </TileMaps>
+</TileMapService>
