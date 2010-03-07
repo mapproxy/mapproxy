@@ -1,0 +1,26 @@
+views:
+    germany:
+        bbox:  [5.40731, 46.8447, 15.5072, 55.4314]
+        bbox_srs: EPSG:4326
+        level: [0, 14]
+        srs: ['EPSG:900913', 'EPSG:4326']
+    switzerland:
+        bbox: [5.83, 45.74, 10.71, 47.89]
+        bbox_srs: EPSG:4326
+        level: [0, 14]
+        srs: ['EPSG:900913']
+    austria:
+        bbox: [9.36, 46.33, 17.28, 49.09]
+        bbox_srs: EPSG:4326
+        level: [0, 14]
+        srs: ['EPSG:900913']
+
+seeds:
+    osm:
+        views: ['germany', 'switzerland', 'austria']
+        remove_before:
+          time: '2010-02-20T16:00:00'
+    osm_roads:
+       views: ['germany']
+        remove_before:
+          days: 30

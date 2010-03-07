@@ -16,6 +16,7 @@ setup(
     url='http://mapproxy.org',
     namespace_packages = ['mapproxy'],
     packages=find_packages(),
+    include_package_data=True,
     entry_points = {
         'console_scripts': [
             'proxy_seed = mapproxy.core.scripts.seed:main',
@@ -26,6 +27,9 @@ setup(
         'mapproxy.wms.request_parser': [
         ],
         'mapproxy.wms.client_request': [
+        ],
+        'paste.paster_create_template': [
+            'mapproxy_conf=mapproxy.core.paster_templates:ConfigurationTemplate'
         ],
     },
     package_data = {'': ['*.xml', '*.yaml', '*.ttf']},
