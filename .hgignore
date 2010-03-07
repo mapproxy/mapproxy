@@ -1,0 +1,5 @@
+.pyc
+MapProxy.egg-info
+dist/
+build/
+pip-log.txt
