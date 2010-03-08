@@ -1,5 +1,12 @@
+# generated/install files
 .pyc
+pip-log.txt
 MapProxy.egg-info
 dist/
 build/
-pip-log.txt
+var/
+tmp/
+
+syntax: regexp
+# hidden files
+(^|/)\.
