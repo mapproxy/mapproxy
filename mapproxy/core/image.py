@@ -595,7 +595,8 @@ class ImageTransformer(object):
         minx, miny = to_src_px((dst_bbox[0], dst_bbox[3]))
         maxx, maxy = to_src_px((dst_bbox[2], dst_bbox[1]))
         result = src_img.as_image().transform(dst_size, Image.EXTENT,
-                                              (minx, miny, maxx, maxy))
+                                              (minx, miny, maxx, maxy),
+                                              image_filter[self.resampling])
         return ImageSource(result, size=dst_size, transparent=src_img.transparent)
     
     def _transform(self, src_img, src_bbox, dst_size, dst_bbox):
