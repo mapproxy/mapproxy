@@ -1,31 +1,61 @@
+# #########################
+# # MapProxy configuration 
+# #########################
+
+# # which servers should be started?
 # server: ['wms', 'tms', 'kml']
-# 
+
+# # WMS server options
 # wms:
+#     # supported image formats
 #     image_formats: ['image/jpeg', 'image/png', 'image/gif', 'image/GeoTIFF', 'image/tiff']
-#     srs: !!set(['EPSG:4326', 'EPSG:4258', 'CRS:84', 'EPSG:900913', 'EPSG:31466', 'EPSG:31467', 'EPSG:31468', 'EPSG:25831', 'EPSG:25832', 'EPSG:25833'])
-# 
+#     # supported SRS
+#     srs: ['EPSG:4326', 'EPSG:4258', 'CRS:84', 'EPSG:900913',
+#           'EPSG:31466', 'EPSG:31467', 'EPSG:31468',
+#           'EPSG:25831', 'EPSG:25832', 'EPSG:25833']
+
+
+# # when set to True return tracebacks on error
+# # do not enable this in production!
 # debug_mode: False
-# 
+
+# # image/transformation options
 # image:
 #     # nearest, bilinear, bicubic
 #     resampling_method: 'bicubic'
 #     jpeg_quality: 90
+#     # stretch cached images by this factor before
+#     # using the next level
 #     stretch_factor: 1.15
-# 
+
+
 # # number of concurrent requests to a tile source
 # tile_creator_pool_size: 2
-# 
+
+# # default names of the configuration files
 # services_conf: 'services.yaml'
 # log_conf: 'log.ini'
-# 
+ 
+
+# # cache options
 # cache:
+#     # where to store the cached images
 #     base_dir: '../var/cache_data'
+#     # where to store lockfiles
 #     lock_dir: '../tmp/tile_locks'
+#     # request x*y tiles in one step
 #     meta_size: [4, 4]
+#     # add a buffer on all sides (in pixel) when requesting
+#     # new images
 #     meta_buffer: 80
+#     # do not process requests with more than x tiles
 #     max_tile_limit: 500
-# 
+
+
+# # TMS/Tile server options
 # tiles:
+#     # HTTP cache control expire time 
 #     expires_hours: 72
-# 
+
+# # time out for requests to tile sources
 # http_client_timeout: 60
