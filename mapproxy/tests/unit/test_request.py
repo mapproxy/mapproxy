@@ -324,11 +324,11 @@ def test_non_mime_format():
 
 def test_request_w_url():
     url = WMSMapRequest(url='http://localhost:8000/service?', param={'layers': 'foo,bar'}).complete_url
-    eq_(url, 'http://localhost:8000/service?layers=foo,bar&request=GetMap&service=WMS')
+    eq_(url, 'http://localhost:8000/service?layers=foo,bar&styles=&request=GetMap&service=WMS')
     url = WMSMapRequest(url='http://localhost:8000/service',  param={'layers': 'foo,bar'}).complete_url
-    eq_(url, 'http://localhost:8000/service?layers=foo,bar&request=GetMap&service=WMS')
+    eq_(url, 'http://localhost:8000/service?layers=foo,bar&styles=&request=GetMap&service=WMS')
     url = WMSMapRequest(url='http://localhost:8000/service?map=foo',  param={'layers': 'foo,bar'}).complete_url
-    eq_(url, 'http://localhost:8000/service?map=foo&layers=foo,bar&request=GetMap&service=WMS')
+    eq_(url, 'http://localhost:8000/service?map=foo&layers=foo,bar&styles=&request=GetMap&service=WMS')
 
 class TestWMSRequest(object):
     env = make_wsgi_env("""LAYERS=foo&FORMAT=image%2Fjpeg&SERVICE=WMS&VERSION=1.1.1&

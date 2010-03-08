@@ -371,7 +371,7 @@ class TestWMSTileSource(object):
     def test_get_tile_level_zero(self):
         with tmp_image((256, 256)) as img:
             expected_req = ({'path': r'/service?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&styles='
                                       '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,270.0&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/png'}})
             with mock_httpd(TEST_SERVER_ADDRESS, [expected_req]):
@@ -388,7 +388,7 @@ class TestWMSTileSource(object):
             self.req.params['transparent'] = 'True'
             self.wms = WMSTileSource(self.grid, [WMSClient(self.req)])
             expected_req = ({'path': r'/service?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&styles='
                                       '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,270.0&WIDTH=256'
                                       '&transparent=True'},
                             {'body': img.read(), 'headers': {'content-type': 'image/png'}})
@@ -402,7 +402,7 @@ class TestWMSTileSource(object):
     def test_get_tile_level_one(self):
         with tmp_image((512, 512)) as img:
             expected_req = ({'path': r'/service?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&styles='
                                       '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512'},
                             {'body': img.read(), 'headers': {'content-type': 'image/png'}})
             with mock_httpd(TEST_SERVER_ADDRESS, [expected_req]):
@@ -415,7 +415,7 @@ class TestWMSTileSource(object):
                     assert isinstance(tile.source, ImageSource)
     def test_get_tile_non_image_content_type(self):
         expected_req = ({'path': r'/service?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+                                  '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&styles='
                                   '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512'},
                         {'body': 'error', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(TEST_SERVER_ADDRESS, [expected_req]):
@@ -427,7 +427,7 @@ class TestWMSTileSource(object):
                 assert False, 'expected TileSourceError'
     def test_get_tile_non_image_result(self):
         expected_req = ({'path': r'/service?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+                                  '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&styles='
                                   '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512'},
                         {'body': 'no image', 'headers': {'content-type': 'image/png'}})
         with mock_httpd(TEST_SERVER_ADDRESS, [expected_req]):
@@ -461,12 +461,12 @@ class TestMergedWMSTileSource(object):
         with tmp_image((256, 256)) as img:
             img_data = img.read()
             expected_req1 = ({'path': r'/service1?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&styles='
                                       '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,270.0&WIDTH=256'},
                              {'body': img_data, 'headers': {'content-type': 'image/png'}})
             
             expected_req2 = ({'path': r'/service2?LAYER=bar&SERVICE=WMS&FORMAT=image%2Fpng'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&styles='
                                       '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,270.0&WIDTH=256'},
                              {'body': img_data, 'headers': {'content-type': 'image/png'}})
             with mock_httpd(TEST_SERVER_ADDRESS, [expected_req1, expected_req2]):
@@ -482,13 +482,13 @@ class TestMergedWMSTileSource(object):
             self.req1.params['transparent'] = 'True'
             self.wms = WMSTileSource(self.grid, [WMSClient(self.req1), WMSClient(self.req2)])
             expected_req1 = ({'path': r'/service1?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&styles='
                                       '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,270.0&WIDTH=256'
                                       '&transparent=True'},
                              {'body': img_data, 'headers': {'content-type': 'image/png'}})
             
             expected_req2 = ({'path': r'/service2?LAYER=bar&SERVICE=WMS&FORMAT=image%2Fpng'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&styles='
                                       '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,270.0&WIDTH=256'},
                              {'body': img_data, 'headers': {'content-type': 'image/png'}})
             with mock_httpd(TEST_SERVER_ADDRESS, [expected_req1, expected_req2]):

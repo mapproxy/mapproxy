@@ -70,7 +70,7 @@ class TestWMSClient(object):
     def test_request(self):
         expected_req = ({'path': r'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
-                                  '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512'},
+                                  '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512&STYLES='},
                         {'body': 'no image', 'headers': {'content-type': 'image/png'}})
         with mock_httpd(TESTSERVER_ADDRESS, [expected_req]):
             req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
@@ -81,7 +81,7 @@ class TestWMSClient(object):
             resp = self.wms.get_map(req)
     def test_get_tile_non_image_content_type(self):
         expected_req = ({'path': r'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+                                  '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&STYLES='
                                   '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512'},
                         {'body': 'error', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(TESTSERVER_ADDRESS, [expected_req]):
@@ -142,7 +142,7 @@ class TestWMSMapRequest100(object):
     def test_request(self):
         eq_(self.r.params['request'], 'map')
     def test_str(self):
-        eq_(str(self.r.params), 'layers=foo&request=map&wmtver=1.0.0')
+        eq_(str(self.r.params), 'layers=foo&styles=&request=map&wmtver=1.0.0')
 
 class TestWMSMapRequest130(object):
     def setup(self):
@@ -156,7 +156,7 @@ class TestWMSMapRequest130(object):
     def test_request(self):
         eq_(self.r.params['request'], 'GetMap')
     def test_str(self):
-        query_eq(str(self.r.params), 'layers=foo&service=WMS&request=GetMap&version=1.3.0')
+        query_eq(str(self.r.params), 'layers=foo&styles=&service=WMS&request=GetMap&version=1.3.0')
 
 class TestWMSMapRequest111(object):
     def setup(self):

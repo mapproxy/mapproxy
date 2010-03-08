@@ -147,7 +147,7 @@ class TestKML(object):
     def test_get_tile(self):
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                       '&VERSION=1.1.1&BBOX=-20037508.3428,-20037508.3428,0.0,0.0'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})

@@ -117,6 +117,8 @@ class WMSRequest(BaseRequest):
         params = self.params.copy()
         for key, value in self.fixed_params.iteritems():
             params[key] = value
+        if 'styles' not in params:
+            params['styles'] = ''
         return params
     
     @property

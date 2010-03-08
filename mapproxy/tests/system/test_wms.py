@@ -206,7 +206,7 @@ class TestWMS111(WMSTest):
         self.created_tiles.append('wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                       '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
@@ -237,7 +237,7 @@ class TestWMS111(WMSTest):
         self.created_tiles.append('wms_cache_100_EPSG900913/01/000/000/001/000/000/001.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&FORMAT=image%2Fjpeg'
-                                      '&REQUEST=map&HEIGHT=256&SRS=EPSG%3A900913'
+                                      '&REQUEST=map&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                       '&WMTVER=1.0.0&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
@@ -251,7 +251,7 @@ class TestWMS111(WMSTest):
         self.created_tiles.append('wms_cache_130_EPSG900913/01/000/000/001/000/000/001.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
-                                      '&REQUEST=GetMap&HEIGHT=256&CRS=EPSG%3A900913'
+                                      '&REQUEST=GetMap&HEIGHT=256&CRS=EPSG%3A900913&styles='
                                       '&VERSION=1.3.0&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
@@ -266,7 +266,7 @@ class TestWMS111(WMSTest):
         with tmp_image((256, 256), format='jpeg') as img:
             img = img.read()
             expected_reqs = [({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
-                                      '&REQUEST=GetMap&HEIGHT=256&CRS=EPSG%3A4326'
+                                      '&REQUEST=GetMap&HEIGHT=256&CRS=EPSG%3A4326&styles='
                                       '&VERSION=1.3.0&BBOX=0.0,90.0,90.0,180.0'
                                       '&WIDTH=256'},
                             {'body': img, 'headers': {'content-type': 'image/jgeg'}}),]
@@ -395,7 +395,7 @@ class TestWMS100(WMSTest):
         self.created_tiles.append('wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                       '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
@@ -539,7 +539,7 @@ class TestWMS130(WMSTest):
         self.created_tiles.append('wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                       '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
