@@ -1,11 +1,31 @@
+import os
 import sys
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup, find_packages
+from distutils.cmd import Command
 
-from setuptools import find_packages
 
+class build_api(Command):
+    description = 'Build API documentation'
+    user_options = [('verbose', 'v', 'verbose output')]
+
+    def initialize_options(self): pass
+    def finalize_options(self): pass
+
+    def run(self):
+        conf = os.path.join('doc', 'epydoc.ini')
+        argv_ = sys.argv[1:]
+        try:
+            from epydoc import cli
+            sys.argv[1:] = [
+                '--config=%s' % conf,
+            ]
+            if self.verbose:
+                sys.argv.append('-v')
+            cli.cli()
+        except ImportError:
+            print 'install epydoc to create the API documentation'
+        finally:
+            sys.argv[1:] = argv_
 
 setup(
     name='MapProxy',
@@ -39,4 +59,5 @@ setup(
                       'ConcurrentLogHandler>=0.8.3,<0.9'],
     zip_safe=False,
     test_suite='nose.collector',
+    cmdclass={'build_api': build_api},
 )
