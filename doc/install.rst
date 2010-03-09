@@ -1,0 +1,91 @@
+Installation
+============
+
+This tutorial guides you to the MapProxy installation process.
+
+This tutorial was created and tested with Debian 5.0, if you're installing MapProxy on a different system you might need to change some package names.
+
+
+Create a new virtual environment
+--------------------------------
+
+We highly recommend to install MapProxy into a `virtual Python environment`_. If you don't have `virtualenv` installed, you can download a self-contained version::
+
+    wget http://bitbucket.org/ianb/virtualenv/raw/1.4.3/virtualenv.py
+    
+Next we create a new virtual environment for our proxy installation. It is a good idea to organize all your environments into a single directory. I will use ``~/venv`` for that. To create a new environment with the name ``mapproxy`` and to activate it call::
+
+    python virtualenv.py --distribute ~/venv/mapproxy
+    source ~/venv/mapproxy/bin/activate
+
+The last step is required every time you start working with your MapProxy installation.
+
+.. _`distribute`: http://packages.python.org/distribute/
+.. _`virtual Python environment`: http://guide.python-distribute.org/virtualenv.html
+
+Install MapProxy
+----------------
+
+Dependencies
+~~~~~~~~~~~~
+
+To install MapProxy you need
+
+* Mercurial
+* C compiler
+* Python (development tools)
+
+MapProxy uses the python image library (PIL). To get full support for JPEG and PNG images and attribution/watermarks you will need the following libraries:
+
+* libjpeg
+* zlib
+* libfreetype
+
+To install all requirements on Debian or Ubuntu call::
+
+    sudo aptitude install mercurial build-essential python-dev \
+        libjpeg-dev libz-dev libfreetype6-dev
+
+
+Installation
+~~~~~~~~~~~~
+
+Your virtual environment already contains `pip`_ a tool to install Python packages. We have put a requirements file online that describes which Python packages are needed for MapProxy and where to get these.
+
+To get the requirements file and install MapProxy and all dependencies, call the following::
+
+    wget http://bitbucket.org/olt/mapproxy/raw/tip/requirements.txt
+    pip install -r requirements.txt
+
+
+If you install MapProxy on Windows you should install the required packages manually with ``easy_install`` and not with ``pip``. ``easy_install`` will download and install binary packages on Windows so you do not need a compiler.
+
+.. _`pip`: http://pip.openplans.org/
+
+
+Create a configuration
+----------------------
+
+To create a new set of configuration files for MapProxy call::
+
+    paster create -t mapproxy_conf mymapproxy
+
+This will create a ``myproxyconf`` directory with an ``etc``, ``var`` and ``tmp`` directory.
+The ``etc`` directory contains all configuration files. Refer to the configuration documentation for more information. With the default configuration all log files and the cached data will be placed in the ``var`` directory.
+
+Start the test server
+---------------------
+
+To start a test server::
+
+    cd mymapproxy
+    paster serve etc/develop.ini --reload
+
+There is already a test layer configured that obtains data from the `Omniscale OpenStreetMap WMS`_. Feel free to use this service for testing.
+
+You can now issue you first request to the MapProxy: `http://localhost:8080/service?`_
+The capabilities document is at: http://localhost:8080/service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities
+
+.. _`http://localhost:8080/service?`: http://localhost:8080/service?LAYERS=osm&FORMAT=image%2Fjpeg&SPHERICALMERCATOR=true&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_inimage&SRS=EPSG%3A900913&BBOX=229037.9129083,6551465.7261979,1596343.4746286,7469933.0579081&WIDTH=1118&HEIGHT=751
+
+.. _`Omniscale OpenStreetMap WMS`: http://osm.omniscale.net/
