@@ -3,7 +3,6 @@ import sys
 from setuptools import setup, find_packages
 from distutils.cmd import Command
 
-
 class build_api(Command):
     description = 'Build API documentation'
     user_options = [('verbose', 'v', 'verbose output')]
@@ -34,7 +33,7 @@ setup(
     author='Oliver Tonnhofer',
     author_email='tonnhofer@omniscale.de',
     url='http://mapproxy.org',
-    license='GNU Affero General Public License Version 3 (AGPLv3)',
+    license='GNU Affero General Public License v3 (AGPLv3)',
     namespace_packages = ['mapproxy'],
     packages=find_packages(),
     include_package_data=True,
@@ -58,6 +57,14 @@ setup(
                       'PyYAML>=3.0,<4','Jinja2>=2.1,<2.2',
                       'flup>=1.0.1,<1.1', 'setuptools>=0.6c9',
                       'ConcurrentLogHandler>=0.8.3,<0.9'],
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "License :: OSI Approved :: GNU Affero General Public License v3",
+        "Operating System :: OS Independent",
+        "Topic :: Internet :: Proxy Servers",
+        "Topic :: Internet :: WWW/HTTP :: WSGI",
+        "Topic :: Scientific/Engineering :: GIS",
+    ],
     zip_safe=False,
     test_suite='nose.collector',
     cmdclass={'build_api': build_api},
