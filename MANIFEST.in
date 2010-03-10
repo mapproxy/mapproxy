@@ -1,6 +1,8 @@
 include setup.py
 include setup.cfg
+include README.txt
 include LICENSE.txt
+include CHANGES.txt
 
 recursive-include mapproxy *.*
 recursive-exclude mapproxy *.pyc

@@ -29,7 +29,8 @@ class build_api(Command):
 setup(
     name='MapProxy',
     version="0.8.0",
-    description='MapProxy',
+    description='An accelerating proxy for web map services',
+    long_description=open('README.txt').read(),
     author='Oliver Tonnhofer',
     author_email='tonnhofer@omniscale.de',
     url='http://mapproxy.org',
