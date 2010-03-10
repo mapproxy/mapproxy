@@ -1,4 +1,4 @@
--e hg+https://bitbucket.org/olt/mapproxy/#egg=MapProxy
+MapProxy
 ConcurrentLogHandler==0.8.4
 Jinja2==2.1.1
 PyYAML==3.06
