@@ -34,6 +34,7 @@ setup(
     author='Oliver Tonnhofer',
     author_email='tonnhofer@omniscale.de',
     url='http://mapproxy.org',
+    license='GNU Affero General Public License Version 3 (AGPLv3)',
     namespace_packages = ['mapproxy'],
     packages=find_packages(),
     include_package_data=True,
