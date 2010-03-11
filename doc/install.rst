@@ -6,10 +6,17 @@ This tutorial guides you to the MapProxy installation process.
 This tutorial was created and tested with Debian 5.0, if you're installing MapProxy on a different system you might need to change some package names.
 
 
+MapProxy is `registered at the Python Package Index <http://pypi.python.org/pypi/MapProxy>`_ (PyPI). If you have installed Python setuptools (``python-setuptools`` on Debian) you can install MapProxy with ``sudo easy_install MapProxy``. This is really easy `but` we recommend to **not** use this method. 
+
+We highly advise you to install MapProxy into a `virtual Python environment`_. 
+`Read about virtualenv <http://virtualenv.openplans.org/#what-it-does>`_ if you want to now more about the benefits.
+
+.. _`virtual Python environment`: http://guide.python-distribute.org/virtualenv.html
+
 Create a new virtual environment
 --------------------------------
 
-We highly recommend to install MapProxy into a `virtual Python environment`_. If you don't have `virtualenv` installed, you can download a self-contained version::
+If you don't have `virtualenv` installed, you can download a self-contained version::
 
     wget http://bitbucket.org/ianb/virtualenv/raw/1.4.3/virtualenv.py
     
@@ -21,7 +28,6 @@ Next we create a new virtual environment for our proxy installation. It is a goo
 The last step is required every time you start working with your MapProxy installation.
 
 .. _`distribute`: http://packages.python.org/distribute/
-.. _`virtual Python environment`: http://guide.python-distribute.org/virtualenv.html
 
 Install MapProxy
 ----------------
@@ -35,7 +41,7 @@ To install MapProxy you need
 * C compiler
 * Python (development tools)
 
-MapProxy uses the python image library (PIL). To get full support for JPEG and PNG images and attribution/watermarks you will need the following libraries:
+MapProxy uses the Python Image Library (PIL). To get full support for JPEG and PNG images and attribution/watermarks you will need the following libraries:
 
 * libjpeg
 * zlib
@@ -50,13 +56,11 @@ To install all requirements on Debian or Ubuntu call::
 Installation
 ~~~~~~~~~~~~
 
-Your virtual environment already contains `pip`_ a tool to install Python packages. We have put a requirements file online that describes which Python packages are needed for MapProxy and where to get these.
+Your virtual environment already contains `pip`_, a tool to install Python packages. We have put a requirements file online that describes which Python packages are needed for MapProxy and where to get these.
 
-To get the requirements file and install MapProxy and all dependencies, call the following::
+To install MapProxy and all dependencies, call the following::
 
-    wget http://bitbucket.org/olt/mapproxy/raw/tip/requirements.txt
-    pip install -r requirements.txt
-
+    pip install -r http://bitbucket.org/olt/mapproxy/raw/tip/requirements.txt
 
 If you install MapProxy on Windows you should install the required packages manually with ``easy_install`` and not with ``pip``. ``easy_install`` will download and install binary packages on Windows so you do not need a compiler.
 
