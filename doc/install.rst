@@ -64,6 +64,12 @@ To install MapProxy and all dependencies, call the following::
 
 If you install MapProxy on Windows you should install the required packages manually with ``easy_install`` and not with ``pip``. ``easy_install`` will download and install binary packages on Windows so you do not need a compiler.
 
+
+To check if the MapProxy was successfully installed you can directly call the `version` module. You should see the installed version number.
+::
+
+    python -m mapproxy.core.version
+
 .. _`pip`: http://pip.openplans.org/
 
 
