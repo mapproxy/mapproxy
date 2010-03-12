@@ -25,6 +25,7 @@ from datetime import datetime
 import logging
 log = logging.getLogger(__name__)
 
+from mapproxy.core.app import version
 from mapproxy.core.utils import reraise_exception
 from mapproxy.core.config import base_config
 
@@ -39,7 +40,7 @@ class HTTPClient(object):
     log_fmt = '%(host)s - - [%(date)s] "GET %(path)s HTTP/1.1" %(status)d %(size)s "-" ""'
     log_datefmt = '%d/%b/%Y:%H:%M:%S %z'
     opener = urllib2.build_opener()
-    opener.addheaders = [('User-agent', base_config().client_user_agent)]
+    opener.addheaders = [('User-agent', 'MapProxy-%s' % (version,))]
     
     def _log(self, url, result):
         if not self.log.isEnabledFor(logging.INFO):

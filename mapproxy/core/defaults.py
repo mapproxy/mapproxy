@@ -14,9 +14,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-client_user_agent = 'Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11'
-# client_user_agent = 'Mozilla/5.0 (compatible; proxylib 0.1)'
-
 server = ['wms', 'tms', 'kml']
 
 wms = dict(
