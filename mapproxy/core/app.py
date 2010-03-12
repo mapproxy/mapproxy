@@ -24,6 +24,8 @@ import sys
 import threading
 from cStringIO import StringIO
 from mapproxy.core.config import base_config, load_base_config, abspath
+from mapproxy.core.version import version_string
+version = version_string()
 # NOTE: do not import anything from mapproxy before init_logging is called
 #       otherwise the logging will not be configured properly
 
