@@ -398,8 +398,12 @@ SRS=EPSG%3A4326&BBOX=8,4,9,5&WIDTH=984&HEIGHT=708""".replace('\n', ''))
         self.params130['crs'] = 'CRS:84'
         req130 = WMS130MapRequest(self.params130)
         eq_(req130.params.bbox, (8, 4, 9, 5))
-    def test_130_order_proj(self):
+    def test_130_order_proj_north_east(self):
         self.params130['crs'] = 'EPSG:31466'
+        req130 = WMS130MapRequest(self.params130)
+        eq_(req130.params.bbox, (4, 8, 5, 9))
+    def test_130_order_proj(self):
+        self.params130['crs'] = 'EPSG:31463'
         req130 = WMS130MapRequest(self.params130)
         eq_(req130.params.bbox, (8, 4, 9, 5))
         

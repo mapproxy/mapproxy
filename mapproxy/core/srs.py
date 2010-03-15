@@ -23,6 +23,7 @@ from __future__ import division
 import math
 from itertools import izip
 from pyproj import Proj, transform
+from mapproxy.core.config import base_config
 
 import logging
 log = logging.getLogger(__name__)
@@ -179,6 +180,39 @@ class _SRS(object):
         False
         """
         return self.proj.is_latlong()
+    
+    @property
+    def is_axis_order_ne(self):
+        """
+        Returns `True` if the axis order is North, then East
+        (i.e. y/x or lat/lon).
+        
+        >>> SRS(4326).is_axis_order_ne
+        True
+        >>> SRS('CRS:84').is_axis_order_ne
+        False
+        >>> SRS(31468).is_axis_order_ne
+        True
+        >>> SRS(31463).is_axis_order_ne
+        False
+        >>> SRS(25831).is_axis_order_ne
+        False
+        """
+        if self.srs_code in base_config().srs.axis_order_ne:
+            return True
+        if self.srs_code in base_config().srs.axis_order_en:
+            return False
+        if self.is_latlong:
+            return True
+        return False
+    
+    @property
+    def is_axis_order_en(self):
+        """
+        Returns `True` if the axis order is East then North
+        (i.e. x/y or lon/lat).
+        """
+        return not self.is_axis_order_en
     
     def __eq__(self, other):
         """

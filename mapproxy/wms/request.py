@@ -241,9 +241,9 @@ class WMS111MapRequest(WMSMapRequest):
         del self.params['wmtver']
 
 def _switch_bbox(self):
-    if self.bbox is not None and self.srs is not None and self.srs != 'CRS:84':
+    if self.bbox is not None and self.srs is not None:
         try:
-            if SRS(self.srs).is_latlong:
+            if SRS(self.srs).is_axis_order_ne:
                 bbox = self.bbox
                 bbox = bbox[1], bbox[0], bbox[3], bbox[2]
                 self.bbox = bbox
@@ -257,7 +257,6 @@ class WMS130MapRequestParams(WMSMapRequestParams):
     switch_bbox = _switch_bbox
 
 
-    
 class WMS130MapRequest(WMSMapRequest):
     request_params = WMS130MapRequestParams
     xml_exception_handler = exceptions.WMS130ExceptionHandler

@@ -24,6 +24,11 @@ wms = dict(
 )
 debug_mode = False
 
+srs = dict(
+    axis_order_ne = set(['EPSG:4326', 'EPSG:4258', 'EPSG:31466', 'EPSG:31467', 'EPSG:31468']),
+    axis_order_en = set(['CRS:84', 'EPSG:900913', 'EPSG:25831', 'EPSG:25832', 'EPSG:25833']),
+)
+
 image = dict(
     # nearest, bilinear, bicubic
     resampling_method = 'bicubic',
