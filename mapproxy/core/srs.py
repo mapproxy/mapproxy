@@ -284,6 +284,19 @@ def calculate_bbox(points):
     except ValueError: # everything is INF
         raise TransformationError()
         
+def merge_bbox(bbox1, bbox2):
+    """
+    Merge two bboxes.
+    
+    >>> merge_bbox((-10, 20, 0, 30), (30, -20, 90, 10))
+    (-10, -20, 90, 30)
+    
+    """
+    minx = min(bbox1[0], bbox2[0])
+    miny = min(bbox1[1], bbox2[1])
+    maxx = max(bbox1[2], bbox2[2])
+    maxy = max(bbox1[3], bbox2[3])
+    return (minx, miny, maxx, maxy)
 
 def bbox_equals(src_bbox, dst_bbox, x_delta, y_delta=None):
     """

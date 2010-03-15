@@ -20,6 +20,7 @@ WMS service handler
 from itertools import chain
 from jinja2 import Environment, PackageLoader
 from mapproxy.wms.request import wms_request
+from mapproxy.core.srs import merge_bbox
 from mapproxy.core.server import Server
 from mapproxy.core.response import Response
 from mapproxy.core.exceptions import RequestError
@@ -104,10 +105,17 @@ class Capabilities(object):
     
     def _render_template(self, template):
         template = env.get_template(template)
+        server_bbox = self._create_server_bbox()
         return template.render(service=self.service, layers=self.layers,
+                               server_llbbox=server_bbox,
                                formats=base_config().wms.image_formats,
                                srs=base_config().wms.srs)
-
+    
+    def _create_server_bbox(self):
+        bbox = self.layers[0].llbbox
+        for layer in self.layers[1:]:
+            bbox = merge_bbox(bbox, layer.llbbox)
+        return bbox
 
 def wms100format_filter(format):
     """

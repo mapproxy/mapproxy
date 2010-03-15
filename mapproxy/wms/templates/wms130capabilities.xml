@@ -71,10 +71,10 @@
     <CRS>{{s}}</CRS>
 {% endfor %}
     <EX_GeographicBoundingBox>
-      <westBoundLongitude>-180</westBoundLongitude>
-      <eastBoundLongitude>180</eastBoundLongitude>
-      <southBoundLatitude>-90</southBoundLatitude>
-      <northBoundLatitude>90</northBoundLatitude>
+      <westBoundLongitude>{{ server_llbbox[0] }}</westBoundLongitude>
+      <eastBoundLongitude>{{ server_llbbox[2] }}</eastBoundLongitude>
+      <southBoundLatitude>{{ server_llbbox[1] }}</southBoundLatitude>
+      <northBoundLatitude>{{ server_llbbox[3] }}</northBoundLatitude>
     </EX_GeographicBoundingBox>
 {% for layer in layers %}
   <Layer{% if layer.has_info() %} queryable="1"{% endif %}>
