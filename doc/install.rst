@@ -25,7 +25,8 @@ Next we create a new virtual environment for our proxy installation. It is a goo
     python virtualenv.py --distribute ~/venv/mapproxy
     source ~/venv/mapproxy/bin/activate
 
-The last step is required every time you start working with your MapProxy installation.
+.. note::
+  The last step is required every time you start working with your MapProxy installation.
 
 .. _`distribute`: http://packages.python.org/distribute/
 
@@ -80,7 +81,7 @@ To create a new set of configuration files for MapProxy call::
 
     paster create -t mapproxy_conf mymapproxy
 
-This will create a ``myproxyconf`` directory with an ``etc``, ``var`` and ``tmp`` directory.
+This will create a ``mymapproxy`` directory with an ``etc``, ``var`` and ``tmp`` directory.
 The ``etc`` directory contains all configuration files. Refer to the configuration documentation for more information. With the default configuration all log files and the cached data will be placed in the ``var`` directory.
 
 Start the test server

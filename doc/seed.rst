@@ -8,11 +8,11 @@ this task.
 proxy_seed
 ----------
 
-The command line script expects a seed configuration that describes which tiles from
-which layer should be generated. See `seed configuration`_ for the format of the file.
+The command line script expects a seed configuration that describes which tiles from which layer should be generated. See `seed configuration`_ for the format of the file.
 
 Use the ``-f`` option to specify the proxy configuration.
 ::
+
     proxy_seed -f etc/proxy.yaml etc/seed.yaml
 
 

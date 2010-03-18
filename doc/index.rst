@@ -9,6 +9,8 @@ MapProxy Documentation
    install
    configuration
    seed
+   deployment
+   development
 
 Todo liste
 -----------
