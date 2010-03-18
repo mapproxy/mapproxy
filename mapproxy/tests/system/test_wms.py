@@ -88,7 +88,7 @@ def is_111_exception(xml, msg, code=None):
     assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
     
 def is_111_capa(xml):
-    return validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_CAPABILITIES.dtd')
+    return validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
 def is_130_capa(xml):
     return validate_with_xsd(xml, xsd_name='wms/1.3.0/capabilities_1_3_0.xsd')
 
