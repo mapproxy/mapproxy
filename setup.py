@@ -32,7 +32,7 @@ setup(
     description='An accelerating proxy for web map services',
     long_description=open('README.txt').read(),
     author='Oliver Tonnhofer',
-    author_email='tonnhofer@omniscale.de',
+    author_email='olt@omniscale.de',
     url='http://mapproxy.org',
     license='GNU Affero General Public License v3 (AGPLv3)',
     namespace_packages = ['mapproxy'],
