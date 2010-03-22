@@ -16,9 +16,14 @@ The main (authoritative) repository is hosted at http://bitbucket.org/olt/mappro
 
 To get a copy of the repository call::
 
- hg clone http://bitbucket.org/olt/mapproxy
+  hg clone http://bitbucket.org/olt/mapproxy
+
+If you want to contribute a patch, please consider `creating a "fork"`__ instead. This makes life easier for all of us.
 
 .. _`Mercurial`: http://mercurial.selenic.com/
+.. _`fork`: http://bitbucket.org/help/Collaborating#forking
+
+__ fork_
 
 Documentation
 -------------
@@ -95,6 +100,8 @@ There is also a channel on `Freenode <http://freenode.net/>`_: ``#mapproxy``. It
 Tips on development
 -------------------
 
+You are using `virtualenv` as described in :doc:`install`, right?
+
 Before you start hacking on MapProxy you should install it in development-mode. In the root directory of MapProxy call ``python setup.py develop``. Instead of installing and thus copying MapProxy into you `virtualenv` this will just link to you source directory. If you now start MapProxy, the source from the ``mapproxy`` directory will be used. Any change you do in the code will be available if you restart MapProxy. If you use the ``--reload`` option of the ``paster serve`` command, any change in the source will issue a reload of the MapProxy application.
 
 .. todo:: 
@@ -102,8 +109,8 @@ Before you start hacking on MapProxy you should install it in development-mode. 
   Describe egg:Paste#evalerror
 
 
-Development Guidelines
-----------------------
+Coding Style Guide
+------------------
 
 MapProxy generally follows the `Style Guide for Python Code`_. With the only exception that we permit a line of about 90 characters.
 

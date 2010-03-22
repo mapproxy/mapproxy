@@ -24,7 +24,7 @@ import sys, os
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo']
 
-todo_include_todos = True
+todo_include_todos = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -40,7 +40,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'MapProxy'
-copyright = u'2010, Oliver Tonnhofer'
+copyright = u'2010, Oliver Tonnhofer, Omniscale'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -59,7 +59,7 @@ release = '0.8.0dev'
 # non-false value, then it is used:
 #today = ''
 # Else, today_fmt is used as the format for a strftime call.
-#today_fmt = '%B %d, %Y'
+today_fmt = '%Y-%m-%d'
 
 # List of documents that shouldn't be included in the build.
 #unused_docs = []

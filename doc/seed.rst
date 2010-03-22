@@ -8,7 +8,7 @@ this task.
 proxy_seed
 ----------
 
-The command line script expects a seed configuration that describes which tiles from which layer should be generated. See `seed configuration`_ for the format of the file.
+The command line script expects a seed configuration that describes which tiles from which layer should be generated. See `configuration`_ for the format of the file.
 
 Use the ``-f`` option to specify the proxy configuration.
 ::
@@ -31,8 +31,8 @@ time-stamp of the last rebuild. If there is a `remove_before` date configured, t
 will only be rebuild if the ``last_seed`` file is older than the date.
 
 
-Seed configuration
-------------------
+Configuration
+--------------
 
 The configuration contains two keys: ``views`` and ``seeds``. ``views`` describes
 geographical extends that should be seeded. ``seeds`` links actual layers with

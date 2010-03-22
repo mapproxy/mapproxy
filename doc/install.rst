@@ -20,7 +20,7 @@ If you don't have `virtualenv` installed, you can download a self-contained vers
 
     wget http://bitbucket.org/ianb/virtualenv/raw/1.4.3/virtualenv.py
     
-Next we create a new virtual environment for our proxy installation. It is a good idea to organize all your environments into a single directory. I will use ``~/venv`` for that. To create a new environment with the name ``mapproxy`` and to activate it call::
+Next we create a new virtual environment for our proxy installation. It is a good idea to organize all your environments into a single directory. I use ``~/venv`` for that. To create a new environment with the name ``mapproxy`` and to activate it call::
 
     python virtualenv.py --distribute ~/venv/mapproxy
     source ~/venv/mapproxy/bin/activate
@@ -57,7 +57,7 @@ To install all requirements on Debian or Ubuntu call::
 Installation
 ~~~~~~~~~~~~
 
-Your virtual environment already contains `pip`_, a tool to install Python packages. We have put a requirements file online that describes which Python packages are needed for MapProxy and where to get these.
+Your virtual environment should already contain `pip`_, a tool to install Python packages. If not, ``easy_install pip`` is enough to get it. We have put a requirements file online that describes which Python packages are needed for MapProxy and where to get these.
 
 To install MapProxy and all dependencies, call the following::
 

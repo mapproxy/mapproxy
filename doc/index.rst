@@ -1,7 +1,7 @@
 MapProxy Documentation
 =======================================
 
-*This documentation is a work in progress.* 
+*This documentation is a work in progress.* |today|
 
 .. toctree::
    :maxdepth: 2
@@ -12,15 +12,13 @@ MapProxy Documentation
    deployment
    development
 
-Todo liste
------------
-
 .. todolist::
 
 Indices and tables
 ==================
 
-* :ref:`genindex`
+.. * :ref:`genindex`
+
 * :ref:`search`
 
 .. * :ref:`modindex`

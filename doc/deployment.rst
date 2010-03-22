@@ -7,8 +7,11 @@ The WSGI standard allows to choose between a wide range of servers and server in
 
 MapProxy uses ``paster serve``, a tool included as a dependency, to start these servers with a configured MapProxy application.
 
-Paster needs a configuration where the application (MapProxy in this case) and the server is defined. The ``etc/`` directory created with ``paster create`` in the installation documentation already contains two example configurations.
+Paster needs a configuration where the application (MapProxy in this case) and the server is defined. The ``etc/`` directory created with ``paster create`` (see :doc:`install`) already contains two example configurations.
 Both configuration define MapProxy as the WSGI application to start and setup some configuration options.
+
+Testing
+-------
 
 The ``develop.ini`` uses the Paster HTTP Server as the WSGI server. This server already implements HTTP so you can directly access the MapProxy with your GIS client on port 8080.
 
@@ -16,12 +19,12 @@ With the ``--reload`` option of ``paster serve`` MapProxy will take notice when 
 
 This server is sufficient for local testing of the configuration. For production deployment we recommend other solutions.
 
-Production deployment
----------------------
+Production
+----------
 
 
 `FastCGI`_ is a protocol to integrate web application into web servers.
-FastCGI is language-independent and implemented by most popular web servers like Apache, ISS, Lighttpd or Nginx. The application run isolated from the web server. In this case you do not start MapProxy as an HTTP server but as a FastCGI server.
+FastCGI is language-independent and implemented by most popular web servers like Apache, Lighttpd or Nginx. The application run isolated from the web server. In this case you do not start MapProxy as an HTTP server but as a FastCGI server.
 
 The example paster configuration ``config.ini`` does this. By default the configured server listens on a socket file (``var/fcgi-socket``) to wich you should point your web server. But you can also use TCP/IP with the ``host`` and ``port`` option. 
 
@@ -48,6 +51,14 @@ With this configuration you can access the MapProxy WMS at http://example.org/pr
 
 Other deployment options
 """"""""""""""""""""""""
+
+Refer to http://wsgi.org/wsgi/Servers for a list of some available WSGI servers. 
+
+.. note::
+  Because of the way Python handles threads in computing heavy applications (like MapProxy WMS is), you should choose a (pre)forking-based server for best performance.
+
+Apache mod_wsgi
+^^^^^^^^^^^^^^^
 
 If you use Apache then you can integrate MapProxy with `mod_wsgi`_.
 We will not go into detail about the installation here, but you can read more about `mod_wsgi installation`_ and then loosely follow the `Pylons integration`_ instructions. Pylons is a web framework that also uses paster for WSGI application configuration and deployment, so the steps are similar.
