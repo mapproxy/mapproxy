@@ -1,2 +1,6 @@
-0.8.0dev 2010-03-xx
+0.8.1 2010-03-25
+- improved performance for simple image transformation
+  (same srs and same resolution) #4
+
+0.8.0 2010-03-22
 - initial release
