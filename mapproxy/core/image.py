@@ -604,15 +604,26 @@ class ImageTransformer(object):
     
     def _transform_simple(self, src_img, src_bbox, dst_size, dst_bbox):
         """
-        Do a simple crop transformation.
+        Do a simple crop/extend transformation.
         """
         src_quad = (0, 0, src_img.size[0], src_img.size[1])
         to_src_px = make_lin_transf(src_bbox, src_quad)
         minx, miny = to_src_px((dst_bbox[0], dst_bbox[3]))
         maxx, maxy = to_src_px((dst_bbox[2], dst_bbox[1]))
-        result = src_img.as_image().transform(dst_size, Image.EXTENT,
-                                              (minx, miny, maxx, maxy),
-                                              image_filter[self.resampling])
+        
+        src_res = (src_bbox[0]-src_bbox[2])/src_img.size[0]
+        dst_res = (dst_bbox[0]-dst_bbox[2])/dst_size[0]
+        
+        tenth_px_res = abs(dst_res/(dst_size[0]*10))
+        if abs(src_res-dst_res) < tenth_px_res:
+            minx = int(round(minx))
+            miny = int(round(miny))
+            result = src_img.as_image().crop((minx, miny,
+                                              minx+dst_size[0], miny+dst_size[1]))
+        else:
+            result = src_img.as_image().transform(dst_size, Image.EXTENT,
+                                                  (minx, miny, maxx, maxy),
+                                                  image_filter[self.resampling])
         return ImageSource(result, size=dst_size, transparent=src_img.transparent)
     
     def _transform(self, src_img, src_bbox, dst_size, dst_bbox):
