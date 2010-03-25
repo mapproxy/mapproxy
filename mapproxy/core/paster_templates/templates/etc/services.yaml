@@ -111,7 +111,7 @@ layers:
             # request_format: image/png
             
             # use a tile size of:
-            tile_size: [512, 512]
+            tile_size: [256, 256]
         sources:
         - type: cache_wms
           req:
