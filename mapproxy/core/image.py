@@ -282,10 +282,15 @@ class MessageImage(object):
     @property
     def font(self):
         if self._font is None:
-            if self.font_name == 'default':
+            if self.font_name != 'default':
+                try:
+                    self._font = ImageFont.truetype(font_file(self.font_name),
+                        self.font_size)
+                except ImportError:
+                    log.warn("Couldn't load TrueType fonts, "
+                        "PIL needs to be build with freetype support.")
+            if self._font is None:
                 self._font = ImageFont.load_default()
-            else:
-                self._font = ImageFont.truetype(font_file(self.font_name), self.font_size)
         return self._font
     
     def text_size(self, draw):
