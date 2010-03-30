@@ -294,7 +294,12 @@ class MessageImage(object):
         return self._font
     
     def text_size(self, draw):
-        return draw.textsize(self.message, font=self.font)
+        try:
+            return draw.textsize(self.message, font=self.font)
+        except UnicodeEncodeError:
+            # PILs default font does only support ascii
+            self.message = self.message.encode('ascii', 'ignore')
+            return draw.textsize(self.message, font=self.font)
     
     def text_box(self, img, draw):
         raise NotImplementedError
