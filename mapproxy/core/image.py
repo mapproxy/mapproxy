@@ -26,6 +26,8 @@ import ImageDraw
 import ImageColor
 import ImageFont
 
+_pil_ttf_support = True
+
 from mapproxy.core.srs import make_lin_transf, bbox_equals
 
 from mapproxy.core.config import base_config
@@ -281,12 +283,14 @@ class MessageImage(object):
     
     @property
     def font(self):
+        global _pil_ttf_support
         if self._font is None:
-            if self.font_name != 'default':
+            if self.font_name != 'default' and _pil_ttf_support:
                 try:
                     self._font = ImageFont.truetype(font_file(self.font_name),
                         self.font_size)
                 except ImportError:
+                    _pil_ttf_support = False
                     log.warn("Couldn't load TrueType fonts, "
                         "PIL needs to be build with freetype support.")
             if self._font is None:
