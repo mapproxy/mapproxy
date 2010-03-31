@@ -144,7 +144,7 @@ class TestWMS111(WMSTest):
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
                               'wms_merge', 'tms_cache', 'wms_cache_multi'])
         eq_(layer_names, expected_names)
-        assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_CAPABILITIES.dtd')
+        assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
     
     def test_invalid_layer(self):
         self.common_map_req.params['layers'] = 'invalid'
