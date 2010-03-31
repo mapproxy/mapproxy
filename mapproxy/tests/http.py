@@ -37,8 +37,7 @@ class StopableHTTPServer(HTTPServer):
         except HTTPError, e:
             pass
         except URLError, e:
-            if e.reason.args[1] != 'Connection refused':
-                raise e
+            pass
 
 class ThreadedStopableHTTPServer(threading.Thread):
     def __init__(self, address, requests_responses):
