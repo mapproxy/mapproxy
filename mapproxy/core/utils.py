@@ -67,11 +67,14 @@ else:
             os.kill(int(pid), 0)
         except OSError, err:
             if err.errno == errno.ESRCH:
+                # PID does not exist
                 return False
             elif err.errno == errno.EPERM:
+                # no permission, but some process is running
                 return True
             else:
-                return True
+                # assume it does not run
+                return False
         return True
 
 class FileLock(object):
