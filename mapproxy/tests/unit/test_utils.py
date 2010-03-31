@@ -83,14 +83,6 @@ class TestFileLock(Mocker):
         #cleanup
         l.unlock()
         lock_thread.join()
-
-    def test_stale_lock(self):
-        self._create_lock(1)
-        l = FileLock(self.lock_file, timeout=0.1, step=0.001)
-        with LogMock(mapproxy.core.utils) as log:
-            l.lock()
-            log.assert_log('warn', 'removing stale lock')
-        assert l._locked
     
     @timed(0.2)
     def test_stale_lock2(self):
@@ -99,7 +91,7 @@ class TestFileLock(Mocker):
         with LogMock(mapproxy.core.utils) as log:
             l.lock()
             log.assert_log('warn', 'removing stale lock')
-        assert l._locked
+        assert l._locked, 'process with id 9999 should not exists'
     
     def test_lock_after_pid_was_removed(self):
         os.mkdir(self.lock_file)
@@ -151,7 +143,7 @@ class TestFileLock(Mocker):
     def _create_lock(self, pid):
         os.mkdir(self.lock_file)
         with open(os.path.join(self.lock_file, 'pid'), 'w') as f:
-            f.write('%d,%s' % (pid, sys.executable))
+            f.write('%d' % pid)
     
 
 def assert_locked(lock_file, timeout=0.02, step=0.001):

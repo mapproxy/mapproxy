@@ -45,7 +45,7 @@ if sys.platform == 'win32':
     PROCESS_QUERY_INFORMATION = 0x0400
     PROCESS_VM_READ = 0x0010
     
-    def process_is_running(pid, pid_exec):
+    def process_is_running(pid):
         running = False
         
         mod = ctypes.c_ulong()
@@ -54,27 +54,25 @@ if sys.platform == 'win32':
         
         p = kernel.OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, False, int(pid))
         if p:
-            psapi.EnumProcessModules(p, ctypes.byref(mod), ctypes.sizeof(mod),
-                ctypes.byref(count))
-            psapi.GetModuleBaseNameA(p, mod.value, modname, ctypes.sizeof(modname))
-            modname = ctypes.string_at(modname)
-            running = modname == os.path.basename(pid_exec)
-
+            running = True
         kernel.CloseHandle(p)
         return running
     
+elif sys.platform.startswith('linux'):
+    def process_is_running(pid):
+        return os.path.exists('/proc/%d' % pid)
 else:
-    def process_is_running(pid, pid_exec):
-        pid_exec = os.path.basename(pid_exec)
-        ps = Popen(['ps', '-o', 'command', '-p', str(pid)], stdout=PIPE).communicate()[0]
-        lines = ps.split('\n')
-        assert lines[0] == 'COMMAND'
-        if len(lines) == 3 and lines[2] == '':
-            lock_exec = lines[1].split(' ', 1)[0]
-            lock_exec = os.path.basename(lock_exec)
-            return pid_exec == lock_exec
-        return False
-
+    def process_is_running(pid):
+        try:
+            os.kill(int(pid), 0)
+        except OSError, err:
+            if err.errno == errno.ESRCH:
+                return False
+            elif err.errno == errno.EPERM:
+                return True
+            else:
+                return True
+        return True
 
 class FileLock(object):
     def __init__(self, lock_file, timeout=60.0, step=0.01):
@@ -98,7 +96,7 @@ class FileLock(object):
             try:
                 os.makedirs(self.lock_file)
                 with open(_pid_file_for_lock(self.lock_file), 'w') as pid:
-                    pid.write(str(os.getpid()) + ',' + sys.executable)
+                    pid.write(str(os.getpid()))
                 self._locked = True
             except OSError, e:
                 if e.errno is not errno.EEXIST:
@@ -125,26 +123,25 @@ class FileLock(object):
         try:
             with open(_pid_file_for_lock(self.lock_file)) as pid:
                 info = pid.readline()
-                if ',' in info:
-                    pid, executable = info.split(',')
-                    return int(pid), executable
-                return None, None
+                if info:
+                    return int(info.strip())
+                return None
         except IOError, e:
             if e.errno is not errno.ENOENT:
                 raise
-            return None, None
+            return None
     def _other_lock_is_running(self):
         """
-        Check if the locking process is still running. Uses the POSIX ``ps`` command.
+        Check if the locking process is still running.
         """
         if self._lock_is_old():
             # if the lock is old, we assume it is not running anymore
             return False
-        pid, pid_exec = self._read_pid_file()
+        pid = self._read_pid_file()
         if pid is None:
             log.warn('no pid file found for ' + self.lock_file)
             return True
-        return process_is_running(pid, pid_exec)
+        return process_is_running(pid)
     
     def _lock_is_old(self):
         """
