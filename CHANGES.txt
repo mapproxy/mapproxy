@@ -1,3 +1,11 @@
+0.8.2rc1 2010-04-01
+- add fallback if PIL is missing TrueType support
+- use zc.lockfile for locking
+- improved logging:
+ - log to stdout in develop.ini
+ - add %(here)s support for config.ini
+ - do not enable ConcurrentLogHandler by default
+
 0.8.1 2010-03-25
 - improved performance for simple image transformation
   (same srs and same resolution) #4
