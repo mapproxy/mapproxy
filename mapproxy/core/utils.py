@@ -312,18 +312,3 @@ def replace_instancemethod(old_method, new_method):
     instancemethod = type(old_method)
     setattr(obj, name, instancemethod(new_method, obj, cls))
 
-try:
-    import cloghandler
-
-    class ConcurrentRotatingFileHandler(cloghandler.ConcurrentRotatingFileHandler):
-        """
-        Wraps cloghandler.ConcurrentRotatingFileHandler and converts relative filenames
-        to absolute filenames using base_config's conf_base_dir.
-        """
-        def __init__(self, filename, *args):
-            from mapproxy.core.config import abspath
-            filename = abspath(filename)
-            cloghandler.ConcurrentRotatingFileHandler.__init__(self, filename, *args)
-
-except ImportError:
-    pass

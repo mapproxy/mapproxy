@@ -38,11 +38,15 @@ def app_factory(global_options, **local_options):
     """
     services_conf = local_options.get('services_conf', None)
     proxy_conf = local_options.get('proxy_conf', None)
+    log_conf = local_options.get('log_conf', None)
     reload_files = local_options.get('reload_files', None)
     if reload_files is not None:
         init_paster_reload_files(reload_files)
     if proxy_conf is not None:
         load_base_config(proxy_conf)
+    
+    init_logging_system(log_conf=log_conf)
+    
     return make_wsgi_app(services_conf)
 
 def init_paster_reload_files(reload_files):
@@ -61,22 +65,21 @@ def _add_files_to_paster_file_watcher(files):
     for file in files:
         paste.reloader.watch_file(file)
     
-def init_logging_system():
+def init_logging_system(log_conf=None):
     import logging.config
     try:
-        import cloghandler
+        import cloghandler # adds CRFHandler to log handlers
         cloghandler.ConcurrentRotatingFileHandler #disable pyflakes warning
     except ImportError:
         pass
-    log_conf = base_config().log_conf
+    if log_conf is None:
+        log_conf = base_config().log_conf
     if log_conf:
         log_conf = abspath(log_conf)
         if not os.path.exists(log_conf):
             print >>sys.stderr, 'ERROR: log configuration %s not found.' % log_conf
             return
-        conf = open(log_conf).read()
-        conf = conf.replace("{{conf_base_dir}}", base_config().conf_base_dir)
-        logging.config.fileConfig(StringIO(conf))
+        logging.config.fileConfig(log_conf, dict(here=base_config().conf_base_dir))
 
 def init_null_logging():
     import logging
@@ -85,18 +88,13 @@ def init_null_logging():
             pass
     logging.getLogger().addHandler(NullHandler())
 
-def make_wsgi_app(services_conf=None, init_logging=True):
+def make_wsgi_app(services_conf=None):
     """
     Create a ProxyApp with the given services conf. Also initializes logging.
     
     :param services_conf: the file name of the services.yaml configuration,
                           if ``None`` the default is loaded.
     """
-    if init_logging:
-        init_logging_system()
-    else:
-        init_null_logging()
-    
     from mapproxy.core.request import Request
     from mapproxy.core.response import Response
     from mapproxy.core.conf_loader import load_services

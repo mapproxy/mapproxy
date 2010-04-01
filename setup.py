@@ -59,7 +59,7 @@ setup(
                       'flup>1.0.2,<1.0.99', 'setuptools>=0.6c9',
                       'Paste>=1.7.2,<1.7.99', 'PasteDeploy>=1.3.3,<1.3.99',
                       'PasteScript>=1.7.3,<1.7.99',
-                      'ConcurrentLogHandler>=0.8.3,<0.8.99'],
+                      ],
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: GNU Affero General Public License v3",

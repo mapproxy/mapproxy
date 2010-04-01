@@ -1,5 +1,4 @@
 MapProxy
-ConcurrentLogHandler==0.8.4
 Jinja2==2.1.1
 PyYAML==3.06
 flup==1.0.3.dev-20100221
