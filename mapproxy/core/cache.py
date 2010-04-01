@@ -50,7 +50,7 @@ import errno
 import hashlib
 from functools import partial
 
-from mapproxy.core.utils import FileLock, ThreadedExecutor
+from mapproxy.core.utils import FileLock, cleanup_lockdir, ThreadedExecutor
 from mapproxy.core.image import TiledImage, ImageSource
 from mapproxy.core.config import base_config, abspath
 
@@ -418,6 +418,7 @@ class _SequentialTileCreator(_TileCreator):
                     new_tiles = self.tile_source.create_tile(tile, tile_collection)
                     self.cache.store_tiles(new_tiles)
                     created_tiles.extend(new_tiles)
+        cleanup_lockdir(self.tile_source.lock_dir)
         return created_tiles
 
 def sequential_tile_creator(tiles, tile_collection, tile_source, cache):
@@ -450,6 +451,8 @@ class _ThreadedTileCreator(_TileCreator):
         for value in new_tiles:
             if value is not None:
                 result.extend(value)
+        
+        cleanup_lockdir(self.tile_source.lock_dir)
         return result
     
     def _create_tile(self, tile, tile_collection):

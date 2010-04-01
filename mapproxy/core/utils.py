@@ -27,6 +27,7 @@ import threading
 import shutil
 import datetime
 from subprocess import Popen, PIPE
+from mapproxy.core import lockfile
 
 import logging
 log = logging.getLogger(__name__)
@@ -34,56 +35,12 @@ log = logging.getLogger(__name__)
 class LockTimeout(Exception):
     pass
 
-
-# WINPORT
-if sys.platform == 'win32':
-    import ctypes
-    
-    psapi = ctypes.windll.psapi
-    kernel = ctypes.windll.kernel32
-    
-    PROCESS_QUERY_INFORMATION = 0x0400
-    PROCESS_VM_READ = 0x0010
-    
-    def process_is_running(pid):
-        running = False
-        
-        mod = ctypes.c_ulong()
-        count = ctypes.c_ulong()
-        modname = ctypes.create_string_buffer(512)
-        
-        p = kernel.OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, False, int(pid))
-        if p:
-            running = True
-        kernel.CloseHandle(p)
-        return running
-    
-elif sys.platform.startswith('linux'):
-    def process_is_running(pid):
-        return os.path.exists('/proc/%d' % pid)
-else:
-    def process_is_running(pid):
-        try:
-            os.kill(int(pid), 0)
-        except OSError, err:
-            if err.errno == errno.ESRCH:
-                # PID does not exist
-                return False
-            elif err.errno == errno.EPERM:
-                # no permission, but some process is running
-                return True
-            else:
-                # assume it does not run
-                return False
-        return True
-
 class FileLock(object):
     def __init__(self, lock_file, timeout=60.0, step=0.01):
         self.lock_file = lock_file
         self.timeout = timeout
         self.step = step
         self._locked = False
-        self.max_lock_time = 300
     
     def __enter__(self):
         self.lock()
@@ -94,98 +51,48 @@ class FileLock(object):
     def lock(self):
         current_time = time.time()
         stop_time = current_time + self.timeout
-        checked_stale = False
-        while not self._locked:
+        if not os.path.exists(os.path.dirname(self.lock_file)):
             try:
-                os.makedirs(self.lock_file)
-                with open(_pid_file_for_lock(self.lock_file), 'w') as pid:
-                    pid.write(str(os.getpid()))
-                self._locked = True
+                os.makedirs(os.path.dirname(self.lock_file))
             except OSError, e:
                 if e.errno is not errno.EEXIST:
                     raise e
-                if not checked_stale:
-                    checked_stale = True
-                    if not self._other_lock_is_running():
-                        log.warn('removing stale lock file: ' + self.lock_file)
-                        _remove_lock(self.lock_file)
-                        continue
+        while not self._locked:
+            try:
+                self.lock = lockfile.LockFile(self.lock_file)
+            except lockfile.LockError, e:
                 current_time = time.time()
                 if current_time < stop_time:
                     time.sleep(self.step)
                     continue
                 else:
                     raise LockTimeout('another process is still running with our lock')
+            else:
+                self._locked = True
     
     def unlock(self):
         if self._locked:
             self._locked = False
-            _remove_lock(self.lock_file)
+            self.lock.close()
     
-    def _read_pid_file(self):
-        try:
-            with open(_pid_file_for_lock(self.lock_file)) as pid:
-                info = pid.readline()
-                if info:
-                    return int(info.strip())
-                return None
-        except IOError, e:
-            if e.errno is not errno.ENOENT:
-                raise
-            return None
-    def _other_lock_is_running(self):
-        """
-        Check if the locking process is still running.
-        """
-        if self._lock_is_old():
-            # if the lock is old, we assume it is not running anymore
-            return False
-        pid = self._read_pid_file()
-        if pid is None:
-            log.warn('no pid file found for ' + self.lock_file)
-            return True
-        return process_is_running(pid)
-    
-    def _lock_is_old(self):
-        """
-        Check if the lock file is older than ``max_lock_time``.
-        """
-        if self.max_lock_time <= 0:
-            return False
-        try:
-            mtime = os.stat(self.lock_file).st_mtime
-        except OSError, e:
-            if e.errno == errno.ENOENT:
-                return True
-            raise e
-        if time.time() - mtime > self.max_lock_time:
-            return True
-        else:
-            return False
-        
     def __del__(self):
         self.unlock()
 
-def _remove_lock(lock_file):
-    try:
-        os.remove(_pid_file_for_lock(lock_file))
-    except OSError, e:
-        if e.errno == errno.ENOENT:
-            log.warn('lock pid disappeared: ' + _pid_file_for_lock(lock_file))
-        else:
-            import traceback
-            traceback.print_exc()
-    try:
-        os.rmdir(lock_file)
-    except OSError, e:
-        if e.errno == errno.ENOENT:
-            log.warn('lock disappeared: ' + lock_file)
-        else:
-            import traceback
-            traceback.print_exc()
 
-def _pid_file_for_lock(lock_file):
-    return os.path.join(lock_file, 'pid')
+def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300):
+    expire_time = time.time() - max_lock_time
+    if not os.path.exists(lockdir) or not os.path.isdir(lockdir):
+        log.warn('lock dir not a directory: %s', lockdir)
+        return
+    for entry in os.listdir(lockdir):
+        name = os.path.join(lockdir, entry)
+        if os.path.isfile(name) and name.endswith(suffix):
+            if os.path.getmtime(name) < expire_time:
+                try:
+                    os.unlink(name)
+                except IOError, ex:
+                    log.warn('could not remove old lock file %s: %s', name, ex)
+                
 
 class ThreadedExecutor(object):
     class Executor(threading.Thread):

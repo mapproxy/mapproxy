@@ -20,11 +20,13 @@ import stat
 import sys
 import shutil
 import tempfile
+import thread
 import threading
 import time
 import mapproxy.core.utils
 from mapproxy.core.utils import (
     FileLock,
+    cleanup_lockdir,
     LockTimeout,
     ThreadedExecutor,
     _force_rename_dir,
@@ -47,7 +49,7 @@ class TestFileLock(Mocker):
         shutil.rmtree(self.lock_dir)
         Mocker.teardown(self)
     def test_file_lock_timeout(self):
-        self._create_running_lock()
+        running_lock = self._create_lock()
         assert_locked(self.lock_file)
     
     def test_file_lock(self):
@@ -84,67 +86,53 @@ class TestFileLock(Mocker):
         l.unlock()
         lock_thread.join()
     
-    @timed(0.2)
-    def test_stale_lock2(self):
-        self._create_lock(9999)
-        l = FileLock(self.lock_file, timeout=2, step=0.001)
-        with LogMock(mapproxy.core.utils) as log:
-            l.lock()
-            log.assert_log('warn', 'removing stale lock')
-        assert l._locked, 'process with id 9999 should not exists'
-    
-    def test_lock_after_pid_was_removed(self):
-        os.mkdir(self.lock_file)
-        old_log = mapproxy.core.utils.log
-        mapproxy.core.utils.log = self.mock()
-        self.expect(mapproxy.core.utils.log.warn(mocker.ANY))
-        self.replay()
-        l = FileLock(self.lock_file, timeout=0.1, step=0.001)
-        try:
-            l.lock()
-        except LockTimeout:
-            pass
-        else:
-            assert False, 'expected LockTimeout'
-        finally:
-            mapproxy.core.utils.log = old_log
-    
-    def test_old_lock(self):
-        l = FileLock(self.lock_file)
+    def test_lock_cleanup(self):
+        old_lock_file = os.path.join(self.lock_dir, 'lock_old.lck')
+        l = FileLock(old_lock_file)
         l.lock()
+        l.unlock()
+        mtime = os.stat(old_lock_file).st_mtime
+        mtime -= 7*60
+        os.utime(old_lock_file, (mtime, mtime))
         
-        mtime = os.stat(self.lock_file).st_mtime
-        mtime -= 5*60
-
-        # windows does not support mtime modification for dirs
-        # wait two seconds and set max_lock_time to one second (below)
-        if is_win:
-            time.sleep(2.0)
-        else:
-            os.utime(self.lock_file, (mtime, mtime))
-
-        with LogMock(mapproxy.core.utils) as log:
-            l2 = FileLock(self.lock_file, timeout=1)
-            if is_win: l2.max_lock_time = 1.0
-            l2.lock()
-            log.assert_log('warn', 'removing stale lock')
-            assert l2._locked
+        l = self._create_lock()
+        l.unlock()
+        assert os.path.exists(old_lock_file)
+        assert os.path.exists(self.lock_file)
+        cleanup_lockdir(self.lock_dir)
         
-        with LogMock(mapproxy.core.utils) as log:
-            l.unlock()
-            l2.unlock()
-            log.assert_log('warn', 'lock pid disappeared')
-            log.assert_log('warn', 'lock disappeared')
-            
+        assert not os.path.exists(old_lock_file)
+        assert os.path.exists(self.lock_file)
     
-    def _create_running_lock(self):
-        self._create_lock(os.getpid())
+    def test_concurrent_access(self):
+        count_file = os.path.join(self.lock_dir, 'count.txt')
+        with open(count_file, 'wb') as f:
+            f.write('0')
+        
+        def count_up():
+            with FileLock(self.lock_file, timeout=60):
+                with open(count_file, 'r+b') as f:
+                    counter = int(f.read().strip())
+                    f.seek(0)
+                    f.write(str(counter+1))
+
+        def do_it():
+            for x in range(20):
+                time.sleep(0.002)
+                count_up()
+        threads = [threading.Thread(target=do_it) for _ in range(20)]
+        [t.start() for t in threads]
+        [t.join() for t in threads]
+        
+        with open(count_file, 'r+b') as f:
+            counter = int(f.read().strip())
+        
+        assert counter == 400
     
-    def _create_lock(self, pid):
-        os.mkdir(self.lock_file)
-        with open(os.path.join(self.lock_file, 'pid'), 'w') as f:
-            f.write('%d' % pid)
-    
+    def _create_lock(self):
+        lock = FileLock(self.lock_file)
+        lock.lock()
+        return lock
 
 def assert_locked(lock_file, timeout=0.02, step=0.001):
     assert os.path.exists(lock_file)
@@ -350,5 +338,3 @@ class TestCleanupDirectory(DirTest):
             assert not os.path.exists(os.path.dirname(filename)), filename
         for filename in files[1::2]:
             assert os.path.exists(filename), filename
-            
-        

@@ -239,6 +239,7 @@ class Test_SequentialTileCreator(Mocker):
                 self.expect(self.cache.is_cached(tile)).result(False)
                 self.expect(self.tile_source.create_tile(tile, ANY)).result([tile])
                 self.expect(self.cache.store_tiles([tile]))
+        self.expect(self.tile_source.lock_dir).result('/tmp/dfjhsdkf')
         
         self.replay()
         new_tiles = self.creator.create_tiles(tiles, tiles)
@@ -275,6 +276,7 @@ class Test_ThreadedTileCreator(Mocker):
                 self.expect(self.cache.is_cached(tile)).result(False)
                 self.expect(self.tile_source.create_tile(tile, ANY)).result([tile])
                 self.expect(self.cache.store_tiles([tile]))
+        self.expect(self.tile_source.lock_dir).result('/tmp/dfjhsdkf')
         
         self.replay()
         
@@ -311,6 +313,7 @@ class Test_ThreadedTileCreator(Mocker):
         self.expect(self.cache.is_cached(tiles[2])).result(False)
         self.expect(self.tile_source.create_tile(tiles[2], ANY)).result([tiles[2], tiles[3]])
         self.expect(self.cache.store_tiles([tiles[2], tiles[3]]))
+        self.expect(self.tile_source.lock_dir).result('/tmp/dfjhsdkf')
         
         self.replay()
         
