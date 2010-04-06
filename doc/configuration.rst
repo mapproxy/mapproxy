@@ -25,7 +25,10 @@ There are a few different configuration files used by MapProxy. Some are require
 ``services.yaml``
 -----------------
 
-All layers the proxy offers are configured in this file. The configuration uses the YAML format. 
+All layers the proxy offers are configured in this file. The configuration uses the YAML format.
+
+
+.. note:: The indentation is significant and shall only contain space characters. Tabulators are **not** permitted for indentation.
 
 The configuration contains the keys ``service`` and ``layers``.
 
