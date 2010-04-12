@@ -38,9 +38,8 @@ Dependencies
 
 To install MapProxy you need
 
-* Mercurial
 * C compiler
-* Python (development tools)
+* Python 2.5 or 2.6 (development tools)
 
 MapProxy uses the Python Image Library (PIL). To get full support for JPEG and PNG images and attribution/watermarks you will need the following libraries:
 
@@ -50,7 +49,7 @@ MapProxy uses the Python Image Library (PIL). To get full support for JPEG and P
 
 To install all requirements on Debian or Ubuntu call::
 
-    sudo aptitude install mercurial build-essential python-dev \
+    sudo aptitude install build-essential python-dev \
         libjpeg-dev libz-dev libfreetype6-dev
 
 
