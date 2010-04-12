@@ -233,7 +233,7 @@ class TileGrid(object):
         ... #doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
         ((-20037508.342789244, -20037508.342789244,\
           20037508.342789244, 20037508.342789244), (1, 1),\
-          <generator object at ...>)
+          <generator object ...>)
         """
         if req_srs and req_srs != self.srs:
             src_bbox = req_srs.transform_bbox_to(self.srs, bbox)

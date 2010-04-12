@@ -264,10 +264,10 @@ def timestamp_from_isodate(isodate):
     """
     >>> timestamp_from_isodate('2009-06-09T10:57:00')
     1244537820.0
-    >>> timestamp_from_isodate('2009-06-09T10:57')
+    >>> timestamp_from_isodate('2009-06-09T10:57') #doctest: +ELLIPSIS
     Traceback (most recent call last):
-      ...
-    ValueError: time data did not match format:  data=2009-06-09T10:57  fmt=%Y-%m-%dT%H:%M:%S
+    ...
+    ValueError: ...
     """
     date = datetime.datetime.strptime(isodate, "%Y-%m-%dT%H:%M:%S")
     return time.mktime(date.timetuple())
