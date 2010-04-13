@@ -8,6 +8,7 @@ MapProxy Documentation
    
    install
    configuration
+   services
    seed
    deployment
    development
