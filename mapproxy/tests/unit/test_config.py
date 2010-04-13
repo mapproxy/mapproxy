@@ -92,4 +92,29 @@ class TestDefaultsLoading(object):
             assert base_config().foo.bar.eggs == 5
             assert not hasattr(base_config(), 'wms')
         
+
+class TestSRSConfig(object):
+    def setup(self):
+        import mapproxy.core.config
+        mapproxy.core.config._config = None
+    
+    def test_user_srs_definitions(self):
+        user_yaml = """
+        srs:
+          axis_order_ne: ['EPSG:9999']
+        """
+        with TempFiles() as tmp:
+            with open(tmp[0], 'w') as f:
+                f.write(user_yaml)
+        
+            load_base_config(config_file=tmp[0])
             
+            assert 'EPSG:9999' in base_config().srs.axis_order_ne
+            assert 'EPSG:9999' not in base_config().srs.axis_order_en
+            
+            #defaults still there
+            assert 'EPSG:31468' in base_config().srs.axis_order_ne
+            assert 'CRS:84' in base_config().srs.axis_order_en
+            
+            
+        

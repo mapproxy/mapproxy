@@ -111,7 +111,13 @@ def load_base_config(config_file=None, clear_existing=False):
         conf_base_dir = os.path.abspath(os.path.dirname(config_file))
         load_config(base_config(), config_file=config_file, clear_existing=clear_existing)
     
-    base_config().conf_base_dir = conf_base_dir
+    bc = base_config()
+    if 'srs' in bc:
+        # build union of default axis_order_xx_ and the user configured axis_order_xx
+        bc.srs.axis_order_ne = set(bc.srs.axis_order_ne).union(bc.srs.axis_order_ne_)
+        bc.srs.axis_order_en = set(bc.srs.axis_order_en).union(bc.srs.axis_order_en_)
+    
+    bc.conf_base_dir = conf_base_dir
 
 def load_config(config, config_file=None, config_dict=None, clear_existing=False):
     if clear_existing:

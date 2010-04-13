@@ -29,6 +29,14 @@
 #     stretch_factor: 1.15
 
 
+# # WMS 1.3.0 requires all coordiates in the correct axis order,
+# # i.e. lon/lat or lat/lon. Use the following settings to
+# # explicitly set a CRS to either North/East or East/North
+# # ordering.
+# srs:
+#   axis_order_ne: ['EPSG:9999', 'EPSG:9998']
+#   axis_order_en: ['EPSG:0000', 'EPSG:0001']
+
 # # number of concurrent requests to a tile source
 # tile_creator_pool_size: 2
 
