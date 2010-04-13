@@ -117,6 +117,9 @@ def load_base_config(config_file=None, clear_existing=False):
         bc.srs.axis_order_ne = set(bc.srs.axis_order_ne).union(bc.srs.axis_order_ne_)
         bc.srs.axis_order_en = set(bc.srs.axis_order_en).union(bc.srs.axis_order_en_)
     
+    if 'wms' in bc:
+        bc.wms.srs = set(bc.wms.srs)
+    
     bc.conf_base_dir = conf_base_dir
 
 def load_config(config, config_file=None, config_dict=None, clear_existing=False):
