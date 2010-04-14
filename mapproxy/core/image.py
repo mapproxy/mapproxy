@@ -762,5 +762,10 @@ def is_single_color_image(image):
     # returns a list of (count, color), limit to one
     if result is None:
         return False
-    else:
-        return result[0][1]
+    
+    color = result[0][1]
+    if image.mode == 'P':
+        palette = image.getpalette()
+        return palette[color*3], palette[color*3+1], palette[color*3+2]
+    
+    return result[0][1]

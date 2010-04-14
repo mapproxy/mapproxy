@@ -18,6 +18,7 @@ from __future__ import with_statement
 import Image
 import ImageDraw
 import ImageColor
+import ImagePalette
 import os
 import sys
 from mapproxy.core.image import (
@@ -269,3 +270,12 @@ class TestSingleColorImage(object):
     def test_solid_w_alpha(self):
         img = Image.new('RGBA', (100, 100), color='#ff0102')
         eq_(is_single_color_image(img), (255, 1, 2, 255))
+    
+    def test_solid_paletted_image(self):
+        img = Image.new('P', (100, 100), color=20)
+        palette = []
+        for i in range(256):
+            palette.extend((i, i//2, i%3))
+        img.putpalette(palette)
+        eq_(is_single_color_image(img), (20, 10, 2))
+    
