@@ -272,9 +272,11 @@ class CacheSource(Source):
         suffix = self.param['srs'].replace(':', '')
         cache_dir = self.layer_conf.cache_dir(suffix=suffix)
         format = self.param['format'].split('/')[1]
+        link_single_color_images = self.param.get('link_single_color_images', False)
         tile_filter = self.get_tile_filter()
         self.file_cache = FileCache(cache_dir, file_ext=format,
-                                    pre_store_filter=tile_filter)
+                                    pre_store_filter=tile_filter,
+                                    link_single_color_images=link_single_color_images)
     
     def get_tile_filter(self):
         filters = []

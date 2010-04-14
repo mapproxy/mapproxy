@@ -1,3 +1,7 @@
+0.8.3dev
+- New link_single_color_images layer option. Multiple "emtpy" tiles will
+  be linked to the same image. (Unix only)
+
 0.8.2 2010-04-13
 0.8.2rc1 2010-04-01
 - add fallback if PIL is missing TrueType support

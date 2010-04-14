@@ -101,8 +101,11 @@ def draw_pattern(draw, size):
         draw.line((0, i*step, w, i*step), fill=color)
 
 @contextmanager
-def tmp_image(size, format='png'):
-    img = create_debug_img(size)
+def tmp_image(size, format='png', color=None, mode='RGB'):
+    if color is not None:
+        img = Image.new(mode, size, color=color)
+    else:
+        img = create_debug_img(size)
     data = StringIO()
     img.save(data, format)
     data.seek(0)

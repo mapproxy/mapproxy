@@ -45,6 +45,7 @@ Tile caching (creation, caching and retrieval of tiles).
 
 from __future__ import with_statement
 import os
+import sys
 import time
 import errno
 import hashlib
@@ -268,7 +269,10 @@ class FileCache(object):
         if pre_store_filter is None:
             pre_store_filter = []
         self.pre_store_filter = pre_store_filter
-        self.link_single_color_images = False
+        if link_single_color_images and sys.platform == 'win32':
+            log.warn('link_single_color_images not supported on windows')
+            link_single_color_images = False
+        self.link_single_color_images = link_single_color_images
     
     def level_location(self, level):
         """

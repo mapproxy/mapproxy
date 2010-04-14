@@ -40,6 +40,19 @@ layers:
           req:
             url: http://localhost:42423/service
             layers: foo,bar
+    wms_cache_link_single:
+        md:
+            title: WMS Cache Layer
+        param:
+            format: image/png
+            link_single_color_images: True
+        sources:
+        - type: cache_wms
+          wms_opts:
+            featureinfo: True
+          req:
+            url: http://localhost:42423/service
+            layers: foo,bar
     wms_cache_100:
         md:
             title: WMS Cache Layer

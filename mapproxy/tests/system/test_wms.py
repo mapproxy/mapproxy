@@ -16,6 +16,7 @@
 
 from __future__ import with_statement
 import os
+import sys
 import Image
 import functools
 
@@ -31,7 +32,6 @@ from mapproxy.tests.image import is_jpeg, is_png, tmp_image
 from mapproxy.tests.http import mock_httpd
 from mapproxy.tests.helper import validate_with_dtd, validate_with_xsd
 from nose.tools import eq_
-
 
 global_app = None
 
@@ -66,12 +66,13 @@ class WMSTest(object):
         for filename in self.created_tiles:
             yield os.path.join(base_dir, filename)
     
-    def test_created_tiles(self):
+    def _test_created_tiles(self):
         for filename in self.created_tiles_filenames():
             if not os.path.exists(filename):
                 assert False, "didn't found tile " + filename
     
     def teardown(self):
+        self._test_created_tiles()
         for filename in self.created_tiles_filenames():
             if os.path.exists(filename):
                 os.remove(filename)
@@ -142,7 +143,8 @@ class TestWMS111(WMSTest):
             'http://localhost:80/service?')
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
-                              'wms_merge', 'tms_cache', 'wms_cache_multi'])
+                              'wms_merge', 'tms_cache', 'wms_cache_multi',
+                              'wms_cache_link_single'])
         eq_(layer_names, expected_names)
         assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
     
@@ -336,7 +338,8 @@ class TestWMS100(WMSTest):
             'MapProxy test fixture')
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
-                              'wms_merge', 'tms_cache', 'wms_cache_multi'])
+                              'wms_merge', 'tms_cache', 'wms_cache_multi',
+                              'wms_cache_link_single'])
         eq_(layer_names, expected_names)
         #TODO srs
         assert validate_with_dtd(xml, dtd_name='wms/1.0.0/capabilities_1_0_0.dtd')
@@ -468,7 +471,8 @@ class TestWMS130(WMSTest):
         layer_names = set(xml.xpath('//wms:Layer/wms:Layer/wms:Name/text()',
                                     namespaces=ns130))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
-                              'wms_merge', 'tms_cache', 'wms_cache_multi'])
+                              'wms_merge', 'tms_cache', 'wms_cache_multi',
+                              'wms_cache_link_single'])
         eq_(layer_names, expected_names)
         assert is_130_capa(xml)
     
@@ -563,3 +567,40 @@ class TestWMS130(WMSTest):
                 self.common_map_req.params['bbox'] = '0,0,180,90' #internal axis-order
                 resp = self.app.get(self.common_map_req)
                 eq_(resp.content_type, 'image/png')
+
+
+if sys.platform != 'win32':
+    class TestWMSLinkSingleColorImages(WMSTest):
+        def setup(self):
+            WMSTest.setup(self)
+            self.common_map_req = WMS111MapRequest(url='/service?', param=dict(service='WMS', 
+                 version='1.1.1', bbox='-180,0,0,80', width='200', height='200',
+                 layers='wms_cache_link_single', srs='EPSG:4326', format='image/jpeg',
+                 styles='', request='GetMap'))
+    
+        def test_get_map(self):
+            link_name = 'wms_cache_link_single_EPSG900913/01/000/000/001/000/000/001.png'
+            real_name = 'wms_cache_link_single_EPSG900913/single_color_tiles/fe0005.png'
+            self.created_tiles.append(link_name)
+            self.created_tiles.append(real_name)
+            with tmp_image((256, 256), format='png', color='#fe0005') as img:
+                expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
+                                          '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
+                                          '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
+                                          '&WIDTH=256'},
+                                {'body': img.read(), 'headers': {'content-type': 'image/png'}})
+                with mock_httpd(('localhost', 42423), [expected_req]):
+                    self.common_map_req.params['bbox'] = '0,0,180,90'
+                    resp = self.app.get(self.common_map_req)
+                    eq_(resp.content_type, 'image/jpeg')
+            
+                base_dir = mapproxy.core.config.base_config().cache.base_dir
+                single_loc = os.path.join(base_dir, real_name)
+                tile_loc = os.path.join(base_dir, link_name)
+                assert os.path.exists(single_loc)
+                assert os.path.islink(tile_loc)
+            
+                self.common_map_req.params['format'] = 'image/png'
+                resp = self.app.get(self.common_map_req)
+                eq_(resp.content_type, 'image/png')
+            
