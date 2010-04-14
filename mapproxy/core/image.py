@@ -752,3 +752,15 @@ class TiledImage(object):
         src_img = self.image()
         return transformer.transform(src_img, self.src_bbox, out_size, req_bbox)
     
+def is_single_color_image(image):
+    """
+    Checks if the `image` contains only one color.
+    Returns ``False`` if it contains more than one color, else
+    the color-tuple of the single color.
+    """
+    result = image.getcolors(1)
+    # returns a list of (count, color), limit to one
+    if result is None:
+        return False
+    else:
+        return result[0][1]

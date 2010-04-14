@@ -16,12 +16,22 @@
 
 from __future__ import with_statement
 import Image
+import ImageDraw
+import ImageColor
 import os
 import sys
-from mapproxy.core.image import ImageSource, message_image, TileMerger, ReadBufWrapper
+from mapproxy.core.image import (
+    ImageSource,
+    message_image,
+    TileMerger,
+    ReadBufWrapper,
+    ImageTransformer,
+    is_single_color_image,
+)
 from mapproxy.core.tilefilter import watermark_filter, PNGQuantFilter
 from mapproxy.core.cache import _Tile
 from mapproxy.tests.image import is_png, create_tmp_image, check_format, create_debug_img
+from mapproxy.core.srs import SRS
 from nose.tools import eq_
 
 class TestImageSource(object):
@@ -216,10 +226,6 @@ class TestGetCrop(object):
         result = transformer.transform(self.img, bbox, (200, 200), bbox)
         assert result.as_image().size == (200, 200)
 
-from mapproxy.core.srs import SRS
-from mapproxy.core.image import ImageTransformer 
-
-import ImageColor
 
 class TestTransform(object):
     def setup(self):
@@ -246,3 +252,20 @@ class TestTransform(object):
                                            self.dst_size, self.dst_bbox)
             result.as_image().save('/tmp/transform-%d.png' % (div,))
         
+
+class TestSingleColorImage(object):
+    def test_one_point(self):
+        img = Image.new('RGB', (100, 100), color='#ff0000')
+        draw = ImageDraw.Draw(img)
+        draw.point((99, 99))
+        del draw
+        
+        assert not is_single_color_image(img)
+    
+    def test_solid(self):
+        img = Image.new('RGB', (100, 100), color='#ff0102')
+        eq_(is_single_color_image(img), (255, 1, 2))
+    
+    def test_solid_w_alpha(self):
+        img = Image.new('RGBA', (100, 100), color='#ff0102')
+        eq_(is_single_color_image(img), (255, 1, 2, 255))
