@@ -154,9 +154,10 @@ class TestWatermarkTileFilter(object):
         
         pil_img = filtered_tile.source.as_image()
         eq_(pil_img.getpixel((0, 0)), (0, 0, 0, 255))
-        # 6 values in histogram (3xRGB for background, 3xRGB for text message)
-        eq_([x for x in pil_img.histogram() if x > 0],
-               [40000, 40000, 40000, 227, 37, 64, 39672])
+        # check histogram profile (w TrueType support and w/o)
+        hist_color_counts = [x for x in pil_img.histogram() if x > 0]
+        assert hist_color_counts == [40000, 40000, 40000, 227, 37, 64, 39672]\
+            or hist_color_counts == [40000, 40000, 40000, 75, 39925]
         
 class TestMergeAll(object):
     def setup(self):
