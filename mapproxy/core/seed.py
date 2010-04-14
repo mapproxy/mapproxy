@@ -219,7 +219,7 @@ def level_needs_rebuild(cache, level, remove_before):
     cache_dir = cache.cache_mgr.cache.level_location(level)
     level_timestamp = os.path.join(cache_dir, 'last_seed')
     if os.path.exists(level_timestamp):
-        return os.stat(level_timestamp).st_mtime < remove_before
+        return os.lstat(level_timestamp).st_mtime < remove_before
     else:
         return True
 

@@ -285,7 +285,7 @@ def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
                 continue
             for filename in filenames:
                 filename = os.path.join(dirpath, filename)
-                if os.stat(filename).st_mtime < before_timestamp:
+                if os.lstat(filename).st_mtime < before_timestamp:
                     file_handler(filename)
             if (remove_empty_dirs and not os.listdir(dirpath)
                 and dirpath != directory):

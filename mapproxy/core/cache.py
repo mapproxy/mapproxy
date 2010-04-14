@@ -332,7 +332,7 @@ class FileCache(object):
     
     def _update_tile_metadata(self, tile):
         location = self.tile_location(tile)
-        stats = os.stat(tile.location)
+        stats = os.lstat(tile.location)
         tile.timestamp = stats.st_mtime
         tile.size = stats.st_size
     
