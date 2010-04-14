@@ -19,34 +19,16 @@ from urllib2 import urlopen, URLError, HTTPError
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from contextlib import contextmanager
 
-class StopableHTTPServer(HTTPServer):
-    stopped = False
-    
-    def serve_forever(self):
-        while not self.stopped:
-            self.handle_request()
-    
-    def force_shutdown(self):
-        self.server_close()
-        self.stopped = True
-        self._dummy_request()
-    
-    def _dummy_request(self):
-        try:
-            urlopen('http://%s:%d/' % self.server_address)
-        except HTTPError, e:
-            pass
-        except URLError, e:
-            pass
-
 class ThreadedStopableHTTPServer(threading.Thread):
     def __init__(self, address, requests_responses):
         threading.Thread.__init__(self, **{'group': None})
-        self.httpd = StopableHTTPServer(address, mock_http_handler(requests_responses))
+        self.requests_responses = requests_responses
+        self.shutdown = False
+        self.httpd = HTTPServer(address, mock_http_handler(requests_responses))
     def run(self):
-        self.httpd.serve_forever()
-    def force_shutdown(self):
-        self.httpd.force_shutdown()
+        for _ in xrange(len(self.requests_responses)):
+            if self.shutdown: return
+            self.httpd.handle_request()
 
 def mock_http_handler(requests_responses):
     class MockHTTPHandler(BaseHTTPRequestHandler):
@@ -54,7 +36,7 @@ def mock_http_handler(requests_responses):
             try:
                 return self.do_mock_request()
             except AssertionError:
-                self.server.force_shutdown()
+                self.server.shutdown = True
                 raise
         def do_mock_request(self):
             assert len(requests_responses) > 0, 'got unexpected request (%s)' % self.path
@@ -66,7 +48,7 @@ def mock_http_handler(requests_responses):
             self.start_response(resp)
             self.wfile.write(resp['body'])
             if not requests_responses:
-                self.server.force_shutdown()
+                self.server.shutdown = True
             return
         def start_response(self, resp):
             self.send_response(int(resp.get('status', '200')))
@@ -128,10 +110,7 @@ def query_to_dict(query):
 def mock_httpd(address, requests_responses):
     t = ThreadedStopableHTTPServer(address, requests_responses)
     t.start()
-    try:
-        yield
-    finally:
-        t.force_shutdown()
+    yield
 
 def make_wsgi_env(query_string):
         env = {'QUERY_STRING': query_string,
@@ -139,8 +118,3 @@ def make_wsgi_env(query_string):
                'HTTP_HOST': 'localhost',
               }
         return env
-
-if __name__ == '__main__':
-    requests_responses = [('/foo', 'bar'), ('/baz', 'boo')]
-    httpd = StopableHTTPServer(('', 8080), mock_http_handler(requests_responses))
-    httpd.serve_forever()
