@@ -51,7 +51,7 @@ import hashlib
 from functools import partial
 
 from mapproxy.core.utils import FileLock, cleanup_lockdir, ThreadedExecutor
-from mapproxy.core.image import TiledImage, ImageSource
+from mapproxy.core.image import TiledImage, ImageSource, is_single_color_image
 from mapproxy.core.config import base_config, abspath
 
 import logging
@@ -253,7 +253,8 @@ class FileCache(object):
     """
     This class is responsible to store and load the actual tile data.
     """
-    def __init__(self, cache_dir, file_ext, pre_store_filter=None):
+    def __init__(self, cache_dir, file_ext, pre_store_filter=None,
+                 link_single_color_images):
         """
         :param cache_dir: the path where the tile will be stored
         :param file_ext: the file extension that will be appended to
@@ -267,6 +268,7 @@ class FileCache(object):
         if pre_store_filter is None:
             pre_store_filter = []
         self.pre_store_filter = pre_store_filter
+        self.link_single_color_images = False
     
     def level_location(self, level):
         """
@@ -304,6 +306,22 @@ class FileCache(object):
         if create_dir:
             _create_dir(tile.location)
         return tile.location
+    
+    def _single_color_tile_location(self, color, create_dir=False):
+        """
+        >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png')
+        >>> c._single_color_tile_location((254, 0, 4)).replace('\\\\', '/')
+        '/tmp/cache/single_color_tiles/fe0004.png'
+        """
+        parts = (
+            self.cache_dir,
+            'single_color_tiles',
+            ''.join('%02x' % v for v in color) + '.' + self.file_ext
+        )
+        location = os.path.join(*parts)
+        if create_dir:
+            _create_dir(location)
+        return location
     
     def timestamp_created(self, tile):
         """
@@ -358,12 +376,30 @@ class FileCache(object):
         """
         if tile.stored:
             return
+        
         tile_loc = self.tile_location(tile, create_dir=True)
+        
+        if self.link_single_color_images:
+            color = is_single_color_image(tile.source.as_image())
+            if color:
+                real_tile_loc = self._single_color_tile_location(color, create_dir=True)
+                if not os.path.exists(real_tile_loc):
+                    self._store(tile, real_tile_loc)
+                
+                log.debug('linking %r from %s to %s',
+                          tile.coord, real_tile_loc, tile_loc)
+                os.symlink(real_tile_loc, tile_loc)
+                return
+        
+        self._store(tile, tile_loc)
+    
+    def _store(self, tile, location):
+        
         for img_filter in self.pre_store_filter:
             tile = img_filter(tile)
         data = tile.source.as_buffer()
-        with open(tile_loc, 'wb') as f:
-            log.debug('writing %r to %s' % (tile.coord, tile_loc))
+        with open(location, 'wb') as f:
+            log.debug('writing %r to %s' % (tile.coord, location))
             f.write(data.read())
         tile.size = data.tell()
         tile.timestamp = time.time()

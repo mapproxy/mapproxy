@@ -17,6 +17,7 @@
 from __future__ import with_statement
 import os
 import time
+import Image
 from contextlib import contextmanager
 from tempfile import mkdtemp
 from shutil import rmtree
@@ -45,7 +46,7 @@ from mapproxy.tests.helper import Mocker, TempFiles
 from mapproxy.tests.http import mock_httpd
 from mapproxy.tests.image import tmp_image, is_png, assert_image_mode
 from mocker import ANY
-from nose.tools import eq_, raises
+from nose.tools import eq_, assert_not_equal, raises
 
 
 class TestCache(Mocker):
@@ -215,6 +216,39 @@ class TestFileCache(object):
         self.cache.store(tile)
         loc = self.cache.tile_location(tile)
         assert not os.path.exists(loc)
+    
+    def test_single_color_tile_store(self):
+        img = Image.new('RGB', (256, 256), color='#ff0105')
+        tile = _Tile((0, 0, 0), ImageSource(img))
+        self.cache.link_single_color_images = True
+        self.cache.store(tile)
+        assert self.cache.is_cached(tile)
+        loc = self.cache.tile_location(tile)
+        assert os.path.islink(loc)
+        assert os.path.realpath(loc).endswith('ff0105.png')
+        assert is_png(open(loc, 'rb'))
+        
+        tile2 = _Tile((0, 0, 1), ImageSource(img))
+        self.cache.store(tile2)
+        assert self.cache.is_cached(tile2)
+        loc2 = self.cache.tile_location(tile2)
+        assert os.path.islink(loc2)
+        assert os.path.realpath(loc2).endswith('ff0105.png')
+        assert is_png(open(loc2, 'rb'))
+        
+        assert_not_equal(loc, loc2)
+        assert os.path.samefile(loc, loc2)
+    
+    def test_single_color_tile_store_w_alpha(self):
+        img = Image.new('RGBA', (256, 256), color='#ff0105')
+        tile = _Tile((0, 0, 0), ImageSource(img))
+        self.cache.link_single_color_images = True
+        self.cache.store(tile)
+        assert self.cache.is_cached(tile)
+        loc = self.cache.tile_location(tile)
+        assert os.path.islink(loc)
+        assert os.path.realpath(loc).endswith('ff0105ff.png')
+        assert is_png(open(loc, 'rb'))
     
     def _create_cached_tile(self, tile):
         loc = self.cache.tile_location(tile, create_dir=True)
