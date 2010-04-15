@@ -395,6 +395,10 @@ class FileCache(object):
                 
                 log.debug('linking %r from %s to %s',
                           tile.coord, real_tile_loc, tile_loc)
+                
+                if os.path.exists(tile_loc):
+                    os.remove(tile_loc)
+                
                 os.symlink(real_tile_loc, tile_loc)
                 return
         
