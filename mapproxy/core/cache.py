@@ -393,8 +393,8 @@ class FileCache(object):
                 log.debug('linking %r from %s to %s',
                           tile.coord, real_tile_loc, tile_loc)
                 
-                if os.path.exists(tile_loc):
-                    os.remove(tile_loc)
+                if os.path.islink(tile_loc):
+                    os.unlink(tile_loc)
                 
                 os.symlink(real_tile_loc, tile_loc)
                 return
@@ -402,6 +402,8 @@ class FileCache(object):
         self._store(tile, tile_loc)
     
     def _store(self, tile, location):
+        if os.path.islink(location):
+            os.unlink(location)
         
         for img_filter in self.pre_store_filter:
             tile = img_filter(tile)
