@@ -483,6 +483,7 @@ class _ThreadedTileCreator(_TileCreator):
             new_tiles = self._create_tile(unique_meta_tiles[0], tile_collection)
             if new_tiles is None:
                 return []
+            cleanup_lockdir(self.tile_source.lock_dir)
             return new_tiles
         else:
             return self._create_multiple_tiles(unique_meta_tiles, tile_collection)
