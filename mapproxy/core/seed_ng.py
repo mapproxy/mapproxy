@@ -1,5 +1,6 @@
 from __future__ import with_statement, division
 import sys
+import math
 import time
 import yaml
 import datetime
@@ -108,10 +109,10 @@ class TileSeeder(object):
         seed_pool = SeedPool(cache, dry_run=self.dry_run)
         
         num_seed_levels = level[1] - level[0] + 1
-        report_till_level = level[0] + int(num_seed_levels * 0.8)
+        report_till_level = level[0] + int(num_seed_levels * 0.7)
         print level, num_seed_levels, report_till_level
         grid = cache.grid
-        status = list('.oO0')
+        
         def _seed(cur_bbox, level, max_level, id=''):
             bbox_, tiles_, subtiles = grid.get_affected_level_tiles(cur_bbox, level)
             subtiles = list(subtiles)
@@ -119,11 +120,17 @@ class TileSeeder(object):
                 print '[%s] %2s %s' % (timestamp(), level, format_bbox(cur_bbox))
                 sys.stdout.flush()
             if level < max_level:
-                for i, subtile in enumerate(subtiles):
+                sub_seeds = []
+                for subtile in subtiles:
                     if subtile is None: continue
                     sub_bbox = grid.tile_bbox(subtile)
                     if bbox_intersects(sub_bbox, bbox):
-                        seed_id = id + (status[i] if i <=3 else str(i))
+                        sub_seeds.append(sub_bbox)
+                
+                if sub_seeds:
+                    total_sub_seeds = len(sub_seeds)
+                    for i, sub_bbox in enumerate(sub_seeds):
+                        seed_id = id + status_symbol(i, total_sub_seeds)
                         _seed(sub_bbox, level+1, max_level, seed_id)
             # print id #, level, tiles, cur_bbox
             seed_pool.seed(id, subtiles)
@@ -149,6 +156,22 @@ def timestamp():
 
 def format_bbox(bbox):
     return ('(%.5f, %.5f, %.5f, %.5f)') % bbox
+
+def status_symbol(i, total):
+    """
+    >>> status_symbol(0, 1)
+    '0'
+    >>> [status_symbol(i, 4) for i in range(5)]
+    ['.', 'o', 'O', '0', 'X']
+    >>> [status_symbol(i, 10) for i in range(11)]
+    ['.', '.', 'o', 'o', 'o', 'O', 'O', '0', '0', '0', 'X']
+    """
+    symbols = list(' .oO0')
+    i += 1
+    if 0 < i > total:
+        return 'X'
+    else:
+        return symbols[int(math.ceil(i/(total/4)))]
 
 def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=False):
     from mapproxy.core.conf_loader import load_services
