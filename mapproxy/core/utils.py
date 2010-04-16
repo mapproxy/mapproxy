@@ -86,13 +86,17 @@ def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300):
         return
     for entry in os.listdir(lockdir):
         name = os.path.join(lockdir, entry)
-        if os.path.isfile(name) and name.endswith(suffix):
-            if os.path.getmtime(name) < expire_time:
-                try:
-                    os.unlink(name)
-                except IOError, ex:
-                    log.warn('could not remove old lock file %s: %s', name, ex)
-                
+        try:
+            if os.path.isfile(name) and name.endswith(suffix):
+                if os.path.getmtime(name) < expire_time:
+                    try:
+                        os.unlink(name)
+                    except IOError, ex:
+                        log.warn('could not remove old lock file %s: %s', name, ex)
+        except OSError, e:
+            # some one might remove the file, ignore this
+            if e.errno != errno.ENOENT:
+                raise e
 
 class ThreadedExecutor(object):
     class Executor(threading.Thread):
