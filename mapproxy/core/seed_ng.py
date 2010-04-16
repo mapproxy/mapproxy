@@ -1,5 +1,8 @@
-from __future__ import with_statement
+from __future__ import with_statement, division
+import sys
+import time
 import yaml
+import datetime
 import multiprocessing
 from mapproxy.core.srs import SRS
 from mapproxy.core import seed
@@ -33,12 +36,13 @@ def exp_backoff(func, max_repeat=10, start_backoff_sec=2,
             return result
 
 class SeedPool(object):
-    def __init__(self, cache, size=4):
+    def __init__(self, cache, size=8, dry_run=False):
         self.tiles_queue = multiprocessing.Queue(16)
         self.cache = cache
+        self.dry_run = dry_run
         self.procs = []
         for _ in xrange(size):
-            worker = SeedWorker(cache, self.tiles_queue)
+            worker = SeedWorker(cache, self.tiles_queue, dry_run=dry_run)
             worker.start()
             self.procs.append(worker)
     
@@ -53,18 +57,22 @@ class SeedPool(object):
             proc.join()
     
 class SeedWorker(multiprocessing.Process):
-    def __init__(self, cache, tiles_queue):
+    def __init__(self, cache, tiles_queue, dry_run=False):
         multiprocessing.Process.__init__(self)
         self.cache = cache
         self.tiles_queue = tiles_queue
+        self.dry_run = dry_run
     def run(self):
         while True:
             seed_id, tiles = self.tiles_queue.get()
             if tiles is None:
                 return
-            print seed_id
-            load_tiles = lambda: self.cache.cache_mgr.load_tile_coords(tiles)
-            exp_backoff(load_tiles, exceptions=(TileSourceError, IOError))
+            print '[%s] %s\r' % (timestamp(), seed_id), #, tiles
+            sys.stdout.flush()
+            time.sleep(0.1)
+            if not self.dry_run:
+                load_tiles = lambda: self.cache.cache_mgr.load_tile_coords(tiles)
+                exp_backoff(load_tiles, exceptions=(TileSourceError, IOError))
 
 class TileSeeder(object):
     def __init__(self, vlayer, remove_before, progress_meter, dry_run=False):
@@ -89,25 +97,33 @@ class TileSeeder(object):
                 self._seed_location(cache, bbox, level=level, srs=srs)
     
     def _seed_location(self, cache, bbox, level, srs):
+        print bbox
         if cache.grid.srs != srs:
             bbox = srs.transform_bbox_to(cache.grid.srs, bbox)
+        print bbox
         print cache
         if self.remove_before:
             cache.cache_mgr.expire_timestamp = lambda tile: self.remove_before
         
-        seed_pool = SeedPool(cache)
+        seed_pool = SeedPool(cache, dry_run=self.dry_run)
         
+        num_seed_levels = level[1] - level[0] + 1
+        report_till_level = level[0] + int(num_seed_levels * 0.8)
+        print level, num_seed_levels, report_till_level
         grid = cache.grid
         status = list('.oO0')
         def _seed(cur_bbox, level, max_level, id=''):
-            bbox, tiles, subtiles = grid.get_affected_level_tiles(cur_bbox, level)
+            bbox_, tiles_, subtiles = grid.get_affected_level_tiles(cur_bbox, level)
             subtiles = list(subtiles)
+            if level <= report_till_level:
+                print '[%s] %2s %s' % (timestamp(), level, format_bbox(cur_bbox))
+                sys.stdout.flush()
             if level < max_level:
                 for i, subtile in enumerate(subtiles):
                     if subtile is None: continue
                     sub_bbox = grid.tile_bbox(subtile)
                     if bbox_intersects(sub_bbox, bbox):
-                        seed_id = id + (status[i] if i <=3 else 'x')
+                        seed_id = id + (status[i] if i <=3 else str(i))
                         _seed(sub_bbox, level+1, max_level, seed_id)
             # print id #, level, tiles, cur_bbox
             seed_pool.seed(id, subtiles)
@@ -115,10 +131,6 @@ class TileSeeder(object):
         
         seed_pool.stop()
     
-    def _seed_tiles(self, cache, tiles):
-        if not self.dry_run:
-            cache.cache_mgr.load_tile_coords(tiles)
-       
     def cleanup(self):
         for cache in self.caches:
             for i in range(cache.grid.levels):
@@ -132,7 +144,12 @@ class TileSeeder(object):
                 cleanup_directory(level_dir, self.remove_before,
                     file_handler=file_handler)
             
-    
+def timestamp():
+    return datetime.datetime.now().strftime('%H:%M:%S')
+
+def format_bbox(bbox):
+    return ('(%.5f, %.5f, %.5f, %.5f)') % bbox
+
 def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=False):
     from mapproxy.core.conf_loader import load_services
     
