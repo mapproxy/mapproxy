@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from nose.tools import eq_, assert_almost_equals
-from mapproxy.core.grid import MetaGrid, TileGrid, _create_tile_list
+from mapproxy.core.grid import MetaGrid, TileGrid, _create_tile_list, bbox_intersects
 from mapproxy.core.srs import SRS, TransformationError
 
 def test_metagrid_bbox():
@@ -132,6 +132,15 @@ class TestWGS84TileGrid(object):
         eq_(grid, (2, 1))
         eq_(list(tiles), [(0, 0, 1), (1, 0, 1)])
     
+    def test_affected_level_tiles(self):
+        bbox, grid, tiles = self.grid.get_affected_level_tiles((-180,-90,180,90), 1)
+        eq_(grid, (2, 1))
+        eq_(bbox, (-180.0, -90.0, 180.0, 90.0))
+        eq_(list(tiles), [(0, 0, 1), (1, 0, 1)])
+        bbox, grid, tiles = self.grid.get_affected_level_tiles((0,0,180,90), 2)
+        eq_(grid, (2, 1))
+        eq_(bbox, (0.0, 0.0, 180.0, 90.0))
+        eq_(list(tiles), [(2, 1, 2), (3, 1, 2)])
 
 class TestGKTileGrid(TileGridTest):
     def setup(self):
@@ -324,6 +333,46 @@ class TestCreateTileList(object):
                 else:
                     yield x, y, level
 
+
+class TestBBOXIntersects(object):
+    def test_no_intersect(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (20, 20, 30, 30)
+        assert not bbox_intersects(b1, b2)
+        assert not bbox_intersects(b2, b1)
+
+    def test_no_intersect_only_vertical(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (20, 0, 30, 10)
+        assert not bbox_intersects(b1, b2)
+        assert not bbox_intersects(b2, b1)
+
+    def test_no_intersect_touch_point(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (10, 10, 20, 20)
+        assert not bbox_intersects(b1, b2)
+        assert not bbox_intersects(b2, b1)
+
+    def test_no_intersect_touch_side(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (0, 10, 10, 20)
+        assert not bbox_intersects(b1, b2)
+        assert not bbox_intersects(b2, b1)
+
+    def test_full_contains(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (2, 2, 8, 8)
+        assert bbox_intersects(b1, b2)
+        assert bbox_intersects(b2, b1)
+
+    def test_overlap(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (-5, -5, 5, 5)
+        assert bbox_intersects(b1, b2)
+        assert bbox_intersects(b2, b1)
+
+
 def assert_almost_equal_bbox(bbox1, bbox2, places=2):
     for coord1, coord2 in zip(bbox1, bbox2):
         assert_almost_equals(coord1, coord2, places)
+

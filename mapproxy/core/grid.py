@@ -242,16 +242,32 @@ class TileGrid(object):
         
         res = get_resolution(src_bbox, size)
         level = self.closest_level(res)
+        return self.get_affected_level_tiles(src_bbox, level, inverse=inverse)
+    
+    def get_affected_level_tiles(self, bbox, level, inverse=False):
+        """
+        Get a list with all affected tiles for a `bbox` in the given `level`.
+        
+        :returns: the bbox, the size and a list with tile coordinates, sorted row-wise
+        :rtype: ``bbox, (xs, yz), [(x, y, z), ...]``
+        
+        >>> grid = TileGrid()
+        >>> bbox = (-20037508.34, -20037508.34, 20037508.34, 20037508.34)
+        >>> grid.get_affected_level_tiles(bbox, 0)
+        ... #doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+        ((-20037508.342789244, -20037508.342789244,\
+          20037508.342789244, 20037508.342789244), (1, 1),\
+          <generator object ...>)
+        """
+        
         # remove 1/10 of a pixel so we don't get a tiles we only touch
-        x_delta = (src_bbox[2]-src_bbox[0]) / size[0] / 10.0
-        y_delta = (src_bbox[3]-src_bbox[1]) / size[1] / 10.0
-        x0, y0, _ = self.tile(src_bbox[0]+x_delta, src_bbox[1]+y_delta, level)
-        x1, y1, _ = self.tile(src_bbox[2]-x_delta, src_bbox[3]-y_delta, level)
+        delta = self.resolutions[level] / 10.0
+        x0, y0, _ = self.tile(bbox[0]+delta, bbox[1]+delta, level)
+        x1, y1, _ = self.tile(bbox[2]-delta, bbox[3]-delta, level)
         
-        log.debug('BBOX: ' + str(src_bbox))
-        log.debug('coords: %f, %f, %f, %f' % (x0, y0, x1, y1))
-        log.debug('res: ' + str(res))
+        return self._tile_iter(x0, y0, x1, y1, level, inverse=inverse)
         
+    def _tile_iter(self, x0, y0, x1, y1, level, inverse=False):
         xs = range(x0, x1+1)
         if inverse:
             y0 = int(self.grid_sizes[level][1]) - 1 - y0
@@ -267,7 +283,7 @@ class TileGrid(object):
         abbox = self._get_bbox([ll, ur])
         return (abbox, (len(xs), len(ys)),
                 _create_tile_list(xs, ys, level, self.grid_sizes[level]))
-    
+        
     def _get_bbox(self, tiles):
         """
         Returns the bbox of multiple tiles.
@@ -491,3 +507,16 @@ class MetaGrid(object):
         grid_size = self.grid.grid_sizes[level]
         return min(self._meta_size[0], grid_size[0]), min(self._meta_size[1], grid_size[1])
 
+
+def bbox_intersects(one, two):
+    a_x0, a_y0, a_x1, a_y1 = one
+    b_x0, b_y0, b_x1, b_y1 = two
+    
+    if (
+        a_x0 < b_x1 and
+        a_x1 > b_x0 and
+        a_y0 < b_y1 and
+        a_y1 > b_y0
+        ): return True
+    
+    return False

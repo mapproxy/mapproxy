@@ -112,8 +112,11 @@ class Cache(object):
         :param out_size: the target output size
         :rtype: `ImageSource`
         """
-        src_bbox, tile_grid, affected_tile_coords = \
-            self.grid.get_affected_tiles(req_bbox, out_size, req_srs=req_srs)
+        try:
+            src_bbox, tile_grid, affected_tile_coords = \
+                self.grid.get_affected_tiles(req_bbox, out_size, req_srs=req_srs)
+        except IndexError:
+            raise TileCacheError('Invalid BBOX')
         
         num_tiles = tile_grid[0] * tile_grid[1]
         if num_tiles >= base_config().cache.max_tile_limit:

@@ -244,7 +244,7 @@ class TestWMS111(WMSTest):
         # broken bbox for the requested srs
         url =  """/service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&BBOX=-72988843.697212,-255661507.634227,142741550.188860,255661507.634227&SRS=EPSG:25833&WIDTH=164&HEIGHT=388&LAYERS=wms_cache&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""
         resp = self.app.get(url)
-        is_111_exception(resp.lxml, 'Request too large or invalid BBOX.')
+        is_111_exception(resp.lxml, 'Invalid BBOX')
     
     def test_get_map_broken_bbox(self):
         url = """/service?VERSION=1.1.11&REQUEST=GetMap&SRS=EPSG:31467&BBOX=-10000855.0573254,2847125.18913603,-9329367.42767611,4239924.78564583&WIDTH=130&HEIGHT=62&LAYERS=wms_cache&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""
