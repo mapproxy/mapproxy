@@ -5,12 +5,19 @@ import time
 import yaml
 import datetime
 import multiprocessing
+from functools import partial
+
 from mapproxy.core.srs import SRS
 from mapproxy.core import seed
 from mapproxy.core.grid import MetaGrid, bbox_intersects, bbox_contains
 from mapproxy.core.cache import TileSourceError
 from mapproxy.core.utils import cleanup_directory
 from mapproxy.core.config import base_config, load_base_config
+
+
+from shapely.prepared import prep
+from shapely.geometry import MultiPolygon, LineString, Polygon
+
 
 """
 >>> g = grid.TileGrid()
@@ -39,7 +46,7 @@ def exp_backoff(func, max_repeat=10, start_backoff_sec=2,
 
 class SeedPool(object):
     def __init__(self, cache, size=2, dry_run=False):
-        self.tiles_queue = multiprocessing.Queue(16)
+        self.tiles_queue = multiprocessing.Queue(32)
         self.cache = cache
         self.dry_run = dry_run
         self.procs = []
@@ -92,17 +99,21 @@ class TileSeeder(object):
             else:
                 self.caches.append(layer.cache)
     
-    def seed_location(self, bbox, level, srs, cache_srs):
+    def seed_location(self, bbox, level, srs, cache_srs, geom=None):
         for cache in self.caches:
             if not cache_srs or cache.grid.srs in cache_srs:
-                self._seed_location(cache, bbox, level=level, srs=srs)
+                self._seed_location(cache, bbox, level=level, srs=srs, geom=geom)
     
-    def _seed_location(self, cache, bbox, level, srs):
-        print bbox
+    def _seed_location(self, cache, bbox, level, srs, geom):
         if cache.grid.srs != srs:
-            bbox = srs.transform_bbox_to(cache.grid.srs, bbox)
-        print bbox
-        print cache
+            if geom is not None:
+                geom = transform_geometry(srs, cache.grid.srs, geom)
+                bbox = geom.bounds
+            else:
+                bbox = srs.transform_bbox_to(cache.grid.srs, bbox)
+            
+        start_level, max_level = level[0], level[1]
+        
         if self.remove_before:
             cache.cache_mgr.expire_timestamp = lambda tile: self.remove_before
         
@@ -110,15 +121,35 @@ class TileSeeder(object):
         
         num_seed_levels = level[1] - level[0] + 1
         report_till_level = level[0] + int(num_seed_levels * 0.7)
-        print level, num_seed_levels, report_till_level
         grid = MetaGrid(cache.grid, meta_size=base_config().cache.meta_size)
         
-        def intersects(sub_bbox):
-            if bbox_contains(bbox, sub_bbox): return -1
-            if bbox_intersects(bbox, sub_bbox): return 1
-            return 0
+        # create intersects function
+        # should return: 0 for no intersection, 1 for intersection,
+        # -1 for full contains of the sub_bbox
+        if geom is not None:
+            prep_geom = prep(geom)
+            def intersects(sub_bbox):
+                bbox_poly = Polygon((
+                    (sub_bbox[0], sub_bbox[1]),
+                    (sub_bbox[2], sub_bbox[1]),
+                    (sub_bbox[2], sub_bbox[3]),
+                    (sub_bbox[0], sub_bbox[3]),
+                    ))
+                if prep_geom.contains(bbox_poly): return -1
+                if prep_geom.intersects(bbox_poly): return 1
+                return 0
+        else:
+            def intersects(sub_bbox):
+                if bbox_contains(bbox, sub_bbox): return -1
+                if bbox_intersects(bbox, sub_bbox): return 1
+                return 0
         
-        def _seed(cur_bbox, level, max_level, id='', full_intersect=False):
+        def _seed(cur_bbox, level, id='', full_intersect=False):
+            """
+            :param cur_bbox: the bbox to seed in this call
+            :param level: the current seed level
+            :param full_intersect: do not check for intersections with bbox if True
+            """
             bbox_, tiles_, subtiles = grid.get_affected_level_tiles(cur_bbox, level)
             subtiles = list(subtiles)
             if level <= report_till_level:
@@ -139,11 +170,10 @@ class TileSeeder(object):
                     for i, (sub_bbox, intersection) in enumerate(sub_seeds):
                         seed_id = id + status_symbol(i, total_sub_seeds)
                         full_intersect = True if intersection == -1 else False
-                        _seed(sub_bbox, level+1, max_level, seed_id,
+                        _seed(sub_bbox, level+1, seed_id,
                               full_intersect=full_intersect)
-            # print id #, level, tiles, cur_bbox
             seed_pool.seed(id, subtiles)
-        _seed(bbox, level[0], level[1])
+        _seed(bbox, start_level)
         
         seed_pool.stop()
     
@@ -212,6 +242,10 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
             view_conf = seed_conf['views'][view]
             srs = view_conf.get('bbox_srs', None)
             bbox = view_conf['bbox']
+            geom = None
+            if isinstance(bbox, basestring):
+                bbox, geom = load_geom(bbox)
+            
             cache_srs = view_conf.get('srs', None)
             if cache_srs is not None:
                 cache_srs = [SRS(s) for s in cache_srs]
@@ -219,10 +253,45 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
                 srs = SRS(srs)
             level = view_conf.get('level', None)
             seeder.seed_location(bbox, level=level, srs=srs, 
-                                     cache_srs=cache_srs)
+                                     cache_srs=cache_srs, geom=geom)
         
         if remove_before:
             seeder.cleanup()
+
+def load_geom(geom_file):
+    from shapely import wkt
+    from shapely.geometry import MultiPolygon
+    polygons = []
+    with open(geom_file) as f:
+        for line in f:
+            polygons.append(wkt.loads(line))
+    
+    mp = MultiPolygon(polygons)
+    return mp.bounds, mp
+
+def transform_geometry(from_srs, to_srs, geometry):
+    transf = partial(transform_xy, from_srs, to_srs)
+    
+    if geometry.type == 'Polygon':
+        return transform_polygon(transf, geometry)
+    
+    if geometry.type == 'MultiPolygon':
+        return transform_multipolygon(transf, geometry)
+
+def transform_polygon(transf, polygon):
+    ext = transf(polygon.exterior.xy)
+    ints = [transf(ring.xy) for ring in polygon.interiors]
+    return Polygon(ext, ints)
+
+def transform_multipolygon(transf, multipolygon):
+    transformed_polygons = []
+    for polygon in multipolygon:
+        transformed_polygons.append(transform_polygon(transf, polygon))
+    return MultiPolygon(transformed_polygons)
+
+
+def transform_xy(from_srs, to_srs, xy):
+    return list(from_srs.transform_to(to_srs, zip(*xy)))
 
 import signal
 
