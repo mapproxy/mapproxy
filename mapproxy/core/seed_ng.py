@@ -7,9 +7,10 @@ import datetime
 import multiprocessing
 from mapproxy.core.srs import SRS
 from mapproxy.core import seed
-from mapproxy.core.grid import bbox_intersects, bbox_contains
+from mapproxy.core.grid import MetaGrid, bbox_intersects, bbox_contains
 from mapproxy.core.cache import TileSourceError
 from mapproxy.core.utils import cleanup_directory
+from mapproxy.core.config import base_config, load_base_config
 
 """
 >>> g = grid.TileGrid()
@@ -37,7 +38,7 @@ def exp_backoff(func, max_repeat=10, start_backoff_sec=2,
             return result
 
 class SeedPool(object):
-    def __init__(self, cache, size=8, dry_run=False):
+    def __init__(self, cache, size=2, dry_run=False):
         self.tiles_queue = multiprocessing.Queue(16)
         self.cache = cache
         self.dry_run = dry_run
@@ -110,7 +111,7 @@ class TileSeeder(object):
         num_seed_levels = level[1] - level[0] + 1
         report_till_level = level[0] + int(num_seed_levels * 0.7)
         print level, num_seed_levels, report_till_level
-        grid = cache.grid
+        grid = MetaGrid(cache.grid, meta_size=base_config().cache.meta_size)
         
         def intersects(sub_bbox):
             if bbox_contains(bbox, sub_bbox): return -1
@@ -128,7 +129,7 @@ class TileSeeder(object):
                 sub_seeds = []
                 for subtile in subtiles:
                     if subtile is None: continue
-                    sub_bbox = grid.tile_bbox(subtile)
+                    sub_bbox = grid.meta_bbox(subtile)
                     intersection = -1 if full_intersect else intersects(sub_bbox)
                     if intersection:
                         sub_seeds.append((sub_bbox, intersection))
@@ -227,12 +228,10 @@ import signal
 
 def load_config(conf_file=None):
     if conf_file is not None:
-        from mapproxy.core.config import load_base_config
         load_base_config(conf_file)
 
 def set_service_config(conf_file=None):
     if conf_file is not None:
-        from mapproxy.core.config import base_config
         base_config().services_conf = conf_file
 
 def stop_processing(_signal, _frame):

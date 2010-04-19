@@ -84,6 +84,63 @@ def test_metagrid_tiles_geodetic():
     assert mgrid.tile_size(1) == (532, 276)
     assert mgrid.meta_bbox((0, 0, 1)) == (-187.03125, -97.03125, 187.03125, 97.03125)
 
+
+class TestMetaGridLevelMetaTiles(object):
+    def __init__(self):
+        self.meta_grid = MetaGrid(TileGrid(), meta_size=(2, 2))
+    
+    def test_full_grid_0(self):
+        bbox = (-20037508.34, -20037508.34, 20037508.34, 20037508.34)
+        abbox, tile_grid, meta_tiles = \
+            self.meta_grid.get_affected_level_tiles(bbox, 0)
+        meta_tiles = list(meta_tiles)
+        assert_almost_equal_bbox(bbox, abbox)
+        
+        eq_(len(meta_tiles), 1)
+        eq_(meta_tiles[0], (0, 0, 0))
+    
+    def test_full_grid_2(self):
+        bbox = (-20037508.34, -20037508.34, 20037508.34, 20037508.34)
+        abbox, tile_grid, meta_tiles = \
+            self.meta_grid.get_affected_level_tiles(bbox, 2)
+        meta_tiles = list(meta_tiles)
+        assert_almost_equal_bbox(bbox, abbox)
+        
+        eq_(tile_grid, (2, 2))
+        eq_(len(meta_tiles), 4)
+        eq_(meta_tiles[0], (0, 2, 2))
+        eq_(meta_tiles[1], (2, 2, 2))
+        eq_(meta_tiles[2], (0, 0, 2))
+        eq_(meta_tiles[3], (2, 0, 2))
+        
+class TestMetaGridLevelMetaTilesGeodetic(object):
+    def __init__(self):
+        self.meta_grid = MetaGrid(TileGrid(is_geodetic=True), meta_size=(2, 2))
+    
+    def test_full_grid_2(self):
+        bbox = (-180.0, -90.0, 180.0, 90)
+        abbox, tile_grid, meta_tiles = \
+            self.meta_grid.get_affected_level_tiles(bbox, 2)
+        meta_tiles = list(meta_tiles)
+        assert_almost_equal_bbox(bbox, abbox)
+        
+        eq_(tile_grid, (2, 1))
+        eq_(len(meta_tiles), 2)
+        eq_(meta_tiles[0], (0, 0, 2))
+        eq_(meta_tiles[1], (2, 0, 2))
+
+    def test_partial_grid_3(self):
+        bbox = (0.0, 5.0, 45, 40)
+        abbox, tile_grid, meta_tiles = \
+            self.meta_grid.get_affected_level_tiles(bbox, 3)
+        meta_tiles = list(meta_tiles)
+        assert_almost_equal_bbox((0.0, 0.0, 90.0, 90.0), abbox)
+        
+        eq_(tile_grid, (1, 1))
+        eq_(len(meta_tiles), 1)
+        eq_(meta_tiles[0], (4, 2, 3))
+        
+
 class TileGridTest(object):
     def check_grid(self, level, grid_size):
         print self.grid.grid_sizes[level], "==", grid_size
