@@ -25,6 +25,10 @@ else:
     shapely_present = True
 
 
+NONE = 0
+CONTAINS = -1
+INTERSECTS = 1
+
 """
 >>> g = grid.TileGrid()
 >>> seed_bbox = (-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428)
@@ -34,6 +38,9 @@ else:
 """
 
 class SeedPool(object):
+    """
+    Manages multiple SeedWorker.
+    """
     def __init__(self, cache, size=2, dry_run=False):
         self.tiles_queue = multiprocessing.Queue(32)
         self.cache = cache
@@ -53,7 +60,7 @@ class SeedPool(object):
         
         for proc in self.procs:
             proc.join()
-    
+
 class SeedWorker(multiprocessing.Process):
     def __init__(self, cache, tiles_queue, dry_run=False):
         multiprocessing.Process.__init__(self)
@@ -69,92 +76,79 @@ class SeedWorker(multiprocessing.Process):
             sys.stdout.flush()
             if not self.dry_run:
                 load_tiles = lambda: self.cache.cache_mgr.load_tile_coords(tiles)
-                exp_backoff(load_tiles, exceptions=(TileSourceError, IOError))
+                seed.exp_backoff(load_tiles, exceptions=(TileSourceError, IOError))
 
-class TileSeeder(object):
+class Seeder(object):
+    def __init__(self, cache, task, seed_pool):
+        self.cache = cache
+        self.task = task
+        self.seed_pool = seed_pool
+        
+        num_seed_levels = task.max_level - task.start_level + 1
+        self.report_till_level = task.start_level + int(num_seed_levels * 0.7)
+        self.grid = MetaGrid(cache.grid, meta_size=base_config().cache.meta_size)
+    
+    def seed(self):
+        self._seed(self.task.bbox, self.task.start_level)
+            
+    def _seed(self, cur_bbox, level, progess_str='', all_subtiles=False):
+        """
+        :param cur_bbox: the bbox to seed in this call
+        :param level: the current seed level
+        :param all_subtiles: seed all subtiles and do not check for
+                             intersections with bbox/geom
+        """
+        bbox_, tiles_, subtiles = self.grid.get_affected_level_tiles(cur_bbox, level)
+        subtiles = list(subtiles)
+        if level <= self.report_till_level:
+            print '[%s] %2s %s' % (timestamp(), level, format_bbox(cur_bbox))
+            sys.stdout.flush()
+        
+        if level < self.task.max_level:
+            sub_seeds = self._sub_seeds(subtiles, all_subtiles)
+            if sub_seeds:
+                total_sub_seeds = len(sub_seeds)
+                for i, (sub_bbox, intersection) in enumerate(sub_seeds):
+                    cur_progess_str = progess_str + status_symbol(i, total_sub_seeds)
+                    all_subtiles = True if intersection == CONTAINS else False
+                    self._seed(sub_bbox, level+1, cur_progess_str,
+                               all_subtiles=all_subtiles)
+        self.seed_pool.seed(progess_str, subtiles)
+
+    def _sub_seeds(self, subtiles, all_subtiles):
+        """
+        Return all sub tiles that intersect the 
+        """
+        sub_seeds = []
+        for subtile in subtiles:
+            if subtile is None: continue
+            sub_bbox = self.grid.meta_bbox(subtile)
+            intersection = CONTAINS if all_subtiles else self.task.intersects(sub_bbox)
+            if intersection:
+                sub_seeds.append((sub_bbox, intersection))
+        return sub_seeds
+
+
+class CacheSeeder(object):
+    """
+    Seed multiple caches with the same option set.
+    """
     def __init__(self, caches, remove_before, progress_meter, dry_run=False):
         self.remove_before = remove_before
         self.progress = progress_meter
         self.dry_run = dry_run
         self.caches = caches
     
-    def seed_location(self, bbox, level, srs, cache_srs, geom=None):
+    def seed_view(self, bbox, level, srs, cache_srs, geom=None):
         for cache in self.caches:
             if not cache_srs or cache.grid.srs in cache_srs:
-                self._seed_location(cache, bbox, level=level, srs=srs, geom=geom)
-    
-    def _seed_location(self, cache, bbox, level, srs, geom):
-        if cache.grid.srs != srs:
-            if geom is not None:
-                geom = transform_geometry(srs, cache.grid.srs, geom)
-                bbox = geom.bounds
-            else:
-                bbox = srs.transform_bbox_to(cache.grid.srs, bbox)
-            
-        start_level, max_level = level[0], level[1]
-        
-        if self.remove_before:
-            cache.cache_mgr.expire_timestamp = lambda tile: self.remove_before
-        
-        seed_pool = SeedPool(cache, dry_run=self.dry_run)
-        
-        num_seed_levels = level[1] - level[0] + 1
-        report_till_level = level[0] + int(num_seed_levels * 0.7)
-        grid = MetaGrid(cache.grid, meta_size=base_config().cache.meta_size)
-        
-        # create intersects function
-        # should return: 0 for no intersection, 1 for intersection,
-        # -1 for full contains of the sub_bbox
-        if geom is not None:
-            prep_geom = shapely.prepared.prep(geom)
-            def intersects(sub_bbox):
-                bbox_poly = shapely.geometry.Polygon((
-                    (sub_bbox[0], sub_bbox[1]),
-                    (sub_bbox[2], sub_bbox[1]),
-                    (sub_bbox[2], sub_bbox[3]),
-                    (sub_bbox[0], sub_bbox[3]),
-                    ))
-                if prep_geom.contains(bbox_poly): return -1
-                if prep_geom.intersects(bbox_poly): return 1
-                return 0
-        else:
-            def intersects(sub_bbox):
-                if bbox_contains(bbox, sub_bbox): return -1
-                if bbox_intersects(bbox, sub_bbox): return 1
-                return 0
-        
-        def _seed(cur_bbox, level, id='', full_intersect=False):
-            """
-            :param cur_bbox: the bbox to seed in this call
-            :param level: the current seed level
-            :param full_intersect: do not check for intersections with bbox if True
-            """
-            bbox_, tiles_, subtiles = grid.get_affected_level_tiles(cur_bbox, level)
-            subtiles = list(subtiles)
-            if level <= report_till_level:
-                print '[%s] %2s %s full:%r' % (timestamp(), level, format_bbox(cur_bbox),
-                                               full_intersect)
-                sys.stdout.flush()
-            if level < max_level:
-                sub_seeds = []
-                for subtile in subtiles:
-                    if subtile is None: continue
-                    sub_bbox = grid.meta_bbox(subtile)
-                    intersection = -1 if full_intersect else intersects(sub_bbox)
-                    if intersection:
-                        sub_seeds.append((sub_bbox, intersection))
-                
-                if sub_seeds:
-                    total_sub_seeds = len(sub_seeds)
-                    for i, (sub_bbox, intersection) in enumerate(sub_seeds):
-                        seed_id = id + status_symbol(i, total_sub_seeds)
-                        full_intersect = True if intersection == -1 else False
-                        _seed(sub_bbox, level+1, seed_id,
-                              full_intersect=full_intersect)
-            seed_pool.seed(id, subtiles)
-        _seed(bbox, start_level)
-        
-        seed_pool.stop()
+                if self.remove_before:
+                    cache.cache_mgr.expire_timestamp = lambda tile: self.remove_before
+                seed_pool = SeedPool(cache, dry_run=self.dry_run)
+                seed_task = SeedTask(bbox, level, srs, cache.grid.srs, geom)
+                seeder = Seeder(cache, seed_task, seed_pool)
+                seeder.seed()
+                seed_pool.stop()
     
     def cleanup(self):
         for cache in self.caches:
@@ -168,7 +162,48 @@ class TileSeeder(object):
                 self.progress.print_msg('removing oldfiles in ' + level_dir)
                 cleanup_directory(level_dir, self.remove_before,
                     file_handler=file_handler)
-            
+
+class SeedTask(object):
+    def __init__(self, bbox, level, bbox_srs, seed_srs, geom=None):
+        self.start_level = level[0]
+        self.max_level = level[1]
+        self.bbox_srs = bbox_srs
+        self.seed_srs = seed_srs
+    
+        if bbox_srs != seed_srs:
+            if geom is not None:
+                geom = transform_geometry(bbox_srs, seed_srs, geom)
+                bbox = geom.bounds
+                geom = shapely.prepared.prep(geom)
+            else:
+                bbox = bbox_srs.transform_bbox_to(seed_srs, bbox)
+        
+        self.bbox = bbox
+        self.geom = geom
+        
+        if geom is None:
+            self.intersects = self._geom_intersects
+        else:
+            self.intersects = self._bbox_intersects
+    
+
+    def _geom_intersects(self, bbox):
+        bbox_poly = shapely.geometry.Polygon((
+            (bbox[0], bbox[1]),
+            (bbox[2], bbox[1]),
+            (bbox[2], bbox[3]),
+            (bbox[0], bbox[3]),
+            ))
+        if self.geom.contains(bbox_poly): return CONTAINS
+        if self.geom.intersects(bbox_poly): return INTERSECTS
+        return NONE
+    
+    def _bbox_intersects(self, bbox):
+        if bbox_contains(self.bbox, bbox): return CONTAINS
+        if bbox_intersects(self.bbox, bbox): return INTERSECTS
+        return NONE
+
+
 def timestamp():
     return datetime.datetime.now().strftime('%H:%M:%S')
 
@@ -216,7 +251,7 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
     for layer, options in seed_conf['seeds'].iteritems():
         remove_before = seed.before_timestamp_from_options(options)
         caches = caches_from_layer(server.layers[layer])
-        seeder = TileSeeder(caches, remove_before=remove_before,
+        seeder = CacheSeeder(caches, remove_before=remove_before,
                             progress_meter=progress_meter(), dry_run=dry_run)
         for view in options['views']:
             view_conf = seed_conf['views'][view]
@@ -235,8 +270,9 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
             if srs is not None:
                 srs = SRS(srs)
             level = view_conf.get('level', None)
-            seeder.seed_location(bbox, level=level, srs=srs, 
-                                     cache_srs=cache_srs, geom=geom)
+            assert len(level) == 2
+            seeder.seed_view(bbox, level=level, srs=srs, 
+                             cache_srs=cache_srs, geom=geom)
         
         if remove_before:
             seeder.cleanup()
@@ -288,8 +324,6 @@ def transform_multipolygon(transf, multipolygon):
 
 def transform_xy(from_srs, to_srs, xy):
     return list(from_srs.transform_to(to_srs, zip(*xy)))
-
-import signal
 
 def load_config(conf_file=None):
     if conf_file is not None:
