@@ -15,7 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from nose.tools import eq_, assert_almost_equals
-from mapproxy.core.grid import MetaGrid, TileGrid, _create_tile_list, bbox_intersects
+from mapproxy.core.grid import (
+    MetaGrid,
+    TileGrid,
+    _create_tile_list,
+    bbox_intersects,
+    bbox_contains,
+)
 from mapproxy.core.srs import SRS, TransformationError
 
 def test_metagrid_bbox():
@@ -371,6 +377,43 @@ class TestBBOXIntersects(object):
         assert bbox_intersects(b1, b2)
         assert bbox_intersects(b2, b1)
 
+
+class TestBBOXContains(object):
+    def test_no_intersect(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (20, 20, 30, 30)
+        assert not bbox_contains(b1, b2)
+        assert not bbox_contains(b2, b1)
+
+    def test_no_intersect_only_vertical(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (20, 0, 30, 10)
+        assert not bbox_contains(b1, b2)
+        assert not bbox_contains(b2, b1)
+
+    def test_no_intersect_touch_point(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (10, 10, 20, 20)
+        assert not bbox_contains(b1, b2)
+        assert not bbox_contains(b2, b1)
+
+    def test_no_intersect_touch_side(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (0, 10, 10, 20)
+        assert not bbox_contains(b1, b2)
+        assert not bbox_contains(b2, b1)
+
+    def test_full_contains(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (2, 2, 8, 8)
+        assert bbox_contains(b1, b2)
+        assert not bbox_contains(b2, b1)
+
+    def test_overlap(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (-5, -5, 5, 5)
+        assert not bbox_contains(b1, b2)
+        assert not bbox_contains(b2, b1)
 
 def assert_almost_equal_bbox(bbox1, bbox2, places=2):
     for coord1, coord2 in zip(bbox1, bbox2):

@@ -520,3 +520,16 @@ def bbox_intersects(one, two):
         ): return True
     
     return False
+
+def bbox_contains(one, two):
+    a_x0, a_y0, a_x1, a_y1 = one
+    b_x0, b_y0, b_x1, b_y1 = two
+    
+    if (
+        a_x0 < b_x0 and
+        a_x1 > b_x1 and
+        a_y0 < b_y0 and
+        a_y1 > b_y1
+        ): return True
+    
+    return False

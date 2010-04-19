@@ -7,7 +7,7 @@ import datetime
 import multiprocessing
 from mapproxy.core.srs import SRS
 from mapproxy.core import seed
-from mapproxy.core.grid import bbox_intersects
+from mapproxy.core.grid import bbox_intersects, bbox_contains
 from mapproxy.core.cache import TileSourceError
 from mapproxy.core.utils import cleanup_directory
 
@@ -70,7 +70,6 @@ class SeedWorker(multiprocessing.Process):
                 return
             print '[%s] %s\r' % (timestamp(), seed_id), #, tiles
             sys.stdout.flush()
-            time.sleep(0.1)
             if not self.dry_run:
                 load_tiles = lambda: self.cache.cache_mgr.load_tile_coords(tiles)
                 exp_backoff(load_tiles, exceptions=(TileSourceError, IOError))
@@ -113,25 +112,34 @@ class TileSeeder(object):
         print level, num_seed_levels, report_till_level
         grid = cache.grid
         
-        def _seed(cur_bbox, level, max_level, id=''):
+        def intersects(sub_bbox):
+            if bbox_contains(bbox, sub_bbox): return -1
+            if bbox_intersects(bbox, sub_bbox): return 1
+            return 0
+        
+        def _seed(cur_bbox, level, max_level, id='', full_intersect=False):
             bbox_, tiles_, subtiles = grid.get_affected_level_tiles(cur_bbox, level)
             subtiles = list(subtiles)
             if level <= report_till_level:
-                print '[%s] %2s %s' % (timestamp(), level, format_bbox(cur_bbox))
+                print '[%s] %2s %s full:%r' % (timestamp(), level, format_bbox(cur_bbox),
+                                               full_intersect)
                 sys.stdout.flush()
             if level < max_level:
                 sub_seeds = []
                 for subtile in subtiles:
                     if subtile is None: continue
                     sub_bbox = grid.tile_bbox(subtile)
-                    if bbox_intersects(sub_bbox, bbox):
-                        sub_seeds.append(sub_bbox)
+                    intersection = -1 if full_intersect else intersects(sub_bbox)
+                    if intersection:
+                        sub_seeds.append((sub_bbox, intersection))
                 
                 if sub_seeds:
                     total_sub_seeds = len(sub_seeds)
-                    for i, sub_bbox in enumerate(sub_seeds):
+                    for i, (sub_bbox, intersection) in enumerate(sub_seeds):
                         seed_id = id + status_symbol(i, total_sub_seeds)
-                        _seed(sub_bbox, level+1, max_level, seed_id)
+                        full_intersect = True if intersection == -1 else False
+                        _seed(sub_bbox, level+1, max_level, seed_id,
+                              full_intersect=full_intersect)
             # print id #, level, tiles, cur_bbox
             seed_pool.seed(id, subtiles)
         _seed(bbox, level[0], level[1])
