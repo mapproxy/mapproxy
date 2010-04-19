@@ -393,7 +393,10 @@ class FileCache(object):
                 log.debug('linking %r from %s to %s',
                           tile.coord, real_tile_loc, tile_loc)
                 
-                if os.path.islink(tile_loc):
+                # remove any file before symlinking.
+                # exists() returns False if it links to non-
+                # existing file, islink() test to check that
+                if os.path.exists(tile_loc) or os.path.islink(tile_loc):
                     os.unlink(tile_loc)
                 
                 os.symlink(real_tile_loc, tile_loc)
