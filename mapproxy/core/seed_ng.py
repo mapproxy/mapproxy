@@ -15,8 +15,14 @@ from mapproxy.core.utils import cleanup_directory
 from mapproxy.core.config import base_config, load_base_config
 
 
-from shapely.prepared import prep
-from shapely.geometry import MultiPolygon, LineString, Polygon
+try:
+    import shapely.wkt
+    import shapely.prepared 
+    import shapely.geometry
+except ImportError:
+    shapely_present = False
+else:
+    shapely_present = True
 
 
 """
@@ -26,23 +32,6 @@ from shapely.geometry import MultiPolygon, LineString, Polygon
 >>> seed(g, seed_bbox, seed_level)
 
 """
-
-def exp_backoff(func, max_repeat=10, start_backoff_sec=2, 
-        exceptions=(Exception,)):
-    n = 0
-    while True:
-        try:
-            result = func()
-        except exceptions, ex:
-            if (n+1) >= max_repeat:
-                raise
-            wait_for = start_backoff_sec * 2**n
-            print >>sys.stderr, ("An error occured. Retry in %d seconds: %r" % 
-                (wait_for, ex))
-            time.sleep(wait_for)
-            n += 1
-        else:
-            return result
 
 class SeedPool(object):
     def __init__(self, cache, size=2, dry_run=False):
@@ -83,21 +72,11 @@ class SeedWorker(multiprocessing.Process):
                 exp_backoff(load_tiles, exceptions=(TileSourceError, IOError))
 
 class TileSeeder(object):
-    def __init__(self, vlayer, remove_before, progress_meter, dry_run=False):
+    def __init__(self, caches, remove_before, progress_meter, dry_run=False):
         self.remove_before = remove_before
         self.progress = progress_meter
         self.dry_run = dry_run
-        self.caches = []
-        if hasattr(vlayer, 'layers'): # MultiLayer
-            vlayer = vlayer.layers
-        else:
-            vlayer = [vlayer]
-        for layer in vlayer:
-            if hasattr(layer, 'sources'): # VLayer
-                self.caches.extend([source.cache for source in layer.sources
-                                    if hasattr(source, 'cache')])
-            else:
-                self.caches.append(layer.cache)
+        self.caches = caches
     
     def seed_location(self, bbox, level, srs, cache_srs, geom=None):
         for cache in self.caches:
@@ -127,9 +106,9 @@ class TileSeeder(object):
         # should return: 0 for no intersection, 1 for intersection,
         # -1 for full contains of the sub_bbox
         if geom is not None:
-            prep_geom = prep(geom)
+            prep_geom = shapely.prepared.prep(geom)
             def intersects(sub_bbox):
-                bbox_poly = Polygon((
+                bbox_poly = shapely.geometry.Polygon((
                     (sub_bbox[0], sub_bbox[1]),
                     (sub_bbox[2], sub_bbox[1]),
                     (sub_bbox[2], sub_bbox[3]),
@@ -236,7 +215,8 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
         return
     for layer, options in seed_conf['seeds'].iteritems():
         remove_before = seed.before_timestamp_from_options(options)
-        seeder = TileSeeder(server.layers[layer], remove_before=remove_before,
+        caches = caches_from_layer(server.layers[layer])
+        seeder = TileSeeder(caches, remove_before=remove_before,
                             progress_meter=progress_meter(), dry_run=dry_run)
         for view in options['views']:
             view_conf = seed_conf['views'][view]
@@ -244,6 +224,9 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
             bbox = view_conf['bbox']
             geom = None
             if isinstance(bbox, basestring):
+                if not shapely_present:
+                    print 'need shapely to support polygon seed areas'
+                    return
                 bbox, geom = load_geom(bbox)
             
             cache_srs = view_conf.get('srs', None)
@@ -258,15 +241,28 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
         if remove_before:
             seeder.cleanup()
 
+
+def caches_from_layer(layer):
+    caches = []
+    if hasattr(layer, 'layers'): # MultiLayer
+        layers = layer.layers
+    else:
+        layers = [layer]
+    for layer in layers:
+        if hasattr(layer, 'sources'): # VLayer
+            caches.extend([source.cache for source in layer.sources
+                                if hasattr(source, 'cache')])
+        else:
+            caches.append(layer.cache)
+    return caches
+
 def load_geom(geom_file):
-    from shapely import wkt
-    from shapely.geometry import MultiPolygon
     polygons = []
     with open(geom_file) as f:
         for line in f:
-            polygons.append(wkt.loads(line))
+            polygons.append(shapely.wkt.loads(line))
     
-    mp = MultiPolygon(polygons)
+    mp = shapely.geometry.MultiPolygon(polygons)
     return mp.bounds, mp
 
 def transform_geometry(from_srs, to_srs, geometry):
@@ -281,13 +277,13 @@ def transform_geometry(from_srs, to_srs, geometry):
 def transform_polygon(transf, polygon):
     ext = transf(polygon.exterior.xy)
     ints = [transf(ring.xy) for ring in polygon.interiors]
-    return Polygon(ext, ints)
+    return shapely.geometry.Polygon(ext, ints)
 
 def transform_multipolygon(transf, multipolygon):
     transformed_polygons = []
     for polygon in multipolygon:
         transformed_polygons.append(transform_polygon(transf, polygon))
-    return MultiPolygon(transformed_polygons)
+    return shapely.geometry.MultiPolygon(transformed_polygons)
 
 
 def transform_xy(from_srs, to_srs, xy):
@@ -303,11 +299,6 @@ def set_service_config(conf_file=None):
     if conf_file is not None:
         base_config().services_conf = conf_file
 
-def stop_processing(_signal, _frame):
-    print "Stopping..."
-    TileSeeder.stop_all()
-    return 0
-
 def main():
     from optparse import OptionParser
     usage = "usage: %prog [options] seed_conf"
@@ -321,10 +312,6 @@ def main():
     parser.add_option("-s", "--services-conf",
                       dest="services_file", default=None,
                       help="services configuration")
-    parser.add_option("-r", "--secure_rebuild",
-                      action="store_true", dest="secure_rebuild", default=False,
-                      help="do not rebuild tiles inplace. rebuild each level change"
-                           " the level cache afterwards.")
     parser.add_option("-n", "--dry-run",
                       action="store_true", dest="dry_run", default=False,
                       help="do not seed, just print output")    
@@ -333,10 +320,11 @@ def main():
     if len(args) != 1:
         parser.error('missing seed_conf file as last argument')
     
+    if not options.conf_file:
+        parser.error('set proxy configuration with -f')
+    
     load_config(options.conf_file)
     set_service_config(options.services_file)
-    
-    #signal.signal(signal.SIGINT, stop_processing)
     
     seed_from_yaml_conf(args[0], verbose=options.verbose,
                         dry_run=options.dry_run)
