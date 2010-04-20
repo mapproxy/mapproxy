@@ -16,6 +16,7 @@
 
 from __future__ import with_statement, division
 import sys
+import re
 import math
 import time
 import yaml
@@ -274,7 +275,11 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
             if 'ogr_datasource' in view_conf:
                 check_shapely()
                 srs = view_conf['ogr_srs']
-                datasource = abspath(view_conf['ogr_datasource'])
+                datasource = view_conf['ogr_datasource']
+                if not re.match(r'^\w{2,}:', datasource):
+                    # looks like a file and not PG:, MYSQL:, etc
+                    # make absolute path
+                    datasource = abspath(datasource)
                 where = view_conf.get('ogr_where', None)
                 bbox, geom = load_datasource(datasource, where)
             elif 'polygons' in view_conf:
