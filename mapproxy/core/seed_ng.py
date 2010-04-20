@@ -12,7 +12,7 @@ from mapproxy.core import seed
 from mapproxy.core.grid import MetaGrid, bbox_intersects, bbox_contains
 from mapproxy.core.cache import TileSourceError
 from mapproxy.core.utils import cleanup_directory
-from mapproxy.core.config import base_config, load_base_config
+from mapproxy.core.config import base_config, load_base_config, abspath
 
 
 try:
@@ -181,7 +181,7 @@ class SeedTask(object):
         self.bbox = bbox
         self.geom = geom
         
-        if geom is None:
+        if geom is not None:
             self.intersects = self._geom_intersects
         else:
             self.intersects = self._bbox_intersects
@@ -255,14 +255,21 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
                             progress_meter=progress_meter(), dry_run=dry_run)
         for view in options['views']:
             view_conf = seed_conf['views'][view]
-            srs = view_conf.get('bbox_srs', None)
-            bbox = view_conf['bbox']
-            geom = None
-            if isinstance(bbox, basestring):
-                if not shapely_present:
-                    print 'need shapely to support polygon seed areas'
-                    return
-                bbox, geom = load_geom(bbox)
+            if 'ogr_datasource' in view_conf:
+                check_shapely()
+                srs = view_conf['ogr_srs']
+                datasource = abspath(view_conf['ogr_datasource'])
+                where = view_conf.get('ogr_where', None)
+                bbox, geom = load_datasource(datasource, where)
+            elif 'polygons' in view_conf:
+                check_shapely()
+                srs = view_conf['polygons_srs']
+                poly_file = abspath(view_conf['polygons'])
+                bbox, geom = load_polygons(poly_file)
+            else:
+                srs = view_conf.get('bbox_srs', None)
+                bbox = view_conf.get('bbox', None)
+                geom = None
             
             cache_srs = view_conf.get('srs', None)
             if cache_srs is not None:
@@ -277,6 +284,10 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
         if remove_before:
             seeder.cleanup()
 
+def check_shapely():
+    if not shapely_present:
+        raise ImportError('could not import shapley.'
+            ' required for polygon/ogr seed areas')
 
 def caches_from_layer(layer):
     caches = []
@@ -292,7 +303,17 @@ def caches_from_layer(layer):
             caches.append(layer.cache)
     return caches
 
-def load_geom(geom_file):
+def load_datasource(datasource, where=None):
+    from mapproxy.core.ogr_reader import OGRShapeReader
+    
+    polygons = []
+    for wkt in OGRShapeReader(datasource).wkts(where):
+        polygons.append(shapely.wkt.loads(wkt))
+        
+    mp = shapely.geometry.MultiPolygon(polygons)
+    return mp.bounds, mp
+
+def load_polygons(geom_file):
     polygons = []
     with open(geom_file) as f:
         for line in f:
