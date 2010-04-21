@@ -31,6 +31,16 @@ from mapproxy.core.cache import (FileCache, CacheManager, Cache,
                                   threaded_tile_creator)
 from mapproxy.core.config import base_config, abspath
 
+def load_source_loaders():
+    source_loaders = {}
+    for entry_point in pkg_resources.iter_entry_points('mapproxy.source_loader'):
+        source_loaders[entry_point.name] = entry_point
+    return source_loaders
+
+source_loaders = load_source_loaders()
+del load_source_loaders
+
+
 def loader(loaders, name):
     """
     Return named class/function from loaders map.
@@ -39,17 +49,6 @@ def loader(loaders, name):
     module_name, class_name = entry_point.split(':')
     module = __import__(module_name, {}, {}, class_name)
     return getattr(module, class_name)
-
-source_loaders = {
-    'cache_wms': 'mapproxy.wms.conf_loader:WMSCacheSource',
-    'cache_tms': 'mapproxy.tms.conf_loader:TMSCacheSource',
-    'maptiler': 'bplanproxy.maptiles:MapTilerSourceLoader',
-    'debug': 'mapproxy.wms.conf_loader:DebugSource',
-    'direct': 'mapproxy.wms.conf_loader:DirectSource',
-}
-
-def source_loader(name):
-    return loader(source_loaders, name)
 
 
 tile_filter_loaders = {
@@ -150,7 +149,7 @@ class LayerConf(object):
         for param in params:
             conf_sources = []
             for source in self.layer['sources']:
-                conf_source = source_loader(source['type'])(self, source, param)
+                conf_source = source_loaders[source['type']].load()(self, source, param)
                 conf_sources.append(conf_source)
             multi_layer_sources.append(self._merge_sources(conf_sources))
         
