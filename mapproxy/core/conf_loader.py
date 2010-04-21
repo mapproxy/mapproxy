@@ -31,13 +31,6 @@ from mapproxy.core.cache import (FileCache, CacheManager, Cache,
                                   threaded_tile_creator)
 from mapproxy.core.config import base_config, abspath
 
-try:
-    services_doc = open(os.path.join(os.path.dirname(__file__), '..', 'doc', 'services_yaml.rst')).read()
-    __doc__ += '\n' + services_doc
-    del services_doc
-except:
-    pass
-
 def loader(loaders, name):
     """
     Return named class/function from loaders map.
@@ -50,6 +43,7 @@ def loader(loaders, name):
 source_loaders = {
     'cache_wms': 'mapproxy.wms.conf_loader:WMSCacheSource',
     'cache_tms': 'mapproxy.tms.conf_loader:TMSCacheSource',
+    'maptiler': 'bplanproxy.maptiles:MapTilerSourceLoader',
     'debug': 'mapproxy.wms.conf_loader:DebugSource',
     'direct': 'mapproxy.wms.conf_loader:DirectSource',
 }
