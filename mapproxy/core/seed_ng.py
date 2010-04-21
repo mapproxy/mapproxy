@@ -155,18 +155,19 @@ class CacheSeeder(object):
     """
     Seed multiple caches with the same option set.
     """
-    def __init__(self, caches, remove_before, progress_meter, dry_run=False):
+    def __init__(self, caches, remove_before, progress_meter, dry_run=False, concurrency=2):
         self.remove_before = remove_before
         self.progress = progress_meter
         self.dry_run = dry_run
         self.caches = caches
+        self.concurrency = concurrency
     
     def seed_view(self, bbox, level, srs, cache_srs, geom=None):
         for cache in self.caches:
             if not cache_srs or cache.grid.srs in cache_srs:
                 if self.remove_before:
                     cache.cache_mgr.expire_timestamp = lambda tile: self.remove_before
-                seed_pool = SeedPool(cache, dry_run=self.dry_run)
+                seed_pool = SeedPool(cache, dry_run=self.dry_run, size=self.concurrency)
                 seed_task = SeedTask(bbox, level, srs, cache.grid.srs, geom)
                 seeder = Seeder(cache, seed_task, seed_pool)
                 seeder.seed()
@@ -248,7 +249,8 @@ def status_symbol(i, total):
     else:
         return symbols[int(math.ceil(i/(total/4)))]
 
-def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=False):
+def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=False,
+    concurrency=2):
     from mapproxy.core.conf_loader import load_services
     
     if hasattr(conf_file, 'read'):
@@ -274,7 +276,8 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
         remove_before = seed.before_timestamp_from_options(options)
         caches = caches_from_layer(server.layers[layer])
         seeder = CacheSeeder(caches, remove_before=remove_before,
-                            progress_meter=progress_meter(), dry_run=dry_run)
+                            progress_meter=progress_meter(), dry_run=dry_run,
+                            concurrency=concurrency)
         for view in options['views']:
             view_conf = seed_conf['views'][view]
             if 'ogr_datasource' in view_conf:
@@ -390,6 +393,9 @@ def main():
     parser.add_option("-f", "--proxy-conf",
                       dest="conf_file", default=None,
                       help="proxy configuration")
+    parser.add_option("-c", "--concurrency", type="int",
+                      dest="concurrency", default=2,
+                      help="number of parallel seed processes")
     parser.add_option("-s", "--services-conf",
                       dest="services_file", default=None,
                       help="services configuration")
@@ -408,7 +414,7 @@ def main():
     set_service_config(options.services_file)
     
     seed_from_yaml_conf(args[0], verbose=options.verbose,
-                        dry_run=options.dry_run)
+                        dry_run=options.dry_run, concurrency=options.concurrency)
 
 if __name__ == '__main__':
     main()
