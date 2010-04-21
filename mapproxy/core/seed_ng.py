@@ -68,8 +68,8 @@ class SeedPool(object):
             worker.start()
             self.procs.append(worker)
     
-    def seed(self, seed_id, tiles):
-        self.tiles_queue.put((seed_id, tiles))
+    def seed(self, tiles, progress):
+        self.tiles_queue.put((tiles, progress))
     
     def stop(self):
         for _ in xrange(len(self.procs)):
@@ -86,10 +86,10 @@ class SeedWorker(multiprocessing.Process):
         self.dry_run = dry_run
     def run(self):
         while True:
-            seed_id, tiles = self.tiles_queue.get()
+            tiles, progress = self.tiles_queue.get()
             if tiles is None:
                 return
-            print '[%s] %s\r' % (timestamp(), seed_id), #, tiles
+            print '[%s] %6.2f%% %s\r' % (timestamp(), progress[1]*100, progress[0]),
             sys.stdout.flush()
             if not self.dry_run:
                 load_tiles = lambda: self.cache.cache_mgr.load_tile_coords(tiles)
@@ -104,11 +104,13 @@ class Seeder(object):
         num_seed_levels = task.max_level - task.start_level + 1
         self.report_till_level = task.start_level + int(num_seed_levels * 0.7)
         self.grid = MetaGrid(cache.grid, meta_size=base_config().cache.meta_size)
+        self.progress = 0.0
+        self.start_time = time.time()
     
     def seed(self):
         self._seed(self.task.bbox, self.task.start_level)
             
-    def _seed(self, cur_bbox, level, progess_str='', all_subtiles=False):
+    def _seed(self, cur_bbox, level, progess_str='', progress=1.0, all_subtiles=False):
         """
         :param cur_bbox: the bbox to seed in this call
         :param level: the current seed level
@@ -123,14 +125,17 @@ class Seeder(object):
         
         if level < self.task.max_level:
             sub_seeds = self._sub_seeds(subtiles, all_subtiles)
+            progress = progress / len(sub_seeds)
             if sub_seeds:
                 total_sub_seeds = len(sub_seeds)
                 for i, (sub_bbox, intersection) in enumerate(sub_seeds):
                     cur_progess_str = progess_str + status_symbol(i, total_sub_seeds)
                     all_subtiles = True if intersection == CONTAINS else False
                     self._seed(sub_bbox, level+1, cur_progess_str,
-                               all_subtiles=all_subtiles)
-        self.seed_pool.seed(progess_str, subtiles)
+                               all_subtiles=all_subtiles, progress=progress)
+        else:
+            self.progress += progress
+        self.seed_pool.seed(subtiles, (progess_str, self.progress))
 
     def _sub_seeds(self, subtiles, all_subtiles):
         """
