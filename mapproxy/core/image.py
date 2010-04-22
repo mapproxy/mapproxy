@@ -490,7 +490,7 @@ class TileMerger(object):
                 return ImageSource(tile.source, size=self.tile_size,
                                    transparent=transparent)
         src_size = self._src_size()
-        result = Image.new("RGBA", src_size, (255, 255, 255, 255))
+        result = Image.new("RGBA", src_size, (255, 255, 255, 0))
         for i, source in enumerate(ordered_tiles):
             if source is None:
                 continue

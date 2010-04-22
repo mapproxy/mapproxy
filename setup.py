@@ -45,6 +45,12 @@ setup(
         'paste.app_factory': [
             'app = mapproxy.core.app:app_factory'
         ],
+        'mapproxy.source_loader': [
+            'cache_wms = mapproxy.wms.conf_loader:WMSCacheSource',
+            'cache_tms = mapproxy.tms.conf_loader:TMSCacheSource',
+            'direct = mapproxy.wms.conf_loader:DirectSource',
+            'debug = mapproxy.wms.conf_loader:DebugSource',
+        ],
         'mapproxy.wms.request_parser': [
         ],
         'mapproxy.wms.client_request': [
