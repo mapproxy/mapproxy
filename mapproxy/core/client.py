@@ -42,24 +42,28 @@ class HTTPClient(object):
     opener = urllib2.build_opener()
     opener.addheaders = [('User-agent', 'MapProxy-%s' % (version,))]
     
-    def _log(self, url, result):
+    def _log(self, url, status, result):
         if not self.log.isEnabledFor(logging.INFO):
             return
         _scheme, host, path, query, _frag = urlsplit(url)
         if query:
             path = path + '?' + query
         date = datetime.now().strftime(self.log_datefmt)
-        status = result.code
-        size = result.headers.get('Content-length', '-')
+        size = 0
+        if result is not None:
+            size = result.headers.get('Content-length', '-')
         log_msg = self.log_fmt % locals()
         self.log.info(log_msg)
     
     def open(self, url, *args, **kw):
         try:
+            code = 500
+            result = None
             result = self.opener.open(url, *args, **kw)
-            self._log(url, result)
+            code = result.code
             return result
         except HTTPError, e:
+            code = e.code
             reraise_exception(HTTPClientError('HTTP Error (%.30s...): %d' 
                                               % (url, e.code)), sys.exc_info())
         except URLError, e:
@@ -75,6 +79,8 @@ class HTTPClient(object):
         except Exception, e:
             reraise_exception(HTTPClientError('Internal HTTP error (%.30s...): %r'
                                               % (url, e)), sys.exc_info())
+        finally:
+            self._log(url, code, result)
 
 
 class TMSClient(object):
