@@ -50,12 +50,11 @@ TMS begins with two or four tiles by default, depending on the SRS. MapProxy sup
 
 
 Keyhole Markup Language (OGC KML)
--------------------------
+---------------------------------
 
 Keyhole Markup Language (KML) is an XML-based language schema. 
-Mapproxy supports KML version 2.2. KML is available at `/kml/layername/0/0/0.kml` for example http://localhost:8080/kml/osm/0/0/0.kml 
+Mapproxy supports KML version 2.2. KML is available at `/kml/layername/0/0/0.kml` for example http://localhost:8080/kml/osm/0/0/0.kml ::
 
-You have to add the service to your proxy configuration:
-::
  server: ['kml']
+
 
