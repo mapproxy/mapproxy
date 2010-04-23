@@ -22,8 +22,8 @@ from __future__ import division
 
 import math
 from itertools import izip
-from pyproj import Proj, transform
-from mapproxy.core.config import base_config
+from pyproj import Proj, transform, set_datapath
+from mapproxy.core.config import base_config, abspath
 
 import logging
 log = logging.getLogger(__name__)
@@ -61,8 +61,18 @@ def _clean_srs_code(code):
 class TransformationError(Exception):
     pass
 
+_proj_initalized = False
+def _init_proj():
+    global _proj_initalized
+    if not _proj_initalized and 'proj_data_dir' in base_config().srs:
+        proj_data_dir = abspath(base_config().srs.proj_data_dir)
+        log.info('loading proj data from %s', proj_data_dir)
+        set_datapath(proj_data_dir)
+        _proj_initalized = True
+
 _srs_cache = {}
 def SRS(srs_code):
+    _init_proj()
     srs_code = _clean_srs_code(srs_code)
     if srs_code in _srs_cache:
         return _srs_cache[srs_code]
