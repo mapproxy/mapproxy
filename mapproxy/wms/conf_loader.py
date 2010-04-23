@@ -101,8 +101,13 @@ def get_attribution_layer(layer_conf):
     attribution_inverse = layer_conf.layer.get('attribution', {}).get('inverse', None)
     if attribution_inverse is None:
         attrib = layer_conf.service.get('attribution', {})
-        attribution_inverse = attrib.get('inverse', 'false')
-    attribution_inverse = attribution_inverse.lower() == 'true'
+        attribution_inverse = attrib.get('inverse', False)
+    
+    if isinstance(attribution_inverse, basestring):
+        if attribution_inverse.lower() == 'true':
+            attribution_inverse = True
+        else:
+            attribution_inverse = False
     return AttributionLayer(attribution_text, inverse=attribution_inverse)
 
 def _configured_layer(layer_conf, sources, attribution_layer=None):
