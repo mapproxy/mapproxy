@@ -89,8 +89,10 @@ class SeedWorker(multiprocessing.Process):
             tiles, progress = self.tiles_queue.get()
             if tiles is None:
                 return
-            print '[%s] %6.2f%% %s\r' % (timestamp(), progress[1]*100, progress[0]),
+            print '[%s] %6.2f%% %s \tETA: %s\r' % (timestamp(), progress[1]*100, progress[0],
+                time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(progress[2]))),
             sys.stdout.flush()
+            time.sleep(0.00001)
             if not self.dry_run:
                 load_tiles = lambda: self.cache.cache_mgr.load_tile_coords(tiles)
                 seed.exp_backoff(load_tiles, exceptions=(TileSourceError, IOError))
@@ -106,6 +108,8 @@ class Seeder(object):
         self.grid = MetaGrid(cache.grid, meta_size=base_config().cache.meta_size)
         self.progress = 0.0
         self.start_time = time.time()
+        self._avgs = []
+        self.count = 0
     
     def seed(self):
         self._seed(self.task.bbox, self.task.start_level)
@@ -135,7 +139,24 @@ class Seeder(object):
                                all_subtiles=all_subtiles, progress=progress)
         else:
             self.progress += progress
-        self.seed_pool.seed(subtiles, (progess_str, self.progress))
+        self.count += 1
+        if (progress*1000-1) > len(self._avgs):
+            self._avgs.append((time.time()-self.start_time))
+            self.start_time = time.time()
+        self.seed_pool.seed(subtiles,
+                            (progess_str, self.progress, self._eta(progress)))
+    
+    def _eta(self, progress):
+        if not self._avgs:
+            return self.start_time + (time.time() - self.start_time)*(1/progress)
+        count = 0
+        avg_sum = 0
+        for i, avg in enumerate(self._avgs):
+            multiplicator = (i+1)**1.2
+            count += multiplicator
+            avg_sum += avg*multiplicator
+
+        return time.time() + (1-progress) * (avg_sum/count)*1000
 
     def _sub_seeds(self, subtiles, all_subtiles):
         """
