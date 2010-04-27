@@ -46,8 +46,8 @@ class WMSLayer(Layer):
     """
     Base class for all renderable layers.
     """
-    def __init__(self, md):
-        Layer.__init__(self)
+    def __init__(self, md, **kw):
+        Layer.__init__(self, **kw)
         if md is None:
             md = {}
         self.md = LayerMetaData(md)
@@ -69,7 +69,7 @@ class VLayer(WMSLayer):
         :param sources: a list with layers
         :type sources: [`WMSLayer`]
         """
-        WMSLayer.__init__(self, md)
+        WMSLayer.__init__(self, md, transparent=sources[0].transparent)
         self.sources = sources
     
     def _bbox(self):
@@ -183,7 +183,7 @@ class WMSCacheLayer(WMSLayer):
     This is a layer that caches the data.
     """
     def __init__(self, cache, fi_source=None):
-        WMSLayer.__init__(self, {})
+        WMSLayer.__init__(self, {}, transparent=cache.transparent)
         self.cache = cache
         self.fi_source = fi_source
     
@@ -237,7 +237,7 @@ class MultiLayer(WMSLayer):
     This layer dispatches requests to other layers. 
     """
     def __init__(self, layers, md, dispatcher=None):
-        WMSLayer.__init__(self, md)
+        WMSLayer.__init__(self, md, transparent=layers[0].transparent)
         self.layers = layers
         if dispatcher is None:
             dispatcher = srs_dispatcher

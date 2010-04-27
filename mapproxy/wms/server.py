@@ -29,6 +29,9 @@ from mapproxy.core.config import base_config
 env = Environment(loader=PackageLoader('mapproxy.wms', 'templates'),
                   trim_blocks=True)
 
+import logging
+log = logging.getLogger(__name__)
+
 class WMSServer(Server):
     names = ('service',)
     request_methods = ('map', 'capabilities', 'featureinfo')
@@ -46,8 +49,16 @@ class WMSServer(Server):
     def map(self, map_request):
         merger = self.merger()
         self.check_request(map_request)
-        for layer in map_request.params.layers:
-            merger.add(self.layers[layer].render(map_request))
+        
+        render_layers = []
+        for layer_name in map_request.params.layers:
+            layer = self.layers[layer_name]
+            if not layer.transparent:
+                render_layers = []
+            render_layers.append(layer)
+        
+        for layer in render_layers:
+            merger.add(layer.render(map_request))
         params = map_request.params
         result = merger.merge(params.format, params.size,
                               bgcolor=params.bgcolor,

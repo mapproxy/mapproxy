@@ -49,6 +49,7 @@ class TestWMSServer(Mocker):
                                     layers='dummy2', width=200, height=200))
         self.expect_and_return(self.layer_merger_factory(), self.layer_merger)
         dummy2 = self.layers['dummy2']
+        self.expect_and_return(dummy2.transparent, True)
         self.expect_and_return(dummy2.render(req), 'img')
         self.layer_merger.add('img')
         img_result = self.mock()
@@ -65,8 +66,10 @@ class TestWMSServer(Mocker):
                                     width=200, height=200))
         self.expect_and_return(self.layer_merger_factory(), self.layer_merger)
         dummy2 = self.layers['dummy2']
+        self.expect_and_return(dummy2.transparent, True)
         self.expect_and_return(dummy2.render(req), 'img2')
         dummy1 = self.layers['dummy1']
+        self.expect_and_return(dummy1.transparent, True)
         self.expect_and_return(dummy1.render(req), 'img1')
         self.layer_merger.add('img1')
         self.layer_merger.add('img2')
@@ -77,6 +80,29 @@ class TestWMSServer(Mocker):
         
         self.replay()
         self.wms.map(req)
+
+    def test_render_base_over_transparent(self):
+        req = WMS111MapRequest(url='http://localhost/',
+                         param=dict(format='image/png', layers='dummy2,dummy1',
+                                    width=200, height=200))
+        self.expect_and_return(self.layer_merger_factory(), self.layer_merger)
+        dummy2 = self.layers['dummy2']
+        self.expect_and_return(dummy2.transparent, True)
+        # dummy1 is not transparent but above dummy2, dumm1 is not rendered
+        # self.expect_and_return(dummy2.render(req), 'img2')
+        dummy1 = self.layers['dummy1']
+        self.expect_and_return(dummy1.transparent, False)
+        self.expect_and_return(dummy1.render(req), 'img1')
+        self.layer_merger.add('img1')
+        # self.layer_merger.add('img2') # not rendered
+        img_result = self.mock()
+        self.expect_and_return(self.layer_merger.merge('png8', (200, 200), bgcolor='#ffffff',
+                                                      transparent=False), img_result)
+        img_result.as_buffer(format='png8')
+        
+        self.replay()
+        self.wms.map(req)
+
 
 class TestTileServer(Mocker):
     def setup(self):
