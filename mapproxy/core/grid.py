@@ -28,6 +28,9 @@ from mapproxy.core.srs import SRS, get_epsg_num
 
 geodetic_epsg_codes = [4326, 31466, 31467, 31468, 31469]
 
+class NoTiles(Exception):
+    pass
+
 def get_resolution(bbox, size):
     """
     Calculate the highest resolution needed to draw the bbox
@@ -91,7 +94,10 @@ class TileGrid(object):
         self.is_geodetic = is_geodetic
         
         self.stretch_factor = base_config().image.stretch_factor
-        'allow images to be scaled by this factor before the next level will be selected'
+        'allow images to be scaled up by this factor before the next level will be selected'
+        
+        self.max_shrink_factor = base_config().image.max_shrink_factor
+        'allow images to be scaled down by this factor before NoTiles is raised'
         
         if levels is None:
             self.levels = 20
@@ -240,8 +246,15 @@ class TileGrid(object):
         else:
             src_bbox = bbox
         
+        if not bbox_intersects(self.bbox, src_bbox):
+            raise NoTiles()
+        
         res = get_resolution(src_bbox, size)
         level = self.closest_level(res)
+        
+        if res > self.resolutions[level]*self.max_shrink_factor:
+            raise NoTiles()
+        
         # remove 1/10 of a pixel so we don't get a tiles we only touch
         x_delta = (src_bbox[2]-src_bbox[0]) / size[0] / 10.0
         y_delta = (src_bbox[3]-src_bbox[1]) / size[1] / 10.0
@@ -491,3 +504,16 @@ class MetaGrid(object):
         grid_size = self.grid.grid_sizes[level]
         return min(self._meta_size[0], grid_size[0]), min(self._meta_size[1], grid_size[1])
 
+
+def bbox_intersects(one, two):
+    a_x0, a_y0, a_x1, a_y1 = one
+    b_x0, b_y0, b_x1, b_y1 = two
+    
+    if (
+        a_x0 < b_x1 and
+        a_x1 > b_x0 and
+        a_y0 < b_y1 and
+        a_y1 > b_y0
+        ): return True
+    
+    return False

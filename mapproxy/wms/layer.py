@@ -25,7 +25,7 @@ Layer classes (direct, cached, etc.).
 from mapproxy.core.srs import SRS, TransformationError
 from mapproxy.core.exceptions import RequestError
 from mapproxy.core.client import HTTPClientError
-from mapproxy.core.cache import TileCacheError, TooManyTilesError
+from mapproxy.core.cache import TileCacheError, TooManyTilesError, BlankImage
 from mapproxy.core.layer import Layer, LayerMetaData
 from mapproxy.core.image import message_image, attribution_image
 
@@ -80,7 +80,13 @@ class VLayer(WMSLayer):
     
     def render(self, request):
         for source in self.sources:
-            yield source.render(request)
+            img = None
+            try:
+                img = source.render(request)
+            except BlankImage:
+                pass
+            if img is not None:
+                yield img
     
     def caches(self, request):
         result = []
@@ -223,6 +229,8 @@ class WMSCacheLayer(WMSLayer):
         except TileCacheError, e:
             log.error(e)
             raise RequestError(e.message, request=map_request)
+        except BlankImage:
+            return None
     
 
 def srs_dispatcher(layers, srs):

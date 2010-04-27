@@ -27,6 +27,9 @@
 #     # stretch cached images by this factor before
 #     # using the next level
 #     stretch_factor: 1.15
+#     # shrink cached images up to this factor before
+#     # returning an empty image (for the first level)
+#     max_shrink_factor: 4.0
 
 
 # # coordinate transformation options
