@@ -20,7 +20,7 @@ Service requests (parsing, handling, etc).
 from mapproxy.wms import exceptions
 from mapproxy.core.config import base_config
 from mapproxy.core.exceptions import RequestError
-from mapproxy.core.srs import SRS
+from mapproxy.core.srs import SRS, make_lin_transf
 from mapproxy.core.request import RequestParams, BaseRequest, split_mime_type
 
 import logging
@@ -301,7 +301,7 @@ class WMSFeatureInfoRequestParams(WMSMapRequestParams):
         return sum((layers.split(',') for layers in self.params.get_all('query_layers')), [])
 
     def _get_pos(self):
-        """x, y query image coordinates"""
+        """x, y query image coordinates (in pixel)"""
         return int(self['x']), int(self['y'])
     def _set_pos(self, value):
         self['x'] = str(int(round(value[0])))
@@ -309,6 +309,13 @@ class WMSFeatureInfoRequestParams(WMSMapRequestParams):
     pos = property(_get_pos, _set_pos)
     del _get_pos
     del _set_pos
+    
+    @property
+    def pos_coords(self):
+        """x, y query coordinates (in request SRS)"""
+        width, height = self.size
+        bbox = self.bbox
+        return make_lin_transf((0, 0, width, height), bbox)(self.pos)
 
 class WMS130FeatureInfoRequestParams(WMSFeatureInfoRequestParams):
     switch_bbox = _switch_bbox
