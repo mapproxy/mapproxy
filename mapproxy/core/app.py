@@ -36,10 +36,12 @@ def app_factory(global_options, **local_options):
     """
     Paster app_factory.
     """
-    services_conf = local_options.get('services_conf', None)
-    proxy_conf = local_options.get('proxy_conf', None)
-    log_conf = local_options.get('log_conf', None)
-    reload_files = local_options.get('reload_files', None)
+    conf = global_options.copy()
+    conf.update(local_options)
+    services_conf = conf.get('services_conf', None)
+    proxy_conf = conf.get('proxy_conf', None)
+    log_conf = conf.get('log_conf', None)
+    reload_files = conf.get('reload_files', None)
     if reload_files is not None:
         init_paster_reload_files(reload_files)
     if proxy_conf is not None:
