@@ -230,3 +230,47 @@ layers:
             server = create_wms_server(conf)
             eq_(server.md['title'], 'Omniscale WMS Proxy')
             assert 'direct' in server.layers
+    def test_from_yaml_ordered_layers(self):
+        with TempFiles() as tmp:
+            with open(tmp[0], 'w') as conf:
+                conf.write("""
+service:
+    md:
+        name: omniscale_wms
+        title: Omniscale WMS Proxy
+        abstract: This is the fantastic Omniscale WMS Proxy.
+
+layers:
+    - c:
+        md:
+            title: Direct DebugWMS
+        sources:
+        - req:
+            url: http://localhost:5000/service
+          type: direct
+    - d:
+        md:
+            title: Direct DebugWMS
+        sources:
+        - req:
+            url: http://localhost:5000/service
+          type: direct
+    - a:
+        md:
+            title: Direct DebugWMS
+        sources:
+        - req:
+            url: http://localhost:5000/service
+          type: direct
+    - b:
+        md:
+            title: Direct DebugWMS
+        sources:
+        - req:
+            url: http://localhost:5000/service
+          type: direct
+""")
+            conf = ProxyConf(tmp[0])
+            server = create_wms_server(conf)
+            eq_(server.md['title'], 'Omniscale WMS Proxy')
+            eq_(server.layers.keys(), ['c', 'd', 'a', 'b', '__debug__'])

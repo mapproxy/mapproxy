@@ -37,6 +37,7 @@ from mapproxy.wms.request import WMS100MapRequest, WMS111MapRequest, WMS130MapRe
 from mapproxy.wms.client import WMSClient
 from mapproxy.core.config import base_config
 from mapproxy.core.request import split_mime_type
+from mapproxy.core.odict import odict
 
 
 def load_request_parser():
@@ -71,7 +72,7 @@ client_request = load_client_request()
 del load_client_request
 
 def create_wms_server(proxy_conf):
-    layers = {}
+    layers = odict()
     for name, layer in proxy_conf.layer_confs.iteritems():
         layers[name] = configured_layer(layer)
     
