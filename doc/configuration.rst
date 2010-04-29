@@ -98,7 +98,7 @@ Metadata for this layer. At the moment only ``title`` ist supported. It will be 
 param
 """"""
 
-Unter ``param`` werden Parameter für die Datenquelle und den Zwischenspeicher gesetzt.
+With ``param`` you can set the parametes of the data-source and cache.
 
 ``format``
     This is the internal image format for the cache. The default is ``image/png``.

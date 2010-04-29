@@ -8,7 +8,7 @@ The WSGI standard allows to choose between a wide range of servers and server in
 MapProxy uses ``paster serve``, a tool included as a dependency, to start these servers with a configured MapProxy application.
 
 Paster needs a configuration where the application (MapProxy in this case) and the server is defined. The ``etc/`` directory created with ``paster create`` (see :doc:`install`) already contains two example configurations.
-Both configuration define MapProxy as the WSGI application to start and setup some configuration options.
+Both configurations define MapProxy as the WSGI application to start and setup some configuration options.
 
 Testing
 -------
@@ -23,10 +23,10 @@ Production
 ----------
 
 
-`FastCGI`_ is a protocol to integrate web application into web servers.
-FastCGI is language-independent and implemented by most popular web servers like Apache, Lighttpd or Nginx. The application run isolated from the web server. In this case you do not start MapProxy as an HTTP server but as a FastCGI server.
+`FastCGI`_ is a protocol to integrate web applications into web servers.
+FastCGI is language-independent and implemented by most popular web servers like Apache, Lighttpd or Nginx. The applications run isolated from the web server. In this case you do not start MapProxy as an HTTP server but as a FastCGI server.
 
-The example paster configuration ``config.ini`` does this. By default the configured server listens on a socket file (``var/fcgi-socket``) to wich you should point your web server. But you can also use TCP/IP with the ``host`` and ``port`` option. 
+The example paster configuration ``config.ini`` does this. By default the configured server listens on a socket file (``var/fcgi-socket``) to which you should point your web server. But you can also use TCP/IP with the ``host`` and ``port`` option. 
 
 .. _`FastCGI`: http://www.fastcgi.com/
 

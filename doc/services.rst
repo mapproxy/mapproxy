@@ -37,7 +37,7 @@ Tiled Map Services (TMS)
 
 MapProxy supports the `Tile Map Service Specification`_ from the OSGeo. The TMS is available at `/tms/1.0.0`. A request to this URL will return some metadata in XML format.
 
-Here is an example TMS request: ``/tms/1.0.0/base_EPSG900913/3/1/0.png``. ``png`` is the internal format of the cached tiles. ``base`` is name of the layer and ``EPSG900913`` is the SRS of the layer. You can only select a SRS that your layer is caching. You can omit the SRS for EPSG900913.
+Here is an example TMS request: ``/tms/1.0.0/base_EPSG900913/3/1/0.png``. ``png`` is the internal format of the cached tiles. ``base`` is the name of the layer and ``EPSG900913`` is the SRS of the layer. You can only select a SRS that your layer is caching. You can omit the SRS for EPSG900913.
 
 
 OpenLayers

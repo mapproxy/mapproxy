@@ -9,7 +9,7 @@ This tutorial was created and tested with Debian 5.0, if you're installing MapPr
 MapProxy is `registered at the Python Package Index <http://pypi.python.org/pypi/MapProxy>`_ (PyPI). If you have installed Python setuptools (``python-setuptools`` on Debian) you can install MapProxy with ``sudo easy_install MapProxy``. This is really easy `but` we recommend to **not** use this method. 
 
 We highly advise you to install MapProxy into a `virtual Python environment`_. 
-`Read about virtualenv <http://virtualenv.openplans.org/#what-it-does>`_ if you want to now more about the benefits.
+`Read about virtualenv <http://virtualenv.openplans.org/#what-it-does>`_ if you want to know more about the benefits.
 
 .. _`virtual Python environment`: http://guide.python-distribute.org/virtualenv.html
 
@@ -65,7 +65,7 @@ To install MapProxy and all dependencies, call the following::
 If you install MapProxy on Windows you should install the required packages manually with ``easy_install`` and not with ``pip``. ``easy_install`` will download and install binary packages on Windows so you do not need a compiler.
 
 
-To check if the MapProxy was successfully installed you can directly call the `version` module. You should see the installed version number.
+To check if the MapProxy was successfully installed, you can directly call the `version` module. You should see the installed version number.
 ::
 
     python -m mapproxy.core.version
