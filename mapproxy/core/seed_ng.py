@@ -34,7 +34,6 @@ from mapproxy.core.config import base_config, load_base_config, abspath
 
 try:
     import shapely.wkt
-    import shapely.prepared 
     import shapely.geometry
 except ImportError:
     shapely_present = False
@@ -232,7 +231,6 @@ class SeedTask(object):
             if geom is not None:
                 geom = transform_geometry(bbox_srs, seed_srs, geom)
                 bbox = geom.bounds
-                geom = shapely.prepared.prep(geom)
             else:
                 bbox = bbox_srs.transform_bbox_to(seed_srs, bbox)
         
