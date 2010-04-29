@@ -123,8 +123,13 @@ class Seeder(object):
         bbox_, tiles_, subtiles = self.grid.get_affected_level_tiles(cur_bbox, level)
         subtiles = list(subtiles)
         if level <= self.report_till_level:
-            print '[%s] %2s %s' % (timestamp(), level, format_bbox(cur_bbox))
+            print '[%s] %2s %6.2f%% %s ETA: %s' % (timestamp(), level, self.progress*100,
+                format_bbox(cur_bbox), self._eta_string(self.progress))
             sys.stdout.flush()
+        
+        if level == self.task.max_level-1:
+            # do not filter in last levels
+            all_subtiles = True
         
         if level < self.task.max_level:
             sub_seeds = self._sub_seeds(subtiles, all_subtiles)
@@ -139,11 +144,16 @@ class Seeder(object):
         else:
             self.progress += progress
         self.count += 1
-        if (progress*1000-1) > len(self._avgs):
+        if (self.progress*1000-1) > len(self._avgs):
             self._avgs.append((time.time()-self.start_time))
             self.start_time = time.time()
-        self.seed_pool.seed(subtiles,
-                            (progess_str, self.progress, self._eta_string(progress)))
+        not_cached_tiles = self.not_cached(subtiles)
+        if not_cached_tiles:
+            self.seed_pool.seed(not_cached_tiles,
+                (progess_str, self.progress, self._eta_string(self.progress)))
+    
+    def not_cached(self, tiles):
+        return [tile for tile in tiles if tile is not None and not self.cache.cache_mgr.is_cached(tile)]
     
     def _eta(self, progress):
         if not self._avgs: return

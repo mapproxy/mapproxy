@@ -182,6 +182,8 @@ class CacheManager(object):
         """
         Return True if the tile is cached.
         """
+        if isinstance(tile, tuple):
+            tile = _Tile(tile)
         max_mtime = self.expire_timestamp(tile)
         cached = self.cache.is_cached(tile)
         if cached and max_mtime is not None:
