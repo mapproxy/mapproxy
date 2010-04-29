@@ -37,6 +37,7 @@ from mapproxy.wms.request import WMS100MapRequest, WMS111MapRequest, WMS130MapRe
 from mapproxy.wms.client import WMSClient
 from mapproxy.core.config import base_config
 from mapproxy.core.request import split_mime_type
+from mapproxy.core.odict import odict
 
 
 def load_request_parser():
@@ -71,7 +72,7 @@ client_request = load_client_request()
 del load_client_request
 
 def create_wms_server(proxy_conf):
-    layers = {}
+    layers = odict()
     for name, layer in proxy_conf.layer_confs.iteritems():
         layers[name] = configured_layer(layer)
     
@@ -101,8 +102,13 @@ def get_attribution_layer(layer_conf):
     attribution_inverse = layer_conf.layer.get('attribution', {}).get('inverse', None)
     if attribution_inverse is None:
         attrib = layer_conf.service.get('attribution', {})
-        attribution_inverse = attrib.get('inverse', 'false')
-    attribution_inverse = attribution_inverse.lower() == 'true'
+        attribution_inverse = attrib.get('inverse', False)
+    
+    if isinstance(attribution_inverse, basestring):
+        if attribution_inverse.lower() == 'true':
+            attribution_inverse = True
+        else:
+            attribution_inverse = False
     return AttributionLayer(attribution_text, inverse=attribution_inverse)
 
 def _configured_layer(layer_conf, sources, attribution_layer=None):

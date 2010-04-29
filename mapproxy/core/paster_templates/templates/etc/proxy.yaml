@@ -27,15 +27,24 @@
 #     # stretch cached images by this factor before
 #     # using the next level
 #     stretch_factor: 1.15
+#     # shrink cached images up to this factor before
+#     # returning an empty image (for the first level)
+#     max_shrink_factor: 4.0
 
 
-# # WMS 1.3.0 requires all coordiates in the correct axis order,
-# # i.e. lon/lat or lat/lon. Use the following settings to
-# # explicitly set a CRS to either North/East or East/North
-# # ordering.
+# # coordinate transformation options
 # srs:
+#   # WMS 1.3.0 requires all coordiates in the correct axis order,
+#   # i.e. lon/lat or lat/lon. Use the following settings to
+#   # explicitly set a CRS to either North/East or East/North
+#   # ordering.
 #   axis_order_ne: ['EPSG:9999', 'EPSG:9998']
 #   axis_order_en: ['EPSG:0000', 'EPSG:0001']
+#   # you can set the proj4 data dir here, if you need custom
+#   # epsg definitions. the path must contain a file named 'epsg'
+#   # the format of the file is:
+#   # <4326> +proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs  <>
+#   proj_data_dir: '/path to dir that contains epsg file'
 
 # # number of concurrent requests to a tile source
 # tile_creator_pool_size: 2

@@ -27,7 +27,7 @@ layers:
     # # server with two data sources
     # # configured for use in regular WMS clients
     # ###########################################
-    # merged:
+    # - merged:
     #     md:
     #         title: Merged server
     #     param:
@@ -59,7 +59,7 @@ layers:
     # # #########################
     # # # Layer from TMS Source
     # # #########################
-    # osm:
+    # - osm:
     #     md:
     #         title: osm.omniscale.net - Open Street Map
     #    attribution:
@@ -79,7 +79,7 @@ layers:
     # ###########################################
     # # overlay layer
     # ###########################################
-    # roads:
+    # - roads:
     #     md:
     #         title: transparent overlay
     #     param:
@@ -94,7 +94,7 @@ layers:
     # #########################
     # # Layer from TMS Source
     # #########################
-    osm:
+    - osm:
         md:
             title: Omniscale OSM WMS - osm.omniscale.net
         param:

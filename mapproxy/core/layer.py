@@ -52,6 +52,8 @@ class Layer(object):
     """
     Base class for all renderable layers.
     """
+    def __init__(self, transparent=True):
+        self.transparent = transparent
     def render(self, request):
         """
         Render the response for the given `request`.

@@ -21,6 +21,7 @@ from mapproxy.core.grid import (
     _create_tile_list,
     bbox_intersects,
     bbox_contains,
+    NoTiles,
 )
 from mapproxy.core.srs import SRS, TransformationError
 
@@ -267,6 +268,7 @@ class TestFixedResolutionsTileGrid(TileGridTest):
     
     def test_affected_tiles(self):
         req_bbox = (3250000, 5230000, 3930000, 6110000)
+        self.grid.max_shrink_factor = 10
         bbox, grid_size, tiles = \
             self.grid.get_affected_tiles(req_bbox, (256, 256))
         assert bbox == (req_bbox[0], req_bbox[1],
@@ -279,6 +281,16 @@ class TestFixedResolutionsTileGrid(TileGridTest):
                          (0, 0, 0), (1, 0, 0), (2, 0, 0),
                          ]
     
+    def test_affected_tiles(self):
+        req_bbox = (3250000, 5230000, 3930000, 6110000)
+        self.grid.max_shrink_factor = 2.0
+        try:
+            bbox, grid_size, tiles = \
+                self.grid.get_affected_tiles(req_bbox, (256, 256))
+        except NoTiles:
+            pass
+        else:
+            assert False, 'got no exception'
     def test_grid(self):
         for level, grid_size in [(0, (3, 4)), (1, (6, 7)), (2, (14, 18))]:
             yield self.check_grid, level, grid_size

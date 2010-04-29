@@ -30,6 +30,7 @@ log = logging.getLogger(__name__)
 from mapproxy.core.cache import (FileCache, CacheManager, Cache,
                                   threaded_tile_creator)
 from mapproxy.core.config import base_config, abspath
+from mapproxy.core.odict import odict
 
 def load_source_loaders():
     source_loaders = {}
@@ -98,11 +99,23 @@ class ProxyConf(object):
         self.layer_confs = self._init_layer_confs()
         
     def _init_layer_confs(self):
-        layer_confs = {}
-        for name, layer in self.conf['layers'].iteritems():
+        layer_confs = odict()
+        
+        def _init_layer(name, layer):
             layer_conf = LayerConf(name, layer, self.conf['service'],
                                    self.cache_dirs)
             layer_confs[name] = layer_conf
+        
+        # layers is a dictionary
+        if hasattr(self.conf['layers'], 'iteritems'):
+            for name, layer in self.conf['layers'].iteritems():
+                _init_layer(name, layer)
+        else:
+            # layers is a list of dictionaries
+            for layer_dict in self.conf['layers']:
+                for name, layer in layer_dict.iteritems():
+                    _init_layer(name, layer)
+        
         return layer_confs
     
 

@@ -37,34 +37,39 @@ class TestVLayer(Mocker):
     def setup(self):
         Mocker.setup(self)
         self.sources = [self.mock(Layer), self.mock(Layer)]
-        self.vlayer = VLayer({}, self.sources)
+        
     def test_render(self):
         req = {}
+        self.expect(self.sources[0].transparent).result(True)
         self.expect(self.sources[0].render(req)).result('dummy0')
         self.expect(self.sources[1].render(req)).result('dummy1')
         self.replay()
-        result = list(self.vlayer.render(req))
+        vlayer = VLayer({}, self.sources)
+        result = list(vlayer.render(req))
         eq_(len(result), 2)
 
 class TestMultiLayer(Mocker):
     def setup(self):
         Mocker.setup(self)
         self.layers = [self.mock(Layer), self.mock(Layer)]
-        self.layer = MultiLayer(self.layers, {})
         self.srs = [SRS(900913), SRS(4326)]
     def test_srs_dispatch(self):
         req = WMS111MapRequest(param={'srs': 'EPSG:4326'})
+        self.expect_and_return(self.layers[0].transparent, True) #.result(True)
         self.expect(self.layers[0].srs).result(self.srs[0])
         self.expect(self.layers[1].srs).result(self.srs[1])
         self.expect(self.layers[1].render(req)).result('dummy')
         self.replay()
-        assert self.layer.render(req) == 'dummy'
+        layer = MultiLayer(self.layers, {})
+        assert layer.render(req) == 'dummy'
     def test_srs_dispatch2(self):
         req = WMS111MapRequest(param={'srs': 'EPSG:31466'})
+        self.expect(self.layers[0].transparent).result(True)
         self.expect(self.layers[0].srs).result(self.srs[0])
         self.expect(self.layers[0].render(req)).result('dummy')
         self.replay()
-        assert self.layer.render(req) == 'dummy'
+        layer = MultiLayer(self.layers, {})
+        assert layer.render(req) == 'dummy'
 
 
 class TestDirectLayer(Mocker):
@@ -84,12 +89,13 @@ class TestWMSCacheLayer(Mocker):
     def setup(self):
         Mocker.setup(self)
         self.tc = self.mock(Cache)
-        self.tcl = WMSCacheLayer(self.tc)
+        self.expect(self.tc.transparent).result(True)
     def test_render(self):
         req = WMS111MapRequest(param={'width': '100', 'height': '200',
                                     'bbox': '10,-5,15,5', 'srs': 'EPSG:4326'})
         self.expect(self.tc.image((10, -5, 15, 5), SRS(4326), (100, 200))).result('dummy')
         self.replay()
+        self.tcl = WMSCacheLayer(self.tc)
         result = self.tcl.render(req)
         assert result == 'dummy'
     def test_render_w_exception(self):
@@ -101,6 +107,7 @@ class TestWMSCacheLayer(Mocker):
         exc = TileCacheError('foo happened')
         self.expect(self.tc.image((10, -5, 15, 5), SRS(4326), (100, 200))).throw(exc)
         self.replay()
+        self.tcl = WMSCacheLayer(self.tc)
         try:
             self.tcl.render(req)
         except RequestError, e:

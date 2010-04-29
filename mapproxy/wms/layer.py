@@ -25,7 +25,7 @@ Layer classes (direct, cached, etc.).
 from mapproxy.core.srs import SRS, TransformationError
 from mapproxy.core.exceptions import RequestError
 from mapproxy.core.client import HTTPClientError
-from mapproxy.core.cache import TileCacheError, TooManyTilesError
+from mapproxy.core.cache import TileCacheError, TooManyTilesError, BlankImage
 from mapproxy.core.layer import Layer, LayerMetaData
 from mapproxy.core.image import message_image, attribution_image
 
@@ -46,8 +46,8 @@ class WMSLayer(Layer):
     """
     Base class for all renderable layers.
     """
-    def __init__(self, md):
-        Layer.__init__(self)
+    def __init__(self, md, **kw):
+        Layer.__init__(self, **kw)
         if md is None:
             md = {}
         self.md = LayerMetaData(md)
@@ -69,7 +69,7 @@ class VLayer(WMSLayer):
         :param sources: a list with layers
         :type sources: [`WMSLayer`]
         """
-        WMSLayer.__init__(self, md)
+        WMSLayer.__init__(self, md, transparent=sources[0].transparent)
         self.sources = sources
     
     def _bbox(self):
@@ -80,7 +80,13 @@ class VLayer(WMSLayer):
     
     def render(self, request):
         for source in self.sources:
-            yield source.render(request)
+            img = None
+            try:
+                img = source.render(request)
+            except BlankImage:
+                pass
+            if img is not None:
+                yield img
     
     def caches(self, request):
         result = []
@@ -183,7 +189,7 @@ class WMSCacheLayer(WMSLayer):
     This is a layer that caches the data.
     """
     def __init__(self, cache, fi_source=None):
-        WMSLayer.__init__(self, {})
+        WMSLayer.__init__(self, {}, transparent=cache.transparent)
         self.cache = cache
         self.fi_source = fi_source
     
@@ -223,6 +229,8 @@ class WMSCacheLayer(WMSLayer):
         except TileCacheError, e:
             log.error(e)
             raise RequestError(e.message, request=map_request)
+        except BlankImage:
+            return None
     
 
 def srs_dispatcher(layers, srs):
@@ -237,7 +245,7 @@ class MultiLayer(WMSLayer):
     This layer dispatches requests to other layers. 
     """
     def __init__(self, layers, md, dispatcher=None):
-        WMSLayer.__init__(self, md)
+        WMSLayer.__init__(self, md, transparent=layers[0].transparent)
         self.layers = layers
         if dispatcher is None:
             dispatcher = srs_dispatcher

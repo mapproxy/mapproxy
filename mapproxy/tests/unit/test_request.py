@@ -17,7 +17,8 @@
 from mapproxy.core.request import url_decode, Request, NoCaseMultiDict
 from mapproxy.tms.request import TMSRequest, tile_request, TileRequest
 from mapproxy.wms.request import (wms_request, WMSMapRequest, WMSMapRequestParams,
-                              WMS111MapRequest, WMS100MapRequest, WMS130MapRequest)
+                              WMS111MapRequest, WMS100MapRequest, WMS130MapRequest,
+                              WMS111FeatureInfoRequest)
 from mapproxy.core.exceptions import RequestError
 from mapproxy.wms.exceptions import (WMS111ExceptionHandler, WMSImageExceptionHandler,
                                      WMSBlankExceptionHandler)
@@ -186,6 +187,26 @@ class TestWMS130MapRequest(TestWMSMapRequest):
         assert isinstance(req2, WMS111MapRequest)
         
     
+class TestWMS111FeatureInfoRequest(TestWMSMapRequest):
+    def setup(self):
+        TestWMSMapRequest.setup(self)
+        self.base_req['request'] = 'GetFeatureInfo'
+        self.base_req['x'] = '100'
+        self.base_req['y'] = '150'
+        self.base_req['query_layers'] = 'foo'
+        
+    def test_basic_request(self):
+        req = wms_request(DummyRequest(self.base_req))#, validate=False)
+        assert isinstance(req, WMS111FeatureInfoRequest)
+    
+    def test_pos(self):
+        req = wms_request(DummyRequest(self.base_req))
+        eq_(req.params.pos, (100, 150))
+    
+    def test_pos_coords(self):
+        req = wms_request(DummyRequest(self.base_req))
+        eq_(req.params.pos_coords, (7.25, 50.5))
+        
 
 class TestRequest(object):
     def setup(self):

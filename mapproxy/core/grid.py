@@ -28,6 +28,9 @@ from mapproxy.core.srs import SRS, get_epsg_num
 
 geodetic_epsg_codes = [4326, 31466, 31467, 31468, 31469]
 
+class NoTiles(Exception):
+    pass
+
 def get_resolution(bbox, size):
     """
     Calculate the highest resolution needed to draw the bbox
@@ -91,7 +94,10 @@ class TileGrid(object):
         self.is_geodetic = is_geodetic
         
         self.stretch_factor = base_config().image.stretch_factor
-        'allow images to be scaled by this factor before the next level will be selected'
+        'allow images to be scaled up by this factor before the next level will be selected'
+        
+        self.max_shrink_factor = base_config().image.max_shrink_factor
+        'allow images to be scaled down by this factor before NoTiles is raised'
         
         if levels is None:
             self.levels = 20
@@ -240,17 +246,23 @@ class TileGrid(object):
         else:
             src_bbox = bbox
         
+        if not bbox_intersects(self.bbox, src_bbox):
+            raise NoTiles()
+        
         res = get_resolution(src_bbox, size)
         level = self.closest_level(res)
+        
+        if res > self.resolutions[level]*self.max_shrink_factor:
+            raise NoTiles()
+        
         return self.get_affected_level_tiles(src_bbox, level, inverse=inverse)
     
     def get_affected_level_tiles(self, bbox, level, inverse=False):
         """
         Get a list with all affected tiles for a `bbox` in the given `level`.
-        
         :returns: the bbox, the size and a list with tile coordinates, sorted row-wise
         :rtype: ``bbox, (xs, yz), [(x, y, z), ...]``
-        
+
         >>> grid = TileGrid()
         >>> bbox = (-20037508.34, -20037508.34, 20037508.34, 20037508.34)
         >>> grid.get_affected_level_tiles(bbox, 0)
@@ -259,7 +271,6 @@ class TileGrid(object):
           20037508.342789244, 20037508.342789244), (1, 1),\
           <generator object ...>)
         """
-        
         # remove 1/10 of a pixel so we don't get a tiles we only touch
         delta = self.resolutions[level] / 10.0
         x0, y0, _ = self.tile(bbox[0]+delta, bbox[1]+delta, level)

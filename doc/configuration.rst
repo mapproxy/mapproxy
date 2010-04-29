@@ -76,7 +76,18 @@ md
 layers
 ^^^^^^
 
-Here you can define all layers the proxy should offer. The key of each layer is also the name of the layer, i.e. the name used in WMS layers argument.
+Here you can define all layers the proxy should offer. Each layer configuration is a YAML dictionary. The key of each layer is also the name of the layer, i.e. the name used in WMS layers argument. If MapProxy should use the same ordering of the layers for capability responses, you should put the definitions in a list (prepend a ``-`` before the key).
+::
+
+  layers:
+    - layer1:
+      option1: aaa
+      option2: bbb
+    - layer2:
+      option1: xxx
+      option2: yyy
+
+
 
 Each configuration item contains information about the layer (e.g. name), how the layer is cached (e.g. in which SRS) and where the data comes from (e.g. which WMS-Server).
 

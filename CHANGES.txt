@@ -1,19 +1,34 @@
 0.8.3dev
-- New link_single_color_images layer option. Multiple "emtpy" tiles will
+
+- new link_single_color_images layer option. multiple "emtpy" tiles will
   be linked to the same image. (Unix only)
+- fixed transparency for image parts without tiles
+- log HTTP requests to servers regardless of the success
+- made proj4 data dir configurable
+- use same ordering of layers in service.yaml for capabilities documents
+  (use list of dicts in configuration, see docs)
+- performance improvements for requests with multiple layers and
+  for layers with smaler BBOXs
 
 0.8.2 2010-04-13
+
+- no changes since 0.8.2rc1
+
 0.8.2rc1 2010-04-01
+
 - add fallback if PIL is missing TrueType support
 - use zc.lockfile for locking
 - improved logging:
+
   - log to stdout when using develop.ini
   - add %(here)s support in log.ini (changed from {{conf_base_dir}})
   - do not enable ConcurrentLogHandler by default
 
 0.8.1 2010-03-25
+
 - improved performance for simple image transformation
   (same srs and same resolution) #4
 
 0.8.0 2010-03-22
+
 - initial release
