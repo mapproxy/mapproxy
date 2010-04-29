@@ -90,9 +90,8 @@ class SeedWorker(multiprocessing.Process):
             if tiles is None:
                 return
             print '[%s] %6.2f%% %s \tETA: %s\r' % (timestamp(), progress[1]*100, progress[0],
-                time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(progress[2]))),
+                progress[2]),
             sys.stdout.flush()
-            time.sleep(0.00001)
             if not self.dry_run:
                 load_tiles = lambda: self.cache.cache_mgr.load_tile_coords(tiles)
                 seed.exp_backoff(load_tiles, exceptions=(TileSourceError, IOError))
@@ -144,11 +143,10 @@ class Seeder(object):
             self._avgs.append((time.time()-self.start_time))
             self.start_time = time.time()
         self.seed_pool.seed(subtiles,
-                            (progess_str, self.progress, self._eta(progress)))
+                            (progess_str, self.progress, self._eta_string(progress)))
     
     def _eta(self, progress):
-        if not self._avgs:
-            return self.start_time + (time.time() - self.start_time)*(1/progress)
+        if not self._avgs: return
         count = 0
         avg_sum = 0
         for i, avg in enumerate(self._avgs):
@@ -157,6 +155,12 @@ class Seeder(object):
             avg_sum += avg*multiplicator
 
         return time.time() + (1-progress) * (avg_sum/count)*1000
+    
+    def _eta_string(self, progress):
+        eta_timestamp = self._eta(progress)
+        if not eta_timestamp:
+            return 'N/A'
+        return time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(eta_timestamp))
 
     def _sub_seeds(self, subtiles, all_subtiles):
         """
