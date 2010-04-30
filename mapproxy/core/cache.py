@@ -116,6 +116,8 @@ class Cache(object):
         try:
             src_bbox, tile_grid, affected_tile_coords = \
                 self.grid.get_affected_tiles(req_bbox, out_size, req_srs=req_srs)
+        except IndexError:
+            raise TileCacheError('Invalid BBOX')
         except NoTiles:
             raise BlankImage()
         
@@ -180,6 +182,8 @@ class CacheManager(object):
         """
         Return True if the tile is cached.
         """
+        if isinstance(tile, tuple):
+            tile = _Tile(tile)
         max_mtime = self.expire_timestamp(tile)
         cached = self.cache.is_cached(tile)
         if cached and max_mtime is not None:

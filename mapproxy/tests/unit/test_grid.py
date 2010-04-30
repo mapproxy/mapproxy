@@ -15,7 +15,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from nose.tools import eq_, assert_almost_equals
-from mapproxy.core.grid import MetaGrid, TileGrid, _create_tile_list, NoTiles
+from mapproxy.core.grid import (
+    MetaGrid,
+    TileGrid,
+    _create_tile_list,
+    bbox_intersects,
+    bbox_contains,
+    NoTiles,
+)
 from mapproxy.core.srs import SRS, TransformationError
 
 def test_metagrid_bbox():
@@ -78,6 +85,63 @@ def test_metagrid_tiles_geodetic():
     assert mgrid.tile_size(1) == (532, 276)
     assert mgrid.meta_bbox((0, 0, 1)) == (-187.03125, -97.03125, 187.03125, 97.03125)
 
+
+class TestMetaGridLevelMetaTiles(object):
+    def __init__(self):
+        self.meta_grid = MetaGrid(TileGrid(), meta_size=(2, 2))
+    
+    def test_full_grid_0(self):
+        bbox = (-20037508.34, -20037508.34, 20037508.34, 20037508.34)
+        abbox, tile_grid, meta_tiles = \
+            self.meta_grid.get_affected_level_tiles(bbox, 0)
+        meta_tiles = list(meta_tiles)
+        assert_almost_equal_bbox(bbox, abbox)
+        
+        eq_(len(meta_tiles), 1)
+        eq_(meta_tiles[0], (0, 0, 0))
+    
+    def test_full_grid_2(self):
+        bbox = (-20037508.34, -20037508.34, 20037508.34, 20037508.34)
+        abbox, tile_grid, meta_tiles = \
+            self.meta_grid.get_affected_level_tiles(bbox, 2)
+        meta_tiles = list(meta_tiles)
+        assert_almost_equal_bbox(bbox, abbox)
+        
+        eq_(tile_grid, (2, 2))
+        eq_(len(meta_tiles), 4)
+        eq_(meta_tiles[0], (0, 2, 2))
+        eq_(meta_tiles[1], (2, 2, 2))
+        eq_(meta_tiles[2], (0, 0, 2))
+        eq_(meta_tiles[3], (2, 0, 2))
+        
+class TestMetaGridLevelMetaTilesGeodetic(object):
+    def __init__(self):
+        self.meta_grid = MetaGrid(TileGrid(is_geodetic=True), meta_size=(2, 2))
+    
+    def test_full_grid_2(self):
+        bbox = (-180.0, -90.0, 180.0, 90)
+        abbox, tile_grid, meta_tiles = \
+            self.meta_grid.get_affected_level_tiles(bbox, 2)
+        meta_tiles = list(meta_tiles)
+        assert_almost_equal_bbox(bbox, abbox)
+        
+        eq_(tile_grid, (2, 1))
+        eq_(len(meta_tiles), 2)
+        eq_(meta_tiles[0], (0, 0, 2))
+        eq_(meta_tiles[1], (2, 0, 2))
+
+    def test_partial_grid_3(self):
+        bbox = (0.0, 5.0, 45, 40)
+        abbox, tile_grid, meta_tiles = \
+            self.meta_grid.get_affected_level_tiles(bbox, 3)
+        meta_tiles = list(meta_tiles)
+        assert_almost_equal_bbox((0.0, 0.0, 90.0, 90.0), abbox)
+        
+        eq_(tile_grid, (1, 1))
+        eq_(len(meta_tiles), 1)
+        eq_(meta_tiles[0], (4, 2, 3))
+        
+
 class TileGridTest(object):
     def check_grid(self, level, grid_size):
         print self.grid.grid_sizes[level], "==", grid_size
@@ -132,6 +196,15 @@ class TestWGS84TileGrid(object):
         eq_(grid, (2, 1))
         eq_(list(tiles), [(0, 0, 1), (1, 0, 1)])
     
+    def test_affected_level_tiles(self):
+        bbox, grid, tiles = self.grid.get_affected_level_tiles((-180,-90,180,90), 1)
+        eq_(grid, (2, 1))
+        eq_(bbox, (-180.0, -90.0, 180.0, 90.0))
+        eq_(list(tiles), [(0, 0, 1), (1, 0, 1)])
+        bbox, grid, tiles = self.grid.get_affected_level_tiles((0,0,180,90), 2)
+        eq_(grid, (2, 1))
+        eq_(bbox, (0.0, 0.0, 180.0, 90.0))
+        eq_(list(tiles), [(2, 1, 2), (3, 1, 2)])
 
 class TestGKTileGrid(TileGridTest):
     def setup(self):
@@ -335,6 +408,83 @@ class TestCreateTileList(object):
                 else:
                     yield x, y, level
 
+
+class TestBBOXIntersects(object):
+    def test_no_intersect(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (20, 20, 30, 30)
+        assert not bbox_intersects(b1, b2)
+        assert not bbox_intersects(b2, b1)
+
+    def test_no_intersect_only_vertical(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (20, 0, 30, 10)
+        assert not bbox_intersects(b1, b2)
+        assert not bbox_intersects(b2, b1)
+
+    def test_no_intersect_touch_point(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (10, 10, 20, 20)
+        assert not bbox_intersects(b1, b2)
+        assert not bbox_intersects(b2, b1)
+
+    def test_no_intersect_touch_side(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (0, 10, 10, 20)
+        assert not bbox_intersects(b1, b2)
+        assert not bbox_intersects(b2, b1)
+
+    def test_full_contains(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (2, 2, 8, 8)
+        assert bbox_intersects(b1, b2)
+        assert bbox_intersects(b2, b1)
+
+    def test_overlap(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (-5, -5, 5, 5)
+        assert bbox_intersects(b1, b2)
+        assert bbox_intersects(b2, b1)
+
+
+class TestBBOXContains(object):
+    def test_no_intersect(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (20, 20, 30, 30)
+        assert not bbox_contains(b1, b2)
+        assert not bbox_contains(b2, b1)
+
+    def test_no_intersect_only_vertical(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (20, 0, 30, 10)
+        assert not bbox_contains(b1, b2)
+        assert not bbox_contains(b2, b1)
+
+    def test_no_intersect_touch_point(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (10, 10, 20, 20)
+        assert not bbox_contains(b1, b2)
+        assert not bbox_contains(b2, b1)
+
+    def test_no_intersect_touch_side(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (0, 10, 10, 20)
+        assert not bbox_contains(b1, b2)
+        assert not bbox_contains(b2, b1)
+
+    def test_full_contains(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (2, 2, 8, 8)
+        assert bbox_contains(b1, b2)
+        assert not bbox_contains(b2, b1)
+
+    def test_overlap(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (-5, -5, 5, 5)
+        assert not bbox_contains(b1, b2)
+        assert not bbox_contains(b2, b1)
+
 def assert_almost_equal_bbox(bbox1, bbox2, places=2):
     for coord1, coord2 in zip(bbox1, bbox2):
         assert_almost_equals(coord1, coord2, places)
+
