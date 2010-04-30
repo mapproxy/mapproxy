@@ -63,6 +63,8 @@ There are three different ways to describe the extend of the seed view.
  - a text file with one or more polygons in WKT format,
  - polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)
 
+.. note:: The last two variants require `Shapely <http://pypi.python.org/pypi/Shapely>`_. Make sure it is available (e.g. ``pip install Shapely``). Shapely itself needs GEOS and the OGR reader needs GDAL/OGR. On Debian/Ubuntu these libraries are in the ``libgeos-dev`` and ``libgdal-dev`` packages.
+
 Bounding box
 """"""""""""
 
@@ -79,7 +81,7 @@ Polygon file
 
 ``polygons``:
   Path to a text file with one WKT polygon per line. The path should be relative to
-  the proxy configuration or absolute.
+  the proxy configuration or absolute. `We provide polygons for every country <http://mapproxy.org/static/polygons/>`_. `Read the index <http://mapproxy.org/static/polygons/0-fips-codes.txt>`_ to find your country. You can use these or create your own. 
 
 ``polygons_srs``:
   The SRS of the polygons.

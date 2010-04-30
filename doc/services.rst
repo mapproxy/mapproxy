@@ -22,7 +22,7 @@ The `wms.srs` option defines which SRS the WMS service supports. If you need oth
 Axis ordering
 ^^^^^^^^^^^^^
 
-The axis ordering defines in which order coordinates are given, i.e. lon/lat or lat/lon. The ordering is dependent to the SRS. Most clients and servers did not respected the ordering and everyone used lon/lat ordering. With the WMS 1.3.0 specification the OGC emphasized that the axis ordering of the SRS should be used. MapProxy must know the axis ordering of each enabled SRS for 1.3.0 support. The axis orderings are already defined for all default SRS. If you add you own SRS to the WMS configuration, you have to define the ordering with the `srs` options.
+The axis ordering defines in which order coordinates are given, i.e. lon/lat or lat/lon. The ordering is dependent to the SRS. Most clients and servers did not respected the ordering and everyone used lon/lat ordering. With the WMS 1.3.0 specification the OGC emphasized that the axis ordering of the SRS should be used. MapProxy must know the axis ordering of each enabled SRS for 1.3.0 support. The axis orderings are already defined for all default SRS. If you add you own SRS to the WMS configuration, you have to define the ordering with the `srs` options in your `proxy.yaml`.
 ::
 
  srs:
@@ -52,8 +52,9 @@ TMS begins with two or four tiles by default, depending on the SRS. MapProxy sup
 Keyhole Markup Language (OGC KML)
 ---------------------------------
 
-Keyhole Markup Language (KML) is an XML-based language schema. 
-Mapproxy supports KML version 2.2. KML is available at `/kml/layername/0/0/0.kml` for example http://localhost:8080/kml/osm/0/0/0.kml ::
+MapProxy supports KML version 2.2 for integration into Google Earth. Each layer is available as a Super Overlay – image tiles are loaded on demand when the user zooms to a specific region. The initial KML file  is available at `/kml/layername/0/0/0.kml`.
+
+To start the KML server, you have to add it to your `proxy.yaml`::
 
  server: ['kml']
 
