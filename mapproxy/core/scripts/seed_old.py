@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import signal
-from mapproxy.core.seed import seed_from_yaml_conf, TileSeeder
+from mapproxy.core.seed_old import seed_from_yaml_conf, TileSeeder
 
 def load_config(conf_file=None):
     if conf_file is not None:

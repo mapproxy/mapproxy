@@ -14,312 +14,325 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import division, with_statement
-import os
+from __future__ import with_statement, division
 import sys
+import re
+import math
 import time
-from collections import defaultdict
-from itertools import islice, chain
-from contextlib import contextmanager 
+import yaml
+import datetime
+import multiprocessing
+from functools import partial
+
 from mapproxy.core.srs import SRS
+from mapproxy.core.grid import MetaGrid, bbox_intersects, bbox_contains
 from mapproxy.core.cache import TileSourceError
+from mapproxy.core.config import base_config, abspath
 from mapproxy.core.utils import (
-    swap_dir,
     cleanup_directory,
     timestamp_before,
     timestamp_from_isodate,
 )
 
-import yaml #pylint: disable-msg=F0401
+try:
+    import shapely.wkt
+    import shapely.geometry
+except ImportError:
+    shapely_present = False
+else:
+    shapely_present = True
 
-import math
 
-def exp_backoff(func, max_repeat=10, start_backoff_sec=2, 
-        exceptions=(Exception,)):
-    n = 0
-    while True:
-        try:
-            result = func()
-        except exceptions, ex:
-            if (n+1) >= max_repeat:
-                raise
-            wait_for = start_backoff_sec * 2**n
-            print >>sys.stderr, ("An error occured. Retry in %d seconds: %r" % 
-                (wait_for, ex))
-            time.sleep(wait_for)
-            n += 1
+NONE = 0
+CONTAINS = -1
+INTERSECTS = 1
+
+
+class SeedPool(object):
+    """
+    Manages multiple SeedWorker.
+    """
+    def __init__(self, cache, size=2, dry_run=False):
+        self.tiles_queue = multiprocessing.Queue(32)
+        self.cache = cache
+        self.dry_run = dry_run
+        self.procs = []
+        for _ in xrange(size):
+            worker = SeedWorker(cache, self.tiles_queue, dry_run=dry_run)
+            worker.start()
+            self.procs.append(worker)
+    
+    def seed(self, tiles, progress):
+        self.tiles_queue.put((tiles, progress))
+    
+    def stop(self):
+        for _ in xrange(len(self.procs)):
+            self.tiles_queue.put((None, None))
+        
+        for proc in self.procs:
+            proc.join()
+
+class SeedWorker(multiprocessing.Process):
+    def __init__(self, cache, tiles_queue, dry_run=False):
+        multiprocessing.Process.__init__(self)
+        self.cache = cache
+        self.tiles_queue = tiles_queue
+        self.dry_run = dry_run
+    def run(self):
+        while True:
+            tiles, progress = self.tiles_queue.get()
+            if tiles is None:
+                return
+            print '[%s] %6.2f%% %s \tETA: %s\r' % (timestamp(), progress[1]*100, progress[0],
+                progress[2]),
+            sys.stdout.flush()
+            if not self.dry_run:
+                load_tiles = lambda: self.cache.cache_mgr.load_tile_coords(tiles)
+                exp_backoff(load_tiles, exceptions=(TileSourceError, IOError))
+
+class Seeder(object):
+    def __init__(self, cache, task, seed_pool):
+        self.cache = cache
+        self.task = task
+        self.seed_pool = seed_pool
+        
+        num_seed_levels = task.max_level - task.start_level + 1
+        self.report_till_level = task.start_level + int(num_seed_levels * 0.7)
+        self.grid = MetaGrid(cache.grid, meta_size=base_config().cache.meta_size)
+        self.progress = 0.0
+        self.start_time = time.time()
+        self._avgs = []
+        self.count = 0
+    
+    def seed(self):
+        self._seed(self.task.bbox, self.task.start_level)
+            
+    def _seed(self, cur_bbox, level, progess_str='', progress=1.0, all_subtiles=False):
+        """
+        :param cur_bbox: the bbox to seed in this call
+        :param level: the current seed level
+        :param all_subtiles: seed all subtiles and do not check for
+                             intersections with bbox/geom
+        """
+        bbox_, tiles_, subtiles = self.grid.get_affected_level_tiles(cur_bbox, level)
+        subtiles = list(subtiles)
+        if level <= self.report_till_level:
+            print '[%s] %2s %6.2f%% %s ETA: %s' % (timestamp(), level, self.progress*100,
+                format_bbox(cur_bbox), self._eta_string(self.progress))
+            sys.stdout.flush()
+        
+        if level == self.task.max_level-1:
+            # do not filter in last levels
+            all_subtiles = True
+        
+        if level < self.task.max_level:
+            sub_seeds = self._sub_seeds(subtiles, all_subtiles)
+            progress = progress / len(sub_seeds)
+            if sub_seeds:
+                total_sub_seeds = len(sub_seeds)
+                for i, (sub_bbox, intersection) in enumerate(sub_seeds):
+                    cur_progess_str = progess_str + status_symbol(i, total_sub_seeds)
+                    all_subtiles = True if intersection == CONTAINS else False
+                    self._seed(sub_bbox, level+1, cur_progess_str,
+                               all_subtiles=all_subtiles, progress=progress)
         else:
-            return result
+            self.progress += progress
+        self.count += 1
+        if (self.progress*1000-1) > len(self._avgs):
+            self._avgs.append((time.time()-self.start_time))
+            self.start_time = time.time()
+        not_cached_tiles = self.not_cached(subtiles)
+        if not_cached_tiles:
+            self.seed_pool.seed(not_cached_tiles,
+                (progess_str, self.progress, self._eta_string(self.progress)))
+    
+    def not_cached(self, tiles):
+        return [tile for tile in tiles if tile is not None and not self.cache.cache_mgr.is_cached(tile)]
+    
+    def _eta(self, progress):
+        if not self._avgs: return
+        count = 0
+        avg_sum = 0
+        for i, avg in enumerate(self._avgs):
+            multiplicator = (i+1)**1.2
+            count += multiplicator
+            avg_sum += avg*multiplicator
 
-class TileSeeder(object):
-    operating = True
+        return time.time() + (1-progress) * (avg_sum/count)*1000
     
-    @classmethod
-    def stop_all(cls):
-        cls.operating = False
-    
-    def __init__(self, vlayer, progress_meter, rebuild_inplace=True, remove_before=None):
-        self.progress_meter = progress_meter
-        self.caches = []
-        self.seeds = defaultdict(list)
-        self.rebuild_inplace = rebuild_inplace
+    def _eta_string(self, progress):
+        eta_timestamp = self._eta(progress)
+        if not eta_timestamp:
+            return 'N/A'
+        return time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(eta_timestamp))
+
+    def _sub_seeds(self, subtiles, all_subtiles):
+        """
+        Return all sub tiles that intersect the 
+        """
+        sub_seeds = []
+        for subtile in subtiles:
+            if subtile is None: continue
+            sub_bbox = self.grid.meta_bbox(subtile)
+            intersection = CONTAINS if all_subtiles else self.task.intersects(sub_bbox)
+            if intersection:
+                sub_seeds.append((sub_bbox, intersection))
+        return sub_seeds
+
+
+class CacheSeeder(object):
+    """
+    Seed multiple caches with the same option set.
+    """
+    def __init__(self, caches, remove_before, dry_run=False, concurrency=2):
         self.remove_before = remove_before
-        if hasattr(vlayer, 'layers'): # MultiLayer
-            vlayer = vlayer.layers
-        else:
-            vlayer = [vlayer]
-        for layer in vlayer:
-            if hasattr(layer, 'sources'): # VLayer
-                self.caches.extend([source.cache for source in layer.sources
-                                    if hasattr(source, 'cache')])
-            else:
-                self.caches.append(layer.cache)
-    def add_seed_location(self, point_bbox, res=None, level=None, srs=None,
-                          cache_srs=None, px_buffer=1000):
+        self.dry_run = dry_run
+        self.caches = caches
+        self.concurrency = concurrency
+    
+    def seed_view(self, bbox, level, srs, cache_srs, geom=None):
         for cache in self.caches:
             if not cache_srs or cache.grid.srs in cache_srs:
-                self._add_seed_location(cache, point_bbox, res=res, level=level,
-                                        srs=srs, px_buffer=px_buffer)
-    def _add_seed_location(self, cache, point_bbox, res=None, level=None,
-                           srs=None, px_buffer=1000):
-        assert px_buffer >= 0
-        if len(point_bbox) == 2 and px_buffer == 0:
-            px_buffer = 1 # prevent divzero later
-        assert res is not None or level is not None
-        
-        bbox = make_bbox(point_bbox)
-        
-        if srs is None:
-            srs = cache.grid.srs
-            
-        grid = cache.grid
-        
-        if level is None:
-            if srs != grid.srs: # convert res to native srs
-                res = transform_res((bbox[0], bbox[1]), res, srs, grid.srs)
-            level = grid.closest_level(res)
-        if isinstance(level, (int, long)):
-            levels = range(level+1)
-        else:
-            levels = range(level[0], level[1]+1)
-        
-        if srs != grid.srs:
-            bbox = srs.transform_bbox_to(grid.srs, bbox)
-        
-        for level in levels:
-            res = grid.resolutions[level]
-            buf = px_buffer * res
-            seed_bbox = (bbox[0] - buf, bbox[1] - buf,
-                         bbox[2] + buf, bbox[3] + buf)
-            self._add_seed_level(cache, seed_bbox, level)
+                if self.remove_before:
+                    cache.cache_mgr.expire_timestamp = lambda tile: self.remove_before
+                seed_pool = SeedPool(cache, dry_run=self.dry_run, size=self.concurrency)
+                seed_task = SeedTask(bbox, level, srs, cache.grid.srs, geom)
+                seeder = Seeder(cache, seed_task, seed_pool)
+                seeder.seed()
+                seed_pool.stop()
     
-    @staticmethod
-    def _create_tile_iterator(grid, bbox, level):
-        """
-        Return all tiles that intersect the `bbox` on `level`.
-        
-        :returns: estimated number of tiles, tile iterator
-        """
-        res = grid.resolutions[level]
-        w, h = bbox_pixel_size(bbox, res)
-        bbox, _grid, tiles = grid.get_affected_tiles(bbox, (w, h))
-        
-        est_number_of_tiles = int(math.ceil(w/grid.tile_size[0] * 
-                                            h/grid.tile_size[1]))
-        return est_number_of_tiles, tiles
-     
-    def _add_seed_level(self, cache, bbox, level):        
-        est_number_of_tiles, tiles = self._create_tile_iterator(cache.grid, bbox, level)
-        self.seeds[(cache, level)].append((est_number_of_tiles, tiles))
-    
-    def _seed_tiles(self, cache, tiles, progress, dry_run=False):
-        """
-        Seed the given `tiles` form `cache`.
-        """
-        tiles_per_loop = 128
-        for chunk in take_n(tiles, tiles_per_loop):
-            if not self.operating: return
-            if not dry_run:
-                load_tiles = lambda: cache.cache_mgr.load_tile_coords(chunk)
-                exp_backoff(load_tiles, exceptions=(TileSourceError, IOError))
-            progress.advance(len(chunk))
-    
-    def seed(self, dry_run=False):
-        for seed in self._sorted_seeds():
-            if not self.operating: return
-            level, cache, tiles = seed['level'], seed['cache'], seed['tiles']
-            
-            progress = self.progress_meter(total=seed['est_number_of_tiles'],
-                                           opts={'level': level})
-            progress.print_msg('start seeding #%d: %r' % (level, cache))
-            if (not self.rebuild_inplace and 
-                level_needs_rebuild(cache, level, self.remove_before)):
-                with self._tmp_rebuild_location(cache, level, dry_run=dry_run):
-                    self._seed_tiles(cache, tiles, progress, dry_run=dry_run)
-                    if not dry_run:
-                        update_level_timestamp(cache, level)
-            else:
-                cache.cache_mgr.expire_timestamp = lambda tile: self.remove_before
-                self._seed_tiles(cache, tiles, progress, dry_run=dry_run)
-            
-        self.cleanup(progress, dry_run)
-    
-    def cleanup(self, progress, dry_run):
-        if self.remove_before is None:
-            return
-        caches = self._caches_with_seeded_levels()
-        for cache, seeded_levels in caches.iteritems():
+    def cleanup(self):
+        for cache in self.caches:
             for i in range(cache.grid.levels):
-                if not self.rebuild_inplace and i in seeded_levels:
-                    continue # fresh level
                 level_dir = cache.cache_mgr.cache.level_location(i)
-                if dry_run:
+                if self.dry_run:
                     def file_handler(filename):
-                        progress.print_msg('removing ' + filename)
+                        self.progress.print_msg('removing ' + filename)
                 else:
                     file_handler = None
-                progress.print_msg('removing oldfiles in ' + level_dir)
+                self.progress.print_msg('removing oldfiles in ' + level_dir)
                 cleanup_directory(level_dir, self.remove_before,
-                                  file_handler=file_handler)
+                    file_handler=file_handler)
+
+class SeedTask(object):
+    def __init__(self, bbox, level, bbox_srs, seed_srs, geom=None):
+        self.start_level = level[0]
+        self.max_level = level[1]
+        self.bbox_srs = bbox_srs
+        self.seed_srs = seed_srs
     
-    def _sorted_seeds(self):
-        seeds = []
-        keys = self.seeds.keys()
-        keys.sort(lambda a, b: cmp(a[1], b[1]) or cmp(a[0], b[0]))
-        for key in keys:
-            num = sum(task[0] for task in self.seeds[key])
-            tiles = chain(*[task[1] for task in self.seeds[key]])
-            seeds.append(dict(cache=key[0], level=key[1], est_number_of_tiles=num,
-                              tiles=tiles))
-        return seeds
-    
-    def _caches_with_seeded_levels(self):
-        caches = defaultdict(set)
-        for cache, level in self.seeds.iterkeys():
-            caches[cache].add(level)
-        return caches
-    
-    @contextmanager
-    def _tmp_rebuild_location(self, cache, level, dry_run=False):
-        old_level_location = cache.cache_mgr.cache.level_location
-        def level_location(level):
-            return old_level_location(level) + '.new'
-        cache.cache_mgr.cache.level_location = level_location
+        if bbox_srs != seed_srs:
+            if geom is not None:
+                geom = transform_geometry(bbox_srs, seed_srs, geom)
+                bbox = geom.bounds
+            else:
+                bbox = bbox_srs.transform_bbox_to(seed_srs, bbox)
         
-        yield
+        self.bbox = bbox
+        self.geom = geom
         
-        self.progress_meter().print_msg('rotating new tiles')
-        if not dry_run:
-            swap_dir(level_location(level), old_level_location(level))
-        cache.cache_mgr.cache.level_location = old_level_location
-    
-def level_needs_rebuild(cache, level, remove_before):
-    if remove_before is None:
-        return True
-    cache_dir = cache.cache_mgr.cache.level_location(level)
-    level_timestamp = os.path.join(cache_dir, 'last_seed')
-    if os.path.exists(level_timestamp):
-        return os.lstat(level_timestamp).st_mtime < remove_before
-    else:
-        return True
-
-def update_level_timestamp(cache, level):
-    cache_dir = cache.cache_mgr.cache.level_location(level)
-    level_timestamp = os.path.join(cache_dir, 'last_seed')
-    if os.path.exists(level_timestamp):
-        os.utime(level_timestamp, None)
-    else:
-        if os.path.exists(os.path.dirname(level_timestamp)):
-            open(level_timestamp, 'w').close()
-    
-
-class ProgressMeter(object):
-    def __init__(self, start=0, total=None, opts=None, out=None):
-        self.start = start
-        self.current = start
-        self.total = total
-        if out is None:
-            import sys
-            out = sys.stdout
-        self.out = out
-        if opts is None:
-            opts = {}
-        self.opts = opts
-    @property
-    def percent(self):
-        if self.total is None:
-            return ''
-        return '%.2f%%' % (self.current/self.total*100,)
-    @property
-    def progress(self):
-        if self.total is None:
-            return str(self.current)
+        if geom is not None:
+            self.intersects = self._geom_intersects
         else:
-            return '%d/%d' % (self.current, self.total)
-    def advance(self, steps):
-        self.current += steps
-        if self.current > self.total:
-            self.total = self.current
-        self.print_progress()
-    def print_progress(self):
-        pass
-    
-    def print_msg(self, msg):
-        pass
+            self.intersects = self._bbox_intersects
     
 
-class NullProgressMeter(ProgressMeter):
-    pass
+    def _geom_intersects(self, bbox):
+        bbox_poly = shapely.geometry.Polygon((
+            (bbox[0], bbox[1]),
+            (bbox[2], bbox[1]),
+            (bbox[2], bbox[3]),
+            (bbox[0], bbox[3]),
+            ))
+        if self.geom.contains(bbox_poly): return CONTAINS
+        if self.geom.intersects(bbox_poly): return INTERSECTS
+        return NONE
+    
+    def _bbox_intersects(self, bbox):
+        if bbox_contains(self.bbox, bbox): return CONTAINS
+        if bbox_intersects(self.bbox, bbox): return INTERSECTS
+        return NONE
 
-class TileProgressMeter(ProgressMeter):
-    def print_progress(self):
-        level = ''
-        if 'level' in self.opts:
-            level = 'for level ' + str(self.opts['level']) + ' '
-        print >>self.out, "created %s tiles %s(%s)" % (self.progress, level, self.percent)
-    def print_msg(self, msg):
-        print >>self.out, msg
 
+def timestamp():
+    return datetime.datetime.now().strftime('%H:%M:%S')
 
-def make_bbox(point_bbox):
+def format_bbox(bbox):
+    return ('(%.5f, %.5f, %.5f, %.5f)') % bbox
+
+def status_symbol(i, total):
     """
-    >>> make_bbox((8, 53))
-    (8, 53, 8, 53)
-    >>> make_bbox((5, 46,15, 55))
-    (5, 46, 15, 55)
+    >>> status_symbol(0, 1)
+    '0'
+    >>> [status_symbol(i, 4) for i in range(5)]
+    ['.', 'o', 'O', '0', 'X']
+    >>> [status_symbol(i, 10) for i in range(11)]
+    ['.', '.', 'o', 'o', 'o', 'O', 'O', '0', '0', '0', 'X']
     """
-    if len(point_bbox) == 2:
-        return (point_bbox[0], point_bbox[1],
-                point_bbox[0], point_bbox[1])
+    symbols = list(' .oO0')
+    i += 1
+    if 0 < i > total:
+        return 'X'
     else:
-        return point_bbox
+        return symbols[int(math.ceil(i/(total/4)))]
 
-def transform_res(point, res, src_srs, dst_srs):
-    """
-    Transform the resolution from one `src_srs` to `dst_srs` at `point`.
-    Eg. from m/px resolution to deg/pix.
-    """
-    res_point = point[0] + res, point[1] + res
-    point = src_srs.transform_to(dst_srs, point)
-    res_point = src_srs.transform_to(dst_srs, res_point)
-    res = res_point[0] - point[0]
+def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=False,
+    concurrency=2):
+    from mapproxy.core.conf_loader import load_services
     
-def take_n(values, n):
-    iterator = iter(values)
-    while True:
-        chunk = list(islice(iterator, n+1))
-        if chunk: 
-            yield chunk
-        else:
-            break
-
-def bbox_pixel_size(bbox, res):
-    """
-    Return the size of the `bbox` in pixel at the given `res`.
-    """
-    w = bbox[2] - bbox[0]
-    h = bbox[3] - bbox[1]
-    return (w/res, h/res)
+    if hasattr(conf_file, 'read'):
+        seed_conf = yaml.load(conf_file)
+    else:
+        with open(conf_file) as conf_file:
+            seed_conf = yaml.load(conf_file)
+    
+    services = load_services()
+    if 'wms' in services:
+        server  = services['wms']
+    elif 'tms' in services:
+        server  = services['tms']
+    else:
+        print 'no wms or tms server configured. add one to your proxy.yaml'
+        return
+    for layer, options in seed_conf['seeds'].iteritems():
+        remove_before = before_timestamp_from_options(options)
+        caches = caches_from_layer(server.layers[layer])
+        seeder = CacheSeeder(caches, remove_before=remove_before, dry_run=dry_run,
+                            concurrency=concurrency)
+        for view in options['views']:
+            view_conf = seed_conf['views'][view]
+            if 'ogr_datasource' in view_conf:
+                check_shapely()
+                srs = view_conf['ogr_srs']
+                datasource = view_conf['ogr_datasource']
+                if not re.match(r'^\w{2,}:', datasource):
+                    # looks like a file and not PG:, MYSQL:, etc
+                    # make absolute path
+                    datasource = abspath(datasource)
+                where = view_conf.get('ogr_where', None)
+                bbox, geom = load_datasource(datasource, where)
+            elif 'polygons' in view_conf:
+                check_shapely()
+                srs = view_conf['polygons_srs']
+                poly_file = abspath(view_conf['polygons'])
+                bbox, geom = load_polygons(poly_file)
+            else:
+                srs = view_conf.get('bbox_srs', None)
+                bbox = view_conf.get('bbox', None)
+                geom = None
+            
+            cache_srs = view_conf.get('srs', None)
+            if cache_srs is not None:
+                cache_srs = [SRS(s) for s in cache_srs]
+            if srs is not None:
+                srs = SRS(srs)
+            level = view_conf.get('level', None)
+            assert len(level) == 2
+            seeder.seed_view(bbox, level=level, srs=srs, 
+                             cache_srs=cache_srs, geom=geom)
+        
+        if remove_before:
+            seeder.cleanup()
 
 def before_timestamp_from_options(options):
     """
@@ -341,46 +354,82 @@ def before_timestamp_from_options(options):
         deltas[delta_type] = remove_before.get(delta_type, 0)
     return timestamp_before(**deltas)
 
-def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=False):
-    from mapproxy.core.conf_loader import load_services
-    
-    
-    if hasattr(conf_file, 'read'):
-        seed_conf = yaml.load(conf_file)
+def exp_backoff(func, max_repeat=10, start_backoff_sec=2, 
+        exceptions=(Exception,)):
+    n = 0
+    while True:
+        try:
+            result = func()
+        except exceptions, ex:
+            if (n+1) >= max_repeat:
+                raise
+            wait_for = start_backoff_sec * 2**n
+            print >>sys.stderr, ("An error occured. Retry in %d seconds: %r" % 
+                (wait_for, ex))
+            time.sleep(wait_for)
+            n += 1
+        else:
+            return result
+
+def check_shapely():
+    if not shapely_present:
+        raise ImportError('could not import shapley.'
+            ' required for polygon/ogr seed areas')
+
+def caches_from_layer(layer):
+    caches = []
+    if hasattr(layer, 'layers'): # MultiLayer
+        layers = layer.layers
     else:
-        with open(conf_file) as conf_file:
-            seed_conf = yaml.load(conf_file)
+        layers = [layer]
+    for layer in layers:
+        if hasattr(layer, 'sources'): # VLayer
+            caches.extend([source.cache for source in layer.sources
+                                if hasattr(source, 'cache')])
+        else:
+            caches.append(layer.cache)
+    return caches
+
+def load_datasource(datasource, where=None):
+    from mapproxy.core.ogr_reader import OGRShapeReader
     
-    if verbose:
-        progress_meter = TileProgressMeter
-    else:
-        progress_meter = NullProgressMeter
+    polygons = []
+    for wkt in OGRShapeReader(datasource).wkts(where):
+        polygons.append(shapely.wkt.loads(wkt))
+        
+    mp = shapely.geometry.MultiPolygon(polygons)
+    return mp.bounds, mp
+
+def load_polygons(geom_file):
+    polygons = []
+    with open(geom_file) as f:
+        for line in f:
+            polygons.append(shapely.wkt.loads(line))
     
-    services = load_services()
-    if 'wms' in services:
-        server  = services['wms']
-    elif 'tms' in services:
-        server  = services['tms']
-    else:
-        print 'no wms or tms server configured. add one to your proxy.yaml'
-        return
-    for layer, options in seed_conf['seeds'].iteritems():
-        remove_before = before_timestamp_from_options(options)
-        seeder = TileSeeder(server.layers[layer], remove_before=remove_before,
-                            progress_meter=progress_meter,
-                            rebuild_inplace=rebuild_inplace)
-        for view in options['views']:
-            view_conf = seed_conf['views'][view]
-            srs = view_conf.get('bbox_srs', None)
-            bbox = view_conf['bbox']
-            cache_srs = view_conf.get('srs', None)
-            if cache_srs is not None:
-                cache_srs = [SRS(s) for s in cache_srs]
-            if srs is not None:
-                srs = SRS(srs)
-            level = view_conf.get('level', None)
-            res = view_conf.get('res', None)
-            seeder.add_seed_location(bbox, res=res, level=level, srs=srs, 
-                                     cache_srs=cache_srs)
-        seeder.seed(dry_run=dry_run)
+    mp = shapely.geometry.MultiPolygon(polygons)
+    return mp.bounds, mp
+
+def transform_geometry(from_srs, to_srs, geometry):
+    transf = partial(transform_xy, from_srs, to_srs)
     
+    if geometry.type == 'Polygon':
+        return transform_polygon(transf, geometry)
+    
+    if geometry.type == 'MultiPolygon':
+        return transform_multipolygon(transf, geometry)
+
+def transform_polygon(transf, polygon):
+    ext = transf(polygon.exterior.xy)
+    ints = [transf(ring.xy) for ring in polygon.interiors]
+    return shapely.geometry.Polygon(ext, ints)
+
+def transform_multipolygon(transf, multipolygon):
+    transformed_polygons = []
+    for polygon in multipolygon:
+        transformed_polygons.append(transform_polygon(transf, polygon))
+    return shapely.geometry.MultiPolygon(transformed_polygons)
+
+
+def transform_xy(from_srs, to_srs, xy):
+    return list(from_srs.transform_to(to_srs, zip(*xy)))
+
