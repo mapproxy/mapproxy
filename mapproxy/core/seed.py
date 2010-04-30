@@ -189,10 +189,12 @@ class CacheSeeder(object):
         self.dry_run = dry_run
         self.caches = caches
         self.concurrency = concurrency
+        self.seeded_caches = []
     
     def seed_view(self, bbox, level, srs, cache_srs, geom=None):
         for cache in self.caches:
             if not cache_srs or cache.grid.srs in cache_srs:
+                self.seeded_caches.append(cache)
                 if self.remove_before:
                     cache.cache_mgr.expire_timestamp = lambda tile: self.remove_before
                 seed_pool = SeedPool(cache, dry_run=self.dry_run, size=self.concurrency)
@@ -202,7 +204,7 @@ class CacheSeeder(object):
                 seed_pool.stop()
     
     def cleanup(self):
-        for cache in self.caches:
+        for cache in self.seeded_caches:
             for i in range(cache.grid.levels):
                 level_dir = cache.cache_mgr.cache.level_location(i)
                 if self.dry_run:
