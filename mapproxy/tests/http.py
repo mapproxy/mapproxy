@@ -26,7 +26,7 @@ class ThreadedStopableHTTPServer(threading.Thread):
         self.shutdown = False
         self.httpd = HTTPServer(address, mock_http_handler(requests_responses))
     def run(self):
-        for _ in xrange(len(self.requests_responses)):
+        while self.requests_responses:
             if self.shutdown: return
             self.httpd.handle_request()
 
@@ -41,10 +41,22 @@ def mock_http_handler(requests_responses):
         def do_mock_request(self):
             assert len(requests_responses) > 0, 'got unexpected request (%s)' % self.path
             req, resp = requests_responses.pop(0)
+            if req.get('require_basic_auth', False):
+                f = open('out.txt', 'a')
+                print >>f, self.headers
+                if 'Authorization' not in self.headers:
+                    requests_responses.insert(0, (req, resp)) # push back
+                    self.send_response(401)
+                    self.send_header('WWW-Authenticate', 'Basic realm="Secure Area"')
+                    self.end_headers()
+                    self.wfile.write('no access')
+                    return
             if not query_eq(req['path'], self.path):
                 print 'got request      ', self.path
                 print 'excpected request', req['path']
                 assert False, 'got unexpected request (see stdout)'
+            if 'req_assert_function' in req:
+                assert req['req_assert_function'](self)
             self.start_response(resp)
             self.wfile.write(resp['body'])
             if not requests_responses:

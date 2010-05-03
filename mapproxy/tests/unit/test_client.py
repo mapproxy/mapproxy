@@ -22,10 +22,12 @@ from mapproxy.wms.request import wms_request, WMS111MapRequest, WMS100MapRequest
                                  WMS130MapRequest
 from mapproxy.core.srs import bbox_equals
 from mapproxy.core.request import Request, url_decode
+from mapproxy.core.config import base_config
 from mapproxy.tests.http import mock_httpd, query_eq, make_wsgi_env
-from mapproxy.tests.helper import assert_re
+from mapproxy.tests.helper import assert_re, TempFiles
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 TESTSERVER_ADDRESS = ('127.0.0.1', 56413)
 TESTSERVER_URL = 'http://%s:%s' % TESTSERVER_ADDRESS
@@ -77,7 +79,92 @@ class TestHTTPClient(object):
             assert_re(e.message, r'Internal HTTP error \(http://localhost.*\): TypeError')
         else:
             assert False, 'expected HTTPClientError'
+
     
+    def test_https_no_ssl_module_error(self):
+        from mapproxy.core import client
+        old_ssl = client.ssl
+        try:
+            client.ssl = None
+            try:
+                self.client = HTTPClient('https://trac.osgeo.org/')
+            except ImportError:
+                pass
+            else:
+                assert False, 'no ImportError for missing ssl module'
+        finally:
+            client.ssl = old_ssl
+    
+    def test_https_no_ssl_module_insecure(self):
+        from mapproxy.core import client
+        old_ssl = client.ssl
+        try:
+            client.ssl = None
+            base_config().http.ssl.insecure = True
+            self.client = HTTPClient('https://trac.osgeo.org/')
+            self.client.open('https://trac.osgeo.org/')
+        finally:
+            client.ssl = old_ssl
+            base_config().http.ssl.insecure = False
+    
+    def test_https_valid_cert(self):
+        try:
+            import ssl
+        except ImportError:
+            raise SkipTest()
+        
+        with TempFiles(1) as tmp:
+            with open(tmp[0], 'w') as f:
+                f.write(OSGEO_CERT)
+            base_config().http.ssl.ca_certs = tmp[0]
+            self.client = HTTPClient('https://trac.osgeo.org/')
+            self.client.open('https://trac.osgeo.org/')
+    
+    def test_https_invalid_cert(self):
+        try:
+            import ssl
+        except ImportError:
+            raise SkipTest()
+        
+        with TempFiles(1) as tmp:
+            base_config().http.ssl.ca_certs = tmp[0]
+            self.client = HTTPClient('https://trac.osgeo.org/')
+            try:
+                self.client.open('https://trac.osgeo.org/')
+            except HTTPClientError, e:
+                assert_re(e.message, r'Could not verify connection to URL')                
+        
+OSGEO_CERT = """
+-----BEGIN CERTIFICATE-----
+MIIE2DCCBEGgAwIBAgIEN0rSQzANBgkqhkiG9w0BAQUFADCBwzELMAkGA1UEBhMC
+VVMxFDASBgNVBAoTC0VudHJ1c3QubmV0MTswOQYDVQQLEzJ3d3cuZW50cnVzdC5u
+ZXQvQ1BTIGluY29ycC4gYnkgcmVmLiAobGltaXRzIGxpYWIuKTElMCMGA1UECxMc
+KGMpIDE5OTkgRW50cnVzdC5uZXQgTGltaXRlZDE6MDgGA1UEAxMxRW50cnVzdC5u
+ZXQgU2VjdXJlIFNlcnZlciBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eTAeFw05OTA1
+MjUxNjA5NDBaFw0xOTA1MjUxNjM5NDBaMIHDMQswCQYDVQQGEwJVUzEUMBIGA1UE
+ChMLRW50cnVzdC5uZXQxOzA5BgNVBAsTMnd3dy5lbnRydXN0Lm5ldC9DUFMgaW5j
+b3JwLiBieSByZWYuIChsaW1pdHMgbGlhYi4pMSUwIwYDVQQLExwoYykgMTk5OSBF
+bnRydXN0Lm5ldCBMaW1pdGVkMTowOAYDVQQDEzFFbnRydXN0Lm5ldCBTZWN1cmUg
+U2VydmVyIENlcnRpZmljYXRpb24gQXV0aG9yaXR5MIGdMA0GCSqGSIb3DQEBAQUA
+A4GLADCBhwKBgQDNKIM0VBuJ8w+vN5Ex/68xYMmo6LIQaO2f55M28Qpku0f1BBc/
+I0dNxScZgSYMVHINiC3ZH5oSn7yzcdOAGT9HZnuMNSjSuQrfJNqc1lB5gXpa0zf3
+wkrYKZImZNHkmGw6AIr1NJtl+O3jEP/9uElY3KDegjlrgbEWGWG5VLbmQwIBA6OC
+AdcwggHTMBEGCWCGSAGG+EIBAQQEAwIABzCCARkGA1UdHwSCARAwggEMMIHeoIHb
+oIHYpIHVMIHSMQswCQYDVQQGEwJVUzEUMBIGA1UEChMLRW50cnVzdC5uZXQxOzA5
+BgNVBAsTMnd3dy5lbnRydXN0Lm5ldC9DUFMgaW5jb3JwLiBieSByZWYuIChsaW1p
+dHMgbGlhYi4pMSUwIwYDVQQLExwoYykgMTk5OSBFbnRydXN0Lm5ldCBMaW1pdGVk
+MTowOAYDVQQDEzFFbnRydXN0Lm5ldCBTZWN1cmUgU2VydmVyIENlcnRpZmljYXRp
+b24gQXV0aG9yaXR5MQ0wCwYDVQQDEwRDUkwxMCmgJ6AlhiNodHRwOi8vd3d3LmVu
+dHJ1c3QubmV0L0NSTC9uZXQxLmNybDArBgNVHRAEJDAigA8xOTk5MDUyNTE2MDk0
+MFqBDzIwMTkwNTI1MTYwOTQwWjALBgNVHQ8EBAMCAQYwHwYDVR0jBBgwFoAU8Bdi
+E1U9s/8KAGv7UISX8+1i0BowHQYDVR0OBBYEFPAXYhNVPbP/CgBr+1CEl/PtYtAa
+MAwGA1UdEwQFMAMBAf8wGQYJKoZIhvZ9B0EABAwwChsEVjQuMAMCBJAwDQYJKoZI
+hvcNAQEFBQADgYEAkNwwAvpkdMKnCqV8IY00F6j7Rw7/JXyNEwr75Ji174z4xRAN
+95K+8cPV1ZVqBLssziY2ZcgxxufuP+NXdYR6Ee9GTxj005i7qIcyunL2POI9n9cd
+2cNgQ4xYDiKWL2KjLB+6rQXvqzJ4h6BUcxm1XAX5Uj5tLUUL9wqT6u0G+bI=
+-----END CERTIFICATE-----
+
+"""
 
 class TestWMSClient(object):
     def setup(self):
@@ -95,6 +182,29 @@ class TestWMSClient(object):
             req.params['format'] = 'image/png'
             req.params['srs'] = 'EPSG:4326'
             resp = self.wms.get_map(req)
+    
+    def test_request_w_auth(self):
+        wms = WMSClient(self.req, http_client=HTTPClient(self.req.url, username='foo', password='bar'))
+        def assert_auth(req_handler):
+            assert 'Authorization' in req_handler.headers
+            auth_data = req_handler.headers['Authorization'].split()[1]
+            auth_data = auth_data.decode('base64')
+            eq_(auth_data, 'foo:bar')
+            return True
+        expected_req = ({'path': r'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+                                  '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512&STYLES=',
+                         'require_basic_auth': True,
+                         'req_assert_function': assert_auth},
+                        {'body': 'no image', 'headers': {'content-type': 'image/png'}})
+        with mock_httpd(TESTSERVER_ADDRESS, [expected_req]):
+            req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
+                                   param={'layers': 'foo', 'bbox': '-180.0,-90.0,180.0,90.0'})
+            req.params.size = (512, 256)
+            req.params['format'] = 'image/png'
+            req.params['srs'] = 'EPSG:4326'
+            resp = wms.get_map(req)
+
     def test_get_tile_non_image_content_type(self):
         expected_req = ({'path': r'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&STYLES='
