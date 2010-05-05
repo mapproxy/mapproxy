@@ -55,7 +55,7 @@ We are using `the issue tracker at BitBucket <http://bitbucket.org/olt/mapproxy/
 Tests
 -----
 
-MapProxy contains lots of automatic tests. If you don't count in the `proxy_seed`-tool and the WSGI application, the test coverage is around 95%. We want to keep this number high, so all new developments should include some tests.
+MapProxy contains lots of automatic tests. If you don't count in the ``mapproxy-seed``-tool and the WSGI application, the test coverage is around 95%. We want to keep this number high, so all new developments should include some tests.
 
 MapProxy uses `Nose`_ as a test loader and runner. To install Nose and all further test dependencies call::
 

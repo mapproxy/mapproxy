@@ -40,8 +40,8 @@ setup(
     include_package_data=True,
     entry_points = {
         'console_scripts': [
-            'proxy_seed = mapproxy.core.scripts.seed:main',
-            'proxy_seed_old = mapproxy.core.scripts.seed_old:main',
+            'mapproxy-seed = mapproxy.core.scripts.seed:main',
+            'proxy_seed = mapproxy.core.scripts.seed_old:main',
         ],
         'paste.app_factory': [
             'app = mapproxy.core.app:app_factory'
