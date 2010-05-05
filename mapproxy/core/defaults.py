@@ -57,4 +57,11 @@ tiles = dict(
     expires_hours = 72,
 )
 
+http = dict(
+    ssl = dict(
+        ca_certs = None,
+        insecure = False,
+    ),
+)
+
 http_client_timeout = 60

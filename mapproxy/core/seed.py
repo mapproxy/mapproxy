@@ -316,8 +316,7 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
             elif 'polygons' in view_conf:
                 check_shapely()
                 srs = view_conf['polygons_srs']
-                poly_file = abspath(view_conf['polygons'])
-                bbox, geom = load_polygons(poly_file)
+                bbox, geom = load_polygons(view_conf['polygons'])
             else:
                 srs = view_conf.get('bbox_srs', None)
                 bbox = view_conf.get('bbox', None)
@@ -402,11 +401,21 @@ def load_datasource(datasource, where=None):
     mp = shapely.geometry.MultiPolygon(polygons)
     return mp.bounds, mp
 
-def load_polygons(geom_file):
+def load_polygons(geom_files):
     polygons = []
-    with open(geom_file) as f:
-        for line in f:
-            polygons.append(shapely.wkt.loads(line))
+    if isinstance(geom_files, basestring):
+        geom_files = [geom_files]
+    
+    for geom_file in geom_files:
+        geom_file = abspath(geom_file)
+        with open(geom_file) as f:
+            for line in f:
+                geom = shapely.wkt.loads(line)
+                if geom.type != 'Polygon':
+                    print 'ignoring non-polygon geometry (%s) from %s' % \
+                        (geom.type, geom_file)
+                else:
+                    polygons.append(geom)
     
     mp = shapely.geometry.MultiPolygon(polygons)
     return mp.bounds, mp

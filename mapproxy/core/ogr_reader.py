@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
 import ctypes
 from ctypes import c_void_p, c_char_p, c_int
 from ctypes.util import find_library

@@ -59,7 +59,6 @@
 ##############################################################################
 
 import os
-import errno
 # import logging
 # logger = logging.getLogger("zc.lockfile")
 
