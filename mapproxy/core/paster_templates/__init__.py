@@ -1,5 +1,5 @@
 from paste.util.template import paste_script_template_renderer
-from paste.script.templates import Template, var
+from paste.script.templates import Template #, var
 
 
 class ConfigurationTemplate(Template):

@@ -15,14 +15,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from mapproxy.core.image import ImageSource
-from mapproxy.core.client import retrieve_image, retrieve_url
+from mapproxy.core.client import retrieve_url, HTTPClientError
 from mapproxy.core.srs import SRS, make_lin_transf
 
 class WMSClient(object):
     """
     Client for WMS requests.
     """
-    def __init__(self, request_template=None, client_request=None):
+    def __init__(self, request_template=None, client_request=None, http_client=None):
         """
         :param request_template: a request that will be used as a template for
             new requests
@@ -34,9 +34,12 @@ class WMSClient(object):
             client_request = wms_client_request
         self.client_request = client_request
         self.request_template = request_template
+        self.http_client = http_client
 
     def get_map(self, request):
-        resp = retrieve_image(self._map_url(request))
+        resp = self._retrieve_url(self._map_url(request))
+        if not resp.headers['content-type'].startswith('image'):
+            raise HTTPClientError('response is not an image: (%s)' % (resp.read()))
         return ImageSource(resp, request.params.format)
     
     def _map_url(self, request):
@@ -44,8 +47,13 @@ class WMSClient(object):
         return req.complete_url
     
     def get_info(self, request):
-        resp = retrieve_url(self._info_url(request))
+        resp = self._retrieve_url(self._info_url(request))
         return resp.read()
+    
+    def _retrieve_url(self, url):
+        if self.http_client:
+            return self.http_client.open(url)
+        return retrieve_url(url)
     
     def _info_url(self, request):
         req = self.client_request(self.request_template, request)

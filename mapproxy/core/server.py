@@ -18,9 +18,6 @@
 Service handler (WMS, TMS, etc.).
 """
 from mapproxy.core.exceptions import RequestError
-from mapproxy.core.utils import replace_instancemethod
-from mapproxy.core.response import Response
-from mapproxy.core.app import ctx
 
 class Server(object):
     names = tuple()
