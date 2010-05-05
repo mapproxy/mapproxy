@@ -415,7 +415,7 @@ def load_polygons(geom_files):
                     print 'ignoring non-polygon geometry (%s) from %s' % \
                         (geom.type, geom_file)
                 else:
-                    polygons.append()
+                    polygons.append(geom)
     
     mp = shapely.geometry.MultiPolygon(polygons)
     return mp.bounds, mp
