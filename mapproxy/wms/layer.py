@@ -39,7 +39,7 @@ class FeatureInfoSource(object):
         for fi_source in self.fi_sources:
             try:
                 yield fi_source.get_info(request)
-            except HTTPClientError, ex:
+            except HTTPClientError:
                 raise RequestError('unable to retrieve feature info')
 
 class WMSLayer(Layer):

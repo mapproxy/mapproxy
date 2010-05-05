@@ -176,7 +176,7 @@ def static_file_response(filename, max_age=None):
     mtime = os.lstat(filename).st_mtime
     size = os.stat(filename).st_size
     resp = Response(f, content_type=content_type)
-    resp.cache_headers(stats.st_mtime, etag_data=(mtime, size),
+    resp.cache_headers(mtime, etag_data=(mtime, size),
                        max_age=max_age)
     if hasattr(ctx, 'env'):
         resp.make_conditional(ctx.env)

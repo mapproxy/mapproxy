@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from mapproxy.core.image import ImageSource
-from mapproxy.core.client import retrieve_image, retrieve_url, HTTPClientError
+from mapproxy.core.client import retrieve_url, HTTPClientError
 from mapproxy.core.srs import SRS, make_lin_transf
 
 class WMSClient(object):
