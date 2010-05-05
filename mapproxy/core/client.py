@@ -97,8 +97,8 @@ class HTTPClient(object):
         except URLError, e:
             if ssl and isinstance(e.reason, ssl.SSLError):
                 e = HTTPClientError('Could not verify connection to URL (%.30s...): %s'
-                                     % (url, e.reason.args[1])), sys.exc_info()
-                reraise_exception(e)
+                                     % (url, e.reason.args[1]))
+                reraise_exception(e, sys.exc_info())
             try:
                 reason = e.reason.args[1]
             except (AttributeError, IndexError):
