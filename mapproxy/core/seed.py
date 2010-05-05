@@ -316,7 +316,7 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
             elif 'polygons' in view_conf:
                 check_shapely()
                 srs = view_conf['polygons_srs']
-                bbox, geom = load_polygons(poly_file)
+                bbox, geom = load_polygons(view_conf['polygons'])
             else:
                 srs = view_conf.get('bbox_srs', None)
                 bbox = view_conf.get('bbox', None)
