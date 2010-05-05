@@ -26,7 +26,7 @@ import logging
 log = logging.getLogger(__name__)
 
 from mapproxy.core.conf_loader import Source, CacheSource
-from mapproxy.core.client import auth_data_from_url
+from mapproxy.core.client import auth_data_from_url, HTTPClient
 from mapproxy.wms.cache import WMSTileSource
 from mapproxy.wms.layer import (DirectLayer, WMSCacheLayer, DebugLayer, VLayer,
                                  FeatureInfoSource, MultiLayer, AttributionLayer)
