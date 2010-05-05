@@ -34,6 +34,11 @@ def stop_processing(_signal, _frame):
 
 def main():
     from optparse import OptionParser
+
+    print '#' * 70
+    print 'proxy_seed is deprecated, please use the new mapproxy-seed tool!'
+    print '#' * 70
+    
     usage = "usage: %prog [options] seed_conf"
     parser = OptionParser(usage)
     parser.add_option("-q", "--quiet",

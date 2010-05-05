@@ -2,10 +2,12 @@ Seeding
 =======
 
 The MapProxy creates all tiles on demand. To improve the performance for commonly
-requested views it is possible to pre-generate these tiles. The ``proxy_seed`` script does
+requested views it is possible to pre-generate these tiles. The ``mapproxy-seed`` script does
 this task.
 
-proxy_seed
+.. note:: ``mapproxy-seed`` is a new version of the seed tool. The old ``proxy_seed`` tool is deprecated and will be removed in 0.9.0. The configuration is upward compatible.
+
+mapproxy-seed
 ----------
 
 The command line script expects a seed configuration that describes which tiles from which layer should be generated. See `configuration`_ for the format of the file.
@@ -13,7 +15,7 @@ The command line script expects a seed configuration that describes which tiles 
 Use the ``-f`` option to specify the proxy configuration.
 ::
 
-    proxy_seed -f etc/proxy.yaml etc/seed.yaml
+    mapproxy-seed -f etc/proxy.yaml etc/seed.yaml
 
 Configuration
 --------------
