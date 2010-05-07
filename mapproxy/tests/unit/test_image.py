@@ -59,6 +59,22 @@ class TestImageSource(object):
         assert ir.as_image() == img
         assert is_png(ir.as_buffer())
     
+    def test_from_non_seekable_file(self):
+        with open(self.tmp_filename, 'rb') as tmp_file:
+            data = tmp_file.read()
+            
+        class FileLikeDummy(object):
+            # "file" without seek, like urlopen response
+            def read(self):
+                return data
+        
+        ir = ImageSource(FileLikeDummy(), 'png')
+        assert isinstance(ir.as_buffer(), ReadBufWrapper)
+        assert ir.as_buffer().read() == data
+        assert ir.as_image().size == (100, 100)
+        assert ir.as_buffer().read() == data
+        
+    
     def test_output_formats(self):
         img = Image.new('RGB', (100, 100))
         for format in ['png', 'gif', 'tiff', 'jpeg', 'GeoTIFF', 'bmp']:
