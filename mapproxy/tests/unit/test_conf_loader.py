@@ -54,7 +54,7 @@ class TestTMSTileCacheLoader(object):
     def test_loading_w_defaults(self):
         name = 'tms'
         layer_config = {'md': {'title': 'TMS Cache Layer'},
-                        'sources': [{'type': 'cache_tms'}]}
+                        'sources': [{'type': 'cache_tms', 'url': 'http://localhost/'}]}
         layer = configured_layer(LayerConf(name, layer_config, {}, set()))
         assert isinstance(layer, WMSLayer)
         eq_(layer.md.title, 'TMS Cache Layer')
