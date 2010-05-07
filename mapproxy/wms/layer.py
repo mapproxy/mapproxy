@@ -233,8 +233,11 @@ class WMSCacheLayer(WMSLayer):
             return None
     
 
-def srs_dispatcher(layers, srs):
-    latlong = SRS(srs).is_latlong
+def srs_dispatcher(layers, srs, srs_layers=None):
+    if srs_layers and srs in srs_layers:
+        return srs_layers[srs]
+    
+    latlong = srs.is_latlong
     for layer in layers:
         if layer.srs.is_latlong == latlong:
             return layer
@@ -247,6 +250,7 @@ class MultiLayer(WMSLayer):
     def __init__(self, layers, md, dispatcher=None):
         WMSLayer.__init__(self, md, transparent=layers[0].transparent)
         self.layers = layers
+        self.srs_layers = dict((layer.srs, layer) for layer in layers)
         if dispatcher is None:
             dispatcher = srs_dispatcher
         self.dispatcher = dispatcher
@@ -259,7 +263,7 @@ class MultiLayer(WMSLayer):
     
     def render(self, map_request):
         srs = map_request.params.srs
-        layer = self.dispatcher(self.layers, srs)
+        layer = self.dispatcher(self.layers, SRS(srs), self.srs_layers)
         return layer.render(map_request)
     
     def caches(self, request):

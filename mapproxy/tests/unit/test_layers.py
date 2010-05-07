@@ -20,7 +20,7 @@ import mapproxy.wms.layer
 from mapproxy.wms.client import WMSClient
 from mapproxy.core.grid import TileGrid
 from mapproxy.core.cache import Cache, TileCacheError
-from mapproxy.wms.layer import DirectLayer, Layer, VLayer, WMSCacheLayer, MultiLayer
+from mapproxy.wms.layer import DirectLayer, Layer, VLayer, WMSCacheLayer, MultiLayer, srs_dispatcher
 from mapproxy.tms.layer import TileServiceLayer
 from mapproxy.core.request import Request
 from mapproxy.tms.request import tile_request
@@ -56,8 +56,8 @@ class TestMultiLayer(Mocker):
     def test_srs_dispatch(self):
         req = WMS111MapRequest(param={'srs': 'EPSG:4326'})
         self.expect_and_return(self.layers[0].transparent, True) #.result(True)
-        self.expect(self.layers[0].srs).result(self.srs[0])
-        self.expect(self.layers[1].srs).result(self.srs[1])
+        self.expect(self.layers[0].srs).count(1).result(self.srs[0])
+        self.expect(self.layers[1].srs).count(1).result(self.srs[1])
         self.expect(self.layers[1].render(req)).result('dummy')
         self.replay()
         layer = MultiLayer(self.layers, {})
@@ -65,11 +65,50 @@ class TestMultiLayer(Mocker):
     def test_srs_dispatch2(self):
         req = WMS111MapRequest(param={'srs': 'EPSG:31466'})
         self.expect(self.layers[0].transparent).result(True)
-        self.expect(self.layers[0].srs).result(self.srs[0])
+        self.expect(self.layers[0].srs).count(2).result(self.srs[0])
+        self.expect(self.layers[1].srs).count(1).result(self.srs[1])
         self.expect(self.layers[0].render(req)).result('dummy')
         self.replay()
         layer = MultiLayer(self.layers, {})
         assert layer.render(req) == 'dummy'
+
+class TestSRSDispatcher(object):
+    def setup(self):
+        class SRSLayer(Layer):
+            def __init__(self, srs):
+                Layer.__init__(self)
+                self.test_srs = srs
+            def _srs(self):
+                return self.test_srs
+        
+        self.layers = [
+            SRSLayer(SRS(4326)),
+            SRSLayer(SRS(31467)),
+            SRSLayer(SRS(900913)),
+        ]
+        self.srs_layers = dict((layer.srs, layer) for layer in self.layers)
+        
+    def test_match(self):
+        eq_(srs_dispatcher(self.layers, SRS(4326), self.srs_layers), 
+            self.layers[0])
+        eq_(srs_dispatcher(self.layers, SRS(31467), self.srs_layers), 
+            self.layers[1])
+        eq_(srs_dispatcher(self.layers, SRS(900913), self.srs_layers), 
+            self.layers[2])
+    
+    def test_latlong(self):
+        eq_(srs_dispatcher(self.layers, SRS(4326)), 
+            self.layers[0])
+        eq_(srs_dispatcher(self.layers, SRS(4258)), 
+            self.layers[0])
+    
+    def test_not_latlong(self):
+        eq_(srs_dispatcher(self.layers, SRS(31467)), 
+            self.layers[1])
+        eq_(srs_dispatcher(self.layers, SRS(31468)), 
+            self.layers[1])
+        eq_(srs_dispatcher(self.layers, SRS(900913)), 
+            self.layers[1])
 
 
 class TestDirectLayer(Mocker):
