@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 
 from mapproxy.core.app import version
 from mapproxy.core.utils import reraise_exception
-from mapproxy.core.config import base_config
+from mapproxy.core.config import base_config, abspath
 
 import socket
 socket.setdefaulttimeout(base_config().http_client_timeout)
@@ -180,7 +180,7 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
                                     self.key_file,
                                     self.cert_file,
                                     cert_reqs=ssl.CERT_REQUIRED,
-                                    ca_certs=base_config().http.ssl.ca_certs)
+                                    ca_certs=abspath(base_config().http.ssl.ca_certs))
 
 class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
     def __init__(self, connection_class=VerifiedHTTPSConnection):
