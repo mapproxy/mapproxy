@@ -8,7 +8,7 @@ this task.
 .. note:: ``mapproxy-seed`` is a new version of the seed tool. The old ``proxy_seed`` tool is deprecated and will be removed in 0.9.0. The configuration is upward compatible.
 
 mapproxy-seed
-----------
+-------------
 
 The command line script expects a seed configuration that describes which tiles from which layer should be generated. See `configuration`_ for the format of the file.
 
@@ -16,6 +16,10 @@ Use the ``-f`` option to specify the proxy configuration.
 ::
 
     mapproxy-seed -f etc/proxy.yaml etc/seed.yaml
+
+.. note:: 
+  Due to some limitations of Windows it is not possible to start the tool with a
+  direct call of ``mapproxy-seed``. Use ``python -m mapproxy.core.scripts.seed`` instead.
 
 Configuration
 --------------
