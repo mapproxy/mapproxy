@@ -21,7 +21,6 @@ import math
 import time
 import yaml
 import datetime
-import multiprocessing
 from functools import partial
 
 from mapproxy.core.srs import SRS
@@ -47,13 +46,25 @@ NONE = 0
 CONTAINS = -1
 INTERSECTS = 1
 
+# do not use multiprocessing on windows, it blows
+# no lambdas, no anonymous functions/classes, no base_config(), etc.
+if sys.platform == 'win32':
+    import Queue
+    import threading
+    proc_class = threading.Thread
+    queue_class = Queue.Queue
+else:
+    import multiprocessing
+    proc_class = multiprocessing.Process
+    queue_class = multiprocessing.Queue
+
 
 class SeedPool(object):
     """
     Manages multiple SeedWorker.
     """
     def __init__(self, cache, size=2, dry_run=False):
-        self.tiles_queue = multiprocessing.Queue(32)
+        self.tiles_queue = queue_class(32)
         self.cache = cache
         self.dry_run = dry_run
         self.procs = []
@@ -72,9 +83,10 @@ class SeedPool(object):
         for proc in self.procs:
             proc.join()
 
-class SeedWorker(multiprocessing.Process):
+class SeedWorker(proc_class):
     def __init__(self, cache, tiles_queue, dry_run=False):
-        multiprocessing.Process.__init__(self)
+        proc_class.__init__(self)
+        proc_class.daemon = True
         self.cache = cache
         self.tiles_queue = tiles_queue
         self.dry_run = dry_run

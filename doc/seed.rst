@@ -17,10 +17,6 @@ Use the ``-f`` option to specify the proxy configuration.
 
     mapproxy-seed -f etc/proxy.yaml etc/seed.yaml
 
-.. note:: 
-  Due to some limitations of Windows it is not possible to start the tool with a
-  direct call of ``mapproxy-seed``. Use ``python -m mapproxy.core.scripts.seed`` instead.
-
 Configuration
 --------------
 
