@@ -1,0 +1,74 @@
+# This file is part of the MapProxy project.
+# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import sys
+import os
+
+from ctypes import CDLL
+from ctypes.util import find_library as _find_library
+
+
+default_locations = dict(
+    darwin=dict(
+        paths = ['/opt/local/lib'],
+        exts = ['.dylib'],
+    ),
+    win32=dict(
+        paths = [os.path.dirname(os.__file__) + '/../../../DLLs'],
+        exts = ['.dll']
+    )
+)
+
+
+def load_library(lib_name, locations_conf=default_locations):
+    """
+    Load the `lib_name` library with ctypes.
+    If ctypes.util.find_library does not find the library,
+    different path and filename extensions will be tried.
+    
+    Retruns the loaded library or None.
+    """
+    lib_path = find_library(lib_name)
+    
+    if lib_path:
+        return CDLL(lib_path)
+    
+    if sys.platform in locations_conf:
+        paths = locations_conf[sys.platform]['paths']
+        exts = locations_conf[sys.platform]['exts']
+        lib_path = find_library(lib_name, paths, exts)
+
+    if lib_path:
+        return CDLL(lib_path)
+        
+
+
+def find_library(lib_name, paths=None, exts=None):
+    """
+    Search for library in all permutations of `paths` and `exts`.
+    If nothing is found None is returned.
+    """
+    
+    if not paths or not exts:
+        return _find_library(lib_name)
+    
+    for path in paths:
+        for ext in exts:
+            lib_path = os.path.join(path, lib_name + ext)
+            if os.path.exists(lib_path):
+                return lib_path
+    
+    return None
