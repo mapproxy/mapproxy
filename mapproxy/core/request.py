@@ -75,6 +75,16 @@ class NoCaseMultiDict(dict):
     def __contains__(self, key):
         return dict.__contains__(self, key.lower())
     
+    def __getstate__(self):
+        data = []
+        for key, values in self.iteritems():
+            for v in values:
+                data.append((key, v))
+        return data
+        
+    def __setstate__(self, data):
+        self.__init__(data)
+    
     def get(self, key, default=None, type_func=None):
         """Return the default value if the requested data doesn't exist.
         If `type_func` is provided and is a callable it should convert the value,
@@ -213,6 +223,7 @@ class RequestParams(object):
     
     :param param: A dict or ``NoCaseMultiDict``.
     """
+    params = None
     def __init__(self, param=None):
         self.delimiter = ','
         
@@ -266,7 +277,7 @@ class RequestParams(object):
             yield key, self.delimiter.join((str(x) for x in values))
     
     def __contains__(self, key):
-        return key in self.params
+        return self.params and key in self.params
     
     def copy(self):
         return self.__class__(self.params)

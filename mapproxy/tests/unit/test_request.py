@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from mapproxy.core.request import url_decode, Request, NoCaseMultiDict
+from mapproxy.core.request import url_decode, Request, NoCaseMultiDict, RequestParams, BaseRequest
 from mapproxy.tms.request import TMSRequest, tile_request, TileRequest
 from mapproxy.wms.request import (wms_request, WMSMapRequest, WMSMapRequestParams,
                               WMS111MapRequest, WMS100MapRequest, WMS130MapRequest,
@@ -23,6 +23,8 @@ from mapproxy.core.exceptions import RequestError
 from mapproxy.wms.exceptions import (WMS111ExceptionHandler, WMSImageExceptionHandler,
                                      WMSBlankExceptionHandler)
 from mapproxy.tests.http import make_wsgi_env
+
+import pickle
 from nose.tools import eq_
 
 class TestNoCaseMultiDict(object):
@@ -461,3 +463,9 @@ class TestTileRequest(object):
         eq_(tile_req.tile, (2, 3, 5))
         eq_(tile_req.format, 'png')
         eq_(tile_req.layer, 'osm_EPSG4326')
+
+def test_request_params_pickle():
+    params = RequestParams(dict(foo='bar', zing='zong'))
+    params2 = pickle.loads(pickle.dumps(params, 2))
+    assert params.params == params2.params
+    
