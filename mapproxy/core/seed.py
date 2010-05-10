@@ -87,8 +87,8 @@ class SeedWorker(multiprocessing.Process):
                 progress[2]),
             sys.stdout.flush()
             if not self.dry_run:
-                load_tiles = lambda: self.cache.cache_mgr.load_tile_coords(tiles)
-                exp_backoff(load_tiles, exceptions=(TileSourceError, IOError))
+                exp_backoff(self.cache.cache_mgr.load_tile_coords, args=(tiles,),
+                            exceptions=(TileSourceError, IOError))
 
 class Seeder(object):
     def __init__(self, cache, task, seed_pool):
@@ -196,7 +196,7 @@ class CacheSeeder(object):
             if not cache_srs or cache.grid.srs in cache_srs:
                 self.seeded_caches.append(cache)
                 if self.remove_before:
-                    cache.cache_mgr.expire_timestamp = lambda tile: self.remove_before
+                    cache.cache_mgr._expire_timestamp = self.remove_before
                 seed_pool = SeedPool(cache, dry_run=self.dry_run, size=self.concurrency)
                 seed_task = SeedTask(bbox, level, srs, cache.grid.srs, geom)
                 seeder = Seeder(cache, seed_task, seed_pool)
@@ -209,10 +209,10 @@ class CacheSeeder(object):
                 level_dir = cache.cache_mgr.cache.level_location(i)
                 if self.dry_run:
                     def file_handler(filename):
-                        self.progress.print_msg('removing ' + filename)
+                        print 'removing ' + filename
                 else:
                     file_handler = None
-                self.progress.print_msg('removing oldfiles in ' + level_dir)
+                print 'removing oldfiles in ' + level_dir
                 cleanup_directory(level_dir, self.remove_before,
                     file_handler=file_handler)
 
@@ -260,7 +260,7 @@ def timestamp():
     return datetime.datetime.now().strftime('%H:%M:%S')
 
 def format_bbox(bbox):
-    return ('(%.5f, %.5f, %.5f, %.5f)') % bbox
+    return ('(%.5f, %.5f, %.5f, %.5f)') % tuple(bbox)
 
 def status_symbol(i, total):
     """
@@ -356,12 +356,12 @@ def before_timestamp_from_options(options):
         deltas[delta_type] = remove_before.get(delta_type, 0)
     return timestamp_before(**deltas)
 
-def exp_backoff(func, max_repeat=10, start_backoff_sec=2, 
+def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2, 
         exceptions=(Exception,)):
     n = 0
     while True:
         try:
-            result = func()
+            result = func(*args, **kw)
         except exceptions, ex:
             if (n+1) >= max_repeat:
                 raise

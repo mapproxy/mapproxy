@@ -177,6 +177,7 @@ class CacheManager(object):
         self.cache = cache
         self.tile_source = tile_source
         self.tile_creator = tile_creator
+        self._expire_timestamp = None
         
     def is_cached(self, tile):
         """
@@ -197,10 +198,9 @@ class CacheManager(object):
         Return the timestamp until which a tile should be accepted as up-to-date,
         or ``None`` if the tiles should not expire.
         
-        :note: Returns ``None`` by default. Overwrite/change method to enable
-            expiration.
+        :note: Returns _expire_timestamp by default.
         """
-        return None
+        return self._expire_timestamp
     
     def load_tile_coords(self, tile_coords, with_metadata=False):
         """
