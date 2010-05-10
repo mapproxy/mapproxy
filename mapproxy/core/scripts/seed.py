@@ -28,6 +28,15 @@ def set_service_config(conf_file=None):
         base_config().services_conf = conf_file
 
 def main():
+    import sys
+    if sys.platform == 'win32':
+        print "mapproxy-seed is not callable on Windows platforms."
+        print "Please use: python -m mapproxy.core.scripts.seed"
+        sys.exit(1)
+    
+    _main()
+
+def _main():
     usage = "usage: %prog [options] seed_conf"
     parser = OptionParser(usage)
     parser.add_option("-q", "--quiet",
@@ -60,4 +69,4 @@ def main():
                         dry_run=options.dry_run, concurrency=options.concurrency)
 
 if __name__ == '__main__':
-    main()
+    _main()
