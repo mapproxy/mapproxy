@@ -14,13 +14,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from mapproxy.core.libutils import load_library
 import ctypes
 from ctypes import c_void_p, c_char_p, c_int
-from ctypes.util import find_library
 
 def init_libgdal():
-    libgdal = None
-    libgdal = ctypes.CDLL(find_library('libgdal'))
+    libgdal = load_library('libgdal')
+    
+    if not libgdal: return
     
     libgdal.OGROpen.argtypes = [c_char_p, c_int, c_void_p]
     libgdal.OGROpen.restype = c_void_p
@@ -116,6 +117,7 @@ class OGRShapeReader(object):
         if self.opened:
             libgdal.OGR_DS_Destroy(self._ds)
             self.opened = False
+    
     def __del__(self):
         self.close()
         

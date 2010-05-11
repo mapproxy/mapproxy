@@ -61,7 +61,7 @@ class TMSCacheSource(CacheSource):
     def init_grid(self):
         self.grid = tile_grid_for_epsg(epsg=900913, tile_size=(256, 256))
     def init_tile_source(self):
-        url = self.source.get('url', 'http://b.tile.openstreetmap.org')
+        url = self.source['url']
         ll_origin = self.source.get('ll_origin', True)
         inverse = not ll_origin
         self.src = TMSTileSource(self.grid, url=url, inverse=inverse)
