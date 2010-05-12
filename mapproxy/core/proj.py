@@ -29,6 +29,10 @@ from ctypes import (
     addressof,
 )
 
+import logging
+log = logging.getLogger(__name__)
+
+
 c_double_p = POINTER(c_double)
 FINDERCMD = ctypes.CFUNCTYPE(c_char_p, c_char_p)
 
@@ -91,13 +95,17 @@ class SearchPath(object):
 
 libproj = init_libproj()
 
-if libproj is None:
+if libproj is None and 'MAPPROXY_USE_LIBPROJ' in os.environ:
+    raise ImportError('could not found libproj')
+
+if libproj is None or 'MAPPROXY_USE_PYPROJ' in os.environ:
     try:
         from pyproj import Proj, transform, set_datapath
+        log.debug('using pyproj for coordinate transformation')
     except ImportError:
         raise ImportError('could not found either libproj or pyproj')
-
 else:
+    log.debug('using libproj for coordinate transformation')
 
     # search_path and finder_func must be defined in module
     # context to avoid garbage collection
