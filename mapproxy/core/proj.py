@@ -18,8 +18,19 @@ from mapproxy.core.libutils import load_library
 
 import os
 import ctypes
-from ctypes import c_void_p, c_char_p, c_int, c_double, c_long, byref, POINTER, create_string_buffer, pointer, cast, addressof
+from ctypes import (
+    c_void_p,
+    c_char_p,
+    c_int,
+    c_double,
+    c_long,
+    POINTER,
+    create_string_buffer,
+    addressof,
+)
+
 c_double_p = POINTER(c_double)
+FINDERCMD = ctypes.CFUNCTYPE(c_char_p, c_char_p)
 
 def init_libproj():
     libproj = load_library('libproj')
@@ -48,14 +59,10 @@ def init_libproj():
     libproj.pj_transform.argtypes = [c_void_p, c_void_p, c_long, c_int,
                                      c_double_p, c_double_p, c_double_p]
     libproj.pj_transform.restype = c_int
+
+    libproj.pj_set_finder.argtypes = [FINDERCMD]
     
     return libproj
-
-libproj = init_libproj()
-
-FINDERCMD = ctypes.CFUNCTYPE(c_char_p, c_char_p)
-libproj.pj_set_finder.argtypes = [FINDERCMD]
-
 
 class SearchPath(object):
     def __init__(self):
@@ -82,14 +89,18 @@ class SearchPath(object):
         
         return addressof(result)
 
-search_path = SearchPath()
+libproj = init_libproj()
 
-finder_func = FINDERCMD(search_path.finder)
-libproj.pj_set_finder(finder_func)
+if libproj:
+    # search_path and finder_func must be defined in module
+    # context to avoid garbage collection
+    search_path = SearchPath()
+    finder_func = FINDERCMD(search_path.finder)
+    libproj.pj_set_finder(finder_func)
+
 
 RAD_TO_DEG = 57.29577951308232
 DEG_TO_RAD = .0174532925199432958
-
 
 class ProjError(RuntimeError):
     pass
