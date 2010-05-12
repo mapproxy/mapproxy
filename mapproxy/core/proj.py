@@ -91,102 +91,108 @@ class SearchPath(object):
 
 libproj = init_libproj()
 
-if libproj:
+if libproj is None:
+    try:
+        from pyproj import Proj, transform, set_datapath
+    except ImportError:
+        raise ImportError('could not found either libproj or pyproj')
+
+else:
+
     # search_path and finder_func must be defined in module
     # context to avoid garbage collection
     search_path = SearchPath()
     finder_func = FINDERCMD(search_path.finder)
     libproj.pj_set_finder(finder_func)
 
+    RAD_TO_DEG = 57.29577951308232
+    DEG_TO_RAD = .0174532925199432958
 
-RAD_TO_DEG = 57.29577951308232
-DEG_TO_RAD = .0174532925199432958
+    class ProjError(RuntimeError):
+        pass
 
-class ProjError(RuntimeError):
-    pass
+    class ProjInitError(ProjError):
+        pass
 
-class ProjInitError(ProjError):
-    pass
+    class Proj(object):
+        def __init__(self, proj_def=None, init=None):
+            if init:
+                self._proj = libproj.pj_init_plus('+init=%s' % init)
+            else:
+                self._proj = libproj.pj_init_plus(proj_def)
+            if not self._proj:
+                errno = libproj.pj_get_errno_ref().contents
+                raise ProjInitError('error initializing Proj(proj_def=%r, init=%r): %s' %
+                    (proj_def, init, libproj.pj_strerrno(errno)))
+    
+        def is_latlong(self):
+            """
+            >>> Proj(init='epsg:4326').is_latlong()
+            True
+            >>> Proj(init='epsg:4258').is_latlong()
+            True
+            >>> Proj(init='epsg:31467').is_latlong()
+            False
+            >>> Proj('+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 '
+            ...      '+lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m '
+            ...      '+nadgrids=@null +no_defs').is_latlong()
+            False
+            """
+            if libproj.pj_is_latlong(self._proj):
+                return True
+            else:
+                return False
+    
+        @property
+        def srs(self):
+            return libproj.pj_get_def(self._proj, 0)
+    
+        def __del__(self):
+            if self._proj and libproj:
+                libproj.pj_free(self._proj)
+                self._proj = None
 
-class Proj(object):
-    def __init__(self, proj_def=None, init=None):
-        if init:
-            self._proj = libproj.pj_init_plus('+init=%s' % init)
+
+    def transform(from_srs, to_srs, x, y, z=None):
+        if from_srs == to_srs:
+            return (x, y) if z is None else (x, y, z)
+    
+        if isinstance(x, (float, int)):
+            x = [x]
+            y = [y]
+        assert len(x) == len(y)
+    
+        if from_srs.is_latlong():
+            x = map(lambda x: x*DEG_TO_RAD, x)
+            y = map(lambda y: y*DEG_TO_RAD, y)
+    
+        x = (c_double * len(x))(*x)
+        y = (c_double * len(y))(*y)
+        if z is not None:
+            z = (c_double * len(z))(*z)
+    
+        res = libproj.pj_transform(from_srs._proj, to_srs._proj,
+                                   len(x), 0, x, y, z)
+    
+        if res:
+            raise ProjError(libproj.pj_strerrno(res))
+    
+        if to_srs.is_latlong():
+            x = map(lambda x: x*RAD_TO_DEG, x)
+            y = map(lambda y: y*RAD_TO_DEG, y)
         else:
-            self._proj = libproj.pj_init_plus(proj_def)
-        if not self._proj:
-            errno = libproj.pj_get_errno_ref().contents
-            raise ProjInitError('error initializing Proj(proj_def=%r, init=%r): %s' %
-                (proj_def, init, libproj.pj_strerrno(errno)))
+            x = x[:]
+            y = y[:]
     
-    def is_latlong(self):
-        """
-        >>> Proj(init='epsg:4326').is_latlong()
-        True
-        >>> Proj(init='epsg:4258').is_latlong()
-        True
-        >>> Proj(init='epsg:31467').is_latlong()
-        False
-        >>> Proj('+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 '
-        ...      '+lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m '
-        ...      '+nadgrids=@null +no_defs').is_latlong()
-        False
-        """
-        if libproj.pj_is_latlong(self._proj):
-            return True
-        else:
-            return False
+        if len(x) == 1:
+            x = x[0]
+            y = y[0]
+            z = z[0] if z else None
     
-    @property
-    def srs(self):
-        return libproj.pj_get_def(self._proj, 0)
-    
-    def __del__(self):
-        if self._proj and libproj:
-            libproj.pj_free(self._proj)
-            self._proj = None
-
-
-def transform(from_srs, to_srs, x, y, z=None):
-    if from_srs == to_srs:
         return (x, y) if z is None else (x, y, z)
-    
-    if isinstance(x, (float, int)):
-        x = [x]
-        y = [y]
-    assert len(x) == len(y)
-    
-    if from_srs.is_latlong():
-        x = map(lambda x: x*DEG_TO_RAD, x)
-        y = map(lambda y: y*DEG_TO_RAD, y)
-    
-    x = (c_double * len(x))(*x)
-    y = (c_double * len(y))(*y)
-    if z is not None:
-        z = (c_double * len(z))(*z)
-    
-    res = libproj.pj_transform(from_srs._proj, to_srs._proj,
-                               len(x), 0, x, y, z)
-    
-    if res:
-        raise ProjError(libproj.pj_strerrno(res))
-    
-    if to_srs.is_latlong():
-        x = map(lambda x: x*RAD_TO_DEG, x)
-        y = map(lambda y: y*RAD_TO_DEG, y)
-    else:
-        x = x[:]
-        y = y[:]
-    
-    if len(x) == 1:
-        x = x[0]
-        y = y[0]
-        z = z[0] if z else None
-    
-    return (x, y) if z is None else (x, y, z)
 
-def set_datapath(path):
-    search_path.set_searchpath(path)
+    def set_datapath(path):
+        search_path.set_searchpath(path)
 
 if __name__ == '__main__':
     
