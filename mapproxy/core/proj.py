@@ -1,0 +1,191 @@
+# This file is part of the MapProxy project.
+# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from mapproxy.core.libutils import load_library
+
+import os
+import ctypes
+from ctypes import c_void_p, c_char_p, c_int, c_double, c_long, byref, POINTER, create_string_buffer, pointer, cast, addressof
+c_double_p = POINTER(c_double)
+
+def init_libproj():
+    libproj = load_library('libproj')
+    
+    if libproj is None: return
+
+    libproj.pj_init_plus.argtypes = [c_char_p]
+    libproj.pj_init_plus.restype = c_void_p
+
+    libproj.pj_is_latlong.argtypes = [c_void_p]
+    libproj.pj_is_latlong.restype = c_int
+
+    libproj.pj_set_searchpath.argtypes = [c_int, POINTER(c_char_p)]
+
+    libproj.pj_get_def.argtypes = [c_void_p, c_int]
+    libproj.pj_get_def.restype = c_char_p
+
+    libproj.pj_strerrno.argtypes = [c_int]
+    libproj.pj_strerrno.restype = c_char_p
+
+    libproj.pj_get_errno_ref.argtypes = []
+    libproj.pj_get_errno_ref.restype = POINTER(c_int)
+
+    libproj.pj_free.argtypes = [c_void_p]
+
+    libproj.pj_transform.argtypes = [c_void_p, c_void_p, c_long, c_int,
+                                     c_double_p, c_double_p, c_double_p]
+    libproj.pj_transform.restype = c_int
+    
+    return libproj
+
+libproj = init_libproj()
+
+FINDERCMD = ctypes.CFUNCTYPE(c_char_p, c_char_p)
+libproj.pj_set_finder.argtypes = [FINDERCMD]
+
+
+class SearchPath(object):
+    def __init__(self):
+        self.path = None
+        self.finder_results = {}
+    
+    def clear(self):
+        self.path = None
+        self.finder_results = {}
+    
+    def set_searchpath(self, path):
+        self.clear()
+        self.path = path
+    
+    def finder(self, name):
+        if self.path is None:
+            return None
+        
+        if name in self.path:
+            result = self.path[name]
+        else:
+            sysname = os.path.join(self.path, name)
+            result = self.finder_results[name] = create_string_buffer(sysname)
+        
+        return addressof(result)
+
+search_path = SearchPath()
+
+finder_func = FINDERCMD(search_path.finder)
+libproj.pj_set_finder(finder_func)
+
+RAD_TO_DEG = 57.29577951308232
+DEG_TO_RAD = .0174532925199432958
+
+
+class ProjError(RuntimeError):
+    pass
+
+class ProjInitError(ProjError):
+    pass
+
+class Proj(object):
+    def __init__(self, proj_def=None, init=None):
+        if init:
+            self._proj = libproj.pj_init_plus('+init=%s' % init)
+        else:
+            self._proj = libproj.pj_init_plus(proj_def)
+        if not self._proj:
+            errno = libproj.pj_get_errno_ref().contents
+            raise ProjInitError('error initializing Proj(proj_def=%r, init=%r): %s' %
+                (proj_def, init, libproj.pj_strerrno(errno)))
+    
+    def is_latlong(self):
+        """
+        >>> Proj(init='epsg:4326').is_latlong()
+        True
+        >>> Proj(init='epsg:4258').is_latlong()
+        True
+        >>> Proj(init='epsg:31467').is_latlong()
+        False
+        >>> Proj('+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 '
+        ...      '+lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m '
+        ...      '+nadgrids=@null +no_defs').is_latlong()
+        False
+        """
+        if libproj.pj_is_latlong(self._proj):
+            return True
+        else:
+            return False
+    
+    @property
+    def srs(self):
+        return libproj.pj_get_def(self._proj, 0)
+    
+    def __del__(self):
+        if self._proj and libproj:
+            libproj.pj_free(self._proj)
+            self._proj = None
+
+
+def transform(from_srs, to_srs, x, y, z=None):
+    if from_srs == to_srs:
+        return (x, y) if z is None else (x, y, z)
+    
+    if isinstance(x, (float, int)):
+        x = [x]
+        y = [y]
+    assert len(x) == len(y)
+    
+    if from_srs.is_latlong():
+        x = map(lambda x: x*DEG_TO_RAD, x)
+        y = map(lambda y: y*DEG_TO_RAD, y)
+    
+    x = (c_double * len(x))(*x)
+    y = (c_double * len(y))(*y)
+    if z is not None:
+        z = (c_double * len(z))(*z)
+    
+    res = libproj.pj_transform(from_srs._proj, to_srs._proj,
+                               len(x), 0, x, y, z)
+    
+    if res:
+        raise ProjError(libproj.pj_strerrno(res))
+    
+    if to_srs.is_latlong():
+        x = map(lambda x: x*RAD_TO_DEG, x)
+        y = map(lambda y: y*RAD_TO_DEG, y)
+    else:
+        x = x[:]
+        y = y[:]
+    
+    if len(x) == 1:
+        x = x[0]
+        y = y[0]
+        z = z[0] if z else None
+    
+    return (x, y) if z is None else (x, y, z)
+
+def set_datapath(path):
+    search_path.set_searchpath(path)
+
+if __name__ == '__main__':
+    
+    prj1 = Proj(init='epsg:4326')
+    prj2 = Proj(init='epsg:31467')
+    
+    coords = [(8.2, 8.22, 8.3), (53.1, 53.15, 53.2)]
+    # coords = [(8, 9, 10), (50, 50, 50)]
+    print coords
+    coords = transform(prj1, prj2, *coords)
+    print coords
+    coords = transform(prj2, prj1, *coords)
+    print coords
