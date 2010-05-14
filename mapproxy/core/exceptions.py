@@ -27,7 +27,7 @@ class RequestError(Exception):
                     was valid (e.g. the source server is unreachable
     """
     def __init__(self, message, code=None, request=None, internal=False):
-        Exception.__init__(self)
+        Exception.__init__(self, message)
         self.message = message
         self.code = code
         self.request = request

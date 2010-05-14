@@ -104,7 +104,7 @@ class WMSTileSource(TileSource):
             try:
                 resp = client.get_map(request).as_buffer()
             except HTTPClientError, e:
-                reraise_exception(TileSourceError(e.message), sys.exc_info())
+                reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
             responses.append(ImageSource(StringIO(resp.read()), size=size))
         if len(responses) > 1:
             return merge_images(responses, transparent=True)
@@ -119,7 +119,7 @@ class WMSTileSource(TileSource):
             splitter = TileSplitter(meta_tile, format)
         except IOError, e:
             reraise_exception(TileSourceError('could not read WMS response: %s' % 
-                                              e.message), sys.exc_info())
+                                              e.args[0]), sys.exc_info())
         split_tiles = []
         for tile in tiles:
             tile_coord, crop_coord = tile
