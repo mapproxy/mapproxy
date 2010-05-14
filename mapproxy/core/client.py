@@ -107,7 +107,7 @@ class HTTPClient(object):
                                               % (url, reason)), sys.exc_info())
         except ValueError, e:
             reraise_exception(HTTPClientError('URL not correct (%.30s...): %s' 
-                                              % (url, e.message)), sys.exc_info())
+                                              % (url, e.args[0])), sys.exc_info())
         except Exception, e:
             reraise_exception(HTTPClientError('Internal HTTP error (%.30s...): %r'
                                               % (url, e)), sys.exc_info())

@@ -228,7 +228,7 @@ class WMSCacheLayer(WMSLayer):
                 request=map_request)
         except TileCacheError, e:
             log.error(e)
-            raise RequestError(e.message, request=map_request)
+            raise RequestError(e.args[0], request=map_request)
         except BlankImage:
             return None
     

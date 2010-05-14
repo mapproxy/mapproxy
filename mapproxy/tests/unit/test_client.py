@@ -41,42 +41,42 @@ class TestHTTPClient(object):
                                                   {'status': '500', 'body': ''})]):
                 self.client.open(TESTSERVER_URL + '/')
         except HTTPClientError, e:
-            assert_re(e.message, r'HTTP Error \(.*\): 500')
+            assert_re(e.args[0], r'HTTP Error \(.*\): 500')
         else:
             assert False, 'expected HTTPClientError'
     def test_invalid_url_type(self):
         try:
             self.client.open('htp://example.org')
         except HTTPClientError, e:
-            assert_re(e.message, r'No response .* \(htp://example.*\): unknown url type')
+            assert_re(e.args[0], r'No response .* \(htp://example.*\): unknown url type')
         else:
             assert False, 'expected HTTPClientError'
     def test_invalid_url(self):
         try:
             self.client.open('this is not a url')
         except HTTPClientError, e:
-            assert_re(e.message, r'URL not correct \(this is not.*\): unknown url type')
+            assert_re(e.args[0], r'URL not correct \(this is not.*\): unknown url type')
         else:
             assert False, 'expected HTTPClientError'
     def test_unknown_host(self):
         try:
             self.client.open('http://thishostshouldnotexist000136really42.org')
         except HTTPClientError, e:
-            assert_re(e.message, r'No response .* \(http://thishost.*\): .*')
+            assert_re(e.args[0], r'No response .* \(http://thishost.*\): .*')
         else:
             assert False, 'expected HTTPClientError'
     def test_no_connect(self):
         try:
             self.client.open('http://localhost:53871')
         except HTTPClientError, e:
-            assert_re(e.message, r'No response .* \(http://localhost.*\): Connection refused')
+            assert_re(e.args[0], r'No response .* \(http://localhost.*\): Connection refused')
         else:
             assert False, 'expected HTTPClientError'
     def test_internal_error(self):
         try:
             self.client.open('http://localhost:53871', invalid_key='argument')
         except HTTPClientError, e:
-            assert_re(e.message, r'Internal HTTP error \(http://localhost.*\): TypeError')
+            assert_re(e.args[0], r'Internal HTTP error \(http://localhost.*\): TypeError')
         else:
             assert False, 'expected HTTPClientError'
 
@@ -132,7 +132,7 @@ class TestHTTPClient(object):
             try:
                 self.client.open('https://trac.osgeo.org/')
             except HTTPClientError, e:
-                assert_re(e.message, r'Could not verify connection to URL')                
+                assert_re(e.args[0], r'Could not verify connection to URL')
         
 OSGEO_CERT = """
 -----BEGIN CERTIFICATE-----
@@ -219,7 +219,7 @@ class TestWMSClient(object):
                 req.params['srs'] = 'EPSG:4326'
                 resp = self.wms.get_map(req)
             except HTTPClientError, e:
-                assert_re(e.message, r'response is not an image')
+                assert_re(e.args[0], r'response is not an image')
             else:
                 assert False, 'expected HTTPClientError'
     

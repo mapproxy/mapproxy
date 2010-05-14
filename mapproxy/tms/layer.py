@@ -65,7 +65,7 @@ class TileServiceLayer(Layer):
             return TileResponse(self.cache.tile(tile_coord))
         except TileCacheError, e:
             log.error(e)
-            raise RequestError(e.message, request=tile_request, internal=True)
+            raise RequestError(e.args[0], request=tile_request, internal=True)
 
 class TileResponse(object):
     def __init__(self, tile):
