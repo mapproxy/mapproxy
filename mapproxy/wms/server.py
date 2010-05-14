@@ -18,7 +18,6 @@
 WMS service handler
 """
 from itertools import chain
-from jinja2 import Environment, PackageLoader
 from mapproxy.wms.request import wms_request
 from mapproxy.core.srs import merge_bbox
 from mapproxy.core.server import Server
@@ -26,8 +25,9 @@ from mapproxy.core.response import Response
 from mapproxy.core.exceptions import RequestError
 from mapproxy.core.config import base_config
 
-env = Environment(loader=PackageLoader('mapproxy.wms', 'templates'),
-                  trim_blocks=True)
+from mapproxy.core.template import template_loader, bunch
+env = {'bunch': bunch}
+get_template = template_loader(__file__, 'templates', namespace=env)
 
 import logging
 log = logging.getLogger(__name__)
@@ -115,12 +115,13 @@ class Capabilities(object):
         return self._render_template(_map_request.capabilities_template)
     
     def _render_template(self, template):
-        template = env.get_template(template)
+        template = get_template(template)
         server_bbox = self._create_server_bbox()
-        return template.render(service=self.service, layers=self.layers,
-                               server_llbbox=server_bbox,
-                               formats=base_config().wms.image_formats,
-                               srs=base_config().wms.srs)
+        return template.substitute(service=bunch(default='', **self.service),
+                                   layers=self.layers,
+                                   server_llbbox=server_bbox,
+                                   formats=base_config().wms.image_formats,
+                                   srs=base_config().wms.srs)
     
     def _create_server_bbox(self):
         bbox = self.layers[0].llbbox
@@ -141,5 +142,4 @@ def wms100format_filter(format):
     else:
         return None
 
-env.filters['wms100format'] = wms100format_filter
-env.tests['wms100format'] = wms100format_filter
+env['wms100format'] = wms100format_filter

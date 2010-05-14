@@ -20,9 +20,9 @@ from tempita import Template, bunch
 __all__ = ['Template', 'bunch', 'template_loader']
 
 
-def template_loader(module_file, location='templates'):
+def template_loader(module_file, location='templates', namespace={}):
     template_dir = os.path.join(os.path.dirname(module_file), location)
     print template_dir
     def load_template(name):
-        return Template.from_filename(os.path.join(template_dir, name))
+        return Template.from_filename(os.path.join(template_dir, name), namespace=namespace)
     return load_template

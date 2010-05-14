@@ -9,7 +9,8 @@
   <Title>{{service.title}}</Title>
   <Abstract>{{service.abstract}}</Abstract>
   <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.online_resource}}"/>
-{% if service.contact is defined %}
+{{if service.contact}}
+{{py:service.contact = bunch(default='', **service.contact)}}
   <ContactInformation>
       <ContactPersonPrimary>
         <ContactPerson>{{service.contact.person}}</ContactPerson>
@@ -17,7 +18,7 @@
       </ContactPersonPrimary>
       <ContactPosition>{{service.contact.position}}</ContactPosition>
       <ContactAddress>
-        <AddressType>{{service.contact.address_type|default('postal')}}</AddressType>
+        <AddressType>{{service.contact.get('address_type', 'postal')}}</AddressType>
         <Address>{{service.contact.address}}</Address>
         <City>{{service.contact.city}}</City>
         <StateOrProvince>{{service.contact.state}}</StateOrProvince>
@@ -28,9 +29,9 @@
       <ContactFacsimileTelephone>{{service.contact.fax}}</ContactFacsimileTelephone>
       <ContactElectronicMailAddress>{{service.contact.email}}</ContactElectronicMailAddress>
   </ContactInformation>
-{% endif %}
-  <Fees>{{service.fees|default('none')}}</Fees>
-  <AccessConstraints>{{service.access_constraints|default('none')}}</AccessConstraints>
+{{endif}}
+  <Fees>{{service.get('fees', 'none')}}</Fees>
+  <AccessConstraints>{{service.get('access_constraints', 'none')}}</AccessConstraints>
 </Service>
 
 <Capability>
@@ -44,9 +45,9 @@
       </DCPType>
     </GetCapabilities>
     <GetMap>
-{% for format in formats %}
+{{for format in formats}}
         <Format>{{format}}</Format>
-{% endfor %}
+{{endfor}}
       <DCPType>
         <HTTP>
           <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.url}}?"/></Get>
@@ -71,18 +72,18 @@
   </Exception>
   <Layer>
     <Title>{{service.title}}</Title>
-{% for s in srs %}
+{{for s in srs}}
     <SRS>{{s}}</SRS>
-{% endfor %}
+{{endfor}}
     <LatLonBoundingBox minx="{{ server_llbbox[0] }}" miny="{{ server_llbbox[1] }}" maxx="{{ server_llbbox[2] }}" maxy="{{ server_llbbox[3] }}" />
-{% for layer in layers %}
-    <Layer{% if layer.has_info() %} queryable="1"{% endif %}>
+{{for layer in layers}}
+    <Layer{{if layer.has_info()}} queryable="1"{{endif}}>
       <Name>{{ layer.md.name }}</Name>
       <Title>{{ layer.md.title }}</Title>
       <LatLonBoundingBox minx="{{ layer.llbbox[0] }}" miny="{{ layer.llbbox[1] }}" maxx="{{ layer.llbbox[2] }}" maxy="{{ layer.llbbox[3] }}" />
       <BoundingBox SRS="EPSG:4326" minx="{{ layer.llbbox[0] }}" miny="{{ layer.llbbox[1] }}" maxx="{{ layer.llbbox[2] }}" maxy="{{ layer.llbbox[3] }}" />
     </Layer>
-{% endfor %}
+{{endfor}}
   </Layer>
 </Capability>
 </WMT_MS_Capabilities>
