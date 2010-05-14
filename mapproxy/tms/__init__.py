@@ -1,4 +1,4 @@
-from jinja2 import Environment, PackageLoader
+import os
 
 from mapproxy.core.response import Response
 from mapproxy.core.exceptions import RequestError
@@ -9,8 +9,9 @@ from mapproxy.tms.request import tile_request
 from mapproxy.core.config import base_config
 from mapproxy.core.app import ctx
 
-env = Environment(loader=PackageLoader('mapproxy.tms', 'templates'),
-                  trim_blocks=True)
+from mapproxy.core.template import template_loader, bunch
+
+get_template = template_loader(__file__, 'templates')
 
 import logging
 log = logging.getLogger(__name__)
@@ -83,12 +84,12 @@ class TileServer(Server):
         return md
     
     def _render_template(self, service):
-        template = env.get_template(self.template_file)
-        return template.render(service=service, layers=self.layers)
+        template = get_template(self.template_file)
+        return template.substitute(service=bunch(default='', **service), layers=self.layers)
     
     def _render_layer_template(self, layer, service):
-        template = env.get_template(self.layer_template_file)
-        return template.render(service=service, layer=layer)
+        template = get_template(self.layer_template_file)
+        return template.substitute(service=bunch(default='', **service), layer=layer)
 
 class TileServiceGrid(object):
     """
