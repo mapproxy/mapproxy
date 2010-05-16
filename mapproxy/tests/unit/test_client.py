@@ -16,7 +16,7 @@
 
 from __future__ import with_statement
 from mapproxy.core.client import HTTPClient, HTTPClientError
-from mapproxy.core.client import TMSClient
+from mapproxy.core.client import TMSClient, TileClient, TileURLTemplate
 from mapproxy.wms.client import WMSClient
 from mapproxy.wms.request import wms_request, WMS111MapRequest, WMS100MapRequest,\
                                  WMS130MapRequest
@@ -254,6 +254,33 @@ class TestTMSClient(object):
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/9/5/13.png'},
                                                 {'body': 'tile', 'headers': {'content-type': 'image/png'}})]):
             resp = self.client.get_tile((5, 13, 9)).read()
+            eq_(resp, 'tile')
+
+class TestTileClient(object):
+    def test_tc_path(self):
+        template = TileURLTemplate(TESTSERVER_URL + '/%(tc_path)s.png')
+        client = TileClient(template)
+        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/09/000/000/005/000/000/013.png'},
+                                              {'body': 'tile',
+                                               'headers': {'content-type': 'image/png'}})]):
+            resp = client.get_tile((5, 13, 9)).read()
+            eq_(resp, 'tile')
+
+    def test_quadkey(self):
+        template = TileURLTemplate(TESTSERVER_URL + '/key=%(quadkey)s&format=%(format)s')
+        client = TileClient(template)
+        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/key=000002303&format=png'},
+                                              {'body': 'tile',
+                                               'headers': {'content-type': 'image/png'}})]):
+            resp = client.get_tile((5, 13, 9)).read()
+            eq_(resp, 'tile')
+    def test_xyz(self):
+        template = TileURLTemplate(TESTSERVER_URL + '/x=%(x)s&y=%(y)s&z=%(z)s&format=%(format)s')
+        client = TileClient(template)
+        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/x=5&y=13&z=9&format=png'},
+                                              {'body': 'tile',
+                                               'headers': {'content-type': 'image/png'}})]):
+            resp = client.get_tile((5, 13, 9)).read()
             eq_(resp, 'tile')
 
 class TestWMSMapRequest100(object):
