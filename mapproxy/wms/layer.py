@@ -25,7 +25,7 @@ Layer classes (direct, cached, etc.).
 from mapproxy.core.srs import SRS, TransformationError
 from mapproxy.core.exceptions import RequestError
 from mapproxy.core.client import HTTPClientError
-from mapproxy.core.cache import TileCacheError, TooManyTilesError, BlankImage
+from mapproxy.core.cache import TileCacheError, TooManyTilesError, BlankImage, NoTiles
 from mapproxy.core.layer import Layer, LayerMetaData
 from mapproxy.core.image import message_image, attribution_image
 
@@ -243,7 +243,12 @@ class WMSCacheDirectLayer(WMSCacheLayer):
         req_bbox = params.bbox
         size = params.size
         req_srs = SRS(params.srs)
-        bbox, level = self.cache.grid.get_affected_bbox_and_level(req_bbox, size, req_srs)
+        
+        try:
+            bbox, level = self.cache.grid.get_affected_bbox_and_level(req_bbox,
+                                                                      size, req_srs)
+        except NoTiles:
+            raise StopIteration
         
         if level >= self.direct_from_level:
             for client in self.direct_clients:
