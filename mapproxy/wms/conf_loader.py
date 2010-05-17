@@ -29,7 +29,8 @@ from mapproxy.core.conf_loader import Source, CacheSource
 from mapproxy.core.client import auth_data_from_url, HTTPClient
 from mapproxy.wms.cache import WMSTileSource
 from mapproxy.wms.layer import (DirectLayer, WMSCacheLayer, DebugLayer, VLayer,
-                                 FeatureInfoSource, MultiLayer, AttributionLayer)
+                                 FeatureInfoSource, MultiLayer, AttributionLayer,
+                                 WMSCacheDirectLayer)
 from mapproxy.core.layer import LayerMetaData
 from mapproxy.core.grid import tile_grid_for_epsg
 from mapproxy.wms.server import WMSServer
@@ -169,6 +170,11 @@ class WMSCacheSource(CacheSource):
         if self.fi_requests:
             fi_clients = wms_clients_for_requests(self.fi_requests)
             fi_source = FeatureInfoSource(fi_clients)
+        if self.param['use_direct_from_level']:
+            clients = wms_clients_for_requests(self.requests[::-1])
+            direct_from_level = self.param['use_direct_from_level']
+            return WMSCacheDirectLayer(self.configured_cache(), fi_source=fi_source,
+                direct_clients=clients, direct_from_level=direct_from_level)
         return WMSCacheLayer(self.configured_cache(), fi_source=fi_source)
     
     def init_grid(self):

@@ -49,13 +49,11 @@ class LayerMerger(object):
         Add one or more layers to merge. Bottom-layers first.
         """
         try:
-            layers = iter(layer)
+            for l in iter(layer):
+                self.add(l)
         except TypeError:
             if layer is not None:
                 self.layers.append(layer)
-        else:
-            [self.layers.append(layer) for layer in layers if layer is not None]
-        
 
     def merge(self, format='png', size=None, bgcolor='#ffffff', transparent=False):
         """

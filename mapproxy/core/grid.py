@@ -241,6 +241,10 @@ class TileGrid(object):
           20037508.342789244, 20037508.342789244), (1, 1),\
           <generator object ...>)
         """
+        src_bbox, level = self.get_affected_bbox_and_level(bbox, size, req_srs=req_srs)
+        return self.get_affected_level_tiles(src_bbox, level, inverse=inverse)
+    
+    def get_affected_bbox_and_level(self, bbox, size, req_srs=None):
         if req_srs and req_srs != self.srs:
             src_bbox = req_srs.transform_bbox_to(self.srs, bbox)
         else:
@@ -255,7 +259,7 @@ class TileGrid(object):
         if res > self.resolutions[level]*self.max_shrink_factor:
             raise NoTiles()
         
-        return self.get_affected_level_tiles(src_bbox, level, inverse=inverse)
+        return src_bbox, level
     
     def get_affected_level_tiles(self, bbox, level, inverse=False):
         """

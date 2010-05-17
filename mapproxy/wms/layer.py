@@ -232,7 +232,31 @@ class WMSCacheLayer(WMSLayer):
         except BlankImage:
             return None
     
-
+class WMSCacheDirectLayer(WMSCacheLayer):
+    def __init__(self, cache, fi_source, direct_clients, direct_from_level):
+        WMSCacheLayer.__init__(self, cache, fi_source)
+        self.direct_clients = direct_clients
+        self.direct_from_level = direct_from_level
+    
+    def render(self, map_request):
+        params = map_request.params
+        req_bbox = params.bbox
+        size = params.size
+        req_srs = SRS(params.srs)
+        bbox, level = self.cache.grid.get_affected_bbox_and_level(req_bbox, size, req_srs)
+        
+        if level >= self.direct_from_level:
+            for client in self.direct_clients:
+                try:
+                    yield client.get_map(map_request)
+                except HTTPClientError, ex:
+                    log.warn('unable to get map for direct layer: %r', ex)
+                    raise RequestError('unable to get map for layers: %s' % 
+                                       ','.join(request.params.layers), request=request)
+        
+        else:
+            yield WMSCacheLayer.render(self, map_request)
+        
 def srs_dispatcher(layers, srs, srs_layers=None):
     if srs_layers and srs in srs_layers:
         return srs_layers[srs]
