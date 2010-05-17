@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from mapproxy.core.srs import SRS
 from mapproxy.core.request import url_decode, Request, NoCaseMultiDict, RequestParams, BaseRequest
 from mapproxy.tms.request import TMSRequest, tile_request, TileRequest
 from mapproxy.wms.request import (wms_request, WMSMapRequest, WMSMapRequestParams,
@@ -314,6 +315,8 @@ class TestWMSMapRequestParams(object):
         assert self.m.srs == 'EPSG:0815'
         del self.m['srs']
         assert self.m.srs is None
+        self.m.srs = SRS('EPSG:4326')
+        assert self.m.srs == 'EPSG:4326'
     def test_layers(self):
         assert list(self.m.layers) == ['bar', 'foo']
     def test_query_string(self):
