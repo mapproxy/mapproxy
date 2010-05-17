@@ -170,7 +170,7 @@ class WMSCacheSource(CacheSource):
         if self.fi_requests:
             fi_clients = wms_clients_for_requests(self.fi_requests, self.supported_srs)
             fi_source = FeatureInfoSource(fi_clients)
-        if self.param['use_direct_from_level']:
+        if 'use_direct_from_level' in self.param:
             clients = wms_clients_for_requests(self.requests[::-1], self.supported_srs)
             direct_from_level = self.param['use_direct_from_level']
             return WMSCacheDirectLayer(self.configured_cache(), fi_source=fi_source,
