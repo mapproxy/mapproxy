@@ -679,7 +679,7 @@ class ImageTransformer(object):
             meshes.append(dst_quad_to_src(quad))
         result = src_img.as_image().transform(dst_size, Image.MESH, meshes,
                                               image_filter[self.resampling])
-        return ImageSource(result, size=self.dst_size, transparent=src_img.transparent)
+        return ImageSource(result, size=dst_size, transparent=src_img.transparent)
     
     def _no_transformation_needed(self, src_size, src_bbox, dst_size, dst_bbox):
         """
