@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from mapproxy.core.image import ImageSource
+from mapproxy.core.image import ImageSource, ImageTransformer
 from mapproxy.core.client import retrieve_url, HTTPClientError
 from mapproxy.core.srs import SRS, make_lin_transf
 
@@ -40,13 +40,41 @@ class WMSClient(object):
 
     def get_map(self, request):
         if self.supported_srs and request.params.srs not in self.supported_srs:
-            raise HTTPClientError('could not request in %r' % request.params.srs)
+            return self._transformed_get_map(request)
         
         resp = self._retrieve_url(self._map_url(request))
         if not resp.headers['content-type'].startswith('image'):
             raise HTTPClientError('response is not an image: (%s)' % (resp.read()))
         return ImageSource(resp, request.params.format)
     
+    def _transformed_get_map(self, request):
+        dst_srs = SRS(request.params.srs)
+        src_srs = self._best_supported_srs(dst_srs)
+        dst_bbox = request.params.bbox
+        src_bbox = dst_srs.transform_bbox_to(src_srs, dst_bbox)
+        
+        request.params['srs'] = src_srs.srs_code
+        request.params.bbox = src_bbox
+        
+        resp = self._retrieve_url(self._map_url(request))
+        
+        img = ImageSource(resp, request.params.format, size=request.params.size)
+        
+        img = ImageTransformer(src_srs, dst_srs).transform(img, src_bbox, 
+            request.params.size, dst_bbox)
+        
+        img.format = request.params.format
+        return img
+    
+    def _best_supported_srs(self, srs):
+        latlong = srs.is_latlong
+        
+        for srs in self.supported_srs:
+            if srs.is_latlong == latlong:
+                return srs
+        
+        return iter(self.supported_srs).next()
+        
     def _map_url(self, request):
         req = self.client_request(self.request_template, request)
         return req.complete_url
@@ -96,4 +124,6 @@ def wms_client_request(request_template, map_request):
     req = request_template.copy_with_request_params(map_request)
     req.url = request_template.url
     req.params.bbox = map_request.params.bbox
+    if map_request.params.srs:
+        req.params.srs = map_request.params.srs
     return req
