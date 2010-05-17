@@ -631,11 +631,15 @@ class ImageTransformer(object):
         minx, miny = to_src_px((dst_bbox[0], dst_bbox[3]))
         maxx, maxy = to_src_px((dst_bbox[2], dst_bbox[1]))
         
-        src_res = (src_bbox[0]-src_bbox[2])/src_img.size[0]
-        dst_res = (dst_bbox[0]-dst_bbox[2])/dst_size[0]
+        src_res = ((src_bbox[0]-src_bbox[2])/src_img.size[0],
+                   (src_bbox[1]-src_bbox[3])/src_img.size[1])
+        dst_res = ((dst_bbox[0]-dst_bbox[2])/dst_size[0],
+                   (dst_bbox[1]-dst_bbox[3])/dst_size[1])
         
-        tenth_px_res = abs(dst_res/(dst_size[0]*10))
-        if abs(src_res-dst_res) < tenth_px_res:
+        tenth_px_res = (abs(dst_res[0]/(dst_size[0]*10)),
+                        abs(dst_res[1]/(dst_size[1]*10)))
+        if (abs(src_res[0]-dst_res[0]) < tenth_px_res[0] and
+            abs(src_res[1]-dst_res[1]) < tenth_px_res[1]):
             minx = int(round(minx))
             miny = int(round(miny))
             result = src_img.as_image().crop((minx, miny,
