@@ -186,7 +186,7 @@ class WMSCacheSource(CacheSource):
         tile_size = self.layer_conf.layer.get('param', {}).get('tile_size', (256, 256))
         self.grid = tile_grid_for_epsg(epsg=srs, tile_size=tile_size, bbox=bbox, res=res)
     def init_tile_source(self):
-        clients = wms_clients_for_requests(self.requests[::-1])
+        clients = wms_clients_for_requests(self.requests[::-1], self.supported_srs)
         format = self.layer_conf.layer.get('param', {}).get('format', None)
         if format is not None:
             _mime_class, format, _options = split_mime_type(format)
