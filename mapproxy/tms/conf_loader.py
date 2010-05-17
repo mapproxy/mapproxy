@@ -20,6 +20,7 @@ from mapproxy.core.client import TMSClient, TileClient, TileURLTemplate
 from mapproxy.tms.cache import TileSource
 from mapproxy.tms.layer import TileServiceLayer
 from mapproxy.tms import TileServer
+from mapproxy.core.request import split_mime_type
 
 def create_tms_server(proxy_conf):
     layers = configured_cache_layers(proxy_conf)
@@ -70,7 +71,8 @@ class TileCacheSource(CacheSource):
             # TODO raise some configuration exception
         
         inverse = True if origin == 'nw' else False
-        client = TileClient(TileURLTemplate(url, format=self.param['format']))
+        _mime_class, format, _options = split_mime_type(self.param['format'])
+        client = TileClient(TileURLTemplate(url, format=format))
         self.src = TileSource(self.grid, client, inverse=inverse)
 
 
@@ -79,5 +81,6 @@ class TMSCacheSource(TileCacheSource):
         url = self.source['url']
         ll_origin = self.source.get('ll_origin', True)
         inverse = not ll_origin
-        client = TMSClient(url, format=self.param['format'])
+        _mime_class, format, _options = split_mime_type(self.param['format'])
+        client = TMSClient(url, format=format)
         self.src = TileSource(self.grid, client, inverse=inverse)
