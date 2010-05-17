@@ -252,7 +252,7 @@ class WMSCacheDirectLayer(WMSCacheLayer):
                 except HTTPClientError, ex:
                     log.warn('unable to get map for direct layer: %r', ex)
                     raise RequestError('unable to get map for layers: %s' % 
-                                       ','.join(request.params.layers), request=request)
+                                       ','.join(map_request.params.layers), request=map_request)
         
         else:
             yield WMSCacheLayer.render(self, map_request)
