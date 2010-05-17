@@ -63,7 +63,8 @@ class WMSClient(object):
         img = ImageTransformer(src_srs, dst_srs).transform(img, src_bbox, 
             request.params.size, dst_bbox)
         
-        img.format = request.params.format
+        img.format = self.request_template.params.format
+        
         return img
     
     def _best_supported_srs(self, srs):
