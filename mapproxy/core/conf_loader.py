@@ -27,6 +27,7 @@ import pkg_resources
 import logging
 log = logging.getLogger(__name__)
 
+from mapproxy.core.srs import SRS
 from mapproxy.core.cache import (FileCache, CacheManager, Cache,
                                   threaded_tile_creator)
 from mapproxy.core.config import base_config, abspath
@@ -230,6 +231,10 @@ class Source(object):
         if param is None:
             param = self.layer_conf.param
         self.param = param
+        
+        self.supported_srs = set(SRS(x) for x in self.source.get('supported_srs', []))
+        if not self.supported_srs:
+            self.supported_srs = None
     
     @property
     def name(self):

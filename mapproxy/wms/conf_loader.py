@@ -139,7 +139,7 @@ class DirectSource(Source):
     def has_featureinfo(self):
         return self.source.get('wms_opts', {}).get('featureinfo', False)
     def configured_layer(self):
-        clients = wms_clients_for_requests(self.requests)
+        clients = wms_clients_for_requests(self.requests, self.supported_srs)
         return DirectLayer(clients[0], queryable=self.has_featureinfo())
 
 class DebugSource(Source):
@@ -168,10 +168,10 @@ class WMSCacheSource(CacheSource):
     def configured_layer(self):
         fi_source = None
         if self.fi_requests:
-            fi_clients = wms_clients_for_requests(self.fi_requests)
+            fi_clients = wms_clients_for_requests(self.fi_requests, self.supported_srs)
             fi_source = FeatureInfoSource(fi_clients)
         if self.param['use_direct_from_level']:
-            clients = wms_clients_for_requests(self.requests[::-1])
+            clients = wms_clients_for_requests(self.requests[::-1], self.supported_srs)
             direct_from_level = self.param['use_direct_from_level']
             return WMSCacheDirectLayer(self.configured_cache(), fi_source=fi_source,
                 direct_clients=clients, direct_from_level=direct_from_level)
@@ -203,7 +203,7 @@ class WMSCacheSource(CacheSource):
             return None
 
 
-def wms_clients_for_requests(requests):
+def wms_clients_for_requests(requests, supported_srs=None):
     clients = []
     for req in requests:
         http_client = None
@@ -211,7 +211,9 @@ def wms_clients_for_requests(requests):
         if username and password:
             req.url = url
             http_client = HTTPClient(url, username, password)
-        clients.append(WMSClient(req, client_request, http_client=http_client))
+        client = WMSClient(req, client_request, http_client=http_client,
+                           supported_srs=supported_srs)
+        clients.append(client)
     return clients
 
 wms_version_requests = {'1.0.0': {'featureinfo': WMS100FeatureInfoRequest,

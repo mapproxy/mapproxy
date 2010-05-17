@@ -22,7 +22,8 @@ class WMSClient(object):
     """
     Client for WMS requests.
     """
-    def __init__(self, request_template=None, client_request=None, http_client=None):
+    def __init__(self, request_template=None, client_request=None, http_client=None,
+        supported_srs=None):
         """
         :param request_template: a request that will be used as a template for
             new requests
@@ -35,8 +36,12 @@ class WMSClient(object):
         self.client_request = client_request
         self.request_template = request_template
         self.http_client = http_client
+        self.supported_srs = supported_srs
 
     def get_map(self, request):
+        if self.supported_srs and request.params.srs not in self.supported_srs:
+            raise HTTPClientError('could not request in %r' % request.params.srs)
+        
         resp = self._retrieve_url(self._map_url(request))
         if not resp.headers['content-type'].startswith('image'):
             raise HTTPClientError('response is not an image: (%s)' % (resp.read()))
