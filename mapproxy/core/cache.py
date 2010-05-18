@@ -562,7 +562,8 @@ class TileSource(object):
         Returns a lock object for the given tile.
         """
         lock_file = self.lock_filename(tile)
-        return FileLock(lock_file)
+        # TODO use own configuration option for lock timeout
+        return FileLock(lock_file, timeout=base_config().http_client_timeout)
     
     def lock_filename(self, tile):
         if self._id is None:
