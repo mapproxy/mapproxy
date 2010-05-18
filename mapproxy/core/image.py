@@ -640,6 +640,9 @@ class ImageTransformer(object):
                         abs(dst_res[1]/(dst_size[1]*10)))
         if (abs(src_res[0]-dst_res[0]) < tenth_px_res[0] and
             abs(src_res[1]-dst_res[1]) < tenth_px_res[1]):
+            # rounding might result in subpixel inaccuracy
+            # this exact resolutioni match should only happen in clients with
+            # fixed resolutions like OpenLayers
             minx = int(round(minx))
             miny = int(round(miny))
             result = src_img.as_image().crop((minx, miny,
@@ -666,7 +669,7 @@ class ImageTransformer(object):
             src_quad = []
             for dst_px in [(quad[0], quad[1]), (quad[0], quad[3]),
                            (quad[2], quad[3]), (quad[2], quad[1])]:
-                dst_w = to_dst_w(dst_px)
+                dst_w = to_dst_w((dst_px[0]+0.5, dst_px[1]+0.5))
                 src_w = self.dst_srs.transform_to(self.src_srs, dst_w)
                 src_px = to_src_px(src_w)
                 src_quad.extend(src_px)
