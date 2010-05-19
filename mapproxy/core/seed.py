@@ -411,6 +411,7 @@ def load_datasource(datasource, where=None):
         polygons.append(shapely.wkt.loads(wkt))
         
     mp = shapely.geometry.MultiPolygon(polygons)
+    mp = simplify_geom(mp)
     return mp.bounds, mp
 
 def load_polygons(geom_files):
@@ -430,7 +431,14 @@ def load_polygons(geom_files):
                     polygons.append(geom)
     
     mp = shapely.geometry.MultiPolygon(polygons)
+    mp = simplify_geom(mp)
     return mp.bounds, mp
+
+def simplify_geom(geom):
+    bounds = geom.bounds
+    w, h = bounds[2] - bounds[0], bounds[3] - bounds[1]
+    tolerance = min((w/10000, h/10000))
+    return geom.simplify(tolerance, preserve_topology=False)
 
 def transform_geometry(from_srs, to_srs, geometry):
     transf = partial(transform_xy, from_srs, to_srs)
