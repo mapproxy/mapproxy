@@ -118,8 +118,9 @@ class Seeder(object):
     
     def seed(self):
         self._seed(self.task.bbox, self.task.start_level)
+        print '\n### total tiles:', self.count
             
-    def _seed(self, cur_bbox, level, progess_str='', progress=1.0, all_subtiles=False):
+    def _seed(self, cur_bbox, level, progess_str='', progress=1.0, all_subtiles=False, already_seeded=set()):
         """
         :param cur_bbox: the bbox to seed in this call
         :param level: the current seed level
@@ -128,6 +129,7 @@ class Seeder(object):
         """
         bbox_, tiles_, subtiles = self.grid.get_affected_level_tiles(cur_bbox, level)
         subtiles = list(subtiles)
+        subtiles = [t for t in subtiles if t is not None and t not in already_seeded]
         if level <= self.report_till_level:
             print '[%s] %2s %6.2f%% %s ETA: %s' % (timestamp(), level, self.progress*100,
                 format_bbox(cur_bbox), self._eta_string(self.progress))
@@ -139,24 +141,31 @@ class Seeder(object):
         
         if level < self.task.max_level:
             sub_seeds = self._sub_seeds(subtiles, all_subtiles)
-            progress = progress / len(sub_seeds)
             if sub_seeds:
+                progress = progress / len(sub_seeds)
                 total_sub_seeds = len(sub_seeds)
+                seeded_in_next_level = set()
                 for i, (sub_bbox, intersection) in enumerate(sub_seeds):
                     cur_progess_str = progess_str + status_symbol(i, total_sub_seeds)
                     all_subtiles = True if intersection == CONTAINS else False
-                    self._seed(sub_bbox, level+1, cur_progess_str,
-                               all_subtiles=all_subtiles, progress=progress)
+                    seeded_in_next_level.update(
+                        self._seed(sub_bbox, level+1, cur_progess_str,
+                                   already_seeded=seeded_in_next_level,
+                                   all_subtiles=all_subtiles, progress=progress))
         else:
             self.progress += progress
-        self.count += 1
         if (self.progress*1000-1) > len(self._avgs):
             self._avgs.append((time.time()-self.start_time))
             self.start_time = time.time()
+        
+        self.count += len(subtiles)
+        
         not_cached_tiles = self.not_cached(subtiles)
         if not_cached_tiles:
             self.seed_pool.seed(not_cached_tiles,
                 (progess_str, self.progress, self._eta_string(self.progress)))
+        
+        return subtiles
     
     def not_cached(self, tiles):
         return [tile for tile in tiles if tile is not None and not self.cache.cache_mgr.is_cached(tile)]
