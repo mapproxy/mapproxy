@@ -437,7 +437,7 @@ def load_polygons(geom_files):
 def simplify_geom(geom):
     bounds = geom.bounds
     w, h = bounds[2] - bounds[0], bounds[3] - bounds[1]
-    tolerance = min((w/10000, h/10000))
+    tolerance = min((w/1000, h/1000))
     return geom.simplify(tolerance, preserve_topology=False)
 
 def transform_geometry(from_srs, to_srs, geometry):
