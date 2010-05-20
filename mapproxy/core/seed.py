@@ -83,6 +83,7 @@ class SeedPool(object):
         for proc in self.procs:
             proc.join()
 
+
 class SeedWorker(proc_class):
     def __init__(self, cache, tiles_queue, dry_run=False):
         proc_class.__init__(self)
@@ -102,6 +103,40 @@ class SeedWorker(proc_class):
                 exp_backoff(self.cache.cache_mgr.load_tile_coords, args=(tiles,),
                             exceptions=(TileSourceError, IOError))
 
+
+class ETA(object):
+    def __init__(self):
+        self.avgs = []
+        self.start_time = time.time()
+        self.progress = 0.0
+        self.ticks = 1000
+
+    def update(self, progress):
+        self.progress = progress
+        if (self.progress*self.ticks-1) > len(self.avgs):
+            self.avgs.append((time.time()-self.start_time))
+            self.start_time = time.time()
+
+    def eta_string(self):
+        timestamp = self.eta()
+        if timestamp is None:
+            return 'N/A'
+        return time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(timestamp))
+
+    def eta(self):
+        if not self.avgs: return
+        count = 0
+        avg_sum = 0
+        for i, avg in enumerate(self.avgs):
+            multiplicator = (i+1)**1.2
+            count += multiplicator
+            avg_sum += avg*multiplicator
+        return time.time() + (1-self.progress) * (avg_sum/count)*self.ticks
+
+    def __str__(self):
+        return self.eta_string()
+
+
 class Seeder(object):
     def __init__(self, cache, task, seed_pool):
         self.cache = cache
@@ -112,14 +147,13 @@ class Seeder(object):
         self.report_till_level = task.start_level + int(num_seed_levels * 0.7)
         self.grid = MetaGrid(cache.grid, meta_size=base_config().cache.meta_size)
         self.progress = 0.0
-        self.start_time = time.time()
-        self._avgs = []
+        self.eta = ETA()
         self.count = 0
     
     def seed(self):
         self._seed(self.task.bbox, self.task.start_level)
         print '[%s] %2s %6.2f%% %s ETA: %s' % (timestamp(), self.task.start_level, self.progress*100,
-            format_bbox(self.task.bbox), self._eta_string(self.progress))
+            format_bbox(self.task.bbox), self.eta)
         print '[%s] tiles generated: %d' % (timestamp(), self.count)
             
     def _seed(self, cur_bbox, level, progess_str='', progress=1.0, all_subtiles=False):
@@ -133,7 +167,7 @@ class Seeder(object):
         subtiles = list(subtiles)
         if level <= self.report_till_level:
             print '[%s] %2s %6.2f%% %s (#%d) ETA: %s' % (timestamp(), level, self.progress*100,
-                format_bbox(cur_bbox), self.count, self._eta_string(self.progress))
+                format_bbox(cur_bbox), self.count, self.eta)
             sys.stdout.flush()
         
         if level == self.task.max_level-1:
@@ -154,37 +188,20 @@ class Seeder(object):
                                all_subtiles=all_subtiles, progress=progress)
         else:
             self.progress += progress
-        if (self.progress*1000-1) > len(self._avgs):
-            self._avgs.append((time.time()-self.start_time))
-            self.start_time = time.time()
+        
+        self.eta.update(self.progress)
         
         not_cached_tiles = self.not_cached(subtiles)
         if not_cached_tiles:
             self.count += len(not_cached_tiles)
             self.seed_pool.seed(not_cached_tiles,
-                (progess_str, self.progress, self._eta_string(self.progress)))
+                (progess_str, self.progress, self.eta))
         
         return subtiles
     
     def not_cached(self, tiles):
         return [tile for tile in tiles if tile is not None and not self.cache.cache_mgr.is_cached(tile)]
-    
-    def _eta(self, progress):
-        if not self._avgs: return
-        count = 0
-        avg_sum = 0
-        for i, avg in enumerate(self._avgs):
-            multiplicator = (i+1)**1.2
-            count += multiplicator
-            avg_sum += avg*multiplicator
 
-        return time.time() + (1-progress) * (avg_sum/count)*1000
-    
-    def _eta_string(self, progress):
-        eta_timestamp = self._eta(progress)
-        if not eta_timestamp:
-            return 'N/A'
-        return time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(eta_timestamp))
 
     def _sub_seeds(self, subtiles, all_subtiles):
         """
