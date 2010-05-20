@@ -233,10 +233,19 @@ class WMSCacheLayer(WMSLayer):
             return None
     
 class WMSCacheDirectLayer(WMSCacheLayer):
-    def __init__(self, cache, fi_source, direct_clients, direct_from_level):
+    def __init__(self, cache, fi_source, direct_clients, direct_from_level, direct_from_res):
         WMSCacheLayer.__init__(self, cache, fi_source)
         self.direct_clients = direct_clients
         self.direct_from_level = direct_from_level
+        self.direct_from_res = direct_from_res
+    
+    
+    def use_direct(self, level, res):
+        if self.direct_from_level and level >= self.direct_from_level:
+            return True
+        if self.direct_from_res and res <= self.direct_from_res:
+            return True
+        return False
     
     def render(self, map_request):
         params = map_request.params
@@ -247,10 +256,11 @@ class WMSCacheDirectLayer(WMSCacheLayer):
         try:
             bbox, level = self.cache.grid.get_affected_bbox_and_level(req_bbox,
                                                                       size, req_srs)
+            res = self.cache.grid.resolution(level)
         except NoTiles:
             raise StopIteration
         
-        if level >= self.direct_from_level:
+        if self.use_direct(level, res):
             for client in self.direct_clients:
                 try:
                     yield client.get_map(map_request)

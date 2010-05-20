@@ -171,11 +171,15 @@ class WMSCacheSource(CacheSource):
         if self.fi_requests:
             fi_clients = wms_clients_for_requests(self.fi_requests, self.supported_srs)
             fi_source = FeatureInfoSource(fi_clients)
-        if 'use_direct_from_level' in self.param:
+        if 'use_direct_from_level' in self.param or 'use_direct_from_res' in self.param:
             clients = wms_clients_for_requests(self.requests[::-1], self.supported_srs)
-            direct_from_level = self.param['use_direct_from_level']
+            direct_from_level = self.param.get('use_direct_from_level', None)
+            direct_from_res = self.param.get('use_direct_from_res', None)
+            if direct_from_level is not None and direct_from_res is not None:
+                log.warn('only one of direct_from_level _or_ direct_from_res supported')
             return WMSCacheDirectLayer(self.configured_cache(), fi_source=fi_source,
-                direct_clients=clients, direct_from_level=direct_from_level)
+                direct_clients=clients, direct_from_level=direct_from_level,
+                direct_from_res=direct_from_res)
         return WMSCacheLayer(self.configured_cache(), fi_source=fi_source)
     
     def init_grid(self):
