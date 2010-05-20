@@ -120,7 +120,7 @@ class Seeder(object):
         self._seed(self.task.bbox, self.task.start_level)
         print '\n### total tiles:', self.count
             
-    def _seed(self, cur_bbox, level, progess_str='', progress=1.0, all_subtiles=False, already_seeded=set()):
+    def _seed(self, cur_bbox, level, progess_str='', progress=1.0, all_subtiles=False):
         """
         :param cur_bbox: the bbox to seed in this call
         :param level: the current seed level
@@ -129,10 +129,9 @@ class Seeder(object):
         """
         bbox_, tiles_, subtiles = self.grid.get_affected_level_tiles(cur_bbox, level)
         subtiles = list(subtiles)
-        subtiles = [t for t in subtiles if t is not None and t not in already_seeded]
         if level <= self.report_till_level:
-            print '[%s] %2s %6.2f%% %s ETA: %s' % (timestamp(), level, self.progress*100,
-                format_bbox(cur_bbox), self._eta_string(self.progress))
+            print '[%s] %2s %6.2f%% %s (#%d) ETA: %s' % (timestamp(), level, self.progress*100,
+                format_bbox(cur_bbox), self.count, self._eta_string(self.progress))
             sys.stdout.flush()
         
         if level == self.task.max_level-1:
@@ -146,12 +145,11 @@ class Seeder(object):
                 total_sub_seeds = len(sub_seeds)
                 seeded_in_next_level = set()
                 for i, (sub_bbox, intersection) in enumerate(sub_seeds):
+                    sub_bbox = limit_sub_bbox(cur_bbox, sub_bbox)
                     cur_progess_str = progess_str + status_symbol(i, total_sub_seeds)
                     all_subtiles = True if intersection == CONTAINS else False
-                    seeded_in_next_level.update(
-                        self._seed(sub_bbox, level+1, cur_progess_str,
-                                   already_seeded=seeded_in_next_level,
-                                   all_subtiles=all_subtiles, progress=progress))
+                    self._seed(sub_bbox, level+1, cur_progess_str,
+                               all_subtiles=all_subtiles, progress=progress)
         else:
             self.progress += progress
         if (self.progress*1000-1) > len(self._avgs):
@@ -277,6 +275,19 @@ class SeedTask(object):
         return NONE
 
 
+def limit_sub_bbox(bbox, sub_bbox):
+    """
+    >>> limit_sub_bbox((0, 1, 10, 11), (-1, -1, 9, 8))
+    (0, 1, 9, 8)
+    >>> limit_sub_bbox((0, 0, 10, 10), (5, 2, 18, 18))
+    (5, 2, 10, 10)
+    """
+    minx = max(bbox[0], sub_bbox[0])
+    miny = max(bbox[1], sub_bbox[1])
+    maxx = min(bbox[2], sub_bbox[2])
+    maxy = min(bbox[3], sub_bbox[3])
+    return minx, miny, maxx, maxy
+    
 def timestamp():
     return datetime.datetime.now().strftime('%H:%M:%S')
 
