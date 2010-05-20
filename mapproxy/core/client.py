@@ -80,7 +80,8 @@ class HTTPClient(object):
         size = 0
         if result is not None:
             size = result.headers.get('Content-length', '-')
-        log_msg = self.log_fmt % locals()
+        log_msg = self.log_fmt % dict(date=date, size=size, host=host,
+                                      status=status, path=path)
         self.log.info(log_msg)
     
     def open(self, url, *args, **kw):

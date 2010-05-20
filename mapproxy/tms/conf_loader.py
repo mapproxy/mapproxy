@@ -22,6 +22,9 @@ from mapproxy.tms.layer import TileServiceLayer
 from mapproxy.tms import TileServer
 from mapproxy.core.request import split_mime_type
 
+import logging
+log = logging.getLogger(__name__)
+
 def create_tms_server(proxy_conf):
     layers = configured_cache_layers(proxy_conf)
     return TileServer(layers, proxy_conf.service_md)
