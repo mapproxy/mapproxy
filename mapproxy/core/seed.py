@@ -118,7 +118,9 @@ class Seeder(object):
     
     def seed(self):
         self._seed(self.task.bbox, self.task.start_level)
-        print '\n### total tiles:', self.count
+        print '[%s] %2s %6.2f%% %s ETA: %s' % (timestamp(), self.task.start_level, self.progress*100,
+            format_bbox(self.task.bbox), self._eta_string(self.progress))
+        print '[%s] tiles generated: %d' % (timestamp(), self.count)
             
     def _seed(self, cur_bbox, level, progess_str='', progress=1.0, all_subtiles=False):
         """
@@ -156,10 +158,9 @@ class Seeder(object):
             self._avgs.append((time.time()-self.start_time))
             self.start_time = time.time()
         
-        self.count += len(subtiles)
-        
         not_cached_tiles = self.not_cached(subtiles)
         if not_cached_tiles:
+            self.count += len(not_cached_tiles)
             self.seed_pool.seed(not_cached_tiles,
                 (progess_str, self.progress, self._eta_string(self.progress)))
         
