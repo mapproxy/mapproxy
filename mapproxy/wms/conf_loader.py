@@ -81,7 +81,7 @@ def create_wms_server(proxy_conf):
         layers[name] = configured_layer(layer)
     tile_layers = configured_cache_layers(proxy_conf)    
     layers['__debug__'] = DebugLayer()
-    return WMSServer(layers, tile_layers, proxy_conf.service_md, request_parser=request_parser)
+    return WMSServer(layers, proxy_conf.service_md, request_parser=request_parser, tile_layers=tile_layers)
 
 def configured_layer(layer_conf):
     """

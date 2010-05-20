@@ -36,11 +36,11 @@ class WMSServer(Server):
     names = ('service',)
     request_methods = ('map', 'capabilities', 'featureinfo')
     
-    def __init__(self, layers, tile_layers, md, layer_merger=None, request_parser=None):
+    def __init__(self, layers, md, layer_merger=None, request_parser=None, tile_layers=None):
         Server.__init__(self)
         self.request_parser = request_parser or wms_request
         self.layers = layers
-        self.tile_layers = tile_layers
+        self.tile_layers = tile_layers or {}
         if layer_merger is None:
             from mapproxy.core.image import LayerMerger
             layer_merger = LayerMerger
