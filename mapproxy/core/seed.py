@@ -149,13 +149,11 @@ class Seeder(object):
         self.progress = 0.0
         self.eta = ETA()
         self.count = 0
-    
+
     def seed(self):
         self._seed(self.task.bbox, self.task.start_level)
-        print '[%s] %2s %6.2f%% %s ETA: %s' % (timestamp(), self.task.start_level, self.progress*100,
-            format_bbox(self.task.bbox), self.eta)
-        print '[%s] tiles generated: %d' % (timestamp(), self.count)
-            
+        self.report_progress(self.task.start_level, self.task.bbox)
+
     def _seed(self, cur_bbox, level, progess_str='', progress=1.0, all_subtiles=False):
         """
         :param cur_bbox: the bbox to seed in this call
@@ -166,9 +164,7 @@ class Seeder(object):
         bbox_, tiles_, subtiles = self.grid.get_affected_level_tiles(cur_bbox, level)
         subtiles = list(subtiles)
         if level <= self.report_till_level:
-            print '[%s] %2s %6.2f%% %s (#%d) ETA: %s' % (timestamp(), level, self.progress*100,
-                format_bbox(cur_bbox), self.count, self.eta)
-            sys.stdout.flush()
+            self.report_progress(level, cur_bbox)
         
         if level == self.task.max_level-1:
             # do not filter in last levels
@@ -201,6 +197,12 @@ class Seeder(object):
     def not_cached(self, tiles):
         return [tile for tile in tiles if tile is not None and not self.cache.cache_mgr.is_cached(tile)]
 
+    
+    def report_progress(self, level, bbox):
+        print '[%s] %2s %6.2f%% %s (#%d) ETA: %s' % (timestamp(), level, self.progress*100,
+            format_bbox(bbox), self.count, self.eta)
+        sys.stdout.flush()
+    
     def _sub_seeds(self, subtiles, all_subtiles):
         """
         Return all sub tiles that intersect the 
