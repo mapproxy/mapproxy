@@ -38,6 +38,7 @@ from mapproxy.wms.request import WMS100MapRequest, WMS111MapRequest, WMS130MapRe
                                   WMS100FeatureInfoRequest, WMS111FeatureInfoRequest,\
                                   WMS130FeatureInfoRequest
 from mapproxy.wms.client import WMSClient
+from mapproxy.tms.conf_loader import configured_cache_layers
 from mapproxy.core.config import base_config
 from mapproxy.core.request import split_mime_type
 from mapproxy.core.odict import odict
@@ -78,9 +79,9 @@ def create_wms_server(proxy_conf):
     layers = odict()
     for name, layer in proxy_conf.layer_confs.iteritems():
         layers[name] = configured_layer(layer)
-    
+    tile_layers = configured_cache_layers(proxy_conf)    
     layers['__debug__'] = DebugLayer()
-    return WMSServer(layers, proxy_conf.service_md, request_parser=request_parser)
+    return WMSServer(layers, tile_layers, proxy_conf.service_md, request_parser=request_parser)
 
 def configured_layer(layer_conf):
     """

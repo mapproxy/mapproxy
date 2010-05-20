@@ -36,16 +36,17 @@ class WMSServer(Server):
     names = ('service',)
     request_methods = ('map', 'capabilities', 'featureinfo')
     
-    def __init__(self, layers, md, layer_merger=None, request_parser=None):
+    def __init__(self, layers, tile_layers, md, layer_merger=None, request_parser=None):
         Server.__init__(self)
         self.request_parser = request_parser or wms_request
         self.layers = layers
+        self.tile_layers = tile_layers
         if layer_merger is None:
             from mapproxy.core.image import LayerMerger
             layer_merger = LayerMerger
         self.merger = layer_merger
         self.md = md
-        
+                
     def map(self, map_request):
         merger = self.merger()
         self.check_request(map_request)
@@ -71,9 +72,9 @@ class WMSServer(Server):
         else:
             layers = [layer for name, layer in self.layers.iteritems()
                       if name != '__debug__']
-            
+        tile_layers = self.tile_layers.values()
         service = self._service_md(map_request)
-        result = Capabilities(service, layers).render(map_request)
+        result = Capabilities(service, layers, tile_layers).render(map_request)
         return Response(result, mimetype=map_request.mime_type)
     
     def featureinfo(self, request):
@@ -107,20 +108,22 @@ class Capabilities(object):
     """
     Renders WMS capabilities documents.
     """
-    def __init__(self, server_md, layer_md):
+    def __init__(self, server_md, layers, tile_layers):
         self.service = server_md
-        self.layers = layer_md
+        self.layers = layers
+        self.tile_layers = tile_layers
     
     def render(self, _map_request):
         return self._render_template(_map_request.capabilities_template)
     
     def _render_template(self, template):
         template = env.get_template(template)
-        server_bbox = self._create_server_bbox()
+        server_bbox = self._create_server_bbox()        
         return template.render(service=self.service, layers=self.layers,
                                server_llbbox=server_bbox,
                                formats=base_config().wms.image_formats,
-                               srs=base_config().wms.srs)
+                               srs=base_config().wms.srs,
+                               tile_layers=self.tile_layers)
     
     def _create_server_bbox(self):
         bbox = self.layers[0].llbbox
