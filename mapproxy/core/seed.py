@@ -179,7 +179,6 @@ class Seeder(object):
             if sub_seeds:
                 progress = progress / len(sub_seeds)
                 total_sub_seeds = len(sub_seeds)
-                seeded_in_next_level = set()
                 for i, (sub_bbox, intersection) in enumerate(sub_seeds):
                     sub_bbox = limit_sub_bbox(cur_bbox, sub_bbox)
                     cur_progess_str = progess_str + status_symbol(i, total_sub_seeds)
@@ -201,7 +200,6 @@ class Seeder(object):
     
     def not_cached(self, tiles):
         return [tile for tile in tiles if tile is not None and not self.cache.cache_mgr.is_cached(tile)]
-
 
     def _sub_seeds(self, subtiles, all_subtiles):
         """
