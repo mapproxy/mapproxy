@@ -72,7 +72,11 @@ class WMSServer(Server):
         else:
             layers = [layer for name, layer in self.layers.iteritems()
                       if name != '__debug__']
-        tile_layers = self.tile_layers.values()
+        
+        if map_request.params.get('tiled', 'false').lower() == 'true':
+            tile_layers = self.tile_layers.values()
+        else:
+            tile_layers = []
         service = self._service_md(map_request)
         result = Capabilities(service, layers, tile_layers).render(map_request)
         return Response(result, mimetype=map_request.mime_type)
