@@ -218,6 +218,34 @@ Example::
       layers: roads
       transparent: 'true'
 
+``cache_tiles``
+"""""""""""""""
+
+The ``cache_tiles`` source can retrieve data from existing tile servers. This source takes a
+``url`` option that contains a URL template. The template format is ``%(key_name)s``. MapProxy
+supports the following named variables in the URL:
+
+``x``, ``y``, ``z``
+  The tile coordinate.
+``format``
+  The format of the tile.
+``quadkey``
+  Quadkey for the tile as described in http://msdn.microsoft.com/en-us/library/bb259689.aspx
+``tc_path``
+  TileCache path like ``09/000/000/264/000/000/345``. Note that it does not contain any format
+  extension.
+
+Additionally you can specify the origin of the tile grid with the ``origin`` option. Supported
+values are ``sw`` for south-west (lower-left) origin or ``nw`` for north-west (upper-left)
+origin. ``sw`` is the default.
+
+
+Example::
+
+  - type: cache_tiles
+    url: http://localhost:8080/tile?x=%(x)s&y=%(y)s&z=%(z)s&format=%(format)s
+    origin: ``nw``
+
 
 ``debug``
 """""""""""

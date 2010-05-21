@@ -49,6 +49,7 @@ setup(
         'mapproxy.source_loader': [
             'cache_wms = mapproxy.wms.conf_loader:WMSCacheSource',
             'cache_tms = mapproxy.tms.conf_loader:TMSCacheSource',
+            'cache_tiles = mapproxy.tms.conf_loader:TileCacheSource',
             'direct = mapproxy.wms.conf_loader:DirectSource',
             'debug = mapproxy.wms.conf_loader:DebugSource',
         ],

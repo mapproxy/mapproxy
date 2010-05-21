@@ -39,6 +39,7 @@ from mapproxy.wms.request import WMS111MapRequest
 from mapproxy.wms.cache import WMSTileSource
 from mapproxy.tms.cache import TMSTileSource
 from mapproxy.core.srs import SRS
+from mapproxy.core.client import TMSClient
 from mapproxy.core.image import ImageSource, TiledImage
 from mapproxy.core.utils import LockTimeout
 from mapproxy.core.grid import tile_grid_for_epsg, TileGrid
@@ -380,7 +381,8 @@ TEST_SERVER_ADDRESS = ('127.0.0.1', 56413)
 
 class TestTMSTileSource(object):
     def setup(self):
-        self.tms = TMSTileSource(TileGrid(), 'http://%s:%s/tms' % TEST_SERVER_ADDRESS)
+        client = TMSClient('http://%s:%s/tms' % TEST_SERVER_ADDRESS)
+        self.tms = TMSTileSource(TileGrid(), client)
     
     def test_id(self):
         eq_(self.tms.id(), 'http://%s:%s/tms' % TEST_SERVER_ADDRESS)

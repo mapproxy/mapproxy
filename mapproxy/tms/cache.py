@@ -19,21 +19,21 @@ from cStringIO import StringIO
 
 from mapproxy.core.utils import reraise_exception
 from mapproxy.core.image import ImageSource
-from mapproxy.core.cache import TileSource, TileSourceError
-from mapproxy.core.client import TMSClient, HTTPClientError
+from mapproxy.core import cache, client
 
-class TMSTileSource(TileSource):
+
+class TileSource(cache.TileSource):
     """
-    This `TileSource` retrieves new tiles from a TMS server.
+    This `TileSource` retrieves new tiles from a tile server.
     """
-    def __init__(self, grid, url='', format='png', inverse=False):
-        TileSource.__init__(self)
+    def __init__(self, grid, tile_client, inverse=False):
+        cache.TileSource.__init__(self)
         self.grid = grid
-        self.tms_client = TMSClient(url, format) 
+        self.tile_client = tile_client 
         self.inverse = inverse
     
     def id(self):
-        return self.tms_client.url
+        return self.tile_client.url
     
     def create_tile(self, tile, _tile_map):
         """Retrieve the requested `tile`."""
@@ -42,11 +42,14 @@ class TMSTileSource(TileSource):
         else:
             coord = tile.coord
         try:
-            buf = StringIO(self.tms_client.get_tile(coord).read())
+            buf = StringIO(self.tile_client.get_tile(coord).read())
             tile.source = ImageSource(buf)
-        except HTTPClientError, e:
-            reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
+        except client.HTTPClientError, e:
+            reraise_exception(cache.TileSourceError(e.args[0]), sys.exc_info())
         return [tile]
     
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.tms_client)
+
+# TODO remove in 0.9
+TMSTileSource = TileSource

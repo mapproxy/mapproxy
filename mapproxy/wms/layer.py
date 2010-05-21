@@ -25,7 +25,7 @@ Layer classes (direct, cached, etc.).
 from mapproxy.core.srs import SRS, TransformationError
 from mapproxy.core.exceptions import RequestError
 from mapproxy.core.client import HTTPClientError
-from mapproxy.core.cache import TileCacheError, TooManyTilesError, BlankImage
+from mapproxy.core.cache import TileCacheError, TooManyTilesError, BlankImage, NoTiles
 from mapproxy.core.layer import Layer, LayerMetaData
 from mapproxy.core.image import message_image, attribution_image
 
@@ -232,7 +232,46 @@ class WMSCacheLayer(WMSLayer):
         except BlankImage:
             return None
     
-
+class WMSCacheDirectLayer(WMSCacheLayer):
+    def __init__(self, cache, fi_source, direct_clients, direct_from_level, direct_from_res):
+        WMSCacheLayer.__init__(self, cache, fi_source)
+        self.direct_clients = direct_clients
+        self.direct_from_level = direct_from_level
+        self.direct_from_res = direct_from_res
+    
+    
+    def use_direct(self, level, res):
+        if self.direct_from_level and level >= self.direct_from_level:
+            return True
+        if self.direct_from_res and res <= self.direct_from_res:
+            return True
+        return False
+    
+    def render(self, map_request):
+        params = map_request.params
+        req_bbox = params.bbox
+        size = params.size
+        req_srs = SRS(params.srs)
+        
+        try:
+            bbox, level = self.cache.grid.get_affected_bbox_and_level(req_bbox,
+                                                                      size, req_srs)
+            res = self.cache.grid.resolution(level)
+        except NoTiles:
+            raise StopIteration
+        
+        if self.use_direct(level, res):
+            for client in self.direct_clients:
+                try:
+                    yield client.get_map(map_request)
+                except HTTPClientError, ex:
+                    log.warn('unable to get map for direct layer: %r', ex)
+                    raise RequestError('unable to get map for layers: %s' % 
+                                       ','.join(map_request.params.layers), request=map_request)
+        
+        else:
+            yield WMSCacheLayer.render(self, map_request)
+        
 def srs_dispatcher(layers, srs, srs_layers=None):
     if srs_layers and srs in srs_layers:
         return srs_layers[srs]

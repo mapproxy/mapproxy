@@ -101,6 +101,7 @@ class WMSTileSource(TileSource):
             request = WMSMapRequest()
             request.params.bbox = bbox
             request.params.size = size
+            request.params.srs = self.grid.srs
             try:
                 resp = client.get_map(request).as_buffer()
             except HTTPClientError, e:

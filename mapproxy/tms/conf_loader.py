@@ -16,9 +16,14 @@
 
 from mapproxy.core.conf_loader import CacheSource
 from mapproxy.core.grid import tile_grid_for_epsg
-from mapproxy.tms.cache import TMSTileSource
+from mapproxy.core.client import TMSClient, TileClient, TileURLTemplate
+from mapproxy.tms.cache import TileSource
 from mapproxy.tms.layer import TileServiceLayer
 from mapproxy.tms import TileServer
+from mapproxy.core.request import split_mime_type
+
+import logging
+log = logging.getLogger(__name__)
 
 def create_tms_server(proxy_conf):
     layers = configured_cache_layers(proxy_conf)
@@ -57,11 +62,28 @@ def _configured_cache_layers(conf_layer):
     return cache_layers
     
 
-class TMSCacheSource(CacheSource):
+class TileCacheSource(CacheSource):
     def init_grid(self):
         self.grid = tile_grid_for_epsg(epsg=900913, tile_size=(256, 256))
     def init_tile_source(self):
         url = self.source['url']
+        origin = self.source.get('origin', 'sw')
+        if origin not in ('sw', 'nw'):
+            log.error("ignoring origin '%s', only supports sw and nw")
+            origin = 'sw'
+            # TODO raise some configuration exception
+        
+        inverse = True if origin == 'nw' else False
+        _mime_class, format, _options = split_mime_type(self.param['format'])
+        client = TileClient(TileURLTemplate(url, format=format))
+        self.src = TileSource(self.grid, client, inverse=inverse)
+
+
+class TMSCacheSource(TileCacheSource):
+    def init_tile_source(self):
+        url = self.source['url']
         ll_origin = self.source.get('ll_origin', True)
         inverse = not ll_origin
-        self.src = TMSTileSource(self.grid, url=url, inverse=inverse)
+        _mime_class, format, _options = split_mime_type(self.param['format'])
+        client = TMSClient(url, format=format)
+        self.src = TileSource(self.grid, client, inverse=inverse)

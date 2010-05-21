@@ -83,6 +83,7 @@ class SeedPool(object):
         for proc in self.procs:
             proc.join()
 
+
 class SeedWorker(proc_class):
     def __init__(self, cache, tiles_queue, dry_run=False):
         proc_class.__init__(self)
@@ -102,6 +103,40 @@ class SeedWorker(proc_class):
                 exp_backoff(self.cache.cache_mgr.load_tile_coords, args=(tiles,),
                             exceptions=(TileSourceError, IOError))
 
+
+class ETA(object):
+    def __init__(self):
+        self.avgs = []
+        self.start_time = time.time()
+        self.progress = 0.0
+        self.ticks = 1000
+
+    def update(self, progress):
+        self.progress = progress
+        if (self.progress*self.ticks-1) > len(self.avgs):
+            self.avgs.append((time.time()-self.start_time))
+            self.start_time = time.time()
+
+    def eta_string(self):
+        timestamp = self.eta()
+        if timestamp is None:
+            return 'N/A'
+        return time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(timestamp))
+
+    def eta(self):
+        if not self.avgs: return
+        count = 0
+        avg_sum = 0
+        for i, avg in enumerate(self.avgs):
+            multiplicator = (i+1)**1.2
+            count += multiplicator
+            avg_sum += avg*multiplicator
+        return time.time() + (1-self.progress) * (avg_sum/count)*self.ticks
+
+    def __str__(self):
+        return self.eta_string()
+
+
 class Seeder(object):
     def __init__(self, cache, task, seed_pool):
         self.cache = cache
@@ -112,13 +147,13 @@ class Seeder(object):
         self.report_till_level = task.start_level + int(num_seed_levels * 0.7)
         self.grid = MetaGrid(cache.grid, meta_size=base_config().cache.meta_size)
         self.progress = 0.0
-        self.start_time = time.time()
-        self._avgs = []
+        self.eta = ETA()
         self.count = 0
-    
+
     def seed(self):
         self._seed(self.task.bbox, self.task.start_level)
-            
+        self.report_progress(self.task.start_level, self.task.bbox)
+
     def _seed(self, cur_bbox, level, progess_str='', progress=1.0, all_subtiles=False):
         """
         :param cur_bbox: the bbox to seed in this call
@@ -129,9 +164,7 @@ class Seeder(object):
         bbox_, tiles_, subtiles = self.grid.get_affected_level_tiles(cur_bbox, level)
         subtiles = list(subtiles)
         if level <= self.report_till_level:
-            print '[%s] %2s %6.2f%% %s ETA: %s' % (timestamp(), level, self.progress*100,
-                format_bbox(cur_bbox), self._eta_string(self.progress))
-            sys.stdout.flush()
+            self.report_progress(level, cur_bbox)
         
         if level == self.task.max_level-1:
             # do not filter in last levels
@@ -139,45 +172,37 @@ class Seeder(object):
         
         if level < self.task.max_level:
             sub_seeds = self._sub_seeds(subtiles, all_subtiles)
-            progress = progress / len(sub_seeds)
             if sub_seeds:
+                progress = progress / len(sub_seeds)
                 total_sub_seeds = len(sub_seeds)
                 for i, (sub_bbox, intersection) in enumerate(sub_seeds):
+                    sub_bbox = limit_sub_bbox(cur_bbox, sub_bbox)
                     cur_progess_str = progess_str + status_symbol(i, total_sub_seeds)
                     all_subtiles = True if intersection == CONTAINS else False
                     self._seed(sub_bbox, level+1, cur_progess_str,
                                all_subtiles=all_subtiles, progress=progress)
         else:
             self.progress += progress
-        self.count += 1
-        if (self.progress*1000-1) > len(self._avgs):
-            self._avgs.append((time.time()-self.start_time))
-            self.start_time = time.time()
+        
+        self.eta.update(self.progress)
+        
         not_cached_tiles = self.not_cached(subtiles)
         if not_cached_tiles:
+            self.count += len(not_cached_tiles)
             self.seed_pool.seed(not_cached_tiles,
-                (progess_str, self.progress, self._eta_string(self.progress)))
+                (progess_str, self.progress, self.eta))
+        
+        return subtiles
     
     def not_cached(self, tiles):
         return [tile for tile in tiles if tile is not None and not self.cache.cache_mgr.is_cached(tile)]
-    
-    def _eta(self, progress):
-        if not self._avgs: return
-        count = 0
-        avg_sum = 0
-        for i, avg in enumerate(self._avgs):
-            multiplicator = (i+1)**1.2
-            count += multiplicator
-            avg_sum += avg*multiplicator
 
-        return time.time() + (1-progress) * (avg_sum/count)*1000
     
-    def _eta_string(self, progress):
-        eta_timestamp = self._eta(progress)
-        if not eta_timestamp:
-            return 'N/A'
-        return time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(eta_timestamp))
-
+    def report_progress(self, level, bbox):
+        print '[%s] %2s %6.2f%% %s (#%d) ETA: %s' % (timestamp(), level, self.progress*100,
+            format_bbox(bbox), self.count, self.eta)
+        sys.stdout.flush()
+    
     def _sub_seeds(self, subtiles, all_subtiles):
         """
         Return all sub tiles that intersect the 
@@ -268,6 +293,19 @@ class SeedTask(object):
         return NONE
 
 
+def limit_sub_bbox(bbox, sub_bbox):
+    """
+    >>> limit_sub_bbox((0, 1, 10, 11), (-1, -1, 9, 8))
+    (0, 1, 9, 8)
+    >>> limit_sub_bbox((0, 0, 10, 10), (5, 2, 18, 18))
+    (5, 2, 10, 10)
+    """
+    minx = max(bbox[0], sub_bbox[0])
+    miny = max(bbox[1], sub_bbox[1])
+    maxx = min(bbox[2], sub_bbox[2])
+    maxy = min(bbox[3], sub_bbox[3])
+    return minx, miny, maxx, maxy
+    
 def timestamp():
     return datetime.datetime.now().strftime('%H:%M:%S')
 
@@ -411,6 +449,7 @@ def load_datasource(datasource, where=None):
         polygons.append(shapely.wkt.loads(wkt))
         
     mp = shapely.geometry.MultiPolygon(polygons)
+    mp = simplify_geom(mp)
     return mp.bounds, mp
 
 def load_polygons(geom_files):
@@ -430,7 +469,14 @@ def load_polygons(geom_files):
                     polygons.append(geom)
     
     mp = shapely.geometry.MultiPolygon(polygons)
+    mp = simplify_geom(mp)
     return mp.bounds, mp
+
+def simplify_geom(geom):
+    bounds = geom.bounds
+    w, h = bounds[2] - bounds[0], bounds[3] - bounds[1]
+    tolerance = min((w/1000, h/1000))
+    return geom.simplify(tolerance, preserve_topology=False)
 
 def transform_geometry(from_srs, to_srs, geometry):
     transf = partial(transform_xy, from_srs, to_srs)

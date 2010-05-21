@@ -36,11 +36,11 @@ class WMSServer(Server):
     names = ('service',)
     request_methods = ('map', 'capabilities', 'featureinfo')
     
-    def __init__(self, layers, tile_layers, md, layer_merger=None, request_parser=None):
+    def __init__(self, layers, md, layer_merger=None, request_parser=None, tile_layers=None):
         Server.__init__(self)
         self.request_parser = request_parser or wms_request
         self.layers = layers
-        self.tile_layers = tile_layers
+        self.tile_layers = tile_layers or {}
         if layer_merger is None:
             from mapproxy.core.image import LayerMerger
             layer_merger = LayerMerger
@@ -72,7 +72,10 @@ class WMSServer(Server):
         else:
             layers = [layer for name, layer in self.layers.iteritems()
                       if name != '__debug__']
-        tile_layers = self.tile_layers.values()
+        if map_request.params.get('tiled', 'false').lower() == 'true':
+            tile_layers = self.tile_layers.values()
+        else:
+            tile_layers = []
         service = self._service_md(map_request)
         result = Capabilities(service, layers, tile_layers).render(map_request)
         return Response(result, mimetype=map_request.mime_type)

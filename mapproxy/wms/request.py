@@ -75,9 +75,18 @@ class WMSMapRequestParams(RequestParams):
     del _get_size
     del _set_size
     
-    @property
-    def srs(self):
+    def _get_srs(self):
         return self.params.get('srs', None)
+    def _set_srs(self, srs):
+        if hasattr(srs, 'srs_code'):
+            self.params['srs'] = srs.srs_code
+        else:
+            self.params['srs'] = srs
+    
+    srs = property(_get_srs, _set_srs)
+    del _get_srs
+    del _set_srs
+    
     
     @property
     def transparent(self):

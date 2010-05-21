@@ -29,7 +29,8 @@ from mapproxy.core.conf_loader import Source, CacheSource
 from mapproxy.core.client import auth_data_from_url, HTTPClient
 from mapproxy.wms.cache import WMSTileSource
 from mapproxy.wms.layer import (DirectLayer, WMSCacheLayer, DebugLayer, VLayer,
-                                 FeatureInfoSource, MultiLayer, AttributionLayer)
+                                 FeatureInfoSource, MultiLayer, AttributionLayer,
+                                 WMSCacheDirectLayer)
 from mapproxy.core.layer import LayerMetaData
 from mapproxy.core.grid import tile_grid_for_epsg
 from mapproxy.wms.server import WMSServer
@@ -80,7 +81,7 @@ def create_wms_server(proxy_conf):
         layers[name] = configured_layer(layer)
     tile_layers = configured_cache_layers(proxy_conf)    
     layers['__debug__'] = DebugLayer()
-    return WMSServer(layers, tile_layers, proxy_conf.service_md, request_parser=request_parser)
+    return WMSServer(layers, proxy_conf.service_md, request_parser=request_parser, tile_layers=tile_layers)
 
 def configured_layer(layer_conf):
     """
@@ -139,7 +140,7 @@ class DirectSource(Source):
     def has_featureinfo(self):
         return self.source.get('wms_opts', {}).get('featureinfo', False)
     def configured_layer(self):
-        clients = wms_clients_for_requests(self.requests)
+        clients = wms_clients_for_requests(self.requests, self.supported_srs)
         return DirectLayer(clients[0], queryable=self.has_featureinfo())
 
 class DebugSource(Source):
@@ -168,8 +169,17 @@ class WMSCacheSource(CacheSource):
     def configured_layer(self):
         fi_source = None
         if self.fi_requests:
-            fi_clients = wms_clients_for_requests(self.fi_requests)
+            fi_clients = wms_clients_for_requests(self.fi_requests, self.supported_srs)
             fi_source = FeatureInfoSource(fi_clients)
+        if 'use_direct_from_level' in self.param or 'use_direct_from_res' in self.param:
+            clients = wms_clients_for_requests(self.requests[::-1], self.supported_srs)
+            direct_from_level = self.param.get('use_direct_from_level', None)
+            direct_from_res = self.param.get('use_direct_from_res', None)
+            if direct_from_level is not None and direct_from_res is not None:
+                log.warn('only one of direct_from_level _or_ direct_from_res supported')
+            return WMSCacheDirectLayer(self.configured_cache(), fi_source=fi_source,
+                direct_clients=clients, direct_from_level=direct_from_level,
+                direct_from_res=direct_from_res)
         return WMSCacheLayer(self.configured_cache(), fi_source=fi_source)
     
     def init_grid(self):
@@ -181,7 +191,7 @@ class WMSCacheSource(CacheSource):
         tile_size = self.layer_conf.layer.get('param', {}).get('tile_size', (256, 256))
         self.grid = tile_grid_for_epsg(epsg=srs, tile_size=tile_size, bbox=bbox, res=res)
     def init_tile_source(self):
-        clients = wms_clients_for_requests(self.requests[::-1])
+        clients = wms_clients_for_requests(self.requests[::-1], self.supported_srs)
         format = self.layer_conf.layer.get('param', {}).get('format', None)
         if format is not None:
             _mime_class, format, _options = split_mime_type(format)
@@ -198,7 +208,7 @@ class WMSCacheSource(CacheSource):
             return None
 
 
-def wms_clients_for_requests(requests):
+def wms_clients_for_requests(requests, supported_srs=None):
     clients = []
     for req in requests:
         http_client = None
@@ -206,7 +216,9 @@ def wms_clients_for_requests(requests):
         if username and password:
             req.url = url
             http_client = HTTPClient(url, username, password)
-        clients.append(WMSClient(req, client_request, http_client=http_client))
+        client = WMSClient(req, client_request, http_client=http_client,
+                           supported_srs=supported_srs)
+        clients.append(client)
     return clients
 
 wms_version_requests = {'1.0.0': {'featureinfo': WMS100FeatureInfoRequest,

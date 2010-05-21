@@ -49,13 +49,13 @@ class LayerMerger(object):
         Add one or more layers to merge. Bottom-layers first.
         """
         try:
-            layers = iter(layer)
+            layer = iter(layer)
         except TypeError:
             if layer is not None:
                 self.layers.append(layer)
         else:
-            [self.layers.append(layer) for layer in layers if layer is not None]
-        
+            for l in layer:
+                self.add(l)
 
     def merge(self, format='png', size=None, bgcolor='#ffffff', transparent=False):
         """
@@ -631,11 +631,18 @@ class ImageTransformer(object):
         minx, miny = to_src_px((dst_bbox[0], dst_bbox[3]))
         maxx, maxy = to_src_px((dst_bbox[2], dst_bbox[1]))
         
-        src_res = (src_bbox[0]-src_bbox[2])/src_img.size[0]
-        dst_res = (dst_bbox[0]-dst_bbox[2])/dst_size[0]
+        src_res = ((src_bbox[0]-src_bbox[2])/src_img.size[0],
+                   (src_bbox[1]-src_bbox[3])/src_img.size[1])
+        dst_res = ((dst_bbox[0]-dst_bbox[2])/dst_size[0],
+                   (dst_bbox[1]-dst_bbox[3])/dst_size[1])
         
-        tenth_px_res = abs(dst_res/(dst_size[0]*10))
-        if abs(src_res-dst_res) < tenth_px_res:
+        tenth_px_res = (abs(dst_res[0]/(dst_size[0]*10)),
+                        abs(dst_res[1]/(dst_size[1]*10)))
+        if (abs(src_res[0]-dst_res[0]) < tenth_px_res[0] and
+            abs(src_res[1]-dst_res[1]) < tenth_px_res[1]):
+            # rounding might result in subpixel inaccuracy
+            # this exact resolutioni match should only happen in clients with
+            # fixed resolutions like OpenLayers
             minx = int(round(minx))
             miny = int(round(miny))
             result = src_img.as_image().crop((minx, miny,
@@ -662,7 +669,7 @@ class ImageTransformer(object):
             src_quad = []
             for dst_px in [(quad[0], quad[1]), (quad[0], quad[3]),
                            (quad[2], quad[3]), (quad[2], quad[1])]:
-                dst_w = to_dst_w(dst_px)
+                dst_w = to_dst_w((dst_px[0]+0.5, dst_px[1]+0.5))
                 src_w = self.dst_srs.transform_to(self.src_srs, dst_w)
                 src_px = to_src_px(src_w)
                 src_quad.extend(src_px)
@@ -675,7 +682,7 @@ class ImageTransformer(object):
             meshes.append(dst_quad_to_src(quad))
         result = src_img.as_image().transform(dst_size, Image.MESH, meshes,
                                               image_filter[self.resampling])
-        return ImageSource(result, size=self.dst_size, transparent=src_img.transparent)
+        return ImageSource(result, size=dst_size, transparent=src_img.transparent)
     
     def _no_transformation_needed(self, src_size, src_bbox, dst_size, dst_bbox):
         """

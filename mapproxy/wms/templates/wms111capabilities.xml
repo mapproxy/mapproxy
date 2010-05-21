@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE WMT_MS_Capabilities SYSTEM "http://schemas.opengis.net/wms/1.1.1/WMS_MS_Capabilities.dtd"
  [
+ {{if tile_layers}}
  <!ELEMENT VendorSpecificCapabilities (TileSet*) >
  <!ELEMENT TileSet (SRS, BoundingBox?, Resolutions, Width, Height, Format, Layers*, Styles*) >
  <!ELEMENT Resolutions (#PCDATA) >
@@ -8,6 +9,9 @@
  <!ELEMENT Height (#PCDATA) >
  <!ELEMENT Layers (#PCDATA) >
  <!ELEMENT Styles (#PCDATA) >
+ {{else}}
+ <!ELEMENT VendorSpecificCapabilities EMPTY>
+ {{endif}}
  ]>  <!-- end of DOCTYPE declaration -->
 <WMT_MS_Capabilities version="1.1.1">
 <Service>
@@ -76,8 +80,9 @@
     <Format>application/vnd.ogc.se_inimage</Format>
     <Format>application/vnd.ogc.se_blank</Format>
   </Exception>
+{{if tile_layers}}
   <VendorSpecificCapabilities>
-{% for layer in tile_layers %}
+{{for layer in tile_layers}}
     <TileSet>
       <SRS>{{layer.grid.srs_name}}</SRS>
       <BoundingBox srs="EPSG:4326" minx="{{ layer.llbbox[0] }}" miny="{{ layer.llbbox[1] }}" maxx="{{ layer.llbbox[2] }}" maxy="{{ layer.llbbox[3] }}" />
@@ -88,8 +93,9 @@
       <Layers>{{layer.md.name}}</Layers>
       <Styles></Styles>
     </TileSet>  
-{% endfor %}
+{{endfor}}
   </VendorSpecificCapabilities>
+{{endif}}
   <Layer>
     <Title>{{service.title}}</Title>
 {{for s in srs}}
