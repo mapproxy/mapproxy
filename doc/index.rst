@@ -11,6 +11,7 @@ MapProxy Documentation
    configuration
    services
    seed
+   configuration_examples
    deployment
    development
 

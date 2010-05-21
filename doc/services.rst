@@ -19,17 +19,6 @@ The `wms.srs` option defines which SRS the WMS service supports. If you need oth
  wms:
    srs: ['EPSG:4326', 'CRS:84', 'EPSG:900913']
 
-Axis ordering
-^^^^^^^^^^^^^
-
-The axis ordering defines in which order coordinates are given, i.e. lon/lat or lat/lon. The ordering is dependent to the SRS. Most clients and servers did not respected the ordering and everyone used lon/lat ordering. With the WMS 1.3.0 specification the OGC emphasized that the axis ordering of the SRS should be used. MapProxy must know the axis ordering of each enabled SRS for 1.3.0 support. The axis orderings are already defined for all default SRS. If you add you own SRS to the WMS configuration, you have to define the ordering with the `srs` options in your `proxy.yaml`.
-::
-
- srs:
-   # for North/East ordering
-   axis_order_ne: ['EPSG:9999', 'EPSG:9998']
-   # for East/North ordering
-   axis_order_en: ['EPSG:0000', 'EPSG:0001']
 
 
 Tiled Map Services (TMS)
