@@ -7,6 +7,7 @@ MapProxy Documentation
    :maxdepth: 2
    
    install
+   install_windows
    configuration
    services
    seed

@@ -411,7 +411,7 @@ class TestTMSTileSource(object):
                 try:
                     self.tms.create_tile(_Tile((1, 0, 1)), lambda x: _Tile(x))
                 except TileSourceError, e:
-                    assert 'image' in e.message
+                    assert 'image' in e.args[0]
                 else:
                     assert False, 'expected TileSourceError'
 
@@ -475,7 +475,7 @@ class TestWMSTileSource(object):
             try:
                 self.wms.create_tile(_Tile((1, 0, 1)), lambda x: _Tile(x))
             except TileSourceError, e:
-                assert 'image' in e.message
+                assert 'image' in e.args[0]
             else:
                 assert False, 'expected TileSourceError'
     def test_get_tile_non_image_result(self):
@@ -487,8 +487,8 @@ class TestWMSTileSource(object):
             try:
                 self.wms.create_tile(_Tile((1, 0, 1)), lambda x: _Tile(x))
             except TileSourceError, e:
-                print e.message
-                assert 'cannot identify' in e.message
+                print e.args[0]
+                assert 'cannot identify' in e.args[0]
             else:
                 assert False, 'expected TileSourceError'
     

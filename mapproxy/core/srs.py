@@ -22,7 +22,7 @@ from __future__ import division
 
 import math
 from itertools import izip
-from pyproj import Proj, transform, set_datapath
+from mapproxy.core.proj import Proj, transform, set_datapath
 from mapproxy.core.config import base_config, abspath
 
 import logging
@@ -64,7 +64,7 @@ class TransformationError(Exception):
 _proj_initalized = False
 def _init_proj():
     global _proj_initalized
-    if not _proj_initalized and 'proj_data_dir' in base_config().srs:
+    if not _proj_initalized and base_config().srs.get('proj_data_dir'):
         proj_data_dir = abspath(base_config().srs.proj_data_dir)
         log.info('loading proj data from %s', proj_data_dir)
         set_datapath(proj_data_dir)
@@ -100,7 +100,7 @@ class _SRS(object):
         
         init = _SRS.proj_init.get(srs_code, None)
         if init is None:
-            epsg_num = get_epsg_num(srs_code)
+            epsg_num = get_epsg_num(srs_code)   
             self.proj = Proj(init='epsg:%d' % epsg_num)
         else:
             self.proj = init()
@@ -250,10 +250,6 @@ class _SRS(object):
         else:
             return not equal_result
     def __str__(self):
-        """
-        >>> print(SRS(4326))
-        SRS EPSG:4326 ('+units=m +init=epsg:4326 ')
-        """
         #pylint: disable-msg=E1101
         return "SRS %s ('%s')" % (self.srs_code, self.proj.srs)
     

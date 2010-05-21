@@ -13,7 +13,7 @@ There are a few different configuration files used by MapProxy. Some are require
     started, where the cached data should be stored, etc.
     
 ``seed.yaml``
-    This file is the configuration for the proxy_seed tool.
+    This file is the configuration for the ``mapproxy-seed`` tool.
     
 
 ``log.ini``

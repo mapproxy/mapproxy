@@ -26,7 +26,6 @@ import Queue
 import threading
 import shutil
 import datetime
-from subprocess import Popen, PIPE
 from mapproxy.core import lockfile
 
 import logging

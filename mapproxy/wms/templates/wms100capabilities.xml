@@ -9,8 +9,8 @@
   <Title>{{service.title}}</Title>
   <Abstract>{{service.abstract}}</Abstract>
   <OnlineResource>{{service.online_resource}}</OnlineResource>
-  <Fees>{{service.fees|default('none')}}</Fees>
-  <AccessConstraints>{{service.access_constraints|default('none')}}</AccessConstraints>
+  <Fees>{{service.get('fees', 'none')}}</Fees>
+  <AccessConstraints>{{service.get('access_constraints', 'none')}}</AccessConstraints>
 </Service>
 
 <Capability>
@@ -27,11 +27,11 @@
     </Capabilities>
     <Map>
       <Format>
-{% for format in formats %}
-{% if format is wms100format %}
-        <{{format|wms100format}}/>
-{% endif %}
-{% endfor %}
+{{for format in formats}}
+{{if wms100format(format)}}
+        <{{wms100format(format)}}/>
+{{endif}}
+{{endfor}}
       </Format>
       <DCPType>
         <HTTP>
@@ -60,16 +60,16 @@
   </Exception>
   <Layer>
     <Title>{{service.title}}</Title>
-    <SRS>{% for s in srs %}{{s}} {% endfor %}</SRS>
+    <SRS>{{for s in srs}}{{s}} {{endfor}}</SRS>
     <LatLonBoundingBox minx="{{ server_llbbox[0] }}" miny="{{ server_llbbox[1] }}" maxx="{{ server_llbbox[2] }}" maxy="{{ server_llbbox[3] }}" />
-{% for layer in layers %}
-  <Layer{% if layer.has_info() %} queryable="1"{% endif %}>
+{{for layer in layers}}
+  <Layer{{if layer.has_info()}} queryable="1"{{endif}}>
       <Name>{{ layer.md.name }}</Name>
       <Title>{{ layer.md.title }}</Title>
       <LatLonBoundingBox minx="{{ layer.llbbox[0] }}" miny="{{ layer.llbbox[1] }}" maxx="{{ layer.llbbox[2] }}" maxy="{{ layer.llbbox[3] }}" />
       <BoundingBox SRS="EPSG:4326" minx="{{ layer.llbbox[0] }}" miny="{{ layer.llbbox[1] }}" maxx="{{ layer.llbbox[2] }}" maxy="{{ layer.llbbox[3] }}" />
     </Layer>
-{% endfor %}
+{{endfor}}
   </Layer>
 </Capability>
 </WMT_MS_Capabilities>

@@ -116,6 +116,8 @@ class Cache(object):
         try:
             src_bbox, tile_grid, affected_tile_coords = \
                 self.grid.get_affected_tiles(req_bbox, out_size, req_srs=req_srs)
+        except IndexError:
+            raise TileCacheError('Invalid BBOX')
         except NoTiles:
             raise BlankImage()
         
@@ -175,11 +177,14 @@ class CacheManager(object):
         self.cache = cache
         self.tile_source = tile_source
         self.tile_creator = tile_creator
+        self._expire_timestamp = None
         
     def is_cached(self, tile):
         """
         Return True if the tile is cached.
         """
+        if isinstance(tile, tuple):
+            tile = _Tile(tile)
         max_mtime = self.expire_timestamp(tile)
         cached = self.cache.is_cached(tile)
         if cached and max_mtime is not None:
@@ -193,10 +198,9 @@ class CacheManager(object):
         Return the timestamp until which a tile should be accepted as up-to-date,
         or ``None`` if the tiles should not expire.
         
-        :note: Returns ``None`` by default. Overwrite/change method to enable
-            expiration.
+        :note: Returns _expire_timestamp by default.
         """
-        return None
+        return self._expire_timestamp
     
     def load_tile_coords(self, tile_coords, with_metadata=False):
         """
@@ -340,7 +344,7 @@ class FileCache(object):
     
     def _update_tile_metadata(self, tile):
         location = self.tile_location(tile)
-        stats = os.lstat(tile.location)
+        stats = os.lstat(location)
         tile.timestamp = stats.st_mtime
         tile.size = stats.st_size
     

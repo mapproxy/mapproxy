@@ -132,6 +132,11 @@ class ImageSource(object):
             f = self.source
             if isinstance(f, basestring):
                 f = open(f, 'rb')
+            elif not hasattr(f, 'seek'):
+                # PIL needs file objects with seek
+                f = StringIO(f.read())
+                self.source = f
+                f.seek(0)
             try:
                 return Image.open(f)
             except StandardError:
@@ -159,6 +164,7 @@ class ImageSource(object):
             return open(self.source, 'rb')
         if not hasattr(self.source, 'seek'):
             return ReadBufWrapper(self.source)
+        self.source.seek(0)
         return self.source
     @property
     def size(self):

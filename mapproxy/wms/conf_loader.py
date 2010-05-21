@@ -19,12 +19,14 @@ Configuration loading and system initializing.
 """
 from __future__ import with_statement
 
+import types
 import pkg_resources
 
 import logging
 log = logging.getLogger(__name__)
 
 from mapproxy.core.conf_loader import Source, CacheSource
+from mapproxy.core.client import auth_data_from_url, HTTPClient
 from mapproxy.wms.cache import WMSTileSource
 from mapproxy.wms.layer import (DirectLayer, WMSCacheLayer, DebugLayer, VLayer,
                                  FeatureInfoSource, MultiLayer, AttributionLayer)
@@ -137,8 +139,8 @@ class DirectSource(Source):
     def has_featureinfo(self):
         return self.source.get('wms_opts', {}).get('featureinfo', False)
     def configured_layer(self):
-        return DirectLayer(WMSClient(self.requests[0], client_request),
-                           queryable=self.has_featureinfo())
+        clients = wms_clients_for_requests(self.requests)
+        return DirectLayer(clients[0], queryable=self.has_featureinfo())
 
 class DebugSource(Source):
     def configured_layer(self):
@@ -166,7 +168,7 @@ class WMSCacheSource(CacheSource):
     def configured_layer(self):
         fi_source = None
         if self.fi_requests:
-            fi_clients = [WMSClient(req) for req in self.fi_requests]
+            fi_clients = wms_clients_for_requests(self.fi_requests)
             fi_source = FeatureInfoSource(fi_clients)
         return WMSCacheLayer(self.configured_cache(), fi_source=fi_source)
     
@@ -179,7 +181,7 @@ class WMSCacheSource(CacheSource):
         tile_size = self.layer_conf.layer.get('param', {}).get('tile_size', (256, 256))
         self.grid = tile_grid_for_epsg(epsg=srs, tile_size=tile_size, bbox=bbox, res=res)
     def init_tile_source(self):
-        clients = [WMSClient(req) for req in self.requests[::-1]]
+        clients = wms_clients_for_requests(self.requests[::-1])
         format = self.layer_conf.layer.get('param', {}).get('format', None)
         if format is not None:
             _mime_class, format, _options = split_mime_type(format)
@@ -195,6 +197,17 @@ class WMSCacheSource(CacheSource):
         else:
             return None
 
+
+def wms_clients_for_requests(requests):
+    clients = []
+    for req in requests:
+        http_client = None
+        url, (username, password) = auth_data_from_url(req.url)
+        if username and password:
+            req.url = url
+            http_client = HTTPClient(url, username, password)
+        clients.append(WMSClient(req, client_request, http_client=http_client))
+    return clients
 
 wms_version_requests = {'1.0.0': {'featureinfo': WMS100FeatureInfoRequest,
                                   'map': WMS100MapRequest,},
@@ -213,6 +226,8 @@ def create_request(req_data, param, req_type='map', version='1.1.1'):
     else:
         req_data['format'] = param['format']
     req_data['bbox'] = param['bbox']
+    if isinstance(req_data['bbox'], types.ListType):
+        req_data['bbox'] = ','.join(str(x) for x in req_data['bbox'])
     req_data['srs'] = param['srs']
     
     return wms_version_requests[version][req_type](url=url, param=req_data)

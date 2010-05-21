@@ -7,8 +7,8 @@
   <Origin x="{{layer.bbox[0]}}" y="{{layer.bbox[1]}}" /> 
   <TileFormat width="{{layer.grid.tile_size[0]}}" height="{{layer.grid.tile_size[1]}}" mime-type="{{layer.format_mime_type}}" extension="{{layer.format}}" />
   <TileSets profile="{{layer.grid.profile}}">
-{% for level, res in layer.grid.tile_sets %}
+{{for level, res in layer.grid.tile_sets }}
     <TileSet href="{{service.url}}/{{level}}" units-per-pixel="{{res}}" order="{{level}}" />
-{% endfor %}
+{{endfor}}
   </TileSets>
 </TileMap>

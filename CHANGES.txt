@@ -1,6 +1,12 @@
 0.8.3dev
 
-- new link_single_color_images layer option. multiple "emtpy" tiles will
+- new improved seed tool
+  
+  - seed polygon areas instead BBOX (from shapefiles, etc)
+  - advanced seeding strategy
+  - multiprocessing
+
+- new link_single_color_images layer option. multiple "empty" tiles will
   be linked to the same image. (Unix only)
 - fixed transparency for image parts without tiles
 - log HTTP requests to servers regardless of the success

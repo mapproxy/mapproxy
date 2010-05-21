@@ -1,5 +1,4 @@
 import re
-from jinja2 import Environment, PackageLoader
 
 from mapproxy.core.response import Response
 from mapproxy.core.exceptions import RequestError, PlainExceptionHandler
@@ -9,8 +8,8 @@ from mapproxy.core.srs import SRS
 from mapproxy.core.app import ctx
 from mapproxy.core.config import base_config
 
-env = Environment(loader=PackageLoader('mapproxy.kml', 'templates'),
-                  trim_blocks=True)
+from mapproxy.core.template import template_loader, bunch
+get_template = template_loader(__file__, 'templates')
 
 class KMLRequest(TileRequest):
     """
@@ -93,10 +92,10 @@ class KMLServer(Server):
         tile = SubTile(tile_coord, bbox)
         
         subtiles = self._get_subtiles(tile_coord, layer)
-        layer = {'name': map_request.layer, 'format': layer.format, 'md': layer.md}
-        service = {'url': map_request.request.script_url.rstrip('/')}
-        template = env.get_template(self.template_file)
-        result = template.render(tile=tile, subtiles=subtiles, layer=layer,
+        layer = bunch(name=map_request.layer, format=layer.format, md=layer.md)
+        service = bunch(url=map_request.request.script_url.rstrip('/'))
+        template = get_template(self.template_file)
+        result = template.substitute(tile=tile, subtiles=subtiles, layer=layer,
                                  service=service, initial_level=initial_level)
         resp = Response(result, content_type='application/vnd.google-earth.kml+xml')
         resp.cache_headers(etag_data=(result,), max_age=self.max_age)

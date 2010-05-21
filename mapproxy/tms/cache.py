@@ -45,7 +45,7 @@ class TMSTileSource(TileSource):
             buf = StringIO(self.tms_client.get_tile(coord).read())
             tile.source = ImageSource(buf)
         except HTTPClientError, e:
-            reraise_exception(TileSourceError(e.message), sys.exc_info())
+            reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
         return [tile]
     
     def __repr__(self):

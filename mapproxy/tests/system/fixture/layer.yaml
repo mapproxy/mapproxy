@@ -115,3 +115,4 @@ layers:
         cache_dir: wms
         sources:
         - type: cache_tms
+          url: http://localhost:42423/tiles
