@@ -30,7 +30,10 @@ Example::
     - type: cache_wms
       req:
           url: http://two.example.org/service?
-          layer: aerial
+          layers: aerial
+
+
+.. note:: If the layers come from the same WMS server, you can just them to the ``layers`` parameter. E.g. ``layers: water,railroads,roads``.
 
 
 Access local servers
@@ -53,53 +56,59 @@ Example::
         transparent: true
 
 
+Cache vector data (e.g. rendered road maps)
+===========================================
 
+You have a WMS server that renders vector data like road maps. By default MapProxy caches traditional power-of-two image pyramids, the resolutions between each pyramid level doubles. For example if the first level has a resolution of 10km, it would also cache resolutions of 5km, 2.5km, 1.125km etc. Requests with a resolution of 7km would be generated from cached data with a resolution of 10km. The problem with this approach is, that everything needs to be scaled down, lines will get thin and text labels will become unreadable. The solution is simple: Just add more levels to the pyramid. There are three options to do this.
+
+
+You can set every cache resolution in the ``res`` option of a layer.
+::
+
+  custom_res:
+    params:
+      res: [10000, 7500, 5000, 3500, 2500]
+    [sources and md omitted]
+
+You can specify a different factor that is used to calculate the resolutions. By default a factor of 2 is used (10, 5, 2.5,…) but you can set smaller values like 1.6 (10, 6.25, 3.9,…)::
+
+  custom_factor:
+    params:
+      res: 1.6
+    [sources and md omitted]
+
+The third options is a convenient variation of the previous option. A factor of 1.41421, the square root of two, would get resolutions of 10, 7.07, 5, 3.54, 2.5,…. Notice that every second resolution is identical to the power-of-two resolutions. This comes in handy if you use the layer not only in classic WMS clients but also want to use it in tile-based clients like OpenLayers, wich only request in these resolutions.
+::
+  sqrt2:
+    params:
+      res: sqrt2
+    [sources and md omitted]
     
-.. TODO
-.. Examples
-.. # direct:
-.. #     md:
-.. #         title: Direct Layer
-.. #     sources:
-.. #     - req:
-.. #         url: http://carl:5000/service
-.. #         layers: foo,bar
-.. #       type: direct
-.. combined:
-..     md:
-..         title: OSM Mapnik + MapServer WMS (Cached)
-..     cache_dir: mapnik_mapserver
-..     param:
-..         format: image/png
-..         srs: EPSG:900913
-..     sources:
-..     - type: cache_wms
-..       wms_opts:
-..         featureinfo: True
-..         version: 1.1.1
-..       req:
-..           url: http://burns/mapserv/?map=/home/os/mapserver/mapfiles/osm.map
-..           layers: roads
-..     - type: cache_wms
-..       req:
-..           url: http://carl/service?
-..           layer: luftbild
-.. osm_roads:
-..     md:
-..         title: OSM Streets
-..     attribution:
-..         inverse: 'true'
-..     param:
-..         format: image/png
-..         srs: ['EPSG:4326', 'EPSG:900913']
-..         # res: 'sqrt2'
-..     pngquant: True
-..     sources:
-..     - type: cache_wms
-..       req:
-..         url: http://carl/service?
-..         layers: roads
-..         transparent: 'true'
+.. note:: The quality of aerial images or scanned maps are unaffected from these options.
+
+Add highly dynamic layers
+=========================
+
+You have dynamic layers that change constantly and you do not want to cache these. You can use the ``direct`` source type. See next example. 
+
+Reproject WMS layers
+====================
+
+If you do not want want to cache data but still want to use MapProxy's ability to reproject WMS layers on the fly, you can add the layers as a ``direct`` layer.
+You should explicitly define the SRS the source WMS supports. Requests in other SRS will be reprojected. You should specify at least one geographic and one projected SRS to limit the distortions from reprojection. 
+::
+
+  direct_example:
+    [md and params omitted]
+    sources:
+    - type: direct
+      supported_srs: ['EPSG:4326', 'EPSG:25832']
+      req:
+        url: http://wms.example.org/service?
+        layers: layer0,layer1
+    
+
+
 .. osm_mapnik:
 ..     md:
 ..         title: osm.omniscale.net - Open Street Map
