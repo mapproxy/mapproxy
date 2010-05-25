@@ -305,6 +305,16 @@ Here you can define some options that affect the way MapProxy generates image re
   You can use one of nearest, bilinear or bicubic. Nearest is the fastest and
   bicubic the slowest. The results will look best with bilinear or bicubic.
   Bicubic enhances the contrast at edges and should be used for vector images.
+  
+  With `bilinear` you should get about 2/3 of the `nearest` performance, with
+  `bicubic` 1/3.
+  
+  See the examples below for results of `nearest`, `bilinear` and `bicubic`.
+  
+  .. image:: imgs/nearest.png
+  .. image:: imgs/bilinear.png
+  .. image:: imgs/bicubic.png
+
 
 .. _jpeg_quality:
 
