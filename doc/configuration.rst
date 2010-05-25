@@ -202,7 +202,7 @@ The ``cache_wms`` source passes requests to a WMS server and caches all data for
     SRS, and vice versa for geographic SRS. E.g when `supported_srs` is ``['EPSG:4326', 'EPSG:31467']`` caches
     for EPSG:900913 will use EPSG:32467.
     
-    .. note:: For the configuration of SRS for MapProxy see `srs_configuration`_.
+  ..  .. note:: For the configuration of SRS for MapProxy see `srs_configuration`_.
 
 Minimal example::
 
@@ -402,6 +402,30 @@ Here you can define some options that affect the way MapProxy generates image re
      axis_order_ne: ['EPSG:9999', 'EPSG:9998']
      # for East/North ordering
      axis_order_en: ['EPSG:0000', 'EPSG:0001']
+
+.. _http_ssl:
+
+``http.ssl``
+^^^^^^^^^^^^
+
+.. note:: You need Python 2.6 or the `SSL module <http://pypi.python.org/pypi/ssl>`_ for this feature.
+
+MapProxy supports access to HTTPS servers. Just use ``https`` instead of ``http`` when
+defining the URL of a source. MapProxy needs a file that contains the root and CA
+certificates. See the `Python SSL documentation <http://docs.python.org/dev/library/ssl.html#ssl-certificates>`_ for more information
+about the format.
+::
+
+  http:
+    ssl:
+      ca_certs: ./certs_file
+
+If you want to use SSL but do not need certificate verification, then you can disable it with the ``insecure`` option.
+::
+
+  http:
+    ssl:
+      insecure: True
 
 
 ``tile_creator_pool_size``

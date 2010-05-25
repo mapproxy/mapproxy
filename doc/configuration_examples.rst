@@ -146,6 +146,25 @@ You should explicitly define the SRS the source WMS supports. Requests in other 
     
 
 
+WMS layers with HTTP Basic Authentication
+=========================================
+
+You have a WMS source that requires authentication. MapProxy has support for HTTP Basic
+Authentication. You just need to add the username and password to the URL. Since the
+password is sent in plaintext, you should use this feature in combination with HTTPS.
+See :ref:`HTTPS configuration for more information <http_ssl>`.
+::
+
+  secure_source:
+    md:
+      title: Map from HTTPS server
+    sources:
+    - type: cache_wms
+      req:
+        url: https://username:mypassword@example.org/service?
+        layers: securelayer
+
+
 .. osm_mapnik:
 ..     md:
 ..         title: osm.omniscale.net - Open Street Map
