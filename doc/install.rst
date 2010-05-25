@@ -56,11 +56,15 @@ To install all requirements on Debian or Ubuntu call::
 Installation
 ~~~~~~~~~~~~
 
-Your virtual environment should already contain `pip`_, a tool to install Python packages. If not, ``easy_install pip`` is enough to get it. We have put a requirements file online that describes which Python packages are needed for MapProxy and where to get these.
+Your virtual environment should already contain `pip`_, a tool to install Python packages. If not, ``easy_install pip`` is enough to get it.
 
-To install MapProxy and all dependencies, call the following::
+To install you need to call::
 
-    pip install -r http://bitbucket.org/olt/mapproxy/raw/tip/requirements.txt
+  pip install MapProxy
+
+You specify the release version of MapProxy. E.g.::
+
+  pip install MapProxy==0.8.3
 
 To check if the MapProxy was successfully installed, you can directly call the `version` module. You should see the installed version number.
 ::
@@ -69,6 +73,8 @@ To check if the MapProxy was successfully installed, you can directly call the `
 
 .. _`pip`: http://pip.openplans.org/
 
+
+.. _create_configuration:
 
 Create a configuration
 ----------------------

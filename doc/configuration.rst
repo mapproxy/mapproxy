@@ -16,14 +16,11 @@ There are a few different configuration files used by MapProxy. Some are require
     This file is the configuration for the ``mapproxy-seed`` tool.
     
 
-``log.ini``
-    Configures the logging.
-
 ``develop.ini`` and ``config.ini``
     These are the paster configuration files that are used to start the proxy in development or production mode.
 
-``services.yaml``
------------------
+services.yaml
+-------------
 
 All layers the proxy offers are configured in this file. The configuration uses the YAML format.
 
@@ -205,7 +202,7 @@ The ``cache_wms`` source passes requests to a WMS server and caches all data for
     SRS, and vice versa for geographic SRS. E.g when `supported_srs` is ``['EPSG:4326', 'EPSG:31467']`` caches
     for EPSG:900913 will use EPSG:32467.
     
-    .. note:: For the configuration of SRS for MapProxy see `SRS configuration`_.
+    .. note:: For the configuration of SRS for MapProxy see `srs_configuration`_.
 
 Minimal example::
 
@@ -281,8 +278,8 @@ This is useful to determine a fixed set of resolutions for the ``res``-parameter
 
 
 
-``proxy.yaml``
---------------
+proxy.yaml
+----------
 
 This file configures some internals of MapProxy.
 
@@ -308,6 +305,8 @@ Here you can define some options that affect the way MapProxy generates image re
   You can use one of nearest, bilinear or bicubic. Nearest is the fastest and
   bicubic the slowest. The results will look best with bilinear or bicubic.
   Bicubic enhances the contrast at edges and should be used for vector images.
+
+.. _jpeg_quality:
 
 ``jpeg_quality``
   An integer value from 0 to 100. Larger values result in slower performance,
@@ -371,6 +370,7 @@ Here you can define some options that affect the way MapProxy generates image re
   
   The configured path can be absolute or relative to the proxy.yaml.
 
+.. _axis_order:
 
 ``axis_order_ne`` and ``axis_order_ne``
   The axis ordering defines in which order coordinates are given, i.e. lon/lat or lat/lon.

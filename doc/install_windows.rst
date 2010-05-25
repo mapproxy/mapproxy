@@ -37,5 +37,5 @@ To check if the MapProxy was successfully installed you can directly call the `v
     python -m mapproxy.core.version
 
 
-Now continue with the `Create a configuration` from the :doc:`main installation documentation <install>`.
+Now continue with :ref:`Create a configuration <create_configuration>` from the installation documentation.
 

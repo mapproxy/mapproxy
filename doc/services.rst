@@ -19,7 +19,7 @@ The `wms.srs` option defines which SRS the WMS service supports. If you need oth
  wms:
    srs: ['EPSG:4326', 'CRS:84', 'EPSG:900913']
 
-
+See :ref:`axis order<axis_order>` for further configuration that might be needed for WMS 1.3.0.
 
 Tiled Map Services (TMS)
 ------------------------
