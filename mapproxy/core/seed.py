@@ -96,8 +96,10 @@ class SeedWorker(proc_class):
             tiles, progress = self.tiles_queue.get()
             if tiles is None:
                 return
-            print '[%s] %6.2f%% %s \tETA: %s\r' % (timestamp(), progress[1]*100, progress[0],
-                progress[2]),
+            print '[%s] %6.2f%% %s \tETA: %s\r' % (
+                timestamp(), progress[1]*100, progress[0],
+                progress[2]
+            ),
             sys.stdout.flush()
             if not self.dry_run:
                 exp_backoff(self.cache.cache_mgr.load_tile_coords, args=(tiles,),
@@ -195,11 +197,14 @@ class Seeder(object):
         return subtiles
     
     def not_cached(self, tiles):
-        return [tile for tile in tiles if tile is not None and not self.cache.cache_mgr.is_cached(tile)]
+        return [tile for tile in tiles
+                    if tile is not None and
+                        not self.cache.cache_mgr.is_cached(tile)]
 
     
     def report_progress(self, level, bbox):
-        print '[%s] %2s %6.2f%% %s (#%d) ETA: %s' % (timestamp(), level, self.progress*100,
+        print '[%s] %2s %6.2f%% %s (#%d) ETA: %s' % (
+            timestamp(), level, self.progress*100,
             format_bbox(bbox), self.count, self.eta)
         sys.stdout.flush()
     
