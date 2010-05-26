@@ -22,14 +22,18 @@ This server is sufficient for local testing of the configuration. For production
 Production
 ----------
 
-
 `FastCGI`_ is a protocol to integrate web applications into web servers.
 FastCGI is language-independent and implemented by most popular web servers like Apache, Lighttpd or Nginx. The applications run isolated from the web server. In this case you do not start MapProxy as an HTTP server but as a FastCGI server.
 
-The example paster configuration ``config.ini`` does this. By default the configured server listens on a socket file (``var/fcgi-socket``) to which you should point your web server. But you can also use TCP/IP with the ``host`` and ``port`` option. 
+The example paster configuration ``config.ini`` does this. By default the configured server listens on a socket file (``var/fcgi-socket``) to which you should point your web server. But you can also use TCP/IP with the ``host`` and ``port`` option.
+
+To start MapProxy as a FastCGI server::
+
+  paster serve etc/config.ini
+
+Next you must configure you web server to talk to this FastCGI server.
 
 .. _`FastCGI`: http://www.fastcgi.com/
-
 
 Lighttpd
 """"""""
