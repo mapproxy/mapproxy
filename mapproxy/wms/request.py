@@ -392,6 +392,10 @@ class WMS130FeatureInfoRequest(WMS130MapRequest):
         del params['x']
         del params['y']
         return params
+    
+    def validate_format(self):
+        if self.non_strict: return
+        WMS130MapRequest.validate_format(self)
 
 class WMSCapabilitiesRequest(WMSRequest):
     request_handler_name = 'capabilities'
