@@ -27,7 +27,7 @@ from mapproxy.core.app import make_wsgi_app
 from mapproxy.wms.request import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest, \
                                  WMS111FeatureInfoRequest, WMS111CapabilitiesRequest, \
                                  WMS130CapabilitiesRequest, WMS100CapabilitiesRequest, \
-                                 WMS100FeatureInfoRequest
+                                 WMS100FeatureInfoRequest, WMS130FeatureInfoRequest
 from mapproxy.tests.image import is_jpeg, is_png, tmp_image
 from mapproxy.tests.http import mock_httpd
 from mapproxy.tests.helper import validate_with_dtd, validate_with_xsd
@@ -305,6 +305,19 @@ class TestWMS111(WMSTest):
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, 'info')
     
+    def test_get_featureinfo_130(self):
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
+                                  '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
+                                  '&WIDTH=200&QUERY_LAYERS=foo,bar&I=10&J=20'},
+                        {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+        with mock_httpd(('localhost', 42423), [expected_req]):
+            self.common_fi_req.params['layers'] = 'wms_cache_130'
+            self.common_fi_req.params['query_layers'] = 'wms_cache_130'
+            resp = self.app.get(self.common_fi_req)
+            eq_(resp.content_type, 'text/plain')
+            eq_(resp.body, 'info')
+        
     def test_get_featureinfo_missing_params(self):
         del self.common_fi_req.params['format']
         del self.common_fi_req.params['styles']
@@ -486,6 +499,10 @@ class TestWMS130(WMSTest):
              version='1.3.0', bbox='0,-180,80,0', width='200', height='200',
              layers='wms_cache', crs='EPSG:4326', format='image/png',
              styles='', request='GetMap'))
+        self.common_fi_req = WMS130FeatureInfoRequest(url='/service?',
+            param=dict(i='10', j='20', width='200', height='200', layers='wms_cache_130',
+                       format='image/png', query_layers='wms_cache_130', styles='',
+                       bbox='1000,400,2000,1400', crs='EPSG:900913'))
         
     def test_wms_capabilities(self):
         req = WMS130CapabilitiesRequest(url='/service?').copy_with_request_params(self.common_req)
@@ -593,7 +610,30 @@ class TestWMS130(WMSTest):
                 self.common_map_req.params['bbox'] = '0,0,180,90' #internal axis-order
                 resp = self.app.get(self.common_map_req)
                 eq_(resp.content_type, 'image/png')
+    
+    def test_get_featureinfo(self):
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
+                                  '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
+                                  '&WIDTH=200&QUERY_LAYERS=foo,bar&I=10&J=20'},
+                        {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+        with mock_httpd(('localhost', 42423), [expected_req]):
+            resp = self.app.get(self.common_fi_req)
+            eq_(resp.content_type, 'text/plain')
+            eq_(resp.body, 'info')
 
+    def test_get_featureinfo_111(self):
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
+                                  '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},
+                        {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+        with mock_httpd(('localhost', 42423), [expected_req]):
+            self.common_fi_req.params['layers'] = 'wms_cache'
+            self.common_fi_req.params['query_layers'] = 'wms_cache'
+            resp = self.app.get(self.common_fi_req)
+            eq_(resp.content_type, 'text/plain')
+            eq_(resp.body, 'info')
 
 if sys.platform != 'win32':
     class TestWMSLinkSingleColorImages(WMSTest):

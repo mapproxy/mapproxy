@@ -362,16 +362,36 @@ class WMS100FeatureInfoRequest(WMSFeatureInfoRequest):
     
     def adapt_params_to_version(self):
         params = WMSMapRequest.adapt_params_to_version(self)
-        del self.params['version']
+        del params['version']
         return params
 
-class WMS130FeatureInfoRequest(WMSFeatureInfoRequest):
+class WMS130FeatureInfoRequest(WMS130MapRequest):
     request_params = WMS130FeatureInfoRequestParams
     xml_exception_handler = exceptions.WMS130ExceptionHandler
     request_handler_name = 'featureinfo'
     fixed_params = WMS130MapRequest.fixed_params.copy()
     fixed_params['request'] = 'GetFeatureInfo'
-    expected_param = WMS130MapRequest.expected_param[:] + ['query_layers', 'x', 'y']
+    expected_param = WMS130MapRequest.expected_param[:] + ['query_layers', 'i', 'j']
+    non_strict_params = set(['format', 'styles'])
+
+    def adapt_to_111(self):
+        WMS130MapRequest.adapt_to_111(self)
+        # only set x,y when present,
+        # avoids empty values for request templates
+        if 'i' in self.params:
+            self.params['x'] = self.params['i']
+        if 'j' in self.params:
+            self.params['y'] = self.params['j']
+        del self.params['i']
+        del self.params['j']
+    
+    def adapt_params_to_version(self):
+        params = WMS130MapRequest.adapt_params_to_version(self)
+        params['i'] = self.params['x']
+        params['j'] = self.params['y']
+        del params['x']
+        del params['y']
+        return params
 
 class WMSCapabilitiesRequest(WMSRequest):
     request_handler_name = 'capabilities'
