@@ -128,10 +128,12 @@ class WMSRequest(BaseRequest):
     request_handler_name = None
     fixed_params = {}
     expected_param = []
+    non_strict_params = set()
     #pylint: disable-msg=E1102
     xml_exception_handler = None
     
-    def __init__(self, param=None, url='', validate=False):
+    def __init__(self, param=None, url='', validate=False, non_strict=False):
+        self.non_strict = non_strict
         BaseRequest.__init__(self, param=param, url=url, validate=validate)
         self.adapt_to_111()
     
@@ -167,12 +169,15 @@ class WMSMapRequest(WMSRequest):
     #pylint: disable-msg=E1102
     xml_exception_handler = None
 
-    def __init__(self, param=None, url='', validate=False):
-        WMSRequest.__init__(self, param=param, url=url, validate=validate)
+    def __init__(self, param=None, url='', validate=False, non_strict=False):
+        WMSRequest.__init__(self, param=param, url=url, validate=validate,
+                            non_strict=non_strict)
     
     def validate(self):
         missing_param = []
         for param in self.expected_param:
+            if self.non_strict and param in self.non_strict_params:
+                continue
             if param not in self.params:
                 missing_param.append(param)
         
@@ -329,7 +334,14 @@ class WMSFeatureInfoRequestParams(WMSMapRequestParams):
 class WMS130FeatureInfoRequestParams(WMSFeatureInfoRequestParams):
     switch_bbox = _switch_bbox
 
-class WMS111FeatureInfoRequest(WMSMapRequest):
+class WMSFeatureInfoRequest(WMSMapRequest):
+    non_strict_params = set(['format', 'styles'])
+    
+    def validate_format(self):
+        if self.non_strict: return 
+        WMSMapRequest.validate_format(self)
+
+class WMS111FeatureInfoRequest(WMSFeatureInfoRequest):
     request_params = WMSFeatureInfoRequestParams
     xml_exception_handler = exceptions.WMS111ExceptionHandler
     request_handler_name = 'featureinfo'
@@ -337,7 +349,7 @@ class WMS111FeatureInfoRequest(WMSMapRequest):
     fixed_params['request'] = 'GetFeatureInfo'
     expected_param = WMSMapRequest.expected_param[:] + ['query_layers', 'x', 'y']
     
-class WMS100FeatureInfoRequest(WMSMapRequest):
+class WMS100FeatureInfoRequest(WMSFeatureInfoRequest):
     request_params = WMSFeatureInfoRequestParams
     xml_exception_handler = exceptions.WMS100ExceptionHandler
     request_handler_name = 'featureinfo'
@@ -353,22 +365,20 @@ class WMS100FeatureInfoRequest(WMSMapRequest):
         del self.params['version']
         return params
 
-
-class WMS130FeatureInfoRequest(WMSMapRequest):
+class WMS130FeatureInfoRequest(WMSFeatureInfoRequest):
     request_params = WMS130FeatureInfoRequestParams
     xml_exception_handler = exceptions.WMS130ExceptionHandler
     request_handler_name = 'featureinfo'
     fixed_params = WMS130MapRequest.fixed_params.copy()
     fixed_params['request'] = 'GetFeatureInfo'
     expected_param = WMS130MapRequest.expected_param[:] + ['query_layers', 'x', 'y']
-    
 
 class WMSCapabilitiesRequest(WMSRequest):
     request_handler_name = 'capabilities'
     exception_handler = None
     mime_type = 'text/xml'
     fixed_params = {}
-    def __init__(self, param=None, url='', validate=False):
+    def __init__(self, param=None, url='', validate=False, non_strict=False):
         WMSRequest.__init__(self, param=param, url=url, validate=validate)
     
     def adapt_to_111(self):
@@ -486,6 +496,7 @@ def negotiate_version(version):
             return next_highest_version
 
 def wms_request(req, validate=True):
+    non_strict = base_config().wms.non_strict
     version = _parse_version(req)
     req_type = _parse_request_type(req)
     
@@ -499,4 +510,5 @@ def wms_request(req, validate=True):
         dummy_req = version_requests['map'](param=req.args, url=req.base_url,
                                             validate=False)
         raise RequestError("unknown WMS request type '%s'" % req_type, request=dummy_req)
-    return req_class(param=req.args, url=req.base_url, validate=True)
+    return req_class(param=req.args, url=req.base_url, validate=True,
+                     non_strict=non_strict)

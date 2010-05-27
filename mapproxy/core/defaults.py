@@ -19,6 +19,7 @@ server = ['wms', 'tms', 'kml']
 wms = dict(
     image_formats = ['image/jpeg', 'image/png', 'image/gif', 'image/GeoTIFF', 'image/tiff'],
     srs = set(['EPSG:4326', 'EPSG:4258', 'CRS:84', 'EPSG:900913', 'EPSG:31466', 'EPSG:31467', 'EPSG:31468', 'EPSG:25831', 'EPSG:25832', 'EPSG:25833']),
+    non_strict = False,
     request_parser = 'default',
     client_request = 'default',
 )

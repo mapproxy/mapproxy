@@ -305,6 +305,32 @@ class TestWMS111(WMSTest):
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, 'info')
     
+    def test_get_featureinfo_missing_params(self):
+        del self.common_fi_req.params['format']
+        del self.common_fi_req.params['styles']
+        resp = self.app.get(self.common_fi_req)
+        xml = resp.lxml
+        assert 'missing parameters' in xml.xpath('//ServiceException/text()')[0]
+        assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
+    
+    def test_get_featureinfo_missing_params_non_strict(self):
+        mapproxy.core.config.base_config().wms.non_strict = True
+        try:
+            expected_req = (
+                {'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+                          '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                          '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
+                          '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},
+                {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                del self.common_fi_req.params['format']
+                del self.common_fi_req.params['styles']
+                resp = self.app.get(self.common_fi_req)
+                eq_(resp.content_type, 'text/plain')
+                eq_(resp.body, 'info')
+        finally:
+            mapproxy.core.config.base_config().wms.non_strict = False
+    
     def test_get_featureinfo_not_queryable(self):
         self.common_fi_req.params['query_layers'] = 'tms_cache'
         self.common_fi_req.params['exceptions'] = 'application/vnd.ogc.se_xml'
