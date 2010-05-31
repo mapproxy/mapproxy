@@ -186,7 +186,7 @@ class WMSCacheSource(CacheSource):
         req = self.requests[0]
         bbox = req.params.bbox
         self.transparent = req.params.transparent
-        res = self.param['res']
+        res = sorted(self.param['res'], reverse=True)
         srs = self.param['srs']
         tile_size = self.layer_conf.layer.get('param', {}).get('tile_size', (256, 256))
         self.grid = tile_grid_for_epsg(epsg=srs, tile_size=tile_size, bbox=bbox, res=res)

@@ -93,7 +93,11 @@ class WMSServer(Server):
                 infos.append(info)
             else:
                 [infos.append(i) for i in info if i is not None]
-        return Response('\n'.join(infos), mimetype='text/plain')
+        if 'info_format' in request.params:
+            mimetype = request.params.info_format
+        else:
+            mimetype = 'text/plain'
+        return Response('\n'.join(infos), mimetype=mimetype)
     
     def check_request(self, request):
         query_layers = request.params.query_layers if hasattr(request, 'query_layers') else []

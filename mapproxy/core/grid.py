@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 from mapproxy.core.config import base_config
 from mapproxy.core.srs import SRS, get_epsg_num
 
-geodetic_epsg_codes = [4326, 31466, 31467, 31468, 31469]
+geodetic_epsg_codes = [4326]
 
 class NoTiles(Exception):
     pass

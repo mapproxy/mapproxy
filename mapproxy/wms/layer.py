@@ -314,5 +314,5 @@ class MultiLayer(WMSLayer):
     
     def info(self, request):
         srs = request.params.srs
-        layer = self.dispatcher(self.layers, srs)
+        layer = self.dispatcher(self.layers, SRS(srs), self.srs_layers)
         return layer.info(request)
