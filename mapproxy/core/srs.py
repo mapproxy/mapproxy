@@ -21,6 +21,7 @@ Spatial reference systems and transformation of coordinates.
 from __future__ import division
 
 import math
+import threading
 from itertools import izip
 from mapproxy.core.proj import Proj, transform, set_datapath
 from mapproxy.core.config import base_config, abspath
@@ -70,15 +71,16 @@ def _init_proj():
         set_datapath(proj_data_dir)
         _proj_initalized = True
 
-_srs_cache = {}
+_thread_local = threading.local()
+_thread_local.srs_cache = {}
 def SRS(srs_code):
     _init_proj()
     srs_code = _clean_srs_code(srs_code)
-    if srs_code in _srs_cache:
-        return _srs_cache[srs_code]
+    if srs_code in _thread_local.srs_cache:
+        return _thread_local.srs_cache[srs_code]
     else:
         srs = _SRS(srs_code)
-        _srs_cache[srs_code] = srs
+        _thread_local.srs_cache[srs_code] = srs
         return srs
 
 class _SRS(object):
