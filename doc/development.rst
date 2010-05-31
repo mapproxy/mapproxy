@@ -102,7 +102,7 @@ Tips on development
 
 You are using `virtualenv` as described in :doc:`install`, right?
 
-Before you start hacking on MapProxy you should install it in development-mode. In the root directory of MapProxy call ``python setup.py develop``. Instead of installing and thus copying MapProxy into you `virtualenv`, this will just link to your source directory. If you now start MapProxy, the source from the ``mapproxy`` directory will be used. Any change you do in the code will be available if you restart MapProxy. If you use the ``--reload`` option of the ``paster serve`` command, any change in the source will issue a reload of the MapProxy application.
+Before you start hacking on MapProxy you should install it in development-mode. In the root directory of MapProxy call ``pip install -e ./``. Instead of installing and thus copying MapProxy into your `virtualenv`, this will just link to your source directory. If you now start MapProxy, the source from your MapProxy directory will be used. Any change you do in the code will be available if you restart MapProxy. If you use the ``--reload`` option of the ``paster serve`` command, any change in the source will issue a reload of the MapProxy server.
 
 .. todo:: 
   
@@ -112,6 +112,6 @@ Before you start hacking on MapProxy you should install it in development-mode. 
 Coding Style Guide
 ------------------
 
-MapProxy generally follows the `Style Guide for Python Code`_. With the only exception that we permit a line of about 90 characters.
+MapProxy generally follows the `Style Guide for Python Code`_. With the only exception that we permit a line width of about 90 characters.
 
 .. _`Style Guide for Python Code`: http://www.python.org/dev/peps/pep-0008/
