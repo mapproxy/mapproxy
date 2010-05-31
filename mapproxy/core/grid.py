@@ -20,6 +20,7 @@
 from __future__ import division
 import math
 
+import warnings
 import logging
 log = logging.getLogger(__name__)
 
@@ -82,14 +83,19 @@ class TileGrid(object):
     
     spheroid_a = 6378137.0 # for 900913
     
-    def __init__(self, epsg=900913, bbox=None, tile_size=(256, 256), res=None,
-                 is_geodetic=False, levels=None):
+    def __init__(self, srs=900913, bbox=None, tile_size=(256, 256), res=None,
+                 is_geodetic=False, levels=None, epsg=None):
         """
         >>> grid = TileGrid(epsg=900913)
         >>> [round(x, 2) for x in grid.bbox]
         [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
         """
-        self.srs = SRS(epsg)
+        if epsg is not None:
+            warnings.warn('TileGrid epsg parameter is deprecated', DeprecationWarning)
+            srs = epsg
+        if isinstance(srs, (int, basestring)):
+            srs = SRS(srs)
+        self.srs = srs
         self.tile_size = tile_size
         self.is_geodetic = is_geodetic
         
