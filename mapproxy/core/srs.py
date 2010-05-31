@@ -72,10 +72,13 @@ def _init_proj():
         _proj_initalized = True
 
 _thread_local = threading.local()
-_thread_local.srs_cache = {}
 def SRS(srs_code):
     _init_proj()
     srs_code = _clean_srs_code(srs_code)
+    
+    if not hasattr(_thread_local, 'srs_cache'):
+        _thread_local.srs_cache = {}
+    
     if srs_code in _thread_local.srs_cache:
         return _thread_local.srs_cache[srs_code]
     else:
