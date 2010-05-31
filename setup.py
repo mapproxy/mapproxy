@@ -28,7 +28,7 @@ class build_api(Command):
 
 setup(
     name='MapProxy',
-    version="0.8.3",
+    version="0.9.0",
     description='An accelerating proxy for web map services',
     long_description=open('README.txt').read(),
     author='Oliver Tonnhofer',
@@ -64,9 +64,7 @@ setup(
     package_data = {'': ['*.xml', '*.yaml', '*.ttf']},
     install_requires=[
         'PIL>=1.1.6,<1.1.99',
-        'pyproj>=1.8.5,<1.8.99',
         'PyYAML>=3.0,<3.99',
-        'Jinja2>=2.1,<2.1.99',
         'flup>1.0.2,<1.0.99',
         'setuptools>=0.6c9',
         'Paste>=1.7.2,<1.7.99',
