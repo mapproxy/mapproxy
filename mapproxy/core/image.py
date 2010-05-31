@@ -482,6 +482,7 @@ class TileMerger(object):
         """
         self.tile_grid = tile_grid
         self.tile_size = tile_size
+    
     def merge(self, ordered_tiles, transparent=False):
         """
         Merge all tiles into one image.
@@ -496,14 +497,22 @@ class TileMerger(object):
                 return ImageSource(tile.source, size=self.tile_size,
                                    transparent=transparent)
         src_size = self._src_size()
-        result = Image.new("RGBA", src_size, (255, 255, 255, 0))
+        
+        if transparent:
+            result = Image.new("RGBA", src_size, (255, 255, 255, 0))
+        else:
+            result = Image.new("RGB", src_size, (255, 255, 255))
+
         for i, source in enumerate(ordered_tiles):
             if source is None:
                 continue
             try:
                 tile = source.as_image()
-                tile.draft('RGBA', self.tile_size)
                 pos = self._tile_offset(i)
+                if transparent:
+                    tile.draft('RGBA', self.tile_size)
+                else:
+                    tile.draft('RGB', self.tile_size)
                 result.paste(tile, pos)
             except IOError, e:
                 log.warn('unable to load tile %s, removing it (reason was: %s)'
@@ -512,10 +521,12 @@ class TileMerger(object):
                     if os.path.exists(source.source):
                         os.remove(source.source)
         return ImageSource(result, size=src_size, transparent=transparent)
+    
     def _src_size(self):
         width = self.tile_grid[0]*self.tile_size[0]
         height = self.tile_grid[1]*self.tile_size[1]
         return width, height
+    
     def _tile_offset(self, i):
         """
         Return the image offset (upper-left coord) of the i-th tile,
