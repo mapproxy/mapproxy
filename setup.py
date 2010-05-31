@@ -70,6 +70,7 @@ setup(
         'Paste>=1.7.2,<1.7.99',
         'PasteDeploy>=1.3.3,<1.3.99',
         'PasteScript>=1.7.3,<1.7.99',
+        'Tempita>=0.4',
     ],
     classifiers=[
         "Development Status :: 4 - Beta",
