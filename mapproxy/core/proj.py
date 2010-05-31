@@ -111,7 +111,7 @@ else:
     # context to avoid garbage collection
     search_path = SearchPath()
     finder_func = FINDERCMD(search_path.finder)
-    libproj.pj_set_finder(finder_func)
+    _finder_callback_set = False
 
     RAD_TO_DEG = 57.29577951308232
     DEG_TO_RAD = .0174532925199432958
@@ -200,6 +200,10 @@ else:
         return (x, y) if z is None else (x, y, z)
 
     def set_datapath(path):
+        global _finder_callback_set
+        if not _finder_callback_set:
+            libproj.pj_set_finder(finder_func)
+            _finder_callback_set = True
         search_path.set_searchpath(path)
 
 if __name__ == '__main__':
