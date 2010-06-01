@@ -182,7 +182,7 @@ The ``cache_wms`` source passes requests to a WMS server and caches all data for
 
 ``req``
     ``req`` contains the source WMS URL and the layers.
-    For transparent layers the option ``transparten`` should be set to ``'true'``.
+    For transparent layers the option ``transparent`` should be set to ``'true'``.
 
 ``wms_opts``
     This option affects what request the proxy sends to the source WMS server.
