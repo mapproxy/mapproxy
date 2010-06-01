@@ -69,10 +69,10 @@ class ExceptionHandler(object):
 
 class XMLExceptionHandler(ExceptionHandler):
     """
-    Mixin class for jinja-based template renderer.
+    Mixin class for tempita-based template renderer.
     """
     template_file = None
-    """The filename of the jinja xml template"""
+    """The filename of the tempita xml template"""
     
     content_type = None
     """
@@ -91,9 +91,9 @@ class XMLExceptionHandler(ExceptionHandler):
     A character encoding might be added to the mimetype (like text/xml;charset=UTF-8) 
     """
     
-    env = None
+    template_func = None
     """
-    Jinja template environment.
+    Function that returns the named template.
     """
     
     def render(self, request_error):
@@ -103,8 +103,8 @@ class XMLExceptionHandler(ExceptionHandler):
         
         :type request_error: `RequestError`
         """
-        result = self.template.render(exception=request_error.message,
-                                      code=request_error.code)
+        result = self.template.substitute(exception=request_error.message,
+                                          code=request_error.code)
         return Response(result, mimetype=self.mimetype, content_type=self.content_type,
                         status=self.status_code)
     
@@ -113,7 +113,7 @@ class XMLExceptionHandler(ExceptionHandler):
         """
         The template for this ExceptionHandler.
         """
-        return self.env.get_template(self.template_file)
+        return self.template_func(self.template_file)
 
 class PlainExceptionHandler(ExceptionHandler):
     mimetype = 'text/plain'

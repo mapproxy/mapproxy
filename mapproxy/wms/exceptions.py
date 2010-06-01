@@ -17,16 +17,15 @@
 """
 Service exception handling (WMS exceptions, XML, in_image, etc.).
 """
-from jinja2 import Environment, PackageLoader
 from mapproxy.core.exceptions import ExceptionHandler, XMLExceptionHandler
 from mapproxy.core.response import Response
 from mapproxy.core.image import message_image
 
-_env = Environment(loader=PackageLoader('mapproxy.wms', 'templates'),
-                  trim_blocks=True)
+from mapproxy.core.template import template_loader, bunch
+get_template = template_loader(__file__, 'templates')
 
 class WMSXMLExceptionHandler(XMLExceptionHandler):
-    env = _env
+    template_func = get_template
 
 class WMS100ExceptionHandler(WMSXMLExceptionHandler):
     """

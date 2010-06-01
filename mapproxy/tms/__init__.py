@@ -10,7 +10,6 @@ from mapproxy.core.config import base_config
 from mapproxy.core.app import ctx
 
 from mapproxy.core.template import template_loader, bunch
-
 get_template = template_loader(__file__, 'templates')
 
 import logging

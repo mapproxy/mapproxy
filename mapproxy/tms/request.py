@@ -16,14 +16,13 @@
 
 import re
 
-from jinja2 import Environment, PackageLoader
 from mapproxy.core.exceptions import (
     RequestError,
     XMLExceptionHandler,
     PlainExceptionHandler, )
 
-env = Environment(loader=PackageLoader('mapproxy.tms', 'templates'),
-                  trim_blocks=True)
+from mapproxy.core.template import template_loader, bunch
+get_template = template_loader(__file__, 'templates')
 
 class TileRequest(object):
     """
@@ -102,9 +101,9 @@ def tile_request(req):
 
 class TMSExceptionHandler(XMLExceptionHandler):
     template_file = 'tms_exception.xml'
+    template_func = get_template
     mimetype = 'text/xml'
     status_code = 404
-    env = env
     
     def render(self, request_error):
         if request_error.internal:

@@ -22,7 +22,8 @@ __all__ = ['Template', 'bunch', 'template_loader']
 
 def template_loader(module_file, location='templates', namespace={}):
     template_dir = os.path.join(os.path.dirname(module_file), location)
-    print template_dir
-    def load_template(name):
+    def load_template(self_or_name, name=None):
+        # allow this function to be a method
+        if name is None: name = self_or_name
         return Template.from_filename(os.path.join(template_dir, name), namespace=namespace)
     return load_template
