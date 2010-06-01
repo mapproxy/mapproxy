@@ -98,9 +98,9 @@ def make_wsgi_app(services_conf=None):
     """
     from mapproxy.core.request import Request
     from mapproxy.core.response import Response
-    from mapproxy.core.conf_loader import load_services
+    from mapproxy.core.conf_loader import load_new_services
     
-    services = load_services(services_conf)
+    services = load_new_services('./test.yaml')
     class ProxyApp(object):
         """
         The proxy WSGI application.
