@@ -308,7 +308,7 @@ from mapproxy.core.grid import TileGrid
 from mapproxy.wms.conf_loader import create_request, wms_clients_for_requests
 from mapproxy.wms.cache import WMSTileSource
 from mapproxy.wms.server import WMSServer
-from mapproxy.wms.layer import WMSCacheLayer, VLayer
+from mapproxy.wms.layer import WMSCacheLayer, VLayer, FeatureInfoSource
 from mapproxy.core import defaults
 
 class ConfigurationError(Exception):
@@ -317,15 +317,23 @@ class ConfigurationError(Exception):
 class ProxyConfiguration(object):
     def __init__(self, conf):
         self.configuration = conf
-        
+
+        self.load_globals()
         self.load_grids()
         self.load_caches()
         self.load_sources()
         self.load_layers()
         self.load_services()
     
+    def load_globals(self):
+        self.globals = GlobalConfiguration(**self.configuration.get('globals', {}))
+    
     def load_grids(self):
         self.grids = {}
+        
+        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(srs='EPSG:4326', bbox=[-180, -90, 180, 90])
+        self.grids['GLOBAL_MERCATOR'] = GridConfiguration(srs='EPSG:900913')
+        
         for grid_name, grid_conf in self.configuration.get('grids', {}).iteritems():
             self.grids[grid_name] = GridConfiguration(**grid_conf)
     
@@ -337,7 +345,7 @@ class ProxyConfiguration(object):
     def load_sources(self):
         self.sources = {}
         for source_name, source_conf in self.configuration.get('sources', {}).iteritems():
-            self.sources[source_name] = SourceConfiguration(**source_conf)
+            self.sources[source_name] = SourceConfiguration.load(**source_conf)
 
     def load_layers(self):
         self.layers = {}
@@ -345,9 +353,9 @@ class ProxyConfiguration(object):
             self.layers[layer_name] = LayerConfiguration(name=layer_name, **layer_conf)
 
     def load_services(self):
-        self.services = {}
-        for service_name, service_conf in self.configuration.get('services', {}).iteritems():
-            self.services[service_name] = LayerConfiguration(name=service_name, **service_conf)
+        self.services = ServiceConfiguration(**self.configuration.get('services', {}))
+        # for service_name, service_conf in self.configuration.get('services', {}).iteritems():
+        #     self.services[service_name] = ServiceConfiguration(name=service_name, **service_conf)
 
 
 class ConfigurationBase(object):
@@ -359,6 +367,7 @@ class ConfigurationBase(object):
         self.conf = {}
         expected_keys = set(self.optional_keys)
         expected_keys.update(self.required_keys)
+        expected_keys.update(self.defaults.keys())
         for k, v in kw.iteritems():
             if k not in expected_keys:
                 raise ConfigurationError('unexpected key %s' % k)
@@ -383,12 +392,17 @@ class GridConfiguration(ConfigurationBase):
         else:
             conf = self.conf
         
-        bbox = self.conf.get('bbox')
+        bbox = conf.get('bbox')
         if isinstance(bbox, basestring):
             bbox = [float(x) for x in bbox.split(',')]
-        if bbox and 'bbox_srs' in self.conf:
-            bbox = SRS(self.conf['bbox_srs']).transform_bbox_to(SRS(self.conf['srs']), self.conf['bbox'])
+        if bbox and 'bbox_srs' in conf:
+            bbox_srs = SRS(conf['bbox_srs'])
+            srs = SRS(conf['srs'])
+            bbox = bbox_srs.transform_bbox_to(srs, conf['bbox'])
         
+        tile_size = conf.get('tile_size')
+        if not tile_size:
+            tile_size = context.globals.conf['tile_size']
         
         res = conf.get('res')
         if isinstance(res, list):
@@ -396,21 +410,35 @@ class GridConfiguration(ConfigurationBase):
         
         return TileGrid(
             srs=conf['srs'],
-            tile_size=conf.get('tile_size'),
+            tile_size=tile_size,
             res=res,
             bbox=bbox,
             levels=conf.get('num_levels'),
         )
 
-class SourceConfiguration(ConfigurationBase):
-    def __new__(self, **kw):
-        assert kw['type'] == 'wms'
-        return WMSSourceConfiguration(**kw)
+class GlobalConfiguration(ConfigurationBase):
+    defaults = {
+        'tile_size': [256, 256],
+        'meta_size': [4, 4],
+        'meta_buffer': 0
+    }
 
-class WMSSourceConfiguration(ConfigurationBase):
-    optional_keys = set('type supported_srs image_resampling wms_opts meta_size meta_buffer'.split())
+class SourceConfiguration(ConfigurationBase):
+    @classmethod
+    def load(cls, **kw):
+        source_type = kw['type']
+        for subclass in cls.__subclasses__():
+            if source_type in subclass.source_type:
+                return subclass(**kw)
+        
+        raise ValueError()
+
+class WMSSourceConfiguration(SourceConfiguration):
+    source_type = ('wms',)
+    optional_keys = set('''type supported_srs image_resampling 
+        use_direct_from_level wms_opts meta_size meta_buffer'''.split())
     required_keys = set('req'.split())
-    defaults = {'meta_size': [4, 4], 'meta_buffer': 50}
+    defaults = {'meta_size': [1, 1], 'meta_buffer': 0}
     
     
     def source(self, grid_conf, cache_conf, context):
@@ -419,18 +447,36 @@ class WMSSourceConfiguration(ConfigurationBase):
         #TODO legacy
         params = cache_conf.conf.copy()
         params['bbox'] = ','.join(str(x) for x in tile_grid.bbox)
-        params['srs'] = tile_grid.srs
+        params['srs'] = tile_grid.srs.srs_code
         
-        request = create_request(self.conf['req'], params)
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
+        version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
+        request = create_request(self.conf['req'], params, version=version)
         clients = wms_clients_for_requests([request], supported_srs)
         return WMSTileSource(tile_grid, clients, format=cache_conf.format,
             meta_size=self.conf['meta_size'], meta_buffer=self.conf['meta_buffer'])
     
+    def fi_source(self, grid_conf, cache_conf, context):
+        tile_grid = grid_conf.tile_grid(context)
+        
+        params = cache_conf.conf.copy()
+        params['bbox'] = ','.join(str(x) for x in tile_grid.bbox)
+        params['srs'] = tile_grid.srs.srs_code
+        supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
+        
+        fi_source = None
+        if self.conf.get('wms_opts', {}).get('featureinfo', False):
+            version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
+            fi_request = create_request(self.conf['req'], params,
+                req_type='featureinfo', version=version)
+            fi_clients = wms_clients_for_requests([fi_request], supported_srs)
+            fi_source = FeatureInfoSource(fi_clients)
+        return fi_source
+        
 class CacheConfiguration(ConfigurationBase):
-    optional_keys = set('format cache_dir'.split())
-    required_keys = set('name sources grids'.split())
-    defaults = {'format': 'image/png'}
+    optional_keys = set('format cache_dir grids link_single_color_images'.split())
+    required_keys = set('name sources'.split())
+    defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
     
     @property
     def format(self):
@@ -443,7 +489,7 @@ class CacheConfiguration(ConfigurationBase):
             cache_dir = context.configuration.get('global', {}).get('cache', {}).get('base_dir', None)
         
         if not cache_dir:
-            cache_dir = defaults.cache['base_dir']
+            cache_dir = base_config().cache.base_dir
         
         return abspath(cache_dir)
         
@@ -476,11 +522,38 @@ class LayerConfiguration(ConfigurationBase):
     def obj(self, context):
         caches = []
         for cache_name in self.conf['caches']:
-            caches.append(WMSCacheLayer(context.caches[cache_name].obj(context)[0]))
+            cache_source = context.caches[cache_name].obj(context)[0]
+            
+            cache_sources_conf = context.sources[context.caches[cache_name].conf['sources'][0]]
+            grid_conf = context.grids[context.caches[cache_name].conf['grids'][0]]
+            fi_source = cache_sources_conf.fi_source(grid_conf, context.caches[cache_name], context)
+            
+            cache = WMSCacheLayer(cache_source, fi_source)
+            caches.append(cache)
         
         layer = VLayer({'title': self.conf['title'], 'name': self.conf['name']}, caches)
         return layer
 
+
+class ServiceConfiguration(ConfigurationBase):
+    optional_keys = set('wms'.split())
+    
+    def services(self, context):
+        services = {}
+        for service_name, service_conf in self.conf.iteritems():
+            creator = getattr(self, service_name + '_service', None)
+            if not creator:
+                raise ValueError('unknown service: %s' % service_name)
+            services[service_name] = creator(service_conf, context)
+        return services
+    
+    def wms_service(self, conf, context):
+        md = conf.get('md', {})
+        layers = {}
+        for layer_name, layer_conf in context.layers.iteritems():
+            layers[layer_name] = layer_conf.obj(context)
+        return WMSServer(layers, md)
+    
 def load_new_services(conf_file):
     if hasattr(conf_file, 'read'):
         conf_data = conf_file.read()
@@ -489,11 +562,7 @@ def load_new_services(conf_file):
     conf_dict = yaml.load(conf_data)
     conf = ProxyConfiguration(conf_dict)
     
-    layers = {}
-    for layer_name, layer_conf in conf.layers.iteritems():
-        layers[layer_name] = layer_conf.obj(conf)
-    
-    return {'wms': WMSServer(layers, {})}
+    return conf.services.services(conf)
     
         
 
