@@ -540,7 +540,7 @@ class TileSplitter(object):
     """
     Splits a large image into multiple tiles.
     """
-    def __init__(self, meta_tile, format):
+    def __init__(self, meta_tile, format='png'):
         self.meta_img = meta_tile.as_image()
         if self.meta_img.mode == 'P' and format in ('png', 'gif'):
             self.meta_img = self.meta_img.convert('RGBA')

@@ -663,3 +663,113 @@ class _Tile(object):
     
     def __repr__(self):
         return '_Tile(%r, source=%r)' % (self.coord, self.source)
+
+Tile = _Tile
+from mapproxy.core.grid import MetaGrid
+from mapproxy.core.image import TileSplitter
+
+
+class TileManager(object):
+    def __init__(self, grid, file_cache, sources,
+        meta_buffer=None, meta_size=None):
+        self.grid = grid
+        self.file_cache = file_cache
+        self.meta_grid = None
+        assert len(sources) == 1
+        self.sources = sources
+        
+        if any(source.supports_meta_tiles for source in sources):
+            self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
+        
+    def load_tile_coords(self, tile_coords):
+        pass
+    
+    def _create_tiles(self, tiles):
+        created_tiles = []
+        if not self.meta_grid:
+            for tile in tiles:
+                created_tiles.append(self._create_tile(tile))
+        else:
+            meta_tiles = []
+            meta_bboxes = set()
+            for tile in tiles:
+                meta_bbox = self.meta_grid.meta_bbox(tile.coord)
+                if meta_bbox not in meta_bboxes:
+                    meta_tiles.append((tile, meta_bbox))
+                    meta_bboxes.add(meta_bbox)
+            
+            created_tiles = self._create_meta_tiles(meta_tiles)
+        
+        for tile in created_tiles:
+            self.file_cache.store(tile)
+            
+    def _create_tile(self, tile):
+        assert len(self.sources) == 1
+        tile_bbox = self.grid.tile_bbox(tile.coord)
+        tile.source = self.sources[0].get(tile_bbox, self.grid.tile_size, self.grid.srs) 
+        return tile
+    
+    def _create_meta_tiles(self, meta_tiles):
+        assert len(self.sources) == 1
+        tiles = []
+        for tile, meta_bbox in meta_tiles:
+            tile_size = self.meta_grid.tile_size(tile.coord[2])
+            meta_tile = self.sources[0].get(meta_bbox, tile_size, self.grid.srs)
+            
+            tiles.extend(split_meta_tiles(meta_tile, self.meta_grid.tiles(tile.coord), tile_size))
+            
+        return tiles
+
+def split_meta_tiles(meta_tile, tiles, tile_size):
+        try:
+            # TODO png8
+            # if not self.transparent and format == 'png':
+            #     format = 'png8'
+            splitter = TileSplitter(meta_tile)
+        except IOError, e:
+            # TODO
+            raise
+        split_tiles = []
+        for tile in tiles:
+            tile_coord, crop_coord = tile
+            data = splitter.get_tile(crop_coord, tile_size)
+            new_tile = Tile(tile_coord)
+            new_tile.source = data
+            split_tiles.append(new_tile)
+        return split_tiles
+
+class InvalidTileRequest(ValueError):
+    pass
+
+class Source(object):
+    supports_meta_tiles = False
+    def get(self, bbox, size, srs):
+        raise NotImplemented
+
+class WMSSource(object):
+    supports_meta_tiles = True
+    def __init__(self, client):
+        self.client = client
+    
+    def get(self, bbox, size, srs):
+        return self.client.get_map(bbox, size, srs)
+    
+class TileSource(Source):
+    def __init__(self, grid):
+        self.grid = grid
+    
+    def get(self, bbox, size, srs):
+        if self.grid.tile_size != size:
+            raise InvalidTileRequest()
+        if srs != self.grid.srs:
+            raise InvalidTileRequest()
+        
+        _bbox, _grid, tiles = self.grid.get_affected_tiles(bbox, size)
+        tiles = list(tiles)
+        
+        if len(tiles) != 1:
+            raise InvalidTileRequest('bbox does not align to tile')
+        
+        
+        return self.get_tile(tiles[0])
+    
