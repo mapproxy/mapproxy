@@ -2,6 +2,8 @@ globals:
   meta_size: [1, 1]
   meta_buffer: 0
 services:
+  tms:
+  kml:
   wms:
     md:
       title: MapProxy test fixture
@@ -40,7 +42,7 @@ layers:
     title: WMS Cache Layer
     caches: [wms_cache_130]
   wms_cache_multi:
-    title: WMS Cache MultiLayer
+    title: WMS Cache Multi Layer
     caches: [wms_cache_multi]
   tms_cache:
     title: TMS Cache Layer

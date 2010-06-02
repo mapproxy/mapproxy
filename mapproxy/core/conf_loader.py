@@ -310,6 +310,9 @@ from mapproxy.wms.cache import WMSTileSource
 from mapproxy.wms.server import WMSServer
 from mapproxy.wms.layer import WMSCacheLayer, VLayer, FeatureInfoSource
 from mapproxy.core import defaults
+from mapproxy.tms import TileServer
+from mapproxy.tms.layer import TileServiceLayer
+from mapproxy.kml import KMLServer
 
 class ConfigurationError(Exception):
     pass
@@ -403,6 +406,7 @@ class GridConfiguration(ConfigurationBase):
         tile_size = conf.get('tile_size')
         if not tile_size:
             tile_size = context.globals.conf['tile_size']
+        tile_size = tuple(tile_size)
         
         res = conf.get('res')
         if isinstance(res, list):
@@ -519,7 +523,7 @@ class LayerConfiguration(ConfigurationBase):
     optional_keys = set(''.split())
     required_keys = set('name title caches'.split())
     
-    def obj(self, context):
+    def wms_layer(self, context):
         caches = []
         for cache_name in self.conf['caches']:
             cache_source = context.caches[cache_name].obj(context)[0]
@@ -533,10 +537,25 @@ class LayerConfiguration(ConfigurationBase):
         
         layer = VLayer({'title': self.conf['title'], 'name': self.conf['name']}, caches)
         return layer
-
+    
+    def tile_layer(self, context):
+        # todo multiple caches
+        if len(self.conf['caches']) > 1: return None
+        for cache_name in self.conf['caches']:
+            cache_source = context.caches[cache_name].obj(context)[0]
+            md = {}
+            md['title'] = self.conf['title']
+            md['name'] = self.conf['name']
+            md['name_path'] = (self.conf['name'], cache_source.grid.srs.srs_code.replace(':', '').upper())
+            md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
+            md['format'] = context.caches[cache_name].conf['format']
+            
+            return TileServiceLayer(md, cache_source)
+        
+        
 
 class ServiceConfiguration(ConfigurationBase):
-    optional_keys = set('wms'.split())
+    optional_keys = set('wms tms kml'.split())
     
     def services(self, context):
         services = {}
@@ -544,14 +563,34 @@ class ServiceConfiguration(ConfigurationBase):
             creator = getattr(self, service_name + '_service', None)
             if not creator:
                 raise ValueError('unknown service: %s' % service_name)
-            services[service_name] = creator(service_conf, context)
+            services[service_name] = creator(service_conf or {}, context)
         return services
+    
+    def kml_service(self, conf, context):
+        md = conf.get('md', {})
+        layers = {}
+        for layer_name, layer_conf in context.layers.iteritems():
+            tile_layer = layer_conf.tile_layer(context)
+            if not tile_layer: continue
+            layers[tile_layer.md['name_internal']] = tile_layer
+        
+        return KMLServer(layers, md)
+    
+    def tms_service(self, conf, context):
+        md = conf.get('md', {})
+        layers = {}
+        for layer_name, layer_conf in context.layers.iteritems():
+            tile_layer = layer_conf.tile_layer(context)
+            if not tile_layer: continue
+            layers[tile_layer.md['name_internal']] = tile_layer
+        
+        return TileServer(layers, md)
     
     def wms_service(self, conf, context):
         md = conf.get('md', {})
         layers = {}
         for layer_name, layer_conf in context.layers.iteritems():
-            layers[layer_name] = layer_conf.obj(context)
+            layers[layer_name] = layer_conf.wms_layer(context)
         return WMSServer(layers, md)
     
 def load_new_services(conf_file):

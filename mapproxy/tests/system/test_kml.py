@@ -34,7 +34,7 @@ global_app = None
 
 def setup_module():
     fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
-    fixture_layer_conf = os.path.join(fixture_dir, 'layer.yaml')
+    fixture_layer_conf = os.path.join(fixture_dir, 'new_layer.yaml')
     fixture_cache_data = os.path.join(fixture_dir, 'cache_data')
     mapproxy.core.config.base_config().services_conf = fixture_layer_conf
     mapproxy.core.config.base_config().cache.meta_size = (1, 1)
@@ -42,7 +42,7 @@ def setup_module():
     mapproxy.core.config.base_config().cache.base_dir = fixture_cache_data
     
     global global_app
-    global_app = TestApp(make_wsgi_app())
+    global_app = TestApp(make_wsgi_app(fixture_layer_conf))
 
 def teardown_module():
     mapproxy.core.config._config = None

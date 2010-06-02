@@ -112,8 +112,9 @@ class TileGrid(object):
         
         self.res_type = RES_TYPE_CUSTOM
         
-        if bbox is None and res is None and tile_size == (256, 256):
-            self.res_type = RES_TYPE_GLOBAL
+        if res is None and tile_size == (256, 256):
+            if bbox is None or bbox == [-180, -90, 180, 90]:
+                self.res_type = RES_TYPE_GLOBAL
         
         if bbox is None:
             bbox = self._calc_bbox()
