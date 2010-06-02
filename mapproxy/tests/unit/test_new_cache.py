@@ -4,7 +4,7 @@ from mapproxy.core.cache import (
     FileCache,
     TileManager,
     Source,
-    TileSource,
+    TiledSource,
     WMSSource,
     InvalidTileRequest,
     Tile,
@@ -15,18 +15,18 @@ from mapproxy.core.image import ImageSource
 
 from nose.tools import eq_, raises
 
-class MockTileSource(TileSource):
+class MockTiledSource(TiledSource):
     def __init__(self, *args):
-        TileSource.__init__(self, *args)
+        TiledSource.__init__(self, *args)
         self.requested_tiles = []
     
     def get_tile(self, tile_coord):
         self.requested_tiles.append(tile_coord)
 
-class TestTileSourceGlobalGeodetic(object):
+class TestTiledSourceGlobalGeodetic(object):
     def setup(self):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.source = MockTileSource(self.grid)
+        self.source = MockTiledSource(self.grid)
     def test_match(self):
         self.source.get([-180, -90, 0, 90], (256, 256), SRS(4326))
         self.source.get([0, -90, 180, 90], (256, 256), SRS(4326))
@@ -50,11 +50,11 @@ class MockFileCache(FileCache):
     def is_cached(self, tile):
         return tile.coord in self.stored_tiles
     
-class TestTileManagerTileSource(object):
+class TestTileManagerTiledSource(object):
     def setup(self):
         self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.source = MockTileSource(self.grid)
+        self.source = MockTiledSource(self.grid)
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source])
     
     def test_create_tiles(self):
@@ -67,7 +67,7 @@ class TestTileManagerDifferentSourceGrid(object):
         self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.source_grid = TileGrid(SRS(4326), bbox=[0, -90, 180, 90])
-        self.source = MockTileSource(self.source_grid)
+        self.source = MockTiledSource(self.source_grid)
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source])
     
     def test_create_tiles(self):
@@ -131,6 +131,20 @@ class TestTileManagerWMSSource(object):
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326))])
     def test_create_tiles(self):
         self.tile_mgr._create_tiles([Tile((0, 0, 2)), Tile((2, 0, 2))])
+        eq_(self.file_cache.stored_tiles,
+            set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
+                 (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)]))
+        eq_(self.client.requested,
+            [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326)),
+            ((0.0, -90.0, 180.0, 90.0), (512, 512), SRS(4326))])
+
+    def test_load_tile_coords(self):
+        tiles = self.tile_mgr.load_tile_coords(((0, 0, 2), (2, 0, 2)))
+        eq_(tiles[0].coord, (0, 0, 2))
+        assert isinstance(tiles[0].source, ImageSource)
+        eq_(tiles[1].coord, (2, 0, 2))
+        assert isinstance(tiles[1].source, ImageSource)
+        
         eq_(self.file_cache.stored_tiles,
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
                  (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)]))

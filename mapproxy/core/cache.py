@@ -160,6 +160,13 @@ class TileCollection(object):
             return self.tiles_dict[idx_or_coord]
         return _Tile(idx_or_coord)
     
+    def __contains__(self, tile_or_coord):
+        if isinstance(tile_or_coord, tuple):
+            return tile_or_coord in self.tiles_dict
+        if hasattr(tile_or_coord, 'coord'):
+            return tile_or_coord.coord in self.tiles_dict
+        return False
+    
     def __len__(self):
         return len(self.tiles)
     
@@ -682,7 +689,22 @@ class TileManager(object):
             self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
         
     def load_tile_coords(self, tile_coords):
-        pass
+        tiles = TileCollection(tile_coords)
+        uncached_tiles = []
+        for tile in tiles:
+            # TODO cache eviction
+            if self.file_cache.is_cached(tile):
+                self.file_cache.load(tile)
+            else:
+                uncached_tiles.append(tile)
+        
+        if uncached_tiles:
+            created_tiles = self._create_tiles(uncached_tiles)
+            for created_tile in created_tiles:
+                if created_tile.coord in tiles:
+                    tiles[created_tile.coord].source = created_tile.source
+        
+        return tiles
     
     def _create_tiles(self, tiles):
         created_tiles = []
@@ -702,6 +724,8 @@ class TileManager(object):
         
         for tile in created_tiles:
             self.file_cache.store(tile)
+        
+        return created_tiles
             
     def _create_tile(self, tile):
         assert len(self.sources) == 1
@@ -754,7 +778,7 @@ class WMSSource(object):
     def get(self, bbox, size, srs):
         return self.client.get_map(bbox, size, srs)
     
-class TileSource(Source):
+class TiledSource(Source):
     def __init__(self, grid):
         self.grid = grid
     
