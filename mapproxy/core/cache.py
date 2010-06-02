@@ -770,17 +770,19 @@ class Source(object):
     def get(self, bbox, size, srs):
         raise NotImplemented
 
-class WMSSource(object):
+class WMSSource(Source):
     supports_meta_tiles = True
     def __init__(self, client):
+        Source.__init__(self)
         self.client = client
     
     def get(self, bbox, size, srs):
         return self.client.get_map(bbox, size, srs)
     
 class TiledSource(Source):
-    def __init__(self, grid):
+    def __init__(self, grid, client):
         self.grid = grid
+        self.client = client
     
     def get(self, bbox, size, srs):
         if self.grid.tile_size != size:
@@ -795,5 +797,5 @@ class TiledSource(Source):
             raise InvalidTileRequest('bbox does not align to tile')
         
         
-        return self.get_tile(tiles[0])
+        return self.client.get_tile(tiles[0])
     

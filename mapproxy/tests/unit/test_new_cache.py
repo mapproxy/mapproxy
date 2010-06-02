@@ -15,9 +15,8 @@ from mapproxy.core.image import ImageSource
 
 from nose.tools import eq_, raises
 
-class MockTiledSource(TiledSource):
-    def __init__(self, *args):
-        TiledSource.__init__(self, *args)
+class MockTileClient(object):
+    def __init__(self):
         self.requested_tiles = []
     
     def get_tile(self, tile_coord):
@@ -26,11 +25,12 @@ class MockTiledSource(TiledSource):
 class TestTiledSourceGlobalGeodetic(object):
     def setup(self):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.source = MockTiledSource(self.grid)
+        self.client = MockTileClient()
+        self.source = TiledSource(self.grid, self.client)
     def test_match(self):
         self.source.get([-180, -90, 0, 90], (256, 256), SRS(4326))
         self.source.get([0, -90, 180, 90], (256, 256), SRS(4326))
-        eq_(self.source.requested_tiles, [(0, 0, 1), (1, 0, 1)])
+        eq_(self.client.requested_tiles, [(0, 0, 1), (1, 0, 1)])
     @raises(InvalidTileRequest)
     def test_wrong_size(self):
         self.source.get([-180, -90, 0, 90], (512, 256), SRS(4326))
@@ -54,26 +54,28 @@ class TestTileManagerTiledSource(object):
     def setup(self):
         self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.source = MockTiledSource(self.grid)
+        self.client = MockTileClient()
+        self.source = TiledSource(self.grid, self.client)
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source])
     
     def test_create_tiles(self):
         self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
         eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
-        eq_(self.source.requested_tiles, [(0, 0, 1), (1, 0, 1)])
+        eq_(self.client.requested_tiles, [(0, 0, 1), (1, 0, 1)])
 
 class TestTileManagerDifferentSourceGrid(object):
     def setup(self):
         self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.source_grid = TileGrid(SRS(4326), bbox=[0, -90, 180, 90])
-        self.source = MockTiledSource(self.source_grid)
+        self.client = MockTileClient()
+        self.source = TiledSource(self.source_grid, self.client)
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source])
     
     def test_create_tiles(self):
         self.tile_mgr._create_tiles([Tile((1, 0, 1))])
         eq_(self.file_cache.stored_tiles, set([(1, 0, 1)]))
-        eq_(self.source.requested_tiles, [(0, 0, 0)])
+        eq_(self.client.requested_tiles, [(0, 0, 0)])
     
     @raises(InvalidTileRequest)
     def test_create_tiles_out_of_bounds(self):
