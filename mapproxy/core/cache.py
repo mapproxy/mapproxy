@@ -676,6 +676,57 @@ from mapproxy.core.grid import MetaGrid
 from mapproxy.core.image import TileSplitter
 
 
+class MapQuery(object):
+    """
+    Internal query for a map with a specific extend, size, srs, etc.
+    """
+    def __init__(self, bbox, size, srs, format=None, transparent=False):
+        self.bbox = bbox
+        self.size = size
+        self.srs = srs
+        self.format = format
+        self.transparent = transparent
+        
+
+class MapLayer(object):
+    def get_map(self, query):
+        raise NotImplementedError
+
+class DirectMapLayer(MapLayer):
+    def __init__(self, source):
+        self.source = source
+    
+    def get_map(self, query):
+        return self.source.get(query)
+    
+class CacheMapLayer(MapLayer):
+    def __init__(self, tile_manager):
+        self.tile_manager = tile_manager
+        self.grid = tile_manager.grid
+    
+    def get_map(self, query):
+        tiled_image = self._tiled_image(query.bbox, query.size, query.srs)
+        return tiled_image.transform(query.bbox, query.srs, query.size)
+    
+    def _tiled_image(self, bbox, size, srs):
+        try:
+            src_bbox, tile_grid, affected_tile_coords = \
+                self.grid.get_affected_tiles(bbox, size, req_srs=srs)
+        except IndexError:
+            raise TileCacheError('Invalid BBOX')
+        except NoTiles:
+            raise BlankImage()
+        
+        num_tiles = tile_grid[0] * tile_grid[1]
+        if num_tiles >= base_config().cache.max_tile_limit:
+            raise TooManyTilesError()
+        
+        tile_sources = [tile.source for tile in self.tile_manager.load_tile_coords(affected_tile_coords)]
+        return TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
+                          tile_grid=tile_grid, tile_size=self.grid.tile_size,
+                          transparent=True) #TODO transparent
+    
+
 class TileManager(object):
     def __init__(self, grid, file_cache, sources,
         meta_buffer=None, meta_size=None):
@@ -730,7 +781,7 @@ class TileManager(object):
     def _create_tile(self, tile):
         assert len(self.sources) == 1
         tile_bbox = self.grid.tile_bbox(tile.coord)
-        tile.source = self.sources[0].get(tile_bbox, self.grid.tile_size, self.grid.srs) 
+        tile.source = self.sources[0].get(MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs))
         return tile
     
     def _create_meta_tiles(self, meta_tiles):
@@ -738,7 +789,7 @@ class TileManager(object):
         tiles = []
         for tile, meta_bbox in meta_tiles:
             tile_size = self.meta_grid.tile_size(tile.coord[2])
-            meta_tile = self.sources[0].get(meta_bbox, tile_size, self.grid.srs)
+            meta_tile = self.sources[0].get(MapQuery(meta_bbox, tile_size, self.grid.srs))
             
             tiles.extend(split_meta_tiles(meta_tile, self.meta_grid.tiles(tile.coord), tile_size))
             
@@ -767,8 +818,8 @@ class InvalidTileRequest(ValueError):
 
 class Source(object):
     supports_meta_tiles = False
-    def get(self, bbox, size, srs):
-        raise NotImplemented
+    def get(self, query):
+        raise NotImplementedError
 
 class WMSSource(Source):
     supports_meta_tiles = True
@@ -776,21 +827,21 @@ class WMSSource(Source):
         Source.__init__(self)
         self.client = client
     
-    def get(self, bbox, size, srs):
-        return self.client.get_map(bbox, size, srs)
+    def get(self, query):
+        return self.client.get_map(query)
     
 class TiledSource(Source):
     def __init__(self, grid, client):
         self.grid = grid
         self.client = client
     
-    def get(self, bbox, size, srs):
-        if self.grid.tile_size != size:
+    def get(self, query):
+        if self.grid.tile_size != query.size:
             raise InvalidTileRequest()
-        if srs != self.grid.srs:
+        if self.grid.srs != query.srs:
             raise InvalidTileRequest()
         
-        _bbox, _grid, tiles = self.grid.get_affected_tiles(bbox, size)
+        _bbox, _grid, tiles = self.grid.get_affected_tiles(query.bbox, query.size)
         tiles = list(tiles)
         
         if len(tiles) != 1:

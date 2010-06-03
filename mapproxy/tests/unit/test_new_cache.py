@@ -8,11 +8,15 @@ from mapproxy.core.cache import (
     WMSSource,
     InvalidTileRequest,
     Tile,
+    CacheMapLayer,
+    DirectMapLayer,
+    MapQuery,
 )
 from mapproxy.core.grid import TileGrid
 from mapproxy.core.srs import SRS
 from mapproxy.core.image import ImageSource
 
+from mapproxy.tests.image import create_debug_img
 from nose.tools import eq_, raises
 
 class MockTileClient(object):
@@ -28,15 +32,15 @@ class TestTiledSourceGlobalGeodetic(object):
         self.client = MockTileClient()
         self.source = TiledSource(self.grid, self.client)
     def test_match(self):
-        self.source.get([-180, -90, 0, 90], (256, 256), SRS(4326))
-        self.source.get([0, -90, 180, 90], (256, 256), SRS(4326))
+        self.source.get(MapQuery([-180, -90, 0, 90], (256, 256), SRS(4326)))
+        self.source.get(MapQuery([0, -90, 180, 90], (256, 256), SRS(4326)))
         eq_(self.client.requested_tiles, [(0, 0, 1), (1, 0, 1)])
     @raises(InvalidTileRequest)
     def test_wrong_size(self):
-        self.source.get([-180, -90, 0, 90], (512, 256), SRS(4326))
+        self.source.get(MapQuery([-180, -90, 0, 90], (512, 256), SRS(4326)))
     @raises(InvalidTileRequest)
     def test_wrong_srs(self):
-        self.source.get([-180, -90, 0, 90], (512, 256), SRS(4326))
+        self.source.get(MapQuery([-180, -90, 0, 90], (512, 256), SRS(4326)))
 
 
 class MockFileCache(FileCache):
@@ -86,8 +90,8 @@ class MockWMSSource(Source):
         Source.__init__(self, *args)
         self.requested = []
     
-    def get(self, bbox, size, srs):
-        self.requested.append((bbox, size, srs))
+    def get(self, query):
+        self.requested.append((query.bbox, query.size, query.srs))
 
 class TestTileManagerWMSSource(object):
     def setup(self):
@@ -107,9 +111,9 @@ class MockWMSClient(object):
     def __init__(self):
         self.requested = []
     
-    def get_map(self, bbox, size, srs):
-        self.requested.append((bbox, size, srs))
-        return ImageSource(Image.new('RGBA', size))
+    def get_map(self, query):
+        self.requested.append((query.bbox, query.size, query.srs))
+        return ImageSource(create_debug_img(query.size))
 
 class TestTileManagerWMSSource(object):
     def setup(self):
@@ -125,12 +129,14 @@ class TestTileManagerWMSSource(object):
         eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
         eq_(self.client.requested,
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))])
+    
     def test_create_tile(self):
         self.tile_mgr._create_tiles([Tile((0, 0, 2))])
         eq_(self.file_cache.stored_tiles,
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)]))
         eq_(self.client.requested,
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326))])
+    
     def test_create_tiles(self):
         self.tile_mgr._create_tiles([Tile((0, 0, 2)), Tile((2, 0, 2))])
         eq_(self.file_cache.stored_tiles,
@@ -138,7 +144,7 @@ class TestTileManagerWMSSource(object):
                  (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)]))
         eq_(self.client.requested,
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326)),
-            ((0.0, -90.0, 180.0, 90.0), (512, 512), SRS(4326))])
+             ((0.0, -90.0, 180.0, 90.0), (512, 512), SRS(4326))])
 
     def test_load_tile_coords(self):
         tiles = self.tile_mgr.load_tile_coords(((0, 0, 2), (2, 0, 2)))
@@ -152,4 +158,57 @@ class TestTileManagerWMSSource(object):
                  (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)]))
         eq_(self.client.requested,
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326)),
-            ((0.0, -90.0, 180.0, 90.0), (512, 512), SRS(4326))])
+             ((0.0, -90.0, 180.0, 90.0), (512, 512), SRS(4326))])
+
+
+class TestCacheMapLayer(object):
+    def setup(self):
+        self.file_cache = MockFileCache('/dev/null', 'png')
+        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        self.client = MockWMSClient()
+        self.source = WMSSource(self.client)
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source],
+            meta_size=[2, 2], meta_buffer=0)
+        self.layer = CacheMapLayer(self.tile_mgr)
+    
+    def test_get_map_small(self):
+        result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
+        eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
+        eq_(result.size, (300, 150))
+    
+    def test_get_map_large(self):
+        # gets next resolution layer
+        result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (600, 300), SRS(4326), 'png'))
+        eq_(self.file_cache.stored_tiles,
+            set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
+                 (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)]))
+        eq_(result.size, (600, 300))
+    
+    def test_transformed(self):
+        result = self.layer.get_map(MapQuery(
+            (-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
+            SRS(900913), 'png'))
+        eq_(self.file_cache.stored_tiles,
+            set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
+                 (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)]))
+        eq_(result.size, (500, 500))
+
+class TestDirectMapLayer(object):
+    def setup(self):
+        self.client = MockWMSClient()
+        self.source = WMSSource(self.client)
+        self.layer = DirectMapLayer(self.source)
+    
+    def test_get_map(self):
+        result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
+        eq_(self.client.requested, [((-180, -90, 180, 90), (300, 150), SRS(4326))])
+        eq_(result.size, (300, 150))
+    
+    def test_get_map_mercator(self):
+        result = self.layer.get_map(MapQuery(
+            (-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
+            SRS(900913), 'png'))
+        eq_(self.client.requested,
+            [((-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
+              SRS(900913))])
+        eq_(result.size, (500, 500))
