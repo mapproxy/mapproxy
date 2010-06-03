@@ -673,7 +673,7 @@ class _Tile(object):
 
 Tile = _Tile
 from mapproxy.core.grid import MetaGrid
-from mapproxy.core.image import TileSplitter
+from mapproxy.core.image import TileSplitter, ImageTransformer
 
 
 class MapQuery(object):
@@ -813,13 +813,61 @@ def split_meta_tiles(meta_tile, tiles, tile_size):
             split_tiles.append(new_tile)
         return split_tiles
 
-class InvalidTileRequest(ValueError):
+class InvalidSourceQuery(ValueError):
     pass
 
 class Source(object):
     supports_meta_tiles = False
     def get(self, query):
         raise NotImplementedError
+
+class WMSClient(object):
+    def __init__(self, request_template, http_client=None, supported_srs=None):
+        self.request_template = request_template
+        self.http_client = http_client or HTTPClient()
+        self.supported_srs = set(supported_srs or [])
+    
+    def get(self, query):
+        if self.supported_srs and query.srs not in self.supported_srs:
+            return self._get_transformed(query)
+        return self._retrieve(query)
+    
+    def _get_transformed(self, query):
+        dst_srs = query.srs
+        src_srs = self._best_supported_srs(dst_srs)
+        dst_bbox = query.bbox
+        src_bbox = dst_srs.transform_bbox_to(src_srs, dst_bbox)
+        
+        src_query = MapQuery(src_bbox, query.size, src_srs)
+        resp = self._retrieve(src_query)
+        
+        img = ImageSource(resp, self.request_template.params.format, size=src_query.size)
+        
+        img = ImageTransformer(src_srs, dst_srs).transform(img, src_bbox, 
+            query.size, dst_bbox)
+        
+        img.format = self.request_template.params.format
+        return img
+    
+    def _best_supported_srs(self, srs):
+        latlong = srs.is_latlong
+        
+        for srs in self.supported_srs:
+            if srs.is_latlong == latlong:
+                return srs
+        
+        return iter(self.supported_srs).next()
+    def _retrieve(self, query):
+        url = self._query_url(query)
+        return self.http_client.get(url)
+    
+    def _query_url(self, query):
+        req = self.request_template.copy()
+        req.params.bbox = query.bbox
+        req.params.size = query.size
+        req.params.srs = query.srs.srs_code
+        
+        return req.complete_url
 
 class WMSSource(Source):
     supports_meta_tiles = True
@@ -837,15 +885,15 @@ class TiledSource(Source):
     
     def get(self, query):
         if self.grid.tile_size != query.size:
-            raise InvalidTileRequest()
+            raise InvalidSourceQuery()
         if self.grid.srs != query.srs:
-            raise InvalidTileRequest()
+            raise InvalidSourceQuery()
         
         _bbox, _grid, tiles = self.grid.get_affected_tiles(query.bbox, query.size)
         tiles = list(tiles)
         
         if len(tiles) != 1:
-            raise InvalidTileRequest('bbox does not align to tile')
+            raise InvalidSourceQuery('bbox does not align to tile')
         
         
         return self.client.get_tile(tiles[0])

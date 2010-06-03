@@ -1,3 +1,5 @@
+import re
+from cStringIO import StringIO
 import Image
 
 from mapproxy.core.cache import (
@@ -6,17 +8,22 @@ from mapproxy.core.cache import (
     Source,
     TiledSource,
     WMSSource,
-    InvalidTileRequest,
+    InvalidSourceQuery,
     Tile,
     CacheMapLayer,
     DirectMapLayer,
     MapQuery,
+    WMSClient,
 )
 from mapproxy.core.grid import TileGrid
 from mapproxy.core.srs import SRS
 from mapproxy.core.image import ImageSource
 
+from mapproxy.wms.request import WMS111MapRequest
+
 from mapproxy.tests.image import create_debug_img
+from mapproxy.tests.http import query_eq
+
 from nose.tools import eq_, raises
 
 class MockTileClient(object):
@@ -35,10 +42,10 @@ class TestTiledSourceGlobalGeodetic(object):
         self.source.get(MapQuery([-180, -90, 0, 90], (256, 256), SRS(4326)))
         self.source.get(MapQuery([0, -90, 180, 90], (256, 256), SRS(4326)))
         eq_(self.client.requested_tiles, [(0, 0, 1), (1, 0, 1)])
-    @raises(InvalidTileRequest)
+    @raises(InvalidSourceQuery)
     def test_wrong_size(self):
         self.source.get(MapQuery([-180, -90, 0, 90], (512, 256), SRS(4326)))
-    @raises(InvalidTileRequest)
+    @raises(InvalidSourceQuery)
     def test_wrong_srs(self):
         self.source.get(MapQuery([-180, -90, 0, 90], (512, 256), SRS(4326)))
 
@@ -81,7 +88,7 @@ class TestTileManagerDifferentSourceGrid(object):
         eq_(self.file_cache.stored_tiles, set([(1, 0, 1)]))
         eq_(self.client.requested_tiles, [(0, 0, 0)])
     
-    @raises(InvalidTileRequest)
+    @raises(InvalidSourceQuery)
     def test_create_tiles_out_of_bounds(self):
         self.tile_mgr._create_tiles([Tile((0, 0, 0))])
 
@@ -212,3 +219,60 @@ class TestDirectMapLayer(object):
             [((-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
               SRS(900913))])
         eq_(result.size, (500, 500))
+
+class TestDirectMapLayerWithSupportedSRS(object):
+    def setup(self):
+        self.client = MockWMSClient()
+        self.source = WMSSource(self.client)
+        self.layer = DirectMapLayer(self.source)
+    
+    def test_get_map(self):
+        result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
+        eq_(self.client.requested, [((-180, -90, 180, 90), (300, 150), SRS(4326))])
+        eq_(result.size, (300, 150))
+    
+    def test_get_map_mercator(self):
+        result = self.layer.get_map(MapQuery(
+            (-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
+            SRS(900913), 'png'))
+        eq_(self.client.requested,
+            [((-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
+              SRS(900913))])
+        eq_(result.size, (500, 500))
+
+
+class MockHTTPClient(object):
+    def __init__(self):
+        self.requested = []
+    
+    def get(self, url):
+        self.requested.append(url)
+        w = int(re.search(r'width=(\d+)', url, re.IGNORECASE).group(1))
+        h = int(re.search(r'height=(\d+)', url, re.IGNORECASE).group(1))
+        format = re.search(r'format=image(/|%2F)(\w+)', url, re.IGNORECASE).group(2)
+        result = StringIO()
+        create_debug_img((int(w), int(h))).save(result, format=format)
+        result.seek(0)
+        return result
+    
+class TestWMSClient(object):
+    def setup(self):
+        self.http_client = MockHTTPClient()
+        self.req_template = WMS111MapRequest(url='http://localhost/service?', param={
+            'format': 'image/png', 'layers': 'foo'
+        })
+        self.client = WMSClient(self.req_template, self.http_client, [SRS(4326)])
+        
+    def test_get_map(self):
+        result = self.client.get(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326)))
+        assert query_eq(self.http_client.requested[0], "http://localhost/service?"
+            "layers=foo&width=300&version=1.1.1&bbox=-180,-90,180,90&service=WMS"
+            "&format=image%2Fpng&styles=&srs=EPSG%3A4326&request=GetMap&height=150")
+    
+    def test_get_map_transformed(self):
+        result = self.client.get(MapQuery(
+           (556597, 4865942, 1669792, 7361866), (300, 150), SRS(900913)))
+        assert query_eq(self.http_client.requested[0], "http://localhost/service?"
+            "layers=foo&width=300&version=1.1.1"
+            "&bbox=4.99999592195,39.9999980766,14.999996749,54.9999994175&service=WMS"
+            "&format=image%2Fpng&styles=&srs=EPSG%3A4326&request=GetMap&height=150")
