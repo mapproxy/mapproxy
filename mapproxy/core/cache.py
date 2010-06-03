@@ -728,11 +728,12 @@ class CacheMapLayer(MapLayer):
     
 
 class TileManager(object):
-    def __init__(self, grid, file_cache, sources,
+    def __init__(self, grid, file_cache, sources, format,
         meta_buffer=None, meta_size=None):
         self.grid = grid
         self.file_cache = file_cache
         self.meta_grid = None
+        self.format = format
         assert len(sources) == 1
         self.sources = sources
         
@@ -781,7 +782,8 @@ class TileManager(object):
     def _create_tile(self, tile):
         assert len(self.sources) == 1
         tile_bbox = self.grid.tile_bbox(tile.coord)
-        tile.source = self.sources[0].get(MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs))
+        query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs, self.format)
+        tile.source = self.sources[0].get(query)
         return tile
     
     def _create_meta_tiles(self, meta_tiles):
@@ -789,7 +791,8 @@ class TileManager(object):
         tiles = []
         for tile, meta_bbox in meta_tiles:
             tile_size = self.meta_grid.tile_size(tile.coord[2])
-            meta_tile = self.sources[0].get(MapQuery(meta_bbox, tile_size, self.grid.srs))
+            query = MapQuery(meta_bbox, tile_size, self.grid.srs, self.format)
+            meta_tile = self.sources[0].get(query)
             
             tiles.extend(split_meta_tiles(meta_tile, self.meta_grid.tiles(tile.coord), tile_size))
             
@@ -889,12 +892,11 @@ class TiledSource(Source):
         if self.grid.srs != query.srs:
             raise InvalidSourceQuery()
         
-        _bbox, _grid, tiles = self.grid.get_affected_tiles(query.bbox, query.size)
-        tiles = list(tiles)
+        _bbox, grid, tiles = self.grid.get_affected_tiles(query.bbox, query.size)
         
-        if len(tiles) != 1:
+        if grid != (1, 1):
             raise InvalidSourceQuery('bbox does not align to tile')
         
         
-        return self.client.get_tile(tiles[0])
+        return self.client.get_tile(tiles.next())
     

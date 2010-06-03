@@ -67,7 +67,7 @@ class TestTileManagerTiledSource(object):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = MockTileClient()
         self.source = TiledSource(self.grid, self.client)
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source])
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png')
     
     def test_create_tiles(self):
         self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
@@ -81,7 +81,7 @@ class TestTileManagerDifferentSourceGrid(object):
         self.source_grid = TileGrid(SRS(4326), bbox=[0, -90, 180, 90])
         self.client = MockTileClient()
         self.source = TiledSource(self.source_grid, self.client)
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source])
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png')
     
     def test_create_tiles(self):
         self.tile_mgr._create_tiles([Tile((1, 0, 1))])
@@ -105,7 +105,7 @@ class TestTileManagerWMSSource(object):
         self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.source = MockWMSSource()
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source])
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png')
     
     def test_create_tile(self):
         self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
@@ -128,7 +128,7 @@ class TestTileManagerWMSSource(object):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = MockWMSClient()
         self.source = WMSSource(self.client)
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source],
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
             meta_size=[2, 2], meta_buffer=0)
     
     def test_create_tile_first_level(self):
@@ -174,7 +174,7 @@ class TestCacheMapLayer(object):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = MockWMSClient()
         self.source = WMSSource(self.client)
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source],
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
             meta_size=[2, 2], meta_buffer=0)
         self.layer = CacheMapLayer(self.tile_mgr)
     
