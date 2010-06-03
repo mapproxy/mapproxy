@@ -14,6 +14,8 @@ from mapproxy.core.cache import (
     DirectMapLayer,
     MapQuery,
     WMSClient,
+    ResolutionConditional,
+    SRSConditional,
 )
 from mapproxy.core.grid import TileGrid
 from mapproxy.core.srs import SRS
@@ -276,3 +278,62 @@ class TestWMSClient(object):
             "layers=foo&width=300&version=1.1.1"
             "&bbox=4.99999592195,39.9999980766,14.999996749,54.9999994175&service=WMS"
             "&format=image%2Fpng&styles=&srs=EPSG%3A4326&request=GetMap&height=150")
+
+class MockLayer(object):
+    def __init__(self):
+        self.requested = []
+    def get_map(self, query):
+        self.requested.append((query.bbox, query.size, query.srs))
+
+class TestResolutionConditionalLayers(object):
+    def setup(self):
+        self.low = MockLayer()
+        self.high = MockLayer()
+        self.layer = ResolutionConditional(self.low, self.high, 10, SRS(900913))
+    def test_resolution_low(self):
+        self.layer.get_map(MapQuery((0, 0, 10000, 10000), (100, 100), SRS(900913)))
+        assert self.low.requested
+        assert not self.high.requested
+    def test_resolution_high(self):
+        self.layer.get_map(MapQuery((0, 0, 100, 100), (100, 100), SRS(900913)))
+        assert not self.low.requested
+        assert self.high.requested
+    def test_resolution_match(self):
+        self.layer.get_map(MapQuery((0, 0, 10, 10), (100, 100), SRS(900913)))
+        assert not self.low.requested
+        assert self.high.requested
+    def test_resolution_low_transform(self):
+        self.layer.get_map(MapQuery((0, 0, 0.1, 0.1), (100, 100), SRS(4326)))
+        assert self.low.requested
+        assert not self.high.requested
+    def test_resolution_high_transform(self):
+        self.layer.get_map(MapQuery((0, 0, 0.005, 0.005), (100, 100), SRS(4326)))
+        assert not self.low.requested
+        assert self.high.requested
+
+class TestSRSConditionalLayers(object):
+    def setup(self):
+        self.l4326 = MockLayer()
+        self.l900913 = MockLayer()
+        self.l32632 = MockLayer()
+        self.layer = SRSConditional([
+            (self.l4326, (SRS('EPSG:4326'),)), 
+            (self.l900913, (SRS('EPSG:900913'), SRS('EPSG:31467'))),
+            (self.l32632, (SRSConditional.PROJECTED,)),
+        ])
+    def test_srs_match(self):
+        assert self.layer._select_layer(SRS(4326)) == self.l4326
+        assert self.layer._select_layer(SRS(900913)) == self.l900913
+        assert self.layer._select_layer(SRS(31467)) == self.l900913
+    def test_srs_match_type(self):
+        assert self.layer._select_layer(SRS(31466)) == self.l32632
+        assert self.layer._select_layer(SRS(32633)) == self.l32632
+    def test_no_match_first_type(self):
+        assert self.layer._select_layer(SRS(4258)) == self.l4326
+
+class TestNeastedConditionalLayers(object):
+    def setup(self):
+        self.direct = MockLayer()
+        self.l900913 = MockLayer()
+        self.l4326 = MockLayer()
+        self.layer = ResolutionConditional()

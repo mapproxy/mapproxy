@@ -692,6 +692,61 @@ class MapLayer(object):
     def get_map(self, query):
         raise NotImplementedError
 
+class ResolutionConditional(MapLayer):
+    def __init__(self, one, two, resolution, srs):
+        self.one = one
+        self.two = two
+        self.resolution = resolution
+        self.srs = srs
+    
+    def get_map(self, query):
+        bbox = query.bbox
+        if query.srs != self.srs:
+            bbox = query.srs.transform_bbox_to(self.srs, bbox)
+        
+        xres = (bbox[2] - bbox[0]) / query.size[0]
+        yres = (bbox[3] - bbox[1]) / query.size[1]
+        res = min(xres, yres)
+        if res > self.resolution:
+            return self.one.get_map(query)
+        else:
+            return self.two.get_map(query)
+
+class SRSConditional(MapLayer):
+    PROJECTED = 'PROJECTED'
+    GEOGRAPHIC = 'GEOGRAPHIC'
+    
+    def __init__(self, layers):
+        # TODO geographic/projected fallback
+        self.srs_map = {}
+        for layer, srss in layers:
+            for srs in srss:
+                self.srs_map[srs] = layer
+    
+    def get_map(self, query):
+        layer = self._select_layer(query.srs)
+        return self.layer.get_map(query)
+    
+    def _select_layer(self, query_srs):
+        # srs exists
+        if query_srs in self.srs_map:
+            return self.srs_map[query_srs]
+        
+        # srs_type exists
+        srs_type = self.GEOGRAPHIC if query_srs.is_latlong else self.PROJECTED
+        if srs_type in self.srs_map:
+            return self.srs_map[srs_type]
+        
+        # first with same type
+        is_latlong = query_srs.is_latlong
+        for srs in self.srs_map:
+            if hasattr(srs, 'is_latlong') and srs.is_latlong == is_latlong:
+                return self.srs_map[srs]
+        
+        # return first
+        return self.srs_map.itervalues().next()
+        
+
 class DirectMapLayer(MapLayer):
     def __init__(self, source):
         self.source = source
