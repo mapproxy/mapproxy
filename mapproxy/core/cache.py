@@ -269,7 +269,7 @@ class FileCache(object):
     """
     This class is responsible to store and load the actual tile data.
     """
-    def __init__(self, cache_dir, file_ext, pre_store_filter=None,
+    def __init__(self, cache_dir, lock_dir, file_ext, pre_store_filter=None,
                  link_single_color_images=False):
         """
         :param cache_dir: the path where the tile will be stored
@@ -280,7 +280,9 @@ class FileCache(object):
             return this or a new tile object.
         """
         self.cache_dir = cache_dir
+        self.lock_dir = lock_dir
         self.file_ext = file_ext
+        self._lock_cache_id = None
         if pre_store_filter is None:
             pre_store_filter = []
         self.pre_store_filter = pre_store_filter
@@ -433,7 +435,22 @@ class FileCache(object):
         tile.timestamp = time.time()
         data.seek(0)
         tile.stored = True
-
+    
+    def lock_filename(self, tile):
+        if self._lock_cache_id is None:
+            md5 = hashlib.md5()
+            md5.update(self.cache_dir)
+            self._lock_cache_id = md5.hexdigest()
+        return os.path.join(self.lock_dir, self._lock_cache_id + '-' +
+                            '-'.join(map(str, tile.coord)) + '.lck')
+        
+    def lock(self, tile):
+        """
+        Returns a lock object for this tile.
+        """
+        lock_filename = self.lock_filename(tile)
+        return FileLock(lock_filename, timeout=base_config().http_client_timeout)
+    
     def __repr__(self):
         return '%s(%r, %r)' % (self.__class__.__name__, self.cache_dir, self.file_ext)
 
@@ -829,29 +846,42 @@ class TileManager(object):
             
             created_tiles = self._create_meta_tiles(meta_tiles)
         
-        for tile in created_tiles:
-            self.file_cache.store(tile)
-        
         return created_tiles
             
     def _create_tile(self, tile):
         assert len(self.sources) == 1
         tile_bbox = self.grid.tile_bbox(tile.coord)
         query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs, self.format)
-        tile.source = self.sources[0].get(query)
+        with self.file_cache.lock(tile):
+            if not self.file_cache.is_cached(tile):
+                tile.source = self.sources[0].get(query)
+                self.file_cache.store(tile)
+            else:
+                self.file_cache.load(tile)
         return tile
     
     def _create_meta_tiles(self, meta_tiles):
         assert len(self.sources) == 1
-        tiles = []
+        created_tiles = []
         for tile, meta_bbox in meta_tiles:
-            tile_size = self.meta_grid.tile_size(tile.coord[2])
+            tiles = list(self.meta_grid.tiles(tile.coord))
+            main_tile = Tile(tiles[0][0]) # use first tile of meta grid
+            
+            tile_size = self.meta_grid.tile_size(main_tile.coord[2])
             query = MapQuery(meta_bbox, tile_size, self.grid.srs, self.format)
-            meta_tile = self.sources[0].get(query)
-            
-            tiles.extend(split_meta_tiles(meta_tile, self.meta_grid.tiles(tile.coord), tile_size))
-            
-        return tiles
+            with self.file_cache.lock(main_tile):
+                if not self.file_cache.is_cached(main_tile):
+                    meta_tile = self.sources[0].get(query)
+                    splitted_tiles = split_meta_tiles(meta_tile, tiles, tile_size)
+                    for splitted_tile in splitted_tiles:
+                        self.file_cache.store(splitted_tile)
+                    created_tiles.extend(splitted_tiles)
+                else:
+                    for tile, tile_pos in tiles:
+                        tile = Tile(tile)
+                        self.file_cache.load(tile)
+                        created_tiles.append(tile)
+        return created_tiles
 
 def split_meta_tiles(meta_tile, tiles, tile_size):
         try:
