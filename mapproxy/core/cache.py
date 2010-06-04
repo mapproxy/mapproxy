@@ -269,7 +269,7 @@ class FileCache(object):
     """
     This class is responsible to store and load the actual tile data.
     """
-    def __init__(self, cache_dir, lock_dir, file_ext, pre_store_filter=None,
+    def __init__(self, cache_dir, file_ext, lock_dir=None, pre_store_filter=None,
                  link_single_color_images=False):
         """
         :param cache_dir: the path where the tile will be stored
@@ -280,6 +280,8 @@ class FileCache(object):
             return this or a new tile object.
         """
         self.cache_dir = cache_dir
+        if lock_dir is None:
+            lock_dir = os.path.join(cache_dir, 'tile_locks')
         self.lock_dir = lock_dir
         self.file_ext = file_ext
         self._lock_cache_id = None
