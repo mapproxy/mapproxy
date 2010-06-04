@@ -1,4 +1,7 @@
+import os
 import re
+import time
+import threading
 import shutil
 import tempfile
 
@@ -68,9 +71,17 @@ class MockFileCache(FileCache):
     def __init__(self, *args):
         FileCache.__init__(self, *args)
         self.stored_tiles = set()
+        self.loaded_tiles = []
     
     def store(self, tile):
+        assert tile.coord not in self.stored_tiles
         self.stored_tiles.add(tile.coord)
+        if self.cache_dir != '/dev/null':
+            FileCache.store(self, tile)
+    
+    def load(self, tile):
+        self.loaded_tiles.append(tile.coord)
+        return FileCache.load(self, tile)
     
     def is_cached(self, tile):
         return tile.coord in self.stored_tiles
@@ -106,19 +117,20 @@ class TestTileManagerDifferentSourceGrid(object):
     def test_create_tiles_out_of_bounds(self):
         self.tile_mgr._create_tiles([Tile((0, 0, 0))])
 
-class MockWMSSource(Source):
+class MockSource(Source):
     def __init__(self, *args):
         Source.__init__(self, *args)
         self.requested = []
     
     def get(self, query):
         self.requested.append((query.bbox, query.size, query.srs))
+        return ImageSource(create_debug_img(query.size))
 
-class TestTileManagerWMSSource(object):
+class TestTileManagerSource(object):
     def setup(self):
         self.file_cache = MockFileCache('/dev/null', tmp_lock_dir, 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.source = MockWMSSource()
+        self.source = MockSource()
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png')
     
     def test_create_tile(self):
@@ -182,6 +194,45 @@ class TestTileManagerWMSSource(object):
              ((0.0, -90.0, 180.0, 90.0), (512, 512), SRS(4326))])
 
 
+class SlowMockSource(MockSource):
+    supports_meta_tiles = True
+    def get(self, query):
+        time.sleep(0.1)
+        return MockSource.get(self, query)
+
+class TestTileManagerLocking(object):
+    def setup(self):
+        self.tile_dir = tempfile.mkdtemp()
+        self.file_cache = MockFileCache(self.tile_dir, tmp_lock_dir, 'png')
+        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        self.source = SlowMockSource()
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
+            meta_size=[2, 2], meta_buffer=0)
+    
+    def test_get_single(self):
+        self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
+        eq_(self.source.requested,
+            [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))])
+    
+    def test_concurrent(self):
+        def do_it():
+            self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        
+        threads = [threading.Thread(target=do_it) for _ in range(3)]
+        [t.start() for t in threads]
+        [t.join() for t in threads]
+        
+        eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
+        eq_(self.file_cache.loaded_tiles, [(0, 0, 1), (1, 0, 1), (0, 0, 1), (1, 0, 1)])
+        eq_(self.source.requested,
+            [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))])
+        
+        assert os.path.exists(self.file_cache.tile_location(Tile((0, 0, 1))))
+    
+    def teardown(self):
+        shutil.rmtree(self.tile_dir)
+    
 class TestCacheMapLayer(object):
     def setup(self):
         self.file_cache = MockFileCache('/dev/null', tmp_lock_dir, 'png')
@@ -349,3 +400,4 @@ class TestNeastedConditionalLayers(object):
         self.l900913 = MockLayer()
         self.l4326 = MockLayer()
         self.layer = ResolutionConditional()
+        # TODO

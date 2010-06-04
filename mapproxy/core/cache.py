@@ -866,22 +866,24 @@ class TileManager(object):
         for tile, meta_bbox in meta_tiles:
             tiles = list(self.meta_grid.tiles(tile.coord))
             main_tile = Tile(tiles[0][0]) # use first tile of meta grid
-            
-            tile_size = self.meta_grid.tile_size(main_tile.coord[2])
-            query = MapQuery(meta_bbox, tile_size, self.grid.srs, self.format)
-            with self.file_cache.lock(main_tile):
-                if not self.file_cache.is_cached(main_tile):
-                    meta_tile = self.sources[0].get(query)
-                    splitted_tiles = split_meta_tiles(meta_tile, tiles, tile_size)
-                    for splitted_tile in splitted_tiles:
-                        self.file_cache.store(splitted_tile)
-                    created_tiles.extend(splitted_tiles)
-                else:
-                    for tile, tile_pos in tiles:
-                        tile = Tile(tile)
-                        self.file_cache.load(tile)
-                        created_tiles.append(tile)
+            created_tiles.extend(self._create_meta_tile(main_tile, meta_bbox, tiles))
         return created_tiles
+    
+    def _create_meta_tile(self, main_tile, meta_bbox, tiles):
+        tile_size = self.meta_grid.tile_size(main_tile.coord[2])
+        query = MapQuery(meta_bbox, tile_size, self.grid.srs, self.format)
+        with self.file_cache.lock(main_tile):
+            if not self.file_cache.is_cached(main_tile):
+                meta_tile = self.sources[0].get(query)
+                splitted_tiles = split_meta_tiles(meta_tile, tiles, tile_size)
+                for splitted_tile in splitted_tiles:
+                    self.file_cache.store(splitted_tile)
+                return splitted_tiles
+        # else
+        tiles = [Tile(coord) for coord, pos in tiles]
+        for tile in tiles:
+            self.file_cache.load(tile)
+        return tiles
 
 def split_meta_tiles(meta_tile, tiles, tile_size):
         try:
