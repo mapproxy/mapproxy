@@ -163,7 +163,8 @@ class ImageSource(object):
             log.debug('file(%s) -> buf' % self.source)
             return open(self.source, 'rb')
         if not hasattr(self.source, 'seek'):
-            return ReadBufWrapper(self.source)
+            self.source = ReadBufWrapper(self.source)
+            return self.source
         self.source.seek(0)
         return self.source
     @property

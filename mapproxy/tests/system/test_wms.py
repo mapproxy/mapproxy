@@ -210,7 +210,7 @@ class TestWMS111(WMSTest):
         assert 'No response from URL' in xml.xpath('//ServiceException/text()')[0]
         assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
     
-    def _test_direct_layer_error(self):
+    def test_direct_layer_error(self):
         self.common_map_req.params['layers'] = 'direct'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'application/vnd.ogc.se_xml')

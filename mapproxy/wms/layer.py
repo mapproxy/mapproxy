@@ -29,6 +29,8 @@ from mapproxy.core.cache import TileCacheError, TooManyTilesError, BlankImage, N
 from mapproxy.core.layer import Layer, LayerMetaData
 from mapproxy.core.image import message_image, attribution_image
 
+from mapproxy.core.cache import MapQuery
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -220,7 +222,7 @@ class WMSCacheLayer(WMSLayer):
         req_srs = SRS(params.srs)
         
         try:
-            return self.cache.image(req_bbox, req_srs, size)
+            return self.cache.get_map(MapQuery(req_bbox, size, req_srs))
         except TooManyTilesError:
             raise RequestError('Request too large or invalid BBOX.', request=map_request)
         except TransformationError:

@@ -314,6 +314,8 @@ from mapproxy.tms import TileServer
 from mapproxy.tms.layer import TileServiceLayer
 from mapproxy.kml import KMLServer
 
+from mapproxy.core.cache import WMSClient, WMSSource, TileManager, CacheMapLayer
+
 class ConfigurationError(Exception):
     pass
 
@@ -450,15 +452,14 @@ class WMSSourceConfiguration(SourceConfiguration):
         
         #TODO legacy
         params = cache_conf.conf.copy()
-        params['bbox'] = ','.join(str(x) for x in tile_grid.bbox)
-        params['srs'] = tile_grid.srs.srs_code
+        # params['bbox'] = ','.join(str(x) for x in tile_grid.bbox)
+        # params['srs'] = tile_grid.srs.srs_code
         
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
         request = create_request(self.conf['req'], params, version=version)
-        clients = wms_clients_for_requests([request], supported_srs)
-        return WMSTileSource(tile_grid, clients, format=cache_conf.format,
-            meta_size=self.conf['meta_size'], meta_buffer=self.conf['meta_buffer'])
+        client = WMSClient(request, supported_srs)
+        return WMSSource(client)
     
     def fi_source(self, grid_conf, cache_conf, context):
         tile_grid = grid_conf.tile_grid(context)
@@ -513,8 +514,8 @@ class CacheConfiguration(ConfigurationBase):
                 file_cache = self._file_cache(grid_conf, context)
                 tile_grid = grid_conf.tile_grid(context)
                 source = source_conf.source(grid_conf, self, context)
-                mgr = CacheManager(file_cache, source, threaded_tile_creator)
-                caches.append(Cache(mgr, tile_grid))
+                mgr = TileManager(tile_grid, file_cache, [source], self.format)
+                caches.append(mgr)
         
         return caches
         
@@ -527,13 +528,14 @@ class LayerConfiguration(ConfigurationBase):
         caches = []
         for cache_name in self.conf['caches']:
             cache_source = context.caches[cache_name].obj(context)[0]
+            caches.append(WMSCacheLayer(CacheMapLayer(cache_source)))
             
-            cache_sources_conf = context.sources[context.caches[cache_name].conf['sources'][0]]
-            grid_conf = context.grids[context.caches[cache_name].conf['grids'][0]]
-            fi_source = cache_sources_conf.fi_source(grid_conf, context.caches[cache_name], context)
-            
-            cache = WMSCacheLayer(cache_source, fi_source)
-            caches.append(cache)
+            # cache_sources_conf = context.sources[context.caches[cache_name].conf['sources'][0]]
+            # grid_conf = context.grids[context.caches[cache_name].conf['grids'][0]]
+            # fi_source = cache_sources_conf.fi_source(grid_conf, context.caches[cache_name], context)
+            # 
+            # cache = WMSCacheLayer(cache_source, fi_source)
+            # caches.append(cache)
         
         layer = VLayer({'title': self.conf['title'], 'name': self.conf['name']}, caches)
         return layer

@@ -238,9 +238,9 @@ def create_request(req_data, param, req_type='map', version='1.1.1'):
         req_data['format'] = param['request_format']
     else:
         req_data['format'] = param['format']
-    req_data['bbox'] = param['bbox']
-    if isinstance(req_data['bbox'], types.ListType):
-        req_data['bbox'] = ','.join(str(x) for x in req_data['bbox'])
-    req_data['srs'] = param['srs']
+    # req_data['bbox'] = param['bbox']
+    # if isinstance(req_data['bbox'], types.ListType):
+    #     req_data['bbox'] = ','.join(str(x) for x in req_data['bbox'])
+    # req_data['srs'] = param['srs']
     
     return wms_version_requests[version][req_type](url=url, param=req_data)

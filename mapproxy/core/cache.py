@@ -430,6 +430,7 @@ class FileCache(object):
         for img_filter in self.pre_store_filter:
             tile = img_filter(tile)
         data = tile.source.as_buffer()
+        data.seek(0)
         with open(location, 'wb') as f:
             log.debug('writing %r to %s' % (tile.coord, location))
             f.write(data.read())
@@ -693,7 +694,9 @@ class _Tile(object):
 Tile = _Tile
 from mapproxy.core.grid import MetaGrid
 from mapproxy.core.image import TileSplitter, ImageTransformer
+from mapproxy.core.client import HTTPClient, HTTPClientError
 
+from mapproxy.core.utils import reraise_exception
 
 class MapQuery(object):
     """
@@ -774,9 +777,10 @@ class DirectMapLayer(MapLayer):
         return self.source.get(query)
     
 class CacheMapLayer(MapLayer):
-    def __init__(self, tile_manager):
+    def __init__(self, tile_manager, transparent=False):
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
+        self.transparent = transparent
     
     def get_map(self, query):
         tiled_image = self._tiled_image(query.bbox, query.size, query.srs)
@@ -798,7 +802,7 @@ class CacheMapLayer(MapLayer):
         tile_sources = [tile.source for tile in self.tile_manager.load_tile_coords(affected_tile_coords)]
         return TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
                           tile_grid=tile_grid, tile_size=self.grid.tile_size,
-                          transparent=True) #TODO transparent
+                          transparent=self.transparent)
     
 
 class TileManager(object):
@@ -811,7 +815,8 @@ class TileManager(object):
         assert len(sources) == 1
         self.sources = sources
         
-        if any(source.supports_meta_tiles for source in sources):
+        if meta_buffer and meta_size is not None and \
+            any(source.supports_meta_tiles for source in sources):
             self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
         
     def load_tile_coords(self, tile_coords):
@@ -856,7 +861,10 @@ class TileManager(object):
         query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs, self.format)
         with self.file_cache.lock(tile):
             if not self.file_cache.is_cached(tile):
-                tile.source = self.sources[0].get(query)
+                try:
+                    tile.source = self.sources[0].get(query)
+                except HTTPClientError, e:
+                    reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
                 self.file_cache.store(tile)
             else:
                 self.file_cache.load(tile)
@@ -876,7 +884,10 @@ class TileManager(object):
         query = MapQuery(meta_bbox, tile_size, self.grid.srs, self.format)
         with self.file_cache.lock(main_tile):
             if not self.file_cache.is_cached(main_tile):
-                meta_tile = self.sources[0].get(query)
+                try:
+                    meta_tile = self.sources[0].get(query)
+                except HTTPClientError, e:
+                    reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
                 splitted_tiles = split_meta_tiles(meta_tile, tiles, tile_size)
                 for splitted_tile in splitted_tiles:
                     self.file_cache.store(splitted_tile)
@@ -922,7 +933,8 @@ class WMSClient(object):
     def get(self, query):
         if self.supported_srs and query.srs not in self.supported_srs:
             return self._get_transformed(query)
-        return self._retrieve(query)
+        resp = self._retrieve(query)
+        return ImageSource(resp, self.request_template.params.format)
     
     def _get_transformed(self, query):
         dst_srs = query.srs
@@ -951,7 +963,7 @@ class WMSClient(object):
         return iter(self.supported_srs).next()
     def _retrieve(self, query):
         url = self._query_url(query)
-        return self.http_client.get(url)
+        return self.http_client.open(url)
     
     def _query_url(self, query):
         req = self.request_template.copy()
@@ -968,7 +980,7 @@ class WMSSource(Source):
         self.client = client
     
     def get(self, query):
-        return self.client.get_map(query)
+        return self.client.get(query)
     
 class TiledSource(Source):
     def __init__(self, grid, client):
