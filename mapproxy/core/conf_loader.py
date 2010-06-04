@@ -528,14 +528,14 @@ class LayerConfiguration(ConfigurationBase):
         caches = []
         for cache_name in self.conf['caches']:
             cache_source = context.caches[cache_name].obj(context)[0]
-            caches.append(WMSCacheLayer(CacheMapLayer(cache_source)))
+            # caches.append(WMSCacheLayer(CacheMapLayer(cache_source)))
             
-            # cache_sources_conf = context.sources[context.caches[cache_name].conf['sources'][0]]
-            # grid_conf = context.grids[context.caches[cache_name].conf['grids'][0]]
-            # fi_source = cache_sources_conf.fi_source(grid_conf, context.caches[cache_name], context)
-            # 
-            # cache = WMSCacheLayer(cache_source, fi_source)
-            # caches.append(cache)
+            cache_sources_conf = context.sources[context.caches[cache_name].conf['sources'][0]]
+            grid_conf = context.grids[context.caches[cache_name].conf['grids'][0]]
+            fi_source = cache_sources_conf.fi_source(grid_conf, context.caches[cache_name], context)
+            
+            cache = WMSCacheLayer(CacheMapLayer(cache_source), fi_source)
+            caches.append(cache)
         
         layer = VLayer({'title': self.conf['title'], 'name': self.conf['name']}, caches)
         return layer

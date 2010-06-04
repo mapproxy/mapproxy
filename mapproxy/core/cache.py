@@ -814,8 +814,9 @@ class TileManager(object):
         self.format = format
         assert len(sources) == 1
         self.sources = sources
+        self.transparent = self.sources[0].transparent
         
-        if meta_buffer and meta_size is not None and \
+        if meta_buffer is not None and meta_size and \
             any(source.supports_meta_tiles for source in sources):
             self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
         
@@ -921,6 +922,7 @@ class InvalidSourceQuery(ValueError):
 
 class Source(object):
     supports_meta_tiles = False
+    transparent = False
     def get(self, query):
         raise NotImplementedError
 

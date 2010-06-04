@@ -32,6 +32,8 @@ from mapproxy.wms.request import WMS111MapRequest
 from mapproxy.tests.image import create_debug_img
 from mapproxy.tests.http import query_eq
 
+from collections import defaultdict
+
 from nose.tools import eq_, raises
 
 
@@ -42,6 +44,17 @@ def setup():
 
 def teardown():
     shutil.rmtree(tmp_lock_dir)
+
+class counting_set(object):
+    def __init__(self, items):
+        self.data = defaultdict(int)
+        for item in items:
+            self.data[item] += 1
+    def add(self, item):
+        self.data[item] += 1
+    
+    def __eq__(self, other):
+        return self.data == other.data
 
 class MockTileClient(object):
     def __init__(self):
@@ -71,7 +84,7 @@ class MockFileCache(FileCache):
     def __init__(self, *args, **kw):
         FileCache.__init__(self, *args, **kw)
         self.stored_tiles = set()
-        self.loaded_tiles = []
+        self.loaded_tiles = counting_set([])
     
     def store(self, tile):
         assert tile.coord not in self.stored_tiles
@@ -80,7 +93,7 @@ class MockFileCache(FileCache):
             FileCache.store(self, tile)
     
     def load(self, tile):
-        self.loaded_tiles.append(tile.coord)
+        self.loaded_tiles.add(tile.coord)
         return FileCache.load(self, tile)
     
     def is_cached(self, tile):
@@ -144,7 +157,7 @@ class MockWMSClient(object):
     def __init__(self):
         self.requested = []
     
-    def get_map(self, query):
+    def get(self, query):
         self.requested.append((query.bbox, query.size, query.srs))
         return ImageSource(create_debug_img(query.size))
 
@@ -224,7 +237,7 @@ class TestTileManagerLocking(object):
         [t.join() for t in threads]
         
         eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
-        eq_(self.file_cache.loaded_tiles, [(0, 0, 1), (1, 0, 1), (0, 0, 1), (1, 0, 1)])
+        eq_(self.file_cache.loaded_tiles, counting_set([(0, 0, 1), (1, 0, 1), (0, 0, 1), (1, 0, 1)]))
         eq_(self.source.requested,
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))])
         
@@ -310,7 +323,7 @@ class MockHTTPClient(object):
     def __init__(self):
         self.requested = []
     
-    def get(self, url):
+    def open(self, url):
         self.requested.append(url)
         w = int(re.search(r'width=(\d+)', url, re.IGNORECASE).group(1))
         h = int(re.search(r'height=(\d+)', url, re.IGNORECASE).group(1))

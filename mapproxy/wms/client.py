@@ -101,9 +101,12 @@ class WMSClient(object):
         return req.complete_url
     
     def _transform_fi_request(self, request):
+        
         params = request.params
-        if self.request_template.params.srs == params.srs:
-            return request
+        # TODO supported SRS
+        #if self.request_template.params.srs == params.srs:
+        
+        return request
         
         pos = params.pos
         req_bbox = params.bbox
