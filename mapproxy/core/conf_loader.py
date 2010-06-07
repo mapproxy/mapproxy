@@ -314,7 +314,7 @@ from mapproxy.tms import TileServer
 from mapproxy.tms.layer import TileServiceLayer
 from mapproxy.kml import KMLServer
 
-from mapproxy.core.cache import WMSClient, WMSSource, TileManager, CacheMapLayer, SRSConditional, ResolutionConditional
+from mapproxy.core.cache import WMSClient, WMSSource, TileManager, CacheMapLayer, SRSConditional, ResolutionConditional, map_extend_from_grid
 
 class ConfigurationError(Exception):
     pass
@@ -441,17 +441,22 @@ class SourceConfiguration(ConfigurationBase):
 
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
-    optional_keys = set('''type supported_srs image_resampling 
+    optional_keys = set('''type supported_srs image_resampling request_format
         use_direct_from_level wms_opts meta_size meta_buffer'''.split())
     required_keys = set('req'.split())
     defaults = {'meta_size': [1, 1], 'meta_buffer': 0}
     
     
-    def source(self, grid_conf, cache_conf, context):
-        tile_grid = grid_conf.tile_grid(context)
+    def source(self, context, params):
+        
+        request_format = self.conf.get('request_format')
+        if request_format:
+            params['format'] = request_format
+        
+        # tile_grid = grid_conf.tile_grid(context)
         
         #TODO legacy
-        params = cache_conf.conf.copy()
+        # params = {'format': 'image/png'} #cache_conf.conf.copy()
         # params['bbox'] = ','.join(str(x) for x in tile_grid.bbox)
         # params['srs'] = tile_grid.srs.srs_code
         
@@ -461,12 +466,12 @@ class WMSSourceConfiguration(SourceConfiguration):
         client = WMSClient(request, supported_srs)
         return WMSSource(client)
     
-    def fi_source(self, grid_conf, cache_conf, context):
-        tile_grid = grid_conf.tile_grid(context)
-        
-        params = cache_conf.conf.copy()
-        params['bbox'] = ','.join(str(x) for x in tile_grid.bbox)
-        params['srs'] = tile_grid.srs.srs_code
+    def fi_source(self, context, params):
+        # tile_grid = grid_conf.tile_grid(context)
+        # 
+        # params = cache_conf.conf.copy()
+        # params['bbox'] = ','.join(str(x) for x in tile_grid.bbox)
+        # params['srs'] = tile_grid.srs.srs_code
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         
         fi_source = None
@@ -513,7 +518,7 @@ class CacheConfiguration(ConfigurationBase):
             for grid_conf in [context.grids[g] for g in self.conf['grids']]:
                 file_cache = self._file_cache(grid_conf, context)
                 tile_grid = grid_conf.tile_grid(context)
-                source = source_conf.source(grid_conf, self, context)
+                source = source_conf.source(context, {'format': self.conf['format']})
                 mgr = TileManager(tile_grid, file_cache, [source], self.format)
                 caches.append(mgr)
         
@@ -523,36 +528,49 @@ class CacheConfiguration(ConfigurationBase):
         assert len(self.conf['sources']) == 1
         source_conf = context.sources[self.conf['sources'][0]]
         caches = []
+        main_grid = None
         for grid_conf in [context.grids[g] for g in self.conf['grids']]:
             file_cache = self._file_cache(grid_conf, context)
             tile_grid = grid_conf.tile_grid(context)
-            source = source_conf.source(grid_conf, self, context)
+            if main_grid is None:
+                main_grid = tile_grid
+            source = source_conf.source(context, {'format': self.conf['format']})
             mgr = TileManager(tile_grid, file_cache, [source], self.format)
             caches.append((CacheMapLayer(mgr), (tile_grid.srs,)))
+        
         if len(caches) == 1:
             layer = caches[0][0]
         else:
-            layer = SRSConditional(caches, caches[0][0].transparent)
+            map_extend = map_extend_from_grid(main_grid)
+            layer = SRSConditional(caches, map_extend, caches[0][0].transparent)
         
         if 'use_direct_from_level' in self.conf:
             self.conf['use_direct_from_res'] = tile_grid.resolution(self.conf['use_direct_from_level'])
         if 'use_direct_from_res' in self.conf:
-            layer = ResolutionConditional(layer, source, self.conf['use_direct_from_res'], tile_grid.srs)
+            layer = ResolutionConditional(layer, source, self.conf['use_direct_from_res'], tile_grid.srs, layer.extend)
         return layer
-        
+    
 class LayerConfiguration(ConfigurationBase):
     optional_keys = set(''.split())
-    required_keys = set('name title caches'.split())
+    required_keys = set('name title sources'.split())
     
     def wms_layer(self, context):
         caches = []
-        for cache_name in self.conf['caches']:
-            map_layer = context.caches[cache_name].map_layer(context)
+        for source_name in self.conf['sources']:
+            fi_source_names = []
+            if source_name in context.caches:
+                map_layer = context.caches[source_name].map_layer(context)
+                fi_source_names = context.caches[source_name].conf['sources']
+            elif source_name in context.sources:
+                map_layer = context.sources[source_name].source(context)
+                fi_source_names = [source_name]
+            else:
+                raise ConfigurationError('source/cache "%s" not found' % source_name)
             # caches.append(WMSCacheLayer(CacheMapLayer(cache_source)))
             
-            cache_sources_conf = context.sources[context.caches[cache_name].conf['sources'][0]]
-            grid_conf = context.grids[context.caches[cache_name].conf['grids'][0]]
-            fi_source = cache_sources_conf.fi_source(grid_conf, context.caches[cache_name], context)
+            for fi_source_name in fi_source_names:
+                # TODO multiple sources
+                fi_source = context.sources[fi_source_name].fi_source(context, {'format': 'image/jpeg'})
             
             cache = WMSCacheLayer(map_layer, fi_source)
             caches.append(cache)
@@ -561,10 +579,10 @@ class LayerConfiguration(ConfigurationBase):
         return layer
     
     def tile_layers(self, context):
-        if len(self.conf['caches']) > 1: return [] #TODO
+        if len(self.conf['sources']) > 1: return [] #TODO
         
         tile_layers = []
-        for cache_name in self.conf['caches']:
+        for cache_name in self.conf['sources']:
             for cache_source in context.caches[cache_name].caches(context):
                 md = {}
                 md['title'] = self.conf['title']

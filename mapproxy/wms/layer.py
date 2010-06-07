@@ -196,10 +196,10 @@ class WMSCacheLayer(WMSLayer):
         self.fi_source = fi_source
     
     def _bbox(self):
-        return self.cache.grid.bbox
+        return self.cache.extend.bbox_for(self.srs)
     
     def _srs(self):
-        return self.cache.grid.srs
+        return self.cache.extend._srs
     
     def has_info(self):
         return self.fi_source is not None

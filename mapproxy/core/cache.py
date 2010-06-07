@@ -55,6 +55,7 @@ from mapproxy.core.utils import FileLock, cleanup_lockdir, ThreadedExecutor
 from mapproxy.core.image import TiledImage, ImageSource, is_single_color_image
 from mapproxy.core.config import base_config, abspath
 from mapproxy.core.grid import NoTiles
+from mapproxy.core.srs import SRS
 
 import logging
 log = logging.getLogger(__name__)
@@ -715,7 +716,7 @@ class MapLayer(object):
         raise NotImplementedError
 
 class ResolutionConditional(MapLayer):
-    def __init__(self, one, two, resolution, srs):
+    def __init__(self, one, two, resolution, srs, extend):
         self.one = one
         self.two = two
         self.resolution = resolution
@@ -723,7 +724,7 @@ class ResolutionConditional(MapLayer):
         
         #TODO
         self.transparent = self.one.transparent
-        self.grid = self.one.grid
+        self.extend = extend
     
     def get_map(self, query):
         bbox = query.bbox
@@ -744,15 +745,15 @@ class SRSConditional(MapLayer):
     PROJECTED = 'PROJECTED'
     GEOGRAPHIC = 'GEOGRAPHIC'
     
-    def __init__(self, layers, grid, transparent=False):
+    def __init__(self, layers, extend, transparent=False):
         self.transparent = transparent
         # TODO geographic/projected fallback
         self.srs_map = {}
         for layer, srss in layers:
             for srs in srss:
                 self.srs_map[srs] = layer
-        # TODO
-        self.grid = self.srs_map.itervalues().next().grid
+        
+        self.extend = extend
     
     def get_map(self, query):
         layer = self._select_layer(query.srs)
@@ -779,7 +780,7 @@ class SRSConditional(MapLayer):
         
 
 class DirectMapLayer(MapLayer):
-    def __init__(self, source):
+    def __init__(self, source, extend):
         self.source = source
     
     def get_map(self, query):
@@ -789,6 +790,7 @@ class CacheMapLayer(MapLayer):
     def __init__(self, tile_manager, transparent=False):
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
+        self.extend = map_extend_from_grid(self.grid)
         self.transparent = transparent
     
     def get_map(self, query):
@@ -1012,4 +1014,19 @@ class TiledSource(Source):
         except HTTPClientError, e:
             reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
         
+
+def map_extend_from_grid(grid):
+    return MapExtend(grid.bbox, grid.srs)
+
+class MapExtend(object):
+    def __init__(self, bbox, srs):
+        self.llbbox = srs.transform_bbox_to(SRS(4326), bbox)
+        self._bbox = bbox
+        self._srs = srs
     
+    def bbox_for(self, srs):
+        if srs == self._srs:
+            return self._bbox
+        
+        return self._srs.transform_bbox_to(srs, bbox)
+

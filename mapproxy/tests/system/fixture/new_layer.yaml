@@ -28,28 +28,28 @@ services:
 layers:
   direct:
     title: Direct Layer
-    caches: [direct]
+    sources: [direct]
   wms_cache:
     title: WMS Cache Layer
-    caches: [wms_cache]
+    sources: [wms_cache]
   wms_cache_link_single:
     title: WMS Cache Layer (link single)
-    caches: [wms_cache_link_single]
+    sources: [wms_cache_link_single]
   wms_cache_100:
     title: WMS Cache Layer
-    caches: [wms_cache_100]
+    sources: [wms_cache_100]
   wms_cache_130:
     title: WMS Cache Layer
-    caches: [wms_cache_130]
+    sources: [wms_cache_130]
   wms_cache_multi:
     title: WMS Cache Multi Layer
-    caches: [wms_cache_multi]
+    sources: [wms_cache_multi]
   tms_cache:
     title: TMS Cache Layer
-    caches: [tms_cache]
+    sources: [tms_cache]
   wms_merge:
     title: WMS Cache + Direct Layer
-    caches: [direct, wms_cache]
+    sources: [direct, wms_cache]
 
 caches:
   direct:
