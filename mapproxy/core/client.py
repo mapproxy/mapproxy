@@ -27,6 +27,7 @@ import logging
 log = logging.getLogger(__name__)
 
 from mapproxy.core.app import version
+from mapproxy.core.image import ImageSource
 from mapproxy.core.utils import reraise_exception
 from mapproxy.core.config import base_config, abspath
 
@@ -246,7 +247,7 @@ def retrieve_image(url):
     resp = open_url(url)
     if not resp.headers['content-type'].startswith('image'):
         raise HTTPClientError('response is not an image: (%s)' % (resp.read()))
-    return resp
+    return ImageSource(resp)
 
 
 class VerifiedHTTPSConnection(httplib.HTTPSConnection):

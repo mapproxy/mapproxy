@@ -1077,9 +1077,10 @@ class WMSInfoSource(InfoSource):
         return self.client.get_info(query).read()
 
 class TiledSource(Source):
-    def __init__(self, grid, client):
+    def __init__(self, grid, client, inverse=False):
         self.grid = grid
         self.client = client
+        self.inverse = inverse
     
     def get_map(self, query):
         if self.grid.tile_size != query.size:
@@ -1092,8 +1093,12 @@ class TiledSource(Source):
         if grid != (1, 1):
             raise InvalidSourceQuery('bbox does not align to tile')
 
+        tile_coord = tiles.next()
+        
+        if self.inverse:
+            tile_coord = self.grid.flip_tile_coord(tile_coord)
         try:
-            return self.client.get_tile(tiles.next())
+            return self.client.get_tile(tile_coord)
         except HTTPClientError, e:
             reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
         

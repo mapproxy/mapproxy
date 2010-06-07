@@ -305,8 +305,10 @@ class CacheSource(Source):
 
 
 from mapproxy.core.grid import TileGrid
+from mapproxy.core.request import split_mime_type
 from mapproxy.wms.conf_loader import create_request, wms_clients_for_requests
 from mapproxy.wms.cache import WMSTileSource
+from mapproxy.core.client import TileClient, TileURLTemplate
 from mapproxy.wms.server import WMSServer
 from mapproxy.wms.layer import WMSCacheLayer, WMSLayer
 from mapproxy.core import defaults
@@ -318,6 +320,7 @@ from mapproxy.core.cache import (
     WMSClient,
     WMSSource,
     TileManager,
+    TiledSource,
     CacheMapLayer,
     SRSConditional,
     ResolutionConditional,
@@ -477,6 +480,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
         request = create_request(self.conf['req'], params, version=version)
+        # TODO https + basic auth
         client = WMSClient(request, supported_srs)
         return WMSSource(client)
     
@@ -496,7 +500,31 @@ class WMSSourceConfiguration(SourceConfiguration):
             fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs)
             fi_source = WMSInfoSource(fi_client)
         return fi_source
+
+
+class TileSourceConfiguration(SourceConfiguration):
+    source_type = ('tiles',)
+    optional_keys = set('''type grid request_format origin'''.split())
+    required_keys = set('url'.split())
+    defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
+    # defaults = {'meta_size': [1, 1], 'meta_buffer': 0}
+    
+    def source(self, context, params):
+        url = self.conf['url']
+        origin = self.conf['origin']
+        if origin not in ('sw', 'nw'):
+            log.error("ignoring origin '%s', only supports sw and nw")
+            origin = 'sw'
+            # TODO raise some configuration exception
         
+        grid = context.grids[self.conf['grid']].tile_grid(context)
+        
+        inverse = True if origin == 'nw' else False
+        _mime_class, format, _options = split_mime_type(params['format'])
+        client = TileClient(TileURLTemplate(url, format=format))
+        return TiledSource(grid, client, inverse=inverse)
+
+
 class CacheConfiguration(ConfigurationBase):
     optional_keys = set('format cache_dir grids link_single_color_images use_direct_from_res use_direct_from_level'.split())
     required_keys = set('name sources'.split())
@@ -585,6 +613,7 @@ class LayerConfiguration(ConfigurationBase):
             
             for fi_source_name in fi_source_names:
                 # TODO multiple sources
+                if not hasattr(context.sources[fi_source_name], 'fi_source'): continue
                 fi_source = context.sources[fi_source_name].fi_source(context, {'format': 'image/jpeg'})
                 if fi_source:
                     fi_sources.append(fi_source)
