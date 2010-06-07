@@ -720,6 +720,10 @@ class ResolutionConditional(MapLayer):
         self.two = two
         self.resolution = resolution
         self.srs = srs
+        
+        #TODO
+        self.transparent = self.one.transparent
+        self.grid = self.one.grid
     
     def get_map(self, query):
         bbox = query.bbox
@@ -729,6 +733,8 @@ class ResolutionConditional(MapLayer):
         xres = (bbox[2] - bbox[0]) / query.size[0]
         yres = (bbox[3] - bbox[1]) / query.size[1]
         res = min(xres, yres)
+        print res, self.resolution
+        
         if res > self.resolution:
             return self.one.get_map(query)
         else:
@@ -738,16 +744,19 @@ class SRSConditional(MapLayer):
     PROJECTED = 'PROJECTED'
     GEOGRAPHIC = 'GEOGRAPHIC'
     
-    def __init__(self, layers):
+    def __init__(self, layers, grid, transparent=False):
+        self.transparent = transparent
         # TODO geographic/projected fallback
         self.srs_map = {}
         for layer, srss in layers:
             for srs in srss:
                 self.srs_map[srs] = layer
+        # TODO
+        self.grid = self.srs_map.itervalues().next().grid
     
     def get_map(self, query):
         layer = self._select_layer(query.srs)
-        return self.layer.get_map(query)
+        return layer.get_map(query)
     
     def _select_layer(self, query_srs):
         # srs exists
@@ -774,7 +783,7 @@ class DirectMapLayer(MapLayer):
         self.source = source
     
     def get_map(self, query):
-        return self.source.get(query)
+        return self.source.get_map(query)
     
 class CacheMapLayer(MapLayer):
     def __init__(self, tile_manager, transparent=False):
@@ -862,10 +871,7 @@ class TileManager(object):
         query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs, self.format)
         with self.file_cache.lock(tile):
             if not self.file_cache.is_cached(tile):
-                try:
-                    tile.source = self.sources[0].get(query)
-                except HTTPClientError, e:
-                    reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
+                tile.source = self.sources[0].get_map(query)
                 self.file_cache.store(tile)
             else:
                 self.file_cache.load(tile)
@@ -885,10 +891,7 @@ class TileManager(object):
         query = MapQuery(meta_bbox, tile_size, self.grid.srs, self.format)
         with self.file_cache.lock(main_tile):
             if not self.file_cache.is_cached(main_tile):
-                try:
-                    meta_tile = self.sources[0].get(query)
-                except HTTPClientError, e:
-                    reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
+                meta_tile = self.sources[0].get_map(query)
                 splitted_tiles = split_meta_tiles(meta_tile, tiles, tile_size)
                 for splitted_tile in splitted_tiles:
                     self.file_cache.store(splitted_tile)
@@ -923,16 +926,16 @@ class InvalidSourceQuery(ValueError):
 class Source(object):
     supports_meta_tiles = False
     transparent = False
-    def get(self, query):
+    def get_map(self, query):
         raise NotImplementedError
 
 class WMSClient(object):
-    def __init__(self, request_template, http_client=None, supported_srs=None):
+    def __init__(self, request_template, supported_srs=None, http_client=None):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
         self.supported_srs = set(supported_srs or [])
     
-    def get(self, query):
+    def get_map(self, query):
         if self.supported_srs and query.srs not in self.supported_srs:
             return self._get_transformed(query)
         resp = self._retrieve(query)
@@ -981,15 +984,19 @@ class WMSSource(Source):
         Source.__init__(self)
         self.client = client
     
-    def get(self, query):
-        return self.client.get(query)
+    def get_map(self, query):
+        try:
+            return self.client.get_map(query)
+        except HTTPClientError, e:
+            reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
+        
     
 class TiledSource(Source):
     def __init__(self, grid, client):
         self.grid = grid
         self.client = client
     
-    def get(self, query):
+    def get_map(self, query):
         if self.grid.tile_size != query.size:
             raise InvalidSourceQuery()
         if self.grid.srs != query.srs:
@@ -999,7 +1006,10 @@ class TiledSource(Source):
         
         if grid != (1, 1):
             raise InvalidSourceQuery('bbox does not align to tile')
+
+        try:
+            return self.client.get_tile(tiles.next())
+        except HTTPClientError, e:
+            reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
         
-        
-        return self.client.get_tile(tiles.next())
     

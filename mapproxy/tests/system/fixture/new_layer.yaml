@@ -53,6 +53,7 @@ layers:
 
 caches:
   direct:
+    use_direct_from_level: 0
     sources: [direct]
   wms_cache:
     format: image/jpeg
@@ -77,7 +78,6 @@ caches:
 sources:
   direct:
     type: wms
-    use_direct_from_level: 0
     req:
       url: http://localhost:42423/service
       layers: bar

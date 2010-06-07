@@ -314,7 +314,7 @@ from mapproxy.tms import TileServer
 from mapproxy.tms.layer import TileServiceLayer
 from mapproxy.kml import KMLServer
 
-from mapproxy.core.cache import WMSClient, WMSSource, TileManager, CacheMapLayer
+from mapproxy.core.cache import WMSClient, WMSSource, TileManager, CacheMapLayer, SRSConditional, ResolutionConditional
 
 class ConfigurationError(Exception):
     pass
@@ -479,7 +479,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         return fi_source
         
 class CacheConfiguration(ConfigurationBase):
-    optional_keys = set('format cache_dir grids link_single_color_images'.split())
+    optional_keys = set('format cache_dir grids link_single_color_images use_direct_from_res use_direct_from_level'.split())
     required_keys = set('name sources'.split())
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
     
@@ -507,7 +507,7 @@ class CacheConfiguration(ConfigurationBase):
         return FileCache(cache_dir, file_ext=self.format,
             link_single_color_images=link_single_color_images)
     
-    def obj(self, context):
+    def caches(self, context):
         caches = []
         for source_conf in [context.sources[s] for s in self.conf['sources']]:
             for grid_conf in [context.grids[g] for g in self.conf['grids']]:
@@ -518,8 +518,28 @@ class CacheConfiguration(ConfigurationBase):
                 caches.append(mgr)
         
         return caches
+    
+    def map_layer(self, context):
+        assert len(self.conf['sources']) == 1
+        source_conf = context.sources[self.conf['sources'][0]]
+        caches = []
+        for grid_conf in [context.grids[g] for g in self.conf['grids']]:
+            file_cache = self._file_cache(grid_conf, context)
+            tile_grid = grid_conf.tile_grid(context)
+            source = source_conf.source(grid_conf, self, context)
+            mgr = TileManager(tile_grid, file_cache, [source], self.format)
+            caches.append((CacheMapLayer(mgr), (tile_grid.srs,)))
+        if len(caches) == 1:
+            layer = caches[0][0]
+        else:
+            layer = SRSConditional(caches, caches[0][0].transparent)
         
-
+        if 'use_direct_from_level' in self.conf:
+            self.conf['use_direct_from_res'] = tile_grid.resolution(self.conf['use_direct_from_level'])
+        if 'use_direct_from_res' in self.conf:
+            layer = ResolutionConditional(layer, source, self.conf['use_direct_from_res'], tile_grid.srs)
+        return layer
+        
 class LayerConfiguration(ConfigurationBase):
     optional_keys = set(''.split())
     required_keys = set('name title caches'.split())
@@ -527,32 +547,35 @@ class LayerConfiguration(ConfigurationBase):
     def wms_layer(self, context):
         caches = []
         for cache_name in self.conf['caches']:
-            cache_source = context.caches[cache_name].obj(context)[0]
+            map_layer = context.caches[cache_name].map_layer(context)
             # caches.append(WMSCacheLayer(CacheMapLayer(cache_source)))
             
             cache_sources_conf = context.sources[context.caches[cache_name].conf['sources'][0]]
             grid_conf = context.grids[context.caches[cache_name].conf['grids'][0]]
             fi_source = cache_sources_conf.fi_source(grid_conf, context.caches[cache_name], context)
             
-            cache = WMSCacheLayer(CacheMapLayer(cache_source), fi_source)
+            cache = WMSCacheLayer(map_layer, fi_source)
             caches.append(cache)
         
         layer = VLayer({'title': self.conf['title'], 'name': self.conf['name']}, caches)
         return layer
     
-    def tile_layer(self, context):
-        # todo multiple caches
-        if len(self.conf['caches']) > 1: return None
+    def tile_layers(self, context):
+        if len(self.conf['caches']) > 1: return [] #TODO
+        
+        tile_layers = []
         for cache_name in self.conf['caches']:
-            cache_source = context.caches[cache_name].obj(context)[0]
-            md = {}
-            md['title'] = self.conf['title']
-            md['name'] = self.conf['name']
-            md['name_path'] = (self.conf['name'], cache_source.grid.srs.srs_code.replace(':', '').upper())
-            md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
-            md['format'] = context.caches[cache_name].conf['format']
+            for cache_source in context.caches[cache_name].caches(context):
+                md = {}
+                md['title'] = self.conf['title']
+                md['name'] = self.conf['name']
+                md['name_path'] = (self.conf['name'], cache_source.grid.srs.srs_code.replace(':', '').upper())
+                md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
+                md['format'] = context.caches[cache_name].conf['format']
             
-            return TileServiceLayer(md, cache_source)
+                tile_layers.append(TileServiceLayer(md, cache_source))
+        
+        return tile_layers
         
         
 
@@ -572,9 +595,9 @@ class ServiceConfiguration(ConfigurationBase):
         md = conf.get('md', {})
         layers = {}
         for layer_name, layer_conf in context.layers.iteritems():
-            tile_layer = layer_conf.tile_layer(context)
-            if not tile_layer: continue
-            layers[tile_layer.md['name_internal']] = tile_layer
+            for tile_layer in layer_conf.tile_layers(context):
+                if not tile_layer: continue
+                layers[tile_layer.md['name_internal']] = tile_layer
         
         return KMLServer(layers, md)
     
@@ -582,9 +605,9 @@ class ServiceConfiguration(ConfigurationBase):
         md = conf.get('md', {})
         layers = {}
         for layer_name, layer_conf in context.layers.iteritems():
-            tile_layer = layer_conf.tile_layer(context)
-            if not tile_layer: continue
-            layers[tile_layer.md['name_internal']] = tile_layer
+            for tile_layer in layer_conf.tile_layers(context):
+                if not tile_layer: continue
+                layers[tile_layer.md['name_internal']] = tile_layer
         
         return TileServer(layers, md)
     
