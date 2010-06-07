@@ -573,7 +573,7 @@ class LayerConfiguration(ConfigurationBase):
                 map_layer = context.caches[source_name].map_layer(context)
                 fi_source_names = context.caches[source_name].conf['sources']
             elif source_name in context.sources:
-                map_layer = context.sources[source_name].source(context)
+                map_layer = context.sources[source_name].source(context, {'format': 'image/jpeg'})
                 fi_source_names = [source_name]
             else:
                 raise ConfigurationError('source/cache "%s" not found' % source_name)
@@ -594,6 +594,7 @@ class LayerConfiguration(ConfigurationBase):
         
         tile_layers = []
         for cache_name in self.conf['sources']:
+            if not cache_name in context.caches: continue
             for cache_source in context.caches[cache_name].caches(context):
                 md = {}
                 md['title'] = self.conf['title']

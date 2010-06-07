@@ -62,7 +62,7 @@ class TileServiceLayer(Layer):
                                % (tile_request.format, self.format), request=tile_request)
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
         try:
-            return TileResponse(self.cache.tile(tile_coord))
+            return TileResponse(self.cache.load_tile_coord(tile_coord, with_metadata=True))
         except TileCacheError, e:
             log.error(e)
             raise RequestError(e.args[0], request=tile_request, internal=True)

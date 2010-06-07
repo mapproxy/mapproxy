@@ -850,14 +850,17 @@ class TileManager(object):
         if meta_buffer is not None and meta_size and \
             any(source.supports_meta_tiles for source in sources):
             self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
-        
-    def load_tile_coords(self, tile_coords):
+    
+    def load_tile_coord(self, tile_coord, with_metadata=False):
+        return self.load_tile_coords([tile_coord], with_metadata)[0]
+    
+    def load_tile_coords(self, tile_coords, with_metadata=False):
         tiles = TileCollection(tile_coords)
         uncached_tiles = []
         for tile in tiles:
             # TODO cache eviction
             if self.file_cache.is_cached(tile):
-                self.file_cache.load(tile)
+                self.file_cache.load(tile, with_metadata)
             else:
                 uncached_tiles.append(tile)
         
@@ -1053,6 +1056,8 @@ class WMSSource(Source):
     def __init__(self, client):
         Source.__init__(self)
         self.client = client
+        #TODO extend
+        self.extend = MapExtend((-180, -90, 180, 90), SRS(4326))
     
     def get_map(self, query):
         try:

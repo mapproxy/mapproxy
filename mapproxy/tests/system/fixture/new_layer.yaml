@@ -52,9 +52,6 @@ layers:
     sources: [direct, wms_cache]
 
 caches:
-  direct:
-    use_direct_from_level: 0
-    sources: [direct]
   wms_cache:
     format: image/jpeg
     sources: [wms_cache]
