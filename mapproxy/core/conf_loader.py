@@ -308,13 +308,23 @@ from mapproxy.core.grid import TileGrid
 from mapproxy.wms.conf_loader import create_request, wms_clients_for_requests
 from mapproxy.wms.cache import WMSTileSource
 from mapproxy.wms.server import WMSServer
-from mapproxy.wms.layer import WMSCacheLayer, VLayer, FeatureInfoSource
+from mapproxy.wms.layer import WMSCacheLayer, WMSLayer
 from mapproxy.core import defaults
 from mapproxy.tms import TileServer
 from mapproxy.tms.layer import TileServiceLayer
 from mapproxy.kml import KMLServer
 
-from mapproxy.core.cache import WMSClient, WMSSource, TileManager, CacheMapLayer, SRSConditional, ResolutionConditional, map_extend_from_grid
+from mapproxy.core.cache import (
+    WMSClient,
+    WMSSource,
+    TileManager,
+    CacheMapLayer,
+    SRSConditional,
+    ResolutionConditional,
+    map_extend_from_grid,
+    WMSInfoSource,
+    WMSInfoClient,
+)
 
 class ConfigurationError(Exception):
     pass
@@ -479,8 +489,8 @@ class WMSSourceConfiguration(SourceConfiguration):
             version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
             fi_request = create_request(self.conf['req'], params,
                 req_type='featureinfo', version=version)
-            fi_clients = wms_clients_for_requests([fi_request], supported_srs)
-            fi_source = FeatureInfoSource(fi_clients)
+            fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs)
+            fi_source = WMSInfoSource(fi_client)
         return fi_source
         
 class CacheConfiguration(ConfigurationBase):
@@ -555,7 +565,8 @@ class LayerConfiguration(ConfigurationBase):
     required_keys = set('name title sources'.split())
     
     def wms_layer(self, context):
-        caches = []
+        sources = []
+        fi_sources = []
         for source_name in self.conf['sources']:
             fi_source_names = []
             if source_name in context.caches:
@@ -566,16 +577,16 @@ class LayerConfiguration(ConfigurationBase):
                 fi_source_names = [source_name]
             else:
                 raise ConfigurationError('source/cache "%s" not found' % source_name)
-            # caches.append(WMSCacheLayer(CacheMapLayer(cache_source)))
+            sources.append(map_layer)
             
             for fi_source_name in fi_source_names:
                 # TODO multiple sources
                 fi_source = context.sources[fi_source_name].fi_source(context, {'format': 'image/jpeg'})
+                if fi_source:
+                    fi_sources.append(fi_source)
             
-            cache = WMSCacheLayer(map_layer, fi_source)
-            caches.append(cache)
         
-        layer = VLayer({'title': self.conf['title'], 'name': self.conf['name']}, caches)
+        layer = WMSLayer({'title': self.conf['title'], 'name': self.conf['name']}, sources, fi_sources)
         return layer
     
     def tile_layers(self, context):

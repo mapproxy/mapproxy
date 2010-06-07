@@ -711,6 +711,18 @@ class MapQuery(object):
         self.transparent = transparent
         
 
+class InfoQuery(object):
+    def __init__(self, bbox, size, srs, pos, info_format):
+        self.bbox = bbox
+        self.size = size
+        self.srs = srs
+        self.pos = pos
+        self.info_format = info_format
+
+class InfoLayer(object):
+    def get_info(self, query):
+        raise NotImplementedError
+
 class MapLayer(object):
     def get_map(self, query):
         raise NotImplementedError
@@ -785,7 +797,15 @@ class DirectMapLayer(MapLayer):
     
     def get_map(self, query):
         return self.source.get_map(query)
+
+
+class DirectInfoLayer(InfoLayer):
+    def __init__(self, source):
+        self.source = source
     
+    def get_info(self, query):
+        return self.source.get_info(query)
+
 class CacheMapLayer(MapLayer):
     def __init__(self, tile_manager, transparent=False):
         self.tile_manager = tile_manager
@@ -980,6 +1000,54 @@ class WMSClient(object):
         
         return req.complete_url
 
+
+class WMSInfoClient(object):
+    def __init__(self, request_template, supported_srs=None, http_client=None):
+        self.request_template = request_template
+        self.http_client = http_client or HTTPClient()
+        self.supported_srs = set(supported_srs or [])
+    
+    def get_info(self, query):
+        if self.supported_srs and query.srs not in self.supported_srs:
+            return self._get_transformed(query)
+        resp = self._retrieve(query)
+        return resp
+    
+    def _get_transformed(self, query):
+        req_srs = query.srs
+        req_bbox = query.bbox
+        info_srs = self._best_supported_srs(dst_srs)
+        info_bbox = req_srs.transform_bbox_to(info_srs, req_bbox)
+        
+        req_coord = make_lin_transf((0, 0) + query.size, req_bbox)(query.pos)
+        
+        info_coord = req_srs.transform_to(info_srs, req_coord)
+        info_pos = make_lin_transf((info_bbox), (0, 0) + params.size)(info_coord)
+        
+        info_query = InfoQuery(info_bbox, query.size, info_srs, info_pos, query.info_format)
+        
+        return self._retrieve(info_query)
+    
+    def _best_supported_srs(self, srs):
+        return iter(self.supported_srs).next()
+    
+    def _retrieve(self, query):
+        url = self._query_url(query)
+        return self.http_client.open(url)
+    
+    def _query_url(self, query):
+        req = self.request_template.copy()
+        req.params.bbox = query.bbox
+        req.params.size = query.size
+        req.params.pos = query.pos
+        # del req.params['info_format']
+        req.params['query_layers'] = req.params['layers']
+        if query.info_format:
+            req.params['info_format'] = query.info_format
+        req.params.srs = query.srs.srs_code
+        
+        return req.complete_url
+
 class WMSSource(Source):
     supports_meta_tiles = True
     def __init__(self, client):
@@ -992,7 +1060,17 @@ class WMSSource(Source):
         except HTTPClientError, e:
             reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
         
-    
+
+class InfoSource(object):
+    def get_info(self, query):
+        raise NotImplementedError
+
+class WMSInfoSource(InfoSource):
+    def __init__(self, client):
+        self.client = client
+    def get_info(self, query):
+        return self.client.get_info(query).read()
+
 class TiledSource(Source):
     def __init__(self, grid, client):
         self.grid = grid

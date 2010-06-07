@@ -78,16 +78,16 @@
       <northBoundLatitude>{{ server_llbbox[3] }}</northBoundLatitude>
     </EX_GeographicBoundingBox>
 {{for layer in layers}}
-  <Layer{{if layer.has_info()}} queryable="1"{{endif}}>
+  <Layer{{if layer.queryable}} queryable="1"{{endif}}>
       <Name>{{ layer.md.name }}</Name>
       <Title>{{ layer.md.title }}</Title>
       <EX_GeographicBoundingBox>
-        <westBoundLongitude>{{ layer.llbbox[0] }}</westBoundLongitude>
-        <eastBoundLongitude>{{ layer.llbbox[2] }}</eastBoundLongitude>
-        <southBoundLatitude>{{ layer.llbbox[1] }}</southBoundLatitude>
-        <northBoundLatitude>{{ layer.llbbox[3] }}</northBoundLatitude>
+        <westBoundLongitude>{{ layer.extend.llbbox[0] }}</westBoundLongitude>
+        <eastBoundLongitude>{{ layer.extend.llbbox[2] }}</eastBoundLongitude>
+        <southBoundLatitude>{{ layer.extend.llbbox[1] }}</southBoundLatitude>
+        <northBoundLatitude>{{ layer.extend.llbbox[3] }}</northBoundLatitude>
        </EX_GeographicBoundingBox>
-      <BoundingBox CRS="CRS:84" minx="{{ layer.llbbox[0] }}" miny="{{ layer.llbbox[1] }}" maxx="{{ layer.llbbox[2] }}" maxy="{{ layer.llbbox[3] }}" />
+      <BoundingBox CRS="CRS:84" minx="{{ layer.extend.llbbox[0] }}" miny="{{ layer.extend.llbbox[1] }}" maxx="{{ layer.extend.llbbox[2] }}" maxy="{{ layer.extend.llbbox[3] }}" />
     </Layer>
 {{endfor}}
   </Layer>

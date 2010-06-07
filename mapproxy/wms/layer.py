@@ -18,7 +18,7 @@
 """
 Layer classes (direct, cached, etc.).
 
-.. classtree:: mapproxy.core.layer.WMSLayer
+.. classtree:: mapproxy.core.layer._WMSLayer
 .. classtree:: mapproxy.core.layer.MetaDataMixin
 
 """
@@ -29,7 +29,7 @@ from mapproxy.core.cache import TileCacheError, TooManyTilesError, BlankImage, N
 from mapproxy.core.layer import Layer, LayerMetaData
 from mapproxy.core.image import message_image, attribution_image
 
-from mapproxy.core.cache import MapQuery
+from mapproxy.core.cache import MapQuery, InfoQuery
 
 import logging
 log = logging.getLogger(__name__)
@@ -44,7 +44,47 @@ class FeatureInfoSource(object):
             except HTTPClientError:
                 raise RequestError('unable to retrieve feature info')
 
-class WMSLayer(Layer):
+
+class WMSLayer(object):
+    
+    def __init__(self, md, map_layers, info_layers=[]):
+        self.md = LayerMetaData(md)
+        self.map_layers = map_layers
+        self.info_layers = info_layers
+        self.extend = map_layers[0].extend #TODO
+        self.queryable = True if info_layers else False
+        self.transparent = any(map_lyr.transparent for map_lyr in self.map_layers)
+        
+        
+    def render(self, request):
+        p = request.params
+        query = MapQuery(p.bbox, p.size, SRS(p.srs))
+        for layer in self.map_layers:
+            yield self._render_layer(layer, query, request)
+    
+    def _render_layer(self, layer, query, request):
+        try:
+            return layer.get_map(query)
+        except TooManyTilesError:
+            raise RequestError('Request too large or invalid BBOX.', request=request)
+        except TransformationError:
+            raise RequestError('Could not transform BBOX: Invalid result.',
+                request=request)
+        except TileCacheError, e:
+            log.error(e)
+            raise RequestError(e.args[0], request=request)
+        except BlankImage:
+            return None
+    
+    def info(self, request):
+        p = request.params
+        query = InfoQuery(p.bbox, p.size, SRS(p.srs), p.pos,
+            p['info_format'])
+        
+        for lyr in self.info_layers:
+            yield lyr.get_info(query)
+        
+class _WMSLayer(Layer):
     """
     Base class for all renderable layers.
     """
@@ -61,7 +101,7 @@ class WMSLayer(Layer):
         return []
     
 
-class VLayer(WMSLayer):
+class VLayer(_WMSLayer):
     """
     A layer with multiple sources.
     """
@@ -69,9 +109,9 @@ class VLayer(WMSLayer):
         """
         :param md: the layer metadata
         :param sources: a list with layers
-        :type sources: [`WMSLayer`]
+        :type sources: [`_WMSLayer`]
         """
-        WMSLayer.__init__(self, md, transparent=sources[0].transparent)
+        _WMSLayer.__init__(self, md, transparent=sources[0].transparent)
         self.sources = sources
     
     def _bbox(self):
@@ -112,12 +152,12 @@ class VLayer(WMSLayer):
         return '%s(%r, %r)' % (self.__class__.__name__, self.md, self.sources)
 
 
-class DebugLayer(WMSLayer):
+class DebugLayer(_WMSLayer):
     """
     A transparent layer with debug information.
     """
     def __init__(self, md=None):
-        WMSLayer.__init__(self, md)
+        _WMSLayer.__init__(self, md)
         if md is None:
             md = {'name': '__debug__', 'title': 'Debug Layer'}
     
@@ -133,7 +173,7 @@ class DebugLayer(WMSLayer):
         debug_info = "bbox: %r\nres: %.8f(%.8f)" % (bbox, res_x, res_y)
         return message_image(debug_info, size=request.params.size, transparent=True)
 
-class AttributionLayer(WMSLayer):
+class AttributionLayer(_WMSLayer):
     """
     A layer with an attribution line (e.g. copyright, etc).
     """
@@ -141,7 +181,7 @@ class AttributionLayer(WMSLayer):
         """
         :param attribution: the attribution message to add to the rendered output
         """
-        WMSLayer.__init__(self, {})
+        _WMSLayer.__init__(self, {})
         self.attribution = attribution
         self.inverse = inverse
     
@@ -154,12 +194,12 @@ class AttributionLayer(WMSLayer):
         return attribution_image(self.attribution, size=request.params.size,
                                  transparent=True, inverse=self.inverse)
 
-class DirectLayer(WMSLayer):
+class DirectLayer(_WMSLayer):
     """
     A layer that passes the request to a wms.
     """
     def __init__(self, wms, queryable=False):
-        WMSLayer.__init__(self, {})
+        _WMSLayer.__init__(self, {})
         self.wms = wms
         self.queryable = queryable
     
@@ -186,12 +226,12 @@ class DirectLayer(WMSLayer):
     def info(self, request):
         return self.wms.get_info(request)
 
-class WMSCacheLayer(WMSLayer):
+class WMSCacheLayer(_WMSLayer):
     """
     This is a layer that caches the data.
     """
     def __init__(self, cache, fi_source=None):
-        WMSLayer.__init__(self, {}, transparent=cache.transparent)
+        _WMSLayer.__init__(self, {}, transparent=cache.transparent)
         self.cache = cache
         self.fi_source = fi_source
     
@@ -234,87 +274,4 @@ class WMSCacheLayer(WMSLayer):
         except BlankImage:
             return None
     
-class WMSCacheDirectLayer(WMSCacheLayer):
-    def __init__(self, cache, fi_source, direct_clients, direct_from_level, direct_from_res):
-        WMSCacheLayer.__init__(self, cache, fi_source)
-        self.direct_clients = direct_clients
-        self.direct_from_level = direct_from_level
-        self.direct_from_res = direct_from_res
-    
-    
-    def use_direct(self, level, res):
-        if self.direct_from_level and level >= self.direct_from_level:
-            return True
-        if self.direct_from_res and res <= self.direct_from_res:
-            return True
-        return False
-    
-    def render(self, map_request):
-        params = map_request.params
-        req_bbox = params.bbox
-        size = params.size
-        req_srs = SRS(params.srs)
-        
-        try:
-            bbox, level = self.cache.grid.get_affected_bbox_and_level(req_bbox,
-                                                                      size, req_srs)
-            res = self.cache.grid.resolution(level)
-        except NoTiles:
-            raise StopIteration
-        
-        if self.use_direct(level, res):
-            for client in self.direct_clients:
-                try:
-                    yield client.get_map(map_request)
-                except HTTPClientError, ex:
-                    log.warn('unable to get map for direct layer: %r', ex)
-                    raise RequestError('unable to get map for layers: %s' % 
-                                       ','.join(map_request.params.layers), request=map_request)
-        
-        else:
-            yield WMSCacheLayer.render(self, map_request)
-        
-def srs_dispatcher(layers, srs, srs_layers=None):
-    if srs_layers and srs in srs_layers:
-        return srs_layers[srs]
-    
-    latlong = srs.is_latlong
-    for layer in layers:
-        if layer.srs.is_latlong == latlong:
-            return layer
-    return layers[0]
 
-class MultiLayer(WMSLayer):
-    """
-    This layer dispatches requests to other layers. 
-    """
-    def __init__(self, layers, md, dispatcher=None):
-        WMSLayer.__init__(self, md, transparent=layers[0].transparent)
-        self.layers = layers
-        self.srs_layers = dict((layer.srs, layer) for layer in layers)
-        if dispatcher is None:
-            dispatcher = srs_dispatcher
-        self.dispatcher = dispatcher
-    
-    def _bbox(self):
-        return self.layers[0].bbox
-    
-    def _srs(self):
-        return self.layers[0].srs
-    
-    def render(self, map_request):
-        srs = map_request.params.srs
-        layer = self.dispatcher(self.layers, SRS(srs), self.srs_layers)
-        return layer.render(map_request)
-    
-    def caches(self, request):
-        layer = self.dispatcher(self.layers, request.params.srs)
-        return layer.caches(request)
-    
-    def has_info(self):
-        return self.layers[0].has_info()
-    
-    def info(self, request):
-        srs = request.params.srs
-        layer = self.dispatcher(self.layers, SRS(srs), self.srs_layers)
-        return layer.info(request)

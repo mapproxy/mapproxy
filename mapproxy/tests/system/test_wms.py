@@ -488,6 +488,7 @@ class TestWMS100(WMSTest):
                         {'body': 'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_fi_req)
+            print resp.body
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, 'info')
     

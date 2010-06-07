@@ -29,8 +29,8 @@ from mapproxy.core.conf_loader import Source, CacheSource
 from mapproxy.core.client import auth_data_from_url, HTTPClient
 from mapproxy.wms.cache import WMSTileSource
 from mapproxy.wms.layer import (DirectLayer, WMSCacheLayer, DebugLayer, VLayer,
-                                 FeatureInfoSource, MultiLayer, AttributionLayer,
-                                 WMSCacheDirectLayer)
+                                 FeatureInfoSource, AttributionLayer)
+                                 # WMSCacheDirectLayer)
 from mapproxy.core.layer import LayerMetaData
 from mapproxy.core.grid import tile_grid_for_epsg
 from mapproxy.wms.server import WMSServer

@@ -84,7 +84,7 @@ class WMSServer(Server):
         infos = []
         self.check_request(request)
         for layer in request.params.query_layers:
-            if not self.layers[layer].has_info():
+            if not self.layers[layer].queryable:
                 raise RequestError('layer %s is not queryable' % layer, request=request)
             info = self.layers[layer].info(request)
             if info is None:
@@ -134,9 +134,9 @@ class Capabilities(object):
                                    tile_layers=self.tile_layers)
     
     def _create_server_bbox(self):
-        bbox = self.layers[0].llbbox
+        bbox = self.layers[0].extend.llbbox
         for layer in self.layers[1:]:
-            bbox = merge_bbox(bbox, layer.llbbox)
+            bbox = merge_bbox(bbox, layer.extend.llbbox)
         return bbox
 
 def wms100format_filter(format):
