@@ -406,13 +406,17 @@ class GridConfiguration(ConfigurationBase):
             conf.update(self.conf)
         else:
             conf = self.conf
-        
+
+        srs = SRS(conf['srs'])
         bbox = conf.get('bbox')
         if isinstance(bbox, basestring):
             bbox = [float(x) for x in bbox.split(',')]
+        
+        if bbox is None and srs == SRS(4326):
+            bbox = (-180.0, -90, 180, 90)
+        
         if bbox and 'bbox_srs' in conf:
             bbox_srs = SRS(conf['bbox_srs'])
-            srs = SRS(conf['srs'])
             bbox = bbox_srs.transform_bbox_to(srs, conf['bbox'])
         
         tile_size = conf.get('tile_size')
@@ -425,7 +429,7 @@ class GridConfiguration(ConfigurationBase):
             res.sort(reverse=True)
         
         return TileGrid(
-            srs=conf['srs'],
+            srs=srs,
             tile_size=tile_size,
             res=res,
             bbox=bbox,

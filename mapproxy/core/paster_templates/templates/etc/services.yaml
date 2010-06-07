@@ -1,6 +1,6 @@
-service:
-    attribution:
-        text: "©Omniscale 2010 (http://omniscale.de) – Map data: CC-BY-SA OpenStreetMap and Contributors"
+services:
+  tms:
+  wms:
     md:
         title: MapProxy WMS Proxy
         abstract: This is the fantastic MapProxy.
@@ -23,99 +23,27 @@ service:
         fees: 'None'
 
 layers:
-    # ###########################################
-    # # server with two data sources
-    # # configured for use in regular WMS clients
-    # ###########################################
-    # - merged:
-    #     md:
-    #         title: Merged server
-    #     param:
-    #       # cache tiles in format:
-    #       # format: image/png
-    #       
-    #       # cache projected and geographical SRS
-    #       srs: ['EPSG:4326', 'EPSG:900913']
-    #       
-    #       # store another level between each regular level
-    #       res: 'sqrt2'
-    #       
-    #       # request all data in this format:
-    #       request_format: image/tiff
-    #       
-    #       # use a tile size of:
-    #       tile_size: [512, 512]
-    #       
-    #     sources:
-    #     - type: cache_wms
-    #       req:
-    #         url: http://server1/mapserver/service?
-    #         layers: base
-    #     - type: cache_wms
-    #       req:
-    #         url: http://server2/mapserver/service?
-    #         layers: roads
+  osm:
+    title: Omniscale OSM WMS - osm.omniscale.net
+    sources: [osm]
 
-    # # #########################
-    # # # Layer from TMS Source
-    # # #########################
-    # - osm:
-    #     md:
-    #         title: osm.omniscale.net - Open Street Map
-    #    attribution:
-    #        # text for this layer
-    #        text: ""
-    #        # if inverse: use white on black attribution. for aerial images
-    #        # inverse: False
-    #     watermark:
-    #         # add the following text on each tile
-    #         text: Omniscale
-    #     sources:
-    #     - type: cache_tms
-    #       # is the tile coordinate origin (0, 0) in the lower left corner? otherwise top left.
-    #       ll_origin: True
-    #       url: http://osm.omniscale.net/proxy/tms/osm_EPSG900913
+caches:
+  osm:
+    grids: [global_spherical, global_mercator]
+    sources: [osm_wms]
+  
+sources:
+  osm_wms:
+    type: wms
+    req:
+      url: http://osm.omniscale.net/proxy/service?
+      layers: osm
 
-    # ###########################################
-    # # overlay layer
-    # ###########################################
-    # - roads:
-    #     md:
-    #         title: transparent overlay
-    #     param:
-    #       srs: 'EPSG:900913'
-    #     sources:
-    #     - type: cache_wms
-    #       req:
-    #         url: http://server/mapserver/service?
-    #         layers: roads
-    #         transparent: 'true'
+grids:
+  global_spherical:
+    srs: 'EPSG:4326'
+    res: 'sqrt2'
+  global_mercator:
+    srs: 'EPSG:900913'
+    res: 'sqrt2'
     
-    # #########################
-    # # Layer from TMS Source
-    # #########################
-    - osm:
-        md:
-            title: Omniscale OSM WMS - osm.omniscale.net
-        param:
-            # cache tiles in format:
-            # format: image/png
-            
-            # cache projected and geographical SRS
-            srs: ['EPSG:4326', 'EPSG:900913']
-            
-            # store another level between each regular level
-            res: 'sqrt2'
-            
-            # request all data in this format:
-            # request_format: image/png
-            
-            # use a tile size of:
-            tile_size: [256, 256]
-        sources:
-        - type: cache_wms
-          req:
-            url: http://osm.omniscale.net/proxy/service?
-            layers: osm
-            # styles:
-            # transparent: False
