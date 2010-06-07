@@ -905,22 +905,22 @@ class TileManager(object):
         return tiles
 
 def split_meta_tiles(meta_tile, tiles, tile_size):
-        try:
-            # TODO png8
-            # if not self.transparent and format == 'png':
-            #     format = 'png8'
-            splitter = TileSplitter(meta_tile)
-        except IOError, e:
-            # TODO
-            raise
-        split_tiles = []
-        for tile in tiles:
-            tile_coord, crop_coord = tile
-            data = splitter.get_tile(crop_coord, tile_size)
-            new_tile = Tile(tile_coord)
-            new_tile.source = data
-            split_tiles.append(new_tile)
-        return split_tiles
+    try:
+        # TODO png8
+        # if not self.transparent and format == 'png':
+        #     format = 'png8'
+        splitter = TileSplitter(meta_tile)
+    except IOError, e:
+        # TODO
+        raise
+    split_tiles = []
+    for tile in tiles:
+        tile_coord, crop_coord = tile
+        data = splitter.get_tile(crop_coord, tile_size)
+        new_tile = Tile(tile_coord)
+        new_tile.source = data
+        split_tiles.append(new_tile)
+    return split_tiles
 
 class InvalidSourceQuery(ValueError):
     pass
