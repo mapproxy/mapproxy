@@ -4,7 +4,7 @@ from mapproxy.core.conf_loader import (
     GridConfiguration,
     ProxyConfiguration,
     WMSSourceConfiguration,
-    load_new_services,
+    load_services,
 )
 
 
@@ -88,5 +88,5 @@ sources:
     
     def test_loading(self):
         f = StringIO(self.yaml_string)
-        wms = load_new_services(f)
+        wms = load_services(f)
         print wms

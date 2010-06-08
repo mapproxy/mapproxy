@@ -73,23 +73,6 @@ server_loaders = {
 def server_loader(name):
     return loader(server_loaders, name)
 
-def load_services(services_conf=None):
-    if services_conf is None:
-        services_conf = base_config().services_conf
-    if not os.path.isabs(services_conf):
-        services_conf = os.path.join(base_config().conf_base_dir, services_conf)
-    base_config().services_conf = services_conf
-    log.info('Reading services configuration: %s' % services_conf)
-    proxy_conf = ProxyConf(services_conf)
-    server = {}
-    for server_name in base_config().server:
-        if server_name in server_loaders:
-            server[server_name] = server_loader(server_name)(proxy_conf)
-        else:
-            log.warn('server \'%s\' configured but not found', server_name)
-    return server
-    
-
 
 from mapproxy.core.grid import TileGrid
 from mapproxy.core.request import split_mime_type
@@ -447,7 +430,8 @@ class ServiceConfiguration(ConfigurationBase):
         return services
     
     def kml_service(self, conf, context):
-        md = conf.get('md', {})
+        md = context.services.conf.get('wms', {}).get('md', {}).copy()
+        md.update(conf.get('md', {}))
         layers = {}
         for layer_name, layer_conf in context.layers.iteritems():
             for tile_layer in layer_conf.tile_layers(context):
@@ -457,7 +441,8 @@ class ServiceConfiguration(ConfigurationBase):
         return KMLServer(layers, md)
     
     def tms_service(self, conf, context):
-        md = conf.get('md', {})
+        md = context.services.conf.get('wms', {}).get('md', {}).copy()
+        md.update(conf.get('md', {}))
         layers = {}
         for layer_name, layer_conf in context.layers.iteritems():
             for tile_layer in layer_conf.tile_layers(context):
@@ -473,10 +458,11 @@ class ServiceConfiguration(ConfigurationBase):
             layers[layer_name] = layer_conf.wms_layer(context)
         return WMSServer(layers, md)
     
-def load_new_services(conf_file):
+def load_services(conf_file):
     if hasattr(conf_file, 'read'):
         conf_data = conf_file.read()
     else:
+        log.info('Reading services configuration: %s' % conf_file)
         conf_data = open(conf_file).read()
     conf_dict = yaml.load(conf_data)
     conf = ProxyConfiguration(conf_dict)
