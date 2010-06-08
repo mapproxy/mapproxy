@@ -333,10 +333,10 @@ class CacheConfiguration(ConfigurationBase):
         caches = []
         for source_conf in [context.sources[s] for s in self.conf['sources']]:
             for grid_conf in [context.grids[g] for g in self.conf['grids']]:
-                file_cache = self._file_cache(grid_conf, context)
+                cache = self._file_cache(grid_conf, context)
                 tile_grid = grid_conf.tile_grid(context)
                 source = source_conf.source(context, {'format': self.conf['format']})
-                mgr = TileManager(tile_grid, file_cache, [source], self.format)
+                mgr = TileManager(tile_grid, cache, [source], self.format)
                 caches.append(mgr)
         
         return caches
@@ -347,12 +347,12 @@ class CacheConfiguration(ConfigurationBase):
         caches = []
         main_grid = None
         for grid_conf in [context.grids[g] for g in self.conf['grids']]:
-            file_cache = self._file_cache(grid_conf, context)
+            cache = self._file_cache(grid_conf, context)
             tile_grid = grid_conf.tile_grid(context)
             if main_grid is None:
                 main_grid = tile_grid
             source = source_conf.source(context, {'format': self.conf['format']})
-            mgr = TileManager(tile_grid, file_cache, [source], self.format)
+            mgr = TileManager(tile_grid, cache, [source], self.format)
             caches.append((CacheMapLayer(mgr), (tile_grid.srs,)))
         
         if len(caches) == 1:

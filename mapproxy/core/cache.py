@@ -308,10 +308,10 @@ def _create_dir(file_name):
     
 
 class TileManager(object):
-    def __init__(self, grid, file_cache, sources, format,
+    def __init__(self, grid, cache, sources, format,
         meta_buffer=None, meta_size=None):
         self.grid = grid
-        self.file_cache = file_cache
+        self.cache = cache
         self.meta_grid = None
         self.format = format
         assert len(sources) == 1
@@ -331,8 +331,8 @@ class TileManager(object):
         
         for tile in tiles:
             # TODO cache eviction
-            if self.file_cache.is_cached(tile):
-                self.file_cache.load(tile, with_metadata)
+            if self.cache.is_cached(tile):
+                self.cache.load(tile, with_metadata)
             else:
                 uncached_tiles.append(tile)
         
@@ -366,12 +366,12 @@ class TileManager(object):
         assert len(self.sources) == 1
         tile_bbox = self.grid.tile_bbox(tile.coord)
         query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs, self.format)
-        with self.file_cache.lock(tile):
-            if not self.file_cache.is_cached(tile):
+        with self.cache.lock(tile):
+            if not self.cache.is_cached(tile):
                 tile.source = self.sources[0].get_map(query)
-                self.file_cache.store(tile)
+                self.cache.store(tile)
             else:
-                self.file_cache.load(tile)
+                self.cache.load(tile)
         return tile
     
     def _create_meta_tiles(self, meta_tiles):
@@ -386,17 +386,17 @@ class TileManager(object):
     def _create_meta_tile(self, main_tile, meta_bbox, tiles):
         tile_size = self.meta_grid.tile_size(main_tile.coord[2])
         query = MapQuery(meta_bbox, tile_size, self.grid.srs, self.format)
-        with self.file_cache.lock(main_tile):
-            if not self.file_cache.is_cached(main_tile):
+        with self.cache.lock(main_tile):
+            if not self.cache.is_cached(main_tile):
                 meta_tile = self.sources[0].get_map(query)
                 splitted_tiles = split_meta_tiles(meta_tile, tiles, tile_size)
                 for splitted_tile in splitted_tiles:
-                    self.file_cache.store(splitted_tile)
+                    self.cache.store(splitted_tile)
                 return splitted_tiles
         # else
         tiles = [Tile(coord) for coord, pos in tiles]
         for tile in tiles:
-            self.file_cache.load(tile)
+            self.cache.load(tile)
         return tiles
         
 class Tile(object):
