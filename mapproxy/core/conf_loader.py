@@ -254,7 +254,7 @@ class SourceConfiguration(ConfigurationBase):
 
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
-    optional_keys = set('''type supported_srs request_format
+    optional_keys = set('''type supported_srs request_format image
         use_direct_from_level wms_opts'''.split())
     required_keys = set('req'.split())
     
@@ -271,11 +271,13 @@ class WMSSourceConfiguration(SourceConfiguration):
         # params['bbox'] = ','.join(str(x) for x in tile_grid.bbox)
         # params['srs'] = tile_grid.srs.srs_code
         
+        resampling = context.globals.get_value('image.resampling_method', self.conf)
+        
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
         request = create_request(self.conf['req'], params, version=version)
         # TODO https + basic auth
-        client = WMSClient(request, supported_srs)
+        client = WMSClient(request, supported_srs, resampling=resampling)
         return WMSSource(client)
     
     def fi_source(self, context, params):

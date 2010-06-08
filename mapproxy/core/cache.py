@@ -676,10 +676,12 @@ class Source(object):
         raise NotImplementedError
 
 class WMSClient(object):
-    def __init__(self, request_template, supported_srs=None, http_client=None):
+    def __init__(self, request_template, supported_srs=None, http_client=None,
+        resampling=None):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
         self.supported_srs = set(supported_srs or [])
+        self.resampling = resampling or base_config().image.resampling_method
     
     def get_map(self, query):
         if self.supported_srs and query.srs not in self.supported_srs:
@@ -698,7 +700,7 @@ class WMSClient(object):
         
         img = ImageSource(resp, self.request_template.params.format, size=src_query.size)
         
-        img = ImageTransformer(src_srs, dst_srs).transform(img, src_bbox, 
+        img = ImageTransformer(src_srs, dst_srs, self.resampling).transform(img, src_bbox, 
             query.size, dst_bbox)
         
         img.format = self.request_template.params.format
