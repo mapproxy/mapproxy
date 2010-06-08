@@ -384,8 +384,9 @@ class TileManager(object):
         return created_tiles
     
     def _create_meta_tile(self, main_tile, meta_bbox, tiles):
-        tile_size = self.meta_grid.tile_size(main_tile.coord[2])
-        query = MapQuery(meta_bbox, tile_size, self.grid.srs, self.format)
+        meta_tile_size = self.meta_grid.tile_size(main_tile.coord[2])
+        tile_size = self.grid.tile_size
+        query = MapQuery(meta_bbox, meta_tile_size, self.grid.srs, self.format)
         with self.cache.lock(main_tile):
             if not self.cache.is_cached(main_tile):
                 meta_tile = self.sources[0].get_map(query)
@@ -616,15 +617,17 @@ class DirectInfoLayer(InfoLayer):
         return self.source.get_info(query)
 
 class CacheMapLayer(MapLayer):
-    def __init__(self, tile_manager, transparent=False):
+    def __init__(self, tile_manager, resampling, transparent=False):
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
+        self.resampling = resampling
         self.extend = map_extend_from_grid(self.grid)
         self.transparent = transparent
     
     def get_map(self, query):
         tiled_image = self._tiled_image(query.bbox, query.size, query.srs)
-        return tiled_image.transform(query.bbox, query.srs, query.size)
+        return tiled_image.transform(query.bbox, query.srs, query.size, 
+            self.resampling)
     
     def _tiled_image(self, bbox, size, srs):
         try:

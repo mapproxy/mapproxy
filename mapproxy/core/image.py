@@ -38,6 +38,7 @@ log = logging.getLogger(__name__)
 __all__ = ['ImageSource', 'LayerMerger', 'ImageTransformer',
            'TileMerger', 'message_image']
 
+
 class LayerMerger(object):
     """
     Merge multiple layers into one image.
@@ -764,7 +765,7 @@ class TiledImage(object):
         tm = TileMerger(self.tile_grid, self.tile_size)
         return tm.merge(self.tiles, transparent=self.transparent)
     
-    def transform(self, req_bbox, req_srs, out_size):
+    def transform(self, req_bbox, req_srs, out_size, resampling=None):
         """
         Return the the tiles as one merged and transformed image.
         
@@ -773,7 +774,7 @@ class TiledImage(object):
         :param out_size: the size in pixel of the output image
         :rtype: `ImageSource`
         """
-        transformer = ImageTransformer(self.src_srs, req_srs)
+        transformer = ImageTransformer(self.src_srs, req_srs, resampling=resampling)
         src_img = self.image()
         return transformer.transform(src_img, self.src_bbox, out_size, req_bbox)
     

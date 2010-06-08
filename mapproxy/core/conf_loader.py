@@ -212,9 +212,36 @@ class GlobalConfiguration(ConfigurationBase):
     defaults = {
         'tile_size': [256, 256],
         'meta_size': [4, 4],
-        'meta_buffer': 0
+        'meta_buffer': 80
     }
-
+    optional_keys = set('image'.split('.'))
+    
+    def get_value(self, key, local):
+        result = dotted_dict_get(key, local)
+        if result is None:
+            result = dotted_dict_get(key, self.conf)
+        
+        if result is None:
+            result = dotted_dict_get(key, base_config())
+            
+        return result
+    
+def dotted_dict_get(key, d):
+    """
+    >>> dotted_dict_get('foo', {'foo': {'bar': 1}})
+    {'bar': 1}
+    >>> dotted_dict_get('foo.bar', {'foo': {'bar': 1}})
+    1
+    >>> dotted_dict_get('bar', {'foo': {'bar': 1}})
+    """
+    parts = key.split('.')
+    try:
+        while parts and d:
+            d = d[parts.pop(0)]
+    except KeyError:
+        return None
+    return d
+    
 class SourceConfiguration(ConfigurationBase):
     @classmethod
     def load(cls, **kw):
@@ -228,10 +255,8 @@ class SourceConfiguration(ConfigurationBase):
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
     optional_keys = set('''type supported_srs image_resampling request_format
-        use_direct_from_level wms_opts meta_size meta_buffer'''.split())
+        use_direct_from_level wms_opts'''.split())
     required_keys = set('req'.split())
-    defaults = {'meta_size': [1, 1], 'meta_buffer': 0}
-    
     
     def source(self, context, params):
         
@@ -276,7 +301,6 @@ class TileSourceConfiguration(SourceConfiguration):
     optional_keys = set('''type grid request_format origin'''.split())
     required_keys = set('url'.split())
     defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
-    # defaults = {'meta_size': [1, 1], 'meta_buffer': 0}
     
     def source(self, context, params):
         url = self.conf['url']
@@ -301,7 +325,8 @@ class DebugSourceConfiguration(SourceConfiguration):
         return DebugSource()
 
 class CacheConfiguration(ConfigurationBase):
-    optional_keys = set('format cache_dir grids link_single_color_images use_direct_from_res use_direct_from_level'.split())
+    optional_keys = set('''format cache_dir grids link_single_color_images image
+        use_direct_from_res use_direct_from_level meta_buffer meta_size'''.split())
     required_keys = set('name sources'.split())
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
     
@@ -344,6 +369,11 @@ class CacheConfiguration(ConfigurationBase):
     def map_layer(self, context):
         assert len(self.conf['sources']) == 1
         source_conf = context.sources[self.conf['sources'][0]]
+        
+        resampling = context.globals.get_value('image.resampling', self.conf)
+        meta_buffer = context.globals.get_value('meta_buffer', self.conf)
+        meta_size = context.globals.get_value('meta_size', self.conf)
+        
         caches = []
         main_grid = None
         for grid_conf in [context.grids[g] for g in self.conf['grids']]:
@@ -352,8 +382,9 @@ class CacheConfiguration(ConfigurationBase):
             if main_grid is None:
                 main_grid = tile_grid
             source = source_conf.source(context, {'format': self.conf['format']})
-            mgr = TileManager(tile_grid, cache, [source], self.format)
-            caches.append((CacheMapLayer(mgr), (tile_grid.srs,)))
+            mgr = TileManager(tile_grid, cache, [source], self.format, meta_size=meta_size,
+                meta_buffer=meta_buffer)
+            caches.append((CacheMapLayer(mgr, resampling=resampling), (tile_grid.srs,)))
         
         if len(caches) == 1:
             layer = caches[0][0]
