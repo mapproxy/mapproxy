@@ -101,7 +101,11 @@ class _SRS(object):
         init = _SRS.proj_init.get(srs_code, None)
         if init is None:
             epsg_num = get_epsg_num(srs_code)
-            self.proj = Proj(init='epsg:%d' % epsg_num)
+            try:
+                self.proj = Proj(init='epsg:%d' % epsg_num)
+            except RuntimeError, e:
+                log.error('unable to initialize SRS with epsg:%d' % epsg_num)
+                raise
         else:
             self.proj = init()
     
