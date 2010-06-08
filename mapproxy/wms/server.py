@@ -24,6 +24,7 @@ from mapproxy.core.server import Server
 from mapproxy.core.response import Response
 from mapproxy.core.exceptions import RequestError
 from mapproxy.core.config import base_config
+from mapproxy.core.image import attribution_image
 
 from mapproxy.core.template import template_loader, bunch
 env = {'bunch': bunch}
@@ -36,7 +37,8 @@ class WMSServer(Server):
     names = ('service',)
     request_methods = ('map', 'capabilities', 'featureinfo')
     
-    def __init__(self, layers, md, layer_merger=None, request_parser=None, tile_layers=None):
+    def __init__(self, layers, md, layer_merger=None, request_parser=None, tile_layers=None,
+        attribution=None):
         Server.__init__(self)
         self.request_parser = request_parser or wms_request
         self.layers = layers
@@ -45,6 +47,7 @@ class WMSServer(Server):
             from mapproxy.core.image import LayerMerger
             layer_merger = LayerMerger
         self.merger = layer_merger
+        self.attribution = attribution
         self.md = md
                 
     def map(self, map_request):
@@ -60,7 +63,10 @@ class WMSServer(Server):
         
         for layer in render_layers:
             merger.add(layer.render(map_request))
+            
         params = map_request.params
+        if self.attribution:
+            merger.add(attribution_image(self.attribution['text'], params.size))
         result = merger.merge(params.format, params.size,
                               bgcolor=params.bgcolor,
                               transparent=params.transparent)

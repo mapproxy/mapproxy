@@ -483,10 +483,11 @@ class ServiceConfiguration(ConfigurationBase):
     
     def wms_service(self, conf, context):
         md = conf.get('md', {})
+        attribution = conf.get('attribution')
         layers = {}
         for layer_name, layer_conf in context.layers.iteritems():
             layers[layer_name] = layer_conf.wms_layer(context)
-        return WMSServer(layers, md)
+        return WMSServer(layers, md, attribution=attribution)
     
 def load_services(conf_file):
     if hasattr(conf_file, 'read'):
