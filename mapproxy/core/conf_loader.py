@@ -415,7 +415,7 @@ class LayerConfiguration(ConfigurationBase):
         
         return tile_layers
         
-        
+
 
 class ServiceConfiguration(ConfigurationBase):
     optional_keys = set('wms tms kml'.split())

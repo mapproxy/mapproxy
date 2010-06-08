@@ -51,11 +51,16 @@ import errno
 import hashlib
 from functools import partial
 
-from mapproxy.core.utils import FileLock, cleanup_lockdir, ThreadedExecutor
+from mapproxy.core.utils import FileLock, cleanup_lockdir, ThreadedExecutor, reraise_exception
 from mapproxy.core.image import TiledImage, ImageSource, is_single_color_image
 from mapproxy.core.config import base_config, abspath
 from mapproxy.core.grid import NoTiles
 from mapproxy.core.srs import SRS
+
+from mapproxy.core.grid import MetaGrid
+from mapproxy.core.image import TileSplitter, ImageTransformer, message_image
+from mapproxy.core.client import HTTPClient, HTTPClientError
+
 
 import logging
 log = logging.getLogger(__name__)
@@ -71,7 +76,7 @@ class TooManyTilesError(TileCacheError):
 
 class TileCollection(object):
     def __init__(self, tile_coords):
-        self.tiles = [_Tile(coord) for coord in tile_coords]
+        self.tiles = [Tile(coord) for coord in tile_coords]
         self.tiles_dict = {}
         for tile in self.tiles:
             self.tiles_dict[tile.coord] = tile
@@ -81,7 +86,7 @@ class TileCollection(object):
             return self.tiles[idx_or_coord]
         if idx_or_coord in self.tiles_dict:
             return self.tiles_dict[idx_or_coord]
-        return _Tile(idx_or_coord)
+        return Tile(idx_or_coord)
     
     def __contains__(self, tile_or_coord):
         if isinstance(tile_or_coord, tuple):
@@ -147,7 +152,7 @@ class FileCache(object):
         :return: the full filename of the tile
          
         >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png')
-        >>> c.tile_location(_Tile((3, 4, 2))).replace('\\\\', '/')
+        >>> c.tile_location(Tile((3, 4, 2))).replace('\\\\', '/')
         '/tmp/cache/02/000/000/003/000/000/004.png'
         """
         if tile.location is None:
@@ -208,7 +213,7 @@ class FileCache(object):
     
     def load(self, tile, with_metadata=False):
         """
-        Fills the `_Tile.source` of the `tile` if it is cached.
+        Fills the `Tile.source` of the `tile` if it is cached.
         If it is not cached or if the ``.coord`` is ``None``, nothing happens.
         """
         if not tile.is_missing():
@@ -225,7 +230,7 @@ class FileCache(object):
         
     def store(self, tile):
         """
-        Add the given `tile` to the file cache. Stores the `_Tile.source` to
+        Add the given `tile` to the file cache. Stores the `Tile.source` to
         `FileCache.tile_location`.
         
         All ``pre_store_filter`` will be called with the tile, before
@@ -313,7 +318,7 @@ class _TileCreator(object):
         self.cache = cache
     def create_tiles(self, tiles):
         """
-        Create the given tiles (`_Tile.source` will be set). Returns a list with all
+        Create the given tiles (`Tile.source` will be set). Returns a list with all
         created tiles.
         
         :note: The returned list may contain more tiles than requested. This allows
@@ -405,7 +410,7 @@ def threaded_tile_creator(tiles, tile_collection, tile_source, cache):
 class TileSource(object):
     """
     Base class for tile sources.
-    A ``TileSource`` knows how to get the `_Tile.source` for a given tile.
+    A ``TileSource`` knows how to get the `Tile.source` for a given tile.
     """
     def __init__(self, lock_dir=None):
         if lock_dir is None:
@@ -437,7 +442,7 @@ class TileSource(object):
     
     def create_tile(self, tile, tile_map):
         """
-        Create the given tile and set the `_Tile.source`. It doesn't store the data on
+        Create the given tile and set the `Tile.source`. It doesn't store the data on
         disk (or else where), this is up to the cache manager.
         
         :note: This method may return multiple tiles, if it is more effective for the
@@ -451,7 +456,7 @@ class TileSource(object):
         return '%s(%r)' % (self.__class__.__name__)
 
 
-class _Tile(object):
+class Tile(object):
     """
     Internal data object for all tiles. Stores the tile-``coord`` and the tile data.
     
@@ -483,11 +488,11 @@ class _Tile(object):
         Returns ``True`` when the tile has no ``data``, except when the ``coord``
         is ``None``. It doesn't check if the tile exists.
         
-        >>> _Tile((1, 2, 3)).is_missing()
+        >>> Tile((1, 2, 3)).is_missing()
         True
-        >>> _Tile((1, 2, 3), './tmp/foo').is_missing()
+        >>> Tile((1, 2, 3), './tmp/foo').is_missing()
         False
-        >>> _Tile(None).is_missing()
+        >>> Tile(None).is_missing()
         False
         """
         if self.coord is None:
@@ -496,25 +501,25 @@ class _Tile(object):
     
     def __eq__(self, other):
         """
-        >>> _Tile((0, 0, 1)) == _Tile((0, 0, 1))
+        >>> Tile((0, 0, 1)) == Tile((0, 0, 1))
         True
-        >>> _Tile((0, 0, 1)) == _Tile((1, 0, 1))
+        >>> Tile((0, 0, 1)) == Tile((1, 0, 1))
         False
-        >>> _Tile((0, 0, 1)) == None
+        >>> Tile((0, 0, 1)) == None
         False
         """
-        if isinstance(other, _Tile):
+        if isinstance(other, Tile):
             return  (self.coord == other.coord and
                      self.source == other.source)
         else:
             return NotImplemented
     def __ne__(self, other):
         """
-        >>> _Tile((0, 0, 1)) != _Tile((0, 0, 1))
+        >>> Tile((0, 0, 1)) != Tile((0, 0, 1))
         False
-        >>> _Tile((0, 0, 1)) != _Tile((1, 0, 1))
+        >>> Tile((0, 0, 1)) != Tile((1, 0, 1))
         True
-        >>> _Tile((0, 0, 1)) != None
+        >>> Tile((0, 0, 1)) != None
         True
         """
         equal_result = self.__eq__(other)
@@ -524,20 +529,28 @@ class _Tile(object):
             return not equal_result
     
     def __repr__(self):
-        return '_Tile(%r, source=%r)' % (self.coord, self.source)
-
-Tile = _Tile
-from mapproxy.core.grid import MetaGrid
-from mapproxy.core.image import TileSplitter, ImageTransformer, message_image
-from mapproxy.core.client import HTTPClient, HTTPClientError
-
-from mapproxy.core.utils import reraise_exception
-
+        return 'Tile(%r, source=%r)' % (self.coord, self.source)
 
 def map_extend_from_grid(grid):
+    """
+    >>> from mapproxy.core.grid import tile_grid_for_epsg
+    >>> map_extend_from_grid(tile_grid_for_epsg('EPSG:900913')) 
+    ... #doctest: +NORMALIZE_WHITESPACE
+    MapExtend((-20037508.342789244, -20037508.342789244,
+               20037508.342789244, 20037508.342789244), SRS('EPSG:900913'))
+    """
     return MapExtend(grid.bbox, grid.srs)
 
 class MapExtend(object):
+    """
+    >>> me = MapExtend((5, 45, 15, 55), SRS(4326))
+    >>> me.llbbox
+    (5, 45, 15, 55)
+    >>> map(int, me.bbox_for(SRS(900913)))
+    [556597, 5621521, 1669792, 7361866]
+    >>> map(int, me.bbox_for(SRS(4326)))
+    [5, 45, 15, 55]
+    """
     def __init__(self, bbox, srs):
         self.llbbox = srs.transform_bbox_to(SRS(4326), bbox)
         self._bbox = bbox
@@ -547,7 +560,10 @@ class MapExtend(object):
         if srs == self._srs:
             return self._bbox
         
-        return self._srs.transform_bbox_to(srs, bbox)
+        return self._srs.transform_bbox_to(srs, self._bbox)
+    
+    def __repr__(self):
+        return "%s(%r, %r)" % (self.__class__.__name__, self._bbox, self._srs)
 
 class MapQuery(object):
     """
@@ -784,7 +800,7 @@ def split_meta_tiles(meta_tile, tiles, tile_size):
         # if not self.transparent and format == 'png':
         #     format = 'png8'
         splitter = TileSplitter(meta_tile)
-    except IOError, e:
+    except IOError:
         # TODO
         raise
     split_tiles = []
