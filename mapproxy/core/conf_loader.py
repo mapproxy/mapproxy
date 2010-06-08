@@ -356,14 +356,18 @@ class CacheConfiguration(ConfigurationBase):
     
     def caches(self, context):
         caches = []
+
+        meta_buffer = context.globals.get_value('meta_buffer', self.conf)
+        meta_size = context.globals.get_value('meta_size', self.conf)
+
         for source_conf in [context.sources[s] for s in self.conf['sources']]:
             for grid_conf in [context.grids[g] for g in self.conf['grids']]:
                 cache = self._file_cache(grid_conf, context)
                 tile_grid = grid_conf.tile_grid(context)
                 source = source_conf.source(context, {'format': self.conf['format']})
-                mgr = TileManager(tile_grid, cache, [source], self.format)
-                caches.append(mgr)
-        
+                mgr = TileManager(tile_grid, cache, [source], self.format,
+                                  meta_size=meta_size, meta_buffer=meta_buffer)
+                caches.append((tile_grid, mgr))
         return caches
     
     def map_layer(self, context):
@@ -371,20 +375,13 @@ class CacheConfiguration(ConfigurationBase):
         source_conf = context.sources[self.conf['sources'][0]]
         
         resampling = context.globals.get_value('image.resampling', self.conf)
-        meta_buffer = context.globals.get_value('meta_buffer', self.conf)
-        meta_size = context.globals.get_value('meta_size', self.conf)
         
         caches = []
         main_grid = None
-        for grid_conf in [context.grids[g] for g in self.conf['grids']]:
-            cache = self._file_cache(grid_conf, context)
-            tile_grid = grid_conf.tile_grid(context)
+        for grid, tile_manager in self.caches(context):
             if main_grid is None:
-                main_grid = tile_grid
-            source = source_conf.source(context, {'format': self.conf['format']})
-            mgr = TileManager(tile_grid, cache, [source], self.format, meta_size=meta_size,
-                meta_buffer=meta_buffer)
-            caches.append((CacheMapLayer(mgr, resampling=resampling), (tile_grid.srs,)))
+                main_grid = grid
+            caches.append((CacheMapLayer(tile_manager, resampling=resampling), (grid.srs,)))
         
         if len(caches) == 1:
             layer = caches[0][0]
@@ -434,11 +431,11 @@ class LayerConfiguration(ConfigurationBase):
         tile_layers = []
         for cache_name in self.conf['sources']:
             if not cache_name in context.caches: continue
-            for cache_source in context.caches[cache_name].caches(context):
+            for grid, cache_source in context.caches[cache_name].caches(context):
                 md = {}
                 md['title'] = self.conf['title']
                 md['name'] = self.conf['name']
-                md['name_path'] = (self.conf['name'], cache_source.grid.srs.srs_code.replace(':', '').upper())
+                md['name_path'] = (self.conf['name'], grid.srs.srs_code.replace(':', '').upper())
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
                 md['format'] = context.caches[cache_name].conf['format']
             
