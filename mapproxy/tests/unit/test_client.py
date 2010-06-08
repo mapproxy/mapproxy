@@ -17,7 +17,6 @@
 from __future__ import with_statement
 from mapproxy.core.client import HTTPClient, HTTPClientError
 from mapproxy.core.client import TMSClient, TileClient, TileURLTemplate
-from mapproxy.wms.client import WMSClient
 from mapproxy.wms.request import wms_request, WMS111MapRequest, WMS100MapRequest,\
                                  WMS130MapRequest
 from mapproxy.core.srs import bbox_equals
@@ -166,86 +165,86 @@ hvcNAQEFBQADgYEAkNwwAvpkdMKnCqV8IY00F6j7Rw7/JXyNEwr75Ji174z4xRAN
 
 """
 
-class TestWMSClient(object):
-    def setup(self):
-        self.req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo')
-        self.wms = WMSClient(self.req)
-    def test_request(self):
-        expected_req = ({'path': r'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
-                                  '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512&STYLES='},
-                        {'body': 'no image', 'headers': {'content-type': 'image/png'}})
-        with mock_httpd(TESTSERVER_ADDRESS, [expected_req]):
-            req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
-                                   param={'layers': 'foo', 'bbox': '-180.0,-90.0,180.0,90.0'})
-            req.params.size = (512, 256)
-            req.params['format'] = 'image/png'
-            req.params['srs'] = 'EPSG:4326'
-            resp = self.wms.get_map(req)
-    
-    def test_request_w_auth(self):
-        wms = WMSClient(self.req, http_client=HTTPClient(self.req.url, username='foo', password='bar'))
-        def assert_auth(req_handler):
-            assert 'Authorization' in req_handler.headers
-            auth_data = req_handler.headers['Authorization'].split()[1]
-            auth_data = auth_data.decode('base64')
-            eq_(auth_data, 'foo:bar')
-            return True
-        expected_req = ({'path': r'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
-                                  '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512&STYLES=',
-                         'require_basic_auth': True,
-                         'req_assert_function': assert_auth},
-                        {'body': 'no image', 'headers': {'content-type': 'image/png'}})
-        with mock_httpd(TESTSERVER_ADDRESS, [expected_req]):
-            req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
-                                   param={'layers': 'foo', 'bbox': '-180.0,-90.0,180.0,90.0'})
-            req.params.size = (512, 256)
-            req.params['format'] = 'image/png'
-            req.params['srs'] = 'EPSG:4326'
-            resp = wms.get_map(req)
-
-    def test_get_tile_non_image_content_type(self):
-        expected_req = ({'path': r'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&STYLES='
-                                  '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512'},
-                        {'body': 'error', 'headers': {'content-type': 'text/plain'}})
-        with mock_httpd(TESTSERVER_ADDRESS, [expected_req]):
-            try:
-                req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
-                                       param={'layers': 'foo', 'bbox': '-180.0,-90.0,180.0,90.0'})
-                req.params.size = (512, 256)
-                req.params['format'] = 'image/png'
-                req.params['srs'] = 'EPSG:4326'
-                resp = self.wms.get_map(req)
-            except HTTPClientError, e:
-                assert_re(e.args[0], r'response is not an image')
-            else:
-                assert False, 'expected HTTPClientError'
-    
-    def test__transform_fi_request(self):
-        default_req = WMS111MapRequest(url_decode('srs=EPSG%3A4326'))
-        fi_req = Request(make_wsgi_env('''LAYERS=mapserver_cache&
-         QUERY_LAYERS=mapnik_mapserver&X=601&Y=528&FORMAT=image%2Fpng&SERVICE=WMS&
-         VERSION=1.1.1&REQUEST=GetFeatureInfo&STYLES=&
-         EXCEPTIONS=application%2Fvnd.ogc.se_inimage&SRS=EPSG%3A900913&
-         BBOX=730930.9303206909,6866851.379301955,1031481.3254841676,7170153.507483206&
-         WIDTH=983&HEIGHT=992'''.replace('\n', '').replace(' ', '')))
-        wms_client = WMSClient(default_req)
-        orig_req = wms_request(fi_req)
-        req = wms_request(fi_req)
-        wms_client._transform_fi_request(req)
-        
-        eq_(req.params.srs, 'EPSG:4326')
-        eq_(req.params.pos, (601, 523))
-
-        default_req = WMS111MapRequest(url_decode('srs=EPSG%3A900913'))
-        wms_client = WMSClient(default_req)
-        wms_client._transform_fi_request(req)
-        
-        eq_(req.params.srs, 'EPSG:900913')
-        eq_(req.params.pos, (601, 528))
-        assert bbox_equals(orig_req.params.bbox, req.params.bbox, 0.1)
+# class TestWMSClient(object):
+#     def setup(self):
+#         self.req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo')
+#         self.wms = WMSClient(self.req)
+#     def test_request(self):
+#         expected_req = ({'path': r'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+#                                   '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+#                                   '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512&STYLES='},
+#                         {'body': 'no image', 'headers': {'content-type': 'image/png'}})
+#         with mock_httpd(TESTSERVER_ADDRESS, [expected_req]):
+#             req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
+#                                    param={'layers': 'foo', 'bbox': '-180.0,-90.0,180.0,90.0'})
+#             req.params.size = (512, 256)
+#             req.params['format'] = 'image/png'
+#             req.params['srs'] = 'EPSG:4326'
+#             resp = self.wms.get_map(req)
+#     
+#     def test_request_w_auth(self):
+#         wms = WMSClient(self.req, http_client=HTTPClient(self.req.url, username='foo', password='bar'))
+#         def assert_auth(req_handler):
+#             assert 'Authorization' in req_handler.headers
+#             auth_data = req_handler.headers['Authorization'].split()[1]
+#             auth_data = auth_data.decode('base64')
+#             eq_(auth_data, 'foo:bar')
+#             return True
+#         expected_req = ({'path': r'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+#                                   '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+#                                   '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512&STYLES=',
+#                          'require_basic_auth': True,
+#                          'req_assert_function': assert_auth},
+#                         {'body': 'no image', 'headers': {'content-type': 'image/png'}})
+#         with mock_httpd(TESTSERVER_ADDRESS, [expected_req]):
+#             req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
+#                                    param={'layers': 'foo', 'bbox': '-180.0,-90.0,180.0,90.0'})
+#             req.params.size = (512, 256)
+#             req.params['format'] = 'image/png'
+#             req.params['srs'] = 'EPSG:4326'
+#             resp = wms.get_map(req)
+# 
+#     def test_get_tile_non_image_content_type(self):
+#         expected_req = ({'path': r'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+#                                   '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&STYLES='
+#                                   '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512'},
+#                         {'body': 'error', 'headers': {'content-type': 'text/plain'}})
+#         with mock_httpd(TESTSERVER_ADDRESS, [expected_req]):
+#             try:
+#                 req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
+#                                        param={'layers': 'foo', 'bbox': '-180.0,-90.0,180.0,90.0'})
+#                 req.params.size = (512, 256)
+#                 req.params['format'] = 'image/png'
+#                 req.params['srs'] = 'EPSG:4326'
+#                 resp = self.wms.get_map(req)
+#             except HTTPClientError, e:
+#                 assert_re(e.args[0], r'response is not an image')
+#             else:
+#                 assert False, 'expected HTTPClientError'
+#     
+#     def test__transform_fi_request(self):
+#         default_req = WMS111MapRequest(url_decode('srs=EPSG%3A4326'))
+#         fi_req = Request(make_wsgi_env('''LAYERS=mapserver_cache&
+#          QUERY_LAYERS=mapnik_mapserver&X=601&Y=528&FORMAT=image%2Fpng&SERVICE=WMS&
+#          VERSION=1.1.1&REQUEST=GetFeatureInfo&STYLES=&
+#          EXCEPTIONS=application%2Fvnd.ogc.se_inimage&SRS=EPSG%3A900913&
+#          BBOX=730930.9303206909,6866851.379301955,1031481.3254841676,7170153.507483206&
+#          WIDTH=983&HEIGHT=992'''.replace('\n', '').replace(' ', '')))
+#         wms_client = WMSClient(default_req)
+#         orig_req = wms_request(fi_req)
+#         req = wms_request(fi_req)
+#         wms_client._transform_fi_request(req)
+#         
+#         eq_(req.params.srs, 'EPSG:4326')
+#         eq_(req.params.pos, (601, 523))
+# 
+#         default_req = WMS111MapRequest(url_decode('srs=EPSG%3A900913'))
+#         wms_client = WMSClient(default_req)
+#         wms_client._transform_fi_request(req)
+#         
+#         eq_(req.params.srs, 'EPSG:900913')
+#         eq_(req.params.pos, (601, 528))
+#         assert bbox_equals(orig_req.params.bbox, req.params.bbox, 0.1)
         
 class TestTMSClient(object):
     def setup(self):

@@ -27,7 +27,6 @@ from mapproxy.core.client import auth_data_from_url, HTTPClient
 from mapproxy.wms.request import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest,\
                                   WMS100FeatureInfoRequest, WMS111FeatureInfoRequest,\
                                   WMS130FeatureInfoRequest
-from mapproxy.wms.client import WMSClient
 
 def wms_clients_for_requests(requests, supported_srs=None):
     clients = []
