@@ -528,10 +528,26 @@ class _Tile(object):
 
 Tile = _Tile
 from mapproxy.core.grid import MetaGrid
-from mapproxy.core.image import TileSplitter, ImageTransformer
+from mapproxy.core.image import TileSplitter, ImageTransformer, message_image
 from mapproxy.core.client import HTTPClient, HTTPClientError
 
 from mapproxy.core.utils import reraise_exception
+
+
+def map_extend_from_grid(grid):
+    return MapExtend(grid.bbox, grid.srs)
+
+class MapExtend(object):
+    def __init__(self, bbox, srs):
+        self.llbbox = srs.transform_bbox_to(SRS(4326), bbox)
+        self._bbox = bbox
+        self._srs = srs
+    
+    def bbox_for(self, srs):
+        if srs == self._srs:
+            return self._bbox
+        
+        return self._srs.transform_bbox_to(srs, bbox)
 
 class MapQuery(object):
     """
@@ -901,6 +917,18 @@ class WMSSource(Source):
             reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
         
 
+class DebugSource(Source):
+    extend = MapExtend((-180, -90, 180, 90), SRS(4326))
+    def get_map(self, query):
+        bbox = query.bbox
+        w = bbox[2] - bbox[0]
+        h = bbox[3] - bbox[1]
+        res_x = w/query.size[0]
+        res_y = h/query.size[1]
+        debug_info = "bbox: %r\nres: %.8f(%.8f)" % (bbox, res_x, res_y)
+        return message_image(debug_info, size=query.size, transparent=True)
+
+
 class InfoSource(object):
     def get_info(self, query):
         raise NotImplementedError
@@ -937,19 +965,4 @@ class TiledSource(Source):
         except HTTPClientError, e:
             reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
         
-
-def map_extend_from_grid(grid):
-    return MapExtend(grid.bbox, grid.srs)
-
-class MapExtend(object):
-    def __init__(self, bbox, srs):
-        self.llbbox = srs.transform_bbox_to(SRS(4326), bbox)
-        self._bbox = bbox
-        self._srs = srs
-    
-    def bbox_for(self, srs):
-        if srs == self._srs:
-            return self._bbox
-        
-        return self._srs.transform_bbox_to(srs, bbox)
 

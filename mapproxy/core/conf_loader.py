@@ -112,6 +112,7 @@ from mapproxy.core.cache import (
     map_extend_from_grid,
     WMSInfoSource,
     WMSInfoClient,
+    DebugSource,
 )
 
 class ConfigurationError(Exception):
@@ -309,6 +310,12 @@ class TileSourceConfiguration(SourceConfiguration):
         client = TileClient(TileURLTemplate(url, format=format))
         return TiledSource(grid, client, inverse=inverse)
 
+class DebugSourceConfiguration(SourceConfiguration):
+    source_type = ('debug',)
+    required_keys = set('type'.split())
+    
+    def source(self, context, params):
+        return DebugSource()
 
 class CacheConfiguration(ConfigurationBase):
     optional_keys = set('format cache_dir grids link_single_color_images use_direct_from_res use_direct_from_level'.split())

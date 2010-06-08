@@ -71,21 +71,5 @@ class WMSLayer(object):
         
         for lyr in self.info_layers:
             yield lyr.get_info(query)
-        
-class DebugLayer(object):
-    """
-    A transparent layer with debug information.
-    """
-    def __init__(self, md=None):
-        self.md = LayerMetaData({'name': '__debug__', 'title': 'Debug Layer'})
     
-    def render(self, request):
-        bbox = request.params.bbox
-        w = bbox[2] - bbox[0]
-        h = bbox[3] - bbox[1]
-        res_x = w/request.params.size[0]
-        res_y = h/request.params.size[1]
-        debug_info = "bbox: %r\nres: %.8f(%.8f)" % (bbox, res_x, res_y)
-        return message_image(debug_info, size=request.params.size, transparent=True)
-
 
