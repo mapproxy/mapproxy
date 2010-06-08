@@ -21,17 +21,14 @@ from __future__ import with_statement
 
 import os
 import yaml #pylint: disable-msg=F0401
-import types
 import pkg_resources
 
 import logging
 log = logging.getLogger(__name__)
 
 from mapproxy.core.srs import SRS
-from mapproxy.core.cache import (FileCache, CacheManager, Cache,
-                                  threaded_tile_creator)
+from mapproxy.core.cache import FileCache
 from mapproxy.core.config import base_config, abspath
-from mapproxy.core.odict import odict
 
 def load_source_loaders():
     source_loaders = {}
@@ -92,226 +89,14 @@ def load_services(services_conf=None):
             log.warn('server \'%s\' configured but not found', server_name)
     return server
     
-class ProxyConf(object):
-    def __init__(self, conf_file):
-        self.conf = yaml.load(open(conf_file))
-        self.service_md = self.conf['service']['md']
-        self.cache_dirs = set()
-        self.layer_confs = self._init_layer_confs()
-        
-    def _init_layer_confs(self):
-        layer_confs = odict()
-        
-        def _init_layer(name, layer):
-            layer_conf = LayerConf(name, layer, self.conf['service'],
-                                   self.cache_dirs)
-            layer_confs[name] = layer_conf
-        
-        # layers is a dictionary
-        if hasattr(self.conf['layers'], 'iteritems'):
-            for name, layer in self.conf['layers'].iteritems():
-                _init_layer(name, layer)
-        else:
-            # layers is a list of dictionaries
-            for layer_dict in self.conf['layers']:
-                for name, layer in layer_dict.iteritems():
-                    _init_layer(name, layer)
-        
-        return layer_confs
-    
-
-
-class LayerConf(object):
-    default_params = [('srs', 'EPSG:900913'),
-                      ('format', 'image/png'),
-                      ('bbox', None),
-                      ('res', None),
-                     ]
-    def __init__(self, name, layer, service, cache_dirs):
-        self.name = name
-        self.layer = layer
-        self.service = service
-        self.cache_dirs = cache_dirs
-        self.multi_layer = False
-        self.param = self._init_param()
-        self.sources = self._init_sources()
-    
-    def _init_param(self):
-        layer_param = self.layer.get('param', {})
-        for key, default in self.default_params:
-            if key not in layer_param:
-                layer_param[key] = default
-        
-        if not isinstance(layer_param['srs'], types.ListType):
-            return layer_param
-        else:
-            params = []
-            self.multi_layer = True
-            for srs in layer_param['srs']:
-                param = layer_param.copy()
-                param['srs'] = srs
-                params.append(param)
-            return params
-    
-    def _init_sources(self):
-        if self.multi_layer:
-            params = self.param
-        else:
-            params = [self.param]
-        
-        multi_layer_sources = []
-        for param in params:
-            conf_sources = []
-            for source in self.layer['sources']:
-                conf_source = source_loaders[source['type']].load()(self, source, param)
-                conf_sources.append(conf_source)
-            multi_layer_sources.append(self._merge_sources(conf_sources))
-        
-        if self.multi_layer:
-            return multi_layer_sources
-        else:
-            return multi_layer_sources[0]
-    
-    def _merge_sources(self, sources):
-        if len(sources) <= 1:
-            return sources
-        
-        merged_sources = []
-        prev_source = None
-        while sources:
-            cur_source = sources.pop(0)
-            if prev_source is not None and hasattr(prev_source, 'merge'):
-                result = prev_source.merge(cur_source)
-                if result is not None:
-                    continue
-            prev_source = cur_source
-            merged_sources.append(prev_source)
-        
-        return merged_sources
-        
-    def cache_dir(self, suffix=None):
-        if 'cache_dir' in self.layer:
-            cache_dir = os.path.join(base_config().cache.base_dir,
-                                     self.layer['cache_dir'])
-        else:
-            cache_dir = os.path.join(base_config().cache.base_dir, self.name)
-        
-        cache_dir = abspath(cache_dir)
-        
-        if suffix is not None:
-            cache_dir += '_' + str(suffix)
-        
-        if cache_dir in self.cache_dirs:
-            n = 2
-            while cache_dir + '_' + str(n) in self.cache_dirs:
-                n += 1
-            cache_dir += '_' + str(n)
-        
-        self.cache_dirs.add(cache_dir)
-        return cache_dir
-        
-    def __repr__(self):
-        return '%s(%r, %r)' % (self.__class__.__name__, self.name, self.layer)
-
-class Source(object):
-    """
-    :ivar layer_conf: the `LayerConf` of this source
-    :ivar source: the source configuration
-    :ivar param: the parameters for this source
-    """
-    is_cache = False
-    
-    def __init__(self, layer_conf, source, param=None):
-        """
-        :param param: the param for this source,
-                      if ``None`` the param of the layer will be used.
-        """
-        self.layer_conf = layer_conf
-        self.source = source
-        if param is None:
-            param = self.layer_conf.param
-        self.param = param
-        
-        self.supported_srs = set(SRS(x) for x in self.source.get('supported_srs', []))
-        if not self.supported_srs:
-            self.supported_srs = None
-    
-    @property
-    def name(self):
-        return self.layer_conf.name
-        
-class CacheSource(Source):
-    is_cache = True
-    def __init__(self, layer_conf, source, param=None):
-        Source.__init__(self, layer_conf, source, param)
-        self.transparent = False
-        self._configured_cache = None
-        
-        self.file_cache = None
-        self.mgr = None
-        self.creator = None
-        self.src = None
-        self.grid = None
-        
-    @property
-    def name(self):
-        srs = self.param['srs'].replace(':', '').upper()
-        return self.layer_conf.name + '_' + srs
-
-    def configured_cache(self):
-        if self._configured_cache is None:
-            self.init_grid()
-            self.init_tile_source()
-            self.init_file_cache()
-            self.init_tile_creator()
-            self.init_cache_manager()
-        
-            self._configured_cache = Cache(self.mgr, self.grid, self.transparent)
-        
-        return self._configured_cache
-    
-    def configured_layer(self):
-        raise NotImplementedError()
-    
-    def init_grid(self):
-        raise NotImplementedError()
-
-    def init_tile_source(self):
-        raise NotImplementedError()
-    
-    def init_file_cache(self):
-        suffix = self.param['srs'].replace(':', '')
-        cache_dir = self.layer_conf.cache_dir(suffix=suffix)
-        format = self.param['format'].split('/')[1]
-        link_single_color_images = self.param.get('link_single_color_images', False)
-        tile_filter = self.get_tile_filter()
-        self.file_cache = FileCache(cache_dir, file_ext=format,
-                                    pre_store_filter=tile_filter,
-                                    link_single_color_images=link_single_color_images)
-    
-    def get_tile_filter(self):
-        filters = []
-        for tile_filter in tile_filters:
-            f = tile_filter().create_filter(self.layer_conf)
-            if f is not None:
-                filters.append(f)
-        return filters
-                
-    def init_tile_creator(self):
-        self.creator = threaded_tile_creator
-    
-    def init_cache_manager(self):
-        self.mgr = CacheManager(self.file_cache, self.src, self.creator)
 
 
 from mapproxy.core.grid import TileGrid
 from mapproxy.core.request import split_mime_type
-from mapproxy.wms.conf_loader import create_request, wms_clients_for_requests
-from mapproxy.wms.cache import WMSTileSource
+from mapproxy.wms.conf_loader import create_request
 from mapproxy.core.client import TileClient, TileURLTemplate
 from mapproxy.wms.server import WMSServer
-from mapproxy.wms.layer import WMSCacheLayer, WMSLayer
-from mapproxy.core import defaults
+from mapproxy.wms.layer import WMSLayer
 from mapproxy.tms import TileServer
 from mapproxy.tms.layer import TileServiceLayer
 from mapproxy.kml import KMLServer

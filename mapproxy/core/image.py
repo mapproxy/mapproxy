@@ -136,7 +136,7 @@ class ImageSource(object):
                 # PIL needs file objects with seek
                 f = StringIO(f.read())
                 self.source = f
-                f.seek(0)
+            f.seek(0)
             try:
                 return Image.open(f)
             except StandardError:

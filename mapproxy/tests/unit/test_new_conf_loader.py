@@ -7,7 +7,6 @@ from mapproxy.core.conf_loader import (
     load_new_services,
 )
 
-from mapproxy.core.cache import Cache
 
 from nose.tools import eq_
 
@@ -59,9 +58,9 @@ class TestWMSSourceConfiguration(object):
         
         conf = ProxyConfiguration(conf_dict)
         
-        caches = conf.caches['osm'].obj(conf)
+        # caches = conf.caches['osm'].obj(conf)
         
-        assert isinstance(caches[0], Cache)
+        # assert isinstance(caches[0], Cache)
         
 
 class TestConfLoading(object):

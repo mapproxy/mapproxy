@@ -69,84 +69,6 @@ class TileSourceError(TileCacheError):
 class TooManyTilesError(TileCacheError):
     pass
 
-class Cache(object):
-    """
-    Easy access to images from cached tiles.
-    """
-    def __init__(self, cache_mgr, grid, transparent=False):
-        """
-        :param cache_mgr: the cache manager
-        :param grid: the grid of the tile cache
-        """
-        self.cache_mgr = cache_mgr
-        self.grid = grid
-        self.transparent = transparent
-    
-    def tile(self, tile_coord):
-        """
-        Return a single tile.
-        
-        :return: loaded tile or ``None``
-        :rtype: `ImageSource` or ``None``
-        """
-        tiles = self.cache_mgr.load_tile_coords([tile_coord], with_metadata=True)
-        if len(tiles) < 1:
-            return None
-        else:
-            return tiles[0]
-    
-    def _tiles(self, tile_coords):
-        return self.cache_mgr.load_tile_coords(tile_coords)
-        
-    
-    def _tiled_image(self, req_bbox, req_srs, out_size):
-        """
-        Return a `TiledImage` with all tiles that are within the requested bbox,
-        for the given out_size.
-        
-        :note: The parameters are just hints for the tile cache to load the right
-               tiles. Usually the bbox and the size of the result is larger.
-               The result will always be in the native srs of the cache.
-               See `Cache.image`.
-        
-        :param req_bbox: the requested bbox
-        :param req_srs: the srs of the req_bbox
-        :param out_size: the target output size
-        :rtype: `ImageSource`
-        """
-        try:
-            src_bbox, tile_grid, affected_tile_coords = \
-                self.grid.get_affected_tiles(req_bbox, out_size, req_srs=req_srs)
-        except IndexError:
-            raise TileCacheError('Invalid BBOX')
-        except NoTiles:
-            raise BlankImage()
-        
-        num_tiles = tile_grid[0] * tile_grid[1]
-        if num_tiles >= base_config().cache.max_tile_limit:
-            raise TooManyTilesError()
-
-        tile_sources = [tile.source for tile in self._tiles(affected_tile_coords)]
-        return TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
-                          tile_grid=tile_grid, tile_size=self.grid.tile_size,
-                          transparent=self.transparent)
-    
-    def image(self, req_bbox, req_srs, out_size):
-        """
-        Return an image with the given bbox and size.
-        The result will be cropped/transformed if needed.
-        
-        :param req_bbox: the requested bbox
-        :param req_srs: the srs of the req_bbox
-        :param out_size: the output size
-        :rtype: `ImageSource`
-        """
-        tiled_image = self._tiled_image(req_bbox, req_srs, out_size)
-        return tiled_image.transform(req_bbox, req_srs, out_size)
-    
-    def __repr__(self):
-        return '%s(%r, %r)' % (self.__class__.__name__, self.cache_mgr, self.grid)
-
 class TileCollection(object):
     def __init__(self, tile_coords):
         self.tiles = [_Tile(coord) for coord in tile_coords]
@@ -176,95 +98,6 @@ class TileCollection(object):
     
     def __call__(self, coord):
         return self[coord]
-
-class CacheManager(object):
-    """
-    Manages tile cache and tile creation.
-    """
-    def __init__(self, cache, tile_source, tile_creator):
-        self.cache = cache
-        self.tile_source = tile_source
-        self.tile_creator = tile_creator
-        self._expire_timestamp = None
-        
-    def is_cached(self, tile):
-        """
-        Return True if the tile is cached.
-        """
-        if isinstance(tile, tuple):
-            tile = _Tile(tile)
-        max_mtime = self.expire_timestamp(tile)
-        cached = self.cache.is_cached(tile)
-        if cached and max_mtime is not None:
-            stale = self.cache.timestamp_created(tile) < max_mtime
-            if stale:
-                cached = False
-        return cached
-    
-    def expire_timestamp(self, tile=None):
-        """
-        Return the timestamp until which a tile should be accepted as up-to-date,
-        or ``None`` if the tiles should not expire.
-        
-        :note: Returns _expire_timestamp by default.
-        """
-        return self._expire_timestamp
-    
-    def load_tile_coords(self, tile_coords, with_metadata=False):
-        """
-        Load all given tiles from cache. If they are not present, load them.
-        
-        :param tile_coords: list with tile coordinates (``None`` for out of bounds tiles)
-        :return: list with `ImageSource` for all tiles (``None`` for out of bounds tiles)
-        """
-        tiles = TileCollection(tile_coords)
-        self._load_tiles(tiles, with_metadata=with_metadata)
-        
-        return tiles
-    
-    def _load_tiles(self, tiles, with_metadata=False):
-        """
-        Return the given `tiles` with the `_Tile.source` set. If a tile is not cached,
-        it will be created.
-        """
-        self._load_cached_tiles(tiles, with_metadata=with_metadata)
-        self._create_tiles(tiles, with_metadata=with_metadata)
-    
-    def _create_tiles(self, tiles, with_metadata=False):
-        """
-        Create the tile data for all missing tiles. All created tiles will be added
-        to the cache.
-        
-        :return: True if new tiles were created.
-        """
-        new_tiles = [tile for tile in tiles if tile.is_missing()]
-        if new_tiles:
-            created_tiles = self.tile_creator(new_tiles, tiles,
-                                              self.tile_source, self)
-            
-            # load tile that were not created (e.g tiles created by another process)
-            not_created = set(new_tiles).difference(created_tiles)
-            if not_created:
-                self._load_cached_tiles(not_created, with_metadata=with_metadata)
-    
-    def _load_cached_tiles(self, tiles, with_metadata=False):
-        """
-        Set the `_Tile.source` for all cached tiles.
-        """
-        for tile in tiles:
-            if tile.is_missing() and self.is_cached(tile):
-                self.cache.load(tile, with_metadata=with_metadata)
-    def store_tiles(self, tiles):
-        """
-        Store the given tiles in the underlying cache.
-        """
-        for tile in tiles:
-            self.cache.store(tile)
-    
-    def __repr__(self):
-        return '%s(%r, %r, %r)' % (self.__class__.__name__, self.cache, self.tile_source,
-                                   self.tile_creator)
-    
 
 class FileCache(object):
     """
@@ -438,6 +271,7 @@ class FileCache(object):
         tile.size = data.tell()
         tile.timestamp = time.time()
         data.seek(0)
+        # tile.source = ImageSource(data)
         tile.stored = True
     
     def lock_filename(self, tile):
@@ -857,6 +691,7 @@ class TileManager(object):
     def load_tile_coords(self, tile_coords, with_metadata=False):
         tiles = TileCollection(tile_coords)
         uncached_tiles = []
+        
         for tile in tiles:
             # TODO cache eviction
             if self.file_cache.is_cached(tile):

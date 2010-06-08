@@ -231,7 +231,7 @@ class TestWMS111(WMSTest):
                                       '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                       '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
+                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 self.common_map_req.params['bbox'] = '0,0,180,90'
                 resp = self.app.get(self.common_map_req)
@@ -488,7 +488,6 @@ class TestWMS100(WMSTest):
                         {'body': 'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_fi_req)
-            print resp.body
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, 'info')
     

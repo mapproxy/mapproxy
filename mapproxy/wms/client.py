@@ -104,9 +104,8 @@ class WMSClient(object):
         
         params = request.params
         # TODO supported SRS
-        #if self.request_template.params.srs == params.srs:
-        
-        return request
+        if self.request_template.params.srs == params.srs:
+            return request
         
         pos = params.pos
         req_bbox = params.bbox
