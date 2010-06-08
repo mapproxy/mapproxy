@@ -25,7 +25,6 @@ Layer classes (direct, cached, etc.).
 from mapproxy.core.srs import SRS, TransformationError
 from mapproxy.core.exceptions import RequestError
 from mapproxy.core.cache import TileCacheError, TooManyTilesError, BlankImage
-from mapproxy.core.layer import LayerMetaData
 
 from mapproxy.core.cache import MapQuery, InfoQuery
 
@@ -35,7 +34,7 @@ log = logging.getLogger(__name__)
 class WMSLayer(object):
     
     def __init__(self, md, map_layers, info_layers=[]):
-        self.md = LayerMetaData(md)
+        self.md = md
         self.map_layers = map_layers
         self.info_layers = info_layers
         self.extend = map_layers[0].extend #TODO

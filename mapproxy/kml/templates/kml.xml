@@ -2,9 +2,9 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
     <Document>
 {{if initial_level}}
-        <name>{{layer.md.name}}</name>
+        <name>{{layer.md['name']}}</name>
 {{else}}
-        <name>{{layer.md.name}} - {{tile.coord}}</name>
+        <name>{{layer.md['name']}} - {{tile.coord}}</name>
 {{endif}}
         <Region>
             <LatLonAltBox>
@@ -24,7 +24,7 @@
         </Region>
 {{for subtile in subtiles}}
         <NetworkLink>
-            <name>{{layer.md.name}} - {{subtile.coord}}</name>
+            <name>{{layer.md['name']}} - {{subtile.coord}}</name>
             <Region>
                 <LatLonAltBox>
                     <north>{{subtile.bbox[3]}}</north><south>{{subtile.bbox[1]}}</south>
@@ -36,7 +36,7 @@
                 </Lod>
             </Region>
             <Link>
-                <href>{{service.url}}/kml/{{'/'.join(layer.md.name_path)}}/{{subtile.coord[2]}}/{{subtile.coord[0]}}/{{subtile.coord[1]}}.kml</href>
+                <href>{{service.url}}/kml/{{'/'.join(layer.md['name_path'])}}/{{subtile.coord[2]}}/{{subtile.coord[0]}}/{{subtile.coord[1]}}.kml</href>
                 <viewRefreshMode>onRegion</viewRefreshMode>
                 <viewFormat/>
             </Link>
@@ -46,7 +46,7 @@
             <name>{{tile.coord}}</name>
             <drawOrder>{{tile.coord[2]}}</drawOrder>
             <Icon>
-                <href>{{service.url}}/kml/{{'/'.join(layer.md.name_path)}}/{{tile.coord[2]}}/{{tile.coord[0]}}/{{tile.coord[1]}}.{{layer.format}}</href>
+                <href>{{service.url}}/kml/{{'/'.join(layer.md['name_path'])}}/{{tile.coord[2]}}/{{tile.coord[0]}}/{{tile.coord[1]}}.{{layer.format}}</href>
             </Icon>
             <LatLonBox>
                 <north>{{tile.bbox[3]}}</north><south>{{tile.bbox[1]}}</south>

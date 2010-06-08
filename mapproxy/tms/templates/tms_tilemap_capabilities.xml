@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>  
  <TileMap version="1.0.0">
-  <Title>{{layer.md.title}}</Title>
+  <Title>{{layer.md['title']}}</Title>
   <Abstract></Abstract>
   <SRS>{{layer.grid.srs_name}}</SRS>
   <BoundingBox minx="{{layer.bbox[0]}}" miny="{{layer.bbox[1]}}" maxx="{{layer.bbox[2]}}" maxy="{{layer.bbox[3]}}" />

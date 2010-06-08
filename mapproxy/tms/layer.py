@@ -17,7 +17,6 @@
 from mapproxy.tms import TileServiceGrid
 from mapproxy.core.exceptions import RequestError
 from mapproxy.core.cache import TileCacheError
-from mapproxy.core.layer import LayerMetaData
 from mapproxy.core.request import split_mime_type
 
 import logging
@@ -29,7 +28,7 @@ class TileServiceLayer(object):
         :param md: the layer metadata
         :param cache: the layer cache
         """
-        self.md = LayerMetaData(md)
+        self.md = md
         self.cache = cache
         self.grid = TileServiceGrid(cache.grid)
     

@@ -64,8 +64,8 @@
     <LatLonBoundingBox minx="{{ server_llbbox[0] }}" miny="{{ server_llbbox[1] }}" maxx="{{ server_llbbox[2] }}" maxy="{{ server_llbbox[3] }}" />
 {{for layer in layers}}
   <Layer{{if layer.queryable}} queryable="1"{{endif}}>
-      <Name>{{ layer.md.name }}</Name>
-      <Title>{{ layer.md.title }}</Title>
+      <Name>{{ layer.md['name'] }}</Name>
+      <Title>{{ layer.md.get('title') }}</Title>
       <LatLonBoundingBox minx="{{ layer.extend.llbbox[0] }}" miny="{{ layer.extend.llbbox[1] }}" maxx="{{ layer.extend.llbbox[2] }}" maxy="{{ layer.extend.llbbox[3] }}" />
       <BoundingBox SRS="EPSG:4326" minx="{{ layer.extend.llbbox[0] }}" miny="{{ layer.extend.llbbox[1] }}" maxx="{{ layer.extend.llbbox[2] }}" maxy="{{ layer.extend.llbbox[3] }}" />
     </Layer>

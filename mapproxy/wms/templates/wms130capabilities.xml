@@ -79,8 +79,8 @@
     </EX_GeographicBoundingBox>
 {{for layer in layers}}
   <Layer{{if layer.queryable}} queryable="1"{{endif}}>
-      <Name>{{ layer.md.name }}</Name>
-      <Title>{{ layer.md.title }}</Title>
+      <Name>{{ layer.md['name'] }}</Name>
+      <Title>{{ layer.md.get('title') }}</Title>
       <EX_GeographicBoundingBox>
         <westBoundLongitude>{{ layer.extend.llbbox[0] }}</westBoundLongitude>
         <eastBoundLongitude>{{ layer.extend.llbbox[2] }}</eastBoundLongitude>
