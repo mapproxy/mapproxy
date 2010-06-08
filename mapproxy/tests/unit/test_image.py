@@ -30,7 +30,7 @@ from mapproxy.core.image import (
     is_single_color_image,
 )
 from mapproxy.core.tilefilter import watermark_filter, PNGQuantFilter
-from mapproxy.core.cache import _Tile
+from mapproxy.core.cache import Tile
 from mapproxy.tests.image import is_png, create_tmp_image, check_format, create_debug_img
 from mapproxy.core.srs import SRS
 from nose.tools import eq_
@@ -167,8 +167,7 @@ class TestMessageImage(object):
 
 class TestWatermarkTileFilter(object):
     def setup(self):
-        from mapproxy.core.cache import _Tile
-        self.tile = _Tile((0, 0, 0))
+        self.tile = Tile((0, 0, 0))
         self.filter = watermark_filter('Test')
     def test_filter(self):
         img = Image.new('RGB', (200, 200))

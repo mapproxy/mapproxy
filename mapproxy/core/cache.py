@@ -307,155 +307,98 @@ def _create_dir(file_name):
                 raise e            
     
 
-class _TileCreator(object):
-    """
-    Base class for the creation of new tiles.
-    Subclasses can implement different strategies how multiple tiles should
-    be created (e.g. threaded).
-    """
-    def __init__(self, tile_source, cache):
-        self.tile_source = tile_source
-        self.cache = cache
-    def create_tiles(self, tiles):
-        """
-        Create the given tiles (`Tile.source` will be set). Returns a list with all
-        created tiles.
+class TileManager(object):
+    def __init__(self, grid, file_cache, sources, format,
+        meta_buffer=None, meta_size=None):
+        self.grid = grid
+        self.file_cache = file_cache
+        self.meta_grid = None
+        self.format = format
+        assert len(sources) == 1
+        self.sources = sources
+        self.transparent = self.sources[0].transparent
         
-        :note: The returned list may contain more tiles than requested. This allows
-               the `TileSource` to create multiple tiles in one pass. 
-        """
-        raise NotImplementedError()
+        if meta_buffer is not None and meta_size and \
+            any(source.supports_meta_tiles for source in sources):
+            self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
     
-    def __repr__(self):
-        return '%s(%r, %r)' % (self.__class__.__name__, self.tile_source, self.cache)
-
-
-class _SequentialTileCreator(_TileCreator):
-    """
-    This `_TileCreator` creates one requested tile after the other.
-    """
-    def create_tiles(self, tiles, tile_collection):
-        created_tiles = []
-        for tile in tiles:
-            with self.tile_source.tile_lock(tile):
-                if not self.cache.is_cached(tile):
-                    new_tiles = self.tile_source.create_tile(tile, tile_collection)
-                    self.cache.store_tiles(new_tiles)
-                    created_tiles.extend(new_tiles)
-        cleanup_lockdir(self.tile_source.lock_dir)
-        return created_tiles
-
-def sequential_tile_creator(tiles, tile_collection, tile_source, cache):
-    """
-    This tile creator creates a thread pool to create multiple tiles in parallel.
-    """
-    return _SequentialTileCreator(tile_source, cache).create_tiles(tiles, tile_collection)
-
-class _ThreadedTileCreator(_TileCreator):
-    """
-    This `_TileCreator` creates one requested tile after the other.
-    """
-    def create_tiles(self, tiles, tile_collection):
-        unique_meta_tiles, _ = self._sort_tiles(tiles)
-        if len(unique_meta_tiles) == 1: # don't start thread pool for one tile
-            new_tiles = self._create_tile(unique_meta_tiles[0], tile_collection)
-            if new_tiles is None:
-                return []
-            cleanup_lockdir(self.tile_source.lock_dir)
-            return new_tiles
-        else:
-            return self._create_multiple_tiles(unique_meta_tiles, tile_collection)
+    def load_tile_coord(self, tile_coord, with_metadata=False):
+        return self.load_tile_coords([tile_coord], with_metadata)[0]
     
-    def _create_multiple_tiles(self, tiles, tile_collection):
-        pool_size = base_config().tile_creator_pool_size
-        pool = ThreadedExecutor(partial(self._create_tile, 
-                                        tile_collection=tile_collection), 
-                                pool_size=pool_size)
-        new_tiles = pool.execute(tiles)
-        result = []
-        for value in new_tiles:
-            if value is not None:
-                result.extend(value)
+    def load_tile_coords(self, tile_coords, with_metadata=False):
+        tiles = TileCollection(tile_coords)
+        uncached_tiles = []
         
-        cleanup_lockdir(self.tile_source.lock_dir)
-        return result
-    
-    def _create_tile(self, tile, tile_collection):
-        with self.tile_source.tile_lock(tile):
-            if not self.cache.is_cached(tile):
-                new_tiles = self.tile_source.create_tile(tile, tile_collection)
-                self.cache.store_tiles(new_tiles)
-                return new_tiles
-    
-    def _sort_tiles(self, tiles):
-        unique_meta_tiles = {}
-        other_tiles = []
-    
         for tile in tiles:
-            lock_name = self.tile_source.lock_filename(tile)
-            if lock_name in unique_meta_tiles:
-                other_tiles.append(tile)
+            # TODO cache eviction
+            if self.file_cache.is_cached(tile):
+                self.file_cache.load(tile, with_metadata)
             else:
-                unique_meta_tiles[lock_name] = tile
+                uncached_tiles.append(tile)
         
-        return unique_meta_tiles.values(), other_tiles
-    
-def threaded_tile_creator(tiles, tile_collection, tile_source, cache):
-    """
-    This tile creator creates a thread pool to create multiple tiles in parallel.
-    """
-    return _ThreadedTileCreator(tile_source, cache).create_tiles(tiles, tile_collection)
-
-
-class TileSource(object):
-    """
-    Base class for tile sources.
-    A ``TileSource`` knows how to get the `Tile.source` for a given tile.
-    """
-    def __init__(self, lock_dir=None):
-        if lock_dir is None:
-            lock_dir = abspath(base_config().cache.lock_dir)
-        self.lock_dir = lock_dir
-        self._id = None
+        if uncached_tiles:
+            created_tiles = self._create_tiles(uncached_tiles)
+            for created_tile in created_tiles:
+                if created_tile.coord in tiles:
+                    tiles[created_tile.coord].source = created_tile.source
         
-    def id(self):
-        """
-        Returns a unique but constant id of this TileSource used for locking.
-        """
-        raise NotImplementedError
+        return tiles
     
-    def tile_lock(self, tile):
-        """
-        Returns a lock object for the given tile.
-        """
-        lock_file = self.lock_filename(tile)
-        # TODO use own configuration option for lock timeout
-        return FileLock(lock_file, timeout=base_config().http_client_timeout)
-    
-    def lock_filename(self, tile):
-        if self._id is None:
-            md5 = hashlib.md5()
-            md5.update(str(self.id()))
-            self._id = md5.hexdigest()
-        return os.path.join(self.lock_dir, self._id + '-' +
-                                           '-'.join(map(str, tile.coord)) + '.lck')
-    
-    def create_tile(self, tile, tile_map):
-        """
-        Create the given tile and set the `Tile.source`. It doesn't store the data on
-        disk (or else where), this is up to the cache manager.
+    def _create_tiles(self, tiles):
+        created_tiles = []
+        if not self.meta_grid:
+            for tile in tiles:
+                created_tiles.append(self._create_tile(tile))
+        else:
+            meta_tiles = []
+            meta_bboxes = set()
+            for tile in tiles:
+                meta_bbox = self.meta_grid.meta_bbox(tile.coord)
+                if meta_bbox not in meta_bboxes:
+                    meta_tiles.append((tile, meta_bbox))
+                    meta_bboxes.add(meta_bbox)
+            
+            created_tiles = self._create_meta_tiles(meta_tiles)
         
-        :note: This method may return multiple tiles, if it is more effective for the
-               ``TileSource`` to create multiple tiles in one pass.
-        :rtype: list of ``Tiles``
-        
-        """
-        raise NotImplementedError()
+        return created_tiles
+            
+    def _create_tile(self, tile):
+        assert len(self.sources) == 1
+        tile_bbox = self.grid.tile_bbox(tile.coord)
+        query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs, self.format)
+        with self.file_cache.lock(tile):
+            if not self.file_cache.is_cached(tile):
+                tile.source = self.sources[0].get_map(query)
+                self.file_cache.store(tile)
+            else:
+                self.file_cache.load(tile)
+        return tile
     
-    def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__)
-
-
+    def _create_meta_tiles(self, meta_tiles):
+        assert len(self.sources) == 1
+        created_tiles = []
+        for tile, meta_bbox in meta_tiles:
+            tiles = list(self.meta_grid.tiles(tile.coord))
+            main_tile = Tile(tiles[0][0]) # use first tile of meta grid
+            created_tiles.extend(self._create_meta_tile(main_tile, meta_bbox, tiles))
+        return created_tiles
+    
+    def _create_meta_tile(self, main_tile, meta_bbox, tiles):
+        tile_size = self.meta_grid.tile_size(main_tile.coord[2])
+        query = MapQuery(meta_bbox, tile_size, self.grid.srs, self.format)
+        with self.file_cache.lock(main_tile):
+            if not self.file_cache.is_cached(main_tile):
+                meta_tile = self.sources[0].get_map(query)
+                splitted_tiles = split_meta_tiles(meta_tile, tiles, tile_size)
+                for splitted_tile in splitted_tiles:
+                    self.file_cache.store(splitted_tile)
+                return splitted_tiles
+        # else
+        tiles = [Tile(coord) for coord, pos in tiles]
+        for tile in tiles:
+            self.file_cache.load(tile)
+        return tiles
+        
 class Tile(object):
     """
     Internal data object for all tiles. Stores the tile-``coord`` and the tile data.
@@ -701,98 +644,6 @@ class CacheMapLayer(MapLayer):
                           tile_grid=tile_grid, tile_size=self.grid.tile_size,
                           transparent=self.transparent)
     
-
-class TileManager(object):
-    def __init__(self, grid, file_cache, sources, format,
-        meta_buffer=None, meta_size=None):
-        self.grid = grid
-        self.file_cache = file_cache
-        self.meta_grid = None
-        self.format = format
-        assert len(sources) == 1
-        self.sources = sources
-        self.transparent = self.sources[0].transparent
-        
-        if meta_buffer is not None and meta_size and \
-            any(source.supports_meta_tiles for source in sources):
-            self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
-    
-    def load_tile_coord(self, tile_coord, with_metadata=False):
-        return self.load_tile_coords([tile_coord], with_metadata)[0]
-    
-    def load_tile_coords(self, tile_coords, with_metadata=False):
-        tiles = TileCollection(tile_coords)
-        uncached_tiles = []
-        
-        for tile in tiles:
-            # TODO cache eviction
-            if self.file_cache.is_cached(tile):
-                self.file_cache.load(tile, with_metadata)
-            else:
-                uncached_tiles.append(tile)
-        
-        if uncached_tiles:
-            created_tiles = self._create_tiles(uncached_tiles)
-            for created_tile in created_tiles:
-                if created_tile.coord in tiles:
-                    tiles[created_tile.coord].source = created_tile.source
-        
-        return tiles
-    
-    def _create_tiles(self, tiles):
-        created_tiles = []
-        if not self.meta_grid:
-            for tile in tiles:
-                created_tiles.append(self._create_tile(tile))
-        else:
-            meta_tiles = []
-            meta_bboxes = set()
-            for tile in tiles:
-                meta_bbox = self.meta_grid.meta_bbox(tile.coord)
-                if meta_bbox not in meta_bboxes:
-                    meta_tiles.append((tile, meta_bbox))
-                    meta_bboxes.add(meta_bbox)
-            
-            created_tiles = self._create_meta_tiles(meta_tiles)
-        
-        return created_tiles
-            
-    def _create_tile(self, tile):
-        assert len(self.sources) == 1
-        tile_bbox = self.grid.tile_bbox(tile.coord)
-        query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs, self.format)
-        with self.file_cache.lock(tile):
-            if not self.file_cache.is_cached(tile):
-                tile.source = self.sources[0].get_map(query)
-                self.file_cache.store(tile)
-            else:
-                self.file_cache.load(tile)
-        return tile
-    
-    def _create_meta_tiles(self, meta_tiles):
-        assert len(self.sources) == 1
-        created_tiles = []
-        for tile, meta_bbox in meta_tiles:
-            tiles = list(self.meta_grid.tiles(tile.coord))
-            main_tile = Tile(tiles[0][0]) # use first tile of meta grid
-            created_tiles.extend(self._create_meta_tile(main_tile, meta_bbox, tiles))
-        return created_tiles
-    
-    def _create_meta_tile(self, main_tile, meta_bbox, tiles):
-        tile_size = self.meta_grid.tile_size(main_tile.coord[2])
-        query = MapQuery(meta_bbox, tile_size, self.grid.srs, self.format)
-        with self.file_cache.lock(main_tile):
-            if not self.file_cache.is_cached(main_tile):
-                meta_tile = self.sources[0].get_map(query)
-                splitted_tiles = split_meta_tiles(meta_tile, tiles, tile_size)
-                for splitted_tile in splitted_tiles:
-                    self.file_cache.store(splitted_tile)
-                return splitted_tiles
-        # else
-        tiles = [Tile(coord) for coord, pos in tiles]
-        for tile in tiles:
-            self.file_cache.load(tile)
-        return tiles
 
 def split_meta_tiles(meta_tile, tiles, tile_size):
     try:
