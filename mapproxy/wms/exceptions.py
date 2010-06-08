@@ -21,7 +21,7 @@ from mapproxy.core.exceptions import ExceptionHandler, XMLExceptionHandler
 from mapproxy.core.response import Response
 from mapproxy.core.image import message_image
 
-from mapproxy.core.template import template_loader, bunch
+from mapproxy.core.template import template_loader
 get_template = template_loader(__file__, 'templates')
 
 class WMSXMLExceptionHandler(XMLExceptionHandler):

@@ -17,27 +17,28 @@
 from mapproxy.tms import TileServiceGrid
 from mapproxy.core.exceptions import RequestError
 from mapproxy.core.cache import TileCacheError
-from mapproxy.core.layer import Layer, LayerMetaData
+from mapproxy.core.layer import LayerMetaData
 from mapproxy.core.request import split_mime_type
 
 import logging
 log = logging.getLogger(__name__)
 
-class TileServiceLayer(Layer):
+class TileServiceLayer(object):
     def __init__(self, md, cache):
         """
         :param md: the layer metadata
         :param cache: the layer cache
         """
-        Layer.__init__(self)
         self.md = LayerMetaData(md)
         self.cache = cache
         self.grid = TileServiceGrid(cache.grid)
     
-    def _bbox(self):
+    @property
+    def bbox(self):
         return self.grid.bbox()
-    
-    def _srs(self):
+
+    @property
+    def srs(self):
         return self.grid.srs
     
     @property

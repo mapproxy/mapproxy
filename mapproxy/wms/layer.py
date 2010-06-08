@@ -25,8 +25,7 @@ Layer classes (direct, cached, etc.).
 from mapproxy.core.srs import SRS, TransformationError
 from mapproxy.core.exceptions import RequestError
 from mapproxy.core.cache import TileCacheError, TooManyTilesError, BlankImage
-from mapproxy.core.layer import Layer, LayerMetaData
-from mapproxy.core.image import message_image, attribution_image
+from mapproxy.core.layer import LayerMetaData
 
 from mapproxy.core.cache import MapQuery, InfoQuery
 
