@@ -254,7 +254,7 @@ class SourceConfiguration(ConfigurationBase):
 
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
-    optional_keys = set('''type supported_srs image_resampling request_format
+    optional_keys = set('''type supported_srs request_format
         use_direct_from_level wms_opts'''.split())
     required_keys = set('req'.split())
     
@@ -374,7 +374,7 @@ class CacheConfiguration(ConfigurationBase):
         assert len(self.conf['sources']) == 1
         source_conf = context.sources[self.conf['sources'][0]]
         
-        resampling = context.globals.get_value('image.resampling', self.conf)
+        resampling = context.globals.get_value('image.resampling_method', self.conf)
         
         caches = []
         main_grid = None

@@ -617,10 +617,10 @@ class DirectInfoLayer(InfoLayer):
         return self.source.get_info(query)
 
 class CacheMapLayer(MapLayer):
-    def __init__(self, tile_manager, resampling, transparent=False):
+    def __init__(self, tile_manager, resampling=None, transparent=False):
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
-        self.resampling = resampling
+        self.resampling = resampling or base_config().image.resampling_method
         self.extend = map_extend_from_grid(self.grid)
         self.transparent = transparent
     

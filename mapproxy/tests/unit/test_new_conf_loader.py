@@ -74,13 +74,14 @@ grids:
 caches:
   osm_wgs:
       grids: [germany]
+      image:
+        resampling_method: 'nearest'
       sources: [osm]
 
 sources:
   osm:
     type: wms
     supported_srs: ['EPSG:31467']
-    image_resampling: 'nearest'
     req: 
         url: http://foo
         layers: base
