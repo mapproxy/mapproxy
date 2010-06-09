@@ -568,5 +568,22 @@ class TestNeastedConditionalLayers(object):
         self.direct = MockLayer()
         self.l900913 = MockLayer()
         self.l4326 = MockLayer()
-        self.layer = ResolutionConditional()
-        # TODO
+        self.layer = ResolutionConditional(
+            SRSConditional([
+                (self.l900913, (SRS('EPSG:900913'),)),
+                (self.l4326, (SRS('EPSG:4326'),))
+            ], GLOBAL_GEOGRAPHIC_EXTEND),
+            self.direct, 10, SRS(900913), GLOBAL_GEOGRAPHIC_EXTEND
+            )
+    def test_resolution_high_900913(self):
+        self.layer.get_map(MapQuery((0, 0, 100, 100), (100, 100), SRS(900913)))
+        assert self.direct.requested
+    def test_resolution_high_4326(self):
+        self.layer.get_map(MapQuery((0, 0, 0.0001, 0.0001), (100, 100), SRS(4326)))
+        assert self.direct.requested
+    def test_resolution_low_4326(self):
+        self.layer.get_map(MapQuery((0, 0, 10, 10), (100, 100), SRS(4326)))
+        assert self.l4326.requested
+    def test_resolution_low_projected(self):
+        self.layer.get_map(MapQuery((0, 0, 10000, 10000), (100, 100), SRS(31467)))
+        assert self.l900913.requested
