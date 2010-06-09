@@ -16,25 +16,25 @@
 
 from mapproxy.tms import TileServiceGrid
 from mapproxy.core.exceptions import RequestError
-from mapproxy.core.cache import TileCacheError
+from mapproxy.core.cache import TileCacheError, map_extend_from_grid
 from mapproxy.core.request import split_mime_type
 
 import logging
 log = logging.getLogger(__name__)
 
-class TileServiceLayer(object):
-    def __init__(self, md, cache):
+class TileLayer(object):
+    def __init__(self, md, tile_manager):
         """
         :param md: the layer metadata
-        :param cache: the layer cache
+        :param tile_manager: the layer tile manager
         """
         self.md = md
-        self.cache = cache
-        self.grid = TileServiceGrid(cache.grid)
+        self.tile_manager = tile_manager
+        self.grid = TileServiceGrid(tile_manager.grid)
     
     @property
     def bbox(self):
-        return self.grid.bbox()
+        return self.grid.bbox
 
     @property
     def srs(self):
@@ -62,7 +62,7 @@ class TileServiceLayer(object):
                                % (tile_request.format, self.format), request=tile_request)
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
         try:
-            return TileResponse(self.cache.load_tile_coord(tile_coord, with_metadata=True))
+            return TileResponse(self.tile_manager.load_tile_coord(tile_coord, with_metadata=True))
         except TileCacheError, e:
             log.error(e)
             raise RequestError(e.args[0], request=tile_request, internal=True)

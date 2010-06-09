@@ -83,7 +83,7 @@ from mapproxy.core.client import TileClient, TileURLTemplate
 from mapproxy.wms.server import WMSServer
 from mapproxy.wms.layer import WMSLayer
 from mapproxy.tms import TileServer
-from mapproxy.tms.layer import TileServiceLayer
+from mapproxy.tms.layer import TileLayer
 from mapproxy.kml import KMLServer
 
 from mapproxy.core.cache import (
@@ -474,7 +474,7 @@ class LayerConfiguration(ConfigurationBase):
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
                 md['format'] = context.caches[cache_name].conf['format']
             
-                tile_layers.append(TileServiceLayer(md, cache_source))
+                tile_layers.append(TileLayer(md, cache_source))
         
         return tile_layers
         

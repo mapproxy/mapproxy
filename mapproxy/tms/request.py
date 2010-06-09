@@ -97,8 +97,6 @@ def tile_request(req):
     else:
         return TileRequest(req)
 
-
-
 class TMSExceptionHandler(XMLExceptionHandler):
     template_file = 'tms_exception.xml'
     template_func = get_template

@@ -500,17 +500,17 @@ class MapExtend(object):
     """
     def __init__(self, bbox, srs):
         self.llbbox = srs.transform_bbox_to(SRS(4326), bbox)
-        self._bbox = bbox
-        self._srs = srs
+        self.bbox = bbox
+        self.srs = srs
     
     def bbox_for(self, srs):
-        if srs == self._srs:
-            return self._bbox
+        if srs == self.srs:
+            return self.bbox
         
-        return self._srs.transform_bbox_to(srs, self._bbox)
+        return self.srs.transform_bbox_to(srs, self.bbox)
     
     def __repr__(self):
-        return "%s(%r, %r)" % (self.__class__.__name__, self._bbox, self._srs)
+        return "%s(%r, %r)" % (self.__class__.__name__, self.bbox, self.srs)
 
 class MapQuery(object):
     """
@@ -607,6 +607,7 @@ class SRSConditional(MapLayer):
 class DirectMapLayer(MapLayer):
     def __init__(self, source, extend):
         self.source = source
+        self.extend = extend
     
     def get_map(self, query):
         return self.source.get_map(query)

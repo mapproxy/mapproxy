@@ -126,6 +126,7 @@ class TileServiceGrid(object):
             level *= 2
         return level
     
+    @property
     def bbox(self):
         """
         :return: the bbox of all tiles of the first level
