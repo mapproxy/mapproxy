@@ -22,8 +22,6 @@ from __future__ import with_statement
 import logging
 log = logging.getLogger(__name__)
 
-from mapproxy.core.client import auth_data_from_url, HTTPClient
-
 from mapproxy.wms.request import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest,\
                                   WMS100FeatureInfoRequest, WMS111FeatureInfoRequest,\
                                   WMS130FeatureInfoRequest

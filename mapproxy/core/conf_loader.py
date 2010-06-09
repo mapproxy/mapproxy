@@ -425,9 +425,9 @@ class CacheConfiguration(ConfigurationBase):
             layer = SRSConditional(caches, map_extend, caches[0][0].transparent)
         
         if 'use_direct_from_level' in self.conf:
-            self.conf['use_direct_from_res'] = tile_grid.resolution(self.conf['use_direct_from_level'])
+            self.conf['use_direct_from_res'] = main_grid.resolution(self.conf['use_direct_from_level'])
         if 'use_direct_from_res' in self.conf:
-            layer = ResolutionConditional(layer, source, self.conf['use_direct_from_res'], tile_grid.srs, layer.extend)
+            layer = ResolutionConditional(layer, source_conf.source(context), self.conf['use_direct_from_res'], main_grid.srs, layer.extend)
         return layer
     
 class LayerConfiguration(ConfigurationBase):

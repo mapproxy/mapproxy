@@ -16,7 +16,7 @@
 
 from mapproxy.tms import TileServiceGrid
 from mapproxy.core.exceptions import RequestError
-from mapproxy.core.cache import TileCacheError, map_extend_from_grid
+from mapproxy.core.cache import TileCacheError
 from mapproxy.core.request import split_mime_type
 
 import logging
