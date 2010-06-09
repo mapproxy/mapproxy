@@ -25,7 +25,7 @@ from functools import partial
 
 from mapproxy.core.srs import SRS
 from mapproxy.core.grid import MetaGrid, bbox_intersects, bbox_contains
-from mapproxy.core.cache import TileSourceError
+from mapproxy.core.cache import TileSourceError, Tile
 from mapproxy.core.config import base_config, abspath
 from mapproxy.core.utils import (
     cleanup_directory,
@@ -85,10 +85,10 @@ class SeedPool(object):
 
 
 class SeedWorker(proc_class):
-    def __init__(self, cache, tiles_queue, dry_run=False):
+    def __init__(self, tile_mgr, tiles_queue, dry_run=False):
         proc_class.__init__(self)
         proc_class.daemon = True
-        self.cache = cache
+        self.tile_mgr = tile_mgr
         self.tiles_queue = tiles_queue
         self.dry_run = dry_run
     def run(self):
@@ -102,7 +102,7 @@ class SeedWorker(proc_class):
             ),
             sys.stdout.flush()
             if not self.dry_run:
-                exp_backoff(self.cache.cache_mgr.load_tile_coords, args=(tiles,),
+                exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
                             exceptions=(TileSourceError, IOError))
 
 
@@ -140,14 +140,14 @@ class ETA(object):
 
 
 class Seeder(object):
-    def __init__(self, cache, task, seed_pool):
-        self.cache = cache
+    def __init__(self, tile_mgr, task, seed_pool):
+        self.tile_mgr = tile_mgr
         self.task = task
         self.seed_pool = seed_pool
         
         num_seed_levels = task.max_level - task.start_level + 1
         self.report_till_level = task.start_level + int(num_seed_levels * 0.7)
-        self.grid = MetaGrid(cache.grid, meta_size=base_config().cache.meta_size)
+        self.grid = tile_mgr.meta_grid or MetaGrid(tile_mgr.grid, meta_size=(1, 1), meta_buffer=0)
         self.progress = 0.0
         self.eta = ETA()
         self.count = 0
@@ -199,7 +199,7 @@ class Seeder(object):
     def not_cached(self, tiles):
         return [tile for tile in tiles
                     if tile is not None and
-                        not self.cache.cache_mgr.is_cached(tile)]
+                        not self.tile_mgr.cache.is_cached(Tile(tile))]
 
     
     def report_progress(self, level, bbox):
@@ -233,23 +233,24 @@ class CacheSeeder(object):
         self.concurrency = concurrency
         self.seeded_caches = []
     
-    def seed_view(self, bbox, level, srs, cache_srs, geom=None):
-        for cache in self.caches:
-            if not cache_srs or cache.grid.srs in cache_srs:
-                print '[%s] seeding srs: %s' % (timestamp(), cache.grid.srs.srs_code)
-                self.seeded_caches.append(cache)
-                if self.remove_before:
-                    cache.cache_mgr._expire_timestamp = self.remove_before
-                seed_pool = SeedPool(cache, dry_run=self.dry_run, size=self.concurrency)
-                seed_task = SeedTask(bbox, level, srs, cache.grid.srs, geom)
-                seeder = Seeder(cache, seed_task, seed_pool)
+    def seed_view(self, bbox, level, bbox_srs, cache_srs, geom=None):
+        for srs, tile_mgr in self.caches.iteritems():
+            if not cache_srs or srs in cache_srs:
+                print '[%s] seeding srs: %s' % (timestamp(), srs.srs_code)
+                self.seeded_caches.append(tile_mgr)
+                # TODO
+                # if self.remove_before:
+                #     cache.cache_mgr._expire_timestamp = self.remove_before
+                seed_pool = SeedPool(tile_mgr, dry_run=self.dry_run, size=self.concurrency)
+                seed_task = SeedTask(bbox, level, bbox_srs, srs, geom)
+                seeder = Seeder(tile_mgr, seed_task, seed_pool)
                 seeder.seed()
                 seed_pool.stop()
     
     def cleanup(self):
-        for cache in self.seeded_caches:
-            for i in range(cache.grid.levels):
-                level_dir = cache.cache_mgr.cache.level_location(i)
+        for tile_mgr in self.seeded_caches:
+            for i in range(tile_mgr.grid.levels):
+                level_dir = tile_mgr.cache.level_location(i)
                 if self.dry_run:
                     def file_handler(filename):
                         print 'removing ' + filename
@@ -336,7 +337,7 @@ def status_symbol(i, total):
 
 def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=False,
     concurrency=2):
-    from mapproxy.core.conf_loader import load_services
+    from mapproxy.core.conf_loader import ProxyConfiguration
     
     if hasattr(conf_file, 'read'):
         seed_conf = yaml.load(conf_file)
@@ -344,17 +345,11 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
         with open(conf_file) as conf_file:
             seed_conf = yaml.load(conf_file)
     
-    services = load_services()
-    if 'wms' in services:
-        server  = services['wms']
-    elif 'tms' in services:
-        server  = services['tms']
-    else:
-        print 'no wms or tms server configured. add one to your proxy.yaml'
-        return
+    #TODO
+    conf = ProxyConfiguration(yaml.load(open('etc/services.yaml')))
     for layer, options in seed_conf['seeds'].iteritems():
         remove_before = before_timestamp_from_options(options)
-        caches = caches_from_layer(server.layers[layer])
+        caches = dict((grid.srs, tile_mgr) for grid, tile_mgr in conf.caches[layer].caches(conf))
         seeder = CacheSeeder(caches, remove_before=remove_before, dry_run=dry_run,
                             concurrency=concurrency)
         for view in options['views']:
@@ -386,7 +381,7 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
             level = view_conf.get('level', None)
             assert len(level) == 2
             print '[%s] seeding view: %s' % (timestamp(), view)
-            seeder.seed_view(bbox, level=level, srs=srs, 
+            seeder.seed_view(bbox=bbox, level=level, bbox_srs=srs, 
                              cache_srs=cache_srs, geom=geom)
         
         if remove_before:
