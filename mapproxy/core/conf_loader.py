@@ -27,6 +27,7 @@ import logging
 log = logging.getLogger(__name__)
 
 from mapproxy.core.srs import SRS
+from mapproxy.core.odict import odict
 from mapproxy.core.cache import FileCache
 from mapproxy.core.config import base_config, abspath
 
@@ -125,8 +126,12 @@ class ProxyConfiguration(object):
             self.grids[grid_name] = GridConfiguration(**grid_conf)
     
     def load_caches(self):
-        self.caches = {}
-        for cache_name, cache_conf in self.configuration.get('caches', {}).iteritems():
+        self.caches = odict()
+        caches_conf = self.configuration.get('caches')
+        if not caches_conf: return None # TODO config error
+        if isinstance(caches_conf, list):
+            caches_conf = list_of_dicts_to_ordered_dict(caches_conf)
+        for cache_name, cache_conf in caches_conf.iteritems():
             self.caches[cache_name] = CacheConfiguration(name=cache_name, **cache_conf)
     
     def load_sources(self):
@@ -135,8 +140,12 @@ class ProxyConfiguration(object):
             self.sources[source_name] = SourceConfiguration.load(**source_conf)
 
     def load_layers(self):
-        self.layers = {}
-        for layer_name, layer_conf in self.configuration.get('layers', {}).iteritems():
+        self.layers = odict()
+        layers_conf = self.configuration.get('layers')
+        if not layers_conf: return None # TODO config error
+        if isinstance(layers_conf, list):
+            layers_conf = list_of_dicts_to_ordered_dict(layers_conf)
+        for layer_name, layer_conf in layers_conf.iteritems():
             self.layers[layer_name] = LayerConfiguration(name=layer_name, **layer_conf)
 
     def load_services(self):
@@ -144,6 +153,18 @@ class ProxyConfiguration(object):
         # for service_name, service_conf in self.configuration.get('services', {}).iteritems():
         #     self.services[service_name] = ServiceConfiguration(name=service_name, **service_conf)
 
+def list_of_dicts_to_ordered_dict(dictlist):
+    """
+    >>> d = list_of_dicts_to_ordered_dict([{'a': 1}, {'b': 2}, {'c': 3}])
+    >>> d.items()
+    [('a', 1), ('b', 2), ('c', 3)]
+    """
+    
+    result = odict()
+    for d in dictlist:
+        for k, v in d.iteritems():
+            result[k] = v
+    return result
 
 class ConfigurationBase(object):
     optional_keys = set()
@@ -462,7 +483,7 @@ class ServiceConfiguration(ConfigurationBase):
     def kml_service(self, conf, context):
         md = context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
-        layers = {}
+        layers = odict()
         for layer_name, layer_conf in context.layers.iteritems():
             for tile_layer in layer_conf.tile_layers(context):
                 if not tile_layer: continue
@@ -473,7 +494,7 @@ class ServiceConfiguration(ConfigurationBase):
     def tms_service(self, conf, context):
         md = context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
-        layers = {}
+        layers = odict()
         for layer_name, layer_conf in context.layers.iteritems():
             for tile_layer in layer_conf.tile_layers(context):
                 if not tile_layer: continue
@@ -484,7 +505,7 @@ class ServiceConfiguration(ConfigurationBase):
     def wms_service(self, conf, context):
         md = conf.get('md', {})
         attribution = conf.get('attribution')
-        layers = {}
+        layers = odict()
         for layer_name, layer_conf in context.layers.iteritems():
             layers[layer_name] = layer_conf.wms_layer(context)
         return WMSServer(layers, md, attribution=attribution)
