@@ -69,6 +69,8 @@ class BlankImage(Exception):
     pass
 class TileCacheError(Exception):
     pass
+
+#TODO rename to something like SourceError
 class TileSourceError(TileCacheError):
     pass
 class TooManyTilesError(TileCacheError):
@@ -100,9 +102,6 @@ class TileCollection(object):
     
     def __iter__(self):
         return iter(self.tiles)
-    
-    def __call__(self, coord):
-        return self[coord]
 
 class FileCache(object):
     """
@@ -344,6 +343,11 @@ class TileManager(object):
         
         return tiles
     
+    def lock(self, tile):
+        if self.meta_grid:
+            tile = Tile(self.meta_grid.tiles(tile.coord).next())
+        return self.cache.lock(tile)
+    
     def _create_tiles(self, tiles):
         created_tiles = []
         if not self.meta_grid:
@@ -366,7 +370,7 @@ class TileManager(object):
         assert len(self.sources) == 1
         tile_bbox = self.grid.tile_bbox(tile.coord)
         query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs, self.format)
-        with self.cache.lock(tile):
+        with self.lock(tile):
             if not self.cache.is_cached(tile):
                 tile.source = self.sources[0].get_map(query)
                 self.cache.store(tile)
@@ -379,15 +383,14 @@ class TileManager(object):
         created_tiles = []
         for tile, meta_bbox in meta_tiles:
             tiles = list(self.meta_grid.tiles(tile.coord))
-            main_tile = Tile(tiles[0][0]) # use first tile of meta grid
-            created_tiles.extend(self._create_meta_tile(main_tile, meta_bbox, tiles))
+            created_tiles.extend(self._create_meta_tile(tile, meta_bbox, tiles))
         return created_tiles
     
     def _create_meta_tile(self, main_tile, meta_bbox, tiles):
         meta_tile_size = self.meta_grid.tile_size(main_tile.coord[2])
         tile_size = self.grid.tile_size
         query = MapQuery(meta_bbox, meta_tile_size, self.grid.srs, self.format)
-        with self.cache.lock(main_tile):
+        with self.lock(main_tile):
             if not self.cache.is_cached(main_tile):
                 meta_tile = self.sources[0].get_map(query)
                 splitted_tiles = split_meta_tiles(meta_tile, tiles, tile_size)
@@ -687,7 +690,7 @@ class WMSClient(object):
         if self.supported_srs and query.srs not in self.supported_srs:
             return self._get_transformed(query)
         resp = self._retrieve(query)
-        return ImageSource(resp, self.request_template.params.format)
+        return ImageSource(resp, size=query.size, format=self.request_template.params.format)
     
     def _get_transformed(self, query):
         dst_srs = query.srs
@@ -714,9 +717,16 @@ class WMSClient(object):
                 return srs
         
         return iter(self.supported_srs).next()
+    
     def _retrieve(self, query):
         url = self._query_url(query)
-        return self.http_client.open(url)
+        resp = self.http_client.open(url)
+        self._check_resp(resp)
+        return resp
+    
+    def _check_resp(self, resp):
+        if not resp.headers['Content-type'].startswith('image/'):
+            raise TileSourceError('no image returned from source WMS')
     
     def _query_url(self, query):
         req = self.request_template.copy()
