@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Layers that can get maps/infos from different sources/caches. 
+"""
+
 from mapproxy.core.config import base_config
 from mapproxy.core.cache import (
     map_extend_from_grid,

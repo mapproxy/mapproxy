@@ -17,27 +17,20 @@
 """
 Tile caching (creation, caching and retrieval of tiles).
 
-.. classtree:: mapproxy.core.cache.CacheManager
-.. classtree:: mapproxy.core.cache._TileCreator
-.. classtree:: mapproxy.core.cache.TileSource
-
 .. digraph:: Schematic Call Graph
     
     ranksep = 0.1;
     node [shape="box", height="0", width="0"] 
-
-    tcache  [label="Cache",         href="<Cache>"];
-    cm      [label="CacheManager",  href="<CacheManager>"];
-    tc      [label="tile_creator_func", href="<_TileCreator>"];
-    ts      [label="TileSource",    href="<TileSource>"];
-    c       [label="Cache",         href="<Cache>"];
+    
+    cl  [label="CacheMapLayer" href="<mapproxy.core.layer.CacheMapLayer>"]
+    tm  [label="TileManager",  href="<TileManager>"];
+    fc      [label="FileCache", href="<FileCache>"];
+    s       [label="Source", href="<mapproxy.core.source.Source>"];
 
     {
-        tcache -> cm [label="load_tile_coords"];
-        cm -> tc [label="call"];
-        tc -> cm  [label="is_cached"];
-        cm -> c  [label="load\\nstore\\nis_cached"];
-        tc -> ts [label="create_tiles"];
+        cl -> tm [label="load_tile_coords"];
+        tm -> fc [label="load\\nstore\\nis_cached"];
+        tm -> s  [label="get_map"]
     }
     
 

@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Map/information sources for layers or tile cache.
+"""
+
 from mapproxy.core.cache import MapExtend
 from mapproxy.core.image import message_image
 from mapproxy.core.srs import SRS

@@ -1,0 +1,3 @@
+"""
+Capability and exception templates.
+"""

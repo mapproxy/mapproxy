@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+WMS clients for maps and information.
+"""
+
 from mapproxy.core.config import base_config
 from mapproxy.core.cache import MapQuery, InfoQuery, TileSourceError
 from mapproxy.core.client import HTTPClient

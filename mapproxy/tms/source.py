@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Retrieve tiles from different tile servers (TMS/TileCache/etc.).
+"""
+
 import sys
 from mapproxy.core.source import Source
 from mapproxy.core.client import HTTPClientError

@@ -14,6 +14,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+ctypes based replacement of pyroj (with pyproj fallback).
+
+This module implements the `Proj`, `transform` and `set_datapath` class/functions. This
+module is a drop-in replacement for pyproj. It does implement just enough to work for
+MapProxy, i.e. there is no numpy support, etc.
+
+It uses the C libproj library. If the library could not be found/loaded it will fallback
+to pyroj. You can force the usage of either backend by setting the environment variables
+MAPPROXY_USE_LIBPROJ or MAPPROXY_USE_PYPROJ to any value.
+ 
+"""
+
 from mapproxy.core.libutils import load_library
 
 import os
@@ -32,6 +45,7 @@ from ctypes import (
 import logging
 log = logging.getLogger(__name__)
 
+__all__ = ['Proj', 'transform', 'set_datapath']
 
 c_double_p = POINTER(c_double)
 FINDERCMD = ctypes.CFUNCTYPE(c_char_p, c_char_p)

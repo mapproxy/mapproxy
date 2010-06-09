@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Retrieve maps/information from WMS servers.
+"""
+
 import sys
 from mapproxy.core.source import Source, InfoSource
 from mapproxy.core.cache import MapExtend, TileSourceError
