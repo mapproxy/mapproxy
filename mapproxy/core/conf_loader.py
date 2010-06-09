@@ -86,7 +86,7 @@ from mapproxy.wms.server import WMSServer
 from mapproxy.wms.client import WMSClient, WMSInfoClient
 from mapproxy.wms.source import WMSSource, WMSInfoSource
 from mapproxy.wms.layer import WMSLayer
-from mapproxy.tms import TileServer
+from mapproxy.tms.server import TileServer
 from mapproxy.tms.layer import TileLayer
 from mapproxy.tms.source import TiledSource
 from mapproxy.kml import KMLServer
