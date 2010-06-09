@@ -28,18 +28,6 @@ from mapproxy.wms.request import WMS100MapRequest, WMS111MapRequest, WMS130MapRe
                                   WMS100FeatureInfoRequest, WMS111FeatureInfoRequest,\
                                   WMS130FeatureInfoRequest
 
-def wms_clients_for_requests(requests, supported_srs=None):
-    clients = []
-    for req in requests:
-        http_client = None
-        url, (username, password) = auth_data_from_url(req.url)
-        if username and password:
-            req.url = url
-            http_client = HTTPClient(url, username, password)
-        client = WMSClient(req, http_client=http_client,
-                           supported_srs=supported_srs)
-        clients.append(client)
-    return clients
 
 wms_version_requests = {'1.0.0': {'featureinfo': WMS100FeatureInfoRequest,
                                   'map': WMS100MapRequest,},

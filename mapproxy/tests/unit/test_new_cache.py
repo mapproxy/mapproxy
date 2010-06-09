@@ -28,6 +28,7 @@ from mapproxy.core.cache import (
 )
 from mapproxy.core.grid import TileGrid
 from mapproxy.core.srs import SRS
+from mapproxy.core.client import HTTPClient
 from mapproxy.core.image import ImageSource
 
 from mapproxy.wms.request import WMS111MapRequest
@@ -489,7 +490,25 @@ class TestWMSSource(object):
                     assert 'no image returned' in e.args[0]
                 else:
                     assert False, 'no TiledSourceError raised'
-
+    def test_basic_auth(self):
+        http_client = HTTPClient(self.req_template.url, username='foo', password='bar')
+        self.client.http_client = http_client
+        def assert_auth(req_handler):
+            assert 'Authorization' in req_handler.headers
+            auth_data = req_handler.headers['Authorization'].split()[1]
+            auth_data = auth_data.decode('base64')
+            eq_(auth_data, 'foo:bar')
+            return True
+        expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
+                                  '&VERSION=1.1.1&BBOX=0.0,10.0,10.0,20.0&WIDTH=512&STYLES=',
+                         'require_basic_auth': True,
+                         'req_assert_function': assert_auth},
+                        {'body': 'no image', 'headers': {'content-type': 'image/png'}})
+        with mock_httpd(TEST_SERVER_ADDRESS, [expected_req]):
+            q = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
+            result = self.source.get_map(q)
+  
 class MockLayer(object):
     def __init__(self):
         self.requested = []

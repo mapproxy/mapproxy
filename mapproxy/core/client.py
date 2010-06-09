@@ -49,10 +49,10 @@ class HTTPClient(object):
     log_fmt = '%(host)s - - [%(date)s] "GET %(path)s HTTP/1.1" %(status)d %(size)s "-" ""'
     log_datefmt = '%d/%b/%Y:%H:%M:%S %z'
     
-    def __init__(self, url=None, username=None, password=None):
+    def __init__(self, url=None, username=None, password=None, insecure=None):
         handlers = []
         if url and url.startswith('https'):
-            if not base_config().http.ssl.insecure:
+            if insecure is False or insecure is None and not base_config().http.ssl.insecure:
                 if ssl is None:
                     raise ImportError('No ssl module found. SSL certificate '
                         'verification requires Python 2.6 or ssl module. Upgrade '

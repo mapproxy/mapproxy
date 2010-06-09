@@ -6,9 +6,13 @@ from mapproxy.core.conf_loader import (
     WMSSourceConfiguration,
     load_services,
 )
+from mapproxy.core.cache import (
+    TileManager,
+)
 
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 class TestGridConfiguration(object):
     def test_simple_grid(self):
@@ -58,11 +62,36 @@ class TestWMSSourceConfiguration(object):
         
         conf = ProxyConfiguration(conf_dict)
         
-        # caches = conf.caches['osm'].obj(conf)
+        caches = conf.caches['osm'].caches(conf)
+        eq_(len(caches), 1)
+        grid, manager = caches[0]
         
-        # assert isinstance(caches[0], Cache)
+        eq_(grid.srs, SRS(4326))
+        eq_(grid.bbox, [5, 50, 10, 55])
         
-
+        assert isinstance(manager, TileManager)
+        
+    def test_https_source_insecure(self):
+        conf_dict = {
+            'sources': {
+                'osm': {
+                    'type': 'wms',
+                    'http':{'ssl': {'insecure': True}},
+                    'req': {
+                        'url': 'https://foo:bar@localhost/service?',
+                        'layers': 'base',
+                    },
+                },
+            },
+        }
+        
+        conf = ProxyConfiguration(conf_dict)
+        try:
+            wms = conf.sources['osm'].source(conf, {'format': 'image/png'})
+        except ImportError, e:
+            raise SkipTest('no ssl support')
+        
+    
 class TestConfLoading(object):
     yaml_string = """
 grids:

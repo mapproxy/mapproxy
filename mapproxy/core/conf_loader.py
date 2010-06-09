@@ -30,6 +30,7 @@ from mapproxy.core.srs import SRS
 from mapproxy.core.odict import odict
 from mapproxy.core.cache import FileCache
 from mapproxy.core.config import base_config, abspath
+from mapproxy.core.client import auth_data_from_url, HTTPClient
 
 def load_source_loaders():
     source_loaders = {}
@@ -276,11 +277,21 @@ class SourceConfiguration(ConfigurationBase):
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
     optional_keys = set('''type supported_srs request_format image
-        use_direct_from_level wms_opts'''.split())
+        use_direct_from_level wms_opts http'''.split())
     required_keys = set('req'.split())
+    
+    def http_client(self, context, request):
+        http_client = None
+        url, (username, password) = auth_data_from_url(request.url)
+        if username and password:
+            insecure = context.globals.get_value('http.ssl.insecure', self.conf)
+            request.url = url
+            http_client = HTTPClient(url, username, password, insecure=insecure)
+        return http_client
     
     def source(self, context, params):
         
+        # TODO params
         request_format = self.conf.get('request_format')
         if request_format:
             params['format'] = request_format
@@ -297,8 +308,9 @@ class WMSSourceConfiguration(SourceConfiguration):
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
         request = create_request(self.conf['req'], params, version=version)
-        # TODO https + basic auth
-        client = WMSClient(request, supported_srs, resampling=resampling)
+        http_client = self.http_client(context, request)
+        client = WMSClient(request, supported_srs, http_client=http_client, 
+                           resampling=resampling)
         return WMSSource(client)
     
     def fi_source(self, context, params):
