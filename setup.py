@@ -41,7 +41,6 @@ setup(
     entry_points = {
         'console_scripts': [
             'mapproxy-seed = mapproxy.core.scripts.seed:main',
-            'proxy_seed = mapproxy.core.scripts.seed_old:main',
         ],
         'paste.app_factory': [
             'app = mapproxy.core.app:app_factory'
