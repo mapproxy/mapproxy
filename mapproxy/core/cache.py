@@ -345,7 +345,7 @@ class TileManager(object):
     
     def lock(self, tile):
         if self.meta_grid:
-            tile = Tile(self.meta_grid.tiles(tile.coord).next())
+            tile = Tile(self.meta_grid.tiles(tile.coord).next()[0])
         return self.cache.lock(tile)
     
     def _create_tiles(self, tiles):
