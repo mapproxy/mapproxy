@@ -13,18 +13,3 @@
 # 
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from mapproxy.core.image import ImageSource, ImageTransformer
-from mapproxy.core.client import retrieve_url, HTTPClientError
-from mapproxy.core.srs import SRS, make_lin_transf
-
-
-def wms_client_request(request_template, map_request):
-    if request_template is None:
-        return map_request.copy()
-    req = request_template.copy_with_request_params(map_request)
-    req.url = request_template.url
-    req.params.bbox = map_request.params.bbox
-    if map_request.params.srs:
-        req.params.srs = map_request.params.srs
-    return req
