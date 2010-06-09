@@ -9,23 +9,27 @@ import tempfile
 from StringIO import StringIO
 import Image
 
+from mapproxy.core.layer import (
+    CacheMapLayer,
+    SRSConditional,
+    ResolutionConditional,
+    DirectMapLayer,
+)
+from mapproxy.core.source import Source
+from mapproxy.wms.client import WMSClient
+from mapproxy.wms.source import WMSSource
+from mapproxy.tms.source import TiledSource
+
 from mapproxy.core.cache import (
+    Tile,
+    MapExtend, 
+    MapQuery,
+    InvalidSourceQuery,
+    TileSourceError,
     FileCache,
     TileManager,
-    Source,
-    TiledSource,
-    WMSSource,
-    InvalidSourceQuery,
-    Tile,
-    CacheMapLayer,
-    DirectMapLayer,
-    MapQuery,
-    WMSClient,
-    ResolutionConditional,
-    SRSConditional,
-    MapExtend,
-    TileSourceError,
 )
+
 from mapproxy.core.grid import TileGrid
 from mapproxy.core.srs import SRS
 from mapproxy.core.client import HTTPClient

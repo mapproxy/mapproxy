@@ -19,10 +19,10 @@ from mapproxy.core.config import base_config
 from mapproxy.core.cache import (
     map_extend_from_grid,
     TileCacheError,
-    NoTiles,
     BlankImage,
     TooManyTilesError,
 )
+from mapproxy.core.grid import NoTiles
 from mapproxy.core.image import TiledImage
 
 class MapLayer(object):

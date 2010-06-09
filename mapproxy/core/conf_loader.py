@@ -80,24 +80,20 @@ from mapproxy.core.grid import TileGrid
 from mapproxy.core.request import split_mime_type
 from mapproxy.wms.conf_loader import create_request
 from mapproxy.core.client import TileClient, TileURLTemplate
+from mapproxy.core.source import DebugSource
+from mapproxy.core.layer import CacheMapLayer, SRSConditional, ResolutionConditional
 from mapproxy.wms.server import WMSServer
+from mapproxy.wms.client import WMSClient, WMSInfoClient
+from mapproxy.wms.source import WMSSource, WMSInfoSource
 from mapproxy.wms.layer import WMSLayer
 from mapproxy.tms import TileServer
 from mapproxy.tms.layer import TileLayer
+from mapproxy.tms.source import TiledSource
 from mapproxy.kml import KMLServer
 
 from mapproxy.core.cache import (
-    WMSClient,
-    WMSSource,
     TileManager,
-    TiledSource,
-    CacheMapLayer,
-    SRSConditional,
-    ResolutionConditional,
-    map_extend_from_grid,
-    WMSInfoSource,
-    WMSInfoClient,
-    DebugSource,
+    map_extend_from_grid
 )
 
 class ConfigurationError(Exception):
