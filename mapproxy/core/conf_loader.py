@@ -76,6 +76,7 @@ def server_loader(name):
     return loader(server_loaders, name)
 
 
+import mapproxy.core.config
 from mapproxy.core.grid import TileGrid
 from mapproxy.core.request import split_mime_type
 from mapproxy.wms.conf_loader import create_request
@@ -235,7 +236,22 @@ class GridConfiguration(ConfigurationBase):
         )
 
 class GlobalConfiguration(ConfigurationBase):
-    optional_keys = set('image grid'.split())
+    optional_keys = set('image grid srs'.split())
+    
+    def __init__(self, **kw):
+        ConfigurationBase.__init__(self, **kw)
+        self._set_base_config()
+        mapproxy.core.config.finish_base_config()
+    
+    def _set_base_config(self):
+        self._copy_conf_values(self.conf, base_config())
+    def _copy_conf_values(self, d, target):
+        for k, v in d.iteritems():
+            if v is None: continue
+            if hasattr(v, 'iteritems'):
+                self._copy_conf_values(v, target[k])
+            else:
+                target[k] = v
     
     def get_value(self, key, local, global_key=None, default_key=None):
         result = dotted_dict_get(key, local)

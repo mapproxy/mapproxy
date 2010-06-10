@@ -89,6 +89,16 @@ def abspath(path):
     return os.path.join(base_config().conf_base_dir, path)
 
 
+def finish_base_config(bc=None):
+    bc = bc or base_config()
+    if 'srs' in bc:
+        # build union of default axis_order_xx_ and the user configured axis_order_xx
+        bc.srs.axis_order_ne = set(bc.srs.axis_order_ne).union(bc.srs.axis_order_ne_)
+        bc.srs.axis_order_en = set(bc.srs.axis_order_en).union(bc.srs.axis_order_en_)
+    
+    if 'wms' in bc:
+        bc.wms.srs = set(bc.wms.srs)
+
 def load_base_config(config_file=None, clear_existing=False):
     """
     Load system wide base configuration.
@@ -112,13 +122,7 @@ def load_base_config(config_file=None, clear_existing=False):
         load_config(base_config(), config_file=config_file, clear_existing=clear_existing)
     
     bc = base_config()
-    if 'srs' in bc:
-        # build union of default axis_order_xx_ and the user configured axis_order_xx
-        bc.srs.axis_order_ne = set(bc.srs.axis_order_ne).union(bc.srs.axis_order_ne_)
-        bc.srs.axis_order_en = set(bc.srs.axis_order_en).union(bc.srs.axis_order_en_)
-    
-    if 'wms' in bc:
-        bc.wms.srs = set(bc.wms.srs)
+    finish_base_config(bc)
     
     bc.conf_base_dir = conf_base_dir
 
