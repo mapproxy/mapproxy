@@ -236,7 +236,7 @@ class CacheSeeder(object):
     def seed_view(self, bbox, level, bbox_srs, cache_srs, geom=None):
         for srs, tile_mgr in self.caches.iteritems():
             if not cache_srs or srs in cache_srs:
-                print '[%s] seeding srs: %s' % (timestamp(), srs.srs_code)
+                print "[%s] ... srs '%s'" % (timestamp(), srs.srs_code)
                 self.seeded_caches.append(tile_mgr)
                 if self.remove_before:
                     tile_mgr._expire_timestamp = self.remove_before
@@ -379,7 +379,7 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
                 srs = SRS(srs)
             level = view_conf.get('level', None)
             assert len(level) == 2
-            print '[%s] seeding view: %s' % (timestamp(), view)
+            print "[%s] seeding cache '%s' with view '%s'" % (timestamp(), layer, view)
             seeder.seed_view(bbox=bbox, level=level, bbox_srs=srs, 
                              cache_srs=cache_srs, geom=geom)
         
