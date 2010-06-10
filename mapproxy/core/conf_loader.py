@@ -291,18 +291,12 @@ class WMSSourceConfiguration(SourceConfiguration):
         return http_client
     
     def source(self, context, params):
-        
-        # TODO params
-        request_format = self.conf.get('request_format')
+        request_format = self.conf['req'].get('format')
         if request_format:
             params['format'] = request_format
         
-        # tile_grid = grid_conf.tile_grid(context)
-        
-        #TODO legacy
-        # params = {'format': 'image/png'} #cache_conf.conf.copy()
-        # params['bbox'] = ','.join(str(x) for x in tile_grid.bbox)
-        # params['srs'] = tile_grid.srs.srs_code
+        transparent = self.conf['req'].get('transparent', 'false')
+        transparent = bool(transparent.lower() == 'true')
         
         resampling = context.globals.get_value('image.resampling_method', self.conf)
         
@@ -312,16 +306,13 @@ class WMSSourceConfiguration(SourceConfiguration):
         http_client = self.http_client(context, request)
         client = WMSClient(request, supported_srs, http_client=http_client, 
                            resampling=resampling)
-        return WMSSource(client)
+        return WMSSource(client, transparent=transparent)
     
     def fi_source(self, context, params):
-        # tile_grid = grid_conf.tile_grid(context)
-        # 
-        # params = cache_conf.conf.copy()
-        # params['bbox'] = ','.join(str(x) for x in tile_grid.bbox)
-        # params['srs'] = tile_grid.srs.srs_code
+        request_format = self.conf['req'].get('format')
+        if request_format:
+            params['format'] = request_format
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
-        
         fi_source = None
         if self.conf.get('wms_opts', {}).get('featureinfo', False):
             version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
@@ -391,6 +382,7 @@ class CacheConfiguration(ConfigurationBase):
             link_single_color_images=link_single_color_images)
     
     def caches(self, context):
+        request_format = self.conf.get('request_format') or self.conf['format']
         caches = []
 
         meta_buffer = context.globals.get_value('meta_buffer', self.conf)
@@ -400,7 +392,7 @@ class CacheConfiguration(ConfigurationBase):
             for grid_conf in [context.grids[g] for g in self.conf['grids']]:
                 cache = self._file_cache(grid_conf, context)
                 tile_grid = grid_conf.tile_grid(context)
-                source = source_conf.source(context, {'format': self.conf['format']})
+                source = source_conf.source(context, {'format': request_format})
                 mgr = TileManager(tile_grid, cache, [source], self.format,
                                   meta_size=meta_size, meta_buffer=meta_buffer)
                 caches.append((tile_grid, mgr))
@@ -444,7 +436,7 @@ class LayerConfiguration(ConfigurationBase):
                 map_layer = context.caches[source_name].map_layer(context)
                 fi_source_names = context.caches[source_name].conf['sources']
             elif source_name in context.sources:
-                map_layer = context.sources[source_name].source(context, {'format': 'image/jpeg'})
+                map_layer = context.sources[source_name].source(context, {'format': 'image/png'})
                 fi_source_names = [source_name]
             else:
                 raise ConfigurationError('source/cache "%s" not found' % source_name)
@@ -453,7 +445,7 @@ class LayerConfiguration(ConfigurationBase):
             for fi_source_name in fi_source_names:
                 # TODO multiple sources
                 if not hasattr(context.sources[fi_source_name], 'fi_source'): continue
-                fi_source = context.sources[fi_source_name].fi_source(context, {'format': 'image/jpeg'})
+                fi_source = context.sources[fi_source_name].fi_source(context, {'format': 'image/png'})
                 if fi_source:
                     fi_sources.append(fi_source)
             

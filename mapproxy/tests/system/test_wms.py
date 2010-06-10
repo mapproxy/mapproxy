@@ -42,6 +42,7 @@ def setup_module():
     mapproxy.core.config.base_config().debug_mode = True
     mapproxy.core.config.base_config().services_conf = fixture_layer_conf
     mapproxy.core.config.base_config().cache.base_dir = fixture_cache_data
+    mapproxy.core.config.base_config().image.paletted = False
     mapproxy.core.config._service_config = None
     
     global global_app
@@ -183,7 +184,7 @@ class TestWMS111(WMSTest):
         resp.content_type = 'image/png'
         data = StringIO(resp.body)
         assert is_png(data)
-        assert Image.open(data).mode == 'P'
+        assert Image.open(data).mode == 'RGB'
         
     def test_get_map_png_transparent(self):
         self.common_map_req.params['transparent'] = 'True'
@@ -233,7 +234,7 @@ class TestWMS111(WMSTest):
             with mock_httpd(('localhost', 42423), [expected_req]):
                 self.common_map_req.params['bbox'] = '0,0,180,90'
                 resp = self.app.get(self.common_map_req)
-                assert 25000 < int(resp.headers['Content-length']) < 35000
+                assert 50000 < int(resp.headers['Content-length']) < 75000
                 eq_(resp.content_type, 'image/png')
     
     def test_get_map_invalid_bbox(self):
@@ -297,7 +298,7 @@ class TestWMS111(WMSTest):
                 eq_(resp.content_type, 'image/png')
     
     def test_get_featureinfo(self):
-        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},
@@ -309,7 +310,7 @@ class TestWMS111(WMSTest):
             eq_(resp.body, 'info')
 
     def test_get_featureinfo_info_format(self):
-        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'
@@ -322,7 +323,7 @@ class TestWMS111(WMSTest):
             eq_(resp.body, 'info')
     
     def test_get_featureinfo_130(self):
-        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
                                   '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&I=10&J=20'},
@@ -346,7 +347,7 @@ class TestWMS111(WMSTest):
         mapproxy.core.config.base_config().wms.non_strict = True
         try:
             expected_req = (
-                {'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+                {'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                           '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                           '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                           '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},
@@ -443,8 +444,20 @@ class TestWMS100(WMSTest):
         resp.content_type = 'image/png'
         data = StringIO(resp.body)
         assert is_png(data)
-        assert Image.open(data).mode == 'P'
+        eq_(Image.open(data).mode, 'RGB')
         
+    def test_get_map_png_transparent_paletted(self):
+        try:
+            mapproxy.core.config.base_config().image.paletted = True
+            self.common_map_req.params['transparent'] = 'True'
+            resp = self.app.get(self.common_map_req)
+            resp.content_type = 'image/png'
+            data = StringIO(resp.body)
+            assert is_png(data)
+            assert Image.open(data).mode == 'P'
+        finally:
+            mapproxy.core.config.base_config().image.paletted = False
+            
     def test_get_map_png_transparent(self):
         self.common_map_req.params['transparent'] = 'True'
         resp = self.app.get(self.common_map_req)
@@ -479,7 +492,7 @@ class TestWMS100(WMSTest):
                 eq_(resp.content_type, 'image/png')
     
     def test_get_featureinfo(self):
-        expected_req = ({'path': r'/service?LAYERs=foo,bar&FORMAT=image%2Fjpeg'
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&FORMAT=image%2Fpng'
                                   '&REQUEST=feature_info&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&WMTVER=1.0.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},
@@ -588,7 +601,7 @@ class TestWMS130(WMSTest):
         resp.content_type = 'image/png'
         data = StringIO(resp.body)
         assert is_png(data)
-        assert Image.open(data).mode == 'P'
+        assert Image.open(data).mode == 'RGB'
         
     def test_get_map_png_transparent(self):
         self.common_map_req.params['transparent'] = 'True'
@@ -628,7 +641,7 @@ class TestWMS130(WMSTest):
                 eq_(resp.content_type, 'image/png')
     
     def test_get_featureinfo(self):
-        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
                                   '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&I=10&J=20'},
@@ -639,7 +652,7 @@ class TestWMS130(WMSTest):
             eq_(resp.body, 'info')
 
     def test_get_featureinfo_111(self):
-        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},

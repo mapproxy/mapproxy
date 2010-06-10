@@ -34,6 +34,7 @@ class InfoSource(object):
 
 class DebugSource(Source):
     extend = MapExtend((-180, -90, 180, 90), SRS(4326))
+    transparent = True
     def get_map(self, query):
         bbox = query.bbox
         w = bbox[2] - bbox[0]

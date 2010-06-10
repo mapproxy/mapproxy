@@ -27,9 +27,10 @@ from mapproxy.core.utils import reraise_exception
 
 class WMSSource(Source):
     supports_meta_tiles = True
-    def __init__(self, client):
+    def __init__(self, client, transparent=False):
         Source.__init__(self)
         self.client = client
+        self.transparent = transparent
         #TODO extend
         self.extend = MapExtend((-180, -90, 180, 90), SRS(4326))
     

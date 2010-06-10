@@ -111,8 +111,6 @@ class WMSMapRequestParams(RequestParams):
         The requested format as string (w/o any 'image/', 'text/', etc prefixes)
         """
         _mime_class, format, options = split_mime_type(self.get('format', default=''))
-        if format == 'png' and (options == 'mode=8bit' or not self.transparent):
-            format = 'png8'
         return format
     
     @property

@@ -110,12 +110,12 @@ class DirectMapLayer(MapLayer):
         return self.source.get_map(query)
 
 class CacheMapLayer(MapLayer):
-    def __init__(self, tile_manager, resampling=None, transparent=False):
+    def __init__(self, tile_manager, resampling=None):
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
         self.resampling = resampling or base_config().image.resampling_method
         self.extend = map_extend_from_grid(self.grid)
-        self.transparent = transparent
+        self.transparent = tile_manager.transparent
     
     def get_map(self, query):
         tiled_image = self._tiled_image(query.bbox, query.size, query.srs)
