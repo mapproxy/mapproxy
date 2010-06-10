@@ -147,7 +147,7 @@ class ImageSource(object):
                     pass
                 raise
         return self.source
-    def as_buffer(self, format=None):
+    def as_buffer(self, format=None, paletted=None):
         """
         Returns the image as a file object.
         
@@ -159,7 +159,7 @@ class ImageSource(object):
             if not format:
                 format = self.format
             log.debug('image -> buf(%s)' % (format,))
-            return img_to_buf(self.source, format)
+            return img_to_buf(self.source, format, paletted=paletted)
         if isinstance(self.source, basestring):
             log.debug('file(%s) -> buf' % self.source)
             return open(self.source, 'rb')
@@ -207,13 +207,24 @@ class ReadBufWrapper(object):
             self.stringio = StringIO(self.readbuf.read())
         return getattr(self.stringio, name)
 
-def img_to_buf(img, format='png'):
-    if format == 'png8':
-        img = img.convert('RGB')
-        img = img.convert('P', palette=Image.ADAPTIVE, dither=0)
+def img_to_buf(img, format='png', paletted=None):
+    defaults = {}
+    
+    if paletted is None:
+        paletted = base_config().image.paletted
+    if paletted:
+        if format in ('png', 'gif'):
+            if img.mode == 'RGBA':
+                alpha = img.split()[3]
+                img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=255)
+                mask = Image.eval(alpha, lambda a: 255 if a <=128 else 0)
+                img.paste(255, mask)
+                defaults['transparency'] = 255
+            else:
+                img = img.convert('RGB')
+                img = img.convert('P', palette=Image.ADAPTIVE, dither=0)
     format = filter_format(format)
     buf = StringIO()
-    defaults = {}
     if format == 'jpeg':
         defaults['quality'] = base_config().image.jpeg_quality
     img.save(buf, format, **defaults)
