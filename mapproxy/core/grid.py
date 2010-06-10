@@ -84,8 +84,14 @@ class TileGrid(object):
     spheroid_a = 6378137.0 # for 900913
     
     def __init__(self, srs=900913, bbox=None, tile_size=(256, 256), res=None,
-                 is_geodetic=False, levels=None):
+                 is_geodetic=False, levels=None,
+                 stretch_factor=None, max_shrink_factor=None):
         """
+        :param stretch_factor: allow images to be scaled up by this factor
+            before the next level will be selected
+        :param max_shrink_factor: allow images to be scaled down by this
+            factor before NoTiles is raised
+        
         >>> grid = TileGrid(srs=900913)
         >>> [round(x, 2) for x in grid.bbox]
         [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
@@ -96,11 +102,14 @@ class TileGrid(object):
         self.tile_size = tile_size
         self.is_geodetic = is_geodetic
         
-        self.stretch_factor = base_config().image.stretch_factor
-        'allow images to be scaled up by this factor before the next level will be selected'
+        if stretch_factor is None:
+            stretch_factor = base_config().image.stretch_factor
+        self.stretch_factor = stretch_factor
         
-        self.max_shrink_factor = base_config().image.max_shrink_factor
-        'allow images to be scaled down by this factor before NoTiles is raised'
+        if max_shrink_factor is None:
+            max_shrink_factor = base_config().image.max_shrink_factor
+        self.max_shrink_factor = max_shrink_factor
+        
         
         if levels is None:
             self.levels = 20

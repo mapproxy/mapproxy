@@ -1,6 +1,7 @@
 globals:
-  meta_size: [1, 1]
-  meta_buffer: 0
+  grid:
+    meta_size: [1, 1]
+    meta_buffer: 0
   image:
     # resampling: 'bicubic'
 services:

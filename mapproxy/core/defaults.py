@@ -50,10 +50,15 @@ log_conf = 'log.ini'
 cache = dict(
     base_dir = '../var/cache_data',
     lock_dir = '../tmp/tile_locks',
-    meta_size = (4, 4),
-    meta_buffer = 80,
     max_tile_limit = 500,
 )
+
+grid = dict(
+    meta_size = (4, 4),
+    meta_buffer = 80,
+    tile_size = (256, 256),
+)
+
 tiles = dict(
     expires_hours = 72,
 )

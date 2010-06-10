@@ -187,7 +187,9 @@ class ConfigurationBase(object):
                 self.conf[k] = v
 
 class GridConfiguration(ConfigurationBase):
-    optional_keys = set('res srs bbox bbox_srs num_levels tile_size base'.split())
+    optional_keys = set('''res srs bbox bbox_srs num_levels tile_size base
+        stretch_factor max_shrink_factor
+        '''.split())
     
     def tile_grid(self, context):
         if 'base' in self.conf:
@@ -209,10 +211,14 @@ class GridConfiguration(ConfigurationBase):
             bbox_srs = SRS(conf['bbox_srs'])
             bbox = bbox_srs.transform_bbox_to(srs, conf['bbox'])
         
-        tile_size = conf.get('tile_size')
-        if not tile_size:
-            tile_size = context.globals.conf['tile_size']
+        tile_size = context.globals.get_value('tile_size', conf,
+            global_key='grid.tile_size')
         tile_size = tuple(tile_size)
+        
+        stretch_factor = context.globals.get_value('stretch_factor', conf,
+            global_key='image.stretch_factor')
+        max_shrink_factor = context.globals.get_value('max_shrink_factor', conf,
+            global_key='image.max_shrink_factor')
         
         res = conf.get('res')
         if isinstance(res, list):
@@ -224,23 +230,20 @@ class GridConfiguration(ConfigurationBase):
             res=res,
             bbox=bbox,
             levels=conf.get('num_levels'),
+            stretch_factor=stretch_factor,
+            max_shrink_factor=max_shrink_factor,
         )
 
 class GlobalConfiguration(ConfigurationBase):
-    defaults = {
-        'tile_size': [256, 256],
-        'meta_size': [4, 4],
-        'meta_buffer': 80
-    }
-    optional_keys = set('image'.split('.'))
+    optional_keys = set('image grid'.split())
     
-    def get_value(self, key, local):
+    def get_value(self, key, local, global_key=None, default_key=None):
         result = dotted_dict_get(key, local)
         if result is None:
-            result = dotted_dict_get(key, self.conf)
+            result = dotted_dict_get(global_key or key, self.conf)
         
         if result is None:
-            result = dotted_dict_get(key, base_config())
+            result = dotted_dict_get(default_key or global_key or key, base_config())
             
         return result
     
@@ -257,6 +260,8 @@ def dotted_dict_get(key, d):
         while parts and d:
             d = d[parts.pop(0)]
     except KeyError:
+        return None
+    if parts: # not completely resolved
         return None
     return d
     
