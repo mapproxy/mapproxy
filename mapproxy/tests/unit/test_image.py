@@ -83,14 +83,15 @@ class TestImageSource(object):
     
     def test_output_formats_png8(self):
         img = Image.new('RGBA', (100, 100))
-        ir = ImageSource(img, format='png8')
-        img = Image.open(ir.as_buffer())
+        ir = ImageSource(img, format='png')
+        img = Image.open(ir.as_buffer(paletted=True))
         assert img.mode == 'P'
+        assert img.getpixel((0, 0)) == 255
         
     def test_output_formats_png24(self):
         img = Image.new('RGBA', (100, 100))
-        ir = ImageSource(img, format='png24')
-        img = Image.open(ir.as_buffer())
+        ir = ImageSource(img, format='png')
+        img = Image.open(ir.as_buffer(paletted=False))
         assert img.mode == 'RGBA'
         assert img.getpixel((0, 0)) == (0, 0, 0, 0)
 

@@ -284,14 +284,10 @@ class TestWMSMapRequestParams(object):
         del self.m['width']
         assert self.m.size == None
     def test_format(self):
-        assert self.m.format == 'png8'
+        assert self.m.format == 'png'
         assert self.m.format_mime_type == 'image/png'
         self.m['transparent'] = 'True'
         assert self.m.format == 'png'
-        del self.m['transparent']
-        self.m['format'] = 'image/png; mode=8bit'
-        assert self.m.format == 'png8'
-        assert self.m.format_mime_type == 'image/png; mode=8bit'
     def test_bbox(self):
         assert self.m.bbox == (-90.0, -80.0, 70.0, 80.0)
         del self.m['bbox']
