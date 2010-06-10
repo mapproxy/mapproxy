@@ -199,7 +199,7 @@ class Seeder(object):
     def not_cached(self, tiles):
         return [tile for tile in tiles
                     if tile is not None and
-                        not self.tile_mgr.cache.is_cached(Tile(tile))]
+                        not self.tile_mgr.is_cached(tile)]
 
     
     def report_progress(self, level, bbox):
@@ -238,9 +238,8 @@ class CacheSeeder(object):
             if not cache_srs or srs in cache_srs:
                 print '[%s] seeding srs: %s' % (timestamp(), srs.srs_code)
                 self.seeded_caches.append(tile_mgr)
-                # TODO
-                # if self.remove_before:
-                #     cache.cache_mgr._expire_timestamp = self.remove_before
+                if self.remove_before:
+                    tile_mgr._expire_timestamp = self.remove_before
                 seed_pool = SeedPool(tile_mgr, dry_run=self.dry_run, size=self.concurrency)
                 seed_task = SeedTask(bbox, level, bbox_srs, srs, geom)
                 seeder = Seeder(tile_mgr, seed_task, seed_pool)

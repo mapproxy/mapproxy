@@ -303,6 +303,7 @@ class TileManager(object):
         self.format = format
         assert len(sources) == 1
         self.sources = sources
+        self._expire_timestamp = None
         self.transparent = self.sources[0].transparent
         
         if meta_buffer is not None and meta_size and \
@@ -335,6 +336,29 @@ class TileManager(object):
         if self.meta_grid:
             tile = Tile(self.meta_grid.tiles(tile.coord).next()[0])
         return self.cache.lock(tile)
+    
+    def is_cached(self, tile):
+        """
+        Return True if the tile is cached.
+        """
+        if isinstance(tile, tuple):
+            tile = _Tile(tile)
+        max_mtime = self.expire_timestamp(tile)
+        cached = self.cache.is_cached(tile)
+        if cached and max_mtime is not None:
+            stale = self.cache.timestamp_created(tile) < max_mtime
+            if stale:
+                cached = False
+        return cached
+    
+    def expire_timestamp(self, tile=None):
+        """
+        Return the timestamp until which a tile should be accepted as up-to-date,
+        or ``None`` if the tiles should not expire.
+        
+        :note: Returns _expire_timestamp by default.
+        """
+        return self._expire_timestamp
     
     def _create_tiles(self, tiles):
         created_tiles = []
