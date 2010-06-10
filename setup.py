@@ -28,7 +28,7 @@ class build_api(Command):
 
 setup(
     name='MapProxy',
-    version="0.8.3",
+    version="0.8.4",
     description='An accelerating proxy for web map services',
     long_description=open('README.txt').read(),
     author='Oliver Tonnhofer',
