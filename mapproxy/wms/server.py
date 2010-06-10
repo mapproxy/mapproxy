@@ -38,7 +38,7 @@ class WMSServer(Server):
     request_methods = ('map', 'capabilities', 'featureinfo')
     
     def __init__(self, layers, md, layer_merger=None, request_parser=None, tile_layers=None,
-        attribution=None):
+        attribution=None, srs=None, image_formats=None):
         Server.__init__(self)
         self.request_parser = request_parser or wms_request
         self.layers = layers
@@ -49,6 +49,8 @@ class WMSServer(Server):
         self.merger = layer_merger
         self.attribution = attribution
         self.md = md
+        self.image_formats = image_formats or base_config().wms.image_formats
+        self.srs = srs or base_config().wms.srs
                 
     def map(self, map_request):
         merger = self.merger()
@@ -83,7 +85,7 @@ class WMSServer(Server):
         else:
             tile_layers = []
         service = self._service_md(map_request)
-        result = Capabilities(service, layers, tile_layers).render(map_request)
+        result = Capabilities(service, layers, tile_layers, self.image_formats, self.srs).render(map_request)
         return Response(result, mimetype=map_request.mime_type)
     
     def featureinfo(self, request):
@@ -121,10 +123,12 @@ class Capabilities(object):
     """
     Renders WMS capabilities documents.
     """
-    def __init__(self, server_md, layers, tile_layers):
+    def __init__(self, server_md, layers, tile_layers, image_formats, srs):
         self.service = server_md
         self.layers = layers
         self.tile_layers = tile_layers
+        self.image_formats = image_formats
+        self.srs = srs
     
     def render(self, _map_request):
         return self._render_template(_map_request.capabilities_template)
@@ -135,8 +139,8 @@ class Capabilities(object):
         return template.substitute(service=bunch(default='', **self.service),
                                    layers=self.layers,
                                    server_llbbox=server_bbox,
-                                   formats=base_config().wms.image_formats,
-                                   srs=base_config().wms.srs,
+                                   formats=self.image_formats,
+                                   srs=self.srs,
                                    tile_layers=self.tile_layers)
     
     def _create_server_bbox(self):

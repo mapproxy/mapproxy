@@ -521,7 +521,10 @@ class ServiceConfiguration(ConfigurationBase):
         layers = odict()
         for layer_name, layer_conf in context.layers.iteritems():
             layers[layer_name] = layer_conf.wms_layer(context)
-        return WMSServer(layers, md, attribution=attribution)
+        image_formats = context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
+        srs = context.globals.get_value('srs', conf, global_key='wms.srs')
+        return WMSServer(layers, md, attribution=attribution, image_formats=image_formats,
+            srs=srs)
     
 def load_services(conf_file):
     if hasattr(conf_file, 'read'):
