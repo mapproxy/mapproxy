@@ -84,15 +84,12 @@ class TileGrid(object):
     spheroid_a = 6378137.0 # for 900913
     
     def __init__(self, srs=900913, bbox=None, tile_size=(256, 256), res=None,
-                 is_geodetic=False, levels=None, epsg=None):
+                 is_geodetic=False, levels=None):
         """
-        >>> grid = TileGrid(epsg=900913)
+        >>> grid = TileGrid(srs=900913)
         >>> [round(x, 2) for x in grid.bbox]
         [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
         """
-        if epsg is not None:
-            warnings.warn('TileGrid epsg parameter is deprecated', DeprecationWarning)
-            srs = epsg
         if isinstance(srs, (int, basestring)):
             srs = SRS(srs)
         self.srs = srs
@@ -170,7 +167,7 @@ class TileGrid(object):
         
         :param level: the zoom level index (zero is top)
         
-        >>> grid = TileGrid(epsg=900913)
+        >>> grid = TileGrid(SRS(900913))
         >>> grid.resolution(0)
         156543.03392804097
         >>> grid.resolution(1)
@@ -187,7 +184,7 @@ class TileGrid(object):
         :param res: the required resolution
         :returns: the level with the requested or higher resolution
         
-        >>> grid = TileGrid(epsg=900913)
+        >>> grid = TileGrid(SRS(900913))
         >>> grid.stretch_factor = 1.1
         >>> l1_res = grid.resolution(1)
         >>> [grid.closest_level(x) for x in (320000.0, 160000.0, l1_res+50, l1_res, \
@@ -203,12 +200,12 @@ class TileGrid(object):
         """
         Returns the tile id for the given point.
         
-        >>> grid = TileGrid(epsg=900913)
+        >>> grid = TileGrid(SRS(900913))
         >>> grid.tile(1000, 1000, 0)
         (0, 0, 0)
         >>> grid.tile(1000, 1000, 1)
         (1, 1, 1)
-        >>> grid = TileGrid(epsg=900913, tile_size=(512, 512))
+        >>> grid = TileGrid(SRS(900913), tile_size=(512, 512))
         >>> grid.tile(1000, 1000, 2)
         (2, 2, 2)
         """
@@ -224,7 +221,7 @@ class TileGrid(object):
         Flip the tile coord on the y-axis. (Switch between bottom-left and top-left
         origin.)
         
-        >>> grid = TileGrid(epsg=900913)
+        >>> grid = TileGrid(SRS(900913))
         >>> grid.flip_tile_coord((0, 1, 1))
         (0, 0, 1)
         >>> grid.flip_tile_coord((1, 3, 2))
@@ -327,7 +324,7 @@ class TileGrid(object):
         :param tile_coord: the tile coordinate
         :type tile_coord: ``(x, y, z)``
         
-        >>> grid = TileGrid(epsg=900913)
+        >>> grid = TileGrid(SRS(900913))
         >>> [round(x, 2) for x in grid._get_south_west_point((0, 0, 0))]
         [-20037508.34, -20037508.34]
         >>> [round(x, 2) for x in grid._get_south_west_point((1, 1, 1))]
@@ -343,7 +340,7 @@ class TileGrid(object):
         """
         Returns the bbox of the given tile.
         
-        >>> grid = TileGrid(epsg=900913)
+        >>> grid = TileGrid(SRS(900913))
         >>> [round(x, 2) for x in grid.tile_bbox((0, 0, 0))]
         [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
         >>> [round(x, 2) for x in grid.tile_bbox((1, 1, 1))]
@@ -362,7 +359,7 @@ class TileGrid(object):
         :returns: the `tile_coord` if it is within the ``grid``,
                   otherwise ``None``.
         
-        >>> grid = TileGrid(epsg=900913)
+        >>> grid = TileGrid(SRS(900913))
         >>> grid.limit_tile((-1, 0, 2)) == None
         True
         >>> grid.limit_tile((1, 2, 1)) == None

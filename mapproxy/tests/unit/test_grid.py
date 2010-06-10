@@ -208,7 +208,7 @@ class TestWGS84TileGrid(object):
 
 class TestGKTileGrid(TileGridTest):
     def setup(self):
-        self.grid = TileGrid(epsg=31467, bbox=(3250000, 5230000, 3930000, 6110000))
+        self.grid = TileGrid(SRS(31467), bbox=(3250000, 5230000, 3930000, 6110000))
     
     def test_bbox(self):
         assert self.grid.bbox == (3250000, 5230000, 3930000, 6110000)
@@ -254,7 +254,7 @@ class TestFixedResolutionsTileGrid(TileGridTest):
     def setup(self):
         self.res = [1000.0, 500.0, 200.0, 100.0, 50.0, 20.0, 5.0]
         bbox = (3250000, 5230000, 3930000, 6110000)
-        self.grid = TileGrid(epsg=31467, bbox=bbox, res=self.res)
+        self.grid = TileGrid(SRS(31467), bbox=bbox, res=self.res)
     
     def test_resolution(self):
         for level, res in enumerate(self.res):
