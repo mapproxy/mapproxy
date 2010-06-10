@@ -40,7 +40,7 @@ image = dict(
     jpeg_quality = 90,
     stretch_factor = 1.15,
     max_shrink_factor = 4.0,
-    paletted = True,
+    paletted = False,
 )
 # number of concurrent requests to a tile source
 tile_creator_pool_size = 2

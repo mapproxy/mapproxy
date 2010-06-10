@@ -210,8 +210,8 @@ def img_to_buf(img, format='png', paletted=None):
     
     if paletted is None:
         paletted = base_config().image.paletted
-    if paletted:
-        if format in ('png', 'gif'):
+    if paletted or format == 'png8':
+        if format in ('png', 'png8', 'gif'):
             if img.mode == 'RGBA':
                 alpha = img.split()[3]
                 img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=255)
