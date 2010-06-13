@@ -53,6 +53,20 @@ The first line restricts this configuration to the ``example.org`` hostname. In 
 
 With this configuration you can access the MapProxy WMS at http://example.org/proxy/service?
 
+
+Apache mod_fastcgi
+""""""""""""""""""
+
+You can use the following snippet to add the MapProxy FastCGI to an Apache installation::
+
+  LoadModule fastcgi_module modules/mod_fastcgi.so
+
+  <IfModule mod_fastcgi.c>
+   FastCGIExternalServer /some/made/up/path -socket /home/olt/mymapproxy/var/fcgi-socket
+   Alias /proxy /some/made/up/path
+  </IfModule>
+
+
 Other deployment options
 """"""""""""""""""""""""
 
