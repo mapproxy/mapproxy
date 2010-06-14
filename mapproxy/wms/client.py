@@ -39,7 +39,7 @@ class WMSClient(object):
         self.supported_srs = supported_srs
 
     def get_map(self, request):
-        if self.supported_srs and request.params.srs not in self.supported_srs:
+        if self.supported_srs and SRS(request.params.srs) not in self.supported_srs:
             return self._transformed_get_map(request)
         
         resp = self._retrieve_url(self._map_url(request))
