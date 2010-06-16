@@ -44,7 +44,7 @@ import errno
 import hashlib
 
 from mapproxy.core.utils import FileLock
-from mapproxy.core.image import ImageSource, is_single_color_image, TileSplitter
+from mapproxy.core.image import ImageSource, is_single_color_image, TileSplitter, merge_images
 from mapproxy.core.config import base_config
 from mapproxy.core.srs import SRS
 from mapproxy.core.grid import MetaGrid
@@ -301,14 +301,15 @@ class TileManager(object):
         self.cache = cache
         self.meta_grid = None
         self.format = format
-        assert len(sources) == 1
         self.sources = sources
         self._expire_timestamp = None
         self.transparent = self.sources[0].transparent
         
-        if meta_buffer is not None and meta_size and \
-            any(source.supports_meta_tiles for source in sources):
-            self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
+        if meta_buffer is not None and meta_size:
+            if all(source.supports_meta_tiles for source in sources):
+                self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
+            elif any(source.supports_meta_tiles for source in sources):
+                raise ValueError('meta tiling configured but not supported by all sources')
     
     def load_tile_coord(self, tile_coord, with_metadata=False):
         return self.load_tile_coords([tile_coord], with_metadata)[0]
@@ -379,19 +380,32 @@ class TileManager(object):
         return created_tiles
             
     def _create_tile(self, tile):
-        assert len(self.sources) == 1
         tile_bbox = self.grid.tile_bbox(tile.coord)
         query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs, self.format)
         with self.lock(tile):
             if not self.cache.is_cached(tile):
-                tile.source = self.sources[0].get_map(query)
+                tile.source = self._query_sources(query)
                 self.cache.store(tile)
             else:
                 self.cache.load(tile)
         return tile
     
+    def _query_sources(self, query):
+        """
+        Query all sources and return the results as a single ImageSource.
+        Multiple sources will be merged into a single image.
+        """
+        if len(self.sources) == 1:
+            return self.sources[0].get_map(query)
+        
+        imgs = []
+        for source in self.sources:
+            imgs.append(source.get_map(query))
+        
+        return merge_images(imgs)
+        
+    
     def _create_meta_tiles(self, meta_tiles):
-        assert len(self.sources) == 1
         created_tiles = []
         for tile, meta_bbox in meta_tiles:
             tiles = list(self.meta_grid.tiles(tile.coord))
@@ -404,7 +418,7 @@ class TileManager(object):
         query = MapQuery(meta_bbox, meta_tile_size, self.grid.srs, self.format)
         with self.lock(main_tile):
             if not self.cache.is_cached(main_tile):
-                meta_tile = self.sources[0].get_map(query)
+                meta_tile = self._query_sources(query)
                 splitted_tiles = split_meta_tiles(meta_tile, tiles, tile_size)
                 for splitted_tile in splitted_tiles:
                     self.cache.store(splitted_tile)

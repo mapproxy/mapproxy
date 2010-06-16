@@ -404,20 +404,19 @@ class CacheConfiguration(ConfigurationBase):
         meta_buffer = context.globals.get_value('meta_buffer', self.conf)
         meta_size = context.globals.get_value('meta_size', self.conf)
 
-        for source_conf in [context.sources[s] for s in self.conf['sources']]:
-            for grid_conf in [context.grids[g] for g in self.conf['grids']]:
-                cache = self._file_cache(grid_conf, context)
-                tile_grid = grid_conf.tile_grid(context)
+        for grid_conf in [context.grids[g] for g in self.conf['grids']]:
+            sources = []
+            for source_conf in [context.sources[s] for s in self.conf['sources']]:
                 source = source_conf.source(context, {'format': request_format})
-                mgr = TileManager(tile_grid, cache, [source], self.format,
-                                  meta_size=meta_size, meta_buffer=meta_buffer)
-                caches.append((tile_grid, mgr))
+                sources.append(source)
+            cache = self._file_cache(grid_conf, context)
+            tile_grid = grid_conf.tile_grid(context)
+            mgr = TileManager(tile_grid, cache, sources, self.format,
+                              meta_size=meta_size, meta_buffer=meta_buffer)
+            caches.append((tile_grid, mgr))
         return caches
     
     def map_layer(self, context):
-        assert len(self.conf['sources']) == 1
-        source_conf = context.sources[self.conf['sources'][0]]
-        
         resampling = context.globals.get_value('image.resampling_method', self.conf)
         
         caches = []
@@ -436,6 +435,9 @@ class CacheConfiguration(ConfigurationBase):
         if 'use_direct_from_level' in self.conf:
             self.conf['use_direct_from_res'] = main_grid.resolution(self.conf['use_direct_from_level'])
         if 'use_direct_from_res' in self.conf:
+            if len(self.conf['sources']) != 1:
+                raise ValueError('use_direct_from_level/res only supports single sources')
+            source_conf = context.sources[self.conf['sources'][0]]
             layer = ResolutionConditional(layer, source_conf.source(context), self.conf['use_direct_from_res'], main_grid.srs, layer.extend)
         return layer
     

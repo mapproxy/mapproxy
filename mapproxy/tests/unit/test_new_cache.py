@@ -228,9 +228,12 @@ class MockSource(Source):
         Source.__init__(self, *args)
         self.requested = []
     
+    def _image(self, size):
+        return create_debug_img(size)
+    
     def get_map(self, query):
         self.requested.append((query.bbox, query.size, query.srs))
-        return ImageSource(create_debug_img(query.size))
+        return ImageSource(self._image(query.size))
 
 class TestTileManagerSource(object):
     def setup(self):
@@ -348,6 +351,78 @@ class TestTileManagerLocking(object):
     def teardown(self):
         shutil.rmtree(self.tile_dir)
     
+
+class TestTileManagerMultipleSources(object):
+    def setup(self):
+        self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
+        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        self.source_base = MockSource()
+        self.source_overlay = MockSource()
+        self.tile_mgr = TileManager(self.grid, self.file_cache,
+            [self.source_base, self.source_overlay], 'png')
+        self.layer = CacheMapLayer(self.tile_mgr)
+    
+    def test_get_single(self):
+        self.tile_mgr._create_tiles([Tile((0, 0, 1))])
+        eq_(self.file_cache.stored_tiles, set([(0, 0, 1)]))
+        eq_(self.source_base.requested,
+            [((-180.0, -90.0, 0.0, 90.0), (256, 256), SRS(4326))])
+        eq_(self.source_overlay.requested,
+            [((-180.0, -90.0, 0.0, 90.0), (256, 256), SRS(4326))])
+
+class SolidColorMockSource(MockSource):
+    def __init__(self, color='#ff0000'):
+        MockSource.__init__(self)
+        self.color = color
+    def _image(self, size):
+        return Image.new('RGB', size, self.color)
+
+class TestTileManagerMultipleSourcesWithMetaTiles(object):
+    def setup(self):
+        self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
+        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        self.source_base = SolidColorMockSource(color='#ff0000')
+        self.source_base.supports_meta_tiles = True
+        self.source_overlay = MockSource()
+        self.source_overlay.supports_meta_tiles = True
+
+        self.tile_mgr = TileManager(self.grid, self.file_cache,
+            [self.source_base, self.source_overlay], 'png',
+            meta_size=[2, 2], meta_buffer=0)
+    
+    def test_merged_tiles(self):
+        tiles = self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
+        eq_(self.source_base.requested,
+            [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))])
+        eq_(self.source_overlay.requested,
+            [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))])
+        
+        hist = tiles[0].source.as_image().histogram()
+        # lots of red (base), but not everything (overlay)
+        assert 55000 < hist[255] < 60000 # red   = 0xff
+        assert 55000 < hist[256]         # green = 0x00
+        assert 55000 < hist[512]         # blue  = 0x00
+        
+
+    @raises(ValueError)
+    def test_sources_with_mixed_support_for_meta_tiles(self):
+        self.source_base.supports_meta_tiles = False
+        self.tile_mgr = TileManager(self.grid, self.file_cache,
+            [self.source_base, self.source_overlay], 'png',
+            meta_size=[2, 2], meta_buffer=0)
+    
+    def test_sources_with_no_support_for_meta_tiles(self):
+        self.source_base.supports_meta_tiles = False
+        self.source_overlay.supports_meta_tiles = False
+        
+        self.tile_mgr = TileManager(self.grid, self.file_cache,
+            [self.source_base, self.source_overlay], 'png',
+            meta_size=[2, 2], meta_buffer=0)
+        
+        assert self.tile_mgr.meta_grid is None
+    
+
 class TestCacheMapLayer(object):
     def setup(self):
         self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
