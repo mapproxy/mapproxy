@@ -312,7 +312,7 @@ class WMSSourceConfiguration(SourceConfiguration):
             params['format'] = request_format
         
         transparent = self.conf['req'].get('transparent', 'false')
-        transparent = bool(transparent.lower() == 'true')
+        transparent = bool(str(transparent).lower() == 'true')
         
         resampling = context.globals.get_value('image.resampling_method', self.conf)
         
