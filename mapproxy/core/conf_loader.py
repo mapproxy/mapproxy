@@ -62,9 +62,12 @@ def load_tile_filters():
     for key in tile_filter_loaders:
         filters.append(loader(tile_filter_loaders, key))
     filters.sort(key=lambda x: x.priority, reverse=True)
-    return filters
+    conf_keys = set()
+    for f in filters:
+        conf_keys.update(f.cache_conf_keys)
+    return filters, conf_keys
 
-tile_filters = load_tile_filters()
+tile_filters, tile_filter_conf_keys = load_tile_filters()
 del load_tile_filters
 
 server_loaders = {
@@ -176,7 +179,7 @@ class ConfigurationBase(object):
         expected_keys.update(self.defaults.keys())
         for k, v in kw.iteritems():
             if k not in expected_keys:
-                raise ConfigurationError('unexpected key %s' % k)
+                log.warn('unexpected key %s', k)
             self.conf[k] = v
         
         for k in self.required_keys:
@@ -370,6 +373,7 @@ class DebugSourceConfiguration(SourceConfiguration):
 class CacheConfiguration(ConfigurationBase):
     optional_keys = set('''format cache_dir grids link_single_color_images image
         use_direct_from_res use_direct_from_level meta_buffer meta_size'''.split())
+    optional_keys.update(tile_filter_conf_keys)
     required_keys = set('name sources'.split())
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
     
@@ -393,9 +397,19 @@ class CacheConfiguration(ConfigurationBase):
         suffix = grid_conf.conf['srs'].replace(':', '')
         cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
         link_single_color_images = self.conf.get('link_single_color_images', False)
-        # tile_filter = self.get_tile_filter()
+        
+        tile_filter = self._tile_filter(context)
         return FileCache(cache_dir, file_ext=self.format,
+            pre_store_filter=tile_filter,
             link_single_color_images=link_single_color_images)
+    
+    def _tile_filter(self, context):
+        filters = []
+        for tile_filter in tile_filters:
+            f = tile_filter().create_filter(self.conf, context)
+            if f is not None:
+                filters.append(f)
+        return filters
     
     def caches(self, context):
         request_format = self.conf.get('request_format') or self.conf['format']

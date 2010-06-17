@@ -43,6 +43,7 @@ class TileFilter(object):
     same (modified) tile.
     """
     priority = 50
+    cache_conf_keys = []
     def create_filter(self, layer_conf):
         return NotImplementedError
 
@@ -70,10 +71,11 @@ class WaterMarkTileFilter(TileFilter):
     
     """
     priority = 90
-    def create_filter(self, layer_conf):
-        if 'watermark' in layer_conf.layer:
-            text = layer_conf.layer['watermark'].get('text', '')
-            opacity = layer_conf.layer['watermark'].get('opacity', None)
+    cache_conf_keys = ['watermark']
+    def create_filter(self, conf, context, **kw):
+        if 'watermark' in conf:
+            text = conf['watermark'].get('text', '')
+            opacity = conf['watermark'].get('opacity', None)
             if text != '':
                 return watermark_filter(text, opacity=opacity)
 
@@ -108,6 +110,7 @@ class PNGQuantTileFilter(TileFilter):
     
     """
     priority = 10
-    def create_filter(self, layer_conf):
-        if layer_conf.layer.get('pngquant', False):
+    cache_conf_keys = ['pngquant']
+    def create_filter(self, conf, context, **kw):
+        if conf.get('pngquant', False):
             return PNGQuantFilter()
