@@ -36,6 +36,16 @@ Install MapProxy
 Dependencies
 ~~~~~~~~~~~~
 
+* libproj
+* Python Image Library
+
+To install all requirements on Debian or Ubuntu call::
+
+    sudo aptitude install libproj0 python python-imaging
+
+
+
+
 To install MapProxy you need
 
 * C compiler

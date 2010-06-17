@@ -8,6 +8,7 @@ MapProxy Documentation
    
    install
    install_windows
+   tutorial
    configuration
    services
    seed

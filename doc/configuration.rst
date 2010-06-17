@@ -1,5 +1,5 @@
 Configuration
-=============
+#############
 
 There are a few different configuration files used by MapProxy. Some are required and some are optional.
 
@@ -20,7 +20,7 @@ There are a few different configuration files used by MapProxy. Some are require
     These are the paster configuration files that are used to start the proxy in development or production mode.
 
 services.yaml
--------------
+=============
 
 All layers the proxy offers are configured in this file. The configuration uses the YAML format.
 
@@ -30,45 +30,22 @@ All layers the proxy offers are configured in this file. The configuration uses 
 The configuration contains the keys ``service`` and ``layers``.
 
 
-service
-^^^^^^^
+services
+^^^^^^^^
 
-Here is an example for the ``service`` part::
-
-    service:
-        attribution:
-            text: "© MyCompany"
-        md:
-            title: MapProxy WMS Proxy
-            abstract: This is the fantastic MapProxy.
-            online_resource: http://mapproxy.org/
-            contact:
-                person: Your Name Here
-                position: Technical Director
-                organization: 
-                address: Fakestreet 123
-                city: Somewhere
-                postcode: 12345
-                country: Germany
-                phone: +49(0)000-000000-0
-                fax: +49(0)000-000000-0
-                email: you@example.org
-            access_constraints: This service is intended for private and evaluation use only.
-            fees: 'None'
+Here you can configure which services should be started. For more information about the 
+services read :doc:`services`.
 
 
+Here is an example::
 
-attribution
-"""""""""""
-
-Adds an attribution (copyright) line to all WMS requests.
-
-``text``
-  The text line of the attribution (e.g. some copyright notice, etc).
-
-md
-""""
-``md`` is for metadata. These fields are used for the WMS ``GetCapabilities`` responses. See the above example for all supported keys.
+  services:
+    tms:
+    wms:
+      md:
+        title: MapProxy Example WMS
+        contact:
+        [...]
 
 layers
 ^^^^^^
@@ -85,8 +62,50 @@ Here you can define all layers the proxy should offer. Each layer configuration 
       option2: yyy
 
 
+Each configuration item contains information about the layer (e.g. title) and where the data comes from (e.g. which WMS source or which cache).
 
-Each configuration item contains information about the layer (e.g. name), how the layer is cached (e.g. in which SRS) and where the data comes from (e.g. which WMS-Server).
+
+You define the data sources of each layer here. The configuration :ref:`is explained below
+<sources-conf-label>`.
+
+attribution
+"""""""""""
+Overwrite the system-wide attribution line for this layer.
+
+``inverse``
+  If this option is set to ``true``, the colors of the attribution will be inverted. Use this if the normal attribution is hard to on this layer (i.e. on aerial imagery).
+
+
+caches
+^^^^^^
+
+Here you can configure wich sources should be cached with which tile grids.
+Available options are:
+
+sources
+"""""""
+
+A list with one or more source names. The sources needs to be defined in the ``sources`` configuration. This option is `required`.
+
+format
+""""""
+The 
+
+grids
+"""""
+
+You can configure one or more grids for each cache. Internally MapProxy will create a cache for each grid.
+
+    srs: ['EPSG:4326', 'EPSG:900913']
+
+MapProxy supports on-the-fly transformation of requests between different SRSs. So
+it is not required to add an extra cache for each supported SRS. For best performance
+only the SRS most requests are in should be used.
+
+There is some special handling layers that need geographical and projected coordinate
+systems. If you set both ``EPSG:4326`` and ``EPSG:900913`` all requests with projected
+SRS will access the ``EPSG:900913`` cache, requests with geographical SRS will use
+``EPSG:4326``. The distortions from the transformation should be acceptable these to cached SRS.
 
 md
 """"
@@ -105,53 +124,88 @@ With ``param`` you can set the parameters of the data-source and cache.
     (e.g. localhost or LAN) you should use ``image/tiff`` here. That prevents unnecessary
     encoding and decoding of the images. If unset ``format`` is used.
 
-``srs``
-    The spatial reference system used for the internal cache. You can define multiple SRSs
-    here. One cache is created for each.::
-    
-        srs: EPSG:4326
-          or
-        srs: ['EPSG:4326', 'EPSG:900913']
- 
-    MapProxy supports on-the-fly transformation of requests between different SRSs. So
-    it is not required to add an extra cache for each supported SRS. For best performance
-    only the SRS most requests are in should be used.
-    
-    There is some special handling layers that need geographical and projected coordinate
-    systems. If you set both ``EPSG:4326`` and ``EPSG:900913`` all requests with projected
-    SRS will access the ``EPSG:900913`` cache, requests with geographical SRS will use
-    ``EPSG:4326``. The distortions from the transformation should be acceptable these to cached SRS.
+grids
+^^^^^
 
-``res``
-    The resolution for which MapProxy should cache tiles.
-    For requests with no matching cached resolution the next best resolution is used and MapProxy will transform the result. There are three ways to configure the resolutions.
+Here you can define the tile grids that MapProxy uses for the internal caching.
 
-    
-    1. A factor between each resolution. With each step the resolution is multiplied by this
-    factor. Defaults to 2.
-    
-    2. A list with resolutions in units per pixel (degrees or meter per pixel). The units
-    from the first configured ``srs`` are used.
-    
-    3. The term ``sqrt2``. This option is a shorthand for a resolution factor of 1.4142 (i.e.
-    square root of two). With this factor the resolution doubles every second level. Compared
-    to the default factor 2 you will get another cached level between all standard levels.
-    This is suited for free zooming in vector-based layers where the results might look to
-    blurry/pixelated in some resolutions.
-        
+Each grid can have the following options.
 
-sources
-"""""""
+srs
+"""
+The spatial reference system used for the internal cache.
 
-You define the data sources of each layer here. The configuration :ref:`is explained below
-<sources-conf-label>`.
+    srs: EPSG:4326
 
-attribution
-"""""""""""
-Overwrite the system-wide attribution line for this layer.
+res
+"""
 
-``inverse``
-  If this option is set to ``true``, the colors of the attribution will be inverted. Use this if the normal attribution is hard to on this layer (i.e. on aerial imagery).
+The resolution for which MapProxy should cache tiles. There are three ways to configure the resolutions.
+
+#. A factor between each resolution. With each step the resolution is multiplied by this
+   factor. Defaults to 2.
+
+#. A list with resolutions in units per pixel (degrees or meter per pixel).
+
+#. The term ``sqrt2``. This option is a shorthand for a resolution factor of 1.4142
+   (i.e. square root of two). With this factor the resolution doubles every second level.
+   Compared to the default factor 2 you will get another cached level between all standard
+   levels. This is suited for free zooming in vector-based layers where the results might
+   look to blurry/pixelated in some resolutions.
+
+
+For requests with no matching cached resolution the next best resolution is used and MapProxy will transform the result.
+
+bbox
+""""
+
+The extend of your grid. You can use either a list or a string with the lower left and upper right coordinates. You can set the SRS of the coordinates with the ``bbox_srs`` option. If that option is not set the ``srs`` of the grid will be used.
+::
+
+  bbox: [0, 40, 15, 55]
+    or
+  bbox: "0,40,15,55"
+
+bbox_srs
+""""""""
+
+The SRS of the grid bbox. See above.
+
+tile_size
+"""""""""
+
+The size of each tile. Defaults to 256x256 pixel.
+::
+  
+  tile_size: [512, 512]
+
+num_levels
+""""""""""
+
+The total number of cached resolution levels. Defaults to 20, except for grids with  ``sqrt2`` resolutions. This option has no effect when you set an explicit list of cache resolutions.
+
+stretch_factor
+""""""""""""""
+MapProxy chooses the `optimal` cached level for requests that do not exactly
+match any cached resolution. MapProxy will stretch or shrink images to the
+requested resolution. The `stretch_factor` defines the maximum factor
+MapProxy is allowed to stretch images. Stretched images result in better
+performance but will look blurry when the value is to large (> 1.2).
+
+Example: Your MapProxy caches 10m and 5m resolutions. Requests with 9m
+resolution will be generated from the 10m level, requests for 8m from the 5m
+level.
+  
+max_shrink_factor
+"""""""""""""""""
+This factor only applies for the first level and defines the maximum factor
+that MapProxy will shrink images.
+
+Example: Your MapProxy layer starts with 1km resolution. Requests with 3km
+resolution will get a result, requests with 5km will get a blank response.
+
+
+
 
 watermark
 """""""""""
@@ -171,36 +225,59 @@ Add a watermark right into the cached data. The watermark is thus also present i
 sources
 ^^^^^^^
 
-Every layer contains one or more sources. The sources define where the proxy should get the data for this layer. Each layer has a type.
+A sources defines where MapProxy can request new data. Each source has a ``type``, other available options are depended to this type.
 
-MapProxy support the following types:
+MapProxy support the following source types:
 
-``cache_wms``
-""""""""""""""
+``wms``
+"""""""
 
-The ``cache_wms`` source passes requests to a WMS server and caches all data for further requests.
+Use this source to request WMS servers.
 
-``req``
-    ``req`` contains the source WMS URL and the layers.
-    For transparent layers the option ``transparten`` should be set to ``'true'``.
+req
+---
 
-``wms_opts``
-    This option affects what request the proxy sends to the source WMS server.
+This describes the WMS source. The only required options are ``url`` and ``layers``.
+You need to set ``transparent`` to ``true`` if you want to use this source as an overlay.
+::
+
+  req:
+    url: http://example.org/service?
+    layers: base,roads
+    transparent: true
+
+All other options are added to the query string of the request.
+::
+
+  req:
+    url: http://example.org/service?
+    layers: base,roads
+    map: /path/to/mapfile
     
-    ``version`` is the WMS version number used for requests (supported: 1.0.0, 1.1.1, 1.3.0).
-    If ``featureinfo`` is true, MapProxy will mark the layer as queryable and incoming
-    `GetFeatureInfo` requests will be forwarded to the source server.
+
+wms_opts
+--------
+
+This option affects what request MapProxy sends to the source WMS server.
+
+``version`` is the WMS version number used for requests (supported: 1.0.0, 1.1.1, 1.3.0).
+If ``featureinfo`` is true, MapProxy will mark the layer as queryable and incoming
+`GetFeatureInfo` requests will be forwarded to the source server.
+
 
 .. _supported_srs-label:
 
-``supported_srs``
-    A list with SRSs that the WMS source supports. If the layer caches data in an SRS that the source does not
-    provide, MapProxy will use one of the configured `supported_srs` to request images and will then transform
-    the result back to the cache SRS.
+supported_srs
+-------------
+A list with SRSs that the WMS source supports. MapProxy will only query the source in these SRSs. It will reproject data if it needs to get data from this layer in any other SRS.
+
+You don't need to configure this if you only use this WMS as a cache source and the WMS supports all SRS of the cache.  
+
     
-    If you have multiple `supported_srs`, MapProxy will use the fist projected SRS for requests in projected
-    SRS, and vice versa for geographic SRS. E.g when `supported_srs` is ``['EPSG:4326', 'EPSG:31467']`` caches
-    for EPSG:900913 will use EPSG:32467.
+If you have multiple ``supported_srs`` and MapProxy needs to reproject it will use the
+fist projected SRS for requests in projected SRS, and vice versa for geographic SRS. E.g
+when `supported_srs` is ``['EPSG:4326', 'EPSG:31467']`` caches for EPSG:900913 will use
+EPSG:32467.
     
   ..  .. note:: For the configuration of SRS for MapProxy see `srs_configuration`_.
 
@@ -213,22 +290,22 @@ Minimal example::
 
 Full example::
 
-  - type: cache_wms
+  - type: wms
     wms_opts:
       version: 1.0.0
       featureinfo: True
     supported_srs: ['EPSG:4326', 'EPSG:31467']
     req:
-      url: http://localhost:8080/service?mycustomparam=42
+      url: http://localhost:8080/service?mycustomparam=foo
       layers: roads
-      transparent: 'true'
+      another_param: bar
+      transparent: true
 
-``cache_tiles``
-"""""""""""""""
+``tiles``
+""""""""""
 
-The ``cache_tiles`` source can retrieve data from existing tile servers. This source takes a
-``url`` option that contains a URL template. The template format is ``%(key_name)s``. MapProxy
-supports the following named variables in the URL:
+The ``tiles`` source can retrieve data from existing tile servers like TileCache and GeoWebCache. This source takes a
+``url`` option that contains a URL template. The template format is ``%(key_name)s``. MapProxy supports the following named variables in the URL:
 
 ``x``, ``y``, ``z``
   The tile coordinate.
@@ -240,9 +317,9 @@ supports the following named variables in the URL:
   TileCache path like ``09/000/000/264/000/000/345``. Note that it does not contain any format
   extension.
 
-Additionally you can specify the origin of the tile grid with the ``origin`` option. Supported
-values are ``sw`` for south-west (lower-left) origin or ``nw`` for north-west (upper-left)
-origin. ``sw`` is the default.
+Additionally you can specify the origin of the tile grid with the ``origin`` option.
+Supported values are ``sw`` for south-west (lower-left) origin or ``nw`` for north-west
+(upper-left) origin. ``sw`` is the default.
 
 Example::
 
@@ -251,24 +328,6 @@ Example::
     origin: ``nw``
 
 
-``direct``
-"""""""""""
-A ``direct`` source passes all requests to the configured WMS server and does *not* cache any data.
-
-``req``
-  Defines the source WMS URL and the layers that should be requested. This is similar to
-  the ``cache_wms.req`` parameter.
-
-``supported_srs``
-  A list of the SRS the source WMS supportes. Other requests for other SRS will be transformed. See ``supported_srs`` for :ref:`cache_wms.supported_srs <supported_srs-label>`.
-  
-Example::
-
-  - type: direct
-    req:
-      url: http://servername/service
-      layers: poi,roads
-
 ``debug``
 """""""""""
 
@@ -276,27 +335,14 @@ Adds information like resolution and bbox to the response image.
 This is useful to determine a fixed set of resolutions for the ``res``-parameter.
 
 
-
-
-proxy.yaml
-----------
-
-This file configures some internals of MapProxy.
-
-``wms``
+globals
 ^^^^^^^
 
-This configures the MapProxy WMS server. Here you can configure the image formats and SRS your MapProxy should offer in the WMS capabilities.
-
-``image_formats``
-  A list of image mime types. 
-
-``srs``
-  A list of supported SRS. MapProxy will only accept request for these SRS. 
+Here you can define some internals of MapProxy and default values that are used in the other configuration directives.
 
 
 ``image``
-^^^^^^^^^
+"""""""""
 
 Here you can define some options that affect the way MapProxy generates image results.
 
@@ -323,26 +369,8 @@ Here you can define some options that affect the way MapProxy generates image re
   larger file sizes but better image quality. You should try values between 75
   and 90 for good compromise between performance and quality.
 
-``stretch_factor``
-  MapProxy chooses the `optimal` cached level for requests that do not exactly
-  match any cached resolution. MapProxy will stretch or shrink images to the
-  requested resolution. The `stretch_factor` defines the maximum factor
-  MapProxy is allowed to stretch images. Stretched images result in better
-  performance but will look blurry when the value is to large (> 1.2).
-  
-  Example: Your MapProxy caches 10m and 5m resolutions. Requests with 9m
-  resolution will be generated from the 10m level, requests for 8m from the 5m
-  level.
-  
-``max_shrink_factor``
-  This factor only applies for the first level and defines the maximum factor
-  that MapProxy will shrink images.
-  
-  Example: Your MapProxy layer starts with 1km resolution. Requests with 3km
-  resolution will get a result, requests with 5km will get a blank response.
-
 ``cache``
-^^^^^^^^^
+"""""""""
 
 ``meta_size``
   MapProxy does not make a single request for every tile but will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 64 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source WMS.
@@ -370,7 +398,7 @@ Here you can define some options that affect the way MapProxy generates image re
 
 
 ``srs``
-^^^^^^^
+"""""""
 
 ``proj_data_dir``
   MapProxy uses Proj4 for all coordinate transformations. If you need custom projections
@@ -406,7 +434,7 @@ Here you can define some options that affect the way MapProxy generates image re
 .. _http_ssl:
 
 ``http.ssl``
-^^^^^^^^^^^^
+""""""""""""
 
 .. note:: You need Python 2.6 or the `SSL module <http://pypi.python.org/pypi/ssl>`_ for this feature.
 
@@ -429,19 +457,19 @@ If you want to use SSL but do not need certificate verification, then you can di
 
 
 ``tile_creator_pool_size``
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""
 
 This limits the number of parallel requests MapProxy will make to a source WMS. This limit is per request and not for all MapProxy requests.
 
 Example: A request in an uncached region requires MapProxy to fetch four meta-tiles. A tile_creator_pool_size of two allows MapProxy to make two requests to the source WMS request in parallel.
 
 ``http_client_timeout``
-^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""
 
 This defines how long MapProxy should wait for data from source servers. Increase this value if your source servers are slower.
 
 ``tiles``
-^^^^^^^^^
+""""""""""
 
 Configuration options for the TMS/Tile service.
 

@@ -17,6 +17,22 @@ Use the ``-f`` option to specify the proxy configuration.
 
     mapproxy-seed -f etc/proxy.yaml etc/seed.yaml
 
+
+Installation
+^^^^^^^^^^^^
+
+The seed tool is already included in the MapProxy installation but it has some additional dependencies. If you use Python 2.5 you need to install ``multiprocessing``. This module is already included in Python 2.6::
+
+  pip install multiprocessing
+
+If you want to use polygons to define your geographical extend of the seeding area, instead of simple bounding box, you will also need Shapely and GEOS. For loading polygons from shapefiles you'll also need GDAL/OGR.
+
+On Debian::
+
+  sudo aptitude install libgeos-dev libgdal-dev
+  pip install Shapely
+
+
 Configuration
 --------------
 
@@ -65,7 +81,7 @@ There are three different ways to describe the extend of the seed view.
  - a text file with one or more polygons in WKT format,
  - polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)
 
-.. note:: The last two variants require `Shapely <http://pypi.python.org/pypi/Shapely>`_. Make sure it is available (e.g. ``pip install Shapely``). Shapely itself needs GEOS and the OGR reader needs GDAL/OGR. On Debian/Ubuntu these libraries are in the ``libgeos-dev`` and ``libgdal-dev`` packages.
+.. note:: The last two variants have additional dependencies, see :ref:`Installation`.
 
 Bounding box
 """"""""""""

@@ -17,6 +17,7 @@ import sys, os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.append(os.path.abspath('.'))
+sys.path.append(os.path.abspath('_themes'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -93,25 +94,25 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'default'
+html_theme = 'mapproxy'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 
-c_dark_grey = "#3A3740"
-html_theme_options = {
-    "relbarbgcolor": c_dark_grey,
-    "footerbgcolor": c_dark_grey,
-    "sidebarbgcolor": c_dark_grey,
-    "linkcolor": "#6E838B",
-    "sidebarlinkcolor": "#EFEFEF",
-    "codebgcolor": "#DCEBED",
-    
-}
+html_theme_options = {}
+# c_dark_grey = "#3A3740"
+#     "relbarbgcolor": c_dark_grey,
+#     "footerbgcolor": c_dark_grey,
+#     "sidebarbgcolor": c_dark_grey,
+#     "linkcolor": "#6E838B",
+#     "sidebarlinkcolor": "#EFEFEF",
+#     "codebgcolor": "#DCEBED",
+#     
+# }
 
 # Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+html_theme_path = ['_themes']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".

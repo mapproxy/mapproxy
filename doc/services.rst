@@ -11,6 +11,42 @@ Web Map Service (OGC WMS)
 
 The WMS server is accessible at `/service`. The server supports the WMS versions 1.0.0, 1.1.1 and 1.3.0.
 
+::
+
+    service:
+        attribution:
+            text: "© MyCompany"
+        md:
+            title: MapProxy WMS Proxy
+            abstract: This is the fantastic MapProxy.
+            online_resource: http://mapproxy.org/
+            contact:
+                person: Your Name Here
+                position: Technical Director
+                organization: 
+                address: Fakestreet 123
+                city: Somewhere
+                postcode: 12345
+                country: Germany
+                phone: +49(0)000-000000-0
+                fax: +49(0)000-000000-0
+                email: you@example.org
+            access_constraints: This service is intended for private and evaluation use only.
+            fees: 'None'
+            
+attribution
+"""""""""""
+
+Adds an attribution (copyright) line to all WMS requests.
+
+``text``
+  The text line of the attribution (e.g. some copyright notice, etc).
+
+md
+""""
+``md`` is for metadata. These fields are used for the WMS ``GetCapabilities`` responses. See the above example for all supported keys.
+
+
 SRS
 """
 
@@ -20,6 +56,20 @@ The `wms.srs` option defines which SRS the WMS service supports. If you need oth
    srs: ['EPSG:4326', 'CRS:84', 'EPSG:900913']
 
 See :ref:`axis order<axis_order>` for further configuration that might be needed for WMS 1.3.0.
+
+
+``wms``
+"""""""
+
+This configures the MapProxy WMS server. Here you can configure the image formats and SRS your MapProxy should offer in the WMS capabilities.
+
+``image_formats``
+  A list of image mime types. 
+
+``srs``
+  A list of supported SRS. MapProxy will only accept request for these SRS. 
+
+
 
 Tiled Map Services (TMS)
 ------------------------

@@ -95,7 +95,7 @@ The preferred medium for all MapProxy related discussions is our mailing list ma
 
 IRC
 """
-There is also a channel on `Freenode <http://freenode.net/>`_: ``#mapproxy``. It is a quite place but you might find someone during business hours (central european time).
+There is also a channel on `Freenode <http://freenode.net/>`_: ``#mapproxy``. It is a quiet place but you might find someone during business hours (central european time).
 
 Tips on development
 -------------------
