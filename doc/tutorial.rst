@@ -1,6 +1,7 @@
 Tutorial
 ########
 
+.. highlight:: yaml
 
 This tutorial should give you a quick introduction to the MapProxy configuration.
 
@@ -16,7 +17,10 @@ YAML uses a more readable and user-friendly syntax. We encourage you to use it.
 
 If you are familiar with YAML you can skip the next section. 
 
-The YAML configuration consist of dictionaries, lists, strings, numbers and booleans.
+The YAML configuration consist of comments, dictionaries, lists, strings, numbers and booleans.
+
+Comments
+  Everything after a pound character (``#``) is a comment and will be ignored.
 
 Numbers
   Any numerical value like ``12``, ``-4``, ``0``, and ``3.1415``.

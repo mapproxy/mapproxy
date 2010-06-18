@@ -2,6 +2,7 @@
 Configuration examples
 ######################
 
+.. highlight:: yaml
 
 This document will show you some usage scenarios of MapProxy and will explain some combinations of configuration options that might be useful for you.
 
@@ -133,7 +134,7 @@ You can configure the method MapProxy uses for resampling when it scales or tran
     vector_cache:
       image:
         resampling: bicubic
-      [...]
+      # [...]
 
   or
   
@@ -163,7 +164,7 @@ You should explicitly define the SRS the source WMS supports. Requests in other 
     direct_wms:
   
   direct_example:
-    [md and params omitted]
+    # [md and params omitted]
     sources:
     - type: direct
       supported_srs: ['EPSG:4326', 'EPSG:25832']

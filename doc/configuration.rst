@@ -1,6 +1,8 @@
 Configuration
 #############
 
+.. highlight:: yaml
+
 There are a few different configuration files used by MapProxy. Some are required and some are optional.
 
 ``services.yaml``
@@ -45,7 +47,7 @@ Here is an example::
       md:
         title: MapProxy Example WMS
         contact:
-        [...]
+        # [...]
 
 layers
 ^^^^^^
