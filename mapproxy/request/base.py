@@ -20,7 +20,7 @@ Service requests (parsing, handling, etc).
 import urllib
 import cgi
 
-from mapproxy.core.utils import cached_property
+from mapproxy.util import cached_property
 
 import logging
 log = logging.getLogger(__name__)

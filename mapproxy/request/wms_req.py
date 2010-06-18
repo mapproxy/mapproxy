@@ -22,7 +22,7 @@ from __future__ import with_statement
 import logging
 log = logging.getLogger(__name__)
 
-from mapproxy.wms.request import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest,\
+from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest,\
                                   WMS100FeatureInfoRequest, WMS111FeatureInfoRequest,\
                                   WMS130FeatureInfoRequest
 

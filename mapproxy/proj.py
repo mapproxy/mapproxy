@@ -27,7 +27,7 @@ MAPPROXY_USE_LIBPROJ or MAPPROXY_USE_PYPROJ to any value.
  
 """
 
-from mapproxy.core.libutils import load_library
+from mapproxy.util.lib import load_library
 
 import os
 import ctypes

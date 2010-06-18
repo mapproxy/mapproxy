@@ -1,6 +1,6 @@
 import os
-from mapproxy.core.config import base_config
-from mapproxy.core import srs
+from mapproxy.config import base_config
+from mapproxy import srs
 
 class Test_0_ProjDefaultDataPath(object):
     

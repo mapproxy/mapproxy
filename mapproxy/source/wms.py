@@ -19,11 +19,11 @@ Retrieve maps/information from WMS servers.
 """
 
 import sys
-from mapproxy.core.source import Source, InfoSource
-from mapproxy.core.cache import MapExtend, TileSourceError
-from mapproxy.core.srs import SRS
-from mapproxy.core.client import HTTPClientError
-from mapproxy.core.utils import reraise_exception
+from mapproxy.source import Source, InfoSource
+from mapproxy.cache import MapExtend, TileSourceError
+from mapproxy.srs import SRS
+from mapproxy.client import HTTPClientError
+from mapproxy.util import reraise_exception
 
 class WMSSource(Source):
     supports_meta_tiles = True

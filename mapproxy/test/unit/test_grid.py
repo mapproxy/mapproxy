@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from nose.tools import eq_, assert_almost_equals
-from mapproxy.core.grid import (
+from mapproxy.grid import (
     MetaGrid,
     TileGrid,
     _create_tile_list,
@@ -23,7 +23,7 @@ from mapproxy.core.grid import (
     bbox_contains,
     NoTiles,
 )
-from mapproxy.core.srs import SRS, TransformationError
+from mapproxy.srs import SRS, TransformationError
 
 def test_metagrid_bbox():
     mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))

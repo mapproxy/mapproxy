@@ -16,9 +16,9 @@
 
 from __future__ import with_statement
 
-from mapproxy.core.config import Options, base_config, load_base_config
+from mapproxy.config import Options, base_config, load_base_config
 
-from mapproxy.tests.helper import TempFiles
+from mapproxy.test.helper import TempFiles
 
 def teardown_module():
     load_base_config(clear_existing=True)
@@ -95,8 +95,8 @@ class TestDefaultsLoading(object):
 
 class TestSRSConfig(object):
     def setup(self):
-        import mapproxy.core.config
-        mapproxy.core.config._config = None
+        import mapproxy.config.config
+        mapproxy.config.config._config = None
     
     def test_user_srs_definitions(self):
         user_yaml = """

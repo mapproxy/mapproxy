@@ -22,8 +22,8 @@ import re
 import os
 import sys
 import threading
-from mapproxy.core.config import base_config, load_base_config, abspath
-from mapproxy.core.version import version_string
+from mapproxy.config import base_config, load_base_config, abspath
+from mapproxy.version import version_string
 version = version_string()
 # NOTE: do not import anything from mapproxy before init_logging is called
 #       otherwise the logging will not be configured properly
@@ -96,9 +96,9 @@ def make_wsgi_app(services_conf=None):
     :param services_conf: the file name of the services.yaml configuration,
                           if ``None`` the default is loaded.
     """
-    from mapproxy.core.request import Request
-    from mapproxy.core.response import Response
-    from mapproxy.core.conf_loader import load_services
+    from mapproxy.request import Request
+    from mapproxy.response import Response
+    from mapproxy.config.conf_loader import load_services
     
     services = load_services(services_conf)
     class ProxyApp(object):

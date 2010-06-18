@@ -16,12 +16,12 @@
 
 import Image
 from cStringIO import StringIO
-from mapproxy.tests.helper import Mocker, validate_with_dtd, validate_with_xsd
-from mapproxy.tests.image import is_png
-from mapproxy.wms.request import WMSMapRequest
-from mapproxy.core.request import url_decode
-from mapproxy.core.exceptions import (RequestError, ExceptionHandler)
-from mapproxy.wms.exceptions import (WMS100ExceptionHandler, WMS111ExceptionHandler,
+from mapproxy.test.helper import Mocker, validate_with_dtd, validate_with_xsd
+from mapproxy.test.image import is_png
+from mapproxy.request.wms import WMSMapRequest
+from mapproxy.request import url_decode
+from mapproxy.exception import (RequestError, ExceptionHandler)
+from mapproxy.service.wms_exceptions import (WMS100ExceptionHandler, WMS111ExceptionHandler,
                                      WMS130ExceptionHandler)
 from nose.tools import eq_
 

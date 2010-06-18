@@ -16,13 +16,14 @@
 
 import re
 
-from mapproxy.core.exceptions import (
+from mapproxy.exception import (
     RequestError,
     XMLExceptionHandler,
     PlainExceptionHandler, )
 
-from mapproxy.core.template import template_loader
-get_template = template_loader(__file__, 'templates')
+import mapproxy.service
+from mapproxy.template import template_loader
+get_template = template_loader(mapproxy.service.__file__, 'templates')
 
 class TileRequest(object):
     """

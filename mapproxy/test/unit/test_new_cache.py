@@ -9,18 +9,18 @@ import tempfile
 from StringIO import StringIO
 import Image
 
-from mapproxy.core.layer import (
+from mapproxy.layer import (
     CacheMapLayer,
     SRSConditional,
     ResolutionConditional,
     DirectMapLayer,
 )
-from mapproxy.core.source import Source
-from mapproxy.wms.client import WMSClient
-from mapproxy.wms.source import WMSSource
-from mapproxy.tms.source import TiledSource
+from mapproxy.source import Source
+from mapproxy.client.wms import WMSClient
+from mapproxy.source.wms import WMSSource
+from mapproxy.source.tile import TiledSource
 
-from mapproxy.core.cache import (
+from mapproxy.cache import (
     Tile,
     MapExtend, 
     MapQuery,
@@ -30,15 +30,15 @@ from mapproxy.core.cache import (
     TileManager,
 )
 
-from mapproxy.core.grid import TileGrid
-from mapproxy.core.srs import SRS
-from mapproxy.core.client import HTTPClient
-from mapproxy.core.image import ImageSource
+from mapproxy.grid import TileGrid
+from mapproxy.srs import SRS
+from mapproxy.client import HTTPClient
+from mapproxy.image import ImageSource
 
-from mapproxy.wms.request import WMS111MapRequest
+from mapproxy.request.wms import WMS111MapRequest
 
-from mapproxy.tests.image import create_debug_img, is_png, tmp_image
-from mapproxy.tests.http import query_eq, mock_httpd
+from mapproxy.test.image import create_debug_img, is_png, tmp_image
+from mapproxy.test.http import query_eq, mock_httpd
 
 from collections import defaultdict
 

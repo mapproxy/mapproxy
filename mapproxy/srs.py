@@ -23,8 +23,8 @@ from __future__ import division
 import math
 import threading
 from itertools import izip
-from mapproxy.core.proj import Proj, transform, set_datapath
-from mapproxy.core.config import base_config, abspath
+from mapproxy.proj import Proj, transform, set_datapath
+from mapproxy.config import base_config, abspath
 
 import logging
 log = logging.getLogger(__name__)

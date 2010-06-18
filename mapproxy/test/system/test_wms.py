@@ -22,15 +22,15 @@ import functools
 
 from cStringIO import StringIO
 from webtest import TestApp
-import mapproxy.core.config
-from mapproxy.core.app import make_wsgi_app 
-from mapproxy.wms.request import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest, \
+import mapproxy.config
+from mapproxy.wsgiapp import make_wsgi_app 
+from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest, \
                                  WMS111FeatureInfoRequest, WMS111CapabilitiesRequest, \
                                  WMS130CapabilitiesRequest, WMS100CapabilitiesRequest, \
                                  WMS100FeatureInfoRequest, WMS130FeatureInfoRequest
-from mapproxy.tests.image import is_jpeg, is_png, tmp_image
-from mapproxy.tests.http import mock_httpd
-from mapproxy.tests.helper import validate_with_dtd, validate_with_xsd
+from mapproxy.test.image import is_jpeg, is_png, tmp_image
+from mapproxy.test.http import mock_httpd
+from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
 from nose.tools import eq_
 
 global_app = None
@@ -39,18 +39,18 @@ def setup_module():
     fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
     fixture_layer_conf = os.path.join(fixture_dir, 'new_layer.yaml')
     fixture_cache_data = os.path.join(fixture_dir, 'cache_data')
-    mapproxy.core.config.base_config().debug_mode = True
-    mapproxy.core.config.base_config().services_conf = fixture_layer_conf
-    mapproxy.core.config.base_config().cache.base_dir = fixture_cache_data
-    mapproxy.core.config.base_config().image.paletted = False
-    mapproxy.core.config._service_config = None
+    mapproxy.config.base_config().debug_mode = True
+    mapproxy.config.base_config().services_conf = fixture_layer_conf
+    mapproxy.config.base_config().cache.base_dir = fixture_cache_data
+    mapproxy.config.base_config().image.paletted = False
+    mapproxy.config._service_config = None
     
     global global_app
     global_app = TestApp(make_wsgi_app(fixture_layer_conf))
 
 def teardown_module():
-    mapproxy.core.config._config = None
-    mapproxy.core.config._service_config = None
+    mapproxy.config._config = None
+    mapproxy.config._service_config = None
 
 def test_invalid_url():
     global_app.get('/invalid?fop', status=404)
@@ -61,7 +61,7 @@ class WMSTest(object):
         self.created_tiles = []
     
     def created_tiles_filenames(self):
-        base_dir = mapproxy.core.config.base_config().cache.base_dir
+        base_dir = mapproxy.config.base_config().cache.base_dir
         for filename in self.created_tiles:
             yield os.path.join(base_dir, filename)
     
@@ -344,7 +344,7 @@ class TestWMS111(WMSTest):
         assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
     
     def test_get_featureinfo_missing_params_non_strict(self):
-        mapproxy.core.config.base_config().wms.non_strict = True
+        mapproxy.config.base_config().wms.non_strict = True
         try:
             expected_req = (
                 {'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
@@ -359,7 +359,7 @@ class TestWMS111(WMSTest):
                 eq_(resp.content_type, 'text/plain')
                 eq_(resp.body, 'info')
         finally:
-            mapproxy.core.config.base_config().wms.non_strict = False
+            mapproxy.config.base_config().wms.non_strict = False
     
     def test_get_featureinfo_not_queryable(self):
         self.common_fi_req.params['query_layers'] = 'tms_cache'
@@ -448,7 +448,7 @@ class TestWMS100(WMSTest):
         
     def test_get_map_png_transparent_paletted(self):
         try:
-            mapproxy.core.config.base_config().image.paletted = True
+            mapproxy.config.base_config().image.paletted = True
             self.common_map_req.params['transparent'] = 'True'
             resp = self.app.get(self.common_map_req)
             resp.content_type = 'image/png'
@@ -456,7 +456,7 @@ class TestWMS100(WMSTest):
             assert is_png(data)
             assert Image.open(data).mode == 'P'
         finally:
-            mapproxy.core.config.base_config().image.paletted = False
+            mapproxy.config.base_config().image.paletted = False
             
     def test_get_map_png_transparent(self):
         self.common_map_req.params['transparent'] = 'True'
@@ -689,7 +689,7 @@ if sys.platform != 'win32':
                     resp = self.app.get(self.common_map_req)
                     eq_(resp.content_type, 'image/jpeg')
             
-                base_dir = mapproxy.core.config.base_config().cache.base_dir
+                base_dir = mapproxy.config.base_config().cache.base_dir
                 single_loc = os.path.join(base_dir, real_name)
                 tile_loc = os.path.join(base_dir, link_name)
                 assert os.path.exists(single_loc)

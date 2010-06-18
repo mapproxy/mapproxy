@@ -18,18 +18,18 @@
 # from cStringIO import StringIO
 # import mapproxy.wms.layer
 # from mapproxy.wms.client import WMSClient
-# from mapproxy.core.grid import TileGrid
-# from mapproxy.core.cache import TileCacheError
+# from mapproxy.grid import TileGrid
+# from mapproxy.cache import TileCacheError
 # from mapproxy.wms.layer import DirectLayer, Layer, VLayer, WMSCacheLayer, MultiLayer, srs_dispatcher
 # from mapproxy.tms.layer import TileServiceLayer
-# from mapproxy.core.request import Request
+# from mapproxy.request import Request
 # from mapproxy.tms.request import tile_request
-# from mapproxy.core.exceptions import RequestError
-# from mapproxy.wms.request import WMS111MapRequest
-# from mapproxy.core.srs import SRS
+# from mapproxy.exceptions import RequestError
+# from mapproxy.request.wms import WMS111MapRequest
+# from mapproxy.srs import SRS
 # 
 # from nose.tools import eq_, assert_almost_equal, raises
-# from mapproxy.tests.helper import Mocker, mocker
+# from mapproxy.test.helper import Mocker, mocker
 # from mocker import ANY
 # 
 # 
@@ -141,7 +141,7 @@
 #         req = WMS111MapRequest(param={'width': '100', 'height': '200',
 #                                     'bbox': '10,-5,15,5', 'srs': 'EPSG:4326'})
 #         old_log = mapproxy.wms.layer.log
-#         mapproxy.core.layer.log = self.mock()
+#         mapproxy.layer.log = self.mock()
 #         self.expect(mapproxy.wms.layer.log.error(mocker.ANY))
 #         exc = TileCacheError('foo happened')
 #         self.expect(self.tc.image((10, -5, 15, 5), SRS(4326), (100, 200))).throw(exc)
@@ -153,7 +153,7 @@
 #             eq_(e.request, req)
 #         else:
 #             assert False, 'expected RequestError'
-#         mapproxy.core.layer.log = old_log
+#         mapproxy.layer.log = old_log
 # 
 # class TestTileServiceLayer(Mocker):
 #     def layer_for_grid(self, epsg, **kw):

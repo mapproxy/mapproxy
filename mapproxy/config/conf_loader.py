@@ -26,11 +26,11 @@ import pkg_resources
 import logging
 log = logging.getLogger(__name__)
 
-from mapproxy.core.srs import SRS
-from mapproxy.core.odict import odict
-from mapproxy.core.cache import FileCache
-from mapproxy.core.config import base_config, abspath
-from mapproxy.core.client import auth_data_from_url, HTTPClient
+from mapproxy.srs import SRS
+from mapproxy.util.ext.odict import odict
+from mapproxy.cache import FileCache
+from mapproxy.config import base_config, abspath
+from mapproxy.client import auth_data_from_url, HTTPClient
 
 def load_source_loaders():
     source_loaders = {}
@@ -53,8 +53,8 @@ def loader(loaders, name):
 
 
 tile_filter_loaders = {
-    'watermark': 'mapproxy.core.tilefilter:WaterMarkTileFilter',
-    'pngquant': 'mapproxy.core.tilefilter:PNGQuantTileFilter',
+    'watermark': 'mapproxy.tilefilter:WaterMarkTileFilter',
+    'pngquant': 'mapproxy.tilefilter:PNGQuantTileFilter',
 }
 
 def load_tile_filters():
@@ -79,23 +79,23 @@ def server_loader(name):
     return loader(server_loaders, name)
 
 
-import mapproxy.core.config
-from mapproxy.core.grid import TileGrid
-from mapproxy.core.request import split_mime_type
-from mapproxy.wms.conf_loader import create_request
-from mapproxy.core.client import TileClient, TileURLTemplate
-from mapproxy.core.source import DebugSource
-from mapproxy.core.layer import CacheMapLayer, SRSConditional, ResolutionConditional
-from mapproxy.wms.server import WMSServer
-from mapproxy.wms.client import WMSClient, WMSInfoClient
-from mapproxy.wms.source import WMSSource, WMSInfoSource
-from mapproxy.wms.layer import WMSLayer
-from mapproxy.tms.server import TileServer
-from mapproxy.tms.layer import TileLayer
-from mapproxy.tms.source import TiledSource
-from mapproxy.kml import KMLServer
+import mapproxy.config
+from mapproxy.grid import TileGrid
+from mapproxy.request.base import split_mime_type
+from mapproxy.request.wms_req import create_request
+from mapproxy.client import TileClient, TileURLTemplate
+from mapproxy.source import DebugSource
+from mapproxy.layer import CacheMapLayer, SRSConditional, ResolutionConditional
+from mapproxy.service.wms import WMSServer
+from mapproxy.client.wms import WMSClient, WMSInfoClient
+from mapproxy.source.wms import WMSSource, WMSInfoSource
+from mapproxy.service.wms_layer import WMSLayer
+from mapproxy.service.tile import TileServer
+from mapproxy.service.tile_layers import TileLayer
+from mapproxy.source.tile import TiledSource
+from mapproxy.service.kml import KMLServer
 
-from mapproxy.core.cache import (
+from mapproxy.cache import (
     TileManager,
     map_extend_from_grid
 )
@@ -244,7 +244,7 @@ class GlobalConfiguration(ConfigurationBase):
     def __init__(self, **kw):
         ConfigurationBase.__init__(self, **kw)
         self._set_base_config()
-        mapproxy.core.config.finish_base_config()
+        mapproxy.config.finish_base_config()
     
     def _set_base_config(self):
         self._copy_conf_values(self.conf, base_config())

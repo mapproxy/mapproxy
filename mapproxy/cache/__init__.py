@@ -43,11 +43,11 @@ import time
 import errno
 import hashlib
 
-from mapproxy.core.utils import FileLock
-from mapproxy.core.image import ImageSource, is_single_color_image, TileSplitter, merge_images
-from mapproxy.core.config import base_config
-from mapproxy.core.srs import SRS
-from mapproxy.core.grid import MetaGrid
+from mapproxy.util import FileLock
+from mapproxy.image import ImageSource, is_single_color_image, TileSplitter, merge_images
+from mapproxy.config import base_config
+from mapproxy.srs import SRS
+from mapproxy.grid import MetaGrid
 
 
 import logging

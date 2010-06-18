@@ -18,7 +18,7 @@
 Filter for tiles (watermark, pngquant, etc.)
 """
 
-from mapproxy.core.image import ImageSource, WatermarkImage
+from mapproxy.image import ImageSource, WatermarkImage
 
 import logging
 log = logging.getLogger(__name__)

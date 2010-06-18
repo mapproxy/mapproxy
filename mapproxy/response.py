@@ -21,8 +21,8 @@ Service responses.
 import os
 import hashlib
 import mimetypes
-from mapproxy.core.timeutils import format_httpdate, parse_httpdate, timestamp
-from mapproxy.core.app import ctx
+from mapproxy.util.times import format_httpdate, parse_httpdate, timestamp
+from mapproxy.wsgiapp import ctx
 
 class Response(object):
     charset = 'utf-8'

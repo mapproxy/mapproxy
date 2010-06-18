@@ -1,14 +1,14 @@
 import re
 
-from mapproxy.core.response import Response
-from mapproxy.core.exceptions import RequestError, PlainExceptionHandler
-from mapproxy.core.server import Server
-from mapproxy.tms.request import TileRequest
-from mapproxy.core.srs import SRS
-from mapproxy.core.app import ctx
-from mapproxy.core.config import base_config
+from mapproxy.response import Response
+from mapproxy.exception import RequestError, PlainExceptionHandler
+from mapproxy.service.base import Server
+from mapproxy.request.tile import TileRequest
+from mapproxy.srs import SRS
+from mapproxy.wsgiapp import ctx
+from mapproxy.config import base_config
 
-from mapproxy.core.template import template_loader, bunch
+from mapproxy.template import template_loader, bunch
 get_template = template_loader(__file__, 'templates')
 
 class KMLRequest(TileRequest):

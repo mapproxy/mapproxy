@@ -18,15 +18,15 @@
 WMS service handler
 """
 from itertools import chain
-from mapproxy.wms.request import wms_request
-from mapproxy.core.srs import merge_bbox
-from mapproxy.core.server import Server
-from mapproxy.core.response import Response
-from mapproxy.core.exceptions import RequestError
-from mapproxy.core.config import base_config
-from mapproxy.core.image import attribution_image
+from mapproxy.request.wms import wms_request
+from mapproxy.srs import merge_bbox
+from mapproxy.service.base import Server
+from mapproxy.response import Response
+from mapproxy.exception import RequestError
+from mapproxy.config import base_config
+from mapproxy.image import attribution_image
 
-from mapproxy.core.template import template_loader, bunch
+from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
 get_template = template_loader(__file__, 'templates', namespace=env)
 
@@ -44,7 +44,7 @@ class WMSServer(Server):
         self.layers = layers
         self.tile_layers = tile_layers or {}
         if layer_merger is None:
-            from mapproxy.core.image import LayerMerger
+            from mapproxy.image import LayerMerger
             layer_merger = LayerMerger
         self.merger = layer_merger
         self.attribution = attribution

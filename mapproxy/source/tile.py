@@ -19,10 +19,10 @@ Retrieve tiles from different tile servers (TMS/TileCache/etc.).
 """
 
 import sys
-from mapproxy.core.source import Source
-from mapproxy.core.client import HTTPClientError
-from mapproxy.core.cache import TileSourceError, InvalidSourceQuery
-from mapproxy.core.utils import reraise_exception
+from mapproxy.source import Source
+from mapproxy.client import HTTPClientError
+from mapproxy.cache import TileSourceError, InvalidSourceQuery
+from mapproxy.util import reraise_exception
 
 class TiledSource(Source):
     def __init__(self, grid, client, inverse=False):

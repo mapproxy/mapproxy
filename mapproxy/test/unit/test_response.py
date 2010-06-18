@@ -16,9 +16,9 @@
 
 from cStringIO import StringIO
 
-from mapproxy.tests.helper import Mocker
+from mapproxy.test.helper import Mocker
 from mocker import ANY
-from mapproxy.core.response import Response
+from mapproxy.response import Response
 
 class TestResponse(Mocker):
     def test_str_response(self):

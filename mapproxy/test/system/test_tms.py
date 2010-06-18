@@ -19,11 +19,11 @@ import os
 import hashlib
 from cStringIO import StringIO
 from webtest import TestApp
-import mapproxy.core.config
-from mapproxy.core.app import make_wsgi_app 
+import mapproxy.config
+from mapproxy.wsgiapp import make_wsgi_app 
 
-from mapproxy.tests.image import is_jpeg, tmp_image
-from mapproxy.tests.http import mock_httpd
+from mapproxy.test.image import is_jpeg, tmp_image
+from mapproxy.test.http import mock_httpd
 from nose.tools import eq_
 
 global_app = None
@@ -32,16 +32,16 @@ def setup_module():
     fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
     fixture_layer_conf = os.path.join(fixture_dir, 'new_layer.yaml')
     fixture_cache_data = os.path.join(fixture_dir, 'cache_data')
-    mapproxy.core.config.base_config().services_conf = fixture_layer_conf
-    mapproxy.core.config.base_config().cache.base_dir = fixture_cache_data
-    mapproxy.core.config._service_config = None
+    mapproxy.config.base_config().services_conf = fixture_layer_conf
+    mapproxy.config.base_config().cache.base_dir = fixture_cache_data
+    mapproxy.config._service_config = None
     
     global global_app
     global_app = TestApp(make_wsgi_app(fixture_layer_conf))
 
 def teardown_module():
-    mapproxy.core.config._config = None
-    mapproxy.core.config._service_config = None
+    mapproxy.config._config = None
+    mapproxy.config._service_config = None
 
 class TestTMS(object):
     def setup(self):
@@ -112,7 +112,7 @@ class TestTMS(object):
                 self.created_tiles.append('wms_cache_EPSG900913/01/000/000/000/000/000/000.jpeg')
     
     def created_tiles_filenames(self):
-        base_dir = mapproxy.core.config.base_config().cache.base_dir
+        base_dir = mapproxy.config.base_config().cache.base_dir
         for filename in self.created_tiles:
             yield os.path.join(base_dir, filename)
     
@@ -165,11 +165,11 @@ class TestTileService(object):
     def _update_timestamp(self):
         timestamp = 1234567890.0
         size = 10214
-        base_dir = mapproxy.core.config.base_config().cache.base_dir
+        base_dir = mapproxy.config.base_config().cache.base_dir
         os.utime(os.path.join(base_dir,
                               'wms_cache_EPSG900913/01/000/000/000/000/000/001.jpeg'),
                  (timestamp, timestamp))
-        max_age = mapproxy.core.config.base_config().tiles.expires_hours * 60 * 60
+        max_age = mapproxy.config.base_config().tiles.expires_hours * 60 * 60
         etag = hashlib.md5(str(timestamp) + str(size)).hexdigest()
         return etag, max_age
     
@@ -238,7 +238,7 @@ class TestTileService(object):
                 self.created_tiles.append('wms_cache_EPSG900913/01/000/000/000/000/000/000.jpeg')
     
     def created_tiles_filenames(self):
-        base_dir = mapproxy.core.config.base_config().cache.base_dir
+        base_dir = mapproxy.config.base_config().cache.base_dir
         for filename in self.created_tiles:
             yield os.path.join(base_dir, filename)
     

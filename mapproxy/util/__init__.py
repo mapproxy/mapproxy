@@ -26,7 +26,7 @@ import Queue
 import threading
 import shutil
 import datetime
-from mapproxy.core import lockfile
+from mapproxy.util.ext import lockfile
 
 import logging
 log = logging.getLogger(__name__)

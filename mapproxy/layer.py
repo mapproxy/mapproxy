@@ -19,15 +19,15 @@
 Layers that can get maps/infos from different sources/caches. 
 """
 
-from mapproxy.core.config import base_config
-from mapproxy.core.cache import (
+from mapproxy.config import base_config
+from mapproxy.cache import (
     map_extend_from_grid,
     TileCacheError,
     BlankImage,
     TooManyTilesError,
 )
-from mapproxy.core.grid import NoTiles
-from mapproxy.core.image import TiledImage
+from mapproxy.grid import NoTiles
+from mapproxy.image import TiledImage
 
 class MapLayer(object):
     def get_map(self, query):

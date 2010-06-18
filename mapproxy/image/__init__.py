@@ -28,9 +28,9 @@ import ImageFont
 
 _pil_ttf_support = True
 
-from mapproxy.core.srs import make_lin_transf, bbox_equals
+from mapproxy.srs import make_lin_transf, bbox_equals
 
-from mapproxy.core.config import base_config
+from mapproxy.config import base_config
 
 import logging
 log = logging.getLogger(__name__)

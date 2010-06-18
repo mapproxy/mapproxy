@@ -43,18 +43,7 @@ setup(
             'mapproxy-seed = mapproxy.core.scripts.seed:main',
         ],
         'paste.app_factory': [
-            'app = mapproxy.core.app:app_factory'
-        ],
-        'mapproxy.source_loader': [
-            'cache_wms = mapproxy.wms.conf_loader:WMSCacheSource',
-            'cache_tms = mapproxy.tms.conf_loader:TMSCacheSource',
-            'cache_tiles = mapproxy.tms.conf_loader:TileCacheSource',
-            'direct = mapproxy.wms.conf_loader:DirectSource',
-            'debug = mapproxy.wms.conf_loader:DebugSource',
-        ],
-        'mapproxy.wms.request_parser': [
-        ],
-        'mapproxy.wms.client_request': [
+            'app = mapproxy.wsgiapp:app_factory'
         ],
         'paste.paster_create_template': [
             'mapproxy_conf=mapproxy.core.paster_templates:ConfigurationTemplate'

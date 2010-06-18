@@ -24,8 +24,8 @@ import warnings
 import logging
 log = logging.getLogger(__name__)
 
-from mapproxy.core.config import base_config
-from mapproxy.core.srs import SRS, get_epsg_num
+from mapproxy.config import base_config
+from mapproxy.srs import SRS, get_epsg_num
 
 geodetic_epsg_codes = [4326]
 

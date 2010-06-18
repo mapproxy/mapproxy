@@ -17,7 +17,6 @@
 """
 Date and time utilities.
 """
-
 import time
 import datetime
 import calendar

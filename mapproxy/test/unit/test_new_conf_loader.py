@@ -1,12 +1,12 @@
 from cStringIO import StringIO
-from mapproxy.core.srs import SRS
-from mapproxy.core.conf_loader import (
+from mapproxy.srs import SRS
+from mapproxy.config.conf_loader import (
     GridConfiguration,
     ProxyConfiguration,
     WMSSourceConfiguration,
     load_services,
 )
-from mapproxy.core.cache import (
+from mapproxy.cache import (
     TileManager,
 )
 

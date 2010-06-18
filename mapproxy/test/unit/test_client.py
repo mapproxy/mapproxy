@@ -15,15 +15,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
-from mapproxy.core.client import HTTPClient, HTTPClientError
-from mapproxy.core.client import TMSClient, TileClient, TileURLTemplate
-from mapproxy.wms.request import wms_request, WMS111MapRequest, WMS100MapRequest,\
+from mapproxy.client import HTTPClient, HTTPClientError
+from mapproxy.client import TMSClient, TileClient, TileURLTemplate
+from mapproxy.request.wms import wms_request, WMS111MapRequest, WMS100MapRequest,\
                                  WMS130MapRequest
-from mapproxy.core.srs import bbox_equals
-from mapproxy.core.request import Request, url_decode
-from mapproxy.core.config import base_config
-from mapproxy.tests.http import mock_httpd, query_eq, make_wsgi_env
-from mapproxy.tests.helper import assert_re, TempFiles
+from mapproxy.srs import bbox_equals
+from mapproxy.request import Request, url_decode
+from mapproxy.config import base_config
+from mapproxy.test.http import mock_httpd, query_eq, make_wsgi_env
+from mapproxy.test.helper import assert_re, TempFiles
 
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
@@ -81,7 +81,7 @@ class TestHTTPClient(object):
 
     
     def test_https_no_ssl_module_error(self):
-        from mapproxy.core import client
+        from mapproxy import client
         old_ssl = client.ssl
         try:
             client.ssl = None
@@ -95,7 +95,7 @@ class TestHTTPClient(object):
             client.ssl = old_ssl
     
     def test_https_no_ssl_module_insecure(self):
-        from mapproxy.core import client
+        from mapproxy import client
         old_ssl = client.ssl
         try:
             client.ssl = None

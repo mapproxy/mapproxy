@@ -21,7 +21,7 @@ import ImageColor
 import ImagePalette
 import os
 import sys
-from mapproxy.core.image import (
+from mapproxy.image import (
     ImageSource,
     message_image,
     TileMerger,
@@ -29,10 +29,10 @@ from mapproxy.core.image import (
     ImageTransformer,
     is_single_color_image,
 )
-from mapproxy.core.tilefilter import watermark_filter, PNGQuantFilter
-from mapproxy.core.cache import Tile
-from mapproxy.tests.image import is_png, create_tmp_image, check_format, create_debug_img
-from mapproxy.core.srs import SRS
+from mapproxy.tilefilter import watermark_filter, PNGQuantFilter
+from mapproxy.cache import Tile
+from mapproxy.test.image import is_png, create_tmp_image, check_format, create_debug_img
+from mapproxy.srs import SRS
 from nose.tools import eq_
 
 class TestImageSource(object):

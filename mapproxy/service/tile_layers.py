@@ -14,11 +14,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from mapproxy.core.exceptions import RequestError
-from mapproxy.core.cache import TileCacheError
-from mapproxy.core.request import split_mime_type
-from mapproxy.core.srs import SRS
-from mapproxy.core.grid import RES_TYPE_GLOBAL, RES_TYPE_SQRT2
+from mapproxy.exception import RequestError
+from mapproxy.cache import TileCacheError
+from mapproxy.request.base import split_mime_type
+from mapproxy.srs import SRS
+from mapproxy.grid import RES_TYPE_GLOBAL, RES_TYPE_SQRT2
 
 import logging
 log = logging.getLogger(__name__)

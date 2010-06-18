@@ -110,7 +110,7 @@ def load_base_config(config_file=None, clear_existing=False):
     """
     
     if config_file is None:
-        from mapproxy.core import defaults
+        from mapproxy.config import defaults
         config_dict = {}
         for k, v in defaults.__dict__.iteritems():
             if k.startswith('_'): continue

@@ -19,20 +19,20 @@
 # from cStringIO import StringIO
 # from contextlib import nested
 # 
-# from mapproxy.core.grid import TileGrid
-# from mapproxy.core.cache import Cache
-# from mapproxy.core.layer import Layer
+# from mapproxy.grid import TileGrid
+# from mapproxy.cache import Cache
+# from mapproxy.layer import Layer
 # from mapproxy.tms.layer import TileServiceLayer
 # from mapproxy.tms import TileServer
 # from mapproxy.wms.server import WMSServer
-# from mapproxy.wms.request import WMS111MapRequest
-# from mapproxy.core.request import Request
+# from mapproxy.request.wms import WMS111MapRequest
+# from mapproxy.request import Request
 # from mapproxy.tms.request import tile_request
-# from mapproxy.core.exceptions import RequestError
-# from mapproxy.core.image import ImageSource, LayerMerger
+# from mapproxy.exceptions import RequestError
+# from mapproxy.image import ImageSource, LayerMerger
 # 
-# from mapproxy.tests.helper import Mocker, assert_re, XPathValidator
-# from mapproxy.tests.image import tmp_image, is_jpeg
+# from mapproxy.test.helper import Mocker, assert_re, XPathValidator
+# from mapproxy.test.image import tmp_image, is_jpeg
 # from nose.tools import eq_
 # 
 # class TestWMSServer(Mocker):

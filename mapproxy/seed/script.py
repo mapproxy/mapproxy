@@ -16,8 +16,8 @@
 
 
 from optparse import OptionParser
-from mapproxy.core.seed import seed_from_yaml_conf
-from mapproxy.core.config import load_base_config, base_config
+from mapproxy.seed import seed_from_yaml_conf
+from mapproxy.config import load_base_config, base_config
 
 def load_config(conf_file=None):
     if conf_file is not None:

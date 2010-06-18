@@ -14,16 +14,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from mapproxy.core.srs import SRS
-from mapproxy.core.request import url_decode, Request, NoCaseMultiDict, RequestParams, BaseRequest
-from mapproxy.tms.request import TMSRequest, tile_request, TileRequest
-from mapproxy.wms.request import (wms_request, WMSMapRequest, WMSMapRequestParams,
+from mapproxy.srs import SRS
+from mapproxy.request.base import url_decode, Request, NoCaseMultiDict, RequestParams, BaseRequest
+from mapproxy.request.tile import TMSRequest, tile_request, TileRequest
+from mapproxy.request.wms import (wms_request, WMSMapRequest, WMSMapRequestParams,
                               WMS111MapRequest, WMS100MapRequest, WMS130MapRequest,
                               WMS111FeatureInfoRequest)
-from mapproxy.core.exceptions import RequestError
-from mapproxy.wms.exceptions import (WMS111ExceptionHandler, WMSImageExceptionHandler,
+from mapproxy.exception import RequestError
+from mapproxy.service.wms_exceptions import (WMS111ExceptionHandler, WMSImageExceptionHandler,
                                      WMSBlankExceptionHandler)
-from mapproxy.tests.http import make_wsgi_env
+from mapproxy.test.http import make_wsgi_env
 
 import pickle
 from nose.tools import eq_

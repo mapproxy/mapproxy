@@ -23,7 +23,7 @@
 # from shutil import rmtree
 # from cStringIO import StringIO
 # 
-# from mapproxy.core.cache import (
+# from mapproxy.cache import (
 #     Cache,
 #     TileSource,
 #     FileCache,
@@ -35,17 +35,17 @@
 #     TileSourceError,
 # )
 # from mapproxy.wms.client import WMSClient
-# from mapproxy.wms.request import WMS111MapRequest
+# from mapproxy.request.wms import WMS111MapRequest
 # from mapproxy.wms.cache import WMSTileSource
 # from mapproxy.tms.cache import TMSTileSource
-# from mapproxy.core.srs import SRS
-# from mapproxy.core.client import TMSClient
-# from mapproxy.core.image import ImageSource, TiledImage
-# from mapproxy.core.utils import LockTimeout
-# from mapproxy.core.grid import tile_grid_for_epsg, TileGrid
-# from mapproxy.tests.helper import Mocker, TempFiles
-# from mapproxy.tests.http import mock_httpd
-# from mapproxy.tests.image import tmp_image, is_png, assert_image_mode
+# from mapproxy.srs import SRS
+# from mapproxy.client import TMSClient
+# from mapproxy.image import ImageSource, TiledImage
+# from mapproxy.util import LockTimeout
+# from mapproxy.grid import tile_grid_for_epsg, TileGrid
+# from mapproxy.test.helper import Mocker, TempFiles
+# from mapproxy.test.http import mock_httpd
+# from mapproxy.test.image import tmp_image, is_png, assert_image_mode
 # from mocker import ANY
 # from nose.tools import eq_, assert_not_equal, raises
 # 

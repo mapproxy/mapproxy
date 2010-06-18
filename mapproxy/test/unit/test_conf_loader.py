@@ -20,12 +20,12 @@
 # from mapproxy.wms.cache import WMSTileSource
 # from mapproxy.tms.cache import TMSTileSource
 # from mapproxy.wms.layer import WMSLayer, DirectLayer, DebugLayer
-# from mapproxy.core.conf_loader import ProxyConf, LayerConf
+# from mapproxy.config.conf_loader import ProxyConf, LayerConf
 # from mapproxy.wms.conf_loader import create_wms_server, configured_layer
-# from mapproxy.core.srs import SRS
+# from mapproxy.srs import SRS
 # 
 # from nose.tools import eq_
-# from mapproxy.tests.helper import TempFiles
+# from mapproxy.test.helper import TempFiles
 # 
 # class TestDebugLayerLoader(object):
 #     def test_loading(self):

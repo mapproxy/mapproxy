@@ -16,7 +16,7 @@
 
 import re
 from urlparse import urlparse
-from mapproxy.core.response import Response
+from mapproxy.response import Response
 
 import logging
 log = logging.getLogger(__name__)

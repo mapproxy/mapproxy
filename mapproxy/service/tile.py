@@ -16,14 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from mapproxy.core.response import Response
-from mapproxy.core.exceptions import RequestError
-from mapproxy.core.server import Server
-from mapproxy.tms.request import tile_request
-from mapproxy.core.config import base_config
-from mapproxy.core.app import ctx
+from mapproxy.response import Response
+from mapproxy.exception import RequestError
+from mapproxy.service.base import Server
+from mapproxy.request.tile import tile_request
+from mapproxy.config import base_config
+from mapproxy.wsgiapp import ctx
 
-from mapproxy.core.template import template_loader, bunch
+from mapproxy.template import template_loader, bunch
 get_template = template_loader(__file__, 'templates')
 
 import logging

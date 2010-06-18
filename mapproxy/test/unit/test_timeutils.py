@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from mapproxy.core.timeutils import parse_httpdate, format_httpdate, timestamp
+from mapproxy.util.times import parse_httpdate, format_httpdate, timestamp
 from nose.tools import eq_, raises
 
 class TestHTTPDate(object):

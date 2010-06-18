@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from mapproxy.core.libutils import load_library
+from mapproxy.util.lib import load_library
 import ctypes
 from ctypes import c_void_p, c_char_p, c_int
 

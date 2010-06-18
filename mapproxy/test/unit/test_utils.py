@@ -23,8 +23,8 @@ import tempfile
 import thread
 import threading
 import time
-import mapproxy.core.utils
-from mapproxy.core.utils import (
+import mapproxy.util
+from mapproxy.util import (
     FileLock,
     cleanup_lockdir,
     LockTimeout,
@@ -34,7 +34,7 @@ from mapproxy.core.utils import (
     cleanup_directory,
     timestamp_before,
 )
-from mapproxy.tests.helper import Mocker, mocker, LogMock
+from mapproxy.test.helper import Mocker, mocker, LogMock
 
 from nose.tools import timed
 

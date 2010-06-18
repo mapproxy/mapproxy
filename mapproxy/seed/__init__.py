@@ -23,11 +23,11 @@ import yaml
 import datetime
 from functools import partial
 
-from mapproxy.core.srs import SRS
-from mapproxy.core.grid import MetaGrid, bbox_intersects, bbox_contains
-from mapproxy.core.cache import TileSourceError, Tile
-from mapproxy.core.config import base_config, abspath
-from mapproxy.core.utils import (
+from mapproxy.srs import SRS
+from mapproxy.grid import MetaGrid, bbox_intersects, bbox_contains
+from mapproxy.cache import TileSourceError, Tile
+from mapproxy.config import base_config, abspath
+from mapproxy.util import (
     cleanup_directory,
     timestamp_before,
     timestamp_from_isodate,

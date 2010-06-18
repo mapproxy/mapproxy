@@ -18,9 +18,9 @@
 Map/information sources for layers or tile cache.
 """
 
-from mapproxy.core.cache import MapExtend
-from mapproxy.core.image import message_image
-from mapproxy.core.srs import SRS
+from mapproxy.cache import MapExtend
+from mapproxy.image import message_image
+from mapproxy.srs import SRS
 
 class Source(object):
     supports_meta_tiles = False

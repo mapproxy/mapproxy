@@ -17,7 +17,7 @@
 """
 Service exception handling (WMS exceptions, XML, in_image, etc.).
 """
-from mapproxy.core.response import Response
+from mapproxy.response import Response
 
 class RequestError(Exception):
     """

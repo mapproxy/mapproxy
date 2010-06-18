@@ -22,11 +22,10 @@ Layer classes (direct, cached, etc.).
 .. classtree:: mapproxy.core.layer.MetaDataMixin
 
 """
-from mapproxy.core.srs import SRS, TransformationError
-from mapproxy.core.exceptions import RequestError
-from mapproxy.core.cache import TileCacheError, TooManyTilesError, BlankImage
-
-from mapproxy.core.cache import MapQuery, InfoQuery
+from mapproxy.srs import SRS, TransformationError
+from mapproxy.exception import RequestError
+from mapproxy.cache import TileCacheError, TooManyTilesError, BlankImage
+from mapproxy.cache import MapQuery, InfoQuery
 
 import logging
 log = logging.getLogger(__name__)

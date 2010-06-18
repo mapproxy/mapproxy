@@ -17,11 +17,11 @@
 """
 Service requests (parsing, handling, etc).
 """
-from mapproxy.wms import exceptions
-from mapproxy.core.config import base_config
-from mapproxy.core.exceptions import RequestError
-from mapproxy.core.srs import SRS, make_lin_transf
-from mapproxy.core.request import RequestParams, BaseRequest, split_mime_type
+import mapproxy.service.wms_exceptions as exceptions
+from mapproxy.config import base_config
+from mapproxy.exception import RequestError
+from mapproxy.srs import SRS, make_lin_transf
+from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
 
 import logging
 log = logging.getLogger(__name__)
