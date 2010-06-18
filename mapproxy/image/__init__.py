@@ -714,7 +714,7 @@ class ImageTransformer(object):
         ...             -1252344.271424327, 2504688.5428486541)
         >>> dst_bbox = (-2504688.5431999983, 1252344.2704,
         ...             -1252344.2719999983, 2504688.5416000001)
-        >>> from mapproxy.core.srs import SRS
+        >>> from mapproxy.srs import SRS
         >>> t = ImageTransformer(SRS(900913), SRS(900913))
         >>> t._no_transformation_needed((256, 256), src_bbox, (256, 256), dst_bbox)
         True

@@ -506,7 +506,7 @@ class Tile(object):
 
 def map_extend_from_grid(grid):
     """
-    >>> from mapproxy.core.grid import tile_grid_for_epsg
+    >>> from mapproxy.grid import tile_grid_for_epsg
     >>> map_extend_from_grid(tile_grid_for_epsg('EPSG:900913')) 
     ... #doctest: +NORMALIZE_WHITESPACE
     MapExtend((-20037508.342789244, -20037508.342789244,
