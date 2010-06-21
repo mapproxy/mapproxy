@@ -44,7 +44,8 @@ import errno
 import hashlib
 
 from mapproxy.util import FileLock
-from mapproxy.image import ImageSource, is_single_color_image, TileSplitter, merge_images
+from mapproxy.image import ImageSource, is_single_color_image, merge_images
+from mapproxy.image.tile import TileSplitter
 from mapproxy.config import base_config
 from mapproxy.srs import SRS
 from mapproxy.grid import MetaGrid

@@ -19,7 +19,7 @@ Service exception handling (WMS exceptions, XML, in_image, etc.).
 """
 from mapproxy.exception import ExceptionHandler, XMLExceptionHandler
 from mapproxy.response import Response
-from mapproxy.image import message_image
+from mapproxy.image.message import message_image
 import mapproxy.service
 from mapproxy.template import template_loader
 get_template = template_loader(mapproxy.service.__file__, 'templates')

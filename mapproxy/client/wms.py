@@ -22,7 +22,8 @@ from mapproxy.config import base_config
 from mapproxy.cache import MapQuery, InfoQuery, TileSourceError
 from mapproxy.client import HTTPClient
 from mapproxy.srs import make_lin_transf
-from mapproxy.image import ImageSource, ImageTransformer
+from mapproxy.image import ImageSource
+from mapproxy.image.transform import ImageTransformer
 
 class WMSClient(object):
     def __init__(self, request_template, supported_srs=None, http_client=None,

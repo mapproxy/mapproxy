@@ -24,7 +24,7 @@ from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
 from mapproxy.config import base_config
-from mapproxy.image import attribution_image
+from mapproxy.image.message import attribution_image
 
 from mapproxy.cache import (
     TileCacheError, TooManyTilesError, BlankImage,

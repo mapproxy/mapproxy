@@ -21,14 +21,10 @@ import ImageColor
 import ImagePalette
 import os
 import sys
-from mapproxy.image import (
-    ImageSource,
-    message_image,
-    TileMerger,
-    ReadBufWrapper,
-    ImageTransformer,
-    is_single_color_image,
-)
+from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image
+from mapproxy.image.message import message_image
+from mapproxy.image.tile import TileMerger
+from mapproxy.image.transform import ImageTransformer
 from mapproxy.tilefilter import watermark_filter, PNGQuantFilter
 from mapproxy.cache import Tile
 from mapproxy.test.image import is_png, create_tmp_image, check_format, create_debug_img

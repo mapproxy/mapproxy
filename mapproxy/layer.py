@@ -27,7 +27,7 @@ from mapproxy.cache import (
     TooManyTilesError,
 )
 from mapproxy.grid import NoTiles
-from mapproxy.image import TiledImage
+from mapproxy.image.tile import TiledImage
 
 class MapLayer(object):
     def get_map(self, query):

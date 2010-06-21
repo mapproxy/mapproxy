@@ -19,7 +19,7 @@ Map/information sources for layers or tile cache.
 """
 
 from mapproxy.cache import MapExtend
-from mapproxy.image import message_image
+from mapproxy.image.message import message_image
 from mapproxy.srs import SRS
 
 class Source(object):
