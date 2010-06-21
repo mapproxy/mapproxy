@@ -1,6 +1,6 @@
 from cStringIO import StringIO
 from mapproxy.srs import SRS
-from mapproxy.config.conf_loader import (
+from mapproxy.config.loader import (
     GridConfiguration,
     ProxyConfiguration,
     WMSSourceConfiguration,

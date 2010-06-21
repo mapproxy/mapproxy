@@ -20,8 +20,8 @@
 # from mapproxy.wms.cache import WMSTileSource
 # from mapproxy.tms.cache import TMSTileSource
 # from mapproxy.wms.layer import WMSLayer, DirectLayer, DebugLayer
-# from mapproxy.config.conf_loader import ProxyConf, LayerConf
-# from mapproxy.wms.conf_loader import create_wms_server, configured_layer
+# from mapproxy.config.loader import ProxyConf, LayerConf
+# from mapproxy.wms.loader import create_wms_server, configured_layer
 # from mapproxy.srs import SRS
 # 
 # from nose.tools import eq_

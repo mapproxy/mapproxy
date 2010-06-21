@@ -336,7 +336,7 @@ def status_symbol(i, total):
 
 def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=False,
     concurrency=2):
-    from mapproxy.core.conf_loader import ProxyConfiguration
+    from mapproxy.core.loader import ProxyConfiguration
     
     if hasattr(conf_file, 'read'):
         seed_conf = yaml.load(conf_file)

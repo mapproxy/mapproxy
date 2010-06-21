@@ -21,7 +21,7 @@ from mapproxy.request.wms import (wms_request, WMSMapRequest, WMSMapRequestParam
                               WMS111MapRequest, WMS100MapRequest, WMS130MapRequest,
                               WMS111FeatureInfoRequest)
 from mapproxy.exception import RequestError
-from mapproxy.service.wms_exceptions import (WMS111ExceptionHandler, WMSImageExceptionHandler,
+from mapproxy.request.wms.exception import (WMS111ExceptionHandler, WMSImageExceptionHandler,
                                      WMSBlankExceptionHandler)
 from mapproxy.test.http import make_wsgi_env
 

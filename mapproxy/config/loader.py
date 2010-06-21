@@ -71,9 +71,9 @@ tile_filters, tile_filter_conf_keys = load_tile_filters()
 del load_tile_filters
 
 server_loaders = {
-    'wms': 'mapproxy.wms.conf_loader:create_wms_server',
-    'tms': 'mapproxy.tms.conf_loader:create_tms_server',
-    'kml': 'mapproxy.kml.conf_loader:create_kml_server',
+    'wms': 'mapproxy.wms.loader:create_wms_server',
+    'tms': 'mapproxy.tms.loader:create_tms_server',
+    'kml': 'mapproxy.kml.loader:create_kml_server',
 }
 def server_loader(name):
     return loader(server_loaders, name)
@@ -82,16 +82,15 @@ def server_loader(name):
 import mapproxy.config
 from mapproxy.grid import TileGrid
 from mapproxy.request.base import split_mime_type
-from mapproxy.request.wms_req import create_request
+from mapproxy.request.wms import create_request
 from mapproxy.client import TileClient, TileURLTemplate
 from mapproxy.source import DebugSource
 from mapproxy.layer import CacheMapLayer, SRSConditional, ResolutionConditional
 from mapproxy.service.wms import WMSServer
 from mapproxy.client.wms import WMSClient, WMSInfoClient
 from mapproxy.source.wms import WMSSource, WMSInfoSource
-from mapproxy.service.wms_layer import WMSLayer
-from mapproxy.service.tile import TileServer
-from mapproxy.service.tile_layers import TileLayer
+from mapproxy.service.wms import WMSLayer
+from mapproxy.service.tile import TileServer, TileLayer
 from mapproxy.source.tile import TiledSource
 from mapproxy.service.kml import KMLServer
 

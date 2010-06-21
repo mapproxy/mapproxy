@@ -21,7 +21,7 @@ from mapproxy.test.image import is_png
 from mapproxy.request.wms import WMSMapRequest
 from mapproxy.request import url_decode
 from mapproxy.exception import (RequestError, ExceptionHandler)
-from mapproxy.service.wms_exceptions import (WMS100ExceptionHandler, WMS111ExceptionHandler,
+from mapproxy.request.wms.exception import (WMS100ExceptionHandler, WMS111ExceptionHandler,
                                      WMS130ExceptionHandler)
 from nose.tools import eq_
 

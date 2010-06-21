@@ -19,12 +19,17 @@ WMS service handler
 """
 from itertools import chain
 from mapproxy.request.wms import wms_request
-from mapproxy.srs import merge_bbox
+from mapproxy.srs import merge_bbox, SRS, TransformationError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
 from mapproxy.config import base_config
 from mapproxy.image import attribution_image
+
+from mapproxy.cache import (
+    TileCacheError, TooManyTilesError, BlankImage,
+    MapQuery, InfoQuery
+)
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
@@ -163,3 +168,43 @@ def wms100format_filter(format):
         return None
 
 env['wms100format'] = wms100format_filter
+
+class WMSLayer(object):
+    
+    def __init__(self, md, map_layers, info_layers=[]):
+        self.md = md
+        self.map_layers = map_layers
+        self.info_layers = info_layers
+        self.extend = map_layers[0].extend #TODO
+        self.queryable = True if info_layers else False
+        self.transparent = any(map_lyr.transparent for map_lyr in self.map_layers)
+        
+        
+    def render(self, request):
+        p = request.params
+        query = MapQuery(p.bbox, p.size, SRS(p.srs))
+        for layer in self.map_layers:
+            yield self._render_layer(layer, query, request)
+    
+    def _render_layer(self, layer, query, request):
+        try:
+            return layer.get_map(query)
+        except TooManyTilesError:
+            raise RequestError('Request too large or invalid BBOX.', request=request)
+        except TransformationError:
+            raise RequestError('Could not transform BBOX: Invalid result.',
+                request=request)
+        except TileCacheError, e:
+            log.error(e)
+            raise RequestError(e.args[0], request=request)
+        except BlankImage:
+            return None
+    
+    def info(self, request):
+        p = request.params
+        query = InfoQuery(p.bbox, p.size, SRS(p.srs), p.pos,
+            p['info_format'])
+        
+        for lyr in self.info_layers:
+            yield lyr.get_info(query)
+    

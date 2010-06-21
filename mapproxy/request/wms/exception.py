@@ -20,9 +20,9 @@ Service exception handling (WMS exceptions, XML, in_image, etc.).
 from mapproxy.exception import ExceptionHandler, XMLExceptionHandler
 from mapproxy.response import Response
 from mapproxy.image import message_image
-
+import mapproxy.service
 from mapproxy.template import template_loader
-get_template = template_loader(__file__, 'templates')
+get_template = template_loader(mapproxy.service.__file__, 'templates')
 
 class WMSXMLExceptionHandler(XMLExceptionHandler):
     template_func = get_template
