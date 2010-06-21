@@ -22,7 +22,7 @@ import sys
 from mapproxy.source import Source, InfoSource
 from mapproxy.cache import MapExtend, TileSourceError
 from mapproxy.srs import SRS
-from mapproxy.client import HTTPClientError
+from mapproxy.client.http import HTTPClientError
 from mapproxy.util import reraise_exception
 
 class WMSSource(Source):

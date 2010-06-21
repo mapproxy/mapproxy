@@ -20,7 +20,7 @@ Retrieve tiles from different tile servers (TMS/TileCache/etc.).
 
 import sys
 from mapproxy.source import Source
-from mapproxy.client import HTTPClientError
+from mapproxy.client.http import HTTPClientError
 from mapproxy.cache import TileSourceError, InvalidSourceQuery
 from mapproxy.util import reraise_exception
 

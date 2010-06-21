@@ -30,7 +30,7 @@ from mapproxy.srs import SRS
 from mapproxy.util.ext.odict import odict
 from mapproxy.cache import FileCache
 from mapproxy.config import base_config, abspath
-from mapproxy.client import auth_data_from_url, HTTPClient
+from mapproxy.client.http import auth_data_from_url, HTTPClient
 
 def load_source_loaders():
     source_loaders = {}
@@ -83,7 +83,7 @@ import mapproxy.config
 from mapproxy.grid import TileGrid
 from mapproxy.request.base import split_mime_type
 from mapproxy.request.wms import create_request
-from mapproxy.client import TileClient, TileURLTemplate
+from mapproxy.client.tile import TileClient, TileURLTemplate
 from mapproxy.source import DebugSource
 from mapproxy.layer import CacheMapLayer, SRSConditional, ResolutionConditional
 from mapproxy.service.wms import WMSServer

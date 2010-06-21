@@ -32,7 +32,7 @@ from mapproxy.cache import (
 
 from mapproxy.grid import TileGrid
 from mapproxy.srs import SRS
-from mapproxy.client import HTTPClient
+from mapproxy.client.http import HTTPClient
 from mapproxy.image import ImageSource
 
 from mapproxy.request.wms import WMS111MapRequest

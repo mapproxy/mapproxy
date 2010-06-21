@@ -20,7 +20,7 @@ WMS clients for maps and information.
 
 from mapproxy.config import base_config
 from mapproxy.cache import MapQuery, InfoQuery, TileSourceError
-from mapproxy.client import HTTPClient
+from mapproxy.client.http import HTTPClient
 from mapproxy.srs import make_lin_transf
 from mapproxy.image import ImageSource
 from mapproxy.image.transform import ImageTransformer

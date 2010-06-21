@@ -15,8 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
-from mapproxy.client import HTTPClient, HTTPClientError
-from mapproxy.client import TMSClient, TileClient, TileURLTemplate
+from mapproxy.client.http import HTTPClient, HTTPClientError
+from mapproxy.client.tile import TMSClient, TileClient, TileURLTemplate
 from mapproxy.request.wms import wms_request, WMS111MapRequest, WMS100MapRequest,\
                                  WMS130MapRequest
 from mapproxy.srs import bbox_equals
@@ -81,10 +81,10 @@ class TestHTTPClient(object):
 
     
     def test_https_no_ssl_module_error(self):
-        from mapproxy import client
-        old_ssl = client.ssl
+        from mapproxy.client import http
+        old_ssl = http.ssl
         try:
-            client.ssl = None
+            http.ssl = None
             try:
                 self.client = HTTPClient('https://trac.osgeo.org/')
             except ImportError:
@@ -92,18 +92,18 @@ class TestHTTPClient(object):
             else:
                 assert False, 'no ImportError for missing ssl module'
         finally:
-            client.ssl = old_ssl
+            http.ssl = old_ssl
     
     def test_https_no_ssl_module_insecure(self):
-        from mapproxy import client
-        old_ssl = client.ssl
+        from mapproxy.client import http
+        old_ssl = http.ssl
         try:
-            client.ssl = None
+            http.ssl = None
             base_config().http.ssl.insecure = True
             self.client = HTTPClient('https://trac.osgeo.org/')
             self.client.open('https://trac.osgeo.org/')
         finally:
-            client.ssl = old_ssl
+            http.ssl = old_ssl
             base_config().http.ssl.insecure = False
     
     def test_https_valid_cert(self):
