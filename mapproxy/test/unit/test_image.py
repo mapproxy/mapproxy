@@ -26,7 +26,7 @@ from mapproxy.image.message import message_image
 from mapproxy.image.tile import TileMerger
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.tilefilter import watermark_filter, PNGQuantFilter
-from mapproxy.cache import Tile
+from mapproxy.cache.tile import Tile
 from mapproxy.test.image import is_png, create_tmp_image, check_format, create_debug_img
 from mapproxy.srs import SRS
 from nose.tools import eq_

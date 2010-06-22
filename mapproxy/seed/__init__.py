@@ -25,7 +25,8 @@ from functools import partial
 
 from mapproxy.srs import SRS
 from mapproxy.grid import MetaGrid, bbox_intersects, bbox_contains
-from mapproxy.cache import TileSourceError, Tile
+from mapproxy.cache.tile import Tile
+from mapproxy.source import SourceError
 from mapproxy.config import base_config, abspath
 from mapproxy.util import (
     cleanup_directory,

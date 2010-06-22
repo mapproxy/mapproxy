@@ -19,7 +19,8 @@ WMS clients for maps and information.
 """
 
 from mapproxy.config import base_config
-from mapproxy.cache import MapQuery, InfoQuery, TileSourceError
+from mapproxy.layer import MapQuery, InfoQuery
+from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClient
 from mapproxy.srs import make_lin_transf
 from mapproxy.image import ImageSource
@@ -73,7 +74,7 @@ class WMSClient(object):
     
     def _check_resp(self, resp):
         if not resp.headers['Content-type'].startswith('image/'):
-            raise TileSourceError('no image returned from source WMS')
+            raise SourceError('no image returned from source WMS')
     
     def _query_url(self, query):
         req = self.request_template.copy()

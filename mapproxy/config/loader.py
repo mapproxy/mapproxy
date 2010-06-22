@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 
 from mapproxy.srs import SRS
 from mapproxy.util.ext.odict import odict
-from mapproxy.cache import FileCache
+from mapproxy.cache.file import FileCache
 from mapproxy.config import base_config, abspath
 from mapproxy.client.http import auth_data_from_url, HTTPClient
 
@@ -83,21 +83,22 @@ import mapproxy.config
 from mapproxy.grid import TileGrid
 from mapproxy.request.base import split_mime_type
 from mapproxy.request.wms import create_request
-from mapproxy.client.tile import TileClient, TileURLTemplate
-from mapproxy.source import DebugSource
-from mapproxy.layer import CacheMapLayer, SRSConditional, ResolutionConditional
-from mapproxy.service.wms import WMSServer
-from mapproxy.client.wms import WMSClient, WMSInfoClient
-from mapproxy.source.wms import WMSSource, WMSInfoSource
-from mapproxy.service.wms import WMSLayer
-from mapproxy.service.tile import TileServer, TileLayer
-from mapproxy.source.tile import TiledSource
-from mapproxy.service.kml import KMLServer
-
-from mapproxy.cache import (
-    TileManager,
-    map_extend_from_grid
+from mapproxy.layer import (
+    CacheMapLayer, SRSConditional,
+    ResolutionConditional, map_extend_from_grid
 )
+from mapproxy.client.tile import TileClient, TileURLTemplate
+from mapproxy.client.wms import WMSClient, WMSInfoClient
+from mapproxy.service.wms import WMSServer, WMSLayer
+from mapproxy.service.tile import TileServer, TileLayer
+from mapproxy.service.kml import KMLServer
+from mapproxy.source import DebugSource
+from mapproxy.source.wms import WMSSource, WMSInfoSource
+from mapproxy.source.tile import TiledSource
+
+from mapproxy.cache.tile import TileManager
+
+
 
 class ConfigurationError(Exception):
     pass

@@ -29,7 +29,10 @@ from mapproxy.srs import SRS, get_epsg_num
 
 geodetic_epsg_codes = [4326]
 
-class NoTiles(Exception):
+class GridError(Exception):
+    pass
+
+class NoTiles(GridError):
     pass
 
 def get_resolution(bbox, size):
@@ -293,7 +296,10 @@ class TileGrid(object):
         x0, y0, _ = self.tile(bbox[0]+delta, bbox[1]+delta, level)
         x1, y1, _ = self.tile(bbox[2]-delta, bbox[3]-delta, level)
         
-        return self._tile_iter(x0, y0, x1, y1, level, inverse=inverse)
+        try:
+            return self._tile_iter(x0, y0, x1, y1, level, inverse=inverse)
+        except IndexError:
+            raise GridError('Invalid BBOX')
         
     def _tile_iter(self, x0, y0, x1, y1, level, inverse=False):
         xs = range(x0, x1+1)
@@ -564,7 +570,10 @@ class MetaGrid(object):
         y0 = y0//meta_size[1] * meta_size[1]
         y1 = y1//meta_size[1] * meta_size[1]
         
-        return self._tile_iter(x0, y0, x1, y1, level)
+        try:
+            return self._tile_iter(x0, y0, x1, y1, level)
+        except IndexError:
+            raise GridError('Invalid BBOX')
         
     def _tile_iter(self, x0, y0, x1, y1, level, inverse=False):
         meta_size = self.meta_size(level)

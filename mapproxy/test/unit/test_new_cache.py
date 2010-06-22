@@ -14,19 +14,20 @@ from mapproxy.layer import (
     SRSConditional,
     ResolutionConditional,
     DirectMapLayer,
+    MapExtend, 
+    MapQuery,
 )
-from mapproxy.source import Source
+from mapproxy.source import Source, InvalidSourceQuery, SourceError
 from mapproxy.client.wms import WMSClient
 from mapproxy.source.wms import WMSSource
 from mapproxy.source.tile import TiledSource
 
-from mapproxy.cache import (
-    Tile,
-    MapExtend, 
-    MapQuery,
-    InvalidSourceQuery,
-    TileSourceError,
+from mapproxy.cache.file import (
     FileCache,
+)
+from mapproxy.cache.tile import (
+    Tile,
+    TileSourceError,
     TileManager,
 )
 
@@ -565,7 +566,7 @@ class TestWMSSource(object):
                 q = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
                 try:
                     result = self.source.get_map(q)
-                except TileSourceError, e:
+                except SourceError, e:
                     assert 'no image returned' in e.args[0]
                 else:
                     assert False, 'no TiledSourceError raised'

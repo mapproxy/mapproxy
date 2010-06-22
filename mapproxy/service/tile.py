@@ -23,7 +23,7 @@ from mapproxy.request.tile import tile_request
 from mapproxy.request.base import split_mime_type
 from mapproxy.config import base_config
 from mapproxy.wsgiapp import ctx
-from mapproxy.cache import TileCacheError
+from mapproxy.source import SourceError
 from mapproxy.srs import SRS
 from mapproxy.grid import RES_TYPE_GLOBAL, RES_TYPE_SQRT2
 
@@ -153,7 +153,7 @@ class TileLayer(object):
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
         try:
             return TileResponse(self.tile_manager.load_tile_coord(tile_coord, with_metadata=True))
-        except TileCacheError, e:
+        except SourceError, e:
             log.error(e)
             raise RequestError(e.args[0], request=tile_request, internal=True)
 

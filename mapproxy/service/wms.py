@@ -26,10 +26,9 @@ from mapproxy.exception import RequestError
 from mapproxy.config import base_config
 from mapproxy.image.message import attribution_image
 
-from mapproxy.cache import (
-    TileCacheError, TooManyTilesError, BlankImage,
-    MapQuery, InfoQuery
-)
+from mapproxy.layer import BlankImage, MapQuery, InfoQuery, MapBBOXError
+from mapproxy.source import SourceError
+from mapproxy.cache.tile import TileCacheError
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
@@ -189,12 +188,12 @@ class WMSLayer(object):
     def _render_layer(self, layer, query, request):
         try:
             return layer.get_map(query)
-        except TooManyTilesError:
+        except MapBBOXError:
             raise RequestError('Request too large or invalid BBOX.', request=request)
         except TransformationError:
             raise RequestError('Could not transform BBOX: Invalid result.',
                 request=request)
-        except TileCacheError, e:
+        except SourceError, e:
             log.error(e)
             raise RequestError(e.args[0], request=request)
         except BlankImage:

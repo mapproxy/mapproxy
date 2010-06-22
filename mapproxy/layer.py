@@ -20,14 +20,18 @@ Layers that can get maps/infos from different sources/caches.
 """
 
 from mapproxy.config import base_config
-from mapproxy.cache import (
-    map_extend_from_grid,
-    TileCacheError,
-    BlankImage,
-    TooManyTilesError,
-)
-from mapproxy.grid import NoTiles
+from mapproxy.grid import NoTiles, GridError
 from mapproxy.image.tile import TiledImage
+from mapproxy.srs import SRS
+
+class BlankImage(Exception):
+    pass
+
+class MapError(Exception):
+    pass
+
+class MapBBOXError(Exception):
+    pass
 
 class MapLayer(object):
     def get_map(self, query):
@@ -36,6 +40,63 @@ class MapLayer(object):
 class InfoLayer(object):
     def get_info(self, query):
         raise NotImplementedError
+
+
+class MapQuery(object):
+    """
+    Internal query for a map with a specific extend, size, srs, etc.
+    """
+    def __init__(self, bbox, size, srs, format=None, transparent=False):
+        self.bbox = bbox
+        self.size = size
+        self.srs = srs
+        self.format = format
+        self.transparent = transparent
+
+
+class InfoQuery(object):
+    def __init__(self, bbox, size, srs, pos, info_format):
+        self.bbox = bbox
+        self.size = size
+        self.srs = srs
+        self.pos = pos
+        self.info_format = info_format
+
+
+def map_extend_from_grid(grid):
+    """
+    >>> from mapproxy.grid import tile_grid_for_epsg
+    >>> map_extend_from_grid(tile_grid_for_epsg('EPSG:900913')) 
+    ... #doctest: +NORMALIZE_WHITESPACE
+    MapExtend((-20037508.342789244, -20037508.342789244,
+               20037508.342789244, 20037508.342789244), SRS('EPSG:900913'))
+    """
+    return MapExtend(grid.bbox, grid.srs)
+
+class MapExtend(object):
+    """
+    >>> me = MapExtend((5, 45, 15, 55), SRS(4326))
+    >>> me.llbbox
+    (5, 45, 15, 55)
+    >>> map(int, me.bbox_for(SRS(900913)))
+    [556597, 5621521, 1669792, 7361866]
+    >>> map(int, me.bbox_for(SRS(4326)))
+    [5, 45, 15, 55]
+    """
+    def __init__(self, bbox, srs):
+        self.llbbox = srs.transform_bbox_to(SRS(4326), bbox)
+        self.bbox = bbox
+        self.srs = srs
+    
+    def bbox_for(self, srs):
+        if srs == self.srs:
+            return self.bbox
+        
+        return self.srs.transform_bbox_to(srs, self.bbox)
+    
+    def __repr__(self):
+        return "%s(%r, %r)" % (self.__class__.__name__, self.bbox, self.srs)
+
 
 class ResolutionConditional(MapLayer):
     def __init__(self, one, two, resolution, srs, extend):
@@ -126,14 +187,14 @@ class CacheMapLayer(MapLayer):
         try:
             src_bbox, tile_grid, affected_tile_coords = \
                 self.grid.get_affected_tiles(bbox, size, req_srs=srs)
-        except IndexError:
-            raise TileCacheError('Invalid BBOX')
         except NoTiles:
             raise BlankImage()
+        except GridError, ex:
+            raise MapBBOXError(ex.args[0])
         
         num_tiles = tile_grid[0] * tile_grid[1]
         if num_tiles >= base_config().cache.max_tile_limit:
-            raise TooManyTilesError()
+            raise MapBBOXError("to many tiles")
         
         tile_sources = [tile.source for tile in self.tile_manager.load_tile_coords(affected_tile_coords)]
         return TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,

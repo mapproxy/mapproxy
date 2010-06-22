@@ -19,8 +19,8 @@ Retrieve maps/information from WMS servers.
 """
 
 import sys
-from mapproxy.source import Source, InfoSource
-from mapproxy.cache import MapExtend, TileSourceError
+from mapproxy.source import Source, InfoSource, SourceError
+from mapproxy.layer import MapExtend
 from mapproxy.srs import SRS
 from mapproxy.client.http import HTTPClientError
 from mapproxy.util import reraise_exception
@@ -38,7 +38,7 @@ class WMSSource(Source):
         try:
             return self.client.get_map(query)
         except HTTPClientError, e:
-            reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
+            reraise_exception(SourceError(e.args[0]), sys.exc_info())
         
 
 class WMSInfoSource(InfoSource):

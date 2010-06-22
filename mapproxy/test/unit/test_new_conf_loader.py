@@ -6,9 +6,7 @@ from mapproxy.config.loader import (
     WMSSourceConfiguration,
     load_services,
 )
-from mapproxy.cache import (
-    TileManager,
-)
+from mapproxy.cache.tile import TileManager
 
 
 from nose.tools import eq_

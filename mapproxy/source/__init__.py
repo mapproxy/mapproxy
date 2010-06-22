@@ -18,9 +18,18 @@
 Map/information sources for layers or tile cache.
 """
 
-from mapproxy.cache import MapExtend
+from mapproxy.layer import MapExtend, MapError, MapBBOXError
 from mapproxy.image.message import message_image
 from mapproxy.srs import SRS
+
+class SourceError(MapError):
+    pass
+
+class SourceBBOXError(SourceError, MapBBOXError):
+    pass
+
+class InvalidSourceQuery(ValueError):
+    pass
 
 class Source(object):
     supports_meta_tiles = False
