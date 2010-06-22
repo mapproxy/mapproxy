@@ -40,13 +40,13 @@ setup(
     include_package_data=True,
     entry_points = {
         'console_scripts': [
-            'mapproxy-seed = mapproxy.core.scripts.seed:main',
+            'mapproxy-seed = mapproxy.seed.script:main',
         ],
         'paste.app_factory': [
             'app = mapproxy.wsgiapp:app_factory'
         ],
         'paste.paster_create_template': [
-            'mapproxy_conf=mapproxy.core.paster_templates:ConfigurationTemplate'
+            'mapproxy_conf=mapproxy.paster_templates:ConfigurationTemplate'
         ],
     },
     package_data = {'': ['*.xml', '*.yaml', '*.ttf']},
