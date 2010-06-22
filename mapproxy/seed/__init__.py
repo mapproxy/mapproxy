@@ -104,7 +104,7 @@ class SeedWorker(proc_class):
             sys.stdout.flush()
             if not self.dry_run:
                 exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
-                            exceptions=(TileSourceError, IOError))
+                            exceptions=(SourceError, IOError))
 
 
 class ETA(object):

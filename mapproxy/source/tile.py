@@ -19,9 +19,8 @@ Retrieve tiles from different tile servers (TMS/TileCache/etc.).
 """
 
 import sys
-from mapproxy.source import Source
+from mapproxy.source import Source, SourceError
 from mapproxy.client.http import HTTPClientError
-from mapproxy.cache.tile import TileSourceError
 from mapproxy.source import InvalidSourceQuery
 from mapproxy.util import reraise_exception
 
@@ -49,4 +48,4 @@ class TiledSource(Source):
         try:
             return self.client.get_tile(tile_coord)
         except HTTPClientError, e:
-            reraise_exception(TileSourceError(e.args[0]), sys.exc_info())
+            reraise_exception(SourceError(e.args[0]), sys.exc_info())

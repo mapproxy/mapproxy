@@ -21,15 +21,8 @@ from mapproxy.source import Source, InvalidSourceQuery, SourceError
 from mapproxy.client.wms import WMSClient
 from mapproxy.source.wms import WMSSource
 from mapproxy.source.tile import TiledSource
-
-from mapproxy.cache.file import (
-    FileCache,
-)
-from mapproxy.cache.tile import (
-    Tile,
-    TileSourceError,
-    TileManager,
-)
+from mapproxy.cache.file import FileCache
+from mapproxy.cache.tile import Tile, TileManager
 
 from mapproxy.grid import TileGrid
 from mapproxy.srs import SRS
@@ -569,7 +562,7 @@ class TestWMSSource(object):
                 except SourceError, e:
                     assert 'no image returned' in e.args[0]
                 else:
-                    assert False, 'no TiledSourceError raised'
+                    assert False, 'no SourceError raised'
     def test_basic_auth(self):
         http_client = HTTPClient(self.req_template.url, username='foo', password='bar')
         self.client.http_client = http_client

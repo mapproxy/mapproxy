@@ -48,14 +48,6 @@ from mapproxy.grid import MetaGrid
 import logging
 log = logging.getLogger(__name__)
 
-class TileCacheError(Exception):
-    pass
-
-#TODO rename to something like SourceError
-class TileSourceError(TileCacheError):
-    pass
-class TooManyTilesError(TileCacheError):
-    pass
 
 class TileManager(object):
     def __init__(self, grid, cache, sources, format,

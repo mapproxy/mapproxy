@@ -28,7 +28,6 @@ from mapproxy.image.message import attribution_image
 
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, MapBBOXError
 from mapproxy.source import SourceError
-from mapproxy.cache.tile import TileCacheError
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
