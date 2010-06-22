@@ -255,7 +255,7 @@ class _SRS(object):
         else:
             return not equal_result
     def __str__(self):
-        #pylint: disable-msg=E1101
+        #pylint: disable=E1101
         return "SRS %s ('%s')" % (self.srs_code, self.proj.srs)
     
     def __repr__(self):

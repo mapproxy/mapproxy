@@ -20,7 +20,7 @@ Configuration loading and system initializing.
 from __future__ import with_statement
 
 import os
-import yaml #pylint: disable-msg=F0401
+import yaml #pylint: disable=F0401
 import pkg_resources
 
 import logging
@@ -97,7 +97,6 @@ from mapproxy.source.wms import WMSSource, WMSInfoSource
 from mapproxy.source.tile import TiledSource
 
 from mapproxy.cache.tile import TileManager
-
 
 
 class ConfigurationError(Exception):

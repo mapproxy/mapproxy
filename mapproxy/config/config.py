@@ -19,7 +19,7 @@ System-wide configuration.
 """
 from __future__ import with_statement
 import os
-import yaml #pylint: disable-msg=F0401
+import yaml #pylint: disable=F0401
 
 class Options(dict):
     """

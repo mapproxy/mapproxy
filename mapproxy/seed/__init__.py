@@ -337,7 +337,7 @@ def status_symbol(i, total):
 
 def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=False,
     concurrency=2):
-    from mapproxy.core.loader import ProxyConfiguration
+    from mapproxy.config.loader import ProxyConfiguration
     
     if hasattr(conf_file, 'read'):
         seed_conf = yaml.load(conf_file)
@@ -444,7 +444,7 @@ def caches_from_layer(layer):
     return caches
 
 def load_datasource(datasource, where=None):
-    from mapproxy.core.ogr_reader import OGRShapeReader
+    from mapproxy.util.ogr import OGRShapeReader
     
     polygons = []
     for wkt in OGRShapeReader(datasource).wkts(where):

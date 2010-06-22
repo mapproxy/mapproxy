@@ -58,7 +58,7 @@ class FileLock(object):
                     raise e
         while not self._locked:
             try:
-                self.lock = lockfile.LockFile(self.lock_file)
+                self._lock = lockfile.LockFile(self.lock_file)
             except lockfile.LockError, e:
                 current_time = time.time()
                 if current_time < stop_time:
@@ -72,7 +72,7 @@ class FileLock(object):
     def unlock(self):
         if self._locked:
             self._locked = False
-            self.lock.close()
+            self._lock.close()
     
     def __del__(self):
         self.unlock()

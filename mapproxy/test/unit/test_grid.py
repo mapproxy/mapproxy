@@ -281,7 +281,7 @@ class TestFixedResolutionsTileGrid(TileGridTest):
                          (0, 0, 0), (1, 0, 0), (2, 0, 0),
                          ]
     
-    def test_affected_tiles(self):
+    def test_affected_tiles_2(self):
         req_bbox = (3250000, 5230000, 3930000, 6110000)
         self.grid.max_shrink_factor = 2.0
         try:

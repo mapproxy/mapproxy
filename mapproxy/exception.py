@@ -66,6 +66,8 @@ class ExceptionHandler(object):
         """
         raise NotImplementedError()
 
+def _not_implemented(*args, **kw):
+    raise NotImplementedError()
 
 class XMLExceptionHandler(ExceptionHandler):
     """
@@ -91,7 +93,7 @@ class XMLExceptionHandler(ExceptionHandler):
     A character encoding might be added to the mimetype (like text/xml;charset=UTF-8) 
     """
     
-    template_func = None
+    template_func = _not_implemented
     """
     Function that returns the named template.
     """
