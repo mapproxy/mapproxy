@@ -85,12 +85,12 @@
 {{for layer in tile_layers}}
     <TileSet>
       <SRS>{{layer.grid.srs_name}}</SRS>
-      <BoundingBox srs="EPSG:4326" minx="{{ layer.llbbox[0] }}" miny="{{ layer.llbbox[1] }}" maxx="{{ layer.llbbox[2] }}" maxy="{{ layer.llbbox[3] }}" />
-      <Resolutions>{% for level, res in layer.grid.tile_sets %}{{res}} {% endfor %}</Resolutions>
+      <BoundingBox srs="EPSG:4326" minx="{{ layer.extend.llbbox[0] }}" miny="{{ layer.extend.llbbox[1] }}" maxx="{{ layer.extend.llbbox[2] }}" maxy="{{ layer.extend.llbbox[3] }}" />
+      <Resolutions>{{for level, res in layer.grid.tile_sets}}{{res}} {{endfor}}</Resolutions>
       <Width>{{layer.grid.tile_size[0]}}</Width>
       <Height>{{layer.grid.tile_size[1]}}</Height>
-      <Format>{{layer.md.format}}</Format>
-      <Layers>{{layer.md.name}}</Layers>
+      <Format>{{layer.md['format']}}</Format>
+      <Layers>{{layer.md['name']}}</Layers>
       <Styles></Styles>
     </TileSet>  
 {{endfor}}

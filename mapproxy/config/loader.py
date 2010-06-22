@@ -516,30 +516,31 @@ class ServiceConfiguration(ConfigurationBase):
             services[service_name] = creator(service_conf or {}, context)
         return services
     
-    def kml_service(self, conf, context):
-        md = context.services.conf.get('wms', {}).get('md', {}).copy()
-        md.update(conf.get('md', {}))
+    def tile_layers(self, conf, context):
         layers = odict()
         for layer_name, layer_conf in context.layers.iteritems():
             for tile_layer in layer_conf.tile_layers(context):
                 if not tile_layer: continue
                 layers[tile_layer.md['name_internal']] = tile_layer
-        
+        return layers
+    
+    def kml_service(self, conf, context):
+        md = context.services.conf.get('wms', {}).get('md', {}).copy()
+        md.update(conf.get('md', {}))
+        layers = self.tile_layers(conf, context)
         return KMLServer(layers, md)
     
     def tms_service(self, conf, context):
         md = context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
-        layers = odict()
-        for layer_name, layer_conf in context.layers.iteritems():
-            for tile_layer in layer_conf.tile_layers(context):
-                if not tile_layer: continue
-                layers[tile_layer.md['name_internal']] = tile_layer
-        
+        layers = self.tile_layers(conf, context)
         return TileServer(layers, md)
     
     def wms_service(self, conf, context):
         md = conf.get('md', {})
+        tile_layers = None
+        if 'wmsc' in conf:
+            tile_layers = self.tile_layers(conf, context)
         attribution = conf.get('attribution')
         layers = odict()
         for layer_name, layer_conf in context.layers.iteritems():
@@ -547,7 +548,7 @@ class ServiceConfiguration(ConfigurationBase):
         image_formats = context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = context.globals.get_value('srs', conf, global_key='wms.srs')
         return WMSServer(layers, md, attribution=attribution, image_formats=image_formats,
-            srs=srs)
+            srs=srs, tile_layers=tile_layers)
     
 def load_services(conf_file):
     if hasattr(conf_file, 'read'):
