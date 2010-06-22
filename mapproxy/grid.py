@@ -20,12 +20,11 @@
 from __future__ import division
 import math
 
-import warnings
-import logging
-log = logging.getLogger(__name__)
-
 from mapproxy.config import base_config
 from mapproxy.srs import SRS, get_epsg_num
+
+import logging
+log = logging.getLogger(__name__)
 
 geodetic_epsg_codes = [4326]
 

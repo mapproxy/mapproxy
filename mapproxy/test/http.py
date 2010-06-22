@@ -15,7 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import threading
-from urllib2 import urlopen, URLError, HTTPError
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from contextlib import contextmanager
 

@@ -19,15 +19,15 @@ import sys
 import re
 import math
 import time
-import yaml
 import datetime
 from functools import partial
 
+import yaml
+
 from mapproxy.srs import SRS
 from mapproxy.grid import MetaGrid, bbox_intersects, bbox_contains
-from mapproxy.cache.tile import Tile
 from mapproxy.source import SourceError
-from mapproxy.config import base_config, abspath
+from mapproxy.config import abspath
 from mapproxy.util import (
     cleanup_directory,
     timestamp_before,

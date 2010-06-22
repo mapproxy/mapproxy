@@ -22,10 +22,10 @@ Tile caching (creation, caching and retrieval of tiles).
     ranksep = 0.1;
     node [shape="box", height="0", width="0"] 
     
-    cl  [label="CacheMapLayer" href="<mapproxy.core.layer.CacheMapLayer>"]
-    tm  [label="TileManager",  href="<TileManager>"];
-    fc      [label="FileCache", href="<FileCache>"];
-    s       [label="Source", href="<mapproxy.core.source.Source>"];
+    cl  [label="CacheMapLayer" href="<mapproxy.layer.CacheMapLayer>"]
+    tm  [label="TileManager",  href="<mapproxy.cache.tile.TileManager>"];
+    fc      [label="FileCache", href="<mapproxy.cache.file.FileCache>"];
+    s       [label="Source", href="<mapproxy.source.Source>"];
 
     {
         cl -> tm [label="load_tile_coords"];

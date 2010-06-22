@@ -38,12 +38,10 @@ Tile caching (creation, caching and retrieval of tiles).
 
 from __future__ import with_statement
 
+from mapproxy.grid import MetaGrid
 from mapproxy.image import merge_images
 from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery
-from mapproxy.srs import SRS
-from mapproxy.grid import MetaGrid
-
 
 import logging
 log = logging.getLogger(__name__)
