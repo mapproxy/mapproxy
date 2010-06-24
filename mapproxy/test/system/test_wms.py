@@ -37,7 +37,7 @@ global_app = None
 
 def setup_module():
     fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
-    fixture_layer_conf = os.path.join(fixture_dir, 'new_layer.yaml')
+    fixture_layer_conf = os.path.join(fixture_dir, 'layer.yaml')
     fixture_cache_data = os.path.join(fixture_dir, 'cache_data')
     mapproxy.config.base_config().debug_mode = True
     mapproxy.config.base_config().services_conf = fixture_layer_conf
