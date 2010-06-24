@@ -7,6 +7,7 @@ build/
 var/
 tmp/
 api/
+cover/
 
 syntax: regexp
 # hidden files
