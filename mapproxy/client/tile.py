@@ -53,12 +53,17 @@ class TileURLTemplate(object):
     >>> t = TileURLTemplate('http://foo/tiles/%(tc_path)s.png')
     >>> t.substitute((7, 4, 3))
     'http://foo/tiles/03/000/000/007/000/000/004.png'
+    
+    >>> t = TileURLTemplate('http://foo/tms/1.0.0/%(tms_path)s.png')
+    >>> t.substitute((7, 4, 3))
+    'http://foo/tms/1.0.0/3/7/4.png'
     """
     def __init__(self, template, format='png'):
         self.template= template
         self.format = format
         self.with_quadkey = True if '%(quadkey)' in template else False
         self.with_tc_path = True if '%(tc_path)' in template else False
+        self.with_tms_path = True if '%(tms_path)' in template else False
     
     def substitute(self, tile_coord):
         x, y, z = tile_coord
@@ -67,6 +72,8 @@ class TileURLTemplate(object):
             data['quadkey'] = quadkey(tile_coord)
         if self.with_tc_path:
             data['tc_path'] = tilecache_path(tile_coord)
+        if self.with_tms_path:
+            data['tms_path'] = tms_path(tile_coord)
         return self.template % data
     
     def __repr__(self):
@@ -109,3 +116,9 @@ def quadkey(tile_coord):
         quadKey += str(digit)
     return quadKey
 
+def tms_path(tile_coord):
+    """
+    >>> tms_path((1234567, 87654321, 9))
+    '9/1234567/87654321'
+    """
+    return '%d/%d/%d' % (tile_coord[2], tile_coord[0], tile_coord[1])

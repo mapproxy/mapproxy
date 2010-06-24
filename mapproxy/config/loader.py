@@ -325,7 +325,7 @@ class WMSSourceConfiguration(SourceConfiguration):
 
 
 class TileSourceConfiguration(SourceConfiguration):
-    source_type = ('tiles',)
+    source_type = ('tile',)
     optional_keys = set('''type grid request_format origin'''.split())
     required_keys = set('url'.split())
     defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}

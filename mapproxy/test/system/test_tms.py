@@ -111,6 +111,15 @@ class TestTMS(object):
                 eq_(resp.content_type, 'image/jpeg')
                 self.created_tiles.append('wms_cache_EPSG900913/01/000/000/000/000/000/000.jpeg')
     
+    def test_get_tile_from_cache_with_tile_source(self):
+        with tmp_image((256, 256), format='jpeg') as img:
+            expected_req = ({'path': r'/tiles/01/000/000/000/000/000/001.png'},
+                            {'body': img.read(), 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                resp = self.app.get('/tms/1.0.0/tms_cache/0/0/1.png')
+                eq_(resp.content_type, 'image/png')
+                self.created_tiles.append('tms_cache_EPSG900913/01/000/000/000/000/000/001.png')
+    
     def created_tiles_filenames(self):
         base_dir = mapproxy.config.base_config().cache.base_dir
         for filename in self.created_tiles:
