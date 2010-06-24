@@ -11,3 +11,4 @@ api/
 syntax: regexp
 # hidden files
 (^|/)\.
+\.lck$
