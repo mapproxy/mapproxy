@@ -32,15 +32,6 @@ from mapproxy.cache.file import FileCache
 from mapproxy.config import base_config, abspath
 from mapproxy.client.http import auth_data_from_url, HTTPClient
 
-def load_source_loaders():
-    source_loaders = {}
-    for entry_point in pkg_resources.iter_entry_points('mapproxy.source_loader'):
-        source_loaders[entry_point.name] = entry_point
-    return source_loaders
-
-source_loaders = load_source_loaders()
-del load_source_loaders
-
 
 def loader(loaders, name):
     """
@@ -69,14 +60,6 @@ def load_tile_filters():
 
 tile_filters, tile_filter_conf_keys = load_tile_filters()
 del load_tile_filters
-
-server_loaders = {
-    'wms': 'mapproxy.wms.loader:create_wms_server',
-    'tms': 'mapproxy.tms.loader:create_tms_server',
-    'kml': 'mapproxy.kml.loader:create_kml_server',
-}
-def server_loader(name):
-    return loader(server_loaders, name)
 
 
 import mapproxy.config
