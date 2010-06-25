@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from nose.tools import eq_, assert_almost_equals
+from __future__ import division
+from nose.tools import eq_, assert_almost_equal
 from mapproxy.grid import (
     MetaGrid,
     TileGrid,
@@ -22,8 +23,54 @@ from mapproxy.grid import (
     bbox_intersects,
     bbox_contains,
     NoTiles,
+    resolutions
 )
 from mapproxy.srs import SRS, TransformationError
+
+class TestResolution(object):
+    def test_min_res(self):
+        conf = dict(min_res=1000)
+        res = resolutions(**conf)
+        eq_(res[:5], [1000, 500.0, 250.0, 125.0, 62.5])
+        eq_(len(res), 20)
+
+    def test_min_res_max_res(self):
+        conf = dict(min_res=1000, max_res=80)
+        res = resolutions(**conf)
+        eq_(res, [1000, 500.0, 250.0, 125.0, 62.5])
+    
+    def test_min_res_levels(self):
+        conf = dict(min_res=1600, num_levels=5)
+        res = resolutions(**conf)
+        eq_(res, [1600, 800.0, 400.0, 200.0, 100.0])
+    
+    def test_min_res_levels_res_factor(self):
+        conf = dict(min_res=1600, num_levels=4, res_factor=4.0)
+        res = resolutions(**conf)
+        eq_(res, [1600, 400.0, 100.0, 25.0])
+
+    def test_min_res_levels_sqrt2(self):
+        conf = dict(min_res=1600, num_levels=5, res_factor='sqrt2')
+        res = resolutions(**conf)
+        eq_(map(round, res), [1600.0, 1131.0, 800.0, 566.0, 400.0])
+    
+    def test_min_res_max_res_levels(self):
+        conf = dict(min_res=1600, max_res=10, num_levels=10)
+        res = resolutions(**conf)
+        eq_(len(res), 10)
+        # will calculate log10 based factor of 1.75752...
+        assert_almost_equal(res[0], 1600)
+        assert_almost_equal(res[1], 1600/1.75752, 2)
+        assert_almost_equal(res[8], 1600/1.75752**8, 2)
+        assert_almost_equal(res[9], 10)
+    
+    def test_bbox_levels(self):
+        conf = dict(bbox=[0,40,15,50], num_levels=10, tile_size=(256, 256))
+        res = resolutions(**conf)
+        eq_(len(res), 10)
+        assert_almost_equal(res[0], 15/256)
+        assert_almost_equal(res[1], 15/512)
+        
 
 def test_metagrid_bbox():
     mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))
@@ -170,8 +217,8 @@ class TestTileGridResolutions(object):
     def test_sqrt_grid(self):
         grid = TileGrid(is_geodetic=True, res='sqrt2', tile_size=(360, 180))
         eq_(grid.resolution(0), 1.0)
-        assert_almost_equals(grid.resolution(2), 0.5)
-        assert_almost_equals(grid.resolution(4), 0.25)
+        assert_almost_equal(grid.resolution(2), 0.5)
+        assert_almost_equal(grid.resolution(4), 0.25)
     
 
 class TestWGS84TileGrid(object):
@@ -179,8 +226,8 @@ class TestWGS84TileGrid(object):
         self.grid = TileGrid(is_geodetic=True)
     
     def test_resolution(self):
-        assert_almost_equals(self.grid.resolution(0), 1.40625)
-        assert_almost_equals(self.grid.resolution(1), 1.40625/2)
+        assert_almost_equal(self.grid.resolution(0), 1.40625)
+        assert_almost_equal(self.grid.resolution(1), 1.40625/2)
     
     def test_bbox(self):
         eq_(self.grid.bbox, (-180.0, -90.0, 180.0, 90.0))
@@ -486,5 +533,5 @@ class TestBBOXContains(object):
 
 def assert_almost_equal_bbox(bbox1, bbox2, places=2):
     for coord1, coord2 in zip(bbox1, bbox2):
-        assert_almost_equals(coord1, coord2, places)
+        assert_almost_equal(coord1, coord2, places)
 

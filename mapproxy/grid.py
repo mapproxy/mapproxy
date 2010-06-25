@@ -68,6 +68,97 @@ RES_TYPE_SQRT2 = 'sqrt2'
 RES_TYPE_GLOBAL = 'global'
 RES_TYPE_CUSTOM = 'custom'
 
+default_bboxs = {
+    SRS(900913): (-20037508.342789244,
+                  -20037508.342789244,
+                   20037508.342789244,
+                   20037508.342789244),
+    SRS(4326): (-180, -90, 180, 90),
+}
+
+def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
+              res=None, res_factor=None,
+              num_levels=None, min_res=None, max_res=None,
+              stretch_factor=None, max_shrink_factor=None):
+    """
+    This function creates a new TileGrid.
+    """
+    if srs is None: srs = 'EPSG:900913'
+    srs = SRS(srs)
+    
+    if not bbox:
+        bbox = default_bboxs.get(srs)
+        if not bbox:
+            raise ValueError('need a bbox for grid with %s' % srs)
+    
+    bbox = grid_bbox(bbox, srs=srs, bbox_srs=bbox_srs)
+    
+    if res:
+        if isinstance(res, list):
+            res = sorted(res, reverse=True)
+            assert min_res is None
+            assert max_res is None
+        else:
+            raise ValueError("res is not a list, use res_factor for float values")
+
+    else:
+        res = resolutions(min_res, max_res, res_factor, num_levels, bbox, tile_size)
+    
+    return TileGrid(srs, bbox=bbox, tile_size=tile_size, res=res,
+                    stretch_factor=stretch_factor, max_shrink_factor=max_shrink_factor)
+
+def resolutions(min_res=None, max_res=None, res_factor=2.0, num_levels=None,
+                bbox=None, tile_size=(256, 256)):
+    if res_factor == 'sqrt2':
+        res_factor = math.sqrt(2)
+
+    res = []
+    if not min_res:
+        width = bbox[2] - bbox[0]
+        height = bbox[3] - bbox[1]
+        min_res = max(width/tile_size[0], height/tile_size[1])
+    
+    if max_res:
+        if num_levels:
+            res_step = (math.log10(min_res) - math.log10(max_res)) / (num_levels-1)
+            res = [10**(math.log10(min_res) - res_step*i) for i in range(num_levels)]
+        else:
+            res = [min_res]
+            while res[-1] > max_res:
+                res.append(res[-1]/res_factor)
+    else:
+        if not num_levels:
+            num_levels = 20 if res_factor != math.sqrt(2) else 40
+        res = [min_res]
+        while len(res) < num_levels:
+            res.append(res[-1]/res_factor)
+    
+    return res
+
+def grid_bbox(bbox, bbox_srs, srs):
+    bbox = bbox_tuple(bbox)
+    if bbox_srs:
+        bbox = SRS(bbox_srs).transform_bbox_to(srs, bbox)
+    return bbox
+    
+def bbox_tuple(bbox):
+    """
+    >>> bbox_tuple('20,-30,40,-10')
+    (20.0, -30.0, 40.0, -10.0)
+    >>> bbox_tuple([20,-30,40,-10])
+    (20.0, -30.0, 40.0, -10.0)
+    
+    """
+    if isinstance(bbox, basestring):
+        bbox = bbox.split(',')
+    bbox = tuple(map(float, bbox))
+    return bbox
+    
+
+            
+            
+    
+
 class TileGrid(object):
     """
     This class represents a regular tile grid. The first level (0) contains a single

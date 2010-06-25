@@ -1,3 +1,4 @@
+from __future__ import division
 from cStringIO import StringIO
 from mapproxy.srs import SRS
 from mapproxy.config.loader import (
@@ -8,33 +9,65 @@ from mapproxy.config.loader import (
 )
 from mapproxy.cache.tile import TileManager
 
-
-from nose.tools import eq_
+from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
+from nose.tools import eq_, assert_almost_equal
 from nose.plugins.skip import SkipTest
 
+
 class TestGridConfiguration(object):
-    def test_simple_grid(self):
+    def test_default_grids(self):
+        conf = {}
+        conf = ProxyConfiguration(conf)
+        grid = conf.grids['GLOBAL_MERCATOR'].tile_grid(conf)
+        eq_(grid.srs, SRS(900913))
+    
+        grid = conf.grids['GLOBAL_GEODETIC'].tile_grid(conf)
+        eq_(grid.srs, SRS(4326))
+    
+    
+    def test_simple(self):
         conf = {'grids': {'grid': {'srs': 'EPSG:4326', 'bbox': [5, 50, 10, 55]}}}
-        
         conf = ProxyConfiguration(conf)
         grid = conf.grids['grid'].tile_grid(conf)
-        
         eq_(grid.srs, SRS(4326))
 
-    def test_simple_grid_w_base(self):
+    def test_with_base(self):
         conf = {'grids': {
             'base_grid': {'srs': 'EPSG:4326', 'bbox': [5, 50, 10, 55]},
             'grid': {'base': 'base_grid'}
         }}
-        
         conf = ProxyConfiguration(conf)
-        
         grid = conf.grids['grid'].tile_grid(conf)
-        
         eq_(grid.srs, SRS(4326))
 
-
-
+    def test_with_num_levels(self):
+        conf = {'grids': {'grid': {'srs': 'EPSG:4326', 'bbox': [5, 50, 10, 55], 'num_levels': 8}}}
+        conf = ProxyConfiguration(conf)
+        grid = conf.grids['grid'].tile_grid(conf)
+        eq_(len(grid.resolutions), 8)
+    
+    def test_with_bbox_srs(self):
+        conf = {'grids': {'grid': {'srs': 'EPSG:25832', 'bbox': [5, 50, 10, 55], 'bbox_srs': 'EPSG:4326'}}}
+        conf = ProxyConfiguration(conf)
+        grid = conf.grids['grid'].tile_grid(conf)
+        assert_almost_equal_bbox([213372, 5538660, 571666, 6102110], grid.bbox, -3)
+    
+    def test_with_min_res(self):
+        conf = {'grids': {'grid': {'srs': 'EPSG:4326', 'bbox': [5, 50, 10, 55], 'min_res': 0.0390625}}}
+        conf = ProxyConfiguration(conf)
+        grid = conf.grids['grid'].tile_grid(conf)
+        assert_almost_equal_bbox([5, 50, 10, 55], grid.bbox, 2)
+        eq_(grid.resolution(0), 0.0390625)
+        eq_(grid.resolution(1), 0.01953125)
+    
+    def test_with_max_res(self):
+        conf = {'grids': {'grid': {'srs': 'EPSG:4326', 'bbox': [5, 50, 10, 55], 'max_res': 0.0048828125}}}
+        conf = ProxyConfiguration(conf)
+        grid = conf.grids['grid'].tile_grid(conf)
+        assert_almost_equal_bbox([5, 50, 10, 55], grid.bbox, 2)
+        eq_(grid.resolution(0), 0.01953125)
+        eq_(grid.resolution(1), 0.01953125/2)
+    
 class TestWMSSourceConfiguration(object):
     def test_simple_grid(self):
         conf_dict = {
@@ -65,7 +98,7 @@ class TestWMSSourceConfiguration(object):
         grid, manager = caches[0]
         
         eq_(grid.srs, SRS(4326))
-        eq_(grid.bbox, [5, 50, 10, 55])
+        eq_(grid.bbox, (5.0, 50.0, 10.0, 55.0))
         
         assert isinstance(manager, TileManager)
         

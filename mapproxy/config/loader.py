@@ -17,9 +17,10 @@
 """
 Configuration loading and system initializing.
 """
-from __future__ import with_statement
+from __future__ import with_statement, division
 
 import os
+import math
 import yaml #pylint: disable=F0401
 import pkg_resources
 
@@ -63,7 +64,7 @@ del load_tile_filters
 
 
 import mapproxy.config
-from mapproxy.grid import TileGrid
+from mapproxy.grid import TileGrid, RES_TYPE_GLOBAL, tile_grid
 from mapproxy.request.base import split_mime_type
 from mapproxy.request.wms import create_request
 from mapproxy.layer import (
@@ -185,40 +186,36 @@ class GridConfiguration(ConfigurationBase):
         else:
             conf = self.conf
 
-        srs = SRS(conf['srs'])
-        bbox = conf.get('bbox')
-        if isinstance(bbox, basestring):
-            bbox = [float(x) for x in bbox.split(',')]
-        
-        if bbox is None and srs == SRS(4326):
-            bbox = (-180.0, -90, 180, 90)
-        
-        if bbox and 'bbox_srs' in conf:
-            bbox_srs = SRS(conf['bbox_srs'])
-            bbox = bbox_srs.transform_bbox_to(srs, conf['bbox'])
-        
         tile_size = context.globals.get_value('tile_size', conf,
             global_key='grid.tile_size')
+        conf['tile_size'] = tuple(tile_size)
         tile_size = tuple(tile_size)
+        
         
         stretch_factor = context.globals.get_value('stretch_factor', conf,
             global_key='image.stretch_factor')
         max_shrink_factor = context.globals.get_value('max_shrink_factor', conf,
             global_key='image.max_shrink_factor')
         
-        res = conf.get('res')
-        if isinstance(res, list):
-            res.sort(reverse=True)
         
-        return TileGrid(
-            srs=srs,
+        grid = tile_grid(
+            srs=conf.get('srs'),
             tile_size=tile_size,
-            res=res,
-            bbox=bbox,
-            levels=conf.get('num_levels'),
+            min_res=conf.get('min_res'),
+            max_res=conf.get('max_res'),
+            res=conf.get('res'),
+            res_factor=conf.get('res_factor', 2.0),
+            bbox=conf.get('bbox'),
+            bbox_srs=conf.get('bbox_srs'),
+            num_levels=conf.get('num_levels'),
             stretch_factor=stretch_factor,
             max_shrink_factor=max_shrink_factor,
         )
+        
+        grid.res_type = RES_TYPE_GLOBAL
+        return grid
+
+
 
 class GlobalConfiguration(ConfigurationBase):
     optional_keys = set('image grid srs'.split())
