@@ -22,7 +22,6 @@ import os
 import hashlib
 import mimetypes
 from mapproxy.util.times import format_httpdate, parse_httpdate, timestamp
-from mapproxy.wsgiapp import ctx
 
 class Response(object):
     charset = 'utf-8'
@@ -162,25 +161,6 @@ class Response(object):
                 chunk = chunk.encode(self.charset)
             yield chunk
 
-def static_file_response(filename, max_age=None):
-    """
-    Create a Response for a file. Sets HTTP caching-headers (Last-modified and ETag)
-    according to the file stats and the optional max_age (for Cache-control).
-    
-    :param max_age: ``Cache-control`` ``max-age`` in seconds.
-    """
-    content_type = mimetypes.guess_type(filename)[0]
-    if content_type is None:
-        content_type = 'text/plain'
-    f = open(filename)
-    mtime = os.lstat(filename).st_mtime
-    size = os.stat(filename).st_size
-    resp = Response(f, content_type=content_type)
-    resp.cache_headers(mtime, etag_data=(mtime, size),
-                       max_age=max_age)
-    if hasattr(ctx, 'env'):
-        resp.make_conditional(ctx.env)
-    return resp
 
 # http://www.faqs.org/rfcs/rfc2616.html
 _status_codes = {
