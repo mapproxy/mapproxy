@@ -394,8 +394,10 @@ class CacheConfiguration(ConfigurationBase):
         request_format = self.conf.get('request_format') or self.conf['format']
         caches = []
 
-        meta_buffer = context.globals.get_value('meta_buffer', self.conf)
-        meta_size = context.globals.get_value('meta_size', self.conf)
+        meta_buffer = context.globals.get_value('meta_buffer', self.conf,
+            global_key='grid.meta_buffer')
+        meta_size = context.globals.get_value('meta_size', self.conf,
+            global_key='grid.meta_size')
 
         for grid_conf in [context.grids[g] for g in self.conf['grids']]:
             sources = []
