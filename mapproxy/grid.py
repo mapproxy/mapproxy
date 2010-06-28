@@ -77,9 +77,11 @@ default_bboxs = {
 }
 
 def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
-              res=None, res_factor=None,
+              res=None, res_factor=2.0,
               num_levels=None, min_res=None, max_res=None,
-              stretch_factor=None, max_shrink_factor=None):
+              stretch_factor=None, max_shrink_factor=None,
+              align_with=None
+              ):
     """
     This function creates a new TileGrid.
     """
@@ -98,14 +100,52 @@ def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
             res = sorted(res, reverse=True)
             assert min_res is None
             assert max_res is None
+            assert align_with is None
         else:
             raise ValueError("res is not a list, use res_factor for float values")
 
+    elif align_with is not None:
+        res = aligned_resolutions(min_res, max_res, res_factor, num_levels, bbox, tile_size,
+                                  align_with)
     else:
         res = resolutions(min_res, max_res, res_factor, num_levels, bbox, tile_size)
     
     return TileGrid(srs, bbox=bbox, tile_size=tile_size, res=res,
                     stretch_factor=stretch_factor, max_shrink_factor=max_shrink_factor)
+
+def aligned_resolutions(min_res=None, max_res=None, res_factor=2.0, num_levels=None,
+                bbox=None, tile_size=(256, 256), align_with=None):
+    
+    
+    alinged_res = align_with.resolutions
+    res = alinged_res[:]
+    
+    if not min_res:
+        width = bbox[2] - bbox[0]
+        height = bbox[3] - bbox[1]
+        min_res = max(width/tile_size[0], height/tile_size[1])
+        
+    res = [r for r in res if r <= min_res]
+    
+    if max_res:
+        res = [r for r in res if r >= max_res]
+
+    if num_levels:
+        res = res[:num_levels]
+    
+    factor_calculated = res[0]/res[1]
+    if res_factor == 'sqrt2' and round(factor_calculated, 8) != round(math.sqrt(2), 8):
+        if round(factor_calculated, 8) == 2.0:
+            new_res = []
+            for r in res:
+                new_res.append(r)
+                new_res.append(r/math.sqrt(2))
+            res = new_res
+    elif res_factor == 2.0 and round(factor_calculated, 8) != round(2.0, 8):
+        if round(factor_calculated, 8) == round(math.sqrt(2), 8):
+            res = res[::2]
+    return res
+
 
 def resolutions(min_res=None, max_res=None, res_factor=2.0, num_levels=None,
                 bbox=None, tile_size=(256, 256)):

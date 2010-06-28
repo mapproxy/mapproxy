@@ -23,6 +23,7 @@ from mapproxy.grid import (
     bbox_intersects,
     bbox_contains,
     NoTiles,
+    tile_grid,
     resolutions
 )
 from mapproxy.srs import SRS, TransformationError
@@ -70,6 +71,43 @@ class TestResolution(object):
         eq_(len(res), 10)
         assert_almost_equal(res[0], 15/256)
         assert_almost_equal(res[1], 15/512)
+        
+
+class TestAlignedGrid(object):
+    def test_epsg_4326_bbox(self):
+        base = tile_grid(srs='epsg:4326')
+        bbox = (10.0, -20.0, 40.0, 10.0)
+        sub = tile_grid(align_with=base, bbox=bbox)
+        
+        eq_(sub.bbox, bbox)
+        eq_(sub.resolution(0), 180/256/8)
+        abbox, grid_size, tiles = sub.get_affected_level_tiles(bbox, 0)
+        eq_(abbox, (10.0, -20.0, 55.0, 25.0))
+        eq_(grid_size, (2, 2))
+        eq_(list(tiles), [(0, 1, 0), (1, 1, 0), (0, 0, 0), (1, 0, 0)])
+    
+    def test_epsg_4326_bbox_from_sqrt2(self):
+        base = tile_grid(srs='epsg:4326', res_factor='sqrt2')
+        bbox = (10.0, -20.0, 40.0, 10.0)
+        sub = tile_grid(align_with=base, bbox=bbox, res_factor=2.0)
+        
+        eq_(sub.bbox, bbox)
+        eq_(sub.resolution(0), base.resolution(8))
+        eq_(sub.resolution(1), base.resolution(10))
+        eq_(sub.resolution(2), base.resolution(12))
+
+    def test_epsg_4326_bbox_to_sqrt2(self):
+        base = tile_grid(srs='epsg:4326', res_factor=2.0)
+        bbox = (10.0, -20.0, 40.0, 10.0)
+        sub = tile_grid(align_with=base, bbox=bbox, res_factor='sqrt2')
+        
+        eq_(sub.bbox, bbox)
+        eq_(sub.resolution(0), base.resolution(4))
+        eq_(sub.resolution(2), base.resolution(5))
+        eq_(sub.resolution(4), base.resolution(6))
+
+        assert sub.resolution(0) > sub.resolution(1) > sub.resolution(3)
+        eq_(sub.resolution(3)/2, sub.resolution(5))
         
 
 def test_metagrid_bbox():
