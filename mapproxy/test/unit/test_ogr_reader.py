@@ -15,9 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from mapproxy.util.ogr import OGRShapeReader
+from mapproxy.util.ogr import OGRShapeReader, libgdal
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
+if not libgdal:
+    raise SkipTest('libgdal not found')
+    
 polygon_file = os.path.join(os.path.dirname(__file__), 'polygons', 'polygons.shp')
 
 class TestOGRShapeReader(object):
