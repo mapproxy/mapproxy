@@ -68,7 +68,7 @@ class OGRShapeReaderError(Exception):
     pass
 
 class OGRShapeReader(object):
-    def __init__(self, datasource, where=None):
+    def __init__(self, datasource):
         self.datasource = datasource
         self.opened = False
         self._ds = None
