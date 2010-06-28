@@ -23,11 +23,13 @@ import functools
 from cStringIO import StringIO
 from webtest import TestApp
 import mapproxy.config
+from mapproxy.srs import SRS
 from mapproxy.wsgiapp import make_wsgi_app 
 from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest, \
                                  WMS111FeatureInfoRequest, WMS111CapabilitiesRequest, \
                                  WMS130CapabilitiesRequest, WMS100CapabilitiesRequest, \
                                  WMS100FeatureInfoRequest, WMS130FeatureInfoRequest
+from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from mapproxy.test.image import is_jpeg, is_png, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
@@ -237,6 +239,38 @@ class TestWMS111(WMSTest):
                 assert 50000 < int(resp.headers['Content-length']) < 75000
                 eq_(resp.content_type, 'image/png')
     
+    def test_get_map_use_direct(self):
+        with tmp_image((200, 200), format='jpeg') as img:
+            expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+                                      '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
+                                      '&VERSION=1.1.1&BBOX=5.0,-10.0,6.0,-9.0'
+                                      '&WIDTH=200'},
+                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                self.common_map_req.params['bbox'] = '5,-10,6,-9'
+                resp = self.app.get(self.common_map_req)
+                img.seek(0)
+                assert resp.body == img.read()
+                # is_png(img) # TODO
+                eq_(resp.content_type, 'image/png')
+        
+    def test_get_map_use_direct_with_transform(self):
+        bbox_900913 = [1110868.98971,6444038.14317,1229263.18538,6623564.86585]
+        with tmp_image((200, 200), format='jpeg') as img:
+            expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+                                      '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A900913&styles='
+                                      '&VERSION=1.1.1&BBOX=1110868.98971,6444038.14317,1229263.18538,6623564.86585'
+                                      '&WIDTH=200'},
+                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                self.common_map_req.params['bbox'] = '3570269,5540889,3643458,5653553'
+                self.common_map_req.params['srs'] = 'EPSG:31467'
+                resp = self.app.get(self.common_map_req)
+                img.seek(0)
+                assert resp.body != img.read()
+                is_png(img)
+                eq_(resp.content_type, 'image/png')
+    
     def test_get_map_invalid_bbox(self):
         # min x larger than max x
         url =  """/service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&BBOX=7,2,-9,10&SRS=EPSG:4326&WIDTH=164&HEIGHT=388&LAYERS=wms_cache&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""
@@ -245,7 +279,7 @@ class TestWMS111(WMSTest):
     
     def test_get_map_invalid_bbox2(self):
         # broken bbox for the requested srs
-        url =  """/service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&BBOX=-72988843.697212,-255661507.634227,142741550.188860,255661507.634227&SRS=EPSG:25833&WIDTH=164&HEIGHT=388&LAYERS=wms_cache&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""
+        url =  """/service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&BBOX=-72988843.697212,-255661507.634227,142741550.188860,255661507.634227&SRS=EPSG:25833&WIDTH=164&HEIGHT=388&LAYERS=wms_cache_100&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""
         resp = self.app.get(url)
         is_111_exception(resp.lxml, 'Request too large or invalid BBOX.')
     

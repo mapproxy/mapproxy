@@ -24,6 +24,9 @@ from mapproxy.grid import NoTiles, GridError
 from mapproxy.image.tile import TiledImage
 from mapproxy.srs import SRS
 
+import logging
+log = logging.getLogger(__name__)
+
 class BlankImage(Exception):
     pass
 
@@ -117,7 +120,7 @@ class ResolutionConditional(MapLayer):
         xres = (bbox[2] - bbox[0]) / query.size[0]
         yres = (bbox[3] - bbox[1]) / query.size[1]
         res = min(xres, yres)
-        print res, self.resolution
+        log.debug('actual res: %s, threshold res: %s', res, self.resolution)
         
         if res > self.resolution:
             return self.one.get_map(query)

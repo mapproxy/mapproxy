@@ -439,7 +439,7 @@ class CacheConfiguration(ConfigurationBase):
             if len(self.conf['sources']) != 1:
                 raise ValueError('use_direct_from_level/res only supports single sources')
             source_conf = context.sources[self.conf['sources'][0]]
-            layer = ResolutionConditional(layer, source_conf.source(context), self.conf['use_direct_from_res'], main_grid.srs, layer.extend)
+            layer = ResolutionConditional(layer, source_conf.source(context, {'format': 'image/'+tile_manager.format}), self.conf['use_direct_from_res'], main_grid.srs, layer.extend)
         return layer
     
 class LayerConfiguration(ConfigurationBase):
