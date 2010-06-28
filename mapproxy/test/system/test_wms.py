@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import with_statement
+from __future__ import with_statement, division
 import os
 import sys
 import Image
@@ -33,7 +33,7 @@ from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from mapproxy.test.image import is_jpeg, is_png, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
-from nose.tools import eq_
+from nose.tools import eq_, assert_almost_equal
 
 global_app = None
 
@@ -338,6 +338,31 @@ class TestWMS111(WMSTest):
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},
                         {'body': 'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
+            resp = self.app.get(self.common_fi_req)
+            print resp.body
+            eq_(resp.content_type, 'text/plain')
+            eq_(resp.body, 'info')
+
+    def test_get_featureinfo_transformed(self):
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&BBOX=1110868.98971,6444038.14317,1229263.18538,6623564.86585'
+                                  '&styles=&VERSION=1.1.1'
+                                  '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=22'},
+                        {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+        
+        # out fi point at x=10,y=20
+        p_31467  = (3570269+10*(3643458 - 3570269)/200, 5540889+20*(5653553 - 5540889)/200)
+        # the transformed fi point at x=10,y=22
+        p_900913 = (1110868.98971+10*(1229263.18538 - 1110868.98971)/200,
+                    6444038.14317+22*(6623564.86585 - 6444038.14317)/200)
+        # are they the same?
+        assert_almost_equal(SRS(31467).transform_to(SRS(900913), p_31467)[0], p_900913[0], -2)
+        assert_almost_equal(SRS(31467).transform_to(SRS(900913), p_31467)[1], p_900913[1], -2)
+        
+        with mock_httpd(('localhost', 42423), [expected_req]):
+            self.common_fi_req.params['bbox'] = '3570269,5540889,3643458,5653553'
+            self.common_fi_req.params['srs'] = 'EPSG:31467'
             resp = self.app.get(self.common_fi_req)
             print resp.body
             eq_(resp.content_type, 'text/plain')
