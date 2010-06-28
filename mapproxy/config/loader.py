@@ -175,7 +175,7 @@ class ConfigurationBase(object):
 
 class GridConfiguration(ConfigurationBase):
     optional_keys = set('''res srs bbox bbox_srs num_levels tile_size base
-        stretch_factor max_shrink_factor
+        stretch_factor max_shrink_factor align_resolutions_with min_res max_res
         '''.split())
     
     def tile_grid(self, context):
@@ -185,6 +185,11 @@ class GridConfiguration(ConfigurationBase):
             conf.update(self.conf)
         else:
             conf = self.conf
+        
+        align_with = None
+        if 'align_resolutions_with' in self.conf:
+            align_with_grid_name = self.conf['align_resolutions_with']
+            align_with = context.grids[align_with_grid_name].tile_grid(context)
 
         tile_size = context.globals.get_value('tile_size', conf,
             global_key='grid.tile_size')
@@ -210,6 +215,7 @@ class GridConfiguration(ConfigurationBase):
             num_levels=conf.get('num_levels'),
             stretch_factor=stretch_factor,
             max_shrink_factor=max_shrink_factor,
+            align_with = align_with,
         )
         
         grid.res_type = RES_TYPE_GLOBAL
