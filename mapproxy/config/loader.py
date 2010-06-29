@@ -103,7 +103,7 @@ class ProxyConfiguration(object):
     def load_grids(self):
         self.grids = {}
         
-        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(srs='EPSG:4326', bbox=[-180, -90, 180, 90])
+        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(srs='EPSG:4326')
         self.grids['GLOBAL_MERCATOR'] = GridConfiguration(srs='EPSG:900913')
         
         for grid_name, grid_conf in self.configuration.get('grids', {}).iteritems():
@@ -134,8 +134,6 @@ class ProxyConfiguration(object):
 
     def load_services(self):
         self.services = ServiceConfiguration(**self.configuration.get('services', {}))
-        # for service_name, service_conf in self.configuration.get('services', {}).iteritems():
-        #     self.services[service_name] = ServiceConfiguration(name=service_name, **service_conf)
 
 def list_of_dicts_to_ordered_dict(dictlist):
     """
@@ -277,7 +275,7 @@ class SourceConfiguration(ConfigurationBase):
             if source_type in subclass.source_type:
                 return subclass(**kw)
         
-        raise ValueError()
+        raise ValueError("unknown source type '%s'" % source_type)
 
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
