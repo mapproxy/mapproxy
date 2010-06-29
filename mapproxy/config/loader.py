@@ -64,7 +64,7 @@ del load_tile_filters
 
 
 import mapproxy.config
-from mapproxy.grid import TileGrid, RES_TYPE_GLOBAL, tile_grid
+from mapproxy.grid import TileGrid, tile_grid
 from mapproxy.request.base import split_mime_type
 from mapproxy.request.wms import create_request
 from mapproxy.layer import (
@@ -216,7 +216,6 @@ class GridConfiguration(ConfigurationBase):
             align_with = align_with,
         )
         
-        grid.res_type = RES_TYPE_GLOBAL
         return grid
 
 

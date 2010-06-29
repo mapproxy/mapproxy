@@ -64,10 +64,6 @@ def tile_grid_for_epsg(epsg, bbox=None, tile_size=(256, 256), res=None):
         return TileGrid(epsg, is_geodetic=True, bbox=bbox, tile_size=tile_size, res=res)
     return TileGrid(epsg, bbox=bbox, tile_size=tile_size, res=res)
 
-RES_TYPE_SQRT2 = 'sqrt2'
-RES_TYPE_GLOBAL = 'global'
-RES_TYPE_CUSTOM = 'custom'
-
 default_bboxs = {
     SRS(900913): (-20037508.342789244,
                   -20037508.342789244,
@@ -195,17 +191,12 @@ def bbox_tuple(bbox):
     return bbox
     
 
-            
-            
-    
 
 class TileGrid(object):
     """
     This class represents a regular tile grid. The first level (0) contains a single
     tile, the origin is bottom-left.
     
-    :ivar res_type: the type of the multi-resolution pyramid.
-    :type res_type: `RES_TYPE_CUSTOM`, `RES_TYPE_GLOBAL`, `RES_TYPE_SQRT2`
     :ivar levels: the number of levels
     :ivar tile_size: the size of each tile in pixel
     :type tile_size: ``int(with), int(height)``
@@ -249,12 +240,6 @@ class TileGrid(object):
         else:
             self.levels = levels
         
-        self.res_type = RES_TYPE_CUSTOM
-        
-        if res is None and tile_size == (256, 256):
-            if bbox is None or bbox == [-180, -90, 180, 90]:
-                self.res_type = RES_TYPE_GLOBAL
-        
         if bbox is None:
             bbox = self._calc_bbox()
         self.bbox = bbox
@@ -262,7 +247,6 @@ class TileGrid(object):
         if res is None:
             res = self._calc_res()
         elif res == 'sqrt2':
-            self.res_type = RES_TYPE_SQRT2
             if levels is None:
                 self.levels = 40
             res = self._calc_res(factor=math.sqrt(2))

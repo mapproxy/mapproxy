@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import division
+
+import math
 
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
@@ -26,8 +29,7 @@ from mapproxy.wsgiapp import ctx
 from mapproxy.layer import map_extend_from_grid
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
-from mapproxy.grid import RES_TYPE_GLOBAL, RES_TYPE_SQRT2
-
+from mapproxy.grid import default_bboxs
 
 import logging
 log = logging.getLogger(__name__)
@@ -174,28 +176,33 @@ class TileResponse(object):
     def size(self):
         return self.tile.size
 
+
 class TileServiceGrid(object):
     """
     Wraps a `TileGrid` and adds some ``TileService`` specific methods.
     """
     def __init__(self, grid):
         self.grid = grid
-        if self.grid.res_type in (RES_TYPE_GLOBAL, RES_TYPE_SQRT2):
-            if self.grid.srs == SRS(900913):
-                self.profile = 'global-mercator'
-                self.srs_name = 'OSGEO:41001' # as required by TMS 1.0.0
-                self._skip_first_level = True
-            elif self.grid.srs == SRS(4326):
-                self.profile = 'global-geodetic'
-                self.srs_name = 'EPSG:4326'
-                self._skip_first_level = True
+        self.profile = None
+        
+        if self.grid.srs == SRS(900913) and self.grid.bbox == default_bboxs[SRS((900913))]:
+            self.profile = 'global-mercator'
+            self.srs_name = 'OSGEO:41001' # as required by TMS 1.0.0
+            self._skip_first_level = True
+        
+        elif self.grid.srs == SRS(4326) and self.grid.bbox == default_bboxs[SRS((4326))]:
+            self.profile = 'global-geodetic'
+            self.srs_name = 'EPSG:4326'
+            self._skip_first_level = True
         else:
             self.profile = 'local'
             self.srs_name = self.grid.srs.srs_code
             self._skip_first_level = False
         
         self._skip_odd_level = False
-        if self.grid.res_type == RES_TYPE_SQRT2:
+
+        res_factor = self.grid.resolutions[0]/self.grid.resolutions[1]
+        if res_factor == math.sqrt(2):
             self._skip_odd_level = True
     
     def internal_level(self, level):
