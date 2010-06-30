@@ -125,7 +125,7 @@ class TestWMS111(WMSTest):
         yield self.check_get_cached, 'png_cache_all_source', 'allsource', 'jpeg', 'png', 'png'
 
         yield self.check_get_cached, 'jpeg_cache_png_jpeg_source', 'pngjpegsource', 'jpeg', 'jpeg', 'jpeg'
-        yield self.check_get_cached, 'jpeg_cache_png_jpeg_source', 'pngjpegsource', 'jpeg', 'jpeg', 'jpeg'
+        yield self.check_get_cached, 'jpeg_cache_png_jpeg_source', 'pngjpegsource', 'png', 'jpeg', 'jpeg'
         
     def test_direct_formats(self):
         yield self.check_get_direct, 'jpeg_cache_tiff_source', 'tiffsource', 'gif', 'tiff'
@@ -168,3 +168,34 @@ class TestWMS111(WMSTest):
                 resp = self.app.get(self.common_direct_map_req)
                 eq_(resp.content_type, 'image/'+wms_format)    
                 check_format(StringIO(resp.body), wms_format)
+
+class TestTMS(WMSTest):
+    def setup(self):
+        WMSTest.setup(self)
+        self.expected_base_path = '/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256' \
+            '&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=256' \
+            '&BBOX=0.0,0.0,20037508.3428,20037508.3428'
+        self.expected_direct_base_path = '/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=200' \
+            '&SRS=EPSG%3A4326&styles=&VERSION=1.1.1&WIDTH=200' \
+            '&BBOX=0.0,0.0,10.0,10.0'
+            
+    
+    def test_cache_formats(self):
+        yield self.check_get_cached, 'jpeg_cache_tiff_source', 'tiffsource', 'jpeg', 'jpeg', 'tiff'
+
+        yield self.check_get_cached, 'png_cache_all_source', 'allsource', 'png', 'png', 'png'
+
+        yield self.check_get_cached, 'jpeg_cache_png_jpeg_source', 'pngjpegsource', 'jpeg', 'jpeg', 'jpeg'
+        
+
+    def check_get_cached(self, layer, source, tms_format, cache_format, req_format):
+        self.created_tiles.append(layer+'_EPSG900913/01/000/000/001/000/000/001.'+cache_format)
+        with tmp_image((256, 256), format=req_format) as img:
+            expected_req = ({'path': self.expected_base_path +
+                                     '&layers=' + source +
+                                     '&format=image%2F' + req_format},
+                            {'body': img.read(), 'headers': {'content-type': 'image/'+req_format}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                resp = self.app.get('/tms/1.0.0/%s/0/1/1.%s' % (layer, tms_format))
+                eq_(resp.content_type, 'image/'+tms_format)
+                check_format(StringIO(resp.body), tms_format)

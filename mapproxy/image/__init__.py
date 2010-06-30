@@ -112,31 +112,50 @@ class ImageSource(object):
         self.format = format
         self.transparent = transparent
         self._size = size
+    
+    def _set_source(self, source):
+        self._img = None
+        self._buf = None
+        if isinstance(source, Image.Image):
+            self._img = source
+        else:
+            self._buf = source
+    
+    def _get_source(self):
+        return self._img or self._buf
+    
+    source = property(_get_source, _set_source)
+    
     def as_image(self):
         """
         Returns the image or the loaded image.
         
         :rtype: PIL `Image`
         """
-        if not isinstance(self.source, Image.Image):
-            log.debug('file(%s) -> image', self.source)
-            f = self.source
-            if isinstance(f, basestring):
-                f = open(f, 'rb')
-            elif not hasattr(f, 'seek'):
-                # PIL needs file objects with seek
-                f = StringIO(f.read())
-                self.source = f
-            f.seek(0)
+        if self._img: return self._img
+        
+        log.debug('file(%s) -> image', self._buf)
+        self._make_seekable_buf()
+        
+        try:
+            img = Image.open(self._buf)
+        except StandardError:
             try:
-                return Image.open(f)
-            except StandardError:
-                try:
-                    f.close()
-                except:
-                    pass
-                raise
-        return self.source
+                self._buf.close()
+            except:
+                pass
+            raise
+        self._img = img
+        return img
+    
+    def _make_seekable_buf(self):
+        if isinstance(self._buf, basestring):
+            self._buf = open(self._buf, 'rb')
+        elif not hasattr(self._buf, 'seek'):
+            # PIL needs file objects with seek
+            self._buf = StringIO(self._buf.read())
+        self._buf.seek(0)
+    
     def as_buffer(self, format=None, paletted=None):
         """
         Returns the image as a file object.
@@ -145,23 +164,20 @@ class ImageSource(object):
                        Existing files will not be re-encoded.
         :rtype: file-like object
         """
-        if isinstance(self.source, Image.Image):
+        if not self._buf:
             if not format:
                 format = self.format
             log.debug('image -> buf(%s)' % (format,))
-            return img_to_buf(self.source, format, paletted=paletted)
-        if self.format and format and self.format != format:
-            log.debug('converting image from %s -> %s' % (format, self.format))
+            self._buf = img_to_buf(self._img, format, paletted=paletted)
+
+        elif self.format and format and self.format != format:
+            log.debug('converting image from %s -> %s' % (self.format, format))
             self.source = self.as_image()
-            return self.as_buffer(format=format, paletted=paletted)
-        if isinstance(self.source, basestring):
-            log.debug('file(%s) -> buf' % self.source)
-            return open(self.source, 'rb')
-        if not hasattr(self.source, 'seek'):
-            self.source = ReadBufWrapper(self.source)
-            return self.source
-        self.source.seek(0)
-        return self.source
+            self._buf = None
+            self.format = format
+            self.as_buffer(format=format, paletted=paletted)
+        return self._buf
+
     @property
     def size(self):
         if isinstance(self.source, Image.Image):

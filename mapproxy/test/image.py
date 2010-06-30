@@ -35,7 +35,7 @@ def assert_image_mode(img, mode):
     
 
 def check_format(img, format):
-    assert globals()['is_' + format.lower()](img), 'img is not %s' % f
+    assert globals()['is_' + format.lower()](img), 'img is not %s' % format
 
 def has_magic_bytes(fileobj, bytes):
     pos = fileobj.tell()
