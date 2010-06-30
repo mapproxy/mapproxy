@@ -48,12 +48,13 @@ log = logging.getLogger(__name__)
 
 
 class TileManager(object):
-    def __init__(self, grid, cache, sources, format,
+    def __init__(self, grid, cache, sources, format, request_format=None,
         meta_buffer=None, meta_size=None):
         self.grid = grid
         self.cache = cache
         self.meta_grid = None
         self.format = format
+        self.request_format = request_format or format
         self.sources = sources
         self._expire_timestamp = None
         self.transparent = self.sources[0].transparent
@@ -134,7 +135,8 @@ class TileManager(object):
             
     def _create_tile(self, tile):
         tile_bbox = self.grid.tile_bbox(tile.coord)
-        query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs, self.format)
+        query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs,
+                         self.request_format)
         with self.lock(tile):
             if not self.cache.is_cached(tile):
                 tile.source = self._query_sources(query)
@@ -168,7 +170,7 @@ class TileManager(object):
     def _create_meta_tile(self, main_tile, meta_bbox, tiles):
         meta_tile_size = self.meta_grid.tile_size(main_tile.coord[2])
         tile_size = self.grid.tile_size
-        query = MapQuery(meta_bbox, meta_tile_size, self.grid.srs, self.format)
+        query = MapQuery(meta_bbox, meta_tile_size, self.grid.srs, self.request_format)
         with self.lock(main_tile):
             if not self.cache.is_cached(main_tile):
                 meta_tile = self._query_sources(query)

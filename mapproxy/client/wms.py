@@ -46,7 +46,7 @@ class WMSClient(object):
         dst_bbox = query.bbox
         src_bbox = dst_srs.transform_bbox_to(src_srs, dst_bbox)
         
-        src_query = MapQuery(src_bbox, query.size, src_srs)
+        src_query = MapQuery(src_bbox, query.size, src_srs, query.format)
         resp = self._retrieve(src_query)
         
         img = ImageSource(resp, self.request_template.params.format, size=src_query.size)
@@ -81,6 +81,7 @@ class WMSClient(object):
         req.params.bbox = query.bbox
         req.params.size = query.size
         req.params.srs = query.srs.srs_code
+        req.params.format = query.format
         
         return req.complete_url
 
@@ -127,6 +128,8 @@ class WMSInfoClient(object):
         req.params['query_layers'] = req.params['layers']
         if query.info_format:
             req.params['info_format'] = query.info_format
+        if not req.params.format:
+            req.params.format = query.format or 'image/png'
         req.params.srs = query.srs.srs_code
         
         return req.complete_url

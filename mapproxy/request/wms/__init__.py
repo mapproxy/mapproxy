@@ -105,13 +105,21 @@ class WMSMapRequestParams(RequestParams):
         color = self.get('bgcolor', '0xffffff')
         return '#'+color[2:]
     
-    @property
-    def format(self):
+    def _get_format(self):
         """
         The requested format as string (w/o any 'image/', 'text/', etc prefixes)
         """
         _mime_class, format, options = split_mime_type(self.get('format', default=''))
         return format
+    
+    def _set_format(self, format):
+        if '/' not in format:
+            format = 'image/' + format
+        self['format'] = format
+    
+    format = property(_get_format, _set_format)
+    del _get_format
+    del _set_format
     
     @property
     def format_mime_type(self):
@@ -542,7 +550,7 @@ def create_request(req_data, param, req_type='map', version='1.1.1'):
     del req_data['url']
     if 'request_format' in param:
         req_data['format'] = param['request_format']
-    else:
+    elif 'format' in param:
         req_data['format'] = param['format']
     # req_data['bbox'] = param['bbox']
     # if isinstance(req_data['bbox'], types.ListType):

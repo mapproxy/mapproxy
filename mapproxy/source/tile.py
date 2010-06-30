@@ -46,6 +46,6 @@ class TiledSource(Source):
         if self.inverse:
             tile_coord = self.grid.flip_tile_coord(tile_coord)
         try:
-            return self.client.get_tile(tile_coord)
+            return self.client.get_tile(tile_coord, format=query.format)
         except HTTPClientError, e:
             reraise_exception(SourceError(e.args[0]), sys.exc_info())

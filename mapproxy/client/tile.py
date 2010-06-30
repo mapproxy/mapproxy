@@ -21,9 +21,9 @@ class TMSClient(object):
         self.url = url
         self.format = format
     
-    def get_tile(self, tile_coord):
+    def get_tile(self, tile_coord, format=None):
         x, y, z = tile_coord
-        url = '%s/%d/%d/%d.%s' % (self.url, z, x, y, self.format)
+        url = '%s/%d/%d/%d.%s' % (self.url, z, x, y, format or self.format)
         return retrieve_image(url)
     
     def __repr__(self):
@@ -32,9 +32,8 @@ class TMSClient(object):
 class TileClient(object):
     def __init__(self, url_template):
         self.url_template = url_template
-        self.url = url_template.template + url_template.format
-    def get_tile(self, tile_coord):
-        url = self.url_template.substitute(tile_coord)
+    def get_tile(self, tile_coord, format=None):
+        url = self.url_template.substitute(tile_coord, format)
         return retrieve_image(url)
     
     def __repr__(self):
@@ -54,9 +53,14 @@ class TileURLTemplate(object):
     >>> t.substitute((7, 4, 3))
     'http://foo/tiles/03/000/000/007/000/000/004.png'
     
-    >>> t = TileURLTemplate('http://foo/tms/1.0.0/%(tms_path)s.png')
+    >>> t = TileURLTemplate('http://foo/tms/1.0.0/%(tms_path)s.%(format)s')
     >>> t.substitute((7, 4, 3))
     'http://foo/tms/1.0.0/3/7/4.png'
+    
+    >>> t = TileURLTemplate('http://foo/tms/1.0.0/%(tms_path)s.%(format)s')
+    >>> t.substitute((7, 4, 3), 'jpeg')
+    'http://foo/tms/1.0.0/3/7/4.jpeg'
+    
     """
     def __init__(self, template, format='png'):
         self.template= template
@@ -65,9 +69,10 @@ class TileURLTemplate(object):
         self.with_tc_path = True if '%(tc_path)' in template else False
         self.with_tms_path = True if '%(tms_path)' in template else False
     
-    def substitute(self, tile_coord):
+    def substitute(self, tile_coord, format=None):
         x, y, z = tile_coord
-        data = dict(x=x, y=y, z=z, format=self.format)
+        data = dict(x=x, y=y, z=z)
+        data['format'] = format or self.format
         if self.with_quadkey:
             data['quadkey'] = quadkey(tile_coord)
         if self.with_tc_path:

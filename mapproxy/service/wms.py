@@ -180,7 +180,7 @@ class WMSLayer(object):
         
     def render(self, request):
         p = request.params
-        query = MapQuery(p.bbox, p.size, SRS(p.srs))
+        query = MapQuery(p.bbox, p.size, SRS(p.srs), request.params.format)
         for layer in self.map_layers:
             yield self._render_layer(layer, query, request)
     
@@ -201,7 +201,7 @@ class WMSLayer(object):
     def info(self, request):
         p = request.params
         query = InfoQuery(p.bbox, p.size, SRS(p.srs), p.pos,
-            p['info_format'])
+            p['info_format'], format=request.params.format or None)
         
         for lyr in self.info_layers:
             yield lyr.get_info(query)

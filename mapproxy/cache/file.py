@@ -193,7 +193,7 @@ class FileCache(object):
         
         for img_filter in self.pre_store_filter:
             tile = img_filter(tile)
-        data = tile.source.as_buffer()
+        data = tile.source.as_buffer(format=self.file_ext)
         data.seek(0)
         with open(location, 'wb') as f:
             log.debug('writing %r to %s' % (tile.coord, location))

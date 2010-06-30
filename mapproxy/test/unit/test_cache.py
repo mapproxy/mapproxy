@@ -64,7 +64,7 @@ class MockTileClient(object):
     def __init__(self):
         self.requested_tiles = []
     
-    def get_tile(self, tile_coord):
+    def get_tile(self, tile_coord, format=None):
         self.requested_tiles.append(tile_coord)
 
 class TestTiledSourceGlobalGeodetic(object):

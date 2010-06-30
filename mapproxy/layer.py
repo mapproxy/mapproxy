@@ -49,7 +49,7 @@ class MapQuery(object):
     """
     Internal query for a map with a specific extend, size, srs, etc.
     """
-    def __init__(self, bbox, size, srs, format=None, transparent=False):
+    def __init__(self, bbox, size, srs, format='image/png', transparent=False):
         self.bbox = bbox
         self.size = size
         self.srs = srs
@@ -58,12 +58,13 @@ class MapQuery(object):
 
 
 class InfoQuery(object):
-    def __init__(self, bbox, size, srs, pos, info_format):
+    def __init__(self, bbox, size, srs, pos, info_format, format=None):
         self.bbox = bbox
         self.size = size
         self.srs = srs
         self.pos = pos
         self.info_format = info_format
+        self.format = format
 
 
 def map_extend_from_grid(grid):

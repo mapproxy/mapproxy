@@ -240,28 +240,28 @@ class TestWMS111(WMSTest):
                 eq_(resp.content_type, 'image/png')
     
     def test_get_map_use_direct(self):
-        with tmp_image((200, 200), format='jpeg') as img:
-            expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+        with tmp_image((200, 200), format='png') as img:
+            expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                       '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
                                       '&VERSION=1.1.1&BBOX=5.0,-10.0,6.0,-9.0'
                                       '&WIDTH=200'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
+                            {'body': img.read(), 'headers': {'content-type': 'image/png'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 self.common_map_req.params['bbox'] = '5,-10,6,-9'
                 resp = self.app.get(self.common_map_req)
                 img.seek(0)
                 assert resp.body == img.read()
-                # is_png(img) # TODO
+                is_png(img)
                 eq_(resp.content_type, 'image/png')
         
     def test_get_map_use_direct_with_transform(self):
         bbox_900913 = [1110868.98971,6444038.14317,1229263.18538,6623564.86585]
-        with tmp_image((200, 200), format='jpeg') as img:
-            expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+        with tmp_image((200, 200), format='png') as img:
+            expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                       '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A900913&styles='
                                       '&VERSION=1.1.1&BBOX=1110868.98971,6444038.14317,1229263.18538,6623564.86585'
                                       '&WIDTH=200'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
+                            {'body': img.read(), 'headers': {'content-type': 'image/png'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 self.common_map_req.params['bbox'] = '3570269,5540889,3643458,5653553'
                 self.common_map_req.params['srs'] = 'EPSG:31467'

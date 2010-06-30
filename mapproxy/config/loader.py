@@ -291,7 +291,9 @@ class WMSSourceConfiguration(SourceConfiguration):
             http_client = HTTPClient(url, username, password, insecure=insecure)
         return http_client
     
-    def source(self, context, params):
+    def source(self, context, params=None):
+        if params is None: params = {}
+        
         request_format = self.conf['req'].get('format')
         if request_format:
             params['format'] = request_format
@@ -309,7 +311,8 @@ class WMSSourceConfiguration(SourceConfiguration):
                            resampling=resampling)
         return WMSSource(client, transparent=transparent)
     
-    def fi_source(self, context, params):
+    def fi_source(self, context, params=None):
+        if params is None: params = {}
         request_format = self.conf['req'].get('format')
         if request_format:
             params['format'] = request_format
@@ -330,7 +333,9 @@ class TileSourceConfiguration(SourceConfiguration):
     required_keys = set('url'.split())
     defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
     
-    def source(self, context, params):
+    def source(self, context, params=None):
+        if params is None: params = {}
+        
         url = self.conf['url']
         origin = self.conf['origin']
         if origin not in ('sw', 'nw'):
@@ -341,15 +346,19 @@ class TileSourceConfiguration(SourceConfiguration):
         grid = context.grids[self.conf['grid']].tile_grid(context)
         
         inverse = True if origin == 'nw' else False
-        _mime_class, format, _options = split_mime_type(params['format'])
+        format = file_ext(params['format'])
         client = TileClient(TileURLTemplate(url, format=format))
         return TiledSource(grid, client, inverse=inverse)
+
+def file_ext(mimetype):
+    _mime_class, format, _options = split_mime_type(mimetype)
+    return format
 
 class DebugSourceConfiguration(SourceConfiguration):
     source_type = ('debug',)
     required_keys = set('type'.split())
     
-    def source(self, context, params):
+    def source(self, context, params=None):
         return DebugSource()
 
 class CacheConfiguration(ConfigurationBase):
@@ -359,19 +368,9 @@ class CacheConfiguration(ConfigurationBase):
     required_keys = set('name sources'.split())
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
     
-    @property
-    def format(self):
-        return self.conf['format'].split('/')[1]
-    
     def cache_dir(self, context):
-        if 'cache_dir' in self.conf: 
-            cache_dir = self.conf['cache_dir']
-        else:
-            cache_dir = context.configuration.get('global', {}).get('cache', {}).get('base_dir', None)
-        
-        if not cache_dir:
-            cache_dir = base_config().cache.base_dir
-        
+        cache_dir = context.globals.get_value('cache_dir', self.conf,
+            global_key='cache.base_dir')
         return abspath(cache_dir)
         
     def _file_cache(self, grid_conf, context):
@@ -381,7 +380,7 @@ class CacheConfiguration(ConfigurationBase):
         link_single_color_images = self.conf.get('link_single_color_images', False)
         
         tile_filter = self._tile_filter(context)
-        return FileCache(cache_dir, file_ext=self.format,
+        return FileCache(cache_dir, file_ext=file_ext(self.conf['format']),
             pre_store_filter=tile_filter,
             link_single_color_images=link_single_color_images)
     
@@ -409,7 +408,7 @@ class CacheConfiguration(ConfigurationBase):
                 sources.append(source)
             cache = self._file_cache(grid_conf, context)
             tile_grid = grid_conf.tile_grid(context)
-            mgr = TileManager(tile_grid, cache, sources, self.format,
+            mgr = TileManager(tile_grid, cache, sources, file_ext(request_format),
                               meta_size=meta_size, meta_buffer=meta_buffer)
             caches.append((tile_grid, mgr))
         return caches
@@ -436,7 +435,7 @@ class CacheConfiguration(ConfigurationBase):
             if len(self.conf['sources']) != 1:
                 raise ValueError('use_direct_from_level/res only supports single sources')
             source_conf = context.sources[self.conf['sources'][0]]
-            layer = ResolutionConditional(layer, source_conf.source(context, {'format': 'image/'+tile_manager.format}), self.conf['use_direct_from_res'], main_grid.srs, layer.extend)
+            layer = ResolutionConditional(layer, source_conf.source(context), self.conf['use_direct_from_res'], main_grid.srs, layer.extend)
         return layer
     
 class LayerConfiguration(ConfigurationBase):
@@ -452,7 +451,7 @@ class LayerConfiguration(ConfigurationBase):
                 map_layer = context.caches[source_name].map_layer(context)
                 fi_source_names = context.caches[source_name].conf['sources']
             elif source_name in context.sources:
-                map_layer = context.sources[source_name].source(context, {'format': 'image/png'})
+                map_layer = context.sources[source_name].source(context)
                 fi_source_names = [source_name]
             else:
                 raise ConfigurationError('source/cache "%s" not found' % source_name)
@@ -461,7 +460,7 @@ class LayerConfiguration(ConfigurationBase):
             for fi_source_name in fi_source_names:
                 # TODO multiple sources
                 if not hasattr(context.sources[fi_source_name], 'fi_source'): continue
-                fi_source = context.sources[fi_source_name].fi_source(context, {'format': 'image/png'})
+                fi_source = context.sources[fi_source_name].fi_source(context)
                 if fi_source:
                     fi_sources.append(fi_source)
             
