@@ -290,12 +290,13 @@ class TestWMS111(WMSTest):
         
     def test_get_map100(self):
         self.created_tiles.append('wms_cache_100_EPSG900913/01/000/000/001/000/000/001.jpeg')
-        with tmp_image((256, 256), format='jpeg') as img:
-            expected_req = ({'path': r'/service?LAYERs=foo,bar&FORMAT=image%2Fjpeg'
+        # request_format tiff, cache format jpeg, wms request in png
+        with tmp_image((256, 256), format='tiff') as img:
+            expected_req = ({'path': r'/service?LAYERs=foo,bar&FORMAT=image%2Ftiff'
                                       '&REQUEST=map&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                       '&WMTVER=1.0.0&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
+                            {'body': img.read(), 'headers': {'content-type': 'image/tiff'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 self.common_map_req.params['bbox'] = '0,0,180,90'
                 self.common_map_req.params['layers'] = 'wms_cache_100'

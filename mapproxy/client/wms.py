@@ -28,33 +28,39 @@ from mapproxy.image.transform import ImageTransformer
 
 class WMSClient(object):
     def __init__(self, request_template, supported_srs=None, http_client=None,
-        resampling=None):
+        resampling=None, supported_formats=None):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
         self.supported_srs = set(supported_srs or [])
+        self.supported_formats = supported_formats or []
         self.resampling = resampling or base_config().image.resampling_method
     
     def get_map(self, query):
+        format = self.request_template.params.format
+        if not format:
+            format = query.format
+            if self.supported_formats and format not in self.supported_formats:
+                format = self.supported_formats[0]
         if self.supported_srs and query.srs not in self.supported_srs:
-            return self._get_transformed(query)
-        resp = self._retrieve(query)
-        return ImageSource(resp, size=query.size, format=self.request_template.params.format)
+            return self._get_transformed(query, format)
+        resp = self._retrieve(query, format)
+        return ImageSource(resp, size=query.size, format=format)
     
-    def _get_transformed(self, query):
+    def _get_transformed(self, query, format):
         dst_srs = query.srs
         src_srs = self._best_supported_srs(dst_srs)
         dst_bbox = query.bbox
         src_bbox = dst_srs.transform_bbox_to(src_srs, dst_bbox)
         
-        src_query = MapQuery(src_bbox, query.size, src_srs, query.format)
-        resp = self._retrieve(src_query)
+        src_query = MapQuery(src_bbox, query.size, src_srs, format)
+        resp = self._retrieve(src_query, format)
         
-        img = ImageSource(resp, self.request_template.params.format, size=src_query.size)
+        img = ImageSource(resp, format, size=src_query.size)
         
         img = ImageTransformer(src_srs, dst_srs, self.resampling).transform(img, src_bbox, 
             query.size, dst_bbox)
         
-        img.format = self.request_template.params.format
+        img.format = format
         return img
     
     def _best_supported_srs(self, srs):
@@ -66,8 +72,8 @@ class WMSClient(object):
         
         return iter(self.supported_srs).next()
     
-    def _retrieve(self, query):
-        url = self._query_url(query)
+    def _retrieve(self, query, format):
+        url = self._query_url(query, format)
         resp = self.http_client.open(url)
         self._check_resp(resp)
         return resp
@@ -76,12 +82,12 @@ class WMSClient(object):
         if not resp.headers['Content-type'].startswith('image/'):
             raise SourceError('no image returned from source WMS')
     
-    def _query_url(self, query):
+    def _query_url(self, query, format):
         req = self.request_template.copy()
         req.params.bbox = query.bbox
         req.params.size = query.size
         req.params.srs = query.srs.srs_code
-        req.params.format = query.format
+        req.params.format = format
         
         return req.complete_url
 

@@ -278,7 +278,7 @@ class SourceConfiguration(ConfigurationBase):
 
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
-    optional_keys = set('''type supported_srs request_format image
+    optional_keys = set('''type supported_srs supported_formats request_format image
         use_direct_from_level wms_opts http'''.split())
     required_keys = set('req'.split())
     
@@ -304,11 +304,13 @@ class WMSSourceConfiguration(SourceConfiguration):
         resampling = context.globals.get_value('image.resampling_method', self.conf)
         
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
+        supported_formats = [file_ext(f) for f in self.conf.get('supported_formats', [])]
         version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
         request = create_request(self.conf['req'], params, version=version)
         http_client = self.http_client(context, request)
         client = WMSClient(request, supported_srs, http_client=http_client, 
-                           resampling=resampling)
+                           resampling=resampling,
+                           supported_formats=supported_formats or None)
         return WMSSource(client, transparent=transparent)
     
     def fi_source(self, context, params=None):

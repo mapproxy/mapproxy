@@ -65,6 +65,7 @@ caches:
     sources: [wms_cache]
   wms_cache_100:
     format: image/jpeg
+    request_format: image/tiff
     sources: [wms_cache_100]
   wms_cache_130:
     format: image/jpeg

@@ -150,6 +150,10 @@ class ImageSource(object):
                 format = self.format
             log.debug('image -> buf(%s)' % (format,))
             return img_to_buf(self.source, format, paletted=paletted)
+        if self.format and format and self.format != format:
+            log.debug('converting image from %s -> %s' % (format, self.format))
+            self.source = self.as_image()
+            return self.as_buffer(format=format, paletted=paletted)
         if isinstance(self.source, basestring):
             log.debug('file(%s) -> buf' % self.source)
             return open(self.source, 'rb')
