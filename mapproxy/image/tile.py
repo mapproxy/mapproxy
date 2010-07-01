@@ -69,9 +69,9 @@ class TileMerger(object):
             except IOError, e:
                 log.warn('unable to load tile %s, removing it (reason was: %s)'
                          % (source, str(e)))
-                if isinstance(source.source, basestring):
-                    if os.path.exists(source.source):
-                        os.remove(source.source)
+                if getattr(source, 'filename'):
+                    if os.path.exists(source.filename):
+                        os.remove(source.filename)
         return ImageSource(result, size=src_size, transparent=transparent)
     
     def _src_size(self):

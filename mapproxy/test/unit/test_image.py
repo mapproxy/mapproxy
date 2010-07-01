@@ -27,7 +27,7 @@ from mapproxy.image.tile import TileMerger
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.tilefilter import watermark_filter, PNGQuantFilter
 from mapproxy.cache.tile import Tile
-from mapproxy.test.image import is_png, create_tmp_image, check_format, create_debug_img
+from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image, check_format, create_debug_img
 from mapproxy.srs import SRS
 from nose.tools import eq_
 
@@ -65,8 +65,7 @@ class TestImageSource(object):
                 return data
         
         ir = ImageSource(FileLikeDummy(), 'png')
-        assert isinstance(ir.as_buffer(), ReadBufWrapper)
-        assert ir.as_buffer().read() == data
+        assert ir.as_buffer(seekable=True).read() == data
         assert ir.as_image().size == (100, 100)
         assert ir.as_buffer().read() == data
         
@@ -77,6 +76,14 @@ class TestImageSource(object):
             ir = ImageSource(img, format)
             yield check_format, ir.as_buffer(), format
     
+    def test_converted_output(self):
+        ir = ImageSource(self.tmp_filename, 'png')
+        assert is_png(ir.as_buffer())
+        assert is_jpeg(ir.as_buffer(format='jpeg'))
+        assert is_jpeg(ir.as_buffer())
+        assert is_tiff(ir.as_buffer(format='tiff'))
+        assert is_tiff(ir.as_buffer())
+        
     def test_output_formats_png8(self):
         img = Image.new('RGBA', (100, 100))
         ir = ImageSource(img, format='png')

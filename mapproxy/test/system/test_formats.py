@@ -58,31 +58,33 @@ def teardown_module():
     mapproxy.config._service_config = None
     shutil.rmtree(tmp_cache_dir)
 
-class WMSTest(object):
+class TilesTest(object):
     def setup(self):
         self.app = global_app
         self.created_tiles = []
     
     def created_tiles_filenames(self):
         base_dir = mapproxy.config.base_config().cache.base_dir
-        for filename in self.created_tiles:
-            yield os.path.join(base_dir, filename)
+        for filename, format in self.created_tiles:
+            yield os.path.join(base_dir, filename), format
     
     def _test_created_tiles(self):
-        for filename in self.created_tiles_filenames():
+        for filename, format in self.created_tiles_filenames():
             if not os.path.exists(filename):
                 assert False, "didn't found tile " + filename
-    
+            else:
+                check_format(open(filename, 'rb'), format)
+            
     def teardown(self):
         self._test_created_tiles()
-        for filename in self.created_tiles_filenames():
+        for filename, _format in self.created_tiles_filenames():
             if os.path.exists(filename):
                 os.remove(filename)
 
 
-class TestWMS111(WMSTest):
+class TestWMS111(TilesTest):
     def setup(self):
-        WMSTest.setup(self)
+        TilesTest.setup(self)
         self.common_req = WMS111MapRequest(url='/service?', param=dict(service='WMS', 
              version='1.1.1'))
         self.common_map_req = WMS111MapRequest(url='/service?', param=dict(service='WMS', 
@@ -103,18 +105,7 @@ class TestWMS111(WMSTest):
         self.expected_direct_base_path = '/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=200' \
             '&SRS=EPSG%3A4326&styles=&VERSION=1.1.1&WIDTH=200' \
             '&BBOX=0.0,0.0,10.0,10.0'
-            
-    def test_get_map(self):
-        self.created_tiles.append('jpeg_cache_tiff_source_EPSG900913/01/000/000/001/000/000/001.jpeg')
-        with tmp_image((256, 256), format='tiff') as img:
-            expected_req = ({'path': self.expected_base_path +
-                                     '&layers=tiffsource&format=image%2Ftiff'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/tiff'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
-                self.common_map_req.params['layers'] = 'jpeg_cache_tiff_source'
-                resp = self.app.get(self.common_map_req)
-                eq_(resp.content_type, 'image/png')
-    
+                
     def test_cache_formats(self):
         yield self.check_get_cached, 'jpeg_cache_tiff_source', 'tiffsource', 'png', 'jpeg', 'tiff'
         yield self.check_get_cached, 'jpeg_cache_tiff_source', 'tiffsource', 'jpeg', 'jpeg', 'tiff'
@@ -143,7 +134,7 @@ class TestWMS111(WMSTest):
 
 
     def check_get_cached(self, layer, source, wms_format, cache_format, req_format):
-        self.created_tiles.append(layer+'_EPSG900913/01/000/000/001/000/000/001.'+cache_format)
+        self.created_tiles.append((layer+'_EPSG900913/01/000/000/001/000/000/001.'+cache_format, cache_format))
         with tmp_image((256, 256), format=req_format) as img:
             expected_req = ({'path': self.expected_base_path +
                                      '&layers=' + source +
@@ -169,9 +160,9 @@ class TestWMS111(WMSTest):
                 eq_(resp.content_type, 'image/'+wms_format)    
                 check_format(StringIO(resp.body), wms_format)
 
-class TestTMS(WMSTest):
+class TestTMS(TilesTest):
     def setup(self):
-        WMSTest.setup(self)
+        TilesTest.setup(self)
         self.expected_base_path = '/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256' \
             '&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=256' \
             '&BBOX=0.0,0.0,20037508.3428,20037508.3428'
@@ -189,7 +180,7 @@ class TestTMS(WMSTest):
         
 
     def check_get_cached(self, layer, source, tms_format, cache_format, req_format):
-        self.created_tiles.append(layer+'_EPSG900913/01/000/000/001/000/000/001.'+cache_format)
+        self.created_tiles.append((layer+'_EPSG900913/01/000/000/001/000/000/001.'+cache_format, cache_format))
         with tmp_image((256, 256), format=req_format) as img:
             expected_req = ({'path': self.expected_base_path +
                                      '&layers=' + source +

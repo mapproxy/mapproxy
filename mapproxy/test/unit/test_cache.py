@@ -547,7 +547,7 @@ class TestWMSSource(object):
                 result = self.source.get_map(q)
                 assert isinstance(result, ImageSource)
                 eq_(result.size, (512, 512))
-                assert is_png(result.as_buffer())
+                assert is_png(result.as_buffer(seekable=True))
                 eq_(result.as_image().size, (512, 512))
     def test_get_map_non_image_content_type(self):
         with tmp_image((512, 512)) as img:
