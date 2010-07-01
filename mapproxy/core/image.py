@@ -206,21 +206,24 @@ class ReadBufWrapper(object):
         return getattr(self.stringio, name)
 
 def img_to_buf(img, format='png', paletted=None):
-    defaults = {}
-    
+    defaults = {}    
     if paletted is None:
-        paletted = base_config().image.paletted
-    if paletted or format == 'png8':
-        if format in ('png', 'png8', 'gif'):
+        if format == 'png8':
+            paletted = True
+        else:
+            paletted = base_config().image.paletted
+    if paletted:
+        if format in ('png', 'gif', 'png8'):
             if img.mode == 'RGBA':
                 alpha = img.split()[3]
-                img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=255)
+                img = quantize(img, colors=255)
                 mask = Image.eval(alpha, lambda a: 255 if a <=128 else 0)
                 img.paste(255, mask)
                 defaults['transparency'] = 255
             else:
-                img = img.convert('RGB')
-                img = img.convert('P', palette=Image.ADAPTIVE, dither=0)
+                img = quantize(img)
+            if hasattr(Image, 'RLE'):
+                defaults['compress_type'] = Image.RLE
     format = filter_format(format)
     buf = StringIO()
     if format == 'jpeg':
@@ -228,6 +231,11 @@ def img_to_buf(img, format='png', paletted=None):
     img.save(buf, format, **defaults)
     buf.seek(0)
     return buf
+
+def quantize(img, colors=256):
+    if hasattr(Image, 'FASTOCTREE'):
+        return img.quantize(colors, Image.FASTOCTREE)
+    return img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
 
 def filter_format(format):
     if format.lower() == 'geotiff':
