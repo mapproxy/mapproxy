@@ -266,7 +266,7 @@ def img_to_buf(img, format='png', paletted=None):
 
 def quantize(img, colors=256):
     if hasattr(Image, 'FASTOCTREE'):
-        return img.quantize(colors, Image.FASTOCTREE)
+        return img.convert('RGB').quantize(colors, Image.FASTOCTREE)
     return img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
     
 def filter_format(format):
