@@ -227,6 +227,7 @@ def img_to_buf(img, format='png', paletted=None):
     format = filter_format(format)
     buf = StringIO()
     if format == 'jpeg':
+        img = img.convert('RGB')
         defaults['quality'] = base_config().image.jpeg_quality
     img.save(buf, format, **defaults)
     buf.seek(0)
