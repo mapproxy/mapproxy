@@ -131,6 +131,13 @@ class ImageSource(object):
     
     source = property(_get_source, _set_source)
     
+    def close_buffers(self):
+        if self._buf:
+            try:
+                self._buf.close()
+            except IOError:
+                pass
+    
     @property
     def filename(self):
         return self._fname
@@ -149,10 +156,7 @@ class ImageSource(object):
         try:
             img = Image.open(self._buf)
         except StandardError:
-            try:
-                self._buf.close()
-            except:
-                pass
+            self.close_buffers()
             raise
         self._img = img
         return img

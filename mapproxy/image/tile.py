@@ -66,12 +66,16 @@ class TileMerger(object):
                 else:
                     tile.draft('RGB', self.tile_size)
                 result.paste(tile, pos)
+                source.close_buffers()
             except IOError, e:
-                log.warn('unable to load tile %s, removing it (reason was: %s)'
-                         % (source, str(e)))
-                if getattr(source, 'filename'):
-                    if os.path.exists(source.filename):
-                        os.remove(source.filename)
+                if e.errno is None: # PIL error
+                    log.warn('unable to load tile %s, removing it (reason was: %s)'
+                             % (source, str(e)))
+                    if getattr(source, 'filename'):
+                        if os.path.exists(source.filename):
+                            os.remove(source.filename)
+                else:
+                    raise
         return ImageSource(result, size=src_size, transparent=transparent)
     
     def _src_size(self):
