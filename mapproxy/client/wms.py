@@ -17,7 +17,7 @@
 """
 WMS clients for maps and information.
 """
-
+from __future__ import with_statement
 from mapproxy.config import base_config
 from mapproxy.layer import MapQuery, InfoQuery
 from mapproxy.source import SourceError
@@ -28,12 +28,13 @@ from mapproxy.image.transform import ImageTransformer
 
 class WMSClient(object):
     def __init__(self, request_template, supported_srs=None, http_client=None,
-        resampling=None, supported_formats=None):
+        resampling=None, supported_formats=None, lock=None):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
         self.supported_srs = set(supported_srs or [])
         self.supported_formats = supported_formats or []
         self.resampling = resampling or base_config().image.resampling_method
+        self.lock = lock
     
     def get_map(self, query):
         format = self.request_template.params.format
@@ -74,7 +75,11 @@ class WMSClient(object):
     
     def _retrieve(self, query, format):
         url = self._query_url(query, format)
-        resp = self.http_client.open(url)
+        if self.lock:
+            with self.lock():
+                resp = self.http_client.open(url)
+        else:
+            resp = self.http_client.open(url)
         self._check_resp(resp)
         return resp
     

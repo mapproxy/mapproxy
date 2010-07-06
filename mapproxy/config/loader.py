@@ -21,6 +21,7 @@ from __future__ import with_statement, division
 
 import os
 import math
+import hashlib
 import yaml #pylint: disable=F0401
 import pkg_resources
 
@@ -30,6 +31,7 @@ log = logging.getLogger(__name__)
 from mapproxy.srs import SRS
 from mapproxy.util.ext.odict import odict
 from mapproxy.cache.file import FileCache
+from mapproxy.util.lock import SemLock
 from mapproxy.config import base_config, abspath
 from mapproxy.client.http import auth_data_from_url, HTTPClient
 
@@ -279,7 +281,7 @@ class SourceConfiguration(ConfigurationBase):
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
     optional_keys = set('''type supported_srs supported_formats request_format image
-        use_direct_from_level wms_opts http'''.split())
+        use_direct_from_level wms_opts http concurrent_requests'''.split())
     required_keys = set('req'.split())
     
     def http_client(self, context, request):
@@ -306,10 +308,18 @@ class WMSSourceConfiguration(SourceConfiguration):
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         supported_formats = [file_ext(f) for f in self.conf.get('supported_formats', [])]
         version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
+        
+        lock = None
+        if 'concurrent_requests' in self.conf:
+            lock_dir = abspath(context.globals.get_value('cache.lock_dir', self.conf))
+            md5 = hashlib.md5(self.conf['req']['url'])
+            lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
+            lock = lambda: SemLock(lock_file, self.conf['concurrent_requests'])
+        
         request = create_request(self.conf['req'], params, version=version)
         http_client = self.http_client(context, request)
         client = WMSClient(request, supported_srs, http_client=http_client, 
-                           resampling=resampling,
+                           resampling=resampling, lock=lock,
                            supported_formats=supported_formats or None)
         return WMSSource(client, transparent=transparent)
     
