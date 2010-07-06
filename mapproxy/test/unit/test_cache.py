@@ -197,7 +197,7 @@ class TestTileManagerTiledSource(object):
     def test_create_tiles(self):
         self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
         eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
-        eq_(self.client.requested_tiles, [(0, 0, 1), (1, 0, 1)])
+        eq_(sorted(self.client.requested_tiles), [(0, 0, 1), (1, 0, 1)])
 
 class TestTileManagerDifferentSourceGrid(object):
     def setup(self):
