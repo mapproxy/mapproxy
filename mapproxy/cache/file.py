@@ -21,7 +21,7 @@ import time
 import errno
 import hashlib
 
-from mapproxy.util import FileLock
+from mapproxy.util.lock import FileLock
 from mapproxy.image import ImageSource, is_single_color_image
 from mapproxy.config import base_config
 

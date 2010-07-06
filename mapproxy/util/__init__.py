@@ -26,76 +26,9 @@ import Queue
 import threading
 import shutil
 import datetime
-from mapproxy.util.ext import lockfile
 
 import logging
 log = logging.getLogger(__name__)
-
-class LockTimeout(Exception):
-    pass
-
-class FileLock(object):
-    def __init__(self, lock_file, timeout=60.0, step=0.01):
-        self.lock_file = lock_file
-        self.timeout = timeout
-        self.step = step
-        self._locked = False
-    
-    def __enter__(self):
-        self.lock()
-    
-    def __exit__(self, _exc_type, _exc_value, _traceback):
-        self.unlock()
-    
-    def lock(self):
-        current_time = time.time()
-        stop_time = current_time + self.timeout
-        if not os.path.exists(os.path.dirname(self.lock_file)):
-            try:
-                os.makedirs(os.path.dirname(self.lock_file))
-            except OSError, e:
-                if e.errno is not errno.EEXIST:
-                    raise e
-        while not self._locked:
-            try:
-                self._lock = lockfile.LockFile(self.lock_file)
-            except lockfile.LockError, e:
-                current_time = time.time()
-                if current_time < stop_time:
-                    time.sleep(self.step)
-                    continue
-                else:
-                    raise LockTimeout('another process is still running with our lock')
-            else:
-                self._locked = True
-    
-    def unlock(self):
-        if self._locked:
-            self._locked = False
-            self._lock.close()
-    
-    def __del__(self):
-        self.unlock()
-
-
-def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300):
-    expire_time = time.time() - max_lock_time
-    if not os.path.exists(lockdir) or not os.path.isdir(lockdir):
-        log.warn('lock dir not a directory: %s', lockdir)
-        return
-    for entry in os.listdir(lockdir):
-        name = os.path.join(lockdir, entry)
-        try:
-            if os.path.isfile(name) and name.endswith(suffix):
-                if os.path.getmtime(name) < expire_time:
-                    try:
-                        os.unlink(name)
-                    except IOError, ex:
-                        log.warn('could not remove old lock file %s: %s', name, ex)
-        except OSError, e:
-            # some one might remove the file, ignore this
-            if e.errno != errno.ENOENT:
-                raise e
 
 class ThreadedExecutor(object):
     class Executor(threading.Thread):

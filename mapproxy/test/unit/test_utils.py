@@ -24,10 +24,12 @@ import thread
 import threading
 import time
 import mapproxy.util
-from mapproxy.util import (
+from mapproxy.util.lock import (
     FileLock,
     cleanup_lockdir,
     LockTimeout,
+)
+from mapproxy.util import (
     ThreadedExecutor,
     _force_rename_dir,
     swap_dir,
