@@ -42,6 +42,8 @@ from mapproxy.grid import MetaGrid
 from mapproxy.image import merge_images
 from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery
+from mapproxy.util import ThreadedExecutor
+from mapproxy.config import base_config
 
 import logging
 log = logging.getLogger(__name__)
@@ -58,6 +60,7 @@ class TileManager(object):
         self.sources = sources
         self._expire_timestamp = None
         self.transparent = self.sources[0].transparent
+        self.thread_pool_size = base_config().tile_creator_pool_size
         
         if meta_buffer is not None and meta_size:
             if all(source.supports_meta_tiles for source in sources):
@@ -116,10 +119,8 @@ class TileManager(object):
         return self._expire_timestamp
     
     def _create_tiles(self, tiles):
-        created_tiles = []
         if not self.meta_grid:
-            for tile in tiles:
-                created_tiles.append(self._create_tile(tile))
+            created_tiles = self._create_single_tiles(tiles)
         else:
             meta_tiles = []
             meta_bboxes = set()
@@ -132,8 +133,24 @@ class TileManager(object):
             created_tiles = self._create_meta_tiles(meta_tiles)
         
         return created_tiles
-            
-    def _create_tile(self, tile):
+
+    def _create_single_tiles(self, tiles):
+        if self.thread_pool_size and len(tiles) > 1:
+            return self._create_threaded(self._create_single_tile, tiles)
+        
+        created_tiles = []
+        for tile in tiles:
+            created_tiles.extend(self._create_single_tile(tile))
+        return created_tiles
+    
+    def _create_threaded(self, create_func, tiles):
+        pool = ThreadedExecutor(create_func, pool_size=self.thread_pool_size)
+        result = []
+        for new_tiles in pool.execute(tiles):
+            result.extend(new_tiles)
+        return result
+    
+    def _create_single_tile(self, tile):
         tile_bbox = self.grid.tile_bbox(tile.coord)
         query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs,
                          self.request_format)
@@ -143,7 +160,7 @@ class TileManager(object):
                 self.cache.store(tile)
             else:
                 self.cache.load(tile)
-        return tile
+        return [tile]
     
     def _query_sources(self, query):
         """
@@ -161,6 +178,15 @@ class TileManager(object):
         
     
     def _create_meta_tiles(self, meta_tiles):
+        if self.thread_pool_size and len(meta_tiles) > 1:
+            args = []
+            for tile, meta_bbox in meta_tiles:
+                tiles = list(self.meta_grid.tiles(tile.coord))
+                args.append((tile, meta_bbox, tiles))
+            def create_func(args): # wrapper that unpacks args
+                return self._create_meta_tile(*args)
+            return self._create_threaded(create_func, args)
+        
         created_tiles = []
         for tile, meta_bbox in meta_tiles:
             tiles = list(self.meta_grid.tiles(tile.coord))

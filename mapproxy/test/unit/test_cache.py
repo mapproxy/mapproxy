@@ -239,7 +239,7 @@ class TestTileManagerSource(object):
     def test_create_tile(self):
         self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
         eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
-        eq_(self.source.requested,
+        eq_(sorted(self.source.requested),
             [((-180.0, -90.0, 0.0, 90.0), (256, 256), SRS(4326)),
              ((0.0, -90.0, 180.0, 90.0), (256, 256), SRS(4326))])
 
@@ -279,7 +279,7 @@ class TestTileManagerWMSSource(object):
         self.tile_mgr._create_tiles([Tile((0, 0, 2))])
         eq_(self.file_cache.stored_tiles,
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)]))
-        eq_(self.client.requested,
+        eq_(sorted(self.client.requested),
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326))])
     
     def test_create_tiles(self):
@@ -287,7 +287,7 @@ class TestTileManagerWMSSource(object):
         eq_(self.file_cache.stored_tiles,
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
                  (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)]))
-        eq_(self.client.requested,
+        eq_(sorted(self.client.requested),
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326)),
              ((0.0, -90.0, 180.0, 90.0), (512, 512), SRS(4326))])
 
@@ -301,7 +301,7 @@ class TestTileManagerWMSSource(object):
         eq_(self.file_cache.stored_tiles,
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
                  (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)]))
-        eq_(self.client.requested,
+        eq_(sorted(self.client.requested),
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326)),
              ((0.0, -90.0, 180.0, 90.0), (512, 512), SRS(4326))])
 
