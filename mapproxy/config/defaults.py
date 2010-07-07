@@ -65,10 +65,8 @@ tiles = dict(
 )
 
 http = dict(
-    ssl = dict(
-        ca_certs = None,
-        insecure = False,
-    ),
+    ssl_ca_certs = None,
+    ssl_no_cert_checks = False,
 )
 
 http_client_timeout = 60

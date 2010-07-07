@@ -99,12 +99,12 @@ class TestHTTPClient(object):
         old_ssl = http.ssl
         try:
             http.ssl = None
-            base_config().http.ssl.insecure = True
+            base_config().http.ssl_no_cert_checks = True
             self.client = HTTPClient('https://trac.osgeo.org/')
             self.client.open('https://trac.osgeo.org/')
         finally:
             http.ssl = old_ssl
-            base_config().http.ssl.insecure = False
+            base_config().http.ssl_no_cert_checks = False
     
     def test_https_valid_cert(self):
         try:
@@ -115,7 +115,7 @@ class TestHTTPClient(object):
         with TempFiles(1) as tmp:
             with open(tmp[0], 'w') as f:
                 f.write(OSGEO_CERT)
-            base_config().http.ssl.ca_certs = tmp[0]
+            base_config().http.ssl_ca_certs = tmp[0]
             self.client = HTTPClient('https://trac.osgeo.org/')
             self.client.open('https://trac.osgeo.org/')
     
@@ -126,7 +126,7 @@ class TestHTTPClient(object):
             raise SkipTest()
         
         with TempFiles(1) as tmp:
-            base_config().http.ssl.ca_certs = tmp[0]
+            base_config().http.ssl_ca_certs = tmp[0]
             self.client = HTTPClient('https://trac.osgeo.org/')
             try:
                 self.client.open('https://trac.osgeo.org/')

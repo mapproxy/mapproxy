@@ -288,7 +288,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         http_client = None
         url, (username, password) = auth_data_from_url(request.url)
         if username and password:
-            insecure = context.globals.get_value('http.ssl.insecure', self.conf)
+            insecure = context.globals.get_value('http.ssl_no_cert_checks', self.conf)
             request.url = url
             http_client = HTTPClient(url, username, password, insecure=insecure)
         return http_client

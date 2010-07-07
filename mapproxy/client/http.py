@@ -52,14 +52,14 @@ class HTTPClient(object):
     def __init__(self, url=None, username=None, password=None, insecure=None):
         handlers = []
         if url and url.startswith('https'):
-            if insecure is False or insecure is None and not base_config().http.ssl.insecure:
+            if insecure is False or insecure is None and not base_config().http.ssl_no_cert_checks:
                 if ssl is None:
                     raise ImportError('No ssl module found. SSL certificate '
                         'verification requires Python 2.6 or ssl module. Upgrade '
-                        'or disable verification with http.ssl.insecure option.')
-                if base_config().http.ssl.ca_certs is None:
-                    raise HTTPClientError('No ca_certs file set (http.ssl.ca_certs). '
-                        'Set file or disable verification with http.ssl.insecure option.')
+                        'or disable verification with http.ssl_no_cert_checks option.')
+                if base_config().http.ssl_ca_certs is None:
+                    raise HTTPClientError('No ca_certs file set (http.ssl_ca_certs). '
+                        'Set file or disable verification with http.ssl_no_cert_checks option.')
                 https_handler = VerifiedHTTPSHandler()
                 handlers.append(https_handler)
         if url is not None and username is not None and password is not None:
@@ -165,12 +165,12 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
         sock.connect((self.host, self.port))
         
         # wrap the socket using verification with the root
-        #    certs in base_config().http.ca_cert
+        #    certs in base_config().http.ssl_ca_cert
         self.sock = ssl.wrap_socket(sock,
                                     self.key_file,
                                     self.cert_file,
                                     cert_reqs=ssl.CERT_REQUIRED,
-                                    ca_certs=abspath(base_config().http.ssl.ca_certs))
+                                    ca_certs=abspath(base_config().http.ssl_ca_certs))
 
 class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
     def __init__(self, connection_class=VerifiedHTTPSConnection):
