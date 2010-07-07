@@ -217,7 +217,7 @@ class FileCache(object):
         Returns a lock object for this tile.
         """
         lock_filename = self.lock_filename(tile)
-        return FileLock(lock_filename, timeout=base_config().http_client_timeout)
+        return FileLock(lock_filename, timeout=base_config().http.client_timeout)
     
     def __repr__(self):
         return '%s(%r, %r)' % (self.__class__.__name__, self.cache_dir, self.file_ext)

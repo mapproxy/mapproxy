@@ -32,7 +32,7 @@ from mapproxy.util import reraise_exception
 from mapproxy.config import base_config, abspath
 
 import socket
-socket.setdefaulttimeout(base_config().http_client_timeout)
+socket.setdefaulttimeout(base_config().http.client_timeout)
 
 class HTTPClientError(Exception):
     pass
