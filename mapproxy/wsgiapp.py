@@ -31,24 +31,22 @@ version = version_string()
 
 ctx = threading.local()
 
-def app_factory(global_options, **local_options):
+def app_factory(global_options, mapproxy_conf, **local_options):
     """
     Paster app_factory.
     """
     conf = global_options.copy()
     conf.update(local_options)
-    services_conf = conf.get('services_conf', None)
-    proxy_conf = conf.get('proxy_conf', None)
     log_conf = conf.get('log_conf', None)
     reload_files = conf.get('reload_files', None)
     if reload_files is not None:
         init_paster_reload_files(reload_files)
-    if proxy_conf is not None:
-        load_base_config(proxy_conf)
+
+    load_base_config(mapproxy_conf)
     
     init_logging_system(log_conf=log_conf)
     
-    return make_wsgi_app(services_conf)
+    return make_wsgi_app(mapproxy_conf)
 
 def init_paster_reload_files(reload_files):
     file_patterns = reload_files.split('\n')
