@@ -46,7 +46,7 @@ setup(
             'app = mapproxy.wsgiapp:app_factory'
         ],
         'paste.paster_create_template': [
-            'mapproxy_conf=mapproxy.paster_templates:ConfigurationTemplate'
+            'mapproxy_conf=mapproxy.paster_template:ConfigurationTemplate'
         ],
     },
     package_data = {'': ['*.xml', '*.yaml', '*.ttf']},
