@@ -176,6 +176,7 @@ class ConfigurationBase(object):
 class GridConfiguration(ConfigurationBase):
     optional_keys = set('''res srs bbox bbox_srs num_levels tile_size base
         stretch_factor max_shrink_factor align_resolutions_with min_res max_res
+        res_factor
         '''.split())
     
     def tile_grid(self, context):
@@ -183,9 +184,10 @@ class GridConfiguration(ConfigurationBase):
             base_grid_name = self.conf['base']
             conf = context.grids[base_grid_name].conf.copy()
             conf.update(self.conf)
+            conf.pop('base')
+            self.conf = conf
         else:
             conf = self.conf
-        
         align_with = None
         if 'align_resolutions_with' in self.conf:
             align_with_grid_name = self.conf['align_resolutions_with']
@@ -232,6 +234,7 @@ class GlobalConfiguration(ConfigurationBase):
     
     def _set_base_config(self):
         self._copy_conf_values(self.conf, base_config())
+    
     def _copy_conf_values(self, d, target):
         for k, v in d.iteritems():
             if v is None: continue
@@ -280,8 +283,8 @@ class SourceConfiguration(ConfigurationBase):
 
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
-    optional_keys = set('''type supported_srs supported_formats request_format image
-        use_direct_from_level wms_opts http concurrent_requests'''.split())
+    optional_keys = set('''type supported_srs supported_formats image
+        wms_opts http concurrent_requests'''.split())
     required_keys = set('req'.split())
     
     def http_client(self, context, request):
@@ -387,6 +390,7 @@ class CacheConfiguration(ConfigurationBase):
         
     def _file_cache(self, grid_conf, context):
         cache_dir = self.cache_dir(context)
+        grid_conf.tile_grid(context) #create to resolve `base` in grid_conf.conf
         suffix = grid_conf.conf['srs'].replace(':', '')
         cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
         link_single_color_images = self.conf.get('link_single_color_images', False)
