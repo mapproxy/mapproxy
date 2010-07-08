@@ -123,7 +123,7 @@ The third options is a convenient variation of the previous option. A factor of 
     sqrt2:
       res: sqrt2
     
-.. note:: The quality of aerial images or scanned maps are unaffected from these options.
+.. note:: This does not improve the quality of aerial images or scanned maps, so you should avoid it for these images.
 
 Resampling method
 -----------------

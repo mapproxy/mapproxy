@@ -33,34 +33,22 @@ Next we create a new virtual environment for our proxy installation. It is a goo
 Install MapProxy
 ----------------
 
-Dependencies
-~~~~~~~~~~~~
+MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 2.5 and 2.6, 2.7 is untested but should work.
 
-* libproj
-* Python Image Library
+MapProxy has some dependencies, other libraries that are required to run. Most dependencies are small Python libraries that will be installed automatically when you install MapProxy. There are two exceptions: libproj and PIL
 
-To install all requirements on Debian or Ubuntu call::
+libproj
+~~~~~~~
+MapProxy uses the Proj4 C Library for all coordinate transformation tasks. Most distributions offer this library as a binary package. On Debian or Ubuntu you can install it with::
+  
+   sudo aptitude install libproj0
+  
 
-    sudo aptitude install libproj0 python python-imaging
-
-
-
-
-To install MapProxy you need
-
-* C compiler
-* Python 2.5 or 2.6 (development tools)
-
-MapProxy uses the Python Image Library (PIL). To get full support for JPEG and PNG images and attribution/watermarks you will need the following libraries:
-
-* libjpeg
-* zlib
-* libfreetype
-
-To install all requirements on Debian or Ubuntu call::
-
-    sudo aptitude install build-essential python-dev \
-        libjpeg-dev libz-dev libfreetype6-dev
+PIL
+~~~
+The Python Image Library (PIL) is also included in most distributions. On Debian or Ubuntu you can install it with::
+  
+    sudo aptitude install python-imaging
 
 
 Installation

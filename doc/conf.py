@@ -100,16 +100,17 @@ html_theme = 'mapproxy'
 # further.  For a list of options available for each theme, see the
 # documentation.
 
-html_theme_options = {}
-# c_dark_grey = "#3A3740"
-#     "relbarbgcolor": c_dark_grey,
-#     "footerbgcolor": c_dark_grey,
-#     "sidebarbgcolor": c_dark_grey,
-#     "linkcolor": "#6E838B",
-#     "sidebarlinkcolor": "#EFEFEF",
-#     "codebgcolor": "#DCEBED",
-#     
-# }
+c_dark_grey = "#3A3740"
+html_theme_options = {
+    'rightsidebar': True,
+    "relbarbgcolor": c_dark_grey,
+    "footerbgcolor": c_dark_grey,
+    "sidebarbgcolor": c_dark_grey,
+    "linkcolor": "#6E838B",
+    "sidebarlinkcolor": "#EFEFEF",
+    "codebgcolor": "#DCEBED",
+    
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = ['_themes']
