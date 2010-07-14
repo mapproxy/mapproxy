@@ -93,9 +93,13 @@ def finish_base_config(bc=None):
     bc = bc or base_config()
     if 'srs' in bc:
         # build union of default axis_order_xx_ and the user configured axis_order_xx
-        bc.srs.axis_order_ne = set(bc.srs.axis_order_ne).union(bc.srs.axis_order_ne_)
-        bc.srs.axis_order_en = set(bc.srs.axis_order_en).union(bc.srs.axis_order_en_)
-    
+        default_ne = bc.srs.axis_order_ne_
+        default_en = bc.srs.axis_order_en_
+        # remove from default to allow overwrites
+        default_ne.difference_update(set(bc.srs.axis_order_en))
+        default_en.difference_update(set(bc.srs.axis_order_ne))
+        bc.srs.axis_order_ne = default_ne.union(set(bc.srs.axis_order_ne))
+        bc.srs.axis_order_en = default_en.union(set(bc.srs.axis_order_en))
     if 'wms' in bc:
         bc.wms.srs = set(bc.wms.srs)
 
