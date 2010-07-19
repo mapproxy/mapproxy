@@ -205,6 +205,22 @@ class ReadBufWrapper(object):
             self.stringio = StringIO(self.readbuf.read())
         return getattr(self.stringio, name)
 
+_pil_supports_full_transparency = None
+def pil_supports_full_transparency():
+    global _pil_supports_full_transparency
+    
+    if _pil_supports_full_transparency is not None:
+        return _pil_supports_full_transparency
+    
+    try:
+        import PngImagePlugin
+        if hasattr(PngImagePlugin, 'TRANSPARENCY_FULL'):
+            _pil_supports_full_transparency = True
+            return
+    except ImportError:
+        pass
+    _pil_supports_full_transparency = False
+
 def img_to_buf(img, format='png', paletted=None):
     defaults = {}    
     if paletted is None:
@@ -215,11 +231,15 @@ def img_to_buf(img, format='png', paletted=None):
     if paletted:
         if format in ('png', 'gif', 'png8'):
             if img.mode == 'RGBA':
-                alpha = img.split()[3]
-                img = quantize(img, colors=255)
-                mask = Image.eval(alpha, lambda a: 255 if a <=128 else 0)
-                img.paste(255, mask)
-                defaults['transparency'] = 255
+                if pil_supports_full_transparency():
+                    img = quantize(img)
+                    defaults['transparency'] = 'full'
+                else:
+                    alpha = img.split()[3]
+                    img = quantize(img, colors=255)
+                    mask = Image.eval(alpha, lambda a: 255 if a <=128 else 0)
+                    img.paste(255, mask)
+                    defaults['transparency'] = 255
             else:
                 img = quantize(img)
             if hasattr(Image, 'RLE'):
