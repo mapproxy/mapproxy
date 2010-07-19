@@ -138,9 +138,9 @@ class WMSRequest(BaseRequest):
     #pylint: disable=E1102
     xml_exception_handler = None
     
-    def __init__(self, param=None, url='', validate=False, non_strict=False):
+    def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
         self.non_strict = non_strict
-        BaseRequest.__init__(self, param=param, url=url, validate=validate)
+        BaseRequest.__init__(self, param=param, url=url, validate=validate, **kw)
         self.adapt_to_111()
     
     def adapt_to_111(self):
@@ -175,9 +175,9 @@ class WMSMapRequest(WMSRequest):
     #pylint: disable=E1102
     xml_exception_handler = None
 
-    def __init__(self, param=None, url='', validate=False, non_strict=False):
+    def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
         WMSRequest.__init__(self, param=param, url=url, validate=validate,
-                            non_strict=non_strict)
+                            non_strict=non_strict, **kw)
     
     def validate(self):
         missing_param = []
@@ -408,8 +408,8 @@ class WMSCapabilitiesRequest(WMSRequest):
     exception_handler = None
     mime_type = 'text/xml'
     fixed_params = {}
-    def __init__(self, param=None, url='', validate=False, non_strict=False):
-        WMSRequest.__init__(self, param=param, url=url, validate=validate)
+    def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
+        WMSRequest.__init__(self, param=param, url=url, validate=validate, **kw)
     
     def adapt_to_111(self):
         pass
@@ -541,7 +541,7 @@ def wms_request(req, validate=True):
                                             validate=False)
         raise RequestError("unknown WMS request type '%s'" % req_type, request=dummy_req)
     return req_class(param=req.args, url=req.base_url, validate=True,
-                     non_strict=non_strict)
+                     non_strict=non_strict, http=req)
 
 
 def create_request(req_data, param, req_type='map', version='1.1.1'):

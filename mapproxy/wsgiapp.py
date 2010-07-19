@@ -29,8 +29,6 @@ version = version_string()
 #       otherwise the logging will not be configured properly
 
 
-ctx = threading.local()
-
 def app_factory(global_options, mapproxy_conf, **local_options):
     """
     Paster app_factory.
@@ -110,15 +108,9 @@ def make_wsgi_app(services_conf=None):
                 for name in service.names:
                     self.handlers[name] = service
         
-        def _set_ctx(self, environ):
-            ctx.__dict__.clear()
-            ctx.env = environ
-        
         def __call__(self, environ, start_response):
             resp = None
             req = Request(environ)
-            
-            self._set_ctx(environ)
             
             match = self.handler_path_re.match(req.path)
             if match:

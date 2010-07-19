@@ -25,7 +25,6 @@ from mapproxy.service.base import Server
 from mapproxy.request.tile import tile_request
 from mapproxy.request.base import split_mime_type
 from mapproxy.config import base_config
-from mapproxy.wsgiapp import ctx
 from mapproxy.layer import map_extend_from_grid
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
@@ -70,7 +69,7 @@ class TileServer(Server):
         resp = Response(tile.as_buffer(), content_type='image/' + tile_request.format)
         resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
                            max_age=base_config().tiles.expires_hours * 60 * 60)
-        resp.make_conditional(ctx.env)
+        resp.make_conditional(tile_request.http)
         return resp
     
     def _internal_layer(self, name):
@@ -104,7 +103,7 @@ class TileServer(Server):
     
     def _service_md(self, map_request):
         md = dict(self.md)
-        md['url'] = map_request.request.base_url
+        md['url'] = map_request.http.base_url
         return md
     
     def _render_template(self, service):

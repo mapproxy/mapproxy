@@ -316,8 +316,9 @@ class BaseRequest(object):
     """
     request_params = RequestParams
     
-    def __init__(self, param=None, url='', validate=False):
+    def __init__(self, param=None, url='', validate=False, http=None):
         self.delimiter = ','
+        self.http = http
         
         if param is None:
             self.params = self.request_params(NoCaseMultiDict())

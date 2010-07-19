@@ -41,7 +41,7 @@ class TileRequest(object):
     req_prefix = '/tiles'
     
     def __init__(self, request):
-        self.request = request
+        self.http = request
         self._init_request()
     
     def _init_request(self):
@@ -49,9 +49,9 @@ class TileRequest(object):
         Initialize tile request. Sets ``tile`` and ``layer``.
         :raise RequestError: if the format is not ``/layer/z/x/y.format``
         """
-        match = self.tile_req_re.search(self.request.path)
+        match = self.tile_req_re.search(self.http.path)
         if not match or match.group('begin') != self.req_prefix:
-            raise RequestError('invalid request (%s)' % (self.request.path), request=self)
+            raise RequestError('invalid request (%s)' % (self.http.path), request=self)
         
         self.layer = match.group('layer')
         if match.group('layer_spec') is not None:
@@ -77,7 +77,7 @@ class TMSRequest(TileRequest):
         $''', re.VERBOSE)
     use_profiles = True
     def __init__(self, request):
-        self.request = request
+        self.http = request
         cap_match = self.capabilities_re.match(request.path)
         if cap_match:
             if cap_match.group('layer') is not None:

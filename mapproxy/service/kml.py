@@ -5,7 +5,6 @@ from mapproxy.exception import RequestError, PlainExceptionHandler
 from mapproxy.service.base import Server
 from mapproxy.request.tile import TileRequest
 from mapproxy.srs import SRS
-from mapproxy.wsgiapp import ctx
 from mapproxy.config import base_config
 
 from mapproxy.template import template_loader, bunch
@@ -62,7 +61,7 @@ class KMLServer(Server):
                         content_type='image/' + map_request.format)
         resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
                            max_age=base_config().tiles.expires_hours * 60 * 60)
-        resp.make_conditional(ctx.env)
+        resp.make_conditional(map_request.http)
         return resp
 
     def layer(self, tile_request):
@@ -93,13 +92,13 @@ class KMLServer(Server):
         
         subtiles = self._get_subtiles(tile_coord, layer)
         layer = bunch(name=map_request.layer, format=layer.format, md=layer.md)
-        service = bunch(url=map_request.request.script_url.rstrip('/'))
+        service = bunch(url=map_request.http.script_url.rstrip('/'))
         template = get_template(self.template_file)
         result = template.substitute(tile=tile, subtiles=subtiles, layer=layer,
                                  service=service, initial_level=initial_level)
         resp = Response(result, content_type='application/vnd.google-earth.kml+xml')
         resp.cache_headers(etag_data=(result,), max_age=self.max_age)
-        resp.make_conditional(ctx.env)
+        resp.make_conditional(map_request.http)
         return resp
 
     def _get_subtiles(self, tile, layer):

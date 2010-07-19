@@ -88,14 +88,19 @@ class Response(object):
         if (timestamp or etag_data) and max_age is not None:
             self.headers['Cache-control'] = 'max-age=%d public' % max_age
     
-    def make_conditional(self, environ):
+    def make_conditional(self, req):
         """
         Make the response conditional to the HTTP headers in the CGI/WSGI `environ`.
         Checks for ``If-none-match`` and ``If-modified-since`` headers and compares
         to the etag and timestamp of this response. If the content was not modified
         the repsonse will changed to HTTP 304 Not Modified.
         """
+        if req is None:
+            return
+        environ = req.environ
+        
         not_modified = False
+        
         
         if self.etag == environ.get('HTTP_IF_NONE_MATCH', -1):
             not_modified = True        
