@@ -731,6 +731,7 @@ class ImageTransformer(object):
             mesh_div -= 1
         for quad in griddify(dst_quad, mesh_div):
             meshes.append(dst_quad_to_src(quad))
+
         result = src_img.as_image().transform(dst_size, Image.MESH, meshes,
                                               image_filter[self.resampling])
         return ImageSource(result, size=dst_size, transparent=src_img.transparent)

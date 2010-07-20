@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import division
 from mapproxy.core.image import ImageSource, ImageTransformer
 from mapproxy.core.client import retrieve_url, HTTPClientError
 from mapproxy.core.srs import SRS, make_lin_transf
@@ -53,18 +54,29 @@ class WMSClient(object):
         dst_bbox = request.params.bbox
         src_bbox = dst_srs.transform_bbox_to(src_srs, dst_bbox)
         
+        src_width, src_height = src_bbox[2]-src_bbox[0], src_bbox[3]-src_bbox[1]
+        ratio = src_width/src_height
+
+        dst_size = request.params.size
+        
+        xres, yres = src_width/dst_size[0], src_height/dst_size[1]
+        if xres < yres:
+            src_size = dst_size[0], int(dst_size[0]/ratio + 0.5)
+        else:
+            src_size = int(dst_size[1]*ratio +0.5), dst_size[1]
+        
+        request = request.copy()
         request.params['srs'] = src_srs.srs_code
         request.params.bbox = src_bbox
+        request.params.size = src_size
         
         resp = self._retrieve_url(self._map_url(request))
         
-        img = ImageSource(resp, request.params.format, size=request.params.size)
-        
+        img = ImageSource(resp, request.params.format, size=src_size)
         img = ImageTransformer(src_srs, dst_srs).transform(img, src_bbox, 
-            request.params.size, dst_bbox)
+            dst_size, dst_bbox)
         
         img.format = self.request_template.params.format
-        
         return img
     
     def _best_supported_srs(self, srs):
