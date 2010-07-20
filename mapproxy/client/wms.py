@@ -53,10 +53,19 @@ class WMSClient(object):
         dst_bbox = query.bbox
         src_bbox = dst_srs.transform_bbox_to(src_srs, dst_bbox)
         
-        src_query = MapQuery(src_bbox, query.size, src_srs, format)
+        src_width, src_height = src_bbox[2]-src_bbox[0], src_bbox[3]-src_bbox[1]
+        ratio = src_width/src_height
+        dst_size = query.size
+        xres, yres = src_width/dst_size[0], src_height/dst_size[1]
+        if xres < yres:
+            src_size = dst_size[0], int(dst_size[0]/ratio + 0.5)
+        else:
+            src_size = int(dst_size[1]*ratio +0.5), dst_size[1]
+        
+        src_query = MapQuery(src_bbox, src_size, src_srs, format)
         resp = self._retrieve(src_query, format)
         
-        img = ImageSource(resp, format, size=src_query.size)
+        img = ImageSource(resp, format, size=src_size)
         
         img = ImageTransformer(src_srs, dst_srs, self.resampling).transform(img, src_bbox, 
             query.size, dst_bbox)
