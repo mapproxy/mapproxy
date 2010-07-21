@@ -16,16 +16,19 @@
 
 from __future__ import with_statement
 import os
+import glob
 import stat
 import sys
 import shutil
 import tempfile
 import thread
 import threading
+import random
 import time
 import mapproxy.core.utils
 from mapproxy.core.utils import (
     FileLock,
+    SemLock,
     cleanup_lockdir,
     LockTimeout,
     ThreadedExecutor,
@@ -36,7 +39,7 @@ from mapproxy.core.utils import (
 )
 from mapproxy.tests.helper import Mocker, mocker, LogMock
 
-from nose.tools import timed
+from nose.tools import timed, eq_
 
 is_win = sys.platform == 'win32'
 
@@ -142,6 +145,84 @@ def assert_locked(lock_file, timeout=0.02, step=0.001):
         assert False
     except LockTimeout, e:
         pass
+
+
+class TestSemLock(object):
+    def setup(self):
+        self.lock_dir = tempfile.mkdtemp()
+        self.lock_file = os.path.join(self.lock_dir, 'lock.lck')
+    def teardown(self):
+        shutil.rmtree(self.lock_dir)
+    
+    def count_lockfiles(self):
+        return len(glob.glob(self.lock_file + '*'))
+    
+    def test_single(self):
+        locks = [SemLock(self.lock_file, 1, timeout=0.01) for _ in range(2)]
+        locks[0].lock()
+        try:
+            locks[1].lock()
+        except LockTimeout:
+            pass
+        else:
+            assert False, 'expected LockTimeout'
+        
+    
+    def test_creating(self):
+        locks = [SemLock(self.lock_file, 2) for _ in range(3)]
+        
+        eq_(self.count_lockfiles(), 0)
+        locks[0].lock()
+        eq_(self.count_lockfiles(), 1)
+        locks[1].lock()
+        eq_(self.count_lockfiles(), 2)
+        assert os.path.exists(locks[0]._lock._path)
+        assert os.path.exists(locks[1]._lock._path)
+        locks[0].unlock()
+        locks[2].lock()
+        locks[2].unlock()
+        locks[1].unlock()
+
+    def test_timeout(self):
+        locks = [SemLock(self.lock_file, 2, timeout=0.1) for _ in range(3)]
+        
+        eq_(self.count_lockfiles(), 0)
+        locks[0].lock()
+        eq_(self.count_lockfiles(), 1)
+        locks[1].lock()
+        eq_(self.count_lockfiles(), 2)
+        try:
+            locks[2].lock()
+        except LockTimeout:
+            pass
+        else:
+            assert False, 'expected LockTimeout'
+        locks[0].unlock()
+        locks[2].unlock()
+    
+    def test_load(self):
+        locks = [SemLock(self.lock_file, 8, timeout=1) for _ in range(20)]
+        
+        new_locks = random.sample([l for l in locks if not l._locked], 5)
+        for l in new_locks:
+            l.lock()
+        
+        for _ in range(20):
+            old_locks = random.sample([l for l in locks if l._locked], 3)
+            for l in old_locks:
+                l.unlock()
+            eq_(len([l for l in locks if l._locked]), 2)
+            eq_(len([l for l in locks if not l._locked]), 18)
+
+            new_locks = random.sample([l for l in locks if not l._locked], 3)
+            for l in new_locks:
+                l.lock()
+
+            eq_(len([l for l in locks if l._locked]), 5)
+            eq_(len([l for l in locks if not l._locked]), 15)
+        
+        assert self.count_lockfiles() == 8
+
 
 class TestThreadedExecutor(object):
     def setup(self):

@@ -25,6 +25,7 @@ import errno
 import Queue
 import threading
 import shutil
+import random
 import datetime
 from mapproxy.core import lockfile
 
@@ -47,18 +48,25 @@ class FileLock(object):
     def __exit__(self, _exc_type, _exc_value, _traceback):
         self.unlock()
     
-    def lock(self):
-        current_time = time.time()
-        stop_time = current_time + self.timeout
+    def _make_lockdir(self):
         if not os.path.exists(os.path.dirname(self.lock_file)):
             try:
                 os.makedirs(os.path.dirname(self.lock_file))
             except OSError, e:
                 if e.errno is not errno.EEXIST:
                     raise e
+    
+    def _try_lock(self):
+        return lockfile.LockFile(self.lock_file)
+    
+    def lock(self):
+        self._make_lockdir()
+        current_time = time.time()
+        stop_time = current_time + self.timeout
+
         while not self._locked:
             try:
-                self.lock = lockfile.LockFile(self.lock_file)
+                self._lock = self._try_lock()
             except lockfile.LockError, e:
                 current_time = time.time()
                 if current_time < stop_time:
@@ -72,7 +80,7 @@ class FileLock(object):
     def unlock(self):
         if self._locked:
             self._locked = False
-            self.lock.close()
+            self._lock.close()
     
     def __del__(self):
         self.unlock()
@@ -96,6 +104,27 @@ def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300):
             # some one might remove the file, ignore this
             if e.errno != errno.ENOENT:
                 raise e
+
+class SemLock(FileLock):
+    """
+    File-lock-based counting semaphore (i.e. this lock can be locked n-times).
+    """
+    def __init__(self, lock_file, n, timeout=60.0, step=0.01):
+        FileLock.__init__(self, lock_file, timeout=timeout, step=step)
+        self.n = n
+    
+    def _try_lock(self):
+        tries = 0
+        i = random.randint(0, self.n-1)
+        while True:
+            tries += 1
+            try:
+                return lockfile.LockFile(self.lock_file + str(i))
+            except lockfile.LockError, e:
+                if tries >= self.n:
+                    raise
+            i = (i+1) % self.n
+
 
 class ThreadedExecutor(object):
     class Executor(threading.Thread):
