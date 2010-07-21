@@ -86,6 +86,12 @@ class FileLock(object):
         self.unlock()
 
 
+class NullLock(object):
+    def __enter__(self):
+        return
+    def __exit__(self, _exc_type, _exc_value, _traceback):
+        return
+
 def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300):
     expire_time = time.time() - max_lock_time
     if not os.path.exists(lockdir) or not os.path.isdir(lockdir):

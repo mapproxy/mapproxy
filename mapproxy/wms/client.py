@@ -14,17 +14,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import division
+from __future__ import division, with_statement
 from mapproxy.core.image import ImageSource, ImageTransformer
 from mapproxy.core.client import retrieve_url, HTTPClientError
 from mapproxy.core.srs import SRS, make_lin_transf
+from mapproxy.core.utils import NullLock
 
 class WMSClient(object):
     """
     Client for WMS requests.
     """
     def __init__(self, request_template=None, client_request=None, http_client=None,
-        supported_srs=None):
+        supported_srs=None, lock=None):
         """
         :param request_template: a request that will be used as a template for
             new requests
@@ -38,6 +39,7 @@ class WMSClient(object):
         self.request_template = request_template
         self.http_client = http_client
         self.supported_srs = supported_srs
+        self.lock = lock or NullLock
 
     def get_map(self, request):
         if self.supported_srs and SRS(request.params.srs) not in self.supported_srs:
@@ -97,9 +99,10 @@ class WMSClient(object):
         return resp.read()
     
     def _retrieve_url(self, url):
-        if self.http_client:
-            return self.http_client.open(url)
-        return retrieve_url(url)
+        with self.lock():
+            if self.http_client:
+                return self.http_client.open(url)
+            return retrieve_url(url)
     
     def _info_url(self, request):
         req = self.client_request(self.request_template, request)
