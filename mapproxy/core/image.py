@@ -216,10 +216,11 @@ def pil_supports_full_transparency():
         import PngImagePlugin
         if hasattr(PngImagePlugin, 'TRANSPARENCY_FULL'):
             _pil_supports_full_transparency = True
-            return
+            return True
     except ImportError:
         pass
     _pil_supports_full_transparency = False
+    return False
 
 def img_to_buf(img, format='png', paletted=None):
     defaults = {}    
