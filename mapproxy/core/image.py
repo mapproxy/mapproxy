@@ -232,7 +232,7 @@ def img_to_buf(img, format='png', paletted=None):
         if format in ('png', 'gif', 'png8'):
             if img.mode == 'RGBA':
                 if pil_supports_full_transparency():
-                    img = quantize(img)
+                    img = quantize(img, alpha=True)
                     defaults['transparency'] = 'full'
                 else:
                     alpha = img.split()[3]
@@ -253,9 +253,11 @@ def img_to_buf(img, format='png', paletted=None):
     buf.seek(0)
     return buf
 
-def quantize(img, colors=256):
+def quantize(img, colors=256, alpha=False):
     if hasattr(Image, 'FASTOCTREE'):
-        return img.convert('RGB').quantize(colors, Image.FASTOCTREE)
+        if not alpha:
+            img = img.convert('RGB')
+        return img.quantize(colors, Image.FASTOCTREE)
     return img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
 
 def filter_format(format):
