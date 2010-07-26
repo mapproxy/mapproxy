@@ -8,6 +8,7 @@ services:
   tms:
   kml:
   wms:
+    wmsc:
     md:
       title: MapProxy test fixture
       abstract: This is MapProxy.
