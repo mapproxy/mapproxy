@@ -85,6 +85,19 @@ def query_eq(expected, actual):
     return (query_to_dict(expected) == query_to_dict(actual) and
             path_from_query(expected) == path_from_query(actual))
 
+def assert_query_eq(expected, actual):
+    """
+    >>> query_eq('bAR=baz&foo=bizz', 'foO=bizz&bar=baz')
+    True
+    >>> query_eq('/service?bar=baz&fOO=bizz', 'foo=bizz&bar=baz')
+    False
+    >>> query_eq('/1/2/3.png', '/1/2/3.png')
+    True
+    >>> query_eq('/1/2/3.png', '/1/2/0.png')
+    False
+    """
+    assert query_eq(expected, actual), expected + ' != ' + actual
+
 def path_from_query(query):
     """
     >>> path_from_query('/service?foo=bar')

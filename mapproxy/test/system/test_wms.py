@@ -258,7 +258,7 @@ class TestWMS111(WMSTest):
         bbox_900913 = [1110868.98971,6444038.14317,1229263.18538,6623564.86585]
         with tmp_image((200, 200), format='png') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
-                                      '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A900913&styles='
+                                      '&REQUEST=GetMap&HEIGHT=303&SRS=EPSG%3A900913&styles='
                                       '&VERSION=1.1.1&BBOX=1110868.98971,6444038.14317,1229263.18538,6623564.86585'
                                       '&WIDTH=200'},
                             {'body': img.read(), 'headers': {'content-type': 'image/png'}})

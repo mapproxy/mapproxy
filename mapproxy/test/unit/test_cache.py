@@ -32,7 +32,7 @@ from mapproxy.image import ImageSource
 from mapproxy.request.wms import WMS111MapRequest
 
 from mapproxy.test.image import create_debug_img, is_png, tmp_image
-from mapproxy.test.http import query_eq, mock_httpd
+from mapproxy.test.http import assert_query_eq, query_eq, mock_httpd
 
 from collections import defaultdict
 
@@ -523,10 +523,10 @@ class TestWMSClient(object):
     def test_get_map_transformed(self):
         result = self.client.get_map(MapQuery(
            (556597, 4865942, 1669792, 7361866), (300, 150), SRS(900913)))
-        assert query_eq(self.http_client.requested[0], "http://localhost/service?"
+        assert_query_eq(self.http_client.requested[0], "http://localhost/service?"
             "layers=foo&width=300&version=1.1.1"
             "&bbox=4.99999592195,39.9999980766,14.999996749,54.9999994175&service=WMS"
-            "&format=image%2Fpng&styles=&srs=EPSG%3A4326&request=GetMap&height=150")
+            "&format=image%2Fpng&styles=&srs=EPSG%3A4326&request=GetMap&height=450")
 
 class TestWMSSource(object):
     def setup(self):
