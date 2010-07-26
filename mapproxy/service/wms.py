@@ -26,7 +26,7 @@ from mapproxy.exception import RequestError
 from mapproxy.config import base_config
 from mapproxy.image.message import attribution_image
 
-from mapproxy.layer import BlankImage, MapQuery, InfoQuery, MapBBOXError
+from mapproxy.layer import BlankImage, MapQuery, InfoQuery, MapError, MapBBOXError
 from mapproxy.source import SourceError
 
 from mapproxy.template import template_loader, bunch
@@ -182,6 +182,8 @@ class WMSLayer(object):
     def render(self, request):
         p = request.params
         query = MapQuery(p.bbox, p.size, SRS(p.srs), request.params.format)
+        if request.params.get('tiled', 'false').lower() == 'true':
+            query.tiled_only = True
         for layer in self.map_layers:
             yield self._render_layer(layer, query, request)
     
@@ -190,6 +192,8 @@ class WMSLayer(object):
             return layer.get_map(query)
         except MapBBOXError:
             raise RequestError('Request too large or invalid BBOX.', request=request)
+        except MapError, e:
+            raise RequestError('Invalid request: %s' % e.args[0], request=request)
         except TransformationError:
             raise RequestError('Could not transform BBOX: Invalid result.',
                 request=request)

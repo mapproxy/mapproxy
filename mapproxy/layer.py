@@ -19,10 +19,11 @@
 Layers that can get maps/infos from different sources/caches. 
 """
 
+from __future__ import division
 from mapproxy.config import base_config
 from mapproxy.grid import NoTiles, GridError
 from mapproxy.image.tile import TiledImage
-from mapproxy.srs import SRS
+from mapproxy.srs import SRS, bbox_equals
 
 import logging
 log = logging.getLogger(__name__)
@@ -49,12 +50,14 @@ class MapQuery(object):
     """
     Internal query for a map with a specific extend, size, srs, etc.
     """
-    def __init__(self, bbox, size, srs, format='image/png', transparent=False):
+    def __init__(self, bbox, size, srs, format='image/png', transparent=False,
+                 tiled_only=False):
         self.bbox = bbox
         self.size = size
         self.srs = srs
         self.format = format
         self.transparent = transparent
+        self.tiled_only = tiled_only
 
 
 class InfoQuery(object):
@@ -183,11 +186,23 @@ class CacheMapLayer(MapLayer):
         self.transparent = tile_manager.transparent
     
     def get_map(self, query):
-        tiled_image = self._tiled_image(query.bbox, query.size, query.srs)
-        return tiled_image.transform(query.bbox, query.srs, query.size, 
-            self.resampling)
+        if query.tiled_only:
+            self._check_tiled(query)
+        
+        tiled_image = self._tiled_image(query.bbox, query.size, query.srs,
+                                        query.tiled_only)
+        result = tiled_image.transform(query.bbox, query.srs, query.size, 
+                                       self.resampling)
+        return result
+
+    def _check_tiled(self, query):
+        if query.format != self.tile_manager.format:
+            raise MapError("invalid tile format, use %s" % self.tile_manager.format)
+        if query.size != self.grid.tile_size:
+            raise MapError("invalid tile size (use %dx%d)" % self.grid.tile_size)
     
-    def _tiled_image(self, bbox, size, srs):
+    
+    def _tiled_image(self, bbox, size, srs, tiled_only):
         try:
             src_bbox, tile_grid, affected_tile_coords = \
                 self.grid.get_affected_tiles(bbox, size, req_srs=srs)
@@ -199,6 +214,13 @@ class CacheMapLayer(MapLayer):
         num_tiles = tile_grid[0] * tile_grid[1]
         if num_tiles >= base_config().cache.max_tile_limit:
             raise MapBBOXError("to many tiles")
+        
+        if tiled_only:
+            if num_tiles > 1: 
+                raise MapBBOXError("not a single tile")
+            if not bbox_equals(bbox, src_bbox, (bbox[2]-bbox[0]/size[0]/10),
+                                               (bbox[3]-bbox[1]/size[1]/10)):
+                raise MapBBOXError("query does not align to tile boundaries")
         
         tile_sources = [tile.source for tile in self.tile_manager.load_tile_coords(affected_tile_coords)]
         return TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,

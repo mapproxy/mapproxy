@@ -16,6 +16,7 @@
 
 from __future__ import with_statement, division
 import os
+import re
 import sys
 import Image
 import functools
@@ -82,9 +83,14 @@ class WMSTest(object):
 def is_100_capa(xml):
     return validate_with_dtd(xml, dtd_name='wms/1.0.0/capabilities_1_0_0.dtd')
 
-def is_111_exception(xml, msg, code=None):
+def is_111_exception(xml, msg=None, code=None, re_msg=None):
     eq_(xml.xpath('/ServiceExceptionReport/@version')[0], '1.1.1')
-    eq_(xml.xpath('//ServiceException/text()')[0], msg)
+    if msg:
+        eq_(xml.xpath('//ServiceException/text()')[0], msg)
+    if re_msg:
+        exception_msg = xml.xpath('//ServiceException/text()')[0]
+        assert re.match(re_msg, exception_msg, re.I), "'%r' does not match '%s'" % (
+            re_msg, exception_msg)
     if code is not None:
         eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code')[0], code)
     assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
