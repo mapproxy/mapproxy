@@ -2,8 +2,6 @@
 Configuration examples
 ######################
 
-.. highlight:: yaml
-
 This document will show you some usage scenarios of MapProxy and will explain some combinations of configuration options that might be useful for you.
 
 
@@ -42,13 +40,13 @@ Example::
           layers: aerial
 
 
-.. note:: If the layers come from the same WMS server, you can just them to the ``layers`` parameter. E.g. ``layers: water,railroads,roads``.
+.. note:: If the layers come from the same WMS server, then you can add them direct to the ``layers`` parameter. E.g. ``layers: water,railroads,roads``.
 
 
 Access local servers
 ====================
 
-If a source is on the same host or connected with high bandwidth (i.e. LAN), you can use an uncompressed image format for requests to the source WMS. By default MapProxy will request data in the same format it uses to cache the data. For example, if you cache files in PNG MapProxy will request all images from the source WMS in PNG too. This compression is quite CPU intensive and can be avoided if you have plenty of bandwidth. Your source WMS should respond faster if you use uncompressed TIFF.
+By default MapProxy will request data in the same format it uses to cache the data, if you cache files in PNG MapProxy will request all images from the source WMS in PNG. This encoding is quite CPU intensive for your WMS server but reduces the amount of data than needs to be transfered between you WMS and MapProxy. You can use uncompressed TIFF as the request format, if both servers are on the same host or if they are connected with high bandwidth.
 
 Example::
   
@@ -78,7 +76,7 @@ By default MapProxy uses `bicubic` resampling. This resampling method also sharp
       sources: [aerial_images]
 
 
-You might also want to experiment with different compression levels of JPEG. A higher value of ``jpeg_quality`` results in better image quality at the cost of slower encoding and lager file sizes. See :ref:`proxy.yaml configuration <jpeg_quality>`. TODO
+You might also want to experiment with different compression levels of JPEG. A higher value of ``jpeg_quality`` results in better image quality at the cost of slower encoding and lager file sizes. See :ref:`proxy.yaml configuration <jpeg_quality>`.
 
 ::
 
@@ -114,14 +112,14 @@ You can specify a different factor that is used to calculate the resolutions. By
 
   grids:
     custom_factor:
-      res: 1.6
+      res_factor: 1.6
 
 The third options is a convenient variation of the previous option. A factor of 1.41421, the square root of two, would get resolutions of 10, 7.07, 5, 3.54, 2.5,…. Notice that every second resolution is identical to the power-of-two resolutions. This comes in handy if you use the layer not only in classic WMS clients but also want to use it in tile-based clients like OpenLayers, wich only request in these resolutions.
 ::
 
   grids:
     sqrt2:
-      res: sqrt2
+      res_factor: sqrt2
     
 .. note:: This does not improve the quality of aerial images or scanned maps, so you should avoid it for these images.
 
@@ -136,7 +134,7 @@ You can configure the method MapProxy uses for resampling when it scales or tran
         resampling: bicubic
       # [...]
 
-  or
+  # or
   
   globals:
     image:
@@ -162,11 +160,7 @@ You should explicitly define the SRS the source WMS supports. Requests in other 
   
   sources:
     direct_wms:
-  
-  direct_example:
-    # [md and params omitted]
-    sources:
-    - type: direct
+      type: direct
       supported_srs: ['EPSG:4326', 'EPSG:25832']
       req:
         url: http://wms.example.org/service?
@@ -196,18 +190,9 @@ You can disable the certificate verification if you you don't need it.
   secure_source:
     type: wms
     http:
-      ssl:
-        insecure: true
+      ssl_no_cert_check: True
     req:
       url: https://username:mypassword@example.org/service?
       layers: securelayer
   
-.. osm_mapnik:
-..     md:
-..         title: osm.omniscale.net - Open Street Map
-..     attribution:
-..         text: "Nur zu Testzwecken!"
-..     sources:
-..     - type: cache_tms
-..       ll_origin: True
-..       url: http://osm.omniscale.net/proxy/tms/osm_EPSG900913
+

@@ -62,12 +62,16 @@ To install you need to call::
 
 You specify the release version of MapProxy. E.g.::
 
-  pip install MapProxy==0.8.3
+  pip install MapProxy==0.9.0
+  
+or to get the latest 0.9 version::
+ 
+  pip install "MapProxy>=0.9.0,<=0.9.99"
 
 To check if the MapProxy was successfully installed, you can directly call the `version` module. You should see the installed version number.
 ::
 
-    python -m mapproxy.core.version
+    python -m mapproxy.version
 
 .. _`pip`: http://pip.openplans.org/
 
