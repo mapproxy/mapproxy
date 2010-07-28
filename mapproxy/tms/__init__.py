@@ -96,6 +96,10 @@ class TileServiceGrid(object):
     """
     def __init__(self, grid):
         self.grid = grid
+        self.profile = 'local'
+        self.srs_name = self.grid.srs.srs_code
+        self._skip_first_level = False
+
         if self.grid.res_type in (RES_TYPE_GLOBAL, RES_TYPE_SQRT2):
             if self.grid.srs == SRS(900913):
                 self.profile = 'global-mercator'
@@ -105,10 +109,6 @@ class TileServiceGrid(object):
                 self.profile = 'global-geodetic'
                 self.srs_name = 'EPSG:4326'
                 self._skip_first_level = True
-        else:
-            self.profile = 'local'
-            self.srs_name = self.grid.srs.srs_code
-            self._skip_first_level = False
         
         self._skip_odd_level = False
         if self.grid.res_type == RES_TYPE_SQRT2:
