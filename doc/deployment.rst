@@ -44,7 +44,7 @@ Here is an example Lighttpd configuration::
     fastcgi.server += (
       "/proxy" => ((
         "check-local" => "disable",
-        "socket"      => "/home/olt/mymapproxy/var/fcgi-socket"
+        "socket"      => "/path/to/mymapproxy/var/fcgi-socket"
       ))
     )
   }
@@ -52,6 +52,45 @@ Here is an example Lighttpd configuration::
 The first line restricts this configuration to the ``example.org`` hostname. In the third line you set the URL path where MapProxy should listen. The ``socket`` option should point to the ``fcgi-socket`` file that is used to communicate with the MapProxy FastCGI server.
 
 With this configuration you can access the MapProxy WMS at http://example.org/proxy/service?
+
+
+Apache mod_fastcgi
+""""""""""""""""""
+
+You can use the following snippet to add the MapProxy FastCGI to an Apache installation::
+
+  LoadModule fastcgi_module modules/mod_fastcgi.so
+
+  <IfModule mod_fastcgi.c>
+   FastCGIExternalServer /tmp/madeup -socket /path/to/mymapproxy/var/fcgi-socket
+   Alias /proxy /tmp/madeup
+  </IfModule>
+
+.. note:: ``/tmp/madeup`` is just a dummy value and you can choose any path you want, the only limitation is that the directory must exist but not the file. In this example there must be a ``/tmp`` directory but the file ``madeup`` should not exist.
+
+nginx
+"""""
+
+The following snippet adds MapProxy to an nginx installation. Note that you need to split the URI manually if you use an nginx version before 0.7.31. If you have a more recent version, you can use `fastcgi_split_path_info <http://wiki.nginx.org/NginxHttpFcgiModule#fastcgi_split_path_info>`_.
+
+::
+
+  server {
+    # server options
+    # ...
+    
+    location /proxy {
+      if ($uri ~ "^(/proxy)(/.*)$") {
+        set $script_name  $1;
+        set $path_info  $2;
+      }
+      fastcgi_pass   unix:/path/to/mymapproxy/var/fcgi-socket;
+      include fastcgi_params;
+      fastcgi_param  SCRIPT_NAME $script_name;
+      fastcgi_param  PATH_INFO   $path_info;
+    }
+  }
+
 
 Other deployment options
 """"""""""""""""""""""""
