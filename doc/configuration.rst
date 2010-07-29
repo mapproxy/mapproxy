@@ -122,6 +122,9 @@ With ``param`` you can set the parameters of the data-source and cache.
     SRS will access the ``EPSG:900913`` cache, requests with geographical SRS will use
     ``EPSG:4326``. The distortions from the transformation should be acceptable these to cached SRS.
 
+``bbox``
+    The bounding box of the layer.
+
 ``res``
     The resolution for which MapProxy should cache tiles.
     For requests with no matching cached resolution the next best resolution is used and MapProxy will transform the result. There are three ways to configure the resolutions.
