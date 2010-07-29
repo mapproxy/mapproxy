@@ -205,23 +205,6 @@ class ReadBufWrapper(object):
             self.stringio = StringIO(self.readbuf.read())
         return getattr(self.stringio, name)
 
-_pil_supports_full_transparency = None
-def pil_supports_full_transparency():
-    global _pil_supports_full_transparency
-    
-    if _pil_supports_full_transparency is not None:
-        return _pil_supports_full_transparency
-    
-    try:
-        import PngImagePlugin
-        if hasattr(PngImagePlugin, 'TRANSPARENCY_FULL'):
-            _pil_supports_full_transparency = True
-            return True
-    except ImportError:
-        pass
-    _pil_supports_full_transparency = False
-    return False
-
 def img_to_buf(img, format='png', paletted=None):
     defaults = {}    
     if paletted is None:
@@ -232,15 +215,7 @@ def img_to_buf(img, format='png', paletted=None):
     if paletted:
         if format in ('png', 'gif', 'png8'):
             if img.mode == 'RGBA':
-                if pil_supports_full_transparency():
-                    img = quantize(img, alpha=True)
-                    defaults['transparency'] = 'full'
-                else:
-                    alpha = img.split()[3]
-                    img = quantize(img, colors=255)
-                    mask = Image.eval(alpha, lambda a: 255 if a <=128 else 0)
-                    img.paste(255, mask)
-                    defaults['transparency'] = 255
+                img = quantize(img, alpha=True, defaults=defaults)
             else:
                 img = quantize(img)
             if hasattr(Image, 'RLE'):
@@ -254,13 +229,24 @@ def img_to_buf(img, format='png', paletted=None):
     buf.seek(0)
     return buf
 
-def quantize(img, colors=256, alpha=False):
+def quantize(img, colors=256, alpha=False, defaults=None):
     if hasattr(Image, 'FASTOCTREE'):
         if not alpha:
             img = img.convert('RGB')
-        return img.quantize(colors, Image.FASTOCTREE)
-    return img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
-
+        img = img.quantize(colors, Image.FASTOCTREE)
+    else:
+        if alpha:
+            alpha = img.split()[3]
+            img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
+            mask = Image.eval(alpha, lambda a: 255 if a <=128 else 0)
+            img.paste(255, mask)
+            if defaults is not None:
+                defaults['transparency'] = 255
+        else:
+            img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
+    
+    return img
+    
 def filter_format(format):
     if format.lower() == 'geotiff':
         format = 'tiff'
