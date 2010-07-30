@@ -14,6 +14,9 @@ There are a few different configuration files used by MapProxy.
 ``develop.ini`` or ``config.ini``
     These are the paster configuration files that are used to start MapProxy in development or production mode. See :doc:`deployment documentation <deployment>` for more information.
 
+
+.. note:: The configuration changed with the 0.9.0 release and you have to update any older configuration. This is a one-time change and further versions will offer backwards-compatibility.
+
 .. index:: mapproxy.yaml
 
 mapproxy.yaml
@@ -110,7 +113,7 @@ A list with one or more source names. The sources needs to be defined in the ``s
 ``format``
 """"""""""
 
-The internal image format for the cache. The default is image/png.
+The internal image format for the cache. The default is ``image/png``.
 
 
 ``request_format``
@@ -150,6 +153,31 @@ There is some special handling layers that need geographical and projected coord
 systems. If you set both ``EPSG:4326`` and ``EPSG:900913`` all requests with projected
 SRS will access the ``EPSG:900913`` cache, requests with geographical SRS will use
 ``EPSG:4326``.
+
+
+``use_direct_from_level`` and ``use_direct_from_res``
+"""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+You can limit until which resolution MapProxy should cache data with these two options.
+Requests below the configured resolution or level will be passed to the underlying source and the results will not be stored. The resolution of ``use_direct_from_res`` should use the units of the first configured grid of this cache.
+
+
+Example ``caches`` configuration
+""""""""""""""""""""""""""""""""
+::
+
+ caches:
+  simple:
+    source: [mysource]
+    grids: [mygrid]
+  fullexample:
+    source: [mysource, mysecondsource]
+    grids: [mygrid, mygrid2]
+    watermark:
+      text: MapProxy
+    request_format: image/tiff
+    format: image/jpeg
+  
 
 
 .. #################################################################################
@@ -244,6 +272,10 @@ that MapProxy will shrink images.
 Example: Your MapProxy layer starts with 1km resolution. Requests with 3km
 resolution will get a result, requests with 5km will get a blank response.
 
+``base``
+""""""""
+
+With this option, you can base the grid on the options of another grid you already defined.
 
 Defining Resolutions
 """"""""""""""""""""
@@ -260,6 +292,24 @@ If you have ``max_res`` and ``res_factor``: The resolutions will be multiplied b
 
 If you have ``num_levels`` and ``res_factor``: The resolutions will be multiplied by ``res_factor`` for up to ``num_levels`` levels.
 
+
+Example ``grids`` configuration
+"""""""""""""""""""""""""""""""
+
+::
+
+  grids:
+    localgrid:
+      srs: EPSG:31467
+      bbox: [5,50,10,55]
+      bbox_srs: EPSG:4326
+      min_res: 10000
+      res_factor: sqrt2
+    localgrid2:
+      base: localgrid
+      srs: EPSG:25832
+      tile_size: [512, 512]
+      
 
 .. #################################################################################
 .. index:: sources

@@ -20,6 +20,8 @@ Use the ``-f`` option to specify the proxy configuration.
     mapproxy-seed -f etc/mapproxy.yaml etc/seed.yaml
 
 
+.. _seed_installation_label:
+
 Installation
 ^^^^^^^^^^^^
 
@@ -83,7 +85,7 @@ There are three different ways to describe the extend of the seed view.
  - a text file with one or more polygons in WKT format,
  - polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)
 
-.. note:: The last two variants have additional dependencies, see :ref:`Installation`.
+.. note:: The last two variants have additional dependencies, see :ref:`seed_installation_label`.
 
 Bounding box
 """"""""""""
