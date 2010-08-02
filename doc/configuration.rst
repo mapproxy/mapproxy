@@ -142,6 +142,10 @@ With ``param`` you can set the parameters of the data-source and cache.
     This is suited for free zooming in vector-based layers where the results might look to
     blurry/pixelated in some resolutions.
         
+``concurrent_requests``
+  This limits the number of parallel requests MapProxy will issue to the source server. It
+  even works across multiple WMS sources as long as all have the same
+  ``concurrent_requests`` and ``req.url`` parameter.
 
 sources
 """""""
@@ -190,20 +194,21 @@ The ``cache_wms`` source passes requests to a WMS server and caches all data for
 ``wms_opts``
     This option affects what request the proxy sends to the source WMS server.
     
-    ``version`` is the WMS version number used for requests (supported: 1.0.0, 1.1.1, 1.3.0).
-    If ``featureinfo`` is true, MapProxy will mark the layer as queryable and incoming
-    `GetFeatureInfo` requests will be forwarded to the source server.
+    ``version`` is the WMS version number used for requests (supported: 1.0.0, 1.1.1,
+    1.3.0). If ``featureinfo`` is true, MapProxy will mark the layer as queryable and
+    incoming `GetFeatureInfo` requests will be forwarded to the source server.
+
 
 .. _supported_srs-label:
 
 ``supported_srs``
-    A list with SRSs that the WMS source supports. If the layer caches data in an SRS that the source does not
-    provide, MapProxy will use one of the configured `supported_srs` to request images and will then transform
-    the result back to the cache SRS.
+    A list with SRSs that the WMS source supports. If the layer caches data in an SRS that
+    the source does not provide, MapProxy will use one of the configured `supported_srs`
+    to request images and will then transform the result back to the cache SRS.
     
-    If you have multiple `supported_srs`, MapProxy will use the fist projected SRS for requests in projected
-    SRS, and vice versa for geographic SRS. E.g when `supported_srs` is ``['EPSG:4326', 'EPSG:31467']`` caches
-    for EPSG:900913 will use EPSG:32467.
+    If you have multiple `supported_srs`, MapProxy will use the fist projected SRS for
+    requests in projected SRS, and vice versa for geographic SRS. E.g when `supported_srs`
+    is ``['EPSG:4326', 'EPSG:31467']`` caches for EPSG:900913 will use EPSG:32467.
     
   ..  .. note:: For the configuration of SRS for MapProxy see `srs_configuration`_.
 
