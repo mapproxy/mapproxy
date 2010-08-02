@@ -1,3 +1,10 @@
+0.8.4 2010-08-01
+
+- Extra newline at the end of all templates. Some deployment setups
+  removed the last characters.
+- Improved PNG performance with PIL fastpng branch.
+- New concurrent_requests option to limit requests for each source WMS server.
+
 0.8.3 2010-06-01
 
 - Some bug fixes regarding feature info
