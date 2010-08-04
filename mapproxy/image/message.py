@@ -15,10 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import Image
-import ImageColor
-import ImageDraw
-import ImageFont
+
+from mapproxy.platform.image import Image, ImageColor, ImageDraw, ImageFont
 from mapproxy.image import ImageSource
 
 _pil_ttf_support = True

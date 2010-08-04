@@ -51,7 +51,7 @@ setup(
     },
     package_data = {'': ['*.xml', '*.yaml', '*.ttf']},
     install_requires=[
-        'PIL>=1.1.6,<1.1.99',
+        #'PIL>=1.1.6,<1.1.99',
         'PyYAML>=3.0,<3.99',
         'flup>1.0.2,<1.0.99',
         'setuptools>=0.6c9',
