@@ -32,14 +32,14 @@ from mapproxy.util.lib import load_library
 import os
 import ctypes
 from ctypes import (
-    c_void_p,
-    c_char_p,
-    c_int,
-    c_double,
-    c_long,
-    POINTER,
-    create_string_buffer,
-    addressof,
+   c_void_p,
+   c_char_p,
+   c_int,
+   c_double,
+   c_long,
+   POINTER,
+   create_string_buffer,
+   addressof,
 )
 
 import logging
@@ -175,7 +175,7 @@ else:
                 self._proj = None
 
 
-    def transform(from_srs, to_srs, x, y, z=None):
+    def transform(from_srs, to_srs, x, y, z=None):        
         if from_srs == to_srs:
             return (x, y) if z is None else (x, y, z)
     
@@ -213,7 +213,7 @@ else:
     
         return (x, y) if z is None else (x, y, z)
 
-    def set_datapath(path):
+    def set_datapath(path):        
         global _finder_callback_set
         if not _finder_callback_set:
             libproj.pj_set_finder(finder_func)

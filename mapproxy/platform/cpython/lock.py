@@ -22,13 +22,15 @@ import time
 import os
 import errno
 import random
-from mapproxy.util.ext import lockfile
+
+from mapproxy.util.ext.lockfile import LockFile, LockError
 
 import logging
 log = logging.getLogger(__name__)
 
 class LockTimeout(Exception):
     pass
+
 
 class FileLock(object):
     def __init__(self, lock_file, timeout=60.0, step=0.01):
@@ -52,7 +54,7 @@ class FileLock(object):
                     raise e
     
     def _try_lock(self):
-        return lockfile.LockFile(self.lock_file)
+        return LockFile(self.lock_file)
     
     def lock(self):
         self._make_lockdir()
@@ -62,7 +64,7 @@ class FileLock(object):
         while not self._locked:
             try:
                 self._lock = self._try_lock()
-            except lockfile.LockError, e:
+            except LockError, e:
                 current_time = time.time()
                 if current_time < stop_time:
                     time.sleep(self.step)
@@ -101,22 +103,3 @@ def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300):
                 raise e
 
 
-class SemLock(FileLock):
-    """
-    File-lock-based counting semaphore (i.e. this lock can be locked n-times).
-    """
-    def __init__(self, lock_file, n, timeout=60.0, step=0.01):
-        FileLock.__init__(self, lock_file, timeout=timeout, step=step)
-        self.n = n
-    
-    def _try_lock(self):
-        tries = 0
-        i = random.randint(0, self.n-1)
-        while True:
-            tries += 1
-            try:
-                return lockfile.LockFile(self.lock_file + str(i))
-            except lockfile.LockError, e:
-                if tries >= self.n:
-                    raise
-            i = (i+1) % self.n

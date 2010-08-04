@@ -7,7 +7,7 @@ import shutil
 import tempfile
 
 from StringIO import StringIO
-import Image
+from mapproxy.platform.image import Image
 
 from mapproxy.layer import (
     CacheMapLayer,
