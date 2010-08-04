@@ -60,7 +60,7 @@ class TileManager(object):
         self.sources = sources
         self._expire_timestamp = None
         self.transparent = self.sources[0].transparent
-        self.thread_pool_size = base_config().tile_creator_pool_size
+        self.thread_pool_size = base_config().cache.concurrent_tile_creators
         
         if meta_buffer is not None and meta_size:
             if all(source.supports_meta_tiles for source in sources):

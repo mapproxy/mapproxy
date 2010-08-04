@@ -2,10 +2,12 @@ Seeding
 =======
 
 The MapProxy creates all tiles on demand. To improve the performance for commonly
-requested views it is possible to pre-generate these tiles. The ``mapproxy-seed`` script does
-this task.
+requested views it is possible to pre-generate these tiles. The ``mapproxy-seed`` script does this task.
 
-.. note:: ``mapproxy-seed`` is a new version of the seed tool. The old ``proxy_seed`` tool is deprecated and will be removed in 0.9.0. The configuration is upward compatible.
+The tool can seed one or more polygon or BBOX areas for each cached layer.
+
+MapProxy does not seed the image pyramid level by level, but traverses the pyramid depth-first, from bottom to top. This is optimized to work `with` the caches of your operating system and geospatial database, and not against.
+
 
 mapproxy-seed
 -------------
@@ -15,8 +17,10 @@ The command line script expects a seed configuration that describes which tiles 
 Use the ``-f`` option to specify the proxy configuration.
 ::
 
-    mapproxy-seed -f etc/proxy.yaml etc/seed.yaml
+    mapproxy-seed -f etc/mapproxy.yaml etc/seed.yaml
 
+
+.. _seed_installation_label:
 
 Installation
 ^^^^^^^^^^^^
@@ -37,7 +41,7 @@ Configuration
 --------------
 
 The configuration contains two keys: ``views`` and ``seeds``. ``views`` describes
-geographical extends that should be seeded. ``seeds`` links actual layers with
+the geographical extends that should be seeded. ``seeds`` links actual layers with
 those ``views``.
 
 
@@ -81,7 +85,7 @@ There are three different ways to describe the extend of the seed view.
  - a text file with one or more polygons in WKT format,
  - polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)
 
-.. note:: The last two variants have additional dependencies, see :ref:`Installation`.
+.. note:: The last two variants have additional dependencies, see :ref:`seed_installation_label`.
 
 Bounding box
 """"""""""""
@@ -139,17 +143,35 @@ or
     A number until which this layer is cached, or a tuple with a range of
     levels that should be cached.
 
-Example::
-    
-    views:
-        world: # cache whole layer from level 0 to 3
-            level: 3
-        germany: # seed a fixed bbox, from level 4 to 10
-            bbox:  [5.40731, 46.8447, 15.5072, 55.4314]
-            bbox_srs: EPSG:4326
-            level: (4, 10)
-        oldb: # seed around bbox until resolution of 4m/px
-            bbox: [904500, 7000800, 925700, 7020400]
-            bbox_srs: EPSG:900913
-            srs: ['EPSG:4326', 'EPSG:900913']
-            res: 4
+Example configuration
+^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  views:
+    germany:
+      ogr_datasource: 'shps/world_boundaries_m.shp'
+      ogr_where: 'CNTRY_NAME = "Germany"'
+      ogr_srs: 'EPSG:900913'
+      level: [0, 14]
+      srs: ['EPSG:900913', 'EPSG:4326']
+    switzerland:
+      polygons: 'polygons/SZ.txt'
+      polygons_srs: EPSG:900913
+      level: [0, 14]
+      srs: ['EPSG:900913']
+    austria:
+      bbox: [9.36, 46.33, 17.28, 49.09]
+      bbox_srs: EPSG:4326
+      level: [0, 14]
+      srs: ['EPSG:900913']
+
+  seeds:
+    osm:
+      views: ['germany', 'switzerland', 'austria']
+      remove_before:
+        time: '2010-02-20T16:00:00'
+    osm_roads:
+      views: ['germany']
+      remove_before:
+        days: 30

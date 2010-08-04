@@ -538,9 +538,7 @@ class ServiceConfiguration(ConfigurationBase):
     
     def wms_service(self, conf, context):
         md = conf.get('md', {})
-        tile_layers = None
-        if 'wmsc' in conf:
-            tile_layers = self.tile_layers(conf, context)
+        tile_layers = self.tile_layers(conf, context)
         attribution = conf.get('attribution')
         layers = odict()
         for layer_name, layer_conf in context.layers.iteritems():

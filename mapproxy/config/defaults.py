@@ -43,7 +43,7 @@ image = dict(
     paletted = True,
 )
 # number of concurrent requests to a tile source
-tile_creator_pool_size = 2
+
 
 services_conf = 'services.yaml'
 log_conf = 'log.ini'
@@ -52,6 +52,7 @@ cache = dict(
     base_dir = '../var/cache_data',
     lock_dir = '../tmp/tile_locks',
     max_tile_limit = 500,
+    concurrent_tile_creators = 2
 )
 
 grid = dict(

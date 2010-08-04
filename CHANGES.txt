@@ -1,4 +1,35 @@
-0.8.3dev
+0.9.0a1
+
+- new configuration format (merged proxy.yaml and service.yaml)
+- refactoring of the caching (sources and layers)
+- large refactoring of the package layout
+
+- pyproj dependency is not required when libproj is available
+- removed jinja dependency
+
+- more options to define tile grids (min_res, max_res, etc.)
+
+
+0.8.3 2010-06-01
+
+- Some bug fixes regarding feature info
+- The configured resolutions are sorted
+
+0.8.3rc2 2010-05-25
+
+- HTTPS support with certificate verification and HTTP Basic-
+  Authentication.
+- New `use_direct_from_level` and `use_direct_from_res` options to
+  disable caching for high resolutions.
+- New `cache_tiles` source for more flexible tile-based sources
+  Supports url templates like '/tiles?x=%(x)s&y=%(y)s&level=%(z)s'
+  and Quadkeys as used by Bing-Maps. (as suggested by Pascal)
+- You can limit the SRS of a source WMS with the `supported_srs`
+  option. MapProxy will reproject between cached/requested SRS and
+  the supported. This also works with direct layers, i.e. you can
+  reproject WMS on-the-fly.
+
+0.8.3rc1 2010-04-30
 
 - new improved seed tool
   

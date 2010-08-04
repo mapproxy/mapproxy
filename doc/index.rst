@@ -10,6 +10,7 @@ MapProxy Documentation
    install_windows
    configuration
    services
+   sources
    seed
    configuration_examples
    deployment
@@ -20,7 +21,7 @@ MapProxy Documentation
 Indices and tables
 ==================
 
-.. * :ref:`genindex`
+* :ref:`genindex`
 
 * :ref:`search`
 

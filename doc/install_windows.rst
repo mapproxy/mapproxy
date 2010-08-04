@@ -34,7 +34,7 @@ This might take some minutes.
 To check if the MapProxy was successfully installed you can directly call the `version` module. You should see the installed version number.
 ::
 
-    python -m mapproxy.core.version
+    python -m mapproxy.version
 
 
 Now continue with :ref:`Create a configuration <create_configuration>` from the installation documentation.

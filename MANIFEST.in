@@ -4,5 +4,7 @@ include README.txt
 include LICENSE.txt
 include CHANGES.txt
 
-recursive-include mapproxy *.*
+recursive-include mapproxy *
 recursive-exclude mapproxy *.pyc
+recursive-exclude mapproxy *.lck
+recursive-exclude mapproxy .DS_Store
