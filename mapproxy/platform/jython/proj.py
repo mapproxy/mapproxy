@@ -17,7 +17,7 @@ class Proj(object):
     
     def __init__(self, proj_def=None, init=None):
         if isinstance(init,basestring):
-            self._crs = CRS.decode(init)
+            self._crs = CRS.decode(init, True)
             self._srs_def = init
         elif isinstance(proj_def, basestring):
             self._crs = CRS.parseWKT(proj_def)    
@@ -27,27 +27,13 @@ class Proj(object):
                                 % (proj_def, init, libproj.pj_strerrno(errno)))        
             
     def is_latlong(self):
-        lat = str(self._crs.getCoordinateSystem().getAxis(0))
-        long = str(self._crs.getCoordinateSystem().getAxis(1))
-        print lat, long
-        if not lat.find('latitude') and not long.find('longitude'):
-            return False
-        else:
-            return True
+        axis1 = str(self._crs.getCoordinateSystem().getAxis(0)).lower()
+        return 'latitude' in axis1 or 'longitude' in axis1
     
     @property
     def _proj(self):
         #return str(CRS.lookupIdentifier(self._crs, True))
         return self._crs
-    
-    @property
-    def is_axis_order_ne(self):
-        axis_1 = str(self._crs.getCoordinateSystem().getAxis(0))
-        axis_2 = str(self._crs.getCoordinateSystem().getAxis(1))
-        if not axis_1.find('NORTH') and not long.find('EAST'):
-            return False
-        else:
-            return True
     
     @property
     def srs(self):
@@ -59,10 +45,7 @@ class Proj(object):
 def transform(from_srs, to_srs, x, y, z=None):
     if from_srs == to_srs:
         return (x, y) if z is None else(x, y, z)
-    if not from_srs.is_axis_order_ne:
-        temp = x
-        x = y
-        y = temp
+
     if isinstance(x, (float, int)):
         x = [x]
         y = [y]
@@ -84,11 +67,6 @@ def transform(from_srs, to_srs, x, y, z=None):
         x.append(transformed_coord_pairs[i])
         y.append(transformed_coord_pairs[i+1])
 
-    if not to_srs.is_axis_order_ne:
-        temp = x
-        x = y
-        y = temp
-            
     if len(x) == 1:
             x = x[0]
             y = y[0]

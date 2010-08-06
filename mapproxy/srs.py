@@ -243,8 +243,6 @@ class _SRS(object):
         >>> SRS(25831).is_axis_order_ne
         False
         """
-        if hasattr(self.proj, 'is_axis_order_ne'):
-            return self.proj.is_axis_order_ne()
         if self.srs_code in base_config().srs.axis_order_ne:
             return True
         if self.srs_code in base_config().srs.axis_order_en:
@@ -259,7 +257,7 @@ class _SRS(object):
         Returns `True` if the axis order is East then North
         (i.e. x/y or lon/lat).
         """
-        return not self.is_axis_order_en
+        return not self.is_axis_order_ne
     
     def __eq__(self, other):
         """
