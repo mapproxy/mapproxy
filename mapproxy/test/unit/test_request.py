@@ -23,7 +23,7 @@ from mapproxy.request.wms import (wms_request, WMSMapRequest, WMSMapRequestParam
 from mapproxy.exception import RequestError
 from mapproxy.request.wms.exception import (WMS111ExceptionHandler, WMSImageExceptionHandler,
                                      WMSBlankExceptionHandler)
-from mapproxy.test.http import make_wsgi_env
+from mapproxy.test.http import make_wsgi_env, assert_url_eq, assert_query_eq
 
 import pickle
 from nose.tools import eq_
@@ -40,7 +40,7 @@ class TestNoCaseMultiDict(object):
         assert nc_dict.get_all('crs') == ['EPSG:4326']
     
     def test_from_dict(self):
-        data = dict([('layers', 'foo,bar'), ('laYERs', 'baz'), ('crs', 'EPSG:4326')])
+        data = [('layers', 'foo,bar'), ('laYERs', 'baz'), ('crs', 'EPSG:4326')]
         nc_dict = NoCaseMultiDict(data)
         print nc_dict
         
@@ -317,8 +317,9 @@ class TestWMSMapRequestParams(object):
         assert list(self.m.layers) == ['bar', 'foo']
     def test_query_string(self):
         print self.m.query_string
-        assert self.m.query_string == 'layers=bar,foo&WIdth=100&bBOx=-90,-80,70.0,+80'\
-                                      '&format=image%2Fpng&srs=EPSG%3A0815&heIGHT=200'
+        assert_query_eq(self.m.query_string, 
+            'layers=bar,foo&WIdth=100&bBOx=-90,-80,70.0,+80'
+            '&format=image%2Fpng&srs=EPSG%3A0815&heIGHT=200')
     def test_get(self):
         assert self.m.get('LAYERS') == 'bar'
         assert self.m.get('width', type_func=int) == 100
@@ -362,11 +363,11 @@ def test_non_mime_format():
 
 def test_request_w_url():
     url = WMSMapRequest(url='http://localhost:8000/service?', param={'layers': 'foo,bar'}).complete_url
-    eq_(url, 'http://localhost:8000/service?layers=foo,bar&styles=&request=GetMap&service=WMS')
+    assert_url_eq(url, 'http://localhost:8000/service?layers=foo,bar&styles=&request=GetMap&service=WMS')
     url = WMSMapRequest(url='http://localhost:8000/service',  param={'layers': 'foo,bar'}).complete_url
-    eq_(url, 'http://localhost:8000/service?layers=foo,bar&styles=&request=GetMap&service=WMS')
+    assert_url_eq(url, 'http://localhost:8000/service?layers=foo,bar&styles=&request=GetMap&service=WMS')
     url = WMSMapRequest(url='http://localhost:8000/service?map=foo',  param={'layers': 'foo,bar'}).complete_url
-    eq_(url, 'http://localhost:8000/service?map=foo&layers=foo,bar&styles=&request=GetMap&service=WMS')
+    assert_url_eq(url, 'http://localhost:8000/service?map=foo&layers=foo,bar&styles=&request=GetMap&service=WMS')
 
 class TestWMSRequest(object):
     env = make_wsgi_env("""LAYERS=foo&FORMAT=image%2Fjpeg&SERVICE=WMS&VERSION=1.1.1&

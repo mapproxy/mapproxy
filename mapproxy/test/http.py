@@ -15,8 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import threading
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from urlparse import urlsplit
+from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
 from contextlib import contextmanager
+
+class HTTPServer(HTTPServer_):
+    allow_reuse_address = True
 
 class ThreadedStopableHTTPServer(threading.Thread):
     def __init__(self, address, requests_responses):
@@ -28,6 +32,8 @@ class ThreadedStopableHTTPServer(threading.Thread):
         while self.requests_responses:
             if self.shutdown: return
             self.httpd.handle_request()
+        # force socket close so next test can bind to same address
+        self.httpd.socket.close()
 
 def mock_http_handler(requests_responses):
     class MockHTTPHandler(BaseHTTPRequestHandler):
@@ -130,11 +136,22 @@ def query_to_dict(query):
         d[key.lower()] = value
     return d
 
+def assert_url_eq(url1, url2):
+    parts1 = urlsplit(url1)
+    parts2 = urlsplit(url2)
+    
+    assert parts1[0] == parts2[0], '%s != %s (%s)' % (url1, url2, 'schema')
+    assert parts1[1] == parts2[1], '%s != %s (%s)' % (url1, url2, 'location')
+    assert parts1[2] == parts2[2], '%s != %s (%s)' % (url1, url2, 'path')
+    assert query_eq(parts1[3], parts2[3]), '%s != %s (%s)' % (url1, url2, 'query')
+    assert parts1[4] == parts2[4], '%s != %s (%s)' % (url1, url2, 'fragment')
+
 @contextmanager
 def mock_httpd(address, requests_responses):
     t = ThreadedStopableHTTPServer(address, requests_responses)
     t.start()
     yield
+    t.join()
 
 def make_wsgi_env(query_string):
         env = {'QUERY_STRING': query_string,
