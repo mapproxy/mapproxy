@@ -19,7 +19,7 @@ import ctypes
 from ctypes import c_void_p, c_char_p, c_int
 
 def init_libgdal():
-    libgdal = load_library('libgdal')
+    libgdal = load_library(['libgdal', 'libgdal1'])
     
     if not libgdal: return
     
