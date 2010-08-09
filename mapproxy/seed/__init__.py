@@ -141,14 +141,16 @@ class ETA(object):
 
 
 class Seeder(object):
-    def __init__(self, tile_mgr, task, seed_pool):
+    def __init__(self, tile_mgr, task, seed_pool, skip_geoms_for_last_levels):
         self.tile_mgr = tile_mgr
         self.task = task
         self.seed_pool = seed_pool
+        self.skip_geoms_for_last_levels = skip_geoms_for_last_levels
         
         num_seed_levels = task.max_level - task.start_level + 1
         self.report_till_level = task.start_level + int(num_seed_levels * 0.7)
         self.grid = tile_mgr.meta_grid or MetaGrid(tile_mgr.grid, meta_size=(1, 1), meta_buffer=0)
+        self.grid.meta_buffer = 0
         self.progress = 0.0
         self.eta = ETA()
         self.count = 0
@@ -165,20 +167,19 @@ class Seeder(object):
                              intersections with bbox/geom
         """
         bbox_, tiles_, subtiles = self.grid.get_affected_level_tiles(cur_bbox, level)
-        subtiles = list(subtiles)
+        
+        if level == self.task.max_level-self.skip_geoms_for_last_levels:
+            # do not filter in last levels
+            all_subtiles = True
+        sub_seeds, total_sub_seeds = self._filter_subtiles(subtiles, all_subtiles)
+        
         if level <= self.report_till_level:
             self.report_progress(level, cur_bbox)
         
-        if level == self.task.max_level-1:
-            # do not filter in last levels
-            all_subtiles = True
-        
         if level < self.task.max_level:
-            sub_seeds = self._sub_seeds(subtiles, all_subtiles)
             if sub_seeds:
                 progress = progress / len(sub_seeds)
-                total_sub_seeds = len(sub_seeds)
-                for i, (sub_bbox, intersection) in enumerate(sub_seeds):
+                for i, (subtile_, sub_bbox, intersection) in enumerate(sub_seeds):
                     sub_bbox = limit_sub_bbox(cur_bbox, sub_bbox)
                     cur_progess_str = progess_str + status_symbol(i, total_sub_seeds)
                     all_subtiles = True if intersection == CONTAINS else False
@@ -189,19 +190,18 @@ class Seeder(object):
         
         self.eta.update(self.progress)
         
-        not_cached_tiles = self.not_cached(subtiles)
+        not_cached_tiles = self.not_cached(sub_seeds)
         if not_cached_tiles:
             self.count += len(not_cached_tiles)
             self.seed_pool.seed(not_cached_tiles,
                 (progess_str, self.progress, self.eta))
         
-        return subtiles
+        return sub_seeds
     
     def not_cached(self, tiles):
-        return [tile for tile in tiles
+        return [tile for tile, _bbox, _intersection in tiles
                     if tile is not None and
                         not self.tile_mgr.is_cached(tile)]
-
     
     def report_progress(self, level, bbox):
         print '[%s] %2s %6.2f%% %s (#%d) ETA: %s' % (
@@ -209,30 +209,34 @@ class Seeder(object):
             format_bbox(bbox), self.count, self.eta)
         sys.stdout.flush()
     
-    def _sub_seeds(self, subtiles, all_subtiles):
+    def _filter_subtiles(self, subtiles, all_subtiles):
         """
         Return all sub tiles that intersect the 
         """
         sub_seeds = []
+        total_sub_seeds = 0
         for subtile in subtiles:
+            total_sub_seeds += 1
             if subtile is None: continue
             sub_bbox = self.grid.meta_bbox(subtile)
             intersection = CONTAINS if all_subtiles else self.task.intersects(sub_bbox)
             if intersection:
-                sub_seeds.append((sub_bbox, intersection))
-        return sub_seeds
+                sub_seeds.append((subtile, sub_bbox, intersection))
+        return sub_seeds, total_sub_seeds
 
 
 class CacheSeeder(object):
     """
     Seed multiple caches with the same option set.
     """
-    def __init__(self, caches, remove_before, dry_run=False, concurrency=2):
+    def __init__(self, caches, remove_before, dry_run=False, concurrency=2,
+                 skip_geoms_for_last_levels=0):
         self.remove_before = remove_before
         self.dry_run = dry_run
         self.caches = caches
         self.concurrency = concurrency
         self.seeded_caches = []
+        self.skip_geoms_for_last_levels = skip_geoms_for_last_levels
     
     def seed_view(self, bbox, level, bbox_srs, cache_srs, geom=None):
         for srs, tile_mgr in self.caches.iteritems():
@@ -243,7 +247,7 @@ class CacheSeeder(object):
                     tile_mgr._expire_timestamp = self.remove_before
                 seed_pool = SeedPool(tile_mgr, dry_run=self.dry_run, size=self.concurrency)
                 seed_task = SeedTask(bbox, level, bbox_srs, srs, geom)
-                seeder = Seeder(tile_mgr, seed_task, seed_pool)
+                seeder = Seeder(tile_mgr, seed_task, seed_pool, self.skip_geoms_for_last_levels)
                 seeder.seed()
                 seed_pool.stop()
     
@@ -336,7 +340,7 @@ def status_symbol(i, total):
         return symbols[int(math.ceil(i/(total/4)))]
 
 def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=False,
-    concurrency=2):
+    concurrency=2, skip_geoms_for_last_levels=0):
     from mapproxy.config.loader import ProxyConfiguration
     
     if hasattr(conf_file, 'read'):
@@ -346,12 +350,13 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
             seed_conf = yaml.load(conf_file)
     
     #TODO
-    conf = ProxyConfiguration(yaml.load(open('etc/services.yaml')))
+    conf = ProxyConfiguration(yaml.load(open('etc/mapproxy.yaml')))
     for layer, options in seed_conf['seeds'].iteritems():
         remove_before = before_timestamp_from_options(options)
         caches = dict((grid.srs, tile_mgr) for grid, tile_mgr in conf.caches[layer].caches(conf))
         seeder = CacheSeeder(caches, remove_before=remove_before, dry_run=dry_run,
-                            concurrency=concurrency)
+                            concurrency=concurrency,
+                            skip_geoms_for_last_levels=skip_geoms_for_last_levels)
         for view in options['views']:
             view_conf = seed_conf['views'][view]
             if 'ogr_datasource' in view_conf:

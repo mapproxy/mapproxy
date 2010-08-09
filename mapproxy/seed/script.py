@@ -45,6 +45,11 @@ def main():
     parser.add_option("-n", "--dry-run",
                       action="store_true", dest="dry_run", default=False,
                       help="do not seed, just print output")    
+    parser.add_option("-l", "--skip-geoms-for-last-levels",
+                      type="int", dest="geom_levels", default=0,
+                      metavar="N",
+                      help="do not check for intersections between tiles"
+                           " and seed geometries on the last N levels")
     
     (options, args) = parser.parse_args()
     if len(args) != 1:
@@ -57,7 +62,8 @@ def main():
     set_service_config(options.services_file)
     
     seed_from_yaml_conf(args[0], verbose=options.verbose,
-                        dry_run=options.dry_run, concurrency=options.concurrency)
+                        dry_run=options.dry_run, concurrency=options.concurrency,
+                        skip_geoms_for_last_levels=options.geom_levels)
 
 if __name__ == '__main__':
     main()
