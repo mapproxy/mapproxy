@@ -135,7 +135,7 @@ class TileManager(object):
         return created_tiles
 
     def _create_single_tiles(self, tiles):
-        if self.thread_pool_size and len(tiles) > 1:
+        if self.thread_pool_size > 1 and len(tiles) > 1:
             return self._create_threaded(self._create_single_tile, tiles)
         
         created_tiles = []
@@ -178,7 +178,7 @@ class TileManager(object):
         
     
     def _create_meta_tiles(self, meta_tiles):
-        if self.thread_pool_size and len(meta_tiles) > 1:
+        if self.thread_pool_size > 1 and len(meta_tiles) > 1:
             args = []
             for tile, meta_bbox in meta_tiles:
                 tiles = list(self.meta_grid.tiles(tile.coord))
