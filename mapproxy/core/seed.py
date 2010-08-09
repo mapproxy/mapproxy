@@ -165,20 +165,19 @@ class Seeder(object):
                              intersections with bbox/geom
         """
         bbox_, tiles_, subtiles = self.grid.get_affected_level_tiles(cur_bbox, level)
-        subtiles = list(subtiles)
-        if level <= self.report_till_level:
-            self.report_progress(level, cur_bbox)
-        
+
         if level == self.task.max_level-self.skip_geoms_for_last_levels:
             # do not filter in last levels
             all_subtiles = True
+        sub_seeds, total_sub_seeds = self._filter_subtiles(subtiles, all_subtiles)
+        
+        if level <= self.report_till_level:
+            self.report_progress(level, cur_bbox)
         
         if level < self.task.max_level:
-            sub_seeds = self._sub_seeds(subtiles, all_subtiles)
             if sub_seeds:
                 progress = progress / len(sub_seeds)
-                total_sub_seeds = len(sub_seeds)
-                for i, (sub_bbox, intersection) in enumerate(sub_seeds):
+                for i, (subtile_, sub_bbox, intersection) in enumerate(sub_seeds):
                     sub_bbox = limit_sub_bbox(cur_bbox, sub_bbox)
                     cur_progess_str = progess_str + status_symbol(i, total_sub_seeds)
                     all_subtiles = True if intersection == CONTAINS else False
@@ -189,19 +188,18 @@ class Seeder(object):
         
         self.eta.update(self.progress)
         
-        not_cached_tiles = self.not_cached(subtiles)
+        not_cached_tiles = self.not_cached(sub_seeds)
         if not_cached_tiles:
             self.count += len(not_cached_tiles)
             self.seed_pool.seed(not_cached_tiles,
                 (progess_str, self.progress, self.eta))
         
-        return subtiles
+        return sub_seeds
     
     def not_cached(self, tiles):
-        return [tile for tile in tiles
+        return [tile for tile, _bbox, _intersection in tiles
                     if tile is not None and
                         not self.cache.cache_mgr.is_cached(tile)]
-
     
     def report_progress(self, level, bbox):
         print '[%s] %2s %6.2f%% %s (#%d) ETA: %s' % (
@@ -209,18 +207,21 @@ class Seeder(object):
             format_bbox(bbox), self.count, self.eta)
         sys.stdout.flush()
     
-    def _sub_seeds(self, subtiles, all_subtiles):
+    def _filter_subtiles(self, subtiles, all_subtiles):
         """
         Return all sub tiles that intersect the 
         """
         sub_seeds = []
+        total_sub_seeds = 0
         for subtile in subtiles:
+            total_sub_seeds += 1
             if subtile is None: continue
             sub_bbox = self.grid.meta_bbox(subtile)
             intersection = CONTAINS if all_subtiles else self.task.intersects(sub_bbox)
             if intersection:
-                sub_seeds.append((sub_bbox, intersection))
-        return sub_seeds
+                sub_seeds.append((subtile, sub_bbox, intersection))
+        return sub_seeds, total_sub_seeds
+    
 
 
 class CacheSeeder(object):
