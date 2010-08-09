@@ -140,10 +140,11 @@ class ETA(object):
 
 
 class Seeder(object):
-    def __init__(self, cache, task, seed_pool):
+    def __init__(self, cache, task, seed_pool, skip_geoms_for_last_levels):
         self.cache = cache
         self.task = task
         self.seed_pool = seed_pool
+        self.skip_geoms_for_last_levels = skip_geoms_for_last_levels
         
         num_seed_levels = task.max_level - task.start_level + 1
         self.report_till_level = task.start_level + int(num_seed_levels * 0.7)
@@ -168,7 +169,7 @@ class Seeder(object):
         if level <= self.report_till_level:
             self.report_progress(level, cur_bbox)
         
-        if level == self.task.max_level-1:
+        if level == self.task.max_level-self.skip_geoms_for_last_levels:
             # do not filter in last levels
             all_subtiles = True
         
@@ -226,12 +227,14 @@ class CacheSeeder(object):
     """
     Seed multiple caches with the same option set.
     """
-    def __init__(self, caches, remove_before, dry_run=False, concurrency=2):
+    def __init__(self, caches, remove_before, dry_run=False, concurrency=2,
+                 skip_geoms_for_last_levels=0):
         self.remove_before = remove_before
         self.dry_run = dry_run
         self.caches = caches
         self.concurrency = concurrency
         self.seeded_caches = []
+        self.skip_geoms_for_last_levels = skip_geoms_for_last_levels
     
     def seed_view(self, bbox, level, srs, cache_srs, geom=None):
         for cache in self.caches:
@@ -242,7 +245,7 @@ class CacheSeeder(object):
                     cache.cache_mgr._expire_timestamp = self.remove_before
                 seed_pool = SeedPool(cache, dry_run=self.dry_run, size=self.concurrency)
                 seed_task = SeedTask(bbox, level, srs, cache.grid.srs, geom)
-                seeder = Seeder(cache, seed_task, seed_pool)
+                seeder = Seeder(cache, seed_task, seed_pool, self.skip_geoms_for_last_levels)
                 seeder.seed()
                 seed_pool.stop()
     
@@ -334,8 +337,8 @@ def status_symbol(i, total):
     else:
         return symbols[int(math.ceil(i/(total/4)))]
 
-def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=False,
-    concurrency=2):
+def seed_from_yaml_conf(conf_file, verbose=True, dry_run=False,
+    concurrency=2, skip_geoms_for_last_levels=0):
     from mapproxy.core.conf_loader import load_services
     
     if hasattr(conf_file, 'read'):
@@ -356,7 +359,8 @@ def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=F
         remove_before = before_timestamp_from_options(options)
         caches = caches_from_layer(server.layers[layer])
         seeder = CacheSeeder(caches, remove_before=remove_before, dry_run=dry_run,
-                            concurrency=concurrency)
+                            concurrency=concurrency,
+                            skip_geoms_for_last_levels=skip_geoms_for_last_levels)
         for view in options['views']:
             view_conf = seed_conf['views'][view]
             if 'ogr_datasource' in view_conf:
