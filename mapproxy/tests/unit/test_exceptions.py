@@ -62,7 +62,7 @@ class TestWMS111ExceptionHandler(Mocker):
     <ServiceException>the exception message</ServiceException>
 </ServiceExceptionReport>
 """
-        assert expected_resp.strip() == response.data
+        assert expected_resp.strip() == response.data.strip()
         assert validate_with_dtd(response.data, 'wms/1.1.1/exception_1_1_1.dtd')
     def test_render_w_code(self):
         req = self.mock(WMSMapRequest)
@@ -81,7 +81,7 @@ class TestWMS111ExceptionHandler(Mocker):
     <ServiceException code="InvalidFormat">the exception message</ServiceException>
 </ServiceExceptionReport>
 """
-        assert expected_resp.strip() == response.data
+        assert expected_resp.strip() == response.data.strip()
         assert validate_with_dtd(response.data, 'wms/1.1.1/exception_1_1_1.dtd')
 
 class TestWMS130ExceptionHandler(Mocker):
@@ -104,7 +104,7 @@ http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd">
     <ServiceException>the exception message</ServiceException>
 </ServiceExceptionReport>
 """
-        assert expected_resp.strip() == response.data
+        assert expected_resp.strip() == response.data.strip()
         assert validate_with_xsd(response.data, 'wms/1.3.0/exceptions_1_3_0.xsd')
     def test_render_w_code(self):
         req = self.mock(WMSMapRequest)
@@ -126,7 +126,7 @@ http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd">
     <ServiceException code="InvalidFormat">the exception message</ServiceException>
 </ServiceExceptionReport>
 """
-        assert expected_resp.strip() == response.data
+        assert expected_resp.strip() == response.data.strip()
         assert validate_with_xsd(response.data, 'wms/1.3.0/exceptions_1_3_0.xsd')
 
 class TestWMS100ExceptionHandler(Mocker):
@@ -146,7 +146,7 @@ class TestWMS100ExceptionHandler(Mocker):
 the exception message
 </WMTException>
 """
-        assert expected_resp.strip() == response.data
+        assert expected_resp.strip() == response.data.strip()
 
 class TestWMSImageExceptionHandler(ExceptionHandlerTest):
     def test_exception(self):
