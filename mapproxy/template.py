@@ -19,7 +19,7 @@ Loading of template files (e.g. capability documents)
 """
 
 import os
-from tempita import Template, bunch
+from mapproxy.util.ext.tempita import Template, bunch
 
 __all__ = ['Template', 'bunch', 'template_loader']
 
