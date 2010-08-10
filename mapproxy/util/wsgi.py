@@ -14,18 +14,29 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pkg_resources
+"""
+WSGI utils
+"""
 
-def version_string():
+def lighttpd_root_fix_filter_factory(global_conf):
+    return LighttpdCGIRootFix
+
+class LighttpdCGIRootFix(object):
+    """Wrap the application in this middleware if you are using lighttpd
+    with FastCGI or CGI and the application is mounted on the URL root.
+
+    :param app: the WSGI application
     """
-    Return the current version number of MapProxy.
-    """
-    try:
-        return pkg_resources.working_set.by_key['mapproxy'].version
-    except KeyError:
-        return 'unknown_version'
 
-__version__ = version = version_string()
+    def __init__(self, app):
+        self.app = app
 
-if __name__ == '__main__':
-    print __version__
+    def __call__(self, environ, start_response):
+        script_name = environ.get('SCRIPT_NAME', '')
+        path_info = environ.get('PATH_INFO', '')
+        if path_info == script_name:
+            environ['PATH_INFO'] = path_info
+        else:
+            environ['PATH_INFO'] = script_name + path_info
+        environ['SCRIPT_NAME'] = ''
+        return self.app(environ, start_response)

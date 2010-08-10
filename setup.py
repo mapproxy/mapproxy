@@ -48,6 +48,9 @@ setup(
         'paste.paster_create_template': [
             'mapproxy_conf=mapproxy.paster_template:ConfigurationTemplate'
         ],
+        'paste.filter_factory': [
+            'lighttpd_root_fix = mapproxy.util.wsgi:lighttpd_root_fix_filter_factory',
+        ],
     },
     package_data = {'': ['*.xml', '*.yaml', '*.ttf']},
     install_requires=[
