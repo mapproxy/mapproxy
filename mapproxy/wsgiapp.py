@@ -21,7 +21,6 @@ from __future__ import with_statement
 import re
 import os
 import sys
-import threading
 
 from mapproxy.request import Request
 from mapproxy.response import Response

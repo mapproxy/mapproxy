@@ -20,10 +20,8 @@ Configuration loading and system initializing.
 from __future__ import with_statement, division
 
 import os
-import math
 import hashlib
 import yaml #pylint: disable=F0401
-import pkg_resources
 
 import logging
 log = logging.getLogger(__name__)
@@ -66,7 +64,7 @@ del load_tile_filters
 
 
 import mapproxy.config
-from mapproxy.grid import TileGrid, tile_grid
+from mapproxy.grid import tile_grid
 from mapproxy.request.base import split_mime_type
 from mapproxy.request.wms import create_request
 from mapproxy.layer import (
