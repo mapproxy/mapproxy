@@ -56,7 +56,6 @@ setup(
     install_requires=[
         'PIL>=1.1.6,<1.1.99',
         'PyYAML>=3.0,<3.99',
-        'flup>1.0.2,<1.0.99',
         'setuptools>=0.6c9',
         'Paste>=1.7.2,<1.7.99',
         'PasteDeploy>=1.3.3,<1.3.99',

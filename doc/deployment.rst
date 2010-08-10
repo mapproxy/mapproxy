@@ -7,13 +7,13 @@ The WSGI standard allows to choose between a wide range of servers and server in
 
 MapProxy uses ``paster serve``, a tool included as a dependency, to start these servers with a configured MapProxy application.
 
-Paster needs a configuration where the application (MapProxy in this case) and the server is defined. The ``etc/`` directory created with ``paster create`` (see :doc:`install`) already contains two example configurations.
+Paster needs a configuration where the application (MapProxy in this case) and the server are defined. The ``etc/`` directory created with ``paster create`` (see :doc:`install`) already contains two example configurations.
 Both configurations define MapProxy as the WSGI application to start and setup some configuration options.
 
 Testing
 -------
 
-The ``develop.ini`` uses the Paster HTTP Server as the WSGI server. This server already implements HTTP so you can directly access the MapProxy with your GIS client on port 8080.
+The ``develop.ini`` uses the Paster HTTP Server as the WSGI server. This server already implements HTTP so you can directly access the MapProxy with your Web or GIS client on port 8080.
 
 With the ``--reload`` option of ``paster serve`` MapProxy will take notice when you change any configuration and will reload these files.
 
@@ -26,6 +26,9 @@ Production
 FastCGI is language-independent and implemented by most popular web servers like Apache, Lighttpd or Nginx. The applications run isolated from the web server. In this case you do not start MapProxy as an HTTP server but as a FastCGI server.
 
 The example paster configuration ``config.ini`` does this. By default the configured server listens on a socket file (``var/fcgi-socket``) to which you should point your web server. But you can also use TCP/IP with the ``host`` and ``port`` option.
+
+.. note:: You need to install `flup <http://pypi.python.org/pypi/flup/>`_ to run MapProxy as a FastCGI server:
+          ``pip install flup``
 
 To start MapProxy as a FastCGI server::
 
