@@ -1,0 +1,42 @@
+MapProxy is copyrighted by Omniscale, Germany <http://omniscale.com>.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program (LICENSE.txt). If not, see
+<http://www.gnu.org/licenses/>.
+
+
+For the following parts the copyright is held by third parties and the license terms
+differ.
+
+mapproxy/image/fonts/*.ttf
+--------------------------
+Fonts are (c) Bitstream (see below). DejaVu changes are in public domain.
+Glyphs imported from Arev fonts are (c) Tavmjong Bah (see below)
+
+See mapproxy/image/fonts/LICENSE
+
+mapproxy/util/ext/odict.py
+--------------------------
+(c) 2008 by Armin Ronacher and PEP 273 authors.
+Modified "3-clause" BSD license.
+
+mapproxy/util/ext/tempita/*.py
+------------------------------
+(c) 2009 by Ian Bicking.
+MIT license.
+
+mapproxy/util/ext/lockfile.py
+-----------------------------
+Copyright (c) 2001, 2002 Zope Corporation and Contributors.
+Zope Public License (ZPL) Version 2.1
+See file header.
