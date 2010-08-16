@@ -81,6 +81,7 @@ If MapProxy needs to reproject and the source has multiple ``supported_srs``, th
 
 Use this option to specify which image formats you source WMS supports. MapProxy only requests images in one of these formats, and will convert any image if it needs another format. If you do not supply this options, MapProxy assumes that the source supports all formats.
 
+.. _wms_source_concurrent_requests_label:
 
 ``concurrent_requests``
 ^^^^^^^^^^^^^^^^^^^^^^^
