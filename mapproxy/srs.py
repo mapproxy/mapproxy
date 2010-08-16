@@ -240,8 +240,16 @@ class _SRS(object):
         True
         >>> SRS(4326) == SRS(900913)
         False
+        >>> SRS(3857) == SRS(900913)
+        True
+        >>> SRS(900913) == SRS(3857)
+        True
+
         """
         if isinstance(other, _SRS):
+            if (self.srs_code in ('EPSG:900913', 'EPSG:3857')
+                and other.srs_code in ('EPSG:900913', 'EPSG:3857')):
+                return True
             return self.proj.srs == other.proj.srs
         else:
             return NotImplemented
