@@ -145,6 +145,10 @@ class ImageSource(object):
                 except:
                     pass
                 raise
+        
+        if self.transparent and self.source.mode == 'P':
+            self.source = self.source.convert('RGBA')
+        
         return self.source
     def as_buffer(self, format=None, paletted=None):
         """
