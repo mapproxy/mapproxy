@@ -178,7 +178,10 @@ class Request(object):
     
     @cached_property
     def args(self):
-        return url_decode(self.environ['QUERY_STRING'], self.charset)
+        if self.environ['QUERY_STRING']:
+            return url_decode(self.environ['QUERY_STRING'], self.charset)
+        else:
+            return {}
     
     @cached_property
     def path(self):

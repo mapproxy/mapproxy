@@ -39,10 +39,16 @@ class TileRequest(object):
             (?P<y>-?\d+)\.(?P<format>\w+)''', re.VERBOSE)
     use_profiles = False
     req_prefix = '/tiles'
+    origin = 'sw'
     
     def __init__(self, request):
         self.request = request
         self._init_request()
+        
+        self.origin = self.request.args.get('origin', 'sw')
+        if self.origin not in ('sw', 'nw'):
+            self.origin = 'sw'
+        
     
     def _init_request(self):
         """
