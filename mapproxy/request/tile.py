@@ -44,7 +44,7 @@ class TileRequest(object):
     def __init__(self, request):
         self.http = request
         self._init_request()
-        self.origin = self.request.args.get('origin', 'sw')
+        self.origin = self.http.args.get('origin', 'sw')
         if self.origin not in ('sw', 'nw'):
             self.origin = 'sw'
     
