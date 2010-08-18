@@ -436,7 +436,8 @@ SRS=EPSG%3A4326&BBOX=8,4,9,5&WIDTH=984&HEIGHT=708""".replace('\n', ''))
 class TestTileRequest(object):
     def test_tms_request(self):
         env = {
-            'PATH_INFO': '/tms/1.0.0/osm/5/2/3.png'
+            'PATH_INFO': '/tms/1.0.0/osm/5/2/3.png',
+            'QUERY_STRING': '',
         }
         req = Request(env)
         tms = tile_request(req)
@@ -447,18 +448,34 @@ class TestTileRequest(object):
 
     def test_tile_request(self):
         env = {
-            'PATH_INFO': '/tiles/1.0.0/osm/5/2/3.png'
+            'PATH_INFO': '/tiles/1.0.0/osm/5/2/3.png',
+            'QUERY_STRING': '',
         }
         req = Request(env)
         tile_req = tile_request(req)
         assert isinstance(tile_req, TileRequest)
         eq_(tile_req.tile, (2, 3, 5))
+        eq_(tile_req.origin, 'sw')
         eq_(tile_req.format, 'png')
         eq_(tile_req.layer, 'osm')
-        
+
+    def test_tile_request_flipped_y(self):
+        env = {
+            'PATH_INFO': '/tiles/1.0.0/osm/5/2/3.png',
+            'QUERY_STRING': 'origin=nw',
+        }
+        req = Request(env)
+        tile_req = tile_request(req)
+        assert isinstance(tile_req, TileRequest)
+        eq_(tile_req.tile, (2, 3, 5)) # not jet flipped
+        eq_(tile_req.origin, 'nw')
+        eq_(tile_req.format, 'png')
+        eq_(tile_req.layer, 'osm')
+
     def test_tile_request_w_epsg(self):
         env = {
-            'PATH_INFO': '/tiles/1.0.0/osm/EPSG4326/5/2/3.png'
+            'PATH_INFO': '/tiles/1.0.0/osm/EPSG4326/5/2/3.png',
+            'QUERY_STRING': '',
         }
         req = Request(env)
         tile_req = tile_request(req)

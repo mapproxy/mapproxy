@@ -185,7 +185,13 @@ class TestTileService(object):
         resp = self.app.get('/tiles/wms_cache/1/0/1.jpeg')
         self._check_cache_control_headers(resp, etag, max_age)
         self._check_tile_resp(resp)
-        
+    
+    def test_get_cached_tile_flipped_y(self):
+        etag, max_age = self._update_timestamp()
+        resp = self.app.get('/tiles/wms_cache/1/0/0.jpeg?origin=nw')
+        self._check_cache_control_headers(resp, etag, max_age)
+        self._check_tile_resp(resp)
+    
     def test_if_none_match(self):
         etag, max_age = self._update_timestamp()
         resp = self.app.get('/tiles/wms_cache/1/0/1.jpeg',
