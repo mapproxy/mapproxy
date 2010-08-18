@@ -172,8 +172,11 @@ class _SRS(object):
         
         At the moment only EPSG:4326 bbox will be modifyed.
         
-        >>> SRS(4326).align_bbox((-180, -90, 180, 90))
-        (-180, -89.999999990000006, 180, 89.999999990000006)
+        >>> bbox = SRS(4326).align_bbox((-180, -90, 180, 90))
+        >>> -90 < bbox[1] < -89.99999998
+        True
+        >>> 90 > bbox[3] > 89.99999998
+        True
         """
         if self.srs_code == 'EPSG:4326':
             delta = 0.00000001
