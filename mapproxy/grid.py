@@ -390,7 +390,7 @@ class TileGrid(object):
         res = get_resolution(src_bbox, size)
         level = self.closest_level(res)
         
-        if res > self.resolutions[level]*self.max_shrink_factor:
+        if res > self.resolutions[0]*self.max_shrink_factor:
             raise NoTiles()
         
         return src_bbox, level
