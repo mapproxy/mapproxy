@@ -600,10 +600,10 @@ class MetaGrid(object):
         
         if self.meta_buffer > 0:
             res = self.grid.resolution(z)
-            minx -= self.meta_buffer * res
-            miny -= self.meta_buffer * res
-            maxx += self.meta_buffer * res
-            maxy += self.meta_buffer * res
+            minx = max(minx, minx - self.meta_buffer * res)
+            miny = max(miny, miny - self.meta_buffer * res)
+            maxx = min(maxx, maxx + self.meta_buffer * res)
+            maxy = min(maxy, maxy + self.meta_buffer * res)
         
         return (minx, miny, maxx, maxy)
         
