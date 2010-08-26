@@ -14,10 +14,30 @@ mapproxy-seed
 
 The command line script expects a seed configuration that describes which tiles from which layer should be generated. See `configuration`_ for the format of the file.
 
-Use the ``-f`` option to specify the proxy configuration.
-::
 
-    mapproxy-seed -f etc/mapproxy.yaml etc/seed.yaml
+Options
+^^^^^^^
+
+.. option:: -f <mapproxy.yaml>
+  
+  The MapProxy configuration to use.
+  
+.. option:: -c N, --concurrency N
+  
+  The number of concurrent seed worker. Some parts of the seed tool are CPU intensive
+  (image splitting and encoding), use this option to distribute that load across multiple
+  CPUs. To limit the concurrent requests to the source WMS see
+  :ref:`wms_source_concurrent_requests_label`
+
+.. option:: -n, --dry-run
+  
+  Run the seed tool without requesting, creating or removing any tiles.
+
+
+
+Example::
+
+    mapproxy-seed -f etc/mapproxy.yaml -c 4 etc/seed.yaml
 
 
 .. _seed_installation_label:
@@ -120,7 +140,7 @@ OGR datasource
 
 ``ogr_where``:
   Restrict which polygons should be loaded from the datasource. Either a simple where
-  statement (e.g. 'CNTRY_NAME="Germany"') or a full select statement. Refer to the
+  statement (e.g. ``'CNTRY_NAME="Germany"'``) or a full select statement. Refer to the
   `OGR SQL support documentation <http://www.gdal.org/ogr/ogr_sql.html>`_. If this
   option is unset, the first layer from the datasource will be used.
 

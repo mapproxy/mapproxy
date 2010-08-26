@@ -69,6 +69,10 @@ default_bboxs = {
                   -20037508.342789244,
                    20037508.342789244,
                    20037508.342789244),
+    SRS(3857): (-20037508.342789244,
+                -20037508.342789244,
+                 20037508.342789244,
+                 20037508.342789244),
     SRS(4326): (-180, -90, 180, 90),
 }
 
@@ -294,12 +298,12 @@ class TileGrid(object):
         :param level: the zoom level index (zero is top)
         
         >>> grid = TileGrid(SRS(900913))
-        >>> grid.resolution(0)
-        156543.03392804097
-        >>> grid.resolution(1)
-        78271.516964020484
-        >>> grid.resolution(4)
-        9783.9396205025605
+        >>> round(grid.resolution(0), 5)
+        156543.03393
+        >>> round(grid.resolution(1), 5)
+        78271.51696
+        >>> round(grid.resolution(4), 5)
+        9783.93962
         """
         return self.resolutions[level]
     
@@ -386,7 +390,7 @@ class TileGrid(object):
         res = get_resolution(src_bbox, size)
         level = self.closest_level(res)
         
-        if res > self.resolutions[level]*self.max_shrink_factor:
+        if res > self.resolutions[0]*self.max_shrink_factor:
             raise NoTiles()
         
         return src_bbox, level
@@ -541,8 +545,9 @@ def pyramid_res_level(initial_res, factor=2.0, levels=20):
     
     >>> pyramid_res_level(10000, levels=5)
     [10000.0, 5000.0, 2500.0, 1250.0, 625.0]
-    >>> pyramid_res_level(10000, factor=1/0.75, levels=5)
-    [10000.0, 7500.0, 5625.0, 4218.7500000000009, 3164.0625000000005]
+    >>> map(lambda x: round(x, 4),
+    ...     pyramid_res_level(10000, factor=1/0.75, levels=5))
+    [10000.0, 7500.0, 5625.0, 4218.75, 3164.0625]
     """
     return [initial_res/factor**n for n in range(levels)]
 
@@ -595,10 +600,10 @@ class MetaGrid(object):
         
         if self.meta_buffer > 0:
             res = self.grid.resolution(z)
-            minx -= self.meta_buffer * res
-            miny -= self.meta_buffer * res
-            maxx += self.meta_buffer * res
-            maxy += self.meta_buffer * res
+            minx = max(minx, minx - self.meta_buffer * res)
+            miny = max(miny, miny - self.meta_buffer * res)
+            maxx = min(maxx, maxx + self.meta_buffer * res)
+            maxy = min(maxy, maxy + self.meta_buffer * res)
         
         return (minx, miny, maxx, maxy)
         

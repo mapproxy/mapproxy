@@ -48,17 +48,18 @@ setup(
         'paste.paster_create_template': [
             'mapproxy_conf=mapproxy.paster_template:ConfigurationTemplate'
         ],
+        'paste.filter_factory': [
+            'lighttpd_root_fix = mapproxy.util.wsgi:lighttpd_root_fix_filter_factory',
+        ],
     },
     package_data = {'': ['*.xml', '*.yaml', '*.ttf']},
     install_requires=[
         #'PIL>=1.1.6,<1.1.99',
         'PyYAML>=3.0,<3.99',
-        'flup>1.0.2,<1.0.99',
         'setuptools>=0.6c9',
         'Paste>=1.7.2,<1.7.99',
         'PasteDeploy>=1.3.3,<1.3.99',
         'PasteScript>=1.7.3,<1.7.99',
-        'Tempita>=0.4',
     ],
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -66,6 +67,7 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.5",
         "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
         "Topic :: Internet :: Proxy Servers",
         "Topic :: Internet :: WWW/HTTP :: WSGI",
         "Topic :: Scientific/Engineering :: GIS",

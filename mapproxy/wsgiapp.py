@@ -21,13 +21,11 @@ from __future__ import with_statement
 import re
 import os
 import sys
-import threading
-from mapproxy.config import base_config, load_base_config, abspath
-from mapproxy.version import version_string
-version = version_string()
-# NOTE: do not import anything from mapproxy before init_logging is called
-#       otherwise the logging will not be configured properly
 
+from mapproxy.request import Request
+from mapproxy.response import Response
+from mapproxy.config import base_config, load_base_config, abspath
+from mapproxy.config.loader import load_services
 
 def app_factory(global_options, mapproxy_conf, **local_options):
     """
@@ -92,64 +90,37 @@ def make_wsgi_app(services_conf=None):
     :param services_conf: the file name of the services.yaml configuration,
                           if ``None`` the default is loaded.
     """
-    from mapproxy.request import Request
-    from mapproxy.response import Response
-    from mapproxy.config.loader import load_services
-    
     services = load_services(services_conf)
-    class ProxyApp(object):
-        """
-        The proxy WSGI application.
-        """
-        handler_path_re = re.compile('^/(\w+)')
-        def __init__(self, services):
-            self.handlers = {}
-            for service in services.itervalues():
-                for name in service.names:
-                    self.handlers[name] = service
-        
-        def __call__(self, environ, start_response):
-            resp = None
-            req = Request(environ)
-            
-            match = self.handler_path_re.match(req.path)
-            if match:
-                handler_name = match.group(1)
-                if handler_name in self.handlers:
-                    try:
-                        resp = self.handlers[handler_name].handle(req)
-                    except Exception:
-                        if base_config().debug_mode:
-                            raise
-                        else:
-                            import traceback
-                            traceback.print_exc(file=environ['wsgi.errors'])
-                            resp = Response('internal error', status=500)
-            if resp is None:
-                resp = Response('not found', mimetype='text/plain', status=404)
-            return resp(environ, start_response)
-    
-    app = ProxyApp(services)
-    if os.environ.get('PROXY_LIGHTTPD_ROOTFIX', False):
-        app = LighttpdCGIRootFix(app)
-    return app
+    return MapProxyApp(services)
 
-class LighttpdCGIRootFix(object):
-    """Wrap the application in this middleware if you are using lighttpd
-    with FastCGI or CGI and the application is mounted on the URL root.
-
-    :param app: the WSGI application
+class MapProxyApp(object):
     """
-
-    def __init__(self, app):
-        self.app = app
-
+    The MapProxy WSGI application.
+    """
+    handler_path_re = re.compile('^/(\w+)')
+    def __init__(self, services):
+        self.handlers = {}
+        for service in services.itervalues():
+            for name in service.names:
+                self.handlers[name] = service
+    
     def __call__(self, environ, start_response):
-        script_name = environ.get('SCRIPT_NAME', '')
-        path_info = environ.get('PATH_INFO', '')
-        if path_info == script_name:
-            environ['PATH_INFO'] = path_info
-        else:
-            environ['PATH_INFO'] = script_name + path_info
-        environ['SCRIPT_NAME'] = ''
-        return self.app(environ, start_response)
+        resp = None
+        req = Request(environ)
+        
+        match = self.handler_path_re.match(req.path)
+        if match:
+            handler_name = match.group(1)
+            if handler_name in self.handlers:
+                try:
+                    resp = self.handlers[handler_name].handle(req)
+                except Exception:
+                    if base_config().debug_mode:
+                        raise
+                    else:
+                        import traceback
+                        traceback.print_exc(file=environ['wsgi.errors'])
+                        resp = Response('internal error', status=500)
+        if resp is None:
+            resp = Response('not found', mimetype='text/plain', status=404)
+        return resp(environ, start_response)

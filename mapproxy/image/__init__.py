@@ -147,18 +147,21 @@ class ImageSource(object):
         
         :rtype: PIL `Image`
         """
-        if self._img: return self._img
+        if not self._img: 
+            self._make_seekable_buf()
+            log.debug('file(%s) -> image', self._fname or self._buf)
         
-        self._make_seekable_buf()
-        log.debug('file(%s) -> image', self._fname or self._buf)
+            try:
+                img = Image.open(self._buf)
+            except StandardError:
+                self.close_buffers()
+                raise
+            self._img = img
         
-        try:
-            img = Image.open(self._buf)
-        except StandardError:
-            self.close_buffers()
-            raise
-        self._img = img
-        return img
+        if self.transparent and self._img.mode == 'P':
+            self._img = self._img.convert('RGBA')
+    
+        return self._img
     
     def _make_seekable_buf(self):
         if not self._buf and self._fname:

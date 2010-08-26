@@ -33,7 +33,7 @@ Next we create a new virtual environment for our proxy installation. It is a goo
 Install MapProxy
 ----------------
 
-MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 2.5 and 2.6, 2.7 is untested but should work.
+MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 2.5, 2.6 and 2.7.
 
 MapProxy has some dependencies, other libraries that are required to run. Most dependencies are small Python libraries that will be installed automatically when you install MapProxy. There are two exceptions: libproj and PIL
 

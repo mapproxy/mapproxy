@@ -25,5 +25,7 @@ def version_string():
     except KeyError:
         return 'unknown_version'
 
+__version__ = version = version_string()
+
 if __name__ == '__main__':
-    print version_string()
+    print __version__

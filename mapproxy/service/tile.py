@@ -147,6 +147,8 @@ class TileLayer(object):
         if tile_coord is None:
             raise RequestError('The requested tile is outside the bounding box'
                                ' of the tile map.', request=tile_request)
+        if tile_request.origin == 'nw':
+            tile_coord = self.grid.flip_tile_coord(tile_coord)
         return tile_coord
     
     def render(self, tile_request, use_profiles=False):

@@ -26,7 +26,7 @@ from datetime import datetime
 import logging
 log = logging.getLogger(__name__)
 
-from mapproxy.wsgiapp import version
+from mapproxy.version import version
 from mapproxy.image import ImageSource
 from mapproxy.util import reraise_exception
 from mapproxy.config import base_config, abspath

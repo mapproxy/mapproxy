@@ -123,6 +123,16 @@ MapProxy will try to use this format to request new tiles, if it is not set ``fo
 
 .. index:: watermark
 
+``link_single_color_images``
+""""""""""""""""""""""""""""
+If set to ``true``, MapProxy will not store tiles that only contain a single color as a
+separate file. MapProxy stores these tiles only once and uses symbolic links to this file
+for every occurrence. This can reduce the size of your tile cache if you have larger areas
+with no data (e.g. water areas, areas with no roads, etc.).
+
+.. note:: This feature is only available on Unix, since Windows has no support for symbolic links.
+
+
 ``watermark``
 """""""""""""
 

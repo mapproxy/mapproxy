@@ -40,8 +40,8 @@ class WMSClient(object):
         format = self.request_template.params.format
         if not format:
             format = query.format
-            if self.supported_formats and format not in self.supported_formats:
-                format = self.supported_formats[0]
+        if self.supported_formats and format not in self.supported_formats:
+            format = self.supported_formats[0]
         if self.supported_srs and query.srs not in self.supported_srs:
             return self._get_transformed(query, format)
         resp = self._retrieve(query, format)

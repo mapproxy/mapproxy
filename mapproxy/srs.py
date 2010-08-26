@@ -203,8 +203,11 @@ class _SRS(object):
         
         At the moment only EPSG:4326 bbox will be modifyed.
         
-        >>> SRS(4326).align_bbox((-180, -90, 180, 90))
-        (-180, -89.999999990000006, 180, 89.999999990000006)
+        >>> bbox = SRS(4326).align_bbox((-180, -90, 180, 90))
+        >>> -90 < bbox[1] < -89.99999998
+        True
+        >>> 90 > bbox[3] > 89.99999998
+        True
         """
         if self.srs_code == 'EPSG:4326':
             delta = 0.00000001
@@ -267,8 +270,16 @@ class _SRS(object):
         True
         >>> SRS(4326) == SRS(900913)
         False
+        >>> SRS(3857) == SRS(900913)
+        True
+        >>> SRS(900913) == SRS(3857)
+        True
+
         """
         if isinstance(other, _SRS):
+            if (self.srs_code in ('EPSG:900913', 'EPSG:3857')
+                and other.srs_code in ('EPSG:900913', 'EPSG:3857')):
+                return True
             return self.proj.srs == other.proj.srs
         else:
             return NotImplemented

@@ -18,9 +18,7 @@
 Service responses.
 """
 
-import os
 import hashlib
-import mimetypes
 from mapproxy.util.times import format_httpdate, parse_httpdate, timestamp
 
 class Response(object):

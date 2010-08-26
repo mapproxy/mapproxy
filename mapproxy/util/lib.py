@@ -37,7 +37,7 @@ default_locations = dict(
 )
 
 
-def load_library(lib_name, locations_conf=default_locations):
+def load_library(lib_names, locations_conf=default_locations):
     """
     Load the `lib_name` library with ctypes.
     If ctypes.util.find_library does not find the library,
@@ -45,6 +45,14 @@ def load_library(lib_name, locations_conf=default_locations):
     
     Retruns the loaded library or None.
     """
+    if isinstance(lib_names, basestring):
+        lib_names = [lib_names]
+    
+    for lib_name in lib_names:
+        lib = load_library_(lib_name, locations_conf)
+        if lib is not None: return lib
+
+def load_library_(lib_name, locations_conf=default_locations):
     lib_path = find_library(lib_name)
     
     if lib_path:
@@ -59,7 +67,6 @@ def load_library(lib_name, locations_conf=default_locations):
         return CDLL(lib_path)
         
 
-
 def find_library(lib_name, paths=None, exts=None):
     """
     Search for library in all permutations of `paths` and `exts`.
@@ -67,7 +74,10 @@ def find_library(lib_name, paths=None, exts=None):
     """
     
     if not paths or not exts:
-        return _find_library(lib_name)
+        lib = _find_library(lib_name)
+        if lib is None and lib_name.startswith('lib'):
+            lib = _find_library(lib_name[3:])
+        return lib
     
     for path in paths:
         for ext in exts:
@@ -76,3 +86,6 @@ def find_library(lib_name, paths=None, exts=None):
                 return lib_path
     
     return None
+
+if __name__ == '__main__':
+    print load_library(sys.argv[1])

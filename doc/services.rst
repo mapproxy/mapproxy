@@ -120,11 +120,23 @@ This service takes no further options::
     tms:
 
 
+.. index:: OpenLayers
+
 OpenLayers
 """"""""""
 When you create a map in OpenLayers with an explicit ``mapExtend``, it will request only a single tile for the first (z=0) level.
 TMS begins with two or four tiles by default, depending on the SRS. MapProxy supports a different TMS mode to support this use-case. MapProxy will start with a single-tile level if you request ``/tiles`` instead of ``/tms``.
 
+
+.. index:: Google Maps
+
+Google Maps
+"""""""""""
+The TMS standard counts tiles starting from the lower left corner of the tile grid, while Google Maps starts at the upper left corner. The ``/tiles`` service accepts an ``origin`` parameter that flips the y-axis accordingly. You can set it to either ``sw`` (south-west), the default, or to ``nw`` (north-west), required for Google Maps.
+
+Example::
+  
+  http://localhost:8080/tiles/osm_EPSG900913/1/0/1.png?origin=nw
 
 .. _`Tile Map Service Specification`: http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification
 

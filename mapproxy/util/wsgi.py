@@ -15,19 +15,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Loading of template files (e.g. capability documents) 
+WSGI utils
 """
 
-import os
-from mapproxy.util.ext.tempita import Template, bunch
+def lighttpd_root_fix_filter_factory(global_conf):
+    return LighttpdCGIRootFix
 
-__all__ = ['Template', 'bunch', 'template_loader']
+class LighttpdCGIRootFix(object):
+    """Wrap the application in this middleware if you are using lighttpd
+    with FastCGI or CGI and the application is mounted on the URL root.
 
+    :param app: the WSGI application
+    """
 
-def template_loader(module_file, location='templates', namespace={}):
-    template_dir = os.path.join(os.path.dirname(module_file), location)
-    def load_template(self_or_name, name=None):
-        # allow this function to be a method
-        if name is None: name = self_or_name
-        return Template.from_filename(os.path.join(template_dir, name), namespace=namespace)
-    return load_template
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        script_name = environ.get('SCRIPT_NAME', '')
+        path_info = environ.get('PATH_INFO', '')
+        if path_info == script_name:
+            environ['PATH_INFO'] = path_info
+        else:
+            environ['PATH_INFO'] = script_name + path_info
+        environ['SCRIPT_NAME'] = ''
+        return self.app(environ, start_response)
