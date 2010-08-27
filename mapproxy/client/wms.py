@@ -93,6 +93,8 @@ class WMSClient(object):
         return resp
     
     def _check_resp(self, resp):
+        if 'Content-type' not in resp.headers:
+            raise SourceError('response from source WMS has no Content-type header')
         if not resp.headers['Content-type'].startswith('image/'):
             raise SourceError('no image returned from source WMS')
     
