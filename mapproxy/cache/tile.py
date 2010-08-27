@@ -194,7 +194,7 @@ class TileManager(object):
         return created_tiles
     
     def _create_meta_tile(self, main_tile, meta_bbox, tiles):
-        meta_tile_size = self.meta_grid.tile_size(main_tile.coord[2])
+        meta_tile_size = self.meta_grid.meta_tile_size(main_tile.coord)
         tile_size = self.grid.tile_size
         query = MapQuery(meta_bbox, meta_tile_size, self.grid.srs, self.request_format)
         with self.lock(main_tile):

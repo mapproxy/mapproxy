@@ -196,6 +196,15 @@ def bbox_tuple(bbox):
     
 
 
+def bbox_width(bbox):
+    return bbox[2] - bbox[0]
+
+def bbox_height(bbox):
+    return bbox[3] - bbox[1]
+
+def bbox_size(bbox):
+    return bbox_width(bbox), bbox_height(bbox)
+    
 class TileGrid(object):
     """
     This class represents a regular tile grid. The first level (0) contains a single
@@ -568,7 +577,7 @@ class MetaGrid(object):
         self._meta_size = meta_size
         self.meta_buffer = meta_buffer
     
-    def meta_bbox(self, tile_coord):
+    def meta_bbox(self, tile_coord, limit_to_bbox=True):
         """
         Returns the bbox of the metatile that contains `tile_coord`.
         
@@ -585,8 +594,8 @@ class MetaGrid(object):
         x, y, z = tile_coord
         meta_size = self.meta_size(z)
         
-        if z == 0 and meta_size == (1, 1):
-            return self.grid.tile_bbox((0, 0, 0))
+        # if z == 0 and meta_size == (1, 1):
+        #     return self.grid.tile_bbox((0, 0, 0))
         
         meta_x = x//meta_size[0]
         meta_y = y//meta_size[1]
@@ -600,11 +609,17 @@ class MetaGrid(object):
         
         if self.meta_buffer > 0:
             res = self.grid.resolution(z)
-            minx = max(minx, minx - self.meta_buffer * res)
-            miny = max(miny, miny - self.meta_buffer * res)
-            maxx = min(maxx, maxx + self.meta_buffer * res)
-            maxy = min(maxy, maxy + self.meta_buffer * res)
-        
+            minx -= self.meta_buffer * res
+            miny -= self.meta_buffer * res
+            maxx += self.meta_buffer * res
+            maxy += self.meta_buffer * res
+
+        if limit_to_bbox:
+            minx = max(self.grid.bbox[0], minx)
+            miny = max(self.grid.bbox[1], miny)
+            maxx = min(self.grid.bbox[2], maxx)
+            maxy = min(self.grid.bbox[3], maxy)
+                
         return (minx, miny, maxx, maxy)
         
     def tiles(self, tile_coord):
@@ -630,10 +645,12 @@ class MetaGrid(object):
         x0 = x//meta_size[0] * meta_size[0]
         y0 = y//meta_size[1] * meta_size[1]
         
+        meta_tile_offset = self._meta_tile_offset(tile_coord)
+        
         for i, y in enumerate(range(y0+(meta_size[1]-1), y0-1, -1)):
             for j, x in enumerate(range(x0, x0+meta_size[0])):
-                yield (x, y, z), (j*self.grid.tile_size[0] + self.meta_buffer,
-                                  i*self.grid.tile_size[1] + self.meta_buffer)
+                yield (x, y, z), (j*self.grid.tile_size[0] + meta_tile_offset[0],
+                                  i*self.grid.tile_size[1] + meta_tile_offset[1])
     
     def tile_size(self, level):
         """
@@ -647,14 +664,60 @@ class MetaGrid(object):
         >>> mgrid.tile_size(0)
         (256, 256)
         """
+        import warnings
+        warnings.warn("deprecated", DeprecationWarning)
         
         meta_size = self.meta_size(level)
         
         if level == 0 and meta_size == (1, 1):
             return self.grid.tile_size
         
+        
         return (self.grid.tile_size[0] * meta_size[0] + 2*self.meta_buffer,
                 self.grid.tile_size[1] * meta_size[1] + 2*self.meta_buffer)
+    
+    def meta_tile_size(self, coord):
+        meta_size = self.meta_size(coord[2])
+        
+        meta_tile_size = (self.grid.tile_size[0] * meta_size[0] + 2*self.meta_buffer,
+                          self.grid.tile_size[1] * meta_size[1] + 2*self.meta_buffer)
+        
+        if self.meta_buffer > 0:
+            limited_bbox = self.meta_bbox(coord, limit_to_bbox=True)
+            full_bbox = self.meta_bbox(coord, limit_to_bbox=False)
+            
+            if limited_bbox != full_bbox:
+                full_width, full_height = bbox_size(full_bbox)
+                limited_width, limited_height = bbox_size(limited_bbox)
+                meta_tile_size = (int(meta_tile_size[0]*(limited_width/full_width)),
+                                  int(meta_tile_size[1]*(limited_height/full_height)))
+        return meta_tile_size
+        
+    
+    def _full_meta_tile_size(self, coord):
+        meta_size = self.meta_size(coord[2])
+        return (self.grid.tile_size[0] * meta_size[0] + 2*self.meta_buffer,
+                self.grid.tile_size[1] * meta_size[1] + 2*self.meta_buffer)
+    
+    def _meta_tile_offset(self, coord):
+        offset = (self.meta_buffer, self.meta_buffer)
+        if self.meta_buffer > 0:
+            limited_bbox = self.meta_bbox(coord, limit_to_bbox=True)
+            full_bbox = self.meta_bbox(coord, limit_to_bbox=False)
+            
+            if limited_bbox != full_bbox:
+                full_width, full_height = bbox_size(full_bbox)
+                meta_tile_size = self._full_meta_tile_size(coord)
+                xres, yres = full_width/meta_tile_size[0], full_height/meta_tile_size[1]
+                
+                if limited_bbox[0] != full_bbox[0]:
+                    offset = (offset[0] + int((full_bbox[0]-limited_bbox[0])/xres),
+                              offset[1])
+                if limited_bbox[3] != full_bbox[3]:
+                    offset = (offset[0],
+                              offset[1] - int((full_bbox[3]-limited_bbox[3])/yres))
+        
+        return offset
     
     def meta_size(self, level):
         grid_size = self.grid.grid_sizes[level]

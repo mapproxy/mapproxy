@@ -124,13 +124,6 @@ def test_metagrid_bbox_w_meta_size():
     bbox = mgrid.meta_bbox((4, 5, 3))
     assert bbox == (0.0, 0.0, 20037508.342789244, 10018754.171394622)
 
-def test_metagrid_bbox_w_meta_buffer():    
-    mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2), meta_buffer=10)
-    assert mgrid.grid.resolution(2) == 39135.758482010242
-    bbox = mgrid.meta_bbox((0, 0, 2))
-    assert bbox == (-20428865.927609347, -20428865.927609347,
-                    391357.58482010243, 391357.58482010243)
-
 def test_metagrid_tiles():
     mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))
     assert list(mgrid.tiles((0, 0, 0))) == \
@@ -150,26 +143,75 @@ def test_metagrid_tiles_w_meta_size():
          ((2, 3, 2), (512, 0)), ((3, 3, 2), (768, 0)),
          ((0, 2, 2), (0, 256)), ((1, 2, 2), (256, 256)),
          ((2, 2, 2), (512, 256)), ((3, 2, 2), (768, 256))]
+
+class TestMetaGridGeodetic(object):
+    def setup(self):
+        self.mgrid = MetaGrid(grid=tile_grid('EPSG:4326'), meta_size=(2, 2), meta_buffer=10)
     
-def test_metagrid_tiles_w_meta_buffer():
-    mgrid = MetaGrid(grid=TileGrid(), meta_size=(4, 2), meta_buffer=10)
-    assert list(mgrid.tiles((0, 0, 0))) == \
-        [((0, 0, 0), (0, 0))]
-    assert list(mgrid.tiles((1, 2, 2))) == \
-        [((0, 3, 2), (10, 10)), ((1, 3, 2), (266, 10)),
-         ((2, 3, 2), (522, 10)), ((3, 3, 2), (778, 10)),
-         ((0, 2, 2), (10, 266)), ((1, 2, 2), (266, 266)),
-         ((2, 2, 2), (522, 266)), ((3, 2, 2), (778, 266))]
+    def test_meta_bbox_level_0(self):
+        eq_(self.mgrid.meta_bbox((0, 0, 0)), (-180, -90, 180, 90))
+        eq_(self.mgrid.meta_bbox((0, 0, 0), limit_to_bbox=False),
+            (-194.0625, -104.0625, 194.0625, 284.0625))
+        
+        eq_(self.mgrid.meta_tile_size((0, 0, 0)), (256, 128))
+    
+    def test_tiles_level_0(self):
+        eq_(list(self.mgrid.tiles((0, 0, 0))), [((0, 0, 0), (0, 0))])
+    
+    def test_meta_bbox_level_1(self):
+        eq_(self.mgrid.meta_bbox((0, 0, 1)), (-180, -90, 180, 90))
+        eq_(self.mgrid.meta_bbox((0, 0, 1), limit_to_bbox=False),
+            (-187.03125, -97.03125, 187.03125, 97.03125))
+        eq_(self.mgrid.meta_tile_size((0, 0, 1)), (512, 256))
+        
+    def test_tiles_level_1(self):
+        eq_(list(self.mgrid.tiles((0, 0, 1))),
+            [
+                ((0, 0, 1), (0, 0)),
+                ((1, 0, 1), (256, 0))
+            ])
 
-def test_metagrid_tiles_geodetic():
-    mgrid = MetaGrid(grid=TileGrid(is_geodetic=True, ), meta_size=(2, 2), meta_buffer=10)
-    assert list(mgrid.tiles((0, 0, 0))) == \
-        [((0, 0, 0), (0, 0))]
-    assert list(mgrid.tiles((0, 0, 1))) == \
-        [((0, 0, 1), (10, 10)), ((1, 0, 1), (266, 10))]
-    assert mgrid.tile_size(1) == (532, 276)
-    assert mgrid.meta_bbox((0, 0, 1)) == (-187.03125, -97.03125, 187.03125, 97.03125)
+    def test_meta_bbox_level_2(self):
+        eq_(self.mgrid.meta_bbox((0, 0, 2)), (-180, -90, 3.515625, 90))
+        eq_(self.mgrid.meta_bbox((0, 0, 2), limit_to_bbox=False),
+            (-183.515625, -93.515625, 3.515625, 93.515625))
+        eq_(self.mgrid.meta_tile_size((0, 0, 2)), (522, 512))
+        
+        eq_(self.mgrid.meta_bbox((2, 0, 2)), (-3.515625, -90, 180, 90))
+        eq_(self.mgrid.meta_tile_size((2, 0, 2)), (522, 512))
 
+    def test_tiles_level_2(self):
+        eq_(list(self.mgrid.tiles((0, 0, 2))),
+            [
+                ((0, 1, 2), (0, 0)),
+                ((1, 1, 2), (256, 0)),
+                ((0, 0, 2), (0, 256)),
+                ((1, 0, 2), (256, 256)),
+            ])
+        eq_(list(self.mgrid.tiles((2, 0, 2))),
+            [
+                ((2, 1, 2), (10, 0)),
+                ((3, 1, 2), (266, 0)),
+                ((2, 0, 2), (10, 256)),
+                ((3, 0, 2), (266, 256)),
+            ])
+
+    def test_tiles_level_3(self):
+        eq_(list(self.mgrid.tiles((2, 0, 3))),
+            [
+                ((2, 1, 3), (10, 10)),
+                ((3, 1, 3), (266, 10)),
+                ((2, 0, 3), (10, 266)),
+                ((3, 0, 3), (266, 266)),
+            ])
+        eq_(list(self.mgrid.tiles((2, 2, 3))),
+            [
+                ((2, 3, 3), (10, 0)),
+                ((3, 3, 3), (266, 0)),
+                ((2, 2, 3), (10, 256)),
+                ((3, 2, 3), (266, 256)),
+            ])
+        
 
 class TestMetaGridLevelMetaTiles(object):
     def __init__(self):
