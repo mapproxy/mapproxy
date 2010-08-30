@@ -41,8 +41,6 @@ def mock_http_handler(requests_responses):
             assert len(requests_responses) > 0, 'got unexpected request (%s)' % self.path
             req, resp = requests_responses.pop(0)
             if req.get('require_basic_auth', False):
-                f = open('out.txt', 'a')
-                print >>f, self.headers
                 if 'Authorization' not in self.headers:
                     requests_responses.insert(0, (req, resp)) # push back
                     self.send_response(401)
