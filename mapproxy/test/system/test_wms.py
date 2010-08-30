@@ -242,7 +242,7 @@ class TestWMS111(WMSTest):
             with mock_httpd(('localhost', 42423), [expected_req]):
                 self.common_map_req.params['bbox'] = '0,0,180,90'
                 resp = self.app.get(self.common_map_req)
-                assert 50000 < int(resp.headers['Content-length']) < 75000
+                assert 35000 < int(resp.headers['Content-length']) < 75000
                 eq_(resp.content_type, 'image/png')
     
     def test_get_map_use_direct(self):
