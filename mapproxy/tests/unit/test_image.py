@@ -183,8 +183,8 @@ class TestWatermarkTileFilter(object):
         eq_(pil_img.getpixel((0, 0)), (0, 0, 0, 255))
         # check histogram profile (w TrueType support and w/o)
         hist_color_counts = [x for x in pil_img.histogram() if x > 0]
-        assert hist_color_counts == [40000, 40000, 40000, 227, 37, 64, 39672]\
-            or hist_color_counts == [40000, 40000, 40000, 75, 39925]
+        eq_(hist_color_counts[:3], [40000, 40000, 40000])
+        assert hist_color_counts[-1] > 39000
         
 class TestMergeAll(object):
     def setup(self):
