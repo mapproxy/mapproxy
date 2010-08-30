@@ -1,4 +1,19 @@
-0.9.0a1
+0.9.0b1 2010-08-30
+
+- Improved support for EPSG:3857
+- Source requests now never go beyond the grid BBOX even with meta_buffers/meta_tiles
+- removed install_requires
+  - flup: not required for all deployment options
+  - tempita: now embeded
+- now Python 2.7 compatible
+- [mapproxy-seed] fixed libgdal loading on some Linux systems
+- [mapproxy-seed] check for intersections on all levels
+- add origin options to /tiles service to support Google Maps clients
+- Improved PNG performance with PIL fastpng branch.
+- New concurrent_requests option to limit requests for each source WMS server.
+- minor bug fixes
+
+0.9.0a1 2010-07-27
 
 - new configuration format (merged proxy.yaml and service.yaml)
 - refactoring of the caching (sources and layers)
@@ -9,6 +24,12 @@
 
 - more options to define tile grids (min_res, max_res, etc.)
 
+0.8.4 2010-08-01
+
+- Extra newline at the end of all templates. Some deployment setups
+  removed the last characters.
+- Improved PNG performance with PIL fastpng branch.
+- New concurrent_requests option to limit requests for each source WMS server.
 
 0.8.3 2010-06-01
 
