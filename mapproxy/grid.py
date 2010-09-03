@@ -307,12 +307,12 @@ class TileGrid(object):
         :param level: the zoom level index (zero is top)
         
         >>> grid = TileGrid(SRS(900913))
-        >>> round(grid.resolution(0), 5)
-        156543.03393
-        >>> round(grid.resolution(1), 5)
-        78271.51696
-        >>> round(grid.resolution(4), 5)
-        9783.93962
+        >>> '%.5f' % grid.resolution(0)
+        '156543.03393'
+        >>> '%.5f' % grid.resolution(1)
+        '78271.51696'
+        >>> '%.5f' % grid.resolution(4)
+        '9783.93962'
         """
         return self.resolutions[level]
     
