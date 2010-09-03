@@ -652,29 +652,6 @@ class MetaGrid(object):
                 yield (x, y, z), (j*self.grid.tile_size[0] + meta_tile_offset[0],
                                   i*self.grid.tile_size[1] + meta_tile_offset[1])
     
-    def tile_size(self, level):
-        """
-        Returns the size of a metatile (includes ``meta_buffer`` if present).
-        
-        :param level: the zoom level
-        
-        >>> mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2), meta_buffer=10)
-        >>> mgrid.tile_size(2)
-        (532, 532)
-        >>> mgrid.tile_size(0)
-        (256, 256)
-        """
-        import warnings
-        warnings.warn("deprecated", DeprecationWarning)
-        
-        meta_size = self.meta_size(level)
-        
-        if level == 0 and meta_size == (1, 1):
-            return self.grid.tile_size
-        
-        
-        return (self.grid.tile_size[0] * meta_size[0] + 2*self.meta_buffer,
-                self.grid.tile_size[1] * meta_size[1] + 2*self.meta_buffer)
     
     def meta_tile_size(self, coord):
         meta_size = self.meta_size(coord[2])
