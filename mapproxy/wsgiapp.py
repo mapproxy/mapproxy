@@ -21,11 +21,30 @@ from __future__ import with_statement
 import re
 import os
 import sys
+import site
 
 from mapproxy.request import Request
 from mapproxy.response import Response
 from mapproxy.config import base_config, load_base_config, abspath
 from mapproxy.config.loader import load_services
+
+class Modjyhandler(object):
+    def __init__(self):
+        self.app = None
+    
+    def init_app(self, environ):
+        mapproxy_conf = environ.get("modjy.param.mapproxy_conf")
+        if mapproxy_conf.startswith('$'): # support for relative path
+            mapproxy_conf = mapproxy_conf.lstrip('$/')
+            app_url = environ.get("modjy.param.app_directory")
+            mapproxy_conf = os.path.join(app_url, mapproxy_conf)
+                    
+        self.app = make_wsgi_app(mapproxy_conf)
+    
+    def __call__(self, environ, start_response):
+        if not self.app:
+            self.init_app(environ)
+        return self.app(environ, start_response)
 
 def app_factory(global_options, mapproxy_conf, **local_options):
     """

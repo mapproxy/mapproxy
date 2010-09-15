@@ -176,7 +176,8 @@ class ExceptionImage(MessageImage):
     
     def draw_msg(self, msg_img, draw):
         if not self.transparent:
-            draw.rectangle((0, 0, msg_img.size[0], msg_img.size[1]), fill=self.bgcolor)
+            bgcolor = ImageColor.getrgb(self.bgcolor)
+            draw.rectangle((0, 0, msg_img.size[0], msg_img.size[1]), fill=bgcolor)
         MessageImage.draw_msg(self, msg_img, draw)
     
 
