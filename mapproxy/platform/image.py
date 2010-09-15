@@ -17,24 +17,8 @@
 import platform
 
 if platform.system() == "Java":
-    from jil import Image
+    from jil import Image, ImageColor, ImageDraw, ImageFont
     
-    class ImageColor(object):
-        def __init__(self, *args, **kw):
-            raise NotImplementedError()
-        
-        @classmethod    
-        def getrgb(cls, *args, **kw):
-            return (0, 0, 0)
-            
-    class ImageDraw(object):
-        def __init__(self, *args, **kw):
-            raise NotImplementedError()
-        
-    class ImageFont(object):
-        def __init__(self, *args, **kw):
-            raise NotImplementedError()
-
     class ImagePalette(object):
         def __init__(self, *args, **kw):
             raise NotImplementedError()
