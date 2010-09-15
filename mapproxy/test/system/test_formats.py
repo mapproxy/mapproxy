@@ -19,7 +19,7 @@ import os
 import sys
 import tempfile
 import shutil
-import Image
+from mapproxy.platform.image import Image
 import functools
 
 from cStringIO import StringIO

@@ -86,14 +86,44 @@ def SRS(srs_code):
         _thread_local.srs_cache[srs_code] = srs
         return srs
 
+def epsg900913():
+    try:
+        return Proj(proj_def='''PROJCS["Google Mercator", 
+       GEOGCS["WGS 84", 
+         DATUM["World Geodetic System 1984", 
+           SPHEROID["WGS 84", 6378137.0, 298.257223563, AUTHORITY["EPSG","7030"]], 
+           AUTHORITY["EPSG","6326"]], 
+         PRIMEM["Greenwich", 0.0, AUTHORITY["EPSG","8901"]], 
+         UNIT["degree", 0.017453292519943295], 
+         AXIS["Geodetic latitude", NORTH], 
+         AXIS["Geodetic longitude", EAST], 
+         AUTHORITY["EPSG","4326"]], 
+       PROJECTION["Mercator (1SP)", AUTHORITY["EPSG","9804"]], 
+       PARAMETER["semi_major", 6378137.0], 
+       PARAMETER["semi_minor", 6378137.0], 
+       PARAMETER["latitude_of_origin", 0.0], 
+       PARAMETER["central_meridian", 0.0], 
+       PARAMETER["scale_factor", 1.0], 
+       PARAMETER["false_easting", 0.0], 
+       PARAMETER["false_northing", 0.0], 
+       UNIT["m", 1.0], 
+       AXIS["Easting", EAST], 
+       AXIS["Northing", NORTH], 
+       AUTHORITY["EPSG","900913"]]''')
+    except RuntimeError:
+        return Proj('+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 '
+                '+lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m '
+                '+nadgrids=@null +no_defs')
+
 class _SRS(object):
     # http://trac.openlayers.org/wiki/SphericalMercator
-    proj_init = {'EPSG:900913':
-                    lambda:Proj('+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 '
-                                '+lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m '
-                                '+nadgrids=@null +no_defs'),
-                 'CRS:84': lambda:Proj(init='epsg:4326'),
+    # TODO jproj/libproj
+    proj_init = {
+                 'EPSG:900913': epsg900913,
+                 'CRS:84': lambda: Proj(init='epsg:4326'),
                 }
+
+        
     """
     This class represents a Spatial Reference System.
     """
@@ -230,7 +260,7 @@ class _SRS(object):
         Returns `True` if the axis order is East then North
         (i.e. x/y or lon/lat).
         """
-        return not self.is_axis_order_en
+        return not self.is_axis_order_ne
     
     def __eq__(self, other):
         """

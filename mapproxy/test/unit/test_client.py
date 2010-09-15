@@ -22,7 +22,7 @@ from mapproxy.request.wms import wms_request, WMS111MapRequest, WMS100MapRequest
 from mapproxy.srs import bbox_equals
 from mapproxy.request import Request, url_decode
 from mapproxy.config import base_config
-from mapproxy.test.http import mock_httpd, query_eq, make_wsgi_env
+from mapproxy.test.http import mock_httpd, query_eq, assert_query_eq, make_wsgi_env
 from mapproxy.test.helper import assert_re, TempFiles
 
 from nose.tools import eq_
@@ -294,7 +294,7 @@ class TestWMSMapRequest100(object):
     def test_request(self):
         eq_(self.r.params['request'], 'map')
     def test_str(self):
-        eq_(str(self.r.params), 'layers=foo&styles=&request=map&wmtver=1.0.0')
+        assert_query_eq(str(self.r.params), 'layers=foo&styles=&request=map&wmtver=1.0.0')
 
 class TestWMSMapRequest130(object):
     def setup(self):

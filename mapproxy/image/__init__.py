@@ -20,8 +20,7 @@ Image and tile manipulation (transforming, merging, etc).
 from __future__ import with_statement
 from cStringIO import StringIO
 
-import Image
-import ImageColor
+from mapproxy.platform.image import Image, ImageColor
 
 from mapproxy.config import base_config
 

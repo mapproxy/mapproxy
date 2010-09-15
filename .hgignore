@@ -1,5 +1,6 @@
 # generated/install files
 .pyc
+.class
 pip-log.txt
 MapProxy.egg-info
 dist/

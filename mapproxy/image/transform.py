@@ -16,7 +16,7 @@
 
 from __future__ import division
 
-import Image
+from mapproxy.platform.image import Image
 from mapproxy.config import base_config
 from mapproxy.image import ImageSource, image_filter
 from mapproxy.srs import make_lin_transf, bbox_equals
@@ -151,10 +151,11 @@ class ImageTransformer(object):
             mesh_div -= 1
         for quad in griddify(dst_quad, mesh_div):
             meshes.append(dst_quad_to_src(quad))
+
         result = src_img.as_image().transform(dst_size, Image.MESH, meshes,
                                               image_filter[self.resampling])
         return ImageSource(result, size=dst_size, transparent=src_img.transparent)
-    
+        
     def _no_transformation_needed(self, src_size, src_bbox, dst_size, dst_bbox):
         """
         >>> src_bbox = (-2504688.5428486541, 1252344.271424327,

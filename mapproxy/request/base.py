@@ -162,11 +162,10 @@ def url_decode(qs, charset='utf-8', decode_keys=False, include_empty=True,
     Parse query string `qs` and return a `NoCaseMultiDict`.
     """
     tmp = []
-    for key, values in cgi.parse_qs(str(qs), include_empty).iteritems():
-        for value in values:
-            if decode_keys:
-                key = key.decode(charset, errors)
-            tmp.append((key, value.decode(charset, errors)))
+    for key, value in cgi.parse_qsl(str(qs), include_empty):
+        if decode_keys:
+            key = key.decode(charset, errors)
+        tmp.append((key, value.decode(charset, errors)))
     return NoCaseMultiDict(tmp)
 
 class Request(object):

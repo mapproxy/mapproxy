@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import Image
+from mapproxy.platform.image import Image
 from cStringIO import StringIO
 from mapproxy.test.helper import Mocker, validate_with_dtd, validate_with_xsd
 from mapproxy.test.image import is_png

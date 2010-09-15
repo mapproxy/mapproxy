@@ -14,27 +14,30 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import platform
 
-from mapproxy.util.ext.lockfile import LockFile
-from mapproxy.platform.lock import LockTimeout, FileLock, LockError, cleanup_lockdir
-import random
-
-class SemLock(FileLock):
-    """
-    File-lock-based counting semaphore (i.e. this lock can be locked n-times).
-    """
-    def __init__(self, lock_file, n, timeout=60.0, step=0.01):
-        FileLock.__init__(self, lock_file, timeout=timeout, step=step)
-        self.n = n
+if platform.system() == "Java":
+    from jil import Image
     
-    def _try_lock(self):
-        tries = 0
-        i = random.randint(0, self.n-1)
-        while True:
-            tries += 1
-            try:
-                return LockFile(self.lock_file + str(i))
-            except LockError, e:
-                if tries >= self.n:
-                    raise
-            i = (i+1) % self.n
+    class ImageColor(object):
+        def __init__(self, *args, **kw):
+            raise NotImplementedError()
+        
+        @classmethod    
+        def getrgb(cls, *args, **kw):
+            return (0, 0, 0)
+            
+    class ImageDraw(object):
+        def __init__(self, *args, **kw):
+            raise NotImplementedError()
+        
+    class ImageFont(object):
+        def __init__(self, *args, **kw):
+            raise NotImplementedError()
+
+    class ImagePalette(object):
+        def __init__(self, *args, **kw):
+            raise NotImplementedError()
+    
+else:
+    from PIL import Image, ImageColor, ImageDraw, ImageFont, ImagePalette
