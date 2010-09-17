@@ -42,7 +42,7 @@ def setup_module():
     mapproxy.core.config.base_config().cache.base_dir = fixture_cache_data
     
     global global_app
-    global_app = TestApp(make_wsgi_app())
+    global_app = TestApp(make_wsgi_app(), use_unicode=False)
 
 def teardown_module():
     mapproxy.core.config._config = None

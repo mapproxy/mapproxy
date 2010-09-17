@@ -47,7 +47,7 @@ def setup_module():
     mapproxy.core.config._service_config = None
     
     global global_app
-    global_app = TestApp(make_wsgi_app())
+    global_app = TestApp(make_wsgi_app(), use_unicode=False)
 
 def teardown_module():
     mapproxy.core.config._config = None
