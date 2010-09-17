@@ -245,6 +245,7 @@ class CacheSeeder(object):
                 self.seeded_caches.append(tile_mgr)
                 if self.remove_before:
                     tile_mgr._expire_timestamp = self.remove_before
+                tile_mgr.minimize_meta_requests = False
                 seed_pool = SeedPool(tile_mgr, dry_run=self.dry_run, size=self.concurrency)
                 seed_task = SeedTask(bbox, level, bbox_srs, srs, geom)
                 seeder = Seeder(tile_mgr, seed_task, seed_pool, self.skip_geoms_for_last_levels)
