@@ -57,6 +57,9 @@ class counting_set(object):
     def add(self, item):
         self.data[item] += 1
     
+    def __repr__(self):
+        return 'counting_set(%r)' % dict(self.data)
+    
     def __eq__(self, other):
         return self.data == other.data
 
@@ -305,6 +308,37 @@ class TestTileManagerWMSSource(object):
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326)),
              ((0.0, -90.0, 180.0, 90.0), (512, 512), SRS(4326))])
 
+
+class TestTileManagerWMSSourceMinimalMetaRequests(object):
+    def setup(self):
+        self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
+        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        self.client = MockWMSClient()
+        self.source = WMSSource(self.client)
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
+            meta_size=[2, 2], meta_buffer=10, minimize_meta_requests=True)
+    
+    def test_create_tile_single(self):
+        # not enabled for single tile requests
+        self.tile_mgr._create_tiles([Tile((0, 0, 2))])
+        eq_(self.file_cache.stored_tiles,
+            set([(0, 0, 2), (0, 1, 2), (1, 0, 2), (1, 1, 2)]))
+        eq_(sorted(self.client.requested),
+            [((-180.0, -90.0, 3.515625, 90.0), (522, 512), SRS(4326))])
+    
+    def test_create_tile_multiple(self):
+        self.tile_mgr._create_tiles([Tile((4, 0, 3)), Tile((4, 1, 3)), Tile((4, 2, 3))])
+        eq_(self.file_cache.stored_tiles,
+            set([(4, 0, 3), (4, 1, 3), (4, 2, 3)]))
+        eq_(sorted(self.client.requested),
+            [((-1.7578125, -90, 46.7578125, 46.7578125), (276, 778), SRS(4326))])
+
+    def test_create_tile_multiple_fragmented(self):
+        self.tile_mgr._create_tiles([Tile((4, 0, 3)), Tile((5, 2, 3))])
+        eq_(self.file_cache.stored_tiles,
+            set([(4, 0, 3), (4, 1, 3), (4, 2, 3), (5, 0, 3), (5, 1, 3), (5, 2, 3)]))
+        eq_(sorted(self.client.requested),
+            [((-1.7578125, -90, 91.7578125, 46.7578125), (532, 778), SRS(4326))])
 
 class SlowMockSource(MockSource):
     supports_meta_tiles = True

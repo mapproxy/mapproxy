@@ -218,7 +218,7 @@ class Seeder(object):
         for subtile in subtiles:
             total_sub_seeds += 1
             if subtile is None: continue
-            sub_bbox = self.grid.meta_bbox(subtile)
+            sub_bbox = self.grid.meta_tile(subtile).bbox
             intersection = CONTAINS if all_subtiles else self.task.intersects(sub_bbox)
             if intersection:
                 sub_seeds.append((subtile, sub_bbox, intersection))

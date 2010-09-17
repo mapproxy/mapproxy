@@ -132,6 +132,12 @@ with no data (e.g. water areas, areas with no roads, etc.).
 
 .. note:: This feature is only available on Unix, since Windows has no support for symbolic links.
 
+``minimize_meta_requests``
+""""""""""""""""""""""""""
+If set to ``true``, MapProxy will only issue a single request to the source. This option can reduce the request latency for uncached areas (on demand caching).
+
+By default MapProxy requests all uncached meta tiles that intersect the requested bbox. With a typical configuration it is not uncommon that a requests will trigger four requests each larger than 2000x2000 pixel. With the ``minimize_meta_requests`` option enabled, each request will trigger only one request to the source. That request will be aligned to the next tile boundaries and the tiles will be cached.
+
 
 ``watermark``
 """""""""""""
