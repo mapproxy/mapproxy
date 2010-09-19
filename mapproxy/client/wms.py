@@ -31,7 +31,7 @@ class WMSClient(object):
         resampling=None, supported_formats=None, lock=None):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
-        self.supported_srs = set(supported_srs or [])
+        self.supported_srs = supported_srs or []
         self.supported_formats = supported_formats or []
         self.resampling = resampling or base_config().image.resampling_method
         self.lock = lock
@@ -80,7 +80,8 @@ class WMSClient(object):
             if srs.is_latlong == latlong:
                 return srs
         
-        return iter(self.supported_srs).next()
+        # else
+        return self.supported_srs[0]
     
     def _retrieve(self, query, format):
         url = self._query_url(query, format)
@@ -112,7 +113,7 @@ class WMSInfoClient(object):
     def __init__(self, request_template, supported_srs=None, http_client=None):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
-        self.supported_srs = set(supported_srs or [])
+        self.supported_srs = supported_srs or []
     
     def get_info(self, query):
         if self.supported_srs and query.srs not in self.supported_srs:
@@ -135,7 +136,7 @@ class WMSInfoClient(object):
         return self._retrieve(info_query)
     
     def _best_supported_srs(self, srs):
-        return iter(self.supported_srs).next()
+        return self.supported_srs[0]
     
     def _retrieve(self, query):
         url = self._query_url(query)
