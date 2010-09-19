@@ -21,7 +21,7 @@ from __future__ import with_statement, division
 
 import os
 import hashlib
-import yaml #pylint: disable=F0401
+import yaml #pylint: disable-msg=F0401
 
 import logging
 log = logging.getLogger(__name__)
