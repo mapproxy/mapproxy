@@ -1,5 +1,6 @@
 import os
 import sys
+import platform
 from setuptools import setup, find_packages
 from distutils.cmd import Command
 
@@ -25,6 +26,18 @@ class build_api(Command):
             print 'install epydoc to create the API documentation'
         finally:
             sys.argv[1:] = argv_
+
+install_requires = [
+    'PIL>=1.1.6,<1.1.99',
+    'PyYAML>=3.0,<3.99',
+    'setuptools>=0.6c9',
+    'Paste>=1.7.2,<1.7.99',
+    'PasteDeploy>=1.3.3,<1.3.99',
+    'PasteScript>=1.7.3,<1.7.99',
+]
+
+if platform.python_version_tuple() < ('2', '6'):
+    install_requires.append('multiprocessing>=2.6')
 
 setup(
     name='MapProxy',
@@ -53,14 +66,7 @@ setup(
         ],
     },
     package_data = {'': ['*.xml', '*.yaml', '*.ttf']},
-    install_requires=[
-        'PIL>=1.1.6,<1.1.99',
-        'PyYAML>=3.0,<3.99',
-        'setuptools>=0.6c9',
-        'Paste>=1.7.2,<1.7.99',
-        'PasteDeploy>=1.3.3,<1.3.99',
-        'PasteScript>=1.7.3,<1.7.99',
-    ],
+    install_requires=install_requires,
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: GNU Affero General Public License v3",
