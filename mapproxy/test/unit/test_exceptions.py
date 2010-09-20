@@ -178,7 +178,7 @@ class TestWMSImageExceptionHandler(ExceptionHandlerTest):
         eq_(sorted([x for x in img.histogram() if x > 25]),
             [377, 14623])
         img = img.convert('RGBA')
-        eq_(img.getpixel((0, 0)), (255, 255, 255, 0))
+        eq_(img.getpixel((0, 0))[3], 0)
     
 
 class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
@@ -225,5 +225,5 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
         assert img.size == (150, 100)
         assert img.mode == 'P'
         img = img.convert('RGBA')
-        eq_(img.getpixel((0, 0)), (255, 255, 255, 0))
+        eq_(img.getpixel((0, 0))[3], 0)
     
