@@ -62,7 +62,7 @@ setup(
             'app = mapproxy.wsgiapp:app_factory'
         ],
         'paste.paster_create_template': [
-            'mapproxy_conf=mapproxy.paster_template:ConfigurationTemplate'
+            'mapproxy_conf=mapproxy.config_template:PasterConfigurationTemplate'
         ],
         'paste.filter_factory': [
             'lighttpd_root_fix = mapproxy.util.wsgi:lighttpd_root_fix_filter_factory',
