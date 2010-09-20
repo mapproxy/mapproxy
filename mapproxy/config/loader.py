@@ -222,7 +222,7 @@ class GridConfiguration(ConfigurationBase):
 
 
 class GlobalConfiguration(ConfigurationBase):
-    optional_keys = set('image grid srs'.split())
+    optional_keys = set('image grid srs http cache'.split())
     
     def __init__(self, **kw):
         ConfigurationBase.__init__(self, **kw)
