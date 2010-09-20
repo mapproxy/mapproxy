@@ -22,6 +22,27 @@ if platform.system() == "Java":
     class ImagePalette(object):
         def __init__(self, *args, **kw):
             raise NotImplementedError()
+            
+    def quantize(img, colors=256, alpha=False, defaults=None):
+        return img.convert('P', palette=Image.ADAPTIVE, colors=colors)
     
 else:
     from PIL import Image, ImageColor, ImageDraw, ImageFont, ImagePalette
+    
+    def quantize(img, colors=256, alpha=False, defaults=None):
+        if hasattr(Image, 'FASTOCTREE'):
+            if not alpha:
+                img = img.convert('RGB')
+            img = img.quantize(colors, Image.FASTOCTREE)
+        else:
+            if alpha:
+                alpha = img.split()[3]
+                img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
+                mask = Image.eval(alpha, lambda a: 255 if a <=128 else 0)
+                img.paste(255, mask)
+                if defaults is not None:
+                    defaults['transparency'] = 255
+            else:
+                img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
+           
+        return img
