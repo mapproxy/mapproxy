@@ -5,4 +5,4 @@ include LICENSE.txt
 include CHANGES.txt
 
 recursive-include mapproxy *.*
-recursive-exclude mapproxy *.pyc
+recursive-exclude mapproxy *.pyc *.rej *.orig
