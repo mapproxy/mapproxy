@@ -3,8 +3,7 @@ include setup.cfg
 include README.txt
 include LICENSE.txt
 include CHANGES.txt
+include COPYING.txt
 
 recursive-include mapproxy *
-recursive-exclude mapproxy *.pyc
-recursive-exclude mapproxy *.lck
-recursive-exclude mapproxy .DS_Store
+recursive-exclude mapproxy *.pyc *.class *.pyd .DS_Store *.rej *.orig *.lck .empty
