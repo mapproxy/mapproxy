@@ -28,16 +28,19 @@ class build_api(Command):
             sys.argv[1:] = argv_
 
 install_requires = [
-    'PIL>=1.1.6,<1.1.99',
-    'PyYAML>=3.0,<3.99',
     'setuptools>=0.6c9',
     'Paste>=1.7.2,<1.7.99',
     'PasteDeploy>=1.3.3,<1.3.99',
     'PasteScript>=1.7.3,<1.7.99',
 ]
 
-if platform.python_version_tuple() < ('2', '6'):
-    install_requires.append('multiprocessing>=2.6')
+if platform.system() != "Java":
+    if platform.python_version_tuple() < ('2', '6'):
+        install_requires.append('multiprocessing>=2.6')
+    install_requires.extend([
+        'PIL>=1.1.6,<1.1.99',
+        'PyYAML>=3.0,<3.99',
+    ])
 
 setup(
     name='MapProxy',

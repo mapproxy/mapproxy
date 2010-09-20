@@ -15,10 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import Image
-import ImageDraw
-import ImageColor
 
+from mapproxy.platform.image import (
+    Image,
+    ImageDraw,
+    ImageColor,
+)
 import tempfile
 from nose.tools import eq_
 from cStringIO import StringIO

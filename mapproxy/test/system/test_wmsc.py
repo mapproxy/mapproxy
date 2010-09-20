@@ -17,7 +17,7 @@
 from __future__ import with_statement, division
 import os
 import sys
-import Image
+from mapproxy.platform.image import Image
 import functools
 
 from cStringIO import StringIO

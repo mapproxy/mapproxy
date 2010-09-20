@@ -15,10 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import Image
-import ImageColor
-import ImageDraw
-import ImageFont
+
+from mapproxy.platform.image import Image, ImageColor, ImageDraw, ImageFont
 from mapproxy.image import ImageSource
 
 _pil_ttf_support = True
@@ -178,7 +176,8 @@ class ExceptionImage(MessageImage):
     
     def draw_msg(self, msg_img, draw):
         if not self.transparent:
-            draw.rectangle((0, 0, msg_img.size[0], msg_img.size[1]), fill=self.bgcolor)
+            bgcolor = ImageColor.getrgb(self.bgcolor)
+            draw.rectangle((0, 0, msg_img.size[0], msg_img.size[1]), fill=bgcolor)
         MessageImage.draw_msg(self, msg_img, draw)
     
 

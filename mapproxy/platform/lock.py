@@ -15,26 +15,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from mapproxy.util.ext.lockfile import LockFile
-from mapproxy.platform.lock import LockTimeout, FileLock, LockError, cleanup_lockdir
-import random
+import platform
 
-class SemLock(FileLock):
-    """
-    File-lock-based counting semaphore (i.e. this lock can be locked n-times).
-    """
-    def __init__(self, lock_file, n, timeout=60.0, step=0.01):
-        FileLock.__init__(self, lock_file, timeout=timeout, step=step)
-        self.n = n
-    
-    def _try_lock(self):
-        tries = 0
-        i = random.randint(0, self.n-1)
-        while True:
-            tries += 1
-            try:
-                return LockFile(self.lock_file + str(i))
-            except LockError, e:
-                if tries >= self.n:
-                    raise
-            i = (i+1) % self.n
+if platform.system() == "Java":
+    from mapproxy.platform.jython.lock import (
+        LockTimeout,
+        FileLock,
+        LockError,
+        cleanup_lockdir,
+    )
+else:
+    from mapproxy.platform.cpython.lock import (
+        LockTimeout,
+        FileLock,
+        LockError,
+        cleanup_lockdir)

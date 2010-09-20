@@ -20,9 +20,7 @@ Image and tile manipulation (transforming, merging, etc).
 from __future__ import with_statement
 from cStringIO import StringIO
 
-import Image
-import ImageColor
-
+from mapproxy.platform.image import Image, ImageColor, quantize
 from mapproxy.config import base_config
 
 import logging
@@ -248,17 +246,16 @@ class ReadBufWrapper(object):
         return getattr(self.stringio, name)
 
 def img_to_buf(img, format='png', paletted=None):
-    defaults = {}
+    defaults = {}    
     if paletted is None:
-        paletted = base_config().image.paletted
+        if format == 'png8':
+            paletted = True
+        else:
+            paletted = base_config().image.paletted
     if paletted:
-        if format in ('png', 'gif'):
+        if format in ('png', 'gif', 'png8'):
             if img.mode == 'RGBA':
-                alpha = img.split()[3]
-                img = quantize(img, colors=255)
-                mask = Image.eval(alpha, lambda a: 255 if a <=128 else 0)
-                img.paste(255, mask)
-                defaults['transparency'] = 255
+                img = quantize(img, alpha=True, defaults=defaults)
             else:
                 img = quantize(img)
             if hasattr(Image, 'RLE'):
@@ -266,15 +263,11 @@ def img_to_buf(img, format='png', paletted=None):
     format = filter_format(format)
     buf = StringIO()
     if format == 'jpeg':
+        img = img.convert('RGB')
         defaults['quality'] = base_config().image.jpeg_quality
     img.save(buf, format, **defaults)
     buf.seek(0)
     return buf
-
-def quantize(img, colors=256):
-    if hasattr(Image, 'FASTOCTREE'):
-        return img.convert('RGB').quantize(colors, Image.FASTOCTREE)
-    return img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
     
 def filter_format(format):
     if format.lower() == 'geotiff':
