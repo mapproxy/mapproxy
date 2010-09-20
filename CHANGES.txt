@@ -1,3 +1,10 @@
+0.8.5 2010-09-20
+
+- [mapproxy-seed] fixed libgdal loading on some Linux systems
+- [mapproxy-seed] check for intersections on all levels
+- add origin options to /tiles service to support Google Maps clients
+- now Python 2.7 compatible
+
 0.8.4.1 2010-09-20
 
 - Repackaging only. Removed .rej and .orig files from source distribution.
