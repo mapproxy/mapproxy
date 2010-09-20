@@ -404,13 +404,13 @@ Here you can define some options that affect the way MapProxy generates image re
 ``base_dir``
   The base directory where all cached tiles will be stored. The path can
   either be absolute (e.g. ``/var/mapproxy/cache``) or relative to the
-  proxy.yaml file.
+  mapproxy.yaml file.
 
 ``lock_dir``
   MapProxy uses locking to prevent multiple request for the same meta-tile.
   This option defines where the temporary lock files will be stored. The path
   can either be absolute (e.g. ``/tmp/lock/mapproxy``) or relative to the
-  proxy.yaml file.
+  mapproxy.yaml file.
   
   .. note:: 
     Old locks will not be removed immediately but when new locks are created.
@@ -430,7 +430,7 @@ Here you can define some options that affect the way MapProxy generates image re
   MapProxy yo your own set of proj4 init files. The path should contain a ``epsg`` file
   with the EPSG definitions.
   
-  The configured path can be absolute or relative to the proxy.yaml.
+  The configured path can be absolute or relative to the mapproxy.yaml.
 
 .. _axis_order:
 
