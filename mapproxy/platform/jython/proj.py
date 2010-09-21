@@ -38,11 +38,11 @@ class Proj(object):
             self._crs = CRS.decode(init, True)
             self._srs_def = init
         elif isinstance(proj_def, basestring):
-            self._crs = CRS.parseWKT(proj_def)    
+            self._crs = CRS.parseWKT(proj_def)
             self._srs_def = proj_def
         else:
-            raise ProjInitError('error initializing Proj(proj_def=%r, init=%r): %s' 
-                                % (proj_def, init, libproj.pj_strerrno(errno)))        
+            raise ProjInitError('error initializing Proj(proj_def=%r, init=%r)'
+                                % (proj_def, init))
             
     def is_latlong(self):
         axis1 = str(self._crs.getCoordinateSystem().getAxis(0)).lower()
