@@ -393,7 +393,7 @@ Here you can define some options that affect the way MapProxy generates image re
 """""""""
 
 ``meta_size``
-  MapProxy does not make a single request for every tile but will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 64 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source WMS.
+  MapProxy does not make a single request for every tile but will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source WMS.
   
 ``meta_buffer``
   MapProxy will increase the size of each meta-tile request by this number of
