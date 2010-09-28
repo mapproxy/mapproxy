@@ -1,8 +1,12 @@
 {{py:
 from urllib import quote, quote_plus
+from mapproxy.version import version
 
 def strip(s):
     return s.split('/')[1]
+    
+def replace(s):
+    return s.replace(':','')
 }}
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -15,16 +19,19 @@ def strip(s):
     <body>
         <div id="box">
         <div id="header">
-            <img src="static/logo.png">
-            <h1>MapProxy</h1>
+            <a href="http://mapproxy.org/"><img src="static/logo.png">
+            <h1>MapProxy</h1></a>
         </div>
         <div id="menu">
             <span class="current"><a href="demo.html">Demos</a></span>            
         </div>    
         <div id="content">
             <h2>About</h2>
-            <p>please insert any text describing this</p>
+            <p>MapProxy Version {{version}}</p>
             <h2>WMS</h2>
+            <span class="capabilities">Capabilities Document</span>
+            <span class="capabilities"><a href="../service?REQUEST=GetCapabilities">(download as xml)</a></span>
+            <span class="capabilities"><a href="../demo/?wms_capabilities">(view as html)</a></span>
             <table class="code">
                 <tr><th>Layer</th><th>Image-Format</th></tr>
                 {{for layer in layers.values()}}
@@ -37,10 +44,21 @@ def strip(s):
                     {{endfor}}
                 {{endfor}}
             </table>
-            
+            <h2>WMS-C</h2>
+            <span class="capabilities">Capabilities Document</span>
+            <span class="capabilities"><a href="../service?REQUEST=GetCapabilities&tiled=true">(download as xml)</a></span>
+            <span class="capabilities"><a href="../demo/?wmsc_capabilities">(view as html)</a></span>
             <h2>TMS</h2>
+            <span class="capabilities">Capabilities Document</span>
+            <span class="capabilities"><a href="../tms/1.0.0/">(download as xml)</a></span>
+            <span class="capabilities"><a href="../demo/?tms_capabilities">(view as html)</a></span>
             <table class="code">
-                <tr><th>Layer</th><th>Coordinate-System</th><th>Image-Format</th></tr>
+                <tr>
+                    <th>Layer</th>
+                    <th>Coordinate-System</th>
+                    <th>Image-Format</th>
+                    <th>Layer Capabilities</th>
+                </tr>
             {{for tms_layer_name, tms_layers in tms_layers.items()}}
             <tr><td rowspan="{{len(tms_layers)}}">{{tms_layer_name}}</td>
                 {{for loop, layer in looper(tms_layers)}}
@@ -48,7 +66,8 @@ def strip(s):
                         <tr>
                     {{endif}}
                     <td class="value">{{layer.grid.srs.srs_code}}</td>
-                    <td class="value"><a href="../demo/?tms_layer={{layer.md['name']}}&format={{layer.format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.format}}</a></td></tr>
+                    <td class="value"><a href="../demo/?tms_layer={{layer.md['name']}}&format={{layer.format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.format}}</a></td>
+                    <td class="value"><a href="../demo/?tms_capabilities&layer={{layer.md['name']}}&srs={{layer.grid.srs.srs_code | replace}}">click here</a></td></tr>
                 {{endfor}}            
             {{endfor}}
             </table>
