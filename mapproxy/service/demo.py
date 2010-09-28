@@ -19,6 +19,7 @@ Demo service handler
 """
 import os
 import mimetypes
+from urllib2 import urlopen
 from collections import defaultdict
 
 from itertools import chain
@@ -42,16 +43,11 @@ log = logging.getLogger(__name__)
 
 class DemoServer(Server):
     names = ('demo',)    
-    def __init__(self, layers, md, layer_merger=None, request_parser=None, tile_layers=None,
-        attribution=None, srs=None, image_formats=None):
+    def __init__(self, layers, md, request_parser=None, tile_layers=None,
+                 srs=None, image_formats=None):
         Server.__init__(self)      
         self.layers = layers
-        self.tile_layers = tile_layers or {}
-        if layer_merger is None:
-            from mapproxy.image import LayerMerger
-            layer_merger = LayerMerger
-        self.merger = layer_merger
-        self.attribution = attribution
+        self.tile_layers = tile_layers or {}        
         self.md = md                
         self.image_formats = image_formats or base_config().wms.image_formats
         filter_image_format = []
@@ -67,11 +63,27 @@ class DemoServer(Server):
             static_file = os.path.join(os.path.dirname(__file__), 'templates', filename)            
             type, encoding = mimetypes.guess_type(filename)            
             return Response(open(static_file, 'rb'), content_type=type)
-                        
+        
         if 'wms_layer' in req.args:                      
             demo = self._render_wms_template('demo/wms_demo.html', req)
         elif 'tms_layer' in req.args:            
             demo = self._render_tms_template('demo/tms_demo.html', req)
+        elif 'wms_capabilities' in req.args:
+            url = '%sservice?REQUEST=GetCapabilities'%(req.script_url)
+            capabilities = urlopen(url)
+            demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS', url)
+        elif 'wmsc_capabilities' in req.args:
+            url = '%sservice?REQUEST=GetCapabilities&tiled=true'%(req.script_url)
+            capabilities = urlopen(url)
+            demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS-C', url)             
+        elif 'tms_capabilities' in req.args:
+            if 'layer' in req.args and 'srs' in req.args:
+                url = '%stms/1.0.0/%s_%s'%(req.script_url, req.args['layer'], req.args['srs'])
+                capabilities = urlopen(url)
+            else:
+                url = '%stms/1.0.0/'%(req.script_url)
+                capabilities = urlopen(url)
+            demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'TMS', url)
         else:         
             demo = self._render_template('demo/demo.html')
         return Response(demo,content_type='text/html') 
@@ -105,3 +117,9 @@ class DemoServer(Server):
                                    format = req.args['format'],
                                    resolutions = res,
                                    all_tile_layers = self.tile_layers)
+                                   
+    def _render_capabilities_template(self, template, xmlfile, service, url):
+        template = get_template(template)        
+        return template.substitute(capabilities = xmlfile,
+                                   service = service,
+                                   url = url)
