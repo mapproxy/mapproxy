@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Mapproxy Demo TMS</title>
+        <link rel="stylesheet" type="text/css" href="static/site.css" />
+    </head>
+    <body onload="init()">
+        <div id="box">
+        <div id="header">
+            <img src="static/logo.png">
+            <h1>MapProxy</h1>
+        </div>
+        <div id="menu">
+            <span class=""><a href="demo.html">Demos</a></span>
+            <span class="current"><a href="">TMS {{layer.md['name']}} {{srs}}</a></span>                  
+        </div>    
+        <div id="content">
+            <h2>Openlayers Client - Layer {{layer.md['name']}}</h2>
+            <form action="" method="GET">
+                <table>
+                    <tr><th>Coordinate System</th><th>Image format</th></tr>
+                    <tr><td>
+                            <select name="srs" size="1" onchange="this.form.submit()"> {{format}}
+                                {{for tms_layer in all_tile_layers.values()}}
+                                    {{if tms_layer.md['name'] == layer.md['name']}}
+                                        {{if tms_layer.md['name_internal'] == layer.md['name_internal']}}
+                                            <option selected value="{{srs}}">{{srs}}</option>
+                                        {{else}}
+                                            <option value="{{tms_layer.grid.srs.srs_code}}">{{tms_layer.grid.srs.srs_code}}</option>
+                                        {{endif}}
+                                    {{endif}}
+                                {{endfor}}
+                            </select>
+                            <input type="hidden" name="format" value="png">
+                            <input type="hidden" name="tms_layer" value="{{layer.md['name']}}">
+                        </td>
+                        <td>{{format}}</td></tr>
+                </table>
+              </form>
+            <div id='map'></div>
+            <h3>Bounding Box</h3>
+            <p class="code">{{', '.join(str(s) for s in layer.grid.bbox)}}</p>
+            <h3>Level and Resolutions</h3>
+            <table class="code">
+                <tr><th>Level</th><th>Resolution</th></tr>
+                {{for level, res in layer.grid.tile_sets}}
+                <tr><td>{{level}}</td><td>{{res}}</td></tr>
+                {{endfor}}
+            </table>                               
+        </div>            
+        </div>
+        <script src="http://openlayers.org/api/OpenLayers.js"></script>
+        <script type="text/javascript">        
+            var map;
+            function init(){
+                var mapOptions = {
+                projection: new OpenLayers.Projection('{{srs}}'),    
+                maxResolution: {{resolutions[0]}},
+                //units: 'm',
+                numZoomLevels: {{len(resolutions)}},
+                maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}})
+                };
+                map = new OpenLayers.Map('map', mapOptions);
+                OpenLayers.Util.onImageLoadErrorColor = "blue";
+                
+                var osm_tms = new OpenLayers.Layer.TMS('TMS {{layer.md['name']}}', 
+                    '../tms/', {layername: '{{layer.md["name_internal"]}}', type: '{{format}}', tileSize: new OpenLayers.Size{{layer.grid.tile_size}},
+                    serverResolutions: [{{', '.join(str(r) for r in resolutions)}}]
+                
+                });
+                var osm_wms = new OpenLayers.Layer.WMS('WMS Omniscale', 'http://osm.omniscale.net/proxy/service?',{layers: 'osm', format: 'image/png'}, 
+                    { singleTile: true, ratio: 1 } );                         
+                map.addLayers([osm_tms, osm_wms]);                
+                map.addControl(new OpenLayers.Control.LayerSwitcher());
+                map.zoomToMaxExtent(); 
+            }
+        </script>     
+    </body>
+</html>
