@@ -22,6 +22,11 @@ div#header {
     background-color: #fefefe;
 }
 
+div#header a {
+    text-decoration: none;
+    color: inherit;
+}
+
 div#header img {
   padding-left: 0.7em;
   display: inline;
@@ -110,4 +115,7 @@ div#map {
 td.value{
     padding: 0 2em;
     
+}
+.capabilities {    
+    padding: 1em;
 }
