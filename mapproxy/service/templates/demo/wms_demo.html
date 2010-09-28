@@ -13,12 +13,12 @@
         </div>
         <div id="menu">
             <span class=""><a href="demo.html">Demos</a></span>
-            <span class="current"><a href="">WMS {{layer.md['name']}}</a></span>                      
-        </div>    
+            <span class="current"><a href="">WMS {{layer.md['name']}}</a></span>
+        </div>
         <div id="content">
-            <h2> Openlayers Client - Layer {{layer.md['name']}}</h2>
+            <h2>Openlayers Client - Layer {{layer.md['name']}}</h2>
             <div id='map'></div>
-        </div>            
+        </div>
         </div>
         <script src="http://openlayers.org/api/OpenLayers.js"></script>
         <script type="text/javascript">
@@ -32,8 +32,8 @@
                 osm_wms.addOptions({isBaseLayer: true});
                 
                 map.addLayer(osm_wms);
-                map.zoomToMaxExtent();           
+                map.zoomToMaxExtent();
             }
-        </script>     
+        </script>
     </body>
 </html>
