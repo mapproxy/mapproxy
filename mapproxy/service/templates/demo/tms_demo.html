@@ -34,7 +34,7 @@ menu_title= "TMS %s %s"%(layer.md['name'], srs)
                 {{endfor}}
             </table>                               
 {{def jscript}}
-        <script src="http://openlayers.org/api/OpenLayers.js"></script>
+        <script src="static/OpenLayers.js"></script>
         <script type="text/javascript">        
             var map;
             function init(){
@@ -53,10 +53,11 @@ menu_title= "TMS %s %s"%(layer.md['name'], srs)
                     serverResolutions: [{{', '.join(str(r) for r in resolutions)}}]
                 
                 });
-                var osm_wms = new OpenLayers.Layer.WMS('WMS Omniscale', 'http://osm.omniscale.net/proxy/service?',{layers: 'osm', format: 'image/png'}, 
+                /*var osm_wms = new OpenLayers.Layer.WMS('WMS Omniscale', 'http://osm.omniscale.net/proxy/service?',{layers: 'osm', format: 'image/png'}, 
                     { singleTile: true, ratio: 1 } );                         
-                map.addLayers([osm_tms, osm_wms]);                
-                map.addControl(new OpenLayers.Control.LayerSwitcher());
+                map.addLayers([osm_tms, osm_wms]); */
+                map.addLayer(osm_tms);               
+                //map.addControl(new OpenLayers.Control.LayerSwitcher());
                 map.zoomToMaxExtent(); 
             }
         </script>     
