@@ -1,21 +1,6 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Mapproxy Demo TMS</title>
-        <link rel="stylesheet" type="text/css" href="static/site.css" />
-    </head>
-    <body onload="init()">
-        <div id="box">
-        <div id="header">
-            <img src="static/logo.png">
-            <h1>MapProxy</h1>
-        </div>
-        <div id="menu">
-            <span class=""><a href="demo.html">Demos</a></span>
-            <span class="current"><a href="">TMS {{layer.md['name']}} {{srs}}</a></span>                  
-        </div>    
-        <div id="content">
+{{py:
+menu_title= "TMS %s %s"%(layer.md['name'], srs)
+}}
             <h2>Openlayers Client - Layer {{layer.md['name']}}</h2>
             <form action="" method="GET">
                 <table>
@@ -48,8 +33,7 @@
                 <tr><td>{{level}}</td><td>{{res}}</td></tr>
                 {{endfor}}
             </table>                               
-        </div>            
-        </div>
+{{def jscript}}
         <script src="http://openlayers.org/api/OpenLayers.js"></script>
         <script type="text/javascript">        
             var map;
@@ -76,5 +60,4 @@
                 map.zoomToMaxExtent(); 
             }
         </script>     
-    </body>
-</html>
+{{enddef}}
