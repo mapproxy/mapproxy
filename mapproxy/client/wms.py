@@ -65,7 +65,8 @@ class WMSClient(object):
         src_query = MapQuery(src_bbox, src_size, src_srs, format)
         resp = self._retrieve(src_query, format)
         
-        img = ImageSource(resp, format, size=src_size)
+        img = ImageSource(resp, format, size=src_size,
+                          transparent=self.request_template.params.transparent)
         
         img = ImageTransformer(src_srs, dst_srs, self.resampling).transform(img, src_bbox, 
             query.size, dst_bbox)
