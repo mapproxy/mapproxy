@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Mapproxy Demo WMS</title>
+        <link rel="stylesheet" type="text/css" href="static/site.css" />
+        
+  </head>
+  {{if jscript !=None }}
+    <body onload="init()">
+  {{else}}
+    <body>
+  {{endif}}
+        <div id="box">
+        <div id="header">
+            <img src="static/logo.png">
+            <h1>MapProxy</h1>
+        </div>
+        <div id="menu">
+{{if menu_title != None}}
+            <span class=""><a href="demo.html">Demos</a></span>
+            <span class="current"><a href="">{{menu_title}}</a></span>
+{{else}}
+            <span class="current"><a href="demo.html">Demos</a></span>
+{{endif}}
+        </div>
+        <div id="content">
+{{self.body}}
+        </div>
+        </div>
+{{jscript}}
+    </body>
+</html>
