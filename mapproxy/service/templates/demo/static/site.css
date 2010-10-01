@@ -112,10 +112,17 @@ div#map {
     padding: 1em;
 }
 
+th {
+    padding-right: 1.5em;
+}
+
 td.value{
-    padding: 0 2em;
-    
+    padding: 0 2em;    
 }
 .capabilities {    
     padding: 1em;
+}
+
+div.capabilities span{
+    padding-right:1.5em;
 }
