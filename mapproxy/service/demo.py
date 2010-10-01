@@ -89,7 +89,7 @@ class DemoServer(Server):
         return Response(demo,content_type='text/html') 
         
     def _render_template(self, template):    
-        template = get_template(template) 
+        template = get_template(template, default_inherit="demo/static.html") 
         tms_tile_layers = defaultdict(list)
         for layer in self.tile_layers:
             name = self.tile_layers[layer].md.get('name')
@@ -100,18 +100,17 @@ class DemoServer(Server):
                                    tms_layers = tms_tile_layers)
                                 
     def _render_wms_template(self, template, req):
-        template = get_template(template)
+        template = get_template(template, default_inherit="demo/static.html")
         return template.substitute(layer = self.layers[req.args['wms_layer']],
                                    format = req.args['format'])
     
     def _render_tms_template(self, template, req):
-        template = get_template(template)
+        template = get_template(template, default_inherit="demo/static.html")
         tile_layer = self.tile_layers['_'.join([req.args['tms_layer'], req.args['srs'].replace(':','')])]
         resolutions = tile_layer.grid.tile_sets
         res = []
         for level, resolution in resolutions:
-            res.append(resolution) 
-        print tile_layer.md
+            res.append(resolution)
         return template.substitute(layer = tile_layer,
                                    srs = req.args['srs'],
                                    format = req.args['format'],
@@ -119,7 +118,7 @@ class DemoServer(Server):
                                    all_tile_layers = self.tile_layers)
                                    
     def _render_capabilities_template(self, template, xmlfile, service, url):
-        template = get_template(template)        
+        template = get_template(template, default_inherit="demo/static.html")
         return template.substitute(capabilities = xmlfile,
                                    service = service,
                                    url = url)
