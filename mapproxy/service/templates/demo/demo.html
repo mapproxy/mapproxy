@@ -7,31 +7,18 @@ def strip(s):
     
 def replace(s):
     return s.replace(':','')
+    
+menu_title=None
+jscript=None
 }}
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>MapProxy Demo</title>
-        <link rel="stylesheet" type="text/css" href="static/site.css" />
-    </head>
-    <body>
-        <div id="box">
-        <div id="header">
-            <a href="http://mapproxy.org/"><img src="static/logo.png">
-            <h1>MapProxy</h1></a>
-        </div>
-        <div id="menu">
-            <span class="current"><a href="demo.html">Demos</a></span>            
-        </div>    
-        <div id="content">
             <h2>About</h2>
             <p>MapProxy Version {{version}}</p>
             <h2>WMS</h2>
-            <span class="capabilities">Capabilities Document</span>
-            <span class="capabilities"><a href="../service?REQUEST=GetCapabilities">(download as xml)</a></span>
-            <span class="capabilities"><a href="../demo/?wms_capabilities">(view as html)</a></span>
+            <div class="capabilities">
+            <span>Capabilities Document</span>
+            <span><a href="../service?REQUEST=GetCapabilities">(download as xml)</a></span>
+            <span><a href="../demo/?wms_capabilities">(view as html)</a></span>
+            </div>
             <table class="code">
                 <tr><th>Layer</th><th>Image-Format</th></tr>
                 {{for layer in layers.values()}}
@@ -45,13 +32,17 @@ def replace(s):
                 {{endfor}}
             </table>
             <h2>WMS-C</h2>
-            <span class="capabilities">Capabilities Document</span>
-            <span class="capabilities"><a href="../service?REQUEST=GetCapabilities&tiled=true">(download as xml)</a></span>
-            <span class="capabilities"><a href="../demo/?wmsc_capabilities">(view as html)</a></span>
+            <div class="capabilities">
+            <span>Capabilities Document</span>
+            <span><a href="../service?REQUEST=GetCapabilities&tiled=true">(download as xml)</a></span>
+            <span><a href="../demo/?wmsc_capabilities">(view as html)</a></span>
+            </div>
             <h2>TMS</h2>
-            <span class="capabilities">Capabilities Document</span>
-            <span class="capabilities"><a href="../tms/1.0.0/">(download as xml)</a></span>
-            <span class="capabilities"><a href="../demo/?tms_capabilities">(view as html)</a></span>
+            <div class="capabilities">
+            <span>Capabilities Document</span>
+            <span><a href="../tms/1.0.0/">(download as xml)</a></span>
+            <span><a href="../demo/?tms_capabilities">(view as html)</a></span>
+            </div>
             <table class="code">
                 <tr>
                     <th>Layer</th>
@@ -71,7 +62,3 @@ def replace(s):
                 {{endfor}}            
             {{endfor}}
             </table>
-        </div>
-        </div>
-    </body>
-</html>
