@@ -86,17 +86,20 @@ class WMSMapRequestParams(RequestParams):
     srs = property(_get_srs, _set_srs)
     del _get_srs
     del _set_srs
-    
-    
-    @property
-    def transparent(self):
-        """
-        ``True`` if transparent is set to true, otherwise ``False``.
-        """
-        if self.get('transparent', 'false').lower() == 'true':
-            return True
-        return False
-    
+
+    def _get_transparent(self):
+         """
+         ``True`` if transparent is set to true, otherwise ``False``.
+         """
+         if self.get('transparent', 'false').lower() == 'true':
+             return True
+         return False
+    def _set_transparent(self, transparent):
+        self.params['transparent'] = str(transparent).lower()
+    transparent = property(_get_transparent, _set_transparent)
+    del _get_transparent
+    del _set_transparent
+
     @property
     def bgcolor(self):
         """
