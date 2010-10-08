@@ -22,7 +22,7 @@ from mapproxy.config import base_config
 from mapproxy.layer import MapQuery, InfoQuery
 from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClient
-from mapproxy.srs import make_lin_transf
+from mapproxy.srs import make_lin_transf, SRS
 from mapproxy.image import ImageSource
 from mapproxy.image.transform import ImageTransformer
 
@@ -114,6 +114,8 @@ class WMSInfoClient(object):
     def __init__(self, request_template, supported_srs=None, http_client=None):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
+        if not supported_srs and self.request_template.params.srs is not None:
+            supported_srs = [SRS(self.request_template.params.srs)]
         self.supported_srs = supported_srs or []
     
     def get_info(self, query):

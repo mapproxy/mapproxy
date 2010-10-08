@@ -17,10 +17,10 @@
 from __future__ import with_statement
 from mapproxy.client.http import HTTPClient, HTTPClientError
 from mapproxy.client.tile import TMSClient, TileClient, TileURLTemplate
-from mapproxy.client.wms import WMSClient
-from mapproxy.layer import MapQuery
+from mapproxy.client.wms import WMSClient, WMSInfoClient
+from mapproxy.layer import MapQuery, InfoQuery
 from mapproxy.request.wms import wms_request, WMS111MapRequest, WMS100MapRequest,\
-                                 WMS130MapRequest
+                                 WMS130MapRequest, WMS111FeatureInfoRequest
 from mapproxy.srs import bbox_equals, SRS
 from mapproxy.request import Request, url_decode
 from mapproxy.config import base_config
@@ -330,6 +330,39 @@ class TestWMSClient(object):
         assert img.mode in ('P', 'RGBA')
         img = img.convert('RGBA')
         eq_(img.getpixel((5, 5))[3], 0)
+
+class TestWMSInfoClient(object):
+    def test_transform_fi_request_supported_srs(self):
+        req = WMS111FeatureInfoRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo'})
+        http = MockHTTPClient()
+        wms = WMSInfoClient(req, http_client=http, supported_srs=[SRS(31467)])
+        fi_req = InfoQuery((8, 50, 9, 51), (512, 512),
+                           SRS(4326), (256, 256), 'text/plain')
+        
+        resp = wms.get_info(fi_req)
+        
+        assert_query_eq(http.requested[0],
+            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                           '&REQUEST=GetFeatureInfo&HEIGHT=512&SRS=EPSG%3A31467&info_format=text/plain'
+                           '&query_layers=foo'
+                           '&VERSION=1.1.1&WIDTH=512&STYLES=&x=259&y=255'
+                           '&BBOX=3428376.92835,5540409.81393,3500072.08248,5652124.61616')
+
+    def test_transform_fi_request(self):
+        req = WMS111FeatureInfoRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo', 'srs': 'EPSG:31467'})
+        http = MockHTTPClient()
+        wms = WMSInfoClient(req, http_client=http)
+        fi_req = InfoQuery((8, 50, 9, 51), (512, 512),
+                           SRS(4326), (256, 256), 'text/plain')
+        
+        resp = wms.get_info(fi_req)
+        
+        assert_query_eq(http.requested[0],
+            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                           '&REQUEST=GetFeatureInfo&HEIGHT=512&SRS=EPSG%3A31467&info_format=text/plain'
+                           '&query_layers=foo'
+                           '&VERSION=1.1.1&WIDTH=512&STYLES=&x=259&y=255'
+                           '&BBOX=3428376.92835,5540409.81393,3500072.08248,5652124.61616')
 
 class TestWMSMapRequest100(object):
     def setup(self):
