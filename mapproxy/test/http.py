@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import threading
+import cgi
 from urlparse import urlsplit
 from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
 from contextlib import contextmanager
@@ -127,8 +128,7 @@ def query_to_dict(query):
     d = {}
     if '?' in query:
         query = query.split('?', 1)[-1]
-    for kv in query.split('&'):
-        key, value = kv.split('=')
+    for key, value in cgi.parse_qsl(query):
         d[key.lower()] = value
     return d
 
