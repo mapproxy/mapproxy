@@ -111,10 +111,22 @@ class DemoServer(Server):
         res = []
         for level, resolution in resolutions:
             res.append(resolution)
+            
+        if tile_layer.grid.srs.is_latlong:
+            units = 'degree'
+        else:
+            units = 'm'
+            
+        if tile_layer.grid.profile == 'local':
+            add_res_to_options = True
+        else:
+            add_res_to_options = False
         return template.substitute(layer = tile_layer,
                                    srs = req.args['srs'],
                                    format = req.args['format'],
                                    resolutions = res,
+                                   units = units,
+                                   add_res_to_options = add_res_to_options,
                                    all_tile_layers = self.tile_layers)
                                    
     def _render_capabilities_template(self, template, xmlfile, service, url):
