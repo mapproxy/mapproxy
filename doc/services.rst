@@ -152,6 +152,6 @@ MapProxy supports KML version 2.2 for integration into Google Earth. Each layer 
   This service takes no further options::
 
     services:
-      tms:
+      kml:
 
 
