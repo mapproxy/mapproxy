@@ -1,6 +1,40 @@
 {{py:
+import cgi
+import textwrap
+
+wrapper = textwrap.TextWrapper(replace_whitespace=False, width=90,
+                               break_long_words=False)
+
 menu_title= "TMS %s %s"%(layer.md['name'], srs)
 }}
+{{def jscript}}
+<script src="static/OpenLayers.js"></script>
+<script type="text/javascript">        
+var map;
+function init(){                
+    var mapOptions = {
+    projection: new OpenLayers.Projection('{{srs}}'),    
+    maxResolution: {{resolutions[0]}},
+    {{if add_res_to_options}}
+    resolutions: [{{', '.join(str(r) for r in resolutions)}}],
+    {{endif}}
+    units: '{{units}}',
+    numZoomLevels: {{len(resolutions)}},
+    maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}})
+    };
+    
+    map = new OpenLayers.Map('map', mapOptions);
+    
+    var layer = new OpenLayers.Layer.TMS('TMS {{layer.md['name']}}', '../tms/',
+        {layername: '{{layer.md["name_internal"]}}', type: '{{format}}',
+         tileSize: new OpenLayers.Size{{layer.grid.tile_size}}
+    });
+    
+    map.addLayer(layer)
+    map.zoomToMaxExtent(); 
+}
+</script>     
+{{enddef}}
             <h2>Openlayers Client - Layer {{layer.md['name']}}</h2>
             <form action="" method="GET">
                 <table>
@@ -32,33 +66,10 @@ menu_title= "TMS %s %s"%(layer.md['name'], srs)
                 {{for level, res in layer.grid.tile_sets}}
                 <tr><td>{{level}}</td><td>{{res}}</td></tr>
                 {{endfor}}
-            </table>                               
-{{def jscript}}
-        <script src="static/OpenLayers.js"></script>
-        <script type="text/javascript">        
-            var map;
-            function init(){
-                var mapOptions = {
-                projection: new OpenLayers.Projection('{{srs}}'),    
-                maxResolution: {{resolutions[0]}},
-                //units: 'm',
-                numZoomLevels: {{len(resolutions)}},
-                maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}})
-                };
-                map = new OpenLayers.Map('map', mapOptions);
-                OpenLayers.Util.onImageLoadErrorColor = "blue";
-                
-                var osm_tms = new OpenLayers.Layer.TMS('TMS {{layer.md['name']}}', 
-                    '../tms/', {layername: '{{layer.md["name_internal"]}}', type: '{{format}}', tileSize: new OpenLayers.Size{{layer.grid.tile_size}},
-                    serverResolutions: [{{', '.join(str(r) for r in resolutions)}}]
-                
-                });
-                /*var osm_wms = new OpenLayers.Layer.WMS('WMS Omniscale', 'http://osm.omniscale.net/proxy/service?',{layers: 'osm', format: 'image/png'}, 
-                    { singleTile: true, ratio: 1 } );                         
-                map.addLayers([osm_tms, osm_wms]); */
-                map.addLayer(osm_tms);               
-                //map.addControl(new OpenLayers.Control.LayerSwitcher());
-                map.zoomToMaxExtent(); 
-            }
-        </script>     
-{{enddef}}
+            </table>
+            <h3>JavaScript code</h3>
+            <pre>
+{{for line in jscript().split('\n')}}
+{{cgi.escape(wrapper.fill(line))}}
+{{endfor}}
+            </pre>
