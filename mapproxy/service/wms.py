@@ -197,9 +197,6 @@ class WMSLayer(object):
         except TransformationError:
             raise RequestError('Could not transform BBOX: Invalid result.',
                 request=request)
-        except SourceError, e:
-            log.error(e)
-            raise RequestError(e.args[0], request=request)
         except BlankImage:
             return None
     

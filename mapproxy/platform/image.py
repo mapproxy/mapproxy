@@ -27,7 +27,10 @@ if platform.system() == "Java":
         return img.convert('P', palette=Image.ADAPTIVE, colors=colors)
     
 else:
-    from PIL import Image, ImageColor, ImageDraw, ImageFont, ImagePalette
+    try:
+        from PIL import Image, ImageColor, ImageDraw, ImageFont, ImagePalette
+    except ImportError:
+        import Image, ImageColor, ImageDraw, ImageFont, ImagePalette
     
     def quantize(img, colors=256, alpha=False, defaults=None):
         if hasattr(Image, 'FASTOCTREE'):

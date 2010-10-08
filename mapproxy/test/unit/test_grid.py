@@ -110,35 +110,21 @@ class TestAlignedGrid(object):
         eq_(sub.resolution(3)/2, sub.resolution(5))
         
 
-def test_metagrid_bbox():
-    mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))
-    bbox = mgrid.meta_bbox((0, 0, 2))
-    assert bbox == (-20037508.342789244, -20037508.342789244, 0.0, 0.0)
-    bbox = mgrid.meta_bbox((1, 1, 2))
-    assert bbox == (-20037508.342789244, -20037508.342789244, 0.0, 0.0)
-    bbox = mgrid.meta_bbox((4, 5, 3))
-    assert bbox == (0.0, 0.0, 10018754.171394622, 10018754.171394622)
-
-def test_metagrid_bbox_w_meta_size():
-    mgrid = MetaGrid(grid=TileGrid(), meta_size=(4, 2))
-    bbox = mgrid.meta_bbox((4, 5, 3))
-    assert bbox == (0.0, 0.0, 20037508.342789244, 10018754.171394622)
-
 def test_metagrid_tiles():
     mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))
-    assert list(mgrid.tiles((0, 0, 0))) == \
+    assert list(mgrid.meta_tile((0, 0, 0)).tile_patterns) == \
         [((0, 0, 0), (0, 0))]
-    assert list(mgrid.tiles((0, 1, 1))) == \
+    assert list(mgrid.meta_tile((0, 1, 1)).tile_patterns) == \
         [((0, 1, 1), (0, 0)), ((1, 1, 1), (256, 0)), 
          ((0, 0, 1), (0, 256)), ((1, 0, 1), (256, 256))]
          
-    assert list(mgrid.tiles((1, 2, 2))) == \
+    assert list(mgrid.meta_tile((1, 2, 2)).tile_patterns) == \
         [((0, 3, 2), (0, 0)), ((1, 3, 2), (256, 0)), 
          ((0, 2, 2), (0, 256)), ((1, 2, 2), (256, 256))]
     
 def test_metagrid_tiles_w_meta_size():
     mgrid = MetaGrid(grid=TileGrid(), meta_size=(4, 2))
-    assert list(mgrid.tiles((1, 2, 2))) == \
+    assert list(mgrid.meta_tile((1, 2, 2)).tile_patterns) == \
         [((0, 3, 2), (0, 0)), ((1, 3, 2), (256, 0)),
          ((2, 3, 2), (512, 0)), ((3, 3, 2), (768, 0)),
          ((0, 2, 2), (0, 256)), ((1, 2, 2), (256, 256)),
@@ -149,46 +135,51 @@ class TestMetaGridGeodetic(object):
         self.mgrid = MetaGrid(grid=tile_grid('EPSG:4326'), meta_size=(2, 2), meta_buffer=10)
     
     def test_meta_bbox_level_0(self):
-        eq_(self.mgrid.meta_bbox((0, 0, 0)), (-180, -90, 180, 90))
-        eq_(self.mgrid.meta_bbox((0, 0, 0), limit_to_bbox=False),
-            (-194.0625, -104.0625, 194.0625, 284.0625))
+        eq_(self.mgrid._meta_bbox((0, 0, 0)), ((-180, -90, 180, 90), (0, 0, 0, -128)))
+        eq_(self.mgrid._meta_bbox((0, 0, 0), limit_to_bbox=False),
+            ((-194.0625, -104.0625, 194.0625, 284.0625), (10, 10, 10, 10)))
         
-        eq_(self.mgrid.meta_tile_size((0, 0, 0)), (256, 128))
+        eq_(self.mgrid.meta_tile((0, 0, 0)).size, (256, 128))
     
     def test_tiles_level_0(self):
-        eq_(list(self.mgrid.tiles((0, 0, 0))), [((0, 0, 0), (0, 0))])
+        meta_tile = self.mgrid.meta_tile((0, 0, 0))
+        eq_(meta_tile.size, (256, 128))
+        eq_(meta_tile.grid_size, (1, 1))
+        eq_(meta_tile.tile_patterns, [((0, 0, 0), (0, -128))])
     
     def test_meta_bbox_level_1(self):
-        eq_(self.mgrid.meta_bbox((0, 0, 1)), (-180, -90, 180, 90))
-        eq_(self.mgrid.meta_bbox((0, 0, 1), limit_to_bbox=False),
-            (-187.03125, -97.03125, 187.03125, 97.03125))
-        eq_(self.mgrid.meta_tile_size((0, 0, 1)), (512, 256))
+        eq_(self.mgrid._meta_bbox((0, 0, 1)), ((-180, -90, 180, 90), (0, 0, 0, 0)))
+        eq_(self.mgrid._meta_bbox((0, 0, 1), limit_to_bbox=False),
+            ((-187.03125, -97.03125, 187.03125, 97.03125), (10, 10, 10, 10)))
+        eq_(self.mgrid.meta_tile((0, 0, 1)).size, (512, 256))
         
     def test_tiles_level_1(self):
-        eq_(list(self.mgrid.tiles((0, 0, 1))),
+        eq_(list(self.mgrid.meta_tile((0, 0, 1)).tile_patterns),
             [
                 ((0, 0, 1), (0, 0)),
                 ((1, 0, 1), (256, 0))
             ])
 
     def test_meta_bbox_level_2(self):
-        eq_(self.mgrid.meta_bbox((0, 0, 2)), (-180, -90, 3.515625, 90))
-        eq_(self.mgrid.meta_bbox((0, 0, 2), limit_to_bbox=False),
-            (-183.515625, -93.515625, 3.515625, 93.515625))
-        eq_(self.mgrid.meta_tile_size((0, 0, 2)), (522, 512))
+        eq_(self.mgrid._meta_bbox((0, 0, 2)), ((-180, -90, 3.515625, 90), (0, 0, 10, 0)))
+        eq_(self.mgrid._meta_bbox((0, 0, 2), limit_to_bbox=False),
+            ((-183.515625, -93.515625, 3.515625, 93.515625), (10, 10, 10, 10)))
+        eq_(self.mgrid.meta_tile((0, 0, 2)).size, (522, 512))
         
-        eq_(self.mgrid.meta_bbox((2, 0, 2)), (-3.515625, -90, 180, 90))
-        eq_(self.mgrid.meta_tile_size((2, 0, 2)), (522, 512))
+        eq_(self.mgrid._meta_bbox((2, 0, 2)), ((-3.515625, -90, 180, 90), (10, 0, 0, 0)))
+        meta_tile = self.mgrid.meta_tile((2, 0, 2))
+        eq_(meta_tile.size, (522, 512))
+        eq_(meta_tile.grid_size, (2, 2))
 
     def test_tiles_level_2(self):
-        eq_(list(self.mgrid.tiles((0, 0, 2))),
+        eq_(list(self.mgrid.meta_tile((0, 0, 2)).tile_patterns),
             [
                 ((0, 1, 2), (0, 0)),
                 ((1, 1, 2), (256, 0)),
                 ((0, 0, 2), (0, 256)),
                 ((1, 0, 2), (256, 256)),
             ])
-        eq_(list(self.mgrid.tiles((2, 0, 2))),
+        eq_(list(self.mgrid.meta_tile((2, 0, 2)).tile_patterns),
             [
                 ((2, 1, 2), (10, 0)),
                 ((3, 1, 2), (266, 0)),
@@ -197,21 +188,119 @@ class TestMetaGridGeodetic(object):
             ])
 
     def test_tiles_level_3(self):
-        eq_(list(self.mgrid.tiles((2, 0, 3))),
+        eq_(list(self.mgrid.meta_tile((2, 0, 3)).tile_patterns),
             [
                 ((2, 1, 3), (10, 10)),
                 ((3, 1, 3), (266, 10)),
                 ((2, 0, 3), (10, 266)),
                 ((3, 0, 3), (266, 266)),
             ])
-        eq_(list(self.mgrid.tiles((2, 2, 3))),
+        eq_(list(self.mgrid.meta_tile((2, 2, 3)).tile_patterns),
             [
                 ((2, 3, 3), (10, 0)),
                 ((3, 3, 3), (266, 0)),
                 ((2, 2, 3), (10, 256)),
                 ((3, 2, 3), (266, 256)),
             ])
+
+
+class TestMetaTile(object):
+    def setup(self):
+        self.mgrid = MetaGrid(grid=tile_grid('EPSG:4326'), meta_size=(2, 2), meta_buffer=10)
+    def test_meta_tile(self):
+        meta_tile = self.mgrid.meta_tile((2, 0, 2))
+        eq_(meta_tile.size, (522, 512))
+
+    def test_metatile_bbox(self):
+        mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))
+        meta_tile = mgrid.meta_tile((0, 0, 2))
+        assert meta_tile.bbox == (-20037508.342789244, -20037508.342789244, 0.0, 0.0)
+        meta_tile = mgrid.meta_tile((1, 1, 2))
+        assert meta_tile.bbox == (-20037508.342789244, -20037508.342789244, 0.0, 0.0)
+        meta_tile = mgrid.meta_tile((4, 5, 3))
+        assert meta_tile.bbox == (0.0, 0.0, 10018754.171394622, 10018754.171394622)
+
+    def test_metatile_non_default_meta_size(self):
+        mgrid = MetaGrid(grid=TileGrid(), meta_size=(4, 2))
+        meta_tile = mgrid.meta_tile((4, 5, 3))
+        assert meta_tile.bbox == (0.0, 0.0, 20037508.342789244, 10018754.171394622)
+        eq_(meta_tile.size, (1024, 512))
+        eq_(meta_tile.grid_size, (4, 2))
+
+class TestMetaTileSQRT2(object):
+    def setup(self):
+        self.grid = tile_grid('EPSG:4326', res_factor='sqrt2')
+        self.mgrid = MetaGrid(grid=self.grid, meta_size=(4, 4), meta_buffer=10)
+    def test_meta_tile(self):
+        meta_tile = self.mgrid.meta_tile((0, 0, 8))
+        eq_(meta_tile.size, (1034, 1034))
+
+    def test_metatile_bbox(self):
+        meta_tile = self.mgrid.meta_tile((0, 0, 2))
+        eq_(meta_tile.bbox,  (-180, -90, 180, 90))
+        eq_(meta_tile.size,  (512, 256))
+        eq_(meta_tile.grid_size,  (2, 1))
+        eq_(meta_tile.tile_patterns, [((0, 0, 2), (0, 0)), ((1, 0, 2), (256, 0))])
         
+        meta_tile = self.mgrid.meta_tile((1, 0, 2))
+        eq_(meta_tile.bbox, (-180.0, -90, 180.0, 90.0))
+        eq_(meta_tile.size,  (512, 256))
+        eq_(meta_tile.grid_size,  (2, 1))
+        
+        meta_tile = self.mgrid.meta_tile((0, 0, 3))
+        eq_(meta_tile.bbox, (-180.0, -90, 180.0, 90.0))
+        eq_(meta_tile.size,  (724, 362))
+        eq_(meta_tile.tile_patterns, [((0, 1, 3), (0, -149)), ((1, 1, 3), (256, -149)),
+            ((2, 1, 3), (512, -149)), ((0, 0, 3), (0, 107)), ((1, 0, 3), (256, 107)),
+            ((2, 0, 3), (512, 107))])
+        
+    def test_metatile_non_default_meta_size(self):
+        mgrid = MetaGrid(grid=self.grid, meta_size=(4, 2), meta_buffer=0)
+        meta_tile = mgrid.meta_tile((4, 3, 6))
+        eq_(meta_tile.bbox, (0.0, 0.0, 180.0, 90.0))
+        eq_(meta_tile.size, (1024, 512))
+        eq_(meta_tile.grid_size, (4, 2))
+        eq_(meta_tile.tile_patterns, [((4, 3, 6), (0, 0)), ((5, 3, 6), (256, 0)),
+            ((6, 3, 6), (512, 0)), ((7, 3, 6), (768, 0)), ((4, 2, 6), (0, 256)), 
+            ((5, 2, 6), (256, 256)), ((6, 2, 6), (512, 256)), ((7, 2, 6), (768, 256))])
+        
+
+
+
+class TestMinimalMetaTile(object):
+    def setup(self):
+        self.mgrid = MetaGrid(grid=tile_grid('EPSG:4326'), meta_size=(2, 2), meta_buffer=10)
+    
+    def test_minimal_tiles(self):
+        sgrid = self.mgrid.minimal_meta_tile([(0, 0, 2), (1, 0, 2)])
+        eq_(sgrid.grid_size, (2, 1))
+        eq_(list(sgrid.tile_patterns),
+            [
+                ((0, 0, 2), (0, 10)),
+                ((1, 0, 2), (256, 10)),
+            ]
+        )
+        eq_(sgrid.bbox, (-180.0, -90.0, 3.515625, 3.515625))
+    
+    def test_minimal_tiles_fragmented(self):
+        sgrid = self.mgrid.minimal_meta_tile(
+            [
+                           (2, 3, 3),
+                (1, 2, 3),
+                           (2, 1, 3),
+            ])
+        
+        eq_(sgrid.grid_size, (2, 3))
+        eq_(list(sgrid.tile_patterns),
+            [
+                ((1, 3, 3), (10, 0)), ((2, 3, 3), (266, 0)),
+                ((1, 2, 3), (10, 256)), ((2, 2, 3), (266, 256)),
+                ((1, 1, 3), (10, 512)), ((2, 1, 3), (266, 512)),
+            ]
+        )
+        eq_(sgrid.bbox, (-136.7578125, -46.7578125, -43.2421875, 90.0))
+
+
 
 class TestMetaGridLevelMetaTiles(object):
     def __init__(self):

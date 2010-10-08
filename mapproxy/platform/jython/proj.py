@@ -1,8 +1,26 @@
-from org.geotools.referencing import CRS
-from org.geotools.referencing.crs import EPSGCRSAuthorityFactory
+# This file is part of the MapProxy project.
+# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from jarray import array, zeros
+import mapproxy.platform
 
+if mapproxy.platform.is_jython:
+    from org.geotools.referencing import CRS
+    from org.geotools.referencing.crs import EPSGCRSAuthorityFactory
+
+    from jarray import array, zeros
 
 RAD_TO_DEG = 57.29577951308232
 DEG_TO_RAD = .0174532925199432958
@@ -20,11 +38,11 @@ class Proj(object):
             self._crs = CRS.decode(init, True)
             self._srs_def = init
         elif isinstance(proj_def, basestring):
-            self._crs = CRS.parseWKT(proj_def)    
+            self._crs = CRS.parseWKT(proj_def)
             self._srs_def = proj_def
         else:
-            raise ProjInitError('error initializing Proj(proj_def=%r, init=%r): %s' 
-                                % (proj_def, init, libproj.pj_strerrno(errno)))        
+            raise ProjInitError('error initializing Proj(proj_def=%r, init=%r)'
+                                % (proj_def, init))
             
     def is_latlong(self):
         axis1 = str(self._crs.getCoordinateSystem().getAxis(0)).lower()

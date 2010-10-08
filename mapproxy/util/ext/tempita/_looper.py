@@ -18,14 +18,18 @@ looper you can get a better sense of the context.  Use like::
 
 """
 
+import sys
+from mapproxy.util.ext.tempita.compat3 import basestring_
+
 __all__ = ['looper']
+
 
 class looper(object):
     """
     Helper for looping (particularly in templates)
-    
+
     Use this like::
-    
+
         for loop, item in looper(seq):
             if loop.first:
                 ...
@@ -41,6 +45,7 @@ class looper(object):
         return '<%s for %r>' % (
             self.__class__.__name__, self.seq)
 
+
 class looper_iter(object):
 
     def __init__(self, seq):
@@ -50,12 +55,16 @@ class looper_iter(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         if self.pos >= len(self.seq):
             raise StopIteration
         result = loop_pos(self.seq, self.pos), self.seq[self.pos]
         self.pos += 1
         return result
+
+    if sys.version < "3":
+        next = __next__
+
 
 class loop_pos(object):
 
@@ -65,7 +74,7 @@ class loop_pos(object):
 
     def __repr__(self):
         return '<loop pos=%r at %r>' % (
-            self.seq[pos], pos)
+            self.seq[self.pos], self.pos)
 
     def index(self):
         return self.pos
@@ -79,17 +88,20 @@ class loop_pos(object):
         return self.seq[self.pos]
     item = property(item)
 
-    def next(self):
+    def __next__(self):
         try:
-            return self.seq[self.pos+1]
+            return self.seq[self.pos + 1]
         except IndexError:
             return None
-    next = property(next)
+    __next__ = property(__next__)
+
+    if sys.version < "3":
+        next = __next__
 
     def previous(self):
         if self.pos == 0:
             return None
-        return self.seq[self.pos-1]
+        return self.seq[self.pos - 1]
     previous = property(previous)
 
     def odd(self):
@@ -105,7 +117,7 @@ class loop_pos(object):
     first = property(first)
 
     def last(self):
-        return self.pos == len(self.seq)-1
+        return self.pos == len(self.seq) - 1
     last = property(last)
 
     def length(self):
@@ -132,12 +144,12 @@ class loop_pos(object):
         """
         if self.last:
             return True
-        return self._compare_group(self.item, self.next, getter)
+        return self._compare_group(self.item, self.__next__, getter)
 
     def _compare_group(self, item, other, getter):
         if getter is None:
             return item != other
-        elif (isinstance(getter, basestring)
+        elif (isinstance(getter, basestring_)
               and getter.startswith('.')):
             getter = getter[1:]
             if getter.endswith('()'):
@@ -145,8 +157,7 @@ class loop_pos(object):
                 return getattr(item, getter)() != getattr(other, getter)()
             else:
                 return getattr(item, getter) != getattr(other, getter)
-        elif callable(getter):
+        elif hasattr(getter, '__call__'):
             return getter(item) != getter(other)
         else:
             return item[getter] != other[getter]
-    

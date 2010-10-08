@@ -149,8 +149,8 @@ class Seeder(object):
         
         num_seed_levels = task.max_level - task.start_level + 1
         self.report_till_level = task.start_level + int(num_seed_levels * 0.7)
-        self.grid = tile_mgr.meta_grid or MetaGrid(tile_mgr.grid, meta_size=(1, 1), meta_buffer=0)
-        self.grid.meta_buffer = 0
+        meta_size = tile_mgr.meta_grid._meta_size if tile_mgr.meta_grid else (1, 1)
+        self.grid = MetaGrid(tile_mgr.grid, meta_size=meta_size, meta_buffer=0)
         self.progress = 0.0
         self.eta = ETA()
         self.count = 0
@@ -218,7 +218,7 @@ class Seeder(object):
         for subtile in subtiles:
             total_sub_seeds += 1
             if subtile is None: continue
-            sub_bbox = self.grid.meta_bbox(subtile)
+            sub_bbox = self.grid.meta_tile(subtile).bbox
             intersection = CONTAINS if all_subtiles else self.task.intersects(sub_bbox)
             if intersection:
                 sub_seeds.append((subtile, sub_bbox, intersection))
@@ -245,6 +245,7 @@ class CacheSeeder(object):
                 self.seeded_caches.append(tile_mgr)
                 if self.remove_before:
                     tile_mgr._expire_timestamp = self.remove_before
+                tile_mgr.minimize_meta_requests = False
                 seed_pool = SeedPool(tile_mgr, dry_run=self.dry_run, size=self.concurrency)
                 seed_task = SeedTask(bbox, level, bbox_srs, srs, geom)
                 seeder = Seeder(tile_mgr, seed_task, seed_pool, self.skip_geoms_for_last_levels)

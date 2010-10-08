@@ -17,9 +17,11 @@
 from __future__ import with_statement
 from mapproxy.client.http import HTTPClient, HTTPClientError
 from mapproxy.client.tile import TMSClient, TileClient, TileURLTemplate
+from mapproxy.client.wms import WMSClient
+from mapproxy.layer import MapQuery
 from mapproxy.request.wms import wms_request, WMS111MapRequest, WMS100MapRequest,\
                                  WMS130MapRequest
-from mapproxy.srs import bbox_equals
+from mapproxy.srs import bbox_equals, SRS
 from mapproxy.request import Request, url_decode
 from mapproxy.config import base_config
 from mapproxy.test.http import mock_httpd, query_eq, assert_query_eq, make_wsgi_env
@@ -281,6 +283,53 @@ class TestTileClient(object):
                                                'headers': {'content-type': 'image/png'}})]):
             resp = client.get_tile((5, 13, 9)).source.read()
             eq_(resp, 'tile')
+
+from mapproxy.test.unit.test_cache import MockHTTPClient
+class TestWMSClient(object):
+    def setup(self):
+        self.req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo'})
+        self.http = MockHTTPClient()
+        self.wms = WMSClient(self.req, http_client=self.http, supported_srs=[SRS(4326)])
+    def test_request(self):
+        req = MapQuery((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326), 'png')
+        resp = self.wms.get_map(req)
+        eq_(len(self.http.requested), 1)
+        assert_query_eq(self.http.requested[0],
+            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                           '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
+                           '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512&STYLES=')
+
+    def test_transformed_request(self):
+        req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
+        resp = self.wms.get_map(req)
+        eq_(len(self.http.requested), 1)
+        
+        assert_query_eq(self.http.requested[0], 
+            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                           '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
+                           '&VERSION=1.1.1&WIDTH=512&STYLES='
+                           '&BBOX=-1.79663056824,-1.7963362121,1.79663056824,1.7963362121')
+        img = resp.as_image()
+        assert img.mode in ('P', 'RGB')
+
+    def test_transformed_request_transparent(self):
+        self.req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
+                                    param={'layers':'foo', 'transparent': 'true'})
+        self.wms = WMSClient(self.req, http_client=self.http, supported_srs=[SRS(4326)])
+
+        req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
+        resp = self.wms.get_map(req)
+        eq_(len(self.http.requested), 1)
+        
+        assert_query_eq(self.http.requested[0],
+            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                           '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
+                           '&VERSION=1.1.1&WIDTH=512&STYLES=&transparent=true'
+                           '&BBOX=-1.79663056824,-1.7963362121,1.79663056824,1.7963362121')
+        img = resp.as_image()
+        assert img.mode in ('P', 'RGBA')
+        img = img.convert('RGBA')
+        eq_(img.getpixel((5, 5))[3], 0)
 
 class TestWMSMapRequest100(object):
     def setup(self):

@@ -175,9 +175,11 @@ class TestWMSImageExceptionHandler(ExceptionHandlerTest):
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
-        eq_(img.getpixel((0, 0)), 255)
-        eq_([x for x in img.histogram() if x > 25],
+        eq_(sorted([x for x in img.histogram() if x > 25]),
             [377, 14623])
+        img = img.convert('RGBA')
+        eq_(img.getpixel((0, 0))[3], 0)
+    
 
 class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
     def test_exception(self):
@@ -220,6 +222,8 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
         data = StringIO(response.data)
         assert is_png(data)
         img = Image.open(data)
-        assert img.size == (150, 100)        
-        eq_(img.getpixel((0, 0)), 255)
+        assert img.size == (150, 100)
+        assert img.mode == 'P'
+        img = img.convert('RGBA')
+        eq_(img.getpixel((0, 0))[3], 0)
     

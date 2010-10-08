@@ -76,7 +76,7 @@ By default MapProxy uses `bicubic` resampling. This resampling method also sharp
       sources: [aerial_images]
 
 
-You might also want to experiment with different compression levels of JPEG. A higher value of ``jpeg_quality`` results in better image quality at the cost of slower encoding and lager file sizes. See :ref:`proxy.yaml configuration <jpeg_quality>`.
+You might also want to experiment with different compression levels of JPEG. A higher value of ``jpeg_quality`` results in better image quality at the cost of slower encoding and lager file sizes. See :ref:`mapproxy.yaml configuration <jpeg_quality>`.
 
 ::
 

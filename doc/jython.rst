@@ -1,8 +1,9 @@
-Getting started
-===============
+MapProxy for Jython
+===================
 
-This document shall help you to install/deploy the `JMapProxy` with an Apache-Tomcat-Server.
+.. warning:: MapProxy for Jython and this document is not stable.
 
+This document shall help you to install/deploy the `MapProxy` with an Apache-Tomcat-Server.
 
 Requirements
 ------------
@@ -34,11 +35,11 @@ Configure the `Mapproxy`
 ------------------------
 The configuration file of `MapProxy` is located at ``$TOMCAT_HOME/webapps/MapProxy/WEB-INF/etc/mapproxy.yaml``
 Open this file with any text-editor and configure the `MapProxy` according to your needs.
-For further informations, please read :doc:<configuration> 
+For further informations, please read :doc:`configuration`
 
 All you need to do now is to start/restart the Tomcat-Server.
 
 
 Exceptions/Bugs
-===============
+---------------
 If you experience other errors or bugs, please report them to us.

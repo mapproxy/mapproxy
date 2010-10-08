@@ -132,6 +132,12 @@ with no data (e.g. water areas, areas with no roads, etc.).
 
 .. note:: This feature is only available on Unix, since Windows has no support for symbolic links.
 
+``minimize_meta_requests``
+""""""""""""""""""""""""""
+If set to ``true``, MapProxy will only issue a single request to the source. This option can reduce the request latency for uncached areas (on demand caching).
+
+By default MapProxy requests all uncached meta tiles that intersect the requested bbox. With a typical configuration it is not uncommon that a requests will trigger four requests each larger than 2000x2000 pixel. With the ``minimize_meta_requests`` option enabled, each request will trigger only one request to the source. That request will be aligned to the next tile boundaries and the tiles will be cached.
+
 
 ``watermark``
 """""""""""""
@@ -387,7 +393,7 @@ Here you can define some options that affect the way MapProxy generates image re
 """""""""
 
 ``meta_size``
-  MapProxy does not make a single request for every tile but will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 64 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source WMS.
+  MapProxy does not make a single request for every tile but will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source WMS.
   
 ``meta_buffer``
   MapProxy will increase the size of each meta-tile request by this number of
@@ -398,13 +404,13 @@ Here you can define some options that affect the way MapProxy generates image re
 ``base_dir``
   The base directory where all cached tiles will be stored. The path can
   either be absolute (e.g. ``/var/mapproxy/cache``) or relative to the
-  proxy.yaml file.
+  mapproxy.yaml file.
 
 ``lock_dir``
   MapProxy uses locking to prevent multiple request for the same meta-tile.
   This option defines where the temporary lock files will be stored. The path
   can either be absolute (e.g. ``/tmp/lock/mapproxy``) or relative to the
-  proxy.yaml file.
+  mapproxy.yaml file.
   
   .. note:: 
     Old locks will not be removed immediately but when new locks are created.
@@ -424,7 +430,7 @@ Here you can define some options that affect the way MapProxy generates image re
   MapProxy yo your own set of proj4 init files. The path should contain a ``epsg`` file
   with the EPSG definitions.
   
-  The configured path can be absolute or relative to the proxy.yaml.
+  The configured path can be absolute or relative to the mapproxy.yaml.
 
 .. _axis_order:
 

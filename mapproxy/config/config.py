@@ -19,7 +19,7 @@ System-wide configuration.
 """
 from __future__ import with_statement
 import os
-import yaml #pylint: disable=F0401
+import yaml #pylint: disable-msg=F0401
 
 class Options(dict):
     """
@@ -107,7 +107,7 @@ def load_base_config(config_file=None, clear_existing=False):
     """
     Load system wide base configuration.
     
-    :param config_file: the file name of the proxy.yaml configuration.
+    :param config_file: the file name of the mapproxy.yaml configuration.
                         if ``None``, load the internal proxylib/default.yaml conf
     :param clear_existing: if ``True`` remove the existing configuration settings,
                            else overwrite the settings.

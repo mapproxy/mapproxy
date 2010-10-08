@@ -21,7 +21,7 @@ from __future__ import with_statement, division
 
 import os
 import hashlib
-import yaml #pylint: disable=F0401
+import yaml #pylint: disable-msg=F0401
 
 import logging
 log = logging.getLogger(__name__)
@@ -197,7 +197,6 @@ class GridConfiguration(ConfigurationBase):
         conf['tile_size'] = tuple(tile_size)
         tile_size = tuple(tile_size)
         
-        
         stretch_factor = context.globals.get_value('stretch_factor', conf,
             global_key='image.stretch_factor')
         max_shrink_factor = context.globals.get_value('max_shrink_factor', conf,
@@ -224,7 +223,7 @@ class GridConfiguration(ConfigurationBase):
 
 
 class GlobalConfiguration(ConfigurationBase):
-    optional_keys = set('image grid srs'.split())
+    optional_keys = set('image grid srs http cache'.split())
     
     def __init__(self, **kw):
         ConfigurationBase.__init__(self, **kw)
@@ -377,7 +376,8 @@ class DebugSourceConfiguration(SourceConfiguration):
 
 class CacheConfiguration(ConfigurationBase):
     optional_keys = set('''format cache_dir grids link_single_color_images image
-        use_direct_from_res use_direct_from_level meta_buffer meta_size'''.split())
+        use_direct_from_res use_direct_from_level meta_buffer meta_size
+        minimize_meta_requests'''.split())
     optional_keys.update(tile_filter_conf_keys)
     required_keys = set('name sources'.split())
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
@@ -415,7 +415,8 @@ class CacheConfiguration(ConfigurationBase):
             global_key='grid.meta_buffer')
         meta_size = context.globals.get_value('meta_size', self.conf,
             global_key='grid.meta_size')
-
+        minimize_meta_requests = self.conf.get('minimize_meta_requests', False)
+        
         for grid_conf in [context.grids[g] for g in self.conf['grids']]:
             sources = []
             for source_conf in [context.sources[s] for s in self.conf['sources']]:
@@ -424,7 +425,8 @@ class CacheConfiguration(ConfigurationBase):
             cache = self._file_cache(grid_conf, context)
             tile_grid = grid_conf.tile_grid(context)
             mgr = TileManager(tile_grid, cache, sources, file_ext(request_format),
-                              meta_size=meta_size, meta_buffer=meta_buffer)
+                              meta_size=meta_size, meta_buffer=meta_buffer,
+                              minimize_meta_requests=minimize_meta_requests)
             caches.append((tile_grid, mgr))
         return caches
     
