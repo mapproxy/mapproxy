@@ -98,9 +98,6 @@ To start a test server::
 
 There is already a test layer configured that obtains data from the `Omniscale OpenStreetMap WMS`_. Feel free to use this service for testing.
 
-You can now issue you first request to the MapProxy: `http://localhost:8080/service?`_
-The capabilities document is at: http://localhost:8080/service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities
-
-.. _`http://localhost:8080/service?`: http://localhost:8080/service?LAYERS=osm&FORMAT=image%2Fjpeg&SPHERICALMERCATOR=true&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_inimage&SRS=EPSG%3A900913&BBOX=229037.9129083,6551465.7261979,1596343.4746286,7469933.0579081&WIDTH=1118&HEIGHT=751
+MapProxy comes with a demo service that lists all configured WMS and TMS layers. You can access that service at http://localhost:8080/demo/
 
 .. _`Omniscale OpenStreetMap WMS`: http://osm.omniscale.net/

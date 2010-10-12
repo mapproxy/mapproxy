@@ -7,7 +7,7 @@ The following services are available:
 - :ref:`wms_service_label` and :ref:`wmsc_service_label`
 - :ref:`tms_service_label`
 - :ref:`kml_service_label`
-
+- :ref:`demo_service_label`
 
 You need to add the service to the ``services`` section of your MapProxy configuration to enable it. Some services take additional options.
 ::
@@ -149,9 +149,24 @@ Keyhole Markup Language (OGC KML)
 
 MapProxy supports KML version 2.2 for integration into Google Earth. Each layer is available as a Super Overlay – image tiles are loaded on demand when the user zooms to a specific region. The initial KML file is available at ``/kml/layername/0/0/0.kml``.
 
-  This service takes no further options::
+This service takes no further options::
 
-    services:
-      kml:
+  services:
+    kml:
 
 
+
+.. index:: Demo Service, OpenLayers
+.. _demo_service_label:
+
+MapProxy Demo Service
+---------------------
+
+MapProxy comes with a demo service that lists all configured WMS and TMS layers. You can test each layer with a simple OpenLayers client.
+
+The service is available at ``/demo/``.
+
+This service takes no further options::
+
+  services:
+      demo:
