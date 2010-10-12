@@ -1,0 +1,75 @@
+{{py:
+import cgi
+import textwrap
+
+wrapper = textwrap.TextWrapper(replace_whitespace=False, width=90,
+                               break_long_words=False)
+
+menu_title= "TMS %s %s"%(layer.md['name'], srs)
+}}
+{{def jscript}}
+<script src="static/OpenLayers.js"></script>
+<script type="text/javascript">        
+var map;
+function init(){                
+    var mapOptions = {
+    projection: new OpenLayers.Projection('{{srs}}'),    
+    maxResolution: {{resolutions[0]}},
+    {{if add_res_to_options}}
+    resolutions: [{{', '.join(str(r) for r in resolutions)}}],
+    {{endif}}
+    units: '{{units}}',
+    numZoomLevels: {{len(resolutions)}},
+    maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}})
+    };
+    
+    map = new OpenLayers.Map('map', mapOptions);
+    
+    var layer = new OpenLayers.Layer.TMS('TMS {{layer.md['name']}}', '../tms/',
+        {layername: '{{layer.md["name_internal"]}}', type: '{{format}}',
+         tileSize: new OpenLayers.Size{{layer.grid.tile_size}}
+    });
+    
+    map.addLayer(layer)
+    map.zoomToMaxExtent(); 
+}
+</script>     
+{{enddef}}
+            <h2>Openlayers Client - Layer {{layer.md['name']}}</h2>
+            <form action="" method="GET">
+                <table>
+                    <tr><th>Coordinate System</th><th>Image format</th></tr>
+                    <tr><td>
+                            <select name="srs" size="1" onchange="this.form.submit()"> {{format}}
+                                {{for tms_layer in all_tile_layers.values()}}
+                                    {{if tms_layer.md['name'] == layer.md['name']}}
+                                        {{if tms_layer.md['name_internal'] == layer.md['name_internal']}}
+                                            <option selected value="{{srs}}">{{srs}}</option>
+                                        {{else}}
+                                            <option value="{{tms_layer.grid.srs.srs_code}}">{{tms_layer.grid.srs.srs_code}}</option>
+                                        {{endif}}
+                                    {{endif}}
+                                {{endfor}}
+                            </select>
+                            <input type="hidden" name="format" value="png">
+                            <input type="hidden" name="tms_layer" value="{{layer.md['name']}}">
+                        </td>
+                        <td>{{format}}</td></tr>
+                </table>
+              </form>
+            <div id='map'></div>
+            <h3>Bounding Box</h3>
+            <p class="code">{{', '.join(str(s) for s in layer.grid.bbox)}}</p>
+            <h3>Level and Resolutions</h3>
+            <table class="code">
+                <tr><th>Level</th><th>Resolution</th></tr>
+                {{for level, res in layer.grid.tile_sets}}
+                <tr><td>{{level}}</td><td>{{res}}</td></tr>
+                {{endfor}}
+            </table>
+            <h3>JavaScript code</h3>
+            <pre>
+{{for line in jscript().split('\n')}}
+{{cgi.escape(wrapper.fill(line))}}
+{{endfor}}
+            </pre>

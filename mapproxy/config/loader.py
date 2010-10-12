@@ -76,6 +76,7 @@ from mapproxy.client.wms import WMSClient, WMSInfoClient
 from mapproxy.service.wms import WMSServer, WMSLayer
 from mapproxy.service.tile import TileServer, TileLayer
 from mapproxy.service.kml import KMLServer
+from mapproxy.service.demo import DemoServer
 from mapproxy.source import DebugSource
 from mapproxy.source.wms import WMSSource, WMSInfoSource
 from mapproxy.source.tile import TiledSource
@@ -505,7 +506,7 @@ class LayerConfiguration(ConfigurationBase):
 
 
 class ServiceConfiguration(ConfigurationBase):
-    optional_keys = set('wms tms kml'.split())
+    optional_keys = set('wms tms kml demo'.split())
     
     def services(self, context):
         services = {}
@@ -547,6 +548,16 @@ class ServiceConfiguration(ConfigurationBase):
         srs = context.globals.get_value('srs', conf, global_key='wms.srs')
         return WMSServer(layers, md, attribution=attribution, image_formats=image_formats,
             srs=srs, tile_layers=tile_layers)
+
+    def demo_service(self, conf, context):
+        md = context.services.conf.get('wms', {}).get('md', {}).copy()
+        md.update(conf.get('md', {}))
+        layers = odict()
+        for layer_name, layer_conf in context.layers.iteritems():
+            layers[layer_name] = layer_conf.wms_layer(context)
+        tile_layers = self.tile_layers(conf, context)
+        image_formats = context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
+        return DemoServer(layers, md, tile_layers=tile_layers, image_formats=image_formats)
     
 def load_services(conf_file):
     if hasattr(conf_file, 'read'):

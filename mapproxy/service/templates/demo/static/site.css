@@ -1,0 +1,129 @@
+
+body {
+    background-color: #ddd;
+    font-family: Verdana, sans-serif;
+    font-size: 12px;
+    line-height: 1.3em;
+    width: 700px;
+    margin: 1em auto;
+    color: #2e3436;
+}
+div#box {
+    background-color: #fefefe;
+    border: solid #2e3436 1px;
+}
+div#menu, div#content, div#footer {
+    padding: 2em;
+}
+
+div#header {
+    padding: 0.5em 2em;
+    position: relative;
+    background-color: #fefefe;
+}
+
+div#header a {
+    text-decoration: none;
+    color: inherit;
+}
+
+div#header img {
+  padding-left: 0.7em;
+  display: inline;
+}
+
+div#header h1 {
+  font-size: 32px;
+  position: absolute;
+  display: inline;
+  top: 5px;
+  left: 2.8em;
+}
+
+div#content {
+  margin-left: 10px;
+}
+
+div#content h1,
+div#content h2,
+div#content h3,
+div#content h4,
+div#content h5,
+div#content h6
+{
+/*  font-family: Georgia, 'Trebuchet MS', Verdana, sans-serif;*/
+  border-bottom: 0;
+  margin: 1.2em 0em 0.5em -10px;
+  padding: .3em 0 .1em 10px;
+}
+div#content h1,
+div#content h2,
+div#content h3
+{
+  border-bottom: 1px dashed #ccc;
+}
+
+
+p {
+    margin-top: 0.5em;
+    margin-right: 5em;
+}
+
+div#menu {
+    background-color: #3A3740;
+    padding: 0.6em 0 0.6em 2.6em;
+}
+#menu span {
+    background-color: #3A3740;
+    font-weight: bold;
+    padding: 0.6em;
+}
+#menu span.current {
+    background-color: #666;
+}
+#menu a {
+    color: #fefefc;
+    text-decoration: none;
+}
+div#footer {
+    color: gray;
+    text-align: center;
+    font-size: small;
+}
+div#footer a {
+    color: gray;
+    text-decoration: none;
+}
+pre {
+    border: dotted black 1px;
+    background: #eeeeec;
+    font-size: small;
+    padding: 1em;
+}
+div#map {
+    border: 1px solid black;
+    width: 600px;
+    height: 400px;
+}
+
+.code {    
+    border: dotted black 1px;
+    background: #eeeeec;
+    font-size: small;
+    padding: 1em;
+}
+
+th {
+    padding-right: 1.5em;
+}
+
+td.value{
+    padding: 0 2em;    
+}
+.capabilities {    
+    padding: 1em;
+}
+
+div.capabilities span{
+    padding-right:1.5em;
+}

@@ -1,0 +1,64 @@
+{{py:
+from urllib import quote, quote_plus
+from mapproxy.version import version
+
+def strip(s):
+    return s.split('/')[1]
+    
+def replace(s):
+    return s.replace(':','')
+    
+menu_title=None
+jscript=None
+}}
+            <h2>About</h2>
+            <p>MapProxy Version {{version}}</p>
+            <h2>WMS</h2>
+            <div class="capabilities">
+            <span>Capabilities Document</span>
+            <span><a href="../service?REQUEST=GetCapabilities">(download as xml)</a></span>
+            <span><a href="../demo/?wms_capabilities">(view as html)</a></span>
+            </div>
+            <table class="code">
+                <tr><th>Layer</th><th>Image-Format</th></tr>
+                {{for layer in layers.values()}}
+                <tr><td rowspan="{{len(formats)}}">{{layer.md.get('name')}}</td>
+                    {{for loop, format in looper(formats)}}
+                        {{if not loop.first}}
+                            <tr>
+                        {{endif}}
+                    <td class="value"><a href="../demo/?wms_layer={{layer.md.get('name')}}&format={{format | quote_plus}}">{{format | strip}}</a></td></tr>
+                    {{endfor}}
+                {{endfor}}
+            </table>
+            <h2>WMS-C</h2>
+            <div class="capabilities">
+            <span>Capabilities Document</span>
+            <span><a href="../service?REQUEST=GetCapabilities&tiled=true">(download as xml)</a></span>
+            <span><a href="../demo/?wmsc_capabilities">(view as html)</a></span>
+            </div>
+            <h2>TMS</h2>
+            <div class="capabilities">
+            <span>Capabilities Document</span>
+            <span><a href="../tms/1.0.0/">(download as xml)</a></span>
+            <span><a href="../demo/?tms_capabilities">(view as html)</a></span>
+            </div>
+            <table class="code">
+                <tr>
+                    <th>Layer</th>
+                    <th>Coordinate-System</th>
+                    <th>Image-Format</th>
+                    <th>Layer Capabilities</th>
+                </tr>
+            {{for tms_layer_name, tms_layers in tms_layers.items()}}
+            <tr><td rowspan="{{len(tms_layers)}}">{{tms_layer_name}}</td>
+                {{for loop, layer in looper(tms_layers)}}
+                    {{if not loop.first}}
+                        <tr>
+                    {{endif}}
+                    <td class="value">{{layer.grid.srs.srs_code}}</td>
+                    <td class="value"><a href="../demo/?tms_layer={{layer.md['name']}}&format={{layer.format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.format}}</a></td>
+                    <td class="value"><a href="../demo/?tms_capabilities&layer={{layer.md['name']}}&srs={{layer.grid.srs.srs_code | replace}}">click here</a></td></tr>
+                {{endfor}}            
+            {{endfor}}
+            </table>
