@@ -15,7 +15,7 @@ There are a few different configuration files used by MapProxy.
     These are the paster configuration files that are used to start MapProxy in development or production mode. See :doc:`deployment documentation <deployment>` for more information.
 
 
-.. note:: The configuration changed with the 0.9.0 release and you have to update any older configuration. This is a one-time change and further versions will offer backwards-compatibility.
+.. note:: The configuration changed with the 0.9.0 release and you have to update any older configuration. This is a one-time change and further versions will offer backwards-compatibility. Read the :doc:`migration guide <migrate>` for some help.
 
 .. index:: mapproxy.yaml
 

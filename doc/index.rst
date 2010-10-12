@@ -13,6 +13,7 @@ MapProxy Documentation
    sources
    seed
    configuration_examples
+   migrate
    deployment
    development
 

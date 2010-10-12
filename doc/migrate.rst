@@ -6,11 +6,11 @@ MapProxy changed the configuration format with the 0.9.0 release in a backwards 
 
 This guide should help you to migrate your existing MapProxy configuration to the new format.
 
-You can skip this document if you create a new project with ``paster create -t mapproxy_conf``.
+.. note:: You can skip this document if you create a new project with ``paster create -t mapproxy_conf``.
 
 
-``develop.ini``, ``config.ini``
-"""""""""""""""""""""""""""""""
+develop.ini and config.ini
+""""""""""""""""""""""""""
 
 We removed the distinction between the services (``service.yaml``) and global (``proxy.yaml``) configuration. There is now a single configuration file wich is named ``mapproxy.yaml`` by default.
 
@@ -23,8 +23,8 @@ You need to update your ``develop.ini`` and ``config.ini`` if you use ``paster s
   mapproxy_conf = %(here)s/mapproxy.yaml
   
 
-``proxy.yaml``
-""""""""""""""
+proxy.yaml
+""""""""""
 
 Most options from the ``proxy.yaml`` defined global settings of MapProxy. These global options are now placed in the `globals` section of the ``mapproxy.yaml``. See :ref:`globals configuration <globals-conf-label>` for all available options.
 
@@ -32,8 +32,8 @@ Most options from the ``proxy.yaml`` defined global settings of MapProxy. These 
 
 The services (WMS/TMS/KML) are know configured in the ``services`` section. See :doc:`services documentation <services>`.
 
-``services.yaml``
-"""""""""""""""""
+services.yaml
+"""""""""""""
 
 With 0.8.x you had to configure each layer independently and you could not reuse anything. The new configuration separates the source, grid, cache and layers configuration.
 
@@ -41,7 +41,7 @@ You now only need to define you grids once. It is also possible to define comple
 
 
 Example
-"""""""
+-------
 
 Here is a configuration example from 0.8::
   
