@@ -1,0 +1,33 @@
+{{py:
+import cgi
+import textwrap
+
+wrapper = textwrap.TextWrapper(replace_whitespace=False, width=90,
+                               break_long_words=False)
+
+menu_title = "WMS %s" % (layer.md['name'])
+}}
+{{def jscript}}
+<script src="static/OpenLayers.js"></script>
+<script type="text/javascript">
+    var map;
+    function init(){
+        OpenLayers.Util.onImageLoadErrorColor = "transparent";
+        map = new OpenLayers.Map('map', {maxResolution: 360/512});
+        var layer = new OpenLayers.Layer.WMS( "WMS {{layer.md['name']}}", 
+            "../service?", {layers: "{{layer.md['name']}}", format: '{{format}}'}, 
+            {singleTile: true, ratio: 1}, {isBaseLayer: true} );
+        
+        map.addLayer(layer);
+        map.zoomToMaxExtent();
+    }
+</script>
+{{enddef}}
+            <h2>Openlayers Client - Layer {{layer.md['name']}}</h2>
+            <div id='map'></div>
+            <h3>JavaScript code</h3>
+            <pre>
+{{for line in jscript().split('\n')}}
+{{cgi.escape(wrapper.fill(line))}}
+{{endfor}}
+            </pre>
