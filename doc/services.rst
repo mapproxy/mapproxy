@@ -124,7 +124,7 @@ This service takes no further options::
 
 OpenLayers
 """"""""""
-When you create a map in OpenLayers with an explicit ``mapExtend``, it will request only a single tile for the first (z=0) level.
+When you create a map in OpenLayers with an explicit ``mapExtent``, it will request only a single tile for the first (z=0) level.
 TMS begins with two or four tiles by default, depending on the SRS. MapProxy supports a different TMS mode to support this use-case. MapProxy will start with a single-tile level if you request ``/tiles`` instead of ``/tms``.
 
 

@@ -20,7 +20,7 @@ Retrieve maps/information from WMS servers.
 
 import sys
 from mapproxy.source import Source, InfoSource, SourceError
-from mapproxy.layer import MapExtend
+from mapproxy.layer import MapExtent
 from mapproxy.srs import SRS
 from mapproxy.client.http import HTTPClientError
 from mapproxy.util import reraise_exception
@@ -31,8 +31,8 @@ class WMSSource(Source):
         Source.__init__(self)
         self.client = client
         self.transparent = transparent
-        #TODO extend
-        self.extend = MapExtend((-180, -90, 180, 90), SRS(4326))
+        #TODO extent
+        self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
     
     def get_map(self, query):
         try:

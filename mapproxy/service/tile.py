@@ -25,7 +25,7 @@ from mapproxy.service.base import Server
 from mapproxy.request.tile import tile_request
 from mapproxy.request.base import split_mime_type
 from mapproxy.config import base_config
-from mapproxy.layer import map_extend_from_grid
+from mapproxy.layer import map_extent_from_grid
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
 from mapproxy.grid import default_bboxs
@@ -123,7 +123,7 @@ class TileLayer(object):
         self.md = md
         self.tile_manager = tile_manager
         self.grid = TileServiceGrid(tile_manager.grid)
-        self.extend = map_extend_from_grid(self.grid)
+        self.extent = map_extent_from_grid(self.grid)
     
     @property
     def bbox(self):

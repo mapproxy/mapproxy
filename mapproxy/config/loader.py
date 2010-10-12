@@ -69,7 +69,7 @@ from mapproxy.request.base import split_mime_type
 from mapproxy.request.wms import create_request
 from mapproxy.layer import (
     CacheMapLayer, SRSConditional,
-    ResolutionConditional, map_extend_from_grid
+    ResolutionConditional, map_extent_from_grid
 )
 from mapproxy.client.tile import TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient
@@ -442,8 +442,8 @@ class CacheConfiguration(ConfigurationBase):
         if len(caches) == 1:
             layer = caches[0][0]
         else:
-            map_extend = map_extend_from_grid(main_grid)
-            layer = SRSConditional(caches, map_extend, caches[0][0].transparent)
+            map_extent = map_extent_from_grid(main_grid)
+            layer = SRSConditional(caches, map_extent, caches[0][0].transparent)
         
         if 'use_direct_from_level' in self.conf:
             self.conf['use_direct_from_res'] = main_grid.resolution(self.conf['use_direct_from_level'])
@@ -451,7 +451,7 @@ class CacheConfiguration(ConfigurationBase):
             if len(self.conf['sources']) != 1:
                 raise ValueError('use_direct_from_level/res only supports single sources')
             source_conf = context.sources[self.conf['sources'][0]]
-            layer = ResolutionConditional(layer, source_conf.source(context), self.conf['use_direct_from_res'], main_grid.srs, layer.extend)
+            layer = ResolutionConditional(layer, source_conf.source(context), self.conf['use_direct_from_res'], main_grid.srs, layer.extent)
         return layer
     
 class LayerConfiguration(ConfigurationBase):

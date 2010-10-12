@@ -49,7 +49,7 @@ The seed tool is already included in the MapProxy installation but it has some a
 
   pip install multiprocessing
 
-If you want to use polygons to define your geographical extend of the seeding area, instead of simple bounding box, you will also need Shapely and GEOS. For loading polygons from shapefiles you'll also need GDAL/OGR.
+If you want to use polygons to define your geographical extent of the seeding area, instead of simple bounding box, you will also need Shapely and GEOS. For loading polygons from shapefiles you'll also need GDAL/OGR.
 
 On Debian::
 
@@ -61,7 +61,7 @@ Configuration
 --------------
 
 The configuration contains two keys: ``views`` and ``seeds``. ``views`` describes
-the geographical extends that should be seeded. ``seeds`` links actual layers with
+the geographical extents that should be seeded. ``seeds`` links actual layers with
 those ``views``.
 
 
@@ -94,12 +94,12 @@ Contains a dictionary with layer/view mapping.::
 Views
 ^^^^^
 
-Contains a dictionary with all views. Each view describes a geographical extend.
+Contains a dictionary with all views. Each view describes a geographical extent.
 
-Geographical extend
+Geographical extent
 *******************
 
-There are three different ways to describe the extend of the seed view.
+There are three different ways to describe the extent of the seed view.
 
  - a simple rectangular bounding box,
  - a text file with one or more polygons in WKT format,

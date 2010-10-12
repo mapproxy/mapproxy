@@ -148,9 +148,9 @@ class Capabilities(object):
                                    tile_layers=self.tile_layers)
     
     def _create_server_bbox(self):
-        bbox = self.layers[0].extend.llbbox
+        bbox = self.layers[0].extent.llbbox
         for layer in self.layers[1:]:
-            bbox = merge_bbox(bbox, layer.extend.llbbox)
+            bbox = merge_bbox(bbox, layer.extent.llbbox)
         return bbox
 
 def wms100format_filter(format):
@@ -174,7 +174,7 @@ class WMSLayer(object):
         self.md = md
         self.map_layers = map_layers
         self.info_layers = info_layers
-        self.extend = map_layers[0].extend #TODO
+        self.extent = map_layers[0].extent #TODO
         self.queryable = True if info_layers else False
         self.transparent = any(map_lyr.transparent for map_lyr in self.map_layers)
         

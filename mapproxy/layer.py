@@ -48,7 +48,7 @@ class InfoLayer(object):
 
 class MapQuery(object):
     """
-    Internal query for a map with a specific extend, size, srs, etc.
+    Internal query for a map with a specific extent, size, srs, etc.
     """
     def __init__(self, bbox, size, srs, format='image/png', transparent=False,
                  tiled_only=False):
@@ -70,19 +70,19 @@ class InfoQuery(object):
         self.format = format
 
 
-def map_extend_from_grid(grid):
+def map_extent_from_grid(grid):
     """
     >>> from mapproxy.grid import tile_grid_for_epsg
-    >>> map_extend_from_grid(tile_grid_for_epsg('EPSG:900913')) 
+    >>> map_extent_from_grid(tile_grid_for_epsg('EPSG:900913')) 
     ... #doctest: +NORMALIZE_WHITESPACE
-    MapExtend((-20037508.342789244, -20037508.342789244,
+    MapExtent((-20037508.342789244, -20037508.342789244,
                20037508.342789244, 20037508.342789244), SRS('EPSG:900913'))
     """
-    return MapExtend(grid.bbox, grid.srs)
+    return MapExtent(grid.bbox, grid.srs)
 
-class MapExtend(object):
+class MapExtent(object):
     """
-    >>> me = MapExtend((5, 45, 15, 55), SRS(4326))
+    >>> me = MapExtent((5, 45, 15, 55), SRS(4326))
     >>> me.llbbox
     (5, 45, 15, 55)
     >>> map(int, me.bbox_for(SRS(900913)))
@@ -106,7 +106,7 @@ class MapExtend(object):
 
 
 class ResolutionConditional(MapLayer):
-    def __init__(self, one, two, resolution, srs, extend):
+    def __init__(self, one, two, resolution, srs, extent):
         self.one = one
         self.two = two
         self.resolution = resolution
@@ -114,7 +114,7 @@ class ResolutionConditional(MapLayer):
         
         #TODO
         self.transparent = self.one.transparent
-        self.extend = extend
+        self.extent = extent
     
     def get_map(self, query):
         bbox = query.bbox
@@ -135,7 +135,7 @@ class SRSConditional(MapLayer):
     PROJECTED = 'PROJECTED'
     GEOGRAPHIC = 'GEOGRAPHIC'
     
-    def __init__(self, layers, extend, transparent=False):
+    def __init__(self, layers, extent, transparent=False):
         self.transparent = transparent
         # TODO geographic/projected fallback
         self.srs_map = {}
@@ -143,7 +143,7 @@ class SRSConditional(MapLayer):
             for srs in srss:
                 self.srs_map[srs] = layer
         
-        self.extend = extend
+        self.extent = extent
     
     def get_map(self, query):
         layer = self._select_layer(query.srs)
@@ -170,9 +170,9 @@ class SRSConditional(MapLayer):
         
 
 class DirectMapLayer(MapLayer):
-    def __init__(self, source, extend):
+    def __init__(self, source, extent):
         self.source = source
-        self.extend = extend
+        self.extent = extent
     
     def get_map(self, query):
         return self.source.get_map(query)
@@ -182,7 +182,7 @@ class CacheMapLayer(MapLayer):
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
         self.resampling = resampling or base_config().image.resampling_method
-        self.extend = map_extend_from_grid(self.grid)
+        self.extent = map_extent_from_grid(self.grid)
         self.transparent = tile_manager.transparent
     
     def get_map(self, query):

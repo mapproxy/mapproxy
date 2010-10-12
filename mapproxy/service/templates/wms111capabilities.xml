@@ -85,7 +85,7 @@
 {{for layer in tile_layers}}
     <TileSet>
       <SRS>{{layer.grid.srs_name}}</SRS>
-      <BoundingBox SRS="EPSG:4326" minx="{{ layer.extend.llbbox[0] }}" miny="{{ layer.extend.llbbox[1] }}" maxx="{{ layer.extend.llbbox[2] }}" maxy="{{ layer.extend.llbbox[3] }}" />
+      <BoundingBox SRS="EPSG:4326" minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
       <Resolutions>{{for level, res in layer.grid.tile_sets}}{{res}} {{endfor}}</Resolutions>
       <Width>{{layer.grid.tile_size[0]}}</Width>
       <Height>{{layer.grid.tile_size[1]}}</Height>
@@ -106,8 +106,8 @@
     <Layer{{if layer.queryable}} queryable="1"{{endif}}>
       <Name>{{ layer.md['name'] }}</Name>
       <Title>{{ layer.md.get('title') }}</Title>
-      <LatLonBoundingBox minx="{{ layer.extend.llbbox[0] }}" miny="{{ layer.extend.llbbox[1] }}" maxx="{{ layer.extend.llbbox[2] }}" maxy="{{ layer.extend.llbbox[3] }}" />
-      <BoundingBox SRS="EPSG:4326" minx="{{ layer.extend.llbbox[0] }}" miny="{{ layer.extend.llbbox[1] }}" maxx="{{ layer.extend.llbbox[2] }}" maxy="{{ layer.extend.llbbox[3] }}" />
+      <LatLonBoundingBox minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
+      <BoundingBox SRS="EPSG:4326" minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
     </Layer>
 {{endfor}}
   </Layer>

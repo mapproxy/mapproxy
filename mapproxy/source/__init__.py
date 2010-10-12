@@ -18,7 +18,7 @@
 Map/information sources for layers or tile cache.
 """
 
-from mapproxy.layer import MapExtend, MapError, MapBBOXError
+from mapproxy.layer import MapExtent, MapError, MapBBOXError
 from mapproxy.image.message import message_image
 from mapproxy.srs import SRS
 
@@ -42,7 +42,7 @@ class InfoSource(object):
         raise NotImplementedError
 
 class DebugSource(Source):
-    extend = MapExtend((-180, -90, 180, 90), SRS(4326))
+    extent = MapExtent((-180, -90, 180, 90), SRS(4326))
     transparent = True
     def get_map(self, query):
         bbox = query.bbox

@@ -14,7 +14,7 @@ from mapproxy.layer import (
     SRSConditional,
     ResolutionConditional,
     DirectMapLayer,
-    MapExtend, 
+    MapExtent, 
     MapQuery,
 )
 from mapproxy.source import Source, InvalidSourceQuery, SourceError
@@ -39,7 +39,7 @@ from collections import defaultdict
 from nose.tools import eq_, raises, assert_not_equal
 
 TEST_SERVER_ADDRESS = ('127.0.0.1', 56413)
-GLOBAL_GEOGRAPHIC_EXTEND = MapExtend((-180, -90, 180, 90), SRS(4326))
+GLOBAL_GEOGRAPHIC_EXTENT = MapExtent((-180, -90, 180, 90), SRS(4326))
 
 tmp_lock_dir = None
 def setup():
@@ -487,7 +487,7 @@ class TestDirectMapLayer(object):
     def setup(self):
         self.client = MockWMSClient()
         self.source = WMSSource(self.client)
-        self.layer = DirectMapLayer(self.source, GLOBAL_GEOGRAPHIC_EXTEND)
+        self.layer = DirectMapLayer(self.source, GLOBAL_GEOGRAPHIC_EXTENT)
     
     def test_get_map(self):
         result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
@@ -507,7 +507,7 @@ class TestDirectMapLayerWithSupportedSRS(object):
     def setup(self):
         self.client = MockWMSClient()
         self.source = WMSSource(self.client)
-        self.layer = DirectMapLayer(self.source, GLOBAL_GEOGRAPHIC_EXTEND)
+        self.layer = DirectMapLayer(self.source, GLOBAL_GEOGRAPHIC_EXTENT)
     
     def test_get_map(self):
         result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
@@ -630,7 +630,7 @@ class TestResolutionConditionalLayers(object):
         self.low.transparent = False #TODO
         self.high = MockLayer()
         self.layer = ResolutionConditional(self.low, self.high, 10, SRS(900913),
-            GLOBAL_GEOGRAPHIC_EXTEND)
+            GLOBAL_GEOGRAPHIC_EXTENT)
     def test_resolution_low(self):
         self.layer.get_map(MapQuery((0, 0, 10000, 10000), (100, 100), SRS(900913)))
         assert self.low.requested
@@ -661,7 +661,7 @@ class TestSRSConditionalLayers(object):
             (self.l4326, (SRS('EPSG:4326'),)), 
             (self.l900913, (SRS('EPSG:900913'), SRS('EPSG:31467'))),
             (self.l32632, (SRSConditional.PROJECTED,)),
-        ], GLOBAL_GEOGRAPHIC_EXTEND)
+        ], GLOBAL_GEOGRAPHIC_EXTENT)
     def test_srs_match(self):
         assert self.layer._select_layer(SRS(4326)) == self.l4326
         assert self.layer._select_layer(SRS(900913)) == self.l900913
@@ -681,8 +681,8 @@ class TestNeastedConditionalLayers(object):
             SRSConditional([
                 (self.l900913, (SRS('EPSG:900913'),)),
                 (self.l4326, (SRS('EPSG:4326'),))
-            ], GLOBAL_GEOGRAPHIC_EXTEND),
-            self.direct, 10, SRS(900913), GLOBAL_GEOGRAPHIC_EXTEND
+            ], GLOBAL_GEOGRAPHIC_EXTENT),
+            self.direct, 10, SRS(900913), GLOBAL_GEOGRAPHIC_EXTENT
             )
     def test_resolution_high_900913(self):
         self.layer.get_map(MapQuery((0, 0, 100, 100), (100, 100), SRS(900913)))

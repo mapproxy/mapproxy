@@ -95,7 +95,7 @@ class ImageTransformer(object):
     
     def _transform_simple(self, src_img, src_bbox, dst_size, dst_bbox):
         """
-        Do a simple crop/extend transformation.
+        Do a simple crop/extent transformation.
         """
         src_quad = (0, 0, src_img.size[0], src_img.size[1])
         to_src_px = make_lin_transf(src_bbox, src_quad)
