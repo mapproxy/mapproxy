@@ -1,4 +1,6 @@
 services:
+  demo:
+  kml:
   tms:
     # needs no arguments
   wms:
