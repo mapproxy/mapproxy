@@ -18,6 +18,7 @@
 WMS service handler
 """
 from itertools import chain
+from functools import partial
 from mapproxy.request.wms import wms_request
 from mapproxy.srs import merge_bbox, SRS, TransformationError
 from mapproxy.service.base import Server
@@ -41,11 +42,12 @@ class WMSServer(Server):
     request_methods = ('map', 'capabilities', 'featureinfo')
     
     def __init__(self, layers, md, layer_merger=None, request_parser=None, tile_layers=None,
-        attribution=None, srs=None, image_formats=None):
+        attribution=None, srs=None, image_formats=None, strict=False):
         Server.__init__(self)
-        self.request_parser = request_parser or wms_request
+        self.request_parser = request_parser or partial(wms_request, strict=strict)
         self.layers = layers
         self.tile_layers = tile_layers or {}
+        self.strict = strict
         if layer_merger is None:
             from mapproxy.image import LayerMerger
             layer_merger = LayerMerger

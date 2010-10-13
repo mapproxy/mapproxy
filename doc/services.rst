@@ -57,6 +57,10 @@ See :ref:`axis order<axis_order>` for further configuration that might be needed
 A list of image mime types the server should support.
 
 
+``strict``
+""""""""""
+
+Some WMS clients do not send all required parameters in feature info requests, MapProxy ignores these errors unless you set ``strict`` to ``true``.
 
 Full example
 """"""""""""

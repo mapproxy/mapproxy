@@ -541,13 +541,14 @@ class ServiceConfiguration(ConfigurationBase):
         md = conf.get('md', {})
         tile_layers = self.tile_layers(conf, context)
         attribution = conf.get('attribution')
+        strict = context.globals.get_value('strict', conf, global_key='wms.strict')
         layers = odict()
         for layer_name, layer_conf in context.layers.iteritems():
             layers[layer_name] = layer_conf.wms_layer(context)
         image_formats = context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = context.globals.get_value('srs', conf, global_key='wms.srs')
         return WMSServer(layers, md, attribution=attribution, image_formats=image_formats,
-            srs=srs, tile_layers=tile_layers)
+            srs=srs, tile_layers=tile_layers, strict=strict)
 
     def demo_service(self, conf, context):
         md = context.services.conf.get('wms', {}).get('md', {}).copy()

@@ -528,8 +528,9 @@ def negotiate_version(version):
         if version >= next_highest_version:
             return next_highest_version
 
-def wms_request(req, validate=True):
-    non_strict = base_config().wms.non_strict
+def wms_request(req, validate=True, strict=None):
+    if strict is None:
+        strict = base_config().wms.strict
     version = _parse_version(req)
     req_type = _parse_request_type(req)
     
@@ -544,7 +545,7 @@ def wms_request(req, validate=True):
                                             validate=False)
         raise RequestError("unknown WMS request type '%s'" % req_type, request=dummy_req)
     return req_class(param=req.args, url=req.base_url, validate=True,
-                     non_strict=non_strict, http=req)
+                     non_strict=not strict, http=req)
 
 
 def create_request(req_data, param, req_type='map', version='1.1.1'):
