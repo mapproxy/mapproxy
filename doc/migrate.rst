@@ -37,7 +37,7 @@ services.yaml
 
 With 0.8.x you had to configure each layer independently and you could not reuse anything. The new configuration separates the source, grid, cache and layers configuration.
 
-You now only need to define you grids once. It is also possible to define complete different grids (``srs``, ``bbox``, ``tile_size``, etc.) and use them within the same cache. All sources and caches can also be used in multiple layers.
+You now only need to define your grids once. It is also possible to define complete different grids (``srs``, ``bbox``, ``tile_size``, etc.) and use them within the same cache. All sources and caches can also be used in multiple layers.
 
 
 Example
