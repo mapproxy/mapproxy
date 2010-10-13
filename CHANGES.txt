@@ -1,3 +1,11 @@
+0.9.0rc1 2010-10-13
+
+- new OpenLayers-based '/demo' service that shows all configured WMS/TMS layers
+- display welcome message at '/' instead of 'not found' error
+- less rigid feature info request parser (no error with missing style or format
+  parameters). Use wms.strict to enable OCG compliant mode.
+- updated tempita to 0.5
+
 0.9.0b2 2010-09-20
 
 - new minimize_meta_requests option
