@@ -149,7 +149,7 @@ class Seeder(object):
         
         num_seed_levels = task.max_level - task.start_level + 1
         self.report_till_level = task.start_level + int(num_seed_levels * 0.7)
-        meta_size = tile_mgr.meta_grid._meta_size if tile_mgr.meta_grid else (1, 1)
+        meta_size = tile_mgr.meta_grid.meta_size if tile_mgr.meta_grid else (1, 1)
         self.grid = MetaGrid(tile_mgr.grid, meta_size=meta_size, meta_buffer=0)
         self.progress = 0.0
         self.eta = ETA()
