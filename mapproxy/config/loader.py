@@ -412,9 +412,9 @@ class CacheConfiguration(ConfigurationBase):
         caches = []
 
         meta_buffer = context.globals.get_value('meta_buffer', self.conf,
-            global_key='grid.meta_buffer')
+            global_key='cache.meta_buffer')
         meta_size = context.globals.get_value('meta_size', self.conf,
-            global_key='grid.meta_size')
+            global_key='cache.meta_size')
         minimize_meta_requests = self.conf.get('minimize_meta_requests', False)
         
         for grid_conf in [context.grids[g] for g in self.conf['grids']]:
