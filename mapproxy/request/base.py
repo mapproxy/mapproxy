@@ -261,7 +261,7 @@ class RequestParams(object):
                                  (self.__class__.__name__, name))
     
     def __getitem__(self, key):
-        return self.delimiter.join(self.params.get_all(key))
+        return self.delimiter.join(map(str, self.params.get_all(key)))
     
     def __setitem__(self, key, value):
         """

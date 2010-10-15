@@ -556,9 +556,9 @@ def create_request(req_data, param, req_type='map', version='1.1.1'):
         req_data['format'] = param['request_format']
     elif 'format' in param:
         req_data['format'] = param['format']
-    # req_data['bbox'] = param['bbox']
-    # if isinstance(req_data['bbox'], types.ListType):
-    #     req_data['bbox'] = ','.join(str(x) for x in req_data['bbox'])
-    # req_data['srs'] = param['srs']
+    
+    if 'transparent' in req_data:
+        # we don't want a boolean
+        req_data['transparent'] = str(req_data['transparent'])
     
     return request_mapping[Version(version)][req_type](url=url, param=req_data)

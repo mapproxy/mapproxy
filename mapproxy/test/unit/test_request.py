@@ -302,6 +302,9 @@ class TestWMSMapRequestParams(object):
         assert self.m.transparent == False
         self.m['transparent'] = 'trUe'
         assert self.m.transparent == True
+    def test_transparent_bool(self):
+        self.m['transparent'] = True
+        assert self.m['transparent'] == 'True'
     def test_bgcolor(self):
         assert self.m.bgcolor == '#ffffff'
         self.m['bgcolor'] = '0x42cafe'
