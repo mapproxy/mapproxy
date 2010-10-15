@@ -52,12 +52,12 @@ cache = dict(
     base_dir = '../var/cache_data',
     lock_dir = '../tmp/tile_locks',
     max_tile_limit = 500,
-    concurrent_tile_creators = 2
+    concurrent_tile_creators = 2,
+    meta_size = (4, 4),
+    meta_buffer = 80,
 )
 
 grid = dict(
-    meta_size = (4, 4),
-    meta_buffer = 80,
     tile_size = (256, 256),
 )
 

@@ -1,5 +1,5 @@
 globals:
-  grid:
+  cache:
     meta_size: [1, 1]
     meta_buffer: 0
   image:
