@@ -171,6 +171,11 @@ SRS will access the ``EPSG:900913`` cache, requests with geographical SRS will u
 ``EPSG:4326``.
 
 
+``meta_size`` and ``meta_buffer``
+"""""""""""""""""""""""""""""""""
+
+Change the ``meta_size`` and ``meta_buffer`` of this cache. See :ref:`global cache options <meta_size>` for more details.
+
 ``use_direct_from_level`` and ``use_direct_from_res``
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 
@@ -189,6 +194,8 @@ Example ``caches`` configuration
   fullexample:
     source: [mysource, mysecondsource]
     grids: [mygrid, mygrid2]
+    meta_size: [8, 8]
+    meta_buffer: 256
     watermark:
       text: MapProxy
     request_format: image/tiff
@@ -392,6 +399,8 @@ Here you can define some options that affect the way MapProxy generates image re
 
 ``cache``
 """""""""
+
+.. _meta_size:
 
 ``meta_size``
   MapProxy does not make a single request for every tile but will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source WMS.
