@@ -45,11 +45,11 @@ class NoCaseMultiDict(dict):
         """
         tmp = {}
         if isinstance(mapping, NoCaseMultiDict):
-            for key, value in mapping.iteritems(): #pylint: disable=E1103
+            for key, value in mapping.iteritems(): #pylint: disable-msg=E1103
                 tmp.setdefault(key.lower(), (key, []))[1].extend(value)
         else:
             if isinstance(mapping, dict):
-                itr = mapping.iteritems() #pylint: disable=E1103
+                itr = mapping.iteritems() #pylint: disable-msg=E1103
             else:
                 itr = iter(mapping)
             for key, value in itr:

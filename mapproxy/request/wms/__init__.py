@@ -138,7 +138,7 @@ class WMSRequest(BaseRequest):
     fixed_params = {}
     expected_param = []
     non_strict_params = set()
-    #pylint: disable=E1102
+    #pylint: disable-msg=E1102
     xml_exception_handler = None
     
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
@@ -175,7 +175,7 @@ class WMSMapRequest(WMSRequest):
     fixed_params = {'request': 'GetMap', 'service': 'WMS'}
     expected_param = ['version', 'request', 'layers', 'styles', 'srs', 'bbox', 
                       'width', 'height', 'format']
-    #pylint: disable=E1102
+    #pylint: disable-msg=E1102
     xml_exception_handler = None
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
