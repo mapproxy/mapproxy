@@ -193,9 +193,9 @@ class TileManager(object):
     def _create_meta_tile(self, meta_tile):
         tile_size = self.grid.tile_size
         query = MapQuery(meta_tile.bbox, meta_tile.size, self.grid.srs, self.request_format)
-        main_tile = Tile(meta_tile.tiles[0])
+        main_tile = Tile(meta_tile.main_tile_coord)
         with self.lock(main_tile):
-            if not all(self.is_cached(t) for t in meta_tile.tiles):
+            if not all(self.is_cached(t) for t in meta_tile.tiles if t is not None):
                 meta_tile_image = self._query_sources(query)
                 splitted_tiles = split_meta_tiles(meta_tile_image, meta_tile.tile_patterns,
                                                   tile_size)
@@ -323,6 +323,7 @@ def split_meta_tiles(meta_tile, tiles, tile_size):
     split_tiles = []
     for tile in tiles:
         tile_coord, crop_coord = tile
+        if tile_coord is None: continue
         data = splitter.get_tile(crop_coord, tile_size)
         new_tile = Tile(tile_coord)
         new_tile.source = data

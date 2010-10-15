@@ -843,6 +843,23 @@ class MetaTile(object):
     def tiles(self):
         return [t[0] for t in self.tile_patterns]
     
+    @property
+    def main_tile_coord(self):
+        """
+        Returns the "main" tile of the meta tile. This tile(coord) can be used
+        for locking.
+        
+        >>> t = MetaTile(None, None, [((0, 0, 0), (0, 0)), ((1, 0, 0), (100, 0))], (2, 1))
+        >>> t.main_tile_coord
+        (0, 0, 0)
+        >>> t = MetaTile(None, None, [(None, None), ((1, 0, 0), (100, 0))], (2, 1))
+        >>> t.main_tile_coord
+        (1, 0, 0)
+        """
+        for t in self.tiles:
+            if t is not None:
+                return t
+    
     def __repr__(self):
         return "MetaTile(%r, %r, %r, %r)" % (self.bbox, self.size, self.grid_size,
                                              self.tile_patterns)
