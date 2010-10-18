@@ -1,8 +1,6 @@
 MapProxy Documentation
 =======================================
 
-*This documentation is a work in progress.* |today|
-
 .. toctree::
    :maxdepth: 2
    
@@ -27,3 +25,6 @@ Indices and tables
 * :ref:`search`
 
 .. * :ref:`modindex`
+
+
+Documentation build on |today|.
