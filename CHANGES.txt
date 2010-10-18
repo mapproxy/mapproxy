@@ -1,3 +1,7 @@
+0.9.0 2010-10-18
+
+- minor bug fixes
+
 0.9.0rc1 2010-10-13
 
 - new OpenLayers-based '/demo' service that shows all configured WMS/TMS layers
