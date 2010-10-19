@@ -34,6 +34,13 @@ class WMS100ExceptionHandler(WMSXMLExceptionHandler):
     template_file = 'wms100exception.xml'
     content_type = 'text/xml'
 
+class WMS110ExceptionHandler(WMSXMLExceptionHandler):
+    """
+    Exception handler for OGC WMS 1.1.0 ServiceExceptionReports
+    """
+    template_file = 'wms110exception.xml'
+    mimetype = 'application/vnd.ogc.se_xml'
+
 class WMS111ExceptionHandler(WMSXMLExceptionHandler):
     """
     Exception handler for OGC WMS 1.1.1 ServiceExceptionReports
