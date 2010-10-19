@@ -141,7 +141,7 @@ class ETA(object):
 
 
 class Seeder(object):
-    def __init__(self, tile_mgr, task, seed_pool, skip_geoms_for_last_levels):
+    def __init__(self, tile_mgr, task, seed_pool, skip_geoms_for_last_levels=0):
         self.tile_mgr = tile_mgr
         self.task = task
         self.seed_pool = seed_pool
