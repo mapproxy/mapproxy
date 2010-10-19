@@ -198,7 +198,7 @@ class TestTileManagerTiledSource(object):
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png')
     
     def test_create_tiles(self):
-        self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
         eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
         eq_(sorted(self.client.requested_tiles), [(0, 0, 1), (1, 0, 1)])
 
@@ -212,13 +212,13 @@ class TestTileManagerDifferentSourceGrid(object):
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png')
     
     def test_create_tiles(self):
-        self.tile_mgr._create_tiles([Tile((1, 0, 1))])
+        self.tile_mgr.creator().create_tiles([Tile((1, 0, 1))])
         eq_(self.file_cache.stored_tiles, set([(1, 0, 1)]))
         eq_(self.client.requested_tiles, [(0, 0, 0)])
     
     @raises(InvalidSourceQuery)
     def test_create_tiles_out_of_bounds(self):
-        self.tile_mgr._create_tiles([Tile((0, 0, 0))])
+        self.tile_mgr.creator().create_tiles([Tile((0, 0, 0))])
 
 class MockSource(Source):
     def __init__(self, *args):
@@ -240,7 +240,7 @@ class TestTileManagerSource(object):
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png')
     
     def test_create_tile(self):
-        self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
         eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
         eq_(sorted(self.source.requested),
             [((-180.0, -90.0, 0.0, 90.0), (256, 256), SRS(4326)),
@@ -273,20 +273,20 @@ class TestTileManagerWMSSource(object):
         )
 
     def test_create_tile_first_level(self):
-        self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
         eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
         eq_(self.client.requested,
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))])
     
     def test_create_tile(self):
-        self.tile_mgr._create_tiles([Tile((0, 0, 2))])
+        self.tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
         eq_(self.file_cache.stored_tiles,
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)]))
         eq_(sorted(self.client.requested),
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326))])
     
     def test_create_tiles(self):
-        self.tile_mgr._create_tiles([Tile((0, 0, 2)), Tile((2, 0, 2))])
+        self.tile_mgr.creator().create_tiles([Tile((0, 0, 2)), Tile((2, 0, 2))])
         eq_(self.file_cache.stored_tiles,
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
                  (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)]))
@@ -320,21 +320,21 @@ class TestTileManagerWMSSourceMinimalMetaRequests(object):
     
     def test_create_tile_single(self):
         # not enabled for single tile requests
-        self.tile_mgr._create_tiles([Tile((0, 0, 2))])
+        self.tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
         eq_(self.file_cache.stored_tiles,
             set([(0, 0, 2), (0, 1, 2), (1, 0, 2), (1, 1, 2)]))
         eq_(sorted(self.client.requested),
             [((-180.0, -90.0, 3.515625, 90.0), (522, 512), SRS(4326))])
     
     def test_create_tile_multiple(self):
-        self.tile_mgr._create_tiles([Tile((4, 0, 3)), Tile((4, 1, 3)), Tile((4, 2, 3))])
+        self.tile_mgr.creator().create_tiles([Tile((4, 0, 3)), Tile((4, 1, 3)), Tile((4, 2, 3))])
         eq_(self.file_cache.stored_tiles,
             set([(4, 0, 3), (4, 1, 3), (4, 2, 3)]))
         eq_(sorted(self.client.requested),
             [((-1.7578125, -90, 46.7578125, 46.7578125), (276, 778), SRS(4326))])
 
     def test_create_tile_multiple_fragmented(self):
-        self.tile_mgr._create_tiles([Tile((4, 0, 3)), Tile((5, 2, 3))])
+        self.tile_mgr.creator().create_tiles([Tile((4, 0, 3)), Tile((5, 2, 3))])
         eq_(self.file_cache.stored_tiles,
             set([(4, 0, 3), (4, 1, 3), (4, 2, 3), (5, 0, 3), (5, 1, 3), (5, 2, 3)]))
         eq_(sorted(self.client.requested),
@@ -356,14 +356,14 @@ class TestTileManagerLocking(object):
             meta_size=[2, 2], meta_buffer=0)
     
     def test_get_single(self):
-        self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
         eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
         eq_(self.source.requested,
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))])
     
     def test_concurrent(self):
         def do_it():
-            self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+            self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
         
         threads = [threading.Thread(target=do_it) for _ in range(3)]
         [t.start() for t in threads]
@@ -391,7 +391,7 @@ class TestTileManagerMultipleSources(object):
         self.layer = CacheMapLayer(self.tile_mgr)
     
     def test_get_single(self):
-        self.tile_mgr._create_tiles([Tile((0, 0, 1))])
+        self.tile_mgr.creator().create_tiles([Tile((0, 0, 1))])
         eq_(self.file_cache.stored_tiles, set([(0, 0, 1)]))
         eq_(self.source_base.requested,
             [((-180.0, -90.0, 0.0, 90.0), (256, 256), SRS(4326))])
@@ -419,7 +419,7 @@ class TestTileManagerMultipleSourcesWithMetaTiles(object):
             meta_size=[2, 2], meta_buffer=0)
     
     def test_merged_tiles(self):
-        tiles = self.tile_mgr._create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        tiles = self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
         eq_(self.file_cache.stored_tiles, set([(0, 0, 1), (1, 0, 1)]))
         eq_(self.source_base.requested,
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))])

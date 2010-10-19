@@ -70,7 +70,7 @@ class TileManager(object):
                 raise ValueError('meta tiling configured but not supported by all sources')
     
     def load_tile_coord(self, tile_coord, with_metadata=False):
-        return self.load_tile_coords([tile_coord], with_metadata)[0]
+        return self.load_tile_coords([tile_coord], with_metadata, use_cache)[0]
     
     def load_tile_coords(self, tile_coords, with_metadata=False):
         tiles = TileCollection(tile_coords)
@@ -84,12 +84,16 @@ class TileManager(object):
                 uncached_tiles.append(tile)
         
         if uncached_tiles:
-            created_tiles = self._create_tiles(uncached_tiles)
+            creator = self.creator(use_cache)
+            created_tiles = creator.create_tiles(uncached_tiles)
             for created_tile in created_tiles:
                 if created_tile.coord in tiles:
                     tiles[created_tile.coord].source = created_tile.source
         
         return tiles
+    
+    def creator(self):
+        return TileCreator(self.cache, self.sources, self.grid, self.meta_grid, self)
     
     def lock(self, tile):
         if self.meta_grid:
@@ -118,11 +122,25 @@ class TileManager(object):
         :note: Returns _expire_timestamp by default.
         """
         return self._expire_timestamp
+
+class TileCreator(object):
+    def __init__(self, cache, sources, grid, meta_grid, tile_mgr):
+        self.cache = cache
+        self.sources = sources
+        self.grid = grid
+        self.meta_grid = meta_grid
+        self.tile_mgr = tile_mgr
     
-    def _create_tiles(self, tiles):
+    def is_cached(self, tile):
+        """
+        Return True if the tile is cached.
+        """
+        return self.tile_mgr.is_cached(tile)
+    
+    def create_tiles(self, tiles):
         if not self.meta_grid:
             created_tiles = self._create_single_tiles(tiles)
-        elif self.minimize_meta_requests and len(tiles) > 1:
+        elif self.tile_mgr.minimize_meta_requests and len(tiles) > 1:
             # use minimal requests only for mulitple tile requests (ie not for TMS)
             meta_tile = self.meta_grid.minimal_meta_tile([t.coord for t in tiles])
             created_tiles = self._create_meta_tile(meta_tile)
@@ -140,7 +158,7 @@ class TileManager(object):
         return created_tiles
 
     def _create_single_tiles(self, tiles):
-        if self.thread_pool_size > 1 and len(tiles) > 1:
+        if self.tile_mgr.thread_pool_size > 1 and len(tiles) > 1:
             return self._create_threaded(self._create_single_tile, tiles)
         
         created_tiles = []
@@ -149,7 +167,7 @@ class TileManager(object):
         return created_tiles
     
     def _create_threaded(self, create_func, tiles):
-        pool = ThreadedExecutor(create_func, pool_size=self.thread_pool_size)
+        pool = ThreadedExecutor(create_func, pool_size=self.tile_mgr.thread_pool_size)
         result = []
         for new_tiles in pool.execute(tiles):
             result.extend(new_tiles)
@@ -158,9 +176,9 @@ class TileManager(object):
     def _create_single_tile(self, tile):
         tile_bbox = self.grid.tile_bbox(tile.coord)
         query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs,
-                         self.request_format)
-        with self.lock(tile):
-            if not self.cache.is_cached(tile):
+                         self.tile_mgr.request_format)
+        with self.tile_mgr.lock(tile):
+            if not self.is_cached(tile):
                 tile.source = self._query_sources(query)
                 self.cache.store(tile)
             else:
@@ -182,7 +200,7 @@ class TileManager(object):
         return merge_images(imgs)
     
     def _create_meta_tiles(self, meta_tiles):
-        if self.thread_pool_size > 1 and len(meta_tiles) > 1:
+        if self.tile_mgr.thread_pool_size > 1 and len(meta_tiles) > 1:
             return self._create_threaded(self._create_meta_tile, meta_tiles)
         
         created_tiles = []
@@ -192,9 +210,9 @@ class TileManager(object):
     
     def _create_meta_tile(self, meta_tile):
         tile_size = self.grid.tile_size
-        query = MapQuery(meta_tile.bbox, meta_tile.size, self.grid.srs, self.request_format)
+        query = MapQuery(meta_tile.bbox, meta_tile.size, self.grid.srs, self.tile_mgr.request_format)
         main_tile = Tile(meta_tile.main_tile_coord)
-        with self.lock(main_tile):
+        with self.tile_mgr.lock(main_tile):
             if not all(self.is_cached(t) for t in meta_tile.tiles if t is not None):
                 meta_tile_image = self._query_sources(query)
                 splitted_tiles = split_meta_tiles(meta_tile_image, meta_tile.tile_patterns,

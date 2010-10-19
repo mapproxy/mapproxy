@@ -189,8 +189,7 @@ class CacheMapLayer(MapLayer):
         if query.tiled_only:
             self._check_tiled(query)
         
-        tiled_image = self._tiled_image(query.bbox, query.size, query.srs,
-                                        query.tiled_only)
+        tiled_image = self._tiled_image(query)
         result = tiled_image.transform(query.bbox, query.srs, query.size, 
                                        self.resampling)
         return result
@@ -202,10 +201,11 @@ class CacheMapLayer(MapLayer):
             raise MapError("invalid tile size (use %dx%d)" % self.grid.tile_size)
     
     
-    def _tiled_image(self, bbox, size, srs, tiled_only):
+    def _tiled_image(self, query):
         try:
             src_bbox, tile_grid, affected_tile_coords = \
-                self.grid.get_affected_tiles(bbox, size, req_srs=srs)
+                self.grid.get_affected_tiles(query.bbox, query.size,
+                                             req_srs=query.srs)
         except NoTiles:
             raise BlankImage()
         except GridError, ex:
@@ -215,14 +215,16 @@ class CacheMapLayer(MapLayer):
         if num_tiles >= base_config().cache.max_tile_limit:
             raise MapBBOXError("to many tiles")
         
-        if tiled_only:
+        if query.tiled_only:
             if num_tiles > 1: 
                 raise MapBBOXError("not a single tile")
-            if not bbox_equals(bbox, src_bbox, (bbox[2]-bbox[0]/size[0]/10),
-                                               (bbox[3]-bbox[1]/size[1]/10)):
+            bbox = query.bbox
+            if not bbox_equals(bbox, src_bbox, (bbox[2]-bbox[0]/query.size[0]/10),
+                                               (bbox[3]-bbox[1]/query.size[1]/10)):
                 raise MapBBOXError("query does not align to tile boundaries")
         
-        tile_sources = [tile.source for tile in self.tile_manager.load_tile_coords(affected_tile_coords)]
+        tile_sources = [tile.source for tile in
+                        self.tile_manager.load_tile_coords(affected_tile_coords)]
         return TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
                           tile_grid=tile_grid, tile_size=self.grid.tile_size,
                           transparent=self.transparent)
