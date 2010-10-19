@@ -353,7 +353,13 @@ def seed_from_yaml_conf(seed_conf_file, mapproxy_conf_file, verbose=True, dry_ru
     conf = ProxyConfiguration(yaml.load(open(mapproxy_conf_file)))
     for layer, options in seed_conf['seeds'].iteritems():
         remove_before = before_timestamp_from_options(options)
-        caches = dict((grid.srs, tile_mgr) for grid, tile_mgr in conf.caches[layer].caches(conf))
+        try:
+            caches = conf.caches[layer].caches(conf)
+        except KeyError:
+            print >>sys.stderr, 'error: cache %s not found. available caches: %s' % (
+                layer, ','.join(conf.caches.keys()))
+            return
+        caches = dict((grid.srs, tile_mgr) for grid, tile_mgr in caches)
         seeder = CacheSeeder(caches, remove_before=remove_before, dry_run=dry_run,
                             concurrency=concurrency,
                             skip_geoms_for_last_levels=skip_geoms_for_last_levels)
