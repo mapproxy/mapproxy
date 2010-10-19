@@ -24,6 +24,7 @@ from functools import partial
 
 import yaml
 
+from mapproxy.config.loader import ProxyConfiguration
 from mapproxy.srs import SRS
 from mapproxy.grid import MetaGrid, bbox_intersects, bbox_contains
 from mapproxy.source import SourceError
@@ -340,18 +341,16 @@ def status_symbol(i, total):
     else:
         return symbols[int(math.ceil(i/(total/4)))]
 
-def seed_from_yaml_conf(conf_file, verbose=True, rebuild_inplace=True, dry_run=False,
+def seed_from_yaml_conf(seed_conf_file, mapproxy_conf_file, verbose=True, dry_run=False,
     concurrency=2, skip_geoms_for_last_levels=0):
-    from mapproxy.config.loader import ProxyConfiguration
     
-    if hasattr(conf_file, 'read'):
-        seed_conf = yaml.load(conf_file)
+    if hasattr(seed_conf_file, 'read'):
+        seed_conf = yaml.load(seed_conf_file)
     else:
-        with open(conf_file) as conf_file:
-            seed_conf = yaml.load(conf_file)
+        with open(seed_conf_file) as seed_conf:
+            seed_conf = yaml.load(seed_conf)
     
-    #TODO
-    conf = ProxyConfiguration(yaml.load(open('etc/mapproxy.yaml')))
+    conf = ProxyConfiguration(yaml.load(open(mapproxy_conf_file)))
     for layer, options in seed_conf['seeds'].iteritems():
         remove_before = before_timestamp_from_options(options)
         caches = dict((grid.srs, tile_mgr) for grid, tile_mgr in conf.caches[layer].caches(conf))

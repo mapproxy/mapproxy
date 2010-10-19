@@ -17,11 +17,6 @@
 
 from optparse import OptionParser
 from mapproxy.seed import seed_from_yaml_conf
-from mapproxy.config import load_base_config, base_config
-
-def load_config(conf_file=None):
-    if conf_file is not None:
-        load_base_config(conf_file)
 
 def main():
     usage = "usage: %prog [options] seed_conf"
@@ -51,9 +46,7 @@ def main():
     if not options.conf_file:
         parser.error('set proxy configuration with -f')
     
-    load_config(options.conf_file)
-    
-    seed_from_yaml_conf(args[0], verbose=options.verbose,
+    seed_from_yaml_conf(args[0], mapproxy_conf_file=options.conf_file, verbose=options.verbose,
                         dry_run=options.dry_run, concurrency=options.concurrency,
                         skip_geoms_for_last_levels=options.geom_levels)
 
