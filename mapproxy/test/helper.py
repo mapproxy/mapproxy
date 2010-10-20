@@ -89,6 +89,12 @@ class TempFiles(object):
                 os.remove(tmp_file)
         self.tmp_files = []
 
+class TempFile(TempFiles):
+    def __init__(self, suffix='', no_create=False):
+        TempFiles.__init__(self, suffix=suffix, no_create=no_create)
+    def __enter__(self):
+        return TempFiles.__enter__(self)[0]
+
 class LogMock(object):
     log_methods = ('info', 'debug', 'warn', 'error', 'fail')
     def __init__(self, module, log_name='log'):
