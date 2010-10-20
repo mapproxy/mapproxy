@@ -20,7 +20,6 @@ import re
 import math
 import time
 import datetime
-from functools import partial
 
 import yaml
 
@@ -36,8 +35,12 @@ from mapproxy.util import (
 )
 
 try:
-    import shapely.wkt
-    import shapely.geometry
+    from mapproxy.util.geom import (
+        load_polygons,
+        load_datasource,
+        transform_geometry,
+        bbox_polygon,
+    )
 except ImportError:
     shapely_present = False
 else:
@@ -288,14 +291,8 @@ class SeedTask(object):
         else:
             self.intersects = self._bbox_intersects
     
-
     def _geom_intersects(self, bbox):
-        bbox_poly = shapely.geometry.Polygon((
-            (bbox[0], bbox[1]),
-            (bbox[2], bbox[1]),
-            (bbox[2], bbox[3]),
-            (bbox[0], bbox[3]),
-            ))
+        bbox_poly = bbox_polygon(bbox)
         if self.geom.contains(bbox_poly): return CONTAINS
         if self.geom.intersects(bbox_poly): return INTERSECTS
         return NONE
@@ -453,65 +450,4 @@ def caches_from_layer(layer):
         else:
             caches.append(layer.cache)
     return caches
-
-def load_datasource(datasource, where=None):
-    from mapproxy.util.ogr import OGRShapeReader
-    
-    polygons = []
-    for wkt in OGRShapeReader(datasource).wkts(where):
-        polygons.append(shapely.wkt.loads(wkt))
-        
-    mp = shapely.geometry.MultiPolygon(polygons)
-    mp = simplify_geom(mp)
-    return mp.bounds, mp
-
-def load_polygons(geom_files):
-    polygons = []
-    if isinstance(geom_files, basestring):
-        geom_files = [geom_files]
-    
-    for geom_file in geom_files:
-        geom_file = abspath(geom_file)
-        with open(geom_file) as f:
-            for line in f:
-                geom = shapely.wkt.loads(line)
-                if geom.type != 'Polygon':
-                    print 'ignoring non-polygon geometry (%s) from %s' % \
-                        (geom.type, geom_file)
-                else:
-                    polygons.append(geom)
-    
-    mp = shapely.geometry.MultiPolygon(polygons)
-    mp = simplify_geom(mp)
-    return mp.bounds, mp
-
-def simplify_geom(geom):
-    bounds = geom.bounds
-    w, h = bounds[2] - bounds[0], bounds[3] - bounds[1]
-    tolerance = min((w/1000, h/1000))
-    return geom.simplify(tolerance, preserve_topology=False)
-
-def transform_geometry(from_srs, to_srs, geometry):
-    transf = partial(transform_xy, from_srs, to_srs)
-    
-    if geometry.type == 'Polygon':
-        return transform_polygon(transf, geometry)
-    
-    if geometry.type == 'MultiPolygon':
-        return transform_multipolygon(transf, geometry)
-
-def transform_polygon(transf, polygon):
-    ext = transf(polygon.exterior.xy)
-    ints = [transf(ring.xy) for ring in polygon.interiors]
-    return shapely.geometry.Polygon(ext, ints)
-
-def transform_multipolygon(transf, multipolygon):
-    transformed_polygons = []
-    for polygon in multipolygon:
-        transformed_polygons.append(transform_polygon(transf, polygon))
-    return shapely.geometry.MultiPolygon(transformed_polygons)
-
-
-def transform_xy(from_srs, to_srs, xy):
-    return list(from_srs.transform_to(to_srs, zip(*xy)))
 
