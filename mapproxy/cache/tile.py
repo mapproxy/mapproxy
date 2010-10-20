@@ -70,7 +70,7 @@ class TileManager(object):
                 raise ValueError('meta tiling configured but not supported by all sources')
     
     def load_tile_coord(self, tile_coord, with_metadata=False):
-        return self.load_tile_coords([tile_coord], with_metadata, use_cache)[0]
+        return self.load_tile_coords([tile_coord], with_metadata)[0]
     
     def load_tile_coords(self, tile_coords, with_metadata=False):
         tiles = TileCollection(tile_coords)
@@ -84,7 +84,7 @@ class TileManager(object):
                 uncached_tiles.append(tile)
         
         if uncached_tiles:
-            creator = self.creator(use_cache)
+            creator = self.creator()
             created_tiles = creator.create_tiles(uncached_tiles)
             for created_tile in created_tiles:
                 if created_tile.coord in tiles:
