@@ -154,6 +154,8 @@ else:
                 errno = libproj.pj_get_errno_ref().contents
                 raise ProjInitError('error initializing Proj(proj_def=%r, init=%r): %s' %
                     (proj_def, init, libproj.pj_strerrno(errno)))
+            
+            self.srs = self._srs()
     
         def is_latlong(self):
             """
@@ -173,8 +175,7 @@ else:
             else:
                 return False
     
-        @property
-        def srs(self):
+        def _srs(self):
             res = libproj.pj_get_def(self._proj, 0)
             srs_def = ctypes.c_char_p(res).value
             libproj.pj_dalloc(res)
