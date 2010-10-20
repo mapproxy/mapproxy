@@ -18,15 +18,15 @@ from __future__ import division, with_statement
 import os
 import tempfile
 
-try:
-    import shapely
-except ImportError:
+from mapproxy.srs import SRS
+from mapproxy.util.geom import load_polygons, transform_geometry, geom_support
+from mapproxy.test.helper import TempFile
+
+if not geom_support:
     from nose.plugins.skip import SkipTest
     raise SkipTest('requires Shapely')
 
-from mapproxy.srs import SRS
-from mapproxy.util.geom import load_polygons, transform_geometry
-from mapproxy.test.helper import TempFile
+import shapely
 
 from nose.tools import eq_, raises
 

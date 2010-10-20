@@ -17,9 +17,13 @@
 from __future__ import division, with_statement
 from functools import partial
 
-import shapely.wkt
-import shapely.geometry
-import shapely.ops
+try:
+    import shapely.wkt
+    import shapely.geometry
+    import shapely.ops
+    geom_support = True
+except ImportError:
+    geom_support = False
 
 def load_datasource(datasource, where=None):
     """
