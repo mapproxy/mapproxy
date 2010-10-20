@@ -68,7 +68,7 @@ def init_libproj():
     libproj.pj_set_searchpath.argtypes = [c_int, POINTER(c_char_p)]
 
     libproj.pj_get_def.argtypes = [c_void_p, c_int]
-    libproj.pj_get_def.restype = c_char_p
+    libproj.pj_get_def.restype = c_void_p
 
     libproj.pj_strerrno.argtypes = [c_int]
     libproj.pj_strerrno.restype = c_char_p
@@ -76,13 +76,17 @@ def init_libproj():
     libproj.pj_get_errno_ref.argtypes = []
     libproj.pj_get_errno_ref.restype = POINTER(c_int)
 
+    # free proj objects
     libproj.pj_free.argtypes = [c_void_p]
+    # free() wrapper
+    libproj.pj_dalloc.argtypes = [c_void_p]
 
     libproj.pj_transform.argtypes = [c_void_p, c_void_p, c_long, c_int,
                                      c_double_p, c_double_p, c_double_p]
     libproj.pj_transform.restype = c_int
 
     libproj.pj_set_finder.argtypes = [FINDERCMD]
+    
     
     return libproj
 
@@ -171,7 +175,10 @@ else:
     
         @property
         def srs(self):
-            return libproj.pj_get_def(self._proj, 0)
+            res = libproj.pj_get_def(self._proj, 0)
+            srs_def = ctypes.c_char_p(res).value
+            libproj.pj_dalloc(res)
+            return srs_def
     
         def __del__(self):
             if self._proj and libproj:
