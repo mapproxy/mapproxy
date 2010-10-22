@@ -142,10 +142,17 @@ This source takes a ``url`` option that contains a URL template. The template fo
 ``tc_path``
   TileCache path like ``09/000/000/264/000/000/345``. Note that it does not contain any format
   extension.
+``tms_path``
+  TMS path like ``5/12/9``. Note that it does not contain the version, the layername or the format extension.
 
 Additionally you can specify the origin of the tile grid with the ``origin`` option.
 Supported values are ``sw`` for south-west (lower-left) origin or ``nw`` for north-west
 (upper-left) origin. ``sw`` is the default.
+
+``grid``
+^^^^^^^^
+
+The grid of the tile source. Defaults to ``GLOBAL_MERCATOR``, a grid that is compatible with popular web mapping applications.
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
@@ -153,6 +160,7 @@ Example configuration
   
   my_tile_source:
     type: tile
+    grid: mygrid
     url: http://localhost:8080/tile?x=%(x)s&y=%(y)s&z=%(z)s&format=%(format)s
     origin: nw
 
