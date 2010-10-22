@@ -28,6 +28,7 @@ from mapproxy.srs import SRS
 from mapproxy.grid import MetaGrid, bbox_intersects, bbox_contains
 from mapproxy.source import SourceError
 from mapproxy.config import abspath
+from mapproxy.config.coverage import load_coverage
 from mapproxy.util import (
     cleanup_directory,
     timestamp_before,
@@ -362,24 +363,10 @@ def seed_from_yaml_conf(seed_conf_file, mapproxy_conf_file, verbose=True, dry_ru
                             skip_geoms_for_last_levels=skip_geoms_for_last_levels)
         for view in options['views']:
             view_conf = seed_conf['views'][view]
-            if 'ogr_datasource' in view_conf:
-                check_shapely()
-                srs = view_conf['ogr_srs']
-                datasource = view_conf['ogr_datasource']
-                if not re.match(r'^\w{2,}:', datasource):
-                    # looks like a file and not PG:, MYSQL:, etc
-                    # make absolute path
-                    datasource = abspath(datasource)
-                where = view_conf.get('ogr_where', None)
-                bbox, geom = load_datasource(datasource, where)
-            elif 'polygons' in view_conf:
-                check_shapely()
-                srs = view_conf['polygons_srs']
-                bbox, geom = load_polygons(view_conf['polygons'])
-            else:
-                srs = view_conf.get('bbox_srs', None)
-                bbox = view_conf.get('bbox', None)
-                geom = None
+            coverage = load_coverage(view_conf)
+            bbox = coverage.bbox
+            srs = coverage.srs
+            geom = coverage.geom
             
             cache_srs = view_conf.get('srs', None)
             if cache_srs is not None:
