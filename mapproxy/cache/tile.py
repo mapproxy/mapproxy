@@ -338,6 +338,16 @@ class TileCollection(object):
     
     def __iter__(self):
         return iter(self.tiles)
+    
+    @property
+    def empty(self):
+        """
+        Returns True if no tile in this collection contains a source.
+        """
+        return all((t.source is None for t in self.tiles))
+    
+    def __repr__(self):
+        return 'TileCollection(%r)' % self.tiles
 
 
 def split_meta_tiles(meta_tile, tiles, tile_size):

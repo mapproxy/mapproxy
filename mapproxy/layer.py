@@ -223,8 +223,10 @@ class CacheMapLayer(MapLayer):
                                                (bbox[3]-bbox[1]/query.size[1]/10)):
                 raise MapBBOXError("query does not align to tile boundaries")
         
-        tile_sources = [tile.source for tile in
-                        self.tile_manager.load_tile_coords(affected_tile_coords)]
+        tile_collection = self.tile_manager.load_tile_coords(affected_tile_coords)
+        if tile_collection.empty:
+            raise BlankImage()
+        tile_sources = [tile.source for tile in tile_collection]
         return TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
                           tile_grid=tile_grid, tile_size=self.grid.tile_size,
                           transparent=self.transparent)

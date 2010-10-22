@@ -54,6 +54,8 @@ class LayerMerger(object):
         :param size: The size for the merged output.
         :rtype: `ImageSource`
         """
+        if not self.layers:
+            return BlankImageSource(size=size, bgcolor=bgcolor, transparent=transparent)
         if len(self.layers) == 1:
             if (self.layers[0].transparent == transparent):
                 return self.layers[0]
@@ -212,6 +214,28 @@ class ImageSource(object):
             return self.source.size
         else:
             return self._size
+
+class BlankImageSource(object):
+    """
+    ImageSource for transparent or solid-color images.
+    Implements optimized as_buffer() method.
+    """
+    def __init__(self, size, bgcolor, transparent):
+        self.size = size
+        self.bgcolor = bgcolor or '#ffffff'
+        self.transparent = transparent
+    
+    def as_image(self):
+        raise NotImplementedError()
+        
+    def as_buffer(self, format=None, paletted=None, seekable=False):
+        bgcolor = ImageColor.getrgb(self.bgcolor)
+        if self.transparent:
+            img = Image.new('RGBA', self.size, bgcolor+(0,))
+        else:
+            img = Image.new('RGB', self.size, bgcolor)
+        # set paletted to false, no need to quantize single color image
+        return img_to_buf(img, format, paletted=False)
 
 class ReadBufWrapper(object):
     """
