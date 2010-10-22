@@ -41,7 +41,7 @@ from __future__ import with_statement
 from mapproxy.grid import MetaGrid
 from mapproxy.image import merge_images
 from mapproxy.image.tile import TileSplitter
-from mapproxy.layer import MapQuery
+from mapproxy.layer import MapQuery, BlankImage
 from mapproxy.util import ThreadedExecutor
 from mapproxy.config import base_config
 
@@ -179,6 +179,7 @@ class TileCreator(object):
                          self.tile_mgr.request_format)
         with self.tile_mgr.lock(tile):
             if not self.is_cached(tile):
+                # TODO source None
                 tile.source = self._query_sources(query)
                 self.cache.store(tile)
             else:
@@ -191,12 +192,21 @@ class TileCreator(object):
         Multiple sources will be merged into a single image.
         """
         if len(self.sources) == 1:
-            return self.sources[0].get_map(query)
+            try:
+                return self.sources[0].get_map(query)
+            except BlankImage:
+                return None
         
         imgs = []
         for source in self.sources:
-            imgs.append(source.get_map(query))
+            try:
+                img = source.get_map(query)
+            except BlankImage:
+                pass
+            else:
+                imgs.append(img)
         
+        if not imgs: return None
         return merge_images(imgs)
     
     def _create_meta_tiles(self, meta_tiles):
@@ -215,6 +225,7 @@ class TileCreator(object):
         with self.tile_mgr.lock(main_tile):
             if not all(self.is_cached(t) for t in meta_tile.tiles if t is not None):
                 meta_tile_image = self._query_sources(query)
+                if not meta_tile_image: return []
                 splitted_tiles = split_meta_tiles(meta_tile_image, meta_tile.tile_patterns,
                                                   tile_size)
                 for splitted_tile in splitted_tiles:

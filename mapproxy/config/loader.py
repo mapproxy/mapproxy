@@ -80,9 +80,8 @@ from mapproxy.service.demo import DemoServer
 from mapproxy.source import DebugSource
 from mapproxy.source.wms import WMSSource, WMSInfoSource
 from mapproxy.source.tile import TiledSource
-
 from mapproxy.cache.tile import TileManager
-
+from mapproxy.config.coverage import load_coverage
 
 class ConfigurationError(Exception):
     pass
@@ -278,6 +277,10 @@ class SourceConfiguration(ConfigurationBase):
                 return subclass(**kw)
         
         raise ValueError("unknown source type '%s'" % source_type)
+    
+    def coverage(self, context):
+        if not 'coverage' in self.conf: return None
+        return load_coverage(self.conf['coverage'])
 
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
@@ -317,12 +320,14 @@ class WMSSourceConfiguration(SourceConfiguration):
             lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
             lock = lambda: SemLock(lock_file, self.conf['concurrent_requests'])
         
+        coverage = self.coverage(context)
+        
         request = create_request(self.conf['req'], params, version=version)
         http_client = self.http_client(context, request)
         client = WMSClient(request, supported_srs, http_client=http_client, 
                            resampling=resampling, lock=lock,
                            supported_formats=supported_formats or None)
-        return WMSSource(client, transparent=transparent)
+        return WMSSource(client, transparent=transparent, coverage=coverage)
     
     def fi_source(self, context, params=None):
         if params is None: params = {}
