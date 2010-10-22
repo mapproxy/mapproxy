@@ -18,8 +18,14 @@ from __future__ import division, with_statement
 import os
 import tempfile
 
-from mapproxy.srs import SRS
-from mapproxy.util.geom import load_polygons, transform_geometry, geom_support
+from mapproxy.srs import SRS, bbox_equals
+from mapproxy.util.geom import (
+    load_polygons,
+    transform_geometry,
+    geom_support,
+    coverage,
+    bbox_polygon,
+)
 from mapproxy.test.helper import TempFile
 
 if not geom_support:
@@ -27,6 +33,7 @@ if not geom_support:
     raise SkipTest('requires Shapely')
 
 import shapely
+import shapely.prepared
 
 from nose.tools import eq_, raises
 
@@ -134,8 +141,69 @@ class TestTransform(object):
         p = shapely.geometry.Point((0, 0))
         transform_geometry(SRS(4326), SRS(900913), p)
     
-class BBOXPolygon(object):
+class TestBBOXPolygon(object):
     def test_bbox_polygon(self):
         p = bbox_polygon([5, 53, 6, 54])
         eq_(p.type, 'Polygon')
         
+
+class TestGeomCoverage(object):
+    def setup(self):
+        # box from 10 10 to 80 80 with small spike/corner to -10 60 (upper left)
+        self.geom = shapely.wkt.loads(
+            "POLYGON((10 10, 10 50, -10 60, 10 80, 80 80, 80 10, 10 10))")
+        self.coverage = coverage(self.geom, SRS(4326))
+    
+    def test_bbox(self):
+        assert bbox_equals(self.coverage.bbox, [-10, 10, 80, 80], 0.0001)
+    
+    def test_geom(self):
+        eq_(self.coverage.geom.type, 'Polygon')
+    
+    def test_contains(self):
+        assert self.coverage.contains((15, 15, 20, 20), SRS(4326))
+        assert self.coverage.contains((15, 15, 80, 20), SRS(4326))
+        assert not self.coverage.contains((9, 10, 20, 20), SRS(4326))
+    
+    def test_intersects(self):
+        assert self.coverage.intersects((15, 15, 20, 20), SRS(4326))
+        assert self.coverage.intersects((15, 15, 80, 20), SRS(4326))
+        assert self.coverage.intersects((9, 10, 20, 20), SRS(4326))
+        assert self.coverage.intersects((-30, 10, -8, 70), SRS(4326))
+        assert not self.coverage.intersects((-30, 10, -11, 70), SRS(4326))
+        
+        assert not self.coverage.intersects((0, 0, 1000, 1000), SRS(900913))
+        assert self.coverage.intersects((0, 0, 1500000, 1500000), SRS(900913))
+        
+    def test_prepared(self):
+        assert hasattr(self.coverage, '_prepared_max')
+        self.coverage._prepared_max = 100
+        for i in xrange(110):
+            assert self.coverage.intersects((-30, 10, -8, 70), SRS(4326))
+
+class TestBBOXCoverage(object):
+    def setup(self):
+        self.coverage = coverage([-10, 10, 80, 80], SRS(4326))
+    
+    def test_bbox(self):
+        assert bbox_equals(self.coverage.bbox, [-10, 10, 80, 80], 0.0001)
+    
+    def test_geom(self):
+        eq_(self.coverage.geom, None)
+    
+    def test_contains(self):
+        assert self.coverage.contains((15, 15, 20, 20), SRS(4326))
+        assert self.coverage.contains((15, 15, 79, 20), SRS(4326))
+        assert not self.coverage.contains((9, 10, 20, 20), SRS(4326))
+    
+    def test_intersects(self):
+        assert self.coverage.intersects((15, 15, 20, 20), SRS(4326))
+        assert self.coverage.intersects((15, 15, 80, 20), SRS(4326))
+        assert self.coverage.intersects((9, 10, 20, 20), SRS(4326))
+        assert self.coverage.intersects((-30, 10, -8, 70), SRS(4326))
+        assert not self.coverage.intersects((-30, 10, -11, 70), SRS(4326))
+        
+        assert not self.coverage.intersects((0, 0, 1000, 1000), SRS(900913))
+        assert self.coverage.intersects((0, 0, 1500000, 1500000), SRS(900913))
+        
+    
