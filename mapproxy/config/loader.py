@@ -285,7 +285,7 @@ class SourceConfiguration(ConfigurationBase):
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
     optional_keys = set('''type supported_srs supported_formats image
-        wms_opts http concurrent_requests'''.split())
+        wms_opts http concurrent_requests coverage'''.split())
     required_keys = set('req'.split())
     
     def http_client(self, context, request):
@@ -347,7 +347,7 @@ class WMSSourceConfiguration(SourceConfiguration):
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
-    optional_keys = set('''type grid request_format origin'''.split())
+    optional_keys = set('''type grid request_format origin coverage'''.split())
     required_keys = set('url'.split())
     defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
     
@@ -362,11 +362,12 @@ class TileSourceConfiguration(SourceConfiguration):
             # TODO raise some configuration exception
         
         grid = context.grids[self.conf['grid']].tile_grid(context)
+        coverage = self.coverage(context)
         
         inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
         client = TileClient(TileURLTemplate(url, format=format))
-        return TiledSource(grid, client, inverse=inverse)
+        return TiledSource(grid, client, inverse=inverse, coverage=coverage)
 
 def file_ext(mimetype):
     _mime_class, format, _options = split_mime_type(mimetype)

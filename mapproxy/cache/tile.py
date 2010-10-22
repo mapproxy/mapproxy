@@ -179,8 +179,9 @@ class TileCreator(object):
                          self.tile_mgr.request_format)
         with self.tile_mgr.lock(tile):
             if not self.is_cached(tile):
-                # TODO source None
-                tile.source = self._query_sources(query)
+                source = self._query_sources(query)
+                if not source: return []
+                tile.source = source
                 self.cache.store(tile)
             else:
                 self.cache.load(tile)
