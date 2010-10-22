@@ -18,6 +18,7 @@
 from __future__ import division
 
 import math
+import time
 
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
@@ -29,6 +30,7 @@ from mapproxy.layer import map_extent_from_grid
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
 from mapproxy.grid import default_bboxs
+from mapproxy.image import BlankImageSource
 
 import logging
 log = logging.getLogger(__name__)
@@ -124,6 +126,7 @@ class TileLayer(object):
         self.tile_manager = tile_manager
         self.grid = TileServiceGrid(tile_manager.grid)
         self.extent = map_extent_from_grid(self.grid)
+        self._empty_tile = None
     
     @property
     def bbox(self):
@@ -151,19 +154,43 @@ class TileLayer(object):
             tile_coord = self.grid.flip_tile_coord(tile_coord)
         return tile_coord
     
+    def empty_response(self):
+        if not self._empty_tile:
+            img = BlankImageSource(size=self.grid.tile_size, transparent=True)
+            self._empty_tile = img.as_buffer(self.format)
+        return ImageResponse(self._empty_tile, time.time())
+    
     def render(self, tile_request, use_profiles=False):
         if tile_request.format != self.format:
             raise RequestError('invalid format (%s). this tile set only supports (%s)'
                                % (tile_request.format, self.format), request=tile_request)
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
         try:
-            return TileResponse(self.tile_manager.load_tile_coord(tile_coord, with_metadata=True))
+            tile = self.tile_manager.load_tile_coord(tile_coord, with_metadata=True)
+            if tile.source is None: return self.empty_response()
+            return TileResponse(tile)
         except SourceError, e:
             log.error(e)
             raise RequestError(e.args[0], request=tile_request, internal=True)
 
+class ImageResponse(object):
+    """
+    Response from an image.
+    """
+    def __init__(self, img, timestamp):
+        self.img = img
+        self.timestamp = 0
+        self.size = 0
+    
+    def as_buffer(self):
+        return self.img
+    
+
 class TileResponse(object):
-    def __init__(self, tile):
+    """
+    Response from a Tile.
+    """
+    def __init__(self, tile, timestamp=None):
         self.tile = tile
     
     def as_buffer(self):
@@ -176,7 +203,7 @@ class TileResponse(object):
     @property
     def size(self):
         return self.tile.size
-
+    
 
 class TileServiceGrid(object):
     """

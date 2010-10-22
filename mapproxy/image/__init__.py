@@ -220,7 +220,7 @@ class BlankImageSource(object):
     ImageSource for transparent or solid-color images.
     Implements optimized as_buffer() method.
     """
-    def __init__(self, size, bgcolor, transparent):
+    def __init__(self, size, bgcolor=None, transparent=True):
         self.size = size
         self.bgcolor = bgcolor or '#ffffff'
         self.transparent = transparent
