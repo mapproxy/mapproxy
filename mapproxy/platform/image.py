@@ -40,7 +40,7 @@ else:
         else:
             if alpha:
                 alpha = img.split()[3]
-                img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
+                img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors-1)
                 mask = Image.eval(alpha, lambda a: 255 if a <=128 else 0)
                 img.paste(255, mask)
                 if defaults is not None:
