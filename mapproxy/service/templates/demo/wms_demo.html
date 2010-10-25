@@ -13,7 +13,10 @@ menu_title = "WMS %s" % (layer.md['name'])
     var map;
     function init(){
         OpenLayers.Util.onImageLoadErrorColor = "transparent";
-        map = new OpenLayers.Map('map', {maxResolution: 360/512});
+        map = new OpenLayers.Map('map', {
+          maxResolution: 360/512,
+          maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.extent.llbbox)}})
+        });
         var layer = new OpenLayers.Layer.WMS( "WMS {{layer.md['name']}}", 
             "../service?", {layers: "{{layer.md['name']}}", format: '{{format}}'}, 
             {singleTile: true, ratio: 1}, {isBaseLayer: true} );
