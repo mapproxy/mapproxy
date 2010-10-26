@@ -64,17 +64,35 @@ def tile_grid_for_epsg(epsg, bbox=None, tile_size=(256, 256), res=None):
         return TileGrid(epsg, is_geodetic=True, bbox=bbox, tile_size=tile_size, res=res)
     return TileGrid(epsg, bbox=bbox, tile_size=tile_size, res=res)
 
-default_bboxs = {
-    SRS(900913): (-20037508.342789244,
-                  -20037508.342789244,
-                   20037508.342789244,
-                   20037508.342789244),
-    SRS(3857): (-20037508.342789244,
-                -20037508.342789244,
-                 20037508.342789244,
-                 20037508.342789244),
-    SRS(4326): (-180, -90, 180, 90),
-}
+
+# defer loading of default bbox since custom proj settings
+# are not loaded on import time
+class _default_bboxs(object):
+    _defaults = {
+        900913: (-20037508.342789244,
+                 -20037508.342789244,
+                  20037508.342789244,
+                  20037508.342789244),
+        3857: (-20037508.342789244,
+               -20037508.342789244,
+                20037508.342789244,
+                20037508.342789244),
+        4326: (-180, -90, 180, 90),
+    }
+    defaults = None
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+    def __getitem__(self, key):
+        if self.defaults is None:
+            defaults = {}
+            for epsg, bbox in self._defaults.iteritems():
+                defaults[SRS(epsg)] = bbox
+            self.defaults = defaults
+        return self.defaults[key]
+default_bboxs = _default_bboxs()
 
 def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
               res=None, res_factor=2.0,

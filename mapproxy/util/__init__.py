@@ -26,10 +26,30 @@ import Queue
 import threading
 import shutil
 import datetime
+import contextlib
+import mapproxy.config
+from copy import deepcopy
 
 import logging
 log = logging.getLogger(__name__)
 
+@contextlib.contextmanager
+def local_base_config(conf):
+    """
+    Temporarily set the global configuration (mapproxy.config.base_config).
+    
+    The global mapproxy.config.base_config object is thread-local and
+    is set per-request in the MapProxyApp. Use `local_base_config` to
+    set base_config outside of a request context (e.g. system loading
+    or seeding).
+    """
+    import mapproxy.config.config
+    mapproxy.config.config._config._push_object(conf)
+    try:
+        yield
+    finally:
+        mapproxy.config.config._config._pop_object()
+    
 class ThreadedExecutor(object):
     class Executor(threading.Thread):
         def __init__(self, func, task_queue, result_queue):
@@ -37,19 +57,21 @@ class ThreadedExecutor(object):
             self.func = func
             self.task_queue = task_queue
             self.result_queue = result_queue
+            self.base_config = deepcopy(mapproxy.config.base_config())
         def run(self):
-            while True:
-                task = self.task_queue.get()
-                if task is None:
+            with local_base_config(self.base_config):
+                while True:
+                    task = self.task_queue.get()
+                    if task is None:
+                        self.task_queue.task_done()
+                        break
+                    exec_id, args = task
+                    try:
+                        result = self.func(args)
+                    except Exception:
+                        result = sys.exc_info()
+                    self.result_queue.put((exec_id, result))
                     self.task_queue.task_done()
-                    break
-                exec_id, args = task
-                try:
-                    result = self.func(args)
-                except Exception:
-                    result = sys.exc_info()
-                self.result_queue.put((exec_id, result))
-                self.task_queue.task_done()
     def __init__(self, func, pool_size=2):
         self.func = func
         self.pool_size = pool_size

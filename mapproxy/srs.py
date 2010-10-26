@@ -24,7 +24,7 @@ import math
 import threading
 from itertools import izip
 from mapproxy.proj import Proj, transform, set_datapath
-from mapproxy.config import base_config, abspath
+from mapproxy.config import base_config
 
 import logging
 log = logging.getLogger(__name__)
@@ -65,8 +65,8 @@ class TransformationError(Exception):
 _proj_initalized = False
 def _init_proj():
     global _proj_initalized
-    if not _proj_initalized and base_config().srs.get('proj_data_dir'):
-        proj_data_dir = abspath(base_config().srs.proj_data_dir)
+    if not _proj_initalized and 'proj_data_dir' in base_config().srs:
+        proj_data_dir = base_config().srs['proj_data_dir']
         log.info('loading proj data from %s', proj_data_dir)
         set_datapath(proj_data_dir)
         _proj_initalized = True

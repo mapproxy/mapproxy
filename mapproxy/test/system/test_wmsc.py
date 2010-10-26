@@ -42,19 +42,12 @@ global_app = None
 def setup_module():
     fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
     fixture_layer_conf = os.path.join(fixture_dir, 'layer.yaml')
-    fixture_cache_data = os.path.join(fixture_dir, 'cache_data')
-    mapproxy.config.base_config().debug_mode = True
-    mapproxy.config.base_config().services_conf = fixture_layer_conf
-    mapproxy.config.base_config().cache.base_dir = fixture_cache_data
-    mapproxy.config.base_config().image.paletted = False
-    mapproxy.config._service_config = None
-    
+
     global global_app
     global_app = TestApp(make_wsgi_app(fixture_layer_conf), use_unicode=False)
 
-def teardown_module():
-    mapproxy.config._config = None
-    mapproxy.config._service_config = None
+def base_config():
+    return global_app.app.application.base_config
 
 class WMSTest(object):
     def setup(self):
@@ -62,7 +55,7 @@ class WMSTest(object):
         self.created_tiles = []
     
     def created_tiles_filenames(self):
-        base_dir = mapproxy.config.base_config().cache.base_dir
+        base_dir = base_config().cache.base_dir
         for filename in self.created_tiles:
             yield os.path.join(base_dir, filename)
     

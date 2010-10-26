@@ -19,7 +19,9 @@ System-wide configuration.
 """
 from __future__ import with_statement
 import os
+import copy
 import yaml #pylint: disable-msg=F0401
+from paste.registry import StackedObjectProxy
 
 class Options(dict):
     """
@@ -59,16 +61,26 @@ class Options(dict):
                 self[key].update(value)
             else:
                 self[key] = value
+    
+    def __deepcopy__(self, memo):
+        return Options(copy.deepcopy(self.items(), memo))
 
-_config = None
+_config = StackedObjectProxy(default=None)
 def base_config():
     """
     Returns the system wide configuration.
     """
-    global _config
-    if _config is None:
-        _config = Options()
-        load_base_config()
+    config = _config._current_obj()
+    if config is None:
+        import warnings
+        import sys
+        if 'nosetests' not in sys.argv[0]:
+            warnings.warn("calling un-configured base_config",
+                DeprecationWarning, stacklevel=2)
+        config = load_default_config()
+        config.conf_base_dir = os.getcwd()
+        finish_base_config(config)
+        _config._push_object(config)
     return _config
 
 def _to_options_map(mapping):
@@ -100,8 +112,18 @@ def finish_base_config(bc=None):
         default_en.difference_update(set(bc.srs.axis_order_ne))
         bc.srs.axis_order_ne = default_ne.union(set(bc.srs.axis_order_ne))
         bc.srs.axis_order_en = default_en.union(set(bc.srs.axis_order_en))
+        if 'proj_data_dir' in bc.srs:
+            bc.srs.proj_data_dir = os.path.join(bc.conf_base_dir, bc.srs.proj_data_dir)
+        
     if 'wms' in bc:
         bc.wms.srs = set(bc.wms.srs)
+    
+    if 'conf_base_dir' in bc:
+        if 'cache' in bc:
+            if 'base_dir' in bc.cache:
+                bc.cache.base_dir = os.path.join(bc.conf_base_dir, bc.cache.base_dir)
+            if 'lock_dir' in bc.cache:
+                bc.cache.lock_dir = os.path.join(bc.conf_base_dir, bc.cache.lock_dir)
 
 def load_base_config(config_file=None, clear_existing=False):
     """
@@ -129,6 +151,17 @@ def load_base_config(config_file=None, clear_existing=False):
     finish_base_config(bc)
     
     bc.conf_base_dir = conf_base_dir
+
+def load_default_config():
+    from mapproxy.config import defaults
+    config_dict = {}
+    for k, v in defaults.__dict__.iteritems():
+        if k.startswith('_'): continue
+        config_dict[k] = v
+
+    default_conf = Options()
+    load_config(default_conf, config_dict=config_dict)
+    return default_conf
 
 def load_config(config, config_file=None, config_dict=None, clear_existing=False):
     if clear_existing:

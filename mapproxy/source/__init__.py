@@ -42,8 +42,9 @@ class InfoSource(object):
         raise NotImplementedError
 
 class DebugSource(Source):
-    extent = MapExtent((-180, -90, 180, 90), SRS(4326))
-    transparent = True
+    def __init__(self):
+        self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
+        self.transparent = True
     def get_map(self, query):
         bbox = query.bbox
         w = bbox[2] - bbox[0]

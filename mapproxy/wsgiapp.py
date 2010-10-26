@@ -23,10 +23,12 @@ import os
 import sys
 import site
 
+from paste.registry import RegistryManager
+
 from mapproxy.request import Request
 from mapproxy.response import Response
-from mapproxy.config import base_config, load_base_config, abspath
-from mapproxy.config.loader import load_services
+import mapproxy.config
+from mapproxy.config.loader import load_configuration
 
 class Modjyhandler(object):
     def __init__(self):
@@ -63,10 +65,8 @@ def app_factory(global_options, mapproxy_conf, **local_options):
     reload_files = conf.get('reload_files', None)
     if reload_files is not None:
         init_paster_reload_files(reload_files)
-
-    load_base_config(mapproxy_conf)
     
-    init_logging_system(log_conf=log_conf)
+    init_logging_system(log_conf, os.path.dirname(mapproxy_conf))
     
     return make_wsgi_app(mapproxy_conf)
 
@@ -86,21 +86,18 @@ def _add_files_to_paster_file_watcher(files):
     for file in files:
         paste.reloader.watch_file(file)
     
-def init_logging_system(log_conf=None):
+def init_logging_system(log_conf, base_dir):
     import logging.config
     try:
         import cloghandler # adds CRFHandler to log handlers
         cloghandler.ConcurrentRotatingFileHandler #disable pyflakes warning
     except ImportError:
         pass
-    if log_conf is None:
-        log_conf = base_config().log_conf
     if log_conf:
-        log_conf = abspath(log_conf)
         if not os.path.exists(log_conf):
             print >>sys.stderr, 'ERROR: log configuration %s not found.' % log_conf
             return
-        logging.config.fileConfig(log_conf, dict(here=base_config().conf_base_dir))
+        logging.config.fileConfig(log_conf, dict(here=base_dir))
 
 def init_null_logging():
     import logging
@@ -116,16 +113,20 @@ def make_wsgi_app(services_conf=None):
     :param services_conf: the file name of the services.yaml configuration,
                           if ``None`` the default is loaded.
     """
-    services = load_services(services_conf)
-    return MapProxyApp(services)
+    conf = load_configuration(mapproxy_conf=services_conf)
+    services = conf.configured_services()
+
+    app = MapProxyApp(services, conf.base_config)
+    return RegistryManager(app)
 
 class MapProxyApp(object):
     """
     The MapProxy WSGI application.
     """
     handler_path_re = re.compile('^/(\w+)')
-    def __init__(self, services):
+    def __init__(self, services, base_config):
         self.handlers = {}
+        self.base_config = base_config
         for service in services.itervalues():
             for name in service.names:
                 self.handlers[name] = service
@@ -134,6 +135,9 @@ class MapProxyApp(object):
         resp = None
         req = Request(environ)
         
+        registry = environ['paste.registry']
+        registry.register(mapproxy.config.config._config, self.base_config)
+        
         match = self.handler_path_re.match(req.path)
         if match:
             handler_name = match.group(1)
@@ -141,7 +145,7 @@ class MapProxyApp(object):
                 try:
                     resp = self.handlers[handler_name].handle(req)
                 except Exception:
-                    if base_config().debug_mode:
+                    if self.base_config.debug_mode:
                         raise
                     else:
                         import traceback

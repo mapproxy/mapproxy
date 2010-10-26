@@ -30,7 +30,7 @@ from mapproxy.srs import SRS
 from mapproxy.util.ext.odict import odict
 from mapproxy.cache.file import FileCache
 from mapproxy.util.lock import SemLock
-from mapproxy.config import base_config, abspath
+from mapproxy.config.config import load_default_config
 from mapproxy.client.http import auth_data_from_url, HTTPClient
 
 
@@ -80,26 +80,29 @@ from mapproxy.service.demo import DemoServer
 from mapproxy.source import DebugSource
 from mapproxy.source.wms import WMSSource, WMSInfoSource
 from mapproxy.source.tile import TiledSource
-
 from mapproxy.cache.tile import TileManager
-
+from mapproxy.util import local_base_config
 
 class ConfigurationError(Exception):
     pass
 
 class ProxyConfiguration(object):
-    def __init__(self, conf):
+    def __init__(self, conf, conf_base_dir=None):
         self.configuration = conf
-
-        self.load_globals()
+        
+        if conf_base_dir is None:
+            conf_base_dir = os.getcwd()
+        
+        self.load_globals(conf_base_dir=conf_base_dir)
         self.load_grids()
         self.load_caches()
         self.load_sources()
         self.load_layers()
         self.load_services()
     
-    def load_globals(self):
-        self.globals = GlobalConfiguration(**self.configuration.get('globals', {}))
+    def load_globals(self, conf_base_dir):
+        self.globals = GlobalConfiguration(conf_base_dir=conf_base_dir,
+                                           **self.configuration.get('globals', {}))
     
     def load_grids(self):
         self.grids = {}
@@ -135,7 +138,15 @@ class ProxyConfiguration(object):
 
     def load_services(self):
         self.services = ServiceConfiguration(**self.configuration.get('services', {}))
-
+    
+    def configured_services(self):
+        with local_base_config(self.base_config):
+            return self.services.services(self)
+    
+    @property
+    def base_config(self):
+        return self.globals.base_config
+    
 def list_of_dicts_to_ordered_dict(dictlist):
     """
     >>> d = list_of_dicts_to_ordered_dict([{'a': 1}, {'b': 2}, {'c': 3}])
@@ -225,13 +236,12 @@ class GridConfiguration(ConfigurationBase):
 class GlobalConfiguration(ConfigurationBase):
     optional_keys = set('image grid srs http cache'.split())
     
-    def __init__(self, **kw):
+    def __init__(self, conf_base_dir, **kw):
         ConfigurationBase.__init__(self, **kw)
-        self._set_base_config()
-        mapproxy.config.finish_base_config()
-    
-    def _set_base_config(self):
-        self._copy_conf_values(self.conf, base_config())
+        self.base_config = load_default_config()
+        self._copy_conf_values(self.conf, self.base_config)
+        self.base_config.conf_base_dir = conf_base_dir
+        mapproxy.config.finish_base_config(self.base_config)
     
     def _copy_conf_values(self, d, target):
         for k, v in d.iteritems():
@@ -247,10 +257,15 @@ class GlobalConfiguration(ConfigurationBase):
             result = dotted_dict_get(global_key or key, self.conf)
         
         if result is None:
-            result = dotted_dict_get(default_key or global_key or key, base_config())
+            result = dotted_dict_get(default_key or global_key or key, self.base_config)
             
         return result
     
+    def get_path(self, key, local, global_key=None, default_key=None):
+        value = self.get_value(key, local, global_key, default_key)
+        return os.path.join(self.base_config.conf_base_dir, value)
+    
+
 def dotted_dict_get(key, d):
     """
     >>> dotted_dict_get('foo', {'foo': {'bar': 1}})
@@ -312,7 +327,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         
         lock = None
         if 'concurrent_requests' in self.conf:
-            lock_dir = abspath(context.globals.get_value('cache.lock_dir', self.conf))
+            lock_dir = context.globals.get_path('cache.lock_dir', self.conf)
             md5 = hashlib.md5(self.conf['req']['url'])
             lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
             lock = lambda: SemLock(lock_file, self.conf['concurrent_requests'])
@@ -383,9 +398,8 @@ class CacheConfiguration(ConfigurationBase):
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
     
     def cache_dir(self, context):
-        cache_dir = context.globals.get_value('cache_dir', self.conf,
+        return context.globals.get_path('cache_dir', self.conf,
             global_key='cache.base_dir')
-        return abspath(cache_dir)
         
     def _file_cache(self, grid_conf, context):
         cache_dir = self.cache_dir(context)
@@ -504,7 +518,6 @@ class LayerConfiguration(ConfigurationBase):
         return tile_layers
         
 
-
 class ServiceConfiguration(ConfigurationBase):
     optional_keys = set('wms tms kml demo'.split())
     
@@ -561,15 +574,17 @@ class ServiceConfiguration(ConfigurationBase):
         return DemoServer(layers, md, tile_layers=tile_layers, image_formats=image_formats)
     
 def load_services(conf_file):
-    if hasattr(conf_file, 'read'):
-        conf_data = conf_file.read()
-    else:
-        log.info('Reading services configuration: %s' % conf_file)
-        conf_data = open(conf_file).read()
-    conf_dict = yaml.load(conf_data)
-    conf = ProxyConfiguration(conf_dict)
-    
+    conf = load_configuration(conf_file)
     return conf.services.services(conf)
     
-        
+def load_configuration(mapproxy_conf):
+    if hasattr(mapproxy_conf, 'read'):
+        conf_data = mapproxy_conf.read()
+        conf_base_dir = os.getcwd()
+    else:
+        log.info('Reading services configuration: %s' % mapproxy_conf)
+        conf_data = open(mapproxy_conf).read()
+        conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
+    conf_dict = yaml.load(conf_data)
+    return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir)
 

@@ -31,17 +31,12 @@ global_app = None
 def setup_module():
     fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
     fixture_layer_conf = os.path.join(fixture_dir, 'layer.yaml')
-    fixture_cache_data = os.path.join(fixture_dir, 'cache_data')
-    mapproxy.config.base_config().services_conf = fixture_layer_conf
-    mapproxy.config.base_config().cache.base_dir = fixture_cache_data
-    mapproxy.config._service_config = None
-    
+
     global global_app
     global_app = TestApp(make_wsgi_app(fixture_layer_conf), use_unicode=False)
 
-def teardown_module():
-    mapproxy.config._config = None
-    mapproxy.config._service_config = None
+def base_config():
+    return global_app.app.application.base_config
 
 class TestTMS(object):
     def setup(self):
@@ -121,7 +116,7 @@ class TestTMS(object):
                 self.created_tiles.append('tms_cache_EPSG900913/01/000/000/000/000/000/001.png')
     
     def created_tiles_filenames(self):
-        base_dir = mapproxy.config.base_config().cache.base_dir
+        base_dir = base_config().cache.base_dir
         for filename in self.created_tiles:
             yield os.path.join(base_dir, filename)
     
@@ -174,11 +169,11 @@ class TestTileService(object):
     def _update_timestamp(self):
         timestamp = 1234567890.0
         size = 10214
-        base_dir = mapproxy.config.base_config().cache.base_dir
+        base_dir = base_config().cache.base_dir
         os.utime(os.path.join(base_dir,
                               'wms_cache_EPSG900913/01/000/000/000/000/000/001.jpeg'),
                  (timestamp, timestamp))
-        max_age = mapproxy.config.base_config().tiles.expires_hours * 60 * 60
+        max_age = base_config().tiles.expires_hours * 60 * 60
         etag = hashlib.md5(str(timestamp) + str(size)).hexdigest()
         return etag, max_age
     
@@ -253,7 +248,7 @@ class TestTileService(object):
                 self.created_tiles.append('wms_cache_EPSG900913/01/000/000/000/000/000/000.jpeg')
     
     def created_tiles_filenames(self):
-        base_dir = mapproxy.config.base_config().cache.base_dir
+        base_dir = base_config().cache.base_dir
         for filename in self.created_tiles:
             yield os.path.join(base_dir, filename)
     

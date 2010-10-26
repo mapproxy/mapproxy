@@ -1,5 +1,6 @@
 globals:
   cache:
+    base_dir: cache_data/
     meta_size: [1, 1]
     meta_buffer: 0
   image:

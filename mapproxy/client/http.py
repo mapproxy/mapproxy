@@ -32,7 +32,6 @@ from mapproxy.util import reraise_exception
 from mapproxy.config import base_config, abspath
 
 import socket
-socket.setdefaulttimeout(base_config().http.client_timeout)
 
 class HTTPClientError(Exception):
     pass
@@ -50,6 +49,7 @@ class HTTPClient(object):
     log_datefmt = '%d/%b/%Y:%H:%M:%S %z'
     
     def __init__(self, url=None, username=None, password=None, insecure=None):
+        socket.setdefaulttimeout(base_config().http.client_timeout)
         handlers = []
         if url and url.startswith('https'):
             if insecure is False or insecure is None and not base_config().http.ssl_no_cert_checks:

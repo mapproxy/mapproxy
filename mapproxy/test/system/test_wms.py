@@ -42,19 +42,12 @@ global_app = None
 def setup_module():
     fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
     fixture_layer_conf = os.path.join(fixture_dir, 'layer.yaml')
-    fixture_cache_data = os.path.join(fixture_dir, 'cache_data')
-    mapproxy.config.base_config().debug_mode = True
-    mapproxy.config.base_config().services_conf = fixture_layer_conf
-    mapproxy.config.base_config().cache.base_dir = fixture_cache_data
-    mapproxy.config.base_config().image.paletted = False
-    mapproxy.config._service_config = None
-    
+
     global global_app
     global_app = TestApp(make_wsgi_app(fixture_layer_conf), use_unicode=False)
 
-def teardown_module():
-    mapproxy.config._config = None
-    mapproxy.config._service_config = None
+def base_config():
+    return global_app.app.application.base_config
 
 def test_invalid_url():
     global_app.get('/invalid?fop', status=404)
@@ -65,7 +58,7 @@ class WMSTest(object):
         self.created_tiles = []
     
     def created_tiles_filenames(self):
-        base_dir = mapproxy.config.base_config().cache.base_dir
+        base_dir = base_config().cache.base_dir
         for filename in self.created_tiles:
             yield os.path.join(base_dir, filename)
     
@@ -417,9 +410,9 @@ class TestWMS111(WMSTest):
             eq_(resp.body, 'info')
     
     def test_get_featureinfo_missing_params_strict(self):
-        request_parser = self.app.app.handlers['service'].request_parser
+        request_parser = self.app.app.application.handlers['service'].request_parser
         try:
-            self.app.app.handlers['service'].request_parser = \
+            self.app.app.application.handlers['service'].request_parser = \
                 functools.partial(wms_request, strict=True)
         
             del self.common_fi_req.params['format']
@@ -429,7 +422,7 @@ class TestWMS111(WMSTest):
             assert 'missing parameters' in xml.xpath('//ServiceException/text()')[0]
             assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
         finally:
-            self.app.app.handlers['service'].request_parser = request_parser
+            self.app.app.application.handlers['service'].request_parser = request_parser
     
     def test_get_featureinfo_not_queryable(self):
         self.common_fi_req.params['query_layers'] = 'tms_cache'
@@ -518,7 +511,7 @@ class TestWMS100(WMSTest):
         
     def test_get_map_png_transparent_paletted(self):
         try:
-            mapproxy.config.base_config().image.paletted = True
+            base_config().image.paletted = True
             self.common_map_req.params['transparent'] = 'True'
             resp = self.app.get(self.common_map_req)
             resp.content_type = 'image/png'
@@ -526,7 +519,7 @@ class TestWMS100(WMSTest):
             assert is_png(data)
             assert Image.open(data).mode == 'P'
         finally:
-            mapproxy.config.base_config().image.paletted = False
+            base_config().image.paletted = False
             
     def test_get_map_png_transparent(self):
         self.common_map_req.params['transparent'] = 'True'
@@ -759,7 +752,7 @@ if sys.platform != 'win32':
                     resp = self.app.get(self.common_map_req)
                     eq_(resp.content_type, 'image/jpeg')
             
-                base_dir = mapproxy.config.base_config().cache.base_dir
+                base_dir = base_config().cache.base_dir
                 single_loc = os.path.join(base_dir, real_name)
                 tile_loc = os.path.join(base_dir, link_name)
                 assert os.path.exists(single_loc)

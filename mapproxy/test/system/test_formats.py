@@ -43,20 +43,18 @@ tmp_cache_dir = tempfile.mkdtemp()
 def setup_module():
     fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
     fixture_layer_conf = os.path.join(fixture_dir, 'formats.yaml')
-    fixture_cache_data = tmp_cache_dir
-    mapproxy.config.base_config().debug_mode = True
-    mapproxy.config.base_config().services_conf = fixture_layer_conf
-    mapproxy.config.base_config().cache.base_dir = fixture_cache_data
-    mapproxy.config.base_config().image.paletted = False
-    mapproxy.config._service_config = None
+    shutil.copy(fixture_layer_conf, tmp_cache_dir)
+    conf = os.path.join(tmp_cache_dir, 'formats.yaml')
     
     global global_app
-    global_app = TestApp(make_wsgi_app(fixture_layer_conf), use_unicode=False)
+    global_app = TestApp(make_wsgi_app(conf), use_unicode=False)
+    global_app.app.application.base_config.image.paletted = False
 
 def teardown_module():
-    mapproxy.config._config = None
-    mapproxy.config._service_config = None
     shutil.rmtree(tmp_cache_dir)
+
+def base_config():
+    return global_app.app.application.base_config
 
 class TilesTest(object):
     def setup(self):
@@ -64,7 +62,7 @@ class TilesTest(object):
         self.created_tiles = []
     
     def created_tiles_filenames(self):
-        base_dir = mapproxy.config.base_config().cache.base_dir
+        base_dir = base_config().cache.base_dir
         for filename, format in self.created_tiles:
             yield os.path.join(base_dir, filename), format
     

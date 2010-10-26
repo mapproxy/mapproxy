@@ -16,6 +16,7 @@
 
 from __future__ import with_statement, division
 import sys
+import os
 import re
 import math
 import time
@@ -23,11 +24,14 @@ import datetime
 
 import yaml
 
+from mapproxy.config import base_config
 from mapproxy.config.loader import ProxyConfiguration
 from mapproxy.srs import SRS
 from mapproxy.grid import MetaGrid, bbox_intersects, bbox_contains
 from mapproxy.source import SourceError
 from mapproxy.config import abspath
+from mapproxy.util import local_base_config
+
 from mapproxy.util import (
     cleanup_directory,
     timestamp_before,
@@ -97,6 +101,7 @@ class SeedWorker(proc_class):
         self.tiles_queue = tiles_queue
         self.dry_run = dry_run
     def run(self):
+        print base_config().cache.base_dir
         while True:
             tiles, progress = self.tiles_queue.get()
             if tiles is None:
@@ -158,6 +163,8 @@ class Seeder(object):
         self.progress = 0.0
         self.eta = ETA()
         self.count = 0
+        print base_config().cache.base_dir
+        
 
     def seed(self):
         self._seed(self.task.bbox, self.task.start_level)
@@ -347,53 +354,55 @@ def seed_from_yaml_conf(seed_conf_file, mapproxy_conf_file, verbose=True, dry_ru
         with open(seed_conf_file) as seed_conf:
             seed_conf = yaml.load(seed_conf)
     
-    conf = ProxyConfiguration(yaml.load(open(mapproxy_conf_file)))
-    for layer, options in seed_conf['seeds'].iteritems():
-        remove_before = before_timestamp_from_options(options)
-        try:
-            caches = conf.caches[layer].caches(conf)
-        except KeyError:
-            print >>sys.stderr, 'error: cache %s not found. available caches: %s' % (
-                layer, ','.join(conf.caches.keys()))
-            return
-        caches = dict((grid.srs, tile_mgr) for grid, tile_mgr in caches)
-        seeder = CacheSeeder(caches, remove_before=remove_before, dry_run=dry_run,
-                            concurrency=concurrency,
-                            skip_geoms_for_last_levels=skip_geoms_for_last_levels)
-        for view in options['views']:
-            view_conf = seed_conf['views'][view]
-            if 'ogr_datasource' in view_conf:
-                check_shapely()
-                srs = view_conf['ogr_srs']
-                datasource = view_conf['ogr_datasource']
-                if not re.match(r'^\w{2,}:', datasource):
-                    # looks like a file and not PG:, MYSQL:, etc
-                    # make absolute path
-                    datasource = abspath(datasource)
-                where = view_conf.get('ogr_where', None)
-                bbox, geom = load_datasource(datasource, where)
-            elif 'polygons' in view_conf:
-                check_shapely()
-                srs = view_conf['polygons_srs']
-                bbox, geom = load_polygons(view_conf['polygons'])
-            else:
-                srs = view_conf.get('bbox_srs', None)
-                bbox = view_conf.get('bbox', None)
-                geom = None
+    base_dir = os.path.abspath(os.path.dirname(mapproxy_conf_file))
+    conf = ProxyConfiguration(yaml.load(open(mapproxy_conf_file)), base_dir)
+    with local_base_config(conf.base_config):
+        for layer, options in seed_conf['seeds'].iteritems():
+            remove_before = before_timestamp_from_options(options)
+            try:
+                caches = conf.caches[layer].caches(conf)
+            except KeyError:
+                print >>sys.stderr, 'error: cache %s not found. available caches: %s' % (
+                    layer, ','.join(conf.caches.keys()))
+                return
+            caches = dict((grid.srs, tile_mgr) for grid, tile_mgr in caches)
+            seeder = CacheSeeder(caches, remove_before=remove_before, dry_run=dry_run,
+                                concurrency=concurrency,
+                                skip_geoms_for_last_levels=skip_geoms_for_last_levels)
+            for view in options['views']:
+                view_conf = seed_conf['views'][view]
+                if 'ogr_datasource' in view_conf:
+                    check_shapely()
+                    srs = view_conf['ogr_srs']
+                    datasource = view_conf['ogr_datasource']
+                    if not re.match(r'^\w{2,}:', datasource):
+                        # looks like a file and not PG:, MYSQL:, etc
+                        # make absolute path
+                        datasource = abspath(datasource)
+                    where = view_conf.get('ogr_where', None)
+                    bbox, geom = load_datasource(datasource, where)
+                elif 'polygons' in view_conf:
+                    check_shapely()
+                    srs = view_conf['polygons_srs']
+                    bbox, geom = load_polygons(view_conf['polygons'])
+                else:
+                    srs = view_conf.get('bbox_srs', None)
+                    bbox = view_conf.get('bbox', None)
+                    geom = None
             
-            cache_srs = view_conf.get('srs', None)
-            if cache_srs is not None:
-                cache_srs = [SRS(s) for s in cache_srs]
-            if srs is not None:
-                srs = SRS(srs)
-            level = view_conf.get('level', None)
-            assert len(level) == 2
-            print "[%s] seeding cache '%s' with view '%s'" % (timestamp(), layer, view)
-            seeder.seed_view(bbox=bbox, level=level, bbox_srs=srs, 
-                             cache_srs=cache_srs, geom=geom)
+                cache_srs = view_conf.get('srs', None)
+                if cache_srs is not None:
+                    cache_srs = [SRS(s) for s in cache_srs]
+                if srs is not None:
+                    srs = SRS(srs)
+                level = view_conf.get('level', None)
+                assert len(level) == 2
+                print "[%s] seeding cache '%s' with view '%s'" % (timestamp(), layer, view)
+                seeder.seed_view(bbox=bbox, level=level, bbox_srs=srs, 
+                                 cache_srs=cache_srs, geom=geom)
         
-        if remove_before:
-            seeder.cleanup()
+            if remove_before:
+                seeder.cleanup()
 
 def before_timestamp_from_options(options):
     """

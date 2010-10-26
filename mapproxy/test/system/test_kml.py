@@ -32,20 +32,15 @@ ns = {'kml': 'http://www.opengis.net/kml/2.2'}
 
 global_app = None
 
+fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
+fixture_layer_conf = os.path.join(fixture_dir, 'layer.yaml')
 def setup_module():
-    fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
-    fixture_layer_conf = os.path.join(fixture_dir, 'layer.yaml')
-    fixture_cache_data = os.path.join(fixture_dir, 'cache_data')
-    mapproxy.config.base_config().services_conf = fixture_layer_conf
-    mapproxy.config.base_config().cache.base_dir = fixture_cache_data
-    
+
     global global_app
     global_app = TestApp(make_wsgi_app(fixture_layer_conf), use_unicode=False)
 
-def teardown_module():
-    mapproxy.config._config = None
-    mapproxy.config._service_config = None
-    
+def base_config():
+    return global_app.app.application.base_config
 
 class TestKML(object):
     def setup(self):
@@ -86,11 +81,11 @@ class TestKML(object):
     def _update_timestamp(self):
         timestamp = 1234567890.0
         size = 10214
-        base_dir = mapproxy.config.base_config().cache.base_dir
+        base_dir = base_config().cache.base_dir
         os.utime(os.path.join(base_dir,
                               'wms_cache_EPSG900913/01/000/000/000/000/000/001.jpeg'),
                  (timestamp, timestamp))
-        max_age = mapproxy.config.base_config().tiles.expires_hours * 60 * 60
+        max_age = base_config().tiles.expires_hours * 60 * 60
         etag = hashlib.md5(str(timestamp) + str(size)).hexdigest()
         return etag, max_age
     
@@ -132,9 +127,9 @@ class TestKML(object):
                       namespaces=ns)[0],
             'http://localhost:80/kml/wms_cache/EPSG900913/1/0/0.kml')
         
-        timestamp = os.stat(mapproxy.config.base_config().services_conf).st_mtime
+        timestamp = os.stat(fixture_layer_conf).st_mtime
         etag = hashlib.md5(resp.body).hexdigest()
-        max_age = mapproxy.config.base_config().tiles.expires_hours * 60 * 60
+        max_age = base_config().tiles.expires_hours * 60 * 60
         self._check_cache_control_headers(resp, etag, max_age, None)
         
         resp = self.app.get('/kml/wms_cache/0/0/0.kml',
@@ -171,7 +166,7 @@ class TestKML(object):
                 self.created_tiles.append('wms_cache_EPSG900913/01/000/000/000/000/000/000.jpeg')
     
     def created_tiles_filenames(self):
-        base_dir = mapproxy.config.base_config().cache.base_dir
+        base_dir = base_config().cache.base_dir
         for filename in self.created_tiles:
             yield os.path.join(base_dir, filename)
     
