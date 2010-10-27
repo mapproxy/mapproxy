@@ -163,9 +163,11 @@ def assert_url_eq(url1, url2):
 def mock_httpd(address, requests_responses):
     t = ThreadedStopableHTTPServer(address, requests_responses)
     t.start()
-    yield
-    t.shutdown = True
-    t.join(1)
+    try:
+        yield
+    finally:
+        t.shutdown = True
+        t.join(1)
     assert t.sucess, 'requests to mock httpd did not match expectations:\n' + t.out.read()
 
 def make_wsgi_env(query_string):
