@@ -33,7 +33,7 @@ class WMSSource(Source):
         self.transparent = transparent
         self.coverage = coverage
         if self.coverage:
-            self.extent = MapExtent(self.coverage.geom.bounds, self.coverage.srs)
+            self.extent = MapExtent(self.coverage.bbox, self.coverage.srs)
         else:
             #TODO extent
             self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
