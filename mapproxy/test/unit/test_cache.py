@@ -69,6 +69,7 @@ class MockTileClient(object):
     
     def get_tile(self, tile_coord, format=None):
         self.requested_tiles.append(tile_coord)
+        return ImageSource(create_debug_img((256, 256)))
 
 class TestTiledSourceGlobalGeodetic(object):
     def setup(self):

@@ -82,6 +82,7 @@ from mapproxy.source.wms import WMSSource, WMSInfoSource
 from mapproxy.source.tile import TiledSource
 from mapproxy.cache.tile import TileManager
 from mapproxy.util import local_base_config
+from mapproxy.config.coverage import load_coverage
 
 class ConfigurationError(Exception):
     pass
@@ -293,11 +294,15 @@ class SourceConfiguration(ConfigurationBase):
                 return subclass(**kw)
         
         raise ValueError("unknown source type '%s'" % source_type)
+    
+    def coverage(self, context):
+        if not 'coverage' in self.conf: return None
+        return load_coverage(self.conf['coverage'])
 
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
     optional_keys = set('''type supported_srs supported_formats image
-        wms_opts http concurrent_requests'''.split())
+        wms_opts http concurrent_requests coverage'''.split())
     required_keys = set('req'.split())
     
     def http_client(self, context, request):
@@ -332,12 +337,14 @@ class WMSSourceConfiguration(SourceConfiguration):
             lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
             lock = lambda: SemLock(lock_file, self.conf['concurrent_requests'])
         
+        coverage = self.coverage(context)
+        
         request = create_request(self.conf['req'], params, version=version)
         http_client = self.http_client(context, request)
         client = WMSClient(request, supported_srs, http_client=http_client, 
                            resampling=resampling, lock=lock,
                            supported_formats=supported_formats or None)
-        return WMSSource(client, transparent=transparent)
+        return WMSSource(client, transparent=transparent, coverage=coverage)
     
     def fi_source(self, context, params=None):
         if params is None: params = {}
@@ -357,7 +364,7 @@ class WMSSourceConfiguration(SourceConfiguration):
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
-    optional_keys = set('''type grid request_format origin'''.split())
+    optional_keys = set('''type grid request_format origin coverage'''.split())
     required_keys = set('url'.split())
     defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
     
@@ -372,11 +379,12 @@ class TileSourceConfiguration(SourceConfiguration):
             # TODO raise some configuration exception
         
         grid = context.grids[self.conf['grid']].tile_grid(context)
+        coverage = self.coverage(context)
         
         inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
         client = TileClient(TileURLTemplate(url, format=format))
-        return TiledSource(grid, client, inverse=inverse)
+        return TiledSource(grid, client, inverse=inverse, coverage=coverage)
 
 def file_ext(mimetype):
     _mime_class, format, _options = split_mime_type(mimetype)

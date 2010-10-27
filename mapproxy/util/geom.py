@@ -21,9 +21,16 @@ try:
     import shapely.wkt
     import shapely.geometry
     import shapely.ops
+    import shapely.prepared
     geom_support = True
 except ImportError:
     geom_support = False
+
+def require_geom_support():
+    if not geom_support:
+        raise ImportError('Shapely required for geometry support')
+
+from mapproxy.grid import bbox_intersects, bbox_contains
 
 def load_datasource(datasource, where=None):
     """
@@ -108,3 +115,68 @@ def transform_multipolygon(transf, multipolygon):
 
 def transform_xy(from_srs, to_srs, xy):
     return list(from_srs.transform_to(to_srs, zip(*xy)))
+
+
+def coverage(geom, srs):
+    if isinstance(geom, (list, tuple)):
+        return BBOXCoverage(geom, srs)
+    else:
+        return GeomCoverage(geom, srs)
+
+class BBOXCoverage(object):
+    def __init__(self, bbox, srs):
+        self.bbox = bbox
+        self.srs = srs
+        self.geom = None
+    
+    def _bbox_in_coverage_srs(self, bbox, srs):
+        if srs != self.srs:
+            bbox = srs.transform_bbox_to(self.srs, bbox)
+        return bbox
+    
+    def intersects(self, bbox, srs):
+        bbox = self._bbox_in_coverage_srs(bbox, srs)
+        return bbox_intersects(self.bbox, bbox)
+    
+    def contains(self, bbox, srs):
+        bbox = self._bbox_in_coverage_srs(bbox, srs)
+        return bbox_contains(self.bbox, bbox)
+
+class GeomCoverage(object):
+    def __init__(self, geom, srs):
+        self.geom = geom
+        self.bbox = geom.bounds
+        self.srs = srs
+        self._prepared_geom = shapely.prepared.prep(geom)
+        self._prepared_counter = 0
+        self._prepared_max = 10000
+    
+    @property
+    def prepared_geom(self):
+        # GEOS internal data structure for prepared geometries grows over time,
+        # recreate to limit memory consumption
+        if self._prepared_counter > self._prepared_max:
+            self._prepared_geom = shapely.prepared.prep(self.geom)
+            self._prepared_counter = 0
+        self._prepared_counter += 1
+        return self._prepared_geom
+    
+    def _bbox_poly_in_coverage_srs(self, bbox, srs):
+        if isinstance(bbox, shapely.geometry.base.BaseGeometry):
+            if srs != self.srs:
+                bbox = transform_geometry(srs, self.srs, bbox)
+        else:
+            if srs != self.srs:
+                bbox = srs.transform_bbox_to(self.srs, bbox)
+            bbox = bbox_polygon(bbox)
+        return bbox
+    
+    def intersects(self, bbox, srs):
+        bbox = self._bbox_poly_in_coverage_srs(bbox, srs)
+        return self.prepared_geom.intersects(bbox)
+    
+    def contains(self, bbox, srs):
+        bbox = self._bbox_poly_in_coverage_srs(bbox, srs)
+        return self.prepared_geom.contains(bbox)
+    
+    

@@ -20,21 +20,27 @@ Retrieve maps/information from WMS servers.
 
 import sys
 from mapproxy.source import Source, InfoSource, SourceError
-from mapproxy.layer import MapExtent
+from mapproxy.layer import MapExtent, BlankImage
 from mapproxy.srs import SRS
 from mapproxy.client.http import HTTPClientError
 from mapproxy.util import reraise_exception
 
 class WMSSource(Source):
     supports_meta_tiles = True
-    def __init__(self, client, transparent=False):
+    def __init__(self, client, transparent=False, coverage=None):
         Source.__init__(self)
         self.client = client
         self.transparent = transparent
-        #TODO extent
-        self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
+        self.coverage = coverage
+        if self.coverage:
+            self.extent = MapExtent(self.coverage.bbox, self.coverage.srs)
+        else:
+            #TODO extent
+            self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
     
     def get_map(self, query):
+        if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
+            raise BlankImage
         try:
             return self.client.get_map(query)
         except HTTPClientError, e:

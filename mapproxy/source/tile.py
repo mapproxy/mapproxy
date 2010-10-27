@@ -22,19 +22,23 @@ import sys
 from mapproxy.source import Source, SourceError
 from mapproxy.client.http import HTTPClientError
 from mapproxy.source import InvalidSourceQuery
+from mapproxy.layer import BlankImage
 from mapproxy.util import reraise_exception
 
 class TiledSource(Source):
-    def __init__(self, grid, client, inverse=False):
+    def __init__(self, grid, client, inverse=False, coverage=None):
         self.grid = grid
         self.client = client
         self.inverse = inverse
+        self.coverage = coverage
     
     def get_map(self, query):
         if self.grid.tile_size != query.size:
             raise InvalidSourceQuery()
         if self.grid.srs != query.srs:
             raise InvalidSourceQuery()
+        if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
+            raise BlankImage()
         
         _bbox, grid, tiles = self.grid.get_affected_tiles(query.bbox, query.size)
         

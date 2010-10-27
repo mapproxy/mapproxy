@@ -16,6 +16,7 @@
 
 import threading
 import cgi
+from cStringIO import StringIO
 from urlparse import urlsplit
 from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
 from contextlib import contextmanager
@@ -27,12 +28,22 @@ class ThreadedStopableHTTPServer(threading.Thread):
     def __init__(self, address, requests_responses):
         threading.Thread.__init__(self, **{'group': None})
         self.requests_responses = requests_responses
+        self.sucess = False
         self.shutdown = False
         self.httpd = HTTPServer(address, mock_http_handler(requests_responses))
+        self.httpd.timeout = 0.5
+        self.out = self.httpd.out = StringIO()
     def run(self):
         while self.requests_responses:
-            if self.shutdown: return
+            if self.shutdown: break
             self.httpd.handle_request()
+        if self.requests_responses:
+            missing_req = [req for req, resp in self.requests_responses]
+            print >>self.out, 'missing requests: ' + ','.join(map(str, missing_req))
+        if self.out.tell() > 0: # errors written
+            self.out.seek(0)
+        else:
+            self.sucess = True
         # force socket close so next test can bind to same address
         self.httpd.socket.close()
 
@@ -56,11 +67,17 @@ def mock_http_handler(requests_responses):
                     self.wfile.write('no access')
                     return
             if not query_eq(req['path'], self.path):
-                print 'got request      ', self.path
-                print 'excpected request', req['path']
-                assert False, 'got unexpected request (see stdout)'
+                print >>self.server.out, 'got request      ', self.path
+                print >>self.server.out, 'expected request ', req['path']
+                query_actual = set(query_to_dict(self.path).items())
+                query_expected = set(query_to_dict(req['path']).items())
+                print >>self.server.out, 'param diff  %s|%s' % (
+                    query_actual - query_expected, query_expected - query_actual)
+                self.server.shutdown = True
             if 'req_assert_function' in req:
-                assert req['req_assert_function'](self)
+                if not req['req_assert_function'](self):
+                    print >>self.server.out, 'req_assert_function failed'
+                    self.server.shutdown = True
             self.start_response(resp)
             self.wfile.write(resp['body'])
             if not requests_responses:
@@ -146,8 +163,12 @@ def assert_url_eq(url1, url2):
 def mock_httpd(address, requests_responses):
     t = ThreadedStopableHTTPServer(address, requests_responses)
     t.start()
-    yield
-    t.join()
+    try:
+        yield
+    finally:
+        t.shutdown = True
+        t.join(1)
+    assert t.sucess, 'requests to mock httpd did not match expectations:\n' + t.out.read()
 
 def make_wsgi_env(query_string):
         env = {'QUERY_STRING': query_string,

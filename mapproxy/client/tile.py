@@ -57,9 +57,9 @@ class TileURLTemplate(object):
     >>> t.substitute((7, 4, 3))
     'http://foo/tms/1.0.0/3/7/4.png'
     
-    >>> t = TileURLTemplate('http://foo/tms/1.0.0/%(tms_path)s.%(format)s')
+    >>> t = TileURLTemplate('http://foo/tms/1.0.0/lyr/%(tms_path)s.%(format)s')
     >>> t.substitute((7, 4, 3), 'jpeg')
-    'http://foo/tms/1.0.0/3/7/4.jpeg'
+    'http://foo/tms/1.0.0/lyr/3/7/4.jpeg'
     
     """
     def __init__(self, template, format='png'):

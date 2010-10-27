@@ -81,6 +81,12 @@ div.body dd
 /*    margin-top: 0.3em;*/
     margin-bottom: 0.3em;
 }
+
+div.body a
+{
+    border-bottom: 1px dashed #999;
+}
+
 tt.literal {
     background-color: inherit;
     padding: 0;

@@ -10,6 +10,7 @@ MapProxy Documentation
    services
    sources
    seed
+   coverages
    configuration_examples
    migrate
    deployment
