@@ -42,19 +42,8 @@ Example::
 
 .. _seed_installation_label:
 
-Installation
-^^^^^^^^^^^^
 
-The seed tool is already included in the MapProxy installation but it has some additional dependencies. If you use Python 2.5 you need to install ``multiprocessing``. This module is already included in Python 2.6::
-
-  pip install multiprocessing
-
-If you want to use polygons to define your geographical extent of the seeding area, instead of simple bounding box, you will also need Shapely and GEOS. For loading polygons from shapefiles you'll also need GDAL/OGR.
-
-On Debian::
-
-  sudo aptitude install libgeos-dev libgdal-dev
-  pip install Shapely
+.. note:: You will need aditional dependencies, if you want to use polygons to define your geographical extent of the seeding area, instead of simple bounding boxes. See :doc:`coverage documentation <coverages>`.
 
 
 Configuration
@@ -94,10 +83,10 @@ Contains a dictionary with layer/view mapping.::
 Views
 ^^^^^
 
-Contains a dictionary with all views. Each view describes a geographical extent.
+Contains a dictionary with all views. Each view describes a coverage/geographical extent and the levels that should be seeded.
 
-Geographical extent
-*******************
+Coverages
+*********
 
 There are three different ways to describe the extent of the seed view.
 
@@ -105,47 +94,7 @@ There are three different ways to describe the extent of the seed view.
  - a text file with one or more polygons in WKT format,
  - polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)
 
-.. note:: The last two variants have additional dependencies, see :ref:`seed_installation_label`.
-
-Bounding box
-""""""""""""
-
-``bbox``:
-    The BBOX that should be cached. If omitted, the whole BBOX of the layer is used.
-
-``bbox_srs``:
-    The SRS of the BBOX.
-
-Polygon file
-""""""""""""
-
-.. versionadded:: 0.8.3
-
-``polygons``:
-  Path to a text file with one WKT polygon per line. The path should be relative to
-  the proxy configuration or absolute. `We provide polygons for every country <http://mapproxy.org/static/polygons/>`_. `Read the index <http://mapproxy.org/static/polygons/0-fips-codes.txt>`_ to find your country. You can use these or create your own. 
-
-``polygons_srs``:
-  The SRS of the polygons.
-
-OGR datasource
-""""""""""""""
-
-.. versionadded:: 0.8.3
-
-``ogr_datasource``:
-  The name of the datasource. Refer to the `OGR format page
-  <http://www.gdal.org/ogr/ogr_formats.html>`_ for a list of all supported
-  datasources. File paths should be relative to the proxy configuration or absolute.
-
-``ogr_where``:
-  Restrict which polygons should be loaded from the datasource. Either a simple where
-  statement (e.g. ``'CNTRY_NAME="Germany"'``) or a full select statement. Refer to the
-  `OGR SQL support documentation <http://www.gdal.org/ogr/ogr_sql.html>`_. If this
-  option is unset, the first layer from the datasource will be used.
-
-``ogr_srs``:
-  The SRS of the polygons.
+Read the :doc:`coverage documentation <coverages>` for more information.
 
 Other options
 *************

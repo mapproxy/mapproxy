@@ -63,6 +63,11 @@ This option affects what request MapProxy sends to the source WMS server.
   If this is set to ``true``, MapProxy will mark the layer as queryable and incoming `GetFeatureInfo` requests will be forwarded to the source server.
 
 
+``coverage``
+^^^^^^^^^^^^
+
+Define the covered area of the source. The source will only be requested if there is an intersection between the incoming request and the coverage. See :doc:`coverages <coverages>` for more information.
+
 .. _supported_srs-label:
 
 ``supported_srs``
@@ -114,6 +119,9 @@ Full example::
       version: 1.0.0
       featureinfo: True
     supported_srs: ['EPSG:4326', 'EPSG:31467']
+    coverage:
+       polygons: GM.txt
+       polygons_srs: EPSG:900913
     req:
       url: http://localhost:8080/service?mycustomparam=foo
       layers: roads
@@ -146,6 +154,12 @@ This source takes a ``url`` option that contains a URL template. The template fo
 Additionally you can specify the origin of the tile grid with the ``origin`` option.
 Supported values are ``sw`` for south-west (lower-left) origin or ``nw`` for north-west
 (upper-left) origin. ``sw`` is the default.
+
+``coverage``
+^^^^^^^^^^^^
+
+Define the covered area of the source. The source will only be requested if there is an intersection between the incoming request and the coverage. See :doc:`coverages <coverages>` for more information.
+
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
