@@ -539,7 +539,7 @@ def negotiate_version(version):
     >>> negotiate_version(Version('1.1.1'))
     Version('1.1.1')
     >>> negotiate_version(Version('1.1.0'))
-    Version('1.0.0')
+    Version('1.1.0')
     """
     supported_versions = request_mapping.keys()
     supported_versions.sort()
