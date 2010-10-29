@@ -159,3 +159,25 @@ class WMSInfoClient(object):
         req.params.srs = query.srs.srs_code
         
         return req.complete_url
+
+class WMSLegendClient(object):
+    def __init__(self, request_template, http_client=None):
+        self.request_template = request_template
+        self.http_client = http_client or HTTPClient()        
+    
+    def get_legend(self, query):
+        resp = self._retrieve(query)
+        return resp
+    
+    def _retrieve(self, query):
+        url = self._query_url(query)
+        return self.http_client.open(url)
+    
+    def _query_url(self, query):
+        req = self.request_template.copy()
+        # req.params.layer = query.layer
+        # req.params['layer'] = req.params['layer']
+        if not req.params.format:
+            req.params.format = query.format or 'image/png'
+        
+        return req.complete_url
