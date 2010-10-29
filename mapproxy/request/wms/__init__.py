@@ -256,6 +256,13 @@ class WMS100MapRequest(WMSMapRequest):
         del params['service']
         return params
 
+class WMS110MapRequest(WMSMapRequest):
+    fixed_params = {'request': 'GetMap', 'version': '1.1.0', 'service': 'WMS'}
+    xml_exception_handler = exception.WMS110ExceptionHandler
+    
+    def adapt_to_111(self):
+        del self.params['wmtver']
+
 class WMS111MapRequest(WMSMapRequest):
     fixed_params = {'request': 'GetMap', 'version': '1.1.1', 'service': 'WMS'}
     xml_exception_handler = exception.WMS111ExceptionHandler
@@ -357,7 +364,15 @@ class WMS111FeatureInfoRequest(WMSFeatureInfoRequest):
     fixed_params = WMS111MapRequest.fixed_params.copy()
     fixed_params['request'] = 'GetFeatureInfo'
     expected_param = WMSMapRequest.expected_param[:] + ['query_layers', 'x', 'y']
-    
+
+class WMS110FeatureInfoRequest(WMSFeatureInfoRequest):
+    request_params = WMSFeatureInfoRequestParams
+    xml_exception_handler = exception.WMS110ExceptionHandler
+    request_handler_name = 'featureinfo'
+    fixed_params = WMS110MapRequest.fixed_params.copy()
+    fixed_params['request'] = 'GetFeatureInfo'
+    expected_param = WMSMapRequest.expected_param[:] + ['query_layers', 'x', 'y']
+
 class WMS100FeatureInfoRequest(WMSFeatureInfoRequest):
     request_params = WMSFeatureInfoRequestParams
     xml_exception_handler = exception.WMS100ExceptionHandler
@@ -430,6 +445,15 @@ class WMS100CapabilitiesRequest(WMSCapabilitiesRequest):
         return exception.WMS100ExceptionHandler()
     
 
+class WMS110CapabilitiesRequest(WMSCapabilitiesRequest):
+    capabilities_template = 'wms110capabilities.xml'
+    mime_type = 'application/vnd.ogc.wms_xml'
+    fixed_params = {'request': 'GetCapabilities', 'version': '1.1.0', 'service': 'WMS'}
+    
+    @property
+    def exception_handler(self):
+        return exception.WMS110ExceptionHandler()
+
 class WMS111CapabilitiesRequest(WMSCapabilitiesRequest):
     capabilities_template = 'wms111capabilities.xml'
     mime_type = 'application/vnd.ogc.wms_xml'
@@ -470,6 +494,9 @@ class Version(object):
 request_mapping = {Version('1.0.0'): {'featureinfo': WMS100FeatureInfoRequest,
                                       'map': WMS100MapRequest,
                                       'capabilities': WMS100CapabilitiesRequest},
+                   Version('1.1.0'): {'featureinfo': WMS110FeatureInfoRequest,
+                                       'map': WMS110MapRequest,
+                                       'capabilities': WMS110CapabilitiesRequest},
                    Version('1.1.1'): {'featureinfo': WMS111FeatureInfoRequest,
                                       'map': WMS111MapRequest,
                                       'capabilities': WMS111CapabilitiesRequest},

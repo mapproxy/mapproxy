@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE WMT_MS_Capabilities SYSTEM "http://schemas.opengis.net/wms/1.1.0/capabilities_1_1_0.dtd"
+ [
+ {{if tile_layers}}
+ <!ELEMENT VendorSpecificCapabilities (TileSet*) >
+ <!ELEMENT TileSet (SRS, BoundingBox?, Resolutions, Width, Height, Format, Layers*, Styles*) >
+ <!ELEMENT Resolutions (#PCDATA) >
+ <!ELEMENT Width (#PCDATA) >
+ <!ELEMENT Height (#PCDATA) >
+ <!ELEMENT Layers (#PCDATA) >
+ <!ELEMENT Styles (#PCDATA) >
+ {{else}}
+ <!ELEMENT VendorSpecificCapabilities EMPTY>
+ {{endif}}
+ ]>  <!-- end of DOCTYPE declaration -->
+<WMT_MS_Capabilities version="1.1.0">
+<Service>
+  <Name>OGC:WMS</Name>
+  <Title>{{service.title}}</Title>
+  <Abstract>{{service.abstract}}</Abstract>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.online_resource}}"/>
+{{if service.contact}}
+{{py:service.contact = bunch(default='', **service.contact)}}
+  <ContactInformation>
+      <ContactPersonPrimary>
+        <ContactPerson>{{service.contact.person}}</ContactPerson>
+        <ContactOrganization>{{service.contact.organization}}</ContactOrganization>
+      </ContactPersonPrimary>
+      <ContactPosition>{{service.contact.position}}</ContactPosition>
+      <ContactAddress>
+        <AddressType>{{service.contact.get('address_type', 'postal')}}</AddressType>
+        <Address>{{service.contact.address}}</Address>
+        <City>{{service.contact.city}}</City>
+        <StateOrProvince>{{service.contact.state}}</StateOrProvince>
+        <PostCode>{{service.contact.postcode}}</PostCode>
+        <Country>{{service.contact.country}}</Country>
+      </ContactAddress>
+      <ContactVoiceTelephone>{{service.contact.phone}}</ContactVoiceTelephone>
+      <ContactFacsimileTelephone>{{service.contact.fax}}</ContactFacsimileTelephone>
+      <ContactElectronicMailAddress>{{service.contact.email}}</ContactElectronicMailAddress>
+  </ContactInformation>
+{{endif}}
+  <Fees>{{service.get('fees', 'none')}}</Fees>
+  <AccessConstraints>{{service.get('access_constraints', 'none')}}</AccessConstraints>
+</Service>
+
+<Capability>
+  <Request>
+    <GetCapabilities>
+      <Format>application/vnd.ogc.wms_xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.url}}?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetCapabilities>
+    <GetMap>
+{{for format in formats}}
+        <Format>{{format}}</Format>
+{{endfor}}
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.url}}?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetMap>
+    <GetFeatureInfo>
+      <Format>text/plain</Format>
+      <Format>text/html</Format>
+      <Format>application/vnd.ogc.gml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.url}}?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetFeatureInfo>
+  </Request>
+  <Exception>
+    <Format>application/vnd.ogc.se_xml</Format>
+    <Format>application/vnd.ogc.se_inimage</Format>
+    <Format>application/vnd.ogc.se_blank</Format>
+  </Exception>
+{{if tile_layers}}
+  <VendorSpecificCapabilities>
+{{for layer in tile_layers}}
+    <TileSet>
+      <SRS>{{layer.grid.srs_name}}</SRS>
+      <BoundingBox SRS="EPSG:4326" minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
+      <Resolutions>{{for level, res in layer.grid.tile_sets}}{{res}} {{endfor}}</Resolutions>
+      <Width>{{layer.grid.tile_size[0]}}</Width>
+      <Height>{{layer.grid.tile_size[1]}}</Height>
+      <Format>{{layer.md['format']}}</Format>
+      <Layers>{{layer.md['name']}}</Layers>
+      <Styles></Styles>
+    </TileSet>  
+{{endfor}}
+  </VendorSpecificCapabilities>
+{{endif}}
+  <Layer>
+    <Title>{{service.title}}</Title>
+    <SRS>{{' '.join(str(s) for s in srs)}}</SRS>
+    <LatLonBoundingBox minx="{{ server_llbbox[0] }}" miny="{{ server_llbbox[1] }}" maxx="{{ server_llbbox[2] }}" maxy="{{ server_llbbox[3] }}" />
+{{for layer in layers}}
+    <Layer{{if layer.queryable}} queryable="1"{{endif}}>
+      <Name>{{ layer.md['name'] }}</Name>
+      <Title>{{ layer.md.get('title') }}</Title>
+      <LatLonBoundingBox minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
+      <BoundingBox SRS="EPSG:4326" minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
+    </Layer>
+{{endfor}}
+  </Layer>
+</Capability>
+</WMT_MS_Capabilities>

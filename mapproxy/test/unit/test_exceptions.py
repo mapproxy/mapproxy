@@ -22,7 +22,7 @@ from mapproxy.request.wms import WMSMapRequest
 from mapproxy.request import url_decode
 from mapproxy.exception import (RequestError, ExceptionHandler)
 from mapproxy.request.wms.exception import (WMS100ExceptionHandler, WMS111ExceptionHandler,
-                                     WMS130ExceptionHandler)
+                                     WMS130ExceptionHandler, WMS110ExceptionHandler)
 from nose.tools import eq_
 
 class TestRequestError(Mocker):
@@ -83,6 +83,45 @@ class TestWMS111ExceptionHandler(Mocker):
 """
         assert expected_resp.strip() == response.data
         assert validate_with_dtd(response.data, 'wms/1.1.1/exception_1_1_1.dtd')
+        
+class TestWMS110ExceptionHandler(Mocker):
+    def test_render(self):
+        req = self.mock(WMSMapRequest)
+        req_ex = RequestError('the exception message', request=req)
+        ex_handler = WMS110ExceptionHandler()
+        self.expect(req.exception_handler).result(ex_handler)
+        
+        self.replay()
+        response = req_ex.render()
+        assert response.content_type == 'application/vnd.ogc.se_xml'
+        expected_resp = """
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE ServiceExceptionReport SYSTEM "http://schemas.opengis.net/wms/1.1.0/exception_1_1_0.dtd">
+<ServiceExceptionReport version="1.1.0">
+    <ServiceException>the exception message</ServiceException>
+</ServiceExceptionReport>
+"""
+        assert expected_resp.strip() == response.data
+        assert validate_with_dtd(response.data, 'wms/1.1.0/exception_1_1_0.dtd')
+    def test_render_w_code(self):
+        req = self.mock(WMSMapRequest)
+        req_ex = RequestError('the exception message', code='InvalidFormat',
+                                  request=req)
+        ex_handler = WMS110ExceptionHandler()
+        self.expect(req.exception_handler).result(ex_handler)
+        
+        self.replay()
+        response = req_ex.render()
+        assert response.content_type == 'application/vnd.ogc.se_xml'
+        expected_resp = """
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE ServiceExceptionReport SYSTEM "http://schemas.opengis.net/wms/1.1.0/exception_1_1_0.dtd">
+<ServiceExceptionReport version="1.1.0">
+    <ServiceException code="InvalidFormat">the exception message</ServiceException>
+</ServiceExceptionReport>
+"""
+        eq_(expected_resp.strip(), response.data)
+        assert validate_with_dtd(response.data, 'wms/1.1.0/exception_1_1_0.dtd')
 
 class TestWMS130ExceptionHandler(Mocker):
     def test_render(self):

@@ -30,6 +30,8 @@ from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRe
                                  WMS111FeatureInfoRequest, WMS111CapabilitiesRequest, \
                                  WMS130CapabilitiesRequest, WMS100CapabilitiesRequest, \
                                  WMS100FeatureInfoRequest, WMS130FeatureInfoRequest, \
+                                 WMS110MapRequest, WMS110FeatureInfoRequest, \
+                                 WMS110CapabilitiesRequest, \
                                  wms_request
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from mapproxy.test.image import is_jpeg, is_png, tmp_image
@@ -77,6 +79,9 @@ class WMSTest(object):
 def is_100_capa(xml):
     return validate_with_dtd(xml, dtd_name='wms/1.0.0/capabilities_1_0_0.dtd')
 
+def is_110_capa(xml):
+    return validate_with_dtd(xml, dtd_name='wms/1.1.0/capabilities_1_1_0.dtd')
+
 def is_111_exception(xml, msg=None, code=None, re_msg=None):
     eq_(xml.xpath('/ServiceExceptionReport/@version')[0], '1.1.1')
     if msg:
@@ -101,7 +106,7 @@ class TestWMSVersionDispatch(object):
     def test_unknown_version_110(self):
         resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
                             '&VERSION=1.1.0')
-        assert is_100_capa(resp.lxml)
+        assert is_110_capa(resp.lxml)
     def test_unknown_version_113(self):
         resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
                             '&VERSION=1.1.3')
@@ -145,7 +150,7 @@ class TestWMS111(WMSTest):
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
                               'wms_merge', 'tms_cache', 'wms_cache_multi',
-                              'wms_cache_link_single'])
+                              'wms_cache_link_single', 'wms_cache_110'])
         eq_(layer_names, expected_names)
         assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
     
@@ -435,6 +440,161 @@ class TestWMS111(WMSTest):
         assert 'tms_cache is not queryable' in xml.xpath('//ServiceException/text()')[0]
         assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
 
+class TestWMS110(WMSTest):
+    def setup(self):
+        WMSTest.setup(self)
+        self.common_req = WMS110MapRequest(url='/service?', param=dict(service='WMS', 
+             version='1.1.0'))
+        self.common_map_req = WMS110MapRequest(url='/service?', param=dict(service='WMS', 
+             version='1.1.0', bbox='-180,0,0,80', width='200', height='200',
+             layers='wms_cache', srs='EPSG:4326', format='image/png',
+             styles='', request='GetMap'))
+        self.common_fi_req = WMS110FeatureInfoRequest(url='/service?',
+            param=dict(x='10', y='20', width='200', height='200', layers='wms_cache',
+                       format='image/png', query_layers='wms_cache_110', styles='',
+                       bbox='1000,400,2000,1400', srs='EPSG:900913'))
+                       
+    def test_wms_capabilities(self):
+        req = WMS110CapabilitiesRequest(url='/service?').copy_with_request_params(self.common_req)
+        resp = self.app.get(req)
+        eq_(resp.content_type, 'application/vnd.ogc.wms_xml')
+        xml = resp.lxml
+        eq_(xml.xpath('//GetMap//OnlineResource/@xlink:href',
+                      namespaces=dict(xlink="http://www.w3.org/1999/xlink"))[0],
+            'http://localhost:80/service?')
+        layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
+        expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
+                              'wms_merge', 'tms_cache', 'wms_cache_multi',
+                              'wms_cache_link_single', 'wms_cache_110'])
+        eq_(layer_names, expected_names)
+        assert validate_with_dtd(xml, dtd_name='wms/1.1.0/capabilities_1_1_0.dtd')
+
+    def test_invalid_layer(self):
+        self.common_map_req.params['layers'] = 'invalid'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        xml = resp.lxml
+        eq_(xml.xpath('/ServiceExceptionReport/@version')[0], '1.1.0')
+        eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code')[0], 'LayerNotDefined')
+        eq_(xml.xpath('//ServiceException/text()')[0], 'unknown layer: invalid')
+        assert validate_with_dtd(xml, dtd_name='wms/1.1.0/exception_1_1_0.dtd')
+    
+    def test_invalid_format(self):
+        self.common_map_req.params['format'] = 'image/ascii'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        xml = resp.lxml
+        eq_(xml.xpath('/ServiceExceptionReport/@version')[0], '1.1.0')
+        eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code')[0], 'InvalidFormat')
+        eq_(xml.xpath('//ServiceException/text()')[0], 'unsupported image format: image/ascii')
+        assert validate_with_dtd(xml, dtd_name='wms/1.1.0/exception_1_1_0.dtd')
+    
+    def test_invalid_format_img_exception(self):
+        self.common_map_req.params['format'] = 'image/ascii'
+        self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'image/png')
+        assert is_png(StringIO(resp.body))
+    
+    def test_missing_format_img_exception(self):
+        del self.common_map_req.params['format']
+        self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'image/png')
+        assert is_png(StringIO(resp.body))
+
+    def test_invalid_srs(self):
+        self.common_map_req.params['srs'] = 'EPSG:1234'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        xml = resp.lxml
+        eq_(xml.xpath('/ServiceExceptionReport/@version')[0], '1.1.0')
+        eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code')[0], 'InvalidSRS')
+        eq_(xml.xpath('//ServiceException/text()')[0], 'unsupported srs: EPSG:1234')
+        assert validate_with_dtd(xml, dtd_name='wms/1.1.0/exception_1_1_0.dtd')
+        
+    def test_get_map_png(self):
+        resp = self.app.get(self.common_map_req)
+        resp.content_type = 'image/png'
+        data = StringIO(resp.body)
+        assert is_png(data)
+        assert Image.open(data).mode == 'RGB'
+    
+    def test_get_map_png_transparent(self):
+        self.common_map_req.params['transparent'] = 'True'
+        resp = self.app.get(self.common_map_req)
+        resp.content_type = 'image/png'
+        data = StringIO(resp.body)
+        assert is_png(data)
+        assert Image.open(data).mode == 'RGBA'
+    
+    def test_get_map_jpeg(self):
+        self.common_map_req.params['format'] = 'image/jpeg'
+        resp = self.app.get(self.common_map_req)
+        resp.content_type = 'image/jpeg'
+        assert is_jpeg(StringIO(resp.body))
+    
+    def test_get_map_xml_exception(self):
+        self.common_map_req.params['bbox'] = '0,0,90,90'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        xml = resp.lxml
+        eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code'), [])
+        assert 'No response from URL' in xml.xpath('//ServiceException/text()')[0]
+        assert validate_with_dtd(xml, 'wms/1.1.0/exception_1_1_0.dtd')
+
+    def test_get_map(self):
+        self.created_tiles.append('wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
+        with tmp_image((256, 256), format='jpeg') as img:
+            expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
+                                      '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
+                                      '&WIDTH=256'},
+                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                self.common_map_req.params['bbox'] = '0,0,180,90'
+                resp = self.app.get(self.common_map_req)
+                assert 35000 < int(resp.headers['Content-length']) < 75000
+                eq_(resp.content_type, 'image/png')
+    
+    def test_get_map_110(self):
+        self.created_tiles.append('wms_cache_110_EPSG900913/01/000/000/001/000/000/001.jpeg')
+        with tmp_image((256, 256), format='jpeg') as img:
+            expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
+                                      '&VERSION=1.1.0&BBOX=0.0,0.0,20037508.3428,20037508.3428'
+                                      '&WIDTH=256'},
+                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                self.common_map_req.params['bbox'] = '0,0,180,90'
+                self.common_map_req.params['layers'] = 'wms_cache_110'
+                resp = self.app.get(self.common_map_req)
+                assert 35000 < int(resp.headers['Content-length']) < 75000
+                eq_(resp.content_type, 'image/png')
+    
+    def test_get_featureinfo(self):
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&VERSION=1.1.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
+                                  '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},
+                        {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+        with mock_httpd(('localhost', 42423), [expected_req]):
+            resp = self.app.get(self.common_fi_req)
+            print resp.body
+            eq_(resp.content_type, 'text/plain')
+            eq_(resp.body, 'info')
+            
+    def test_get_featureinfo_not_queryable(self):
+        self.common_fi_req.params['query_layers'] = 'tms_cache'
+        self.common_fi_req.params['exceptions'] = 'application/vnd.ogc.se_xml'
+        resp = self.app.get(self.common_fi_req)
+        print resp.body
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        xml = resp.lxml
+        eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code'), [])
+        assert 'tms_cache is not queryable' in xml.xpath('//ServiceException/text()')[0]
+        assert validate_with_dtd(xml, 'wms/1.1.0/exception_1_1_0.dtd')
+    
 class TestWMS100(WMSTest):
     def setup(self):
         WMSTest.setup(self)
@@ -458,7 +618,7 @@ class TestWMS100(WMSTest):
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
                               'wms_merge', 'tms_cache', 'wms_cache_multi',
-                              'wms_cache_link_single'])
+                              'wms_cache_link_single', 'wms_cache_110'])
         eq_(layer_names, expected_names)
         #TODO srs
         assert validate_with_dtd(xml, dtd_name='wms/1.0.0/capabilities_1_0_0.dtd')
@@ -595,7 +755,7 @@ class TestWMS130(WMSTest):
             param=dict(i='10', j='20', width='200', height='200', layers='wms_cache_130',
                        format='image/png', query_layers='wms_cache_130', styles='',
                        bbox='1000,400,2000,1400', crs='EPSG:900913'))
-        
+    
     def test_wms_capabilities(self):
         req = WMS130CapabilitiesRequest(url='/service?').copy_with_request_params(self.common_req)
         resp = self.app.get(req)
@@ -607,7 +767,7 @@ class TestWMS130(WMSTest):
                                     namespaces=ns130))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
                               'wms_merge', 'tms_cache', 'wms_cache_multi',
-                              'wms_cache_link_single'])
+                              'wms_cache_link_single', 'wms_cache_110'])
         eq_(layer_names, expected_names)
         assert is_130_capa(xml)
     

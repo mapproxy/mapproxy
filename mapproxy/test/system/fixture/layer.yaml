@@ -55,6 +55,9 @@ layers:
   wms_merge:
     title: WMS Cache + Direct Layer
     sources: [direct, wms_cache]
+  wms_cache_110:
+    title: WMS Cache Layer
+    sources: [wms_cache_110]
 
 caches:
   wms_cache:
@@ -78,6 +81,9 @@ caches:
     sources: [wms_cache_130]
   tms_cache:
     sources: [tms_cache]
+  wms_cache_110:
+    format: image/jpeg
+    sources: [wms_cache_110]
 
 sources:
   direct:
@@ -112,3 +118,12 @@ sources:
   tms_cache:
     type: tile
     url: http://localhost:42423/tiles/%(tc_path)s.png
+  wms_cache_110:
+    type: wms
+    wms_opts:
+      version: '1.1.0'
+      featureinfo: True
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar
+      
