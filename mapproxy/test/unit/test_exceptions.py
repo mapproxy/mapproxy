@@ -115,12 +115,12 @@ class TestWMS110ExceptionHandler(Mocker):
         assert response.content_type == 'application/vnd.ogc.se_xml'
         expected_resp = """
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE ServiceExceptionReport SYSTEM "http://schemas.opengis.net/wms/1.1.1/exception_1_1_0.dtd">
+<!DOCTYPE ServiceExceptionReport SYSTEM "http://schemas.opengis.net/wms/1.1.0/exception_1_1_0.dtd">
 <ServiceExceptionReport version="1.1.0">
     <ServiceException code="InvalidFormat">the exception message</ServiceException>
 </ServiceExceptionReport>
 """
-        assert expected_resp.strip() == response.data
+        eq_(expected_resp.strip(), response.data)
         assert validate_with_dtd(response.data, 'wms/1.1.0/exception_1_1_0.dtd')
 
 class TestWMS130ExceptionHandler(Mocker):
