@@ -183,6 +183,13 @@ class WMSMapRequest(WMSRequest):
                             non_strict=non_strict, **kw)
     
     def validate(self):
+        self.validate_param()
+        self.validate_bbox()
+        self.validate_format()
+        self.validate_srs()
+        self.validate_styles()
+    
+    def validate_param(self):
         missing_param = []
         for param in self.expected_param:
             if self.non_strict and param in self.non_strict_params:
@@ -195,11 +202,6 @@ class WMSMapRequest(WMSRequest):
                 self.params['format'] = 'image/png'
             raise RequestError('missing parameters ' + str(missing_param),
                                request=self)
-        
-        self.validate_bbox()
-        self.validate_format()
-        self.validate_srs()
-        self.validate_styles()
     
     def validate_bbox(self):
         x0, y0, x1, y1 = self.params.bbox
@@ -312,6 +314,29 @@ class WMS130MapRequest(WMSMapRequest):
         new_req.params.switch_bbox()
         return new_req
 
+class WMSLegendGraphicRequestParams(WMSMapRequestParams):
+    """
+    RequestParams for WMS GetLegendGraphic requests.
+    """
+    def _set_layer(self, value):
+        self.params['layer'] = value
+        
+    def _get_layer(self):
+        """
+        Layer for which to produce legend graphic.
+        """
+        return self.params.get('layer')
+    layer = property(_get_layer, _set_layer)
+    del _set_layer
+    del _get_layer
+        
+    @property
+    def sld_version(self):
+        """
+        Specification version for SLD-specification
+        """
+        return self.params.get('sld_version')
+
 class WMSFeatureInfoRequestParams(WMSMapRequestParams):
     """
     RequestParams for WMS GetFeatureInfo requests.
@@ -342,6 +367,27 @@ class WMSFeatureInfoRequestParams(WMSMapRequestParams):
 
 class WMS130FeatureInfoRequestParams(WMSFeatureInfoRequestParams):
     switch_bbox = _switch_bbox
+
+class WMSLegendGraphicRequest(WMSMapRequest):    
+    request_params = WMSLegendGraphicRequestParams
+    request_handler_name = 'legendgraphic'
+    fixed_params = {'request': 'GetLegendGraphic', 'service': 'WMS'}
+    expected_param = ['version', 'request', 'layer', 'format', 'sld_version']
+    
+    def validate(self):
+        self.validate_param()
+        self.validate_format()
+    
+
+class WMS111LegendGraphicRequest(WMSLegendGraphicRequest):
+    fixed_params = WMSLegendGraphicRequest.fixed_params.copy()
+    fixed_params['version'] = '1.1.1'
+    xml_exception_handler = exception.WMS111ExceptionHandler
+    
+class WMS130LegendGraphicRequest(WMSLegendGraphicRequest):
+    fixed_params = WMSLegendGraphicRequest.fixed_params.copy()
+    fixed_params['version'] = '1.3.0'
+    xml_exception_handler = exception.WMS130ExceptionHandler
 
 class WMSFeatureInfoRequest(WMSMapRequest):
     non_strict_params = set(['format', 'styles'])
@@ -472,10 +518,12 @@ request_mapping = {Version('1.0.0'): {'featureinfo': WMS100FeatureInfoRequest,
                                       'capabilities': WMS100CapabilitiesRequest},
                    Version('1.1.1'): {'featureinfo': WMS111FeatureInfoRequest,
                                       'map': WMS111MapRequest,
-                                      'capabilities': WMS111CapabilitiesRequest},
+                                      'capabilities': WMS111CapabilitiesRequest,
+                                      'legendgraphic': WMS111LegendGraphicRequest},
                    Version('1.3.0'): {'featureinfo': WMS130FeatureInfoRequest,
                                       'map': WMS130MapRequest,
-                                      'capabilities': WMS130CapabilitiesRequest},
+                                      'capabilities': WMS130CapabilitiesRequest,
+                                      'legendgraphic': WMS130LegendGraphicRequest},
                    }
 
 
@@ -497,6 +545,8 @@ def _parse_request_type(req):
             return 'featureinfo'
         elif request_type in ('getcapabilities', 'capabilities'):
             return 'capabilities'
+        elif request_type in ('getlegendgraphic',):
+            return 'legendgraphic'
         else:
             return request_type
     else:

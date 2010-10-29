@@ -41,6 +41,10 @@ class InfoSource(object):
     def get_info(self, query):
         raise NotImplementedError
 
+class LegendSource(object):
+    def get_legend(self, query):
+        raise NotImplementedError
+
 class DebugSource(Source):
     def __init__(self):
         self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
