@@ -258,6 +258,22 @@ class TestRequest(object):
         print req.args['foo']
         assert req.args['foo'] == u'some special chars & ='
     
+    def test_script_url(self):
+        req = Request(self.env)
+        eq_(req.script_url, 'http://localhost:5050')
+        self.env['SCRIPT_NAME'] = '/'
+        req = Request(self.env)
+        eq_(req.script_url, 'http://localhost:5050')
+
+        self.env['SCRIPT_NAME'] = '/proxy'
+        req = Request(self.env)
+        eq_(req.script_url, 'http://localhost:5050/proxy')
+
+        self.env['SCRIPT_NAME'] = '/proxy/'
+        req = Request(self.env)
+        eq_(req.script_url, 'http://localhost:5050/proxy')
+        
+    
 def test_maprequest_from_request():
     env = {
         'QUERY_STRING': 'layers=bar&bBOx=-90,-80,70.0,+80&format=image/png&'\

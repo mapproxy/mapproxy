@@ -69,19 +69,19 @@ class DemoServer(Server):
         elif 'tms_layer' in req.args:
             demo = self._render_tms_template('demo/tms_demo.html', req)
         elif 'wms_capabilities' in req.args:
-            url = '%sservice?REQUEST=GetCapabilities'%(req.script_url)
+            url = '%s/service?REQUEST=GetCapabilities'%(req.script_url)
             capabilities = urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS', url)
         elif 'wmsc_capabilities' in req.args:
-            url = '%sservice?REQUEST=GetCapabilities&tiled=true'%(req.script_url)
+            url = '%s/service?REQUEST=GetCapabilities&tiled=true'%(req.script_url)
             capabilities = urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS-C', url)
         elif 'tms_capabilities' in req.args:
             if 'layer' in req.args and 'srs' in req.args:
-                url = '%stms/1.0.0/%s_%s'%(req.script_url, req.args['layer'], req.args['srs'])
+                url = '%s/tms/1.0.0/%s_%s'%(req.script_url, req.args['layer'], req.args['srs'])
                 capabilities = urlopen(url)
             else:
-                url = '%stms/1.0.0/'%(req.script_url)
+                url = '%s/tms/1.0.0/'%(req.script_url)
                 capabilities = urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'TMS', url)
         elif req.path == '/demo/':

@@ -204,8 +204,9 @@ class Request(object):
     
     @cached_property
     def script_url(self):
-        return (self.host_url
-                + urllib.quote(self.environ.get('SCRIPT_NAME', '').lstrip('/'))
+        "Full script URL without trailing /"
+        return (self.host_url.rstrip('/') + 
+                urllib.quote(self.environ.get('SCRIPT_NAME', '/').rstrip('/'))
                )
     
     @cached_property

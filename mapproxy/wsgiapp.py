@@ -152,16 +152,15 @@ class MapProxyApp(object):
                         traceback.print_exc(file=environ['wsgi.errors'])
                         resp = Response('internal error', status=500)
         if resp is None:
-            if req.path == '/':
-                resp = self.welcome_response()
+            if req.path in ('', '/'):
+                resp = self.welcome_response(req.script_url)
             else:
                 resp = Response('not found', mimetype='text/plain', status=404)
         return resp(environ, start_response)
 
-    def welcome_response(self):
+    def welcome_response(self, script_url):
         import mapproxy.version
         html = "<html><body><h1>Welcome to MapProxy %s</h1>" % mapproxy.version.version
-        
         if 'demo' in self.handlers:
-            html += '<p>See all configured layers and services at: <a href="demo/">demo</a>'
+            html += '<p>See all configured layers and services at: <a href="%s/demo/">demo</a>' % (script_url, )
         return Response(html, mimetype='text/html')
