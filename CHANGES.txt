@@ -1,3 +1,8 @@
+0.9.1dev
+
+- WMS 1.1.0 support
+- Coverage support (limit sources to areas via WKT/OGC polygons)
+
 0.9.0 2010-10-18
 
 - minor bug fixes
