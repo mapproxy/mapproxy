@@ -594,5 +594,25 @@ def load_configuration(mapproxy_conf):
         conf_data = open(mapproxy_conf).read()
         conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
     conf_dict = yaml.load(conf_data)
+    if 'base' in conf_dict:
+        with open(os.path.join(conf_base_dir, conf_dict['base'])) as f:
+            base_dict = yaml.load(f)
+        if 'base' in base_dict:
+            log.warn('found `base` option in base config but recursive inheritance is not supported.')
+        conf_dict = merge_dict(conf_dict, base_dict)
+    
     return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir)
 
+def merge_dict(conf, base):
+    """
+    Return `base` dict with values from `conf` merged in.
+    """
+    for k, v in conf.iteritems():
+        if k not in base:
+            base[k] = v
+        else:
+            if isinstance(base[k], dict):
+                merge_dict(v, base[k])
+            else:
+                base[k] = v
+    return base

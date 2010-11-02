@@ -6,6 +6,7 @@ from mapproxy.config.loader import (
     ProxyConfiguration,
     WMSSourceConfiguration,
     load_services,
+    merge_dict,
 )
 from mapproxy.cache.tile import TileManager
 
@@ -151,3 +152,30 @@ sources:
         f = StringIO(self.yaml_string)
         wms = load_services(f)
         print wms
+
+
+class TestConfMerger(object):
+    def test_empty_base(self):
+        a = {'a': 1, 'b': [12, 13]}
+        b = {}
+        m = merge_dict(a, b)
+        eq_(a, m)
+    
+    def test_empty_conf(self):
+        a = {}
+        b = {'a': 1, 'b': [12, 13]}
+        m = merge_dict(a, b)
+        eq_(b, m)
+    
+    def test_differ(self):
+        a = {'a': 12}
+        b = {'b': 42}
+        m = merge_dict(a, b)
+        eq_({'a': 12, 'b': 42}, m)
+    
+    def test_recursive(self):
+        a = {'a': {'aa': 12, 'a':{'aaa': 100}}}
+        b = {'a': {'aa': 11, 'ab': 13, 'a':{'aaa': 101, 'aab': 101}}}
+        m = merge_dict(a, b)
+        eq_({'a': {'aa': 12, 'ab': 13, 'a':{'aaa': 100, 'aab': 101}}}, m)
+        
