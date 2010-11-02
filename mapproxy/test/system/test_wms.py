@@ -30,6 +30,7 @@ from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRe
                                  WMS111FeatureInfoRequest, WMS111CapabilitiesRequest, \
                                  WMS130CapabilitiesRequest, WMS100CapabilitiesRequest, \
                                  WMS100FeatureInfoRequest, WMS130FeatureInfoRequest, \
+                                 WMS111LegendGraphicRequest, WMS130LegendGraphicRequest, \
                                  wms_request
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from mapproxy.test.image import is_jpeg, is_png, tmp_image
@@ -128,6 +129,8 @@ class TestWMS111(WMSTest):
             param=dict(x='10', y='20', width='200', height='200', layers='wms_cache',
                        format='image/png', query_layers='wms_cache', styles='',
                        bbox='1000,400,2000,1400', srs='EPSG:900913'))
+        self.common_lg_req = WMS111LegendGraphicRequest(url='/service?',
+            param=dict(format='image/png', layer='wms_cache', sld_version='1.1.0'))
     
     def test_invalid_request_type(self):
         req = str(self.common_map_req).replace('GetMap', 'invalid')
@@ -434,7 +437,46 @@ class TestWMS111(WMSTest):
         eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code'), [])
         assert 'tms_cache is not queryable' in xml.xpath('//ServiceException/text()')[0]
         assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
+    
+    def test_get_legendgraphic(self):
+        with tmp_image((256, 256), format='png') as img:
+            expected_req = ({'path': r'/service?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                                      '&REQUEST=GetLegendGraphic&'
+                                      '&VERSION=1.1.1&SLD_VERSION=1.1.0'},
+                            {'body': img.read(), 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                resp = self.app.get(self.common_lg_req)
+                eq_(resp.content_type, 'image/png')
+                assert is_png(StringIO(resp.body))
+    
+    def test_get_legendgraphic_no_legend(self):
+        self.common_lg_req.params['layer'] = 'tms_cache'
+        with tmp_image((256, 256), format='png') as img:
+            resp = self.app.get(self.common_lg_req)
+            eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+            xml = resp.lxml
+            assert 'tms_cache has no legend graphic' in xml.xpath('//ServiceException/text()')[0]
+            assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
+    
+    def test_get_legendgraphic_missing_params(self):
+        req = str(self.common_lg_req).replace('sld_version', 'invalid').replace('format', 'invalid')
+        with tmp_image((256, 256), format='png') as img:
+            resp = self.app.get(req)
+            eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+            xml = resp.lxml
+            assert 'missing parameters' in xml.xpath('//ServiceException/text()')[0]
+            assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
+    
+    def test_get_legendgraphic_invalid_sld_version(self):
+        req = str(self.common_lg_req).replace('sld_version=1.1.0', 'sld_version=1.0.0')
+        with tmp_image((256, 256), format='png') as img:
+            resp = self.app.get(req)
+            eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+            xml = resp.lxml
+            assert 'invalid sld_version' in xml.xpath('//ServiceException/text()')[0]
+            assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
 
+    
 class TestWMS100(WMSTest):
     def setup(self):
         WMSTest.setup(self)
@@ -595,6 +637,8 @@ class TestWMS130(WMSTest):
             param=dict(i='10', j='20', width='200', height='200', layers='wms_cache_130',
                        format='image/png', query_layers='wms_cache_130', styles='',
                        bbox='1000,400,2000,1400', crs='EPSG:900913'))
+        self.common_lg_req = WMS130LegendGraphicRequest(url='/service?',
+            param=dict(format='image/png', layer='wms_cache', sld_version='1.1.0'))
         
     def test_wms_capabilities(self):
         req = WMS130CapabilitiesRequest(url='/service?').copy_with_request_params(self.common_req)
@@ -726,6 +770,48 @@ class TestWMS130(WMSTest):
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, 'info')
+    
+    def test_get_legendgraphic(self):
+        with tmp_image((256, 256), format='png') as img:
+            expected_req = ({'path': r'/service?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                                      '&REQUEST=GetLegendGraphic&'
+                                      '&VERSION=1.1.1&SLD_VERSION=1.1.0'},
+                            {'body': img.read(), 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                resp = self.app.get(self.common_lg_req)
+                eq_(resp.content_type, 'image/png')
+                assert is_png(StringIO(resp.body))
+    
+    def test_get_legendgraphic_no_legend(self):
+        self.common_lg_req.params['layer'] = 'tms_cache'
+        with tmp_image((256, 256), format='png') as img:
+            resp = self.app.get(self.common_lg_req)
+            eq_(resp.content_type, 'text/xml')
+            xml = resp.lxml
+            eq_xpath_wms130(xml, '/ogc:ServiceExceptionReport/@version', '1.3.0')
+            eq_xpath_wms130(xml, '//ogc:ServiceException/text()', 'layer tms_cache has no legend graphic')
+            assert validate_with_xsd(xml, xsd_name='wms/1.3.0/exceptions_1_3_0.xsd')
+    
+    def test_get_legendgraphic_missing_params(self):
+        req = str(self.common_lg_req).replace('format', 'invalid')
+        with tmp_image((256, 256), format='png') as img:
+            resp = self.app.get(req)
+            eq_(resp.content_type, 'text/xml')
+            xml = resp.lxml
+            eq_xpath_wms130(xml, '/ogc:ServiceExceptionReport/@version', '1.3.0')
+            eq_xpath_wms130(xml, '//ogc:ServiceException/text()', "missing parameters ['format']")
+            assert validate_with_xsd(xml, xsd_name='wms/1.3.0/exceptions_1_3_0.xsd')
+    
+    def test_get_legendgraphic_invalid_sld_version(self):
+        req = str(self.common_lg_req).replace('sld_version=1.1.0', 'sld_version=1.0.0')
+        with tmp_image((256, 256), format='png') as img:
+            resp = self.app.get(req)
+            eq_(resp.content_type, 'text/xml')
+            xml = resp.lxml
+            eq_xpath_wms130(xml, '/ogc:ServiceExceptionReport/@version', '1.3.0')
+            eq_xpath_wms130(xml, '//ogc:ServiceException/text()', 'invalid sld_version 1.0.0')            
+            assert validate_with_xsd(xml, xsd_name='wms/1.3.0/exceptions_1_3_0.xsd')
+    
 
 if sys.platform != 'win32':
     class TestWMSLinkSingleColorImages(WMSTest):
