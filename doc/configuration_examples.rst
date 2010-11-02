@@ -196,3 +196,33 @@ You can disable the certificate verification if you you don't need it.
       layers: securelayer
   
 
+Serve multiple MapProxy instances
+=================================
+
+Since 0.9.1 it is possible to load multiple MapProxy instances into a single process. Each MapProxy can have a different global configuration and different services and caches. [#f1]_ You can use `Paste's urlmap <http://pythonpaste.org/deploy/#composite-applications>`_ to load multiple MapProxy configurations.
+
+Example ``config.ini``::
+
+  [composite:main]
+  use = egg:Paste#urlmap
+  /proxy1 = proxy1
+  /proxy2 = proxy2
+
+  [app:proxy1]
+  use = egg:MapProxy#app
+  mapproxy_conf = %(here)s/proxy1.yaml
+
+  [app:proxy2]
+  use = egg:MapProxy#app
+  mapproxy_conf = %(here)s/proxy2.yaml
+
+MapProxy is then available at ``/proxy1`` and ``/proxy2``.
+
+You can reuse parts of the MapProxy configuration with the `base` option. You can put all common options into a single base configuration and reference that file in the actual configuration::
+
+  base: mapproxy.yaml
+  layers:
+     [...]
+
+
+.. [#f1] This does not apply to `srs.proj_data_dir`, because it affects the proj4 library directly.
