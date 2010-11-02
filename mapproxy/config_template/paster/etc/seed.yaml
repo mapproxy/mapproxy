@@ -17,11 +17,11 @@ views:
         srs: ['EPSG:900913']
 
 seeds:
-    osm:
+    osm_cache:
         views: ['germany', 'switzerland', 'austria']
         remove_before:
           time: '2010-02-20T16:00:00'
-    osm_roads:
-       views: ['germany']
-       remove_before:
-          days: 30
+    #osm_roads:
+    #   views: ['germany']
+    #   remove_before:
+    #      days: 30
