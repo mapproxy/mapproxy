@@ -305,6 +305,9 @@ class _SRS(object):
         "SRS('EPSG:4326')"
         """
         return "SRS('%s')" % (self.srs_code,)
+    
+    def __hash__(self):
+        return hash(self.srs_code)
 
 
 def generate_envelope_points(bbox, n):
