@@ -371,12 +371,19 @@ class WMS130FeatureInfoRequestParams(WMSFeatureInfoRequestParams):
 class WMSLegendGraphicRequest(WMSMapRequest):    
     request_params = WMSLegendGraphicRequestParams
     request_handler_name = 'legendgraphic'
-    fixed_params = {'request': 'GetLegendGraphic', 'service': 'WMS'}
+    non_strict_params = set(['sld_version'])
+    fixed_params = {'request': 'GetLegendGraphic', 'service': 'WMS', 'sld_version': '1.1.0'}
     expected_param = ['version', 'request', 'layer', 'format', 'sld_version']
     
     def validate(self):
         self.validate_param()
         self.validate_format()
+        self.validate_sld_version()
+
+    def validate_sld_version(self):
+        if self.params.get('sld_version', '1.1.0') != '1.1.0':
+            raise RequestError('invalid sld_version ' + self.params.get('sld_version'),
+                                request=self)
     
 
 class WMS111LegendGraphicRequest(WMSLegendGraphicRequest):
