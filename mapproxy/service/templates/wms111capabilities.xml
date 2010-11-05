@@ -74,6 +74,18 @@
         </HTTP>
       </DCPType>
     </GetFeatureInfo>
+{{if service.has_legend}}
+    <GetLegendGraphic>
+{{for format in formats}}
+        <Format>{{format}}</Format>
+{{endfor}}
+        <DCPType>
+            <HTTP>
+                <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.url}}?"/></Get>
+            </HTTP>
+        </DCPType>
+    </GetLegendGraphic>
+{{endif}}
   </Request>
   <Exception>
     <Format>application/vnd.ogc.se_xml</Format>
@@ -108,6 +120,16 @@
       <Title>{{ layer.md.get('title') }}</Title>
       <LatLonBoundingBox minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
       <BoundingBox SRS="EPSG:4326" minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
+{{if layer.has_legend}}
+    <Style>
+        <Name>default</Name>
+        <Title>default</Title>
+        <LegendURL width="1" height="1">
+            <Format>image/png</Format>
+            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="{{service.url}}?request=GetLegendGraphic&amp;version=1.1.1&amp;service=WMS&amp;layer={{layer.md['name']}}&amp;format=image/png"/>
+        </LegendURL>
+    </Style>
+{{endif}}
     </Layer>
 {{endfor}}
   </Layer>
