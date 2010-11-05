@@ -19,6 +19,7 @@ Retrieve maps/information from WMS servers.
 """
 
 import sys
+from mapproxy.image import concat_legends, ImageSource
 from mapproxy.layer import MapExtent, BlankImage
 from mapproxy.source import Source, InfoSource, SourceError, LegendSource
 from mapproxy.srs import SRS
@@ -54,7 +55,11 @@ class WMSInfoSource(InfoSource):
         return self.client.get_info(query).read()
         
 class WMSLegendSource(LegendSource):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, clients):
+        self.clients = clients
     def get_legend(self, query):
-        return self.client.get_legend(query).read()
+        legends = []
+        for client in self.clients:
+            legends.append(ImageSource(client.get_legend(query)))
+        source = concat_legends(legends)
+        return source.as_buffer(format=query.format).read()
