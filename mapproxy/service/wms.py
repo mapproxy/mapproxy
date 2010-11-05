@@ -133,7 +133,6 @@ class WMSServer(Server):
         self.check_legend_request(request)
         legend_layer = request.params.layer
         layer =request.params.layer
-        print request.params
         if not self.layers[layer].has_legend:
             raise RequestError('layer %s has no legend graphic' % layer, request=request)
         legend = self.layers[layer].legend(request)
@@ -152,6 +151,8 @@ class WMSServer(Server):
     def _service_md(self, map_request):
         md = dict(self.md)
         md['url'] = map_request.url
+        md['has_legend'] = any([layer for name, layer in self.layers.iteritems()
+                                 if layer.has_legend])
         return md
 
 class Capabilities(object):
