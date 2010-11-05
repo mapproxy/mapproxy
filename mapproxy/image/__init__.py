@@ -95,6 +95,49 @@ def merge_images(images, format='png', size=None, transparent=True):
     merger.add(images)
     return merger.merge(format=format, size=size, transparent=transparent)
 
+def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transparent=True):
+    """
+    Merge multiple legends into one
+    :param images: list of `ImageSource`, bottom image first
+    :param format: the format of the output `ImageSource`
+    :param size: size of the merged image, if ``None`` the size
+                 will be calculated
+    :rtype: `ImageSource`
+    """
+    if not legends:
+        return BlankImageSource(size=(1,1), bgcolor=bgcolor, transparent=transparent)
+    if len(legends) == 1:
+        return legends[0]
+    
+    legends = legends[:]
+    legends.reverse()
+    if size is None:
+        legend_width = 0
+        legend_height = 0
+        legend_position_y = []
+        #iterate through all legends, last to first, calc img size and remember the y-position
+        for legend in legends:
+            legend_position_y.append(legend_height)
+            tmp_img = legend.as_image()
+            legend_width = max(legend_width, tmp_img.size[0])
+            legend_height += tmp_img.size[1] #images shall not overlap themselfs
+            
+        size = [legend_width, legend_height]
+    bgcolor = ImageColor.getrgb(bgcolor)
+    
+    if transparent:
+        img = Image.new('RGBA', size, bgcolor+(0,))
+    else:
+        img = Image.new('RGB', size, bgcolor)
+    for i in range(len(legends)):
+        legend_img = legends[i].as_image()
+        if legend_img.mode == 'RGBA':
+            # paste w transparency mask from layer
+            img.paste(legend_img, (0, legend_position_y[i]), legend_img)
+        else:
+            img.paste(legend_img, (0, legend_position_y[i]))
+    return ImageSource(img, format)
+
 class ImageSource(object):
     """
     This class wraps either a PIL image, a file-like object, or a file name.
