@@ -167,11 +167,19 @@ class WMSLegendClient(object):
     
     def get_legend(self, query):
         resp = self._retrieve(query)
-        return resp
+        format = query.format
+        self._check_resp(resp)
+        return ImageSource(resp, format=format)
     
     def _retrieve(self, query):
         url = self._query_url(query)
         return self.http_client.open(url)
+    
+    def _check_resp(self, resp):
+        if 'Content-type' not in resp.headers:
+            raise SourceError('response from source WMS has no Content-type header')
+        if not resp.headers['Content-type'].startswith('image/'):
+            raise SourceError('no image returned from source WMS')
     
     def _query_url(self, query):
         req = self.request_template.copy()
