@@ -369,14 +369,17 @@ class WMSSourceConfiguration(SourceConfiguration):
         lg_source = None
         if self.conf.get('wms_opts', {}).get('legendgraphic', False):
             version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
-            print params, self.conf
             lg_req = self.conf['req'].copy()
-            lg_req['layer'] = lg_req['layers'].split(',')[0] # TODO multiple layers
+            lg_clients = []
+            lg_layers = lg_req['layers'].split(',')
             del lg_req['layers']
-            lg_request = create_request(lg_req, params,
-                req_type='legendgraphic', version=version)
-            lg_client = WMSLegendClient(lg_request)
-            lg_source = WMSLegendSource(lg_client)
+            for lg_layer in lg_layers:
+                lg_req['layer'] = lg_layer
+                lg_request = create_request(lg_req, params,
+                    req_type='legendgraphic', version=version)
+                lg_client = WMSLegendClient(lg_request)
+                lg_clients.append(lg_client)
+            lg_source = WMSLegendSource(lg_clients)
         return lg_source
 
 
