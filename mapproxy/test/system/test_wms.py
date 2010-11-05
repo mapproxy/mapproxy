@@ -440,11 +440,16 @@ class TestWMS111(WMSTest):
     
     def test_get_legendgraphic(self):
         with tmp_image((256, 256), format='png') as img:
-            expected_req = ({'path': r'/service?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+            img_data = img.read()
+            expected_req1 = ({'path': r'/service?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                                       '&REQUEST=GetLegendGraphic&'
                                       '&VERSION=1.1.1&SLD_VERSION=1.1.0'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/png'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+                            {'body': img_data, 'headers': {'content-type': 'image/png'}})
+            expected_req2 = ({'path': r'/service?LAYER=bar&SERVICE=WMS&FORMAT=image%2Fpng'
+                          '&REQUEST=GetLegendGraphic&'
+                          '&VERSION=1.1.1&SLD_VERSION=1.1.0'},
+                {'body': img_data, 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req1, expected_req2]):
                 resp = self.app.get(self.common_lg_req)
                 eq_(resp.content_type, 'image/png')
                 assert is_png(StringIO(resp.body))
@@ -773,11 +778,16 @@ class TestWMS130(WMSTest):
     
     def test_get_legendgraphic(self):
         with tmp_image((256, 256), format='png') as img:
-            expected_req = ({'path': r'/service?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+            img_data = img.read()
+            expected_req1 = ({'path': r'/service?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                                       '&REQUEST=GetLegendGraphic&'
                                       '&VERSION=1.1.1&SLD_VERSION=1.1.0'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/png'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+                            {'body': img_data, 'headers': {'content-type': 'image/png'}})
+            expected_req2 = ({'path': r'/service?LAYER=bar&SERVICE=WMS&FORMAT=image%2Fpng'
+                          '&REQUEST=GetLegendGraphic&'
+                          '&VERSION=1.1.1&SLD_VERSION=1.1.0'},
+                {'body': img_data, 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req1, expected_req2]):
                 resp = self.app.get(self.common_lg_req)
                 eq_(resp.content_type, 'image/png')
                 assert is_png(StringIO(resp.body))
