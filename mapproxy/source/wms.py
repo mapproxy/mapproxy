@@ -19,12 +19,15 @@ Retrieve maps/information from WMS servers.
 """
 
 import sys
-from mapproxy.image import concat_legends, ImageSource
+from mapproxy.image import concat_legends
 from mapproxy.layer import MapExtent, BlankImage
 from mapproxy.source import Source, InfoSource, SourceError, LegendSource
 from mapproxy.srs import SRS
 from mapproxy.client.http import HTTPClientError
 from mapproxy.util import reraise_exception
+
+import logging
+log = logging.getLogger(__name__)
 
 class WMSSource(Source):
     supports_meta_tiles = True
@@ -60,6 +63,9 @@ class WMSLegendSource(LegendSource):
     def get_legend(self, query):
         legends = []
         for client in self.clients:
-            legends.append(ImageSource(client.get_legend(query)))
+            try:
+                legends.append(client.get_legend(query))
+            except SourceError, e:
+                log.error(SourceError(e.args[0]))
         source = concat_legends(legends)
         return source.as_buffer(format=query.format).read()
