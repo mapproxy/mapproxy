@@ -17,6 +17,10 @@
 import platform
 
 if platform.system() == "Java":
-    from mapproxy.platform.jython.proj import Proj, transform, set_datapath
+    from mapproxy.platform.jython.proj import (
+        Proj, transform, set_datapath, ProjInitError
+    )
 else:
-    from mapproxy.platform.cpython.proj import Proj, transform, set_datapath
+    from mapproxy.platform.cpython.proj import (
+        Proj, transform, set_datapath, ProjInitError
+    )

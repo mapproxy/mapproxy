@@ -23,7 +23,7 @@ from __future__ import division
 import math
 import threading
 from itertools import izip
-from mapproxy.proj import Proj, transform, set_datapath
+from mapproxy.proj import Proj, transform, set_datapath, ProjInitError
 from mapproxy.config import base_config
 
 import logging
@@ -39,7 +39,7 @@ def get_epsg_num(epsg_code):
     31466
     """
     if isinstance(epsg_code, basestring):
-        if epsg_code.lower().startswith('epsg:'):
+        if ':' in epsg_code:
             epsg_code = int(epsg_code.split(':')[1])
         else:
             epsg_code = int(epsg_code)
@@ -120,10 +120,10 @@ class _SRS(object):
     # TODO jproj/libproj
     proj_init = {
                  'EPSG:900913': epsg900913,
+                 'EPSG:3857': epsg900913,
                  'CRS:84': lambda: Proj(init='epsg:4326'),
                 }
-
-        
+    
     """
     This class represents a Spatial Reference System.
     """
@@ -133,12 +133,15 @@ class _SRS(object):
         """
         self.srs_code = srs_code
         
-        init = _SRS.proj_init.get(srs_code, None)
-        if init is None:
+        try:
             epsg_num = get_epsg_num(srs_code)   
             self.proj = Proj(init='epsg:%d' % epsg_num)
-        else:
-            self.proj = init()
+        except ProjInitError, ex:
+            init = _SRS.proj_init.get(srs_code, None)
+            if init is not None:
+                self.proj = init()
+            else:
+                raise ex
     
     def transform_to(self, other_srs, points):
         """
