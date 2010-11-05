@@ -25,7 +25,7 @@ from mapproxy.platform.image import (
 import os
 import sys
 from mapproxy.image import ImageSource, concat_legends
-from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image, check_format, create_debug_img
+from mapproxy.test.image import is_png
 from nose.tools import eq_
 
 class Test_Concat_Legends(object):
