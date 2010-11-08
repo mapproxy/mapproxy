@@ -27,6 +27,7 @@ from mapproxy.grid import (
     resolutions,
     ResolutionRange,
     resolution_range,
+    merge_resolution_range,
 )
 from mapproxy.srs import SRS, TransformationError
 
@@ -710,50 +711,50 @@ def assert_almost_equal_bbox(bbox1, bbox2, places=2):
 class TestResolutionRange(object):
     def test_meter(self):
         res_range = ResolutionRange(1000, 10)
-        assert not res_range.intersects([0, 0, 100000, 100000], (10, 10), SRS(900913))
-        assert not res_range.intersects([0, 0, 100000, 100000], (99, 99), SRS(900913))
+        assert not res_range.contains([0, 0, 100000, 100000], (10, 10), SRS(900913))
+        assert not res_range.contains([0, 0, 100000, 100000], (99, 99), SRS(900913))
         # min is exclusive but there is a delta
-        assert     res_range.intersects([0, 0, 100000, 100000], (100, 100), SRS(900913))
-        assert     res_range.intersects([0, 0, 100000, 100000], (1000, 1000), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (100, 100), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (1000, 1000), SRS(900913))
         # max is inclusive
-        assert     res_range.intersects([0, 0, 100000, 100000], (10000, 10000), SRS(900913))
-        assert not res_range.intersects([0, 0, 100000, 100000], (10001, 10001), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (10000, 10000), SRS(900913))
+        assert not res_range.contains([0, 0, 100000, 100000], (10001, 10001), SRS(900913))
     def test_deg(self):
         res_range = ResolutionRange(100000, 1000)
-        assert not res_range.intersects([0, 0, 10, 10], (10, 10), SRS(4326))
-        assert not res_range.intersects([0, 0, 10, 10], (11, 11), SRS(4326))
-        assert     res_range.intersects([0, 0, 10, 10], (12, 12), SRS(4326))
-        assert     res_range.intersects([0, 0, 10, 10], (100, 100), SRS(4326))
-        assert     res_range.intersects([0, 0, 10, 10], (1000, 1000), SRS(4326))
-        assert     res_range.intersects([0, 0, 10, 10], (1100, 1100), SRS(4326))
-        assert not res_range.intersects([0, 0, 10, 10], (1200, 1200), SRS(4326))
+        assert not res_range.contains([0, 0, 10, 10], (10, 10), SRS(4326))
+        assert not res_range.contains([0, 0, 10, 10], (11, 11), SRS(4326))
+        assert     res_range.contains([0, 0, 10, 10], (12, 12), SRS(4326))
+        assert     res_range.contains([0, 0, 10, 10], (100, 100), SRS(4326))
+        assert     res_range.contains([0, 0, 10, 10], (1000, 1000), SRS(4326))
+        assert     res_range.contains([0, 0, 10, 10], (1100, 1100), SRS(4326))
+        assert not res_range.contains([0, 0, 10, 10], (1200, 1200), SRS(4326))
     
     def test_no_min(self):
         res_range = ResolutionRange(None, 10)
-        assert     res_range.intersects([0, 0, 100000, 100000], (1, 1), SRS(900913))
-        assert     res_range.intersects([0, 0, 100000, 100000], (10, 10), SRS(900913))
-        assert     res_range.intersects([0, 0, 100000, 100000], (99, 99), SRS(900913))
-        assert     res_range.intersects([0, 0, 100000, 100000], (100, 100), SRS(900913))
-        assert     res_range.intersects([0, 0, 100000, 100000], (1000, 1000), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (1, 1), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (10, 10), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (99, 99), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (100, 100), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (1000, 1000), SRS(900913))
         # max is inclusive
-        assert     res_range.intersects([0, 0, 100000, 100000], (10000, 10000), SRS(900913))
-        assert not res_range.intersects([0, 0, 100000, 100000], (10001, 10001), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (10000, 10000), SRS(900913))
+        assert not res_range.contains([0, 0, 100000, 100000], (10001, 10001), SRS(900913))
 
     def test_no_max(self):
         res_range = ResolutionRange(1000, None)
-        assert not res_range.intersects([0, 0, 100000, 100000], (10, 10), SRS(900913))
-        assert not res_range.intersects([0, 0, 100000, 100000], (99, 99), SRS(900913))
+        assert not res_range.contains([0, 0, 100000, 100000], (10, 10), SRS(900913))
+        assert not res_range.contains([0, 0, 100000, 100000], (99, 99), SRS(900913))
         # min is exclusive but there is a delta
-        assert     res_range.intersects([0, 0, 100000, 100000], (100, 100), SRS(900913))
-        assert     res_range.intersects([0, 0, 100000, 100000], (1000, 1000), SRS(900913))
-        assert     res_range.intersects([0, 0, 100000, 100000], (10000, 10000), SRS(900913))
-        assert     res_range.intersects([0, 0, 100000, 100000], (10001, 10001), SRS(900913))
-        assert     res_range.intersects([0, 0, 100000, 100000], (1000000, 100000), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (100, 100), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (1000, 1000), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (10000, 10000), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (10001, 10001), SRS(900913))
+        assert     res_range.contains([0, 0, 100000, 100000], (1000000, 100000), SRS(900913))
 
     def test_none(self):
         res_range = resolution_range(None, None)
-        assert res_range.intersects([0, 0, 100000, 100000], (1, 1), SRS(900913))
-        assert res_range.intersects([0, 0, 100000, 100000], (1000000, 100000), SRS(900913))        
+        assert res_range.contains([0, 0, 100000, 100000], (1, 1), SRS(900913))
+        assert res_range.contains([0, 0, 100000, 100000], (1000000, 100000), SRS(900913))        
 
     def test_from_scale(self):
         res_range = resolution_range(max_scale=1e6, min_scale=1e3)
@@ -778,4 +779,32 @@ class TestResolutionRange(object):
     def test_wrong_order_scale(self):
          resolution_range(min_scale=100, max_scale=10)
         
+    
+    def test_merge_resolutions(self):
+        res_range = merge_resolution_range(
+            ResolutionRange(None, 10), ResolutionRange(1000, None))
+        eq_(res_range.min_res, None)
+        eq_(res_range.max_res, None)
 
+        res_range = merge_resolution_range(
+            ResolutionRange(10000, 10), ResolutionRange(1000, None))
+        eq_(res_range.min_res, 10000)
+        eq_(res_range.max_res, None)
+
+        res_range = merge_resolution_range(
+            ResolutionRange(10000, 10), ResolutionRange(1000, 1))
+        eq_(res_range.min_res, 10000)
+        eq_(res_range.max_res, 1)
+        
+        res_range = merge_resolution_range(
+            ResolutionRange(10000, 10), ResolutionRange(None, None))
+        eq_(res_range.min_res, None)
+        eq_(res_range.max_res, None)
+        
+        res_range = merge_resolution_range(
+            None, ResolutionRange(None, None))
+        eq_(res_range, None)
+        
+        res_range = merge_resolution_range(
+            ResolutionRange(10000, 10), None)
+        eq_(res_range, None)

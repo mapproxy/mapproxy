@@ -40,8 +40,8 @@ class WMSSource(Source):
             self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
     
     def get_map(self, query):
-        if self.res_range and not self.res_range.intersects(query.bbox, query.size,
-                                                            query.srs):
+        if self.res_range and not self.res_range.contains(query.bbox, query.size,
+                                                          query.srs):
             raise BlankImage()
         if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
             raise BlankImage()

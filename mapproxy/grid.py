@@ -915,6 +915,8 @@ OGC_PIXLE_SIZE = 0.00028 #m/px
 
 def ogc_scale_to_res(scale):
     return scale * OGC_PIXLE_SIZE
+def res_to_ogc_scale(res):
+    return res / OGC_PIXLE_SIZE
 
 def resolution_range(min_res=None, max_res=None, max_scale=None, min_scale=None):
     if min_scale == max_scale == min_res == max_res == None:
@@ -938,7 +940,24 @@ class ResolutionRange(object):
         if min_res and max_res:
             assert min_res > max_res
     
-    def intersects(self, bbox, size, srs):
+    def scale_denominator(self):
+        min_scale = res_to_ogc_scale(self.max_res) if self.max_res else None
+        max_scale = res_to_ogc_scale(self.min_res) if self.min_res else None
+        return min_scale, max_scale
+    
+    def scale_hint(self):
+        """
+        Returns the min and max diagonal resolution.
+        """
+        min_res = self.min_res
+        max_res = self.max_res
+        if min_res:
+            min_res = math.sqrt(2*min_res**2)
+        if max_res:
+            max_res = math.sqrt(2*max_res**2)
+        return min_res, max_res
+    
+    def contains(self, bbox, size, srs):
         width, height = bbox_size(bbox)
         if srs.is_latlong:
             width = deg_to_m(width)
@@ -959,4 +978,19 @@ class ResolutionRange(object):
                 return False
         
         return True
-            
+    
+    def __repr__(self):
+        return '<ResolutionRange(min_res=%.3f, max_res=%.3f)>' % (
+            self.min_res, self.max_res)
+    
+
+def max_with_none(a, b):
+    if a is None or b is None:
+        return None
+    else:
+        return max(a, b)
+
+def merge_resolution_range(a, b):
+    if a and b:
+        return ResolutionRange(max_with_none(a.min_res, b.min_res), min(a.max_res, b.max_res))
+    return None

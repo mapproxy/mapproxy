@@ -177,6 +177,7 @@ class WMSLayer(object):
         self.map_layers = map_layers
         self.info_layers = info_layers
         self.extent = map_layers[0].extent #TODO
+        self.res_range = map_layers[0].res_range #TODO
         self.queryable = True if info_layers else False
         self.transparent = any(map_lyr.transparent for map_lyr in self.map_layers)
         

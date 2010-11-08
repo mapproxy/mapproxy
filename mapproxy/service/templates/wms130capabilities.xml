@@ -88,7 +88,12 @@
         <northBoundLatitude>{{ layer.extent.llbbox[3] }}</northBoundLatitude>
        </EX_GeographicBoundingBox>
       <BoundingBox CRS="CRS:84" minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
-    </Layer>
+      {{if layer.res_range}}
+      {{py: min_scale, max_scale = layer.res_range.scale_denominator()}}
+      {{if min_scale}}<MinScaleDenominator>{{min_scale}}</MinScaleDenominator>{{endif}}
+      {{if max_scale}}<MaxScaleDenominator>{{max_scale}}</MaxScaleDenominator>{{endif}}
+      {{endif}}
+  </Layer>
 {{endfor}}
   </Layer>
 </Capability>

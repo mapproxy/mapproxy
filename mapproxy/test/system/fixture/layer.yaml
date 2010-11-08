@@ -109,6 +109,8 @@ sources:
       layers: foo,bar
   wms_cache_130:
     type: wms
+    min_res: 250000000
+    max_res: 1
     wms_opts:
       version: '1.3.0'
       featureinfo: True

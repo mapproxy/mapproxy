@@ -21,7 +21,7 @@ Layers that can get maps/infos from different sources/caches.
 
 from __future__ import division
 from mapproxy.config import base_config
-from mapproxy.grid import NoTiles, GridError
+from mapproxy.grid import NoTiles, GridError, merge_resolution_range
 from mapproxy.image.tile import TiledImage
 from mapproxy.srs import SRS, bbox_equals
 
@@ -38,6 +38,7 @@ class MapBBOXError(Exception):
     pass
 
 class MapLayer(object):
+    res_range = None
     def get_map(self, query):
         raise NotImplementedError
 
@@ -172,6 +173,7 @@ class SRSConditional(MapLayer):
 class DirectMapLayer(MapLayer):
     def __init__(self, source, extent):
         self.source = source
+        self.res_range = getattr(source, 'res_range', None)
         self.extent = extent
     
     def get_map(self, query):
@@ -183,9 +185,21 @@ class CacheMapLayer(MapLayer):
         self.grid = tile_manager.grid
         self.resampling = resampling or base_config().image.resampling_method
         self.extent = map_extent_from_grid(self.grid)
+        self.res_range = self._calculate_res_range()
         self.transparent = tile_manager.transparent
     
+    def _calculate_res_range(self):
+        ranges = [s.res_range for s in self.tile_manager.sources
+                  if hasattr(s, 'res_range')]
+        if ranges:
+            ranges = reduce(merge_resolution_range, ranges)
+        
+        return ranges
+    
     def get_map(self, query):
+        if self.res_range and not self.res_range.contains(query.bbox, query.size, query.srs):
+            raise BlankImage()
+        
         if query.tiled_only:
             self._check_tiled(query)
         
