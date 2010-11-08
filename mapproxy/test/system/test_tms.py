@@ -18,31 +18,23 @@ from __future__ import with_statement
 import os
 import hashlib
 from cStringIO import StringIO
-from webtest import TestApp
-import mapproxy.config
-from mapproxy.wsgiapp import make_wsgi_app 
-
 from mapproxy.test.image import is_jpeg, tmp_image
 from mapproxy.test.http import mock_httpd
+from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
 from nose.tools import eq_
 
-global_app = None
+test_config = {}
+base_config = make_base_config(test_config)
 
 def setup_module():
-    fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
-    fixture_layer_conf = os.path.join(fixture_dir, 'layer.yaml')
+    module_setup(test_config, 'layer.yaml', with_cache_data=True)
 
-    global global_app
-    global_app = TestApp(make_wsgi_app(fixture_layer_conf), use_unicode=False)
+def teardown_module():
+    module_teardown(test_config)
 
-def base_config():
-    return global_app.app.application.base_config
-
-class TestTMS(object):
-    def setup(self):
-        self.app = global_app
-        self.created_tiles = []
-        
+class TestTMS(SystemTest):
+    config = test_config
+    
     def test_tms_capabilities(self):
         resp = self.app.get('/tms/1.0.0/')
         assert 'WMS Cache Layer' in resp
@@ -130,11 +122,9 @@ class TestTMS(object):
             if os.path.exists(filename):
                 os.remove(filename)
 
-class TestTileService(object):
-    def setup(self):
-        self.app = global_app
-        self.created_tiles = []
-        
+class TestTileService(SystemTest):
+    config = test_config
+    
     def test_get_out_of_bounds_tile(self):
         for coord in [(0, 0, -1), (-1, 0, 0), (0, -1, 0), (4, 2, 1), (1, 3, 0)]:
             yield self.check_out_of_bounds, coord

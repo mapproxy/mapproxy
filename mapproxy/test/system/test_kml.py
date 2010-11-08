@@ -18,11 +18,7 @@ from __future__ import with_statement
 import os
 import hashlib
 from cStringIO import StringIO
-from webtest import TestApp
-import mapproxy.config
-from mapproxy.wsgiapp import make_wsgi_app
 from mapproxy.util.times import format_httpdate
-
 from mapproxy.test.image import is_jpeg, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import validate_with_xsd
@@ -30,22 +26,19 @@ from nose.tools import eq_
 
 ns = {'kml': 'http://www.opengis.net/kml/2.2'}
 
-global_app = None
+from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
 
-fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
-fixture_layer_conf = os.path.join(fixture_dir, 'layer.yaml')
+test_config = {}
+base_config = make_base_config(test_config)
+
 def setup_module():
+    module_setup(test_config, 'layer.yaml', with_cache_data=True)
 
-    global global_app
-    global_app = TestApp(make_wsgi_app(fixture_layer_conf), use_unicode=False)
+def teardown_module():
+    module_teardown(test_config)
 
-def base_config():
-    return global_app.app.application.base_config
-
-class TestKML(object):
-    def setup(self):
-        self.app = global_app
-        self.created_tiles = []
+class TestKML(SystemTest):
+    config = test_config
         
     def test_get_out_of_bounds_tile(self):
         for coord in [(0, 0, -1), (-1, 0, 0), (0, -1, 0), (4, 2, 1), (1, 3, 0)]:
@@ -127,7 +120,6 @@ class TestKML(object):
                       namespaces=ns)[0],
             'http://localhost:80/kml/wms_cache/EPSG900913/1/0/0.kml')
         
-        timestamp = os.stat(fixture_layer_conf).st_mtime
         etag = hashlib.md5(resp.body).hexdigest()
         max_age = base_config().tiles.expires_hours * 60 * 60
         self._check_cache_control_headers(resp, etag, max_age, None)

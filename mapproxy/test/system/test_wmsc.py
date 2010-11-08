@@ -15,64 +15,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement, division
-import os
-import sys
-from mapproxy.platform.image import Image
-import functools
 
 from cStringIO import StringIO
-from webtest import TestApp
-import mapproxy.config
-from mapproxy.srs import SRS
-from mapproxy.wsgiapp import make_wsgi_app 
-from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest, \
-                                 WMS111FeatureInfoRequest, WMS111CapabilitiesRequest, \
-                                 WMS130CapabilitiesRequest, WMS100CapabilitiesRequest, \
-                                 WMS100FeatureInfoRequest, WMS130FeatureInfoRequest
-from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
-from mapproxy.test.image import is_jpeg, is_png, tmp_image
-from mapproxy.test.http import mock_httpd
-from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
-from nose.tools import eq_, assert_almost_equal
-
+from mapproxy.request.wms import (
+    WMS111MapRequest, WMS111FeatureInfoRequest, WMS111CapabilitiesRequest
+)
+from mapproxy.test.image import is_jpeg
+from mapproxy.test.helper import validate_with_dtd
 from mapproxy.test.system.test_wms import is_111_exception
+from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
+from nose.tools import eq_
 
-global_app = None
+test_config = {}
+base_config = make_base_config(test_config)
 
 def setup_module():
-    fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
-    fixture_layer_conf = os.path.join(fixture_dir, 'layer.yaml')
+    module_setup(test_config, 'layer.yaml', with_cache_data=True)
 
-    global global_app
-    global_app = TestApp(make_wsgi_app(fixture_layer_conf), use_unicode=False)
+def teardown_module():
+    module_teardown(test_config)
 
-def base_config():
-    return global_app.app.application.base_config
-
-class WMSTest(object):
+class TestWMSC(SystemTest):
+    config = test_config
     def setup(self):
-        self.app = global_app
-        self.created_tiles = []
-    
-    def created_tiles_filenames(self):
-        base_dir = base_config().cache.base_dir
-        for filename in self.created_tiles:
-            yield os.path.join(base_dir, filename)
-    
-    def _test_created_tiles(self):
-        for filename in self.created_tiles_filenames():
-            if not os.path.exists(filename):
-                assert False, "didn't found tile " + filename
-    
-    def teardown(self):
-        self._test_created_tiles()
-        for filename in self.created_tiles_filenames():
-            if os.path.exists(filename):
-                os.remove(filename)
-
-class TestWMSC(WMSTest):
-    def setup(self):
-        WMSTest.setup(self)
+        SystemTest.setup(self)
         self.common_cap_req = WMS111CapabilitiesRequest(url='/service?', param=dict(service='WMS', 
              version='1.1.1'))
         self.common_map_req = WMS111MapRequest(url='/service?', param=dict(service='WMS', 

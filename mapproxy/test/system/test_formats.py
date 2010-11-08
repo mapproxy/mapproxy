@@ -16,50 +16,24 @@
 
 from __future__ import with_statement, division
 import os
-import sys
-import tempfile
-import shutil
-from mapproxy.platform.image import Image
-import functools
-
 from cStringIO import StringIO
-from webtest import TestApp
-import mapproxy.config
-from mapproxy.srs import SRS
-from mapproxy.wsgiapp import make_wsgi_app 
-from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest, \
-                                 WMS111FeatureInfoRequest, WMS111CapabilitiesRequest, \
-                                 WMS130CapabilitiesRequest, WMS100CapabilitiesRequest, \
-                                 WMS100FeatureInfoRequest, WMS130FeatureInfoRequest
-from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
-from mapproxy.test.image import is_jpeg, is_png, tmp_image, check_format
+from mapproxy.request.wms import WMS111MapRequest, WMS111FeatureInfoRequest
+from mapproxy.test.image import tmp_image, check_format
 from mapproxy.test.http import mock_httpd
-from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
-from nose.tools import eq_, assert_almost_equal
+from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
+from nose.tools import eq_
 
-global_app = None
-tmp_cache_dir = tempfile.mkdtemp()
+test_config = {}
+base_config = make_base_config(test_config)
 
 def setup_module():
-    fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
-    fixture_layer_conf = os.path.join(fixture_dir, 'formats.yaml')
-    shutil.copy(fixture_layer_conf, tmp_cache_dir)
-    conf = os.path.join(tmp_cache_dir, 'formats.yaml')
-    
-    global global_app
-    global_app = TestApp(make_wsgi_app(conf), use_unicode=False)
-    global_app.app.application.base_config.image.paletted = False
+    module_setup(test_config, 'formats.yaml', with_cache_data=True)
 
 def teardown_module():
-    shutil.rmtree(tmp_cache_dir)
+    module_teardown(test_config)
 
-def base_config():
-    return global_app.app.application.base_config
-
-class TilesTest(object):
-    def setup(self):
-        self.app = global_app
-        self.created_tiles = []
+class TilesTest(SystemTest):
+    config = test_config
     
     def created_tiles_filenames(self):
         base_dir = base_config().cache.base_dir

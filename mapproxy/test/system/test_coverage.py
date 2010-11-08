@@ -15,55 +15,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement, division
-import os
-from mapproxy.platform.image import Image
 
 from cStringIO import StringIO
-from webtest import TestApp
-import mapproxy.config
-from mapproxy.wsgiapp import make_wsgi_app 
 from mapproxy.request.wms import WMS111MapRequest
+from mapproxy.platform.image import Image
 from mapproxy.test.image import is_png, tmp_image
 from mapproxy.test.http import mock_httpd
+from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from nose.tools import eq_
 
-global_app = None
+test_config = {}
 
 def setup_module():
-    fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
-    fixture_layer_conf = os.path.join(fixture_dir, 'coverage.yaml')
+    module_setup(test_config, 'coverage.yaml')
 
-    global global_app
-    global_app = TestApp(make_wsgi_app(fixture_layer_conf), use_unicode=False)
+def teardown_module():
+    module_teardown(test_config)
 
-def base_config():
-    return global_app.app.application.base_config
-
-
-class WMSTest(object):
+class TestCoverageWMS(SystemTest):
+    config = test_config
     def setup(self):
-        self.app = global_app
-        self.created_tiles = []
-    
-    def created_tiles_filenames(self):
-        base_dir = base_config().cache.base_dir
-        for filename in self.created_tiles:
-            yield os.path.join(base_dir, filename)
-    
-    def _test_created_tiles(self):
-        for filename in self.created_tiles_filenames():
-            if not os.path.exists(filename):
-                assert False, "didn't found tile " + filename
-    
-    def teardown(self):
-        self._test_created_tiles()
-        for filename in self.created_tiles_filenames():
-            if os.path.exists(filename):
-                os.remove(filename)
-
-class TestWMS(WMSTest):
-    def setup(self):
-        WMSTest.setup(self)
+        SystemTest.setup(self)
         self.common_map_req = WMS111MapRequest(url='/service?', param=dict(service='WMS', 
              version='1.1.1', bbox='-180,0,0,80', width='200', height='200',
              layers='wms_cache', srs='EPSG:4326', format='image/png',
@@ -109,10 +81,8 @@ class TestWMS(WMSTest):
                 assert is_png(data)
                 assert Image.open(data).mode == 'RGBA'
 
-class TestTMS(object):
-    def setup(self):
-        self.app = global_app
-        self.created_tiles = []
+class TestCoverageTMS(SystemTest):
+    config = test_config
     
     def test_get_tile_intersections(self):
         with tmp_image((256, 256), format='jpeg') as img:
@@ -135,13 +105,3 @@ class TestTMS(object):
                 eq_(resp.content_type, 'image/jpeg')
                 self.created_tiles.append('tms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
 
-    
-    def created_tiles_filenames(self):
-        base_dir = base_config().cache.base_dir
-        for filename in self.created_tiles:
-            yield os.path.join(base_dir, filename)
-    
-    def teardown(self):
-        for filename in self.created_tiles_filenames():
-            if os.path.exists(filename):
-                os.remove(filename)

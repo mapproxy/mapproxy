@@ -22,10 +22,7 @@ from mapproxy.platform.image import Image
 import functools
 
 from cStringIO import StringIO
-from webtest import TestApp
-import mapproxy.config
 from mapproxy.srs import SRS
-from mapproxy.wsgiapp import make_wsgi_app 
 from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest, \
                                  WMS111FeatureInfoRequest, WMS111CapabilitiesRequest, \
                                  WMS130CapabilitiesRequest, WMS100CapabilitiesRequest, \
@@ -33,48 +30,24 @@ from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRe
                                  WMS110MapRequest, WMS110FeatureInfoRequest, \
                                  WMS110CapabilitiesRequest, \
                                  wms_request
-from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from mapproxy.test.image import is_jpeg, is_png, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
 from nose.tools import eq_, assert_almost_equal
 
-global_app = None
+from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
+
+test_config = {}
+base_config = make_base_config(test_config)
 
 def setup_module():
-    fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
-    fixture_layer_conf = os.path.join(fixture_dir, 'layer.yaml')
+    module_setup(test_config, 'layer.yaml', with_cache_data=True)
 
-    global global_app
-    global_app = TestApp(make_wsgi_app(fixture_layer_conf), use_unicode=False)
-
-def base_config():
-    return global_app.app.application.base_config
+def teardown_module():
+    module_teardown(test_config)
 
 def test_invalid_url():
-    global_app.get('/invalid?fop', status=404)
-
-class WMSTest(object):
-    def setup(self):
-        self.app = global_app
-        self.created_tiles = []
-    
-    def created_tiles_filenames(self):
-        base_dir = base_config().cache.base_dir
-        for filename in self.created_tiles:
-            yield os.path.join(base_dir, filename)
-    
-    def _test_created_tiles(self):
-        for filename in self.created_tiles_filenames():
-            if not os.path.exists(filename):
-                assert False, "didn't found tile " + filename
-    
-    def teardown(self):
-        self._test_created_tiles()
-        for filename in self.created_tiles_filenames():
-            if os.path.exists(filename):
-                os.remove(filename)
-
+    test_config['app'].get('/invalid?fop', status=404)
 
 def is_100_capa(xml):
     return validate_with_dtd(xml, dtd_name='wms/1.0.0/capabilities_1_0_0.dtd')
@@ -99,10 +72,12 @@ def is_111_capa(xml):
 def is_130_capa(xml):
     return validate_with_xsd(xml, xsd_name='wms/1.3.0/capabilities_1_3_0.xsd')
 
-class TestWMSVersionDispatch(object):
-    def setup(self):
-        self.app = global_app
-        
+
+class WMSTest(SystemTest):
+    config = test_config
+
+class TestCoverageWMS(WMSTest):
+    
     def test_unknown_version_110(self):
         resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
                             '&VERSION=1.1.0')
@@ -260,7 +235,6 @@ class TestWMS111(WMSTest):
                 eq_(resp.content_type, 'image/png')
         
     def test_get_map_use_direct_with_transform(self):
-        bbox_900913 = [1110868.98971,6444038.14317,1229263.18538,6623564.86585]
         with tmp_image((200, 200), format='png') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                       '&REQUEST=GetMap&HEIGHT=303&SRS=EPSG%3A900913&styles='
