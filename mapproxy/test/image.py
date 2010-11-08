@@ -61,6 +61,8 @@ def create_is_x_functions():
     for type_, magic in magic_bytes.iteritems():
         def create_is_type(type_, magic):
             def is_type(fileobj):
+                if not hasattr(fileobj, 'read'):
+                    fileobj = StringIO(fileobj)
                 return has_magic_bytes(fileobj, magic)
             return is_type
         globals()['is_' + type_] = create_is_type(type_, magic)
