@@ -27,11 +27,12 @@ from mapproxy.util import reraise_exception
 
 class WMSSource(Source):
     supports_meta_tiles = True
-    def __init__(self, client, transparent=False, coverage=None):
+    def __init__(self, client, transparent=False, coverage=None, res_range=None):
         Source.__init__(self)
         self.client = client
         self.transparent = transparent
         self.coverage = coverage
+        self.res_range = res_range
         if self.coverage:
             self.extent = MapExtent(self.coverage.bbox, self.coverage.srs)
         else:
@@ -39,8 +40,11 @@ class WMSSource(Source):
             self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
     
     def get_map(self, query):
+        if self.res_range and not self.res_range.intersects(query.bbox, query.size,
+                                                            query.srs):
+            raise BlankImage()
         if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
-            raise BlankImage
+            raise BlankImage()
         try:
             return self.client.get_map(query)
         except HTTPClientError, e:

@@ -907,3 +907,56 @@ def bbox_contains(one, two):
         ): return True
     
     return False
+
+def deg_to_m(deg):
+    return deg * (6378137 * 2 * math.pi) / 360
+
+OGC_PIXLE_SIZE = 0.00028 #m/px
+
+def ogc_scale_to_res(scale):
+    return scale * OGC_PIXLE_SIZE
+
+def resolution_range(min_res=None, max_res=None, max_scale=None, min_scale=None):
+    if min_scale == max_scale == min_res == max_res == None:
+        return ResolutionRange(None, None)
+    if min_res or max_res:
+        if not max_scale and not min_scale:
+            return ResolutionRange(min_res, max_res)
+    elif max_scale or min_scale:
+        if not min_res and not max_res:
+            min_res = ogc_scale_to_res(max_scale)
+            max_res = ogc_scale_to_res(min_scale)
+            return ResolutionRange(min_res, max_res)
+            
+    raise ValueError('requires either min_res/max_res or max_scale/min_scale')
+
+class ResolutionRange(object):
+    def __init__(self, min_res, max_res):
+        self.min_res = min_res
+        self.max_res = max_res
+        
+        if min_res and max_res:
+            assert min_res > max_res
+    
+    def intersects(self, bbox, size, srs):
+        width, height = bbox_size(bbox)
+        if srs.is_latlong:
+            width = deg_to_m(width)
+            height = deg_to_m(height)
+        
+        x_res = width/size[0]
+        y_res = height/size[1]
+        
+        print self.min_res, x_res, y_res, self.max_res
+        
+        if self.min_res:
+            min_res = self.min_res + 1e-6
+            if min_res <= x_res or min_res <= y_res:
+                return False
+        if self.max_res:
+            max_res = self.max_res - 1e-6
+            if max_res > x_res or max_res > y_res:
+                return False
+        
+        return True
+            

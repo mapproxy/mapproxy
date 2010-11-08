@@ -64,7 +64,7 @@ del load_tile_filters
 
 
 import mapproxy.config
-from mapproxy.grid import tile_grid
+from mapproxy.grid import tile_grid, resolution_range
 from mapproxy.request.base import split_mime_type
 from mapproxy.request.wms import create_request
 from mapproxy.layer import (
@@ -338,13 +338,15 @@ class WMSSourceConfiguration(SourceConfiguration):
             lock = lambda: SemLock(lock_file, self.conf['concurrent_requests'])
         
         coverage = self.coverage(context)
+        res_range = self.res_range(context)
         
         request = create_request(self.conf['req'], params, version=version)
         http_client = self.http_client(context, request)
         client = WMSClient(request, supported_srs, http_client=http_client, 
                            resampling=resampling, lock=lock,
                            supported_formats=supported_formats or None)
-        return WMSSource(client, transparent=transparent, coverage=coverage)
+        return WMSSource(client, transparent=transparent, coverage=coverage,
+                         res_range=res_range)
     
     def fi_source(self, context, params=None):
         if params is None: params = {}
@@ -360,7 +362,14 @@ class WMSSourceConfiguration(SourceConfiguration):
             fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs)
             fi_source = WMSInfoSource(fi_client)
         return fi_source
-
+    
+    def res_range(self, context):
+        if 'min_res' in self.conf or 'max_res' in self.conf:
+            return resolution_range(min_res=self.conf.get('min_res'),
+                                    max_res=self.conf.get('max_res'))
+        if 'min_scale' in self.conf or 'max_scale' in self.conf:
+            return resolution_range(min_scale=self.conf.get('min_scale'),
+                                    max_scale=self.conf.get('max_scale'))
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
