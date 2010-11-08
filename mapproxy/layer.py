@@ -39,6 +39,12 @@ class MapBBOXError(Exception):
 
 class MapLayer(object):
     res_range = None
+    
+    def check_res_range(self, query):
+        if (self.res_range and
+          not self.res_range.contains(query.bbox, query.size, query.srs)):
+            raise BlankImage()
+    
     def get_map(self, query):
         raise NotImplementedError
 
@@ -119,6 +125,7 @@ class ResolutionConditional(MapLayer):
         self.extent = extent
     
     def get_map(self, query):
+        self.check_res_range(query)
         bbox = query.bbox
         if query.srs != self.srs:
             bbox = query.srs.transform_bbox_to(self.srs, bbox)
@@ -149,6 +156,7 @@ class SRSConditional(MapLayer):
         self.extent = extent
     
     def get_map(self, query):
+        self.check_res_range(query)
         layer = self._select_layer(query.srs)
         return layer.get_map(query)
     
@@ -179,6 +187,7 @@ class DirectMapLayer(MapLayer):
         self.extent = extent
     
     def get_map(self, query):
+        self.check_res_range(query)
         return self.source.get_map(query)
 
 
@@ -201,8 +210,7 @@ class CacheMapLayer(MapLayer):
         self.transparent = tile_manager.transparent
     
     def get_map(self, query):
-        if self.res_range and not self.res_range.contains(query.bbox, query.size, query.srs):
-            raise BlankImage()
+        self.check_res_range(query)
         
         if query.tiled_only:
             self._check_tiled(query)

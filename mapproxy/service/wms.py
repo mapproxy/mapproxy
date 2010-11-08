@@ -172,16 +172,17 @@ env['wms100format'] = wms100format_filter
 
 class WMSLayer(object):
     
-    def __init__(self, md, map_layers, info_layers=[]):
+    def __init__(self, md, map_layers, info_layers=[], res_range=None):
         self.md = md
         self.map_layers = map_layers
         self.info_layers = info_layers
         self.extent = map_layers[0].extent #TODO
-        self.res_range = map_layers[0].res_range #TODO
+        if res_range is None:
+            res_range = map_layers[0].res_range #TODO
+        self.res_range = res_range
         self.queryable = True if info_layers else False
         self.transparent = any(map_lyr.transparent for map_lyr in self.map_layers)
-        
-        
+    
     def render(self, request):
         p = request.params
         query = MapQuery(p.bbox, p.size, SRS(p.srs), request.params.format)

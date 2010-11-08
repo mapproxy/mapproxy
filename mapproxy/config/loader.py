@@ -64,7 +64,7 @@ del load_tile_filters
 
 
 import mapproxy.config
-from mapproxy.grid import tile_grid, resolution_range
+from mapproxy.grid import tile_grid, resolution_range as _resolution_range
 from mapproxy.request.base import split_mime_type
 from mapproxy.request.wms import create_request
 from mapproxy.layer import (
@@ -299,10 +299,20 @@ class SourceConfiguration(ConfigurationBase):
         if not 'coverage' in self.conf: return None
         return load_coverage(self.conf['coverage'])
 
+def resolution_range(conf):
+    if 'min_res' in conf or 'max_res' in conf:
+        return _resolution_range(min_res=conf.get('min_res'),
+                                max_res=conf.get('max_res'))
+    if 'min_scale' in conf or 'max_scale' in conf:
+        return _resolution_range(min_scale=conf.get('min_scale'),
+                                max_scale=conf.get('max_scale'))
+
+
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
     optional_keys = set('''type supported_srs supported_formats image
-        wms_opts http concurrent_requests coverage'''.split())
+        wms_opts http concurrent_requests coverage
+        min_res max_res min_scale max_scale'''.split())
     required_keys = set('req'.split())
     
     def http_client(self, context, request):
@@ -338,7 +348,7 @@ class WMSSourceConfiguration(SourceConfiguration):
             lock = lambda: SemLock(lock_file, self.conf['concurrent_requests'])
         
         coverage = self.coverage(context)
-        res_range = self.res_range(context)
+        res_range = resolution_range(self.conf)
         
         request = create_request(self.conf['req'], params, version=version)
         http_client = self.http_client(context, request)
@@ -363,13 +373,6 @@ class WMSSourceConfiguration(SourceConfiguration):
             fi_source = WMSInfoSource(fi_client)
         return fi_source
     
-    def res_range(self, context):
-        if 'min_res' in self.conf or 'max_res' in self.conf:
-            return resolution_range(min_res=self.conf.get('min_res'),
-                                    max_res=self.conf.get('max_res'))
-        if 'min_scale' in self.conf or 'max_scale' in self.conf:
-            return resolution_range(min_scale=self.conf.get('min_scale'),
-                                    max_scale=self.conf.get('max_scale'))
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
@@ -487,7 +490,7 @@ class CacheConfiguration(ConfigurationBase):
         return layer
     
 class LayerConfiguration(ConfigurationBase):
-    optional_keys = set(''.split())
+    optional_keys = set('min_res max_res min_scale max_scale'.split())
     required_keys = set('name title sources'.split())
     
     def wms_layer(self, context):
@@ -512,8 +515,10 @@ class LayerConfiguration(ConfigurationBase):
                 if fi_source:
                     fi_sources.append(fi_source)
             
+        res_range = resolution_range(self.conf)
         
-        layer = WMSLayer({'title': self.conf['title'], 'name': self.conf['name']}, sources, fi_sources)
+        layer = WMSLayer({'title': self.conf['title'], 'name': self.conf['name']},
+                         sources, fi_sources, res_range=res_range)
         return layer
     
     def tile_layers(self, context):
