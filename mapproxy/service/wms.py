@@ -61,15 +61,22 @@ class WMSServer(Server):
         merger = self.merger()
         self.check_request(map_request)
         
+        p = map_request.params
+        query = MapQuery(p.bbox, p.size, SRS(p.srs), p.format)
+        
         render_layers = []
         for layer_name in map_request.params.layers:
             layer = self.layers[layer_name]
-            if not layer.transparent:
-                render_layers = []
-            render_layers.append(layer)
+            # only add if layer reders the query
+            if layer.renders_query(query):
+                # if layer is not transparent but will be rendered,
+                # remove already added (hidden) layers 
+                if not layer.transparent:
+                    render_layers = []
+                render_layers.append(layer)
         
         for layer in render_layers:
-            merger.add(layer.render(map_request))
+            merger.add(layer.render(map_request, query=query))
             
         params = map_request.params
         if self.attribution:
@@ -183,9 +190,15 @@ class WMSLayer(object):
         self.queryable = True if info_layers else False
         self.transparent = any(map_lyr.transparent for map_lyr in self.map_layers)
     
-    def render(self, request):
-        p = request.params
-        query = MapQuery(p.bbox, p.size, SRS(p.srs), request.params.format)
+    def renders_query(self, query):
+        if self.res_range and not self.res_range.contains(query.bbox, query.size, query.srs):
+            return False
+        return True
+    
+    def render(self, request, query=None):
+        if query is None:
+            p = request.params
+            query = MapQuery(p.bbox, p.size, SRS(p.srs), p.format)
         if request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
         for layer in self.map_layers:

@@ -71,6 +71,26 @@ create_is_x_functions()
 del create_is_x_functions
 
 
+def is_transparent(img_data):
+    data = StringIO(img_data)
+    img = Image.open(data)
+    if img.mode == 'RGBA':
+        colors = img.getcolors()
+        if len(colors) != 1:
+            return False
+        count, color = colors[0]
+        if color[3] != 0:
+            return False
+        return True
+    elif img.mode == 'P':
+        colors = img.getcolors()
+        if len(colors) != 1:
+            return False
+    
+    raise NotImplementedError(
+        'assert_is_transparent works only for RGBA images, got %s image' % img.mode)
+        
+
 def create_tmp_image(size):
     fd, out_file = tempfile.mkstemp(suffix='.png')
     os.close(fd)

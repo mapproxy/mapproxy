@@ -4,7 +4,7 @@ globals:
     meta_size: [1, 1]
     meta_buffer: 0
   image:
-    paletted: False
+    paletted: True
 
 services:
   tms:
@@ -61,7 +61,7 @@ sources:
     max_res: 10
     req:
       url: http://localhost:42423/service
-      layers: res
+      layers: reslayer
   wms_scale:
       type: wms
       supported_srs: ['EPSG:900913', 'EPSG:4326']
@@ -69,4 +69,4 @@ sources:
       min_scale: 10000
       req:
         url: http://localhost:42423/service
-        layers: scale
+        layers: scalelayer

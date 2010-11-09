@@ -23,7 +23,8 @@ from mapproxy.request.wms import (
 )
 
 from mapproxy.test.system import module_setup, module_teardown, make_base_config, SystemTest
-from mapproxy.test.image import is_png
+from mapproxy.test.image import is_png, is_transparent, tmp_image
+from mapproxy.test.http import mock_httpd
 from mapproxy.test.system.test_wms import is_111_capa, is_130_capa, ns130
 from nose.tools import eq_, assert_almost_equal
 
@@ -35,7 +36,7 @@ def setup_module():
 def teardown_module():
     module_teardown(test_config)
 
-base_config = make_base_config
+base_config = make_base_config(test_config)
 
 def diagonal_res_to_pixel_res(res):
     """
@@ -52,7 +53,7 @@ class TestWMS(SystemTest):
              version='1.1.1'))
         self.common_map_req = WMS111MapRequest(url='/service?', param=dict(service='WMS', 
              version='1.1.1', bbox='-180,0,0,80', width='200', height='200',
-             layers='res', srs='EPSG:4326', format='image/png',
+             layers='res', srs='EPSG:4326', format='image/png', transparent='true',
              styles='', request='GetMap'))
     
     def test_capabilities_111(self):
@@ -86,3 +87,28 @@ class TestWMS(SystemTest):
 
         assert_almost_equal(float(min_scales[2]), 1000, 2)
         assert_almost_equal(float(max_scales[2]), 10000, 2)
+    
+    def test_get_map_above_res(self):
+        # no layer rendered
+        resp = self.app.get(self.common_map_req)
+        assert is_png(resp.body)
+        assert is_transparent(resp.body)
+    
+    def test_get_map_mixed(self):
+        # only res layer matches resolution range
+        self.common_map_req.params['layers'] = 'res,scale'
+        self.common_map_req.params['bbox'] = '0,0,100000,100000'
+        self.common_map_req.params['srs'] = 'EPSG:900913'
+        self.common_map_req.params.size = 100, 100
+        self.created_tiles.append('res_cache_EPSG900913/08/000/000/128/000/000/128.jpeg')
+        with tmp_image((200, 200), format='png') as img:
+            expected_req = ({'path': r'/service?LAYERs=reslayer&SERVICE=WMS&FORMAT=image%2Fjpeg'
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
+                                      '&VERSION=1.1.1&BBOX=0.0,0.0,156543.033928,156543.033928'
+                                      '&WIDTH=256'},
+                            {'body': img.read(), 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                resp = self.app.get(self.common_map_req)
+                assert is_png(resp.body)
+                assert not is_transparent(resp.body)
+        

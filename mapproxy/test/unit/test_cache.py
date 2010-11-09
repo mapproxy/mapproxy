@@ -24,11 +24,11 @@ from mapproxy.source.tile import TiledSource
 from mapproxy.cache.file import FileCache
 from mapproxy.cache.tile import Tile, TileManager
 
-from mapproxy.grid import TileGrid
+from mapproxy.grid import TileGrid, resolution_range
 from mapproxy.srs import SRS
 from mapproxy.client.http import HTTPClient
 from mapproxy.image import ImageSource
-
+from mapproxy.layer import BlankImage
 from mapproxy.request.wms import WMS111MapRequest
 
 from mapproxy.test.image import create_debug_img, is_png, tmp_image
@@ -483,6 +483,31 @@ class TestCacheMapLayer(object):
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
                  (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)]))
         eq_(result.size, (500, 500))
+    
+    def test_get_map_with_res_range(self):
+        res_range = resolution_range(1000, 10)
+        self.source = WMSSource(self.client, res_range=res_range)
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
+            meta_size=[2, 2], meta_buffer=0)
+        self.layer = CacheMapLayer(self.tile_mgr)
+        
+        try:
+            result = self.layer.get_map(MapQuery(
+                (-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
+                SRS(900913), 'png'))
+        except BlankImage:
+            pass
+        else:
+            assert False, 'expected BlankImage exception'
+        eq_(self.file_cache.stored_tiles, set())
+
+        result = self.layer.get_map(MapQuery(
+                (0, 0, 10000, 10000), (50, 50),
+                SRS(900913), 'png'))
+        eq_(self.file_cache.stored_tiles,
+            set([(512, 257, 10), (513, 256, 10), (512, 256, 10), (513, 257, 10)]))
+        eq_(result.size, (50, 50))
+    
 
 class TestDirectMapLayer(object):
     def setup(self):
