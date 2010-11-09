@@ -966,8 +966,6 @@ class ResolutionRange(object):
         x_res = width/size[0]
         y_res = height/size[1]
         
-        print self.min_res, x_res, y_res, self.max_res
-        
         if self.min_res:
             min_res = self.min_res + 1e-6
             if min_res <= x_res or min_res <= y_res:
