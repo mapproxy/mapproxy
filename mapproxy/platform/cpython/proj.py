@@ -115,6 +115,12 @@ class SearchPath(object):
         
         return addressof(result)
 
+class ProjError(RuntimeError):
+    pass
+
+class ProjInitError(ProjError):
+    pass
+
 libproj = init_libproj()
 
 if libproj is None and 'MAPPROXY_USE_LIBPROJ' in os.environ:
@@ -137,12 +143,6 @@ else:
 
     RAD_TO_DEG = 57.29577951308232
     DEG_TO_RAD = .0174532925199432958
-
-    class ProjError(RuntimeError):
-        pass
-
-    class ProjInitError(ProjError):
-        pass
 
     class Proj(object):
         def __init__(self, proj_def=None, init=None):
