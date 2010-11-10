@@ -121,17 +121,36 @@ class ProjError(RuntimeError):
 class ProjInitError(ProjError):
     pass
 
-libproj = init_libproj()
 
-if libproj is None and 'MAPPROXY_USE_LIBPROJ' in os.environ:
-    raise ImportError('could not found libproj')
+_use_libproj = _use_pyproj = False
+if 'MAPPROXY_USE_LIBPROJ' in os.environ:
+    _use_libproj = True
 
-if libproj is None or 'MAPPROXY_USE_PYPROJ' in os.environ:
-    try:
-        from pyproj import Proj, transform, set_datapath
-        log.debug('using pyproj for coordinate transformation')
-    except ImportError:
-        raise ImportError('could not found either libproj or pyproj')
+if 'MAPPROXY_USE_PYPROJ' in os.environ:
+    _use_pyproj = True
+
+if not _use_libproj and not _use_pyproj:
+    _use_libproj = True # Default
+    _use_pyproj = True # Fallback
+
+libproj = None
+
+if _use_libproj:
+    libproj = init_libproj()
+
+if libproj is None:
+    if _use_pyproj:
+        try:
+            from pyproj import Proj, transform, set_datapath
+            log.debug('using pyproj for coordinate transformation')
+        except ImportError:
+            if _use_libproj:
+                raise ImportError('could not found either libproj or pyproj')
+            else:
+                raise ImportError('could not found pyproj')
+            
+    else:
+        raise ImportError('could not found libproj')
 else:
     log.debug('using libproj for coordinate transformation')
 
