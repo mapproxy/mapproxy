@@ -136,7 +136,7 @@ class _SRS(object):
         try:
             epsg_num = get_epsg_num(srs_code)   
             self.proj = Proj(init='epsg:%d' % epsg_num)
-        except ProjInitError, ex:
+        except (ProjInitError, RuntimeError), ex:
             init = _SRS.proj_init.get(srs_code, None)
             if init is not None:
                 self.proj = init()
