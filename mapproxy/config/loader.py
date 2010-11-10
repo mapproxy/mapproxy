@@ -187,7 +187,7 @@ class ConfigurationBase(object):
 class GridConfiguration(ConfigurationBase):
     optional_keys = set('''res srs bbox bbox_srs num_levels tile_size base
         stretch_factor max_shrink_factor align_resolutions_with min_res max_res
-        res_factor
+        res_factor threshold_res
         '''.split())
     
     def tile_grid(self, context):
@@ -222,6 +222,7 @@ class GridConfiguration(ConfigurationBase):
             max_res=conf.get('max_res'),
             res=conf.get('res'),
             res_factor=conf.get('res_factor', 2.0),
+            threshold_res=conf.get('threshold_res'),
             bbox=conf.get('bbox'),
             bbox_srs=conf.get('bbox_srs'),
             num_levels=conf.get('num_levels'),

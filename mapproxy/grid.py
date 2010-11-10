@@ -95,7 +95,7 @@ class _default_bboxs(object):
 default_bboxs = _default_bboxs()
 
 def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
-              res=None, res_factor=2.0,
+              res=None, res_factor=2.0, threshold_res=None,
               num_levels=None, min_res=None, max_res=None,
               stretch_factor=None, max_shrink_factor=None,
               align_with=None
@@ -128,7 +128,7 @@ def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
     else:
         res = resolutions(min_res, max_res, res_factor, num_levels, bbox, tile_size)
     
-    return TileGrid(srs, bbox=bbox, tile_size=tile_size, res=res,
+    return TileGrid(srs, bbox=bbox, tile_size=tile_size, res=res, threshold_res=threshold_res,
                     stretch_factor=stretch_factor, max_shrink_factor=max_shrink_factor)
 
 def aligned_resolutions(min_res=None, max_res=None, res_factor=2.0, num_levels=None,
@@ -239,7 +239,7 @@ class TileGrid(object):
     spheroid_a = 6378137.0 # for 900913
     
     def __init__(self, srs=900913, bbox=None, tile_size=(256, 256), res=None,
-                 is_geodetic=False, levels=None,
+                 threshold_res=None, is_geodetic=False, levels=None,
                  stretch_factor=None, max_shrink_factor=None):
         """
         :param stretch_factor: allow images to be scaled up by this factor
@@ -286,6 +286,7 @@ class TileGrid(object):
 
         self.levels = len(res)
         self.resolutions = res
+        self.threshold_res = threshold_res
         
         self.grid_sizes = self._calc_grids()
     
@@ -347,9 +348,23 @@ class TileGrid(object):
                                              l1_res-50, l1_res*0.91, l1_res*0.89, 8000.0)]
         [0, 0, 1, 1, 1, 1, 2, 5]
         """
+        prev_l_res = self.resolutions[0]
+        threshold = None
+        thresholds = []
+        if self.threshold_res:
+            thresholds = self.threshold_res[::-1]
+            threshold = thresholds.pop()
+        
         for level, l_res in enumerate(self.resolutions):
+            if threshold and prev_l_res > threshold >= l_res:
+                if res > threshold:
+                    return level-1
+                if res >= l_res:
+                    return level
+                threshold = thresholds.pop() if thresholds else None
             if l_res <= res*self.stretch_factor:
                 return level
+            prev_l_res = l_res
         return level
     
     def tile(self, x, y, level):
