@@ -82,9 +82,24 @@ Here you can define all layers MapProxy should offer. Each layer configuration i
 
 Each layer contains information about the layer and where the data comes from.
 
-- ``title``: Readable name of the layer, e.g WMS layer title.
+``title``
+"""""""""
+Readable name of the layer, e.g WMS layer title.
 
-- ``sources``: A list of data sources for this layer. You can use sources defined in the ``sources`` and ``caches`` section. MapProxy will merge multiple sources from left (bottom) to right (top). 
+``sources``
+"""""""""""
+A list of data sources for this layer. You can use sources defined in the ``sources`` and ``caches`` section. MapProxy will merge multiple sources from left (bottom) to right (top). 
+
+
+``min_res``, ``max_res`` or ``min_scale``, ``max_scale``
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.. NOTE paragraph also in sources/wms section
+ 
+Limit the layer to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries. You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`.
+
+The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).
+
+Pleas read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
 
 
 .. ``attribution``
@@ -212,6 +227,7 @@ grids
 Here you can define the tile grids that MapProxy uses for the internal caching.
 There are multiple options to define the grid, but beware, not all are required at the same time and some combinations will result in ambiguous results.
 
+
 ``srs``
 """""""
 
@@ -250,6 +266,20 @@ levels. This is suited for free zooming in vector-based layers where the results
 look to blurry/pixelated in some resolutions.
 
 For requests with no matching cached resolution the next best resolution is used and MapProxy will transform the result.
+
+``threshold_res``
+"""""""""""""""""
+
+A list with resolutions at which MapProxy should switch from one level to another. MapProxy automatically tries to determine the optimal cache level for each request. You can tweak the behavior with the ``stretch_factor`` option (see below).
+
+If you need explicit transitions from one level to another at fixed resolutions, then you can use the ``threshold_res`` option to define these resolutions. You only need to define the explicit transitions.
+
+Example: You are caching at 1000, 500 and 200m/px resolutions and you are required to display the 1000m/px level for requests with lower than 700m/px resolutions and the 500m/px level for requests with higher resolutions. You can define that transition as follows::
+
+  res: [1000, 500, 200]
+  threshold_res: [700]
+
+Requests with 1500, 1000 or 701m/px resolution will use the first level, requests with 700 or 500m/px will use the second level. All other transitions (between 500 an 200m/px in this case) will be calculated automatically with the ``stretch_factor`` (about 416m/px in this case with a default configuration).
 
 ``bbox``
 """"""""
@@ -511,3 +541,24 @@ Configuration options for the TMS/Tile service.
   that time. MapProxy supports the ETag and Last-Modified headers and will
   respond with the appropriate HTTP `'304 Not modified'` response if the tile
   was not changed.
+
+
+Notes
+=====
+
+.. _scale_resolution:
+
+Scale vs. resolution
+--------------------
+
+Scale is the ratio of a distance on a map and the corresponding distance on the ground. This implies that the map distance and the ground distance are measured in the same unit. For MapProxy a `map` is just a collection of pixels and the pixels do not have any size/dimension. They do correspond to a ground size but the size on the `map` is depended of the physical output format. MapProxy can thus only work with resolutions (pixel per ground unit) and not scales.
+
+This applies to all servers and the OGC WMS standard as well. Some neglect this fact and assume a fixed pixel dimension (like 72dpi), the OCG WMS 1.3.0 standard uses a pixel size of 0.28 mm/px (around 96dpi). But you need to understand that a `scale` will differ if you print a map (200, 300 or more dpi) or if you show it on a computer display (typical 90-120 dpi, but there are mobile devices with more than 300 dpi).
+
+MapProxy will use the OCG value (0.28mm/px) if it's necessary to use a scale value (e.g. MinScaleDenominator in WMS 1.3.0 capabilities), but you should always use resolutions within MapProxy.
+
+
+WMS ScaleHint
+""""""""""""""
+
+The WMS ScaleHint is a bit misleading. The parameter is not a scale but the diagonal pixel resolution. It also defines the ``min`` as the minimum value not the minimum resolution (e.g. 10m/px is a lower resolution than 5m/px, but 5m/px is the minimum value). MapProxy always uses the term resolutions as the side length in ground units per pixel and minimum resolution is always the higher number (100m/px < 10m/px). Keep that in mind when you use these values.

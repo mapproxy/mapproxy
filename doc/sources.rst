@@ -68,6 +68,16 @@ This option affects what request MapProxy sends to the source WMS server.
 
 Define the covered area of the source. The source will only be requested if there is an intersection between the incoming request and the coverage. See :doc:`coverages <coverages>` for more information.
 
+``min_res``, ``max_res`` or ``min_scale``, ``max_scale``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. NOTE paragraph also in configuration/layers section
+ 
+Limit the source to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries. You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`.
+
+The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator). The boundaries will be regarded for each source, but the values in the capabilities might differ if you combine multiple sources or if the MapProxy layer already has a ``min/max_res`` configuration.
+
+Pleas read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
+
 .. _supported_srs-label:
 
 ``supported_srs``
