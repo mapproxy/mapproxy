@@ -66,7 +66,7 @@ This option affects what request MapProxy sends to the source WMS server.
 ``coverage``
 ^^^^^^^^^^^^
 
-Define the covered area of the source. The source will only be requested if there is an intersection between the incoming request and the coverage. See :doc:`coverages <coverages>` for more information.
+Define the covered area of the source. The source will only be requested if there is an intersection between the requested data and the coverage. See :doc:`coverages <coverages>` for more information about the configuration. The intersection is calculated for meta-tiles and not the actual client request, so you should expect more visible data at the coverage boundaries.
 
 ``min_res``, ``max_res`` or ``min_scale``, ``max_scale``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
