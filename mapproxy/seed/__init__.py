@@ -101,7 +101,6 @@ class SeedWorker(proc_class):
         self.tiles_queue = tiles_queue
         self.dry_run = dry_run
     def run(self):
-        print base_config().cache.base_dir
         while True:
             tiles, progress = self.tiles_queue.get()
             if tiles is None:
@@ -163,7 +162,6 @@ class Seeder(object):
         self.progress = 0.0
         self.eta = ETA()
         self.count = 0
-        print base_config().cache.base_dir
         
 
     def seed(self):
