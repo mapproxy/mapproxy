@@ -71,4 +71,9 @@ class TestSRS(object):
         assert not srs.is_latlong
         assert srs.is_axis_order_en
         assert not srs.is_axis_order_ne
+
+    def test_from_srs(self):
+        srs1 = SRS('epgs:4326')
+        srs2 = SRS(srs1)
+        assert srs1 == srs2
         
