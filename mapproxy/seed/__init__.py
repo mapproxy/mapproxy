@@ -379,8 +379,7 @@ def seed_from_yaml_conf(seed_conf_file, mapproxy_conf_file, verbose=True, dry_ru
                 cache_srs = view_conf.get('srs', None)
                 if cache_srs is not None:
                     cache_srs = [SRS(s) for s in cache_srs]
-                if srs is not None:
-                    srs = SRS(srs)
+                
                 level = view_conf.get('level', None)
                 assert len(level) == 2
                 print "[%s] seeding cache '%s' with view '%s'" % (timestamp(), layer, view)
