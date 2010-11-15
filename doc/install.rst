@@ -35,7 +35,7 @@ Install MapProxy
 
 MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 2.5, 2.6 and 2.7.
 
-MapProxy has some dependencies, other libraries that are required to run. Most dependencies are small Python libraries that will be installed automatically when you install MapProxy. There are two exceptions: libproj and PIL
+MapProxy has some dependencies, other libraries that are required to run. Most dependencies are small Python libraries that will be installed automatically when you install MapProxy. There are two exceptions for the base of MapProxy (libproj and PIL) and another for more advanced functionality (Shapely, GEOS, GDAL).
 
 libproj
 ~~~~~~~
@@ -49,6 +49,20 @@ PIL
 The Python Image Library (PIL) is also included in most distributions. On Debian or Ubuntu you can install it with::
   
     sudo aptitude install python-imaging
+
+
+Shapely and GEOS
+~~~~~~~~~~~~~~~~
+You will need Shapely to use the :doc:`coverage feature <coverages>` of MapProxy. Shapely offers Python bindings for the GEOS library. You need Shapely >= 1.2.0 and GEOS >= 3.1.0::
+
+    sudo aptitude install libgeos-dev
+    pip install Shapely
+
+GDAL
+~~~~
+The :doc:`coverage feature <coverages>` allows you to read geometries from OGR datasources (Shapefiles, PostGIS, etc.). This package is optional and only required for OGR datasource support. OGR is part of GDAL::
+
+    sudo aptitude install libgdal-dev
 
 
 Installation
