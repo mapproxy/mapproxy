@@ -95,7 +95,7 @@ A list of data sources for this layer. You can use sources defined in the ``sour
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 .. NOTE paragraph also in sources/wms section
  
-Limit the layer to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries. You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`.
+Limit the layer to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries. You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`. Resolutions should be in meters per pixel.
 
 The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).
 
