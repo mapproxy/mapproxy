@@ -175,6 +175,7 @@ else:
                     (proj_def, init, libproj.pj_strerrno(errno)))
             
             self.srs = self._srs()
+            self._latlong = libproj.pj_is_latlong(self._proj)
     
         def is_latlong(self):
             """
@@ -189,11 +190,8 @@ else:
             ...      '+nadgrids=@null +no_defs').is_latlong()
             False
             """
-            if libproj.pj_is_latlong(self._proj):
-                return True
-            else:
-                return False
-    
+            return self._latlong
+        
         def _srs(self):
             res = libproj.pj_get_def(self._proj, 0)
             srs_def = ctypes.c_char_p(res).value
