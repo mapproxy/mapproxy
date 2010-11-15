@@ -175,7 +175,7 @@ else:
                     (proj_def, init, libproj.pj_strerrno(errno)))
             
             self.srs = self._srs()
-            self._latlong = libproj.pj_is_latlong(self._proj)
+            self._latlong = bool(libproj.pj_is_latlong(self._proj))
     
         def is_latlong(self):
             """
