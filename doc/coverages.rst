@@ -18,6 +18,8 @@ Requirements
 
 If you want to use polygons to define a coverage, instead of simple bounding boxes, you will also need Shapely and GEOS. For loading polygons from shapefiles you'll also need GDAL/OGR.
 
+MapProxy requires Shapely 1.2.0 or later and GEOS 3.1.0 or later.
+
 On Debian::
 
   sudo aptitude install libgeos-dev libgdal-dev
