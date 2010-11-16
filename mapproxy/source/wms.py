@@ -67,5 +67,4 @@ class WMSLegendSource(LegendSource):
                 legends.append(client.get_legend(query))
             except SourceError, e:
                 log.error(SourceError(e.args[0]))
-        source = concat_legends(legends)
-        return source.as_buffer(format=query.format).read()
+        return concat_legends(legends)
