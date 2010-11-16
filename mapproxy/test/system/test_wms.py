@@ -93,7 +93,7 @@ def is_111_exception(xml, msg=None, code=None, re_msg=None):
 def is_111_capa(xml):
     return validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
 def is_130_capa(xml):
-    return validate_with_xsd(xml, xsd_name='wms/1.3.0/capabilities_1_3_0.xsd')
+    return validate_with_xsd(xml, xsd_name='sld/1.1.0/sld_capabilities.xsd')
 
 class TestWMSVersionDispatch(object):
     def setup(self):
