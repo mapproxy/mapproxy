@@ -1,0 +1,53 @@
+globals:
+  cache:
+    base_dir: cache_data/
+    meta_size: [1, 1]
+    meta_buffer: 0
+  image:
+    # resampling: 'bicubic'
+    paletted: False
+services:
+  tms:
+  kml:
+  wms:
+    md:
+      title: MapProxy test fixture
+      abstract: This is MapProxy.
+      online_resource: http://mapproxy.org/
+      contact:
+        person: Oliver Tonnhofer
+        position: Technical Director
+        organization: Omniscale
+        address: Nadorster Str. 60
+        city: Oldenburg
+        postcode: 26123
+        country: Germany
+        phone: +49(0)441-9392774-0
+        fax: +49(0)441-9392774-9
+        email: info@omniscale.de
+      access_constraints:
+        This service is intended for private and evaluation use only.
+        The data is licensed as Creative Commons Attribution-Share Alike 2.0
+        (http://creativecommons.org/licenses/by-sa/2.0/)
+
+layers:
+  wms_cache:
+    title: WMS Cache Layer
+    sources: [wms_cache]
+
+caches:
+  wms_cache:
+    format: image/jpeg
+    use_direct_from_level: 8
+    sources: [wms_cache]
+
+sources:
+  wms_cache:
+    type: wms
+    seed_only: true
+    supported_srs: ['EPSG:900913', 'EPSG:4326']
+    wms_opts:
+      featureinfo: True
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar

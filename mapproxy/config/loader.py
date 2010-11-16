@@ -77,7 +77,7 @@ from mapproxy.service.wms import WMSServer, WMSLayer
 from mapproxy.service.tile import TileServer, TileLayer
 from mapproxy.service.kml import KMLServer
 from mapproxy.service.demo import DemoServer
-from mapproxy.source import DebugSource
+from mapproxy.source import DebugSource, DummySource
 from mapproxy.source.wms import WMSSource, WMSInfoSource
 from mapproxy.source.tile import TiledSource
 from mapproxy.cache.tile import TileManager
@@ -88,8 +88,9 @@ class ConfigurationError(Exception):
     pass
 
 class ProxyConfiguration(object):
-    def __init__(self, conf, conf_base_dir=None):
+    def __init__(self, conf, conf_base_dir=None, seed=False):
         self.configuration = conf
+        self.seed = seed
         
         if conf_base_dir is None:
             conf_base_dir = os.getcwd()
@@ -312,7 +313,7 @@ def resolution_range(conf):
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
     optional_keys = set('''type supported_srs supported_formats image
-        wms_opts http concurrent_requests coverage
+        wms_opts http concurrent_requests coverage seed_only
         min_res max_res min_scale max_scale'''.split())
     required_keys = set('req'.split())
     
@@ -326,6 +327,9 @@ class WMSSourceConfiguration(SourceConfiguration):
         return http_client
     
     def source(self, context, params=None):
+        if not context.seed and self.conf.get('seed_only'):
+            return DummySource()
+        
         if params is None: params = {}
         
         request_format = self.conf['req'].get('format')
@@ -377,11 +381,14 @@ class WMSSourceConfiguration(SourceConfiguration):
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
-    optional_keys = set('''type grid request_format origin coverage'''.split())
+    optional_keys = set('''type grid request_format origin coverage seed_only'''.split())
     required_keys = set('url'.split())
     defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
     
     def source(self, context, params=None):
+        if not context.seed and self.conf.get('seed_only'):
+            return DummySource()
+        
         if params is None: params = {}
         
         url = self.conf['url']

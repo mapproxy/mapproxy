@@ -353,7 +353,7 @@ def seed_from_yaml_conf(seed_conf_file, mapproxy_conf_file, verbose=True, dry_ru
             seed_conf = yaml.load(seed_conf)
     
     base_dir = os.path.abspath(os.path.dirname(mapproxy_conf_file))
-    conf = ProxyConfiguration(yaml.load(open(mapproxy_conf_file)), base_dir)
+    conf = ProxyConfiguration(yaml.load(open(mapproxy_conf_file)), base_dir, seed=True)
     with local_base_config(conf.base_config):
         for layer, options in seed_conf['seeds'].iteritems():
             remove_before = before_timestamp_from_options(options)

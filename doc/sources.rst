@@ -68,6 +68,13 @@ This option affects what request MapProxy sends to the source WMS server.
 
 Define the covered area of the source. The source will only be requested if there is an intersection between the requested data and the coverage. See :doc:`coverages <coverages>` for more information about the configuration. The intersection is calculated for meta-tiles and not the actual client request, so you should expect more visible data at the coverage boundaries.
 
+.. _wms_seed_only:
+
+``seed_only``
+^^^^^^^^^^^^^
+
+Disable this source in regular mode. If set to ``true``, this source will always return a blank/transparent image. The source will only be requested during the seeding process. You can use this option to run MapProxy in an offline mode.
+
 ``min_res``, ``max_res`` or ``min_scale``, ``max_scale``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. NOTE paragraph also in configuration/layers section
@@ -174,6 +181,10 @@ The grid of the tile source. Defaults to ``GLOBAL_MERCATOR``, a grid that is com
 ``coverage``
 ^^^^^^^^^^^^
 Define the covered area of the source. The source will only be requested if there is an intersection between the incoming request and the coverage. See :doc:`coverages <coverages>` for more information.
+
+``seed_only``
+^^^^^^^^^^^^^
+See :ref:`seed_only <wms_seed_only>`
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
