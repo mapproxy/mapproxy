@@ -25,6 +25,7 @@ from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
 from mapproxy.config import base_config
+from mapproxy.image import concat_legends
 from mapproxy.image.message import attribution_image
 
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, MapBBOXError
@@ -136,17 +137,14 @@ class WMSServer(Server):
         if not self.layers[layer].has_legend:
             raise RequestError('layer %s has no legend graphic' % layer, request=request)
         legend = self.layers[layer].legend(request)
-        if legend is None:
-            pass
-        if isinstance(legend, basestring):
-            legends.append(legend)
-        else:
-            [legends.append(i) for i in legend if i is not None]
+        
+        [legends.append(i) for i in legend if i is not None]
+        result = concat_legends(legends)
         if 'format' in request.params:
             mimetype = request.params.format_mime_type
         else:
             mimetype = 'image/png'
-        return Response(legends, mimetype=mimetype)
+        return Response(result.as_buffer(format=request.params.format).read(), mimetype=mimetype)
     
     def _service_md(self, map_request):
         md = dict(self.md)
