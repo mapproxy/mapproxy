@@ -18,7 +18,7 @@
 Map/information sources for layers or tile cache.
 """
 
-from mapproxy.layer import MapExtent, MapError, MapBBOXError
+from mapproxy.layer import MapExtent, MapError, MapBBOXError, BlankImage
 from mapproxy.image.message import message_image
 from mapproxy.srs import SRS
 
@@ -53,3 +53,15 @@ class DebugSource(Source):
         res_y = h/query.size[1]
         debug_info = "bbox: %r\nres: %.8f(%.8f)" % (bbox, res_x, res_y)
         return message_image(debug_info, size=query.size, transparent=True)
+
+class DummySource(Source):
+    """
+    Source that always returns a blank image.
+    
+    Used internally for 'offline' sources (e.g. seed_only).
+    """
+    def __init__(self):
+        self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
+        self.transparent = True
+    def get_map(self, query):
+        raise BlankImage()
