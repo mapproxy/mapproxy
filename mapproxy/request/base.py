@@ -182,9 +182,21 @@ class Request(object):
         else:
             return {}
     
-    @cached_property
+    @property
     def path(self):
-        return self.environ.get('PATH_INFO', '/')
+        return self.environ.get('PATH_INFO', '')
+    
+    def pop_path(self):
+        path = self.path.lstrip('/')
+        if '/' in path:
+            result, rest = path.split('/', 1)
+            self.environ['PATH_INFO'] = '/' + rest
+        else:
+            self.environ['PATH_INFO'] = ''
+            result = path
+        if result:
+            self.environ['SCRIPT_NAME'] = self.environ['SCRIPT_NAME'] + '/' + result
+        return result
     
     @cached_property
     def host(self):
@@ -202,18 +214,18 @@ class Request(object):
     def host_url(self):
         return '%s://%s/' % (self.environ['wsgi.url_scheme'], self.host)
     
-    @cached_property
+    @property
     def script_url(self):
         "Full script URL without trailing /"
         return (self.host_url.rstrip('/') + 
                 urllib.quote(self.environ.get('SCRIPT_NAME', '/').rstrip('/'))
                )
     
-    @cached_property
+    @property
     def base_url(self):
         return (self.host_url.rstrip('/')
                 + urllib.quote(self.environ.get('SCRIPT_NAME', '').rstrip('/'))
-                + urllib.quote(self.environ.get('PATH_INFO', '/'))
+                + urllib.quote(self.environ.get('PATH_INFO', ''))
                )
 
 class RequestParams(object):

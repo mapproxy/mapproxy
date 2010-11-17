@@ -59,7 +59,8 @@ setup(
             'mapproxy-seed = mapproxy.seed.script:main',
         ],
         'paste.app_factory': [
-            'app = mapproxy.wsgiapp:app_factory'
+            'app = mapproxy.wsgiapp:app_factory',
+            'multiapp = mapproxy.multiapp:app_factory'
         ],
         'paste.paster_create_template': [
             'mapproxy_conf=mapproxy.config_template:PasterConfigurationTemplate'

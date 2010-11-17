@@ -1,0 +1,19 @@
+services:
+  tms:
+
+layers:
+  app2_layer:
+    title: WMS Cache Layer
+    sources: [app2_cache]
+
+caches:
+  app2_cache:
+    grids: [GLOBAL_MERCATOR]
+    sources: [app2_source]
+
+sources:
+  app2_source:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar

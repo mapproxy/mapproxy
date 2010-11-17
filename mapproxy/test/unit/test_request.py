@@ -272,8 +272,26 @@ class TestRequest(object):
         self.env['SCRIPT_NAME'] = '/proxy/'
         req = Request(self.env)
         eq_(req.script_url, 'http://localhost:5050/proxy')
-        
     
+    def test_pop_path(self):
+        self.env['PATH_INFO'] = '/foo/service'
+        req = Request(self.env)
+        part = req.pop_path()
+        eq_(part, 'foo')
+        eq_(self.env['PATH_INFO'], '/service')
+        eq_(self.env['SCRIPT_NAME'], '/foo')
+        
+        part = req.pop_path()
+        eq_(part, 'service')
+        eq_(self.env['PATH_INFO'], '')
+        eq_(self.env['SCRIPT_NAME'], '/foo/service')
+    
+        part = req.pop_path()
+        eq_(part, '')
+        eq_(self.env['PATH_INFO'], '')
+        eq_(self.env['SCRIPT_NAME'], '/foo/service')
+    
+
 def test_maprequest_from_request():
     env = {
         'QUERY_STRING': 'layers=bar&bBOx=-90,-80,70.0,+80&format=image/png&'\
