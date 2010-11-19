@@ -68,6 +68,13 @@
       <Title>{{ layer.md.get('title') }}</Title>
       <LatLonBoundingBox minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
       <BoundingBox SRS="EPSG:4326" minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
+{{if layer.has_legend}}
+      <Style>
+        <Name>default</Name>
+        <Title>default</Title>
+        <StyleURL>{{service.url}}{{layer.legend_url}}</StyleURL>
+      </Style>
+{{endif}}
     </Layer>
 {{endfor}}
   </Layer>

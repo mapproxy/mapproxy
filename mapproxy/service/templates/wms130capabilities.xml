@@ -106,7 +106,7 @@
         <Title>default</Title>
         <LegendURL>
           <Format>image/png</Format>
-          <OnlineResource xlink:type="simple" xlink:href="{{service.url}}?request=GetLegendGraphic&amp;version=1.3.0&amp;service=WMS&amp;layer={{layer.md['name']}}&amp;format=image/png" />
+          <OnlineResource xlink:type="simple" xlink:href="{{service.url}}{{layer.legend_url}}" />
         </LegendURL>
       </Style>
 {{endif}}

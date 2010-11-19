@@ -17,10 +17,11 @@
 """
 Retrieve maps/information from WMS servers.
 """
-
+from __future__ import with_statement
 import sys
-from mapproxy.image import concat_legends
-from mapproxy.layer import MapExtent, BlankImage
+
+from mapproxy.image import concat_legends, ImageSource
+from mapproxy.layer import MapExtent, BlankImage, LegendQuery
 from mapproxy.source import Source, InfoSource, SourceError, LegendSource
 from mapproxy.srs import SRS
 from mapproxy.client.http import HTTPClientError
@@ -54,17 +55,30 @@ class WMSSource(Source):
 class WMSInfoSource(InfoSource):
     def __init__(self, client):
         self.client = client
+    
     def get_info(self, query):
         return self.client.get_info(query).read()
         
 class WMSLegendSource(LegendSource):
     def __init__(self, clients):
         self.clients = clients
+        self._legend = None
+    
+    @property
+    def size(self):
+        if self._legend is None:
+            self.get_legend(LegendQuery(format='image/png'))
+        return self._legend.size
+    
     def get_legend(self, query):
-        legends = []
-        for client in self.clients:
-            try:
-                legends.append(client.get_legend(query))
-            except SourceError, e:
-                log.error(SourceError(e.args[0]))
-        return concat_legends(legends)
+        if not self._legend:
+            legends = []
+            for client in self.clients:
+                try:
+                    legends.append(client.get_legend(query))
+                except SourceError, e:
+                    # TODO errors?
+                    log.error(SourceError(e.args[0]))
+            self._legend = concat_legends(legends, format=query.format)
+        return self._legend
+    

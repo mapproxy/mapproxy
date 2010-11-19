@@ -124,9 +124,9 @@
     <Style>
         <Name>default</Name>
         <Title>default</Title>
-        <LegendURL width="1" height="1">
+        <LegendURL width="{{layer.legend_size[0]}}" height="{{layer.legend_size[1]}}">
             <Format>image/png</Format>
-            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="{{service.url}}?request=GetLegendGraphic&amp;version=1.1.1&amp;service=WMS&amp;layer={{layer.md['name']}}&amp;format=image/png"/>
+            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="{{service.url}}{{layer.legend_url}}"/>
         </LegendURL>
     </Style>
 {{endif}}

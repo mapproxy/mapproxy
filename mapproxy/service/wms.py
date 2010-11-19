@@ -19,7 +19,7 @@ WMS service handler
 """
 from itertools import chain
 from functools import partial
-from mapproxy.request.wms import wms_request
+from mapproxy.request.wms import wms_request, WMS111LegendGraphicRequest
 from mapproxy.srs import merge_bbox, SRS, TransformationError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
@@ -242,7 +242,26 @@ class WMSLayer(object):
     
     def legend(self, request):
         p = request.params
-        query = LegendQuery(p.layer, p.format)
+        query = LegendQuery(p.format)
         
         for lyr in self.legend_layers:
             yield lyr.get_legend(query)
+    
+    @property
+    def legend_size(self):
+        width = 0
+        height = 0
+        for layer in self.legend_layers:
+            width = max(layer.size[0], width)
+            height += layer.size[1]
+        return (width, height)
+    
+    @property
+    def legend_url(self):
+        if self.has_legend:
+            req = WMS111LegendGraphicRequest(url='?',
+                param=dict(format='image/png', layer=self.md['name'], sld_version='1.1.0'))
+            return req.complete_url
+        else:
+            return None
+    
