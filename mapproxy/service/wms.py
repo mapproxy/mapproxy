@@ -19,15 +19,16 @@ WMS service handler
 """
 from itertools import chain
 from functools import partial
-from mapproxy.request.wms import wms_request
+from mapproxy.request.wms import wms_request, WMS111LegendGraphicRequest
 from mapproxy.srs import merge_bbox, SRS, TransformationError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
 from mapproxy.config import base_config
+from mapproxy.image import concat_legends
 from mapproxy.image.message import attribution_image
 
-from mapproxy.layer import BlankImage, MapQuery, InfoQuery, MapError, MapBBOXError
+from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, MapBBOXError
 from mapproxy.source import SourceError
 
 from mapproxy.template import template_loader, bunch
@@ -39,7 +40,7 @@ log = logging.getLogger(__name__)
 
 class WMSServer(Server):
     names = ('service',)
-    request_methods = ('map', 'capabilities', 'featureinfo')
+    request_methods = ('map', 'capabilities', 'featureinfo', 'legendgraphic')
     
     def __init__(self, layers, md, layer_merger=None, request_parser=None, tile_layers=None,
         attribution=None, srs=None, image_formats=None, strict=False):
@@ -126,10 +127,37 @@ class WMSServer(Server):
             if layer not in self.layers:
                 raise RequestError('unknown layer: ' + str(layer), code='LayerNotDefined',
                                    request=request)
+
+    def check_legend_request(self, request):
+        legend_layer = request.params.layer if hasattr(request, 'layer') else []
+        for layer in chain(request.params.layers, legend_layer):
+            if layer not in self.layers:
+                raise RequestError('unknown layer: ' + str(layer), code='LayerNotDefined',
+                                   request=request)
+    
+    #TODO: If layer not in self.layers raise RequestError
+    def legendgraphic(self, request):
+        legends = []
+        self.check_legend_request(request)
+        legend_layer = request.params.layer
+        layer =request.params.layer
+        if not self.layers[layer].has_legend:
+            raise RequestError('layer %s has no legend graphic' % layer, request=request)
+        legend = self.layers[layer].legend(request)
+        
+        [legends.append(i) for i in legend if i is not None]
+        result = concat_legends(legends)
+        if 'format' in request.params:
+            mimetype = request.params.format_mime_type
+        else:
+            mimetype = 'image/png'
+        return Response(result.as_buffer(format=request.params.format).read(), mimetype=mimetype)
     
     def _service_md(self, map_request):
         md = dict(self.md)
         md['url'] = map_request.url
+        md['has_legend'] = any([layer for name, layer in self.layers.iteritems()
+                                 if layer.has_legend])
         return md
 
 class Capabilities(object):
@@ -178,17 +206,18 @@ def wms100format_filter(format):
 env['wms100format'] = wms100format_filter
 
 class WMSLayer(object):
-    
-    def __init__(self, md, map_layers, info_layers=[], res_range=None):
+    def __init__(self, md, map_layers, info_layers=[], legend_layers=[], res_range=None):
         self.md = md
         self.map_layers = map_layers
         self.info_layers = info_layers
+        self.legend_layers = legend_layers
         self.extent = map_layers[0].extent #TODO
         if res_range is None:
             res_range = map_layers[0].res_range #TODO
         self.res_range = res_range
         self.queryable = True if info_layers else False
         self.transparent = any(map_lyr.transparent for map_lyr in self.map_layers)
+        self.has_legend = True if legend_layers else False
     
     def renders_query(self, query):
         if self.res_range and not self.res_range.contains(query.bbox, query.size, query.srs):
@@ -199,6 +228,7 @@ class WMSLayer(object):
         if query is None:
             p = request.params
             query = MapQuery(p.bbox, p.size, SRS(p.srs), p.format)
+
         if request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
         for layer in self.map_layers:
@@ -224,4 +254,29 @@ class WMSLayer(object):
         
         for lyr in self.info_layers:
             yield lyr.get_info(query)
+    
+    def legend(self, request):
+        p = request.params
+        query = LegendQuery(p.format)
+        
+        for lyr in self.legend_layers:
+            yield lyr.get_legend(query)
+    
+    @property
+    def legend_size(self):
+        width = 0
+        height = 0
+        for layer in self.legend_layers:
+            width = max(layer.size[0], width)
+            height += layer.size[1]
+        return (width, height)
+    
+    @property
+    def legend_url(self):
+        if self.has_legend:
+            req = WMS111LegendGraphicRequest(url='?',
+                param=dict(format='image/png', layer=self.md['name'], sld_version='1.1.0'))
+            return req.complete_url
+        else:
+            return None
     

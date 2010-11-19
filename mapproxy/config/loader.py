@@ -72,13 +72,13 @@ from mapproxy.layer import (
     ResolutionConditional, map_extent_from_grid
 )
 from mapproxy.client.tile import TileClient, TileURLTemplate
-from mapproxy.client.wms import WMSClient, WMSInfoClient
+from mapproxy.client.wms import WMSClient, WMSInfoClient, WMSLegendClient
 from mapproxy.service.wms import WMSServer, WMSLayer
 from mapproxy.service.tile import TileServer, TileLayer
 from mapproxy.service.kml import KMLServer
 from mapproxy.service.demo import DemoServer
 from mapproxy.source import DebugSource, DummySource
-from mapproxy.source.wms import WMSSource, WMSInfoSource
+from mapproxy.source.wms import WMSSource, WMSInfoSource, WMSLegendSource
 from mapproxy.source.tile import TiledSource
 from mapproxy.cache.tile import TileManager
 from mapproxy.util import local_base_config
@@ -377,7 +377,28 @@ class WMSSourceConfiguration(SourceConfiguration):
             fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs)
             fi_source = WMSInfoSource(fi_client)
         return fi_source
-    
+
+    def lg_source(self, context, params=None):
+        if params is None: params = {}
+        request_format = self.conf['req'].get('format')
+        if request_format:
+            params['format'] = request_format
+        lg_source = None
+        if self.conf.get('wms_opts', {}).get('legendgraphic', False):
+            version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
+            lg_req = self.conf['req'].copy()
+            lg_clients = []
+            lg_layers = lg_req['layers'].split(',')
+            del lg_req['layers']
+            for lg_layer in lg_layers:
+                lg_req['layer'] = lg_layer
+                lg_request = create_request(lg_req, params,
+                    req_type='legendgraphic', version=version)
+                lg_client = WMSLegendClient(lg_request)
+                lg_clients.append(lg_client)
+            lg_source = WMSLegendSource(lg_clients)
+        return lg_source
+
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
@@ -504,14 +525,18 @@ class LayerConfiguration(ConfigurationBase):
     def wms_layer(self, context):
         sources = []
         fi_sources = []
+        lg_sources = []
         for source_name in self.conf['sources']:
             fi_source_names = []
+            lg_source_names = []
             if source_name in context.caches:
                 map_layer = context.caches[source_name].map_layer(context)
                 fi_source_names = context.caches[source_name].conf['sources']
+                lg_source_names = context.caches[source_name].conf['sources']
             elif source_name in context.sources:
                 map_layer = context.sources[source_name].source(context)
                 fi_source_names = [source_name]
+                lg_source_names = [source_name]
             else:
                 raise ConfigurationError('source/cache "%s" not found' % source_name)
             sources.append(map_layer)
@@ -522,11 +547,18 @@ class LayerConfiguration(ConfigurationBase):
                 fi_source = context.sources[fi_source_name].fi_source(context)
                 if fi_source:
                     fi_sources.append(fi_source)
+
+            for lg_source_name in lg_source_names:
+                # TODO multiple sources
+                if not hasattr(context.sources[lg_source_name], 'lg_source'): continue
+                lg_source = context.sources[lg_source_name].lg_source(context)
+                if lg_source:
+                    lg_sources.append(lg_source)
             
         res_range = resolution_range(self.conf)
         
         layer = WMSLayer({'title': self.conf['title'], 'name': self.conf['name']},
-                         sources, fi_sources, res_range=res_range)
+                         sources, fi_sources, lg_sources, res_range=res_range)
         return layer
     
     def tile_layers(self, context):
