@@ -21,6 +21,7 @@ from __future__ import with_statement, division
 
 import os
 import hashlib
+import urlparse
 import yaml #pylint: disable-msg=F0401
 
 import logging
@@ -346,9 +347,12 @@ class WMSSourceConfiguration(SourceConfiguration):
         version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
         
         lock = None
-        if 'concurrent_requests' in self.conf:
+        concurrent_requests = context.globals.get_value('concurrent_requests', self.conf,
+                                                        global_key='http.concurrent_requests')
+        if concurrent_requests:
             lock_dir = context.globals.get_path('cache.lock_dir', self.conf)
-            md5 = hashlib.md5(self.conf['req']['url'])
+            url = urlparse.urlparse(self.conf['req']['url'])
+            md5 = hashlib.md5(url.netloc)
             lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
             lock = lambda: SemLock(lock_file, self.conf['concurrent_requests'])
         

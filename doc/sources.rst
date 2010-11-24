@@ -108,7 +108,7 @@ Use this option to specify which image formats you source WMS supports. MapProxy
 ``concurrent_requests``
 ^^^^^^^^^^^^^^^^^^^^^^^
 This limits the number of parallel requests MapProxy will issue to the source server.
-It even works across multiple WMS sources as long as all have the same ``concurrent_requests`` and ``req.url`` parameter. 
+It even works across multiple WMS sources as long as all have the same ``concurrent_requests`` value and all ``req.url`` parameters point to the same host. Defaults to 0, which means no limitation.
 
 .. _wms_source-ssl_no_cert_check:
 

@@ -70,4 +70,5 @@ http = dict(
     ssl_ca_certs = None,
     ssl_no_cert_checks = False,
     client_timeout = 60,
+    concurrent_requests = 0,
 )
