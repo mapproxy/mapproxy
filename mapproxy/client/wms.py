@@ -45,7 +45,8 @@ class WMSClient(object):
         if self.supported_srs and query.srs not in self.supported_srs:
             return self._get_transformed(query, format)
         resp = self._retrieve(query, format)
-        return ImageSource(resp, size=query.size, format=format)
+        return ImageSource(resp, size=query.size, format=format,
+                           transparent=self.request_template.params.transparent)
     
     def _get_transformed(self, query, format):
         dst_srs = query.srs
