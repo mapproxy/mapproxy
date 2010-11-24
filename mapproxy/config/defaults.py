@@ -55,6 +55,7 @@ cache = dict(
     concurrent_tile_creators = 2,
     meta_size = (4, 4),
     meta_buffer = 80,
+    minimize_meta_requests = False,
 )
 
 grid = dict(
