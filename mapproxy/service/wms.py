@@ -129,18 +129,15 @@ class WMSServer(Server):
                                    request=request)
 
     def check_legend_request(self, request):
-        legend_layer = request.params.layer if hasattr(request, 'layer') else []
-        for layer in chain(request.params.layers, legend_layer):
-            if layer not in self.layers:
-                raise RequestError('unknown layer: ' + str(layer), code='LayerNotDefined',
-                                   request=request)
+        if request.params.layer not in self.layers:
+            raise RequestError('unknown layer: ' + request.params.layer,
+                               code='LayerNotDefined', request=request)
     
     #TODO: If layer not in self.layers raise RequestError
     def legendgraphic(self, request):
         legends = []
         self.check_legend_request(request)
-        legend_layer = request.params.layer
-        layer =request.params.layer
+        layer = request.params.layer
         if not self.layers[layer].has_legend:
             raise RequestError('layer %s has no legend graphic' % layer, request=request)
         legend = self.layers[layer].legend(request)
@@ -257,7 +254,7 @@ class WMSLayer(object):
     
     def legend(self, request):
         p = request.params
-        query = LegendQuery(p.format)
+        query = LegendQuery(p.format, p.scale)
         
         for lyr in self.legend_layers:
             yield lyr.get_legend(query)
