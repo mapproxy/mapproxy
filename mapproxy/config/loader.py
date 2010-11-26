@@ -81,6 +81,7 @@ from mapproxy.source import DebugSource, DummySource
 from mapproxy.source.wms import WMSSource, WMSInfoSource, WMSLegendSource
 from mapproxy.source.tile import TiledSource
 from mapproxy.cache.tile import TileManager
+from mapproxy.cache.legend import LegendCache
 from mapproxy.util import local_base_config
 from mapproxy.config.coverage import load_coverage
 
@@ -377,13 +378,15 @@ class WMSSourceConfiguration(SourceConfiguration):
             fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs)
             fi_source = WMSInfoSource(fi_client)
         return fi_source
-
+    
     def lg_source(self, context, params=None):
         if params is None: params = {}
         request_format = self.conf['req'].get('format')
         if request_format:
             params['format'] = request_format
         lg_source = None
+        cache_dir = os.path.join(context.globals.get_path('cache.base_dir', {}),
+                                 'legends')
         if self.conf.get('wms_opts', {}).get('legendgraphic', False):
             version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
             lg_req = self.conf['req'].copy()
@@ -396,9 +399,10 @@ class WMSSourceConfiguration(SourceConfiguration):
                     req_type='legendgraphic', version=version)
                 lg_client = WMSLegendClient(lg_request)
                 lg_clients.append(lg_client)
-            lg_source = WMSLegendSource(lg_clients)
+            legend_cache = LegendCache(cache_dir=cache_dir)
+            lg_source = WMSLegendSource(lg_clients, legend_cache)
         return lg_source
-
+    
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
