@@ -77,8 +77,9 @@ class InfoQuery(object):
         self.format = format
 
 class LegendQuery(object):
-    def __init__(self, format):
+    def __init__(self, format, scale):
         self.format = format
+        self.scale = scale
 
 def map_extent_from_grid(grid):
     """
