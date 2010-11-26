@@ -327,7 +327,7 @@ class WMSLegendGraphicRequestParams(WMSMapRequestParams):
     """
     def _set_layer(self, value):
         self.params['layer'] = value
-        
+    
     def _get_layer(self):
         """
         Layer for which to produce legend graphic.
@@ -343,6 +343,19 @@ class WMSLegendGraphicRequestParams(WMSMapRequestParams):
         Specification version for SLD-specification
         """
         return self.params.get('sld_version')
+    
+    
+    def _set_scale(self, value):
+        self.params['scale'] = value
+    
+    def _get_scale(self):
+        if self.params.get('scale') is not None:
+            return float(self['scale'])
+        return None
+    
+    scale = property(_get_scale,_set_scale)
+    del _set_scale
+    del _get_scale
 
 class WMSFeatureInfoRequestParams(WMSMapRequestParams):
     """
@@ -378,7 +391,7 @@ class WMS130FeatureInfoRequestParams(WMSFeatureInfoRequestParams):
 class WMSLegendGraphicRequest(WMSMapRequest):    
     request_params = WMSLegendGraphicRequestParams
     request_handler_name = 'legendgraphic'
-    non_strict_params = set(['sld_version'])
+    non_strict_params = set(['sld_version', 'scale'])
     fixed_params = {'request': 'GetLegendGraphic', 'service': 'WMS', 'sld_version': '1.1.0'}
     expected_param = ['version', 'request', 'layer', 'format', 'sld_version']
     
