@@ -354,7 +354,7 @@ class WMSSourceConfiguration(SourceConfiguration):
             url = urlparse.urlparse(self.conf['req']['url'])
             md5 = hashlib.md5(url.netloc)
             lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
-            lock = lambda: SemLock(lock_file, self.conf['concurrent_requests'])
+            lock = lambda: SemLock(lock_file, concurrent_requests)
         
         coverage = self.coverage(context)
         res_range = resolution_range(self.conf)
