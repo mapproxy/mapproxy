@@ -105,16 +105,17 @@ class ProxyConfiguration(object):
     
     def load_globals(self, conf_base_dir):
         self.globals = GlobalConfiguration(conf_base_dir=conf_base_dir,
-                                           **self.configuration.get('globals', {}))
+                                           conf=self.configuration.get('globals', {}),
+                                           context=self)
     
     def load_grids(self):
         self.grids = {}
         
-        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(srs='EPSG:4326')
-        self.grids['GLOBAL_MERCATOR'] = GridConfiguration(srs='EPSG:900913')
+        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(dict(srs='EPSG:4326'), context=self)
+        self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913'), context=self)
         
         for grid_name, grid_conf in self.configuration.get('grids', {}).iteritems():
-            self.grids[grid_name] = GridConfiguration(**grid_conf)
+            self.grids[grid_name] = GridConfiguration(grid_conf, context=self)
     
     def load_caches(self):
         self.caches = odict()
@@ -123,12 +124,13 @@ class ProxyConfiguration(object):
         if isinstance(caches_conf, list):
             caches_conf = list_of_dicts_to_ordered_dict(caches_conf)
         for cache_name, cache_conf in caches_conf.iteritems():
-            self.caches[cache_name] = CacheConfiguration(name=cache_name, **cache_conf)
+            cache_conf['name'] = cache_name
+            self.caches[cache_name] = CacheConfiguration(conf=cache_conf, context=self)
     
     def load_sources(self):
         self.sources = {}
         for source_name, source_conf in self.configuration.get('sources', {}).iteritems():
-            self.sources[source_name] = SourceConfiguration.load(**source_conf)
+            self.sources[source_name] = SourceConfiguration.load(conf=source_conf, context=self)
 
     def load_layers(self):
         self.layers = odict()
@@ -137,14 +139,15 @@ class ProxyConfiguration(object):
         if isinstance(layers_conf, list):
             layers_conf = list_of_dicts_to_ordered_dict(layers_conf)
         for layer_name, layer_conf in layers_conf.iteritems():
-            self.layers[layer_name] = LayerConfiguration(name=layer_name, **layer_conf)
+            layer_conf['name'] = layer_name
+            self.layers[layer_name] = LayerConfiguration(conf=layer_conf, context=self)
 
     def load_services(self):
-        self.services = ServiceConfiguration(**self.configuration.get('services', {}))
+        self.services = ServiceConfiguration(self.configuration.get('services', {}), context=self)
     
     def configured_services(self):
         with local_base_config(self.base_config):
-            return self.services.services(self)
+            return self.services.services()
     
     @property
     def base_config(self):
@@ -164,16 +167,25 @@ def list_of_dicts_to_ordered_dict(dictlist):
     return result
 
 class ConfigurationBase(object):
+    """
+    Base class for all configurations.
+    """
     optional_keys = set()
     required_keys = set()
     defaults = {}
     
-    def __init__(self, **kw):
+    def __init__(self, conf, context):
+        """
+        :param conf: the configuration part for this configurator
+        :param context: the complete proxy configuration
+        :type context: ProxyConfiguration
+        """
         self.conf = {}
+        self.context = context
         expected_keys = set(self.optional_keys)
         expected_keys.update(self.required_keys)
         expected_keys.update(self.defaults.keys())
-        for k, v in kw.iteritems():
+        for k, v in conf.iteritems():
             if k not in expected_keys:
                 log.warn('unexpected key %s', k)
             self.conf[k] = v
@@ -192,10 +204,10 @@ class GridConfiguration(ConfigurationBase):
         res_factor threshold_res
         '''.split())
     
-    def tile_grid(self, context):
+    def tile_grid(self):
         if 'base' in self.conf:
             base_grid_name = self.conf['base']
-            conf = context.grids[base_grid_name].conf.copy()
+            conf = self.context.grids[base_grid_name].conf.copy()
             conf.update(self.conf)
             conf.pop('base')
             self.conf = conf
@@ -204,16 +216,16 @@ class GridConfiguration(ConfigurationBase):
         align_with = None
         if 'align_resolutions_with' in self.conf:
             align_with_grid_name = self.conf['align_resolutions_with']
-            align_with = context.grids[align_with_grid_name].tile_grid(context)
+            align_with = self.context.grids[align_with_grid_name].tile_grid()
 
-        tile_size = context.globals.get_value('tile_size', conf,
+        tile_size = self.context.globals.get_value('tile_size', conf,
             global_key='grid.tile_size')
         conf['tile_size'] = tuple(tile_size)
         tile_size = tuple(tile_size)
         
-        stretch_factor = context.globals.get_value('stretch_factor', conf,
+        stretch_factor = self.context.globals.get_value('stretch_factor', conf,
             global_key='image.stretch_factor')
-        max_shrink_factor = context.globals.get_value('max_shrink_factor', conf,
+        max_shrink_factor = self.context.globals.get_value('max_shrink_factor', conf,
             global_key='image.max_shrink_factor')
         
         
@@ -240,8 +252,8 @@ class GridConfiguration(ConfigurationBase):
 class GlobalConfiguration(ConfigurationBase):
     optional_keys = set('image grid srs http cache'.split())
     
-    def __init__(self, conf_base_dir, **kw):
-        ConfigurationBase.__init__(self, **kw)
+    def __init__(self, conf_base_dir, conf, context):
+        ConfigurationBase.__init__(self, conf, context)
         self.base_config = load_default_config()
         self._copy_conf_values(self.conf, self.base_config)
         self.base_config.conf_base_dir = conf_base_dir
@@ -290,15 +302,15 @@ def dotted_dict_get(key, d):
     
 class SourceConfiguration(ConfigurationBase):
     @classmethod
-    def load(cls, **kw):
-        source_type = kw['type']
+    def load(cls, conf, context):
+        source_type = conf['type']
         for subclass in cls.__subclasses__():
             if source_type in subclass.source_type:
-                return subclass(**kw)
+                return subclass(conf, context)
         
         raise ValueError("unknown source type '%s'" % source_type)
     
-    def coverage(self, context):
+    def coverage(self):
         if not 'coverage' in self.conf: return None
         return load_coverage(self.conf['coverage'])
 
@@ -318,17 +330,17 @@ class WMSSourceConfiguration(SourceConfiguration):
         min_res max_res min_scale max_scale'''.split())
     required_keys = set('req'.split())
     
-    def http_client(self, context, request):
+    def http_client(self, request):
         http_client = None
         url, (username, password) = auth_data_from_url(request.url)
         if username and password:
-            insecure = context.globals.get_value('http.ssl_no_cert_checks', self.conf)
+            insecure = self.context.globals.get_value('http.ssl_no_cert_checks', self.conf)
             request.url = url
             http_client = HTTPClient(url, username, password, insecure=insecure)
         return http_client
     
-    def source(self, context, params=None):
-        if not context.seed and self.conf.get('seed_only'):
+    def source(self, params=None):
+        if not self.context.seed and self.conf.get('seed_only'):
             return DummySource()
         
         if params is None: params = {}
@@ -340,34 +352,34 @@ class WMSSourceConfiguration(SourceConfiguration):
         transparent = self.conf['req'].get('transparent', 'false')
         transparent = bool(str(transparent).lower() == 'true')
         
-        resampling = context.globals.get_value('image.resampling_method', self.conf)
+        resampling = self.context.globals.get_value('image.resampling_method', self.conf)
         
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         supported_formats = [file_ext(f) for f in self.conf.get('supported_formats', [])]
         version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
         
         lock = None
-        concurrent_requests = context.globals.get_value('concurrent_requests', self.conf,
+        concurrent_requests = self.context.globals.get_value('concurrent_requests', self.conf,
                                                         global_key='http.concurrent_requests')
         if concurrent_requests:
-            lock_dir = context.globals.get_path('cache.lock_dir', self.conf)
+            lock_dir = self.context.globals.get_path('cache.lock_dir', self.conf)
             url = urlparse.urlparse(self.conf['req']['url'])
             md5 = hashlib.md5(url.netloc)
             lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
             lock = lambda: SemLock(lock_file, concurrent_requests)
         
-        coverage = self.coverage(context)
+        coverage = self.coverage()
         res_range = resolution_range(self.conf)
         
         request = create_request(self.conf['req'], params, version=version)
-        http_client = self.http_client(context, request)
+        http_client = self.http_client(request)
         client = WMSClient(request, supported_srs, http_client=http_client, 
                            resampling=resampling, lock=lock,
                            supported_formats=supported_formats or None)
         return WMSSource(client, transparent=transparent, coverage=coverage,
                          res_range=res_range)
     
-    def fi_source(self, context, params=None):
+    def fi_source(self, params=None):
         if params is None: params = {}
         request_format = self.conf['req'].get('format')
         if request_format:
@@ -389,8 +401,8 @@ class TileSourceConfiguration(SourceConfiguration):
     required_keys = set('url'.split())
     defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
     
-    def source(self, context, params=None):
-        if not context.seed and self.conf.get('seed_only'):
+    def source(self, params=None):
+        if not self.context.seed and self.conf.get('seed_only'):
             return DummySource()
         
         if params is None: params = {}
@@ -402,8 +414,8 @@ class TileSourceConfiguration(SourceConfiguration):
             origin = 'sw'
             # TODO raise some configuration exception
         
-        grid = context.grids[self.conf['grid']].tile_grid(context)
-        coverage = self.coverage(context)
+        grid = self.context.grids[self.conf['grid']].tile_grid()
+        coverage = self.coverage()
         
         inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
@@ -418,7 +430,7 @@ class DebugSourceConfiguration(SourceConfiguration):
     source_type = ('debug',)
     required_keys = set('type'.split())
     
-    def source(self, context, params=None):
+    def source(self, params=None):
         return DebugSource()
 
 class CacheConfiguration(ConfigurationBase):
@@ -429,60 +441,60 @@ class CacheConfiguration(ConfigurationBase):
     required_keys = set('name sources'.split())
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
     
-    def cache_dir(self, context):
-        return context.globals.get_path('cache_dir', self.conf,
+    def cache_dir(self):
+        return self.context.globals.get_path('cache_dir', self.conf,
             global_key='cache.base_dir')
         
-    def _file_cache(self, grid_conf, context):
-        cache_dir = self.cache_dir(context)
-        grid_conf.tile_grid(context) #create to resolve `base` in grid_conf.conf
+    def _file_cache(self, grid_conf):
+        cache_dir = self.cache_dir()
+        grid_conf.tile_grid() #create to resolve `base` in grid_conf.conf
         suffix = grid_conf.conf['srs'].replace(':', '')
         cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
         link_single_color_images = self.conf.get('link_single_color_images', False)
         
-        tile_filter = self._tile_filter(context)
+        tile_filter = self._tile_filter()
         return FileCache(cache_dir, file_ext=file_ext(self.conf['format']),
             pre_store_filter=tile_filter,
             link_single_color_images=link_single_color_images)
     
-    def _tile_filter(self, context):
+    def _tile_filter(self):
         filters = []
         for tile_filter in tile_filters:
-            f = tile_filter().create_filter(self.conf, context)
+            f = tile_filter().create_filter(self.conf, self.context)
             if f is not None:
                 filters.append(f)
         return filters
     
-    def caches(self, context):
+    def caches(self):
         request_format = self.conf.get('request_format') or self.conf['format']
         caches = []
 
-        meta_buffer = context.globals.get_value('meta_buffer', self.conf,
+        meta_buffer = self.context.globals.get_value('meta_buffer', self.conf,
             global_key='cache.meta_buffer')
-        meta_size = context.globals.get_value('meta_size', self.conf,
+        meta_size = self.context.globals.get_value('meta_size', self.conf,
             global_key='cache.meta_size')
-        minimize_meta_requests = context.globals.get_value('minimize_meta_requests', self.conf,
+        minimize_meta_requests = self.context.globals.get_value('minimize_meta_requests', self.conf,
             global_key='cache.minimize_meta_requests')
         
-        for grid_conf in [context.grids[g] for g in self.conf['grids']]:
+        for grid_conf in [self.context.grids[g] for g in self.conf['grids']]:
             sources = []
-            for source_conf in [context.sources[s] for s in self.conf['sources']]:
-                source = source_conf.source(context, {'format': request_format})
+            for source_conf in [self.context.sources[s] for s in self.conf['sources']]:
+                source = source_conf.source({'format': request_format})
                 sources.append(source)
-            cache = self._file_cache(grid_conf, context)
-            tile_grid = grid_conf.tile_grid(context)
+            cache = self._file_cache(grid_conf)
+            tile_grid = grid_conf.tile_grid()
             mgr = TileManager(tile_grid, cache, sources, file_ext(request_format),
                               meta_size=meta_size, meta_buffer=meta_buffer,
                               minimize_meta_requests=minimize_meta_requests)
             caches.append((tile_grid, mgr))
         return caches
     
-    def map_layer(self, context):
-        resampling = context.globals.get_value('image.resampling_method', self.conf)
+    def map_layer(self):
+        resampling = self.context.globals.get_value('image.resampling_method', self.conf)
         
         caches = []
         main_grid = None
-        for grid, tile_manager in self.caches(context):
+        for grid, tile_manager in self.caches():
             if main_grid is None:
                 main_grid = grid
             caches.append((CacheMapLayer(tile_manager, resampling=resampling), (grid.srs,)))
@@ -498,24 +510,24 @@ class CacheConfiguration(ConfigurationBase):
         if 'use_direct_from_res' in self.conf:
             if len(self.conf['sources']) != 1:
                 raise ValueError('use_direct_from_level/res only supports single sources')
-            source_conf = context.sources[self.conf['sources'][0]]
-            layer = ResolutionConditional(layer, source_conf.source(context), self.conf['use_direct_from_res'], main_grid.srs, layer.extent)
+            source_conf = self.context.sources[self.conf['sources'][0]]
+            layer = ResolutionConditional(layer, source_conf.source(), self.conf['use_direct_from_res'], main_grid.srs, layer.extent)
         return layer
     
 class LayerConfiguration(ConfigurationBase):
     optional_keys = set('min_res max_res min_scale max_scale'.split())
     required_keys = set('name title sources'.split())
     
-    def wms_layer(self, context):
+    def wms_layer(self):
         sources = []
         fi_sources = []
         for source_name in self.conf['sources']:
             fi_source_names = []
-            if source_name in context.caches:
-                map_layer = context.caches[source_name].map_layer(context)
-                fi_source_names = context.caches[source_name].conf['sources']
-            elif source_name in context.sources:
-                map_layer = context.sources[source_name].source(context)
+            if source_name in self.context.caches:
+                map_layer = self.context.caches[source_name].map_layer()
+                fi_source_names = self.context.caches[source_name].conf['sources']
+            elif source_name in self.context.sources:
+                map_layer = self.context.sources[source_name].source()
                 fi_source_names = [source_name]
             else:
                 raise ConfigurationError('source/cache "%s" not found' % source_name)
@@ -523,8 +535,8 @@ class LayerConfiguration(ConfigurationBase):
             
             for fi_source_name in fi_source_names:
                 # TODO multiple sources
-                if not hasattr(context.sources[fi_source_name], 'fi_source'): continue
-                fi_source = context.sources[fi_source_name].fi_source(context)
+                if not hasattr(self.context.sources[fi_source_name], 'fi_source'): continue
+                fi_source = self.context.sources[fi_source_name].fi_source()
                 if fi_source:
                     fi_sources.append(fi_source)
             
@@ -534,19 +546,19 @@ class LayerConfiguration(ConfigurationBase):
                          sources, fi_sources, res_range=res_range)
         return layer
     
-    def tile_layers(self, context):
+    def tile_layers(self):
         if len(self.conf['sources']) > 1: return [] #TODO
         
         tile_layers = []
         for cache_name in self.conf['sources']:
-            if not cache_name in context.caches: continue
-            for grid, cache_source in context.caches[cache_name].caches(context):
+            if not cache_name in self.context.caches: continue
+            for grid, cache_source in self.context.caches[cache_name].caches():
                 md = {}
                 md['title'] = self.conf['title']
                 md['name'] = self.conf['name']
                 md['name_path'] = (self.conf['name'], grid.srs.srs_code.replace(':', '').upper())
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
-                md['format'] = context.caches[cache_name].conf['format']
+                md['format'] = self.context.caches[cache_name].conf['format']
             
                 tile_layers.append(TileLayer(md, cache_source))
         
@@ -556,61 +568,61 @@ class LayerConfiguration(ConfigurationBase):
 class ServiceConfiguration(ConfigurationBase):
     optional_keys = set('wms tms kml demo'.split())
     
-    def services(self, context):
+    def services(self):
         services = {}
         for service_name, service_conf in self.conf.iteritems():
             creator = getattr(self, service_name + '_service', None)
             if not creator:
                 raise ValueError('unknown service: %s' % service_name)
-            services[service_name] = creator(service_conf or {}, context)
+            services[service_name] = creator(service_conf or {})
         return services
     
-    def tile_layers(self, conf, context):
+    def tile_layers(self, conf):
         layers = odict()
-        for layer_name, layer_conf in context.layers.iteritems():
-            for tile_layer in layer_conf.tile_layers(context):
+        for layer_name, layer_conf in self.context.layers.iteritems():
+            for tile_layer in layer_conf.tile_layers():
                 if not tile_layer: continue
                 layers[tile_layer.md['name_internal']] = tile_layer
         return layers
     
-    def kml_service(self, conf, context):
-        md = context.services.conf.get('wms', {}).get('md', {}).copy()
+    def kml_service(self, conf):
+        md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
-        layers = self.tile_layers(conf, context)
+        layers = self.tile_layers(conf)
         return KMLServer(layers, md)
     
-    def tms_service(self, conf, context):
-        md = context.services.conf.get('wms', {}).get('md', {}).copy()
+    def tms_service(self, conf):
+        md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
-        layers = self.tile_layers(conf, context)
+        layers = self.tile_layers(conf)
         return TileServer(layers, md)
     
-    def wms_service(self, conf, context):
+    def wms_service(self, conf):
         md = conf.get('md', {})
-        tile_layers = self.tile_layers(conf, context)
+        tile_layers = self.tile_layers(conf)
         attribution = conf.get('attribution')
-        strict = context.globals.get_value('strict', conf, global_key='wms.strict')
+        strict = self.context.globals.get_value('strict', conf, global_key='wms.strict')
         layers = odict()
-        for layer_name, layer_conf in context.layers.iteritems():
-            layers[layer_name] = layer_conf.wms_layer(context)
-        image_formats = context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
-        srs = context.globals.get_value('srs', conf, global_key='wms.srs')
+        for layer_name, layer_conf in self.context.layers.iteritems():
+            layers[layer_name] = layer_conf.wms_layer()
+        image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
+        srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
         return WMSServer(layers, md, attribution=attribution, image_formats=image_formats,
             srs=srs, tile_layers=tile_layers, strict=strict)
 
-    def demo_service(self, conf, context):
-        md = context.services.conf.get('wms', {}).get('md', {}).copy()
+    def demo_service(self, conf):
+        md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
         layers = odict()
-        for layer_name, layer_conf in context.layers.iteritems():
-            layers[layer_name] = layer_conf.wms_layer(context)
-        tile_layers = self.tile_layers(conf, context)
-        image_formats = context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
+        for layer_name, layer_conf in self.context.layers.iteritems():
+            layers[layer_name] = layer_conf.wms_layer()
+        tile_layers = self.tile_layers(conf)
+        image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         return DemoServer(layers, md, tile_layers=tile_layers, image_formats=image_formats)
     
 def load_services(conf_file):
     conf = load_configuration(conf_file)
-    return conf.services.services(conf)
+    return conf.configured_services()
     
 def load_configuration(mapproxy_conf):
     if hasattr(mapproxy_conf, 'read'):
