@@ -108,7 +108,7 @@ class TestWMSSourceConfiguration(object):
             'sources': {
                 'osm': {
                     'type': 'wms',
-                    'http':{'ssl': {'insecure': True}},
+                    'http':{'ssl_no_cert_checks': True},
                     'req': {
                         'url': 'https://foo:bar@localhost/service?',
                         'layers': 'base',

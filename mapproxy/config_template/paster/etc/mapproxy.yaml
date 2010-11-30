@@ -68,7 +68,7 @@ sources:
   #   supported_srs: ['EPSG:4326', 'EPSG:31467']
   #   supported_formats: ['image/tiff', 'image/jpeg']
   #   http:
-  #     insecure_ssl: true
+  #     ssl_no_cert_checks: true
   #   req:
   #     url: https://user@password:example.org:81/service?
   #     layers: roads,rails
