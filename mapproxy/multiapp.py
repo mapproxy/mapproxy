@@ -1,3 +1,20 @@
+# -:- encoding: utf-8 -:-
+# This file is part of the MapProxy project.
+# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import with_statement
 import os
 
@@ -10,18 +27,25 @@ from threading import Lock
 import logging
 log = logging.getLogger(__name__)
 
-def app_factory(global_options, base_dir, **local_options):
+def app_factory(global_options, base_dir, list_apps=False, **local_options):
+    """
+    Create a new MultiMapProxy app.
+    
+    :param base_dir: directory with all mapproxy configurations
+    :param list_apps: allow to list all available apps
+    """
+    
     loader = DirectoryConfLoader(base_dir)
-    list_apps = local_options.get('list_apps', False)
-    return MultiMapProxy(loader, None, list_apps=list_apps)
+    return MultiMapProxy(loader, list_apps=list_apps)
 
 class MultiMapProxy(object):
-    def __init__(self, loader, conf, list_apps=False, app_cache_size=100):
+    
+    def __init__(self, loader, list_apps=False, app_cache_size=100):
         self.loader = loader
-        self.conf = conf
         self.list_apps = list_apps
         self._app_init_lock = Lock()
         self.apps = LRU(app_cache_size)
+    
     def __call__(self, environ, start_response):
         req = Request(environ)
         return self.handle(req)(environ, start_response)
@@ -39,6 +63,9 @@ class MultiMapProxy(object):
         return self.proj_app(app_name)
     
     def index_list(self):
+        """
+        Return greeting response with a list of available apps (if enabled with list_apps).
+        """
         import mapproxy.version
         html = "<html><body><h1>Welcome to MapProxy %s</h1>" % mapproxy.version.version
         
@@ -116,9 +143,9 @@ class DirectoryConfLoader(ConfLoader):
     """
     Load application configurations from a directory.
     """
-    def __init__(self, base_dir, prefix='.yaml'):
+    def __init__(self, base_dir, suffix='.yaml'):
         self.base_dir = base_dir
-        self.prefix = prefix
+        self.suffix = suffix
     
     def needs_reload(self, app_name, timestamp):
         conf_file = self.filename_from_app_name(app_name)
@@ -130,23 +157,28 @@ class DirectoryConfLoader(ConfLoader):
     def _is_conf_file(self, fname):
         if not os.path.isfile(os.path.join(self.base_dir, fname)):
             return False
-        if self.prefix:
-            return fname.lower().endswith(self.prefix)
+        if self.suffix:
+            return fname.lower().endswith(self.suffix)
         else:
             return True
     
     def app_name_from_filename(self, fname):
+        """
+        >>> DirectoryConfLoader('/tmp/').app_name_from_filename('/tmp/foobar.yaml')
+        'foobar'
+        """
         _path, fname = os.path.split(fname)
         app_name, _ext = os.path.splitext(fname)
         return app_name
     
     def filename_from_app_name(self, app_name):
-        return os.path.join(self.base_dir, app_name + self.prefix or '')
+        """
+        >>> DirectoryConfLoader('/tmp/').filename_from_app_name('foobar')
+        '/tmp/foobar.yaml'
+        """
+        return os.path.join(self.base_dir, app_name + self.suffix or '')
         
     def available_apps(self):
-        """
-        List all available app names.
-        """
         apps = []
         for f in os.listdir(self.base_dir):
             if self._is_conf_file(f):
@@ -155,9 +187,6 @@ class DirectoryConfLoader(ConfLoader):
         return apps
     
     def app_available(self, app_name):
-        """
-        Return if application is available.
-        """
         conf_file = self.filename_from_app_name(app_name)
         return self._is_conf_file(conf_file)
     
