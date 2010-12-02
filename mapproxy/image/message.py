@@ -189,10 +189,12 @@ class WatermarkImage(MessageImage):
     font_size = 24
     font_color = (0, 0, 0)
     
-    def __init__(self, message, format='png', odd=False, opacity=None):
+    def __init__(self, message, format='png', odd=False, opacity=None, font_size=None):
         MessageImage.__init__(self, message, format)
         if opacity is None:
             opacity = 3
+        if font_size:
+            self.font_size = font_size
         self.font_color = self.font_color + tuple([opacity])
         self.odd = odd
     
@@ -209,7 +211,6 @@ class WatermarkImage(MessageImage):
     def merge_msg(self, img, msg_img):
         if img is None:
             return msg_img
-        
         w, _ = img.size
         if self.odd:
             img.paste(msg_img, (-w//2, 0), msg_img)

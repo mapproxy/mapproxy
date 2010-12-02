@@ -166,6 +166,8 @@ Add a watermark right into the cached tiles. The watermark is thus also present 
     The opacity of the watermark (from 0 transparent to 255 full opaque).
     Use a value between 3 and 10 for unobtrusive watermarks.
 
+``font_size``
+  Font size of the watermark text.
 
 ``grids``
 """""""""

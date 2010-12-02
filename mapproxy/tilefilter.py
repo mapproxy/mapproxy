@@ -47,7 +47,7 @@ class TileFilter(object):
     def create_filter(self, layer_conf):
         return NotImplementedError
 
-def watermark_filter(text, opacity=None):
+def watermark_filter(text, opacity=None, font_size=None):
     """
     Returns a tile filter that adds a watermark to the tiles.
     :param text: watermark text
@@ -55,7 +55,7 @@ def watermark_filter(text, opacity=None):
     def _watermark_filter(tile):
         odd = False if tile.coord[1] % 2 == 0 else True
         wimg = WatermarkImage(text, format=tile.source.format, odd=odd,
-                              opacity=opacity)
+                              opacity=opacity, font_size=font_size)
         tile.source = wimg.draw(img=tile.source)
         return tile
     return _watermark_filter
@@ -76,8 +76,9 @@ class WaterMarkTileFilter(TileFilter):
         if 'watermark' in conf:
             text = conf['watermark'].get('text', '')
             opacity = conf['watermark'].get('opacity', None)
+            font_size = conf['watermark'].get('font_size', None)
             if text != '':
-                return watermark_filter(text, opacity=opacity)
+                return watermark_filter(text, opacity=opacity, font_size=font_size)
 
 class PNGQuantFilter(object):
     def __init__(self):
