@@ -23,6 +23,7 @@ import os
 import hashlib
 import urlparse
 import yaml #pylint: disable-msg=F0401
+from functools import wraps
 
 import logging
 log = logging.getLogger(__name__)
@@ -152,7 +153,18 @@ class ProxyConfiguration(object):
     @property
     def base_config(self):
         return self.globals.base_config
-    
+
+def memoize(func):
+    @wraps(func)
+    def wrapper(*args):
+        if not hasattr(func, '__memoize_cache'):
+            func.__memoize_cache = {}
+        key = args
+        if key not in func.__memoize_cache:
+            func.__memoize_cache[key] = func(*args)
+        return func.__memoize_cache[key]
+    return wrapper
+
 def list_of_dicts_to_ordered_dict(dictlist):
     """
     >>> d = list_of_dicts_to_ordered_dict([{'a': 1}, {'b': 2}, {'c': 3}])
@@ -204,6 +216,7 @@ class GridConfiguration(ConfigurationBase):
         res_factor threshold_res
         '''.split())
     
+    @memoize
     def tile_grid(self):
         if 'base' in self.conf:
             base_grid_name = self.conf['base']
@@ -246,7 +259,6 @@ class GridConfiguration(ConfigurationBase):
         )
         
         return grid
-
 
 
 class GlobalConfiguration(ConfigurationBase):
@@ -310,6 +322,7 @@ class SourceConfiguration(ConfigurationBase):
         
         raise ValueError("unknown source type '%s'" % source_type)
     
+    @memoize
     def coverage(self):
         if not 'coverage' in self.conf: return None
         return load_coverage(self.conf['coverage'])
@@ -465,6 +478,7 @@ class CacheConfiguration(ConfigurationBase):
                 filters.append(f)
         return filters
     
+    @memoize
     def caches(self):
         request_format = self.conf.get('request_format') or self.conf['format']
         caches = []
@@ -489,6 +503,7 @@ class CacheConfiguration(ConfigurationBase):
             caches.append((tile_grid, mgr))
         return caches
     
+    @memoize
     def map_layer(self):
         resampling = self.context.globals.get_value('image.resampling_method', self.conf)
         
@@ -518,6 +533,7 @@ class LayerConfiguration(ConfigurationBase):
     optional_keys = set('min_res max_res min_scale max_scale'.split())
     required_keys = set('name title sources'.split())
     
+    @memoize
     def wms_layer(self):
         sources = []
         fi_sources = []
@@ -546,6 +562,7 @@ class LayerConfiguration(ConfigurationBase):
                          sources, fi_sources, res_range=res_range)
         return layer
     
+    @memoize
     def tile_layers(self):
         if len(self.conf['sources']) > 1: return [] #TODO
         
