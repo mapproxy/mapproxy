@@ -5,9 +5,9 @@ There are different ways to deploy Python web applications. MapProxy implements 
 
 The WSGI standard allows to choose between a wide range of servers and server integration components.
 
-MapProxy uses ``paster serve``, a tool included as a dependency, to start these servers with a configured MapProxy application.
+MapProxy uses :ref:`Paste Deploy <http://pythonpaste.org/deploy/>` to start these servers with a configured MapProxy application. It is a dependency of MapProxy and should be installed already. You can access the tool with ``paster serve``.
 
-Paster needs a configuration where the application (MapProxy in this case) and the server are defined. The ``etc/`` directory created with ``paster create`` (see :doc:`install`) already contains two example configurations.
+Paste Deploy needs a configuration where the application (MapProxy in this case) and the server are defined. The ``etc/`` directory created with ``paster create`` (see :doc:`install`) already contains two example configurations.
 Both configurations define MapProxy as the WSGI application to start and setup some configuration options.
 
 Testing
@@ -38,6 +38,8 @@ Next you must configure you web server to talk to this FastCGI server.
 
 .. _`FastCGI`: http://www.fastcgi.com/
 
+.. index:: lighttpd
+
 Lighttpd
 """"""""
 
@@ -56,6 +58,7 @@ The first line restricts this configuration to the ``example.org`` hostname. In 
 
 With this configuration you can access the MapProxy WMS at http://example.org/proxy/service?
 
+.. index:: mod_fastcgi, Apache
 
 Apache mod_fastcgi
 """"""""""""""""""
@@ -70,6 +73,8 @@ You can use the following snippet to add the MapProxy FastCGI to an Apache insta
   </IfModule>
 
 .. note:: ``/tmp/madeup`` is just a dummy value and you can choose any path you want, the only limitation is that the directory must exist but not the file. In this example there must be a ``/tmp`` directory but the file ``madeup`` should not exist.
+
+.. index:: nginx
 
 nginx
 """""
@@ -103,6 +108,8 @@ Refer to http://wsgi.org/wsgi/Servers for a list of some available WSGI servers.
 .. note::
   Because of the way Python handles threads in computing heavy applications (like MapProxy WMS is), you should choose a (pre)forking-based server for best performance.
 
+.. index:: mod_wsgi, Apache
+
 Apache mod_wsgi
 ^^^^^^^^^^^^^^^
 
@@ -113,3 +120,32 @@ We will not go into detail about the installation here, but you can read more ab
 .. _`mod_wsgi installation`: http://code.google.com/p/modwsgi/wiki/InstallationInstructions
 .. _`Pylons integration`: http://code.google.com/p/modwsgi/wiki/IntegrationWithPylons
 
+.. index:: MultiMapProxy
+
+MultiMapProxy
+-------------
+
+.. versionadded:: 0.9.1
+.. note:: The interface/configuration of MultiMapProxy is not stable yet and might change with future releases.
+
+You can run multiple MapProxy instances (configurations) within one process. You can either manually map URLs to a MapProxy configuration as :ref:`described in the configuration examples <paster_urlmap>` or you can use the MultiMapProxy application.
+
+MultiMapProxy can dynamically load configurations. You can put all configurations into one directory and MapProxy maps each file to a URL: ``conf/proj1.yaml`` is available at ``http://hostname/proj1/``.
+
+Each configuration will be loaded on demand and MapProxy caches each loaded instance. The configuration will be reloaded if the file changes.
+
+You can use Paste deploy, as described above, to configure and start MultiMapProxy. The application takes the following options:
+
+``config_dir``
+  The directory where MapProxy should look for configurations.
+
+``allow_listing``
+  If set to ``true``, MapProxy will list all available configurations at the root URL of your MapProxy. Defaults to false.
+
+
+Example ``config.ini``::
+
+  [app:main]
+  use = egg:MapProxy#multiapp
+  config_dir = %(here)s/projects
+  allow_listing = true

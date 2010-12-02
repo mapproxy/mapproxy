@@ -196,6 +196,8 @@ You can disable the certificate verification if you you don't need it.
       layers: securelayer
   
 
+.. _paster_urlmap:
+
 Serve multiple MapProxy instances
 =================================
 
