@@ -291,7 +291,9 @@ class GlobalConfiguration(ConfigurationBase):
     
     def get_path(self, key, local, global_key=None, default_key=None):
         value = self.get_value(key, local, global_key, default_key)
-        return os.path.join(self.base_config.conf_base_dir, value)
+        if value is not None:
+            value = os.path.join(self.base_config.conf_base_dir, value)
+        return value
     
 
 def dotted_dict_get(key, d):
@@ -348,8 +350,10 @@ class WMSSourceConfiguration(SourceConfiguration):
         url, (username, password) = auth_data_from_url(request.url)
         if username and password:
             insecure = self.context.globals.get_value('http.ssl_no_cert_checks', self.conf)
+            ssl_ca_certs = self.context.globals.get_path('http.ssl_ca_certs', self.conf)
             request.url = url
-            http_client = HTTPClient(url, username, password, insecure=insecure)
+            http_client = HTTPClient(url, username, password, insecure=insecure,
+                                     ssl_ca_certs=ssl_ca_certs)
         return http_client
     
     def source(self, params=None):

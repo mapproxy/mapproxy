@@ -29,7 +29,7 @@ log = logging.getLogger(__name__)
 from mapproxy.version import version
 from mapproxy.image import ImageSource
 from mapproxy.util import reraise_exception
-from mapproxy.config import base_config, abspath
+from mapproxy.config import base_config
 
 import socket
 
@@ -48,19 +48,21 @@ class HTTPClient(object):
     log_fmt = '%(host)s - - [%(date)s] "GET %(path)s HTTP/1.1" %(status)d %(size)s "-" ""'
     log_datefmt = '%d/%b/%Y:%H:%M:%S %z'
     
-    def __init__(self, url=None, username=None, password=None, insecure=None):
+    def __init__(self, url=None, username=None, password=None, insecure=False, ssl_ca_certs=None):
         socket.setdefaulttimeout(base_config().http.client_timeout)
+        print "#" *30
         handlers = []
         if url and url.startswith('https'):
-            if insecure is False or insecure is None and not base_config().http.ssl_no_cert_checks:
+            if insecure is False:
                 if ssl is None:
                     raise ImportError('No ssl module found. SSL certificate '
                         'verification requires Python 2.6 or ssl module. Upgrade '
                         'or disable verification with http.ssl_no_cert_checks option.')
-                if base_config().http.ssl_ca_certs is None:
+                if ssl_ca_certs is None:
                     raise HTTPClientError('No ca_certs file set (http.ssl_ca_certs). '
                         'Set file or disable verification with http.ssl_no_cert_checks option.')
-                https_handler = VerifiedHTTPSHandler()
+                connection_class = verified_https_connection_with_ca_certs(ssl_ca_certs)
+                https_handler = VerifiedHTTPSHandler(connection_class=connection_class)
                 handlers.append(https_handler)
         if url is not None and username is not None and password is not None:
             passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -158,6 +160,10 @@ def retrieve_image(url):
 
 
 class VerifiedHTTPSConnection(httplib.HTTPSConnection):
+    def __init__(self, *args, **kw):
+        self._ca_certs = kw.pop('ca_certs', None)
+        httplib.HTTPSConnection.__init__(self, *args, **kw)
+        
     def connect(self):
         # overrides the version in httplib so that we do
         #    certificate verification
@@ -165,12 +171,21 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
         sock.connect((self.host, self.port))
         
         # wrap the socket using verification with the root
-        #    certs in base_config().http.ssl_ca_cert
+        #    certs in self.ca_certs_path
         self.sock = ssl.wrap_socket(sock,
                                     self.key_file,
                                     self.cert_file,
                                     cert_reqs=ssl.CERT_REQUIRED,
-                                    ca_certs=abspath(base_config().http.ssl_ca_certs))
+                                    ca_certs=self._ca_certs)
+
+def verified_https_connection_with_ca_certs(ca_certs):
+    """
+    Creates VerifiedHTTPSConnection classes with given ca_certs file.
+    """
+    def wrapper(*args, **kw):
+        kw['ca_certs'] = ca_certs
+        return VerifiedHTTPSConnection(*args, **kw)
+    return wrapper
 
 class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
     def __init__(self, connection_class=VerifiedHTTPSConnection):

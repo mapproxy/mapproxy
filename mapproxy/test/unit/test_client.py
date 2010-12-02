@@ -23,9 +23,8 @@ from mapproxy.request.wms import wms_request, WMS111MapRequest, WMS100MapRequest
                                  WMS130MapRequest, WMS111FeatureInfoRequest
 from mapproxy.srs import bbox_equals, SRS
 from mapproxy.request import Request, url_decode
-from mapproxy.config import base_config
 from mapproxy.test.http import mock_httpd, query_eq, assert_query_eq, make_wsgi_env
-from mapproxy.test.helper import assert_re, TempFiles
+from mapproxy.test.helper import assert_re, TempFile
 
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
@@ -101,12 +100,10 @@ class TestHTTPClient(object):
         old_ssl = http.ssl
         try:
             http.ssl = None
-            base_config().http.ssl_no_cert_checks = True
-            self.client = HTTPClient('https://trac.osgeo.org/')
+            self.client = HTTPClient('https://trac.osgeo.org/', insecure=True)
             self.client.open('https://trac.osgeo.org/')
         finally:
             http.ssl = old_ssl
-            base_config().http.ssl_no_cert_checks = False
     
     def test_https_valid_cert(self):
         try:
@@ -114,11 +111,10 @@ class TestHTTPClient(object):
         except ImportError:
             raise SkipTest()
         
-        with TempFiles(1) as tmp:
-            with open(tmp[0], 'w') as f:
+        with TempFile() as tmp:
+            with open(tmp, 'w') as f:
                 f.write(OSGEO_CERT)
-            base_config().http.ssl_ca_certs = tmp[0]
-            self.client = HTTPClient('https://trac.osgeo.org/')
+            self.client = HTTPClient('https://trac.osgeo.org/', ssl_ca_certs=tmp)
             self.client.open('https://trac.osgeo.org/')
     
     def test_https_invalid_cert(self):
@@ -127,9 +123,8 @@ class TestHTTPClient(object):
         except ImportError:
             raise SkipTest()
         
-        with TempFiles(1) as tmp:
-            base_config().http.ssl_ca_certs = tmp[0]
-            self.client = HTTPClient('https://trac.osgeo.org/')
+        with TempFile() as tmp:
+            self.client = HTTPClient('https://trac.osgeo.org/', ssl_ca_certs=tmp)
             try:
                 self.client.open('https://trac.osgeo.org/')
             except HTTPClientError, e:
