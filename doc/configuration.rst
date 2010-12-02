@@ -513,12 +513,13 @@ Secure HTTPS Connections (HTTPS)
 
 MapProxy supports access to HTTPS servers. Just use ``https`` instead of ``http`` when
 defining the URL of a source. MapProxy needs a file that contains the root and CA
-certificates. See the `Python SSL documentation <http://docs.python.org/dev/library/ssl.html#ssl-certificates>`_ for more information
-about the format.
+certificates. If the server certificate is signed by a "standard" root certificate (i.e. your browser does not warn you), then you can use a cert file that is distributed with your system. On Debian based systems you can use ``/etc/ssl/certs/ca-certificates.crt``.
+See the `Python SSL documentation <http://docs.python.org/dev/library/ssl.html#ssl-certificates>`_ for more information about the format.
+
 ::
 
   http:
-    ssl_ca_certs: ./certs_file
+    ssl_ca_certs: /etc/ssl/certs/ca-certificates.crt
 
 If you want to use SSL but do not need certificate verification, then you can disable it with the ``ssl_no_cert_check`` option. You can also disable this check on a source level, see :ref:`WMS source options <wms_source-ssl_no_cert_check>`.
 ::
