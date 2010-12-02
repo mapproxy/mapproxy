@@ -121,6 +121,7 @@ We will not go into detail about the installation here, but you can read more ab
 .. _`Pylons integration`: http://code.google.com/p/modwsgi/wiki/IntegrationWithPylons
 
 .. index:: MultiMapProxy
+.. _multimapproxy:
 
 MultiMapProxy
 -------------

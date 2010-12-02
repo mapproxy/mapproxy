@@ -201,7 +201,7 @@ You can disable the certificate verification if you you don't need it.
 Serve multiple MapProxy instances
 =================================
 
-Since 0.9.1 it is possible to load multiple MapProxy instances into a single process. Each MapProxy can have a different global configuration and different services and caches. [#f1]_ You can use `Paste's urlmap <http://pythonpaste.org/deploy/#composite-applications>`_ to load multiple MapProxy configurations.
+Since 0.9.1 it is possible to load multiple MapProxy instances into a single process. Each MapProxy can have a different global configuration and different services and caches. [#f1]_ You can use `Paste's urlmap <http://pythonpaste.org/deploy/#composite-applications>`_ to load multiple MapProxy configurations. If you have multiple MapProxy configurations and what to load them dynamically, then you can also use :ref:`MultiMapProxy`.
 
 Example ``config.ini``::
 
