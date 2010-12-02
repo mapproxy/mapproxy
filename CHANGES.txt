@@ -1,7 +1,34 @@
 0.9.1dev
 
+Features:
 - WMS 1.1.0 support
 - Coverage support (limit sources to areas via WKT/OGC polygons)
+- new base option to reuse configurations
+- ScaleHint support (min/max_res, min/max_scale)
+- Support for multiple MapProxy configurations in one process with distinct
+  global/cache/source/etc. configurations
+- New MultiMapProxy: dynamically load multiple configurations (experimental)
+- treshold_res option for grids: switch cache levels at fixed resolutions
+- seed_only option for sources: allows offline usage
+
+Improvements:
+- concurrent_requests limit is now per unique hostname and not per URL
+- concurrent_requests can be set with globals.http.concurrent_requests
+- font_size of watermark is now configurable
+- improved configuration loading time and memory consumption
+- make use of PyYAML's C extension if available
+- cache projection attributes in SRS objects for better performance
+- try system wide projection definitions first, then fallback to defaults
+  (e.g. for EPSG:900913)
+- trailing slash is now optional for /tms/1.0.0
+
+Fixes:
+- removed start up error on systems where proj4 misses EPSG:3857
+- fixed color error for transparent PNG8 files
+- fixed links in demo service when URL is not /demo/
+- removed memory leak proj4 wrapper
+- fixed mapproxy-seed -f option
+- tests work without Shapely
 
 0.9.0 2010-10-18
 
