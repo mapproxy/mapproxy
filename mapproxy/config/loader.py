@@ -623,7 +623,13 @@ class ServiceConfiguration(ConfigurationBase):
 def load_services(conf_file):
     conf = load_configuration(conf_file)
     return conf.configured_services()
-    
+
+def load_yaml_file(file):
+    if yaml.__with_libyaml__:
+        return yaml.load(file, Loader=yaml.CLoader)
+    else:
+        return yaml.load(file)
+
 def load_configuration(mapproxy_conf):
     if hasattr(mapproxy_conf, 'read'):
         conf_data = mapproxy_conf.read()
@@ -632,10 +638,10 @@ def load_configuration(mapproxy_conf):
         log.info('Reading services configuration: %s' % mapproxy_conf)
         conf_data = open(mapproxy_conf).read()
         conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
-    conf_dict = yaml.load(conf_data)
+    conf_dict = load_yaml_file(conf_data)
     if 'base' in conf_dict:
         with open(os.path.join(conf_base_dir, conf_dict['base'])) as f:
-            base_dict = yaml.load(f)
+            base_dict = load_yaml_file(f)
         if 'base' in base_dict:
             log.warn('found `base` option in base config but recursive inheritance is not supported.')
         conf_dict = merge_dict(conf_dict, base_dict)
