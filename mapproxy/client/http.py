@@ -50,7 +50,6 @@ class HTTPClient(object):
     
     def __init__(self, url=None, username=None, password=None, insecure=False, ssl_ca_certs=None):
         socket.setdefaulttimeout(base_config().http.client_timeout)
-        print "#" *30
         handlers = []
         if url and url.startswith('https'):
             if insecure is False:
