@@ -75,8 +75,8 @@ class TMSRequest(TileRequest):
     request_handler_name = 'map'
     req_prefix = '/tms'
     capabilities_re = re.compile(r'''
-        ^.*/1\.0\.0/
-        (?P<layer>[^/]+)?
+        ^.*/1\.0\.0/?
+        (/(?P<layer>[^/]+))?
         (/(?P<layer_spec>[^/]+))?
         $''', re.VERBOSE)
     use_profiles = True

@@ -7,7 +7,7 @@
         <TileMap title="{{layer.md.get('title')}}"
                  srs="{{layer.grid.srs_name}}"
                  profile="{{layer.grid.profile}}"
-                 href="{{service.url}}{{'/'.join(layer.md['name_path'])}}" />
+                 href="{{service.url.rstrip('/')}}/{{'/'.join(layer.md['name_path'])}}" />
 {{endfor}}
     </TileMaps>
 </TileMapService>
