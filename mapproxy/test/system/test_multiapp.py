@@ -33,7 +33,7 @@ def module_setup(test_config, config_files):
         shutil.copy(config_file_src, config_file_dst)
         test_config['config_files'].append(config_file_dst)
         
-    app = app_factory({}, test_config['base_dir'])
+    app = app_factory({}, config_dir=test_config['base_dir'], allow_listing=False)
     test_config['multiapp'] = app
     test_config['app'] = TestApp(app, use_unicode=False)
 

@@ -18,6 +18,8 @@
 from __future__ import with_statement
 import os
 
+from paste.deploy.converters import asbool
+
 from mapproxy.request import Request
 from mapproxy.response import Response
 from mapproxy.util.collections import LRU
@@ -27,16 +29,15 @@ from threading import Lock
 import logging
 log = logging.getLogger(__name__)
 
-def app_factory(global_options, base_dir, list_apps=False, **local_options):
+def app_factory(global_options, config_dir, allow_listing=False, **local_options):
     """
     Create a new MultiMapProxy app.
     
-    :param base_dir: directory with all mapproxy configurations
-    :param list_apps: allow to list all available apps
+    :param config_dir: directory with all mapproxy configurations
+    :param allow_listing: allow to list all available apps
     """
-    
-    loader = DirectoryConfLoader(base_dir)
-    return MultiMapProxy(loader, list_apps=list_apps)
+    loader = DirectoryConfLoader(config_dir)
+    return MultiMapProxy(loader, list_apps=asbool(allow_listing))
 
 class MultiMapProxy(object):
     
