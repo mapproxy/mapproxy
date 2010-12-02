@@ -136,7 +136,6 @@ The internal image format for the cache. The default is ``image/png``.
 
 MapProxy will try to use this format to request new tiles, if it is not set ``format`` is used. This option has no effect if the source does not support that format or the format of the source is set explicitly (see ``suported_format`` or ``format`` for sources).
 
-.. index:: watermark
 
 ``link_single_color_images``
 """"""""""""""""""""""""""""
@@ -153,6 +152,7 @@ If set to ``true``, MapProxy will only issue a single request to the source. Thi
 
 By default MapProxy requests all uncached meta tiles that intersect the requested bbox. With a typical configuration it is not uncommon that a requests will trigger four requests each larger than 2000x2000 pixel. With the ``minimize_meta_requests`` option enabled, each request will trigger only one request to the source. That request will be aligned to the next tile boundaries and the tiles will be cached.
 
+.. index:: watermark
 
 ``watermark``
 """""""""""""
