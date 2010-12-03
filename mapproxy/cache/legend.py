@@ -29,6 +29,25 @@ from mapproxy.cache.file import _create_dir
 import logging
 log = logging.getLogger(__name__)
 
+def legend_identifier(legends):
+    """
+    >>> legend_identifier([("http://example/?", "foo"), ("http://example/?", "bar")])
+    'http://example/?foohttp://example/?bar'
+    
+    :param legends: list of legend URL and layer tuples
+    """
+    parts = []
+    for url, layer in legends:
+        parts.append(url)
+        parts.append(layer)
+    return ''.join(parts)
+
+def legend_hash(identifier, scale):
+    md5 = hashlib.md5()
+    md5.update(identifier)
+    md5.update(str(scale))
+    return md5.hexdigest()
+
 class LegendCache(object):
     def __init__(self, cache_dir=None, file_ext='png'):
         self.cache_dir = cache_dir
@@ -39,10 +58,8 @@ class LegendCache(object):
             return
         
         if legend.location is None:
-            md5 = hashlib.md5()
-            md5.update(legend.id)
-            md5.update(str(legend.scale))
-            legend.location = os.path.join(self.cache_dir,md5.hexdigest()) + '.' + self.file_ext
+            hash = legend_hash(legend.id, legend.scale)
+            legend.location = os.path.join(self.cache_dir, hash) + '.' + self.file_ext
             _create_dir(legend.location)
             
         data = legend.source.as_buffer(format=self.file_ext, seekable=True)
@@ -54,10 +71,8 @@ class LegendCache(object):
         legend.stored = True
     
     def load(self, legend):
-        md5 = hashlib.md5()
-        md5.update(legend.id)
-        md5.update(str(legend.scale))
-        legend.location = os.path.join(self.cache_dir,md5.hexdigest()) + '.' + self.file_ext
+        hash = legend_hash(legend.id, legend.scale)
+        legend.location = os.path.join(self.cache_dir, hash) + '.' + self.file_ext
         
         if os.path.exists(legend.location):
             legend.source = ImageSource(legend.location)
