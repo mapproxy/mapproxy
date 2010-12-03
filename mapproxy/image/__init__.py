@@ -269,16 +269,16 @@ class BlankImageSource(object):
         self.transparent = transparent
     
     def as_image(self):
-        raise NotImplementedError()
-        
-    def as_buffer(self, format=None, paletted=None, seekable=False):
         bgcolor = ImageColor.getrgb(self.bgcolor)
         if self.transparent:
             img = Image.new('RGBA', self.size, bgcolor+(0,))
         else:
             img = Image.new('RGB', self.size, bgcolor)
         # set paletted to false, no need to quantize single color image
-        return img_to_buf(img, format, paletted=False)
+        return img
+    
+    def as_buffer(self, format=None, paletted=None, seekable=False):
+        return img_to_buf(self.as_image(), format, paletted=False)
 
 class ReadBufWrapper(object):
     """
