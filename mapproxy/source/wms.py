@@ -18,7 +18,7 @@
 Retrieve maps/information from WMS servers.
 """
 import sys
-from mapproxy.cache.legend import LegendCache, Legend
+from mapproxy.cache.legend import LegendCache, Legend, legend_identifier
 from mapproxy.image import concat_legends, ImageSource
 from mapproxy.layer import MapExtent, BlankImage, LegendQuery
 from mapproxy.source import Source, InfoSource, SourceError, LegendSource
@@ -65,11 +65,9 @@ class WMSInfoSource(InfoSource):
 class WMSLegendSource(LegendSource):
     def __init__(self, clients, legend_cache):
         self.clients = clients
-        parts = []
-        for c in self.clients:
-            parts.append(c.request_template.url)
-            parts.append(c.request_template.params.layer)
-        self.identifier = ''.join(parts)
+        self.identifier = legend_identifier(
+            [(c.request_template.url, c.request_template.params.layer)
+             for c in self.clients])
         self._cache = legend_cache
         self._size = None
     
@@ -85,16 +83,20 @@ class WMSLegendSource(LegendSource):
         legend = Legend(id=self.identifier, scale=query.scale)
         if not self._cache.load(legend):
             legends = []
+            error_occured = False
             for client in self.clients:
                 try:
                     legends.append(client.get_legend(query))
                 except HTTPClientError, e:
+                    error_occured = True
                     log.error(e.args[0])
                 except SourceError, e:
+                    error_occured = True
                     # TODO errors?
                     log.error(e.args[0])
             legend = Legend(source=concat_legends(legends, format=query.format),
                             id=self.identifier, scale=query.scale)
-            self._cache.store(legend)
+            if not error_occured:
+                self._cache.store(legend)
         return legend.source
     
