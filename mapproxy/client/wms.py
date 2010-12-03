@@ -183,9 +183,8 @@ class WMSLegendClient(object):
     
     def _query_url(self, query):
         req = self.request_template.copy()
-        # req.params.layer = query.layer
-        # req.params['layer'] = req.params['layer']
         if not req.params.format:
             req.params.format = query.format or 'image/png'
-        
+        if query.scale:
+            req.params['scale'] = query.scale
         return req.complete_url
