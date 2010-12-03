@@ -349,12 +349,15 @@ class WMSSourceConfiguration(SourceConfiguration):
         http_client = None
         url, (username, password) = auth_data_from_url(request.url)
         if username and password:
+            request.url = url
+        insecure = ssl_ca_certs = None
+        if 'https' in url:
             insecure = self.context.globals.get_value('http.ssl_no_cert_checks', self.conf)
             ssl_ca_certs = self.context.globals.get_path('http.ssl_ca_certs', self.conf)
-            timeout = self.context.globals.get_value('http.client_timeout', self.conf)
-            request.url = url
-            http_client = HTTPClient(url, username, password, insecure=insecure,
-                                     ssl_ca_certs=ssl_ca_certs, timeout=timeout)
+        
+        timeout = self.context.globals.get_value('http.client_timeout', self.conf)
+        http_client = HTTPClient(url, username, password, insecure=insecure,
+                                 ssl_ca_certs=ssl_ca_certs, timeout=timeout)
         return http_client
     
     def source(self, params=None):
