@@ -17,13 +17,17 @@
 """
 Retrieve maps/information from WMS servers.
 """
-
 import sys
-from mapproxy.source import Source, InfoSource, SourceError
-from mapproxy.layer import MapExtent, BlankImage
+from mapproxy.cache.legend import LegendCache, Legend, legend_identifier
+from mapproxy.image import concat_legends, ImageSource
+from mapproxy.layer import MapExtent, BlankImage, LegendQuery
+from mapproxy.source import Source, InfoSource, SourceError, LegendSource
 from mapproxy.srs import SRS
 from mapproxy.client.http import HTTPClientError
 from mapproxy.util import reraise_exception
+
+import logging
+log = logging.getLogger(__name__)
 
 class WMSSource(Source):
     supports_meta_tiles = True
@@ -54,5 +58,45 @@ class WMSSource(Source):
 class WMSInfoSource(InfoSource):
     def __init__(self, client):
         self.client = client
+    
     def get_info(self, query):
         return self.client.get_info(query).read()
+        
+class WMSLegendSource(LegendSource):
+    def __init__(self, clients, legend_cache):
+        self.clients = clients
+        self.identifier = legend_identifier(
+            [(c.request_template.url, c.request_template.params.layer)
+             for c in self.clients])
+        self._cache = legend_cache
+        self._size = None
+    
+    @property
+    def size(self):
+        if not self._size:
+            legend = self.get_legend(LegendQuery(format='image/png', scale=None))
+            # TODO image size without as_image?
+            self._size = legend.as_image().size
+        return self._size
+    
+    def get_legend(self, query):
+        legend = Legend(id=self.identifier, scale=query.scale)
+        if not self._cache.load(legend):
+            legends = []
+            error_occured = False
+            for client in self.clients:
+                try:
+                    legends.append(client.get_legend(query))
+                except HTTPClientError, e:
+                    error_occured = True
+                    log.error(e.args[0])
+                except SourceError, e:
+                    error_occured = True
+                    # TODO errors?
+                    log.error(e.args[0])
+            legend = Legend(source=concat_legends(legends, format=query.format),
+                            id=self.identifier, scale=query.scale)
+            if not error_occured:
+                self._cache.store(legend)
+        return legend.source
+    

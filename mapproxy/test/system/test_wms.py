@@ -29,6 +29,7 @@ from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRe
                                  WMS100FeatureInfoRequest, WMS130FeatureInfoRequest, \
                                  WMS110MapRequest, WMS110FeatureInfoRequest, \
                                  WMS110CapabilitiesRequest, \
+                                 WMS111LegendGraphicRequest, WMS130LegendGraphicRequest, \
                                  wms_request
 from mapproxy.test.image import is_jpeg, is_png, tmp_image
 from mapproxy.test.http import mock_httpd
@@ -70,7 +71,7 @@ def is_111_exception(xml, msg=None, code=None, re_msg=None):
 def is_111_capa(xml):
     return validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
 def is_130_capa(xml):
-    return validate_with_xsd(xml, xsd_name='wms/1.3.0/capabilities_1_3_0.xsd')
+    return validate_with_xsd(xml, xsd_name='sld/1.1.0/sld_capabilities.xsd')
 
 
 class WMSTest(SystemTest):
@@ -413,6 +414,7 @@ class TestWMS111(WMSTest):
         eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code'), [])
         assert 'tms_cache is not queryable' in xml.xpath('//ServiceException/text()')[0]
         assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
+    
 
 class TestWMS110(WMSTest):
     def setup(self):
@@ -452,7 +454,7 @@ class TestWMS110(WMSTest):
         eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code')[0], 'LayerNotDefined')
         eq_(xml.xpath('//ServiceException/text()')[0], 'unknown layer: invalid')
         assert validate_with_dtd(xml, dtd_name='wms/1.1.0/exception_1_1_0.dtd')
-    
+
     def test_invalid_format(self):
         self.common_map_req.params['format'] = 'image/ascii'
         resp = self.app.get(self.common_map_req)
@@ -569,6 +571,7 @@ class TestWMS110(WMSTest):
         assert 'tms_cache is not queryable' in xml.xpath('//ServiceException/text()')[0]
         assert validate_with_dtd(xml, 'wms/1.1.0/exception_1_1_0.dtd')
     
+
 class TestWMS100(WMSTest):
     def setup(self):
         WMSTest.setup(self)
@@ -709,7 +712,9 @@ class TestWMS100(WMSTest):
         assert 'tms_cache is not queryable' in xml.xpath('//WMTException/text()')[0]
 
 ns130 = {'wms': 'http://www.opengis.net/wms',
-         'ogc': 'http://www.opengis.net/ogc'}
+         'ogc': 'http://www.opengis.net/ogc',
+         'sld': 'http://www.opengis.net/sld',
+         'xlink': 'http://www.w3.org/1999/xlink'}
 
 def eq_xpath(xml, xpath, expected, namespaces=None):
     eq_(xml.xpath(xpath, namespaces=namespaces)[0], expected)
@@ -729,7 +734,7 @@ class TestWMS130(WMSTest):
             param=dict(i='10', j='20', width='200', height='200', layers='wms_cache_130',
                        format='image/png', query_layers='wms_cache_130', styles='',
                        bbox='1000,400,2000,1400', crs='EPSG:900913'))
-    
+
     def test_wms_capabilities(self):
         req = WMS130CapabilitiesRequest(url='/service?').copy_with_request_params(self.common_req)
         resp = self.app.get(req)
@@ -860,6 +865,7 @@ class TestWMS130(WMSTest):
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, 'info')
+    
 
 if sys.platform != 'win32':
     class TestWMSLinkSingleColorImages(WMSTest):
