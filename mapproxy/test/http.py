@@ -41,7 +41,7 @@ class ThreadedStopableHTTPServer(threading.Thread):
         self.sucess = False
         self.shutdown = False
         self.httpd = HTTPServer(address, mock_http_handler(requests_responses))
-        self.httpd.timeout = 0.5
+        self.httpd.timeout = 1.0
         self.out = self.httpd.out = StringIO()
     def run(self):
         while self.requests_responses:

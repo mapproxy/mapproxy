@@ -21,7 +21,8 @@ Improvements:
 - try system wide projection definitions first, then fallback to defaults
   (e.g. for EPSG:900913)
 - trailing slash is now optional for /tms/1.0.0
-- support for http.ssl_ca_cert for each source
+- support for http.ssl_ca_cert for each WMS source
+- support for http.client_timeout for each WMS source (Python >=2.6)
 
 Fixes:
 - removed start up error on systems where proj4 misses EPSG:3857

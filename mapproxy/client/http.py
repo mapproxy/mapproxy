@@ -23,13 +23,13 @@ import urllib2
 from urllib2 import URLError, HTTPError
 from urlparse import urlsplit
 from datetime import datetime
+import warnings
 import logging
 log = logging.getLogger(__name__)
 
 from mapproxy.version import version
 from mapproxy.image import ImageSource
 from mapproxy.util import reraise_exception
-from mapproxy.config import base_config
 
 import socket
 
@@ -37,19 +37,41 @@ class HTTPClientError(Exception):
     pass
     
 
+if sys.version_info >= (2, 6):
+    _urllib2_has_timeout = True
+else:
+    _urllib2_has_timeout = False
+
+_max_set_timeout = None
+
 try:
     import ssl
 except ImportError:
     ssl = None
 
 
+def _set_global_socket_timeout(timeout):
+    global _max_set_timeout
+    if _max_set_timeout is None:
+        _max_set_timeout = timeout
+    elif _max_set_timeout != timeout:
+        _max_set_timeout = max(_max_set_timeout, timeout)
+        warnings.warn("Python >=2.6 required for individual HTTP timeouts. Setting global timeout to %.1f." %
+                     _max_set_timeout)
+    socket.setdefaulttimeout(_max_set_timeout)
+
 class HTTPClient(object):
     log = logging.getLogger(__name__ + '.http')
     log_fmt = '%(host)s - - [%(date)s] "GET %(path)s HTTP/1.1" %(status)d %(size)s "-" ""'
     log_datefmt = '%d/%b/%Y:%H:%M:%S %z'
     
-    def __init__(self, url=None, username=None, password=None, insecure=False, ssl_ca_certs=None):
-        socket.setdefaulttimeout(base_config().http.client_timeout)
+    def __init__(self, url=None, username=None, password=None, insecure=False,
+                 ssl_ca_certs=None, timeout=None):
+        if _urllib2_has_timeout:
+            self._timeout = timeout
+        else:
+            self._timeout = None
+            _set_global_socket_timeout(timeout)
         handlers = []
         if url and url.startswith('https'):
             if insecure is False:
@@ -86,11 +108,14 @@ class HTTPClient(object):
                                       status=status, path=path)
         self.log.info(log_msg)
     
-    def open(self, url, *args, **kw):
+    def open(self, url, data=None):
         try:
             code = 500
             result = None
-            result = self.default_opener.open(url, *args, **kw)
+            if self._timeout is not None:
+                result = self.default_opener.open(url, data=data, timeout=self._timeout)
+            else:
+                result = self.default_opener.open(url, data=data)
             code = result.code
             return result
         except HTTPError, e:

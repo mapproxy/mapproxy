@@ -15,6 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
+
+import time
+import sys
+
 from mapproxy.client.http import HTTPClient, HTTPClientError
 from mapproxy.client.tile import TMSClient, TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient
@@ -72,14 +76,6 @@ class TestHTTPClient(object):
             assert_re(e.args[0], r'No response .* \(http://localhost.*\): Connection refused')
         else:
             assert False, 'expected HTTPClientError'
-    def test_internal_error(self):
-        try:
-            self.client.open('http://localhost:53871', invalid_key='argument')
-        except HTTPClientError, e:
-            assert_re(e.args[0], r'Internal HTTP error \(http://localhost.*\): TypeError')
-        else:
-            assert False, 'expected HTTPClientError'
-
     
     def test_https_no_ssl_module_error(self):
         from mapproxy.client import http
@@ -129,6 +125,40 @@ class TestHTTPClient(object):
                 self.client.open('https://trac.osgeo.org/')
             except HTTPClientError, e:
                 assert_re(e.args[0], r'Could not verify connection to URL')
+        
+    def test_timeouts(self):
+        test_req = ({'path': '/', 'req_assert_function': lambda x: time.sleep(0.5) or True},
+                    {'body': 'nothing'})
+        with mock_httpd(TESTSERVER_ADDRESS, [test_req]):
+            client1 = HTTPClient(timeout=0.1)
+            client2 = HTTPClient(timeout=0.2)
+
+            try:
+                start = time.time()
+                client1.open(TESTSERVER_URL+'/')
+            except HTTPClientError, ex:
+                assert 'timed out' in ex.args[0]
+            else:
+                assert False, 'HTTPClientError expected'
+            duration1 = time.time() - start
+
+            try:
+                start = time.time()
+                client2.open(TESTSERVER_URL+'/')
+            except HTTPClientError, ex:
+                assert 'timed out' in ex.args[0]
+            else:
+                assert False, 'HTTPClientError expected'
+            duration2 = time.time() - start
+            
+            if sys.version_info >= (2, 6):
+                # check individual timeouts
+                assert 0.1 <= duration1 < 0.2
+                assert 0.2 <= duration2 < 0.3
+            else:
+                # use max timeout in Python 2.5
+                assert 0.2 <= duration1 < 0.3
+                assert 0.2 <= duration2 < 0.3
         
 OSGEO_CERT = """
 -----BEGIN CERTIFICATE-----
