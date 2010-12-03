@@ -39,6 +39,12 @@ TESTSERVER_URL = 'http://%s:%s' % TESTSERVER_ADDRESS
 class TestHTTPClient(object):
     def setup(self):
         self.client = HTTPClient()
+    
+    def test_post(self):
+        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?foo=bar', 'method': 'POST'},
+                                              {'status': '200', 'body': ''})]):
+            self.client.open(TESTSERVER_URL + '/service', data="foo=bar")
+    
     def test_internal_error_response(self):
         try:
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/'},

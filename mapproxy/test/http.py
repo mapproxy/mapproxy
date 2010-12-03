@@ -60,14 +60,21 @@ class ThreadedStopableHTTPServer(threading.Thread):
 def mock_http_handler(requests_responses):
     class MockHTTPHandler(BaseHTTPRequestHandler):
         def do_GET(self):
-            try:
-                return self.do_mock_request()
-            except AssertionError:
-                self.server.shutdown = True
-                raise
-        def do_mock_request(self):
-            assert len(requests_responses) > 0, 'got unexpected request (%s)' % self.path
+            self.query_data = self.path
+            return self.do_mock_request('GET')
+            
+        def do_POST(self):
+            length = int(self.headers['content-length'])
+            self.query_data = self.path + '?' + self.rfile.read(length)
+            return self.do_mock_request('POST')
+
+        def do_mock_request(self, method):
+            assert len(requests_responses) > 0, 'got unexpected request (%s)' % self.query_data
             req, resp = requests_responses.pop(0)
+            if 'method' in req:
+                if req['method'] != method:
+                    print >>self.server.out, 'expected %s request, got %s' % (req['method'], method)
+                    self.server.shutdown = True
             if req.get('require_basic_auth', False):
                 if 'Authorization' not in self.headers:
                     requests_responses.insert(0, (req, resp)) # push back
@@ -76,10 +83,10 @@ def mock_http_handler(requests_responses):
                     self.end_headers()
                     self.wfile.write('no access')
                     return
-            if not query_eq(req['path'], self.path):
-                print >>self.server.out, 'got request      ', self.path
+            if not query_eq(req['path'], self.query_data):
+                print >>self.server.out, 'got request      ', self.query_data
                 print >>self.server.out, 'expected request ', req['path']
-                query_actual = set(query_to_dict(self.path).items())
+                query_actual = set(query_to_dict(self.query_data).items())
                 query_expected = set(query_to_dict(req['path']).items())
                 print >>self.server.out, 'param diff  %s|%s' % (
                     query_actual - query_expected, query_expected - query_actual)

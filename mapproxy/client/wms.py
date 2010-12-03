@@ -28,9 +28,11 @@ from mapproxy.image.transform import ImageTransformer
 
 class WMSClient(object):
     def __init__(self, request_template, supported_srs=None, http_client=None,
-        resampling=None, supported_formats=None, lock=None):
+                 http_request_method=None, resampling=None, supported_formats=None,
+                 lock=None):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
+        self.http_method = http_request_method,
         self.supported_srs = supported_srs or []
         self.supported_formats = supported_formats or []
         self.resampling = resampling or base_config().image.resampling_method
@@ -86,12 +88,25 @@ class WMSClient(object):
         return self.supported_srs[0]
     
     def _retrieve(self, query, format):
-        url = self._query_url(query, format)
+        if self.http_method == 'POST':
+            request_method = 'POST'
+        elif self.http_method == 'GET':
+            request_method = 'GET'
+        else:
+            # TODO choose best (i.e. POST for req w/ large SLDs)
+            request_method = 'GET'
+        
+        if request_method == 'POST':
+            url, data = self._query_data(query, format)
+        else:
+            url = self._query_url(query, format)
+            data = None
+        
         if self.lock:
             with self.lock():
-                resp = self.http_client.open(url)
+                resp = self.http_client.open(url, data=data)
         else:
-            resp = self.http_client.open(url)
+            resp = self.http_client.open(url, data=data)
         self._check_resp(resp)
         return resp
     
@@ -102,13 +117,19 @@ class WMSClient(object):
             raise SourceError('no image returned from source WMS')
     
     def _query_url(self, query, format):
+        return self._query_req(query, format).complete_url
+    
+    def _query_data(self, query, format):
+        req = self._query_req(query, format)
+        return req.url.rstrip('?'), req.query_string
+    
+    def _query_req(self, query, format):
         req = self.request_template.copy()
         req.params.bbox = query.bbox
         req.params.size = query.size
         req.params.srs = query.srs.srs_code
         req.params.format = format
-        
-        return req.complete_url
+        return req
 
 
 class WMSInfoClient(object):
