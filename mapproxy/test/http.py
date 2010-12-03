@@ -15,7 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import threading
+import sys
 import cgi
+import socket
+import errno
 from cStringIO import StringIO
 from urlparse import urlsplit
 from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
@@ -23,6 +26,13 @@ from contextlib import contextmanager
 
 class HTTPServer(HTTPServer_):
     allow_reuse_address = True
+    
+    def handle_error(self, request, client_address):
+        _exc_class, exc, _tb = sys.exc_info()
+        if isinstance(exc, socket.error) and exc.errno == errno.EPIPE:
+            # suppres 'Broken pipe' errors raised in timeout tests
+            return
+        HTTPServer_.handle_error(self, request, client_address)
 
 class ThreadedStopableHTTPServer(threading.Thread):
     def __init__(self, address, requests_responses):
