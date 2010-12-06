@@ -57,7 +57,7 @@ All other options are added to the query string of the request.
 This option affects what request MapProxy sends to the source WMS server.
 
 ``version``
-  The WMS version number used for requests (supported: 1.0.0, 1.1.1, 1.3.0). Defaults to 1.1.1.
+  The WMS version number used for requests (supported: 1.0.0, 1.1.0, 1.1.1, 1.3.0). Defaults to 1.1.1.
   
 ``featureinfo``
   If this is set to ``true``, MapProxy will mark the layer as queryable and incoming `GetFeatureInfo` requests will be forwarded to the source server.
