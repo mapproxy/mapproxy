@@ -353,7 +353,7 @@ def seed_from_yaml_conf(seed_conf_file, mapproxy_conf_file, verbose=True, dry_ru
         for layer, options in seed_conf['seeds'].iteritems():
             remove_before = before_timestamp_from_options(options)
             try:
-                caches = conf.caches[layer].caches(conf)
+                caches = conf.caches[layer].caches()
             except KeyError:
                 print >>sys.stderr, 'error: cache %s not found. available caches: %s' % (
                     layer, ','.join(conf.caches.keys()))
