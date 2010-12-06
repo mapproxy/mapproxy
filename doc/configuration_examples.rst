@@ -141,6 +141,40 @@ You can configure the method MapProxy uses for resampling when it scales or tran
       resampling: bicubic
   
 
+.. _sld_example:
+
+WMS Sources with Styled Layer Description (SLD)
+===============================================
+
+You can configure SLDs for your WMS sources.
+
+::
+
+  sources:
+    sld_example:
+      type: wms
+      req:
+        url: http://example.org/service?
+        sld: http://example.net/mysld.xml
+
+You can also configure the raw SLD with the ``sld_body`` option. You need to indent whole SLD string.
+
+::
+
+  sources:
+    sld_example:
+      type: wms
+      req:
+        url: http://example.org/service?
+        sld_body:
+          <sld:StyledLayerDescriptor version="1.0.0"
+          [snip]
+          </sld:StyledLayerDescriptor>
+
+
+MapProxy will use HTTP POST requests in this case. You can change ``http.method``, if you want to force GET requests.
+
+
 Add highly dynamic layers
 =========================
 

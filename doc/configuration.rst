@@ -532,6 +532,16 @@ If you want to use SSL but do not need certificate verification, then you can di
 
 This defines how long MapProxy should wait for data from source servers. Increase this value if your source servers are slower.
 
+``method``
+^^^^^^^^^^
+
+Configure which HTTP method should be used for HTTP requests. By default (`AUTO`) MapProxy will use GET for most requests, except for requests with a long query string (e.g. WMS requests with `sld_body`) where POST is used instead. You can disable this behavior with either `GET` or `POST`.
+
+::
+
+  http:
+    method: GET
+
 
 ``tiles``
 """"""""""

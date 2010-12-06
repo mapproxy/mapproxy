@@ -50,6 +50,8 @@ All other options are added to the query string of the request.
     styles: simple
     map: /path/to/mapfile
 
+You can omit ``layers`` if you configure ``sld`` or ``sld_body``. See :ref:`sources with SLD <sld_example>` for more information.
+
 
 ``wms_opts``
 ^^^^^^^^^^^^
