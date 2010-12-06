@@ -29,7 +29,6 @@ from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRe
                                  WMS100FeatureInfoRequest, WMS130FeatureInfoRequest, \
                                  WMS110MapRequest, WMS110FeatureInfoRequest, \
                                  WMS110CapabilitiesRequest, \
-                                 WMS111LegendGraphicRequest, WMS130LegendGraphicRequest, \
                                  wms_request
 from mapproxy.test.image import is_jpeg, is_png, tmp_image
 from mapproxy.test.http import mock_httpd
@@ -71,7 +70,7 @@ def is_111_exception(xml, msg=None, code=None, re_msg=None):
 def is_111_capa(xml):
     return validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
 def is_130_capa(xml):
-    return validate_with_xsd(xml, xsd_name='sld/1.1.0/sld_capabilities.xsd')
+    return validate_with_xsd(xml, xsd_name='wms/1.3.0/capabilities_1_3_0.xsd')
 
 
 class WMSTest(SystemTest):

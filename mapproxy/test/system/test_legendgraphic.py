@@ -15,7 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement, division
-import math
 from StringIO import StringIO
 
 from mapproxy.platform.image import Image
@@ -24,14 +23,13 @@ from mapproxy.request.wms import (
     WMS111MapRequest, WMS111CapabilitiesRequest, WMS130CapabilitiesRequest,
     WMS111LegendGraphicRequest, WMS130LegendGraphicRequest
 )
-from mapproxy.cache.legend import LegendCache, Legend, legend_identifier
 
 from mapproxy.test.system import module_setup, module_teardown, make_base_config, SystemTest
-from mapproxy.test.image import is_png, is_transparent, tmp_image
+from mapproxy.test.image import is_png, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
-from mapproxy.test.system.test_wms import is_111_capa, is_130_capa, ns130, eq_xpath_wms130, ns130
-from nose.tools import eq_, assert_almost_equal
+from mapproxy.test.system.test_wms import is_111_capa, eq_xpath_wms130, ns130
+from nose.tools import eq_
 
 test_config = {}
 
@@ -42,6 +40,10 @@ def teardown_module():
     module_teardown(test_config)
 
 base_config = make_base_config(test_config)
+
+
+def is_130_capa(xml):
+    return validate_with_xsd(xml, xsd_name='sld/1.1.0/sld_capabilities.xsd')
 
 
 class TestWMS(SystemTest):
@@ -127,58 +129,52 @@ class TestWMS(SystemTest):
     
     def test_get_legendgraphic_no_legend_111(self):
         self.common_lg_req_111.params['layer'] = 'wms_no_legend'
-        with tmp_image((256, 256), format='png') as img:
-            resp = self.app.get(self.common_lg_req_111)
-            eq_(resp.content_type, 'application/vnd.ogc.se_xml')
-            xml = resp.lxml
-            assert 'wms_no_legend has no legend graphic' in xml.xpath('//ServiceException/text()')[0]
-            assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
+        resp = self.app.get(self.common_lg_req_111)
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        xml = resp.lxml
+        assert 'wms_no_legend has no legend graphic' in xml.xpath('//ServiceException/text()')[0]
+        assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
     
     def test_get_legendgraphic_missing_params_111(self):
         req = str(self.common_lg_req_111).replace('sld_version', 'invalid').replace('format', 'invalid')
-        with tmp_image((256, 256), format='png') as img:
-            resp = self.app.get(req)
-            eq_(resp.content_type, 'application/vnd.ogc.se_xml')
-            xml = resp.lxml
-            assert 'missing parameters' in xml.xpath('//ServiceException/text()')[0]
-            assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
+        resp = self.app.get(req)
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        xml = resp.lxml
+        assert 'missing parameters' in xml.xpath('//ServiceException/text()')[0]
+        assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
     
     def test_get_legendgraphic_invalid_sld_version_111(self):
         req = str(self.common_lg_req_111).replace('sld_version=1.1.0', 'sld_version=1.0.0')
-        with tmp_image((256, 256), format='png') as img:
-            resp = self.app.get(req)
-            eq_(resp.content_type, 'application/vnd.ogc.se_xml')
-            xml = resp.lxml
-            assert 'invalid sld_version' in xml.xpath('//ServiceException/text()')[0]
-            assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
+        resp = self.app.get(req)
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        xml = resp.lxml
+        assert 'invalid sld_version' in xml.xpath('//ServiceException/text()')[0]
+        assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
             
     def test_get_legendgraphic_no_legend_130(self):
         self.common_lg_req_130.params['layer'] = 'wms_no_legend'
-        with tmp_image((256, 256), format='png') as img:
-            resp = self.app.get(self.common_lg_req_130)
-            eq_(resp.content_type, 'text/xml')
-            xml = resp.lxml
-            eq_xpath_wms130(xml, '/ogc:ServiceExceptionReport/@version', '1.3.0')
-            eq_xpath_wms130(xml, '//ogc:ServiceException/text()', 'layer wms_no_legend has no legend graphic')
-            assert validate_with_xsd(xml, xsd_name='wms/1.3.0/exceptions_1_3_0.xsd')
+        resp = self.app.get(self.common_lg_req_130)
+        eq_(resp.content_type, 'text/xml')
+        xml = resp.lxml
+        eq_xpath_wms130(xml, '/ogc:ServiceExceptionReport/@version', '1.3.0')
+        eq_xpath_wms130(xml, '//ogc:ServiceException/text()', 'layer wms_no_legend has no legend graphic')
+        assert validate_with_xsd(xml, xsd_name='wms/1.3.0/exceptions_1_3_0.xsd')
     
     def test_get_legendgraphic_missing_params_130(self):
         req = str(self.common_lg_req_130).replace('format', 'invalid')
-        with tmp_image((256, 256), format='png') as img:
-            resp = self.app.get(req)
-            eq_(resp.content_type, 'text/xml')
-            xml = resp.lxml
-            eq_xpath_wms130(xml, '/ogc:ServiceExceptionReport/@version', '1.3.0')
-            eq_xpath_wms130(xml, '//ogc:ServiceException/text()', "missing parameters ['format']")
-            assert validate_with_xsd(xml, xsd_name='wms/1.3.0/exceptions_1_3_0.xsd')
+        resp = self.app.get(req)
+        eq_(resp.content_type, 'text/xml')
+        xml = resp.lxml
+        eq_xpath_wms130(xml, '/ogc:ServiceExceptionReport/@version', '1.3.0')
+        eq_xpath_wms130(xml, '//ogc:ServiceException/text()', "missing parameters ['format']")
+        assert validate_with_xsd(xml, xsd_name='wms/1.3.0/exceptions_1_3_0.xsd')
     
     def test_get_legendgraphic_invalid_sld_version_130(self):
         req = str(self.common_lg_req_130).replace('sld_version=1.1.0', 'sld_version=1.0.0')
-        with tmp_image((256, 256), format='png') as img:
-            resp = self.app.get(req)
-            eq_(resp.content_type, 'text/xml')
-            xml = resp.lxml
-            eq_xpath_wms130(xml, '/ogc:ServiceExceptionReport/@version', '1.3.0')
-            eq_xpath_wms130(xml, '//ogc:ServiceException/text()', 'invalid sld_version 1.0.0')            
-            assert validate_with_xsd(xml, xsd_name='wms/1.3.0/exceptions_1_3_0.xsd')
+        resp = self.app.get(req)
+        eq_(resp.content_type, 'text/xml')
+        xml = resp.lxml
+        eq_xpath_wms130(xml, '/ogc:ServiceExceptionReport/@version', '1.3.0')
+        eq_xpath_wms130(xml, '//ogc:ServiceException/text()', 'invalid sld_version 1.0.0')
+        assert validate_with_xsd(xml, xsd_name='wms/1.3.0/exceptions_1_3_0.xsd')
     
