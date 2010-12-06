@@ -159,6 +159,7 @@ class TestWMS111(WMSTest):
     def test_invalid_srs(self):
         self.common_map_req.params['srs'] = 'EPSG:1234'
         resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
         is_111_exception(resp.lxml, 'unsupported srs: EPSG:1234', 'InvalidSRS')
 
     def test_get_map_unknown_style(self):
@@ -178,7 +179,7 @@ class TestWMS111(WMSTest):
     
     def test_get_map_png(self):
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/png'
+        eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGB'
@@ -186,7 +187,7 @@ class TestWMS111(WMSTest):
     def test_get_map_png_transparent(self):
         self.common_map_req.params['transparent'] = 'True'
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/png'
+        eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGBA'
@@ -194,7 +195,7 @@ class TestWMS111(WMSTest):
     def test_get_map_jpeg(self):
         self.common_map_req.params['format'] = 'image/jpeg'
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/jpeg'
+        eq_(resp.content_type, 'image/jpeg')
         assert is_jpeg(StringIO(resp.body))
     
     def test_get_map_xml_exception(self):
@@ -505,7 +506,7 @@ class TestWMS110(WMSTest):
         
     def test_get_map_png(self):
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/png'
+        eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGB'
@@ -513,7 +514,7 @@ class TestWMS110(WMSTest):
     def test_get_map_png_transparent(self):
         self.common_map_req.params['transparent'] = 'True'
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/png'
+        eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGBA'
@@ -521,7 +522,7 @@ class TestWMS110(WMSTest):
     def test_get_map_jpeg(self):
         self.common_map_req.params['format'] = 'image/jpeg'
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/jpeg'
+        eq_(resp.content_type, 'image/jpeg')
         assert is_jpeg(StringIO(resp.body))
     
     def test_get_map_xml_exception(self):
@@ -655,7 +656,7 @@ class TestWMS100(WMSTest):
     
     def test_get_map_png(self):
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/png'
+        eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         eq_(Image.open(data).mode, 'RGB')
@@ -665,7 +666,7 @@ class TestWMS100(WMSTest):
             base_config().image.paletted = True
             self.common_map_req.params['transparent'] = 'True'
             resp = self.app.get(self.common_map_req)
-            resp.content_type = 'image/png'
+            eq_(resp.content_type, 'image/png')
             data = StringIO(resp.body)
             assert is_png(data)
             assert Image.open(data).mode == 'P'
@@ -675,7 +676,7 @@ class TestWMS100(WMSTest):
     def test_get_map_png_transparent(self):
         self.common_map_req.params['transparent'] = 'True'
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/png'
+        eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGBA'
@@ -683,7 +684,7 @@ class TestWMS100(WMSTest):
     def test_get_map_jpeg(self):
         self.common_map_req.params['format'] = 'image/jpeg'
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/jpeg'
+        eq_(resp.content_type, 'image/jpeg')
         assert is_jpeg(StringIO(resp.body))
     
     def test_get_map_xml_exception(self):
@@ -814,7 +815,7 @@ class TestWMS130(WMSTest):
     
     def test_get_map_png(self):
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/png'
+        eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGB'
@@ -822,7 +823,7 @@ class TestWMS130(WMSTest):
     def test_get_map_png_transparent(self):
         self.common_map_req.params['transparent'] = 'True'
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/png'
+        eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGBA'
@@ -830,7 +831,7 @@ class TestWMS130(WMSTest):
     def test_get_map_jpeg(self):
         self.common_map_req.params['format'] = 'image/jpeg'
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/jpeg'
+        eq_(resp.content_type, 'image/jpeg')
         assert is_jpeg(StringIO(resp.body))
     
     def test_get_map_xml_exception(self):
