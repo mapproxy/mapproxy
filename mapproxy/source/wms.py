@@ -18,6 +18,7 @@
 Retrieve maps/information from WMS servers.
 """
 import sys
+from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import LegendCache, Legend, legend_identifier
 from mapproxy.image import concat_legends, ImageSource
 from mapproxy.layer import MapExtent, BlankImage, LegendQuery
@@ -94,7 +95,8 @@ class WMSLegendSource(LegendSource):
                     error_occured = True
                     # TODO errors?
                     log.error(e.args[0])
-            legend = Legend(source=concat_legends(legends, format=query.format),
+            format = split_mime_type(query.format)[1]
+            legend = Legend(source=concat_legends(legends, format=format),
                             id=self.identifier, scale=query.scale)
             if not error_occured:
                 self._cache.store(legend)
