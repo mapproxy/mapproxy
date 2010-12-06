@@ -32,11 +32,11 @@ log = logging.getLogger(__name__)
 
 class WMSClient(object):
     def __init__(self, request_template, supported_srs=None, http_client=None,
-                 http_request_method=None, resampling=None, supported_formats=None,
+                 http_method=None, resampling=None, supported_formats=None,
                  lock=None):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
-        self.http_method = http_request_method,
+        self.http_method = http_method
         self.supported_srs = supported_srs or []
         self.supported_formats = supported_formats or []
         self.resampling = resampling or base_config().image.resampling_method
@@ -96,9 +96,11 @@ class WMSClient(object):
             request_method = 'POST'
         elif self.http_method == 'GET':
             request_method = 'GET'
-        else:
-            # TODO choose best (i.e. POST for req w/ large SLDs)
-            request_method = 'GET'
+        else: # 'AUTO'
+            if 'sld_body' in self.request_template.params:
+                request_method = 'POST'
+            else:
+                request_method = 'GET'
         
         if request_method == 'POST':
             url, data = self._query_data(query, format)

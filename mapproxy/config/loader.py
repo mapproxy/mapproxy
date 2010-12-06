@@ -393,10 +393,12 @@ class WMSSourceConfiguration(SourceConfiguration):
         coverage = self.coverage()
         res_range = resolution_range(self.conf)
         
+        http_method = self.context.globals.get_value('http.method', self.conf)
+        
         request = create_request(self.conf['req'], params, version=version)
         http_client = self.http_client(request)
         client = WMSClient(request, supported_srs, http_client=http_client, 
-                           resampling=resampling, lock=lock,
+                           http_method=http_method, resampling=resampling, lock=lock,
                            supported_formats=supported_formats or None)
         return WMSSource(client, transparent=transparent, coverage=coverage,
                          res_range=res_range)
