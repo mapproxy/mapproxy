@@ -666,6 +666,7 @@ class ServiceConfiguration(ConfigurationBase):
             layers[layer_name] = layer_conf.wms_layer()
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
+        self.context.globals.base_config.wms.srs = srs
         return WMSServer(layers, md, attribution=attribution, image_formats=image_formats,
             srs=srs, tile_layers=tile_layers, strict=strict)
 
