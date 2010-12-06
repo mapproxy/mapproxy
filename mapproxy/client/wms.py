@@ -27,6 +27,9 @@ from mapproxy.srs import make_lin_transf, SRS
 from mapproxy.image import ImageSource
 from mapproxy.image.transform import ImageTransformer
 
+import logging
+log = logging.getLogger(__name__)
+
 class WMSClient(object):
     def __init__(self, request_template, supported_srs=None, http_client=None,
                  http_request_method=None, resampling=None, supported_formats=None,
@@ -115,6 +118,7 @@ class WMSClient(object):
         if 'Content-type' not in resp.headers:
             raise SourceError('response from source WMS has no Content-type header')
         if not resp.headers['Content-type'].startswith('image/'):
+            log.warn("expected image response, got: %s", resp.read(8000))
             raise SourceError('no image returned from source WMS')
     
     def _query_url(self, query, format):
