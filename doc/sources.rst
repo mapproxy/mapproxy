@@ -62,6 +62,9 @@ This option affects what request MapProxy sends to the source WMS server.
 ``featureinfo``
   If this is set to ``true``, MapProxy will mark the layer as queryable and incoming `GetFeatureInfo` requests will be forwarded to the source server.
 
+``legendgraphic``
+    If this is set to ``true``, MapProxy will request legend graphics from this source. Each MapProxy WMS layer that contains one or more sources with legend graphics will then have a LegendURL.
+
 
 ``coverage``
 ^^^^^^^^^^^^

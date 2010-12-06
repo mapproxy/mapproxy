@@ -10,6 +10,7 @@ Features:
 - New MultiMapProxy: dynamically load multiple configurations (experimental)
 - treshold_res option for grids: switch cache levels at fixed resolutions
 - seed_only option for sources: allows offline usage
+- GetLegendGraphic support
 
 Improvements:
 - concurrent_requests limit is now per unique hostname and not per URL
