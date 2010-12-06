@@ -81,7 +81,7 @@ def base_config():
         config.conf_base_dir = os.getcwd()
         finish_base_config(config)
         _config._push_object(config)
-    return _config
+    return config
 
 def _to_options_map(mapping):
     if isinstance(mapping, dict):
