@@ -135,29 +135,34 @@ class TestHTTPClient(object):
     def test_timeouts(self):
         test_req = ({'path': '/', 'req_assert_function': lambda x: time.sleep(0.5) or True},
                     {'body': 'nothing'})
-        
+
+        import mapproxy.client.http
+
+        old_timeout = mapproxy.client.http._max_set_timeout
+        mapproxy.client.http._max_set_timeout = None
+
+        client1 = HTTPClient(timeout=0.1)
+        client2 = HTTPClient(timeout=0.2)
         with mock_httpd(TESTSERVER_ADDRESS, [test_req]):
             try:
-                client1 = HTTPClient(timeout=0.1)
                 start = time.time()
-                client1.open(TESTSERVER_URL+'/')
+                resp = client1.open(TESTSERVER_URL+'/')
             except HTTPClientError, ex:
                 assert 'timed out' in ex.args[0]
             else:
                 assert False, 'HTTPClientError expected'
             duration1 = time.time() - start
-        
+
         with mock_httpd(TESTSERVER_ADDRESS, [test_req]):
             try:
-                client2 = HTTPClient(timeout=0.2)
                 start = time.time()
-                client2.open(TESTSERVER_URL+'/')
+                resp = client2.open(TESTSERVER_URL+'/')
             except HTTPClientError, ex:
                 assert 'timed out' in ex.args[0]
             else:
                 assert False, 'HTTPClientError expected'
             duration2 = time.time() - start
-            
+
         if sys.version_info >= (2, 6):
             # check individual timeouts
             assert 0.1 <= duration1 < 0.2
@@ -166,6 +171,9 @@ class TestHTTPClient(object):
             # use max timeout in Python 2.5
             assert 0.2 <= duration1 < 0.3
             assert 0.2 <= duration2 < 0.3
+
+        mapproxy.client.http._max_set_timeout = old_timeout
+
         
 OSGEO_CERT = """
 -----BEGIN CERTIFICATE-----
