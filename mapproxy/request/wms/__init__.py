@@ -223,7 +223,7 @@ class WMSMapRequest(WMSRequest):
     def validate_styles(self):
         if 'styles' in self.params:
             styles = self.params['styles']
-            if styles.replace(',', '').strip() != '':
+            if not set(styles.split(',')).issubset(set(['default', ''])):
                 raise RequestError('unsupported styles: ' + self.params['styles'],
                                    code='StyleNotDefined', request=self)
         

@@ -160,6 +160,21 @@ class TestWMS111(WMSTest):
         self.common_map_req.params['srs'] = 'EPSG:1234'
         resp = self.app.get(self.common_map_req)
         is_111_exception(resp.lxml, 'unsupported srs: EPSG:1234', 'InvalidSRS')
+
+    def test_get_map_unknown_style(self):
+        self.common_map_req.params['styles'] = 'unknown'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        is_111_exception(resp.lxml, 'unsupported styles: unknown', 'StyleNotDefined')
+    
+    def test_get_map_default_style(self):
+        self.common_map_req.params['styles'] = 'default'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'image/png')
+        print resp.body
+        data = StringIO(resp.body)
+        assert is_png(data)
+        assert Image.open(data).mode == 'RGB'
     
     def test_get_map_png(self):
         resp = self.app.get(self.common_map_req)
