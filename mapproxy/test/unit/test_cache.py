@@ -554,7 +554,7 @@ class MockHTTPClient(object):
     def __init__(self):
         self.requested = []
     
-    def open(self, url):
+    def open(self, url, data=None):
         self.requested.append(url)
         w = int(re.search(r'width=(\d+)', url, re.IGNORECASE).group(1))
         h = int(re.search(r'height=(\d+)', url, re.IGNORECASE).group(1))
