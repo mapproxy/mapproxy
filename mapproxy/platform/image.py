@@ -39,6 +39,7 @@ else:
             img = img.quantize(colors, Image.FASTOCTREE)
         else:
             if alpha:
+                img.load() # split might fail if image is not loaded
                 alpha = img.split()[3]
                 img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors-1)
                 mask = Image.eval(alpha, lambda a: 255 if a <=128 else 0)
