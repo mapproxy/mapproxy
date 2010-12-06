@@ -29,9 +29,11 @@ class HTTPServer(HTTPServer_):
     
     def handle_error(self, request, client_address):
         _exc_class, exc, _tb = sys.exc_info()
-        if isinstance(exc, socket.error) and exc.errno == errno.EPIPE:
-            # suppres 'Broken pipe' errors raised in timeout tests
-            return
+        if isinstance(exc, socket.error):
+            if (hasattr(exc, 'errno') and exc.errno == errno.EPIPE
+              or exc.args[0] == errno.EPIPE): # exc.errno since py2.6
+                # suppres 'Broken pipe' errors raised in timeout tests
+                return
         HTTPServer_.handle_error(self, request, client_address)
 
 class ThreadedStopableHTTPServer(threading.Thread):
