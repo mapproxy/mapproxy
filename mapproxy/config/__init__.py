@@ -14,4 +14,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from mapproxy.config.config import base_config, abspath, load_base_config, finish_base_config, Options
+from mapproxy.config.config import (
+    base_config, abspath, load_base_config,
+    finish_base_config, Options
+)
+
+__all__ = ['base_config', 'abspath', 'load_base_config', 'finish_base_config', 'Options']

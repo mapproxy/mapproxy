@@ -86,12 +86,3 @@ class LRU(object):
     def __contains__(self, key):
         return key in self.values
 
-
-if __name__ == '__main__':
-    from random import randint
-    
-    cache = LRU(15)
-    for i in xrange(100000):
-        cache[i] = 'foo'
-    
-    print cache

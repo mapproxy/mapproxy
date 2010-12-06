@@ -46,6 +46,7 @@ _max_set_timeout = None
 
 try:
     import ssl
+    ssl # prevent pyflakes warnings
 except ImportError:
     ssl = None
 

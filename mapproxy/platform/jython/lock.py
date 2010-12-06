@@ -16,6 +16,7 @@
 
 from __future__ import with_statement
 from mapproxy.platform.cpython.lock import LockTimeout, FileLock as FileLock_
+LockTimeout # prevent pyflakes warnings
 from threading import Lock
 
 class LockError(Exception):

@@ -17,6 +17,8 @@
 
 import platform
 
+__all__ = ['LockTimeout', 'FileLock', 'LockError', 'cleanup_lockdir']
+
 if platform.system() == "Java":
     from mapproxy.platform.jython.lock import (
         LockTimeout,
@@ -24,9 +26,11 @@ if platform.system() == "Java":
         LockError,
         cleanup_lockdir,
     )
+    LockTimeout, FileLock, LockError, cleanup_lockdir # prevent pyflakes warnings
 else:
     from mapproxy.platform.cpython.lock import (
         LockTimeout,
         FileLock,
         LockError,
         cleanup_lockdir)
+    LockTimeout, FileLock, LockError, cleanup_lockdir # prevent pyflakes warnings

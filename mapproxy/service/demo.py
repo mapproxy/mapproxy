@@ -22,17 +22,9 @@ import mimetypes
 from urllib2 import urlopen
 from collections import defaultdict
 
-from itertools import chain
-from mapproxy.request.wms import wms_request
-from mapproxy.srs import merge_bbox, SRS, TransformationError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
-from mapproxy.exception import RequestError
 from mapproxy.config import base_config
-from mapproxy.image.message import attribution_image
-
-from mapproxy.layer import BlankImage, MapQuery, InfoQuery, MapError, MapBBOXError
-from mapproxy.source import SourceError
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}

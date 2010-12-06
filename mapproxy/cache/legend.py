@@ -17,13 +17,9 @@
 from __future__ import with_statement
 
 import os
-import sys
-import time
-import errno
 import hashlib
 
 from mapproxy.image import ImageSource
-from mapproxy.config import base_config
 from mapproxy.cache.file import _create_dir
 
 import logging
@@ -61,7 +57,7 @@ class LegendCache(object):
             hash = legend_hash(legend.id, legend.scale)
             legend.location = os.path.join(self.cache_dir, hash) + '.' + self.file_ext
             _create_dir(legend.location)
-            
+        
         data = legend.source.as_buffer(format=self.file_ext, seekable=True)
         data.seek(0)
         with open(legend.location, 'wb') as f:

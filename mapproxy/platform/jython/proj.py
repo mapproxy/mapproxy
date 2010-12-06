@@ -18,9 +18,7 @@ import mapproxy.platform
 
 if mapproxy.platform.is_jython:
     from org.geotools.referencing import CRS
-    from org.geotools.referencing.crs import EPSGCRSAuthorityFactory
-
-    from jarray import array, zeros
+    from jarray import zeros
 
 RAD_TO_DEG = 57.29577951308232
 DEG_TO_RAD = .0174532925199432958

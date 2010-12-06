@@ -19,8 +19,8 @@ Retrieve maps/information from WMS servers.
 """
 import sys
 from mapproxy.request.base import split_mime_type
-from mapproxy.cache.legend import LegendCache, Legend, legend_identifier
-from mapproxy.image import concat_legends, ImageSource
+from mapproxy.cache.legend import Legend, legend_identifier
+from mapproxy.image import concat_legends
 from mapproxy.layer import MapExtent, BlankImage, LegendQuery
 from mapproxy.source import Source, InfoSource, SourceError, LegendSource
 from mapproxy.srs import SRS

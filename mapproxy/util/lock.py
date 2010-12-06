@@ -17,6 +17,9 @@
 
 from mapproxy.util.ext.lockfile import LockFile
 from mapproxy.platform.lock import LockTimeout, FileLock, LockError, cleanup_lockdir
+
+__all__ = ['LockTimeout', 'FileLock', 'LockError', 'cleanup_lockdir', 'SemLock']
+
 import random
 
 class SemLock(FileLock):
@@ -34,7 +37,7 @@ class SemLock(FileLock):
             tries += 1
             try:
                 return LockFile(self.lock_file + str(i))
-            except LockError, e:
+            except LockError:
                 if tries >= self.n:
                     raise
             i = (i+1) % self.n

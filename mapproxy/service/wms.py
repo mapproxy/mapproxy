@@ -29,7 +29,6 @@ from mapproxy.image import concat_legends
 from mapproxy.image.message import attribution_image
 
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, MapBBOXError
-from mapproxy.source import SourceError
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}

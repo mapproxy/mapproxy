@@ -142,6 +142,7 @@ if libproj is None:
     if _use_pyproj:
         try:
             from pyproj import Proj, transform, set_datapath
+            Proj, transform, set_datapath #prevent pyflakes arnings
             log.debug('using pyproj for coordinate transformation')
         except ImportError:
             if _use_libproj:

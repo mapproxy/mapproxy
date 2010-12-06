@@ -17,20 +17,17 @@
 from __future__ import with_statement, division
 import sys
 import os
-import re
 import math
 import time
 import datetime
 
 import yaml
 
-from mapproxy.config import base_config
 from mapproxy.config.coverage import load_coverage
 from mapproxy.config.loader import ProxyConfiguration
 from mapproxy.srs import SRS
 from mapproxy.grid import MetaGrid, bbox_intersects, bbox_contains
 from mapproxy.source import SourceError
-from mapproxy.config import abspath
 from mapproxy.util import (
     cleanup_directory,
     timestamp_before,
@@ -40,8 +37,6 @@ from mapproxy.util import (
 
 try:
     from mapproxy.util.geom import (
-        load_polygons,
-        load_datasource,
         transform_geometry,
         bbox_polygon,
     )

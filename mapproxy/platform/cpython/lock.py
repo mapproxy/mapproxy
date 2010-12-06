@@ -21,7 +21,6 @@ from __future__ import with_statement
 import time
 import os
 import errno
-import random
 
 from mapproxy.util.ext.lockfile import LockFile, LockError
 
@@ -64,7 +63,7 @@ class FileLock(object):
         while not self._locked:
             try:
                 self._lock = self._try_lock()
-            except LockError, e:
+            except LockError:
                 current_time = time.time()
                 if current_time < stop_time:
                     time.sleep(self.step)

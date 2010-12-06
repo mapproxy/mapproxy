@@ -16,23 +16,28 @@
 
 import platform
 
+__all__ = ['Image', 'ImageColor', 'ImageDraw', 'ImageFont', 'ImagePalette', 'quantize']
+
 if platform.system() == "Java":
     from jil import Image, ImageColor, ImageDraw, ImageFont
+    Image, ImageColor, ImageDraw, ImageFont # prevent pyflakes warnings
     
     class ImagePalette(object):
         def __init__(self, *args, **kw):
             raise NotImplementedError()
             
-    def quantize(img, colors=256, alpha=False, defaults=None):
+    def quantize_jil(img, colors=256, alpha=False, defaults=None):
         return img.convert('P', palette=Image.ADAPTIVE, colors=colors)
-    
+    quantize = quantize_jil
 else:
     try:
         from PIL import Image, ImageColor, ImageDraw, ImageFont, ImagePalette
+        Image, ImageColor, ImageDraw, ImageFont, ImagePalette # prevent pyflakes warnings
     except ImportError:
         import Image, ImageColor, ImageDraw, ImageFont, ImagePalette
+        Image, ImageColor, ImageDraw, ImageFont, ImagePalette # prevent pyflakes warnings
     
-    def quantize(img, colors=256, alpha=False, defaults=None):
+    def quantize_pil(img, colors=256, alpha=False, defaults=None):
         if hasattr(Image, 'FASTOCTREE'):
             if not alpha:
                 img = img.convert('RGB')
@@ -50,3 +55,4 @@ else:
                 img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
            
         return img
+    quantize = quantize_pil
