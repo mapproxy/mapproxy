@@ -23,6 +23,7 @@ import datetime
 
 import yaml
 
+from mapproxy.config import base_config
 from mapproxy.config.coverage import load_coverage
 from mapproxy.config.loader import ProxyConfiguration
 from mapproxy.srs import SRS
@@ -72,8 +73,9 @@ class SeedPool(object):
         self.cache = cache
         self.dry_run = dry_run
         self.procs = []
+        conf = base_config()
         for _ in xrange(size):
-            worker = SeedWorker(cache, self.tiles_queue, dry_run=dry_run)
+            worker = SeedWorker(cache, self.tiles_queue, conf, dry_run=dry_run)
             worker.start()
             self.procs.append(worker)
     
@@ -89,26 +91,27 @@ class SeedPool(object):
 
 
 class SeedWorker(proc_class):
-    def __init__(self, tile_mgr, tiles_queue, dry_run=False):
+    def __init__(self, tile_mgr, tiles_queue, conf, dry_run=False):
         proc_class.__init__(self)
         proc_class.daemon = True
         self.tile_mgr = tile_mgr
         self.tiles_queue = tiles_queue
+        self.conf = conf
         self.dry_run = dry_run
     def run(self):
-        while True:
-            tiles, progress = self.tiles_queue.get()
-            if tiles is None:
-                return
-            print '[%s] %6.2f%% %s \tETA: %s\r' % (
-                timestamp(), progress[1]*100, progress[0],
-                progress[2]
-            ),
-            sys.stdout.flush()
-            if not self.dry_run:
-                exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
-                            exceptions=(SourceError, IOError))
-
+        with local_base_config(self.conf):
+            while True:
+                tiles, progress = self.tiles_queue.get()
+                if tiles is None:
+                    return
+                print '[%s] %6.2f%% %s \tETA: %s\r' % (
+                    timestamp(), progress[1]*100, progress[0],
+                    progress[2]
+                ),
+                sys.stdout.flush()
+                if not self.dry_run:
+                    exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
+                                exceptions=(SourceError, IOError))
 
 class ETA(object):
     def __init__(self):
