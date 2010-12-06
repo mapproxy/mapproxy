@@ -135,11 +135,10 @@ class TestHTTPClient(object):
     def test_timeouts(self):
         test_req = ({'path': '/', 'req_assert_function': lambda x: time.sleep(0.5) or True},
                     {'body': 'nothing'})
+        
         with mock_httpd(TESTSERVER_ADDRESS, [test_req]):
-            client1 = HTTPClient(timeout=0.1)
-            client2 = HTTPClient(timeout=0.2)
-
             try:
+                client1 = HTTPClient(timeout=0.1)
                 start = time.time()
                 client1.open(TESTSERVER_URL+'/')
             except HTTPClientError, ex:
@@ -147,8 +146,10 @@ class TestHTTPClient(object):
             else:
                 assert False, 'HTTPClientError expected'
             duration1 = time.time() - start
-
+        
+        with mock_httpd(TESTSERVER_ADDRESS, [test_req]):
             try:
+                client2 = HTTPClient(timeout=0.2)
                 start = time.time()
                 client2.open(TESTSERVER_URL+'/')
             except HTTPClientError, ex:
@@ -157,14 +158,14 @@ class TestHTTPClient(object):
                 assert False, 'HTTPClientError expected'
             duration2 = time.time() - start
             
-            if sys.version_info >= (2, 6):
-                # check individual timeouts
-                assert 0.1 <= duration1 < 0.2
-                assert 0.2 <= duration2 < 0.3
-            else:
-                # use max timeout in Python 2.5
-                assert 0.2 <= duration1 < 0.3
-                assert 0.2 <= duration2 < 0.3
+        if sys.version_info >= (2, 6):
+            # check individual timeouts
+            assert 0.1 <= duration1 < 0.2
+            assert 0.2 <= duration2 < 0.3
+        else:
+            # use max timeout in Python 2.5
+            assert 0.2 <= duration1 < 0.3
+            assert 0.2 <= duration2 < 0.3
         
 OSGEO_CERT = """
 -----BEGIN CERTIFICATE-----
