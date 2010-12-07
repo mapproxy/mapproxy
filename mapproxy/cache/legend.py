@@ -35,7 +35,8 @@ def legend_identifier(legends):
     parts = []
     for url, layer in legends:
         parts.append(url)
-        parts.append(layer)
+        if layer:
+            parts.append(layer)
     return ''.join(parts)
 
 def legend_hash(identifier, scale):
