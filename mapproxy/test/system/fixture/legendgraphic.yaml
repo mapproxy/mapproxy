@@ -40,6 +40,13 @@ layers:
   wms_no_legend:
     title: Layer without legendgraphic support
     sources: [wms_cache]
+  wms_source_static_url:
+    title: Layer with a static LegendURL
+    sources: [legendurl_static]
+  wms_layer_static_url:
+    title: Layer with a static LegendURL
+    legendurl: http://localhost:42423/staticlegend_layer.png
+    sources: [legendurl_static_2]
 
 sources:
   legend_cache:
@@ -60,6 +67,23 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: spam
+  legendurl_static:
+    type: wms
+    supported_srs: ['EPSG:900913', 'EPSG:4326']
+    wms_opts:
+      version: '1.1.1'
+      legendurl: http://localhost:42423/staticlegend_source.png
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar
+  legendurl_static_2:
+    type: wms
+    supported_srs: ['EPSG:900913', 'EPSG:4326']
+    wms_opts:
+      version: '1.1.1'
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar
   wms_cache:
     type: wms
     supported_srs: ['EPSG:900913', 'EPSG:4326']

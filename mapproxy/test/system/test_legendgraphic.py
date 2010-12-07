@@ -57,6 +57,56 @@ class TestWMS(SystemTest):
         self.common_lg_req_130 = WMS130LegendGraphicRequest(url='/service?',
             param=dict(format='image/png', layer='wms_legend', sld_version='1.1.0'))
     
+    #test_00, test_01, test_02 need to run first in order to run the other tests properly
+    def test_00_get_legendgraphic_multiple_sources_111(self):
+        self.common_lg_req_111.params['layer'] = 'wms_mult_sources'
+        with tmp_image((256, 256), format='png') as img:
+            img_data = img.read()
+            expected_req1 = ({'path': r'/service?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                                      '&REQUEST=GetLegendGraphic&'
+                                      '&VERSION=1.1.1&SLD_VERSION=1.1.0'},
+                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
+            expected_req2 = ({'path': r'/service?LAYER=bar&SERVICE=WMS&FORMAT=image%2Fpng'
+                                      '&REQUEST=GetLegendGraphic&'
+                                      '&VERSION=1.1.1&SLD_VERSION=1.1.0'},
+                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
+            expected_req3 = ({'path': r'/service?LAYER=spam&SERVICE=WMS&FORMAT=image%2Fpng'
+                                      '&REQUEST=GetLegendGraphic&'
+                                      '&VERSION=1.1.1&SLD_VERSION=1.1.0'},
+                            {'body': img_data, 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req1, expected_req2, expected_req3]):
+                resp = self.app.get(self.common_lg_req_111)
+                eq_(resp.content_type, 'image/png')
+                data = StringIO(resp.body)
+                assert is_png(data)
+                assert Image.open(data).size == (256,768)
+    
+    def test_01_get_legendgraphic_source_static_url(self):
+        self.common_lg_req_111.params['layer'] = 'wms_source_static_url'
+        with tmp_image((256, 256), format='png') as img:
+            img_data = img.read()
+            expected_req1 = ({'path': r'/staticlegend_source.png'},
+                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req1]):
+                resp = self.app.get(self.common_lg_req_111)
+                eq_(resp.content_type, 'image/png')
+                data = StringIO(resp.body)
+                assert is_png(data)
+                assert Image.open(data).size == (256,256)
+    
+    def test_02_get_legendgraphic_layer_static_url(self):
+        self.common_lg_req_111.params['layer'] = 'wms_layer_static_url'
+        with tmp_image((256, 256), format='png') as img:
+            img_data = img.read()
+            expected_req1 = ({'path': r'/staticlegend_layer.png'},
+                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req1]):
+                resp = self.app.get(self.common_lg_req_111)
+                eq_(resp.content_type, 'image/png')
+                data = StringIO(resp.body)
+                assert is_png(data)
+                assert Image.open(data).size == (256,256)
+    
     def test_capabilities_111(self):
         req = WMS111CapabilitiesRequest(url='/service?').copy_with_request_params(self.common_req)
         resp = self.app.get(req)
@@ -64,7 +114,7 @@ class TestWMS(SystemTest):
         eq_(xml.xpath('//Request/GetLegendGraphic')[0].tag, 'GetLegendGraphic')
         legend_sizes = (xml.xpath('//Layer/Style/LegendURL/@width'),
                         xml.xpath('//Layer/Style/LegendURL/@height'))
-        assert legend_sizes == (['256', '256'],['768', '512'])        
+        assert legend_sizes == (['256', '256', '256', '256'],['256', '768', '512', '256'])
         layer_urls = xml.xpath('//Layer/Style/LegendURL/OnlineResource/@xlink:href',
                          namespaces=ns130)
         for layer_url in layer_urls:
@@ -103,29 +153,6 @@ class TestWMS(SystemTest):
                 data = StringIO(resp.body)
                 assert is_png(data)
                 assert Image.open(data).size == (256,512)
-    
-    def test_00_get_legendgraphic_multiple_sources_111(self):
-        self.common_lg_req_111.params['layer'] = 'wms_mult_sources'
-        with tmp_image((256, 256), format='png') as img:
-            img_data = img.read()
-            expected_req1 = ({'path': r'/service?LAYER=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                      '&REQUEST=GetLegendGraphic&'
-                                      '&VERSION=1.1.1&SLD_VERSION=1.1.0'},
-                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
-            expected_req2 = ({'path': r'/service?LAYER=bar&SERVICE=WMS&FORMAT=image%2Fpng'
-                                      '&REQUEST=GetLegendGraphic&'
-                                      '&VERSION=1.1.1&SLD_VERSION=1.1.0'},
-                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
-            expected_req3 = ({'path': r'/service?LAYER=spam&SERVICE=WMS&FORMAT=image%2Fpng'
-                                      '&REQUEST=GetLegendGraphic&'
-                                      '&VERSION=1.1.1&SLD_VERSION=1.1.0'},
-                            {'body': img_data, 'headers': {'content-type': 'image/png'}})
-            with mock_httpd(('localhost', 42423), [expected_req1, expected_req2, expected_req3]):
-                resp = self.app.get(self.common_lg_req_111)
-                eq_(resp.content_type, 'image/png')
-                data = StringIO(resp.body)
-                assert is_png(data)
-                assert Image.open(data).size == (256,768)
     
     def test_get_legendgraphic_no_legend_111(self):
         self.common_lg_req_111.params['layer'] = 'wms_no_legend'
