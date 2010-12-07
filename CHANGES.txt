@@ -1,4 +1,4 @@
-0.9.1dev
+0.9.1rc1 2010-12-07
 
 Features:
 - WMS 1.1.0 support
@@ -11,6 +11,7 @@ Features:
 - treshold_res option for grids: switch cache levels at fixed resolutions
 - seed_only option for sources: allows offline usage
 - GetLegendGraphic support
+- SLD support for WMS sources
 
 Improvements:
 - concurrent_requests limit is now per unique hostname and not per URL
