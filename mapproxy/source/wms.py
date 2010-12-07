@@ -66,9 +66,7 @@ class WMSInfoSource(InfoSource):
 class WMSLegendSource(LegendSource):
     def __init__(self, clients, legend_cache):
         self.clients = clients
-        self.identifier = legend_identifier(
-            [(c.request_template.url, c.request_template.params.layer)
-             for c in self.clients])
+        self.identifier = legend_identifier([c.identifier for c in self.clients])
         self._cache = legend_cache
         self._size = None
     
