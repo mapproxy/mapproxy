@@ -217,3 +217,30 @@ class WMSLegendClient(object):
         if query.scale:
             req.params['scale'] = query.scale
         return req.complete_url
+    
+    @property
+    def identifier(self):
+        return (self.request_template.url, self.request_template.params.layer)
+        
+class WMSLegendURLClient(object):
+    def __init__(self, static_url, http_client=None):
+        self.url = static_url
+        self.http_client = http_client or HTTPClient()
+    
+    def get_legend(self, query):
+        resp = self.http_client.open(self.url)
+        format = split_mime_type(query.format)[1]
+        self._check_resp(resp)
+        return ImageSource(resp, format=format)
+    
+    def _check_resp(self, resp):
+        if 'Content-type' not in resp.headers:
+            raise SourceError('response from source WMS has no Content-type header')
+        if not resp.headers['Content-type'].startswith('image/'):
+            raise SourceError('no image returned from static LegendURL')
+    
+    @property
+    def identifier(self):
+        return (self.url, None)
+        
+        
