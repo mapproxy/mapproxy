@@ -117,7 +117,7 @@ class HTTPClient(object):
                 result = self.default_opener.open(url, data=data, timeout=self._timeout)
             else:
                 result = self.default_opener.open(url, data=data)
-            code = result.code
+            code = getattr(result, 'code', 200)
             return result
         except HTTPError, e:
             code = e.code
