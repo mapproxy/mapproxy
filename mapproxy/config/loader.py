@@ -74,7 +74,7 @@ from mapproxy.layer import (
     ResolutionConditional, map_extent_from_grid
 )
 from mapproxy.client.tile import TileClient, TileURLTemplate
-from mapproxy.client.wms import WMSClient, WMSInfoClient, WMSLegendClient
+from mapproxy.client.wms import WMSClient, WMSInfoClient, WMSLegendClient, WMSLegendURLClient
 from mapproxy.service.wms import WMSServer, WMSLayer
 from mapproxy.service.tile import TileServer, TileLayer
 from mapproxy.service.kml import KMLServer
@@ -293,8 +293,12 @@ class GlobalConfiguration(ConfigurationBase):
     def get_path(self, key, local, global_key=None, default_key=None):
         value = self.get_value(key, local, global_key, default_key)
         if value is not None:
-            value = os.path.join(self.base_config.conf_base_dir, value)
+            value = self.abspath(value)
         return value
+    
+    def abspath(self, path):
+        return os.path.join(self.base_config.conf_base_dir, path)
+        
     
 
 def dotted_dict_get(key, d):
@@ -426,7 +430,16 @@ class WMSSourceConfiguration(SourceConfiguration):
         lg_source = None
         cache_dir = os.path.join(self.context.globals.get_path('cache.base_dir', {}),
                                  'legends')
-        if self.conf.get('wms_opts', {}).get('legendgraphic', False):
+                                 
+        if self.conf.get('wms_opts', {}).get('legendurl', False):
+            lg_url = self.conf.get('wms_opts', {}).get('legendurl')
+            if lg_url.startswith('file://') and not lg_url.startswith('file:///'):
+                prefix = 'file://'
+                lg_url = prefix + self.context.globals.abspath(lg_url[7:])
+            lg_client = WMSLegendURLClient(lg_url)
+            legend_cache = LegendCache(cache_dir=cache_dir)
+            lg_source = WMSLegendSource([lg_client], legend_cache)
+        elif self.conf.get('wms_opts', {}).get('legendgraphic', False):
             version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
             lg_req = self.conf['req'].copy()
             lg_clients = []
