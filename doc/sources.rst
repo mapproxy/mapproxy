@@ -50,7 +50,8 @@ All other options are added to the query string of the request.
     styles: simple
     map: /path/to/mapfile
 
-You can omit ``layers`` if you configure ``sld`` or ``sld_body``. See :ref:`sources with SLD <sld_example>` for more information.
+
+You can also configure ``sld`` or ``sld_body`` parameters, in this case you can omit ``layers``. ``sld`` can also point to a ``file://``-URL. MapProxy will read this file and use the content as the ``sld_body``. See :ref:`sources with SLD <sld_example>` for more information.
 
 
 ``wms_opts``

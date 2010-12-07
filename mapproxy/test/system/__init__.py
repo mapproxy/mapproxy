@@ -25,7 +25,8 @@ def module_setup(test_config, config_file, with_cache_data=False):
     fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
     fixture_layer_conf = os.path.join(fixture_dir, config_file)
     
-    test_config['base_dir'] = tempfile.mkdtemp()
+    if 'base_dir' not in test_config:
+        test_config['base_dir'] = tempfile.mkdtemp()
     test_config['config_file'] = os.path.join(test_config['base_dir'], config_file)
     shutil.copy(fixture_layer_conf, test_config['config_file'])
     if with_cache_data:

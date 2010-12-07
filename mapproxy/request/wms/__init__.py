@@ -17,8 +17,10 @@
 """
 Service requests (parsing, handling, etc).
 """
+
+import codecs
 from mapproxy.request.wms import exception
-from mapproxy.config import base_config
+from mapproxy.config import base_config, abspath
 from mapproxy.exception import RequestError
 from mapproxy.srs import SRS, make_lin_transf
 from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
@@ -657,5 +659,12 @@ def create_request(req_data, param, req_type='map', version='1.1.1'):
     if 'transparent' in req_data:
         # we don't want a boolean
         req_data['transparent'] = str(req_data['transparent'])
+    
+    if req_data.get('sld', '').startswith('file://'):
+        sld_path = req_data['sld'][len('file://'):]
+        sld_path = abspath(sld_path)
+        with codecs.open(sld_path, 'UTF-8') as f:
+            req_data['sld_body'] = f.read()
+        del req_data['sld']
     
     return request_mapping[Version(version)][req_type](url=url, param=req_data)

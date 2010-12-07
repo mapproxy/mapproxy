@@ -157,6 +157,10 @@ You can configure SLDs for your WMS sources.
         url: http://example.org/service?
         sld: http://example.net/mysld.xml
 
+
+MapProxy also supports local file URLs. MapProxy will use the content of the file as the ``sld_body``.
+The path can either be absolute (e.g. ``file:///path/to/sld.xml``) or relative (``file://path/to/sld.xml``) to the mapproxy.yaml file. The file should be UTF-8 encoded.
+
 You can also configure the raw SLD with the ``sld_body`` option. You need to indent whole SLD string.
 
 ::

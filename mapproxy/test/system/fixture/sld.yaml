@@ -1,0 +1,35 @@
+services:
+  wms:
+
+layers:
+ - sld_url:
+    title: Layer with sld
+    sources: [sld_url_wms]
+ - sld_file:
+    title: Layer with file
+    sources: [sld_file_wms]
+ - sld_body:
+    title: Layer with sld body
+    sources: [sld_body_wms]
+
+sources:
+  sld_url_wms:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      sld: http://example.org/sld.xml
+
+  sld_file_wms:
+    type: wms
+    http:
+      method: GET
+    req:
+      url: http://localhost:42423/service
+      sld: file://mysld.xml
+
+  sld_body_wms:
+      type: wms
+      req:
+        url: http://localhost:42423/service
+        sld_body:
+          <sld:StyledLayerDescriptor />
