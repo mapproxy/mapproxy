@@ -318,7 +318,7 @@ def dotted_dict_get(key, d):
     if parts: # not completely resolved
         return None
     return d
-    
+
 class SourceConfiguration(ConfigurationBase):
     @classmethod
     def load(cls, conf, context):
@@ -349,6 +349,17 @@ class WMSSourceConfiguration(SourceConfiguration):
         wms_opts http concurrent_requests coverage seed_only
         min_res max_res min_scale max_scale'''.split())
     required_keys = set('req'.split())
+    
+    @staticmethod
+    def static_legend_source(url, context):
+        cache_dir = os.path.join(context.globals.get_path('cache.base_dir', {}),
+                                 'legends')
+        if url.startswith('file://') and not url.startswith('file:///'):
+            prefix = 'file://'
+            url = prefix + context.globals.abspath(url[7:])
+        lg_client = WMSLegendURLClient(url)
+        legend_cache = LegendCache(cache_dir=cache_dir)
+        return WMSLegendSource([lg_client], legend_cache)
     
     def http_client(self, request):
         http_client = None
@@ -433,12 +444,7 @@ class WMSSourceConfiguration(SourceConfiguration):
                                  
         if self.conf.get('wms_opts', {}).get('legendurl', False):
             lg_url = self.conf.get('wms_opts', {}).get('legendurl')
-            if lg_url.startswith('file://') and not lg_url.startswith('file:///'):
-                prefix = 'file://'
-                lg_url = prefix + self.context.globals.abspath(lg_url[7:])
-            lg_client = WMSLegendURLClient(lg_url)
-            legend_cache = LegendCache(cache_dir=cache_dir)
-            lg_source = WMSLegendSource([lg_client], legend_cache)
+            lg_source = WMSSourceConfiguration.static_legend_source(lg_url, self.context)
         elif self.conf.get('wms_opts', {}).get('legendgraphic', False):
             version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
             lg_req = self.conf['req'].copy()
@@ -578,7 +584,7 @@ class CacheConfiguration(ConfigurationBase):
         return layer
     
 class LayerConfiguration(ConfigurationBase):
-    optional_keys = set('min_res max_res min_scale max_scale'.split())
+    optional_keys = set('min_res max_res min_scale max_scale legendurl'.split())
     required_keys = set('name title sources'.split())
     
     @memoize
@@ -586,6 +592,13 @@ class LayerConfiguration(ConfigurationBase):
         sources = []
         fi_sources = []
         lg_sources = []
+        
+        lg_sources_configured = False
+        if self.conf.get('legendurl'):
+            legend_url = self.conf['legendurl']
+            lg_sources.append(WMSSourceConfiguration.static_legend_source(legend_url, self.context))
+            lg_sources_configured = True
+        
         for source_name in self.conf['sources']:
             fi_source_names = []
             lg_source_names = []
@@ -606,13 +619,13 @@ class LayerConfiguration(ConfigurationBase):
                 fi_source = self.context.sources[fi_source_name].fi_source()
                 if fi_source:
                     fi_sources.append(fi_source)
-
-            for lg_source_name in lg_source_names:
-                if not hasattr(self.context.sources[lg_source_name], 'lg_source'): continue
-                lg_source = self.context.sources[lg_source_name].lg_source()
-                if lg_source:
-                    lg_sources.append(lg_source)
-            
+            if not lg_sources_configured:
+                for lg_source_name in lg_source_names:
+                    if not hasattr(self.context.sources[lg_source_name], 'lg_source'): continue
+                    lg_source = self.context.sources[lg_source_name].lg_source()
+                    if lg_source:
+                        lg_sources.append(lg_source)
+                
         res_range = resolution_range(self.conf)
         
         layer = WMSLayer({'title': self.conf['title'], 'name': self.conf['name']},
