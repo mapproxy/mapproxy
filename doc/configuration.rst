@@ -68,23 +68,75 @@ Here is an example::
 layers
 ------
 
-Here you can define all layers MapProxy should offer. Each layer configuration is a YAML dictionary. The key of each layer is also the name of the layer, i.e. the name used in WMS layers argument. If MapProxy should use the same ordering of the layers for capability responses, you should put the definitions in a list (prepend a ``-`` before the key).
+Here you can define all layers MapProxy should offer. The layer definition is similar to WMS: each layer can have a name and title and you can nest layers to build a layer tree.
+
+Layers should be configured as a list (``-`` in YAML), where each layer configuration is a dictionary (``key: value`` in YAML)
+
 ::
 
   layers:
-    - layer1:
+    - name: layer1
       title: Title of Layer 1
       sources: [cache1, source2]
-    - layer2:
+    - name: layer2
       title: Title of Layer 2
       sources: [cache3]
 
-
 Each layer contains information about the layer and where the data comes from.
+
+``name``
+"""""""""
+
+The name of the layer. You can omit the name for group layers (e.g. layers with ``layers``), in this case the layer is not addressable in WMS and used only for grouping.
+
+.. versionchanged:: 0.9.2
+
+The old syntax to configure each layer as a dictionary, with the key as the name, is deprecated since 0.9.2.
+
+::
+
+ - mylayer:
+    title: My Layer
+    source: [mysoruce]
+
+should become
+
+::
+
+ - name: mylayer
+   title: My Layer
+   source: [mysoruce]
+
 
 ``title``
 """""""""
 Readable name of the layer, e.g WMS layer title.
+
+
+``layers``
+""""""""""
+
+.. versionadded:: 0.9.2
+
+Each layer can contain another ``layers`` configuration. You can use this to build a nested layer tree.
+
+For exmaple::
+
+  layers:
+    - name: layer1
+      title: Title of Layer 1
+      layers:
+        - name: layer1a
+          title: Title of Layer 1a
+          sources: [source1a]
+        - name: layer1b
+          title: Title of Layer 1b
+          sources: [source1b]
+    - name: layer2
+      title: Title of Layer 2
+      sources: [cache2]
+
+``layer1`` is a group layer in this case. The WMS service will render ``layer1a`` and ``layer1b`` if you request ``layer1``. Note that ``sources`` is optional if you supply ``layers``. You can still configure ``sources`` for group layers. In this case the group ``sources`` will replace the ``sources`` of the child layers.
 
 ``sources``
 """""""""""
