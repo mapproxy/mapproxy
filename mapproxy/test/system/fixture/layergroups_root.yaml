@@ -1,0 +1,106 @@
+services:
+  wms:
+
+layers:
+  name: root
+  title: Root Layer
+  layers:
+    - name: layer1
+      title: layer 1
+      sources: [dummy]
+      layers:
+        - name: layer1a
+          title: layer 1a
+          sources: [dummy]
+        - name: layer1b
+          title: layer 1b
+          sources: [dummy]
+    - name: layer2
+      title: layer 2
+      sources: [dummy]
+
+sources:
+  dummy:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+
+
+# # Now
+# layers:
+#   - layer1:
+#      title: layer1
+#      sources: [layer1]
+#   - layer2:
+#      title: layer1
+#      sources: [layer2]
+# 
+# # or (unsorted)
+# layers:
+#   layer1:
+#     title: layer1
+#     sources: [layer1]
+#   layer2:
+#     title: layer1
+#     sources: [layer2]
+# 
+# 
+# 
+# layers:
+#  - root:
+#     title: Root Layer
+#     layers:
+#       - layer1:
+#          title: Layer 1
+#          sources: [layer1]
+#       - layer2:
+#          title: Layer 2
+#          sources: [layer2]
+# 
+# 
+# layers:
+#   name: root
+#   title: Root Layer
+#   - layer1:
+#        title: layer1
+#        sources: [layer1]
+#   - layer2:
+#        title: layer1
+#        sources: [layer2]
+#   
+# 
+# layers:
+#   name: root
+#   title: Root Layer
+#   layers:
+#     - layer1:
+#        title: layer1
+#        sources: [layer1]
+#     - layer2:
+#        title: layer1
+#        sources: [layer2]
+#   
+# 
+# 
+# 
+# wms_layers:
+#   - name: layer1
+#     title: layer 1
+#     sorces: [layer1]
+#     layers:
+#       - name: layer1a
+#         title: layer 1a
+#         sources: [layer 1a]
+#       - name: layer1b
+#         title: layer 1b
+#         sources: [layer 1b]
+#   - name: layer2
+#     title: layer 2
+#     sources: [layer2]
+# 
+# 
+# tile_layers:
+#   - name: 
+#     title:
+#     cache:
+# 
