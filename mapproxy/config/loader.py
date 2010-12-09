@@ -653,7 +653,7 @@ class WMSLayerConfiguration(ConfigurationBase):
         if 'sources' in self.conf:
             this_layer = LayerConfiguration(self.conf, self.context).wms_layer()
         
-        if not layers or not this_layer:
+        if not layers and not this_layer:
             raise ValueError('wms layer requires sources and/or layers')
         
         if not layers:
