@@ -29,10 +29,12 @@ from mapproxy.image import concat_legends
 from mapproxy.image.message import attribution_image
 
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, MapBBOXError
+from mapproxy.util.ext.odict import odict
 
 from mapproxy.template import template_loader, bunch
-env = {'bunch': bunch}
-get_template = template_loader(__file__, 'templates', namespace=env)
+from mapproxy.service import template_helper
+
+get_template = template_loader(__file__, 'templates', namespace=template_helper.__dict__)
 
 import logging
 log = logging.getLogger(__name__)
@@ -41,11 +43,12 @@ class WMSServer(Server):
     names = ('service',)
     request_methods = ('map', 'capabilities', 'featureinfo', 'legendgraphic')
     
-    def __init__(self, layers, md, layer_merger=None, request_parser=None, tile_layers=None,
+    def __init__(self, root_layer, md, layer_merger=None, request_parser=None, tile_layers=None,
         attribution=None, srs=None, image_formats=None, strict=False):
         Server.__init__(self)
         self.request_parser = request_parser or partial(wms_request, strict=strict)
-        self.layers = layers
+        self.root_layer = root_layer
+        self.layers = root_layer.child_layers()
         self.tile_layers = tile_layers or {}
         self.strict = strict
         if layer_merger is None:
@@ -87,18 +90,20 @@ class WMSServer(Server):
         return Response(result.as_buffer(format=params.format),
                         content_type=params.format_mime_type)
     def capabilities(self, map_request):
-        if '__debug__' in map_request.params:
-            layers = self.layers.values()
-        else:
-            layers = [layer for name, layer in self.layers.iteritems()
-                      if name != '__debug__']
+        # TODO: debug layer
+        # if '__debug__' in map_request.params:
+        #     layers = self.layers.values()
+        # else:
+        #     layers = [layer for name, layer in self.layers.iteritems()
+        #               if name != '__debug__']
         
         if map_request.params.get('tiled', 'false').lower() == 'true':
             tile_layers = self.tile_layers.values()
         else:
             tile_layers = []
+            
         service = self._service_md(map_request)
-        result = Capabilities(service, layers, tile_layers, self.image_formats, self.srs).render(map_request)
+        result = Capabilities(service, self.root_layer, tile_layers, self.image_formats, self.srs).render(map_request)
         return Response(result, mimetype=map_request.mime_type)
     
     def featureinfo(self, request):
@@ -152,8 +157,7 @@ class WMSServer(Server):
     def _service_md(self, map_request):
         md = dict(self.md)
         md['url'] = map_request.url
-        md['has_legend'] = any([layer for name, layer in self.layers.iteritems()
-                                 if layer.has_legend])
+        md['has_legend'] = self.root_layer.has_legend
         return md
 
 class Capabilities(object):
@@ -172,36 +176,64 @@ class Capabilities(object):
     
     def _render_template(self, template):
         template = get_template(template)
-        server_bbox = self._create_server_bbox()
-        return template.substitute(service=bunch(default='', **self.service),
+        # server_bbox = self._create_server_bbox()
+        server_bbox = self.layers.extent.llbbox
+        doc = template.substitute(service=bunch(default='', **self.service),
                                    layers=self.layers,
                                    server_llbbox=server_bbox,
                                    formats=self.image_formats,
                                    srs=self.srs,
                                    tile_layers=self.tile_layers)
-    
+        # strip blank lines
+        doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())
+        return doc
     def _create_server_bbox(self):
         bbox = self.layers[0].extent.llbbox
         for layer in self.layers[1:]:
             bbox = merge_bbox(bbox, layer.extent.llbbox)
         return bbox
 
-def wms100format_filter(format):
+class WMSLayerBase(object):
     """
-    >>> wms100format_filter('image/png')
-    'PNG'
-    >>> wms100format_filter('image/GeoTIFF')
+    Base class for WMS layer (layer groups and leaf layers).
     """
-    _mime_class, sub_type = format.split('/')
-    sub_type = sub_type.upper()
-    if sub_type in ['PNG', 'TIFF', 'GIF', 'JPEG']:
-        return sub_type
-    else:
-        return None
+    
+    "True if layer is an actual layer (not a group only)"
+    is_active = True
+    
+    "list of sublayers"
+    layers = []
+    
+    "metadata dictionary with tile, name, etc."
+    md = {}
+    
+    "True if .info() is supported"
+    queryable = False
 
-env['wms100format'] = wms100format_filter
+    transparent = False
 
-class WMSLayer(object):
+    "True is .legend() is supported"
+    has_legend = False
+    legend_url = None
+    legend_size = None
+    
+    "resolution range (i.e. ScaleHint) of the layer"
+    res_range = None
+    "MapExtend of the layer"
+    extent = None
+    
+    def render(self, request, query=None):
+        raise NotImplementedError()
+    
+    def legend(self, query):
+        raise NotImplementedError()
+    
+    def info(self, query):
+        raise NotImplementedError()
+    
+class WMSLayer(WMSLayerBase):
+    is_active = True
+    layers = []
     def __init__(self, md, map_layers, info_layers=[], legend_layers=[], res_range=None):
         self.md = md
         self.map_layers = map_layers
@@ -276,3 +308,52 @@ class WMSLayer(object):
         else:
             return None
     
+class WMSGroupLayer(WMSLayerBase):
+    def __init__(self, md, this, layers):
+        self.this = this
+        self.md = md
+        self.is_active = True if this is not None else False
+        self.layers = layers
+        self.transparent = True if this and this.transparent or any(l.transparent for l in layers) else False
+        self.has_legend = True if this and this.has_legend or any(l.has_legend for l in layers) else False
+        self.queryable = True if this and this.queryable or any(l.queryable for l in layers) else False
+        self.extent = layers[0].extent #TODO
+        self.res_range = layers[0].res_range #TODO
+    
+    @property
+    def legend_size(self):
+        return self.this.legend_size()
+
+    @property
+    def legend_url(self):
+        return self.this.legend_url()
+    
+    def renders_query(self, query):
+        if self.res_range and not self.res_range.contains(query.bbox, query.size, query.srs):
+            return False
+        return True
+    
+    def render(self, request, query=None):
+        if self.this:
+            yield self.this.render(request, query)
+        else:
+            for layer in self.layers:
+                yield layer.render(request, query)
+    
+    def info(self, request):
+        if self.this:
+            yield self.this.info(request)
+        else:
+            for layer in self.layers:
+                yield layer.info(request)
+    
+    def child_layers(self):
+        layers = odict()
+        if self.md.get('name'):
+            layers[self.md['name']] = self
+        for lyr in self.layers:
+            if hasattr(lyr, 'child_layers'):
+                layers.update(lyr.child_layers())
+            elif lyr.md.get('name'):
+                layers[lyr.md['name']] = lyr
+        return layers

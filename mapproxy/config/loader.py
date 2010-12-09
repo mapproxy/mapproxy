@@ -23,6 +23,7 @@ import os
 import hashlib
 import urlparse
 import yaml #pylint: disable-msg=F0401
+from copy import deepcopy
 from functools import wraps
 
 import logging
@@ -75,7 +76,7 @@ from mapproxy.layer import (
 )
 from mapproxy.client.tile import TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient, WMSLegendClient
-from mapproxy.service.wms import WMSServer, WMSLayer
+from mapproxy.service.wms import WMSServer, WMSLayer, WMSGroupLayer
 from mapproxy.service.tile import TileServer, TileLayer
 from mapproxy.service.kml import KMLServer
 from mapproxy.service.demo import DemoServer
@@ -102,7 +103,8 @@ class ProxyConfiguration(object):
         self.load_grids()
         self.load_caches()
         self.load_sources()
-        self.load_layers()
+        self.load_wms_root_layer()
+        self.load_tile_layers()
         self.load_services()
     
     def load_globals(self, conf_base_dir):
@@ -133,17 +135,66 @@ class ProxyConfiguration(object):
         self.sources = {}
         for source_name, source_conf in self.configuration.get('sources', {}).iteritems():
             self.sources[source_name] = SourceConfiguration.load(conf=source_conf, context=self)
-
-    def load_layers(self):
+    
+    def load_tile_layers(self):
         self.layers = odict()
+        layers_conf = deepcopy(self._layers_conf_dict())
+        if layers_conf is None: return
+        layers = self._flatten_layers_conf_dict(layers_conf)
+        for layer_name, layer_conf in layers.iteritems():
+            layer_conf['name'] = layer_name
+            self.layers[layer_name] = LayerConfiguration(conf=layer_conf, context=self)
+        
+    def load_legacy_layers(self):
+        layers = []
         layers_conf = self.configuration.get('layers')
         if not layers_conf: return None # TODO config error
         if isinstance(layers_conf, list):
             layers_conf = list_of_dicts_to_ordered_dict(layers_conf)
         for layer_name, layer_conf in layers_conf.iteritems():
             layer_conf['name'] = layer_name
-            self.layers[layer_name] = LayerConfiguration(conf=layer_conf, context=self)
-
+            layers.append(layer_conf)
+        return dict(title=None, layers=layers)
+        
+        
+    def _layers_conf_dict(self):
+        layers_conf = self.configuration.get('layers')
+        if layers_conf is None: return
+        
+        if isinstance(layers_conf, list):
+            if isinstance(layers_conf[0], dict) and len(layers_conf[0].keys()) == 1:
+                # looks like ordered legacy config
+                layers_conf = self.load_legacy_layers()
+            else:
+                # wrap in root layer
+                layers_conf = dict(title=None, layers=layers_conf)
+        
+        if 'layers' not in layers_conf:
+            # looks like unordered legacy config
+            layers_conf = self.load_legacy_layers()
+        
+        return layers_conf
+    
+    def _flatten_layers_conf_dict(self, layers_conf, _layers=None):
+        layers = _layers if _layers is not None else odict()
+        
+        if 'layers' in layers_conf:
+            for layer in layers_conf.pop('layers'):
+                self._flatten_layers_conf_dict(layer, layers)
+        
+        if 'sources' in layers_conf and 'name' in layers_conf:
+            layers[layers_conf['name']] = layers_conf
+        
+        return layers
+        
+    
+    def load_wms_root_layer(self):
+        self.wms_root_layer = None
+        
+        layers_conf = self._layers_conf_dict()
+        if layers_conf is None: return
+        self.wms_root_layer = WMSLayerConfiguration(layers_conf, context=self)
+    
     def load_services(self):
         self.services = ServiceConfiguration(self.configuration.get('services', {}), context=self)
     
@@ -563,11 +614,40 @@ class CacheConfiguration(ConfigurationBase):
             source_conf = self.context.sources[self.conf['sources'][0]]
             layer = ResolutionConditional(layer, source_conf.source(), self.conf['use_direct_from_res'], main_grid.srs, layer.extent)
         return layer
+
+
+
+class WMSLayerConfiguration(ConfigurationBase):
+    optional_keys = set('name layers min_res max_res min_scale '
+                        'max_scale sources'.split())
+    required_keys = set('title'.split())
     
+    @memoize
+    def wms_layer(self):
+        layers = []
+        this_layer = None
+        
+        if 'layers' in self.conf:
+            layers_conf = self.conf['layers']
+            for layer_conf in layers_conf:
+                layers.append(WMSLayerConfiguration(layer_conf, self.context).wms_layer())
+        
+        if 'sources' in self.conf:
+            this_layer = LayerConfiguration(self.conf, self.context).wms_layer()
+        
+        if not layers or not this_layer:
+            raise ValueError('wms layer requires sources and/or layers')
+        
+        if not layers:
+            layer = this_layer
+        else:
+            layer = WMSGroupLayer({'title':self.conf['title'], 'name': self.conf.get('name')},
+                                  this=this_layer, layers=layers)
+        return layer
+
 class LayerConfiguration(ConfigurationBase):
-    optional_keys = set('min_res max_res min_scale max_scale'.split())
-    required_keys = set('name title sources'.split())
-    
+    optional_keys = set('min_res max_res min_scale max_scale sources layers'.split())
+    required_keys = set('name title'.split())
     @memoize
     def wms_layer(self):
         sources = []
@@ -608,10 +688,10 @@ class LayerConfiguration(ConfigurationBase):
     
     @memoize
     def tile_layers(self):
-        if len(self.conf['sources']) > 1: return [] #TODO
+        if len(self.conf.get('sources', [])) > 1: return [] #TODO
         
         tile_layers = []
-        for cache_name in self.conf['sources']:
+        for cache_name in self.conf.get('sources', []):
             if not cache_name in self.context.caches: continue
             for grid, cache_source in self.context.caches[cache_name].caches():
                 md = {}
@@ -664,12 +744,13 @@ class ServiceConfiguration(ConfigurationBase):
         attribution = conf.get('attribution')
         strict = self.context.globals.get_value('strict', conf, global_key='wms.strict')
         layers = odict()
-        for layer_name, layer_conf in self.context.layers.iteritems():
-            layers[layer_name] = layer_conf.wms_layer()
+        root_layer = self.context.wms_root_layer.wms_layer()
+        if not root_layer.md.get('title'):
+            root_layer.md['title'] = md.get('title')
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
         self.context.globals.base_config.wms.srs = srs
-        return WMSServer(layers, md, attribution=attribution, image_formats=image_formats,
+        return WMSServer(root_layer, md, attribution=attribution, image_formats=image_formats,
             srs=srs, tile_layers=tile_layers, strict=strict)
 
     def demo_service(self, conf):

@@ -96,22 +96,39 @@
 {{endfor}}
   </VendorSpecificCapabilities>
 {{endif}}
-  <Layer>
-    <Title>{{service.title}}</Title>
-    <SRS>{{' '.join(str(s) for s in srs)}}</SRS>
-    <LatLonBoundingBox minx="{{ server_llbbox[0] }}" miny="{{ server_llbbox[1] }}" maxx="{{ server_llbbox[2] }}" maxy="{{ server_llbbox[3] }}" />
-{{for layer in layers}}
-    <Layer{{if layer.queryable}} queryable="1"{{endif}}>
-      <Name>{{ layer.md['name'] }}</Name>
-      <Title>{{ layer.md.get('title') }}</Title>
-      <LatLonBoundingBox minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
-      <BoundingBox SRS="EPSG:4326" minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
-      {{if layer.res_range}}
-      {{py: max_scale, min_scale = layer.res_range.scale_hint()}}
-      <ScaleHint {{if min_scale}}min="{{min_scale}}"{{endif}} {{if max_scale}}max="{{max_scale}}"{{endif}} />
-      {{endif}}
-    </Layer>
-{{endfor}}
+
+{{def layer_capabilities(layer, with_srs)}}
+  <Layer{{if layer.queryable}} queryable="1"{{endif}}>
+    {{if layer.md['name']}}
+    <Name>{{ layer.md['name'] }}</Name>
+    {{endif}}
+    <Title>{{ layer.md.get('title') }}</Title>
+    {{if with_srs}}
+    <SRS>{{for s in srs}}{{s}} {{endfor}}</SRS>
+    {{endif}}
+    <LatLonBoundingBox minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
+    <BoundingBox SRS="EPSG:4326" minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
+    {{if layer.is_active and layer.has_legend}}
+    <Style>
+        <Name>default</Name>
+        <Title>default</Title>
+        <LegendURL width="{{layer.legend_size[0]}}" height="{{layer.legend_size[1]}}">
+            <Format>image/png</Format>
+            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="{{service.url}}{{layer.legend_url|escape}}"/>
+        </LegendURL>
+    </Style>
+    {{endif}}
+    {{if layer.res_range}}
+    {{py: max_scale, min_scale = layer.res_range.scale_hint()}}
+    <ScaleHint {{if min_scale}}min="{{min_scale}}"{{endif}} {{if max_scale}}max="{{max_scale}}"{{endif}} />
+    {{endif}}
+    {{for layer in layer.layers}}
+{{layer_capabilities(layer, False)|indent}}
+    {{endfor}}
   </Layer>
+{{enddef}}
+
+{{layer_capabilities(layers, True)}}
+
 </Capability>
 </WMT_MS_Capabilities>
