@@ -80,7 +80,7 @@ class DemoServer(Server):
             demo = self._render_template('demo/demo.html')
         else:
             resp = Response('', status=301)
-            resp.headers['Location'] = req.script_url + 'demo/'
+            resp.headers['Location'] = req.script_url.rstrip('/') + '/demo/'
             return resp
         return Response(demo, content_type='text/html')
 
