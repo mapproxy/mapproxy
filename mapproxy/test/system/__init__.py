@@ -32,8 +32,9 @@ def module_setup(test_config, config_file, with_cache_data=False):
     if with_cache_data:
         shutil.copytree(os.path.join(fixture_dir, 'cache_data'),
                         os.path.join(test_config['base_dir'], 'cache_data'))
-    
-    test_config['app'] = TestApp(make_wsgi_app(test_config['config_file']), use_unicode=False)
+    app = make_wsgi_app(test_config['config_file'])
+    app.application.base_config.debug_mode = True
+    test_config['app'] = TestApp(app, use_unicode=False)
 
 def module_teardown(test_config):
     shutil.rmtree(test_config['base_dir'])
@@ -41,7 +42,6 @@ def module_teardown(test_config):
     
 def make_base_config(test_config):
     return lambda: test_config['app'].app.application.base_config
-
 
 class SystemTest(object):
     def setup(self):
