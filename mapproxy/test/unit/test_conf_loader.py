@@ -294,7 +294,7 @@ class TestWMSSourceConfiguration(object):
         
         caches = conf.caches['osm'].caches()
         eq_(len(caches), 1)
-        grid, manager = caches[0]
+        grid, extent, manager = caches[0]
         
         eq_(grid.srs, SRS(4326))
         eq_(grid.bbox, (5.0, 50.0, 10.0, 55.0))

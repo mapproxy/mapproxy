@@ -41,6 +41,15 @@ class TestCoverageWMS(SystemTest):
              layers='wms_cache', srs='EPSG:4326', format='image/png',
              styles='', request='GetMap'))
     
+    def test_capababilities(self):
+        resp = self.app.get('/service?request=GetCapabilities&service=WMS&version=1.1.1')
+        xml = resp.lxml
+        # First: combined root, second: wms_cache, third: tms_cache
+        eq_(xml.xpath('//LatLonBoundingBox/@minx'), ['10', '10', '12'])
+        eq_(xml.xpath('//LatLonBoundingBox/@miny'), ['10', '15', '10'])
+        eq_(xml.xpath('//LatLonBoundingBox/@maxx'), ['35', '30', '35'])
+        eq_(xml.xpath('//LatLonBoundingBox/@maxy'), ['31', '31', '30'])
+
     def test_get_map_outside(self):
         self.common_map_req.params.bbox = -90, 0, 0, 90
         self.common_map_req.params['bgcolor'] = '0xff0005'

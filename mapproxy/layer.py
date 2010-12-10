@@ -23,7 +23,7 @@ from __future__ import division
 from mapproxy.config import base_config
 from mapproxy.grid import NoTiles, GridError, merge_resolution_range
 from mapproxy.image.tile import TiledImage
-from mapproxy.srs import SRS, bbox_equals
+from mapproxy.srs import SRS, bbox_equals, merge_bbox
 
 import logging
 log = logging.getLogger(__name__)
@@ -114,7 +114,19 @@ class MapExtent(object):
     
     def __repr__(self):
         return "%s(%r, %r)" % (self.__class__.__name__, self.bbox, self.srs)
+    
+    
+    def __add__(self, other):
+        if not isinstance(other, MapExtent):
+            raise NotImplemented
+        return MapExtent(merge_bbox(self.llbbox, other.llbbox), SRS(4326))
 
+def merge_layer_extents(layers):
+    layers = layers[:]
+    extent = layers.pop().extent
+    for layer in layers:
+        extent = extent + layer.extent
+    return extent
 
 class ResolutionConditional(MapLayer):
     def __init__(self, one, two, resolution, srs, extent):
@@ -205,11 +217,11 @@ def _calculate_res_range(layers):
 
 
 class CacheMapLayer(MapLayer):
-    def __init__(self, tile_manager, resampling=None):
+    def __init__(self, tile_manager, extent=None, resampling=None):
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
         self.resampling = resampling or base_config().image.resampling_method
-        self.extent = map_extent_from_grid(self.grid)
+        self.extent = extent or map_extent_from_grid(self.grid)
         self.res_range = _calculate_res_range(self.tile_manager.sources)
         self.transparent = tile_manager.transparent
     
