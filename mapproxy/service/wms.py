@@ -28,7 +28,7 @@ from mapproxy.config import base_config
 from mapproxy.image import concat_legends
 from mapproxy.image.message import attribution_image
 
-from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, MapBBOXError
+from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, MapBBOXError, merge_layer_extents
 from mapproxy.util.ext.odict import odict
 
 from mapproxy.template import template_loader, bunch
@@ -239,7 +239,7 @@ class WMSLayer(WMSLayerBase):
         self.map_layers = map_layers
         self.info_layers = info_layers
         self.legend_layers = legend_layers
-        self.extent = map_layers[0].extent #TODO
+        self.extent = merge_layer_extents(map_layers)
         if res_range is None:
             res_range = map_layers[0].res_range #TODO
         self.res_range = res_range
@@ -307,7 +307,7 @@ class WMSLayer(WMSLayerBase):
             return req.complete_url
         else:
             return None
-    
+
 class WMSGroupLayer(WMSLayerBase):
     def __init__(self, md, this, layers):
         self.this = this
@@ -317,7 +317,7 @@ class WMSGroupLayer(WMSLayerBase):
         self.transparent = True if this and this.transparent or any(l.transparent for l in layers) else False
         self.has_legend = True if this and this.has_legend or any(l.has_legend for l in layers) else False
         self.queryable = True if this and this.queryable or any(l.queryable for l in layers) else False
-        self.extent = layers[0].extent #TODO
+        self.extent = merge_layer_extents(layers + ([self.this] if self.this else []))
         self.res_range = layers[0].res_range #TODO
     
     @property

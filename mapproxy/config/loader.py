@@ -72,7 +72,7 @@ from mapproxy.request.base import split_mime_type
 from mapproxy.request.wms import create_request
 from mapproxy.layer import (
     CacheMapLayer, SRSConditional,
-    ResolutionConditional, map_extent_from_grid
+    ResolutionConditional, map_extent_from_grid, merge_layer_extents
 )
 from mapproxy.client.tile import TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient, WMSLegendClient
@@ -586,7 +586,7 @@ class CacheConfiguration(ConfigurationBase):
             mgr = TileManager(tile_grid, cache, sources, file_ext(request_format),
                               meta_size=meta_size, meta_buffer=meta_buffer,
                               minimize_meta_requests=minimize_meta_requests)
-            caches.append((tile_grid, mgr))
+            caches.append((tile_grid, merge_layer_extents(sources), mgr))
         return caches
     
     @memoize
@@ -595,16 +595,15 @@ class CacheConfiguration(ConfigurationBase):
         
         caches = []
         main_grid = None
-        for grid, tile_manager in self.caches():
+        for grid, extent, tile_manager in self.caches():
             if main_grid is None:
                 main_grid = grid
-            caches.append((CacheMapLayer(tile_manager, resampling=resampling), (grid.srs,)))
+            caches.append((CacheMapLayer(tile_manager, extent=extent, resampling=resampling), (grid.srs,)))
         
         if len(caches) == 1:
             layer = caches[0][0]
         else:
-            map_extent = map_extent_from_grid(main_grid)
-            layer = SRSConditional(caches, map_extent, caches[0][0].transparent)
+            layer = SRSConditional(caches, caches[0][0].extent, caches[0][0].transparent)
         
         if 'use_direct_from_level' in self.conf:
             self.conf['use_direct_from_res'] = main_grid.resolution(self.conf['use_direct_from_level'])
@@ -693,7 +692,7 @@ class LayerConfiguration(ConfigurationBase):
         tile_layers = []
         for cache_name in self.conf.get('sources', []):
             if not cache_name in self.context.caches: continue
-            for grid, cache_source in self.context.caches[cache_name].caches():
+            for grid, extent, cache_source in self.context.caches[cache_name].caches():
                 md = {}
                 md['title'] = self.conf['title']
                 md['name'] = self.conf['name']

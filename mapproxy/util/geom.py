@@ -17,6 +17,8 @@
 from __future__ import division, with_statement
 from functools import partial
 
+from mapproxy.layer import MapExtent
+
 try:
     import shapely.wkt
     import shapely.geometry
@@ -129,6 +131,10 @@ class BBOXCoverage(object):
         self.srs = srs
         self.geom = None
     
+    @property
+    def extent(self):
+        return MapExtent(self.bbox, self.srs)
+    
     def _bbox_in_coverage_srs(self, bbox, srs):
         if srs != self.srs:
             bbox = srs.transform_bbox_to(self.srs, bbox)
@@ -150,6 +156,10 @@ class GeomCoverage(object):
         self._prepared_geom = shapely.prepared.prep(geom)
         self._prepared_counter = 0
         self._prepared_max = 10000
+    
+    @property
+    def extent(self):
+        return MapExtent(self.bbox, self.srs)
     
     @property
     def prepared_geom(self):

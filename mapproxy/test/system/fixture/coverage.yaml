@@ -53,7 +53,7 @@ sources:
     type: wms
     supported_srs: ['EPSG:900913', 'EPSG:4326']
     coverage:
-      bbox: [10, 10, 30, 30]
+      bbox: [10, 15, 30, 31]
       bbox_srs: 'EPSG:4326'
     req:
       url: http://localhost:42423/service
@@ -61,6 +61,6 @@ sources:
   tms_cache:
     type: tile
     coverage:
-      bbox: [10, 10, 30, 30]
+      bbox: [12, 10, 35, 30]
       bbox_srs: 'EPSG:4326'
     url: http://localhost:42423/tms/1.0.0/foo/%(tms_path)s.jpeg

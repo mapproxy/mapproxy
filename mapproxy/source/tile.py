@@ -22,7 +22,7 @@ import sys
 from mapproxy.source import Source, SourceError
 from mapproxy.client.http import HTTPClientError
 from mapproxy.source import InvalidSourceQuery
-from mapproxy.layer import BlankImage
+from mapproxy.layer import BlankImage, map_extent_from_grid
 from mapproxy.util import reraise_exception
 
 class TiledSource(Source):
@@ -31,6 +31,7 @@ class TiledSource(Source):
         self.client = client
         self.inverse = inverse
         self.coverage = coverage
+        self.extent = coverage.extent if coverage else map_extent_from_grid(grid)
     
     def get_map(self, query):
         if self.grid.tile_size != query.size:
