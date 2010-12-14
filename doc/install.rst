@@ -18,7 +18,7 @@ Create a new virtual environment
 
 If you don't have `virtualenv` installed, you can download a self-contained version::
 
-    wget http://bitbucket.org/ianb/virtualenv/raw/1.4.8/virtualenv.py
+    wget http://bitbucket.org/ianb/virtualenv/raw/1.5.1/virtualenv.py
     
 Next we create a new virtual environment for our proxy installation. It is a good idea to organize all your environments into a single directory. I use ``~/venv`` for that. To create a new environment with the name ``mapproxy`` and to activate it call::
 
