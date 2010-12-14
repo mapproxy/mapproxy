@@ -113,12 +113,25 @@ Refer to http://wsgi.org/wsgi/Servers for a list of some available WSGI servers.
 Apache mod_wsgi
 ^^^^^^^^^^^^^^^
 
-If you use Apache then you can integrate MapProxy with `mod_wsgi`_.
-We will not go into detail about the installation here, but you can read more about `mod_wsgi installation`_ and then loosely follow the `Pylons integration`_ instructions. Pylons is a web framework that also uses paster for WSGI application configuration and deployment, so the steps are similar.
+If you use Apache then you can integrate MapProxy with `mod_wsgi`_. Read `mod_wsgi installation`_ for detailed instructions. 
+
+.. versionadded:: 0.9.1
+
+``mod_wsgi`` requires a Python script that defines the configured WSGI function as ``application``. You can find an example in ``config.wsgi``.
+
+You need to modify your Apache ``httpd.conf`` as follows::
+
+  LoadModule wsgi_module modules/mod_wsgi.so
+
+  WSGIScriptAlias /mapproxy /path/to/mapproxy/etc/config.wsgi
+
+  <Directory /path/to/mapproxy/etc>
+  Order deny,allow
+  Allow from all
+  </Directory>
 
 .. _`mod_wsgi`: http://code.google.com/p/modwsgi/
 .. _`mod_wsgi installation`: http://code.google.com/p/modwsgi/wiki/InstallationInstructions
-.. _`Pylons integration`: http://code.google.com/p/modwsgi/wiki/IntegrationWithPylons
 
 .. index:: MultiMapProxy
 .. _multimapproxy:
