@@ -13,6 +13,9 @@ Improvements:
 - Support custom path to libproj/libgdal with MAPPROXY_LIB_PATH environ
 - Look for xxx if libxxx returned no results.
 
+Fixes:
+- bug fix for threshold_res that overlap with the stretch_factor
+
 0.9.1rc1 2010-12-07
 
 Features:
@@ -23,7 +26,7 @@ Features:
 - Support for multiple MapProxy configurations in one process with distinct
   global/cache/source/etc. configurations
 - New MultiMapProxy: dynamically load multiple configurations (experimental)
-- treshold_res option for grids: switch cache levels at fixed resolutions
+- threshold_res option for grids: switch cache levels at fixed resolutions
 - seed_only option for sources: allows offline usage
 - GetLegendGraphic support
 - SLD support for WMS sources

@@ -604,7 +604,8 @@ class TestTileGrid(object):
             assert False, 'Expected TransformationError'
 
 class TestTileGridThreshold(object):
-    def test(self):
+    def test_lower_bound(self):
+        # thresholds near the next lower res value
         grid = TileGrid(res=[1000, 500, 250, 100, 50], threshold_res=[300, 110])
         grid.stretch_factor = 1.1
         eq_(grid.closest_level(1100), 0)
@@ -623,6 +624,27 @@ class TestTileGridThreshold(object):
         # regular transition (w/stretchfactor)
         eq_(grid.closest_level(92), 3)
         eq_(grid.closest_level(90), 4)
+    def test_upper_bound(self):
+        # thresholds near the next upper res value (within threshold)
+        grid = TileGrid(res=[1000, 500, 250, 100, 50], threshold_res=[495, 240])
+        grid.stretch_factor = 1.1
+        eq_(grid.closest_level(1100), 0)
+        # regular transition (w/stretchfactor)
+        eq_(grid.closest_level(950), 0)
+        eq_(grid.closest_level(800), 1)
+        eq_(grid.closest_level(500), 1)
+        # transition at threshold
+        eq_(grid.closest_level(496), 1)
+        eq_(grid.closest_level(495), 2)
+        eq_(grid.closest_level(250), 2)
+        # transition at threshold (within strechfactor)
+        eq_(grid.closest_level(241), 2)
+        eq_(grid.closest_level(240), 3)
+        eq_(grid.closest_level(100), 3)
+        # regular transition (w/stretchfactor)
+        eq_(grid.closest_level(92), 3)
+        eq_(grid.closest_level(90), 4)
+
         
 class TestCreateTileList(object):
     def test(self):
