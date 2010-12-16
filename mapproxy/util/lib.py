@@ -36,6 +36,13 @@ default_locations = dict(
     )
 )
 
+additional_lib_path = os.environ.get('MAPPROXY_LIB_PATH')
+if additional_lib_path:
+    additional_lib_path = additional_lib_path.split(os.pathsep)
+    additional_lib_path.reverse()
+    for locs in default_locations.values():
+        for path in additional_lib_path:
+            locs['paths'].insert(0, path)
 
 def load_library(lib_names, locations_conf=default_locations):
     """
@@ -62,7 +69,7 @@ def load_library_(lib_name, locations_conf=default_locations):
         paths = locations_conf[sys.platform]['paths']
         exts = locations_conf[sys.platform]['exts']
         lib_path = find_library(lib_name, paths, exts)
-
+    
     if lib_path:
         return CDLL(lib_path)
         
@@ -72,18 +79,18 @@ def find_library(lib_name, paths=None, exts=None):
     Search for library in all permutations of `paths` and `exts`.
     If nothing is found None is returned.
     """
-    
     if not paths or not exts:
         lib = _find_library(lib_name)
         if lib is None and lib_name.startswith('lib'):
             lib = _find_library(lib_name[3:])
         return lib
     
-    for path in paths:
-        for ext in exts:
-            lib_path = os.path.join(path, lib_name + ext)
-            if os.path.exists(lib_path):
-                return lib_path
+    for lib_name in [lib_name] + ([lib_name[3:]] if lib_name.startswith('lib') else []):
+        for path in paths:
+            for ext in exts:
+                lib_path = os.path.join(path, lib_name + ext)
+                if os.path.exists(lib_path):
+                    return lib_path
     
     return None
 
