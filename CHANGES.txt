@@ -7,6 +7,12 @@ Improvements:
 
 Fixes:
 
+0.9.1.dev
+
+Improvements:
+- Support custom path to libproj/libgdal with MAPPROXY_LIB_PATH environ
+- Look for xxx if libxxx returned no results.
+
 0.9.1rc1 2010-12-07
 
 Features:

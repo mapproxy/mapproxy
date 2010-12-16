@@ -65,7 +65,6 @@ def init_libproj():
     libproj.pj_is_latlong.argtypes = [c_void_p]
     libproj.pj_is_latlong.restype = c_int
 
-    libproj.pj_set_searchpath.argtypes = [c_int, POINTER(c_char_p)]
 
     libproj.pj_get_def.argtypes = [c_void_p, c_int]
     libproj.pj_get_def.restype = c_void_p
@@ -84,9 +83,10 @@ def init_libproj():
     libproj.pj_transform.argtypes = [c_void_p, c_void_p, c_long, c_int,
                                      c_double_p, c_double_p, c_double_p]
     libproj.pj_transform.restype = c_int
-
-    libproj.pj_set_finder.argtypes = [FINDERCMD]
     
+    if hasattr(libproj, 'pj_set_searchpath'):
+        libproj.pj_set_searchpath.argtypes = [c_int, POINTER(c_char_p)]
+        libproj.pj_set_finder.argtypes = [FINDERCMD]
     
     return libproj
 
