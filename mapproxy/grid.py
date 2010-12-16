@@ -355,15 +355,20 @@ class TileGrid(object):
             thresholds = self.threshold_res[::-1]
             threshold = thresholds.pop()
         
+        threshold_result = None
         for level, l_res in enumerate(self.resolutions):
             if threshold and prev_l_res > threshold >= l_res:
                 if res > threshold:
                     return level-1
-                if res >= l_res:
+                elif res >= l_res:
                     return level
                 threshold = thresholds.pop() if thresholds else None
+            
+            if threshold_result is not None:
+                return threshold_result
+
             if l_res <= res*self.stretch_factor:
-                return level
+                threshold_result = level
             prev_l_res = l_res
         return level
     
