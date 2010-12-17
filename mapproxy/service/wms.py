@@ -176,22 +176,14 @@ class Capabilities(object):
     
     def _render_template(self, template):
         template = get_template(template)
-        # server_bbox = self._create_server_bbox()
-        server_bbox = self.layers.extent.llbbox
         doc = template.substitute(service=bunch(default='', **self.service),
                                    layers=self.layers,
-                                   server_llbbox=server_bbox,
                                    formats=self.image_formats,
                                    srs=self.srs,
                                    tile_layers=self.tile_layers)
         # strip blank lines
         doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())
         return doc
-    def _create_server_bbox(self):
-        bbox = self.layers[0].extent.llbbox
-        for layer in self.layers[1:]:
-            bbox = merge_bbox(bbox, layer.extent.llbbox)
-        return bbox
 
 class WMSLayerBase(object):
     """
