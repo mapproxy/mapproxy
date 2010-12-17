@@ -17,7 +17,7 @@
 from cgi import escape
 from mapproxy.template import bunch
 
-__all__ = ['escape', 'indent', 'bunch', 'wms100format']
+__all__ = ['escape', 'indent', 'bunch', 'wms100format', 'limit_llbbox']
 
 def indent(text, n=2):
   return '\n'.join(' '*n + line for line in text.split('\n'))
@@ -34,3 +34,23 @@ def wms100format(format):
         return sub_type
     else:
         return None
+
+def limit_llbbox(bbox):
+    """
+    Limit the long/lat bounding box to +-180/89.99999999 degrees.
+    
+    Some clients can't handle +-90 north/south, so we subtract a tiny bit.
+    
+    >>> ', '.join('%.6f' % x for x in limit_llbbox((-200,-90.0, 180, 90)))
+    '-180.000000, -89.999999, 180.000000, 89.999999'
+    >>> ', '.join('%.6f' % x for x in limit_llbbox((-20,-9.0, 10, 10)))
+    '-20.000000, -9.000000, 10.000000, 10.000000'
+    """
+    minx, miny, maxx, maxy = bbox
+    
+    minx = max(-180, minx)
+    miny = max(-89.999999, miny)
+    maxx = min(180, maxx)
+    maxy = min(89.999999, maxy)
+    
+    return minx, miny, maxx, maxy

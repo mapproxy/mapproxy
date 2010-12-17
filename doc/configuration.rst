@@ -84,14 +84,16 @@ Layers should be configured as a list (``-`` in YAML), where each layer configur
 
 Each layer contains information about the layer and where the data comes from.
 
+.. _layers_name:
+
 ``name``
 """""""""
 
 The name of the layer. You can omit the name for group layers (e.g. layers with ``layers``), in this case the layer is not addressable in WMS and used only for grouping.
 
-.. versionchanged:: 0.9.2
+.. versionchanged:: 0.9.1
 
-The old syntax to configure each layer as a dictionary, with the key as the name, is deprecated since 0.9.2.
+The old syntax to configure each layer as a dictionary with the key as the name is deprecated but still supported.
 
 ::
 
@@ -116,27 +118,35 @@ Readable name of the layer, e.g WMS layer title.
 ``layers``
 """"""""""
 
-.. versionadded:: 0.9.2
+.. versionadded:: 0.9.1
 
-Each layer can contain another ``layers`` configuration. You can use this to build a nested layer tree.
+Each layer can contain another ``layers`` configuration. You can use this to build group layers and to build a nested layer tree.
 
-For exmaple::
+For example::
 
   layers:
-    - name: layer1
-      title: Title of Layer 1
+    - name: root
+      title: Root Layer
       layers:
-        - name: layer1a
-          title: Title of Layer 1a
-          sources: [source1a]
-        - name: layer1b
-          title: Title of Layer 1b
-          sources: [source1b]
-    - name: layer2
-      title: Title of Layer 2
-      sources: [cache2]
+        - name: layer1
+          title: Title of Layer 1
+          layers:
+            - name: layer1a
+              title: Title of Layer 1a
+              sources: [source1a]
+            - name: layer1b
+              title: Title of Layer 1b
+              sources: [source1b]
+        - name: layer2
+          title: Title of Layer 2
+          sources: [cache2]
 
-``layer1`` is a group layer in this case. The WMS service will render ``layer1a`` and ``layer1b`` if you request ``layer1``. Note that ``sources`` is optional if you supply ``layers``. You can still configure ``sources`` for group layers. In this case the group ``sources`` will replace the ``sources`` of the child layers.
+``root`` and ``layer1`` is a group layer in this case. The WMS service will render ``layer1a`` and ``layer1b`` if you request ``layer1``. Note that ``sources`` is optional if you supply ``layers``. You can still configure ``sources`` for group layers. In this case the group ``sources`` will replace the ``sources`` of the child layers.
+
+MapProxy will wrap all layers into an unnamed root layer, if you define multiple layers on the first level.
+
+.. note::
+  The old syntax (see ``name`` :ref:`above <layers_name>`) is not supported if you use the nested layer configuration format.
 
 ``sources``
 """""""""""

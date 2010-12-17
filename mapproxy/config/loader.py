@@ -145,7 +145,34 @@ class ProxyConfiguration(object):
             layer_conf['name'] = layer_name
             self.layers[layer_name] = LayerConfiguration(conf=layer_conf, context=self)
         
-    def load_legacy_layers(self):
+    def _legacy_layers_conf_dict(self):
+        """
+        Read old style layer configuration with a dictionary where
+        the key is the layer name. Optionally: a list an each layer
+        is wrapped in such dictionary.
+        
+        ::
+          layers:
+            foo:
+              title: xxx
+              sources: []
+            bar:
+              title: xxx
+              sources: []
+        
+        or
+        
+        ::
+        
+          layers:
+            - foo:
+               title: xxx
+               sources: []
+            - bar:
+               title: xxx
+               sources: []
+        
+        """
         layers = []
         layers_conf = self.configuration.get('layers')
         if not layers_conf: return None # TODO config error
@@ -158,24 +185,46 @@ class ProxyConfiguration(object):
         
         
     def _layers_conf_dict(self):
+        """
+        Returns (recursive) layer configuration as a dictionary
+        in unified structure:
+        
+        ::
+            {
+             title: 'xxx', # required, might be None
+             name: 'xxx', # optional
+             # sources or layers or both are required
+             sources: [],
+             layers: [
+                {..., ...} # more layers like this
+             ]
+            }
+        
+        Multiple layers will be wrapped in an unnamed root layer, if the
+        first level starts with multiple layers.
+        """
         layers_conf = self.configuration.get('layers')
         if layers_conf is None: return
         
         if isinstance(layers_conf, list):
             if isinstance(layers_conf[0], dict) and len(layers_conf[0].keys()) == 1:
                 # looks like ordered legacy config
-                layers_conf = self.load_legacy_layers()
+                layers_conf = self._legacy_layers_conf_dict()
             else:
                 # wrap in root layer
                 layers_conf = dict(title=None, layers=layers_conf)
         
         if 'layers' not in layers_conf:
             # looks like unordered legacy config
-            layers_conf = self.load_legacy_layers()
+            layers_conf = self._legacy_layers_conf_dict()
         
         return layers_conf
     
     def _flatten_layers_conf_dict(self, layers_conf, _layers=None):
+        """
+        Returns a dictionary with all layers that have a name and sources.
+        Flattens the layer tree.
+        """
         layers = _layers if _layers is not None else odict()
         
         if 'layers' in layers_conf:
