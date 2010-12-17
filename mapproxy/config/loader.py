@@ -661,11 +661,11 @@ class WMSLayerConfiguration(ConfigurationBase):
             layer = WMSGroupLayer({'title':self.conf['title'], 'name': self.conf.get('name')},
                                   this=this_layer, layers=layers)
         return layer
-        
+
 class LayerConfiguration(ConfigurationBase):
     optional_keys = set('min_res max_res min_scale max_scale legendurl sources layers'.split())
     required_keys = set('name title'.split())
-    
+
     @memoize
     def wms_layer(self):
         sources = []
