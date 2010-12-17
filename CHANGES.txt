@@ -1,8 +1,10 @@
 0.9.1.dev
 
 Improvements:
+- Allow nested layer configurations (layer groups/trees)
 - Support custom path to libproj/libgdal with MAPPROXY_LIB_PATH environ
 - Look for xxx if libxxx returned no results.
+- Limit lat/lon bbox in WMS capabilities to +-89.999999 north/south values
 
 Fixes:
 - bug fix for threshold_res that overlap with the stretch_factor
