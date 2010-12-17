@@ -89,13 +89,14 @@
     <CRS>{{s}}</CRS>
     {{endfor}}
     {{endif}}
+    {{py: extent = limit_llbbox(layer.extent.llbbox)}}
     <EX_GeographicBoundingBox>
-      <westBoundLongitude>{{ layer.extent.llbbox[0] }}</westBoundLongitude>
-      <eastBoundLongitude>{{ layer.extent.llbbox[2] }}</eastBoundLongitude>
-      <southBoundLatitude>{{ layer.extent.llbbox[1] }}</southBoundLatitude>
-      <northBoundLatitude>{{ layer.extent.llbbox[3] }}</northBoundLatitude>
+      <westBoundLongitude>{{ extent[0] }}</westBoundLongitude>
+      <eastBoundLongitude>{{ extent[2] }}</eastBoundLongitude>
+      <southBoundLatitude>{{ extent[1] }}</southBoundLatitude>
+      <northBoundLatitude>{{ extent[3] }}</northBoundLatitude>
     </EX_GeographicBoundingBox>
-    <BoundingBox CRS="CRS:84" minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
+    <BoundingBox CRS="CRS:84" minx="{{ extent[0] }}" miny="{{ extent[1] }}" maxx="{{ extent[2] }}" maxy="{{ extent[3] }}" />
 {{if layer.is_active and layer.has_legend}}
     <Style>
       <Name>default</Name>

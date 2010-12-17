@@ -453,6 +453,14 @@ class TestWMS110(WMSTest):
         eq_(xml.xpath('//GetMap//OnlineResource/@xlink:href',
                       namespaces=dict(xlink="http://www.w3.org/1999/xlink"))[0],
             'http://localhost:80/service?')
+        
+        llbox = xml.xpath('//Capability/Layer/LatLonBoundingBox')[0]
+        # some clients don't like 90deg north/south
+        assert_almost_equal(float(llbox.attrib['miny']), -89.999999, 6)
+        assert_almost_equal(float(llbox.attrib['maxy']), 89.999999, 6)
+        assert_almost_equal(float(llbox.attrib['minx']), -180.0, 6)
+        assert_almost_equal(float(llbox.attrib['maxx']), 180.0, 6)
+        
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
                               'wms_merge', 'tms_cache', 'wms_cache_multi',

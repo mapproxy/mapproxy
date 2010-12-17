@@ -120,8 +120,9 @@
     <SRS>{{s}}</SRS>
     {{endfor}}
     {{endif}}
-    <LatLonBoundingBox minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
-    <BoundingBox SRS="EPSG:4326" minx="{{ layer.extent.llbbox[0] }}" miny="{{ layer.extent.llbbox[1] }}" maxx="{{ layer.extent.llbbox[2] }}" maxy="{{ layer.extent.llbbox[3] }}" />
+    {{py: extent = limit_llbbox(layer.extent.llbbox)}}
+    <LatLonBoundingBox minx="{{ extent[0] }}" miny="{{ extent[1] }}" maxx="{{ extent[2] }}" maxy="{{ extent[3] }}" />
+    <BoundingBox SRS="EPSG:4326" minx="{{ extent[0] }}" miny="{{ extent[1] }}" maxx="{{ extent[2] }}" maxy="{{ extent[3] }}" />
     {{if layer.is_active and layer.has_legend}}
     <Style>
         <Name>default</Name>
