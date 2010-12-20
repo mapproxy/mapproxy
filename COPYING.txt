@@ -40,3 +40,7 @@ mapproxy/util/ext/lockfile.py
 Copyright (c) 2001, 2002 Zope Corporation and Contributors.
 Zope Public License (ZPL) Version 2.1
 See file header.
+
+mapproxy/test/schemas/*
+-----------------------
+Copyright (c) 1994 - 2010 Open Geospatial Consortium, Inc
