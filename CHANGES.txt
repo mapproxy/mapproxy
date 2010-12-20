@@ -7,7 +7,7 @@ Improvements:
 
 Fixes:
 
-0.9.1.dev
+0.9.1rc2 2010-12-20
 
 Improvements:
 - Allow nested layer configurations (layer groups/trees)
