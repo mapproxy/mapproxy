@@ -25,7 +25,7 @@ from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
 from mapproxy.config import base_config
-from mapproxy.image import concat_legends
+from mapproxy.image import concat_legends, LayerMerger
 from mapproxy.image.message import attribution_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError
 from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
@@ -52,7 +52,6 @@ class WMSServer(Server):
         self.tile_layers = tile_layers or {}
         self.strict = strict
         if layer_merger is None:
-            from mapproxy.image import LayerMerger
             layer_merger = LayerMerger
         self.merger = layer_merger
         self.attribution = attribution
@@ -61,11 +60,10 @@ class WMSServer(Server):
         self.srs = srs or base_config().wms.srs
                 
     def map(self, map_request):
-        merger = self.merger()
         self.check_request(map_request)
         
-        p = map_request.params
-        query = MapQuery(p.bbox, p.size, SRS(p.srs), p.format)
+        params = map_request.params
+        query = MapQuery(params.bbox, params.size, SRS(params.srs), params.format)
         
         if map_request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
@@ -75,16 +73,16 @@ class WMSServer(Server):
             layer = self.layers[layer_name]
             # only add if layer reders the query
             if layer.renders_query(query):
-                # if layer is not transparent but will be rendered,
-                # remove already added (hidden) layers 
+                # if layer is not transparent and will be rendered,
+                # remove already added (then hidden) layers 
                 if not layer.transparent:
                     render_layers = []
                 render_layers.extend(layer.map_layers_for_query(query))
         
+        merger = self.merger()
         for layer in combined_layers(render_layers, query):
             merger.add(self._render_layer(layer, query, map_request))
             
-        params = map_request.params
         if self.attribution:
             merger.add(attribution_image(self.attribution['text'], params.size))
         result = merger.merge(params.format, params.size,
@@ -241,6 +239,11 @@ class WMSLayerBase(object):
         raise NotImplementedError()
     
 class WMSLayer(WMSLayerBase):
+    """
+    Class for WMS layers.
+    
+    Combines map, info and legend sources with metadata.
+    """
     is_active = True
     layers = []
     def __init__(self, md, map_layers, info_layers=[], legend_layers=[], res_range=None):
@@ -298,6 +301,12 @@ class WMSLayer(WMSLayerBase):
             return None
 
 class WMSGroupLayer(WMSLayerBase):
+    """
+    Class for WMS group layers.
+    
+    Groups multiple wms layers, but can also contain a single layer (``this``)
+    that represents this layer.
+    """
     def __init__(self, md, this, layers):
         self.this = this
         self.md = md
