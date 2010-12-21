@@ -37,12 +37,18 @@ class WMSMapRequestParams(RequestParams):
     and height, ``layers`` returns an iterator of all layers, etc. 
     
     """
-    @property
-    def layers(self):
+    def _get_layers(self):
         """
         List with all layer names.
         """
         return sum((layers.split(',') for layers in self.params.get_all('layers')), [])
+    def _set_layers(self, layers):
+        if isinstance(layers, (list, tuple)):
+            layers = ','.join(layers)
+        self.params['layers'] = layers
+    layers = property(_get_layers, _set_layers)
+    del _get_layers
+    del _set_layers
     
     def _get_bbox(self):
         """
