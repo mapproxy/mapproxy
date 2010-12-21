@@ -371,6 +371,36 @@ class TestWMSClient(object):
         img = img.convert('RGBA')
         eq_(img.getpixel((5, 5))[3], 0)
 
+class TestCombinedWMSClient(object):
+    def setup(self):
+        self.http = MockHTTPClient()
+    def test_combine(self):
+        req1 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
+                                    param={'layers':'foo', 'transparent': 'true'})
+        wms1 = WMSClient(req1, http_client=self.http, supported_srs=[SRS(4326)])
+        req2 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
+                                    param={'layers':'bar', 'transparent': 'true'})
+        wms2 = WMSClient(req2, http_client=self.http, supported_srs=[SRS(4326)])
+        
+        req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
+        
+        combined = wms1.combined_client(wms2, req)
+        eq_(combined.request_template.params.layers, ['foo', 'bar'])
+        eq_(combined.request_template.url, TESTSERVER_URL + '/service?map=foo')
+
+    def test_combine_different_url(self):
+        req1 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=bar',
+                                    param={'layers':'foo', 'transparent': 'true'})
+        wms1 = WMSClient(req1, http_client=self.http, supported_srs=[SRS(4326)])
+        req2 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
+                                    param={'layers':'bar', 'transparent': 'true'})
+        wms2 = WMSClient(req2, http_client=self.http, supported_srs=[SRS(4326)])
+        
+        req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
+        
+        combined = wms1.combined_client(wms2, req)
+        assert combined is None
+        
 class TestWMSInfoClient(object):
     def test_transform_fi_request_supported_srs(self):
         req = WMS111FeatureInfoRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo'})

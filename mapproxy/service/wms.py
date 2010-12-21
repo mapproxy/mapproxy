@@ -251,7 +251,7 @@ class WMSLayer(WMSLayerBase):
 
         if request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
-        for layer in self.map_layers:
+        for layer in combined_layers(self.map_layers, query):
             yield self._render_layer(layer, query, request)
     
     def _render_layer(self, layer, query, request):
@@ -349,3 +349,16 @@ class WMSGroupLayer(WMSLayerBase):
             elif lyr.md.get('name'):
                 layers[lyr.md['name']] = lyr
         return layers
+
+
+def combined_layers(layers, query):
+    layers = layers[:]
+    combined_layers = [layers.pop(0)]
+    while layers:
+        current_layer = layers.pop(0)
+        combined = combined_layers[-1].combined_layer(current_layer, query)
+        if combined:
+            combined_layers[-1] = combined
+        else:
+            combined_layers.append(current_layer)
+    return combined_layers

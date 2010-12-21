@@ -47,6 +47,9 @@ class MapLayer(object):
     
     def get_map(self, query):
         raise NotImplementedError
+    
+    def combined_layer(self, other, query):
+        return None
 
 class InfoLayer(object):
     def get_info(self, query):
