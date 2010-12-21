@@ -67,6 +67,9 @@ class WMSServer(Server):
         p = map_request.params
         query = MapQuery(p.bbox, p.size, SRS(p.srs), p.format)
         
+        if map_request.params.get('tiled', 'false').lower() == 'true':
+            query.tiled_only = True
+        
         render_layers = []
         for layer_name in map_request.params.layers:
             layer = self.layers[layer_name]
@@ -76,10 +79,10 @@ class WMSServer(Server):
                 # remove already added (hidden) layers 
                 if not layer.transparent:
                     render_layers = []
-                render_layers.append(layer)
+                render_layers.extend(layer.map_layers_for_query(query))
         
-        for layer in render_layers:
-            merger.add(layer.render(map_request, query=query))
+        for layer in combined_layers(render_layers, query):
+            merger.add(self._render_layer(layer, query, map_request))
             
         params = map_request.params
         if self.attribution:
@@ -89,6 +92,20 @@ class WMSServer(Server):
                               transparent=params.transparent)
         return Response(result.as_buffer(format=params.format),
                         content_type=params.format_mime_type)
+    
+    def _render_layer(self, layer, query, request):
+        try:
+            return layer.get_map(query)
+        except MapBBOXError:
+            raise RequestError('Request too large or invalid BBOX.', request=request)
+        except MapError, e:
+            raise RequestError('Invalid request: %s' % e.args[0], request=request)
+        except TransformationError:
+            raise RequestError('Could not transform BBOX: Invalid result.',
+                request=request)
+        except BlankImage:
+            return None
+    
     def capabilities(self, map_request):
         # TODO: debug layer
         # if '__debug__' in map_request.params:
@@ -214,7 +231,7 @@ class WMSLayerBase(object):
     "MapExtend of the layer"
     extent = None
     
-    def render(self, request, query=None):
+    def map_layers_for_query(self, query):
         raise NotImplementedError()
     
     def legend(self, query):
@@ -244,28 +261,8 @@ class WMSLayer(WMSLayerBase):
             return False
         return True
     
-    def render(self, request, query=None):
-        if query is None:
-            p = request.params
-            query = MapQuery(p.bbox, p.size, SRS(p.srs), p.format)
-
-        if request.params.get('tiled', 'false').lower() == 'true':
-            query.tiled_only = True
-        for layer in combined_layers(self.map_layers, query):
-            yield self._render_layer(layer, query, request)
-    
-    def _render_layer(self, layer, query, request):
-        try:
-            return layer.get_map(query)
-        except MapBBOXError:
-            raise RequestError('Request too large or invalid BBOX.', request=request)
-        except MapError, e:
-            raise RequestError('Invalid request: %s' % e.args[0], request=request)
-        except TransformationError:
-            raise RequestError('Could not transform BBOX: Invalid result.',
-                request=request)
-        except BlankImage:
-            return None
+    def map_layers_for_query(self, query):
+        return self.map_layers
     
     def info(self, request):
         p = request.params
@@ -325,12 +322,14 @@ class WMSGroupLayer(WMSLayerBase):
             return False
         return True
     
-    def render(self, request, query=None):
+    def map_layers_for_query(self, query):
         if self.this:
-            yield self.this.render(request, query)
+            return self.this.map_layers_for_query(query)
         else:
+            layers = []
             for layer in self.layers:
-                yield layer.render(request, query)
+                layers.extend(layer.map_layers_for_query(query))
+            return layer
     
     def info(self, request):
         if self.this:
@@ -352,12 +351,19 @@ class WMSGroupLayer(WMSLayerBase):
 
 
 def combined_layers(layers, query):
+    """
+    Returns a new list of the layers where all adjacent layers are combined
+    if possible.
+    """
+    if len(layers) <= 1:
+        return layers
     layers = layers[:]
     combined_layers = [layers.pop(0)]
     while layers:
         current_layer = layers.pop(0)
         combined = combined_layers[-1].combined_layer(current_layer, query)
         if combined:
+            # change last layer with combined
             combined_layers[-1] = combined
         else:
             combined_layers.append(current_layer)

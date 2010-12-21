@@ -98,10 +98,7 @@ class TestCoverageWMS(SystemTest):
                              {'body': img, 'headers': {'content-type': 'image/png'}}),
                             ({'path': '/service_b' + common_params + '&layers=b_one'},
                              {'body': img, 'headers': {'content-type': 'image/png'}}),
-                             # TODO next two should be combined by WMS service
-                            ({'path': '/service_a' + common_params + '&layers=a_two,a_three'},
-                             {'body': img, 'headers': {'content-type': 'image/png'}}),
-                            ({'path': '/service_a' + common_params + '&layers=a_four'},
+                            ({'path': '/service_a' + common_params + '&layers=a_two,a_three,a_four'},
                              {'body': img, 'headers': {'content-type': 'image/png'}}),
                             ]
                              
