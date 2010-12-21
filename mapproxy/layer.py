@@ -135,7 +135,7 @@ class ResolutionConditional(MapLayer):
     def __init__(self, one, two, resolution, srs, extent):
         self.one = one
         self.two = two
-        self.res_range = _calculate_res_range([one, two])
+        self.res_range = merge_layer_res_ranges([one, two])
         self.resolution = resolution
         self.srs = srs
         
@@ -167,7 +167,7 @@ class SRSConditional(MapLayer):
         self.transparent = transparent
         # TODO geographic/projected fallback
         self.srs_map = {}
-        self.res_range = _calculate_res_range([l[0] for l in layers])
+        self.res_range = merge_layer_res_ranges([l[0] for l in layers])
         for layer, srss in layers:
             for srs in srss:
                 self.srs_map[srs] = layer
@@ -210,7 +210,7 @@ class DirectMapLayer(MapLayer):
         return self.source.get_map(query)
 
 
-def _calculate_res_range(layers):
+def merge_layer_res_ranges(layers):
     ranges = [s.res_range for s in layers
               if hasattr(s, 'res_range')]
     if ranges:
@@ -225,7 +225,7 @@ class CacheMapLayer(MapLayer):
         self.grid = tile_manager.grid
         self.resampling = resampling or base_config().image.resampling_method
         self.extent = extent or map_extent_from_grid(self.grid)
-        self.res_range = _calculate_res_range(self.tile_manager.sources)
+        self.res_range = merge_layer_res_ranges(self.tile_manager.sources)
         self.transparent = tile_manager.transparent
     
     def get_map(self, query):

@@ -27,8 +27,8 @@ from mapproxy.exception import RequestError
 from mapproxy.config import base_config
 from mapproxy.image import concat_legends
 from mapproxy.image.message import attribution_image
-
-from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, MapBBOXError, merge_layer_extents
+from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError
+from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
 from mapproxy.util.ext.odict import odict
 
 from mapproxy.template import template_loader, bunch
@@ -250,7 +250,7 @@ class WMSLayer(WMSLayerBase):
         self.legend_layers = legend_layers
         self.extent = merge_layer_extents(map_layers)
         if res_range is None:
-            res_range = map_layers[0].res_range #TODO
+            res_range = merge_layer_res_ranges(map_layers)
         self.res_range = res_range
         self.queryable = True if info_layers else False
         self.transparent = any(map_lyr.transparent for map_lyr in self.map_layers)
@@ -306,8 +306,9 @@ class WMSGroupLayer(WMSLayerBase):
         self.transparent = True if this and this.transparent or any(l.transparent for l in layers) else False
         self.has_legend = True if this and this.has_legend or any(l.has_legend for l in layers) else False
         self.queryable = True if this and this.queryable or any(l.queryable for l in layers) else False
-        self.extent = merge_layer_extents(layers + ([self.this] if self.this else []))
-        self.res_range = layers[0].res_range #TODO
+        all_layers = layers + ([self.this] if self.this else [])
+        self.extent = merge_layer_extents(all_layers)
+        self.res_range = merge_layer_res_ranges(all_layers)
     
     @property
     def legend_size(self):
