@@ -361,7 +361,7 @@ def seed_from_yaml_conf(seed_conf_file, mapproxy_conf_file, verbose=True, dry_ru
                 print >>sys.stderr, 'error: cache %s not found. available caches: %s' % (
                     layer, ','.join(conf.caches.keys()))
                 return
-            caches = dict((grid.srs, tile_mgr) for grid, tile_mgr in caches)
+            caches = dict((grid.srs, tile_mgr) for grid, extent, tile_mgr in caches)
             seeder = CacheSeeder(caches, remove_before=remove_before, dry_run=dry_run,
                                 concurrency=concurrency,
                                 skip_geoms_for_last_levels=skip_geoms_for_last_levels)

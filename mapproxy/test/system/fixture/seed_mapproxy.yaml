@@ -1,0 +1,14 @@
+globals:
+  cache:
+    base_dir: './cache'
+caches:
+  one:
+    sources: [source_a]
+    grids: [GLOBAL_GEODETIC]
+
+sources:
+  source_a:
+    type: wms
+    req:
+      url: http://localhost:42423/service?
+      layers: foo

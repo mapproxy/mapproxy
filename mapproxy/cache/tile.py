@@ -78,7 +78,7 @@ class TileManager(object):
         
         for tile in tiles:
             # TODO cache eviction
-            if self.cache.is_cached(tile):
+            if self.is_cached(tile):
                 self.cache.load(tile, with_metadata)
             else:
                 uncached_tiles.append(tile)
