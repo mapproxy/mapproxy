@@ -100,16 +100,7 @@ html_theme = 'mapproxy'
 # further.  For a list of options available for each theme, see the
 # documentation.
 
-c_dark_grey = "#3A3740"
 html_theme_options = {
-    'rightsidebar': True,
-    "relbarbgcolor": c_dark_grey,
-    "footerbgcolor": c_dark_grey,
-    "sidebarbgcolor": c_dark_grey,
-    "linkcolor": "#6E838B",
-    "sidebarlinkcolor": "#EFEFEF",
-    "codebgcolor": "#DCEBED",
-    
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -124,7 +115,7 @@ html_theme_path = ['_themes']
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+html_logo = 'logo.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
