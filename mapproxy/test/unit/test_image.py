@@ -1,3 +1,4 @@
+# -:- encoding: utf8 -:-
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 # 
@@ -20,23 +21,24 @@ from mapproxy.platform.image import (
     ImageDraw,
     ImageColor,
     ImagePalette,
+    ImageFont,
 )
 
 import os
 import sys
 from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image
-from mapproxy.image.message import message_image
+from mapproxy.image.message import message_image, TextDraw
 from mapproxy.image.tile import TileMerger
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.tilefilter import watermark_filter, PNGQuantFilter
 from mapproxy.cache.tile import Tile
-from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image, check_format, create_debug_img
+from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image_file, check_format, create_debug_img
 from mapproxy.srs import SRS
 from nose.tools import eq_
 
 class TestImageSource(object):
     def setup(self):
-        self.tmp_filename = create_tmp_image((100, 100))
+        self.tmp_filename = create_tmp_image_file((100, 100))
     
     def teardown(self):
         os.remove(self.tmp_filename)
@@ -144,9 +146,79 @@ class TestReadBufWrapper(object):
         assert hasattr(self.rbuf_wrapper, 'readline')
 
 
+class TestTextDraw(object):
+    def test_ul(self):
+        font = ImageFont.load_default()
+        td = TextDraw('Hello', font)
+        img = Image.new('RGB', (100, 100))
+        draw = ImageDraw.Draw(img)
+        total_box, boxes = td.text_boxes(draw, (100, 100))
+        eq_(total_box, boxes[0])
+        eq_(len(boxes), 1)
+    
+    def test_multiline_ul(self):
+        font = ImageFont.load_default()
+        td = TextDraw('Hello\nWorld', font)
+        img = Image.new('RGB', (100, 100))
+        draw = ImageDraw.Draw(img)
+        total_box, boxes = td.text_boxes(draw, (100, 100))
+        eq_(total_box, (10, 10, 40, 42))
+        eq_(boxes, [(10, 10, 40, 21), (10, 31, 40, 42)])
+
+    def test_multiline_lr(self):
+        font = ImageFont.load_default()
+        td = TextDraw('Hello\nWorld', font, placement='lr')
+        img = Image.new('RGB', (100, 100))
+        draw = ImageDraw.Draw(img)
+        total_box, boxes = td.text_boxes(draw, (100, 100))
+        eq_(total_box, (60, 58, 90, 90))
+        eq_(boxes, [(60, 58, 90, 69), (60, 79, 90, 90)])
+
+    def test_multiline_center(self):
+        font = ImageFont.load_default()
+        td = TextDraw('Hello\nWorld', font, placement='cc')
+        img = Image.new('RGB', (100, 100))
+        draw = ImageDraw.Draw(img)
+        total_box, boxes = td.text_boxes(draw, (100, 100))
+        eq_(total_box, (35, 34, 65, 66))
+        eq_(boxes, [(35, 34, 65, 45), (35, 55, 65, 66)])
+
+    def test_unicode(self):
+        font = ImageFont.load_default()
+        td = TextDraw(u'Héllö\nWørld', font, placement='cc')
+        img = Image.new('RGB', (100, 100))
+        draw = ImageDraw.Draw(img)
+        total_box, boxes = td.text_boxes(draw, (100, 100))
+        eq_(total_box, (35, 34, 65, 66))
+        eq_(boxes, [(35, 34, 65, 45), (35, 55, 65, 66)])
+    
+    def _test_all(self):
+        for x in 'c':
+            for y in 'LR':
+                yield self.check_placement, x, y
+
+    def check_placement(self, x, y):
+        font = ImageFont.load_default()
+        td = TextDraw('Hello\nWorld\n%s %s' % (x, y), font, placement=x+y,
+            padding=5, linespacing=2)
+        img = Image.new('RGB', (100, 100))
+        draw = ImageDraw.Draw(img)
+        td.draw(draw, img.size)
+        img.show()
+    
+    def test_transparent(self):
+        font = ImageFont.load_default()
+        td = TextDraw('Hello\nWorld', font, placement='cc')
+        img = Image.new('RGBA', (100, 100), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+        td.draw(draw, img.size)
+        eq_(len(img.getcolors()), 2)
+        # top color (bg) is transparent
+        eq_(sorted(img.getcolors())[1][1], (0, 0, 0, 0))
+        
+        
 class TestMessageImage(object):
     def test_blank(self):
-        # import nose.tools; nose.tools.set_trace()
         img = message_image('', size=(100, 150), format='png', bgcolor='#113399')
         assert isinstance(img, ImageSource)
         eq_(img.size, (100, 150))
@@ -186,36 +258,56 @@ class TestWatermarkTileFilter(object):
         assert orig_source != filtered_tile.source
         
         pil_img = filtered_tile.source.as_image()
-        eq_(pil_img.getpixel((0, 0)), (0, 0, 0, 255))
-        # check histogram profile (w TrueType support and w/o)
-        hist_color_counts = [x for x in pil_img.histogram() if x > 0]
-        eq_(hist_color_counts[:3], [40000, 40000, 40000])
-        assert hist_color_counts[-1] > 39000
+        eq_(pil_img.getpixel((0, 0)), (0, 0, 0))
+
+        colors = pil_img.getcolors()
+        colors.sort()
+        # most but not all parts are bg color
+        assert 39900 > colors[-1][0] > 39000
+        assert colors[-1][1] == (0, 0, 0)
+
+    def test_filter_with_alpha(self):
+        img = Image.new('RGBA', (200, 200), (10, 15, 20, 0))
+        orig_source = ImageSource(img)
+        self.tile.source = orig_source
+        filtered_tile = self.filter(self.tile)
+        
+        assert self.tile is filtered_tile
+        assert orig_source != filtered_tile.source
+        
+        pil_img = filtered_tile.source.as_image()
+        eq_(pil_img.getpixel((0, 0)), (10, 15, 20, 0))
+
+        colors = pil_img.getcolors()
+        colors.sort()
+        # most but not all parts are bg color
+        assert 39900 > colors[-1][0] > 39000
+        eq_(colors[-1][1], (10, 15, 20, 0))
         
 class TestMergeAll(object):
     def setup(self):
         self.cleanup_tiles = []
     def test_full_merge(self):
-        self.cleanup_tiles = [create_tmp_image((100, 100)) for _ in range(9)]
+        self.cleanup_tiles = [create_tmp_image_file((100, 100)) for _ in range(9)]
         self.tiles = [ImageSource(tile) for tile in self.cleanup_tiles]
         m = TileMerger(tile_grid=(3, 3), tile_size=(100, 100))
         result = m.merge(self.tiles)
         assert result.as_image().size == (300, 300)
     def test_one(self):
-        self.cleanup_tiles = [create_tmp_image((100, 100))]
+        self.cleanup_tiles = [create_tmp_image_file((100, 100))]
         self.tiles = [ImageSource(self.cleanup_tiles[0])]
         m = TileMerger(tile_grid=(1, 1), tile_size=(100, 100))
         result = m.merge(self.tiles)
         assert result.as_image().size == (100, 100)
     def test_missing_tiles(self):
-        self.cleanup_tiles = [create_tmp_image((100, 100))]
+        self.cleanup_tiles = [create_tmp_image_file((100, 100))]
         self.tiles = [ImageSource(self.cleanup_tiles[0])]
         self.tiles.extend([None]*8)
         m = TileMerger(tile_grid=(3, 3), tile_size=(100, 100))
         result = m.merge(self.tiles)
         assert result.as_image().size == (300, 300)
     def test_invalid_tile(self):
-        self.cleanup_tiles = [create_tmp_image((100, 100)) for _ in range(9)]
+        self.cleanup_tiles = [create_tmp_image_file((100, 100)) for _ in range(9)]
         self.tiles = [ImageSource(tile) for tile in self.cleanup_tiles]
         invalid_tile = self.tiles[0].source
         with open(invalid_tile, 'w') as tmp:
@@ -236,7 +328,7 @@ class TestMergeAll(object):
 
 class TestGetCrop(object):
     def setup(self):
-        self.img = ImageSource(create_tmp_image((100, 100)),
+        self.img = ImageSource(create_tmp_image_file((100, 100)),
                                format='png', size=(100, 100))
     def test_perfect_match(self):
         bbox = (-10, -5, 30, 35)

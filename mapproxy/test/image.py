@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import division
 import os
 
 from mapproxy.platform.image import (
@@ -91,13 +92,35 @@ def is_transparent(img_data):
         'assert_is_transparent works only for RGBA images, got %s image' % img.mode)
         
 
-def create_tmp_image(size):
+def bgcolor_ratio(img_data):
+    """
+    Return the ratio of the primary/bg color. 1 == only bg color.
+    """
+    data = StringIO(img_data)
+    img = Image.open(data)
+    total_colors = img.size[0] * img.size[1]
+    colors = img.getcolors()
+    colors.sort()
+    bgcolor = colors[-1][0]
+    return bgcolor/total_colors
+
+def create_tmp_image_file(size):
     fd, out_file = tempfile.mkstemp(suffix='.png')
     os.close(fd)
     print 'creating temp image %s (%r)' % (out_file, size)
     img = Image.new('RGBA', size)
     img.save(out_file, 'png')
     return out_file
+
+def create_tmp_image(size, format='png', color=None, mode='RGB'):
+    if color is not None:
+        img = Image.new(mode, size, color=color)
+    else:
+        img = create_debug_img(size)
+    data = StringIO()
+    img.save(data, format)
+    data.seek(0)
+    return data.read()
     
 
 def create_debug_img(size, transparent=True):
@@ -123,6 +146,7 @@ def draw_pattern(draw, size):
     for i in range(16):
         color = ImageColor.getrgb('#' + hex(16-i)[-1] + hex(i)[-1] + '3')
         draw.line((0, i*step, w, i*step), fill=color)
+
 
 @contextmanager
 def tmp_image(size, format='png', color=None, mode='RGB'):

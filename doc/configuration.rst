@@ -226,10 +226,14 @@ Add a watermark right into the cached tiles. The watermark is thus also present 
 
 ``opacity``
     The opacity of the watermark (from 0 transparent to 255 full opaque).
-    Use a value between 3 and 10 for unobtrusive watermarks.
+    Use a value between 30 and 100 for unobtrusive watermarks.
 
 ``font_size``
   Font size of the watermark text.
+
+``spacing``
+  Configure the spacing between repeated watermarks. By default the watermark will be placed on
+  every tile, with ``wide`` the watermark will be placed on every second tile.
 
 ``grids``
 """""""""

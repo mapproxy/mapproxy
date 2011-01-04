@@ -61,7 +61,7 @@ def is_111_exception(xml, msg=None, code=None, re_msg=None):
         eq_(xml.xpath('//ServiceException/text()')[0], msg)
     if re_msg:
         exception_msg = xml.xpath('//ServiceException/text()')[0]
-        assert re.match(re_msg, exception_msg, re.I), "'%r' does not match '%s'" % (
+        assert re.findall(re_msg, exception_msg, re.I), "'%r' does not match '%s'" % (
             re_msg, exception_msg)
     if code is not None:
         eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code')[0], code)

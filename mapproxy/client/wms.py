@@ -137,6 +137,27 @@ class WMSClient(object):
         req.params.srs = query.srs.srs_code
         req.params.format = format
         return req
+    
+    def combined_client(self, other, query):
+        """
+        Return a new WMSClient that combines this request with the `other`. Returns
+        ``None`` if the clients are not combinable (e.g. different URLs).
+        """
+        if self.request_template.url != other.request_template.url:
+            return None
+        
+        if self.supported_srs != other.supported_srs:
+          return None
+        
+        if self.supported_formats != other.supported_formats:
+          return None
+        
+        new_req = self.request_template.copy()
+        new_req.params.layers = new_req.params.layers + other.request_template.params.layers
+        
+        return WMSClient(new_req, http_client=self.http_client, http_method=self.http_method,
+                         resampling=self.resampling)
+        
 
 
 class WMSInfoClient(object):

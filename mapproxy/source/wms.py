@@ -54,8 +54,17 @@ class WMSSource(Source):
             return self.client.get_map(query)
         except HTTPClientError, e:
             reraise_exception(SourceError(e.args[0]), sys.exc_info())
+    
+    def combined_layer(self, other, query):
+        if not isinstance(other, WMSSource):
+            return None
         
-
+        client = self.client.combined_client(other.client, query)
+        if not client:
+            return None
+        
+        return WMSSource(client, transparent=self.transparent)
+        
 class WMSInfoSource(InfoSource):
     def __init__(self, client):
         self.client = client

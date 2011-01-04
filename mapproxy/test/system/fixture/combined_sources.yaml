@@ -1,0 +1,56 @@
+globals:
+  cache:
+    base_dir: /tmp/cache_data/
+    meta_size: [1, 1]
+    meta_buffer: 0
+  image:
+    paletted: False
+    # resampling: 'bicubic'
+
+services:
+  wms:
+
+layers:
+  combinable:
+    title: Uncached combined layers
+    sources: [wms1, wms3, wms4, wms2]
+  uncombinable:
+    title: Uncached layers
+    sources: [wms1, wms2, wms3]
+  single:
+    title: Uncached combined layers
+    sources: [wms4]
+  cached:
+    title: Cached combined layers
+    sources: [wms_cache]
+
+caches:
+  wms_cache:
+    grids: [GLOBAL_MERCATOR]
+    sources: [wms1, wms3, wms2]
+
+sources:
+  wms1:
+    type: wms
+    req:
+      url: http://localhost:42423/service_a
+      layers: a_one
+      transparent: True
+  wms2:
+    type: wms
+    req:
+      url: http://localhost:42423/service_b
+      layers: b_one
+      transparent: True
+  wms3:
+    type: wms
+    req:
+      url: http://localhost:42423/service_a
+      layers: a_two,a_three
+      transparent: True
+  wms4:
+    type: wms
+    req:
+      url: http://localhost:42423/service_a
+      layers: a_four
+      transparent: True

@@ -18,7 +18,7 @@
 Map/information sources for layers or tile cache.
 """
 
-from mapproxy.layer import MapExtent, MapError, MapBBOXError, BlankImage
+from mapproxy.layer import MapLayer, MapExtent, MapError, MapBBOXError, BlankImage
 from mapproxy.image.message import message_image
 from mapproxy.srs import SRS
 
@@ -31,11 +31,12 @@ class SourceBBOXError(SourceError, MapBBOXError):
 class InvalidSourceQuery(ValueError):
     pass
 
-class Source(object):
+class Source(MapLayer):
     supports_meta_tiles = False
     transparent = False
-    def get_map(self, query):
-        raise NotImplementedError
+    
+    def __init__(self):
+        MapLayer.__init__(self)
 
 class InfoSource(object):
     def get_info(self, query):

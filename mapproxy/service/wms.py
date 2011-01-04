@@ -23,12 +23,13 @@ from mapproxy.request.wms import wms_request, WMS111LegendGraphicRequest
 from mapproxy.srs import merge_bbox, SRS, TransformationError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
+from mapproxy.source import SourceError
 from mapproxy.exception import RequestError
 from mapproxy.config import base_config
-from mapproxy.image import concat_legends
-from mapproxy.image.message import attribution_image
-
-from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, MapBBOXError, merge_layer_extents
+from mapproxy.image import concat_legends, LayerMerger
+from mapproxy.image.message import attribution_image, message_image
+from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError
+from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
 from mapproxy.util.ext.odict import odict
 
 from mapproxy.template import template_loader, bunch
@@ -44,7 +45,7 @@ class WMSServer(Server):
     request_methods = ('map', 'capabilities', 'featureinfo', 'legendgraphic')
     
     def __init__(self, root_layer, md, layer_merger=None, request_parser=None, tile_layers=None,
-        attribution=None, srs=None, image_formats=None, strict=False):
+        attribution=None, srs=None, image_formats=None, strict=False, on_error='raise'):
         Server.__init__(self)
         self.request_parser = request_parser or partial(wms_request, strict=strict)
         self.root_layer = root_layer
@@ -52,36 +53,40 @@ class WMSServer(Server):
         self.tile_layers = tile_layers or {}
         self.strict = strict
         if layer_merger is None:
-            from mapproxy.image import LayerMerger
             layer_merger = LayerMerger
         self.merger = layer_merger
         self.attribution = attribution
         self.md = md
+        self.on_error = on_error
         self.image_formats = image_formats or base_config().wms.image_formats
         self.srs = srs or base_config().wms.srs
                 
     def map(self, map_request):
-        merger = self.merger()
         self.check_request(map_request)
         
-        p = map_request.params
-        query = MapQuery(p.bbox, p.size, SRS(p.srs), p.format)
+        params = map_request.params
+        query = MapQuery(params.bbox, params.size, SRS(params.srs), params.format)
+        
+        if map_request.params.get('tiled', 'false').lower() == 'true':
+            query.tiled_only = True
         
         render_layers = []
         for layer_name in map_request.params.layers:
             layer = self.layers[layer_name]
             # only add if layer reders the query
             if layer.renders_query(query):
-                # if layer is not transparent but will be rendered,
-                # remove already added (hidden) layers 
+                # if layer is not transparent and will be rendered,
+                # remove already added (then hidden) layers 
                 if not layer.transparent:
                     render_layers = []
-                render_layers.append(layer)
+                render_layers.extend(layer.map_layers_for_query(query))
         
-        for layer in render_layers:
-            merger.add(layer.render(map_request, query=query))
-            
-        params = map_request.params
+        merger = self.merger()
+        raise_source_errors =  True if self.on_error == 'raise' else False
+        renderer = LayerRenderer(render_layers, query, map_request,
+                                 raise_source_errors=raise_source_errors)
+        renderer.render(merger)
+        
         if self.attribution:
             merger.add(attribution_image(self.attribution['text'], params.size))
         result = merger.merge(params.format, params.size,
@@ -89,6 +94,9 @@ class WMSServer(Server):
                               transparent=params.transparent)
         return Response(result.as_buffer(format=params.format),
                         content_type=params.format_mime_type)
+    
+
+    
     def capabilities(self, map_request):
         # TODO: debug layer
         # if '__debug__' in map_request.params:
@@ -185,6 +193,49 @@ class Capabilities(object):
         doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())
         return doc
 
+class LayerRenderer(object):
+    def __init__(self, layers, query, request, raise_source_errors=True):
+        self.layers = layers
+        self.query = query
+        self.request = request
+        self.raise_source_errors = raise_source_errors
+    
+    def render(self, layer_merger):
+        errors = []
+        rendered = 0
+        
+        render_layers = combined_layers(self.layers, self.query)
+        for layer in render_layers:
+            try:
+                layer_merger.add(self._render_layer(layer))
+                rendered += 1
+            except SourceError, ex:
+                if self.raise_source_errors:
+                    raise RequestError(ex.args[0], request=self.request)
+                errors.append(ex.args[0])
+        
+        if render_layers and not rendered:
+            errors = '\n'.join(errors)
+            raise RequestError('Could not get retrieve any sources:\n'+errors, request=self.request)
+        
+        if errors:
+            layer_merger.add(message_image('\n'.join(errors), self.query.size, transparent=True))
+    
+    def _render_layer(self, layer):
+        try:
+            return layer.get_map(self.query)
+        except SourceError:
+            raise
+        except MapBBOXError:
+            raise RequestError('Request too large or invalid BBOX.', request=self.request)
+        except MapError, e:
+            raise RequestError('Invalid request: %s' % e.args[0], request=self.request)
+        except TransformationError:
+            raise RequestError('Could not transform BBOX: Invalid result.',
+                request=self.request)
+        except BlankImage:
+            return None
+
 class WMSLayerBase(object):
     """
     Base class for WMS layer (layer groups and leaf layers).
@@ -214,7 +265,7 @@ class WMSLayerBase(object):
     "MapExtend of the layer"
     extent = None
     
-    def render(self, request, query=None):
+    def map_layers_for_query(self, query):
         raise NotImplementedError()
     
     def legend(self, query):
@@ -224,6 +275,11 @@ class WMSLayerBase(object):
         raise NotImplementedError()
     
 class WMSLayer(WMSLayerBase):
+    """
+    Class for WMS layers.
+    
+    Combines map, info and legend sources with metadata.
+    """
     is_active = True
     layers = []
     def __init__(self, md, map_layers, info_layers=[], legend_layers=[], res_range=None):
@@ -233,7 +289,7 @@ class WMSLayer(WMSLayerBase):
         self.legend_layers = legend_layers
         self.extent = merge_layer_extents(map_layers)
         if res_range is None:
-            res_range = map_layers[0].res_range #TODO
+            res_range = merge_layer_res_ranges(map_layers)
         self.res_range = res_range
         self.queryable = True if info_layers else False
         self.transparent = any(map_lyr.transparent for map_lyr in self.map_layers)
@@ -244,28 +300,8 @@ class WMSLayer(WMSLayerBase):
             return False
         return True
     
-    def render(self, request, query=None):
-        if query is None:
-            p = request.params
-            query = MapQuery(p.bbox, p.size, SRS(p.srs), p.format)
-
-        if request.params.get('tiled', 'false').lower() == 'true':
-            query.tiled_only = True
-        for layer in self.map_layers:
-            yield self._render_layer(layer, query, request)
-    
-    def _render_layer(self, layer, query, request):
-        try:
-            return layer.get_map(query)
-        except MapBBOXError:
-            raise RequestError('Request too large or invalid BBOX.', request=request)
-        except MapError, e:
-            raise RequestError('Invalid request: %s' % e.args[0], request=request)
-        except TransformationError:
-            raise RequestError('Could not transform BBOX: Invalid result.',
-                request=request)
-        except BlankImage:
-            return None
+    def map_layers_for_query(self, query):
+        return self.map_layers
     
     def info(self, request):
         p = request.params
@@ -301,6 +337,12 @@ class WMSLayer(WMSLayerBase):
             return None
 
 class WMSGroupLayer(WMSLayerBase):
+    """
+    Class for WMS group layers.
+    
+    Groups multiple wms layers, but can also contain a single layer (``this``)
+    that represents this layer.
+    """
     def __init__(self, md, this, layers):
         self.this = this
         self.md = md
@@ -309,8 +351,9 @@ class WMSGroupLayer(WMSLayerBase):
         self.transparent = True if this and this.transparent or any(l.transparent for l in layers) else False
         self.has_legend = True if this and this.has_legend or any(l.has_legend for l in layers) else False
         self.queryable = True if this and this.queryable or any(l.queryable for l in layers) else False
-        self.extent = merge_layer_extents(layers + ([self.this] if self.this else []))
-        self.res_range = layers[0].res_range #TODO
+        all_layers = layers + ([self.this] if self.this else [])
+        self.extent = merge_layer_extents(all_layers)
+        self.res_range = merge_layer_res_ranges(all_layers)
     
     @property
     def legend_size(self):
@@ -325,12 +368,14 @@ class WMSGroupLayer(WMSLayerBase):
             return False
         return True
     
-    def render(self, request, query=None):
+    def map_layers_for_query(self, query):
         if self.this:
-            yield self.this.render(request, query)
+            return self.this.map_layers_for_query(query)
         else:
+            layers = []
             for layer in self.layers:
-                yield layer.render(request, query)
+                layers.extend(layer.map_layers_for_query(query))
+            return layer
     
     def info(self, request):
         if self.this:
@@ -349,3 +394,23 @@ class WMSGroupLayer(WMSLayerBase):
             elif lyr.md.get('name'):
                 layers[lyr.md['name']] = lyr
         return layers
+
+
+def combined_layers(layers, query):
+    """
+    Returns a new list of the layers where all adjacent layers are combined
+    if possible.
+    """
+    if len(layers) <= 1:
+        return layers
+    layers = layers[:]
+    combined_layers = [layers.pop(0)]
+    while layers:
+        current_layer = layers.pop(0)
+        combined = combined_layers[-1].combined_layer(current_layer, query)
+        if combined:
+            # change last layer with combined
+            combined_layers[-1] = combined
+        else:
+            combined_layers.append(current_layer)
+    return combined_layers

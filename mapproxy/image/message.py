@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import division
 import os
 
 from mapproxy.platform.image import Image, ImageColor, ImageDraw, ImageFont
@@ -118,31 +119,27 @@ class MessageImage(object):
         """
         if not ((img and not size) or (size and not img)):
             raise TypeError, 'need either img or size argument'
-        base_img = None
-        if img is not None:
-            base_img = img.as_image().convert('RGBA')
+
+        if img is None:
+            base_img = self.new_image(size)
+        else:
+            base_img = img.as_image()
             size = base_img.size
-        msg_img = self.new_image(size)
+        
         if not self.message:
-            return img if img is not None else ImageSource(msg_img, size=size,
-                                                           format=self.format)
-        draw = ImageDraw.Draw(msg_img)
-        self.draw_msg(msg_img, draw)
-        result = self.merge_msg(base_img, msg_img)
-        return ImageSource(result, size=size, format=self.format)
+            if img is not None:
+                return img
+            return ImageSource(base_img, size=size, format=self.format)
+        
+        draw = ImageDraw.Draw(base_img)
+        self.draw_msg(draw, size)
+        return ImageSource(base_img, size=size, format=self.format)
     
-    def merge_msg(self, img, msg_img):
-        if img is not None:
-            img.paste(msg_img, (0, 0), msg_img)
-            return img
-        return msg_img
-    
-    def draw_msg(self, msg_img, draw):
-        text_box = self.text_box(msg_img, draw)
-        if self.box_color:
-            draw.rectangle(text_box, fill=self.box_color)
-        draw.text((text_box[0], text_box[1]), self.message, font=self.font,
-                  fill=self.font_color)
+    def draw_msg(self, draw, size):
+        td = TextDraw(self.message, font=self.font, bg_color=self.box_color,
+                      font_color=self.font_color)
+        td.draw(draw, size)
+
 
 class ExceptionImage(MessageImage):
     """
@@ -170,16 +167,6 @@ class ExceptionImage(MessageImage):
             return ImageColor.getrgb('white')
         return ImageColor.getrgb('black')
     
-    def text_box(self, _img, draw):
-        text_size = self.text_size(draw)
-        return (10, 10, text_size[0]+10, text_size[1]+10)
-    
-    def draw_msg(self, msg_img, draw):
-        if not self.transparent:
-            bgcolor = ImageColor.getrgb(self.bgcolor)
-            draw.rectangle((0, 0, msg_img.size[0], msg_img.size[1]), fill=bgcolor)
-        MessageImage.draw_msg(self, msg_img, draw)
-    
 
 class WatermarkImage(MessageImage):
     """
@@ -187,38 +174,30 @@ class WatermarkImage(MessageImage):
     """
     font_name = 'DejaVu Sans'
     font_size = 24
-    font_color = (0, 0, 0)
+    font_color = (128, 128, 128)
     
-    def __init__(self, message, format='png', odd=False, opacity=None, font_size=None):
+    def __init__(self, message, format='png', placement='c', opacity=None, font_size=None):
         MessageImage.__init__(self, message, format)
         if opacity is None:
             opacity = 3
         if font_size:
             self.font_size = font_size
         self.font_color = self.font_color + tuple([opacity])
-        self.odd = odd
+        self.placement = placement
     
-    def new_image(self, size):
-        return Image.new('RGBA', size)
+    def draw_msg(self, draw, size):
+        td = TextDraw(self.message, self.font, self.font_color)
+        if self.placement in ('l', 'b'):
+            td.placement = 'cL'
+            td.draw(draw, size)
+        if self.placement in ('r', 'b'):
+            td.placement = 'cR'
+            td.draw(draw, size)
+        if self.placement == 'c':
+            td.placement = 'cc'
+            td.draw(draw, size)
+        
     
-    def text_box(self, img, draw):
-        text_size = self.text_size(draw)
-        w, h = img.size
-        x = w//2 - text_size[0]//2
-        y = h//2 - text_size[1]//2
-        return (x, y, x+w, y+h)
-    
-    def merge_msg(self, img, msg_img):
-        if img is None:
-            return msg_img
-        w, _ = img.size
-        if self.odd:
-            img.paste(msg_img, (-w//2, 0), msg_img)
-            img.paste(msg_img, (w//2, 0), msg_img)
-        else:
-            img.paste(msg_img, (0, 0), msg_img)
-        return img
-
 class AttributionImage(MessageImage):
     """
     Image with attribution information.
@@ -250,6 +229,93 @@ class AttributionImage(MessageImage):
         text_size = self.text_size(draw)
         return (img_size[0]-text_size[0]-5, img_size[1]-5-text_size[1],
                 img_size[0]-5, img_size[1]-5)
+
+
+class TextDraw(object):
+    def __init__(self, text, font, font_color=None, bg_color=None,
+                 placement='ul', padding=10, linespacing=10):
+        if isinstance(text, basestring):
+            text = text.split('\n')
+        self.text = text
+        self.font = font
+        self.bg_color = bg_color
+        self.font_color = font_color
+        self.placement = placement
+        self.padding = (padding, padding, padding, padding)
+        self.linespacing = linespacing
+    
+    def text_boxes(self, draw, size):
+        try:
+            total_bbox, boxes = self._relative_text_boxes(draw)
+        except UnicodeEncodeError:
+            self.text = [l.encode('ascii', 'replace') for l in self.text]
+            total_bbox, boxes = self._relative_text_boxes(draw)
+        return self._place_boxes(total_bbox, boxes, size)
+    
+    def draw(self, draw, size):
+        total_bbox, boxes = self.text_boxes(draw, size)
+        if self.bg_color:
+            draw.rectangle(
+                (total_bbox[0]-self.padding[0],
+                 total_bbox[1]-self.padding[1],
+                 total_bbox[2]+self.padding[2],
+                 total_bbox[3]+self.padding[3]),
+                fill=self.bg_color)
+        
+        for text, box in zip(self.text, boxes):
+            draw.text((box[0], box[1]), text, font=self.font, fill=self.font_color)
+        
+    def _relative_text_boxes(self, draw):
+        total_bbox = (1e9, 1e9, -1e9, -1e9)
+        boxes = []
+        y_offset = 0
+        for i, line in enumerate(self.text):
+            text_size = draw.textsize(line, font=self.font)
+            text_box = (0, y_offset, text_size[0], text_size[1]+y_offset)
+            boxes.append(text_box)
+            total_bbox = (min(total_bbox[0], text_box[0]),
+                          min(total_bbox[1], text_box[1]),
+                          max(total_bbox[2], text_box[2]),
+                          max(total_bbox[3], text_box[3]),
+                         )
+            
+            y_offset += text_size[1] + self.linespacing
+        return total_bbox, boxes
+        
+    def _move_bboxes(self, boxes, offsets):
+        result = []
+        for box in boxes:
+            box = box[0]+offsets[0], box[1]+offsets[1], box[2]+offsets[0], box[3]+offsets[1]
+            result.append(tuple(int(x) for x in box))
+        return result
+    
+    def _place_boxes(self, total_bbox, boxes, size):
+        x_offset = y_offset = None
+        text_size = (total_bbox[2] - total_bbox[0]), (total_bbox[3] - total_bbox[1])
+        
+        if self.placement[0] == 'u':
+            y_offset = self.padding[1]
+        elif self.placement[0] == 'l':
+            y_offset = size[1] - self.padding[3] - text_size[1]
+        elif self.placement[0] == 'c':
+            y_offset = size[1] // 2 - text_size[1] // 2
+        
+        if self.placement[1] == 'l':
+            x_offset = self.padding[0]
+        if self.placement[1] == 'L':
+            x_offset = -text_size[0] // 2
+        elif self.placement[1] == 'r':
+            x_offset = size[0] - self.padding[1] - text_size[0]
+        elif self.placement[1] == 'R':
+            x_offset = size[0] - text_size[0] // 2
+        elif self.placement[1] == 'c':
+            x_offset = size[0] // 2 - text_size[0] // 2
+        
+        if x_offset is None or y_offset is None:
+            raise ValueError('placement %r not supported' % self.placement)
+        
+        offsets = x_offset, y_offset
+        return self._move_bboxes([total_bbox], offsets)[0], self._move_bboxes(boxes, offsets)
 
 def font_file(font_name):
     font_name = font_name.replace(' ', '')
