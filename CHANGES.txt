@@ -1,3 +1,10 @@
+0.9.1 dev
+
+Fixes:
+- fixed regression in mapproxy_seed
+- resolve direct WMS request issues with equal but not same
+  SRS (e.g. 900913/3857)
+
 0.9.1rc2 2010-12-20
 
 Improvements:
