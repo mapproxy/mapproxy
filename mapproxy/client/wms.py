@@ -48,8 +48,14 @@ class WMSClient(object):
             format = query.format
         if self.supported_formats and format not in self.supported_formats:
             format = self.supported_formats[0]
-        if self.supported_srs and query.srs not in self.supported_srs:
-            return self._get_transformed(query, format)
+        if self.supported_srs:
+            if query.srs not in self.supported_srs:
+                return self._get_transformed(query, format)
+            # some srs are equal but not the same (e.g. 900913/3857)
+            # use only supported srs so we use the right srs code.
+            idx = self.supported_srs.index(query.srs)
+            if self.supported_srs[idx] is not query.srs:
+                query.srs = self.supported_srs[idx]
         resp = self._retrieve(query, format)
         return ImageSource(resp, size=query.size, format=format,
                            transparent=self.request_template.params.transparent)
