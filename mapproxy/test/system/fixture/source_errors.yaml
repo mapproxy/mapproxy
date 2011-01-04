@@ -1,0 +1,48 @@
+globals:
+  cache:
+    base_dir: /tmp/cache_data/
+    meta_size: [1, 1]
+    meta_buffer: 0
+  image:
+    paletted: False
+    # resampling: 'bicubic'
+
+services:
+  wms:
+    source_errors: notify
+
+layers:
+  online:
+    title: all sources online
+    sources: [wms1]
+  all_offline:
+    title: all sources offline
+    sources: [wms2, wms3]
+  mixed:
+    title: on- and offline layers
+    sources: [wms1, wms2, wms3]
+
+caches:
+  wms_cache:
+    grids: [GLOBAL_MERCATOR]
+    sources: [wms1, wms2, wms3]
+
+sources:
+  wms1:
+    type: wms
+    req:
+      url: http://localhost:42423/service_a
+      layers: a_one
+      transparent: True
+  wms2:
+    type: wms
+    req:
+      url: http://localhost:99998/service_b
+      layers: b_one
+      transparent: True
+  wms3:
+    type: wms
+    req:
+      url: http://localhost:99999/service_c
+      layers: c_one
+      transparent: True

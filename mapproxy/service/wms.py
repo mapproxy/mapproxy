@@ -23,10 +23,11 @@ from mapproxy.request.wms import wms_request, WMS111LegendGraphicRequest
 from mapproxy.srs import merge_bbox, SRS, TransformationError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
+from mapproxy.source import SourceError
 from mapproxy.exception import RequestError
 from mapproxy.config import base_config
 from mapproxy.image import concat_legends, LayerMerger
-from mapproxy.image.message import attribution_image
+from mapproxy.image.message import attribution_image, message_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError
 from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
 from mapproxy.util.ext.odict import odict
@@ -44,7 +45,7 @@ class WMSServer(Server):
     request_methods = ('map', 'capabilities', 'featureinfo', 'legendgraphic')
     
     def __init__(self, root_layer, md, layer_merger=None, request_parser=None, tile_layers=None,
-        attribution=None, srs=None, image_formats=None, strict=False):
+        attribution=None, srs=None, image_formats=None, strict=False, on_error='raise'):
         Server.__init__(self)
         self.request_parser = request_parser or partial(wms_request, strict=strict)
         self.root_layer = root_layer
@@ -56,6 +57,7 @@ class WMSServer(Server):
         self.merger = layer_merger
         self.attribution = attribution
         self.md = md
+        self.on_error = on_error
         self.image_formats = image_formats or base_config().wms.image_formats
         self.srs = srs or base_config().wms.srs
                 
@@ -80,9 +82,11 @@ class WMSServer(Server):
                 render_layers.extend(layer.map_layers_for_query(query))
         
         merger = self.merger()
-        for layer in combined_layers(render_layers, query):
-            merger.add(self._render_layer(layer, query, map_request))
-            
+        raise_source_errors =  True if self.on_error == 'raise' else False
+        renderer = LayerRenderer(render_layers, query, map_request,
+                                 raise_source_errors=raise_source_errors)
+        renderer.render(merger)
+        
         if self.attribution:
             merger.add(attribution_image(self.attribution['text'], params.size))
         result = merger.merge(params.format, params.size,
@@ -91,18 +95,7 @@ class WMSServer(Server):
         return Response(result.as_buffer(format=params.format),
                         content_type=params.format_mime_type)
     
-    def _render_layer(self, layer, query, request):
-        try:
-            return layer.get_map(query)
-        except MapBBOXError:
-            raise RequestError('Request too large or invalid BBOX.', request=request)
-        except MapError, e:
-            raise RequestError('Invalid request: %s' % e.args[0], request=request)
-        except TransformationError:
-            raise RequestError('Could not transform BBOX: Invalid result.',
-                request=request)
-        except BlankImage:
-            return None
+
     
     def capabilities(self, map_request):
         # TODO: debug layer
@@ -199,6 +192,49 @@ class Capabilities(object):
         # strip blank lines
         doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())
         return doc
+
+class LayerRenderer(object):
+    def __init__(self, layers, query, request, raise_source_errors=True):
+        self.layers = layers
+        self.query = query
+        self.request = request
+        self.raise_source_errors = raise_source_errors
+    
+    def render(self, layer_merger):
+        errors = []
+        rendered = 0
+        
+        render_layers = combined_layers(self.layers, self.query)
+        for layer in render_layers:
+            try:
+                layer_merger.add(self._render_layer(layer))
+                rendered += 1
+            except SourceError, ex:
+                if self.raise_source_errors:
+                    raise RequestError(ex.args[0], request=self.request)
+                errors.append(ex.args[0])
+        
+        if render_layers and not rendered:
+            errors = '\n'.join(errors)
+            raise RequestError('Could not get retrieve any sources:\n'+errors, request=self.request)
+        
+        if errors:
+            layer_merger.add(message_image('\n'.join(errors), self.query.size, transparent=True))
+    
+    def _render_layer(self, layer):
+        try:
+            return layer.get_map(self.query)
+        except SourceError:
+            raise
+        except MapBBOXError:
+            raise RequestError('Request too large or invalid BBOX.', request=self.request)
+        except MapError, e:
+            raise RequestError('Invalid request: %s' % e.args[0], request=self.request)
+        except TransformationError:
+            raise RequestError('Could not transform BBOX: Invalid result.',
+                request=self.request)
+        except BlankImage:
+            return None
 
 class WMSLayerBase(object):
     """

@@ -817,6 +817,8 @@ class ServiceConfiguration(ConfigurationBase):
         tile_layers = self.tile_layers(conf)
         attribution = conf.get('attribution')
         strict = self.context.globals.get_value('strict', conf, global_key='wms.strict')
+        on_source_errors = self.context.globals.get_value('on_source_errors',
+            conf, global_key='wms.on_source_errors')
         layers = odict()
         root_layer = self.context.wms_root_layer.wms_layer()
         if not root_layer.md.get('title'):
@@ -825,7 +827,7 @@ class ServiceConfiguration(ConfigurationBase):
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
         self.context.globals.base_config.wms.srs = srs
         return WMSServer(root_layer, md, attribution=attribution, image_formats=image_formats,
-            srs=srs, tile_layers=tile_layers, strict=strict)
+            srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors)
 
     def demo_service(self, conf):
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
