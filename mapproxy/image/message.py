@@ -188,38 +188,30 @@ class WatermarkImage(MessageImage):
     """
     font_name = 'DejaVu Sans'
     font_size = 24
-    font_color = (0, 0, 0)
+    font_color = (128, 128, 128)
     
-    def __init__(self, message, format='png', odd=False, opacity=None, font_size=None):
+    def __init__(self, message, format='png', placement='c', opacity=None, font_size=None):
         MessageImage.__init__(self, message, format)
         if opacity is None:
             opacity = 3
         if font_size:
             self.font_size = font_size
         self.font_color = self.font_color + tuple([opacity])
-        self.odd = odd
+        self.placement = placement
     
-    def new_image(self, size):
-        return Image.new('RGBA', size)
+    def draw_msg(self, img, draw):
+        td = TextDraw(self.message, self.font, self.font_color)
+        if self.placement in ('l', 'b'):
+            td.placement = 'cL'
+            td.draw(draw, img.size)
+        if self.placement in ('r', 'b'):
+            td.placement = 'cR'
+            td.draw(draw, img.size)
+        if self.placement == 'c':
+            td.placement = 'cc'
+            td.draw(draw, img.size)
+        
     
-    def text_box(self, img, draw):
-        text_size = self.text_size(draw)
-        w, h = img.size
-        x = w//2 - text_size[0]//2
-        y = h//2 - text_size[1]//2
-        return (x, y, x+w, y+h)
-    
-    def merge_msg(self, img, msg_img):
-        if img is None:
-            return msg_img
-        w, _ = img.size
-        if self.odd:
-            img.paste(msg_img, (-w//2, 0), msg_img)
-            img.paste(msg_img, (w//2, 0), msg_img)
-        else:
-            img.paste(msg_img, (0, 0), msg_img)
-        return img
-
 class AttributionImage(MessageImage):
     """
     Image with attribution information.
