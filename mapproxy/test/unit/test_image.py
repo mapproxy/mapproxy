@@ -32,13 +32,13 @@ from mapproxy.image.tile import TileMerger
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.tilefilter import watermark_filter, PNGQuantFilter
 from mapproxy.cache.tile import Tile
-from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image, check_format, create_debug_img
+from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image_file, check_format, create_debug_img
 from mapproxy.srs import SRS
 from nose.tools import eq_
 
 class TestImageSource(object):
     def setup(self):
-        self.tmp_filename = create_tmp_image((100, 100))
+        self.tmp_filename = create_tmp_image_file((100, 100))
     
     def teardown(self):
         os.remove(self.tmp_filename)
@@ -258,38 +258,56 @@ class TestWatermarkTileFilter(object):
         assert orig_source != filtered_tile.source
         
         pil_img = filtered_tile.source.as_image()
-        eq_(pil_img.getpixel((0, 0)), (0, 0, 0, 255))
+        eq_(pil_img.getpixel((0, 0)), (0, 0, 0))
 
         colors = pil_img.getcolors()
         colors.sort()
         # most but not all parts are bg color
         assert 39900 > colors[-1][0] > 39000
-        assert colors[-1][1] == (0, 0, 0, 255)
+        assert colors[-1][1] == (0, 0, 0)
+
+    def test_filter_with_alpha(self):
+        img = Image.new('RGBA', (200, 200), (10, 15, 20, 0))
+        orig_source = ImageSource(img)
+        self.tile.source = orig_source
+        filtered_tile = self.filter(self.tile)
+        
+        assert self.tile is filtered_tile
+        assert orig_source != filtered_tile.source
+        
+        pil_img = filtered_tile.source.as_image()
+        eq_(pil_img.getpixel((0, 0)), (10, 15, 20, 0))
+
+        colors = pil_img.getcolors()
+        colors.sort()
+        # most but not all parts are bg color
+        assert 39900 > colors[-1][0] > 39000
+        eq_(colors[-1][1], (10, 15, 20, 0))
         
 class TestMergeAll(object):
     def setup(self):
         self.cleanup_tiles = []
     def test_full_merge(self):
-        self.cleanup_tiles = [create_tmp_image((100, 100)) for _ in range(9)]
+        self.cleanup_tiles = [create_tmp_image_file((100, 100)) for _ in range(9)]
         self.tiles = [ImageSource(tile) for tile in self.cleanup_tiles]
         m = TileMerger(tile_grid=(3, 3), tile_size=(100, 100))
         result = m.merge(self.tiles)
         assert result.as_image().size == (300, 300)
     def test_one(self):
-        self.cleanup_tiles = [create_tmp_image((100, 100))]
+        self.cleanup_tiles = [create_tmp_image_file((100, 100))]
         self.tiles = [ImageSource(self.cleanup_tiles[0])]
         m = TileMerger(tile_grid=(1, 1), tile_size=(100, 100))
         result = m.merge(self.tiles)
         assert result.as_image().size == (100, 100)
     def test_missing_tiles(self):
-        self.cleanup_tiles = [create_tmp_image((100, 100))]
+        self.cleanup_tiles = [create_tmp_image_file((100, 100))]
         self.tiles = [ImageSource(self.cleanup_tiles[0])]
         self.tiles.extend([None]*8)
         m = TileMerger(tile_grid=(3, 3), tile_size=(100, 100))
         result = m.merge(self.tiles)
         assert result.as_image().size == (300, 300)
     def test_invalid_tile(self):
-        self.cleanup_tiles = [create_tmp_image((100, 100)) for _ in range(9)]
+        self.cleanup_tiles = [create_tmp_image_file((100, 100)) for _ in range(9)]
         self.tiles = [ImageSource(tile) for tile in self.cleanup_tiles]
         invalid_tile = self.tiles[0].source
         with open(invalid_tile, 'w') as tmp:
@@ -310,7 +328,7 @@ class TestMergeAll(object):
 
 class TestGetCrop(object):
     def setup(self):
-        self.img = ImageSource(create_tmp_image((100, 100)),
+        self.img = ImageSource(create_tmp_image_file((100, 100)),
                                format='png', size=(100, 100))
     def test_perfect_match(self):
         bbox = (-10, -5, 30, 35)

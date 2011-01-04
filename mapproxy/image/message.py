@@ -119,31 +119,27 @@ class MessageImage(object):
         """
         if not ((img and not size) or (size and not img)):
             raise TypeError, 'need either img or size argument'
-        base_img = None
-        if img is not None:
-            base_img = img.as_image().convert('RGBA')
+
+        if img is None:
+            base_img = self.new_image(size)
+        else:
+            base_img = img.as_image()
             size = base_img.size
-        msg_img = self.new_image(size)
+        
         if not self.message:
-            return img if img is not None else ImageSource(msg_img, size=size,
-                                                           format=self.format)
-        draw = ImageDraw.Draw(msg_img)
-        self.draw_msg(msg_img, draw)
-        result = self.merge_msg(base_img, msg_img)
-        return ImageSource(result, size=size, format=self.format)
+            if img is not None:
+                return img
+            return ImageSource(base_img, size=size, format=self.format)
+        
+        draw = ImageDraw.Draw(base_img)
+        self.draw_msg(draw, size)
+        return ImageSource(base_img, size=size, format=self.format)
     
-    def merge_msg(self, img, msg_img):
-        if img is not None:
-            img.paste(msg_img, (0, 0), msg_img)
-            return img
-        return msg_img
-    
-    def draw_msg(self, msg_img, draw):
-        text_box = self.text_box(msg_img, draw)
-        if self.box_color:
-            draw.rectangle(text_box, fill=self.box_color)
-        draw.text((text_box[0], text_box[1]), self.message, font=self.font,
-                  fill=self.font_color)
+    def draw_msg(self, draw, size):
+        td = TextDraw(self.message, font=self.font, bg_color=self.box_color,
+                      font_color=self.font_color)
+        td.draw(draw, size)
+
 
 class ExceptionImage(MessageImage):
     """
@@ -171,16 +167,6 @@ class ExceptionImage(MessageImage):
             return ImageColor.getrgb('white')
         return ImageColor.getrgb('black')
     
-    def text_box(self, _img, draw):
-        text_size = self.text_size(draw)
-        return (10, 10, text_size[0]+10, text_size[1]+10)
-    
-    def draw_msg(self, msg_img, draw):
-        if not self.transparent:
-            bgcolor = ImageColor.getrgb(self.bgcolor)
-            draw.rectangle((0, 0, msg_img.size[0], msg_img.size[1]), fill=bgcolor)
-        MessageImage.draw_msg(self, msg_img, draw)
-    
 
 class WatermarkImage(MessageImage):
     """
@@ -199,17 +185,17 @@ class WatermarkImage(MessageImage):
         self.font_color = self.font_color + tuple([opacity])
         self.placement = placement
     
-    def draw_msg(self, img, draw):
+    def draw_msg(self, draw, size):
         td = TextDraw(self.message, self.font, self.font_color)
         if self.placement in ('l', 'b'):
             td.placement = 'cL'
-            td.draw(draw, img.size)
+            td.draw(draw, size)
         if self.placement in ('r', 'b'):
             td.placement = 'cR'
-            td.draw(draw, img.size)
+            td.draw(draw, size)
         if self.placement == 'c':
             td.placement = 'cc'
-            td.draw(draw, img.size)
+            td.draw(draw, size)
         
     
 class AttributionImage(MessageImage):
