@@ -352,6 +352,23 @@ class TestWMSClient(object):
         img = resp.as_image()
         assert img.mode in ('P', 'RGB')
 
+    def test_similar_srs(self):
+        # request in 3857 and source supports only 900913
+        # 3857 and 900913 are equal but the client requests must use 900913
+        self.req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
+                                    param={'layers':'foo', 'transparent': 'true'})
+        self.wms = WMSClient(self.req, http_client=self.http, supported_srs=[SRS(900913)])
+
+        req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(3857), 'png')
+        resp = self.wms.get_map(req)
+        eq_(len(self.http.requested), 1)
+        
+        assert_query_eq(self.http.requested[0],
+            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                           '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A900913'
+                           '&VERSION=1.1.1&WIDTH=512&STYLES=&transparent=true'
+                           '&BBOX=-200000,-200000,200000,200000')
+
     def test_transformed_request_transparent(self):
         self.req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
                                     param={'layers':'foo', 'transparent': 'true'})

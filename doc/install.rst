@@ -102,6 +102,8 @@ To create a new set of configuration files for MapProxy call::
 This will create a ``mymapproxy`` directory with an ``etc``, ``var`` and ``tmp`` directory.
 The ``etc`` directory contains all configuration files. Refer to the configuration documentation for more information. With the default configuration all log files and the cached data will be placed in the ``var`` directory.
 
+.. note:: ``paster create`` takes a project name and not a path. You need to change (``cd``) to the directory where you want the configuration directory to be created.
+
 Start the test server
 ---------------------
 
