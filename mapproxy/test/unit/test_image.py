@@ -1,3 +1,4 @@
+# -:- encoding: utf8 -:-
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 # 
@@ -20,12 +21,13 @@ from mapproxy.platform.image import (
     ImageDraw,
     ImageColor,
     ImagePalette,
+    ImageFont,
 )
 
 import os
 import sys
 from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image
-from mapproxy.image.message import message_image
+from mapproxy.image.message import message_image, TextDraw
 from mapproxy.image.tile import TileMerger
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.tilefilter import watermark_filter, PNGQuantFilter
@@ -144,9 +146,79 @@ class TestReadBufWrapper(object):
         assert hasattr(self.rbuf_wrapper, 'readline')
 
 
+class TestTextDraw(object):
+    def test_ul(self):
+        font = ImageFont.load_default()
+        td = TextDraw('Hello', font)
+        img = Image.new('RGB', (100, 100))
+        draw = ImageDraw.Draw(img)
+        total_box, boxes = td.text_boxes(draw, (100, 100))
+        eq_(total_box, boxes[0])
+        eq_(len(boxes), 1)
+    
+    def test_multiline_ul(self):
+        font = ImageFont.load_default()
+        td = TextDraw('Hello\nWorld', font)
+        img = Image.new('RGB', (100, 100))
+        draw = ImageDraw.Draw(img)
+        total_box, boxes = td.text_boxes(draw, (100, 100))
+        eq_(total_box, (10, 10, 40, 42))
+        eq_(boxes, [(10, 10, 40, 21), (10, 31, 40, 42)])
+
+    def test_multiline_lr(self):
+        font = ImageFont.load_default()
+        td = TextDraw('Hello\nWorld', font, placement='lr')
+        img = Image.new('RGB', (100, 100))
+        draw = ImageDraw.Draw(img)
+        total_box, boxes = td.text_boxes(draw, (100, 100))
+        eq_(total_box, (60, 58, 90, 90))
+        eq_(boxes, [(60, 58, 90, 69), (60, 79, 90, 90)])
+
+    def test_multiline_center(self):
+        font = ImageFont.load_default()
+        td = TextDraw('Hello\nWorld', font, placement='cc')
+        img = Image.new('RGB', (100, 100))
+        draw = ImageDraw.Draw(img)
+        total_box, boxes = td.text_boxes(draw, (100, 100))
+        eq_(total_box, (35, 34, 65, 66))
+        eq_(boxes, [(35, 34, 65, 45), (35, 55, 65, 66)])
+
+    def test_unicode(self):
+        font = ImageFont.load_default()
+        td = TextDraw(u'Héllö\nWørld', font, placement='cc')
+        img = Image.new('RGB', (100, 100))
+        draw = ImageDraw.Draw(img)
+        total_box, boxes = td.text_boxes(draw, (100, 100))
+        eq_(total_box, (35, 34, 65, 66))
+        eq_(boxes, [(35, 34, 65, 45), (35, 55, 65, 66)])
+    
+    def _test_all(self):
+        for x in 'c':
+            for y in 'LR':
+                yield self.check_placement, x, y
+
+    def check_placement(self, x, y):
+        font = ImageFont.load_default()
+        td = TextDraw('Hello\nWorld\n%s %s' % (x, y), font, placement=x+y,
+            padding=5, linespacing=2)
+        img = Image.new('RGB', (100, 100))
+        draw = ImageDraw.Draw(img)
+        td.draw(draw, img.size)
+        img.show()
+    
+    def test_transparent(self):
+        font = ImageFont.load_default()
+        td = TextDraw('Hello\nWorld', font, placement='cc')
+        img = Image.new('RGBA', (100, 100), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+        td.draw(draw, img.size)
+        eq_(len(img.getcolors()), 2)
+        # top color (bg) is transparent
+        eq_(sorted(img.getcolors())[1][1], (0, 0, 0, 0))
+        
+        
 class TestMessageImage(object):
     def test_blank(self):
-        # import nose.tools; nose.tools.set_trace()
         img = message_image('', size=(100, 150), format='png', bgcolor='#113399')
         assert isinstance(img, ImageSource)
         eq_(img.size, (100, 150))
@@ -187,10 +259,12 @@ class TestWatermarkTileFilter(object):
         
         pil_img = filtered_tile.source.as_image()
         eq_(pil_img.getpixel((0, 0)), (0, 0, 0, 255))
-        # check histogram profile (w TrueType support and w/o)
-        hist_color_counts = [x for x in pil_img.histogram() if x > 0]
-        eq_(hist_color_counts[:3], [40000, 40000, 40000])
-        assert hist_color_counts[-1] > 39000
+
+        colors = pil_img.getcolors()
+        colors.sort()
+        # most but not all parts are bg color
+        assert 39900 > colors[-1][0] > 39000
+        assert colors[-1][1] == (0, 0, 0, 255)
         
 class TestMergeAll(object):
     def setup(self):
