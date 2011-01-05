@@ -24,6 +24,13 @@ layers:
     title: Cached combined layers
     sources: [wms_cache]
 
+  opacity_base:
+    title: opacity test base layer
+    sources: [wms_opacity1]
+  opacity_overlay:
+    title: opacity test overlay layer
+    sources: [wms_opacity2]
+
 caches:
   wms_cache:
     grids: [GLOBAL_MERCATOR]
@@ -54,3 +61,15 @@ sources:
       url: http://localhost:42423/service_a
       layers: a_four
       transparent: True
+  
+  wms_opacity1:
+    type: wms
+    req:
+      url: http://localhost:42423/service_a
+      layers: a_one
+  wms_opacity2:
+    type: wms
+    opacity: 0.5
+    req:
+      url: http://localhost:42423/service_a
+      layers: a_two

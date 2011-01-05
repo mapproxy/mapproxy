@@ -26,10 +26,11 @@ from mapproxy.layer import BlankImage, map_extent_from_grid
 from mapproxy.util import reraise_exception
 
 class TiledSource(Source):
-    def __init__(self, grid, client, inverse=False, coverage=None):
+    def __init__(self, grid, client, inverse=False, coverage=None, opacity=None):
         self.grid = grid
         self.client = client
         self.inverse = inverse
+        self.opacity = opacity
         self.coverage = coverage
         self.extent = coverage.extent if coverage else map_extent_from_grid(grid)
     

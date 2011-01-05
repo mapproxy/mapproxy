@@ -268,6 +268,9 @@ class WMSLayerBase(object):
     "MapExtend of the layer"
     extent = None
     
+    def is_opaque(self):
+        return not self.transparent
+    
     def map_layers_for_query(self, query):
         raise NotImplementedError()
     
@@ -295,7 +298,7 @@ class WMSLayer(WMSLayerBase):
             res_range = merge_layer_res_ranges(map_layers)
         self.res_range = res_range
         self.queryable = True if info_layers else False
-        self.transparent = any(map_lyr.transparent for map_lyr in self.map_layers)
+        self.transparent = all(not map_lyr.is_opaque() for map_lyr in self.map_layers)
         self.has_legend = True if legend_layers else False
     
     def renders_query(self, query):
@@ -351,7 +354,7 @@ class WMSGroupLayer(WMSLayerBase):
         self.md = md
         self.is_active = True if this is not None else False
         self.layers = layers
-        self.transparent = True if this and this.transparent or any(l.transparent for l in layers) else False
+        self.transparent = True if this and not this.is_opaque() or all(not l.is_opaque() for l in layers) else False
         self.has_legend = True if this and this.has_legend or any(l.has_legend for l in layers) else False
         self.queryable = True if this and this.queryable or any(l.queryable for l in layers) else False
         all_layers = layers + ([self.this] if self.this else [])

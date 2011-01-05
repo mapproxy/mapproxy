@@ -433,6 +433,11 @@ class SourceConfiguration(ConfigurationBase):
     def coverage(self):
         if not 'coverage' in self.conf: return None
         return load_coverage(self.conf['coverage'])
+    
+    def opacity(self):
+        opacity = self.conf.get('opacity', None)
+        if opacity is not None: opacity = float(opacity)
+        return opacity
 
 def resolution_range(conf):
     if 'min_res' in conf or 'max_res' in conf:
@@ -489,6 +494,8 @@ class WMSSourceConfiguration(SourceConfiguration):
         transparent = self.conf['req'].get('transparent', 'false')
         transparent = bool(str(transparent).lower() == 'true')
         
+        opacity = self.opacity()
+        
         resampling = self.context.globals.get_value('image.resampling_method', self.conf)
         
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
@@ -516,7 +523,7 @@ class WMSSourceConfiguration(SourceConfiguration):
                            http_method=http_method, resampling=resampling, lock=lock,
                            supported_formats=supported_formats or None)
         return WMSSource(client, transparent=transparent, coverage=coverage,
-                         res_range=res_range)
+                         res_range=res_range, opacity=opacity)
     
     def fi_source(self, params=None):
         if params is None: params = {}
@@ -583,11 +590,12 @@ class TileSourceConfiguration(SourceConfiguration):
         
         grid = self.context.grids[self.conf['grid']].tile_grid()
         coverage = self.coverage()
+        opacity = self.opacity()
         
         inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
         client = TileClient(TileURLTemplate(url, format=format))
-        return TiledSource(grid, client, inverse=inverse, coverage=coverage)
+        return TiledSource(grid, client, inverse=inverse, coverage=coverage, opacity=opacity)
 
 def file_ext(mimetype):
     _mime_class, format, _options = split_mime_type(mimetype)
@@ -632,6 +640,11 @@ class CacheConfiguration(ConfigurationBase):
                 filters.append(f)
         return filters
     
+    def opacity(self):
+        opacity = self.conf.get('opacity', None)
+        if opacity is not None: opacity = float(opacity)
+        return opacity
+    
     @memoize
     def caches(self):
         request_format = self.conf.get('request_format') or self.conf['format']
@@ -660,18 +673,20 @@ class CacheConfiguration(ConfigurationBase):
     @memoize
     def map_layer(self):
         resampling = self.context.globals.get_value('image.resampling_method', self.conf)
-        
+        opacity = self.opacity()
         caches = []
         main_grid = None
         for grid, extent, tile_manager in self.caches():
             if main_grid is None:
                 main_grid = grid
-            caches.append((CacheMapLayer(tile_manager, extent=extent, resampling=resampling), (grid.srs,)))
+            caches.append((CacheMapLayer(tile_manager, extent=extent, resampling=resampling,
+                                         opacity=opacity),
+                          (grid.srs,)))
         
         if len(caches) == 1:
             layer = caches[0][0]
         else:
-            layer = SRSConditional(caches, caches[0][0].extent, caches[0][0].transparent)
+            layer = SRSConditional(caches, caches[0][0].extent, caches[0][0].transparent, opacity=opacity)
         
         if 'use_direct_from_level' in self.conf:
             self.conf['use_direct_from_res'] = main_grid.resolution(self.conf['use_direct_from_level'])
@@ -679,7 +694,8 @@ class CacheConfiguration(ConfigurationBase):
             if len(self.conf['sources']) != 1:
                 raise ValueError('use_direct_from_level/res only supports single sources')
             source_conf = self.context.sources[self.conf['sources'][0]]
-            layer = ResolutionConditional(layer, source_conf.source(), self.conf['use_direct_from_res'], main_grid.srs, layer.extent)
+            layer = ResolutionConditional(layer, source_conf.source(), self.conf['use_direct_from_res'],
+                                          main_grid.srs, layer.extent, opacity=opacity)
         return layer
 
 

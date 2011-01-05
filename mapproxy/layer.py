@@ -40,6 +40,12 @@ class MapBBOXError(Exception):
 class MapLayer(object):
     res_range = None
     opacity = None
+    transparent = False
+    
+    def is_opaque(self):
+        if self.opacity is None:
+            return not self.transparent
+        return self.opacity >= 0.99
     
     def check_res_range(self, query):
         if (self.res_range and
@@ -133,7 +139,7 @@ def merge_layer_extents(layers):
     return extent
 
 class ResolutionConditional(MapLayer):
-    def __init__(self, one, two, resolution, srs, extent):
+    def __init__(self, one, two, resolution, srs, extent, opacity=None):
         self.one = one
         self.two = two
         self.res_range = merge_layer_res_ranges([one, two])
@@ -142,6 +148,7 @@ class ResolutionConditional(MapLayer):
         
         #TODO
         self.transparent = self.one.transparent
+        self.opacity = opacity
         self.extent = extent
     
     def get_map(self, query):
@@ -164,7 +171,7 @@ class SRSConditional(MapLayer):
     PROJECTED = 'PROJECTED'
     GEOGRAPHIC = 'GEOGRAPHIC'
     
-    def __init__(self, layers, extent, transparent=False):
+    def __init__(self, layers, extent, transparent=False, opacity=None):
         self.transparent = transparent
         # TODO geographic/projected fallback
         self.srs_map = {}
@@ -174,6 +181,7 @@ class SRSConditional(MapLayer):
                 self.srs_map[srs] = layer
         
         self.extent = extent
+        self.opacity = opacity
     
     def get_map(self, query):
         self.check_res_range(query)

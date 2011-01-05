@@ -19,7 +19,7 @@ from __future__ import with_statement, division
 from cStringIO import StringIO
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.platform.image import Image
-from mapproxy.test.image import is_png, tmp_image
+from mapproxy.test.image import is_png, tmp_image, create_tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from nose.tools import eq_
@@ -109,5 +109,29 @@ class TestCoverageWMS(SystemTest):
                 resp.content_type = 'image/png'
                 data = StringIO(resp.body)
                 assert is_png(data)
-        
     
+    def test_layers_with_opacity(self):
+        # overlay with opacity -> request should not be combined
+        common_params = (r'?SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
+                                  '&VERSION=1.1.1&BBOX=9.0,50.0,10.0,51.0'
+                                  '&WIDTH=200')
+        
+        img_bg = create_tmp_image((200, 200), color=(0, 0, 0))
+        img_fg = create_tmp_image((200, 200), color=(255, 0, 128))
+        
+        expected_req = [
+                        ({'path': '/service_a' + common_params + '&layers=a_one'},
+                         {'body': img_bg, 'headers': {'content-type': 'image/png'}}),
+                        ({'path': '/service_a' + common_params + '&layers=a_two'},
+                         {'body': img_fg, 'headers': {'content-type': 'image/png'}}),
+                        ]
+                         
+        with mock_httpd(('localhost', 42423), expected_req):
+            self.common_map_req.params.layers = 'opacity_base,opacity_overlay'
+            resp = self.app.get(self.common_map_req)
+            resp.content_type = 'image/png'
+            data = StringIO(resp.body)
+            assert is_png(data)
+            img = Image.open(data)
+            eq_(img.getcolors()[0], ((200*200),(127, 0, 64)))

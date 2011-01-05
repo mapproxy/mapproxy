@@ -62,6 +62,9 @@ class WMSSource(Source):
         if not isinstance(other, WMSSource):
             return None
         
+        if self.opacity is not None or other.opacity is not None:
+            return None
+        
         client = self.client.combined_client(other.client, query)
         if not client:
             return None
