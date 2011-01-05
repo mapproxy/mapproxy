@@ -32,10 +32,11 @@ log = logging.getLogger(__name__)
 
 class WMSSource(Source):
     supports_meta_tiles = True
-    def __init__(self, client, transparent=False, coverage=None, res_range=None):
+    def __init__(self, client, transparent=False, coverage=None, res_range=None, opacity=None):
         Source.__init__(self)
         self.client = client
         self.transparent = transparent
+        self.opacity = opacity
         self.coverage = coverage
         self.res_range = res_range
         if self.coverage:
@@ -51,7 +52,9 @@ class WMSSource(Source):
         if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
             raise BlankImage()
         try:
-            return self.client.get_map(query)
+            img = self.client.get_map(query)
+            img.opacity = self.opacity
+            return img
         except HTTPClientError, e:
             reraise_exception(SourceError(e.args[0]), sys.exc_info())
     

@@ -207,7 +207,10 @@ class LayerRenderer(object):
         render_layers = combined_layers(self.layers, self.query)
         for layer in render_layers:
             try:
-                layer_merger.add(self._render_layer(layer))
+                layer_img = self._render_layer(layer)
+                if layer_img is not None:
+                    layer_img.opacity = layer.opacity
+                    layer_merger.add(layer_img)
                 rendered += 1
             except SourceError, ex:
                 if self.raise_source_errors:

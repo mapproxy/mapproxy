@@ -72,13 +72,18 @@ class LayerMerger(object):
             img = Image.new('RGBA', size, bgcolor+(0,))
         else:
             img = Image.new('RGB', size, bgcolor)
+        
         for layer in self.layers:
             layer_img = layer.as_image()
-            if layer_img.mode == 'RGBA':
-                # paste w transparency mask from layer
-                img.paste(layer_img, (0, 0), layer_img)
+            if layer.opacity is not None and layer.opacity < 1.0:
+                layer_img = layer_img.convert(img.mode)
+                img = Image.blend(img, layer_img, layer.opacity)
             else:
-                img.paste(layer_img, (0, 0))
+                if layer_img.mode == 'RGBA':
+                    # paste w transparency mask from layer
+                    img.paste(layer_img, (0, 0), layer_img)
+                else:
+                    img.paste(layer_img, (0, 0))
         return ImageSource(img, format)
 
 def merge_images(images, format='png', size=None, transparent=True):
@@ -144,7 +149,7 @@ class ImageSource(object):
     You can access the result as an image (`as_image` ) or a file-like buffer
     object (`as_buffer`).
     """
-    def __init__(self, source, format='png', size=None, transparent=False):
+    def __init__(self, source, format='png', size=None, transparent=False, opacity=None):
         """
         :param source: the image
         :type source: PIL `Image`, image file object, or filename
@@ -157,6 +162,7 @@ class ImageSource(object):
         self.source = source
         self.format = format
         self.transparent = transparent
+        self.opacity = opacity
         self._size = size
     
     def _set_source(self, source):
@@ -267,6 +273,7 @@ class BlankImageSource(object):
         self.size = size
         self.bgcolor = bgcolor or '#ffffff'
         self.transparent = transparent
+        self.opacity = 0.0 if transparent else 1.0
     
     def as_image(self):
         bgcolor = ImageColor.getrgb(self.bgcolor)

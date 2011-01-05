@@ -39,6 +39,7 @@ class MapBBOXError(Exception):
 
 class MapLayer(object):
     res_range = None
+    opacity = None
     
     def check_res_range(self, query):
         if (self.res_range and
@@ -220,9 +221,10 @@ def merge_layer_res_ranges(layers):
 
 
 class CacheMapLayer(MapLayer):
-    def __init__(self, tile_manager, extent=None, resampling=None):
+    def __init__(self, tile_manager, extent=None, resampling=None, opacity=None):
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
+        self.opacity = opacity
         self.resampling = resampling or base_config().image.resampling_method
         self.extent = extent or map_extent_from_grid(self.grid)
         self.res_range = merge_layer_res_ranges(self.tile_manager.sources)

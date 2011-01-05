@@ -26,7 +26,7 @@ from mapproxy.platform.image import (
 
 import os
 import sys
-from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image
+from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image, merge_images
 from mapproxy.image.message import message_image, TextDraw
 from mapproxy.image.tile import TileMerger
 from mapproxy.image.transform import ImageTransformer
@@ -341,6 +341,32 @@ class TestGetCrop(object):
         result = transformer.transform(self.img, bbox, (200, 200), bbox)
         assert result.as_image().size == (200, 200)
 
+
+class TestLayerMerge(object):
+    def test_opacity_merge(self):
+        img1 = ImageSource(Image.new('RGB', (10, 10), (255, 0, 255)))
+        img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)), opacity=0.5)
+        
+        result = merge_images([img1, img2], transparent=False)
+        img = result.as_image()
+        eq_(img.getpixel((0, 0)), (127, 127, 255))
+
+    def test_opacity_merge_mixed_modes(self):
+        img1 = ImageSource(Image.new('RGBA', (10, 10), (255, 0, 255, 255)))
+        img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)).convert('P'), opacity=0.5)
+        
+        result = merge_images([img1, img2])
+        img = result.as_image()
+        eq_(img.getpixel((0, 0)), (127, 127, 255, 255))
+
+    def test_solid_merge(self):
+        img1 = ImageSource(Image.new('RGB', (10, 10), (255, 0, 255)))
+        img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)))
+        
+        result = merge_images([img1, img2], transparent=False)
+        img = result.as_image()
+        eq_(img.getpixel((0, 0)), (0, 255, 255))
+    
 
 class TestTransform(object):
     def setup(self):
