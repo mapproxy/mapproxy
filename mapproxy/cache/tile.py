@@ -63,7 +63,7 @@ class TileManager(object):
         self.transparent = self.sources[0].transparent
         self.thread_pool_size = base_config().cache.concurrent_tile_creators
         
-        if meta_buffer is not None or meta_size:
+        if meta_buffer or (meta_size and not meta_size == [1, 1]):
             if all(source.supports_meta_tiles for source in sources):
                 self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
             elif any(source.supports_meta_tiles for source in sources):
