@@ -101,6 +101,7 @@ class MapExtent(object):
     >>> map(int, me.bbox_for(SRS(4326)))
     [5, 45, 15, 55]
     """
+    is_default = False
     def __init__(self, bbox, srs):
         self.llbbox = srs.transform_bbox_to(SRS(4326), bbox)
         self.bbox = bbox
@@ -119,7 +120,26 @@ class MapExtent(object):
     def __add__(self, other):
         if not isinstance(other, MapExtent):
             raise NotImplemented
+        if other.is_default:
+            return self
         return MapExtent(merge_bbox(self.llbbox, other.llbbox), SRS(4326))
+
+class DefaultMapExtent(MapExtent):
+    """
+    Default extent that covers the whole world.
+    Will not affect other extents when added.
+    
+    >>> m1 = MapExtent((0, 0, 10, 10), SRS(4326))
+    >>> m2 = MapExtent((10, 0, 20, 10), SRS(4326))
+    >>> m3 = DefaultMapExtent()
+    >>> (m1 + m2).bbox
+    (0, 0, 20, 10)
+    >>> (m1 + m3).bbox
+    (0, 0, 10, 10)
+    """
+    is_default = True
+    def __init__(self):
+        MapExtent.__init__(self, (-180, -90, 180, 90), SRS(4326))
 
 def merge_layer_extents(layers):
     layers = layers[:]

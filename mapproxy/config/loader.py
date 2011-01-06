@@ -635,7 +635,10 @@ class CacheConfiguration(ConfigurationBase):
             mgr = TileManager(tile_grid, cache, sources, file_ext(request_format),
                               meta_size=meta_size, meta_buffer=meta_buffer,
                               minimize_meta_requests=minimize_meta_requests)
-            caches.append((tile_grid, merge_layer_extents(sources), mgr))
+            extent = merge_layer_extents(sources)
+            if extent.is_default:
+                extent = map_extent_from_grid(tile_grid)
+            caches.append((tile_grid, extent, mgr))
         return caches
     
     @memoize
