@@ -205,14 +205,21 @@ class Request(object):
         elif 'HTTP_HOST' in self.environ:
             return self.environ['HTTP_HOST']
         result = self.environ['SERVER_NAME']
-        if ((self.environ['wsgi.url_scheme'], self.environ['SERVER_PORT'])
+        if ((self.url_scheme, self.environ['SERVER_PORT'])
             not in (('https', '443'), ('http', '80'))):
             result += ':' + self.environ['SERVER_PORT']
         return result
     
     @cached_property
+    def url_scheme(self):
+        scheme = self.environ.get('HTTP_X_FORWARDED_PROTO')
+        if not scheme:
+            scheme = self.environ['wsgi.url_scheme']
+        return scheme
+    
+    @cached_property
     def host_url(self):
-        return '%s://%s/' % (self.environ['wsgi.url_scheme'], self.host)
+        return '%s://%s/' % (self.url_scheme, self.host)
     
     @property
     def script_url(self):
