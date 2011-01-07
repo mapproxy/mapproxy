@@ -20,7 +20,7 @@ Retrieve maps/information from WMS servers.
 import sys
 from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
-from mapproxy.image import concat_legends
+from mapproxy.image import concat_legends, make_transparent
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, LegendQuery
 from mapproxy.source import Source, InfoSource, SourceError, LegendSource
 from mapproxy.srs import SRS
@@ -32,10 +32,13 @@ log = logging.getLogger(__name__)
 
 class WMSSource(Source):
     supports_meta_tiles = True
-    def __init__(self, client, transparent=False, coverage=None, res_range=None, opacity=None):
+    def __init__(self, client, transparent=False, coverage=None, res_range=None, opacity=None,
+                 transparent_color=None, transparent_color_tolerance=None):
         Source.__init__(self)
         self.client = client
-        self.transparent = transparent
+        self.transparent_color = transparent_color
+        self.transparent_color_tolerance = transparent_color_tolerance
+        self.transparent = True if transparent_color else transparent
         self.opacity = opacity
         self.coverage = coverage
         self.res_range = res_range
@@ -51,9 +54,13 @@ class WMSSource(Source):
         if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
             raise BlankImage()
         try:
-            img = self.client.get_map(query)
-            img.opacity = self.opacity
-            return img
+            resp = self.client.get_map(query)
+            if self.transparent_color:
+                resp = make_transparent(resp, self.transparent_color,
+                                        self.transparent_color_tolerance)
+            resp.opacity = self.opacity
+            return resp
+            
         except HTTPClientError, e:
             reraise_exception(SourceError(e.args[0]), sys.exc_info())
     

@@ -20,7 +20,7 @@ Image and tile manipulation (transforming, merging, etc).
 from __future__ import with_statement
 from cStringIO import StringIO
 
-from mapproxy.platform.image import Image, ImageColor, quantize
+from mapproxy.platform.image import Image, ImageColor, ImageChops, quantize
 from mapproxy.config import base_config
 
 import logging
@@ -374,3 +374,35 @@ def is_single_color_image(image):
         return palette[color*3], palette[color*3+1], palette[color*3+2]
     
     return result[0][1]
+
+def make_transparent(img, color, tolerance=10):
+    """
+    Create alpha channel for the given image and make each pixel
+    in `color` full transparent.
+    
+    Returns an RGBA ImageSoruce.
+    
+    Modifies the image in-place, unless it needs to be converted
+    first (P->RGB).
+    
+    :param color: RGB color tuple
+    :param tolerance: tolerance applied to each color value
+    """
+    result = _make_transparent(img.as_image(), color, tolerance)
+    return ImageSource(result, size=result.size, transparent=True)
+
+def _make_transparent(img, color, tolerance=10):
+    img.load()
+    
+    if img.mode == 'P':
+        img = img.convert('RGB')
+    
+    channels = img.split()
+    mask_channels = []
+    for ch, c in zip(channels, color):
+        low_c, high_c = c-tolerance, c+tolerance
+        mask_channels.append(Image.eval(ch, lambda x: 255 if low_c < x < high_c else 0))
+        
+    alpha = reduce(ImageChops.multiply, mask_channels)
+    img.putalpha(ImageChops.invert(alpha))
+    return img

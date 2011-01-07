@@ -515,6 +515,12 @@ class WMSSourceConfiguration(SourceConfiguration):
         coverage = self.coverage()
         res_range = resolution_range(self.conf)
         
+        transparent_color = self.conf.get('image', {}).get('transparent_color')
+        transparent_color_tolerance = self.context.globals.get_value(
+            'image.transparent_color_tolerance', self.conf)
+        if transparent_color:
+            transparent_color = parse_color(transparent_color)
+        
         http_method = self.context.globals.get_value('http.method', self.conf)
         
         request = create_request(self.conf['req'], params, version=version)
@@ -523,7 +529,9 @@ class WMSSourceConfiguration(SourceConfiguration):
                            http_method=http_method, resampling=resampling, lock=lock,
                            supported_formats=supported_formats or None)
         return WMSSource(client, transparent=transparent, coverage=coverage,
-                         res_range=res_range, opacity=opacity)
+                         res_range=res_range, opacity=opacity,
+                         transparent_color=transparent_color,
+                         transparent_color_tolerance=transparent_color_tolerance)
     
     def fi_source(self, params=None):
         if params is None: params = {}
@@ -899,3 +907,28 @@ def merge_dict(conf, base):
             else:
                 base[k] = v
     return base
+
+def parse_color(color):
+    """
+    >>> parse_color((100, 12, 55))
+    (100, 12, 55)
+    >>> parse_color('0xff0530')
+    (255, 5, 48)
+    >>> parse_color('#FF0530')
+    (255, 5, 48)
+    """
+    if isinstance(color, (list, tuple)):
+        return color
+    if not isinstance(color, basestring):
+        raise ValueError('color needs to be a tuple/list or 0xrrggbb/#rrggbb string')
+    
+    if color.startswith('0x'):
+        color = color[2:]
+    if color.startswith('#'):
+        color = color[1:]
+    
+    r, g, b = map(lambda x: int(x, 16), [color[:2], color[2:4], color[4:6]])
+    
+    return r, g, b
+    
+    

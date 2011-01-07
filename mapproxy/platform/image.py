@@ -16,7 +16,8 @@
 
 import platform
 
-__all__ = ['Image', 'ImageColor', 'ImageDraw', 'ImageFont', 'ImagePalette', 'quantize']
+__all__ = ['Image', 'ImageColor', 'ImageDraw', 'ImageFont', 'ImagePalette',
+           'ImageChops', 'quantize']
 
 if platform.system() == "Java":
     from jil import Image, ImageColor, ImageDraw, ImageFont
@@ -25,17 +26,23 @@ if platform.system() == "Java":
     class ImagePalette(object):
         def __init__(self, *args, **kw):
             raise NotImplementedError()
-            
+    
+    class ImageChops(object):
+        def __init__(self, *args, **kw):
+            raise NotImplementedError()
+    
     def quantize_jil(img, colors=256, alpha=False, defaults=None):
         return img.convert('P', palette=Image.ADAPTIVE, colors=colors)
     quantize = quantize_jil
 else:
     try:
-        from PIL import Image, ImageColor, ImageDraw, ImageFont, ImagePalette
-        Image, ImageColor, ImageDraw, ImageFont, ImagePalette # prevent pyflakes warnings
+        from PIL import Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops
+        # prevent pyflakes warnings
+        Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops
     except ImportError:
-        import Image, ImageColor, ImageDraw, ImageFont, ImagePalette
-        Image, ImageColor, ImageDraw, ImageFont, ImagePalette # prevent pyflakes warnings
+        import Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops
+        # prevent pyflakes warnings
+        Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops
     
     def quantize_pil(img, colors=256, alpha=False, defaults=None):
         if hasattr(Image, 'FASTOCTREE'):

@@ -27,6 +27,7 @@ from mapproxy.platform.image import (
 import os
 import sys
 from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image, merge_images
+from mapproxy.image import _make_transparent as make_transparent
 from mapproxy.image.message import message_image, TextDraw
 from mapproxy.image.tile import TileMerger
 from mapproxy.image.transform import ImageTransformer
@@ -418,4 +419,57 @@ class TestSingleColorImage(object):
             palette.extend((i, i//2, i%3))
         img.putpalette(palette)
         eq_(is_single_color_image(img), (20, 10, 2))
+
+class TestMakeTransparent(object):
+    def _make_test_image(self):
+        img = Image.new('RGB', (50, 50), (130, 140, 120))
+        draw = ImageDraw.Draw(img)
+        draw.rectangle((10, 10, 39, 39), fill=(130, 150, 120))
+        return img
+    
+    def _make_transp_test_image(self):
+        img = Image.new('RGBA', (50, 50), (130, 140, 120, 100))
+        draw = ImageDraw.Draw(img)
+        draw.rectangle((10, 10, 39, 39), fill=(130, 150, 120, 120))
+        return img
+    
+    def test_result(self):
+        img = self._make_test_image()
+        img = make_transparent(img, (130, 150, 120))
+        assert img.mode == 'RGBA'
+        assert img.size == (50, 50)
+        colors = img.getcolors()
+        assert colors == [(1600, (130, 140, 120, 255)), (900, (130, 150, 120, 0))]
+    
+    def test_with_color_fuzz(self):
+        img = self._make_test_image()
+        img = make_transparent(img, (128, 154, 121))
+        assert img.mode == 'RGBA'
+        assert img.size == (50, 50)
+        colors = img.getcolors()
+        assert colors == [(1600, (130, 140, 120, 255)), (900, (130, 150, 120, 0))]
+
+    def test_no_match(self):
+        img = self._make_test_image()
+        img = make_transparent(img, (130, 160, 120))
+        assert img.mode == 'RGBA'
+        assert img.size == (50, 50)
+        colors = img.getcolors()
+        assert colors == [(1600, (130, 140, 120, 255)), (900, (130, 150, 120, 255))]
+
+    def test_from_paletted(self):
+        img = self._make_test_image().quantize(256)
+        img = make_transparent(img, (130, 150, 120))
+        assert img.mode == 'RGBA'
+        assert img.size == (50, 50)
+        colors = img.getcolors()
+        assert colors == [(1600, (130, 140, 120, 255)), (900, (130, 150, 120, 0))]
+    
+    def test_from_transparent(self):
+        img = self._make_transp_test_image()
+        img = make_transparent(img, (130, 150, 120, 120))
+        assert img.mode == 'RGBA'
+        assert img.size == (50, 50)
+        colors = img.getcolors()
+        eq_(colors, [(1600, (130, 140, 120, 255)), (900, (130, 150, 120, 0))])
     
