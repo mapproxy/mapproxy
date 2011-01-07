@@ -203,7 +203,12 @@ class Request(object):
         if 'HTTP_X_FORWARDED_HOST' in self.environ:
             return self.environ['HTTP_X_FORWARDED_HOST']
         elif 'HTTP_HOST' in self.environ:
-            return self.environ['HTTP_HOST']
+            host = self.environ['HTTP_HOST']
+            if ':' in host:
+                port = host.split(':')[1]
+                if ((self.url_scheme, port) in (('https', '443'), ('http', '80'))):
+                    host = host.split(':')[0]
+            return host
         result = self.environ['SERVER_NAME']
         if ((self.url_scheme, self.environ['SERVER_PORT'])
             not in (('https', '443'), ('http', '80'))):
