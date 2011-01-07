@@ -21,7 +21,7 @@ import sys
 from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
 from mapproxy.image import concat_legends
-from mapproxy.layer import MapExtent, BlankImage, LegendQuery
+from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, LegendQuery
 from mapproxy.source import Source, InfoSource, SourceError, LegendSource
 from mapproxy.srs import SRS
 from mapproxy.client.http import HTTPClientError
@@ -42,8 +42,7 @@ class WMSSource(Source):
         if self.coverage:
             self.extent = MapExtent(self.coverage.bbox, self.coverage.srs)
         else:
-            #TODO extent
-            self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
+            self.extent = DefaultMapExtent()
     
     def get_map(self, query):
         if self.res_range and not self.res_range.contains(query.bbox, query.size,
