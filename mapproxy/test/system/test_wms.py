@@ -121,7 +121,7 @@ class TestWMS111(WMSTest):
         xml = resp.lxml
         eq_(xml.xpath('//GetMap//OnlineResource/@xlink:href',
                       namespaces=dict(xlink="http://www.w3.org/1999/xlink"))[0],
-            'http://localhost:80/service?')
+            'http://localhost/service?')
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
                               'wms_merge', 'tms_cache', 'wms_cache_multi',
@@ -452,7 +452,7 @@ class TestWMS110(WMSTest):
         xml = resp.lxml
         eq_(xml.xpath('//GetMap//OnlineResource/@xlink:href',
                       namespaces=dict(xlink="http://www.w3.org/1999/xlink"))[0],
-            'http://localhost:80/service?')
+            'http://localhost/service?')
         
         llbox = xml.xpath('//Capability/Layer/LatLonBoundingBox')[0]
         # some clients don't like 90deg north/south

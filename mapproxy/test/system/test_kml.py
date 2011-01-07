@@ -115,10 +115,10 @@ class TestKML(SystemTest):
         assert validate_with_xsd(xml, 'kml/2.2.0/ogckml22.xsd')
         eq_(xml.xpath('/kml:kml/kml:Document/kml:GroundOverlay/kml:Icon/kml:href/text()',
                       namespaces=ns)[0],
-            'http://localhost:80/kml/wms_cache/EPSG900913/0/0/0.jpeg')
+            'http://localhost/kml/wms_cache/EPSG900913/0/0/0.jpeg')
         eq_(xml.xpath('/kml:kml/kml:Document/kml:NetworkLink[1]/kml:Link/kml:href/text()',
                       namespaces=ns)[0],
-            'http://localhost:80/kml/wms_cache/EPSG900913/1/0/0.kml')
+            'http://localhost/kml/wms_cache/EPSG900913/1/0/0.kml')
         
         etag = hashlib.md5(resp.body).hexdigest()
         max_age = base_config().tiles.expires_hours * 60 * 60
@@ -139,10 +139,10 @@ class TestKML(SystemTest):
         assert validate_with_xsd(xml, 'kml/2.2.0/ogckml22.xsd')
         eq_(xml.xpath('/kml:kml/kml:Document/kml:GroundOverlay/kml:Icon/kml:href/text()',
                       namespaces=ns)[0],
-            'http://localhost:80/kml/wms_cache_multi/EPSG4326/1/0/0.jpeg')
+            'http://localhost/kml/wms_cache_multi/EPSG4326/1/0/0.jpeg')
         eq_(xml.xpath('/kml:kml/kml:Document/kml:NetworkLink[1]/kml:Link/kml:href/text()',
                       namespaces=ns)[0],
-            'http://localhost:80/kml/wms_cache_multi/EPSG4326/2/0/0.kml')
+            'http://localhost/kml/wms_cache_multi/EPSG4326/2/0/0.kml')
     
     
     def test_get_tile(self):
