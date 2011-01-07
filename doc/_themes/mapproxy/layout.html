@@ -3,12 +3,12 @@
 
 {%- macro navbar() %}
 <div class="navbar">
- <a href="{{pathto(master_doc)}}">home</a>
+ <span><a href="{{pathto(master_doc)}}">home</a></span>
  {%- if next %}
- <a href="{{ next.link|e }}">next</a>
+ <span><a href="{{ next.link|e }}">next</a></span>
  {%- endif %}
  {%- if prev %}
- <a href="{{ prev.link|e }}">prev</a>
+ <span><a href="{{ prev.link|e }}">prev</a></span>
  {%- endif %}
 </div>
 {%- endmacro %}
@@ -100,7 +100,7 @@
       <div class="header">
         <div class="title">
           <a href="{{ pathto(master_doc) }}">
-            <img class="logo" src="{{ pathto('_static/' + logo, 1) }}" alt="Logo"/>
+            <img class="logo" width="52" height="55" src="{{ pathto('_static/' + logo, 1) }}" alt="Logo"/>
             <h1>{{ shorttitle|e }}</h1>
           </a>
         </div>
