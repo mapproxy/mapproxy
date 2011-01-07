@@ -433,11 +433,6 @@ class SourceConfiguration(ConfigurationBase):
     def coverage(self):
         if not 'coverage' in self.conf: return None
         return load_coverage(self.conf['coverage'])
-    
-    def opacity(self):
-        opacity = self.conf.get('opacity', None)
-        if opacity is not None: opacity = float(opacity)
-        return opacity
 
 def resolution_range(conf):
     if 'min_res' in conf or 'max_res' in conf:
@@ -494,7 +489,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         transparent = self.conf['req'].get('transparent', 'false')
         transparent = bool(str(transparent).lower() == 'true')
         
-        opacity = self.opacity()
+        opacity = self.conf.get('image', {}).get('opacity')
         
         resampling = self.context.globals.get_value('image.resampling_method', self.conf)
         
@@ -598,7 +593,7 @@ class TileSourceConfiguration(SourceConfiguration):
         
         grid = self.context.grids[self.conf['grid']].tile_grid()
         coverage = self.coverage()
-        opacity = self.opacity()
+        opacity = self.conf.get('image', {}).get('opacity')
         
         inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
@@ -648,11 +643,6 @@ class CacheConfiguration(ConfigurationBase):
                 filters.append(f)
         return filters
     
-    def opacity(self):
-        opacity = self.conf.get('opacity', None)
-        if opacity is not None: opacity = float(opacity)
-        return opacity
-    
     @memoize
     def caches(self):
         request_format = self.conf.get('request_format') or self.conf['format']
@@ -684,7 +674,7 @@ class CacheConfiguration(ConfigurationBase):
     @memoize
     def map_layer(self):
         resampling = self.context.globals.get_value('image.resampling_method', self.conf)
-        opacity = self.opacity()
+        opacity = self.conf.get('image', {}).get('opacity')
         caches = []
         main_grid = None
         for grid, extent, tile_manager in self.caches():

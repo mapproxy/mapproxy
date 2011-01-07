@@ -69,7 +69,8 @@ sources:
       layers: a_one
   wms_opacity2:
     type: wms
-    opacity: 0.5
+    image:
+      opacity: 0.5
     req:
       url: http://localhost:42423/service_a
       layers: a_two
