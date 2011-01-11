@@ -1,9 +1,17 @@
 0.9.2dev
 
 Features:
+- new image.transparent_color option: replaces color with full transparency
+- new image.opacity option: blend between opaque layers
+- new watermark.spacing option: place watermark on every other tile
+- new wms.on_source_errors option: capture errors and display notice in
+  response image when some sources did not respond
 
 Improvements:
+- combine requests to the same WMS URL
 - support for local SLD files (sld: file://sld.xml)
+- changed watermark color to gray: improves readability on full transparent
+  images
 
 Fixes:
 
