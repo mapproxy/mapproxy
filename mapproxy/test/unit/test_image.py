@@ -435,7 +435,7 @@ class TestMakeTransparent(object):
     
     def test_result(self):
         img = self._make_test_image()
-        img = make_transparent(img, (130, 150, 120))
+        img = make_transparent(img, (130, 150, 120), tolerance=5)
         assert img.mode == 'RGBA'
         assert img.size == (50, 50)
         colors = img.getcolors()
@@ -443,7 +443,7 @@ class TestMakeTransparent(object):
     
     def test_with_color_fuzz(self):
         img = self._make_test_image()
-        img = make_transparent(img, (128, 154, 121))
+        img = make_transparent(img, (128, 154, 121), tolerance=5)
         assert img.mode == 'RGBA'
         assert img.size == (50, 50)
         colors = img.getcolors()
@@ -451,7 +451,7 @@ class TestMakeTransparent(object):
 
     def test_no_match(self):
         img = self._make_test_image()
-        img = make_transparent(img, (130, 160, 120))
+        img = make_transparent(img, (130, 160, 120), tolerance=5)
         assert img.mode == 'RGBA'
         assert img.size == (50, 50)
         colors = img.getcolors()
@@ -459,15 +459,15 @@ class TestMakeTransparent(object):
 
     def test_from_paletted(self):
         img = self._make_test_image().quantize(256)
-        img = make_transparent(img, (130, 150, 120))
+        img = make_transparent(img, (130, 150, 120), tolerance=5)
         assert img.mode == 'RGBA'
         assert img.size == (50, 50)
         colors = img.getcolors()
-        assert colors == [(1600, (130, 140, 120, 255)), (900, (130, 150, 120, 0))]
+        eq_(colors, [(1600, (130, 140, 120, 255)), (900, (130, 150, 120, 0))])
     
     def test_from_transparent(self):
         img = self._make_transp_test_image()
-        img = make_transparent(img, (130, 150, 120, 120))
+        img = make_transparent(img, (130, 150, 120, 120), tolerance=5)
         assert img.mode == 'RGBA'
         assert img.size == (50, 50)
         colors = img.getcolors()
