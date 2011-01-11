@@ -381,7 +381,7 @@ class WMSGroupLayer(WMSLayerBase):
             layers = []
             for layer in self.layers:
                 layers.extend(layer.map_layers_for_query(query))
-            return layer
+            return layers
     
     def info(self, request):
         if self.this:
