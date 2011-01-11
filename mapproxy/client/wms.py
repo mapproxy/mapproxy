@@ -181,6 +181,9 @@ class WMSInfoClient(object):
         return resp
     
     def _get_transformed(self, query):
+        """
+        Handle FI requests for unsupported SRS.
+        """
         req_srs = query.srs
         req_bbox = query.bbox
         info_srs = self._best_supported_srs(req_srs)
@@ -195,6 +198,7 @@ class WMSInfoClient(object):
         return self._retrieve(info_query)
     
     def _best_supported_srs(self, srs):
+        # always choose the first, distortion should not matter
         return self.supported_srs[0]
     
     def _retrieve(self, query):
@@ -206,7 +210,6 @@ class WMSInfoClient(object):
         req.params.bbox = query.bbox
         req.params.size = query.size
         req.params.pos = query.pos
-        # del req.params['info_format']
         req.params['query_layers'] = req.params['layers']
         if query.info_format:
             req.params['info_format'] = query.info_format
