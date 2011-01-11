@@ -111,6 +111,16 @@ Use this option to specify which image formats you source WMS supports. MapProxy
 
 .. _wms_source_concurrent_requests_label:
 
+``image.transparent_color``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Specify a color that should be converted to full transparency. Can be either a list of color (``[255, 255, 255]``) values or a hex string (``#ffffff``).
+
+``image.transparent_color_tolerance``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Tolerance for the ``transparent_color`` substitution. The value defines the tolerance in each direction. E.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.
+
 ``concurrent_requests``
 ^^^^^^^^^^^^^^^^^^^^^^^
 This limits the number of parallel requests MapProxy will issue to the source server.
@@ -134,7 +144,6 @@ Minimal example::
       layers: base
 
 Full example::
-
   
   my_wmssource:
     type: wms
@@ -142,6 +151,9 @@ Full example::
       version: 1.0.0
       featureinfo: True
     supported_srs: ['EPSG:4326', 'EPSG:31467']
+    image:
+      transparent_color: '#ffffff'
+      transparent_color_tolerance: 0
     coverage:
        polygons: GM.txt
        polygons_srs: EPSG:900913

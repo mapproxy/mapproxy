@@ -401,7 +401,7 @@ def _make_transparent(img, color, tolerance=10):
     mask_channels = []
     for ch, c in zip(channels, color):
         low_c, high_c = c-tolerance, c+tolerance
-        mask_channels.append(Image.eval(ch, lambda x: 255 if low_c < x < high_c else 0))
+        mask_channels.append(Image.eval(ch, lambda x: 255 if low_c <= x <= high_c else 0))
         
     alpha = reduce(ImageChops.multiply, mask_channels)
     img.putalpha(ImageChops.invert(alpha))
