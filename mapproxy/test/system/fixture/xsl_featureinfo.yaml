@@ -1,0 +1,31 @@
+services:
+  wms:
+    featureinfo_xsl: ./fi_out.xsl
+    featureinfo_xml_root: root
+
+layers:
+  fi_layer:
+    title: Layer with fi source
+    sources: [fi_wms1]
+  fi_multi_layer:
+    title: Layer with fi source
+    sources: [fi_wms1, fi_wms2]
+
+
+sources:
+  fi_wms1:
+    type: wms
+    wms_opts:
+      featureinfo: true
+      featureinfo_xsl: ./fi_in.xsl
+    req:
+      url: http://localhost:42423/service_a
+      layers: a_one
+  fi_wms2:
+    type: wms
+    wms_opts:
+      featureinfo: true
+      featureinfo_xsl: ./fi_in.xsl
+    req:
+      url: http://localhost:42423/service_b
+      layers: b_one

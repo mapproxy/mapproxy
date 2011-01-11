@@ -182,3 +182,11 @@ class XPathValidator(object):
                 eq_(self.xml.xpath(xpath)[0], expected)
     def xpath(self, xpath):
         return self.xml.xpath(xpath)
+
+
+def strip_whitespace(text):
+    """
+    >>> strip_whitespace(' <foo> bar\\n zing\\t1')
+    '<foo>barzing1'
+    """
+    return re.sub('\s+', '', text)

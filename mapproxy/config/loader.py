@@ -443,6 +443,15 @@ def resolution_range(conf):
                                 max_scale=conf.get('max_scale'))
 
 
+def fi_xsl_transformer(conf, context):
+    fi_transformer = None
+    fi_xsl = conf.get('featureinfo_xsl')
+    if fi_xsl:
+        fi_xsl = context.globals.abspath(fi_xsl)
+        from mapproxy.util.xml import XSLTransformer
+        fi_transformer = XSLTransformer(fi_xsl)
+    return fi_transformer
+
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
     optional_keys = set('''type supported_srs supported_formats image
@@ -539,8 +548,12 @@ class WMSSourceConfiguration(SourceConfiguration):
             version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
             fi_request = create_request(self.conf['req'], params,
                 req_type='featureinfo', version=version)
+            
+            fi_transformer = fi_xsl_transformer(self.conf.get('wms_opts', {}),
+                                                self.context)
+            
             fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs)
-            fi_source = WMSInfoSource(fi_client)
+            fi_source = WMSInfoSource(fi_client, fi_transformer=fi_transformer)
         return fi_source
     
     def lg_source(self, params=None):
@@ -843,8 +856,12 @@ class ServiceConfiguration(ConfigurationBase):
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
         self.context.globals.base_config.wms.srs = srs
-        return WMSServer(root_layer, md, attribution=attribution, image_formats=image_formats,
+        server = WMSServer(root_layer, md, attribution=attribution, image_formats=image_formats,
             srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors)
+        
+        server.fi_transformer = fi_xsl_transformer(conf, self.context)
+        
+        return server
 
     def demo_service(self, conf):
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()

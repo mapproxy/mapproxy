@@ -78,12 +78,18 @@ class WMSSource(Source):
         return WMSSource(client, transparent=self.transparent)
         
 class WMSInfoSource(InfoSource):
-    def __init__(self, client):
+    def __init__(self, client, fi_transformer=None):
         self.client = client
+        self.fi_transformer = fi_transformer
     
     def get_info(self, query):
-        return self.client.get_info(query).read()
+        resp = self.client.get_info(query).read()
+        if self.fi_transformer:
+            resp = self.fi_transformer(resp)
         
+        return resp
+    
+
 class WMSLegendSource(LegendSource):
     def __init__(self, clients, legend_cache):
         self.clients = clients

@@ -43,6 +43,7 @@ log = logging.getLogger(__name__)
 class WMSServer(Server):
     names = ('service',)
     request_methods = ('map', 'capabilities', 'featureinfo', 'legendgraphic')
+    fi_transformer = None
     
     def __init__(self, root_layer, md, layer_merger=None, request_parser=None, tile_layers=None,
         attribution=None, srs=None, image_formats=None, strict=False, on_error='raise'):
@@ -131,7 +132,12 @@ class WMSServer(Server):
             mimetype = request.params.info_format
         else:
             mimetype = 'text/plain'
-        return Response('\n'.join(infos), mimetype=mimetype)
+        
+        if self.fi_transformer:
+            resp = self.fi_transformer(infos)
+        else:
+            resp = '\n'.join(infos)
+        return Response(resp, mimetype=mimetype)
     
     def check_request(self, request):
         query_layers = request.params.query_layers if hasattr(request, 'query_layers') else []
