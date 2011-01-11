@@ -19,8 +19,7 @@ from __future__ import with_statement, division
 from cStringIO import StringIO
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.platform.image import Image
-from mapproxy.test.image import is_png, tmp_image
-from mapproxy.test.http import mock_httpd
+from mapproxy.test.image import is_png
 from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from nose.tools import eq_
 

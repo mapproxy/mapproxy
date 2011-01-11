@@ -17,7 +17,7 @@
 from webtest import TestApp
 
 from mapproxy.response import Response
-from mapproxy.security.referrer import ReferrerFilter, NONE, SELF, BLOCKED, REGEX
+from mapproxy.security.referrer import ReferrerFilter, NONE, SELF, REGEX
 
 
 DENIED=404

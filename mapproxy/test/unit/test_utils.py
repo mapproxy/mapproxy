@@ -17,15 +17,12 @@
 from __future__ import with_statement
 import os
 import glob
-import stat
 import sys
 import shutil
 import tempfile
-import thread
 import threading
 import random
 import time
-import mapproxy.util
 from mapproxy.util.lock import (
     FileLock,
     SemLock,
@@ -39,9 +36,9 @@ from mapproxy.util import (
     cleanup_directory,
     timestamp_before,
 )
-from mapproxy.test.helper import Mocker, mocker, LogMock
+from mapproxy.test.helper import Mocker
 
-from nose.tools import timed, eq_
+from nose.tools import eq_
 
 is_win = sys.platform == 'win32'
 
@@ -54,8 +51,9 @@ class TestFileLock(Mocker):
         shutil.rmtree(self.lock_dir)
         Mocker.teardown(self)
     def test_file_lock_timeout(self):
-        running_lock = self._create_lock()
+        lock = self._create_lock()
         assert_locked(self.lock_file)
+        lock # prevent lint warnings
     
     def test_file_lock(self):
         # Test a lock that becomes free during a waiting lock() call.
@@ -144,8 +142,8 @@ def assert_locked(lock_file, timeout=0.02, step=0.001):
     l = FileLock(lock_file, timeout=timeout, step=step)
     try:
         l.lock()
-        assert False
-    except LockTimeout, e:
+        assert False, 'file was not locked'
+    except LockTimeout:
         pass
 
 

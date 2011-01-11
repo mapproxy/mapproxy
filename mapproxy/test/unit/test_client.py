@@ -23,11 +23,10 @@ from mapproxy.client.http import HTTPClient, HTTPClientError
 from mapproxy.client.tile import TMSClient, TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient
 from mapproxy.layer import MapQuery, InfoQuery
-from mapproxy.request.wms import wms_request, WMS111MapRequest, WMS100MapRequest,\
+from mapproxy.request.wms import WMS111MapRequest, WMS100MapRequest,\
                                  WMS130MapRequest, WMS111FeatureInfoRequest
-from mapproxy.srs import bbox_equals, SRS
-from mapproxy.request import Request, url_decode
-from mapproxy.test.http import mock_httpd, query_eq, assert_query_eq, make_wsgi_env
+from mapproxy.srs import SRS
+from mapproxy.test.http import mock_httpd, query_eq, assert_query_eq
 from mapproxy.test.helper import assert_re, TempFile
 
 from nose.tools import eq_
@@ -109,7 +108,7 @@ class TestHTTPClient(object):
     
     def test_https_valid_cert(self):
         try:
-            import ssl
+            import ssl; ssl
         except ImportError:
             raise SkipTest()
         
@@ -121,7 +120,7 @@ class TestHTTPClient(object):
     
     def test_https_invalid_cert(self):
         try:
-            import ssl
+            import ssl; ssl
         except ImportError:
             raise SkipTest()
         
@@ -146,7 +145,7 @@ class TestHTTPClient(object):
         with mock_httpd(TESTSERVER_ADDRESS, [test_req]):
             try:
                 start = time.time()
-                resp = client1.open(TESTSERVER_URL+'/')
+                client1.open(TESTSERVER_URL+'/')
             except HTTPClientError, ex:
                 assert 'timed out' in ex.args[0]
             else:
@@ -156,7 +155,7 @@ class TestHTTPClient(object):
         with mock_httpd(TESTSERVER_ADDRESS, [test_req]):
             try:
                 start = time.time()
-                resp = client2.open(TESTSERVER_URL+'/')
+                client2.open(TESTSERVER_URL+'/')
             except HTTPClientError, ex:
                 assert 'timed out' in ex.args[0]
             else:
@@ -332,7 +331,7 @@ class TestWMSClient(object):
         self.wms = WMSClient(self.req, http_client=self.http, supported_srs=[SRS(4326)])
     def test_request(self):
         req = MapQuery((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326), 'png')
-        resp = self.wms.get_map(req)
+        self.wms.get_map(req)
         eq_(len(self.http.requested), 1)
         assert_query_eq(self.http.requested[0],
             TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
@@ -360,7 +359,7 @@ class TestWMSClient(object):
         self.wms = WMSClient(self.req, http_client=self.http, supported_srs=[SRS(900913)])
 
         req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(3857), 'png')
-        resp = self.wms.get_map(req)
+        self.wms.get_map(req)
         eq_(len(self.http.requested), 1)
         
         assert_query_eq(self.http.requested[0],
@@ -426,7 +425,7 @@ class TestWMSInfoClient(object):
         fi_req = InfoQuery((8, 50, 9, 51), (512, 512),
                            SRS(4326), (256, 256), 'text/plain')
         
-        resp = wms.get_info(fi_req)
+        wms.get_info(fi_req)
         
         assert_query_eq(http.requested[0],
             TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
@@ -442,7 +441,7 @@ class TestWMSInfoClient(object):
         fi_req = InfoQuery((8, 50, 9, 51), (512, 512),
                            SRS(4326), (256, 256), 'text/plain')
         
-        resp = wms.get_info(fi_req)
+        wms.get_info(fi_req)
         
         assert_query_eq(http.requested[0],
             TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'

@@ -15,3 +15,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from mapproxy.request.base import Request, url_decode
+
+__all__ = ['Request', 'url_decode']

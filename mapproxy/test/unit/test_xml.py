@@ -23,7 +23,7 @@ from lxml import etree
 from nose.tools import eq_
 
 from mapproxy.util.xml import combined_inputs, XSLTransformer
-from mapproxy.test.helper import TempFile, strip_whitespace
+from mapproxy.test.helper import strip_whitespace
 
 def test_combined_inputs():
     foo = '<a><b>foo</b></a>'
@@ -75,6 +75,3 @@ class TestXSLTransformer(object):
               <foo>ab1</foo><foo>ab2</foo>
             </root>'''))
         
-
-if __name__ == '__main__':
-    test_xstltransformer()

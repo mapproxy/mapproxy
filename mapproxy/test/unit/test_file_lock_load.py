@@ -5,7 +5,7 @@ import time
 import threading
 import multiprocessing
 
-from mapproxy.util.lock import FileLock, cleanup_lockdir
+from mapproxy.util.lock import FileLock
 
 from nose.tools import eq_
 

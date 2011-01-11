@@ -11,6 +11,7 @@ from nose.plugins.skip import SkipTest
 
 try:
     from shapely.wkt import loads as load_wkt
+    load_wkt # prevent lint warning
 except ImportError:
     load_wkt = None
 

@@ -15,18 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
-from mapproxy.platform.image import (
-    Image,
-    ImageDraw,
-    ImageColor,
-    ImagePalette,
-)
-
-import os
-import sys
+from mapproxy.platform.image import Image
 from mapproxy.image import ImageSource, concat_legends
 from mapproxy.test.image import is_png
-from nose.tools import eq_
 
 class Test_Concat_Legends(object):
     def test_concatenation(self):
@@ -39,7 +30,6 @@ class Test_Concat_Legends(object):
         legends.append(ImageSource(img_3))
         source = concat_legends(legends)
         src_img = source.as_image()
-        #src_img.save('/tmp/foo.png')
         assert src_img.getpixel((0,90)) == (255,0,0,255)
         assert src_img.getpixel((0,80)) == (0,0,0,255)
         assert src_img.getpixel((0,0)) == (0,0,255,255)

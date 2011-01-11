@@ -15,8 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import division, with_statement
-import os
-import tempfile
 
 from mapproxy.srs import SRS, bbox_equals
 from mapproxy.util.geom import (

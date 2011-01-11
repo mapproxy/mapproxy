@@ -71,5 +71,5 @@ class TestResponse(Mocker):
         start_response = self.mock()
         self.expect(start_response('200 OK', ANY))
         self.replay()
-        result = resp({'REQUEST_METHOD': 'GET'}, start_response)
+        resp({'REQUEST_METHOD': 'GET'}, start_response)
         assert resp.content_length == 342

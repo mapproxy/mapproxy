@@ -16,9 +16,7 @@
 
 from __future__ import with_statement, division
 
-from cStringIO import StringIO
 from mapproxy.request.wms import WMS111MapRequest
-from mapproxy.platform.image import Image
 from mapproxy.test.image import is_transparent, create_tmp_image, bgcolor_ratio
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest

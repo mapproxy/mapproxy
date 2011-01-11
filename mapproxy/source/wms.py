@@ -23,7 +23,6 @@ from mapproxy.cache.legend import Legend, legend_identifier
 from mapproxy.image import concat_legends, make_transparent
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, LegendQuery
 from mapproxy.source import Source, InfoSource, SourceError, LegendSource
-from mapproxy.srs import SRS
 from mapproxy.client.http import HTTPClientError
 from mapproxy.util import reraise_exception
 

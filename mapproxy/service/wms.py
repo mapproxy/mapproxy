@@ -20,7 +20,7 @@ WMS service handler
 from itertools import chain
 from functools import partial
 from mapproxy.request.wms import wms_request, WMS111LegendGraphicRequest
-from mapproxy.srs import merge_bbox, SRS, TransformationError
+from mapproxy.srs import SRS, TransformationError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.source import SourceError

@@ -16,12 +16,9 @@
 
 from __future__ import with_statement, division
 import os
-import re
-import tempfile
-from urllib import quote
 
 from mapproxy.request.wms import WMS111FeatureInfoRequest
-from mapproxy.test.system import module_setup, module_teardown, make_base_config, SystemTest
+from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import strip_whitespace
 

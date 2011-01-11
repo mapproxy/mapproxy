@@ -3,16 +3,14 @@ import yaml
 from cStringIO import StringIO
 from mapproxy.srs import SRS
 from mapproxy.config.loader import (
-    GridConfiguration,
     ProxyConfiguration,
-    WMSSourceConfiguration,
     load_services,
     merge_dict,
 )
 from mapproxy.cache.tile import TileManager
 
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
-from nose.tools import eq_, assert_almost_equal
+from nose.tools import eq_
 from nose.plugins.skip import SkipTest
 
 class TestLayerConfiguration(object):
@@ -317,8 +315,8 @@ class TestWMSSourceConfiguration(object):
         
         conf = ProxyConfiguration(conf_dict)
         try:
-            wms = conf.sources['osm'].source({'format': 'image/png'})
-        except ImportError, e:
+            conf.sources['osm'].source({'format': 'image/png'})
+        except ImportError:
             raise SkipTest('no ssl support')
         
     

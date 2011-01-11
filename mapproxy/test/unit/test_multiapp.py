@@ -33,7 +33,7 @@ class TestDirectoryConfLoader(object):
     
     def make_conf_file(self, name):
         conf_file_name = os.path.join(self.dir, name)
-        with open(conf_file_name, 'w') as f:
+        with open(conf_file_name, 'w'):
             pass
         return conf_file_name
         

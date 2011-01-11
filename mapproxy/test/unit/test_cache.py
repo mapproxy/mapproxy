@@ -577,13 +577,13 @@ class TestWMSClient(object):
                                 supported_srs=[SRS(4326)])
         
     def test_get_map(self):
-        result = self.client.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326)))
+        self.client.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326)))
         assert query_eq(self.http_client.requested[0], "http://localhost/service?"
             "layers=foo&width=300&version=1.1.1&bbox=-180,-90,180,90&service=WMS"
             "&format=image%2Fpng&styles=&srs=EPSG%3A4326&request=GetMap&height=150")
     
     def test_get_map_transformed(self):
-        result = self.client.get_map(MapQuery(
+        self.client.get_map(MapQuery(
            (556597, 4865942, 1669792, 7361866), (300, 150), SRS(900913)))
         assert_query_eq(self.http_client.requested[0], "http://localhost/service?"
             "layers=foo&width=300&version=1.1.1"
@@ -616,11 +616,11 @@ class TestWMSSource(object):
             expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                                      '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326&styles='
                                      '&VERSION=1.1.1&BBOX=0.0,10.0,10.0,20.0&WIDTH=512'},
-                           {'body': 'error', 'headers': {'content-type': 'text/plain'}})
+                           {'body': img.read(), 'headers': {'content-type': 'text/plain'}})
             with mock_httpd(TEST_SERVER_ADDRESS, [expected_req]):
                 q = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
                 try:
-                    result = self.source.get_map(q)
+                    self.source.get_map(q)
                 except SourceError, e:
                     assert 'no image returned' in e.args[0]
                 else:
@@ -642,7 +642,7 @@ class TestWMSSource(object):
                         {'body': 'no image', 'headers': {'content-type': 'image/png'}})
         with mock_httpd(TEST_SERVER_ADDRESS, [expected_req]):
             q = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
-            result = self.source.get_map(q)
+            self.source.get_map(q)
   
 class MockLayer(object):
     def __init__(self):

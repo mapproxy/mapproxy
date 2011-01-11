@@ -26,7 +26,7 @@ from mapproxy.test.system import module_setup, module_teardown, make_base_config
 from mapproxy.test.image import is_png, is_transparent, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system.test_wms import is_111_capa, is_130_capa, ns130
-from nose.tools import eq_, assert_almost_equal
+from nose.tools import assert_almost_equal
 
 test_config = {}
 

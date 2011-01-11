@@ -1,3 +1,19 @@
+# This file is part of the MapProxy project.
+# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import os
 from mapproxy.config import base_config
 from mapproxy import srs
@@ -6,7 +22,7 @@ from mapproxy.srs import SRS
 class Test_0_ProjDefaultDataPath(object):
     
     def test_known_srs(self):
-        s = srs.SRS(4326)
+        srs.SRS(4326)
     
     def test_unknown_srs(self):
         try:
@@ -25,7 +41,7 @@ class Test_1_ProjDataPath(object):
         base_config().srs.proj_data_dir = os.path.dirname(__file__)
     
     def test_dummy_srs(self):
-        s = srs.SRS(1234)
+        srs.SRS(1234)
     
     def test_unknown_srs(self):
         try:

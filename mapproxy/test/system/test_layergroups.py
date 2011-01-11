@@ -15,13 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement, division
-import os
-import tempfile
-from urllib import quote
 
-from mapproxy.request.wms import WMS111MapRequest
-from mapproxy.test.system import module_setup, module_teardown, make_base_config, SystemTest
-from mapproxy.test.http import mock_httpd
+from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from mapproxy.test.system.test_wms import is_111_capa, is_110_capa, is_100_capa, is_130_capa, ns130
 
 from nose.tools import eq_

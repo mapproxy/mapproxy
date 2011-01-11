@@ -849,7 +849,6 @@ class ServiceConfiguration(ConfigurationBase):
         strict = self.context.globals.get_value('strict', conf, global_key='wms.strict')
         on_source_errors = self.context.globals.get_value('on_source_errors',
             conf, global_key='wms.on_source_errors')
-        layers = odict()
         root_layer = self.context.wms_root_layer.wms_layer()
         if not root_layer.md.get('title'):
             root_layer.md['title'] = md.get('title')

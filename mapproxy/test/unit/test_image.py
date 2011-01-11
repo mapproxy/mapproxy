@@ -16,22 +16,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
+
+import os
 from mapproxy.platform.image import (
     Image,
     ImageDraw,
     ImageColor,
-    ImagePalette,
     ImageFont,
 )
-
-import os
-import sys
 from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image, merge_images
 from mapproxy.image import _make_transparent as make_transparent
 from mapproxy.image.message import message_image, TextDraw
 from mapproxy.image.tile import TileMerger
 from mapproxy.image.transform import ImageTransformer
-from mapproxy.tilefilter import watermark_filter, PNGQuantFilter
+from mapproxy.tilefilter import watermark_filter
 from mapproxy.cache.tile import Tile
 from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image_file, check_format, create_debug_img
 from mapproxy.srs import SRS

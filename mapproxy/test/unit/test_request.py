@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from mapproxy.srs import SRS
-from mapproxy.request.base import url_decode, Request, NoCaseMultiDict, RequestParams, BaseRequest
+from mapproxy.request.base import url_decode, Request, NoCaseMultiDict, RequestParams
 from mapproxy.request.tile import TMSRequest, tile_request, TileRequest
 from mapproxy.request.wms import (wms_request, WMSMapRequest, WMSMapRequestParams,
                               WMS111MapRequest, WMS100MapRequest, WMS130MapRequest,
@@ -186,8 +186,8 @@ class TestWMS130MapRequest(TestWMSMapRequest):
         
         # 111 <- 130
         req5 = req2.copy_with_request_params(req3)
-        eq_(req2.params.bbox, (0.0, 10.0, 40.0, 20.0))
-        assert isinstance(req2, WMS111MapRequest)
+        eq_(req5.params.bbox, (0.0, 10.0, 40.0, 20.0))
+        assert isinstance(req5, WMS111MapRequest)
         
     
 class TestWMS111FeatureInfoRequest(TestWMSMapRequest):
@@ -419,7 +419,7 @@ BBOX=8,4,9,5&WIDTH=984&HEIGHT=708""".replace('\n', ''))
     def test_invalid_request(self):
         del self.req.args['request']
         try:
-            map_req = wms_request(self.req)
+            wms_request(self.req)
         except RequestError, e:
             assert 'request' in e.message
         else:
