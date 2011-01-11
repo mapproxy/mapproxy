@@ -152,6 +152,8 @@ class DefaultMapExtent(MapExtent):
         MapExtent.__init__(self, (-180, -90, 180, 90), SRS(4326))
 
 def merge_layer_extents(layers):
+    if not layers:
+        return DefaultMapExtent()
     layers = layers[:]
     extent = layers.pop().extent
     for layer in layers:

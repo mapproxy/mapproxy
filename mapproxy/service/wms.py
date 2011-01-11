@@ -363,11 +363,11 @@ class WMSGroupLayer(WMSLayerBase):
     
     @property
     def legend_size(self):
-        return self.this.legend_size()
+        return self.this.legend_size
 
     @property
     def legend_url(self):
-        return self.this.legend_url()
+        return self.this.legend_url
     
     def renders_query(self, query):
         if self.res_range and not self.res_range.contains(query.bbox, query.size, query.srs):

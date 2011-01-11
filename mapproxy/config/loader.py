@@ -715,7 +715,7 @@ class WMSLayerConfiguration(ConfigurationBase):
             for layer_conf in layers_conf:
                 layers.append(WMSLayerConfiguration(layer_conf, self.context).wms_layer())
         
-        if 'sources' in self.conf:
+        if 'sources' in self.conf or 'legendurl' in self.conf:
             this_layer = LayerConfiguration(self.conf, self.context).wms_layer()
         
         if not layers and not this_layer:
@@ -744,7 +744,7 @@ class LayerConfiguration(ConfigurationBase):
             lg_sources.append(WMSSourceConfiguration.static_legend_source(legend_url, self.context))
             lg_sources_configured = True
         
-        for source_name in self.conf['sources']:
+        for source_name in self.conf.get('sources', []):
             fi_source_names = []
             lg_source_names = []
             if source_name in self.context.caches:
