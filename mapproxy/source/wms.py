@@ -82,11 +82,10 @@ class WMSInfoSource(InfoSource):
         self.fi_transformer = fi_transformer
     
     def get_info(self, query):
-        resp = self.client.get_info(query).read()
+        doc = self.client.get_info(query)
         if self.fi_transformer:
-            resp = self.fi_transformer(resp)
-        
-        return resp
+            doc = self.fi_transformer(doc)
+        return doc
     
 
 class WMSLegendSource(LegendSource):

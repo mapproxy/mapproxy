@@ -80,7 +80,7 @@ class TestWMSWithRoot(SystemTest):
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=a_one&X=10&Y=20'},
-                        {'body': fi_body, 'headers': {'content-type': 'text/plain'}})
+                        {'body': fi_body, 'headers': {'content-type': 'text/xml'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_fi_req)
             print resp.body
@@ -94,12 +94,12 @@ class TestWMSWithRoot(SystemTest):
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=a_one&X=10&Y=20'},
-                        {'body': fi_body1, 'headers': {'content-type': 'text/plain'}})
+                        {'body': fi_body1, 'headers': {'content-type': 'text/xml'}})
         expected_req2 = ({'path': r'/service_b?LAYERs=b_one&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=b_one&X=10&Y=20'},
-                        {'body': fi_body2, 'headers': {'content-type': 'text/plain'}})
+                        {'body': fi_body2, 'headers': {'content-type': 'text/xml'}})
         with mock_httpd(('localhost', 42423), [expected_req1, expected_req2]):
             self.common_fi_req.params['layers'] = 'fi_multi_layer'
             self.common_fi_req.params['query_layers'] = 'fi_multi_layer'

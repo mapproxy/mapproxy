@@ -448,7 +448,7 @@ def fi_xsl_transformer(conf, context):
     fi_xsl = conf.get('featureinfo_xsl')
     if fi_xsl:
         fi_xsl = context.globals.abspath(fi_xsl)
-        from mapproxy.util.xml import XSLTransformer
+        from mapproxy.featureinfo import XSLTransformer
         fi_transformer = XSLTransformer(fi_xsl)
     return fi_transformer
 

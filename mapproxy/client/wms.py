@@ -26,6 +26,7 @@ from mapproxy.client.http import HTTPClient
 from mapproxy.srs import make_lin_transf, SRS
 from mapproxy.image import ImageSource
 from mapproxy.image.transform import ImageTransformer
+from mapproxy.featureinfo import create_featureinfo_doc
 
 import logging
 log = logging.getLogger(__name__)
@@ -165,7 +166,6 @@ class WMSClient(object):
                          resampling=self.resampling)
         
 
-
 class WMSInfoClient(object):
     def __init__(self, request_template, supported_srs=None, http_client=None):
         self.request_template = request_template
@@ -176,11 +176,14 @@ class WMSInfoClient(object):
     
     def get_info(self, query):
         if self.supported_srs and query.srs not in self.supported_srs:
-            return self._get_transformed(query)
+            query = self._get_transformed_query(query)
         resp = self._retrieve(query)
-        return resp
+        info_format = resp.headers.get('Content-type', None)
+        if not info_format:
+            info_format = query.info_format
+        return create_featureinfo_doc(resp.read(), info_format)
     
-    def _get_transformed(self, query):
+    def _get_transformed_query(self, query):
         """
         Handle FI requests for unsupported SRS.
         """
@@ -195,7 +198,7 @@ class WMSInfoClient(object):
         info_pos = make_lin_transf((info_bbox), (0, query.size[1], query.size[0], 0))(info_coord)
         
         info_query = InfoQuery(info_bbox, query.size, info_srs, info_pos, query.info_format)
-        return self._retrieve(info_query)
+        return info_query
     
     def _best_supported_srs(self, srs):
         # always choose the first, distortion should not matter
