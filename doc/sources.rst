@@ -100,7 +100,7 @@ A list with SRSs that the WMS source supports. MapProxy will only query the sour
 
 You don't need to configure this if you only use this WMS as a cache source and the WMS supports all SRS of the cache.
     
-If MapProxy needs to reproject and the source has multiple ``supported_srs``, then it will use the fist projected SRS for requests in projected SRS, or the fist geographic SRS for requests in geographic SRS. E.g when `supported_srs` is ``['EPSG:4326', 'EPSG:31467']`` caches with EPSG:900913 will use EPSG:32467.
+If MapProxy needs to reproject and the source has multiple ``supported_srs``, then it will use the fist projected SRS for requests in projected SRS, or the fist geographic SRS for requests in geographic SRS. E.g when `supported_srs` is ``['EPSG:4326', 'EPSG:31467']`` caches with EPSG:900913 will use EPSG:31467.
     
   ..  .. note:: For the configuration of SRS for MapProxy see `srs_configuration`_.
 
