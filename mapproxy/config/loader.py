@@ -433,6 +433,22 @@ class SourceConfiguration(ConfigurationBase):
     def coverage(self):
         if not 'coverage' in self.conf: return None
         return load_coverage(self.conf['coverage'])
+    
+    def http_client(self, url):
+        http_client = None
+        url, (username, password) = auth_data_from_url(url)
+        insecure = ssl_ca_certs = None
+        if 'https' in url:
+            insecure = self.context.globals.get_value('http.ssl_no_cert_checks', self.conf)
+            ssl_ca_certs = self.context.globals.get_path('http.ssl_ca_certs', self.conf)
+        
+        timeout = self.context.globals.get_value('http.client_timeout', self.conf)
+        headers = self.context.globals.get_value('http.headers', self.conf)
+        
+        http_client = HTTPClient(url, username, password, insecure=insecure,
+                                 ssl_ca_certs=ssl_ca_certs, timeout=timeout,
+                                 headers=headers)
+        return http_client, url
 
 def resolution_range(conf):
     if 'min_res' in conf or 'max_res' in conf:
@@ -469,21 +485,6 @@ class WMSSourceConfiguration(SourceConfiguration):
         lg_client = WMSLegendURLClient(url)
         legend_cache = LegendCache(cache_dir=cache_dir)
         return WMSLegendSource([lg_client], legend_cache)
-    
-    def http_client(self, request):
-        http_client = None
-        url, (username, password) = auth_data_from_url(request.url)
-        if username and password:
-            request.url = url
-        insecure = ssl_ca_certs = None
-        if 'https' in url:
-            insecure = self.context.globals.get_value('http.ssl_no_cert_checks', self.conf)
-            ssl_ca_certs = self.context.globals.get_path('http.ssl_ca_certs', self.conf)
-        
-        timeout = self.context.globals.get_value('http.client_timeout', self.conf)
-        http_client = HTTPClient(url, username, password, insecure=insecure,
-                                 ssl_ca_certs=ssl_ca_certs, timeout=timeout)
-        return http_client
     
     def source(self, params=None):
         if not self.conf.get('wms_opts', {}).get('map', True):
@@ -531,7 +532,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         http_method = self.context.globals.get_value('http.method', self.conf)
         
         request = create_request(self.conf['req'], params, version=version)
-        http_client = self.http_client(request)
+        http_client, request.url = self.http_client(request.url)
         client = WMSClient(request, supported_srs, http_client=http_client, 
                            http_method=http_method, resampling=resampling, lock=lock,
                            supported_formats=supported_formats or None)
@@ -555,7 +556,9 @@ class WMSSourceConfiguration(SourceConfiguration):
             fi_transformer = fi_xsl_transformer(self.conf.get('wms_opts', {}),
                                                 self.context)
             
-            fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs)
+            http_client, fi_request.url = self.http_client(fi_request.url)
+            fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs,
+                                      http_client=http_client)
             fi_source = WMSInfoSource(fi_client, fi_transformer=fi_transformer)
         return fi_source
     
@@ -581,7 +584,8 @@ class WMSSourceConfiguration(SourceConfiguration):
                 lg_req['layer'] = lg_layer
                 lg_request = create_request(lg_req, params,
                     req_type='legendgraphic', version=version)
-                lg_client = WMSLegendClient(lg_request)
+                http_client, lg_request.url = self.http_client(lg_request.url)
+                lg_client = WMSLegendClient(lg_request, http_client=http_client)
                 lg_clients.append(lg_client)
             legend_cache = LegendCache(cache_dir=cache_dir)
             lg_source = WMSLegendSource(lg_clients, legend_cache)
@@ -607,13 +611,14 @@ class TileSourceConfiguration(SourceConfiguration):
             origin = 'sw'
             # TODO raise some configuration exception
         
+        http_client, url = self.http_client(url)
         grid = self.context.grids[self.conf['grid']].tile_grid()
         coverage = self.coverage()
         opacity = self.conf.get('image', {}).get('opacity')
         
         inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
-        client = TileClient(TileURLTemplate(url, format=format))
+        client = TileClient(TileURLTemplate(url, format=format), http_client=http_client)
         return TiledSource(grid, client, inverse=inverse, coverage=coverage, opacity=opacity)
 
 def file_ext(mimetype):

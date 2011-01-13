@@ -67,7 +67,7 @@ class HTTPClient(object):
     log_datefmt = '%d/%b/%Y:%H:%M:%S %z'
     
     def __init__(self, url=None, username=None, password=None, insecure=False,
-                 ssl_ca_certs=None, timeout=None):
+                 ssl_ca_certs=None, timeout=None, headers=None):
         if _urllib2_has_timeout:
             self._timeout = timeout
         else:
@@ -92,8 +92,13 @@ class HTTPClient(object):
             authhandler = urllib2.HTTPBasicAuthHandler(passman)
             handlers.append(authhandler)
         
+        if headers is None:
+            headers = {}
+        header_list = headers.items()
+        if 'User-agent' not in headers:
+            header_list.append(('User-agent', 'MapProxy-%s' % (version,)))
         self.default_opener = urllib2.build_opener(*handlers)
-        self.default_opener.addheaders = [('User-agent', 'MapProxy-%s' % (version,))]
+        self.default_opener.addheaders = header_list
     
     def _log(self, url, status, result):
         if not self.log.isEnabledFor(logging.INFO):
@@ -142,6 +147,13 @@ class HTTPClient(object):
                                               % (url, e)), sys.exc_info())
         finally:
             self._log(url, code, result)
+    
+    def open_image(self, url, data=None):
+        resp = self.open(url, data=data)
+        if 'content-type' in resp.headers:
+            if not resp.headers['content-type'].lower().startswith('image'):
+                raise HTTPClientError('response is not an image: (%s)' % (resp.read()))
+        return ImageSource(resp)
 
 def auth_data_from_url(url):
     """
@@ -171,7 +183,7 @@ def open_url(url):
 
 retrieve_url = open_url
 
-def retrieve_image(url):
+def retrieve_image(url, client=None):
     """
     Retrive an image from `url`.
     

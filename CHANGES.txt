@@ -6,6 +6,9 @@ Features:
 - new watermark.spacing option: place watermark on every other tile
 - new wms.on_source_errors option: capture errors and display notice in
   response image when some sources did not respond
+- support for custom http headers for requests to sources
+- add support for http options for tile source (user/password, https ssl
+  options, headers, timeout)
 
 Improvements:
 - combine requests to the same WMS URL

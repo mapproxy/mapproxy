@@ -17,24 +17,33 @@
 from mapproxy.client.http import retrieve_image
 
 class TMSClient(object):
-    def __init__(self, url, format='png'):
+    def __init__(self, url, format='png', http_client=None):
         self.url = url
+        self.http_client = http_client
         self.format = format
     
     def get_tile(self, tile_coord, format=None):
         x, y, z = tile_coord
         url = '%s/%d/%d/%d.%s' % (self.url, z, x, y, format or self.format)
-        return retrieve_image(url)
+        if self.http_client:
+            return self.http_client.open_image(url)
+        else:
+            return retrieve_image(url)
     
     def __repr__(self):
         return '%s(%r, %r)' % (self.__class__.__name__, self.url, self.format)
 
 class TileClient(object):
-    def __init__(self, url_template):
+    def __init__(self, url_template, http_client=None):
         self.url_template = url_template
+        self.http_client = http_client
+    
     def get_tile(self, tile_coord, format=None):
         url = self.url_template.substitute(tile_coord, format)
-        return retrieve_image(url)
+        if self.http_client:
+            return self.http_client.open_image(url)
+        else:
+            return retrieve_image(url)
     
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.url_template)
