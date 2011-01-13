@@ -486,6 +486,9 @@ class WMSSourceConfiguration(SourceConfiguration):
         return http_client
     
     def source(self, params=None):
+        if not self.conf.get('wms_opts', {}).get('map', True):
+            return None
+        
         if not self.context.seed and self.conf.get('seed_only'):
             return DummySource()
         
@@ -672,7 +675,9 @@ class CacheConfiguration(ConfigurationBase):
             sources = []
             for source_conf in [self.context.sources[s] for s in self.conf['sources']]:
                 source = source_conf.source({'format': request_format})
-                sources.append(source)
+                if source:
+                    sources.append(source)
+            assert sources, 'no sources configured for %s' % self.conf['name']
             cache = self._file_cache(grid_conf)
             tile_grid = grid_conf.tile_grid()
             mgr = TileManager(tile_grid, cache, sources, file_ext(request_format),
@@ -770,7 +775,9 @@ class LayerConfiguration(ConfigurationBase):
                 lg_source_names = [source_name]
             else:
                 raise ConfigurationError('source/cache "%s" not found' % source_name)
-            sources.append(map_layer)
+            
+            if map_layer:
+                sources.append(map_layer)
             
             for fi_source_name in fi_source_names:
                 if not hasattr(self.context.sources[fi_source_name], 'fi_source'): continue

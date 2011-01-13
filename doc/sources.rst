@@ -68,6 +68,8 @@ This option affects what request MapProxy sends to the source WMS server.
 ``legendgraphic``
     If this is set to ``true``, MapProxy will request legend graphics from this source. Each MapProxy WMS layer that contains one or more sources with legend graphics will then have a LegendURL.
 
+``map``
+  If this is set to ``false``, MapProxy will not request images from this source. You can use this option in combination with ``featureinfo: true`` to create a feature info source.
 
 ``coverage``
 ^^^^^^^^^^^^
