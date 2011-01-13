@@ -608,6 +608,18 @@ Configure which HTTP method should be used for HTTP requests. By default (`AUTO`
   http:
     method: GET
 
+``headers``
+^^^^^^^^^^^
+
+Add additional HTTP headers to all requests to your sources.
+::
+
+  http:
+    headers:
+      My-Header: header value
+
+
+
 
 ``tiles``
 """"""""""
