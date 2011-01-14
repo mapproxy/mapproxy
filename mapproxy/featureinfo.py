@@ -39,10 +39,8 @@ class TextFeatureInfoDoc(FeatureInfoDoc):
     
     @classmethod
     def combine(cls, docs):
-        result_content = [self.content]
-        result_content += [doc.as_string() for doc in docs]
+        result_content = [doc.as_string() for doc in docs]
         return cls('\n'.join(result_content))
-
 
 class XMLFeatureInfoDoc(FeatureInfoDoc):
     info_type = 'xml'

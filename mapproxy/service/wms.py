@@ -135,9 +135,12 @@ class WMSServer(Server):
         
         if self.fi_transformer:
             doc = infos[0].combine(infos)
-            resp = self.fi_transformer(doc).as_string()
+            if doc.info_type == 'text':
+                resp = doc.as_string()
+            else:
+                resp = self.fi_transformer(doc).as_string()
         else:
-            resp = '\n'.join(i.as_string() for i in infos)
+            resp = infos[0].combine(infos).as_string()
         return Response(resp, mimetype=mimetype)
     
     def check_request(self, request):

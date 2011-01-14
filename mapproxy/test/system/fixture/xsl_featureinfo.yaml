@@ -1,12 +1,14 @@
 services:
   wms:
     featureinfo_xsl: ./fi_out.xsl
-    featureinfo_xml_root: root
 
 layers:
   fi_layer:
     title: Layer with fi source
     sources: [fi_wms1]
+  fi_without_xsl_layer:
+    title: Layer with fi source
+    sources: [fi_without_xsl]
   fi_multi_layer:
     title: Layer with fi source
     sources: [fi_wms1, fi_wms2]
@@ -29,3 +31,10 @@ sources:
     req:
       url: http://localhost:42423/service_b
       layers: b_one
+  fi_without_xsl:
+    type: wms
+    wms_opts:
+      featureinfo: true
+    req:
+      url: http://localhost:42423/service_c
+      layers: c_one

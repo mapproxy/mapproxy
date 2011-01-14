@@ -108,3 +108,24 @@ class TestWMSWithRoot(SystemTest):
             eq_(resp.content_type, 'text/plain')
             eq_(strip_whitespace(resp.body),
                 '<bars><bar>Bar1</bar><bar>Bar2</bar></bars>')
+    def test_mixed_featureinfo(self):
+        fi_body1 = "Hello"
+        fi_body2 = "<a><b>Bar2</b></a>"
+        expected_req1 = ({'path': r'/service_c?LAYERs=c_one&SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
+                                  '&WIDTH=200&QUERY_LAYERS=c_one&X=10&Y=20'},
+                        {'body': fi_body1, 'headers': {'content-type': 'text/plain'}})
+        expected_req2 = ({'path': r'/service_a?LAYERs=a_one&SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
+                                  '&WIDTH=200&QUERY_LAYERS=a_one&X=10&Y=20'},
+                        {'body': fi_body2, 'headers': {'content-type': 'text/xml'}})
+        with mock_httpd(('localhost', 42423), [expected_req1, expected_req2]):
+            self.common_fi_req.params['layers'] = 'fi_without_xsl_layer,fi_layer'
+            self.common_fi_req.params['query_layers'] = 'fi_without_xsl_layer,fi_layer'
+            resp = self.app.get(self.common_fi_req)
+            print resp.body
+            eq_(resp.content_type, 'text/plain')
+            eq_(strip_whitespace(resp.body),
+                'Hello<baz><foo>Bar2</foo></baz>')
