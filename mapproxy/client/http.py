@@ -61,6 +61,42 @@ def _set_global_socket_timeout(timeout):
                      _max_set_timeout)
     socket.setdefaulttimeout(_max_set_timeout)
 
+
+class _URLOpenerCache(object):
+    """
+    Creates custom URLOpener with BasicAuth and HTTPS handler.
+    
+    Caches and reuses opener if possible (i.e. if they share the same
+    ssl_ca_certs).
+    """
+    def __init__(self):
+        self._opener = {}
+    
+    def __call__(self, ssl_ca_certs, url, username, password):
+        if ssl_ca_certs not in self._opener:
+            handlers = []
+            if ssl_ca_certs:
+                connection_class = verified_https_connection_with_ca_certs(ssl_ca_certs)
+                https_handler = VerifiedHTTPSHandler(connection_class=connection_class)
+                handlers.append(https_handler)
+            passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
+            authhandler = urllib2.HTTPBasicAuthHandler(passman)
+            handlers.append(authhandler)
+
+            opener = urllib2.build_opener(*handlers)
+            opener.addheaders = [('User-agent', 'MapProxy-%s' % (version,))]
+            
+            self._opener[ssl_ca_certs] = (opener, passman)
+        else:
+            opener, passman = self._opener[ssl_ca_certs]
+        
+        if url is not None and username is not None and password is not None:
+            passman.add_password(None, url, username, password)
+        
+        return opener
+    
+create_url_opener = _URLOpenerCache()
+
 class HTTPClient(object):
     log = logging.getLogger(__name__ + '.http')
     log_fmt = '%(host)s - - [%(date)s] "GET %(path)s HTTP/1.1" %(status)d %(size)s "-" ""'
@@ -75,7 +111,9 @@ class HTTPClient(object):
             _set_global_socket_timeout(timeout)
         handlers = []
         if url and url.startswith('https'):
-            if insecure is False:
+            if insecure:
+                ssl_ca_certs = None
+            else:
                 if ssl is None:
                     raise ImportError('No ssl module found. SSL certificate '
                         'verification requires Python 2.6 or ssl module. Upgrade '
@@ -83,23 +121,10 @@ class HTTPClient(object):
                 if ssl_ca_certs is None:
                     raise HTTPClientError('No ca_certs file set (http.ssl_ca_certs). '
                         'Set file or disable verification with http.ssl_no_cert_checks option.')
-                connection_class = verified_https_connection_with_ca_certs(ssl_ca_certs)
-                https_handler = VerifiedHTTPSHandler(connection_class=connection_class)
-                handlers.append(https_handler)
-        if url is not None and username is not None and password is not None:
-            passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-            passman.add_password(None, url, username, password)
-            authhandler = urllib2.HTTPBasicAuthHandler(passman)
-            handlers.append(authhandler)
         
-        if headers is None:
-            headers = {}
-        header_list = headers.items()
-        if 'User-agent' not in headers:
-            header_list.append(('User-agent', 'MapProxy-%s' % (version,)))
-        self.default_opener = urllib2.build_opener(*handlers)
-        self.default_opener.addheaders = header_list
-    
+        self.opener = create_url_opener(ssl_ca_certs, url, username, password)
+        self.header_list = headers.items() if headers else []
+        
     def _log(self, url, status, result):
         if not self.log.isEnabledFor(logging.INFO):
             return
@@ -115,15 +140,16 @@ class HTTPClient(object):
         self.log.info(log_msg)
     
     def open(self, url, data=None):
+        code = 500
+        result = None
+        req = urllib2.Request(url, data=data)
+        for key, value in self.header_list:
+            req.add_header(key, value)
         try:
-            code = 500
-            result = None
             if self._timeout is not None:
-                result = self.default_opener.open(url, data=data, timeout=self._timeout)
+                result = self.opener.open(req, timeout=self._timeout)
             else:
-                result = self.default_opener.open(url, data=data)
-            code = getattr(result, 'code', 200)
-            return result
+                result = self.opener.open(req)
         except HTTPError, e:
             code = e.code
             reraise_exception(HTTPClientError('HTTP Error (%.30s...): %d' 
@@ -145,6 +171,9 @@ class HTTPClient(object):
         except Exception, e:
             reraise_exception(HTTPClientError('Internal HTTP error (%.30s...): %r'
                                               % (url, e)), sys.exc_info())
+        else:
+            code = getattr(result, 'code', 200)
+            return result
         finally:
             self._log(url, code, result)
     
