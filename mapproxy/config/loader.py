@@ -31,7 +31,7 @@ log = logging.getLogger(__name__)
 
 from mapproxy.srs import SRS
 from mapproxy.util.ext.odict import odict
-from mapproxy.cache.file import FileCache
+from mapproxy.cache.file import FileCache, DummyCache
 from mapproxy.util.lock import SemLock
 from mapproxy.config.config import load_default_config
 from mapproxy.client.http import auth_data_from_url, HTTPClient
@@ -635,7 +635,7 @@ class DebugSourceConfiguration(SourceConfiguration):
 class CacheConfiguration(ConfigurationBase):
     optional_keys = set('''format cache_dir grids link_single_color_images image
         use_direct_from_res use_direct_from_level meta_buffer meta_size
-        minimize_meta_requests'''.split())
+        minimize_meta_requests disable_storage'''.split())
     optional_keys.update(tile_filter_conf_keys)
     required_keys = set('name sources'.split())
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
@@ -645,6 +645,9 @@ class CacheConfiguration(ConfigurationBase):
             global_key='cache.base_dir')
         
     def _file_cache(self, grid_conf):
+        if self.conf.get('disable_storage', False):
+            return DummyCache()
+        
         cache_dir = self.cache_dir()
         grid_conf.tile_grid() #create to resolve `base` in grid_conf.conf
         suffix = grid_conf.conf['srs'].replace(':', '')
