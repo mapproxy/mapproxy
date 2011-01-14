@@ -29,10 +29,10 @@ services:
       fees: 'None'
 
 layers:
-  osm:
+  - name: osm
     title: Omniscale OSM WMS - osm.omniscale.net
     sources: [osm_cache]
-  # osm_full_example:
+  # - name: osm_full_example
   #   title: Omniscale OSM WMS - osm.omniscale.net
   #   sources: [osm_cache_full_example]
     
