@@ -21,7 +21,7 @@ import time
 import errno
 import hashlib
 
-from mapproxy.util.lock import FileLock
+from mapproxy.util.lock import FileLock, DummyLock
 from mapproxy.image import ImageSource, is_single_color_image
 from mapproxy.config import base_config
 
@@ -222,6 +222,16 @@ class FileCache(object):
     def __repr__(self):
         return '%s(%r, %r)' % (self.__class__.__name__, self.cache_dir, self.file_ext)
 
+
+class DummyCache(object):
+    def is_cached(self, tile):
+        return False
+    
+    def lock(self, tile):
+        return DummyLock()
+    
+    def store(self, tile):
+        pass
 
 def _create_dir(file_name):
     dir_name = os.path.dirname(file_name)

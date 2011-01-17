@@ -263,8 +263,14 @@ Change the ``meta_size`` and ``meta_buffer`` of this cache. See :ref:`global cac
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 
 You can limit until which resolution MapProxy should cache data with these two options.
-Requests below the configured resolution or level will be passed to the underlying source and the results will not be stored. The resolution of ``use_direct_from_res`` should use the units of the first configured grid of this cache.
+Requests below the configured resolution or level will be passed to the underlying source and the results will not be stored. The resolution of ``use_direct_from_res`` should use the units of the first configured grid of this cache. This takes only effect when used in WMS services.
 
+``disable_storage``
+""""""""""""""""""""
+
+If set to ``true``, MapProxy will not store any tiles for this cache. MapProxy will re-request all required tiles for each incoming request.
+
+.. note:: Be careful when using a cache with disabled storage in tile services when the cache uses WMS sources with metatiling.
 
 Example ``caches`` configuration
 """"""""""""""""""""""""""""""""
@@ -607,6 +613,18 @@ Configure which HTTP method should be used for HTTP requests. By default (`AUTO`
 
   http:
     method: GET
+
+``headers``
+^^^^^^^^^^^
+
+Add additional HTTP headers to all requests to your sources.
+::
+
+  http:
+    headers:
+      My-Header: header value
+
+
 
 
 ``tiles``
