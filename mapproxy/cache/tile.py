@@ -42,8 +42,8 @@ from mapproxy.grid import MetaGrid
 from mapproxy.image import merge_images
 from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
-from mapproxy.util import ThreadedExecutor
 from mapproxy.config import base_config
+from mapproxy.util import async
 
 import logging
 log = logging.getLogger(__name__)
@@ -167,9 +167,8 @@ class TileCreator(object):
         return created_tiles
     
     def _create_threaded(self, create_func, tiles):
-        pool = ThreadedExecutor(create_func, pool_size=self.tile_mgr.thread_pool_size)
         result = []
-        for new_tiles in pool.execute(tiles):
+        for new_tiles in async.imap(create_func, tiles):
             result.extend(new_tiles)
         return result
     
@@ -198,13 +197,17 @@ class TileCreator(object):
             except BlankImage:
                 return None
         
-        imgs = []
-        for source in self.sources:
+        def get_map_from_source(source):
             try:
                 img = source.get_map(query)
             except BlankImage:
-                pass
+                return None
             else:
+                return img
+        
+        imgs = []
+        for img in async.imap(get_map_from_source, self.sources):
+            if img is not None:
                 imgs.append(img)
         
         if not imgs: return None

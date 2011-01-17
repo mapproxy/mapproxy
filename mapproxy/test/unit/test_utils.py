@@ -30,7 +30,6 @@ from mapproxy.util.lock import (
     LockTimeout,
 )
 from mapproxy.util import (
-    ThreadedExecutor,
     _force_rename_dir,
     swap_dir,
     cleanup_directory,
@@ -223,63 +222,6 @@ class TestSemLock(object):
         
         assert self.count_lockfiles() == 8
 
-
-class TestThreadedExecutor(object):
-    def setup(self):
-        self.lock = threading.Lock()
-        self.exec_count = 0
-        self.te = ThreadedExecutor(self.execute, pool_size=5)
-    def execute(self, x):
-        with self.lock:
-            self.exec_count += 1
-        return x
-    def test_execute(self):
-        self.te.execute(range(10))
-        assert self.exec_count == 10
-    def test_execute_result_order(self):
-        result = self.te.execute(x for x in range(1000))
-        assert result == range(1000)
-
-class TestThreadedExecutorPool(object):
-    def setup(self):
-        self.lock = threading.Lock()
-        self.exec_count = 0
-        self.te = ThreadedExecutor(self.execute, pool_size=5)
-    def execute(self, x):
-        time.sleep(0.005)
-        with self.lock:
-            self.exec_count += 1
-        return x
-    def test_execute(self):
-        self.te.execute(range(10))
-        print self.exec_count
-        assert self.exec_count == 10
-
-
-class DummyException(Exception):
-    pass
-
-class TestThreadedExecutorException(object):
-    def setup(self):
-        self.lock = threading.Lock()
-        self.exec_count = 0
-        self.te = ThreadedExecutor(self.execute, pool_size=2)
-    def execute(self, x):
-        time.sleep(0.005)
-        with self.lock:
-            self.exec_count += 1
-            if self.exec_count == 7:
-                raise DummyException()
-        return x
-    def test_execute_w_exception(self):
-        try:
-            self.te.execute(range(100))
-        except DummyException:
-            print self.exec_count
-            assert 7 <= self.exec_count <= 10, 'execution should be interrupted really '\
-                                               'soon (exec_count should be 7+(max(3)))'
-        else:
-            assert False, 'expected DummyException'
 
 class DirTest(object):
     def setup(self):

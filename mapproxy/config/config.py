@@ -68,7 +68,7 @@ class Options(dict):
 _config = StackedObjectProxy(default=None)
 def base_config():
     """
-    Returns the system wide configuration.
+    Returns the context-local system-wide configuration.
     """
     config = _config._current_obj()
     if config is None:
