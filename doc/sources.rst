@@ -202,6 +202,10 @@ The grid of the tile source. Defaults to ``GLOBAL_MERCATOR``, a grid that is com
 ^^^^^^^^^^^^
 Define the covered area of the source. The source will only be requested if there is an intersection between the incoming request and the coverage. See :doc:`coverages <coverages>` for more information.
 
+``transparent``
+^^^^^^^^^^^^^^^
+You need to set this to ``true`` if you want to use this source as an overlay.
+
 ``seed_only``
 ^^^^^^^^^^^^^
 See :ref:`seed_only <wms_seed_only>`

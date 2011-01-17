@@ -115,6 +115,8 @@ should become
 Readable name of the layer, e.g WMS layer title.
 
 
+.. _layers:
+
 ``layers``
 """"""""""
 
