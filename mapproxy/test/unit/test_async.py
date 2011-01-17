@@ -18,7 +18,7 @@ from __future__ import with_statement
 
 import time
 import threading
-from mapproxy.util.async import imap_async_threaded, imap_async_eventlet, EventletPool, ThreadPool
+from mapproxy.util.async import imap_async_threaded, ThreadPool
 
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
@@ -50,6 +50,7 @@ class TestThreaded(object):
 
 try:
     import eventlet
+    from mapproxy.util.async import imap_async_eventlet, EventletPool
     _has_eventlet = True
 except ImportError:
     _has_eventlet = False
@@ -238,16 +239,17 @@ class TestThreadPool(CommonPoolTests):
                 pool2 = ThreadPool(5)
                 list(pool2.imap(check2, range(200)))
 
-        t1 = eventlet.spawn(test1)
-        t2 = eventlet.spawn(test2)
-        t1.wait()
-        t2.wait()
+        t1 = threading.Thread(target=test1)
+        t2 = threading.Thread(target=test2)
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
         assert 'bar' in base_config()
 
 
 import paste.util.threadinglocal
 from paste.registry import StackedObjectProxy
-from eventlet.corolocal import local
 import mapproxy.config
 
 class TestEventletPool(CommonPoolTests):
@@ -259,11 +261,14 @@ class TestEventletPool(CommonPoolTests):
         # if thread.local was not monkey_patched before import
         # manualy patch for this test (pretty hacky)
         self.old_local = paste.util.threadinglocal.local
+        from eventlet.corolocal import local
         paste.util.threadinglocal.local = local
         
         mapproxy.config.config._config = StackedObjectProxy(default=None)
     
     def mk_pool(self):
+        if not _has_eventlet:
+            raise SkipTest('eventlet required')
         return EventletPool()
     
     def teardown(self):
