@@ -247,7 +247,7 @@ class LayerRenderer(object):
                     errors.append(ex[1].args[0])
                 else:
                     async_pool.shutdown(True)
-                    raise ex[1]
+                    raise ex[0], ex[1], ex[2]
     
         if render_layers and not rendered:
             errors = '\n'.join(errors)
