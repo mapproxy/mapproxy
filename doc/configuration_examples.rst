@@ -15,7 +15,7 @@ The sources should be defined from bottom to top. All sources except the bottom 
 Example::
 
   layers:
-    combined_layer:
+    - name: combined_layer
       title: Aerial image + roads overlay
       sources: [combined_cache]
   
@@ -193,7 +193,7 @@ You should explicitly define the SRS the source WMS supports. Requests in other 
 ::
 
   layers:
-    direct_layer:
+    - name: direct_layer
       sources: [direct_wms]
   
   sources:

@@ -262,7 +262,7 @@ class TestWatermarkTileFilter(object):
         colors = pil_img.getcolors()
         colors.sort()
         # most but not all parts are bg color
-        assert 39900 > colors[-1][0] > 39000
+        assert 39950 > colors[-1][0] > 39000
         assert colors[-1][1] == (0, 0, 0)
 
     def test_filter_with_alpha(self):
@@ -280,7 +280,7 @@ class TestWatermarkTileFilter(object):
         colors = pil_img.getcolors()
         colors.sort()
         # most but not all parts are bg color
-        assert 39900 > colors[-1][0] > 39000
+        assert 39950 > colors[-1][0] > 39000
         eq_(colors[-1][1], (10, 15, 20, 0))
         
 class TestMergeAll(object):
