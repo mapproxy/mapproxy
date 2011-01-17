@@ -615,11 +615,13 @@ class TileSourceConfiguration(SourceConfiguration):
         grid = self.context.grids[self.conf['grid']].tile_grid()
         coverage = self.coverage()
         opacity = self.conf.get('image', {}).get('opacity')
+        transparent = self.conf.get('transparent')
         
         inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
         client = TileClient(TileURLTemplate(url, format=format), http_client=http_client)
-        return TiledSource(grid, client, inverse=inverse, coverage=coverage, opacity=opacity)
+        return TiledSource(grid, client, inverse=inverse, coverage=coverage, opacity=opacity,
+                           transparent=transparent)
 
 def file_ext(mimetype):
     _mime_class, format, _options = split_mime_type(mimetype)
