@@ -69,15 +69,11 @@ class EventletPool(object):
         # there is not way to stop a GreenPool
         pass
     
-    def map(self, func, *args):
-        return list(self.imap(func, *args))
+    def map(self, func, *args, **kw):
+        return list(self.imap(func, *args, **kw))
         
     def imap(self, func, *args, **kw):
         use_result_objects = kw.get('use_result_objects', False)
-        if len(args[0]) == 1:
-            eventlet.sleep()
-            return _result_iter(map(func, args), use_result_objects)
-        pool = eventlet.greenpool.GreenPool(self.size)
         def call(*args):
             with local_base_config(self.base_config):
                 try:
@@ -87,14 +83,14 @@ class EventletPool(object):
                         return sys.exc_info()
                     else:
                         raise
-        
+        if len(args[0]) == 1:
+            eventlet.sleep()
+            return _result_iter([call(*zip(*args)[0])], use_result_objects)
+        pool = eventlet.greenpool.GreenPool(self.size)
         return _result_iter(pool.imap(call, *args), use_result_objects)
     
     def starmap(self, func, args, **kw):
         use_result_objects = kw.get('use_result_objects', False)
-        if len(args) == 1:
-            eventlet.sleep()
-            return _result_iter(func(*args[0]), use_result_objects)
         def call(*args):
             with local_base_config(self.base_config):
                 try:
@@ -104,14 +100,14 @@ class EventletPool(object):
                         return sys.exc_info()
                     else:
                         raise
+        if len(args) == 1:
+            eventlet.sleep()
+            return _result_iter([call(*args[0])], use_result_objects)
         pool = eventlet.greenpool.GreenPool(self.size)
         return _result_iter(pool.starmap(call, args), use_result_objects)
     
     def starcall(self, args, **kw):
         use_result_objects = kw.get('use_result_objects', False)
-        if len(args) == 1:
-            eventlet.sleep()
-            return _result_iter(args[0][0](*args[0][1:]), use_result_objects)
         def call(func, *args):
             with local_base_config(self.base_config):
                 try:
@@ -121,6 +117,9 @@ class EventletPool(object):
                         return sys.exc_info()
                     else:
                         raise
+        if len(args) == 1:
+            eventlet.sleep()
+            return _result_iter([call(args[0][0], *args[0][1:])], use_result_objects)
         pool = eventlet.greenpool.GreenPool(self.size)
         return _result_iter(pool.starmap(call, args), use_result_objects)
     
@@ -164,20 +163,21 @@ class ThreadPool(object):
         self.pool_size = size
         self.task_queue = Queue.Queue()
         self.result_queue = Queue.Queue()
-        self.pool = self._init_pool()
-    
+        self.pool = None
     def map_each(self, func_args, raise_exceptions):
         """
         args should be a list of function arg tuples.
         map_each calls each function with the given arg.
         """
-        if not self.pool:
+        if self.pool_size < 2:
             for func, arg in func_args:
                 try:
                     yield func(*arg)
                 except Exception:
                     yield sys.exc_info()
             raise StopIteration()
+        
+        self.pool = self._init_pool()
         
         i = 0
         for i, (func, arg) in enumerate(func_args):
@@ -202,6 +202,8 @@ class ThreadPool(object):
         try:
             result = func(*args)
         except Exception:
+            if not use_result_objects:
+                raise
             result = sys.exc_info()
         return _result_iter([result], use_result_objects)
         

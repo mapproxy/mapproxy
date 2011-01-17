@@ -85,87 +85,121 @@ class TestEventlet(object):
 
 
 
-class TestThreadPool(object):
-    def test_imap(self):
-        f1 = lambda x: x
-        pool = ThreadPool()
-        result = pool.imap(f1, [1, 2, 3])
-        result = list(result)
-        
-        eq_(result, [1, 2, 3])
-
+class CommonPoolTests(object):
+    def _check_single_arg(self, func):
+        result = list(func())
+        eq_(result, [3])
+    
+    def test_single_argument(self):
         f1 = lambda x, y: x+y
-        pool = ThreadPool()
-        result = pool.imap(f1, [1, 2, 3], [2, 3, 4])
-        result = list(result)
-        
-        eq_(result, [3, 5, 7])
-        
-
-    def test_starmap(self):
-        f1 = lambda x, y: x+y
-        pool = ThreadPool()
-        result = pool.starmap(f1, [(1, 2), (2, 3), (3, 4)])
-        result = list(result)
-        
-        eq_(result, [3, 5, 7])
-    
-    def test_starcall(self):
-        f1 = lambda x: x
-        f2 = lambda x: x
-        f3 = lambda x, y: x+y
-        pool = ThreadPool()
-        result = pool.starcall([(f1, 1), (f2, 2), (f3, 3, 3)])
-        result = list(result)
-        
-        eq_(result, [1, 2, 6])
+        pool = self.mk_pool()
+        check = self._check_single_arg
+        yield check, lambda: pool.map(f1, [1], [2])
+        yield check, lambda: pool.imap(f1, [1], [2])
+        yield check, lambda: pool.starmap(f1, [(1, 2)])
+        yield check, lambda: pool.starcall([(f1, 1, 2)])
     
     
-    @staticmethod
-    def func_error_on_5(x, y):
-        result = x+y
-        if result == 5:
-            raise ValueError()
-        return result
-
-    def test_starmap_exceptions(self):
-        pool = ThreadPool()
-        result = pool.starmap(self.func_error_on_5, [(1, 2), (2, 3), (3, 4)])
+    def _check_single_arg_raise(self, func):
         try:
-            result = list(result)
+            result = list(func())
         except ValueError:
             pass
         else:
             assert False, 'expected ValueError'
+    
+    def test_single_argument_raise(self):
+        def f1(x, y):
+            raise ValueError
+        pool = self.mk_pool()
+        check = self._check_single_arg_raise
+        yield check, lambda: pool.map(f1, [1], [2])
+        yield check, lambda: pool.imap(f1, [1], [2])
+        yield check, lambda: pool.starmap(f1, [(1, 2)])
+        yield check, lambda: pool.starcall([(f1, 1, 2)])
 
-    def test_imap_exceptions(self):
-        pool = ThreadPool()
-        result = pool.imap(self.func_error_on_5, [1, 2, 3], [2, 3, 4])
+    def _check_single_arg_result_object(self, func):
+        result = list(func())
+        assert result[0].result == None
+        assert isinstance(result[0].exception[1], ValueError)
+        
+    def test_single_argument_result_object(self):
+        def f1(x, y):
+            raise ValueError
+        pool = self.mk_pool()
+        check = self._check_single_arg_result_object
+        yield check, lambda: pool.map(f1, [1], [2], use_result_objects=True)
+        yield check, lambda: pool.imap(f1, [1], [2], use_result_objects=True)
+        yield check, lambda: pool.starmap(f1, [(1, 2)], use_result_objects=True)
+        yield check, lambda: pool.starcall([(f1, 1, 2)], use_result_objects=True)
+
+
+    def _check_multiple_args(self, func):
+        result = list(func())
+        eq_(result, [3, 5])
+    
+    def test_multiple_arguments(self):
+        f1 = lambda x, y: x+y
+        pool = self.mk_pool()
+        check = self._check_multiple_args
+        yield check, lambda: pool.map(f1, [1, 2], [2, 3])
+        yield check, lambda: pool.imap(f1, [1, 2], [2, 3])
+        yield check, lambda: pool.starmap(f1, [(1, 2), (2, 3)])
+        yield check, lambda: pool.starcall([(f1, 1, 2), (f1, 2, 3)])
+    
+    def _check_multiple_args_with_exceptions_result_object(self, func):
+        result = list(func())
+        eq_(result[0].result, 3)
+        eq_(type(result[1].exception[1]), ValueError)
+        eq_(result[2].result, 7)
+    
+    def test_multiple_arguments_exceptions_result_object(self):
+        def f1(x, y):
+            if x+y == 5:
+                raise ValueError()
+            return x+y
+        pool = self.mk_pool()
+        check = self._check_multiple_args_with_exceptions_result_object
+        yield check, lambda: pool.map(f1, [1, 2, 3], [2, 3, 4], use_result_objects=True)
+        yield check, lambda: pool.imap(f1, [1, 2, 3], [2, 3, 4], use_result_objects=True)
+        yield check, lambda: pool.starmap(f1, [(1, 2), (2, 3), (3, 4)], use_result_objects=True)
+        yield check, lambda: pool.starcall([(f1, 1, 2), (f1, 2, 3), (f1, 3, 4)], use_result_objects=True)
+    
+    def _check_multiple_args_with_exceptions(self, func):
+        result = func()
+        eq_(result.next(), 3)
         try:
-            result = list(result)
+            result.next()
         except ValueError:
             pass
         else:
             assert False, 'expected ValueError'
+    
+    def test_multiple_arguments_exceptions(self):
+        def f1(x, y):
+            if x+y == 5:
+                raise ValueError()
+            return x+y
+        pool = self.mk_pool()
+        check = self._check_multiple_args_with_exceptions
+        
+        def check_pool_map():
+            try:
+                pool.map(f1, [1, 2, 3], [2, 3, 4])
+            except ValueError:
+                pass
+            else:
+                assert False, 'expected ValueError'
+        yield check_pool_map
+        yield check, lambda: pool.imap(f1, [1, 2, 3], [2, 3, 4])
+        yield check, lambda: pool.starmap(f1, [(1, 2), (2, 3), (3, 4)])
+        yield check, lambda: pool.starcall([(f1, 1, 2), (f1, 2, 3), (f1, 3, 4)])
+    
 
-    def test_starmap_exceptions_in_result_objects(self):
-        pool = ThreadPool()
-        result = pool.starmap(self.func_error_on_5, [(1, 2), (2, 3), (3, 4)],
-                              use_result_objects=True)
-        result = list(result)
-        eq_(result[0].result, 3)
-        eq_(type(result[1].exception[1]), ValueError)
-        eq_(result[2].result, 7)
 
-    def test_imap_exceptions_in_result_objects(self):
-        pool = ThreadPool()
-        result = pool.starmap(self.func_error_on_5, [(1, 2), (2, 3), (3, 4)],
-                              use_result_objects=True)
-        result = list(result)
-        eq_(result[0].result, 3)
-        eq_(type(result[1].exception[1]), ValueError)
-        eq_(result[2].result, 7)
-
+class TestThreadPool(CommonPoolTests):
+    def mk_pool(self):
+        return ThreadPool()
     
     def test_base_config(self):
         # test that all concurrent have access to their
@@ -216,7 +250,7 @@ from paste.registry import StackedObjectProxy
 from eventlet.corolocal import local
 import mapproxy.config
 
-class TestEventletPool(object):
+class TestEventletPool(CommonPoolTests):
     def setup(self):
         if not _has_eventlet:
             raise SkipTest('eventlet required')
@@ -229,90 +263,13 @@ class TestEventletPool(object):
         
         mapproxy.config.config._config = StackedObjectProxy(default=None)
     
+    def mk_pool(self):
+        return EventletPool()
+    
     def teardown(self):
         # recreate StackedObjectProxy with threaded thread local
         paste.util.threadinglocal.local = self.old_local
         mapproxy.config.config._config = StackedObjectProxy(default=None)
-        
-    def test_imap(self):
-        f1 = lambda x: x
-        pool = EventletPool()
-        result = pool.imap(f1, [1, 2, 3])
-        result = list(result)
-        
-        eq_(result, [1, 2, 3])
-
-        f1 = lambda x, y: x+y
-        pool = EventletPool()
-        result = pool.imap(f1, [1, 2, 3], [2, 3, 4])
-        result = list(result)
-        
-        eq_(result, [3, 5, 7])
-        
-
-    def test_starmap(self):
-        f1 = lambda x, y: x+y
-        pool = EventletPool()
-        result = pool.starmap(f1, [(1, 2), (2, 3), (3, 4)])
-        result = list(result)
-        
-        eq_(result, [3, 5, 7])
-    
-    def test_starcall(self):
-        f1 = lambda x: x
-        f2 = lambda x: x
-        f3 = lambda x, y: x+y
-        pool = EventletPool()
-        result = pool.starcall([(f1, 1), (f2, 2), (f3, 3, 3)])
-        result = list(result)
-        
-        eq_(result, [1, 2, 6])
-    
-
-    @staticmethod
-    def func_error_on_5(x, y):
-        result = x+y
-        if result == 5:
-            raise ValueError()
-        return result
-
-    def test_starmap_exceptions(self):
-        pool = EventletPool()
-        result = pool.starmap(self.func_error_on_5, [(1, 2), (2, 3), (3, 4)])
-        try:
-            result = list(result)
-        except ValueError:
-            pass
-        else:
-            assert False, 'expected ValueError'
-
-    def test_imap_exceptions(self):
-        pool = EventletPool()
-        result = pool.imap(self.func_error_on_5, [1, 2, 3], [2, 3, 4])
-        try:
-            result = list(result)
-        except ValueError:
-            pass
-        else:
-            assert False, 'expected ValueError'
-
-    def test_starmap_exceptions_in_result_objects(self):
-        pool = EventletPool()
-        result = pool.starmap(self.func_error_on_5, [(1, 2), (2, 3), (3, 4)],
-                              use_result_objects=True)
-        result = list(result)
-        eq_(result[0].result, 3)
-        eq_(type(result[1].exception[1]), ValueError)
-        eq_(result[2].result, 7)
-
-    def test_imap_exceptions_in_result_objects(self):
-        pool = EventletPool()
-        result = pool.starmap(self.func_error_on_5, [(1, 2), (2, 3), (3, 4)],
-                              use_result_objects=True)
-        result = list(result)
-        eq_(result[0].result, 3)
-        eq_(type(result[1].exception[1]), ValueError)
-        eq_(result[2].result, 7)
     
     def test_base_config(self):
         # test that all concurrent have access to their
