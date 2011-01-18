@@ -594,7 +594,8 @@ class WMSSourceConfiguration(SourceConfiguration):
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
-    optional_keys = set('''type grid request_format origin coverage seed_only'''.split())
+    optional_keys = set('''type grid request_format origin coverage seed_only
+                           transparent http'''.split())
     required_keys = set('url'.split())
     defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
     
