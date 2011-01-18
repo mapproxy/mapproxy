@@ -87,6 +87,7 @@ from mapproxy.cache.tile import TileManager
 from mapproxy.cache.legend import LegendCache
 from mapproxy.util import local_base_config
 from mapproxy.config.coverage import load_coverage
+from mapproxy.featureinfo import XSLTransformer, has_xsl_support
 
 class ConfigurationError(Exception):
     pass
@@ -447,8 +448,9 @@ def fi_xsl_transformer(conf, context):
     fi_transformer = None
     fi_xsl = conf.get('featureinfo_xsl')
     if fi_xsl:
+        if not has_xsl_support:
+            raise ValueError('featureinfo_xsl requires lxml. Please install.')
         fi_xsl = context.globals.abspath(fi_xsl)
-        from mapproxy.featureinfo import XSLTransformer
         fi_transformer = XSLTransformer(fi_xsl)
     return fi_transformer
 

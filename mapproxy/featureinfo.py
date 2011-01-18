@@ -16,7 +16,13 @@
 
 import copy
 from cStringIO import StringIO
-from lxml import etree, html
+
+try:
+    from lxml import etree, html
+    has_xsl_support = True
+except ImportError:
+    has_xsl_support = False
+    etree = html = None
 
 class FeatureInfoDoc(object):
     content_type = None
@@ -75,6 +81,7 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
     
     @classmethod
     def combine(cls, docs):
+        if etree is None: return TextFeatureInfoDoc.combine(docs)
         doc = docs.pop(0)
         result_tree = copy.deepcopy(doc.as_etree())
         for doc in docs:
@@ -95,6 +102,9 @@ class HTMLFeatureInfoDoc(XMLFeatureInfoDoc):
     
     @classmethod
     def combine(cls, docs):
+        if etree is None:
+            return TextFeatureInfoDoc.combine(docs)
+        
         doc = docs.pop(0)
         result_tree = copy.deepcopy(doc.as_etree())
 

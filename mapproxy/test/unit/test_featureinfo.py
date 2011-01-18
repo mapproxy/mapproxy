@@ -60,7 +60,6 @@ class TestXSLTransformer(object):
         doc = t.transform(XMLFeatureInfoDoc('<a><b>Text</b></a>'))
         eq_(strip_whitespace(doc.as_string()), '<root><foo>Text</foo></root>')
 
-
     def test_multiple(self):
         t = XSLTransformer(self.xsl_script)
         doc = t.transform(XMLFeatureInfoDoc.combine([
@@ -76,6 +75,7 @@ class TestXSLTransformer(object):
               <foo>ab1</foo><foo>ab2</foo><foo>ab3</foo>
               <foo>ab1</foo><foo>ab2</foo>
             </root>'''))
+        eq_(doc.info_type, 'xml')
         
 
 class TestXMLFeatureInfoDocs(object):
@@ -89,7 +89,6 @@ class TestXMLFeatureInfoDocs(object):
         doc = XMLFeatureInfoDoc('<root>hello</root>')
         eq_(doc.as_etree().getroot().text, 'hello')
     
-    
     def test_combine(self):
         docs = [
             XMLFeatureInfoDoc('<root><a>foo</a></root>'),
@@ -100,6 +99,29 @@ class TestXMLFeatureInfoDocs(object):
         
         eq_(strip_whitespace(result.as_string()),
             strip_whitespace('<root><a>foo</a><b>bar</b><a>baz</a></root>'))
+        eq_(result.info_type, 'xml')
+        
+
+class TestXMLFeatureInfoDocsNoLXML(object):
+    def setup(self):
+        from mapproxy import featureinfo
+        self.old_etree = featureinfo.etree
+        featureinfo.etree = None
+    def teardown(self):
+        from mapproxy import featureinfo
+        featureinfo.etree = self.old_etree
+
+    def test_combine(self):
+        docs = [
+            XMLFeatureInfoDoc('<root><a>foo</a></root>'),
+            XMLFeatureInfoDoc('<root><b>bar</b></root>'),
+            XMLFeatureInfoDoc('<other_root><a>baz</a></other_root>'),
+        ]
+        result = XMLFeatureInfoDoc.combine(docs)
+
+        eq_('<root><a>foo</a></root>\n<root><b>bar</b></root>\n<other_root><a>baz</a></other_root>',
+            result.as_string())
+        eq_(result.info_type, 'text')
     
 class TestHTMLFeatureInfoDocs(object):
     def test_as_string(self):
@@ -121,6 +143,7 @@ class TestHTMLFeatureInfoDocs(object):
         assert '<title>Hello</title>' in result.as_string()
         assert ('<body><p>baz</p><p>baz2</p><p>foo</p><p>bar</p></body>' in
             result.as_string())
+        eq_(result.info_type, 'html')
     
     def test_combine_parts(self):
         docs = [
@@ -132,3 +155,26 @@ class TestHTMLFeatureInfoDocs(object):
         
         assert ('<body><p>foo</p><p>bar</p><p>baz</p><p>baz2</p></body>' in
             result.as_string())
+        eq_(result.info_type, 'html')
+
+class TestHTMLFeatureInfoDocsNoLXML(object):
+    def setup(self):
+        from mapproxy import featureinfo
+        self.old_etree = featureinfo.etree
+        featureinfo.etree = None
+    def teardown(self):
+        from mapproxy import featureinfo
+        featureinfo.etree = self.old_etree
+
+    def test_combine(self):
+        docs = [
+            HTMLFeatureInfoDoc('<html><head><title>Hello<body><p>baz</p><p>baz2'),
+            HTMLFeatureInfoDoc('<p>foo</p>'),
+            HTMLFeatureInfoDoc('<body><p>bar</p></body>'),
+        ]
+        result = HTMLFeatureInfoDoc.combine(docs)
+        
+        eq_("<html><head><title>Hello<body><p>baz</p>"
+            "<p>baz2\n<p>foo</p>\n<body><p>bar</p></body>",
+            result.as_string())
+        eq_(result.info_type, 'text')
