@@ -426,10 +426,17 @@ class WMS130LegendGraphicRequest(WMSLegendGraphicRequest):
 
 class WMSFeatureInfoRequest(WMSMapRequest):
     non_strict_params = set(['format', 'styles'])
+    info_formats = {'text': 'text/plain',
+                    'html': 'text/html',
+                    'xml': 'application/vnd.ogc.gml',
+                    }
     
     def validate_format(self):
         if self.non_strict: return 
         WMSMapRequest.validate_format(self)
+    
+    def info_format_mimetype(self, info_type):
+        return self.info_formats.get(info_type, 'text/plain')
 
 class WMS111FeatureInfoRequest(WMSFeatureInfoRequest):
     request_params = WMSFeatureInfoRequestParams
@@ -464,6 +471,8 @@ class WMS100FeatureInfoRequest(WMSFeatureInfoRequest):
         return params
 
 class WMS130FeatureInfoRequest(WMS130MapRequest):
+    # XXX: this class inherits from WMS130MapRequest to reuse
+    # the axis order stuff
     request_params = WMS130FeatureInfoRequestParams
     xml_exception_handler = exception.WMS130ExceptionHandler
     request_handler_name = 'featureinfo'
@@ -471,6 +480,10 @@ class WMS130FeatureInfoRequest(WMS130MapRequest):
     fixed_params['request'] = 'GetFeatureInfo'
     expected_param = WMS130MapRequest.expected_param[:] + ['query_layers', 'i', 'j']
     non_strict_params = set(['format', 'styles'])
+    info_formats = {'text': 'text/plain',
+                    'html': 'text/html',
+                    'xml': 'text/xml',
+                    }
 
     def adapt_to_111(self):
         WMS130MapRequest.adapt_to_111(self)
@@ -490,10 +503,14 @@ class WMS130FeatureInfoRequest(WMS130MapRequest):
         del params['x']
         del params['y']
         return params
-    
+
     def validate_format(self):
-        if self.non_strict: return
-        WMS130MapRequest.validate_format(self)
+        if self.non_strict: return 
+        WMSMapRequest.validate_format(self)
+    
+    def info_format_mimetype(self, info_type):
+        return self.info_formats.get(info_type, 'text/plain')
+
 
 class WMSCapabilitiesRequest(WMSRequest):
     request_handler_name = 'capabilities'
@@ -661,6 +678,9 @@ def create_request(req_data, param, req_type='map', version='1.1.1'):
         req_data['format'] = param['request_format']
     elif 'format' in param:
         req_data['format'] = param['format']
+    
+    if 'info_format' in param:
+        req_data['info_format'] = param['info_format']
     
     if 'transparent' in req_data:
         # we don't want a boolean

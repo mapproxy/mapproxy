@@ -103,13 +103,13 @@ class TestXMLFeatureInfoDocs(object):
     
 class TestHTMLFeatureInfoDocs(object):
     def test_as_string(self):
-        input_tree = html.fromstring('<root></root>')
+        input_tree = html.fromstring('<p>Foo')
         doc = HTMLFeatureInfoDoc(input_tree)
-        assert '<body><root/></body>' in strip_whitespace(doc.as_string())
+        assert '<body><p>Foo</p></body>' in strip_whitespace(doc.as_string())
     
     def test_as_etree(self):
-        doc = HTMLFeatureInfoDoc('<root>hello</root>')
-        eq_(doc.as_etree().text, 'hello')
+        doc = HTMLFeatureInfoDoc('<p>hello</p>')
+        eq_(doc.as_etree().find('body/p').text, 'hello')
     
     def test_combine(self):
         docs = [

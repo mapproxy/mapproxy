@@ -214,7 +214,7 @@ class WMSInfoClient(object):
         req.params.size = query.size
         req.params.pos = query.pos
         req.params['query_layers'] = req.params['layers']
-        if query.info_format:
+        if not 'info_format' in req.params and query.info_format:
             req.params['info_format'] = query.info_format
         if not req.params.format:
             req.params.format = query.format or 'image/png'

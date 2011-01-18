@@ -58,14 +58,17 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
     
     def as_string(self):
         if self._str_content is None:
-            self._str_content = etree.tostring(self._etree)
+            self._str_content = self._serialize_etree()
         return self._str_content
     
     def as_etree(self):
         if self._etree is None:
             self._etree = self._parse_str_content()
         return self._etree
-
+    
+    def _serialize_etree(self):
+        return etree.tostring(self._etree)
+    
     def _parse_str_content(self):
         doc = StringIO(self._str_content)
         return etree.parse(doc)
@@ -84,22 +87,16 @@ class HTMLFeatureInfoDoc(XMLFeatureInfoDoc):
     info_type = 'html'
     
     def _parse_str_content(self):
-        root = html.fromstring(self._str_content)
-        try:
-            ignore = etree.tostring(root, encoding=unicode)
-        except UnicodeDecodeError:
-            root = html.soupparser.fromstring(self._str_content)
+        root = html.document_fromstring(self._str_content)
         return root
+    
+    def _serialize_etree(self):
+        return html.tostring(self._etree)
     
     @classmethod
     def combine(cls, docs):
         doc = docs.pop(0)
         result_tree = copy.deepcopy(doc.as_etree())
-        try:
-            _ = result_tree.body
-        except IndexError:
-            result_tree = html.fromstring('<html><body>')
-            docs.insert(0, doc)
 
         for doc in docs:
             tree = doc.as_etree()

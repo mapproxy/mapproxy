@@ -545,7 +545,10 @@ class WMSSourceConfiguration(SourceConfiguration):
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         fi_source = None
         if self.conf.get('wms_opts', {}).get('featureinfo', False):
-            version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
+            wms_opts = self.conf['wms_opts']
+            version = wms_opts.get('version', '1.1.1')
+            if 'featureinfo_format' in wms_opts:
+                params['info_format'] = wms_opts['featureinfo_format']
             fi_request = create_request(self.conf['req'], params,
                 req_type='featureinfo', version=version)
             
