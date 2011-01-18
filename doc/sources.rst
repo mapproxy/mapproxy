@@ -68,6 +68,8 @@ This option affects what request MapProxy sends to the source WMS server.
 ``legendgraphic``
     If this is set to ``true``, MapProxy will request legend graphics from this source. Each MapProxy WMS layer that contains one or more sources with legend graphics will then have a LegendURL.
 
+``map``
+  If this is set to ``false``, MapProxy will not request images from this source. You can use this option in combination with ``featureinfo: true`` to create a feature info source.
 
 ``coverage``
 ^^^^^^^^^^^^
@@ -199,6 +201,10 @@ The grid of the tile source. Defaults to ``GLOBAL_MERCATOR``, a grid that is com
 ``coverage``
 ^^^^^^^^^^^^
 Define the covered area of the source. The source will only be requested if there is an intersection between the incoming request and the coverage. See :doc:`coverages <coverages>` for more information.
+
+``transparent``
+^^^^^^^^^^^^^^^
+You need to set this to ``true`` if you want to use this source as an overlay.
 
 ``seed_only``
 ^^^^^^^^^^^^^

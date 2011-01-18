@@ -31,7 +31,7 @@ log = logging.getLogger(__name__)
 
 from mapproxy.srs import SRS
 from mapproxy.util.ext.odict import odict
-from mapproxy.cache.file import FileCache
+from mapproxy.cache.file import FileCache, DummyCache
 from mapproxy.util.lock import SemLock
 from mapproxy.config.config import load_default_config
 from mapproxy.client.http import auth_data_from_url, HTTPClient
@@ -434,6 +434,22 @@ class SourceConfiguration(ConfigurationBase):
     def coverage(self):
         if not 'coverage' in self.conf: return None
         return load_coverage(self.conf['coverage'])
+    
+    def http_client(self, url):
+        http_client = None
+        url, (username, password) = auth_data_from_url(url)
+        insecure = ssl_ca_certs = None
+        if 'https' in url:
+            insecure = self.context.globals.get_value('http.ssl_no_cert_checks', self.conf)
+            ssl_ca_certs = self.context.globals.get_path('http.ssl_ca_certs', self.conf)
+        
+        timeout = self.context.globals.get_value('http.client_timeout', self.conf)
+        headers = self.context.globals.get_value('http.headers', self.conf)
+        
+        http_client = HTTPClient(url, username, password, insecure=insecure,
+                                 ssl_ca_certs=ssl_ca_certs, timeout=timeout,
+                                 headers=headers)
+        return http_client, url
 
 def resolution_range(conf):
     if 'min_res' in conf or 'max_res' in conf:
@@ -472,22 +488,10 @@ class WMSSourceConfiguration(SourceConfiguration):
         legend_cache = LegendCache(cache_dir=cache_dir)
         return WMSLegendSource([lg_client], legend_cache)
     
-    def http_client(self, request):
-        http_client = None
-        url, (username, password) = auth_data_from_url(request.url)
-        if username and password:
-            request.url = url
-        insecure = ssl_ca_certs = None
-        if 'https' in url:
-            insecure = self.context.globals.get_value('http.ssl_no_cert_checks', self.conf)
-            ssl_ca_certs = self.context.globals.get_path('http.ssl_ca_certs', self.conf)
-        
-        timeout = self.context.globals.get_value('http.client_timeout', self.conf)
-        http_client = HTTPClient(url, username, password, insecure=insecure,
-                                 ssl_ca_certs=ssl_ca_certs, timeout=timeout)
-        return http_client
-    
     def source(self, params=None):
+        if not self.conf.get('wms_opts', {}).get('map', True):
+            return None
+        
         if not self.context.seed and self.conf.get('seed_only'):
             return DummySource()
         
@@ -530,7 +534,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         http_method = self.context.globals.get_value('http.method', self.conf)
         
         request = create_request(self.conf['req'], params, version=version)
-        http_client = self.http_client(request)
+        http_client, request.url = self.http_client(request.url)
         client = WMSClient(request, supported_srs, http_client=http_client, 
                            http_method=http_method, resampling=resampling, lock=lock,
                            supported_formats=supported_formats or None)
@@ -557,7 +561,9 @@ class WMSSourceConfiguration(SourceConfiguration):
             fi_transformer = fi_xsl_transformer(self.conf.get('wms_opts', {}),
                                                 self.context)
             
-            fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs)
+            http_client, fi_request.url = self.http_client(fi_request.url)
+            fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs,
+                                      http_client=http_client)
             fi_source = WMSInfoSource(fi_client, fi_transformer=fi_transformer)
         return fi_source
     
@@ -583,7 +589,8 @@ class WMSSourceConfiguration(SourceConfiguration):
                 lg_req['layer'] = lg_layer
                 lg_request = create_request(lg_req, params,
                     req_type='legendgraphic', version=version)
-                lg_client = WMSLegendClient(lg_request)
+                http_client, lg_request.url = self.http_client(lg_request.url)
+                lg_client = WMSLegendClient(lg_request, http_client=http_client)
                 lg_clients.append(lg_client)
             legend_cache = LegendCache(cache_dir=cache_dir)
             lg_source = WMSLegendSource(lg_clients, legend_cache)
@@ -592,7 +599,8 @@ class WMSSourceConfiguration(SourceConfiguration):
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
-    optional_keys = set('''type grid request_format origin coverage seed_only'''.split())
+    optional_keys = set('''type grid request_format origin coverage seed_only
+                           transparent http'''.split())
     required_keys = set('url'.split())
     defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
     
@@ -609,14 +617,17 @@ class TileSourceConfiguration(SourceConfiguration):
             origin = 'sw'
             # TODO raise some configuration exception
         
+        http_client, url = self.http_client(url)
         grid = self.context.grids[self.conf['grid']].tile_grid()
         coverage = self.coverage()
         opacity = self.conf.get('image', {}).get('opacity')
+        transparent = self.conf.get('transparent')
         
         inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
-        client = TileClient(TileURLTemplate(url, format=format))
-        return TiledSource(grid, client, inverse=inverse, coverage=coverage, opacity=opacity)
+        client = TileClient(TileURLTemplate(url, format=format), http_client=http_client)
+        return TiledSource(grid, client, inverse=inverse, coverage=coverage, opacity=opacity,
+                           transparent=transparent)
 
 def file_ext(mimetype):
     _mime_class, format, _options = split_mime_type(mimetype)
@@ -632,7 +643,7 @@ class DebugSourceConfiguration(SourceConfiguration):
 class CacheConfiguration(ConfigurationBase):
     optional_keys = set('''format cache_dir grids link_single_color_images image
         use_direct_from_res use_direct_from_level meta_buffer meta_size
-        minimize_meta_requests'''.split())
+        minimize_meta_requests disable_storage'''.split())
     optional_keys.update(tile_filter_conf_keys)
     required_keys = set('name sources'.split())
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
@@ -642,6 +653,9 @@ class CacheConfiguration(ConfigurationBase):
             global_key='cache.base_dir')
         
     def _file_cache(self, grid_conf):
+        if self.conf.get('disable_storage', False):
+            return DummyCache()
+        
         cache_dir = self.cache_dir()
         grid_conf.tile_grid() #create to resolve `base` in grid_conf.conf
         suffix = grid_conf.conf['srs'].replace(':', '')
@@ -677,7 +691,9 @@ class CacheConfiguration(ConfigurationBase):
             sources = []
             for source_conf in [self.context.sources[s] for s in self.conf['sources']]:
                 source = source_conf.source({'format': request_format})
-                sources.append(source)
+                if source:
+                    sources.append(source)
+            assert sources, 'no sources configured for %s' % self.conf['name']
             cache = self._file_cache(grid_conf)
             tile_grid = grid_conf.tile_grid()
             mgr = TileManager(tile_grid, cache, sources, file_ext(request_format),
@@ -775,7 +791,9 @@ class LayerConfiguration(ConfigurationBase):
                 lg_source_names = [source_name]
             else:
                 raise ConfigurationError('source/cache "%s" not found' % source_name)
-            sources.append(map_layer)
+            
+            if map_layer:
+                sources.append(map_layer)
             
             for fi_source_name in fi_source_names:
                 if not hasattr(self.context.sources[fi_source_name], 'fi_source'): continue
@@ -857,11 +875,15 @@ class ServiceConfiguration(ConfigurationBase):
         root_layer = self.context.wms_root_layer.wms_layer()
         if not root_layer.md.get('title'):
             root_layer.md['title'] = md.get('title')
+        concurrent_layer_renderer = self.context.globals.get_value(
+            'concurrent_layer_renderer', conf,
+            global_key='wms.concurrent_layer_renderer')
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
         self.context.globals.base_config.wms.srs = srs
         server = WMSServer(root_layer, md, attribution=attribution, image_formats=image_formats,
-            srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors)
+            srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors,
+            concurrent_layer_renderer=concurrent_layer_renderer)
         
         server.fi_transformer = fi_xsl_transformer(conf, self.context)
         

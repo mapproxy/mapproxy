@@ -42,8 +42,8 @@ from mapproxy.grid import MetaGrid
 from mapproxy.image import merge_images
 from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
-from mapproxy.util import ThreadedExecutor
 from mapproxy.config import base_config
+from mapproxy.util import async
 
 import logging
 log = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ class TileManager(object):
         self.minimize_meta_requests = minimize_meta_requests
         self._expire_timestamp = None
         self.transparent = self.sources[0].transparent
-        self.thread_pool_size = base_config().cache.concurrent_tile_creators
+        self.concurrent_tile_creators = base_config().cache.concurrent_tile_creators
         
         if meta_buffer or (meta_size and not meta_size == [1, 1]):
             if all(source.supports_meta_tiles for source in sources):
@@ -80,7 +80,7 @@ class TileManager(object):
             # TODO cache eviction
             if self.is_cached(tile):
                 self.cache.load(tile, with_metadata)
-            else:
+            elif tile.coord is not None:
                 uncached_tiles.append(tile)
         
         if uncached_tiles:
@@ -158,7 +158,7 @@ class TileCreator(object):
         return created_tiles
 
     def _create_single_tiles(self, tiles):
-        if self.tile_mgr.thread_pool_size > 1 and len(tiles) > 1:
+        if self.tile_mgr.concurrent_tile_creators > 1 and len(tiles) > 1:
             return self._create_threaded(self._create_single_tile, tiles)
         
         created_tiles = []
@@ -167,9 +167,9 @@ class TileCreator(object):
         return created_tiles
     
     def _create_threaded(self, create_func, tiles):
-        pool = ThreadedExecutor(create_func, pool_size=self.tile_mgr.thread_pool_size)
         result = []
-        for new_tiles in pool.execute(tiles):
+        async_pool = async.Pool(self.tile_mgr.concurrent_tile_creators)
+        for new_tiles in async_pool.imap(create_func, tiles):
             result.extend(new_tiles)
         return result
     
@@ -198,20 +198,24 @@ class TileCreator(object):
             except BlankImage:
                 return None
         
-        imgs = []
-        for source in self.sources:
+        def get_map_from_source(source):
             try:
                 img = source.get_map(query)
             except BlankImage:
-                pass
+                return None
             else:
+                return img
+        
+        imgs = []
+        for img in async.imap(get_map_from_source, self.sources):
+            if img is not None:
                 imgs.append(img)
         
         if not imgs: return None
         return merge_images(imgs)
     
     def _create_meta_tiles(self, meta_tiles):
-        if self.tile_mgr.thread_pool_size > 1 and len(meta_tiles) > 1:
+        if self.tile_mgr.concurrent_tile_creators > 1 and len(meta_tiles) > 1:
             return self._create_threaded(self._create_meta_tile, meta_tiles)
         
         created_tiles = []

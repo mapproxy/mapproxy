@@ -26,7 +26,11 @@ You need to add the service to the ``services`` section of your MapProxy configu
 Web Map Service (OGC WMS)
 -------------------------
 
-The WMS server is accessible at ``/service`` and it supports the WMS versions 1.0.0, 1.1.1 and 1.3.0. The service takes the following additional option.
+The WMS server is accessible at ``/service`` and it supports the WMS versions 1.0.0, 1.1.1 and 1.3.0.
+
+The WMS service will use all configured :ref:`layers <layers>`.
+
+The service takes the following additional option.
 
 ``attribution``
 """""""""""""""
@@ -113,6 +117,8 @@ Tiled Map Services (TMS)
 ------------------------
 
 MapProxy supports the `Tile Map Service Specification`_ from the OSGeo. The TMS is available at ``/tms/1.0.0``. 
+
+The TMS service will use all configured :ref:`layers <layers>` that have a name and single cached source. Any layer grouping will be flattened.
 
 Here is an example TMS request: ``/tms/1.0.0/base_EPSG900913/3/1/0.png``. ``png`` is the internal format of the cached tiles. ``base`` is the name of the layer and ``EPSG900913`` is the SRS of the layer. You can only select a SRS that your layer is caching.
 

@@ -30,8 +30,8 @@ from mapproxy.image import concat_legends, LayerMerger
 from mapproxy.image.message import attribution_image, message_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError
 from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
+from mapproxy.util import async
 from mapproxy.util.ext.odict import odict
-
 from mapproxy.template import template_loader, bunch
 from mapproxy.service import template_helper
 
@@ -46,7 +46,8 @@ class WMSServer(Server):
     fi_transformer = None
     
     def __init__(self, root_layer, md, layer_merger=None, request_parser=None, tile_layers=None,
-        attribution=None, srs=None, image_formats=None, strict=False, on_error='raise'):
+        attribution=None, srs=None, image_formats=None, strict=False, on_error='raise',
+        concurrent_layer_renderer=1):
         Server.__init__(self)
         self.request_parser = request_parser or partial(wms_request, strict=strict)
         self.root_layer = root_layer
@@ -59,6 +60,7 @@ class WMSServer(Server):
         self.attribution = attribution
         self.md = md
         self.on_error = on_error
+        self.concurrent_layer_renderer = concurrent_layer_renderer
         self.image_formats = image_formats or base_config().wms.image_formats
         self.srs = srs or base_config().wms.srs
                 
@@ -85,7 +87,8 @@ class WMSServer(Server):
         merger = self.merger()
         raise_source_errors =  True if self.on_error == 'raise' else False
         renderer = LayerRenderer(render_layers, query, map_request,
-                                 raise_source_errors=raise_source_errors)
+                                 raise_source_errors=raise_source_errors,
+                                 concurrent_rendering=self.concurrent_layer_renderer)
         renderer.render(merger)
         
         if self.attribution:
@@ -210,39 +213,68 @@ class Capabilities(object):
         return doc
 
 class LayerRenderer(object):
-    def __init__(self, layers, query, request, raise_source_errors=True):
+    def __init__(self, layers, query, request, raise_source_errors=True,
+                 concurrent_rendering=1):
         self.layers = layers
         self.query = query
         self.request = request
         self.raise_source_errors = raise_source_errors
+        self.concurrent_rendering = concurrent_rendering
     
     def render(self, layer_merger):
+        render_layers = combined_layers(self.layers, self.query)
+        if not render_layers: return
+        
+        async_pool = async.Pool(size=min(len(render_layers), self.concurrent_rendering))
+    
+        if self.raise_source_errors:
+            return self._render_raise_exceptions(async_pool, render_layers, layer_merger)
+        else:
+            return self._render_capture_source_errors(async_pool, render_layers,
+                                                      layer_merger)
+    
+    def _render_raise_exceptions(self, async_pool, render_layers, layer_merger):
+        # call _render_layer, raise all exceptions
+        try:
+            for layer in async_pool.imap(self._render_layer, render_layers):
+                if layer_img is not None:
+                    layer_merger.add(layer_img)
+        except SourceError, ex:
+            raise RequestError(ex.args[0], request=self.request)
+        
+    def _render_capture_source_errors(self, async_pool, render_layers, layer_merger):
+        # call _render_layer, capture SourceError exceptions
         errors = []
         rendered = 0
         
-        render_layers = combined_layers(self.layers, self.query)
-        for layer in render_layers:
-            try:
-                layer_img = self._render_layer(layer)
+        for layer_task in async_pool.imap(self._render_layer, render_layers,
+                                          use_result_objects=True):
+            if layer_task.exception is None:
+                layer_img = layer_task.result
                 if layer_img is not None:
-                    layer_img.opacity = layer.opacity
                     layer_merger.add(layer_img)
                 rendered += 1
-            except SourceError, ex:
-                if self.raise_source_errors:
-                    raise RequestError(ex.args[0], request=self.request)
-                errors.append(ex.args[0])
-        
+            else:
+                ex = layer_task.exception
+                if isinstance(ex[1], SourceError):
+                    errors.append(ex[1].args[0])
+                else:
+                    async_pool.shutdown(True)
+                    raise ex[0], ex[1], ex[2]
+    
         if render_layers and not rendered:
             errors = '\n'.join(errors)
             raise RequestError('Could not get retrieve any sources:\n'+errors, request=self.request)
-        
+    
         if errors:
             layer_merger.add(message_image('\n'.join(errors), self.query.size, transparent=True))
     
     def _render_layer(self, layer):
         try:
-            return layer.get_map(self.query)
+            layer_img = layer.get_map(self.query)
+            if layer_img is not None:
+                layer_img.opacity = layer.opacity
+            return layer_img
         except SourceError:
             raise
         except MapBBOXError:

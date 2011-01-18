@@ -41,3 +41,13 @@ class SemLock(FileLock):
                 if tries >= self.n:
                     raise
             i = (i+1) % self.n
+
+class DummyLock(object):
+    def __enter__(self):
+        pass
+    def __exit__(self, _exc_type, _exc_value, _traceback):
+        pass
+    def lock(self):
+        pass
+    def unlock(self):
+        pass
