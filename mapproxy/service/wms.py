@@ -46,7 +46,8 @@ class WMSServer(Server):
     fi_transformer = None
     
     def __init__(self, root_layer, md, layer_merger=None, request_parser=None, tile_layers=None,
-        attribution=None, srs=None, image_formats=None, strict=False, on_error='raise'):
+        attribution=None, srs=None, image_formats=None, strict=False, on_error='raise',
+        concurrent_layer_renderer=1):
         Server.__init__(self)
         self.request_parser = request_parser or partial(wms_request, strict=strict)
         self.root_layer = root_layer
@@ -59,6 +60,7 @@ class WMSServer(Server):
         self.attribution = attribution
         self.md = md
         self.on_error = on_error
+        self.concurrent_layer_renderer = concurrent_layer_renderer
         self.image_formats = image_formats or base_config().wms.image_formats
         self.srs = srs or base_config().wms.srs
                 
@@ -85,7 +87,8 @@ class WMSServer(Server):
         merger = self.merger()
         raise_source_errors =  True if self.on_error == 'raise' else False
         renderer = LayerRenderer(render_layers, query, map_request,
-                                 raise_source_errors=raise_source_errors)
+                                 raise_source_errors=raise_source_errors,
+                                 concurrent_rendering=self.concurrent_layer_renderer)
         renderer.render(merger)
         
         if self.attribution:

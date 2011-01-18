@@ -22,6 +22,7 @@ wms = dict(
     strict = False,
     request_parser = 'default',
     client_request = 'default',
+    concurrent_layer_renderer = 1,
 )
 debug_mode = False
 
