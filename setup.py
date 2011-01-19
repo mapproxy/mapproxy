@@ -38,7 +38,7 @@ if platform.system() != "Java":
     if platform.python_version_tuple() < ('2', '6'):
         install_requires.append('multiprocessing>=2.6')
     install_requires.extend([
-        'PIL>=1.1.6,<1.1.99',
+        'PIL>=1.1.6,<1.2.99',
         'PyYAML>=3.0,<3.99',
     ])
 
