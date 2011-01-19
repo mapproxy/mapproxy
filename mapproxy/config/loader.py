@@ -87,7 +87,7 @@ from mapproxy.cache.tile import TileManager
 from mapproxy.cache.legend import LegendCache
 from mapproxy.util import local_base_config
 from mapproxy.config.coverage import load_coverage
-from mapproxy.featureinfo import XSLTransformer, has_xsl_support
+from mapproxy.featureinfo import XSLTransformer, has_xslt_support
 
 class ConfigurationError(Exception):
     pass
@@ -482,14 +482,14 @@ class WMSSourceConfiguration(SourceConfiguration):
         legend_cache = LegendCache(cache_dir=cache_dir)
         return WMSLegendSource([lg_client], legend_cache)
     
-    def fi_xsl_transformer(self, conf, context):
+    def fi_xslt_transformer(self, conf, context):
         fi_transformer = None
-        fi_xsl = conf.get('featureinfo_xsl')
-        if fi_xsl:
-            if not has_xsl_support:
-                raise ValueError('featureinfo_xsl requires lxml. Please install.')
-            fi_xsl = context.globals.abspath(fi_xsl)
-            fi_transformer = XSLTransformer(fi_xsl)
+        fi_xslt = conf.get('featureinfo_xslt')
+        if fi_xslt:
+            if not has_xslt_support:
+                raise ValueError('featureinfo_xslt requires lxml. Please install.')
+            fi_xslt = context.globals.abspath(fi_xslt)
+            fi_transformer = XSLTransformer(fi_xslt)
         return fi_transformer
     
     def source(self, params=None):
@@ -562,7 +562,7 @@ class WMSSourceConfiguration(SourceConfiguration):
             fi_request = create_request(self.conf['req'], params,
                 req_type='featureinfo', version=version)
             
-            fi_transformer = self.fi_xsl_transformer(self.conf.get('wms_opts', {}),
+            fi_transformer = self.fi_xslt_transformer(self.conf.get('wms_opts', {}),
                                                      self.context)
             
             http_client, fi_request.url = self.http_client(fi_request.url)
@@ -837,15 +837,15 @@ class LayerConfiguration(ConfigurationBase):
         return tile_layers
         
 
-def fi_xsl_transformers(conf, context):
+def fi_xslt_transformers(conf, context):
     fi_transformers = {}
-    fi_xsl = conf.get('featureinfo_xsl')
-    if fi_xsl:
-        if not has_xsl_support:
-            raise ValueError('featureinfo_xsl requires lxml. Please install.')
-        for info_type, fi_xsl in fi_xsl.items():
-            fi_xsl = context.globals.abspath(fi_xsl)
-            fi_transformers[info_type] = XSLTransformer(fi_xsl)
+    fi_xslt = conf.get('featureinfo_xslt')
+    if fi_xslt:
+        if not has_xslt_support:
+            raise ValueError('featureinfo_xslt requires lxml. Please install.')
+        for info_type, fi_xslt in fi_xslt.items():
+            fi_xslt = context.globals.abspath(fi_xslt)
+            fi_transformers[info_type] = XSLTransformer(fi_xslt)
     return fi_transformers
 
 class ServiceConfiguration(ConfigurationBase):
@@ -900,7 +900,7 @@ class ServiceConfiguration(ConfigurationBase):
             srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors,
             concurrent_layer_renderer=concurrent_layer_renderer)
         
-        server.fi_transformers = fi_xsl_transformers(conf, self.context)
+        server.fi_transformers = fi_xslt_transformers(conf, self.context)
         
         return server
 

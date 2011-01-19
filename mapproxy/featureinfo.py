@@ -19,9 +19,9 @@ from cStringIO import StringIO
 
 try:
     from lxml import etree, html
-    has_xsl_support = True
+    has_xslt_support = True
 except ImportError:
-    has_xsl_support = False
+    has_xslt_support = False
     etree = html = None
 
 class FeatureInfoDoc(object):
@@ -129,12 +129,12 @@ def create_featureinfo_doc(content, info_format):
     
 
 class XSLTransformer(object):
-    def __init__(self, xslscript):
-        self.xslscript = xslscript
+    def __init__(self, xsltscript):
+        self.xsltscript = xsltscript
     
     def transform(self, input_doc):
         input_tree = input_doc.as_etree()
-        xslt_tree = etree.parse(self.xslscript)
+        xslt_tree = etree.parse(self.xsltscript)
         transform = etree.XSLT(xslt_tree)
         output_tree = transform(input_tree)
         return XMLFeatureInfoDoc(output_tree)

@@ -27,7 +27,7 @@ from nose.tools import eq_
 test_config = {}
 
 
-xsl_input = """
+xslt_input = """
 <xsl:stylesheet version="1.0"
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  <xsl:template match="/">
@@ -37,7 +37,7 @@ xsl_input = """
  </xsl:template>
 </xsl:stylesheet>""".strip()
 
-xsl_input_html = """
+xslt_input_html = """
 <xsl:stylesheet version="1.0"
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  <xsl:template match="/">
@@ -48,7 +48,7 @@ xsl_input_html = """
 </xsl:stylesheet>""".strip()
 
 
-xsl_output = """
+xslt_output = """
 <xsl:stylesheet version="1.0"
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  <xsl:template match="/">
@@ -62,7 +62,7 @@ xsl_output = """
  </xsl:template>
 </xsl:stylesheet>""".strip()
 
-xsl_output_html = """
+xslt_output_html = """
 <xsl:stylesheet version="1.0"
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  <xsl:template match="/">
@@ -81,21 +81,21 @@ xsl_output_html = """
 
 
 def setup_module():
-    module_setup(test_config, 'xsl_featureinfo.yaml')
+    module_setup(test_config, 'xslt_featureinfo.yaml')
     with open(os.path.join(test_config['base_dir'], 'fi_in.xsl'), 'w') as f:
-        f.write(xsl_input)
+        f.write(xslt_input)
     with open(os.path.join(test_config['base_dir'], 'fi_in_html.xsl'), 'w') as f:
-        f.write(xsl_input_html)
+        f.write(xslt_input_html)
     with open(os.path.join(test_config['base_dir'], 'fi_out.xsl'), 'w') as f:
-        f.write(xsl_output)
+        f.write(xslt_output)
     with open(os.path.join(test_config['base_dir'], 'fi_out_html.xsl'), 'w') as f:
-        f.write(xsl_output_html)
+        f.write(xslt_output_html)
 def teardown_module():
     module_teardown(test_config)
 
 TESTSERVER_ADDRESS = 'localhost', 42423
 
-class TestWMSXSLFeatureInfo(SystemTest):
+class TestWMSXSLTFeatureInfo(SystemTest):
     config = test_config
     def setup(self):
         SystemTest.setup(self)
@@ -198,8 +198,8 @@ class TestWMSXSLFeatureInfo(SystemTest):
                                    '&WIDTH=200&QUERY_LAYERS=a_one&i=10&J=20&info_format=text/xml'},
                         {'body': fi_body2, 'headers': {'content-type': 'text/xml'}})
         with mock_httpd(('localhost', 42423), [expected_req1, expected_req2]):
-            self.common_fi_req.params['layers'] = 'fi_without_xsl_layer,fi_layer'
-            self.common_fi_req.params['query_layers'] = 'fi_without_xsl_layer,fi_layer'
+            self.common_fi_req.params['layers'] = 'fi_without_xslt_layer,fi_layer'
+            self.common_fi_req.params['query_layers'] = 'fi_without_xslt_layer,fi_layer'
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
             eq_(strip_whitespace(resp.body),
