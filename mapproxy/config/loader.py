@@ -211,8 +211,11 @@ class ProxyConfiguration(object):
             if isinstance(layers_conf[0], dict) and len(layers_conf[0].keys()) == 1:
                 # looks like ordered legacy config
                 layers_conf = self._legacy_layers_conf_dict()
+            elif len(layers_conf) == 1:
+                # single root layer in list -> remove list
+                layers_conf = layers_conf[0]
             else:
-                # wrap in root layer
+                # layer list without root -> wrap in root layer
                 layers_conf = dict(title=None, layers=layers_conf)
         
         if 'layers' not in layers_conf:

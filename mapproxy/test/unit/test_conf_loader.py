@@ -194,6 +194,28 @@ class TestLayerConfiguration(object):
         eq_(layers_conf['onea'].conf['name'], 'onea')
         eq_(layers_conf['onea'].conf['sources'], ['s'])
     
+    def test_hierarchy_root_is_list(self):
+        conf = self._test_conf('''
+            layers:
+              - title: Root Layer
+                layers:
+                    - name: one
+                      title: Layer One
+                      sources: [s]
+                    - name: two
+                      title: Layer Two
+                      sources: [s]
+        ''')
+        conf = ProxyConfiguration(conf)
+        root = conf.wms_root_layer.wms_layer()
+        
+        eq_(root.md['title'], 'Root Layer')
+        eq_(root.md['name'], None)
+
+        layers = root.child_layers()
+        # names are in order
+        eq_(layers.keys(), ['one', 'two'])
+    
     def test_without_sources_or_layers(self):
         conf = self._test_conf('''
             layers:
