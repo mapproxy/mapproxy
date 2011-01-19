@@ -460,16 +460,6 @@ def resolution_range(conf):
                                 max_scale=conf.get('max_scale'))
 
 
-def fi_xsl_transformer(conf, context):
-    fi_transformer = None
-    fi_xsl = conf.get('featureinfo_xsl')
-    if fi_xsl:
-        if not has_xsl_support:
-            raise ValueError('featureinfo_xsl requires lxml. Please install.')
-        fi_xsl = context.globals.abspath(fi_xsl)
-        fi_transformer = XSLTransformer(fi_xsl)
-    return fi_transformer
-
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
     optional_keys = set('''type supported_srs supported_formats image
@@ -487,6 +477,16 @@ class WMSSourceConfiguration(SourceConfiguration):
         lg_client = WMSLegendURLClient(url)
         legend_cache = LegendCache(cache_dir=cache_dir)
         return WMSLegendSource([lg_client], legend_cache)
+    
+    def fi_xsl_transformer(self, conf, context):
+        fi_transformer = None
+        fi_xsl = conf.get('featureinfo_xsl')
+        if fi_xsl:
+            if not has_xsl_support:
+                raise ValueError('featureinfo_xsl requires lxml. Please install.')
+            fi_xsl = context.globals.abspath(fi_xsl)
+            fi_transformer = XSLTransformer(fi_xsl)
+        return fi_transformer
     
     def source(self, params=None):
         if not self.conf.get('wms_opts', {}).get('map', True):
@@ -558,8 +558,8 @@ class WMSSourceConfiguration(SourceConfiguration):
             fi_request = create_request(self.conf['req'], params,
                 req_type='featureinfo', version=version)
             
-            fi_transformer = fi_xsl_transformer(self.conf.get('wms_opts', {}),
-                                                self.context)
+            fi_transformer = self.fi_xsl_transformer(self.conf.get('wms_opts', {}),
+                                                     self.context)
             
             http_client, fi_request.url = self.http_client(fi_request.url)
             fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs,
@@ -833,6 +833,17 @@ class LayerConfiguration(ConfigurationBase):
         return tile_layers
         
 
+def fi_xsl_transformers(conf, context):
+    fi_transformers = {}
+    fi_xsl = conf.get('featureinfo_xsl')
+    if fi_xsl:
+        if not has_xsl_support:
+            raise ValueError('featureinfo_xsl requires lxml. Please install.')
+        for info_type, fi_xsl in fi_xsl.items():
+            fi_xsl = context.globals.abspath(fi_xsl)
+            fi_transformers[info_type] = XSLTransformer(fi_xsl)
+    return fi_transformers
+
 class ServiceConfiguration(ConfigurationBase):
     optional_keys = set('wms tms kml demo'.split())
     
@@ -885,7 +896,7 @@ class ServiceConfiguration(ConfigurationBase):
             srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors,
             concurrent_layer_renderer=concurrent_layer_renderer)
         
-        server.fi_transformer = fi_xsl_transformer(conf, self.context)
+        server.fi_transformers = fi_xsl_transformers(conf, self.context)
         
         return server
 

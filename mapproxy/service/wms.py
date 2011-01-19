@@ -43,7 +43,7 @@ log = logging.getLogger(__name__)
 class WMSServer(Server):
     names = ('service',)
     request_methods = ('map', 'capabilities', 'featureinfo', 'legendgraphic')
-    fi_transformer = None
+    fi_transformers = None
     
     def __init__(self, root_layer, md, layer_merger=None, request_parser=None, tile_layers=None,
         attribution=None, srs=None, image_formats=None, strict=False, on_error='raise',
@@ -99,8 +99,6 @@ class WMSServer(Server):
         return Response(result.as_buffer(format=params.format),
                         content_type=params.format_mime_type)
     
-
-    
     def capabilities(self, map_request):
         # TODO: debug layer
         # if '__debug__' in map_request.params:
@@ -131,18 +129,27 @@ class WMSServer(Server):
                 infos.append(info)
             else:
                 [infos.append(i) for i in info if i is not None]
+        mimetype = None
         if 'info_format' in request.params:
             mimetype = request.params.info_format
-        else:
-            mimetype = 'text/plain'
         
-        if self.fi_transformer:
+        if self.fi_transformers:
             doc = infos[0].combine(infos)
-            mimetype = request.info_format_mimetype(doc.info_type)
             if doc.info_type == 'text':
                 resp = doc.as_string()
+                mimetype = 'text/plain'
             else:
-                resp = self.fi_transformer(doc).as_string()
+                if not mimetype:
+                    if 'xml' in self.fi_transformers:
+                        info_type = 'xml'
+                    elif 'html' in self.fi_transformers:
+                        info_type = 'html'
+                    else:
+                        info_type = 'text'
+                    mimetype = request.info_format_mimetype(info_type)
+                else:
+                    info_type = request.info_mimetype_format(mimetype)
+                resp = self.fi_transformers[info_type](doc).as_string()
         else:
             mimetype = request.info_format_mimetype(infos[0].info_type)
             if len(infos) > 1:

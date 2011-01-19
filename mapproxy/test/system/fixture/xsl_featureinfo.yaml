@@ -1,6 +1,8 @@
 services:
   wms:
-    featureinfo_xsl: ./fi_out.xsl
+    featureinfo_xsl:
+      html: ./fi_out_html.xsl
+      xml: ./fi_out.xsl
 
 layers:
   fi_layer:
@@ -12,7 +14,6 @@ layers:
   fi_multi_layer:
     title: Layer with fi source
     sources: [fi_wms1, fi_wms2, fi_wms3]
-
 
 sources:
   fi_wms1:
@@ -30,6 +31,7 @@ sources:
     wms_opts:
       featureinfo: true
       featureinfo_xsl: ./fi_in.xsl
+      featureinfo_format: text/xml
     req:
       url: http://localhost:42423/service_b
       layers: b_one

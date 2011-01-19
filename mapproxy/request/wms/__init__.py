@@ -426,17 +426,23 @@ class WMS130LegendGraphicRequest(WMSLegendGraphicRequest):
 
 class WMSFeatureInfoRequest(WMSMapRequest):
     non_strict_params = set(['format', 'styles'])
-    info_formats = {'text': 'text/plain',
-                    'html': 'text/html',
-                    'xml': 'application/vnd.ogc.gml',
-                    }
+    info_formats = (('text', 'text/plain'),
+                    ('html', 'text/html'),
+                    ('xml', 'application/vnd.ogc.gml'),
+                    )
     
     def validate_format(self):
         if self.non_strict: return 
         WMSMapRequest.validate_format(self)
     
     def info_format_mimetype(self, info_type):
-        return self.info_formats.get(info_type, 'text/plain')
+        for t, m in self.info_formats:
+            if t == info_type: return m
+        return 'text/plain'
+    
+    def info_mimetype_format(self, mime_type):
+        for t, m in self.info_formats:
+            if m == mime_type: return t
 
 class WMS111FeatureInfoRequest(WMSFeatureInfoRequest):
     request_params = WMSFeatureInfoRequestParams
@@ -480,10 +486,10 @@ class WMS130FeatureInfoRequest(WMS130MapRequest):
     fixed_params['request'] = 'GetFeatureInfo'
     expected_param = WMS130MapRequest.expected_param[:] + ['query_layers', 'i', 'j']
     non_strict_params = set(['format', 'styles'])
-    info_formats = {'text': 'text/plain',
-                    'html': 'text/html',
-                    'xml': 'text/xml',
-                    }
+    info_formats = (('text', 'text/plain'),
+                    ('html', 'text/html'),
+                    ('xml', 'text/xml'),
+                    )
 
     def adapt_to_111(self):
         WMS130MapRequest.adapt_to_111(self)
@@ -509,7 +515,13 @@ class WMS130FeatureInfoRequest(WMS130MapRequest):
         WMSMapRequest.validate_format(self)
     
     def info_format_mimetype(self, info_type):
-        return self.info_formats.get(info_type, 'text/plain')
+        for t, m in self.info_formats:
+            if t == info_type: return m
+        return 'text/plain'
+    
+    def info_mimetype_format(self, mime_type):
+        for t, m in self.info_formats:
+            if m == mime_type: return t
 
 
 class WMSCapabilitiesRequest(WMSRequest):
