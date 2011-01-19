@@ -218,7 +218,8 @@ class ProxyConfiguration(object):
                 # layer list without root -> wrap in root layer
                 layers_conf = dict(title=None, layers=layers_conf)
         
-        if 'layers' not in layers_conf:
+        if len(set(layers_conf.keys()) &
+               set('layers name title sources'.split())) < 2:
             # looks like unordered legacy config
             layers_conf = self._legacy_layers_conf_dict()
         
