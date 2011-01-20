@@ -122,7 +122,6 @@ If MapProxy needs to reproject and the source has multiple ``supported_srs``, th
 
 Use this option to specify which image formats you source WMS supports. MapProxy only requests images in one of these formats, and will convert any image if it needs another format. If you do not supply this options, MapProxy assumes that the source supports all formats.
 
-.. _wms_source_concurrent_requests_label:
 
 ``image.transparent_color``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -133,6 +132,13 @@ Specify a color that should be converted to full transparency. Can be either a l
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Tolerance for the ``transparent_color`` substitution. The value defines the tolerance in each direction. E.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.
+
+``image.opacity``
+^^^^^^^^^^^^^^^^^^
+
+Configures the opacity of this source image. This value is used when the image is placed on other layers and it can be used to overlay non-transparent images. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).
+
+.. _wms_source_concurrent_requests_label:
 
 ``concurrent_requests``
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -216,6 +222,11 @@ Define the covered area of the source. The source will only be requested if ther
 ``transparent``
 ^^^^^^^^^^^^^^^
 You need to set this to ``true`` if you want to use this source as an overlay.
+
+``image.opacity``
+^^^^^^^^^^^^^^^^^^
+
+Configures the opacity of this source image. This value is used when the image is placed on other layers and it can be used to overlay non-transparent images. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).
 
 ``seed_only``
 ^^^^^^^^^^^^^
