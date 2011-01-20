@@ -60,6 +60,18 @@ See :ref:`axis order<axis_order>` for further configuration that might be needed
 
 A list of image mime types the server should support.
 
+``featureinfo_xslt``
+""""""""""""""""""""
+
+You can define XSLT scripts to transform outgoing feature information. You can define scripts for different feature info types:
+
+``html``
+  Define a script for ``INFO_FORMAT=text/html`` requests.
+  
+``xml``
+  Define a script for ``INFO_FORMAT=application/vnd.ogc.gml`` and ``INFO_FORMAT=text/xml`` requests.
+
+See :ref:`FeatureInformation for more informaiton <fi_xslt>`.
 
 ``strict``
 """"""""""

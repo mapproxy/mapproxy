@@ -61,15 +61,23 @@ This option affects what request MapProxy sends to the source WMS server.
 
 ``version``
   The WMS version number used for requests (supported: 1.0.0, 1.1.0, 1.1.1, 1.3.0). Defaults to 1.1.1.
-  
-``featureinfo``
-  If this is set to ``true``, MapProxy will mark the layer as queryable and incoming `GetFeatureInfo` requests will be forwarded to the source server.
 
 ``legendgraphic``
     If this is set to ``true``, MapProxy will request legend graphics from this source. Each MapProxy WMS layer that contains one or more sources with legend graphics will then have a LegendURL.
 
 ``map``
   If this is set to ``false``, MapProxy will not request images from this source. You can use this option in combination with ``featureinfo: true`` to create a feature info source.
+  
+``featureinfo``
+  If this is set to ``true``, MapProxy will mark the layer as queryable and incoming `GetFeatureInfo` requests will be forwarded to the source server.
+
+``featureinfo_xslt``
+  Path to an XSLT script that should be used to transform incoming feature information.
+
+``featureinfo_format``
+  The ``INFO_FORMAT`` for FeatureInfo requests. By default MapProxy will use the same format as requested by the client.  
+
+See :ref:`FeatureInformation for more informaiton <fi_xslt>`.
 
 ``coverage``
 ^^^^^^^^^^^^

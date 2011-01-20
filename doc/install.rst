@@ -35,7 +35,7 @@ Install MapProxy
 
 MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 2.5, 2.6 and 2.7.
 
-MapProxy has some dependencies, other libraries that are required to run. Most dependencies are small Python libraries that will be installed automatically when you install MapProxy. There are two exceptions for the base of MapProxy (libproj and PIL) and another for more advanced functionality (Shapely, GEOS, GDAL).
+MapProxy has some dependencies, other libraries that are required to run. Most dependencies are small Python libraries that will be installed automatically when you install MapProxy. There are two exceptions for the base of MapProxy (libproj and PIL) and some for more advanced functionality (Shapely, GEOS, GDAL, lxml).
 
 libproj
 ~~~~~~~
@@ -64,9 +64,19 @@ The :doc:`coverage feature <coverages>` allows you to read geometries from OGR d
 
     sudo aptitude install libgdal-dev
 
+.. _lxml_install:
 
-Installation
-~~~~~~~~~~~~
+lxml
+~~~~
+
+`lxml`_ is used for more advanced WMS FeatureInformation operations like XSL transformation or the concatenation of multiple documents. On Debian or Ubuntu you can install it with::
+
+  sudo aptitude install python-lxml
+
+.. _`lxml`: http://lxml.org
+
+MapProxy
+~~~~~~~~
 
 Your virtual environment should already contain `pip`_, a tool to install Python packages. If not, ``easy_install pip`` is enough to get it.
 

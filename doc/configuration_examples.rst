@@ -198,12 +198,135 @@ You should explicitly define the SRS the source WMS supports. Requests in other 
   
   sources:
     direct_wms:
-      type: direct
+      type: wms
       supported_srs: ['EPSG:4326', 'EPSG:25832']
       req:
         url: http://wms.example.org/service?
         layers: layer0,layer1
     
+
+.. _fi_xslt:
+
+FeatureInformation
+==================
+
+MapProxy can pass-through FeatureInformation requests to your WMS sources. You need to enable each source::
+
+
+  sources:
+    fi_source:
+      type: wms
+      wms_opts:
+        featureinfo: true
+      req:
+        url: http://example.org/service?
+        layers: layer0
+
+
+MapProxy will mark all layers that use this source as ``queryable``. It also works for sources that are used with caching.
+
+.. note:: The more advanced features :ref:`require the lxml library <lxml_install>`. 
+
+Concatenation
+-------------
+Feature information from different sources are concatenated as plain text, that means that XML documents may become invalid. But MapProxy can also do content-aware concatenation when :ref:`lxml <lxml_install>` is available.
+
+HTML
+~~~~
+Multiple HTML documents are put into the HTML ``body`` of the first document.
+MapProxy creates the HTML skeleton if it is missing.
+::
+
+  <p>FI1</p>
+
+and
+::
+
+  <p>FI2</p>
+
+will result in::
+
+  <html>
+    <body>
+      <p>FI1</p>
+      <p>FI2</p>
+   </body>
+  </html>
+
+
+XML
+~~~
+
+Multiple XML documents are put in the root of the first document.
+
+::
+
+  <root>
+    <a>FI1</a>
+  </root>
+
+and
+::
+
+  <other_root>
+    <b>FI2</b>
+  </other_root>
+
+will result in::
+
+  <root>
+    <a>FI1</a>
+    <b>FI2</b>
+  </root>
+
+
+XSL Transformations
+-------------------
+
+MapProxy supports XSL transformations for more control over feature information. This also requires :ref:`lxml <lxml_install>`. You can add an XSLT script for each WMS source (incoming) and for the WMS service (outgoing).
+
+You can use XSLT for sources to convert all incoming documents to a single, uniform format and then use outgoing XSLT scripts to transform this format to either HTML or XML/GML output.
+
+Example
+~~~~~~~
+
+Lets assume we have two WMS sources where we have no control over the format of the feature info responses.
+
+One source only offers HTML feature information. The XSLT script extracts data from a table. We force the ``INFO_FORMAT`` to HTML, so that MapProxy will not query another format.
+
+::
+
+    fi_source:
+      type: wms
+      wms_opts:
+        featureinfo: true
+        featureinfo_xslt: ./html_in.xslt
+        featureinfo_format: text/html
+      req: [...]
+
+
+The second source supports XML feature information. The script converts the XML data to the same format as the HTML script. This service uses WMS 1.3.0 and the format is ``text/xml``.
+::
+
+    fi_source:
+      type: wms
+      wms_opts:
+        version: 1.3.0
+        featureinfo: true
+        featureinfo_xslt: ./xml_in.xslt
+        featureinfo_format: text/xml
+      req: [...]
+
+
+We then define two outgoing XSLT scripts that transform our intermediate format to the final result. We can define scripts for different formats. MapProxy chooses the right script depending on the WMS version and the ``INFO_FORMAT`` of the request.
+
+::
+
+  wms:
+    featureinfo_xslt:
+      html: ./html_out.xslt
+      xml: ./xml_out.xslt
+    [...]
 
 
 WMS layers with HTTP Basic Authentication
