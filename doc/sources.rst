@@ -63,10 +63,13 @@ This option affects what request MapProxy sends to the source WMS server.
   The WMS version number used for requests (supported: 1.0.0, 1.1.0, 1.1.1, 1.3.0). Defaults to 1.1.1.
 
 ``legendgraphic``
-    If this is set to ``true``, MapProxy will request legend graphics from this source. Each MapProxy WMS layer that contains one or more sources with legend graphics will then have a LegendURL.
+  If this is set to ``true``, MapProxy will request legend graphics from this source. Each MapProxy WMS layer that contains one or more sources with legend graphics will then have a LegendURL.
+
+``legendurl``
+  Configure a URL to an image that should be returned as the legend for this source. Local URLs (``file://``) are also supported.
 
 ``map``
-  If this is set to ``false``, MapProxy will not request images from this source. You can use this option in combination with ``featureinfo: true`` to create a feature info source.
+  If this is set to ``false``, MapProxy will not request images from this source. You can use this option in combination with ``featureinfo: true`` to create a source that is only used for feature info requests.
   
 ``featureinfo``
   If this is set to ``true``, MapProxy will mark the layer as queryable and incoming `GetFeatureInfo` requests will be forwarded to the source server.
