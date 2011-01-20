@@ -584,6 +584,8 @@ Here you can define some options that affect the way MapProxy generates image re
 ``http``
 """"""""
 
+HTTP related options.
+
 Secure HTTPS Connections (HTTPS)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -145,6 +145,20 @@ Configures the opacity of this source image. This value is used when the image i
 This limits the number of parallel requests MapProxy will issue to the source server.
 It even works across multiple WMS sources as long as all have the same ``concurrent_requests`` value and all ``req.url`` parameters point to the same host. Defaults to 0, which means no limitation.
 
+
+``http``
+^^^^^^^^
+
+You can configure the following HTTP related options for this source:
+
+- ``method``
+- ``headers``
+- ``client_timeout``
+- ``ssl_ca_certs``
+- ``ssl_no_cert_check`` (see below)
+
+See :ref:`HTTP Options <http_ssl>` for detailed documentation.
+
 .. _wms_source-ssl_no_cert_check:
 
 ``http.ssl_no_cert_check``
@@ -227,6 +241,19 @@ You need to set this to ``true`` if you want to use this source as an overlay.
 ^^^^^^^^^^^^^^^^^^
 
 Configures the opacity of this source image. This value is used when the image is placed on other layers and it can be used to overlay non-transparent images. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).
+
+``http``
+^^^^^^^^
+
+You can configure the following HTTP related options for this source:
+
+- ``headers``
+- ``client_timeout``
+- ``ssl_ca_certs``
+- ``ssl_no_cert_check`` (:ref:`see above <wms_source-ssl_no_cert_check>`)
+
+See :ref:`HTTP Options <http_ssl>` for detailed documentation.
+
 
 ``seed_only``
 ^^^^^^^^^^^^^
