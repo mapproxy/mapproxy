@@ -200,6 +200,7 @@ a.headerlink {
 }
 
 .doc p a,
+.doc dd a,
 .doc li a
 {
   color: blue;
@@ -207,12 +208,14 @@ a.headerlink {
 }
 
 .doc p a:visited,
+.doc dd a:visited,
 .doc li a:visited
 {
   color: purple;
 }
 
 .doc p a:active,
+.doc dd a:active,
 .doc li a:active
 {
   color: red;
