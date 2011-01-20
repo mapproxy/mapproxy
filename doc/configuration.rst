@@ -20,7 +20,7 @@ There are a few different configuration files used by MapProxy.
 .. index:: mapproxy.yaml
 
 mapproxy.yaml
-=============
+-------------
 
 The configuration uses the YAML format.
 
@@ -649,12 +649,12 @@ Configuration options for the TMS/Tile service.
 
 
 Notes
-=====
+-----
 
 .. _scale_resolution:
 
 Scale vs. resolution
---------------------
+""""""""""""""""""""
 
 Scale is the ratio of a distance on a map and the corresponding distance on the ground. This implies that the map distance and the ground distance are measured in the same unit. For MapProxy a `map` is just a collection of pixels and the pixels do not have any size/dimension. They do correspond to a ground size but the size on the `map` is depended of the physical output format. MapProxy can thus only work with resolutions (pixel per ground unit) and not scales.
 
@@ -664,6 +664,6 @@ MapProxy will use the OCG value (0.28mm/px) if it's necessary to use a scale val
 
 
 WMS ScaleHint
-""""""""""""""
+^^^^^^^^^^^^^
 
 The WMS ScaleHint is a bit misleading. The parameter is not a scale but the diagonal pixel resolution. It also defines the ``min`` as the minimum value not the minimum resolution (e.g. 10m/px is a lower resolution than 5m/px, but 5m/px is the minimum value). MapProxy always uses the term resolutions as the side length in ground units per pixel and minimum resolution is always the higher number (100m/px < 10m/px). Keep that in mind when you use these values.
