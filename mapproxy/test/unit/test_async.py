@@ -168,8 +168,10 @@ class CommonPoolTests(object):
     
     def _check_multiple_args_with_exceptions(self, func):
         result = func()
-        eq_(result.next(), 3)
         try:
+            # first result might aleady raise the exception when
+            # when second result is returned faster by the ThreadPoolWorker
+            eq_(result.next(), 3)
             result.next()
         except ValueError:
             pass
