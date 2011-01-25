@@ -5,25 +5,27 @@ Authentication and Authorization
 
 Authentication is the process of mapping a request to a user. There are different ways to do this, from simple HTTP Basic Authentication to cookies or token based systems.
 
-Authorization is the process that defines what an authenticated user is allowed to do. A kind of datastore is required to store these authorization information for everything but trivial systems. This datastore can range from really simple text files (all users in this text file are allowed to do everything) to complex relational databases (user A is allowed to do B but not C, etc.).
+Authorization is the process that defines what an authenticated user is allowed to do. A datastore is required to store this authorization information for everything but trivial systems. These datastores can range from really simple text files (all users in this text file are allowed to do everything) to complex schemas with relational databases (user A is allowed to do B but not C, etc.).
 
-As you can see, the options to choose when implementing a system for authentication and authorization are diverse. Developers (of SDIs, not the software itself) often have specific constraints, like user data in a database or a single login on a website. So it is hard to offer a one-size-fits-all solution.
+As you can see, the options to choose when implementing a system for authentication and authorization are diverse. Developers (of SDIs, not the software itself) often have specific constraints, like existing user data in a database or an existing login on a website for a Web-GIS. So it is hard to offer a one-size-fits-all solution.
 
-Therefore, MapProxy does not come with any embedded authentication or authorization. But, it comes with a flexible authorization interface that allows other SDI developers to implement custom tailored systems.
+Therefore, MapProxy does not come with any embedded authentication or authorization. But it comes with a flexible authorization interface that allows you (SDI developers) to implement custom tailored systems.
 
-Luckily, there are lots of existing toolkits that implement different authentication and authorization methods. For authentication there is the `repoze.who`_ package with plugins for HTTP Basic Authentication, HTTP cookies, etc. For authorization there is the `repoze.what`_ package with plugins for SQL datastores, etc.
+Luckily, there are lots of existing toolkits that can be used to build systems that match your requirements. For authentication there is the `repoze.who`_ package with `plugins for HTTP Basic Authentication, HTTP cookies, etc <repoze.who_plugins>`_. For authorization there is the `repoze.what`_ package with `plugins for SQL datastores, etc <repoze.what_plugins>`_.
 
-.. _`repoze.who`: http://pypi.python.org/pypi?:action=search&term=repoze.who
-.. _`repoze.what`: http://pypi.python.org/pypi?:action=search&term=repoze.what
+.. _`repoze.who`: http://docs.repoze.org/who/
+.. _`repoze.who_plugins`: http://pypi.python.org/pypi?:action=search&term=repoze.who
+.. _`repoze.what`: http://docs.repoze.org/what/
+.. _`repoze.what_plugins`: http://pypi.python.org/pypi?:action=search&term=repoze.what
 
 
 
-Auth middleware
----------------
+Authentication/Authorization Middleware
+---------------------------------------
 
 Your auth system should be implemented as a WSGI middleware. The middleware sits between your web server and the MapProxy.
 
-Auth Filter Middleware
+WSGI Filter Middleware
 ~~~~~~~~~~~~~~~~~~~~~~
 
 A simple middleware that authorizes random requests might look like::
@@ -40,7 +42,7 @@ A simple middleware that authorizes random requests might look like::
             return ['no luck today']
 
 
-One way to add that middleware before MapProxy is the ``filter-with`` option of PasteDeploy. The ``config.ini`` looks like::
+One way to add that middleware in front of MapProxy is the ``filter-with`` option of `PasteDeploy`_. The ``config.ini`` looks like::
 
   [app:mapproxy]
   use = egg:MapProxy#app
@@ -53,16 +55,18 @@ One way to add that middleware before MapProxy is the ``filter-with`` option of 
   [server:main]
   ...
 
-You can implement simple authentication systems with that method, but you should look at repoze.who before reinventing the wheel.
+You can implement simple authentication systems with that method, but you should look at `repoze.who`_ before reinventing the wheel.
+
+.. _`PasteDeploy`: http://pythonpaste.org/deploy/
 
 Authorization Callback
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Authorization is a bit more complex, because your middleware would need to interpret the request to get information required for the authorization, e.g. the layer names of a WMS GetMap request. Limiting the GetCapabilities response to certain layers would even require the middleware to manipulate the XML document. So it's obvious that some parts of the authorization should be handled by MapProxy.
+Authorization is a bit more complex, because your middleware would need to interpret the request to get information required for the authorization (e.g. layer names for WMS GetMap requests). Limiting the GetCapabilities response to certain layers would even require the middleware to manipulate the XML document. So it's obvious that some parts of the authorization should be handled by MapProxy.
 
 MapProxy can call the middleware back for authorization as soon as it knows what to ask for (e.g. the layer names of a WMS GetMap request). You have to pass that function into the environment so that MapProxy knows what to call.
 
-Here is a more elaborate example that hides/denies requests to all layers that start with a specific prefix.
+Here is a more elaborate example that denies requests to all layers that start with a specific prefix. These layers are also hidden from capability documents.
 
 ::
 
@@ -114,11 +118,10 @@ And here is the part of the ``config.ini`` where we define the filter and pass c
   prefix = foo
 
 
-
 MapProxy Authorization API
 --------------------------
 
-MapProxy looks in the request environment for an ``mapproxy.authorize`` entry. This entry should contain a authorize callable (function or method). If it does not find any callable, then MapProxy assumes that authorization is not enabled and all requests should be allowed.
+MapProxy looks in the request environment for a ``mapproxy.authorize`` entry. This entry should contain a callable (function or method). If it does not find any callable, then MapProxy assumes that authorization is not enabled and all requests are allowed.
 
 The signature of the authorization function:
 
@@ -130,18 +133,17 @@ The signature of the authorization function:
 
 .. note:: The actual name of the callable is insignificant, only the environment key ``mapproxy.authorize`` is important.
 
-
-The ``service`` parameter is a string and the content depends on the service that calls the authorize function (e.g. ``tms``). Generally, it is the lower-case name of the service, but it can be different to further control the service (e.g. ``wms.map``).
+The ``service`` parameter is a string and the content depends on the service that calls the authorize function. Generally, it is the lower-case name of the service (e.g. ``tms`` for TMS service), but it can be different to further control the service (e.g. ``wms.map``).
 
 The function should return a dictionary with the authorization information. The expected content of that dictionary can vary with each service. Only the ``authorized`` key is consistent with all services.
 
 The ``authorized`` entry can have three values.
 
 ``full``
-  The request for the given `service` and `layers` is fully authorized. MapProxy will handle the request as if there where no authorization.
+  The request for the given `service` and `layers` is fully authorized. MapProxy handles the request as if is no authorization.
 
 ``none``
-  The request is denied and MapProxy will return an HTTP 403 response. Your middleware can capture this and ask the requester for authentication.
+  The request is denied and MapProxy returns an HTTP 403 response. Your middleware can capture this and ask the requester for authentication.
 
 ``partial``
   Only parts of the request are allowed. The dictionary should contains more information on what parts of the request are allowed and what parts are denied. Depending on the service, MapProxy can then filter the request based on that information, e.g. return WMS Capabilities with permitted layers only.
@@ -152,9 +154,9 @@ WMS Services
 
 The WMS service expects a ``layers`` entry in the authorization dictionary for ``partial`` results. ``layers`` itself should be a dictionary with all layers. All missing layers are interpreted as denied layers.
 
-Each layer is contains the information about the permitted features. A missing feature is interpreted as a denied feature.
+Each layer contains the information about the permitted features. A missing feature is interpreted as a denied feature.
 
-Example result of a call to the authorize function::
+Here is an example result of a call to the authorize function::
 
   {
     'authorized': 'partial',
@@ -176,9 +178,12 @@ The WMS service uses the following service strings:
 ``wms.map``
 ^^^^^^^^^^^
 
-This is called for WMS GetMap requests. ``layers`` is a list with the actual layers to render, that means that group layers will be resolved.
+This is called for WMS GetMap requests. ``layers`` is a list with the actual layers to render, that means that group layers are resolved.
 The ``map`` feature needs to be set to ``True`` for each permitted layer. 
-The whole request is rejected if any requested layer is not permitted. Layers that are added automatically (e.g. sub layers of a group) are filtered out.
+The whole request is rejected if any requested layer is not permitted. Resolved layers (i.e. sub layers of a requested group layer) are filtered out if they are not permitted.
+
+Example
++++++++
 
 With a layer tree like::
 
@@ -189,5 +194,66 @@ With a layer tree like::
       - name: layer1b
         sources: [l1b]
 
-and permissions for ``layer1`` and ``layer1a``. A request for ``layer1`` or ``layer1a`` will render ``layer1a``, request for ``layer1b`` or both ``layer1a`` and ``layer1b`` will be rejected.
+An authorize result of::
 
+  {
+    'authorized': 'partial',
+    'layers': {
+      'layer1':  {'map': True},
+      'layer1a': {'map': True}
+    }
+  }
+
+Results in the following:
+
+- A request for ``layer1`` renders ``layer1a``, ``layer1b`` gets filtered out.
+- A request for ``layer1a`` renders ``layer1a``.
+- A request for ``layer1b`` is rejected.
+- A request for ``layer1a`` and ``layer1b`` is rejected.
+
+
+``wms.featureinfo``
+^^^^^^^^^^^^^^^^^^^
+
+This is called for WMS GetFeatureInfo requests and the behavior is similar to ``wms.map``.
+
+``wms.capabilities``
+^^^^^^^^^^^^^^^^^^^^
+
+This is called for WMS GetCapabilities requests. ``layers`` is a list with all named layers of the WMS service.
+Only layers with the ``map`` feature set to ``True`` are included in the capabilities document. Missing layers are not included.
+
+Sub layers are only included when the parent layer is included, since authorization interface is not able to reorder the layer tree. Note, that you are still able to request these sub layers (see ``wms.map`` above).
+
+Layers that are queryable and only marked so in the capabilities if the ``featureinfo`` feature set to ``True``.
+
+With a layer tree like::
+
+  - name: layer1
+    layers:
+      - name: layer1a
+        sources: [l1a]
+      - name: layer1b
+        sources: [l1b]
+      - name: layer1c
+        sources: [l1c]
+
+An authorize result of::
+
+  {
+    'authorized': 'partial',
+    'layers': {
+      'layer1':  {'map': True, 'feature': True},
+      'layer1a': {'map': True, 'feature': True},
+      'layer1b': {'map': True},
+      'layer1c': {'map': True},
+    }
+  }
+
+Results in the following abbreviated capabilities::
+
+  <Layer queryable="1">
+    <Name>layer1</Name>
+    <Layer queryable="1"><Name>layer1a</Name></Layer>
+    <Layer><Name>layer1b</Name></Layer>
+  </Layer>
