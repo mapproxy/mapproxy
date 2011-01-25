@@ -99,6 +99,10 @@ class TestWMSWithoutRoot(SystemTest):
             ['layer1', 'layer2'])
         eq_(xml.xpath('//Capability/Layer/Layer[1]/Layer/Name/text()'),
             ['layer1a', 'layer1b'])
+        eq_(xml.xpath('//Capability/Layer/Layer[2]/Layer/Name/text()'),
+            ['layer2a', 'layer2b'])
+        eq_(xml.xpath('//Capability/Layer/Layer[2]/Layer/Layer[1]/Name/text()'),
+            ['layer2b1'])
         
     def _check_layernames_with_namespace(self, xml, namespaces=None):
         eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Title/text()', namespaces=namespaces),
@@ -109,6 +113,10 @@ class TestWMSWithoutRoot(SystemTest):
             ['layer1', 'layer2'])
         eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Layer[1]/wms:Layer/wms:Name/text()', namespaces=namespaces),
             ['layer1a', 'layer1b'])
+        eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Layer[2]/wms:Layer/wms:Name/text()', namespaces=namespaces),
+            ['layer2a', 'layer2b'])
+        eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Layer[2]/wms:Layer/wms:Layer[1]/wms:Name/text()', namespaces=namespaces),
+            ['layer2b1'])
 
 
     def test_100_capa(self):

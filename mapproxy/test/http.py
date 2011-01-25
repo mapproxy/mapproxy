@@ -189,9 +189,10 @@ def mock_httpd(address, requests_responses):
         t.join(1)
     assert t.sucess, 'requests to mock httpd did not match expectations:\n' + t.out.read()
 
-def make_wsgi_env(query_string):
+def make_wsgi_env(query_string, extra_environ={}):
         env = {'QUERY_STRING': query_string,
                'wsgi.url_scheme': 'http',
                'HTTP_HOST': 'localhost',
               }
+        env.update(extra_environ)
         return env

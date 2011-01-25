@@ -40,6 +40,9 @@ get_template = template_loader(__file__, 'templates', namespace=template_helper.
 import logging
 log = logging.getLogger(__name__)
 
+class PERMIT_ALL_LAYERS(object):
+    pass
+
 class WMSServer(Server):
     names = ('service',)
     request_methods = ('map', 'capabilities', 'featureinfo', 'legendgraphic')
@@ -73,16 +76,32 @@ class WMSServer(Server):
         if map_request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
         
-        render_layers = []
+        actual_layers = odict()
         for layer_name in map_request.params.layers:
             layer = self.layers[layer_name]
-            # only add if layer reders the query
+            # only add if layer renders the query
             if layer.renders_query(query):
                 # if layer is not transparent and will be rendered,
                 # remove already added (then hidden) layers 
                 if not layer.transparent:
-                    render_layers = []
-                render_layers.extend(layer.map_layers_for_query(query))
+                    actual_layers = odict()
+                for layer_name, map_layers in layer.map_layers_for_query(query):
+                    actual_layers[layer_name] = map_layers
+        
+        authorized_map_layers = self.authorized_map_layers(actual_layers.keys(), map_request.http.environ)
+        
+        if authorized_map_layers is not PERMIT_ALL_LAYERS:
+            requested_layer_names = set(map_request.params.layers)
+            for layer_name in actual_layers.keys():
+                if layer_name not in authorized_map_layers:
+                    if layer_name in requested_layer_names:
+                        raise RequestError('forbidden', status=403)
+                    else:
+                        del actual_layers[layer_name]
+        
+        render_layers = []
+        for layers in actual_layers.values():
+            render_layers.extend(layers)
         
         merger = self.merger()
         raise_source_errors =  True if self.on_error == 'raise' else False
@@ -113,25 +132,56 @@ class WMSServer(Server):
             tile_layers = []
             
         service = self._service_md(map_request)
-        result = Capabilities(service, self.root_layer, tile_layers, self.image_formats, self.srs).render(map_request)
+        root_layer = self.authorized_capability_layers(map_request.http.environ)
+        result = Capabilities(service, root_layer, tile_layers, self.image_formats, self.srs).render(map_request)
         return Response(result, mimetype=map_request.mime_type)
     
     def featureinfo(self, request):
         infos = []
         self.check_request(request)
-        for layer in request.params.query_layers:
-            if not self.layers[layer].queryable:
-                raise RequestError('layer %s is not queryable' % layer, request=request)
-            info = self.layers[layer].info(request)
+        
+        p = request.params
+        query = InfoQuery(p.bbox, p.size, SRS(p.srs), p.pos,
+                          p['info_format'], format=request.params.format or None)
+
+        actual_layers = odict()
+        
+        for layer_name in request.params.query_layers:
+            layer = self.layers[layer_name]
+            print layer, layer.md, layer.queryable
+            if not layer.queryable:
+                raise RequestError('layer %s is not queryable' % layer_name, request=request)
+            for layer_name, info_layers in layer.info_layers_for_query(query):
+                actual_layers[layer_name] = info_layers
+        
+        authorized_info_layers = self.authorized_info_layers(actual_layers.keys(),
+                                                             request.http.environ)
+        
+        if authorized_info_layers is not PERMIT_ALL_LAYERS:
+            requested_layer_names = set(request.params.layers)
+            for layer_name in actual_layers.keys():
+                if layer_name not in authorized_info_layers:
+                    if layer_name in requested_layer_names:
+                        raise RequestError('forbidden', status=403)
+                    else:
+                        del actual_layers[layer_name]
+        
+        info_layers = []
+        for layers in actual_layers.values():
+            info_layers.extend(layers)
+        
+        for layer in info_layers:
+            info = layer.get_info(query)
             if info is None:
                 continue
-            if isinstance(info, basestring):
-                infos.append(info)
-            else:
-                [infos.append(i) for i in info if i is not None]
+            infos.append(info)
+        
         mimetype = None
         if 'info_format' in request.params:
             mimetype = request.params.info_format
+        
+        if not infos:
+            return Response('', mimetype=mimetype)
         
         if self.fi_transformers:
             doc = infos[0].combine(infos)
@@ -193,6 +243,63 @@ class WMSServer(Server):
         md['url'] = map_request.url
         md['has_legend'] = self.root_layer.has_legend
         return md
+    
+    def authorized_map_layers(self, layers, env):
+        return self._authorize_layers('map', layers, env)
+    
+    def authorized_info_layers(self, layers, env):
+        return self._authorize_layers('featureinfo', layers, env)
+    
+    def _authorize_layers(self, feature, layers, env):
+        if 'mapproxy.authorize' in env:
+            result = env['mapproxy.authorize']('wms.' + feature, layers[:])
+            if result['authorized'] == 'full':
+                return PERMIT_ALL_LAYERS
+            layers = set()
+            if result['authorized'] == 'partial':
+                for layer_name, permissions in result['layers'].iteritems():
+                    if permissions.get(feature, False) == True:
+                        layers.add(layer_name)
+            return layers
+        else:
+            return PERMIT_ALL_LAYERS
+    
+    def authorized_capability_layers(self, env):
+        if 'mapproxy.authorize' in env:
+            result = env['mapproxy.authorize']('wms.capabilities', self.layers.keys())
+            if result['authorized'] == 'true':
+                return self.root_layer
+            if result['authorized'] == 'partial':
+                return FilteredRootLayer(self.root_layer, result['layers'])
+            raise RequestError('forbidden', status=403)
+        else:
+            return self.root_layer
+
+class FilteredRootLayer(object):
+    def __init__(self, root_layer, permissions):
+        self.root_layer = root_layer
+        self.permissions = permissions
+    
+    def __getattr__(self, name):
+        return getattr(self.root_layer, name)
+
+    @property
+    def queryable(self):
+        if not self.root_layer.queryable: return False
+        
+        layer_name = self.root_layer.md.get('name')
+        if not layer_name or self.permissions.get(layer_name, {}).get('featureinfo', False):
+            return True
+        return False
+    
+    @property
+    def layers(self):
+        layers = []
+        for layer in self.root_layer.layers:
+            layer_name = layer.md.get('name')
+            if not layer_name or self.permissions.get(layer_name, {}).get('map', False):
+                layers.append(FilteredRootLayer(layer, self.permissions))
+        return layers
 
 class Capabilities(object):
     """
@@ -243,7 +350,7 @@ class LayerRenderer(object):
     def _render_raise_exceptions(self, async_pool, render_layers, layer_merger):
         # call _render_layer, raise all exceptions
         try:
-            for layer in async_pool.imap(self._render_layer, render_layers):
+            for layer_img in async_pool.imap(self._render_layer, render_layers):
                 if layer_img is not None:
                     layer_merger.add(layer_img)
         except SourceError, ex:
@@ -362,15 +469,14 @@ class WMSLayer(WMSLayerBase):
         return True
     
     def map_layers_for_query(self, query):
-        return self.map_layers
-    
-    def info(self, request):
-        p = request.params
-        query = InfoQuery(p.bbox, p.size, SRS(p.srs), p.pos,
-            p['info_format'], format=request.params.format or None)
-        
-        for lyr in self.info_layers:
-            yield lyr.get_info(query)
+        if not self.map_layers:
+            return []
+        return [(self.md.get('name'), self.map_layers)]
+
+    def info_layers_for_query(self, query):
+        if not self.info_layers:
+            return []
+        return [(self.md.get('name'), self.info_layers)]
     
     def legend(self, request):
         p = request.params
@@ -438,12 +544,14 @@ class WMSGroupLayer(WMSLayerBase):
                 layers.extend(layer.map_layers_for_query(query))
             return layers
     
-    def info(self, request):
+    def info_layers_for_query(self, query):
         if self.this:
-            yield self.this.info(request)
+            return self.this.info_layers_for_query(query)
         else:
+            layers = []
             for layer in self.layers:
-                yield layer.info(request)
+                layers.extend(layer.info_layers_for_query(query))
+            return layers
     
     def child_layers(self):
         layers = odict()

@@ -26,12 +26,13 @@ class RequestError(Exception):
     :ivar internal: True if the error was an internal error, ie. the request itself
                     was valid (e.g. the source server is unreachable
     """
-    def __init__(self, message, code=None, request=None, internal=False):
+    def __init__(self, message, code=None, request=None, internal=False, status=None):
         Exception.__init__(self, message)
         self.message = message
         self.code = code
         self.request = request
         self.internal = internal
+        self.status = status
     
     def render(self):
         """
@@ -44,6 +45,8 @@ class RequestError(Exception):
         if self.request is not None:
             handler = self.request.exception_handler
             return handler.render(self)
+        elif self.status is not None:
+            return Response(self.message, status=self.status)
         else:
             return Response('internal error: %s' % self.message, status=500)
     

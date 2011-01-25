@@ -274,6 +274,19 @@ content: ':';
     margin-top: .5em;
 }
 
+.doc dl tt {
+  font-size: 130%;
+  font-weight: bold;
+}
+
+
+.doc dd table.field-list ul,
+.doc dd table.field-list p
+{
+  margin: 0 0;
+  padding-left: 2em;
+}
+
 /* blog style */
 
 h2.blog_post_title {

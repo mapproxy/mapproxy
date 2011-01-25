@@ -111,7 +111,7 @@
 
 {{def layer_capabilities(layer, with_srs)}}
   <Layer{{if layer.queryable}} queryable="1"{{endif}}>
-    {{if layer.md['name']}}
+    {{if layer.md.get('name')}}
     <Name>{{ layer.md['name'] }}</Name>
     {{endif}}
     <Title>{{ layer.md.get('title') }}</Title>
