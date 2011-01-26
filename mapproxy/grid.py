@@ -694,13 +694,11 @@ class MetaGrid(object):
         level = tile_coord[2]
         bbox, buffers = self._meta_bbox(tile_coord)
         grid_size = self._meta_size(level)
-        res = self.grid.resolution(level)
-        width = int((bbox[2] - bbox[0]) / res)
-        height = int((bbox[3] - bbox[1]) / res)
+        size = self._size_from_buffered_bbox(bbox, level)
         
         tile_patterns = self._tiles_pattern(tile=tile_coord, grid_size=grid_size, buffers=buffers)
         
-        return MetaTile(bbox=bbox, size=(width, height), tile_patterns=tile_patterns,
+        return MetaTile(bbox=bbox, size=size, tile_patterns=tile_patterns,
             grid_size=grid_size
         )
     
@@ -715,20 +713,25 @@ class MetaGrid(object):
         bbox, buffers = self._meta_bbox(tiles=bounds)
         
         level = tiles[0][2]
-        res = self.grid.resolution(level)
-        width = int((bbox[2] - bbox[0]) / res)
-        height = int((bbox[3] - bbox[1]) / res)
+        size = self._size_from_buffered_bbox(bbox, level)
         
         tile_pattern = self._tiles_pattern(tiles=tiles, grid_size=grid_size, buffers=buffers)
 
         return MetaTile(
             bbox=bbox,
-            size=(width, height),
+            size=size,
             tile_patterns=tile_pattern,
             grid_size=grid_size,
         )
 
-
+    def _size_from_buffered_bbox(self, bbox, level):
+        # meta_size * tile_size + 2*buffer does not work,
+        # since the buffer can get truncated at the grid border
+        res = self.grid.resolution(level)
+        width = int(round((bbox[2] - bbox[0]) / res))
+        height = int(round((bbox[3] - bbox[1]) / res))
+        return width, height
+    
     def _full_tile_list(self, tiles):
         """
         Return a complete list of all tiles that a minimal meta tile with `tiles` contains.
