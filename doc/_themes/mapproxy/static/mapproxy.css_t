@@ -160,6 +160,7 @@ a:active
 {
   line-height: 1.0em;
   margin-left: -8px;
+  margin-bottom: 7px;
   padding-left: 8px;
   border-bottom: dashed #ccc 1px;
 }
@@ -241,7 +242,7 @@ pre {
   font-size: 120%;
 }
 
-.note,
+.admonition,
 pre
 {
     color: #3a3740;
@@ -251,7 +252,7 @@ pre
     border-left: 1px solid #999;
 }
 
-.note {
+.admonition {
   padding-top: 0.2em;
   padding-bottom: 0.2em;
   margin-bottom: .5em;

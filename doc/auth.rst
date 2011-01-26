@@ -9,7 +9,7 @@ Authorization is the process that defines what an authenticated user is allowed 
 
 As you can see, the options to choose when implementing a system for authentication and authorization are diverse. Developers (of SDIs, not the software itself) often have specific constraints, like existing user data in a database or an existing login on a website for a Web-GIS. So it is hard to offer a one-size-fits-all solution.
 
-Therefore, MapProxy does not come with any embedded authentication or authorization. But it comes with a flexible authorization interface that allows you (SDI developers) to implement custom tailored systems.
+Therefore, MapProxy does not come with any embedded authentication or authorization. But it comes with a flexible authorization interface that allows you (the SDI developer) to implement custom tailored systems.
 
 Luckily, there are lots of existing toolkits that can be used to build systems that match your requirements. For authentication there is the `repoze.who`_ package with `plugins for HTTP Basic Authentication, HTTP cookies, etc <repoze.who_plugins>`_. For authorization there is the `repoze.what`_ package with `plugins for SQL datastores, etc <repoze.what_plugins>`_.
 
@@ -19,6 +19,7 @@ Luckily, there are lots of existing toolkits that can be used to build systems t
 .. _`repoze.what_plugins`: http://pypi.python.org/pypi?:action=search&term=repoze.what
 
 
+.. note:: Developing custom authentication and authorization system requires a bit Python programming and knowledge of `WSGI <http://wsgi.org>`_ and WSGI middleware.
 
 Authentication/Authorization Middleware
 ---------------------------------------
@@ -257,3 +258,39 @@ Results in the following abbreviated capabilities::
     <Layer queryable="1"><Name>layer1a</Name></Layer>
     <Layer><Name>layer1b</Name></Layer>
   </Layer>
+
+
+TMS/Tile service
+~~~~~~~~~~~~~~~~
+
+The TMS service expects a ``layers`` entry in the authorization dictionary for ``partial`` results. ``layers`` itself should be a dictionary with all layers. All missing layers are interpreted as denied layers.
+
+Each layer contains the information about the permitted features. The TMS service only supports the ``tile`` feature. A missing feature is interpreted as a denied feature.
+
+Here is an example result of a call to the authorize function::
+
+  {
+    'authorized': 'partial',
+    'layers': {
+      'layer1': {'tile': True},
+      'layer2': {'tile': False},
+    }
+  }
+
+
+``tms``
+^^^^^^^
+
+The TMS service uses ``tms`` as the service string for all authorization requests.
+
+Only layers with the ``tile`` feature set to ``True`` are included in the TMS capabilities document (``/tms/1.0.0``). Missing layers are not included.
+
+KML service
+~~~~~~~~~~~
+
+The KML authorization is similar to the TMS authorization.
+
+``kml``
+^^^^^^^
+
+The KML service uses ``kml`` as the service string for all authorization requests.
