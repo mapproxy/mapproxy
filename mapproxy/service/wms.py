@@ -287,7 +287,7 @@ class FilteredRootLayer(object):
     def queryable(self):
         if not self.root_layer.queryable: return False
         
-        layer_name = self.root_layer.md.get('name')
+        layer_name = self.root_layer.name
         if not layer_name or self.permissions.get(layer_name, {}).get('featureinfo', False):
             return True
         return False
@@ -296,8 +296,7 @@ class FilteredRootLayer(object):
     def layers(self):
         layers = []
         for layer in self.root_layer.layers:
-            layer_name = layer.md.get('name')
-            if not layer_name or self.permissions.get(layer_name, {}).get('map', False):
+            if not layer.name or self.permissions.get(layer.name, {}).get('map', False):
                 layers.append(FilteredRootLayer(layer, self.permissions))
         return layers
 
@@ -450,8 +449,11 @@ class WMSLayer(WMSLayerBase):
     """
     is_active = True
     layers = []
-    def __init__(self, md, map_layers, info_layers=[], legend_layers=[], res_range=None):
-        self.md = md
+    def __init__(self, name, title, map_layers, info_layers=[], legend_layers=[],
+                 res_range=None, md=None):
+        self.name = name
+        self.title = title
+        self.md = md or {}
         self.map_layers = map_layers
         self.info_layers = info_layers
         self.legend_layers = legend_layers
@@ -471,12 +473,12 @@ class WMSLayer(WMSLayerBase):
     def map_layers_for_query(self, query):
         if not self.map_layers:
             return []
-        return [(self.md.get('name'), self.map_layers)]
+        return [(self.name, self.map_layers)]
 
     def info_layers_for_query(self, query):
         if not self.info_layers:
             return []
-        return [(self.md.get('name'), self.info_layers)]
+        return [(self.name, self.info_layers)]
     
     def legend(self, request):
         p = request.params
@@ -498,7 +500,7 @@ class WMSLayer(WMSLayerBase):
     def legend_url(self):
         if self.has_legend:
             req = WMS111LegendGraphicRequest(url='?',
-                param=dict(format='image/png', layer=self.md['name'], sld_version='1.1.0'))
+                param=dict(format='image/png', layer=self.name, sld_version='1.1.0'))
             return req.complete_url
         else:
             return None
@@ -510,9 +512,11 @@ class WMSGroupLayer(WMSLayerBase):
     Groups multiple wms layers, but can also contain a single layer (``this``)
     that represents this layer.
     """
-    def __init__(self, md, this, layers):
+    def __init__(self, name, title, this, layers, md=None):
+        self.name = name
+        self.title = title
         self.this = this
-        self.md = md
+        self.md = md or {}
         self.is_active = True if this is not None else False
         self.layers = layers
         self.transparent = True if this and not this.is_opaque() or all(not l.is_opaque() for l in layers) else False
@@ -555,13 +559,13 @@ class WMSGroupLayer(WMSLayerBase):
     
     def child_layers(self):
         layers = odict()
-        if self.md.get('name'):
-            layers[self.md['name']] = self
+        if self.name:
+            layers[self.name] = self
         for lyr in self.layers:
             if hasattr(lyr, 'child_layers'):
                 layers.update(lyr.child_layers())
-            elif lyr.md.get('name'):
-                layers[lyr.md['name']] = lyr
+            elif lyr.name:
+                layers[lyr.name] = lyr
         return layers
 
 

@@ -61,10 +61,10 @@
 
 {{def layer_capabilities(layer, with_srs)}}
   <Layer{{if layer.queryable}} queryable="1"{{endif}}>
-    {{if layer.md['name']}}
-    <Name>{{ layer.md['name'] }}</Name>
+    {{if layer.name}}
+    <Name>{{ layer.name }}</Name>
     {{endif}}
-    <Title>{{ layer.md.get('title') }}</Title>
+    <Title>{{ layer.title }}</Title>
     <SRS>{{for s in srs}}{{s}} {{endfor}}</SRS>
     {{py: extent = limit_llbbox(layer.extent.llbbox)}}
     <LatLonBoundingBox minx="{{ extent[0] }}" miny="{{ extent[1] }}" maxx="{{ extent[2] }}" maxy="{{ extent[3] }}" />

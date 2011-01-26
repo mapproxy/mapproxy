@@ -36,17 +36,17 @@ class TestLayerConfiguration(object):
         root = conf.wms_root_layer.wms_layer()
         
         # no root layer defined
-        eq_(root.md['title'], None)
-        eq_(root.md['name'], None)
+        eq_(root.title, None)
+        eq_(root.name, None)
         layers = root.child_layers()
         
         # names are in order
         eq_(layers.keys(), ['one', 'two', 'three'])
         
         eq_(len(layers), 3)
-        eq_(layers['one'].md['title'], 'Layer One')
-        eq_(layers['two'].md['title'], 'Layer Two')
-        eq_(layers['three'].md['title'], 'Layer Three')
+        eq_(layers['one'].title, 'Layer One')
+        eq_(layers['two'].title, 'Layer Two')
+        eq_(layers['three'].title, 'Layer Three')
         
         layers_conf = conf.layers
         eq_(len(layers_conf), 3)
@@ -68,17 +68,17 @@ class TestLayerConfiguration(object):
         root = conf.wms_root_layer.wms_layer()
         
         # no root layer defined
-        eq_(root.md['title'], None)
-        eq_(root.md['name'], None)
+        eq_(root.title, None)
+        eq_(root.name, None)
         layers = root.child_layers()
         
         # names might not be in order
         # layers.keys() != ['one', 'two', 'three']
         
         eq_(len(layers), 3)
-        eq_(layers['one'].md['title'], 'Layer One')
-        eq_(layers['two'].md['title'], 'Layer Two')
-        eq_(layers['three'].md['title'], 'Layer Three')
+        eq_(layers['one'].title, 'Layer One')
+        eq_(layers['two'].title, 'Layer Two')
+        eq_(layers['three'].title, 'Layer Three')
 
     def test_with_root(self):
         conf = self._test_conf('''
@@ -96,17 +96,17 @@ class TestLayerConfiguration(object):
         conf = ProxyConfiguration(conf)
         root = conf.wms_root_layer.wms_layer()
         
-        eq_(root.md['title'], 'Root Layer')
-        eq_(root.md['name'], 'root')
+        eq_(root.title, 'Root Layer')
+        eq_(root.name, 'root')
         layers = root.child_layers()
         
         # names are in order
         eq_(layers.keys(), ['root', 'one', 'two'])
         
         eq_(len(layers), 3)
-        eq_(layers['root'].md['title'], 'Root Layer')
-        eq_(layers['one'].md['title'], 'Layer One')
-        eq_(layers['two'].md['title'], 'Layer Two')
+        eq_(layers['root'].title, 'Root Layer')
+        eq_(layers['one'].title, 'Layer One')
+        eq_(layers['two'].title, 'Layer Two')
         
         layers_conf = conf.layers
         eq_(len(layers_conf), 2)
@@ -126,8 +126,8 @@ class TestLayerConfiguration(object):
         conf = ProxyConfiguration(conf)
         root = conf.wms_root_layer.wms_layer()
         
-        eq_(root.md['title'], 'Root Layer')
-        eq_(root.md['name'], None)
+        eq_(root.title, 'Root Layer')
+        eq_(root.name, None)
 
         layers = root.child_layers()
         # names are in order
@@ -146,8 +146,8 @@ class TestLayerConfiguration(object):
         conf = ProxyConfiguration(conf)
         root = conf.wms_root_layer.wms_layer()
         
-        eq_(root.md['title'], None)
-        eq_(root.md['name'], None)
+        eq_(root.title, None)
+        eq_(root.name, None)
 
         layers = root.child_layers()
         # names are in order
@@ -180,8 +180,8 @@ class TestLayerConfiguration(object):
         conf = ProxyConfiguration(conf)
         root = conf.wms_root_layer.wms_layer()
         
-        eq_(root.md['title'], 'Root Layer')
-        eq_(root.md['name'], None)
+        eq_(root.title, 'Root Layer')
+        eq_(root.name, None)
 
         layers = root.child_layers()
         # names are in order
@@ -209,8 +209,8 @@ class TestLayerConfiguration(object):
         conf = ProxyConfiguration(conf)
         root = conf.wms_root_layer.wms_layer()
         
-        eq_(root.md['title'], 'Root Layer')
-        eq_(root.md['name'], None)
+        eq_(root.title, 'Root Layer')
+        eq_(root.name, None)
 
         layers = root.child_layers()
         # names are in order

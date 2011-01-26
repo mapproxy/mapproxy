@@ -762,7 +762,7 @@ class WMSLayerConfiguration(ConfigurationBase):
         if not layers:
             layer = this_layer
         else:
-            layer = WMSGroupLayer({'title':self.conf['title'], 'name': self.conf.get('name')},
+            layer = WMSGroupLayer(name=self.conf.get('name'), title=self.conf.get('title'),
                                   this=this_layer, layers=layers)
         return layer
 
@@ -813,7 +813,7 @@ class LayerConfiguration(ConfigurationBase):
                 
         res_range = resolution_range(self.conf)
         
-        layer = WMSLayer({'title': self.conf['title'], 'name': self.conf['name']},
+        layer = WMSLayer(self.conf.get('name'), self.conf.get('title'),
                          sources, fi_sources, lg_sources, res_range=res_range)
         return layer
     
@@ -888,8 +888,9 @@ class ServiceConfiguration(ConfigurationBase):
         on_source_errors = self.context.globals.get_value('on_source_errors',
             conf, global_key='wms.on_source_errors')
         root_layer = self.context.wms_root_layer.wms_layer()
-        if not root_layer.md.get('title'):
-            root_layer.md['title'] = md.get('title')
+        if not root_layer.title:
+            # set title of root layer to WMS title
+            root_layer.title = md.get('title')
         concurrent_layer_renderer = self.context.globals.get_value(
             'concurrent_layer_renderer', conf,
             global_key='wms.concurrent_layer_renderer')

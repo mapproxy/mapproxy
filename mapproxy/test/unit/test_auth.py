@@ -44,28 +44,28 @@ class TestWMSAuth(object):
         #         - layer2b1
 
         layers['layer1a'] = DummyLayer('layer1a')
-        wms_layers['layer1a'] = WMSLayer(dict(name='layer1a'), [layers['layer1a']],
+        wms_layers['layer1a'] = WMSLayer('layer1a', None, [layers['layer1a']],
                                          info_layers=[layers['layer1a']])
         layers['layer1b'] = DummyLayer('layer1b')
-        wms_layers['layer1b'] = WMSLayer(dict(name='layer1b'), [layers['layer1b']],
+        wms_layers['layer1b'] = WMSLayer('layer1b', None, [layers['layer1b']],
                                          info_layers=[layers['layer1b']])
-        wms_layers['layer1'] = WMSGroupLayer(dict(name='layer1'), None,
+        wms_layers['layer1'] = WMSGroupLayer('layer1', None, None,
                                              [wms_layers['layer1a'], wms_layers['layer1b']])
 
 
         layers['layer2a'] = DummyLayer('layer2a')
-        wms_layers['layer2a'] = WMSLayer(dict(name='layer2a'), [layers['layer2a']],
+        wms_layers['layer2a'] = WMSLayer('layer2a', None, [layers['layer2a']],
                                          info_layers=[layers['layer2a']])
         layers['layer2b1'] = DummyLayer('layer2b1')
-        wms_layers['layer2b1'] = WMSLayer(dict(name='layer2b1'), [layers['layer2b1']],
+        wms_layers['layer2b1'] = WMSLayer('layer2b1', None, [layers['layer2b1']],
                                           info_layers=[layers['layer2b1']])
         layers['layer2b'] = DummyLayer('layer2b')
-        wms_layers['layer2b'] = WMSGroupLayer(dict(name='layer2b'), layers['layer2b'],
+        wms_layers['layer2b'] = WMSGroupLayer('layer2b', None, layers['layer2b'],
                                               [wms_layers['layer2b1']])
-        wms_layers['layer2'] = WMSGroupLayer(dict(name='layer2'), None,
+        wms_layers['layer2'] = WMSGroupLayer('layer2', None, None,
                                              [wms_layers['layer2a'], wms_layers['layer2b']])
         
-        root_layer = WMSGroupLayer(dict(), None, [wms_layers['layer1'],
+        root_layer = WMSGroupLayer(None, 'root layer', None, [wms_layers['layer1'],
                                                   wms_layers['layer2']])
         self.wms_layers = wms_layers
         self.layers = layers

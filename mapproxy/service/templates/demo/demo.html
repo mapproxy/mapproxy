@@ -22,12 +22,12 @@ jscript=None
             <table class="code">
                 <tr><th>Layer</th><th>Image-Format</th></tr>
                 {{for layer in layers.values()}}
-                <tr><td rowspan="{{len(formats)}}">{{layer.md.get('name')}}</td>
+                <tr><td rowspan="{{len(formats)}}">{{layer.name}}</td>
                     {{for loop, format in looper(formats)}}
                         {{if not loop.first}}
                             <tr>
                         {{endif}}
-                    <td class="value"><a href="../demo/?wms_layer={{layer.md.get('name')}}&format={{format | quote_plus}}">{{format | strip}}</a></td></tr>
+                    <td class="value"><a href="../demo/?wms_layer={{layer.name}}&format={{format | quote_plus}}">{{format | strip}}</a></td></tr>
                     {{endfor}}
                 {{endfor}}
             </table>
