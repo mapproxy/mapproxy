@@ -832,7 +832,8 @@ class LayerConfiguration(ConfigurationBase):
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
                 md['format'] = self.context.caches[cache_name].conf['format']
             
-                tile_layers.append(TileLayer(md, cache_source))
+                tile_layers.append(TileLayer(self.conf['name'], self.conf['title'],
+                                             md, cache_source))
         
         return tile_layers
         

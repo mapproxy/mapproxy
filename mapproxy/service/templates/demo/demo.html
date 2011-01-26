@@ -57,8 +57,8 @@ jscript=None
                         <tr>
                     {{endif}}
                     <td class="value">{{layer.grid.srs.srs_code}}</td>
-                    <td class="value"><a href="../demo/?tms_layer={{layer.md['name']}}&format={{layer.format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.format}}</a></td>
-                    <td class="value"><a href="../demo/?tms_capabilities&layer={{layer.md['name']}}&srs={{layer.grid.srs.srs_code | replace}}">click here</a></td></tr>
+                    <td class="value"><a href="../demo/?tms_layer={{layer.name}}&format={{layer.format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.format}}</a></td>
+                    <td class="value"><a href="../demo/?tms_capabilities&layer={{layer.name}}&srs={{layer.grid.srs.srs_code | replace}}">click here</a></td></tr>
                 {{endfor}}            
             {{endfor}}
             </table>

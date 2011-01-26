@@ -2,9 +2,9 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
     <Document>
 {{if initial_level}}
-        <name>{{layer.md['name']}}</name>
+        <name>{{layer.name}}</name>
 {{else}}
-        <name>{{layer.md['name']}} - {{tile.coord}}</name>
+        <name>{{layer.name}} - {{tile.coord}}</name>
 {{endif}}
         <Region>
             <LatLonAltBox>
@@ -24,7 +24,7 @@
         </Region>
 {{for subtile in subtiles}}
         <NetworkLink>
-            <name>{{layer.md['name']}} - {{subtile.coord}}</name>
+            <name>{{layer.name}} - {{subtile.coord}}</name>
             <Region>
                 <LatLonAltBox>
                     <north>{{subtile.bbox[3]}}</north><south>{{subtile.bbox[1]}}</south>

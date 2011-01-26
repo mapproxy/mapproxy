@@ -5,7 +5,7 @@ import textwrap
 wrapper = textwrap.TextWrapper(replace_whitespace=False, width=90,
                                break_long_words=False)
 
-menu_title= "TMS %s %s"%(layer.md['name'], srs)
+menu_title= "TMS %s %s"%(layer.name, srs)
 }}
 {{def jscript}}
 <script src="static/OpenLayers.js"></script>
@@ -25,7 +25,7 @@ function init(){
     
     map = new OpenLayers.Map('map', mapOptions);
     
-    var layer = new OpenLayers.Layer.TMS('TMS {{layer.md['name']}}', '../tms/',
+    var layer = new OpenLayers.Layer.TMS('TMS {{layer.name}}', '../tms/',
         {layername: '{{layer.md["name_internal"]}}', type: '{{format}}',
          tileSize: new OpenLayers.Size{{layer.grid.tile_size}}
     });
@@ -35,14 +35,14 @@ function init(){
 }
 </script>     
 {{enddef}}
-            <h2>Openlayers Client - Layer {{layer.md['name']}}</h2>
+            <h2>Openlayers Client - Layer {{layer.name}}</h2>
             <form action="" method="GET">
                 <table>
                     <tr><th>Coordinate System</th><th>Image format</th></tr>
                     <tr><td>
                             <select name="srs" size="1" onchange="this.form.submit()"> {{format}}
                                 {{for tms_layer in all_tile_layers.values()}}
-                                    {{if tms_layer.md['name'] == layer.md['name']}}
+                                    {{if tms_layer.name == layer.name}}
                                         {{if tms_layer.md['name_internal'] == layer.md['name_internal']}}
                                             <option selected value="{{srs}}">{{srs}}</option>
                                         {{else}}
@@ -52,7 +52,7 @@ function init(){
                                 {{endfor}}
                             </select>
                             <input type="hidden" name="format" value="png">
-                            <input type="hidden" name="tms_layer" value="{{layer.md['name']}}">
+                            <input type="hidden" name="tms_layer" value="{{layer.name}}">
                         </td>
                         <td>{{format}}</td></tr>
                 </table>

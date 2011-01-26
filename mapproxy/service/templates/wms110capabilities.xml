@@ -90,7 +90,7 @@
       <Width>{{layer.grid.tile_size[0]}}</Width>
       <Height>{{layer.grid.tile_size[1]}}</Height>
       <Format>{{layer.md['format']}}</Format>
-      <Layers>{{layer.md['name']}}</Layers>
+      <Layers>{{layer.name}}</Layers>
       <Styles></Styles>
     </TileSet>  
 {{endfor}}
