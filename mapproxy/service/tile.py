@@ -31,6 +31,7 @@ from mapproxy.source import SourceError
 from mapproxy.srs import SRS
 from mapproxy.grid import default_bboxs
 from mapproxy.image import BlankImageSource
+from mapproxy.util.ext.odict import odict
 
 import logging
 log = logging.getLogger(__name__)
@@ -87,7 +88,33 @@ class TileServer(Server):
         internal_layer = self._internal_layer(tile_request.layer)
         if internal_layer is None:
             raise RequestError('unknown layer: ' + tile_request.layer, request=tile_request)
+        self.authorize_tile_layer(internal_layer.name, tile_request.http.environ)
         return internal_layer
+    
+    def authorize_tile_layer(self, layer_name, env):
+        if 'mapproxy.authorize' in env:
+            result = env['mapproxy.authorize']('tms', [layer_name])
+            if result['authorized'] == 'full':
+                return
+            if result['authorized'] == 'partial':
+                if result['layers'].get(layer_name, {}).get('tile', False) == True:
+                    return
+            raise RequestError('forbidden', status=403)
+    
+    def authorized_tile_layers(self, env):
+        if 'mapproxy.authorize' in env:
+            result = env['mapproxy.authorize']('tms', [l for l in self.layers])
+            if result['authorized'] == 'full':
+                return self.layers
+            if result['authorized'] == 'none':
+                raise RequestError('forbidden', status=403)
+            allowed_layers = odict()
+            for layer in self.layers.itervalues():
+                if result['layers'].get(layer.name, {}).get('tile', False) == True:
+                    allowed_layers[layer.name] = layer
+            return allowed_layers
+        else:
+            return self.layers
     
     def tms_capabilities(self, tms_request):
         """
@@ -97,9 +124,11 @@ class TileServer(Server):
         service = self._service_md(tms_request)
         if hasattr(tms_request, 'layer'):
             layer = self.layer(tms_request)
+            self.authorize_tile_layer(layer.name, tms_request.http.environ)
             result = self._render_layer_template(layer, service)
         else:
-            result = self._render_template(service)
+            layers = self.authorized_tile_layers(tms_request.http.environ)
+            result = self._render_template(layers, service)
 
         return Response(result, mimetype='text/xml')
     
@@ -108,9 +137,9 @@ class TileServer(Server):
         md['url'] = map_request.http.base_url
         return md
     
-    def _render_template(self, service):
+    def _render_template(self, layers, service):
         template = get_template(self.template_file)
-        return template.substitute(service=bunch(default='', **service), layers=self.layers)
+        return template.substitute(service=bunch(default='', **service), layers=layers)
     
     def _render_layer_template(self, layer, service):
         template = get_template(self.layer_template_file)

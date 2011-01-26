@@ -1,4 +1,6 @@
 services:
+  tms:
+  kml:
   wms:
     md:
       title: 'My WMS'
@@ -26,6 +28,15 @@ layers:
             title: layer 2b1
             sources: [dummy_fi]
       
+
+caches:
+  dummy:
+    grids: [GLOBAL_MERCATOR]
+    sources: [dummy]
+  dummy_fi:
+    grids: [GLOBAL_MERCATOR]
+    sources: [dummy_fi]
+
 
 sources:
   dummy:

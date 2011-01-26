@@ -267,7 +267,7 @@ class WMSServer(Server):
     def authorized_capability_layers(self, env):
         if 'mapproxy.authorize' in env:
             result = env['mapproxy.authorize']('wms.capabilities', self.layers.keys())
-            if result['authorized'] == 'true':
+            if result['authorized'] == 'full':
                 return self.root_layer
             if result['authorized'] == 'partial':
                 return FilteredRootLayer(self.root_layer, result['layers'])

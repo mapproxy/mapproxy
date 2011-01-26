@@ -269,11 +269,12 @@ class BlankImageSource(object):
     ImageSource for transparent or solid-color images.
     Implements optimized as_buffer() method.
     """
-    def __init__(self, size, bgcolor=None, transparent=True):
+    def __init__(self, size, bgcolor=None, transparent=True, format=None):
         self.size = size
         self.bgcolor = bgcolor or '#ffffff'
         self.transparent = transparent
         self.opacity = 0.0 if transparent else 1.0
+        self.format = format
     
     def as_image(self):
         bgcolor = ImageColor.getrgb(self.bgcolor)
@@ -285,7 +286,7 @@ class BlankImageSource(object):
         return img
     
     def as_buffer(self, format=None, paletted=None, seekable=False):
-        return img_to_buf(self.as_image(), format, paletted=False)
+        return img_to_buf(self.as_image(), format or self.format, paletted=False)
 
 class ReadBufWrapper(object):
     """

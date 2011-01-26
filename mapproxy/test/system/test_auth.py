@@ -39,8 +39,9 @@ class TestWMSAuth(SystemTest):
     
     def test_capabilities_authorize_all(self):
         def auth(service, layers):
+            eq_(service, 'wms.capabilities')
             eq_(len(layers), 7)
-            return {'authorized': 'true'}
+            return {'authorized': 'full'}
         
         resp = self.app.get(CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth})
         xml = resp.lxml
@@ -48,12 +49,14 @@ class TestWMSAuth(SystemTest):
 
     def test_capabilities_authorize_none(self):
         def auth(service, layers):
+            eq_(service, 'wms.capabilities')
             eq_(len(layers), 7)
-            return {'authorized': 'false'}
+            return {'authorized': 'none'}
         self.app.get(CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth}, status=403)
 
     def test_capabilities_authorize_partial(self):
         def auth(service, layers):
+            eq_(service, 'wms.capabilities')
             eq_(len(layers), 7)
             return {
                 'authorized': 'partial',
@@ -71,6 +74,7 @@ class TestWMSAuth(SystemTest):
     
     def test_capabilities_authorize_partial_with_fi(self):
         def auth(service, layers):
+            eq_(service, 'wms.capabilities')
             eq_(len(layers), 7)
             return {
                 'authorized': 'partial',
@@ -85,4 +89,136 @@ class TestWMSAuth(SystemTest):
         eq_(xml.xpath('//Layer/Name/text()'), ['layer1', 'layer1a', 'layer2'])
     
 
+TMS_CAPABILITIES_REQ = '/tms/1.0.0'
+
+class TestTMSAuth(SystemTest):
+    config = test_config
+
+    def test_capabilities_authorize_all(self):
+        def auth(service, layers):
+            eq_(service, 'tms')
+            eq_(len(layers), 5)
+            return {'authorized': 'full'}
+        
+        resp = self.app.get(TMS_CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth})
+        xml = resp.lxml
+        eq_(xml.xpath('//TileMap/@title'), ['layer 1a', 'layer 1b', 'layer 1', 'layer 2a', 'layer 2b1'])
+
+    def test_capabilities_authorize_none(self):
+        def auth(service, layers):
+            eq_(service, 'tms')
+            eq_(len(layers), 5)
+            return {'authorized': 'none'}
+        self.app.get(TMS_CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth}, status=403)
+
+    def test_capabilities_authorize_partial(self):
+        def auth(service, layers):
+            eq_(service, 'tms')
+            eq_(len(layers), 5)
+            return {
+                'authorized': 'partial',
+                'layers': {
+                    'layer1a': {'tile': True},
+                    'layer1b': {'tile': False},
+                    'layer2': {'tile': True},
+                    'layer2b': {'tile': True},
+                    'layer2b1': {'tile': True},
+                }
+            }
+        resp = self.app.get(TMS_CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth})
+        xml = resp.lxml
+        eq_(xml.xpath('//TileMap/@title'), ['layer 1a', 'layer 2b1'])
+
+    def test_layer_capabilities_authorize_none(self):
+        def auth(service, layers):
+            eq_(service, 'tms')
+            eq_(len(layers), 1)
+            return {
+                'authorized': 'none',
+            }
+        self.app.get(TMS_CAPABILITIES_REQ + '/layer1', extra_environ={'mapproxy.authorize': auth}, status=403)
+
+    def test_layer_capabilities_authorize_all(self):
+        def auth(service, layers):
+            eq_(service, 'tms')
+            eq_(len(layers), 1)
+            return {
+                'authorized': 'full',
+            }
+        resp = self.app.get(TMS_CAPABILITIES_REQ + '/layer1', extra_environ={'mapproxy.authorize': auth})
+        xml = resp.lxml
+        eq_(xml.xpath('//TileMap/Title/text()'), ['layer 1'])
     
+    def test_layer_capabilities_authorize_partial(self):
+        def auth(service, layers):
+            eq_(service, 'tms')
+            eq_(len(layers), 1)
+            return {
+                'authorized': 'partial',
+                'layers': {
+                    'layer1': {'tile': True},
+                }
+            }
+        resp = self.app.get(TMS_CAPABILITIES_REQ + '/layer1', extra_environ={'mapproxy.authorize': auth})
+        xml = resp.lxml
+        eq_(xml.xpath('//TileMap/Title/text()'), ['layer 1'])
+    
+    def test_layer_capabilities_deny_partial(self):
+        def auth(service, layers):
+            eq_(service, 'tms')
+            eq_(len(layers), 1)
+            return {
+                'authorized': 'partial',
+                'layers': {
+                    'layer1': {'tile': False},
+                }
+            }
+        self.app.get(TMS_CAPABILITIES_REQ + '/layer1', extra_environ={'mapproxy.authorize': auth}, status=403)
+
+class TestKMLAuth(SystemTest):
+    config = test_config
+
+    def test_superoverlay_authorize_all(self):
+        def auth(service, layers):
+            eq_(service, 'kml')
+            eq_(len(layers), 1)
+            return {'authorized': 'full'}
+        
+        resp = self.app.get('/kml/layer1/0/0/0.kml', extra_environ={'mapproxy.authorize': auth})
+        xml = resp.lxml
+        eq_(xml.xpath('kml:Document/kml:name/text()', namespaces={'kml': 'http://www.opengis.net/kml/2.2'}), ['layer1'])
+
+    def test_superoverlay_authorize_none(self):
+        def auth(service, layers):
+            eq_(service, 'kml')
+            eq_(len(layers), 1)
+            return {'authorized': 'none'}
+        
+        self.app.get('/kml/layer1/0/0/0.kml', extra_environ={'mapproxy.authorize': auth}, status=403)
+
+    def test_superoverlay_authorize_partial(self):
+        def auth(service, layers):
+            eq_(service, 'kml')
+            eq_(len(layers), 1)
+            return {
+                'authorized': 'partial',
+                'layers': {
+                    'layer1': {'tile': True},
+                }
+            }        
+        resp = self.app.get('/kml/layer1/0/0/0.kml', extra_environ={'mapproxy.authorize': auth})
+        xml = resp.lxml
+        eq_(xml.xpath('kml:Document/kml:name/text()', namespaces={'kml': 'http://www.opengis.net/kml/2.2'}), ['layer1'])
+
+    def test_superoverlay_deny_partial(self):
+        def auth(service, layers):
+            eq_(service, 'kml')
+            eq_(len(layers), 1)
+            return {
+                'authorized': 'partial',
+                'layers': {
+                    'layer1': {'tile': False},
+                }
+            }        
+        self.app.get('/kml/layer1/0/0/0.kml', extra_environ={'mapproxy.authorize': auth}, status=403)
+

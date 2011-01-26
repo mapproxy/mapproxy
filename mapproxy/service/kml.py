@@ -56,6 +56,7 @@ class KMLServer(Server):
         :return: the requested tile
         """
         layer = self.layer(map_request)
+        self.authorize_tile_layer(layer.name, map_request.http.environ)
         tile = layer.render(map_request)
         resp = Response(tile.as_buffer(),
                         content_type='image/' + map_request.format)
@@ -63,7 +64,17 @@ class KMLServer(Server):
                            max_age=base_config().tiles.expires_hours * 60 * 60)
         resp.make_conditional(map_request.http)
         return resp
-
+    
+    def authorize_tile_layer(self, layer_name, env):
+        if 'mapproxy.authorize' in env:
+            result = env['mapproxy.authorize']('kml', [layer_name])
+            if result['authorized'] == 'full':
+                return
+            if result['authorized'] == 'partial':
+                if result['layers'].get(layer_name, {}).get('tile', False) == True:
+                    return
+            raise RequestError('forbidden', status=403)
+    
     def layer(self, tile_request):
         if tile_request.layer in self.layers:
             return self.layers[tile_request.layer]
@@ -78,6 +89,8 @@ class KMLServer(Server):
         :return: the rendered KML response
         """
         layer = self.layer(map_request)
+        self.authorize_tile_layer(layer.name, map_request.http.environ)
+        
         tile_coord = map_request.tile
         
         initial_level = False
