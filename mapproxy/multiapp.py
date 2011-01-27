@@ -62,7 +62,7 @@ class MultiMapProxy(object):
             return Response('not found', status=404)
         
         # safe instance/app name for authorization
-        self.req.environ['mapproxy.instance_name'] = app_name
+        req.environ['mapproxy.instance_name'] = app_name
         return self.proj_app(app_name)
     
     def index_list(self):
