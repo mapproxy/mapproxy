@@ -150,8 +150,8 @@ The ``authorized`` entry can have three values.
   Only parts of the request are allowed. The dictionary should contains more information on what parts of the request are allowed and what parts are denied. Depending on the service, MapProxy can then filter the request based on that information, e.g. return WMS Capabilities with permitted layers only.
 
 
-WMS Services
-~~~~~~~~~~~~
+WMS Service
+~~~~~~~~~~~
 
 The WMS service expects a ``layers`` entry in the authorization dictionary for ``partial`` results. ``layers`` itself should be a dictionary with all layers. All missing layers are interpreted as denied layers.
 
@@ -260,7 +260,7 @@ Results in the following abbreviated capabilities::
   </Layer>
 
 
-TMS/Tile service
+TMS/Tile Service
 ~~~~~~~~~~~~~~~~
 
 The TMS service expects a ``layers`` entry in the authorization dictionary for ``partial`` results. ``layers`` itself should be a dictionary with all layers. All missing layers are interpreted as denied layers.
@@ -278,22 +278,24 @@ Here is an example result of a call to the authorize function::
   }
 
 
-``tms``
-^^^^^^^
-
 The TMS service uses ``tms`` as the service string for all authorization requests.
 
 Only layers with the ``tile`` feature set to ``True`` are included in the TMS capabilities document (``/tms/1.0.0``). Missing layers are not included.
 
-KML service
+KML Service
 ~~~~~~~~~~~
 
 The KML authorization is similar to the TMS authorization.
 
-``kml``
-^^^^^^^
-
 The KML service uses ``kml`` as the service string for all authorization requests.
+
+
+Demo Service
+~~~~~~~~~~~~
+
+The demo service only supports ``full`` or ``none`` authorization. ``layers`` is always an empty list. The demo service does not authorize the services and layers that are listed in the overview page. If you permit a user to access the demo service, then he can see all services and layers names. However, access to these services is still restricted to the according authorization.
+
+The service string is ``demo``.
 
 
 MultiMapProxy

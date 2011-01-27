@@ -51,11 +51,16 @@ class DemoServer(Server):
 
     def handle(self, req):
         if req.path.startswith('/demo/static/'):
-            filename = req.path.lstrip('/')
+            filename = os.path.realpath(req.path).lstrip('/')
             static_file = os.path.join(os.path.dirname(__file__), 'templates', filename)
             type, encoding = mimetypes.guess_type(filename)
             return Response(open(static_file, 'rb'), content_type=type)
-
+        
+        # we don't authorize the static files (css, js)
+        # since they are not confidetial
+        if not self.authorized_demo(req.environ):
+            return Response('forbidden', content_type='text/plain', status=403)
+        
         if 'wms_layer' in req.args:
             demo = self._render_wms_template('demo/wms_demo.html', req)
         elif 'tms_layer' in req.args:
@@ -130,3 +135,11 @@ class DemoServer(Server):
         return template.substitute(capabilities = xmlfile,
                                    service = service,
                                    url = url)
+
+    def authorized_demo(self, environ):
+        if 'mapproxy.authorize' in environ:
+            result = environ['mapproxy.authorize']('demo', [])
+            if result['authorized'] == 'full':
+                return True
+            return False
+        return True
