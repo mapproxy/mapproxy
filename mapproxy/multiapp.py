@@ -61,6 +61,8 @@ class MultiMapProxy(object):
             ):
             return Response('not found', status=404)
         
+        # safe instance/app name for authorization
+        self.req.environ['mapproxy.instance_name'] = app_name
         return self.proj_app(app_name)
     
     def index_list(self):
@@ -71,7 +73,7 @@ class MultiMapProxy(object):
         html = "<html><body><h1>Welcome to MapProxy %s</h1>" % mapproxy.version.version
         
         if self.list_apps:
-            html += "<h2>available apps:</h2><ul>"
+            html += "<h2>available instances:</h2><ul>"
             html += '\n'.join('<li><a href="%(name)s/">%(name)s</a></li>' % {'name': app}
                               for app in self.loader.available_apps())
             html += '</ul>'

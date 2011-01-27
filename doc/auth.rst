@@ -294,3 +294,30 @@ The KML authorization is similar to the TMS authorization.
 ^^^^^^^
 
 The KML service uses ``kml`` as the service string for all authorization requests.
+
+
+MultiMapProxy
+~~~~~~~~~~~~~
+
+The :ref:`MultiMapProxy <multimapproxy>` application stores the instance name in the environment as ``mapproxy.instance_name``. This information in not available when your middleware gets called, but you can use it in your authorization function.
+
+Example that rejects MapProxy instances where the name starts with ``secure``.
+::
+
+
+  class MultiMapProxyAuthFilter(object):
+      def __init__(self, app, global_conf):
+          self.app = app
+
+      def __call__(self, environ, start_reponse):
+          environ['mapproxy.authorize'] = self.authorize
+          return self.app(environ, start_reponse)
+      
+      def authorize(self, service, layers=[]):
+          instance_name = environ.get('mapproxy.instance_name', '')
+          if instance_name.startswith('secure'):
+              return {'authorized': 'none'}
+          else:
+              return {'authorized': 'full'}
+          
+

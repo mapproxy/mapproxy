@@ -154,7 +154,7 @@ You can use Paste deploy, as described above, to configure and start MultiMapPro
   The directory where MapProxy should look for configurations.
 
 ``allow_listing``
-  If set to ``true``, MapProxy will list all available configurations at the root URL of your MapProxy. Defaults to false.
+  If set to ``true``, MapProxy will list all available configurations at the root URL of your MapProxy. Defaults to ``false``.
 
 
 Example ``config.ini``::
