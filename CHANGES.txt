@@ -1,4 +1,4 @@
-0.9.2dev
+1.0.0dev
 
 Features:
 - new image.transparent_color option: replaces color with full transparency
