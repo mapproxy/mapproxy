@@ -17,7 +17,7 @@
 from cgi import escape
 from mapproxy.template import bunch
 
-__all__ = ['escape', 'indent', 'bunch', 'wms100format', 'limit_llbbox']
+__all__ = ['escape', 'indent', 'bunch', 'wms100format', 'wms100info_format', 'limit_llbbox']
 
 def indent(text, n=2):
   return '\n'.join(' '*n + line for line in text.split('\n'))
@@ -34,6 +34,17 @@ def wms100format(format):
         return sub_type
     else:
         return None
+
+def wms100info_format(format):
+    """
+    >>> wms100info_format('text/html')
+    'MIME'
+    >>> wms100info_format('application/vnd.ogc.gml')
+    'GML.1'
+    """
+    if format in ('application/vnd.ogc.gml', 'text/xml'):
+        return 'GML.1'
+    return 'MIME'
 
 def limit_llbbox(bbox):
     """
