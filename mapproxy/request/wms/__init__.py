@@ -248,9 +248,28 @@ class WMSMapRequest(WMSRequest):
     def copy(self):
         return self.__class__(param=self.params.copy(), url=self.url)
     
+
+class Version(object):
+    _versions = {}
+    def __new__(cls, version):
+        if version in cls._versions:
+            return cls._versions[version]
+        version_obj = object.__new__(cls)
+        version_obj.__init__(version)
+        cls._versions[version] = version_obj
+        return version_obj
+    def __init__(self, version):
+        self.parts = tuple(int(x) for x in version.split('.'))
     
+    def __cmp__(self, other):
+        if not isinstance(other, Version):
+            return NotImplemented
+        return cmp(self.parts, other.parts)
+    def __repr__(self):
+        return "Version('%s')" % ('.'.join(str(part) for part in self.parts),)
 
 class WMS100MapRequest(WMSMapRequest):
+    version = Version('1.0.0')
     xml_exception_handler = exception.WMS100ExceptionHandler
     fixed_params = {'request': 'map', 'wmtver': '1.0.0'}
     expected_param = ['wmtver', 'request', 'layers', 'styles', 'srs', 'bbox', 
@@ -267,6 +286,7 @@ class WMS100MapRequest(WMSMapRequest):
         return params
 
 class WMS110MapRequest(WMSMapRequest):
+    version = Version('1.1.0')
     fixed_params = {'request': 'GetMap', 'version': '1.1.0', 'service': 'WMS'}
     xml_exception_handler = exception.WMS110ExceptionHandler
     
@@ -274,6 +294,7 @@ class WMS110MapRequest(WMSMapRequest):
         del self.params['wmtver']
 
 class WMS111MapRequest(WMSMapRequest):
+    version = Version('1.1.1')
     fixed_params = {'request': 'GetMap', 'version': '1.1.1', 'service': 'WMS'}
     xml_exception_handler = exception.WMS111ExceptionHandler
     
@@ -298,6 +319,7 @@ class WMS130MapRequestParams(WMSMapRequestParams):
 
 
 class WMS130MapRequest(WMSMapRequest):
+    version = Version('1.3.0')
     request_params = WMS130MapRequestParams
     xml_exception_handler = exception.WMS130ExceptionHandler
     fixed_params = {'request': 'GetMap', 'version': '1.3.0', 'service': 'WMS'}
@@ -415,36 +437,26 @@ class WMSLegendGraphicRequest(WMSMapRequest):
     
 
 class WMS111LegendGraphicRequest(WMSLegendGraphicRequest):
+    version = Version('1.1.1')
     fixed_params = WMSLegendGraphicRequest.fixed_params.copy()
     fixed_params['version'] = '1.1.1'
     xml_exception_handler = exception.WMS111ExceptionHandler
     
 class WMS130LegendGraphicRequest(WMSLegendGraphicRequest):
+    version = Version('1.3.0')
     fixed_params = WMSLegendGraphicRequest.fixed_params.copy()
     fixed_params['version'] = '1.3.0'
     xml_exception_handler = exception.WMS130ExceptionHandler
 
 class WMSFeatureInfoRequest(WMSMapRequest):
     non_strict_params = set(['format', 'styles'])
-    info_formats = (('text', 'text/plain'),
-                    ('html', 'text/html'),
-                    ('xml', 'application/vnd.ogc.gml'),
-                    )
     
     def validate_format(self):
         if self.non_strict: return 
         WMSMapRequest.validate_format(self)
-    
-    def info_format_mimetype(self, info_type):
-        for t, m in self.info_formats:
-            if t == info_type: return m
-        return 'text/plain'
-    
-    def info_mimetype_format(self, mime_type):
-        for t, m in self.info_formats:
-            if m == mime_type: return t
 
 class WMS111FeatureInfoRequest(WMSFeatureInfoRequest):
+    version = Version('1.1.1')
     request_params = WMSFeatureInfoRequestParams
     xml_exception_handler = exception.WMS111ExceptionHandler
     request_handler_name = 'featureinfo'
@@ -453,6 +465,7 @@ class WMS111FeatureInfoRequest(WMSFeatureInfoRequest):
     expected_param = WMSMapRequest.expected_param[:] + ['query_layers', 'x', 'y']
 
 class WMS110FeatureInfoRequest(WMSFeatureInfoRequest):
+    version = Version('1.1.0')
     request_params = WMSFeatureInfoRequestParams
     xml_exception_handler = exception.WMS110ExceptionHandler
     request_handler_name = 'featureinfo'
@@ -461,6 +474,7 @@ class WMS110FeatureInfoRequest(WMSFeatureInfoRequest):
     expected_param = WMSMapRequest.expected_param[:] + ['query_layers', 'x', 'y']
 
 class WMS100FeatureInfoRequest(WMSFeatureInfoRequest):
+    version = Version('1.0.0')
     request_params = WMSFeatureInfoRequestParams
     xml_exception_handler = exception.WMS100ExceptionHandler
     request_handler_name = 'featureinfo'
@@ -479,6 +493,7 @@ class WMS100FeatureInfoRequest(WMSFeatureInfoRequest):
 class WMS130FeatureInfoRequest(WMS130MapRequest):
     # XXX: this class inherits from WMS130MapRequest to reuse
     # the axis order stuff
+    version = Version('1.3.0')
     request_params = WMS130FeatureInfoRequestParams
     xml_exception_handler = exception.WMS130ExceptionHandler
     request_handler_name = 'featureinfo'
@@ -486,10 +501,6 @@ class WMS130FeatureInfoRequest(WMS130MapRequest):
     fixed_params['request'] = 'GetFeatureInfo'
     expected_param = WMS130MapRequest.expected_param[:] + ['query_layers', 'i', 'j']
     non_strict_params = set(['format', 'styles'])
-    info_formats = (('text', 'text/plain'),
-                    ('html', 'text/html'),
-                    ('xml', 'text/xml'),
-                    )
 
     def adapt_to_111(self):
         WMS130MapRequest.adapt_to_111(self)
@@ -513,16 +524,6 @@ class WMS130FeatureInfoRequest(WMS130MapRequest):
     def validate_format(self):
         if self.non_strict: return 
         WMSMapRequest.validate_format(self)
-    
-    def info_format_mimetype(self, info_type):
-        for t, m in self.info_formats:
-            if t == info_type: return m
-        return 'text/plain'
-    
-    def info_mimetype_format(self, mime_type):
-        for t, m in self.info_formats:
-            if m == mime_type: return t
-
 
 class WMSCapabilitiesRequest(WMSRequest):
     request_handler_name = 'capabilities'
@@ -540,6 +541,7 @@ class WMSCapabilitiesRequest(WMSRequest):
     
 
 class WMS100CapabilitiesRequest(WMSCapabilitiesRequest):
+    version = Version('1.0.0')
     capabilities_template = 'wms100capabilities.xml'
     fixed_params = {'request': 'capabilities', 'wmtver': '1.0.0'}
     
@@ -549,6 +551,7 @@ class WMS100CapabilitiesRequest(WMSCapabilitiesRequest):
     
 
 class WMS110CapabilitiesRequest(WMSCapabilitiesRequest):
+    version = Version('1.1.0')
     capabilities_template = 'wms110capabilities.xml'
     mime_type = 'application/vnd.ogc.wms_xml'
     fixed_params = {'request': 'GetCapabilities', 'version': '1.1.0', 'service': 'WMS'}
@@ -558,6 +561,7 @@ class WMS110CapabilitiesRequest(WMSCapabilitiesRequest):
         return exception.WMS110ExceptionHandler()
 
 class WMS111CapabilitiesRequest(WMSCapabilitiesRequest):
+    version = Version('1.1.1')
     capabilities_template = 'wms111capabilities.xml'
     mime_type = 'application/vnd.ogc.wms_xml'
     fixed_params = {'request': 'GetCapabilities', 'version': '1.1.1', 'service': 'WMS'}
@@ -568,6 +572,7 @@ class WMS111CapabilitiesRequest(WMSCapabilitiesRequest):
     
 
 class WMS130CapabilitiesRequest(WMSCapabilitiesRequest):
+    version = Version('1.3.0')
     capabilities_template = 'wms130capabilities.xml'
     fixed_params = {'request': 'GetCapabilities', 'version': '1.3.0', 'service': 'WMS'}
     
@@ -575,25 +580,6 @@ class WMS130CapabilitiesRequest(WMSCapabilitiesRequest):
     def exception_handler(self):
         return exception.WMS130ExceptionHandler()
     
-class Version(object):
-    _versions = {}
-    def __new__(cls, version):
-        if version in cls._versions:
-            return cls._versions[version]
-        version_obj = object.__new__(cls)
-        version_obj.__init__(version)
-        cls._versions[version] = version_obj
-        return version_obj
-    def __init__(self, version):
-        self.parts = tuple(int(x) for x in version.split('.'))
-    
-    def __cmp__(self, other):
-        if not isinstance(other, Version):
-            return NotImplemented
-        return cmp(self.parts, other.parts)
-    def __repr__(self):
-        return "Version('%s')" % ('.'.join(str(part) for part in self.parts),)
-
 request_mapping = {Version('1.0.0'): {'featureinfo': WMS100FeatureInfoRequest,
                                       'map': WMS100MapRequest,
                                       'capabilities': WMS100CapabilitiesRequest},
@@ -706,3 +692,34 @@ def create_request(req_data, param, req_type='map', version='1.1.1'):
         del req_data['sld']
     
     return request_mapping[Version(version)][req_type](url=url, param=req_data)
+
+
+info_formats = {
+    Version('1.3.0'): (('text', 'text/plain'),
+                       ('html', 'text/html'),
+                       ('xml', 'text/xml'),
+                      ),
+    None: (('text', 'text/plain'),
+           ('html', 'text/html'),
+           ('xml', 'application/vnd.ogc.gml'),
+          )
+}
+
+
+def infotype_from_mimetype(version, mime_type):
+    if version in info_formats:
+        formats = info_formats[version]
+    else:
+        formats = info_formats[None] # default
+    for t, m in formats:
+        if m == mime_type: return t
+
+def mimetype_from_infotype(version, info_type):
+    if version in info_formats:
+        formats = info_formats[version]
+    else:
+        formats = info_formats[None] # default
+    for t, m in formats:
+        if t == info_type: return m
+    return 'text/plain'
+    

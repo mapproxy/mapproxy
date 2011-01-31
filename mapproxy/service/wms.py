@@ -19,7 +19,8 @@ WMS service handler
 """
 from itertools import chain
 from functools import partial
-from mapproxy.request.wms import wms_request, WMS111LegendGraphicRequest
+from mapproxy.request.wms import (wms_request, WMS111LegendGraphicRequest,
+    mimetype_from_infotype, infotype_from_mimetype)
 from mapproxy.srs import SRS, TransformationError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
@@ -49,7 +50,7 @@ class WMSServer(Server):
     fi_transformers = None
     
     def __init__(self, root_layer, md, layer_merger=None, request_parser=None, tile_layers=None,
-        attribution=None, srs=None, image_formats=None, strict=False, on_error='raise',
+        attribution=None, srs=None, image_formats=None, info_types=None, strict=False, on_error='raise',
         concurrent_layer_renderer=1):
         Server.__init__(self)
         self.request_parser = request_parser or partial(wms_request, strict=strict)
@@ -65,6 +66,7 @@ class WMSServer(Server):
         self.on_error = on_error
         self.concurrent_layer_renderer = concurrent_layer_renderer
         self.image_formats = image_formats or base_config().wms.image_formats
+        self.info_types = info_types
         self.srs = srs or base_config().wms.srs
                 
     def map(self, map_request):
@@ -133,7 +135,15 @@ class WMSServer(Server):
             
         service = self._service_md(map_request)
         root_layer = self.authorized_capability_layers(map_request.http.environ)
-        result = Capabilities(service, root_layer, tile_layers, self.image_formats, self.srs).render(map_request)
+        
+        info_types = ['text', 'html', 'xml'] # defaults
+        if self.info_types:
+            info_types = self.info_types
+        elif self.fi_transformers:
+            info_types = self.fi_transformers.keys()
+        info_formats = [mimetype_from_infotype(map_request.version, info_type) for info_type in info_types]
+        
+        result = Capabilities(service, root_layer, tile_layers, self.image_formats, info_formats, self.srs).render(map_request)
         return Response(result, mimetype=map_request.mime_type)
     
     def featureinfo(self, request):
@@ -196,12 +206,12 @@ class WMSServer(Server):
                         info_type = 'html'
                     else:
                         info_type = 'text'
-                    mimetype = request.info_format_mimetype(info_type)
+                    mimetype = mimetype_from_infotype(request.version, info_type)
                 else:
-                    info_type = request.info_mimetype_format(mimetype)
+                    info_type = infotype_from_mimetype(request.version, mimetype)
                 resp = self.fi_transformers[info_type](doc).as_string()
         else:
-            mimetype = request.info_format_mimetype(infos[0].info_type)
+            mimetype = mimetype_from_infotype(request.version, infos[0].info_type)
             if len(infos) > 1:
                 resp = infos[0].combine(infos).as_string()
             else:
@@ -304,11 +314,12 @@ class Capabilities(object):
     """
     Renders WMS capabilities documents.
     """
-    def __init__(self, server_md, layers, tile_layers, image_formats, srs):
+    def __init__(self, server_md, layers, tile_layers, image_formats, info_formats, srs):
         self.service = server_md
         self.layers = layers
         self.tile_layers = tile_layers
         self.image_formats = image_formats
+        self.info_formats = info_formats
         self.srs = srs
     
     def render(self, _map_request):
@@ -319,6 +330,7 @@ class Capabilities(object):
         doc = template.substitute(service=bunch(default='', **self.service),
                                    layers=self.layers,
                                    formats=self.image_formats,
+                                   info_formats=self.info_formats,
                                    srs=self.srs,
                                    tile_layers=self.tile_layers)
         # strip blank lines

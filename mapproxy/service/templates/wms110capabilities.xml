@@ -65,9 +65,9 @@
       </DCPType>
     </GetMap>
     <GetFeatureInfo>
-      <Format>text/plain</Format>
-      <Format>text/html</Format>
-      <Format>application/vnd.ogc.gml</Format>
+{{for format in info_formats}}
+      <Format>{{format}}</Format>
+{{endfor}}
       <DCPType>
         <HTTP>
           <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.url}}?"/></Get>
