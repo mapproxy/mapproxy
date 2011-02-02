@@ -22,6 +22,7 @@ from mapproxy.util.geom import (
     transform_geometry,
     geom_support,
     coverage,
+    MultiCoverage,
     bbox_polygon,
 )
 from mapproxy.test.helper import TempFile
@@ -204,4 +205,35 @@ class TestBBOXCoverage(object):
         assert not self.coverage.intersects((0, 0, 1000, 1000), SRS(900913))
         assert self.coverage.intersects((0, 0, 1500000, 1500000), SRS(900913))
         
+
+class TestMultiCoverage(object):
+    def setup(self):
+        # box from 10 10 to 80 80 with small spike/corner to -10 60 (upper left)
+        self.geom = shapely.wkt.loads(
+            "POLYGON((10 10, 10 50, -10 60, 10 80, 80 80, 80 10, 10 10))")
+        self.coverage1 = coverage(self.geom, SRS(4326))
+        self.coverage2 = coverage([100, 0, 120, 20], SRS(4326))
+        self.coverage = MultiCoverage([self.coverage1, self.coverage2])
     
+    def test_bbox(self):
+        assert bbox_equals(self.coverage.bbox, [-10, 0, 120, 80], 0.0001)
+    
+    def test_contains(self):
+        assert self.coverage.contains((15, 15, 20, 20), SRS(4326))
+        assert self.coverage.contains((15, 15, 79, 20), SRS(4326))
+        assert not self.coverage.contains((9, 10, 20, 20), SRS(4326))
+        assert self.coverage.contains((110, 5, 115, 15), SRS(4326))
+    
+    def test_intersects(self):
+        assert self.coverage.intersects((15, 15, 20, 20), SRS(4326))
+        assert self.coverage.intersects((15, 15, 80, 20), SRS(4326))
+        assert self.coverage.intersects((9, 10, 20, 20), SRS(4326))
+        assert self.coverage.intersects((-30, 10, -8, 70), SRS(4326))
+        assert not self.coverage.intersects((-30, 10, -11, 70), SRS(4326))
+        
+        assert not self.coverage.intersects((0, 0, 1000, 1000), SRS(900913))
+        assert self.coverage.intersects((0, 0, 1500000, 1500000), SRS(900913))
+        
+        assert self.coverage.intersects((110, 5, 115, 15), SRS(4326))
+        assert self.coverage.intersects((90, 5, 105, 15), SRS(4326))
+        

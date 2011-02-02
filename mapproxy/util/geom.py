@@ -16,6 +16,7 @@
 
 from __future__ import division, with_statement
 from functools import partial
+import operator
 
 from mapproxy.layer import MapExtent
 
@@ -33,6 +34,7 @@ def require_geom_support():
         raise ImportError('Shapely required for geometry support')
 
 from mapproxy.grid import bbox_intersects, bbox_contains
+from mapproxy.util import cached_property
 
 def load_datasource(datasource, where=None):
     """
@@ -125,6 +127,28 @@ def coverage(geom, srs):
     else:
         return GeomCoverage(geom, srs)
 
+class MultiCoverage(object):
+    """Aggregates multiple coverages"""
+    def __init__(self, coverages):
+        self.coverages = coverages
+        self.bbox = self.extent.bbox
+    
+    @cached_property
+    def extent(self):
+        return reduce(operator.add, [c.extent for c in self.coverages])
+    
+    def intersects(self, bbox, srs):
+        return any(c.intersects(bbox, srs) for c in self.coverages)
+
+    def contains(self, bbox, srs):
+        return any(c.contains(bbox, srs) for c in self.coverages)
+    
+    def transform_to(self, srs):
+        return MultiCoverage([c.transform_to(srs) for c in self.coverages])
+    
+    def __repr__(self):
+        return '<MultiCoverage %r: %r>' % (self.extent.llbbox, self.coverages)
+
 class BBOXCoverage(object):
     def __init__(self, bbox, srs):
         self.bbox = bbox
@@ -147,6 +171,17 @@ class BBOXCoverage(object):
     def contains(self, bbox, srs):
         bbox = self._bbox_in_coverage_srs(bbox, srs)
         return bbox_contains(self.bbox, bbox)
+    
+    def transform_to(self, srs):
+        if srs == self.srs:
+            return self
+        
+        bbox = self.srs.transform_bbox_to(srs, self.bbox)
+        return BBOXCoverage(bbox, srs)
+    
+    def __repr__(self):
+        return '<BBOXCoverage %r/%r>' % (self.extent.llbbox, self.bbox)
+
 
 class GeomCoverage(object):
     def __init__(self, geom, srs):
@@ -181,6 +216,13 @@ class GeomCoverage(object):
             bbox = bbox_polygon(bbox)
         return bbox
     
+    def transform_to(self, srs):
+        if srs == self.srs:
+            return self
+        
+        geom = transform_geometry(self.srs, srs, self.geom)
+        return GeomCoverage(geom, srs)
+    
     def intersects(self, bbox, srs):
         bbox = self._bbox_poly_in_coverage_srs(bbox, srs)
         return self.prepared_geom.intersects(bbox)
@@ -189,4 +231,7 @@ class GeomCoverage(object):
         bbox = self._bbox_poly_in_coverage_srs(bbox, srs)
         return self.prepared_geom.contains(bbox)
     
+    def __repr__(self):
+        return '<GeomCoverage %r: %r>' % (self.extent.llbbox, self.geom)
+
     
