@@ -38,7 +38,9 @@ def load_coverage(conf):
     else:
         srs = conf['bbox_srs']
         bbox = conf['bbox']
+        if isinstance(bbox, basestring):
+            bbox = map(float, bbox.split(','))
         geom = None
-    
+
     return coverage(geom or bbox, SRS(srs))
         
