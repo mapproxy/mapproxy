@@ -24,7 +24,6 @@ import hashlib
 import urlparse
 import yaml #pylint: disable-msg=F0401
 from copy import deepcopy
-from functools import wraps
 
 import logging
 log = logging.getLogger(__name__)
@@ -85,7 +84,7 @@ from mapproxy.source.wms import WMSSource, WMSInfoSource, WMSLegendSource
 from mapproxy.source.tile import TiledSource
 from mapproxy.cache.tile import TileManager
 from mapproxy.cache.legend import LegendCache
-from mapproxy.util import local_base_config
+from mapproxy.util import local_base_config, memoize
 from mapproxy.config.coverage import load_coverage
 from mapproxy.featureinfo import XSLTransformer, has_xslt_support
 
@@ -259,17 +258,6 @@ class ProxyConfiguration(object):
     @property
     def base_config(self):
         return self.globals.base_config
-
-def memoize(func):
-    @wraps(func)
-    def wrapper(*args):
-        if not hasattr(func, '__memoize_cache'):
-            func.__memoize_cache = {}
-        key = args
-        if key not in func.__memoize_cache:
-            func.__memoize_cache[key] = func(*args)
-        return func.__memoize_cache[key]
-    return wrapper
 
 def list_of_dicts_to_ordered_dict(dictlist):
     """

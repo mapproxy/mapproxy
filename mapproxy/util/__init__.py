@@ -27,8 +27,10 @@ import threading
 import shutil
 import datetime
 import contextlib
-import mapproxy.config
+from functools import wraps
 from copy import deepcopy
+
+import mapproxy.config
 
 import logging
 log = logging.getLogger(__name__)
@@ -82,6 +84,17 @@ class cached_property(object):
         value = self.func(obj)
         setattr(obj, self.__name__, value)
         return value
+
+def memoize(func):
+    @wraps(func)
+    def wrapper(*args):
+        if not hasattr(func, '__memoize_cache'):
+            func.__memoize_cache = {}
+        key = args
+        if key not in func.__memoize_cache:
+            func.__memoize_cache[key] = func(*args)
+        return func.__memoize_cache[key]
+    return wrapper
 
 def swap_dir(src_dir, dst_dir, keep_old=False, backup_ext='.tmp'):
     """
