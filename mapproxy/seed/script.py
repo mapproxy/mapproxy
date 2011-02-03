@@ -14,9 +14,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 from optparse import OptionParser
-from mapproxy.seed import seed_from_yaml_conf
+from mapproxy.seed.config import load_seed_tasks_conf
+from mapproxy.seed.seeder import seed_tasks
+from mapproxy.seed.util import format_task
+
 
 def main():
     usage = "usage: %prog [options] seed_conf"
@@ -24,6 +26,9 @@ def main():
     parser.add_option("-q", "--quiet",
                       action="store_false", dest="verbose", default=True,
                       help="don't print status messages to stdout")
+    parser.add_option("-s", "--seed-conf",
+                      dest="seed_file", default=None,
+                      help="seed configuration")
     parser.add_option("-f", "--proxy-conf",
                       dest="conf_file", default=None,
                       help="proxy configuration")
@@ -38,17 +43,52 @@ def main():
                       metavar="N",
                       help="do not check for intersections between tiles"
                            " and seed geometries on the last N levels")
+    parser.add_option("--summary",
+                      action="store_true", dest="summary", default=False,
+                      help="print summary with all seeding tasks and exit."
+                           " does not seed anything.")
+    parser.add_option("-i", "--interactive",
+                      action="store_true", dest="interactive", default=False,
+                      help="print each task decription and ask if it should be seeded")
     
     (options, args) = parser.parse_args()
-    if len(args) != 1:
-        parser.error('missing seed_conf file as last argument')
+    if not options.seed_file:
+        if len(args) != 1:
+            parser.error('missing seed_conf file as last argument or --seed-conf option')
+        else:
+            options.seed_file = args[0]
     
     if not options.conf_file:
-        parser.error('set proxy configuration with -f')
+        parser.error('missing mapproxy configuration -f/--proxy-conf')
     
-    seed_from_yaml_conf(args[0], mapproxy_conf_file=options.conf_file, verbose=options.verbose,
-                        dry_run=options.dry_run, concurrency=options.concurrency,
-                        skip_geoms_for_last_levels=options.geom_levels)
+    tasks = load_seed_tasks_conf(options.seed_file, options.conf_file)
+    
+    if options.summary:
+        for task in tasks:
+            print format_task(task)
+        return
+    
+    if options.interactive:
+        selected_tasks = []
+        for task in tasks:
+            print format_task(task)
+            resp = raw_input('seed this (y/n)?')
+            if resp.lower() == 'y':
+                selected_tasks.append(task)
+        
+        if selected_tasks:
+            print 'start seeding process'
+            seed_tasks(selected_tasks, verbose=options.verbose, dry_run=options.dry_run,
+                       concurrency=options.concurrency,
+                       skip_geoms_for_last_levels=options.geom_levels)
+            
+    else:
+        seed_tasks(tasks, verbose=options.verbose, dry_run=options.dry_run,
+                   concurrency=options.concurrency,
+                   skip_geoms_for_last_levels=options.geom_levels)
+    
+
+
 
 if __name__ == '__main__':
     main()

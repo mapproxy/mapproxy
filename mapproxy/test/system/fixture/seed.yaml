@@ -1,12 +1,13 @@
-views:
-  test:
+coverage:
+  world:
     bbox: [-180, -90, 180, 90]
     bbox_srs: 'EPSG:4326'
-    srs: ['EPSG:4326']
-    level: [0, 0]
+
 
 seeds:
   one:
-    views: [test]
-    remove_before:
+    caches: [one]
+    grids: [GLOBAL_GEODETIC]
+    levels: [0]
+    refresh_before:
       days: 1
