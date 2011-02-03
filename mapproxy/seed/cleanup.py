@@ -14,68 +14,27 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import shutil
+from mapproxy.seed.util import format_cleanup_task
+from mapproxy.util import cleanup_directory
 
-from optparse import OptionParser
-from textwrap import dedent
+def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
+               verbose=True):
+    for task in tasks:
+        print format_cleanup_task(task)
+        
+        if not task.coverage:
+            simple_cleanup(task, dry_run=dry_run)
+        else:
+            print 'not cleaning up'
 
-def main():
-    usage  = "usage: %prog [options] caches"
-    usage += dedent("""\n
-     Removes cached data from one or more caches.
-     
-     Examples
-       Remove level 10 and above (11, 12, 13, ...)
-         $ %prog cache_EPSG4326 --from 10
-       Remove level 8 - 10
-         $ %prog cache_EPSG4326 --from 8 --to 10
-       Remove all levels
-         $ %prog cache_EPSG4326 --all
-
-     Note: You need to point %prog directly to one (or more)
-           cache directories (e.g. var/cache_data/cache_*).
-           TODO: Support for mapproxy.yaml.""")
-    
-    parser = OptionParser(usage)
-    parser.add_option("--from", type="int", metavar='n',
-                      dest="from_level", default=None,
-                      help="remove from this level (inclusive)")
-    parser.add_option("--to", type="int", metavar='n',
-                      dest="to_level", default=None,
-                      help="remove to this level (inclusive)")
-    parser.add_option("-n", "--dry-run",
-                      action="store_true", dest="dry_run", default=False,
-                      help="do not remove anything, just print output what"
-                      " would be removed")
-    parser.add_option("-a", "--all",
-                      action="store_true", dest="remove_all", default=False,
-                      help="remove all levels")
-    
-    (options, args) = parser.parse_args()
-    if len(args) == 0:
-        parser.error('need one cache directory (see --help)')
-    
-    if not options.from_level and not options.to_level and not options.remove_all:
-        parser.error('need --from or/and --to (use --all to remove all levels)')
-
-    for cache_dir in args:
-        remove_levels(cache_dir, options.from_level, options.to_level, options.dry_run)
-
-def remove_levels(cache_dir, from_level, to_level, dry_run=True):
-    if from_level is None:
-        from_level = 0
-    if to_level is None:
-        to_level = 1e99
-    
-    for filename in os.listdir(cache_dir):
-        level_dir = os.path.join(cache_dir, filename)
-        if os.path.isdir(level_dir) and filename.isdigit():
-            level = int(filename, 10)
-            if from_level <= level <= to_level:
-                print 'rm -r %s' % os.path.join(cache_dir, filename)
-                if not dry_run:
-                    shutil.rmtree(level_dir)
-
-if __name__ == '__main__':
-    main()
+def simple_cleanup(cleanup_task, dry_run=False):
+    for level in cleanup_task.levels:
+        level_dir = cleanup_task.tile_manager.cache.level_location(level)
+        if dry_run:
+            def file_handler(filename):
+                print 'removing ' + filename
+        else:
+            file_handler = None
+        print 'removing oldfiles in ' + level_dir
+        cleanup_directory(level_dir, cleanup_task.remove_timestamp,
+            file_handler=file_handler)

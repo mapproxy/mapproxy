@@ -117,8 +117,7 @@ def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
         else:
             return result
 
-
-def format_task(task):
+def format_seed_task(task):
     info = []
     info.append('Seeding:\tcache %s with grid %s (%s)' % (
                  task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
@@ -132,6 +131,24 @@ def format_task(task):
         info.append('Reseed:\ttiles older than %s' %
                     datetime.fromtimestamp(task.refresh_timestamp))
     else:
-        info.append('Reseed:\t all tiles')
+        info.append('Reseed:\t no tiles')
+    
+    return '\n'.join(info)
+
+def format_cleanup_task(task):
+    info = []
+    info.append('Cleaning up:\tcache %s with grid %s (%s)' % (
+                 task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
+    if task.coverage:
+        info.append('    Limited to:\t%s' % (task.coverage.extent.llbbox, ))
+    else:
+        info.append('    Complete grid:\t%s' % (map_extent_from_grid(task.grid).llbbox, ))
+    info.append('    Levels:\t%s' % (task.levels, ))
+        
+    if task.remove_timestamp:
+        info.append('Remove:\ttiles older than %s' %
+                    datetime.fromtimestamp(task.remove_timestamp))
+    else:
+        info.append('Remove:\t all tiles')
     
     return '\n'.join(info)

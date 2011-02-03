@@ -19,7 +19,8 @@ import os
 import time
 import shutil
 import tempfile
-from mapproxy.seed.seeder import seed_tasks
+from mapproxy.seed.seeder import seed
+from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.config import load_seed_tasks_conf
 
 from mapproxy.test.http import mock_httpd
@@ -52,8 +53,9 @@ class SeedTestBase(object):
         return tile
 
     def test_seed_dry_run(self):
-        tasks = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
-        seed_tasks(tasks, verbose=False, dry_run=True)
+        tasks, cleanup_tasks = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+        seed(tasks, verbose=False, dry_run=True)
+        cleanup(cleanup_tasks, verbose=False, dry_run=True)
     
     def test_seed(self):
         with tmp_image((256, 256), format='png') as img:
@@ -63,40 +65,43 @@ class SeedTestBase(object):
                                   '&width=256&height=128&srs=EPSG:4326'},
                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
-                tasks = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
-                seed_tasks(tasks, verbose=False, dry_run=False)
+                tasks, cleanup_tasks  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+                seed(tasks, verbose=False, dry_run=False)
+                cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
     def test_reseed_uptodate(self):
         # tile already there.
         self.make_tile((0, 0, 0))
-        tasks = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
-        seed_tasks(tasks, verbose=False, dry_run=False)
-    
-    # def test_reseed_remove_before(self):
-    #     # tile already there but too old
-    #     t000 = self.make_tile((0, 0, 0), timestamp=time.time() - (60*60*25))
-    #     # old tile outside the seed view (should be removed)
-    #     t001 = self.make_tile((0, 0, 1), timestamp=time.time() - (60*60*25))
-    #     assert os.path.exists(t000)
-    #     assert os.path.exists(t001)
-    #     with tmp_image((256, 256), format='png') as img:
-    #         img_data = img.read()
-    #         expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-    #                               '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
-    #                               '&width=256&height=128&srs=EPSG:4326'},
-    #                         {'body': img_data, 'headers': {'content-type': 'image/png'}})
-    #         with mock_httpd(('localhost', 42423), [expected_req]):
-    #             tasks = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
-    #             seed_tasks(tasks, verbose=True, dry_run=False)
-    #     
-    #     assert os.path.exists(t000)
-    #     assert os.path.getmtime(t000) - 5 < time.time() < os.path.getmtime(t000) + 5
-    #     assert not os.path.exists(t001)
+        tasks, cleanup_tasks  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+        seed(tasks, verbose=False, dry_run=False)
+        cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
 
 class TestSeedOldConfiguration(SeedTestBase):
     seed_conf_name = 'seed_old.yaml'
     mapproxy_conf_name = 'seed_mapproxy.yaml'
+
+    def test_reseed_remove_before(self):
+        # tile already there but too old
+        t000 = self.make_tile((0, 0, 0), timestamp=time.time() - (60*60*25))
+        # old tile outside the seed view (should be removed)
+        t001 = self.make_tile((0, 0, 1), timestamp=time.time() - (60*60*25))
+        assert os.path.exists(t000)
+        assert os.path.exists(t001)
+        with tmp_image((256, 256), format='png') as img:
+            img_data = img.read()
+            expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                                  '&width=256&height=128&srs=EPSG:4326'},
+                            {'body': img_data, 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                tasks, cleanup_tasks = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+                seed(tasks, verbose=True, dry_run=False)
+                cleanup(cleanup_tasks, verbose=False, dry_run=False)
+        
+        assert os.path.exists(t000)
+        assert os.path.getmtime(t000) - 5 < time.time() < os.path.getmtime(t000) + 5
+        assert not os.path.exists(t001)
 
 class TestSeed(SeedTestBase):
     seed_conf_name = 'seed.yaml'

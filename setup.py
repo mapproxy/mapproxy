@@ -57,7 +57,7 @@ setup(
     entry_points = {
         'console_scripts': [
             'mapproxy-seed = mapproxy.seed.script:main',
-            'mapproxy-cleanup = mapproxy.seed.cleanup:main',
+            'mapproxy-cleanup = mapproxy.seed.script:cleanup_main',
         ],
         'paste.app_factory': [
             'app = mapproxy.wsgiapp:app_factory',

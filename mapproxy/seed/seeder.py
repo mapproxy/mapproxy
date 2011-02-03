@@ -21,7 +21,7 @@ from mapproxy.config import base_config
 from mapproxy.grid import MetaGrid
 from mapproxy.source import SourceError
 from mapproxy.util import local_base_config
-from mapproxy.seed.util import format_task
+from mapproxy.seed.util import format_seed_task
 
 from mapproxy.seed.util import (timestamp, exp_backoff, ETA, limit_sub_bbox,
     status_symbol, format_bbox)
@@ -200,10 +200,24 @@ class SeedTask(object):
         return NONE
 
 
-def seed_tasks(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
+class CleanupTask(object):
+    def __init__(self, md, tile_manager, levels, remove_timestamp, coverage):
+        self.md = md
+        self.tile_manager = tile_manager
+        self.grid = tile_manager.grid
+        self.levels = levels
+        self.remove_timestamp = remove_timestamp
+        self.coverage = coverage
+    
+    def intersects(self, bbox):
+        if self.coverage.contains(bbox, self.grid.srs): return CONTAINS
+        if self.coverage.intersects(bbox, self.grid.srs): return INTERSECTS
+        return NONE
+
+def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
                verbose=True):
     for task in tasks:
-        print format_task(task)
+        print format_seed_task(task)
         if task.refresh_timestamp:
             task.tile_manager._expire_timestamp = task.refresh_timestamp
         # self.seeded_caches.append(tile_mgr)
