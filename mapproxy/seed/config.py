@@ -18,6 +18,7 @@ from __future__ import with_statement
 
 import os
 import sys
+import time
 import operator
 
 import yaml
@@ -225,9 +226,10 @@ class CleanupConfiguration(ConfigurationBase):
     def __init__(self, name, conf, seeding_conf):
         ConfigurationBase.__init__(self, name, conf, seeding_conf)
         
-        self.remove_timestamp = None
         if 'remove_before' in self.conf:
             self.remove_timestamp = before_timestamp_from_options(self.conf['remove_before'])
+        else:
+            self.remove_timestamp = time.time()
     
     def cleanup_tasks(self):
         for grid_name in self.grids:

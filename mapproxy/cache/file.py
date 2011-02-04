@@ -152,7 +152,12 @@ class FileCache(object):
             tile.source = ImageSource(location)
             return True
         return False
-        
+    
+    def remove(self, tile):
+        location = self.tile_location(tile)
+        if os.path.exists(location):
+            os.remove(location)
+    
     def store(self, tile):
         """
         Add the given `tile` to the file cache. Stores the `Tile.source` to

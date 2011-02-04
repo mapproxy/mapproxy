@@ -92,6 +92,11 @@ class TileManager(object):
         
         return tiles
     
+    def remove_tile_coords(self, tile_coords):
+        tiles = TileCollection(tile_coords)
+        for tile in tiles:
+            self.cache.remove(tile)
+    
     def creator(self):
         return TileCreator(self.cache, self.sources, self.grid, self.meta_grid, self)
     
@@ -106,13 +111,27 @@ class TileManager(object):
         """
         if isinstance(tile, tuple):
             tile = Tile(tile)
-        max_mtime = self.expire_timestamp(tile)
         cached = self.cache.is_cached(tile)
+        max_mtime = self.expire_timestamp(tile)
         if cached and max_mtime is not None:
             stale = self.cache.timestamp_created(tile) < max_mtime
             if stale:
                 cached = False
         return cached
+    
+    def is_stale(self, tile):
+        """
+        Return True if tile exists _and_ is expired.
+        """
+        if isinstance(tile, tuple):
+            tile = Tile(tile)
+        if self.cache.is_cached(tile):
+            # tile exists
+            if not self.is_cached(tile):
+                # expired
+                return True
+            return False
+        return False
     
     def expire_timestamp(self, tile=None):
         """

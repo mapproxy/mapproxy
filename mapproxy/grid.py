@@ -771,6 +771,10 @@ class MetaGrid(object):
         
         return x0, y0, z
     
+    def tile_list(self, main_tile):
+        tile_grid = self._meta_size(main_tile[2])
+        return self._meta_tile_list(main_tile, tile_grid)
+    
     def _meta_tile_list(self, main_tile, tile_grid):
         """
         >>> mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))

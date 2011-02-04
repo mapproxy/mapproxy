@@ -106,6 +106,14 @@ class TestFileCache(object):
     def test_is_cached_none(self):
         assert self.cache.is_cached(Tile(None))
     
+    def test_remove(self):
+        tile = Tile((0, 0, 0))
+        self._create_cached_tile(tile)
+        assert self.cache.is_cached(Tile((0, 0, 0)))
+        
+        self.cache.remove(Tile((0, 0, 0)))
+        assert not self.cache.is_cached(Tile((0, 0, 0)))
+    
     def test_load_tile_not_cached(self):
         tile = Tile((0, 0, 0))
         assert self.cache.load(tile) == False
@@ -171,6 +179,7 @@ class TestFileCache(object):
         with open(loc, 'w') as f:
             f.write('foo')
 
+
 class MockFileCache(FileCache):
     def __init__(self, *args, **kw):
         FileCache.__init__(self, *args, **kw)
@@ -189,7 +198,61 @@ class MockFileCache(FileCache):
     
     def is_cached(self, tile):
         return tile.coord in self.stored_tiles
+
+
+def create_cached_tile(tile, cache, timestamp=None):
+    loc = cache.tile_location(tile, create_dir=True)
+    with open(loc, 'w') as f:
+        f.write('foo')
     
+    if timestamp:
+        os.utime(loc, (timestamp, timestamp))
+
+
+class TestTileManagerStaleTiles(object):
+    def setup(self):
+        self.cache_dir = tempfile.mkdtemp()
+        self.file_cache = FileCache(cache_dir=self.cache_dir, file_ext='png')
+        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        self.client = MockTileClient()
+        self.source = TiledSource(self.grid, self.client)
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png')
+    def teardown(self):
+        shutil.rmtree(self.cache_dir)
+    
+    def test_is_stale_missing(self):
+        assert not self.tile_mgr.is_stale(Tile((0, 0, 1)))
+    
+    def test_is_stale_not_expired(self):
+        create_cached_tile(Tile((0, 0, 1)), self.file_cache)
+        assert not self.tile_mgr.is_stale(Tile((0, 0, 1)))
+        
+    def test_is_stale_expired(self):
+        create_cached_tile(Tile((0, 0, 1)), self.file_cache, timestamp=time.time()-3600)
+        self.tile_mgr._expire_timestamp = time.time()
+        assert self.tile_mgr.is_stale(Tile((0, 0, 1)))
+
+
+class TestTileManagerRemoveTiles(object):
+    def setup(self):
+        self.cache_dir = tempfile.mkdtemp()
+        self.file_cache = FileCache(cache_dir=self.cache_dir, file_ext='png')
+        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        self.client = MockTileClient()
+        self.source = TiledSource(self.grid, self.client)
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png')
+    def teardown(self):
+        shutil.rmtree(self.cache_dir)
+    
+    def test_remove_missing(self):
+        self.tile_mgr.remove_tile_coords([(0, 0, 0), (0, 0, 1)])
+        
+    def test_remove_existing(self):
+        create_cached_tile(Tile((0, 0, 1)), self.file_cache)
+        assert self.tile_mgr.is_cached(Tile((0, 0, 1)))
+        self.tile_mgr.remove_tile_coords([(0, 0, 0), (0, 0, 1)])
+        assert not self.tile_mgr.is_cached(Tile((0, 0, 1)))
+
 class TestTileManagerTiledSource(object):
     def setup(self):
         self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)

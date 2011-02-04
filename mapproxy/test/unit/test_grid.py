@@ -162,7 +162,10 @@ class TestMetaGridGeodetic(object):
                 ((0, 0, 1), (0, 0)),
                 ((1, 0, 1), (256, 0))
             ])
-
+    def test_tile_list_level_1(self):
+        eq_(list(self.mgrid.tile_list((0, 0, 1))),
+            [(0, 0, 1), (1, 0, 1)])
+    
     def test_meta_bbox_level_2(self):
         eq_(self.mgrid._meta_bbox((0, 0, 2)), ((-180, -90, 3.515625, 90), (0, 0, 10, 0)))
         eq_(self.mgrid._meta_bbox((0, 0, 2), limit_to_bbox=False),
@@ -189,7 +192,13 @@ class TestMetaGridGeodetic(object):
                 ((2, 0, 2), (10, 256)),
                 ((3, 0, 2), (266, 256)),
             ])
-
+    
+    def test_tile_list_level_2(self):
+        eq_(list(self.mgrid.tile_list((0, 0, 2))),
+            [(0, 1, 2), (1, 1, 2), (0, 0, 2), (1, 0, 2)])
+        eq_(list(self.mgrid.tile_list((1, 1, 2))),
+            [(0, 1, 2), (1, 1, 2), (0, 0, 2), (1, 0, 2)])
+    
     def test_tiles_level_3(self):
         eq_(list(self.mgrid.meta_tile((2, 0, 3)).tile_patterns),
             [

@@ -43,22 +43,22 @@ else:
     queue_class = multiprocessing.Queue
 
 
-class SeedPool(object):
+class TileWorkerPool(object):
     """
-    Manages multiple SeedWorker.
+    Manages multiple TileWorker.
     """
-    def __init__(self, cache, size=2, dry_run=False):
+    def __init__(self, task, worker_class, size=2, dry_run=False):
         self.tiles_queue = queue_class(32)
-        self.cache = cache
+        self.task = task
         self.dry_run = dry_run
         self.procs = []
         conf = base_config()
         for _ in xrange(size):
-            worker = SeedWorker(cache, self.tiles_queue, conf, dry_run=dry_run)
+            worker = worker_class(self.task, self.tiles_queue, conf, dry_run=dry_run)
             worker.start()
             self.procs.append(worker)
     
-    def seed(self, tiles, progress):
+    def process(self, tiles, progress):
         self.tiles_queue.put((tiles, progress))
     
     def stop(self):
@@ -69,34 +69,58 @@ class SeedPool(object):
             proc.join()
 
 
-class SeedWorker(proc_class):
-    def __init__(self, tile_mgr, tiles_queue, conf, dry_run=False):
+class TileWorker(proc_class):
+    def __init__(self, task, tiles_queue, conf, dry_run=False):
         proc_class.__init__(self)
         proc_class.daemon = True
-        self.tile_mgr = tile_mgr
+        self.task = task
+        self.tile_mgr = task.tile_manager
         self.tiles_queue = tiles_queue
         self.conf = conf
         self.dry_run = dry_run
+    
     def run(self):
         with local_base_config(self.conf):
-            while True:
-                tiles, progress = self.tiles_queue.get()
-                if tiles is None:
-                    return
-                print '[%s] %6.2f%% %s \tETA: %s\r' % (
-                    timestamp(), progress[1]*100, progress[0],
-                    progress[2]
-                ),
-                sys.stdout.flush()
-                if not self.dry_run:
-                    exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
-                                exceptions=(SourceError, IOError))
+            self.work_loop()
 
-class Seeder(object):
-    def __init__(self, task, seed_pool, skip_geoms_for_last_levels=0):
+class TileSeedWorker(TileWorker):
+    def work_loop(self):
+        while True:
+            tiles, progress = self.tiles_queue.get()
+            if tiles is None:
+                return
+            print '[%s] %6.2f%% %s \tETA: %s\r' % (
+                timestamp(), progress[1]*100, progress[0],
+                progress[2]
+            ),
+            sys.stdout.flush()
+            if not self.dry_run:
+                exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
+                            exceptions=(SourceError, IOError))
+
+class TileCleanupWorker(TileWorker):
+    def work_loop(self):
+        while True:
+            tiles, progress = self.tiles_queue.get()
+            if tiles is None:
+                return
+            print '[%s] %6.2f%% %s \tETA: %s\r' % (
+                timestamp(), progress[1]*100, progress[0],
+                progress[2]
+            ),
+            sys.stdout.flush()
+            if not self.dry_run:
+                self.tile_mgr.remove_tile_coords(tiles)
+                
+class TileWalker(object):
+    def __init__(self, task, worker_pool, handle_stale=False, handle_uncached=False,
+                 work_on_metatiles=True, skip_geoms_for_last_levels=0):
         self.tile_mgr = task.tile_manager
         self.task = task
-        self.seed_pool = seed_pool
+        self.worker_pool = worker_pool
+        self.handle_stale = handle_stale
+        self.handle_uncached = handle_uncached
+        self.work_on_metatiles = work_on_metatiles
         self.skip_geoms_for_last_levels = skip_geoms_for_last_levels
         
         num_seed_levels = len(task.levels)
@@ -107,14 +131,14 @@ class Seeder(object):
         self.progress = 0.0
         self.eta = ETA()
         self.count = 0
-        
-
-    def seed(self):
+    
+    def walk(self):
+        assert self.handle_stale or self.handle_uncached
         bbox = self.task.coverage.extent.bbox_for(self.tile_mgr.grid.srs)
-        self._seed(bbox, self.task.levels)
+        self._walk(bbox, self.task.levels)
         self.report_progress(self.task.levels[0], self.task.coverage.bbox)
 
-    def _seed(self, cur_bbox, levels, progess_str='', progress=1.0, all_subtiles=False):
+    def _walk(self, cur_bbox, levels, progess_str='', progress=1.0, all_subtiles=False):
         """
         :param cur_bbox: the bbox to seed in this call
         :param levels: list of levels to seed
@@ -123,36 +147,50 @@ class Seeder(object):
         """
         current_level, levels = levels[0], levels[1:]
         bbox_, tiles, subtiles = self.grid.get_affected_level_tiles(cur_bbox, current_level)
-        total_sub_seeds = tiles[0] * tiles[1]
+        total_subtiles = tiles[0] * tiles[1]
         
         if len(levels) < self.skip_geoms_for_last_levels:
             # do not filter in last levels
             all_subtiles = True
-        sub_seeds = self._filter_subtiles(subtiles, all_subtiles)
+        subtiles = self._filter_subtiles(subtiles, all_subtiles)
         
         if current_level <= self.report_till_level:
             self.report_progress(current_level, cur_bbox)
         
-        progress = progress / total_sub_seeds
-        for i, (subtile, sub_bbox, intersection) in enumerate(sub_seeds):
+        progress = progress / total_subtiles
+        for i, (subtile, sub_bbox, intersection) in enumerate(subtiles):
             if subtile is None: # no intersection
                 self.progress += progress
                 continue
             if levels: # recurse to next level
                 sub_bbox = limit_sub_bbox(cur_bbox, sub_bbox)
-                cur_progess_str = progess_str + status_symbol(i, total_sub_seeds)
+                cur_progess_str = progess_str + status_symbol(i, total_subtiles)
                 if intersection == CONTAINS:
                     all_subtiles = True
                 else:
                     all_subtiles = False
-                self._seed(sub_bbox, levels, cur_progess_str,
+                self._walk(sub_bbox, levels, cur_progess_str,
                            all_subtiles=all_subtiles, progress=progress)
             
-            if not self.tile_mgr.is_cached(subtile):
+            if not self.work_on_metatiles:
+                # collect actual tiles
+                handle_tiles = self.grid.tile_list(subtile)
+            else:
+                handle_tiles = [subtile]
+            
+            if self.handle_uncached:
+                handle_tiles = [t for t in handle_tiles if
+                                    t is not None and
+                                    not self.tile_mgr.is_cached(t)]
+            elif self.handle_stale:
+                handle_tiles = [t for t in handle_tiles if
+                                    t is not None and
+                                    self.tile_mgr.is_stale(t)]
+            if handle_tiles:
                 self.count += 1
-                self.seed_pool.seed([subtile],
+                self.worker_pool.process(handle_tiles,
                     (progess_str, self.progress, self.eta))
-
+                
             if not levels:
                 self.progress += progress
         
@@ -220,12 +258,11 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
         print format_seed_task(task)
         if task.refresh_timestamp:
             task.tile_manager._expire_timestamp = task.refresh_timestamp
-        # self.seeded_caches.append(tile_mgr)
         task.tile_manager.minimize_meta_requests = False
-        seed_pool = SeedPool(task.tile_manager, dry_run=dry_run, size=concurrency)
-        seeder = Seeder(task, seed_pool, skip_geoms_for_last_levels=skip_geoms_for_last_levels)
-        seeder.seed()
-        seed_pool.stop()
+        tile_worker_pool = TileWorkerPool(task, TileSeedWorker, dry_run=dry_run, size=concurrency)
+        tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=True, skip_geoms_for_last_levels=skip_geoms_for_last_levels)
+        tile_walker.walk()
+        tile_worker_pool.stop()
 
 # class CacheSeeder(object):
 #     """
@@ -248,9 +285,9 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
 #                 if self.remove_before:
 #                     tile_mgr._expire_timestamp = self.remove_before
 #                 tile_mgr.minimize_meta_requests = False
-#                 seed_pool = SeedPool(tile_mgr, dry_run=self.dry_run, size=self.concurrency)
+#                 seed_pool = TileWorkerPool(tile_mgr, dry_run=self.dry_run, size=self.concurrency)
 #                 seed_task = SeedTask(bbox, level, bbox_srs, srs, geom)
-#                 seeder = Seeder(tile_mgr, seed_task, seed_pool, self.skip_geoms_for_last_levels)
+#                 seeder = TileWalker(tile_mgr, seed_task, seed_pool, self.skip_geoms_for_last_levels)
 #                 seeder.seed()
 #                 seed_pool.stop()
 #     

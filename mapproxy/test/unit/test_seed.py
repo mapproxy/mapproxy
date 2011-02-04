@@ -1,5 +1,5 @@
 from __future__ import division
-from mapproxy.seed.seeder import Seeder, SeedTask
+from mapproxy.seed.seeder import TileWalker, SeedTask
 from mapproxy.cache.tile import TileManager
 from mapproxy.source.tile import TiledSource
 from mapproxy.grid import tile_grid_for_epsg
@@ -20,7 +20,7 @@ except ImportError:
 class MockSeedPool(object):
     def __init__(self):
         self.seeded_tiles = defaultdict(set)
-    def seed(self, tiles, progess):
+    def process(self, tiles, progess):
         for x, y, level in tiles:
             self.seeded_tiles[level].add((x, y))
             
@@ -47,8 +47,8 @@ class TestSeeder(object):
     
     def test_seed_full_bbox(self):
         task = self.make_bbox_task([-180, -90, 180, 90], SRS(4326), [0, 1, 2])
-        seeder = Seeder(task, self.seed_pool)
-        seeder.seed()
+        seeder = TileWalker(task, self.seed_pool, handle_uncached=True)
+        seeder.walk()
         
         eq_(len(self.seed_pool.seeded_tiles), 3)
         eq_(self.seed_pool.seeded_tiles[0], set([(0, 0)]))
@@ -58,8 +58,8 @@ class TestSeeder(object):
     
     def test_seed_small_bbox(self):
         task = self.make_bbox_task([-45, 0, 180, 90], SRS(4326), [0, 1, 2])
-        seeder = Seeder(task, self.seed_pool)
-        seeder.seed()
+        seeder = TileWalker(task, self.seed_pool, handle_uncached=True)
+        seeder.walk()
         
         eq_(len(self.seed_pool.seeded_tiles), 3)
         eq_(self.seed_pool.seeded_tiles[0], set([(0, 0)]))
@@ -68,8 +68,8 @@ class TestSeeder(object):
     
     def test_seed_small_bbox_iregular_levels(self):
         task = self.make_bbox_task([-45, 0, 180, 90], SRS(4326), [0, 2])
-        seeder = Seeder(task, self.seed_pool)
-        seeder.seed()
+        seeder = TileWalker(task, self.seed_pool, handle_uncached=True)
+        seeder.walk()
         
         eq_(len(self.seed_pool.seeded_tiles), 2)
         eq_(self.seed_pool.seeded_tiles[0], set([(0, 0)]))
@@ -78,8 +78,8 @@ class TestSeeder(object):
     def test_seed_small_bbox_transformed(self):
         bbox = SRS(4326).transform_bbox_to(SRS(900913), [-45, 0, 179, 80])
         task = self.make_bbox_task(bbox, SRS(900913), [0, 1, 2])
-        seeder = Seeder(task, self.seed_pool)
-        seeder.seed()
+        seeder = TileWalker(task, self.seed_pool, handle_uncached=True)
+        seeder.walk()
         
         eq_(len(self.seed_pool.seeded_tiles), 3)
         eq_(self.seed_pool.seeded_tiles[0], set([(0, 0)]))
@@ -91,8 +91,8 @@ class TestSeeder(object):
         # box from 10 10 to 80 80 with small spike/corner to -10 60 (upper left)
         geom = load_wkt("POLYGON((10 10, 10 50, -10 60, 10 80, 80 80, 80 10, 10 10))")
         task = self.make_geom_task(geom, SRS(4326), [0, 1, 2, 3, 4])
-        seeder = Seeder(task, self.seed_pool)
-        seeder.seed()
+        seeder = TileWalker(task, self.seed_pool, handle_uncached=True)
+        seeder.walk()
         
         eq_(len(self.seed_pool.seeded_tiles), 5)
         eq_(self.seed_pool.seeded_tiles[0], set([(0, 0)]))
@@ -110,8 +110,8 @@ class TestSeeder(object):
                              res=[360/256, 360/720, 360/2000, 360/5000, 360/8000])
         self.tile_mgr = TileManager(self.grid, MockCache(), [self.source], 'png')
         task = self.make_geom_task(geom, SRS(4326), [0, 1, 2, 3, 4])
-        seeder = Seeder(task, self.seed_pool)
-        seeder.seed()
+        seeder = TileWalker(task, self.seed_pool, handle_uncached=True)
+        seeder.walk()
         
         eq_(len(self.seed_pool.seeded_tiles), 5)
         eq_(self.seed_pool.seeded_tiles[0], set([(0, 0)]))
