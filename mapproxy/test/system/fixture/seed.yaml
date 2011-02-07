@@ -1,8 +1,10 @@
-coverage:
+coverages:
   world:
     bbox: [-180, -90, 180, 90]
     bbox_srs: 'EPSG:4326'
-
+  west:
+    bbox: [-180, -90, 0, 90]
+    bbox_srs: 'EPSG:4326'
 
 seeds:
   one:
@@ -11,3 +13,16 @@ seeds:
     levels: [0]
     refresh_before:
       days: 1
+
+cleanup:
+  cleanup:
+    caches: [one]
+    grids: [GLOBAL_GEODETIC]
+    levels: [0, 1, 3]
+
+  with_coverage:
+    caches: [one]
+    coverages: [west]
+    grids: [GLOBAL_GEODETIC]
+    levels: [0, 1, 3]
+    

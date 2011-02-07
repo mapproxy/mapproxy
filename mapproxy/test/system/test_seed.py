@@ -51,6 +51,12 @@ class SeedTestBase(object):
         if timestamp:
             os.utime(tile, (timestamp, timestamp))
         return tile
+    
+    def tile_exists(self, coord):
+        tile_dir = os.path.join(self.dir, 'cache/one_EPSG4326/%02d/000/000/%03d/000/000/' %
+                                (coord[2], coord[0]))
+        tile = os.path.join(tile_dir + '%03d.png' % coord[1])
+        return os.path.exists(tile)
 
     def test_seed_dry_run(self):
         tasks, cleanup_tasks = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
@@ -75,7 +81,6 @@ class SeedTestBase(object):
         tasks, cleanup_tasks  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
         seed(tasks, verbose=False, dry_run=False)
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
-
 
 class TestSeedOldConfiguration(SeedTestBase):
     seed_conf_name = 'seed_old.yaml'
@@ -107,3 +112,36 @@ class TestSeed(SeedTestBase):
     seed_conf_name = 'seed.yaml'
     mapproxy_conf_name = 'seed_mapproxy.yaml'
     
+    def test_cleanup_levels(self):
+        tasks, cleanup_tasks  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+        cleanup_tasks = [t for t in cleanup_tasks if t.md['name'] == 'cleanup']
+        
+        self.make_tile((0, 0, 0))
+        self.make_tile((0, 0, 1))
+        self.make_tile((0, 0, 2))
+        self.make_tile((0, 0, 3))
+        
+        cleanup(cleanup_tasks, verbose=False, dry_run=False)
+        assert not self.tile_exists((0, 0, 0))
+        assert not self.tile_exists((0, 0, 1))
+        assert self.tile_exists((0, 0, 2))
+        assert not self.tile_exists((0, 0, 3))
+
+    def test_cleanup_coverage(self):
+        tasks, cleanup_tasks  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+        cleanup_tasks = [t for t in cleanup_tasks if t.md['name'] == 'with_coverage']
+        
+        self.make_tile((0, 0, 0))
+        self.make_tile((1, 0, 1))
+        self.make_tile((2, 0, 2))
+        self.make_tile((2, 0, 3))
+        self.make_tile((4, 0, 3))
+        
+        cleanup(cleanup_tasks, verbose=False, dry_run=False)
+        assert not self.tile_exists((0, 0, 0))
+        assert not self.tile_exists((1, 0, 1))
+        assert self.tile_exists((2, 0, 2))
+        assert not self.tile_exists((2, 0, 3))
+        assert self.tile_exists((4, 0, 3))
+
+
