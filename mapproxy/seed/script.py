@@ -67,37 +67,47 @@ def main():
     if not options.conf_file:
         parser.error('missing mapproxy configuration -f/--proxy-conf')
     
-    tasks, cleanup_tasks = load_seed_tasks_conf(options.seed_file, options.conf_file)
+    seed_tasks, cleanup_tasks = load_seed_tasks_conf(options.seed_file, options.conf_file)
     
     if options.summary:
-        for task in tasks:
+        for task in seed_tasks:
             print format_seed_task(task)
         for task in cleanup_tasks:
             print format_cleanup_task(task)
         return
     
-    if options.interactive:
-        selected_tasks = []
-        for task in tasks:
-            print format_seed_task(task)
-            resp = raw_input('seed this (y/n)?')
-            if resp.lower() == 'y':
-                selected_tasks.append(task)
+    try:
+        if options.interactive:
+            selected_seed_tasks = []
+            for task in seed_tasks:
+                print format_seed_task(task)
+                resp = raw_input('seed this (y/n)?')
+                if resp.lower() == 'y':
+                    selected_seed_tasks.append(task)
+            seed_tasks = selected_seed_tasks
         
-        if selected_tasks:
-            print 'start seeding process'
-            seed(selected_tasks, verbose=options.verbose, dry_run=options.dry_run,
-                       concurrency=options.concurrency,
-                       skip_geoms_for_last_levels=options.geom_levels)
-            
-    else:
-        seed(tasks, verbose=options.verbose, dry_run=options.dry_run,
-             concurrency=options.concurrency,
-             skip_geoms_for_last_levels=options.geom_levels)
-        cleanup(cleanup_tasks, verbose=options.verbose, dry_run=options.dry_run,
-                concurrency=options.concurrency,
-                skip_geoms_for_last_levels=options.geom_levels)
+            selected_cleanup_tasks = []
+            for task in cleanup_tasks:
+                print format_cleanup_task(task)
+                resp = raw_input('cleanup this (y/n)?')
+                if resp.lower() == 'y':
+                    selected_cleanup_tasks.append(task)
+            cleanup_tasks = selected_cleanup_tasks
 
+        if seed_tasks:
+            print 'start seeding process'
+            seed(seed_tasks, verbose=options.verbose, dry_run=options.dry_run,
+                 concurrency=options.concurrency,
+                 skip_geoms_for_last_levels=options.geom_levels)
+        if cleanup_tasks:
+            print 'start cleanup process'
+            cleanup(cleanup_tasks, verbose=options.verbose, dry_run=options.dry_run,
+                    concurrency=options.concurrency,
+                    skip_geoms_for_last_levels=options.geom_levels)
+    except KeyboardInterrupt:
+        print '\nexiting...'
+        return 1
+    
 def cleanup_main():
     print "#" *65
     print "# Warning: This script is deprecated."

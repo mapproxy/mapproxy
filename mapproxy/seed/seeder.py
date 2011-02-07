@@ -81,7 +81,10 @@ class TileWorker(proc_class):
     
     def run(self):
         with local_base_config(self.conf):
-            self.work_loop()
+            try:
+                self.work_loop()
+            except KeyboardInterrupt:
+                return
 
 class TileSeedWorker(TileWorker):
     def work_loop(self):
