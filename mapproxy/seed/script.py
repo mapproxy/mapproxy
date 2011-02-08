@@ -26,7 +26,7 @@ from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.util import format_seed_task, format_cleanup_task
 
 
-def main():
+class SeedScript(object):
     usage = "usage: %prog [options] seed_conf"
     parser = OptionParser(usage)
     parser.add_option("-q", "--quiet",
@@ -55,59 +55,131 @@ def main():
                            " does not seed anything.")
     parser.add_option("-i", "--interactive",
                       action="store_true", dest="interactive", default=False,
-                      help="print each task decription and ask if it should be seeded")
+                      help="print each task description and ask if it should be seeded")
     
-    (options, args) = parser.parse_args()
-    if not options.seed_file:
-        if len(args) != 1:
-            parser.error('missing seed_conf file as last argument or --seed-conf option')
-        else:
-            options.seed_file = args[0]
+    parser.add_option("--seed",
+                      action="append", dest="seed_names", metavar='task1,task2,...',
+                      help="seed only the named tasks. cleanup is disabled unless "
+                      "--cleanup is used. use ALL to select all tasks")
+
+    parser.add_option("--cleanup",
+                      action="append", dest="cleanup_names", metavar='task1,task2,...',
+                      help="cleanup only the named tasks. seeding is disabled unless "
+                      "--seed is used. use ALL to select all tasks")
+
+    def __call__(self):
+        (options, args) = self.parser.parse_args()
+        if not options.seed_file:
+            if len(args) != 1:
+                parser.error('missing seed_conf file as last argument or --seed-conf option')
+            else:
+                options.seed_file = args[0]
     
-    if not options.conf_file:
-        parser.error('missing mapproxy configuration -f/--proxy-conf')
+        if not options.conf_file:
+            parser.error('missing mapproxy configuration -f/--proxy-conf')
     
-    seed_tasks, cleanup_tasks = load_seed_tasks_conf(options.seed_file, options.conf_file)
+        
+        seed_conf = load_seed_tasks_conf(options.seed_file, options.conf_file)
+        
+        seed_names, cleanup_names = self.task_names(seed_conf, options)
     
-    if options.summary:
-        for task in seed_tasks:
-            print format_seed_task(task)
-        for task in cleanup_tasks:
-            print format_cleanup_task(task)
-        return
+        seed_tasks = seed_conf.seeds(seed_names)
+        cleanup_tasks = seed_conf.cleanups(cleanup_names)
     
-    try:
-        if options.interactive:
-            selected_seed_tasks = []
+        if options.summary:
             for task in seed_tasks:
                 print format_seed_task(task)
-                resp = raw_input('seed this (y/n)?')
-                if resp.lower() == 'y':
-                    selected_seed_tasks.append(task)
-            seed_tasks = selected_seed_tasks
-        
-            selected_cleanup_tasks = []
             for task in cleanup_tasks:
                 print format_cleanup_task(task)
-                resp = raw_input('cleanup this (y/n)?')
-                if resp.lower() == 'y':
-                    selected_cleanup_tasks.append(task)
-            cleanup_tasks = selected_cleanup_tasks
-
-        if seed_tasks:
-            print 'start seeding process'
-            seed(seed_tasks, verbose=options.verbose, dry_run=options.dry_run,
-                 concurrency=options.concurrency,
-                 skip_geoms_for_last_levels=options.geom_levels)
-        if cleanup_tasks:
-            print 'start cleanup process'
-            cleanup(cleanup_tasks, verbose=options.verbose, dry_run=options.dry_run,
-                    concurrency=options.concurrency,
-                    skip_geoms_for_last_levels=options.geom_levels)
-    except KeyboardInterrupt:
-        print '\nexiting...'
-        return 1
+            return 0
     
+        try:
+            if options.interactive:
+                seed_tasks, cleanup_tasks = self.interactive(seed_tasks, cleanup_tasks)
+
+            if seed_tasks:
+                print 'start seeding process'
+                seed(seed_tasks, verbose=options.verbose, dry_run=options.dry_run,
+                     concurrency=options.concurrency,
+                     skip_geoms_for_last_levels=options.geom_levels)
+            if cleanup_tasks:
+                print 'start cleanup process'
+                cleanup(cleanup_tasks, verbose=options.verbose, dry_run=options.dry_run,
+                        concurrency=options.concurrency,
+                        skip_geoms_for_last_levels=options.geom_levels)
+        except KeyboardInterrupt:
+            print '\nexiting...'
+            return 2
+    
+    def task_names(self, seed_conf, options):
+        seed_names = cleanup_names = []
+    
+        if options.seed_names:
+            seed_names = split_comma_seperated_option(options.seed_names)
+            if seed_names == ['ALL']:
+                seed_names = None
+            else:
+                avail_seed_names = seed_conf.seed_tasks_names()
+                missing = set(seed_names).difference(avail_seed_names)
+                if missing:
+                    print 'unknown seed tasks: %s' % (','.join(missing), )
+                    print 'available seed tasks: %s' % (','.join(avail_seed_names), )
+                    return 1
+        elif not options.cleanup_names:
+            seed_names = None # seed all
+
+        if options.cleanup_names:
+            cleanup_names = split_comma_seperated_option(options.cleanup_names)
+            if cleanup_names == ['ALL']:
+                cleanup_names = None
+            else:
+                avail_cleanup_names = seed_conf.cleanup_tasks_names()
+                missing = set(cleanup_names).difference(avail_cleanup_names)
+                if missing:
+                    print 'unknown cleanup tasks: %s' % (','.join(missing), )
+                    print 'available cleanup tasks: %s' % (','.join(avail_cleanup_names), )
+                    return 1
+        elif not options.seed_names:
+            cleanup_names = None # cleanup all
+    
+        return seed_names, cleanup_names
+
+    def interactive(self, seed_tasks, cleanup_tasks):
+        selected_seed_tasks = []
+        for task in seed_tasks:
+            print format_seed_task(task)
+            if ask_yes_no_question('seed this task (y/n)?'):
+                selected_seed_tasks.append(task)
+        seed_tasks = selected_seed_tasks
+
+        selected_cleanup_tasks = []
+        for task in cleanup_tasks:
+            print format_cleanup_task(task)
+            if ask_yes_no_question('cleanup this task (y/n)?'):
+                selected_cleanup_tasks.append(task)
+        cleanup_tasks = selected_cleanup_tasks
+        return seed_tasks, cleanup_tasks
+
+def main():
+    return SeedScript()()
+
+def ask_yes_no_question(question):
+    while True:
+        resp = raw_input(question).lower()
+        if resp in ('y', 'yes'): return True
+        elif resp in ('n', 'no'): return False
+
+def split_comma_seperated_option(option):
+    """
+    >>> split_comma_seperated_option(['foo,bar', 'baz'])
+    ['foo', 'bar', 'baz']
+    """
+    result = []
+    if option:
+        for args in option:
+            result.extend(args.split(','))
+    return result
+
 def cleanup_main():
     print "#" *65
     print "# Warning: This script is deprecated."

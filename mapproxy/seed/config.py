@@ -52,12 +52,16 @@ def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf_filename):
         mapproxy_conf = ProxyConfiguration(mapproxy_conf, base_dir, seed=True)
 
     if 'views' in conf:
+        # TODO: deprecate old config
         seed_conf = LegacySeedingConfiguration(conf, mapproxy_conf=mapproxy_conf)
     else:
         seed_conf = SeedingConfiguration(conf, mapproxy_conf=mapproxy_conf)
-    return list(seed_conf.seeds()), list(seed_conf.cleanups())
+    return seed_conf
 
 class LegacySeedingConfiguration(object):
+    """
+    Read old seed.yaml configuration (with seed and views).
+    """
     def __init__(self, seed_conf, mapproxy_conf):
         self.conf = seed_conf
         self.mapproxy_conf = mapproxy_conf
@@ -102,11 +106,24 @@ class LegacySeedingConfiguration(object):
                         if remove_before:
                             levels = range(grid.levels+1)
                             self.cleanup_tasks.append(CleanupTask(md, tile_mgr, levels, remove_before, None))
-    def seeds(self):
-        return self.seed_tasks
+                            
+    def seed_tasks_names(self):
+        return self.conf['seeds'].keys()
     
-    def cleanups(self):
-        return self.cleanup_tasks
+    def cleanup_tasks_names(self):
+        return self.conf['seeds'].keys()
+
+    def seeds(self, names=None):
+        if names is None:
+            return self.seed_tasks
+        else:
+            return [t for t in self.seed_tasks if t.md['name'] in names]
+    
+    def cleanups(self, names=None):
+        if names is None:
+            return self.cleanup_tasks
+        else:
+            return [t for t in self.cleanup_tasks if t.md['name'] in names]
 
 class SeedingConfiguration(object):
     def __init__(self, seed_conf, mapproxy_conf):
@@ -129,14 +146,28 @@ class SeedingConfiguration(object):
             cache[grid_name] = tile_mgr
         return cache
     
-    def seeds(self):
+    def seed_tasks_names(self):
+        return self.conf.get('seeds', {}).keys()
+    
+    def cleanup_tasks_names(self):
+        return self.conf.get('cleanups', {}).keys()
+    
+    def seeds(self, names=None):
+        """
+        Return seed tasks.
+        """
         for seed_name, seed_conf in self.conf.get('seeds', {}).iteritems():
+            if names is not None and seed_name not in names: continue
             seed_conf = SeedConfiguration(seed_name, seed_conf, self)
             for task in seed_conf.seed_tasks():
                 yield task
         
-    def cleanups(self):
-        for cleanup_name, cleanup_conf in self.conf.get('cleanup', {}).iteritems():
+    def cleanups(self, names=None):
+        """
+        Return cleanup tasks.
+        """
+        for cleanup_name, cleanup_conf in self.conf.get('cleanups', {}).iteritems():
+            if names is not None and cleanup_name not in names: continue
             cleanup_conf = CleanupConfiguration(cleanup_name, cleanup_conf, self)
             for task in cleanup_conf.cleanup_tasks():
                 yield task

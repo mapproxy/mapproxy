@@ -59,7 +59,8 @@ class SeedTestBase(object):
         return os.path.exists(tile)
 
     def test_seed_dry_run(self):
-        tasks, cleanup_tasks = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+        tasks, cleanup_tasks = seed_conf.seeds(), seed_conf.cleanups()
         seed(tasks, verbose=False, dry_run=True)
         cleanup(cleanup_tasks, verbose=False, dry_run=True)
     
@@ -71,14 +72,16 @@ class SeedTestBase(object):
                                   '&width=256&height=128&srs=EPSG:4326'},
                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
-                tasks, cleanup_tasks  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+                seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+                tasks, cleanup_tasks = seed_conf.seeds(), seed_conf.cleanups()
                 seed(tasks, verbose=False, dry_run=False)
                 cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
     def test_reseed_uptodate(self):
         # tile already there.
         self.make_tile((0, 0, 0))
-        tasks, cleanup_tasks  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+        tasks, cleanup_tasks = seed_conf.seeds(), seed_conf.cleanups()
         seed(tasks, verbose=False, dry_run=False)
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
@@ -100,7 +103,8 @@ class TestSeedOldConfiguration(SeedTestBase):
                                   '&width=256&height=128&srs=EPSG:4326'},
                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
-                tasks, cleanup_tasks = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+                seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+                tasks, cleanup_tasks = seed_conf.seeds(), seed_conf.cleanups()
                 seed(tasks, verbose=True, dry_run=False)
                 cleanup(cleanup_tasks, verbose=False, dry_run=False)
         
@@ -113,8 +117,8 @@ class TestSeed(SeedTestBase):
     mapproxy_conf_name = 'seed_mapproxy.yaml'
     
     def test_cleanup_levels(self):
-        tasks, cleanup_tasks  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
-        cleanup_tasks = [t for t in cleanup_tasks if t.md['name'] == 'cleanup']
+        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+        cleanup_tasks = seed_conf.cleanups(['cleanup'])
         
         self.make_tile((0, 0, 0))
         self.make_tile((0, 0, 1))
@@ -128,8 +132,8 @@ class TestSeed(SeedTestBase):
         assert not self.tile_exists((0, 0, 3))
 
     def test_cleanup_coverage(self):
-        tasks, cleanup_tasks  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
-        cleanup_tasks = [t for t in cleanup_tasks if t.md['name'] == 'with_coverage']
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf_file)
+        cleanup_tasks = seed_conf.cleanups(['with_coverage'])
         
         self.make_tile((0, 0, 0))
         self.make_tile((1, 0, 1))

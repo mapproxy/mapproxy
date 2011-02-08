@@ -14,7 +14,7 @@ seeds:
     refresh_before:
       days: 1
 
-cleanup:
+cleanups:
   cleanup:
     caches: [one]
     grids: [GLOBAL_GEODETIC]
