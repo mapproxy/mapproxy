@@ -12,14 +12,14 @@
                 <east>{{tile.bbox[2]}}</east><west>{{tile.bbox[0]}}</west>
             </LatLonAltBox>
             <Lod>
-                <minLodPixels>100</minLodPixels>
+                <minLodPixels>128</minLodPixels>
 {{if initial_level}}
                 <maxLodPixels>-1</maxLodPixels>
 {{else}}
-                <maxLodPixels>256</maxLodPixels>
+                <maxLodPixels>768</maxLodPixels>
 {{endif}}
-                <minFadeExtent>20</minFadeExtent>
-                <maxFadeExtent>10</maxFadeExtent>
+                <minFadeExtent>8</minFadeExtent>
+                <maxFadeExtent>8</maxFadeExtent>
             </Lod>
         </Region>
 {{for subtile in subtiles}}
@@ -31,7 +31,7 @@
                     <east>{{subtile.bbox[2]}}</east><west>{{subtile.bbox[0]}}</west>
                 </LatLonAltBox>
                 <Lod>
-                    <minLodPixels>128</minLodPixels>
+                    <minLodPixels>96</minLodPixels>
                     <maxLodPixels>-1</maxLodPixels>
                 </Lod>
             </Region>
