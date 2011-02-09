@@ -259,10 +259,9 @@ class ImageSource(object):
 
     @property
     def size(self):
-        if isinstance(self.source, Image.Image):
-            return self.source.size
-        else:
-            return self._size
+        if self._size is None:
+            self._size = self.as_image().size
+        return self._size
 
 class BlankImageSource(object):
     """
