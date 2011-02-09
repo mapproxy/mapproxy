@@ -36,15 +36,20 @@ def simple_cleanup(task, dry_run):
     """
     for level in task.levels:
         level_dir = task.tile_manager.cache.level_location(level)
-        level_dir = os.path.relpath(level_dir)
         if dry_run:
             def file_handler(filename):
                 print 'removing ' + filename
         else:
             file_handler = None
-        print 'removing old tiles in ' + level_dir
+        print 'removing old tiles in ' + relpath(level_dir)
         cleanup_directory(level_dir, task.remove_timestamp,
             file_handler=file_handler, remove_empty_dirs=True)
+
+def relpath(path):
+    # only supported with >= Python 2.6
+    if hasattr(os.path, 'relpath'):
+        path = os.path.relpath(path)
+    return path
 
 def coverage_cleanup(task, dry_run, concurrency, skip_geoms_for_last_levels):
     """
