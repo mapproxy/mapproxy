@@ -2,6 +2,14 @@
 
 Features:
 - [mapproxy-seed] separated seed and cleanup tasks; call tasks independently 
+- XSL transformation of WMS FeatureInfo responses
+- content aware merging of multiple XML/HTML FeatureInfo repsonses
+- FeatureInfo types are configurable with wms.featureinfo_types
+- request cascaded sources in parallel (with threading or eventlet)
+  with new wms.concurrent_layer_renderer option
+- disable GetMap requests for WMS sources (for FeatureInfo only sources)
+- new cache.disable_storage option
+- authorization framework
 - new image.transparent_color option: replaces color with full transparency
 - new image.opacity option: blend between opaque layers
 - new watermark.spacing option: place watermark on every other tile
@@ -17,8 +25,14 @@ Improvements:
 - support for local SLD files (sld: file://sld.xml)
 - changed watermark color to gray: improves readability on full transparent
   images
+- support for transparent/overlayed tile sources
+- renamed thread_pool_size to concurrent_tile_creators
+- tweaked KML level of detail parameters to fix render issues in Google Earth 
+  with tilted views
 
 Fixes:
+- rounding errors in meta-tile size calculation for meta_buffer=0
+- work with upcomming PIL 1.2 release
 
 0.9.1 2011-01-10
 
