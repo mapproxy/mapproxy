@@ -42,6 +42,18 @@ Example::
 
 .. note:: If the layers come from the same WMS server, then you can add them direct to the ``layers`` parameter. E.g. ``layers: water,railroads,roads``.
 
+Merge tile sources
+------------------
+
+.. versionadded:: 1.0.0
+
+You can also merge multiple tile sources. You need to tell MapProxy that all overlay sources are transparent::
+
+  sources:
+    tileoverlay:
+      type: tile
+      url: http://localhost:8080/tile?x=%(x)s&y=%(y)s&z=%(z)s&format=png
+      transparent: true
 
 Access local servers
 ====================
