@@ -233,6 +233,9 @@ Feature information from different sources are concatenated as plain text, that 
 
 HTML
 ~~~~
+
+.. versionadded:: 1.0.0
+
 Multiple HTML documents are put into the HTML ``body`` of the first document.
 MapProxy creates the HTML skeleton if it is missing.
 ::
@@ -256,6 +259,8 @@ will result in::
 
 XML
 ~~~
+
+.. versionadded:: 1.0.0
 
 Multiple XML documents are put in the root of the first document.
 
@@ -282,6 +287,8 @@ will result in::
 
 XSL Transformations
 -------------------
+
+.. versionadded:: 1.0.0
 
 MapProxy supports XSL transformations for more control over feature information. This also requires :ref:`lxml <lxml_install>`. You can add an XSLT script for each WMS source (incoming) and for the WMS service (outgoing).
 

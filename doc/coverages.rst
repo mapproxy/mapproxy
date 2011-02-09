@@ -1,6 +1,8 @@
 Coverages
 =========
 
+.. versionadded:: 0.9.1
+
 With coverages you can define areas where data is available or where data you are interested in is.
 MapProxy supports coverages for :doc:`sources <sources>` and in the :doc:`mapproxy-seed tool <seed>`. Refer to the corresponding section in the documentation.
 
@@ -10,7 +12,6 @@ There are three different ways to describe a coverage.
 - a simple rectangular bounding box,
 - a text file with one or more polygons in WKT format,
 - polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)
-
 
 
 Requirements

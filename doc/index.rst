@@ -11,9 +11,10 @@ MapProxy Documentation
    sources
    seed
    coverages
-   configuration_examples
-   migrate
    deployment
+   configuration_examples
+   auth 
+   migrate
    development
 
 .. todolist::

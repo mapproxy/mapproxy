@@ -80,7 +80,11 @@ This option affects what request MapProxy sends to the source WMS server.
 ``featureinfo_format``
   The ``INFO_FORMAT`` for FeatureInfo requests. By default MapProxy will use the same format as requested by the client.  
 
-See :ref:`FeatureInformation for more informaiton <fi_xslt>`.
+.. versionadded:: 1.0.0
+  ``featureinfo_xslt`` and ``featureinfo_format``
+
+
+See :ref:`FeatureInformation for more information <fi_xslt>`.
 
 ``coverage``
 ^^^^^^^^^^^^
@@ -126,15 +130,21 @@ Use this option to specify which image formats you source WMS supports. MapProxy
 ``image.transparent_color``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. versionadded:: 1.0.0
+
 Specify a color that should be converted to full transparency. Can be either a list of color (``[255, 255, 255]``) values or a hex string (``#ffffff``).
 
 ``image.transparent_color_tolerance``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. versionadded:: 1.0.0
+
 Tolerance for the ``transparent_color`` substitution. The value defines the tolerance in each direction. E.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.
 
 ``image.opacity``
 ^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.0.0
 
 Configures the opacity of this source image. This value is used when the image is placed on other layers and it can be used to overlay non-transparent images. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).
 
@@ -235,10 +245,15 @@ Define the covered area of the source. The source will only be requested if ther
 
 ``transparent``
 ^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.0.0
+
 You need to set this to ``true`` if you want to use this source as an overlay.
 
 ``image.opacity``
 ^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.0.0
 
 Configures the opacity of this source image. This value is used when the image is placed on other layers and it can be used to overlay non-transparent images. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).
 
