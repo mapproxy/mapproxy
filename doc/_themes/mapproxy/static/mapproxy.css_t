@@ -153,6 +153,10 @@ a:active
   line-height: 1.3em;
 }
 
+.doc strong {
+  color: #444;
+}
+
 .doc h1,
 .doc h2,
 .doc h3,
@@ -171,7 +175,7 @@ a:active
 .doc h1 { border-bottom: dashed #999 1px; }
 .doc h2 { border-bottom: dashed #999 1px; }
 .doc h3 { border-bottom: dashed #ddd 1px; }
-.doc h4 { border-bottom: dashed #eee 1px; }
+.doc h4 { border-bottom: dashed #ddd 1px; }
 
 .doc h2,
 .doc h3,
@@ -234,6 +238,12 @@ h5:hover > a.headerlink,
 h6:hover > a.headerlink,
 dt:hover > a.headerlink {
     visibility: visible;
+}
+
+li code,
+p code
+{
+  font-size: 1.2em;
 }
 
 tt.literal {

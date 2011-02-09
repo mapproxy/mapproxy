@@ -108,6 +108,12 @@
       </div>
       <div class="content">
         <div class="doc">
+          {%- if not prev and 'dev' in release %}
+            <div class="admonition note">
+            <p class="first admonition-title">Note</p>
+            <p class="last">This is the documentation of the current development version of MapProxy ({{ release }} from {{ last_updated }}). Make sure you are using a recent <a href="http://mapproxy.org/download.html">nightly version</a> of MapProxy. Otherwise refer to the <a href="http://mapproxy.org/documentation.html"> documentation of your release.</p>
+            </div>
+          {%- endif %}
           {% block body %} {% endblock %}
         </div>
       </div>
@@ -120,6 +126,7 @@
         {%- else %}
           {% trans copyright=copyright|e %}&copy; Copyright {{ copyright }}.{% endtrans %}
         {%- endif %}
+        <br>
       {%- endif %}
       {%- if last_updated %}
         {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
