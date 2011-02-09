@@ -883,10 +883,13 @@ class ServiceConfiguration(ConfigurationBase):
         concurrent_layer_renderer = self.context.globals.get_value(
             'concurrent_layer_renderer', conf,
             global_key='wms.concurrent_layer_renderer')
-        image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
+        image_formats = self.context.globals.get_value('image_formats', conf,
+                                                       global_key='wms.image_formats')
+        info_types = conf.get('featureinfo_types')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
         self.context.globals.base_config.wms.srs = srs
-        server = WMSServer(root_layer, md, attribution=attribution, image_formats=image_formats,
+        server = WMSServer(root_layer, md, attribution=attribution,
+            image_formats=image_formats, info_types=info_types,
             srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors,
             concurrent_layer_renderer=concurrent_layer_renderer)
         

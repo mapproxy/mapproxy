@@ -58,7 +58,11 @@ See :ref:`axis order<axis_order>` for further configuration that might be needed
 ``image_formats``
 """""""""""""""""
 
-A list of image mime types the server should support.
+A list of image mime types the server should offer.
+
+``featureinfo_types``
+"""""""""""""""""""""
+A list of feature info types the server should offer. Available types are ``text``, ``html`` and ``xml``. The types then are advertised in the capabilities with the correct mime type.
 
 ``featureinfo_xslt``
 """"""""""""""""""""

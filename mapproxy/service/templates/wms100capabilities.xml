@@ -41,8 +41,11 @@
     </Map>
     <FeatureInfo>
       <Format>
-        <MIME/>
-        <GML.1/>
+{{for format in info_formats}}
+{{if wms100info_format(format)}}
+        <{{wms100info_format(format)}}/>
+{{endif}}
+{{endfor}}
       </Format>
       <DCPType>
         <HTTP>
@@ -73,7 +76,7 @@
     <Style>
       <Name>default</Name>
       <Title>default</Title>
-      <StyleURL>{{service.url}}{{layer.legend_url|cgi.escape}}</StyleURL>
+      <StyleURL>{{service.url}}{{layer.legend_url|escape}}</StyleURL>
     </Style>
 {{endif}}
     {{if layer.res_range}}
