@@ -1,5 +1,5 @@
 MapProxy Documentation
-=======================================
+======================
 
 .. toctree::
    :maxdepth: 2

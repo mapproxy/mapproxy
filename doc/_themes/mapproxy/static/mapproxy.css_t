@@ -58,6 +58,10 @@ a:active
   text-decoration: none;
 }
 
+.footer a {
+  color: inherit;
+  text-decoration: underline;
+}
 
 /* sidebar style */
 
@@ -111,8 +115,9 @@ a:active
 
 .header h1 {
   position: absolute;
-  top: 22px;
+  top: 20px;
   left: 95px;
+  font-size: 24px;
 }
 .homepage .header h1 {
   top: 18px;
