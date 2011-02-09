@@ -119,36 +119,38 @@ def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
 
 def format_seed_task(task):
     info = []
-    info.append('Seeding:\tcache %s with grid %s (%s)' % (
+    info.append('  %s:' % (task.md['name'], ))
+    info.append("    Seeding cache '%s' with grid '%s' (%s)" % (
                  task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:
-        info.append('    Limited to:\t%s' % (task.coverage.extent.llbbox, ))
+        info.append('    Limited to: %s' % (format_bbox(task.coverage.extent.llbbox), ))
     else:
-        info.append('    Complete grid:\t%s' % (map_extent_from_grid(task.grid).llbbox, ))
-    info.append('    Levels:\t%s' % (task.levels, ))
+        info.append('   Complete grid: %s' % (format_bbox(map_extent_from_grid(task.grid).llbbox), ))
+    info.append('    Levels: %s' % (task.levels, ))
         
     if task.refresh_timestamp:
-        info.append('Reseed:\ttiles older than %s' %
+        info.append('    Overwriting: tiles older than %s' %
                     datetime.fromtimestamp(task.refresh_timestamp))
     else:
-        info.append('Reseed:\t no tiles')
+        info.append('    Overwriting: no tiles')
     
     return '\n'.join(info)
 
 def format_cleanup_task(task):
     info = []
-    info.append('Cleaning up:\tcache %s with grid %s (%s)' % (
+    info.append('  %s:' % (task.md['name'], ))
+    info.append("    Cleaning up cache '%s' with grid '%s' (%s)" % (
                  task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:
-        info.append('    Limited to:\t%s' % (task.coverage.extent.llbbox, ))
+        info.append('    Limited to: %s' % (format_bbox(task.coverage.extent.llbbox), ))
     else:
-        info.append('    Complete grid:\t%s' % (map_extent_from_grid(task.grid).llbbox, ))
-    info.append('    Levels:\t%s' % (task.levels, ))
+        info.append('    Complete grid: %s' % (format_bbox(map_extent_from_grid(task.grid).llbbox), ))
+    info.append('    Levels: %s' % (task.levels, ))
         
     if task.remove_timestamp:
-        info.append('Remove:\ttiles older than %s' %
+        info.append('    Remove: tiles older than %s' %
                     datetime.fromtimestamp(task.remove_timestamp))
     else:
-        info.append('Remove:\t all tiles')
+        info.append('    Remove: all tiles')
     
     return '\n'.join(info)

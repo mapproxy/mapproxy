@@ -156,21 +156,25 @@ class SeedingConfiguration(object):
         """
         Return seed tasks.
         """
+        tasks = []
         for seed_name, seed_conf in self.conf.get('seeds', {}).iteritems():
             if names is not None and seed_name not in names: continue
             seed_conf = SeedConfiguration(seed_name, seed_conf, self)
             for task in seed_conf.seed_tasks():
-                yield task
+                tasks.append(task)
+        return tasks
         
     def cleanups(self, names=None):
         """
         Return cleanup tasks.
         """
+        tasks = []
         for cleanup_name, cleanup_conf in self.conf.get('cleanups', {}).iteritems():
             if names is not None and cleanup_name not in names: continue
             cleanup_conf = CleanupConfiguration(cleanup_name, cleanup_conf, self)
             for task in cleanup_conf.cleanup_tasks():
-                yield task
+                tasks.append(task)
+        return tasks
 
 
 class ConfigurationBase(object):

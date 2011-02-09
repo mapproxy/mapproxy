@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 from mapproxy.seed.util import format_cleanup_task
 from mapproxy.util import cleanup_directory
 from mapproxy.seed.seeder import TileWorkerPool, TileWalker, TileCleanupWorker
@@ -35,12 +36,13 @@ def simple_cleanup(task, dry_run):
     """
     for level in task.levels:
         level_dir = task.tile_manager.cache.level_location(level)
+        level_dir = os.path.relpath(level_dir)
         if dry_run:
             def file_handler(filename):
                 print 'removing ' + filename
         else:
             file_handler = None
-        print 'removing oldfiles in ' + level_dir
+        print 'removing old tiles in ' + level_dir
         cleanup_directory(level_dir, task.remove_timestamp,
             file_handler=file_handler, remove_empty_dirs=True)
 

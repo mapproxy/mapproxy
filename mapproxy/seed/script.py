@@ -16,6 +16,7 @@
 
 
 import os
+import sys
 import shutil
 
 from optparse import OptionParser
@@ -71,14 +72,13 @@ class SeedScript(object):
         (options, args) = self.parser.parse_args()
         if not options.seed_file:
             if len(args) != 1:
-                parser.error('missing seed_conf file as last argument or --seed-conf option')
+                self.parser.error('missing seed_conf file as last argument or --seed-conf option')
             else:
                 options.seed_file = args[0]
     
         if not options.conf_file:
-            parser.error('missing mapproxy configuration -f/--proxy-conf')
+            self.parser.error('missing mapproxy configuration -f/--proxy-conf')
     
-        
         seed_conf = load_seed_tasks_conf(options.seed_file, options.conf_file)
         
         seed_names, cleanup_names = self.task_names(seed_conf, options)
@@ -87,8 +87,10 @@ class SeedScript(object):
         cleanup_tasks = seed_conf.cleanups(cleanup_names)
     
         if options.summary:
+            print '========== Seeding tasks =========='
             for task in seed_tasks:
                 print format_seed_task(task)
+            print '========== Cleanup tasks =========='
             for task in cleanup_tasks:
                 print format_cleanup_task(task)
             return 0
@@ -98,12 +100,16 @@ class SeedScript(object):
                 seed_tasks, cleanup_tasks = self.interactive(seed_tasks, cleanup_tasks)
 
             if seed_tasks:
-                print 'start seeding process'
+                print '========== Seeding tasks =========='
+                print 'Start seeding process (%d task%s)' % (
+                    len(seed_tasks), 's' if len(seed_tasks) > 1 else '')
                 seed(seed_tasks, verbose=options.verbose, dry_run=options.dry_run,
                      concurrency=options.concurrency,
                      skip_geoms_for_last_levels=options.geom_levels)
             if cleanup_tasks:
-                print 'start cleanup process'
+                print '========== Cleanup tasks =========='
+                print 'Start cleanup process (%d task%s)' % (
+                    len(cleanup_tasks), 's' if len(cleanup_tasks) > 1 else '')
                 cleanup(cleanup_tasks, verbose=options.verbose, dry_run=options.dry_run,
                         concurrency=options.concurrency,
                         skip_geoms_for_last_levels=options.geom_levels)
@@ -122,9 +128,9 @@ class SeedScript(object):
                 avail_seed_names = seed_conf.seed_tasks_names()
                 missing = set(seed_names).difference(avail_seed_names)
                 if missing:
-                    print 'unknown seed tasks: %s' % (','.join(missing), )
-                    print 'available seed tasks: %s' % (','.join(avail_seed_names), )
-                    return 1
+                    print 'unknown seed tasks: %s' % (', '.join(missing), )
+                    print 'available seed tasks: %s' % (', '.join(avail_seed_names), )
+                    sys.exit(1)
         elif not options.cleanup_names:
             seed_names = None # seed all
 
@@ -136,9 +142,9 @@ class SeedScript(object):
                 avail_cleanup_names = seed_conf.cleanup_tasks_names()
                 missing = set(cleanup_names).difference(avail_cleanup_names)
                 if missing:
-                    print 'unknown cleanup tasks: %s' % (','.join(missing), )
-                    print 'available cleanup tasks: %s' % (','.join(avail_cleanup_names), )
-                    return 1
+                    print 'unknown cleanup tasks: %s' % (', '.join(missing), )
+                    print 'available cleanup tasks: %s' % (', '.join(avail_cleanup_names), )
+                    sys.exit(1)
         elif not options.seed_names:
             cleanup_names = None # cleanup all
     
@@ -146,16 +152,18 @@ class SeedScript(object):
 
     def interactive(self, seed_tasks, cleanup_tasks):
         selected_seed_tasks = []
+        print '========== Select seeding tasks =========='
         for task in seed_tasks:
             print format_seed_task(task)
-            if ask_yes_no_question('seed this task (y/n)?'):
+            if ask_yes_no_question('    Seed this task (y/n)? '):
                 selected_seed_tasks.append(task)
         seed_tasks = selected_seed_tasks
 
         selected_cleanup_tasks = []
+        print '========== Select cleanup tasks =========='
         for task in cleanup_tasks:
             print format_cleanup_task(task)
-            if ask_yes_no_question('cleanup this task (y/n)?'):
+            if ask_yes_no_question('    Cleanup this task (y/n)? '):
                 selected_cleanup_tasks.append(task)
         cleanup_tasks = selected_cleanup_tasks
         return seed_tasks, cleanup_tasks
