@@ -28,5 +28,3 @@ Indices and tables
 
 .. * :ref:`modindex`
 
-
-Documentation build on |today|.
