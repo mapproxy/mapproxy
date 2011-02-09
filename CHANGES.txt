@@ -1,6 +1,7 @@
 1.0.0dev
 
 Features:
+- [mapproxy-seed] separated seed and cleanup tasks; call tasks independently 
 - new image.transparent_color option: replaces color with full transparency
 - new image.opacity option: blend between opaque layers
 - new watermark.spacing option: place watermark on every other tile
@@ -11,6 +12,7 @@ Features:
   options, headers, timeout)
 
 Improvements:
+- [mapproxy-seed] enhanced CLI (summary and interactive mode)
 - combine requests to the same WMS URL
 - support for local SLD files (sld: file://sld.xml)
 - changed watermark color to gray: improves readability on full transparent
