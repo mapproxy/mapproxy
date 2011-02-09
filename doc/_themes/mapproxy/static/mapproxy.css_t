@@ -77,7 +77,7 @@ a:active
   margin-bottom: 1em;
   margin-left: -8px;
   padding-left: 8px;
-  border-bottom: dashed #ccc 1px;
+  border-bottom: dashed #999 1px;
 }
 
 .sidebar ul {
@@ -162,12 +162,16 @@ a:active
   margin-left: -8px;
   margin-bottom: 7px;
   padding-left: 8px;
-  border-bottom: dashed #ccc 1px;
 }
 
 .doc h2 { font-size: 1.4em; }
 .doc h3 { font-size: 1.2em; }
 .doc h4 { font-size: 1.0em; }
+
+.doc h1 { border-bottom: dashed #999 1px; }
+.doc h2 { border-bottom: dashed #999 1px; }
+.doc h3 { border-bottom: dashed #ddd 1px; }
+.doc h4 { border-bottom: dashed #eee 1px; }
 
 .doc h2,
 .doc h3,
@@ -187,7 +191,7 @@ a:active
   border: none;
 }
 
-.doc h2 tt,
+.doc h2 tt { font-size: 130%; }
 .doc h3 tt,
 .doc h4 tt,
 .doc h5 tt
@@ -275,7 +279,7 @@ content: ':';
     margin-top: .5em;
 }
 
-.doc dl tt {
+.doc dl dt tt {
   font-size: 130%;
   font-weight: bold;
 }
