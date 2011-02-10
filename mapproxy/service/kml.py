@@ -97,7 +97,7 @@ class KMLServer(Server):
         if tile_coord[2] == 0:
             initial_level = True
         
-        bbox = self._tile_bbox(tile_coord, layer.grid)
+        bbox = self._tile_wgs_bbox(tile_coord, layer.grid)
         if bbox is None:
             raise RequestError('The requested tile is outside the bounding box '
                                'of the tile map.', request=map_request)
@@ -118,16 +118,25 @@ class KMLServer(Server):
         """
         Create four `SubTile` for the next level of `tile`.
         """
-        x, y, z = tile
+        bbox = self._tile_bbox(tile, layer.grid)
+        bbox_, tile_grid_, tiles = layer.grid.get_affected_level_tiles(bbox, tile[2]+1)
         subtiles = []
-        for coord in [(x*2, y*2, z+1), (x*2+1, y*2, z+1), 
-                      (x*2+1, y*2+1, z+1), (x*2, y*2+1, z+1)]:
-            bbox = self._tile_bbox(coord, layer.grid)
+        for coord in tiles:
+            if coord is None: continue
+            bbox = self._tile_wgs_bbox(coord, layer.grid)
             if bbox is not None:
                 subtiles.append(SubTile(coord, bbox))
+
+
         return subtiles
-    
+
     def _tile_bbox(self, tile_coord, grid):
+        tile_coord = grid.internal_tile_coord(tile_coord, use_profiles=False)
+        if tile_coord is None:
+            return None
+        return grid.tile_bbox(tile_coord)
+    
+    def _tile_wgs_bbox(self, tile_coord, grid):
         tile_coord = grid.internal_tile_coord(tile_coord, use_profiles=False)
         if tile_coord is None:
             return None

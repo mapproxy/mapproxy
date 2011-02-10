@@ -13,11 +13,7 @@
             </LatLonAltBox>
             <Lod>
                 <minLodPixels>128</minLodPixels>
-{{if initial_level}}
-                <maxLodPixels>-1</maxLodPixels>
-{{else}}
                 <maxLodPixels>768</maxLodPixels>
-{{endif}}
                 <minFadeExtent>8</minFadeExtent>
                 <maxFadeExtent>8</maxFadeExtent>
             </Lod>
@@ -31,7 +27,7 @@
                     <east>{{subtile.bbox[2]}}</east><west>{{subtile.bbox[0]}}</west>
                 </LatLonAltBox>
                 <Lod>
-                    <minLodPixels>96</minLodPixels>
+                    <minLodPixels>128</minLodPixels>
                     <maxLodPixels>-1</maxLodPixels>
                 </Lod>
             </Region>
