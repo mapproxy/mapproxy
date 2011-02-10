@@ -280,7 +280,8 @@ Requests below the configured resolution or level will be passed to the underlyi
 
 .. versionadded:: 1.0.0
 
-If set to ``true``, MapProxy will not store any tiles for this cache. MapProxy will re-request all required tiles for each incoming request.
+If set to ``true``, MapProxy will not store any tiles for this cache. MapProxy will re-request all required tiles for each incoming request, 
+even if the there are matching tiles in the cache. See :ref:`seed_only <wms_seed_only>` if you need an *offline* mode.
 
 .. note:: Be careful when using a cache with disabled storage in tile services when the cache uses WMS sources with metatiling.
 
