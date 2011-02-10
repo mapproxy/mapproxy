@@ -103,12 +103,14 @@ class KMLServer(Server):
                                'of the tile map.', request=map_request)
         tile = SubTile(tile_coord, bbox)
         
-        subtiles = self._get_subtiles(tile_coord, layer)
+        subtile_grid, subtiles = self._get_subtiles(tile_coord, layer)
+        tile_size = layer.grid.tile_size[0]
         layer = bunch(name=map_request.layer, format=layer.format, md=layer.md)
         service = bunch(url=map_request.http.script_url.rstrip('/'))
         template = get_template(self.template_file)
         result = template.substitute(tile=tile, subtiles=subtiles, layer=layer,
-                                 service=service, initial_level=initial_level)
+                                 service=service, initial_level=initial_level,
+                                 subtile_grid=subtile_grid, tile_size=tile_size)
         resp = Response(result, content_type='application/vnd.google-earth.kml+xml')
         resp.cache_headers(etag_data=(result,), max_age=self.max_age)
         resp.make_conditional(map_request.http)
@@ -119,16 +121,19 @@ class KMLServer(Server):
         Create four `SubTile` for the next level of `tile`.
         """
         bbox = self._tile_bbox(tile, layer.grid)
-        bbox_, tile_grid_, tiles = layer.grid.get_affected_level_tiles(bbox, tile[2]+1)
+        bbox_, tile_grid, tiles = layer.grid.get_affected_level_tiles(bbox, tile[2]+1)
         subtiles = []
         for coord in tiles:
             if coord is None: continue
-            bbox = self._tile_wgs_bbox(coord, layer.grid)
-            if bbox is not None:
-                subtiles.append(SubTile(coord, bbox))
+            sub_bbox = self._tile_bbox(coord, layer.grid)
+            if sub_bbox is not None:
+                # only add subtiles where the lower left corner is in the bbox
+                # to prevent subtiles to apear in multiple KML docs
+                if sub_bbox[0] >= bbox[0] and sub_bbox[1] >= bbox[1]:
+                    sub_bbox_wgs = self._tile_bbox_to_wgs(sub_bbox, layer.grid)
+                    subtiles.append(SubTile(coord, sub_bbox_wgs))
 
-
-        return subtiles
+        return tile_grid, subtiles
 
     def _tile_bbox(self, tile_coord, grid):
         tile_coord = grid.internal_tile_coord(tile_coord, use_profiles=False)
@@ -137,10 +142,12 @@ class KMLServer(Server):
         return grid.tile_bbox(tile_coord)
     
     def _tile_wgs_bbox(self, tile_coord, grid):
-        tile_coord = grid.internal_tile_coord(tile_coord, use_profiles=False)
-        if tile_coord is None:
+        src_bbox = self._tile_bbox(tile_coord, grid)
+        if src_bbox is None:
             return None
-        src_bbox = grid.tile_bbox(tile_coord)
+        return self._tile_bbox_to_wgs(src_bbox, grid)
+        
+    def _tile_bbox_to_wgs(self, src_bbox, grid):
         bbox = grid.srs.transform_bbox_to(SRS(4326), src_bbox, with_points=4)
         if grid.srs == SRS(900913):
             bbox = list(bbox)

@@ -11,12 +11,6 @@
                 <north>{{tile.bbox[3]}}</north><south>{{tile.bbox[1]}}</south>
                 <east>{{tile.bbox[2]}}</east><west>{{tile.bbox[0]}}</west>
             </LatLonAltBox>
-            <Lod>
-                <minLodPixels>128</minLodPixels>
-                <maxLodPixels>768</maxLodPixels>
-                <minFadeExtent>8</minFadeExtent>
-                <maxFadeExtent>8</maxFadeExtent>
-            </Lod>
         </Region>
 {{for subtile in subtiles}}
         <NetworkLink>
@@ -27,7 +21,7 @@
                     <east>{{subtile.bbox[2]}}</east><west>{{subtile.bbox[0]}}</west>
                 </LatLonAltBox>
                 <Lod>
-                    <minLodPixels>128</minLodPixels>
+                    <minLodPixels>{{tile_size/2}}</minLodPixels>
                     <maxLodPixels>-1</maxLodPixels>
                 </Lod>
             </Region>
@@ -38,16 +32,30 @@
             </Link>
         </NetworkLink>
 {{endfor}}
+{{for subtile in subtiles}}
         <GroundOverlay>
-            <name>{{tile.coord}}</name>
-            <drawOrder>{{tile.coord[2]}}</drawOrder>
+            <name>{{subtile.coord}}</name>
+            <Region>
+                <LatLonAltBox>
+                    <north>{{subtile.bbox[3]}}</north><south>{{subtile.bbox[1]}}</south>
+                    <east>{{subtile.bbox[2]}}</east><west>{{subtile.bbox[0]}}</west>
+                </LatLonAltBox>
+                <Lod>
+                    <minLodPixels>{{tile_size/2}}</minLodPixels>
+                    <maxLodPixels>{{tile_size*3}}</maxLodPixels>
+                    <minFadeExtent>8</minFadeExtent>
+                    <maxFadeExtent>8</maxFadeExtent>
+                </Lod>
+            </Region>
+            <drawOrder>{{subtile.coord[2]}}</drawOrder>
             <Icon>
-                <href>{{service.url}}/kml/{{'/'.join(layer.md['name_path'])}}/{{tile.coord[2]}}/{{tile.coord[0]}}/{{tile.coord[1]}}.{{layer.format}}</href>
+                <href>{{service.url}}/kml/{{'/'.join(layer.md['name_path'])}}/{{subtile.coord[2]}}/{{subtile.coord[0]}}/{{subtile.coord[1]}}.{{layer.format}}</href>
             </Icon>
             <LatLonBox>
-                <north>{{tile.bbox[3]}}</north><south>{{tile.bbox[1]}}</south>
-                <east>{{tile.bbox[2]}}</east><west>{{tile.bbox[0]}}</west>
+              <north>{{subtile.bbox[3]}}</north><south>{{subtile.bbox[1]}}</south>
+              <east>{{subtile.bbox[2]}}</east><west>{{subtile.bbox[0]}}</west>
             </LatLonBox>
         </GroundOverlay>
+{{endfor}}
     </Document>
 </kml>

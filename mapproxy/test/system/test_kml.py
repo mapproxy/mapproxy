@@ -114,11 +114,19 @@ class TestKML(SystemTest):
         xml = resp.lxml
         assert validate_with_xsd(xml, 'kml/2.2.0/ogckml22.xsd')
         eq_(xml.xpath('/kml:kml/kml:Document/kml:GroundOverlay/kml:Icon/kml:href/text()',
-                      namespaces=ns)[0],
-            'http://localhost/kml/wms_cache/EPSG900913/0/0/0.jpeg')
-        eq_(xml.xpath('/kml:kml/kml:Document/kml:NetworkLink[1]/kml:Link/kml:href/text()',
-                      namespaces=ns)[0],
-            'http://localhost/kml/wms_cache/EPSG900913/1/0/0.kml')
+                      namespaces=ns),
+            ['http://localhost/kml/wms_cache/EPSG900913/1/0/1.jpeg',
+             'http://localhost/kml/wms_cache/EPSG900913/1/1/1.jpeg',
+             'http://localhost/kml/wms_cache/EPSG900913/1/0/0.jpeg',
+             'http://localhost/kml/wms_cache/EPSG900913/1/1/0.jpeg']
+        )
+        eq_(xml.xpath('/kml:kml/kml:Document/kml:NetworkLink/kml:Link/kml:href/text()',
+                      namespaces=ns),
+              ['http://localhost/kml/wms_cache/EPSG900913/1/0/1.kml',
+               'http://localhost/kml/wms_cache/EPSG900913/1/1/1.kml',
+               'http://localhost/kml/wms_cache/EPSG900913/1/0/0.kml',
+               'http://localhost/kml/wms_cache/EPSG900913/1/1/0.kml']
+        )
         
         etag = hashlib.md5(resp.body).hexdigest()
         max_age = base_config().tiles.expires_hours * 60 * 60
@@ -138,12 +146,19 @@ class TestKML(SystemTest):
         xml = resp.lxml
         assert validate_with_xsd(xml, 'kml/2.2.0/ogckml22.xsd')
         eq_(xml.xpath('/kml:kml/kml:Document/kml:GroundOverlay/kml:Icon/kml:href/text()',
-                      namespaces=ns)[0],
-            'http://localhost/kml/wms_cache_multi/EPSG4326/1/0/0.jpeg')
-        eq_(xml.xpath('/kml:kml/kml:Document/kml:NetworkLink[1]/kml:Link/kml:href/text()',
-                      namespaces=ns)[0],
-            'http://localhost/kml/wms_cache_multi/EPSG4326/2/0/0.kml')
-    
+                      namespaces=ns),
+            ['http://localhost/kml/wms_cache_multi/EPSG4326/2/0/1.jpeg',
+             'http://localhost/kml/wms_cache_multi/EPSG4326/2/1/1.jpeg',
+             'http://localhost/kml/wms_cache_multi/EPSG4326/2/0/0.jpeg',
+             'http://localhost/kml/wms_cache_multi/EPSG4326/2/1/0.jpeg']
+        )
+        eq_(xml.xpath('/kml:kml/kml:Document/kml:NetworkLink/kml:Link/kml:href/text()',
+                      namespaces=ns),
+          ['http://localhost/kml/wms_cache_multi/EPSG4326/2/0/1.kml',
+           'http://localhost/kml/wms_cache_multi/EPSG4326/2/1/1.kml',
+           'http://localhost/kml/wms_cache_multi/EPSG4326/2/0/0.kml',
+           'http://localhost/kml/wms_cache_multi/EPSG4326/2/1/0.kml']
+        )
     
     def test_get_tile(self):
         with tmp_image((256, 256), format='jpeg') as img:
