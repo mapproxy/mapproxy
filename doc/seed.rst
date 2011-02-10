@@ -298,7 +298,7 @@ Example
     old_project:
       caches: [osm_cache]
       grids: [GLOBAL_MERCATOR]
-      coverage: [mypolygon]
+      coverages: [mypolygon]
       levels:
         from: 14
         to: 18
