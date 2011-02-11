@@ -312,7 +312,8 @@ def before_timestamp_from_options(conf):
         try:
             return timestamp_from_isodate(conf['time'])
         except ValueError:
-            return None
+            raise SeedConfigurationError(
+                "can't parse time '%s'. should be ISO time string" % (conf["time"], ))
     deltas = {}
     for delta_type in ('weeks', 'days', 'hours', 'minutes'):
         deltas[delta_type] = conf.get(delta_type, 0)
