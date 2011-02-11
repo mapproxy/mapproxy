@@ -516,7 +516,7 @@ class TileGrid(object):
         y0 = self.bbox[1] + round(y * res * self.tile_size[1], 12)
         return x0, y0
     
-    def tile_bbox(self, (x, y, z)):
+    def tile_bbox(self, (x, y, z), limit=False):
         """
         Returns the bbox of the given tile.
         
@@ -530,6 +530,13 @@ class TileGrid(object):
         res = self.resolution(z)
         width = round(res * self.tile_size[0], 12)
         height = round(res * self.tile_size[1], 12)
+        if limit:
+            return (
+                max(x0, self.bbox[0]),
+                max(y0, self.bbox[1]),
+                min(x0+width, self.bbox[2]),
+                min(y0+height, self.bbox[3])
+            )
         return (x0, y0, x0+width, y0+height)
     
     def limit_tile(self, tile_coord):

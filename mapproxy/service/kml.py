@@ -39,7 +39,7 @@ class KMLServer(Server):
     names = ('kml',)
     request_parser = staticmethod(kml_request)
     request_methods = ('map', 'kml')
-    
+
     def __init__(self, layers, md):
         Server.__init__(self)
         self.layers = layers
@@ -93,7 +93,7 @@ class KMLServer(Server):
         if tile_coord[2] == 0:
             initial_level = True
         
-        bbox = self._tile_wgs_bbox(tile_coord, layer.grid)
+        bbox = self._tile_wgs_bbox(tile_coord, layer.grid, limit=True)
         if bbox is None:
             raise RequestError('The requested tile is outside the bounding box '
                                'of the tile map.', request=map_request)
@@ -114,29 +114,31 @@ class KMLServer(Server):
         """
         Create four `SubTile` for the next level of `tile`.
         """
-        bbox = self._tile_bbox(tile, layer.grid)
-        bbox_, tile_grid_, tiles = layer.grid.get_affected_level_tiles(bbox, tile[2]+1)
+        bbox = self._tile_bbox(tile, layer.grid, limit=True)
+        level = layer.grid.internal_tile_coord((tile[0], tile[1], tile[2]+1), use_profiles=False)[2]
+        bbox_, tile_grid_, tiles = layer.grid.get_affected_level_tiles(bbox, level)
         subtiles = []
         for coord in tiles:
             if coord is None: continue
-            sub_bbox = self._tile_bbox(coord, layer.grid)
+            sub_bbox = layer.grid.tile_bbox(coord)
             if sub_bbox is not None:
                 # only add subtiles where the lower left corner is in the bbox
                 # to prevent subtiles to apear in multiple KML docs
                 if sub_bbox[0] >= bbox[0] and sub_bbox[1] >= bbox[1]:
                     sub_bbox_wgs = self._tile_bbox_to_wgs(sub_bbox, layer.grid)
+                    coord = layer.grid.external_tile_coord(coord, use_profiles=False)
                     subtiles.append(SubTile(coord, sub_bbox_wgs))
 
         return subtiles
 
-    def _tile_bbox(self, tile_coord, grid):
+    def _tile_bbox(self, tile_coord, grid, limit=False):
         tile_coord = grid.internal_tile_coord(tile_coord, use_profiles=False)
         if tile_coord is None:
             return None
-        return grid.tile_bbox(tile_coord)
+        return grid.tile_bbox(tile_coord, limit=limit)
     
-    def _tile_wgs_bbox(self, tile_coord, grid):
-        src_bbox = self._tile_bbox(tile_coord, grid)
+    def _tile_wgs_bbox(self, tile_coord, grid, limit=False):
+        src_bbox = self._tile_bbox(tile_coord, grid, limit=limit)
         if src_bbox is None:
             return None
         return self._tile_bbox_to_wgs(src_bbox, grid)
@@ -225,22 +227,22 @@ class KMLRenderer(object):
 """
     def render(self, tile, subtiles, layer, url, name, name_path, format, initial_level, tile_size):
         response = []
-        response.append(self.header % dict(east=tile.bbox[0], south=tile.bbox[1],
-            west=tile.bbox[2], north=tile.bbox[3], layer_name=name))
+        response.append(self.header % dict(east=tile.bbox[2], south=tile.bbox[1],
+            west=tile.bbox[0], north=tile.bbox[3], layer_name=name))
         
         name_path = '/'.join(name_path)
         for subtile in subtiles:
             kml_href = '%s/kml/%s/%d/%d/%d.kml' % (url, name_path,
                 subtile.coord[2], subtile.coord[0], subtile.coord[1])
-            response.append(self.network_link % dict(east=subtile.bbox[0], south=subtile.bbox[1],
-                west=subtile.bbox[2], north=subtile.bbox[3], min_lod=tile_size/2, href=kml_href,
+            response.append(self.network_link % dict(east=subtile.bbox[2], south=subtile.bbox[1],
+                west=subtile.bbox[0], north=subtile.bbox[3], min_lod=tile_size/2, href=kml_href,
                 layer_name=name, coord=subtile.coord))
         
         for subtile in subtiles:
             tile_href = '%s/kml/%s/%d/%d/%d.%s' % ( url, name_path,
                 subtile.coord[2], subtile.coord[0], subtile.coord[1], layer.format)
-            response.append(self.ground_overlay % dict(east=subtile.bbox[0], south=subtile.bbox[1],
-                west=subtile.bbox[2], north=subtile.bbox[3], coord=subtile.coord, 
+            response.append(self.ground_overlay % dict(east=subtile.bbox[2], south=subtile.bbox[1],
+                west=subtile.bbox[0], north=subtile.bbox[3], coord=subtile.coord, 
                 min_lod=tile_size/2, max_lod=tile_size*3, href=tile_href, level=subtile.coord[2]))
         response.append(self.footer)
         return ''.join(response)

@@ -327,3 +327,19 @@ class TileServiceGrid(object):
             z *= 2
         return self.grid.limit_tile((x, y, z))
     
+    def external_tile_coord(self, tile_coord, use_profiles):
+        """
+        Converts internal tile coords to external tile coords.
+        
+        :param tile_coord: the internal tile coord
+        :param use_profiles: True if the tile service supports global 
+                             profiles (see `mapproxy.core.server.TileServer`)
+        """
+        x, y, z = tile_coord
+        if z < 0:
+            return None
+        if use_profiles and self._skip_first_level:
+            z -= 1
+        if self._skip_odd_level:
+            z //= 2
+        return (x, y, z)
