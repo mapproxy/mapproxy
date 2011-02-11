@@ -142,9 +142,9 @@ class TestLevels(object):
     def test_level_range_open_to(self):
         levels = LevelsRange([13, None])
         eq_(levels.for_grid(tile_grid_for_epsg(4326)),
-            [13, 14, 15, 16, 17, 18, 19, 20])
+            [13, 14, 15, 16, 17, 18, 19])
 
-    def test_res_range(self):
+    def test_level_range_open_tos_range(self):
         levels = LevelsResolutionRange([1000, 100])
         eq_(levels.for_grid(tile_grid_for_epsg(900913)),
             [8, 9, 10, 11])
@@ -157,7 +157,7 @@ class TestLevels(object):
     def test_res_range_open_to(self):
         levels = LevelsResolutionRange([1000, None])
         eq_(levels.for_grid(tile_grid_for_epsg(900913)),
-            [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
+            [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
     
     def test_resolution_list(self):
         levels = LevelsResolutionList([1000, 100, 500])

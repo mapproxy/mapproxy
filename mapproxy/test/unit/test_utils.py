@@ -227,7 +227,8 @@ class DirTest(object):
     def setup(self):
         self.tmpdir = tempfile.mkdtemp()
     def teardown(self):
-        shutil.rmtree(self.tmpdir)
+        if os.path.exists(self.tmpdir):
+            shutil.rmtree(self.tmpdir)
     def mkdir(self, name):
         dirname = os.path.join(self.tmpdir, name)
         os.mkdir(dirname)
