@@ -104,7 +104,7 @@ class LegacySeedingConfiguration(object):
                         self.seed_tasks.append(SeedTask(md, tile_mgr, levels, remove_before, seed_coverage))
                 
                         if remove_before:
-                            levels = range(grid.levels+1)
+                            levels = range(grid.levels)
                             self.cleanup_tasks.append(CleanupTask(md, tile_mgr, levels, remove_before, None))
                             
     def seed_tasks_names(self):
@@ -252,7 +252,7 @@ class SeedConfiguration(ConfigurationBase):
                 if self.levels:
                     levels = self.levels.for_grid(grid)
                 else:
-                    levels = list(xrange(0, grid.levels+1))
+                    levels = list(xrange(0, grid.levels))
                 
                 md = dict(name=self.name, cache_name=cache_name, grid_name=grid_name)
                 yield SeedTask(md, tile_manager, levels, self.refresh_timestamp, coverage)
@@ -278,7 +278,7 @@ class CleanupConfiguration(ConfigurationBase):
                 if self.levels:
                     levels = self.levels.for_grid(grid)
                 else:
-                    levels = list(xrange(0, grid.levels+1))
+                    levels = list(xrange(0, grid.levels))
                 
                 md = dict(name=self.name, cache_name=cache_name, grid_name=grid_name)
                 yield CleanupTask(md, tile_manager, levels, self.remove_timestamp, coverage)
@@ -312,7 +312,8 @@ def before_timestamp_from_options(conf):
         try:
             return timestamp_from_isodate(conf['time'])
         except ValueError:
-            return None
+            raise SeedConfigurationError(
+                "can't parse time '%s'. should be ISO time string" % (conf["time"], ))
     deltas = {}
     for delta_type in ('weeks', 'days', 'hours', 'minutes'):
         deltas[delta_type] = conf.get(delta_type, 0)
@@ -324,7 +325,7 @@ class LevelsList(object):
         self.levels = levels
     
     def for_grid(self, grid):
-        uniqe_valid_levels = set(l for l in self.levels if 0 <= l <= grid.levels)
+        uniqe_valid_levels = set(l for l in self.levels if 0 <= l <= (grid.levels-1))
         return sorted(uniqe_valid_levels)
 
 class LevelsRange(object):
@@ -338,7 +339,7 @@ class LevelsRange(object):
         if stop is None:
             stop = 999
         
-        stop = min(stop, grid.levels)
+        stop = min(stop, grid.levels-1)
         
         return list(xrange(start, stop+1))
 
@@ -353,7 +354,7 @@ class LevelsResolutionRange(object):
             start = grid.closest_level(start)
         
         if stop is None:
-            stop = grid.levels
+            stop = grid.levels-1
         else:
             stop = grid.closest_level(stop)
         

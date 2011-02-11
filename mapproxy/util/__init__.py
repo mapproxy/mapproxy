@@ -155,7 +155,10 @@ def timestamp_from_isodate(isodate):
     ...
     ValueError: ...
     """
-    date = datetime.datetime.strptime(isodate, "%Y-%m-%dT%H:%M:%S")
+    if isinstance(isodate, datetime.datetime):
+        date = isodate
+    else:
+        date = datetime.datetime.strptime(isodate, "%Y-%m-%dT%H:%M:%S")
     return time.mktime(date.timetuple())
 
 def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True, 
@@ -173,9 +176,11 @@ def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
                 filename = os.path.join(dirpath, filename)
                 if os.lstat(filename).st_mtime < before_timestamp:
                     file_handler(filename)
-            if (remove_empty_dirs and not os.listdir(dirpath)
-                and dirpath != directory):
+            if remove_empty_dirs and not os.listdir(dirpath):
                 os.rmdir(dirpath)
+    
+        if remove_empty_dirs and not os.listdir(directory):
+            os.rmdir(directory)
 
 def replace_instancemethod(old_method, new_method):
     """
