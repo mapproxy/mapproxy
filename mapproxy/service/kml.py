@@ -7,9 +7,6 @@ from mapproxy.request.tile import TileRequest
 from mapproxy.srs import SRS
 from mapproxy.config import base_config
 
-from mapproxy.template import template_loader, bunch
-get_template = template_loader(__file__, 'templates')
-
 class KMLRequest(TileRequest):
     """
     Class for TMS-like KML requests.
@@ -42,7 +39,6 @@ class KMLServer(Server):
     names = ('kml',)
     request_parser = staticmethod(kml_request)
     request_methods = ('map', 'kml')
-    template_file = 'kml.xml'
     
     def __init__(self, layers, md):
         Server.__init__(self)
@@ -103,14 +99,12 @@ class KMLServer(Server):
                                'of the tile map.', request=map_request)
         tile = SubTile(tile_coord, bbox)
         
-        subtile_grid, subtiles = self._get_subtiles(tile_coord, layer)
+        subtiles = self._get_subtiles(tile_coord, layer)
         tile_size = layer.grid.tile_size[0]
-        layer = bunch(name=map_request.layer, format=layer.format, md=layer.md)
-        service = bunch(url=map_request.http.script_url.rstrip('/'))
-        template = get_template(self.template_file)
-        result = template.substitute(tile=tile, subtiles=subtiles, layer=layer,
-                                 service=service, initial_level=initial_level,
-                                 subtile_grid=subtile_grid, tile_size=tile_size)
+        url = map_request.http.script_url.rstrip('/')
+        result = KMLRenderer().render(tile=tile, subtiles=subtiles, layer=layer,
+            url=url, name=map_request.layer, format=layer.format, name_path=layer.md['name_path'],
+            initial_level=initial_level, tile_size=tile_size)
         resp = Response(result, content_type='application/vnd.google-earth.kml+xml')
         resp.cache_headers(etag_data=(result,), max_age=self.max_age)
         resp.make_conditional(map_request.http)
@@ -121,7 +115,7 @@ class KMLServer(Server):
         Create four `SubTile` for the next level of `tile`.
         """
         bbox = self._tile_bbox(tile, layer.grid)
-        bbox_, tile_grid, tiles = layer.grid.get_affected_level_tiles(bbox, tile[2]+1)
+        bbox_, tile_grid_, tiles = layer.grid.get_affected_level_tiles(bbox, tile[2]+1)
         subtiles = []
         for coord in tiles:
             if coord is None: continue
@@ -133,7 +127,7 @@ class KMLServer(Server):
                     sub_bbox_wgs = self._tile_bbox_to_wgs(sub_bbox, layer.grid)
                     subtiles.append(SubTile(coord, sub_bbox_wgs))
 
-        return tile_grid, subtiles
+        return subtiles
 
     def _tile_bbox(self, tile_coord, grid):
         tile_coord = grid.internal_tile_coord(tile_coord, use_profiles=False)
@@ -169,3 +163,84 @@ class SubTile(object):
     def __init__(self, coord, bbox):
         self.coord = coord
         self.bbox = bbox
+
+class KMLRenderer(object):
+    header = """<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>%(layer_name)s</name>
+    <Region>
+      <LatLonAltBox>
+        <north>%(north)f</north><south>%(south)f</south>
+        <east>%(east)f</east><west>%(west)f</west>
+      </LatLonAltBox>
+    </Region>
+    """
+  
+    network_link = """<NetworkLink>
+      <name>%(layer_name)s - %(coord)s</name>
+      <Region>
+        <LatLonAltBox>
+          <north>%(north)f</north><south>%(south)f</south>
+          <east>%(east)f</east><west>%(west)f</west>
+        </LatLonAltBox>
+        <Lod>
+          <minLodPixels>%(min_lod)d</minLodPixels>
+          <maxLodPixels>-1</maxLodPixels>
+        </Lod>
+      </Region>
+      <Link>
+        <href>%(href)s</href>
+        <viewRefreshMode>onRegion</viewRefreshMode>
+        <viewFormat/>
+      </Link>
+    </NetworkLink>
+    """
+    ground_overlay = """<GroundOverlay>
+      <name>%(coord)s</name>
+      <Region>
+        <LatLonAltBox>
+          <north>%(north)f</north><south>%(south)f</south>
+          <east>%(east)f</east><west>%(west)f</west>
+        </LatLonAltBox>
+        <Lod>
+          <minLodPixels>%(min_lod)d</minLodPixels>
+          <maxLodPixels>%(max_lod)d</maxLodPixels>
+          <minFadeExtent>8</minFadeExtent>
+          <maxFadeExtent>8</maxFadeExtent>
+        </Lod>
+      </Region>
+      <drawOrder>%(level)d</drawOrder>
+      <Icon>
+        <href>%(href)s</href>
+      </Icon>
+      <LatLonBox>
+        <north>%(north)f</north><south>%(south)f</south>
+        <east>%(east)f</east><west>%(west)f</west>
+      </LatLonBox>
+    </GroundOverlay>
+    """
+    footer = """</Document>
+</kml>
+"""
+    def render(self, tile, subtiles, layer, url, name, name_path, format, initial_level, tile_size):
+        response = []
+        response.append(self.header % dict(east=tile.bbox[0], south=tile.bbox[1],
+            west=tile.bbox[2], north=tile.bbox[3], layer_name=name))
+        
+        name_path = '/'.join(name_path)
+        for subtile in subtiles:
+            kml_href = '%s/kml/%s/%d/%d/%d.kml' % (url, name_path,
+                subtile.coord[2], subtile.coord[0], subtile.coord[1])
+            response.append(self.network_link % dict(east=subtile.bbox[0], south=subtile.bbox[1],
+                west=subtile.bbox[2], north=subtile.bbox[3], min_lod=tile_size/2, href=kml_href,
+                layer_name=name, coord=subtile.coord))
+        
+        for subtile in subtiles:
+            tile_href = '%s/kml/%s/%d/%d/%d.%s' % ( url, name_path,
+                subtile.coord[2], subtile.coord[0], subtile.coord[1], layer.format)
+            response.append(self.ground_overlay % dict(east=subtile.bbox[0], south=subtile.bbox[1],
+                west=subtile.bbox[2], north=subtile.bbox[3], coord=subtile.coord, 
+                min_lod=tile_size/2, max_lod=tile_size*3, href=tile_href, level=subtile.coord[2]))
+        response.append(self.footer)
+        return ''.join(response)
