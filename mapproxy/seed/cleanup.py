@@ -41,14 +41,17 @@ def simple_cleanup(task, dry_run):
                 print 'removing ' + filename
         else:
             file_handler = None
-        print 'removing old tiles in ' + relpath(level_dir)
+        print 'removing old tiles in ' + normpath(level_dir)
         cleanup_directory(level_dir, task.remove_timestamp,
             file_handler=file_handler, remove_empty_dirs=True)
 
-def relpath(path):
+def normpath(path):
     # only supported with >= Python 2.6
     if hasattr(os.path, 'relpath'):
         path = os.path.relpath(path)
+    
+    if path.startswith('../../'):
+        path = os.path.abspath(path)
     return path
 
 def coverage_cleanup(task, dry_run, concurrency, skip_geoms_for_last_levels):
