@@ -1,5 +1,10 @@
 1.0.0dev
 
+Improvements:
+- [mapproxy-seed] support for configuration includes in mapproxy.yaml (base)
+
+1.0.0b1 2011-02-09
+
 Features:
 - [mapproxy-seed] separated seed and cleanup tasks; call tasks independently 
 - XSL transformation of WMS FeatureInfo responses

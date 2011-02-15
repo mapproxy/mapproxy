@@ -23,7 +23,7 @@ import operator
 
 import yaml
 from mapproxy.config.coverage import load_coverage
-from mapproxy.config.loader import ProxyConfiguration
+from mapproxy.config.loader import load_configuration
 from mapproxy.srs import SRS
 from mapproxy.util import memoize, timestamp_from_isodate, timestamp_before, local_base_config
 from mapproxy.util.geom import MultiCoverage, BBOXCoverage
@@ -46,11 +46,8 @@ def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf_filename):
     with open(seed_conf_filename) as f:
         conf = yaml.load(f)
     
-    base_dir = os.path.abspath(os.path.dirname(mapproxy_conf_filename))
-    with open(mapproxy_conf_filename) as f:
-        mapproxy_conf = yaml.load(f)
-        mapproxy_conf = ProxyConfiguration(mapproxy_conf, base_dir, seed=True)
-
+    mapproxy_conf = load_configuration(mapproxy_conf_filename, seed=True)
+    
     if 'views' in conf:
         # TODO: deprecate old config
         seed_conf = LegacySeedingConfiguration(conf, mapproxy_conf=mapproxy_conf)

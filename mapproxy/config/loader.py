@@ -917,7 +917,7 @@ def load_yaml_file(file):
     else:
         return yaml.load(file)
 
-def load_configuration(mapproxy_conf):
+def load_configuration(mapproxy_conf, seed=False):
     if hasattr(mapproxy_conf, 'read'):
         conf_data = mapproxy_conf.read()
         conf_base_dir = os.getcwd()
@@ -933,7 +933,7 @@ def load_configuration(mapproxy_conf):
             log.warn('found `base` option in base config but recursive inheritance is not supported.')
         conf_dict = merge_dict(conf_dict, base_dict)
     
-    return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir)
+    return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed)
 
 def merge_dict(conf, base):
     """
