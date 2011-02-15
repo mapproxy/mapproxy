@@ -23,7 +23,6 @@ import operator
 
 import yaml
 from mapproxy.config.coverage import load_coverage
-from mapproxy.config.loader import load_configuration
 from mapproxy.srs import SRS
 from mapproxy.util import memoize, timestamp_from_isodate, timestamp_before, local_base_config
 from mapproxy.util.geom import MultiCoverage, BBOXCoverage
@@ -42,11 +41,9 @@ class SeedConfigurationError(Exception):
 #             ' required for polygon/ogr seed areas')
 
 
-def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf_filename):
+def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf):
     with open(seed_conf_filename) as f:
         conf = yaml.load(f)
-    
-    mapproxy_conf = load_configuration(mapproxy_conf_filename, seed=True)
     
     if 'views' in conf:
         # TODO: deprecate old config
@@ -68,42 +65,41 @@ class LegacySeedingConfiguration(object):
         self._init_tasks()
         
     def _init_tasks(self):
-        with local_base_config(self.mapproxy_conf.base_config):
-            for cache_name, options in self.conf['seeds'].iteritems():
-                remove_before = None
-                if 'remove_before' in options:
-                    remove_before = before_timestamp_from_options(options['remove_before'])
-                try:
-                    caches = self.mapproxy_conf.caches[cache_name].caches()
-                except KeyError:
-                    print >>sys.stderr, 'error: cache %s not found. available caches: %s' % (
-                        cache_name, ','.join(self.mapproxy_conf.caches.keys()))
-                    return
-                caches = dict((grid, tile_mgr) for grid, extent, tile_mgr in caches)
-                for view in options['views']:
-                    view_conf = self.conf['views'][view]
-                    coverage = load_coverage(view_conf)
+        for cache_name, options in self.conf['seeds'].iteritems():
+            remove_before = None
+            if 'remove_before' in options:
+                remove_before = before_timestamp_from_options(options['remove_before'])
+            try:
+                caches = self.mapproxy_conf.caches[cache_name].caches()
+            except KeyError:
+                print >>sys.stderr, 'error: cache %s not found. available caches: %s' % (
+                    cache_name, ','.join(self.mapproxy_conf.caches.keys()))
+                return
+            caches = dict((grid, tile_mgr) for grid, extent, tile_mgr in caches)
+            for view in options['views']:
+                view_conf = self.conf['views'][view]
+                coverage = load_coverage(view_conf)
 
-                    cache_srs = view_conf.get('srs', None)
-                    if cache_srs is not None:
-                        cache_srs = [SRS(s) for s in cache_srs]
+                cache_srs = view_conf.get('srs', None)
+                if cache_srs is not None:
+                    cache_srs = [SRS(s) for s in cache_srs]
+            
+                level = view_conf.get('level', None)
+                assert len(level) == 2
                 
-                    level = view_conf.get('level', None)
-                    assert len(level) == 2
-                    
-                    for grid, tile_mgr in caches.iteritems():
-                        if cache_srs and grid.srs not in cache_srs: continue
-                        md = dict(name=view, cache_name=cache_name, grid_name=self.grids[grid])
-                        levels = range(level[0], level[1]+1)
-                        seed_coverage = None
-                        if coverage:
-                            seed_coverage = coverage.transform_to(grid.srs)
-                        self.seed_tasks.append(SeedTask(md, tile_mgr, levels, remove_before, seed_coverage))
-                
-                        if remove_before:
-                            levels = range(grid.levels)
-                            self.cleanup_tasks.append(CleanupTask(md, tile_mgr, levels, remove_before, None))
-                            
+                for grid, tile_mgr in caches.iteritems():
+                    if cache_srs and grid.srs not in cache_srs: continue
+                    md = dict(name=view, cache_name=cache_name, grid_name=self.grids[grid])
+                    levels = range(level[0], level[1]+1)
+                    seed_coverage = None
+                    if coverage:
+                        seed_coverage = coverage.transform_to(grid.srs)
+                    self.seed_tasks.append(SeedTask(md, tile_mgr, levels, remove_before, seed_coverage))
+            
+                    if remove_before:
+                        levels = range(grid.levels)
+                        self.cleanup_tasks.append(CleanupTask(md, tile_mgr, levels, remove_before, None))
+                        
     def seed_tasks_names(self):
         return self.conf['seeds'].keys()
     

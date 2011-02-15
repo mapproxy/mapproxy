@@ -21,6 +21,8 @@ import shutil
 
 from optparse import OptionParser
 from textwrap import dedent
+from mapproxy.util import local_base_config
+from mapproxy.config.loader import load_configuration
 from mapproxy.seed.config import load_seed_tasks_conf
 from mapproxy.seed.seeder import seed
 from mapproxy.seed.cleanup import cleanup
@@ -79,43 +81,44 @@ class SeedScript(object):
         if not options.conf_file:
             self.parser.error('missing mapproxy configuration -f/--proxy-conf')
     
-        seed_conf = load_seed_tasks_conf(options.seed_file, options.conf_file)
-        
-        seed_names, cleanup_names = self.task_names(seed_conf, options)
-    
-        seed_tasks = seed_conf.seeds(seed_names)
-        cleanup_tasks = seed_conf.cleanups(cleanup_names)
-    
-        if options.summary:
-            print '========== Seeding tasks =========='
-            for task in seed_tasks:
-                print format_seed_task(task)
-            print '========== Cleanup tasks =========='
-            for task in cleanup_tasks:
-                print format_cleanup_task(task)
-            return 0
-    
-        try:
-            if options.interactive:
-                seed_tasks, cleanup_tasks = self.interactive(seed_tasks, cleanup_tasks)
+        mapproxy_conf = load_configuration(options.conf_file, seed=True)
 
-            if seed_tasks:
+        with local_base_config(mapproxy_conf.base_config):
+            seed_conf = load_seed_tasks_conf(options.seed_file, mapproxy_conf)
+            seed_names, cleanup_names = self.task_names(seed_conf, options)
+            seed_tasks = seed_conf.seeds(seed_names)
+            cleanup_tasks = seed_conf.cleanups(cleanup_names)
+
+            if options.summary:
                 print '========== Seeding tasks =========='
-                print 'Start seeding process (%d task%s)' % (
-                    len(seed_tasks), 's' if len(seed_tasks) > 1 else '')
-                seed(seed_tasks, verbose=options.verbose, dry_run=options.dry_run,
-                     concurrency=options.concurrency,
-                     skip_geoms_for_last_levels=options.geom_levels)
-            if cleanup_tasks:
+                for task in seed_tasks:
+                    print format_seed_task(task)
                 print '========== Cleanup tasks =========='
-                print 'Start cleanup process (%d task%s)' % (
-                    len(cleanup_tasks), 's' if len(cleanup_tasks) > 1 else '')
-                cleanup(cleanup_tasks, verbose=options.verbose, dry_run=options.dry_run,
-                        concurrency=options.concurrency,
-                        skip_geoms_for_last_levels=options.geom_levels)
-        except KeyboardInterrupt:
-            print '\nexiting...'
-            return 2
+                for task in cleanup_tasks:
+                    print format_cleanup_task(task)
+                return 0
+
+            try:
+                if options.interactive:
+                    seed_tasks, cleanup_tasks = self.interactive(seed_tasks, cleanup_tasks)
+
+                if seed_tasks:
+                    print '========== Seeding tasks =========='
+                    print 'Start seeding process (%d task%s)' % (
+                        len(seed_tasks), 's' if len(seed_tasks) > 1 else '')
+                    seed(seed_tasks, verbose=options.verbose, dry_run=options.dry_run,
+                         concurrency=options.concurrency,
+                         skip_geoms_for_last_levels=options.geom_levels)
+                if cleanup_tasks:
+                    print '========== Cleanup tasks =========='
+                    print 'Start cleanup process (%d task%s)' % (
+                        len(cleanup_tasks), 's' if len(cleanup_tasks) > 1 else '')
+                    cleanup(cleanup_tasks, verbose=options.verbose, dry_run=options.dry_run,
+                            concurrency=options.concurrency,
+                            skip_geoms_for_last_levels=options.geom_levels)
+            except KeyboardInterrupt:
+                print '\nexiting...'
+                return 2
     
     def task_names(self, seed_conf, options):
         seed_names = cleanup_names = []
