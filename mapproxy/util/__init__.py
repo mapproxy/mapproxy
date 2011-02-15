@@ -174,13 +174,23 @@ def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
                 continue
             for filename in filenames:
                 filename = os.path.join(dirpath, filename)
-                if os.lstat(filename).st_mtime < before_timestamp:
-                    file_handler(filename)
-            if remove_empty_dirs and not os.listdir(dirpath):
-                os.rmdir(dirpath)
+                try:
+                    if os.lstat(filename).st_mtime < before_timestamp:
+                        file_handler(filename)
+                except OSError, ex:
+                    if ex.errno != errno.ENOENT: raise
+
+            if remove_empty_dirs:
+                remove_dir_if_emtpy(dirpath)
     
-        if remove_empty_dirs and not os.listdir(directory):
-            os.rmdir(directory)
+        if remove_empty_dirs:
+            remove_dir_if_emtpy(directory)
+
+def remove_dir_if_emtpy(directory):
+    try:
+        os.rmdir(directory)
+    except OSError, ex:
+        if ex.errno != errno.ENOENT and ex.errno != errno.ENOTEMPTY: raise
 
 def replace_instancemethod(old_method, new_method):
     """

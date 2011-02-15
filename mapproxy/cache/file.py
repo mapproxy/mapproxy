@@ -155,8 +155,10 @@ class FileCache(object):
     
     def remove(self, tile):
         location = self.tile_location(tile)
-        if os.path.exists(location):
+        try:
             os.remove(location)
+        except OSError, ex:
+            if ex.errno != errno.ENOENT: raise
     
     def store(self, tile):
         """
