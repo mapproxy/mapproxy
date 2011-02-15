@@ -307,6 +307,12 @@ content: ':';
   padding-left: 2em;
 }
 
+.doc div img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* blog style */
 
 h2.blog_post_title {
