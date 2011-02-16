@@ -21,7 +21,7 @@ import time
 import errno
 import hashlib
 
-from mapproxy.util.lock import FileLock, DummyLock
+from mapproxy.util.lock import FileLock, DummyLock, cleanup_lockdir
 from mapproxy.image import ImageSource, is_single_color_image
 from mapproxy.config import base_config
 
@@ -224,7 +224,9 @@ class FileCache(object):
         Returns a lock object for this tile.
         """
         lock_filename = self.lock_filename(tile)
-        return FileLock(lock_filename, timeout=base_config().http.client_timeout)
+        cleanup_lockdir(self.lock_dir, force=False)
+        return FileLock(lock_filename, timeout=base_config().http.client_timeout,
+            remove_on_unlock=True)
     
     def __repr__(self):
         return '%s(%r, %r)' % (self.__class__.__name__, self.cache_dir, self.file_ext)

@@ -129,7 +129,23 @@ class TestFileLock(Mocker):
         with open(count_file, 'r+b') as f:
             counter = int(f.read().strip())
         
-        assert counter == 400
+        assert counter == 400, counter
+    
+    def test_remove_on_unlock(self):
+        l = FileLock(self.lock_file, remove_on_unlock=True)
+        l.lock()
+        assert os.path.exists(self.lock_file)
+        l.unlock()
+        assert not os.path.exists(self.lock_file)
+
+        l.lock()
+        assert os.path.exists(self.lock_file)
+        os.remove(self.lock_file)
+        assert not os.path.exists(self.lock_file)
+        # ignore removed lock
+        l.unlock()
+        assert not os.path.exists(self.lock_file)
+
     
     def _create_lock(self):
         lock = FileLock(self.lock_file)

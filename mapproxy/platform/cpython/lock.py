@@ -32,10 +32,11 @@ class LockTimeout(Exception):
 
 
 class FileLock(object):
-    def __init__(self, lock_file, timeout=60.0, step=0.01):
+    def __init__(self, lock_file, timeout=60.0, step=0.01, remove_on_unlock=False):
         self.lock_file = lock_file
         self.timeout = timeout
         self.step = step
+        self.remove_on_unlock = remove_on_unlock
         self._locked = False
     
     def __enter__(self):
@@ -76,13 +77,33 @@ class FileLock(object):
     def unlock(self):
         if self._locked:
             self._locked = False
-            self._lock.close()
+            if self.remove_on_unlock:
+                try:
+                    # try to release lock by removing
+                    # this is not a clean way and more than one process might
+                    # grab the lock afterwards but it is ok when the task is
+                    # solved by the first process that got the lock (i.e. the
+                    # tile is created)
+                    os.remove(self.lock_file)
+                except OSError, ex:
+                    self._lock.close()
+            else:
+                self._lock.close()
     
     def __del__(self):
         self.unlock()
 
-
-def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300):
+_cleanup_counter = -1
+def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300, force=True):
+    """
+    Remove files ending with `suffix` from `lockdir` if they are older then
+    `max_lock_time` seconds.
+    It will not cleanup on every call if `force` is ``False``.
+    """
+    global _cleanup_counter
+    _cleanup_counter += 1
+    if not force and _cleanup_counter % 50 != 0:
+        return
     expire_time = time.time() - max_lock_time
     if not os.path.exists(lockdir) or not os.path.isdir(lockdir):
         log.warn('lock dir not a directory: %s', lockdir)

@@ -3,6 +3,9 @@
 Improvements:
 - [mapproxy-seed] support for configuration includes in mapproxy.yaml (base)
 
+Fixes:
+- fix tile_lock cleanup
+
 1.0.0b1 2011-02-09
 
 Features:
