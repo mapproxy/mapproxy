@@ -1,10 +1,16 @@
-1.0.0dev
+1.0.0b2 2011-02-18
 
 Improvements:
 - [mapproxy-seed] support for configuration includes in mapproxy.yaml (base)
+- [mapproxy-seed] updated config templates
+- KML: reduce number of required KML requests
+- KML: improve superoverlays with res_factor != 2
 
 Fixes:
+- [mapproxy-seed] apply globals from mapproxy.yaml during seed
 - fix tile_lock cleanup
+- merging of cache sources with only tile sources failed
+
 
 1.0.0b1 2011-02-09
 
