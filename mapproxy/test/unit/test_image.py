@@ -161,8 +161,8 @@ class TestTextDraw(object):
         img = Image.new('RGB', (100, 100))
         draw = ImageDraw.Draw(img)
         total_box, boxes = td.text_boxes(draw, (100, 100))
-        eq_(total_box, (10, 10, 40, 42))
-        eq_(boxes, [(10, 10, 40, 21), (10, 31, 40, 42)])
+        eq_(total_box, (5, 5, 35, 30))
+        eq_(boxes, [(5, 5, 35, 16), (5, 19, 35, 30)])
 
     def test_multiline_lr(self):
         font = ImageFont.load_default()
@@ -170,8 +170,8 @@ class TestTextDraw(object):
         img = Image.new('RGB', (100, 100))
         draw = ImageDraw.Draw(img)
         total_box, boxes = td.text_boxes(draw, (100, 100))
-        eq_(total_box, (60, 58, 90, 90))
-        eq_(boxes, [(60, 58, 90, 69), (60, 79, 90, 90)])
+        eq_(total_box, (65, 70, 95, 95))
+        eq_(boxes, [(65, 70, 95, 81), (65, 84, 95, 95)])
 
     def test_multiline_center(self):
         font = ImageFont.load_default()
@@ -179,8 +179,8 @@ class TestTextDraw(object):
         img = Image.new('RGB', (100, 100))
         draw = ImageDraw.Draw(img)
         total_box, boxes = td.text_boxes(draw, (100, 100))
-        eq_(total_box, (35, 34, 65, 66))
-        eq_(boxes, [(35, 34, 65, 45), (35, 55, 65, 66)])
+        eq_(total_box, (35, 38, 65, 63))
+        eq_(boxes, [(35, 38, 65, 49), (35, 52, 65, 63)])
 
     def test_unicode(self):
         font = ImageFont.load_default()
@@ -188,8 +188,8 @@ class TestTextDraw(object):
         img = Image.new('RGB', (100, 100))
         draw = ImageDraw.Draw(img)
         total_box, boxes = td.text_boxes(draw, (100, 100))
-        eq_(total_box, (35, 34, 65, 66))
-        eq_(boxes, [(35, 34, 65, 45), (35, 55, 65, 66)])
+        eq_(total_box, (35, 38, 65, 63))
+        eq_(boxes, [(35, 38, 65, 49), (35, 52, 65, 63)])
     
     def _test_all(self):
         for x in 'c':

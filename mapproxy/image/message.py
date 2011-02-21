@@ -76,6 +76,9 @@ class MessageImage(object):
     font_size = 10
     font_color = ImageColor.getrgb('black')
     box_color = None
+    linespacing = 5
+    padding = 3
+    placement = 'ul'
     
     def __init__(self, message, format='png'):
         self.message = message
@@ -97,17 +100,6 @@ class MessageImage(object):
             if self._font is None:
                 self._font = ImageFont.load_default()
         return self._font
-    
-    def text_size(self, draw):
-        try:
-            return draw.textsize(self.message, font=self.font)
-        except UnicodeEncodeError:
-            # PILs default font does only support ascii
-            self.message = self.message.encode('ascii', 'ignore')
-            return draw.textsize(self.message, font=self.font)
-    
-    def text_box(self, img, draw):
-        raise NotImplementedError
     
     def new_image(self, size):
         return Image.new('RGBA', size)
@@ -137,7 +129,8 @@ class MessageImage(object):
     
     def draw_msg(self, draw, size):
         td = TextDraw(self.message, font=self.font, bg_color=self.box_color,
-                      font_color=self.font_color)
+                      font_color=self.font_color, placement=self.placement,
+                      linespacing=self.linespacing, padding=self.padding)
         td.draw(draw, size)
 
 
@@ -204,6 +197,7 @@ class AttributionImage(MessageImage):
     """
     font_name = 'DejaVu Sans'
     font_size = 10
+    placement = 'lr'
     
     def __init__(self, message, format='png', transparent=False, inverse=False):
         MessageImage.__init__(self, message, format)
@@ -224,16 +218,10 @@ class AttributionImage(MessageImage):
         else:
             return (255, 255, 255, 120)
     
-    def text_box(self, img, draw):
-        img_size = img.size
-        text_size = self.text_size(draw)
-        return (img_size[0]-text_size[0]-5, img_size[1]-5-text_size[1],
-                img_size[0]-5, img_size[1]-5)
-
 
 class TextDraw(object):
     def __init__(self, text, font, font_color=None, bg_color=None,
-                 placement='ul', padding=10, linespacing=10):
+                 placement='ul', padding=5, linespacing=3):
         if isinstance(text, basestring):
             text = text.split('\n')
         self.text = text
