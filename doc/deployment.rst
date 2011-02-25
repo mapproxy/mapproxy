@@ -74,6 +74,15 @@ You can use the following snippet to add the MapProxy FastCGI to an Apache insta
 
 .. note:: ``/tmp/madeup`` is just a dummy value and you can choose any path you want, the only limitation is that the directory must exist but not the file. In this example there must be a ``/tmp`` directory but the file ``madeup`` should not exist.
 
+The ``fcgi-socket`` file needs to be writeable by the Apache process and you need to permit access to the parent directory of the ``madeup`` file. 
+
+::
+
+  <Directory "/tmp">
+    Order allow,deny
+    Allow from all
+  </Directory>
+
 .. index:: nginx
 
 nginx
