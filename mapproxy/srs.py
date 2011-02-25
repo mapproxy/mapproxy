@@ -118,15 +118,18 @@ def epsg900913():
                 '+lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m '
                 '+nadgrids=@null +no_defs')
 
+WEBMERCATOR_EPSG = set(('EPSG:900913', 'EPSG:3857',
+    'EPSG:102100', 'EPSG:102113'))
+
 class _SRS(object):
     # http://trac.openlayers.org/wiki/SphericalMercator
     # TODO jproj/libproj
     proj_init = {
-                 'EPSG:900913': epsg900913,
-                 'EPSG:3857': epsg900913,
                  'CRS:84': lambda: Proj(init='epsg:4326'),
                 }
-    
+    for _epsg in WEBMERCATOR_EPSG:
+        proj_init[_epsg] = epsg900913
+        
     """
     This class represents a Spatial Reference System.
     """
@@ -283,8 +286,8 @@ class _SRS(object):
 
         """
         if isinstance(other, _SRS):
-            if (self.srs_code in ('EPSG:900913', 'EPSG:3857')
-                and other.srs_code in ('EPSG:900913', 'EPSG:3857')):
+            if (self.srs_code in WEBMERCATOR_EPSG
+                and other.srs_code in WEBMERCATOR_EPSG):
                 return True
             return self.proj.srs == other.proj.srs
         else:

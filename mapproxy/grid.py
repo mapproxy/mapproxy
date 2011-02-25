@@ -69,16 +69,13 @@ def tile_grid_for_epsg(epsg, bbox=None, tile_size=(256, 256), res=None):
 # are not loaded on import time
 class _default_bboxs(object):
     _defaults = {
-        900913: (-20037508.342789244,
-                 -20037508.342789244,
-                  20037508.342789244,
-                  20037508.342789244),
-        3857: (-20037508.342789244,
-               -20037508.342789244,
-                20037508.342789244,
-                20037508.342789244),
         4326: (-180, -90, 180, 90),
     }
+    for epsg_num in (900913, 3857, 102100, 102113):
+        _defaults[epsg_num] = (-20037508.342789244,
+                                -20037508.342789244,
+                                20037508.342789244,
+                                20037508.342789244)
     defaults = None
     def get(self, key, default=None):
         try:
