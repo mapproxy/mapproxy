@@ -1,3 +1,11 @@
+1.0.0rc1 2011-02-25
+
+Improvements:
+- handle epsg:102100 and 102113 as equivalents to 900913/3857
+
+Fixes:
+- fixed attribution placement and padding
+
 1.0.0b2 2011-02-18
 
 Improvements:
