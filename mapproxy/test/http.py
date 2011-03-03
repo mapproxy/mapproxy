@@ -45,6 +45,11 @@ class ThreadedStopableHTTPServer(threading.Thread):
         self.httpd = HTTPServer(address, mock_http_handler(requests_responses))
         self.httpd.timeout = 1.0
         self.out = self.httpd.out = StringIO()
+    
+    @property
+    def http_port(self):
+        return self.httpd.socket.getsockname()[1]
+    
     def run(self):
         while self.requests_responses:
             if self.shutdown: break
@@ -69,7 +74,7 @@ def mock_http_handler(requests_responses):
             length = int(self.headers['content-length'])
             self.query_data = self.path + '?' + self.rfile.read(length)
             return self.do_mock_request('POST')
-
+            
         def do_mock_request(self, method):
             assert len(requests_responses) > 0, 'got unexpected request (%s)' % self.query_data
             req, resp = requests_responses.pop(0)
@@ -98,7 +103,11 @@ def mock_http_handler(requests_responses):
                     print >>self.server.out, 'req_assert_function failed'
                     self.server.shutdown = True
             self.start_response(resp)
-            self.wfile.write(resp['body'])
+            if resp.get('body_file'):
+                with open(resp['body_file'], 'rb') as f:
+                    self.wfile.write(f.read())
+            else:
+                self.wfile.write(resp['body'])
             if not requests_responses:
                 self.server.shutdown = True
             return
@@ -110,7 +119,47 @@ def mock_http_handler(requests_responses):
             self.end_headers()
         def log_request(self, code, size=None):
             pass
+    
     return MockHTTPHandler
+
+class MockServ(object):
+    def __init__(self, port=0, host='localhost'):
+        self.port = port
+        self.host = host
+        self.requests_responses = []
+        self._thread = ThreadedStopableHTTPServer((self.host, self.port),
+            self.requests_responses)
+        if self.port == 0:
+            self.port = self._thread.http_port
+        self.address = (host, self.port)
+        
+    @property
+    def base_url(self):
+        return 'http://localhost:%d' % (self.port, )
+        
+    def expects(self, path, method='GET', headers=None):
+        headers = headers or ()
+        self.requests_responses.append(
+            (dict(path=path, method=method, headers=headers), {}))
+        return self
+    
+    def returns(self, body=None, body_file=None, status_code=200, headers=None):
+        assert body or body_file
+        headers = headers or {}
+        self.requests_responses[-1][1].update(
+            body=body, body_file=body_file, status_code=status_code, headers=headers)
+        return self
+    
+    def __enter__(self):
+        self._thread.start()
+    
+    def __exit__(self, type, value, traceback):
+        self._thread.shutdown = True
+        self._thread.join()
+        if value:
+            raise type, value, traceback
+        assert self._thread.sucess, ('requests to mock httpd did not '
+            'match expectations:\n' + self._thread.out.read())
 
 def query_eq(expected, actual):
     """
