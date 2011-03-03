@@ -73,7 +73,7 @@ setup(
     package_data = {'': ['*.xml', '*.yaml', '*.ttf']},
     install_requires=install_requires,
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.5",
