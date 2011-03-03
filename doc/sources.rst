@@ -126,27 +126,32 @@ If MapProxy needs to reproject and the source has multiple ``supported_srs``, th
 
 Use this option to specify which image formats you source WMS supports. MapProxy only requests images in one of these formats, and will convert any image if it needs another format. If you do not supply this options, MapProxy assumes that the source supports all formats.
 
+``image``
+^^^^^^^^^
 
-``image.transparent_color``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``transparent_color``
 
-.. versionadded:: 1.0.0
+  .. versionadded:: 1.0.0
 
-Specify a color that should be converted to full transparency. Can be either a list of color (``[255, 255, 255]``) values or a hex string (``#ffffff``).
+  Specify a color that should be converted to full transparency. Can be either a list of color (``[255, 255, 255]``) values or a hex string (``#ffffff``).
 
-``image.transparent_color_tolerance``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``transparent_color_tolerance``
 
-.. versionadded:: 1.0.0
+  .. versionadded:: 1.0.0
 
-Tolerance for the ``transparent_color`` substitution. The value defines the tolerance in each direction. E.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.
+  Tolerance for the ``transparent_color`` substitution. The value defines the tolerance in each direction. E.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.
+  
+  ::
+  
+    image:
+      transparent_color: '#ffffff'
+      transparent_color_tolerance: 20
 
-``image.opacity``
-^^^^^^^^^^^^^^^^^^
+``opacity``
 
-.. versionadded:: 1.0.0
+  .. versionadded:: 1.0.0
 
-Configures the opacity of this source image. This value is used when the image is placed on other layers and it can be used to overlay non-transparent images. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).
+  Configures the opacity of this source image. This value is used when the image is placed on other layers and it can be used to overlay non-transparent images. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).
 
 .. _wms_source_concurrent_requests_label:
 
@@ -171,9 +176,9 @@ See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 
 .. _wms_source-ssl_no_cert_check:
 
-``http.ssl_no_cert_check``
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-MapProxy checks the SSL server certificates for any ``req.url`` that use HTTPS. You need to supply a file (see) that includes that certificate, otherwise MapProxy will fail to establish the connection. You can set the ``http.ssl_no_cert_check`` options to ``true`` to disable this verification.
+``ssl_no_cert_check``
+
+  MapProxy checks the SSL server certificates for any ``req.url`` that use HTTPS. You need to supply a file (see) that includes that certificate, otherwise MapProxy will fail to establish the connection. You can set the ``http.ssl_no_cert_check`` options to ``true`` to disable this verification.
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
