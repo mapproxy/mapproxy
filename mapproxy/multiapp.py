@@ -158,7 +158,7 @@ class DirectoryConfLoader(ConfLoader):
         return False
     
     def _is_conf_file(self, fname):
-        if not os.path.isfile(os.path.join(self.base_dir, fname)):
+        if not os.path.isfile(fname):
             return False
         if self.suffix:
             return fname.lower().endswith(self.suffix)
@@ -184,7 +184,7 @@ class DirectoryConfLoader(ConfLoader):
     def available_apps(self):
         apps = []
         for f in os.listdir(self.base_dir):
-            if self._is_conf_file(f):
+            if self._is_conf_file(os.path.join(self.base_dir, f)):
                 app_name = self.app_name_from_filename(f)
                 apps.append(app_name)
         return apps
