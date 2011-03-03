@@ -1,3 +1,7 @@
+1.0.0 2011-03-03
+
+- no changes since 1.0.0rc1
+
 1.0.0rc1 2011-02-25
 
 Improvements:
