@@ -1,3 +1,8 @@
+1.1.0a dev
+
+Improvements:
+- tweaked watermarks on transparent images
+
 1.0.0 2011-03-03
 
 - no changes since 1.0.0rc1
