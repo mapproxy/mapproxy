@@ -104,7 +104,7 @@ class MessageImage(object):
     def new_image(self, size):
         return Image.new('RGBA', size)
     
-    def draw(self, img=None, size=None):
+    def draw(self, img=None, size=None, in_place=True):
         """
         Create the message image. Either draws on top of `img` or creates a
         new image with the given `size`.
@@ -113,6 +113,9 @@ class MessageImage(object):
             raise TypeError, 'need either img or size argument'
 
         if img is None:
+            base_img = self.new_image(size)
+        elif not in_place:
+            size = img.size
             base_img = self.new_image(size)
         else:
             base_img = img.as_image()
@@ -125,6 +128,11 @@ class MessageImage(object):
         
         draw = ImageDraw.Draw(base_img)
         self.draw_msg(draw, size)
+        if not in_place and img:
+            img = img.as_image()
+            img.paste(base_img, (0, 0), base_img)
+            base_img = img
+        
         return ImageSource(base_img, size=size, format=self.format)
     
     def draw_msg(self, draw, size):
