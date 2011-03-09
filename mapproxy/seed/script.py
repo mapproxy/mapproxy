@@ -19,6 +19,7 @@ from __future__ import with_statement
 import os
 import sys
 import shutil
+import logging
 
 from optparse import OptionParser
 from textwrap import dedent
@@ -29,6 +30,17 @@ from mapproxy.seed.seeder import seed
 from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.util import format_seed_task, format_cleanup_task
 
+
+def setup_logging():
+    imposm_log = logging.getLogger('mapproxy')
+    imposm_log.setLevel(logging.WARN)
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        "[%(asctime)s] %(name)s - %(levelname)s - %(message)s")
+    ch.setFormatter(formatter)
+    imposm_log.addHandler(ch)
 
 class SeedScript(object):
     usage = "usage: %prog [options] seed_conf"
@@ -81,7 +93,9 @@ class SeedScript(object):
     
         if not options.conf_file:
             self.parser.error('missing mapproxy configuration -f/--proxy-conf')
-    
+
+        setup_logging()
+
         mapproxy_conf = load_configuration(options.conf_file, seed=True)
 
         with local_base_config(mapproxy_conf.base_config):

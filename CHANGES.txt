@@ -2,6 +2,7 @@
 
 Improvements:
 - tweaked watermarks on transparent images
+- [mapproxy-seed] initialize MapProxy logging before seeding
 
 1.0.0 2011-03-03
 
