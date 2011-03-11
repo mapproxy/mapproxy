@@ -54,6 +54,8 @@ class DemoServer(Server):
             filename = os.path.realpath(req.path).lstrip(os.sep)
             static_file = os.path.join(os.path.dirname(__file__), 'templates', filename)
             type, encoding = mimetypes.guess_type(filename)
+            if not os.path.isfile(static_file):
+                return Response('file not found', status=404)
             return Response(open(static_file, 'rb'), content_type=type)
         
         # we don't authorize the static files (css, js)
