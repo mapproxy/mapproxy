@@ -6,6 +6,7 @@ from mapproxy.config.loader import (
     ProxyConfiguration,
     load_services,
     merge_dict,
+    ConfigurationError,
 )
 from mapproxy.cache.tile import TileManager
 
@@ -320,7 +321,128 @@ class TestWMSSourceConfiguration(object):
         eq_(grid.bbox, (5.0, 50.0, 10.0, 55.0))
         
         assert isinstance(manager, TileManager)
+    
+    def check_source_layers(self, conf_dict, layers):
+        conf = ProxyConfiguration(conf_dict)
+        caches = conf.caches['osm'].caches()
+        eq_(len(caches), 1)
+        grid, extent, manager = caches[0]
+        source_layers = manager.sources[0].client.request_template.params.layers
+        eq_(source_layers, layers)
         
+    def test_tagged_source(self):
+        conf_dict = {
+            'sources': {
+                'osm': {
+                    'type': 'wms',
+                    'req': {
+                        'url': 'http://localhost/service?',
+                    },
+                },
+            },
+            'caches': {
+                'osm': {
+                    'sources': ['osm:base,roads'],
+                    'grids': ['GLOBAL_MERCATOR'],
+                }
+            }
+        }
+        self.check_source_layers(conf_dict, ['base', 'roads'])
+
+    def test_tagged_source_with_layers(self):
+        conf_dict = {
+            'sources': {
+                'osm': {
+                    'type': 'wms',
+                    'req': {
+                        'url': 'http://localhost/service?',
+                        'layers': 'base,roads,poi'
+                    },
+                },
+            },
+            'caches': {
+                'osm': {
+                    'sources': ['osm:base,roads'],
+                    'grids': ['GLOBAL_MERCATOR'],
+                }
+            }
+        }
+        self.check_source_layers(conf_dict, ['base', 'roads'])
+
+    def test_tagged_source_with_layers_missing(self):
+        conf_dict = {
+            'sources': {
+                'osm': {
+                    'type': 'wms',
+                    'req': {
+                        'url': 'http://localhost/service?',
+                        'layers': 'base,poi'
+                    },
+                },
+            },
+            'caches': {
+                'osm': {
+                    'sources': ['osm:base,roads'],
+                    'grids': ['GLOBAL_MERCATOR'],
+                }
+            }
+        }
+        conf = ProxyConfiguration(conf_dict)
+        try:
+            conf.caches['osm'].caches()
+        except ConfigurationError, ex:
+            assert 'base,roads' in ex.args[0]
+            assert 'base,poi' in ex.args[0]
+        else:
+            assert False, 'expected ConfigurationError'
+    
+    def test_tagged_source_on_non_wms_source(self):
+        conf_dict = {
+            'sources': {
+                'osm': {
+                    'type': 'tile',
+                    'url': 'http://example.org/'
+                },
+            },
+            'caches': {
+                'osm': {
+                    'sources': ['osm:base,roads'],
+                    'grids': ['GLOBAL_MERCATOR'],
+                }
+            }
+        }
+        conf = ProxyConfiguration(conf_dict)
+        try:
+            conf.caches['osm'].caches()
+        except ConfigurationError, ex:
+            assert 'osm:base,roads' in ex.args[0]
+        else:
+            assert False, 'expected ConfigurationError'
+    
+    
+    def test_layer_tagged_source(self):
+        conf_dict = {
+            'layers': [
+                {
+                    'name': 'osm',
+                    'title': 'OSM',
+                    'sources': ['osm:base,roads']
+                }
+            ],
+            'sources': {
+                'osm': {
+                    'type': 'wms',
+                    'req': {
+                        'url': 'http://localhost/service?',
+                    },
+                },
+            },
+        }
+        conf = ProxyConfiguration(conf_dict)
+        wms_layer = conf.layers['osm'].wms_layer()
+        layers = wms_layer.map_layers[0].client.request_template.params.layers
+        eq_(layers, ['base', 'roads'])
+    
     def test_https_source_insecure(self):
         conf_dict = {
             'sources': {

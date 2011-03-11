@@ -132,7 +132,7 @@ class ProxyConfiguration(object):
             self.caches[cache_name] = CacheConfiguration(conf=cache_conf, context=self)
     
     def load_sources(self):
-        self.sources = {}
+        self.sources = SourcesCollection()
         for source_name, source_conf in self.configuration.get('sources', {}).iteritems():
             self.sources[source_name] = SourceConfiguration.load(conf=source_conf, context=self)
     
@@ -411,6 +411,53 @@ def dotted_dict_get(key, d):
     if parts: # not completely resolved
         return None
     return d
+
+
+class SourcesCollection(dict):
+    """
+    Collection of SourceConfigurations.
+    Allows access to tagged WMS sources, e.g. 
+    ``sc['source_name:lyr,lyr2']`` will return the source with ``source_name``
+    and set ``req.layers`` to ``lyr1,lyr2``.
+    """
+    def __getitem__(self, key):
+        layers = None
+        source_name = key
+        if ':' in source_name:
+            source_name, layers = source_name.split(':', 1)
+        source = dict.__getitem__(self, source_name)
+        if not layers:
+            return source
+
+        if source.conf.get('type') != 'wms':
+            raise ConfigurationError("found ':' in non-WMS source name: '%s'."
+                " tagged sources only supported for WMS" % key)
+
+        source = deepcopy(source)
+
+        supported_layers = source.conf['req'].get('layers', [])
+        supported_layer_set = SourcesCollection.layer_set(supported_layers)
+        layer_set = SourcesCollection.layer_set(layers)
+
+        if supported_layer_set and not layer_set.issubset(supported_layer_set):
+            raise ConfigurationError('layers (%s) not supported by source (%s)' % (
+                layers, supported_layers))
+
+        source.conf['req']['layers'] = layers
+        return source
+
+    def __contains__(self, key):
+        source_name = key
+        if ':' in source_name:
+            source_name, _ = source_name.split(':', 1)
+        return dict.__contains__(self, source_name)
+
+    @staticmethod
+    def layer_set(layers):
+        if isinstance(layers, (list, tuple)):
+            return set(layers)
+        return set(layers.split(','))
+
 
 class SourceConfiguration(ConfigurationBase):
     @classmethod
