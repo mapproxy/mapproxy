@@ -44,7 +44,7 @@ if platform.system() != "Java":
 
 setup(
     name='MapProxy',
-    version="1.0.0",
+    version="1.1.0a",
     description='An accelerating proxy for web map services',
     long_description=open('README.txt').read(),
     author='Oliver Tonnhofer',

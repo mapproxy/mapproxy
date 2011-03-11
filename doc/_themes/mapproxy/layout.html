@@ -108,7 +108,7 @@
       </div>
       <div class="content">
         <div class="doc">
-          {%- if not prev and 'dev' in release %}
+          {%- if not prev and ('dev' in release or 'a' in release) %}
             <div class="admonition note">
             <p class="first admonition-title">Note</p>
             <p class="last">This is the documentation of the current development version of MapProxy ({{ release }} from {{ last_updated }}). Make sure you are using a recent <a href="http://mapproxy.org/download.html">nightly version</a> of MapProxy. Otherwise refer to the <a href="http://mapproxy.org/documentation.html"> documentation of your release.</p>
