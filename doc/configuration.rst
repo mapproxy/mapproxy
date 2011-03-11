@@ -152,8 +152,9 @@ MapProxy will wrap all layers into an unnamed root layer, if you define multiple
 
 ``sources``
 """""""""""
-A list of data sources for this layer. You can use sources defined in the ``sources`` and ``caches`` section. MapProxy will merge multiple sources from left (bottom) to right (top). 
+A list of data sources for this layer. You can use sources defined in the ``sources`` and ``caches`` section. MapProxy will merge multiple sources from left (bottom) to right (top).
 
+WMS sources also support tagged names (``wms:lyr1,lyr2``). See :ref:`tagged_wms_source_names`.
 
 ``min_res``, ``max_res`` or ``min_scale``, ``max_scale``
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -191,7 +192,9 @@ Available options are:
 ``sources``
 """""""""""
 
-A list with one or more source names. The sources needs to be defined in the ``sources`` configuration. This option is `required`. MapProxy will merge multiple sources before they are stored on disk.
+A list with one or more source names. The sources needs to be defined in the ``sources`` configuration. This parameter is `required`. MapProxy will merge multiple sources from left (bottom) to right (top) before they are stored on disk.
+
+WMS sources also support tagged names (``wms:lyr1,lyr2``). See :ref:`tagged_wms_source_names`.
 
 ``format``
 """"""""""

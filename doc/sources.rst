@@ -53,6 +53,7 @@ All other options are added to the query string of the request.
 
 You can also configure ``sld`` or ``sld_body`` parameters, in this case you can omit ``layers``. ``sld`` can also point to a ``file://``-URL. MapProxy will read this file and use the content as the ``sld_body``. See :ref:`sources with SLD <sld_example>` for more information.
 
+You can omit layers if you use :ref:`<tagged_wms_source_names>`.
 
 ``wms_opts``
 ^^^^^^^^^^^^
@@ -179,6 +180,39 @@ See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 ``ssl_no_cert_check``
 
   MapProxy checks the SSL server certificates for any ``req.url`` that use HTTPS. You need to supply a file (see) that includes that certificate, otherwise MapProxy will fail to establish the connection. You can set the ``http.ssl_no_cert_check`` options to ``true`` to disable this verification.
+
+.. _tagged_wms_source_names:
+
+Tagged source names
+^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.1.0
+
+MapProxy supports tagged source names for all WMS sources. This allows you to define the layers of a source in the caches or (WMS)-layers configuration.
+
+Instead of referring to a source by the name alone, you can add a list of comma delimited layers: ``sourcename:lyr1,lyr2``. You need to use quotes for tagged source names.
+
+This works for layers and caches::
+  
+  layers:
+    - name: test
+      title: Test Layer
+      sources: ['wms1:lyr1,lyr2']
+  
+  caches:
+    cache1:
+      sources: ['wms1:lyrA,lyrB']
+      [...]
+
+  sources:
+    wms1:
+      type: wms
+      req:
+        url: http://example.org/service?
+
+
+You can either omit the ``layers`` in the ``req`` parameter, or you can use them to limit the tagged layers. In this case MapProxy will raise an error if you configure ``layers: lyr1,lyr2`` and then try to access ``wms:lyr2,lyr3`` for example.
+
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^

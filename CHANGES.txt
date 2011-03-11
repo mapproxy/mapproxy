@@ -1,5 +1,8 @@
 1.1.0a dev
 
+Features:
+- support for tagged WMS source names: wms:lyr1,lyr2
+
 Improvements:
 - tweaked watermarks on transparent images
 - [mapproxy-seed] initialize MapProxy logging before seeding
