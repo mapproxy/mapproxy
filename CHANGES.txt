@@ -2,6 +2,7 @@
 
 Features:
 - support for tagged WMS source names: wms:lyr1,lyr2
+- fixes demo on Windows (loaded static content from wrong path)
 
 Improvements:
 - tweaked watermarks on transparent images

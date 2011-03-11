@@ -51,7 +51,7 @@ class DemoServer(Server):
 
     def handle(self, req):
         if req.path.startswith('/demo/static/'):
-            filename = os.path.realpath(req.path).lstrip('/')
+            filename = os.path.realpath(req.path).lstrip(os.sep)
             static_file = os.path.join(os.path.dirname(__file__), 'templates', filename)
             type, encoding = mimetypes.guess_type(filename)
             return Response(open(static_file, 'rb'), content_type=type)
