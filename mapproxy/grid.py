@@ -179,15 +179,18 @@ def resolutions(min_res=None, max_res=None, res_factor=2.0, num_levels=None,
             res = [10**(math.log10(min_res) - res_step*i) for i in range(num_levels)]
         else:
             res = [min_res]
-            while res[-1] > max_res:
-                res.append(res[-1]/res_factor)
+            while True:
+                next_res = res[-1]/res_factor
+                if max_res >= next_res:
+                    break
+                res.append(next_res)
     else:
         if not num_levels:
             num_levels = 20 if res_factor != math.sqrt(2) else 40
         res = [min_res]
         while len(res) < num_levels:
             res.append(res[-1]/res_factor)
-    
+        
     return res
 
 def grid_bbox(bbox, bbox_srs, srs):

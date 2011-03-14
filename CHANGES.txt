@@ -2,6 +2,8 @@
 
 Fixes:
 - fixes demo on Windows (loaded static content from wrong path)
+- fixed one-off error with grid.max_res: last resolution is now < max_res
+  e.g. min_res: 1000 max_res: 300 -> now [1000, 500], before [1000, 500, 250]
 
 1.0.0 2011-03-03
 
