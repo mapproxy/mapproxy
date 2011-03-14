@@ -356,7 +356,7 @@ class GridConfiguration(ConfigurationBase):
 
 
 class GlobalConfiguration(ConfigurationBase):
-    optional_keys = set('image grid srs http cache'.split())
+    optional_keys = set('image grid srs http cache mapserver'.split())
     
     def __init__(self, conf_base_dir, conf, context):
         ConfigurationBase.__init__(self, conf, context)
@@ -368,7 +368,7 @@ class GlobalConfiguration(ConfigurationBase):
     def _copy_conf_values(self, d, target):
         for k, v in d.iteritems():
             if v is None: continue
-            if hasattr(v, 'iteritems'):
+            if hasattr(v, 'iteritems') and k in target:
                 self._copy_conf_values(v, target[k])
             else:
                 target[k] = v
@@ -429,12 +429,12 @@ class SourcesCollection(dict):
         if not layers:
             return source
 
-        if source.conf.get('type') != 'wms':
+        if source.conf.get('type') not in ('wms', 'mapserver'):
             raise ConfigurationError("found ':' in non-WMS source name: '%s'."
                 " tagged sources only supported for WMS" % key)
 
         source = deepcopy(source)
-
+        
         supported_layers = source.conf['req'].get('layers', [])
         supported_layer_set = SourcesCollection.layer_set(supported_layers)
         layer_set = SourcesCollection.layer_set(layers)
@@ -463,11 +463,12 @@ class SourceConfiguration(ConfigurationBase):
     @classmethod
     def load(cls, conf, context):
         source_type = conf['type']
-        for subclass in cls.__subclasses__():
-            if source_type in subclass.source_type:
-                return subclass(conf, context)
         
-        raise ValueError("unknown source type '%s'" % source_type)
+        subclass = source_configuration_types.get(source_type)
+        if not subclass:
+            raise ValueError("unknown source type '%s'" % source_type)
+
+        return subclass(conf, context)
     
     @memoize
     def coverage(self):
@@ -636,6 +637,33 @@ class WMSSourceConfiguration(SourceConfiguration):
         return lg_source
     
 
+class MapServerSourceConfiguration(WMSSourceConfiguration):
+    source_type = ('mapserver',)
+    required_keys = WMSSourceConfiguration.required_keys - set(['req'])
+    optional_keys = WMSSourceConfiguration.optional_keys | set(['mapserver', 'http'])
+    
+    def __init__(self, conf, context):
+        WMSSourceConfiguration.__init__(self, conf, context)
+        self.script = self.context.globals.get_path('mapserver.binary',
+            self.conf)
+        if not self.script or not os.path.isfile(self.script):
+            raise ConfigurationError('could not find mapserver binary (%r)' %
+                (self.script, ))
+        
+        # set url to dummy script name, required as identifier
+        # for concurrent_request
+        self.conf.setdefault('req', {})['url'] = 'dummy://' + self.script
+    
+    def http_client(self, url):
+        working_dir = self.context.globals.get_path('mapserver.working_dir', self.conf)
+        if working_dir and not os.path.isdir(working_dir):
+            raise ConfigurationError('could not find mapserver working_dir (%r)' % (working_dir, ))
+        
+        from mapproxy.client.cgi import CGIClient
+        client = CGIClient(script=self.script, working_directory=working_dir)
+        return client, url
+    
+
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
     optional_keys = set('''type grid request_format origin coverage seed_only
@@ -668,6 +696,7 @@ class TileSourceConfiguration(SourceConfiguration):
         return TiledSource(grid, client, inverse=inverse, coverage=coverage, opacity=opacity,
                            transparent=transparent)
 
+
 def file_ext(mimetype):
     _mime_class, format, _options = split_mime_type(mimetype)
     return format
@@ -678,6 +707,15 @@ class DebugSourceConfiguration(SourceConfiguration):
     
     def source(self, params=None):
         return DebugSource()
+
+
+source_configuration_types = {
+    'wms': WMSSourceConfiguration,
+    'tile': TileSourceConfiguration,
+    'debug': DebugSourceConfiguration,
+    'mapserver': MapServerSourceConfiguration,
+}
+
 
 class CacheConfiguration(ConfigurationBase):
     optional_keys = set('''format cache_dir grids link_single_color_images image

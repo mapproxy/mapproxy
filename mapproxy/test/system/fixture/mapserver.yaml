@@ -1,0 +1,21 @@
+services:
+  wms:
+
+layers:
+  - name: ms
+    title: MapServer CGI Test
+    sources: [ms_cache]
+    
+caches:
+  ms_cache:
+    grids: [GLOBAL_MERCATOR]
+    meta_size: [1, 1]
+    meta_buffer: 0
+    sources: ['ms_cgi:base']
+
+sources:
+  ms_cgi:
+    type: mapserver
+    mapserver:
+      binary: ./cgi.py
+      working_dir: ./tmp

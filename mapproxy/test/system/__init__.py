@@ -22,7 +22,12 @@ from webtest import TestApp
 from mapproxy.wsgiapp import make_wsgi_app 
 
 def module_setup(test_config, config_file, with_cache_data=False):
+    prepare_env(test_config, config_file, with_cache_data)
+    create_app(test_config)
+
+def prepare_env(test_config, config_file, with_cache_data=False):
     fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
+    test_config['fixture_dir'] = fixture_dir
     fixture_layer_conf = os.path.join(fixture_dir, config_file)
     
     if 'base_dir' not in test_config:
@@ -32,6 +37,8 @@ def module_setup(test_config, config_file, with_cache_data=False):
     if with_cache_data:
         shutil.copytree(os.path.join(fixture_dir, 'cache_data'),
                         os.path.join(test_config['base_dir'], 'cache_data'))
+    
+def create_app(test_config):
     app = make_wsgi_app(test_config['config_file'])
     app.application.base_config.debug_mode = True
     test_config['app'] = TestApp(app, use_unicode=False)

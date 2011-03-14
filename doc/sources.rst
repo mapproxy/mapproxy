@@ -5,6 +5,7 @@ MapProxy supports the following sources:
 
 - :ref:`wms_label`
 - :ref:`tiles_label`
+- :ref:`mapserver_label`
 - :ref:`debug_label`
 
 You need to choose a unique name for each configured source. This name will be used to reference the source in the ``caches`` and ``layers`` configuration.
@@ -322,6 +323,47 @@ Example configuration
     grid: mygrid
     url: http://localhost:8080/tile?x=%(x)s&y=%(y)s&z=%(z)s&format=%(format)s
     origin: nw
+
+
+.. _mapserver_label:
+
+Mapserver
+"""""""""
+
+.. versionadded:: 1.1.0
+
+
+Use the type ``mapserver`` to directly call the Mapserver CGI executable. This source is based on :ref:`the WMS source <wms_label>` and most options apply to the Mapserver source too.
+
+The only differences are that it does not support the ``http`` option and the ``req.url`` parameter is ignored. 
+
+``mapserver``
+^^^^^^^^^^^^^
+
+You can also set these options in the :ref:`globals-conf-label` section.
+
+``binary``
+
+  The complete path to the ``mapserv`` executable.
+
+``working_dir``
+
+  Path where the Mapserver should be executed from. It should be the directory where any relative paths in your mapfile are based on.
+
+
+Example configuration
+^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  my_ms_source:
+    type: mapserver
+    req:
+      layers: base
+      map: /path/to/my.map
+    mapserver:
+      binary: /usr/cgi-bin/mapserv
+      working_dir: /path/to
 
 
 .. _debug_label:

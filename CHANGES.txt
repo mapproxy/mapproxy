@@ -2,11 +2,14 @@
 
 Features:
 - support for tagged WMS source names: wms:lyr1,lyr2
-- fixes demo on Windows (loaded static content from wrong path)
+- new Mapserver source type
 
 Improvements:
 - tweaked watermarks on transparent images
 - [mapproxy-seed] initialize MapProxy logging before seeding
+
+Fixes:
+- fixes demo on Windows (loaded static content from wrong path)
 
 1.0.0 2011-03-03
 
