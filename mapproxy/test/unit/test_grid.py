@@ -41,7 +41,7 @@ class TestResolution(object):
     def test_min_res_max_res(self):
         conf = dict(min_res=1000, max_res=80)
         res = resolutions(**conf)
-        eq_(res, [1000, 500.0, 250.0, 125.0, 62.5])
+        eq_(res, [1000, 500.0, 250.0, 125.0])
     
     def test_min_res_levels(self):
         conf = dict(min_res=1600, num_levels=5)
