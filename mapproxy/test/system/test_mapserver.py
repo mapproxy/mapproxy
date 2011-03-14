@@ -17,6 +17,7 @@
 from __future__ import with_statement, division
 
 import os
+import stat
 import platform
 import shutil
 
@@ -39,6 +40,10 @@ def setup_module():
     
     shutil.copy(os.path.join(test_config['fixture_dir'], 'cgi.py'),
         test_config['base_dir'])
+    
+    os.chmod(os.path.join(test_config['base_dir'], 'cgi.py'),
+        stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR)
+    
     os.mkdir(os.path.join(test_config['base_dir'], 'tmp'))
     
     create_app(test_config)
@@ -57,7 +62,7 @@ class TestMapServerCGI(SystemTest):
     
     def test_get_map(self):
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/png'
+        eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         img = Image.open(data)

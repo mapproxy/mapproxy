@@ -2,13 +2,12 @@
 
 """
 CGI script that returns a red 256x256 PNG file.
-
 """
 
 if __name__ == '__main__':
     import sys
     w = sys.stdout.write
-
+    
     w("Content-type: image/png\r\n")
     w("\r\n")
 

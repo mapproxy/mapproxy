@@ -28,18 +28,18 @@ from nose.tools import eq_
 
 class TestSplitHTTPResponse(object):
     def test_n(self):
-        eq_(split_http_response('header: foo\nheader: bar\n\ncontent\n\ncontent'),
-            ({'header':'foo', 'header': 'bar'}, 'content\n\ncontent'))
+        eq_(split_http_response('header1: foo\nheader2: bar\n\ncontent\n\ncontent'),
+            ({'Header1':'foo', 'Header2': 'bar'}, 'content\n\ncontent'))
     def test_rn(self):
-        eq_(split_http_response('header\r\nheader\r\n\r\ncontent\r\n\r\ncontent'),
-            ({'header': None, 'header': None}, 'content\r\n\r\ncontent'))
+        eq_(split_http_response('header1\r\nheader2\r\n\r\ncontent\r\n\r\ncontent'),
+            ({'Header1': None, 'Header2': None}, 'content\r\n\r\ncontent'))
     def test_mixed(self):
-        eq_(split_http_response('header: bar:foo\r\nheader\n\r\ncontent\r\n\r\ncontent'),
-            ({'header': 'bar:foo', 'header': None}, 'content\r\n\r\ncontent'))
-        eq_(split_http_response('header\r\nheader\n\ncontent\r\n\r\ncontent'),
-            ({'header': None, 'header': None}, 'content\r\n\r\ncontent'))
-        eq_(split_http_response('header\nheader\r\n\r\ncontent\r\n\r\ncontent'),
-            ({'header': None, 'header': None}, 'content\r\n\r\ncontent'))
+        eq_(split_http_response('header1: bar:foo\r\nheader2\n\r\ncontent\r\n\r\ncontent'),
+            ({'Header1': 'bar:foo', 'Header2': None}, 'content\r\n\r\ncontent'))
+        eq_(split_http_response('header1\r\nheader2\n\ncontent\r\n\r\ncontent'),
+            ({'Header1': None, 'Header2': None}, 'content\r\n\r\ncontent'))
+        eq_(split_http_response('header1\nheader2\r\n\r\ncontent\r\n\r\ncontent'),
+            ({'Header1': None, 'Header2': None}, 'content\r\n\r\ncontent'))
     def test_no_header(self):
         eq_(split_http_response('content\r\ncontent'),
             ({}, 'content\r\ncontent'))
@@ -99,7 +99,7 @@ class TestCGIClient(object):
         script = self.create_script()
         client = CGIClient(script)
         resp = client.open('http://example.org/service?hello=bar')
-        eq_(resp.headers['content-type'], 'text/plain')
+        eq_(resp.headers['Content-type'], 'text/plain')
         eq_(resp.read(), 'hello=bar')
     
     def test_failed_call(self):

@@ -54,14 +54,15 @@ def headers_dict(header_lines):
         else:
             key = line
             value = None
-        headers[key.lower()] = value
+        key = key[0].upper() + key[1:].lower()
+        headers[key] = value
     return headers
 
 class CGIClient(object):
     def __init__(self, script, no_headers=False, working_directory=None):
         self.script = script
         self.working_directory = working_directory
-        self.no_headers = False
+        self.no_headers = no_headers
     
     def open(self, url, data=None):
         assert data is None, 'POST requests not supported by CGIClient'
@@ -102,8 +103,8 @@ class CGIClient(object):
     
     def open_image(self, url, data=None):
         resp = self.open(url, data=data)
-        if 'content-type' in resp.headers:
-            if not resp.headers['content-type'].lower().startswith('image'):
+        if 'Content-type' in resp.headers:
+            if not resp.headers['Content-type'].lower().startswith('image'):
                 raise HTTPClientError('response is not an image: (%s)' % (resp.read()))
         return ImageSource(resp)
 
