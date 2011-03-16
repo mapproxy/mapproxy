@@ -115,10 +115,11 @@ class ProxyConfiguration(object):
     def load_grids(self):
         self.grids = {}
         
-        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(dict(srs='EPSG:4326'), context=self)
-        self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913'), context=self)
+        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(dict(srs='EPSG:4326', name='GLOBAL_GEODETIC'), context=self)
+        self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913', name='GLOBAL_MERCATOR'), context=self)
         
         for grid_name, grid_conf in self.configuration.get('grids', {}).iteritems():
+            grid_conf.setdefault('name', grid_name)
             self.grids[grid_name] = GridConfiguration(grid_conf, context=self)
     
     def load_caches(self):
@@ -337,6 +338,7 @@ class GridConfiguration(ConfigurationBase):
         
         
         grid = tile_grid(
+            name=conf['name'],
             srs=conf.get('srs'),
             tile_size=tile_size,
             min_res=conf.get('min_res'),

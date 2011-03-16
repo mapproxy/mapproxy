@@ -95,7 +95,7 @@ def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
               res=None, res_factor=2.0, threshold_res=None,
               num_levels=None, min_res=None, max_res=None,
               stretch_factor=None, max_shrink_factor=None,
-              align_with=None, origin='ll'
+              align_with=None, origin='ll', name=None
               ):
     """
     This function creates a new TileGrid.
@@ -127,7 +127,7 @@ def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
     
     return TileGrid(srs, bbox=bbox, tile_size=tile_size, res=res, threshold_res=threshold_res,
                     stretch_factor=stretch_factor, max_shrink_factor=max_shrink_factor,
-                    origin=origin)
+                    origin=origin, name=name)
 
 def aligned_resolutions(min_res=None, max_res=None, res_factor=2.0, num_levels=None,
                 bbox=None, tile_size=(256, 256), align_with=None):
@@ -242,7 +242,8 @@ class TileGrid(object):
     
     def __init__(self, srs=900913, bbox=None, tile_size=(256, 256), res=None,
                  threshold_res=None, is_geodetic=False, levels=None,
-                 stretch_factor=None, max_shrink_factor=None, origin='ll'):
+                 stretch_factor=None, max_shrink_factor=None, origin='ll',
+                 name=None):
         """
         :param stretch_factor: allow images to be scaled up by this factor
             before the next level will be selected
@@ -258,6 +259,7 @@ class TileGrid(object):
         self.srs = srs
         self.tile_size = tile_size
         self.origin = origin
+        self.name = name
 
         if origin == 'ul':
             self.flipped_y_axis = True
