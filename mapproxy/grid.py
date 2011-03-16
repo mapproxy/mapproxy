@@ -312,8 +312,8 @@ class TileGrid(object):
         height = self.bbox[3] - self.bbox[1]
         grids = []
         for res in self.resolutions:
-            x = math.ceil(width // res / self.tile_size[0])
-            y = math.ceil(height // res / self.tile_size[1])
+            x = max(math.ceil(width // res / self.tile_size[0]), 1)
+            y = max(math.ceil(height // res / self.tile_size[1]), 1)
             grids.append((int(x), int(y)))
         return grids
     
