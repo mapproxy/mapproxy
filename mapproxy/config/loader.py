@@ -76,6 +76,7 @@ from mapproxy.layer import (
 from mapproxy.client.tile import TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient, WMSLegendClient, WMSLegendURLClient
 from mapproxy.service.wms import WMSServer, WMSLayer, WMSGroupLayer
+from mapproxy.service.wmts import WMTSServer
 from mapproxy.service.tile import TileServer, TileLayer
 from mapproxy.service.kml import KMLServer
 from mapproxy.service.demo import DemoServer
@@ -955,6 +956,12 @@ class ServiceConfiguration(ConfigurationBase):
         md.update(conf.get('md', {}))
         layers = self.tile_layers(conf)
         return TileServer(layers, md)
+    
+    def wmts_service(self, conf):
+        md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
+        md.update(conf.get('md', {}))
+        layers = self.tile_layers(conf)
+        return WMTSServer(layers, md)
     
     def wms_service(self, conf):
         md = conf.get('md', {})
