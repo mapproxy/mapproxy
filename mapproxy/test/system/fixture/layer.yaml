@@ -9,6 +9,7 @@ globals:
 services:
   tms:
   kml:
+  wmts:
   wms:
     md:
       title: MapProxy test fixture

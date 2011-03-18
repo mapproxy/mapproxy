@@ -64,14 +64,16 @@
 {{for layer in layers}}
     <Layer>
       <ows:Title>{{layer.title}}</ows:Title>
-      <ows:Abstract>
-  </ows:Abstract>
+      <ows:Abstract></ows:Abstract>
       <ows:WGS84BoundingBox>
         <ows:LowerCorner>{{layer.extent.llbbox[0]}} {{layer.extent.llbbox[1]}}</ows:LowerCorner>
         <ows:UpperCorner>{{layer.extent.llbbox[2]}} {{layer.extent.llbbox[3]}}</ows:UpperCorner>
       </ows:WGS84BoundingBox>
       <ows:Identifier>{{layer.name}}</ows:Identifier>
-      <Format>{{layer.format}}</Format>
+      <Style>
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/{{layer.format}}</Format>
       <TileMatrixSetLink>
         <TileMatrixSet>{{layer.grid.name}}</TileMatrixSet>
       </TileMatrixSetLink>
@@ -80,11 +82,9 @@
 {{for tile_matrix_set in tile_matrix_sets}}
     <TileMatrixSet>
       <ows:Identifier>{{tile_matrix_set.name}}</ows:Identifier>
-      <ows:SupportedCRS>{{tile_matrix_set.srs_name}}
-  </ows:SupportedCRS>
-      <WellKnownScaleSet>urn:ogc:def:wkss:OGC:1.0:GlobalCRS84Pixel
-  </WellKnownScaleSet>
-  {{for matrix in tile_matrix_set.matrices}}
+      <ows:SupportedCRS>{{tile_matrix_set.srs_name}}</ows:SupportedCRS>
+      <!-- <WellKnownScaleSet>urn:ogc:def:wkss:OGC:1.0:GlobalCRS84Pixel</WellKnownScaleSet> -->
+  {{for matrix in tile_matrix_set}}
       <TileMatrix>
         <ows:Identifier>{{matrix.identifier}}</ows:Identifier>
         <ScaleDenominator>{{matrix.scale_denom}}</ScaleDenominator>

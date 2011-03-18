@@ -22,9 +22,20 @@ from mapproxy.config import base_config
 from mapproxy.exception import RequestError
 from mapproxy.srs import SRS, make_lin_transf
 from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
+from mapproxy.exception import XMLExceptionHandler
+from mapproxy.template import template_loader
+import mapproxy.service
+get_template = template_loader(mapproxy.service.__file__, 'templates')
 
 import logging
 log = logging.getLogger(__name__)
+
+
+
+class WMTS100ExceptionHandler(XMLExceptionHandler):
+    template_func = get_template
+    template_file = 'wmts100exception.xml'
+    content_type = 'text/xml'
 
 class WMTSTileRequestParams(RequestParams):
     """
@@ -42,8 +53,6 @@ class WMTSTileRequestParams(RequestParams):
         """
         return self['layer']
     
-    
-    
     def _get_coord(self):
         x = int(self['tilecol'])
         y = int(self['tilerow'])
@@ -58,17 +67,6 @@ class WMTSTileRequestParams(RequestParams):
     del _get_coord
     del _set_coord
     
-    def _get_srs(self):
-        return self.params.get('srs', None)
-    def _set_srs(self, srs):
-        if hasattr(srs, 'srs_code'):
-            self.params['srs'] = srs.srs_code
-        else:
-            self.params['srs'] = srs
-    
-    srs = property(_get_srs, _set_srs)
-    del _get_srs
-    del _set_srs
     
     def _get_format(self):
         """
@@ -115,7 +113,7 @@ class WMTSRequest(BaseRequest):
     def query_string(self):
         return self.params.query_string
 
-class WMTSTileRequest(WMTSRequest):
+class WMTS100TileRequest(WMTSRequest):
     """
     Base class for all WMTS GetTile requests.
     
@@ -184,17 +182,17 @@ class WMTSFeatureInfoRequestParams(WMTSTileRequestParams):
     del _set_pos
     
 
-class WMTSFeatureInfoRequest(WMTSTileRequest):
+class WMTS100FeatureInfoRequest(WMTS100TileRequest):
     request_params = WMTSFeatureInfoRequestParams
-    xml_exception_handler = exception.WMTS100ExceptionHandler
+    xml_exception_handler = WMTS100ExceptionHandler
     request_handler_name = 'featureinfo'
-    fixed_params = WMTSTileRequest.fixed_params.copy()
+    fixed_params = WMTS100TileRequest.fixed_params.copy()
     fixed_params['request'] = 'GetFeatureInfo'
-    expected_param = WMTSTileRequest.expected_param[:] + ['infoformat', 'i', 'j']
+    expected_param = WMTS100TileRequest.expected_param[:] + ['infoformat', 'i', 'j']
     non_strict_params = set(['format', 'styles'])
     
 
-class WMTSCapabilitiesRequest(WMTSRequest):
+class WMTS100CapabilitiesRequest(WMTSRequest):
     request_handler_name = 'capabilities'
     capabilities_template = 'wmts100_capabilities.xml'
     exception_handler = None
@@ -204,9 +202,10 @@ class WMTSCapabilitiesRequest(WMTSRequest):
         WMTSRequest.__init__(self, param=param, url=url, validate=validate, **kw)
     
 
-request_mapping = { 'featureinfo': WMTSFeatureInfoRequest,
-                    'tile': WMTSTileRequest,
-                    'capabilities': WMTSCapabilitiesRequest
+
+request_mapping = { 'featureinfo': WMTS100FeatureInfoRequest,
+                    'tile': WMTS100TileRequest,
+                    'capabilities': WMTS100CapabilitiesRequest
 }
 
 

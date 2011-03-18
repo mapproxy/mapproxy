@@ -38,7 +38,7 @@ log = logging.getLogger(__name__)
 
 class WMTSServer(Server):
     names = ('wmts',)
-    request_methods = ('capabilities',)
+    request_methods = ('capabilities', 'tile')
     
     def __init__(self, layers, md, request_parser=None):
         Server.__init__(self)
@@ -52,14 +52,26 @@ class WMTSServer(Server):
         for layer in self.layers.values():
             grid = layer.grid
             if grid.name not in sets:
-                sets[grid.name] = TileMatrixSet(grid).tile_matrixes()
-        
+                try:
+                    sets[grid.name] = TileMatrixSet(grid)
+                except AssertionError:
+                    pass # TODO
         return sets.values()
         
     def capabilities(self, request):
         service = self._service_md(request)
         result = Capabilities(service, self.layers.values(), self.matrix_sets).render(request)
         return Response(result, mimetype='application/xml')
+    
+    def tile(self, request):
+        tile_layer = self.layers[request.params.layer]
+        request.format = request.params.format # TODO
+        request.tile = tuple(map(int, request.params.coord)) # TODO
+        request.origin = 'nw'
+        tile = tile_layer.render(request)
+        resp = Response(tile.as_buffer(), content_type='image/' + request.format)
+        
+        return resp
     
     def check_request(self, request):
         query_layers = request.params.query_layers if hasattr(request, 'query_layers') else []
@@ -107,22 +119,24 @@ def meter_per_unit(srs):
 class TileMatrixSet(object):
     def __init__(self, grid):
         self.grid = grid
+        self.name = grid.name
+        self.srs_name = grid.srs.srs_code
+        origin = self.grid.origin_tile(0, 'ul')
     
-    def tile_matrixes(self):
-        sets = []
+    def __iter__(self):
         for level, res in enumerate(self.grid.resolutions):
             origin = self.grid.origin_tile(level, 'ul')
             bbox = self.grid.tile_bbox(origin)
             grid_size = self.grid.grid_sizes[level]
             scale_denom = res / (0.28 / 1000) * meter_per_unit(self.grid.srs)
-            sets.append(bunch(
+            yield bunch(
                 identifier=level,
                 bbox=bbox,
                 grid_size=grid_size,
                 scale_denom=scale_denom,
                 tile_size=self.grid.tile_size,
-            ))
-        return sets
+            )
+
 if __name__ == '__main__':
     print TileMatrixSet(tile_grid(900913)).tile_matrixes()
     print TileMatrixSet(tile_grid(4326, origin='ul')).tile_matrixes()
