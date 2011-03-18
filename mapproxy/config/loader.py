@@ -652,7 +652,7 @@ class MapServerSourceConfiguration(WMSSourceConfiguration):
         
         # set url to dummy script name, required as identifier
         # for concurrent_request
-        self.conf.setdefault('req', {})['url'] = 'dummy://' + self.script
+        self.conf.setdefault('req', {})['url'] = 'http://localhost' + self.script
     
     def http_client(self, url):
         working_dir = self.context.globals.get_path('mapserver.working_dir', self.conf)
