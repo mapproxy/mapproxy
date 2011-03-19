@@ -323,6 +323,15 @@ class TestTileClient(object):
             resp = client.get_tile((5, 13, 9)).source.read()
             eq_(resp, 'tile')
 
+    def test_arcgiscache_path(self):
+        template = TileURLTemplate(TESTSERVER_URL + '/%(arcgiscache_path)s.png')
+        client = TileClient(template)
+        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/L09/R00000005/C0000000d.png'},
+                                              {'body': 'tile',
+                                               'headers': {'content-type': 'image/png'}})]):
+            resp = client.get_tile((5, 13, 9)).source.read()
+            eq_(resp, 'tile')
+
 from mapproxy.test.unit.test_cache import MockHTTPClient
 class TestWMSClient(object):
     def setup(self):

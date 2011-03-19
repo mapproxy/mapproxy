@@ -270,6 +270,9 @@ This source takes a ``url`` option that contains a URL template. The template fo
   extension.
 ``tms_path``
   TMS path like ``5/12/9``. Note that it does not contain the version, the layername or the format extension.
+``arcgiscache_path``
+  ArcGIS cache path like ``L05/R00000123/C00000abc``. Note that it does not contain any format
+  extension.
 
 Additionally you can specify the origin of the tile grid with the ``origin`` option.
 Supported values are ``sw`` for south-west (lower-left) origin or ``nw`` for north-west
