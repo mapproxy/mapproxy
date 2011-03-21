@@ -7,6 +7,7 @@ Features:
 Improvements:
 - tweaked watermarks on transparent images
 - [mapproxy-seed] initialize MapProxy logging before seeding
+- support for ArcGIS tile sources (/L09/R00000005/C0000000d)
 
 Fixes:
 - fixes demo on Windows (loaded static content from wrong path)
