@@ -37,8 +37,7 @@ import logging
 log = logging.getLogger(__name__)
 
 class WMTSServer(Server):
-    names = ('wmts',)
-    request_methods = ('capabilities', 'tile')
+    service = 'wmts'
     
     def __init__(self, layers, md, request_parser=None):
         Server.__init__(self)

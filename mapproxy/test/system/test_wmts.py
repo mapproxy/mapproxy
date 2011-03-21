@@ -43,7 +43,7 @@ class TestWMTS(SystemTest):
     config = test_config
     def setup(self):
         SystemTest.setup(self)
-        self.common_cap_req = WMTS100CapabilitiesRequest(url='/wmts?', param=dict(service='WMTS', 
+        self.common_cap_req = WMTS100CapabilitiesRequest(url='/service?', param=dict(service='WMTS', 
              version='1.0.0', request='GetCapabilities'))
         self.common_tile_req = WMTS100TileRequest(url='/wmts?', param=dict(service='WMTS', 
              version='1.0.0', tilerow='0', tilecol='0', tilematrix='1', tilematrixset='grid',

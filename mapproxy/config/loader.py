@@ -80,6 +80,7 @@ from mapproxy.service.wmts import WMTSServer
 from mapproxy.service.tile import TileServer, TileLayer
 from mapproxy.service.kml import KMLServer
 from mapproxy.service.demo import DemoServer
+from mapproxy.service.ows import OWSServer
 from mapproxy.source import DebugSource, DummySource
 from mapproxy.source.wms import WMSSource, WMSInfoSource, WMSLegendSource
 from mapproxy.source.tile import TiledSource
@@ -929,12 +930,19 @@ class ServiceConfiguration(ConfigurationBase):
     optional_keys = set('wms tms kml demo'.split())
     
     def services(self):
-        services = {}
+        services = []
+        ows_services = []
         for service_name, service_conf in self.conf.iteritems():
             creator = getattr(self, service_name + '_service', None)
             if not creator:
                 raise ValueError('unknown service: %s' % service_name)
-            services[service_name] = creator(service_conf or {})
+            if service_name in ('wms', 'wmts'):
+                ows_services.append(creator(service_conf or {}))
+            else:
+                services.append(creator(service_conf or {}))
+        
+        if ows_services:
+            services.append(OWSServer(ows_services))
         return services
     
     def tile_layers(self, conf):
