@@ -326,7 +326,7 @@ class TestTileClient(object):
     def test_arcgiscache_path(self):
         template = TileURLTemplate(TESTSERVER_URL + '/%(arcgiscache_path)s.png')
         client = TileClient(template)
-        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/L09/R00000005/C0000000d.png'},
+        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/L09/R0000000d/C00000005.png'},
                                               {'body': 'tile',
                                                'headers': {'content-type': 'image/png'}})]):
             resp = client.get_tile((5, 13, 9)).source.read()
