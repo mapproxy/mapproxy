@@ -25,7 +25,6 @@ from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
 from mapproxy.request.tile import tile_request
 from mapproxy.request.base import split_mime_type
-from mapproxy.config import base_config
 from mapproxy.layer import map_extent_from_grid
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
@@ -57,10 +56,11 @@ class TileServer(Server):
     template_file = 'tms_capabilities.xml'
     layer_template_file = 'tms_tilemap_capabilities.xml'
 
-    def __init__(self, layers, md):
+    def __init__(self, layers, md, max_tile_age=None):
         Server.__init__(self)
         self.layers = layers
         self.md = md
+        self.max_tile_age = max_tile_age
     
     def map(self, tile_request):
         """
@@ -71,7 +71,7 @@ class TileServer(Server):
         tile = layer.render(tile_request, use_profiles=tile_request.use_profiles)
         resp = Response(tile.as_buffer(), content_type='image/' + tile_request.format)
         resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
-                           max_age=base_config().tiles.expires_hours * 60 * 60)
+                           max_age=self.max_tile_age)
         resp.make_conditional(tile_request.http)
         return resp
     

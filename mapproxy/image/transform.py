@@ -17,7 +17,6 @@
 from __future__ import division
 
 from mapproxy.platform.image import Image
-from mapproxy.config import base_config
 from mapproxy.image import ImageSource, image_filter
 from mapproxy.srs import make_lin_transf, bbox_equals
 
@@ -51,7 +50,7 @@ class ImageTransformer(object):
             ---------------.
             large src image                   large dst image
     """
-    def __init__(self, src_srs, dst_srs, resampling=None, mesh_div=8):
+    def __init__(self, src_srs, dst_srs, resampling='bicubic', mesh_div=8):
         """
         :param src_srs: the srs of the source image
         :param dst_srs: the srs of the target image
@@ -63,8 +62,6 @@ class ImageTransformer(object):
         """
         self.src_srs = src_srs
         self.dst_srs = dst_srs
-        if resampling is None:
-            resampling = base_config().image.resampling_method
         self.resampling = resampling
         self.mesh_div = mesh_div
         self.dst_bbox = self.dst_size = None

@@ -26,7 +26,6 @@ from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.source import SourceError
 from mapproxy.exception import RequestError
-from mapproxy.config import base_config
 from mapproxy.image import concat_legends, LayerMerger
 from mapproxy.image.message import attribution_image, message_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError
@@ -49,8 +48,9 @@ class WMSServer(Server):
     request_methods = ('map', 'capabilities', 'featureinfo', 'legendgraphic')
     fi_transformers = None
     
-    def __init__(self, root_layer, md, layer_merger=None, request_parser=None, tile_layers=None,
-        attribution=None, srs=None, image_formats=None, info_types=None, strict=False, on_error='raise',
+    def __init__(self, root_layer, md, srs, image_formats, layer_merger=None,
+        request_parser=None, tile_layers=None, attribution=None, 
+        info_types=None, strict=False, on_error='raise',
         concurrent_layer_renderer=1):
         Server.__init__(self)
         self.request_parser = request_parser or partial(wms_request, strict=strict)
@@ -65,9 +65,9 @@ class WMSServer(Server):
         self.md = md
         self.on_error = on_error
         self.concurrent_layer_renderer = concurrent_layer_renderer
-        self.image_formats = image_formats or base_config().wms.image_formats
+        self.image_formats = image_formats
         self.info_types = info_types
-        self.srs = srs or base_config().wms.srs
+        self.srs = srs
                 
     def map(self, map_request):
         self.check_request(map_request)

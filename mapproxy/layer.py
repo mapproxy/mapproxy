@@ -20,7 +20,6 @@ Layers that can get maps/infos from different sources/caches.
 """
 
 from __future__ import division
-from mapproxy.config import base_config
 from mapproxy.grid import NoTiles, GridError, merge_resolution_range
 from mapproxy.image.tile import TiledImage
 from mapproxy.srs import SRS, bbox_equals, merge_bbox
@@ -251,14 +250,16 @@ def merge_layer_res_ranges(layers):
 
 
 class CacheMapLayer(MapLayer):
-    def __init__(self, tile_manager, extent=None, resampling=None, opacity=None):
+    def __init__(self, tile_manager, extent=None, resampling='bicubic', opacity=None,
+        max_tile_limit=None):
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
         self.opacity = opacity
-        self.resampling = resampling or base_config().image.resampling_method
+        self.resampling = resampling
         self.extent = extent or map_extent_from_grid(self.grid)
         self.res_range = merge_layer_res_ranges(self.tile_manager.sources)
         self.transparent = tile_manager.transparent
+        self.max_tile_limit = max_tile_limit
     
     def get_map(self, query):
         self.check_res_range(query)
@@ -289,7 +290,8 @@ class CacheMapLayer(MapLayer):
             raise MapBBOXError(ex.args[0])
         
         num_tiles = tile_grid[0] * tile_grid[1]
-        if num_tiles >= base_config().cache.max_tile_limit:
+        
+        if self.max_tile_limit and num_tiles >= self.max_tile_limit:
             raise MapBBOXError("to many tiles")
         
         if query.tiled_only:

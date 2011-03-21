@@ -20,7 +20,6 @@
 from __future__ import division
 import math
 
-from mapproxy.config import base_config
 from mapproxy.srs import SRS, get_epsg_num, merge_bbox
 
 import logging
@@ -242,7 +241,7 @@ class TileGrid(object):
     
     def __init__(self, srs=900913, bbox=None, tile_size=(256, 256), res=None,
                  threshold_res=None, is_geodetic=False, levels=None,
-                 stretch_factor=None, max_shrink_factor=None, origin='ll'):
+                 stretch_factor=1.15, max_shrink_factor=4.0, origin='ll'):
         """
         :param stretch_factor: allow images to be scaled up by this factor
             before the next level will be selected
@@ -264,14 +263,8 @@ class TileGrid(object):
 
         self.is_geodetic = is_geodetic
         
-        if stretch_factor is None:
-            stretch_factor = base_config().image.stretch_factor
         self.stretch_factor = stretch_factor
-        
-        if max_shrink_factor is None:
-            max_shrink_factor = base_config().image.max_shrink_factor
         self.max_shrink_factor = max_shrink_factor
-        
         
         if levels is None:
             self.levels = 20

@@ -5,7 +5,6 @@ from mapproxy.exception import RequestError, PlainExceptionHandler
 from mapproxy.service.base import Server
 from mapproxy.request.tile import TileRequest
 from mapproxy.srs import SRS
-from mapproxy.config import base_config
 
 class KMLRequest(TileRequest):
     """
@@ -40,12 +39,11 @@ class KMLServer(Server):
     request_parser = staticmethod(kml_request)
     request_methods = ('map', 'kml')
 
-    def __init__(self, layers, md):
+    def __init__(self, layers, md, max_tile_age=None):
         Server.__init__(self)
         self.layers = layers
         self.md = md
-        
-        self.max_age = base_config().tiles.expires_hours * 60 * 60
+        self.max_tile_age = max_tile_age
     
     def map(self, map_request):
         """
@@ -57,7 +55,7 @@ class KMLServer(Server):
         resp = Response(tile.as_buffer(),
                         content_type='image/' + map_request.format)
         resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
-                           max_age=base_config().tiles.expires_hours * 60 * 60)
+                           max_age=self.max_tile_age)
         resp.make_conditional(map_request.http)
         return resp
     
@@ -106,7 +104,7 @@ class KMLServer(Server):
             url=url, name=map_request.layer, format=layer.format, name_path=layer.md['name_path'],
             initial_level=initial_level, tile_size=tile_size)
         resp = Response(result, content_type='application/vnd.google-earth.kml+xml')
-        resp.cache_headers(etag_data=(result,), max_age=self.max_age)
+        resp.cache_headers(etag_data=(result,), max_age=self.max_tile_age)
         resp.make_conditional(map_request.http)
         return resp
 

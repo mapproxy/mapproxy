@@ -23,7 +23,6 @@ import hashlib
 
 from mapproxy.util.lock import FileLock, DummyLock, cleanup_lockdir
 from mapproxy.image import ImageSource, is_single_color_image
-from mapproxy.config import base_config
 
 import logging
 log = logging.getLogger(__name__)
@@ -33,7 +32,7 @@ class FileCache(object):
     This class is responsible to store and load the actual tile data.
     """
     def __init__(self, cache_dir, file_ext, lock_dir=None, pre_store_filter=None,
-                 link_single_color_images=False):
+                 link_single_color_images=False, lock_timeout=60.0):
         """
         :param cache_dir: the path where the tile will be stored
         :param file_ext: the file extension that will be appended to
@@ -46,6 +45,7 @@ class FileCache(object):
         if lock_dir is None:
             lock_dir = os.path.join(cache_dir, 'tile_locks')
         self.lock_dir = lock_dir
+        self.lock_timeout = lock_timeout
         self.file_ext = file_ext
         self._lock_cache_id = None
         if pre_store_filter is None:
@@ -225,7 +225,7 @@ class FileCache(object):
         """
         lock_filename = self.lock_filename(tile)
         cleanup_lockdir(self.lock_dir, force=False)
-        return FileLock(lock_filename, timeout=base_config().http.client_timeout,
+        return FileLock(lock_filename, timeout=self.lock_timeout,
             remove_on_unlock=True)
     
     def __repr__(self):

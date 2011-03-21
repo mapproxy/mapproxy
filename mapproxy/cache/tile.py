@@ -42,7 +42,6 @@ from mapproxy.grid import MetaGrid
 from mapproxy.image import merge_images
 from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
-from mapproxy.config import base_config
 from mapproxy.util import async
 
 import logging
@@ -51,7 +50,8 @@ log = logging.getLogger(__name__)
 
 class TileManager(object):
     def __init__(self, grid, cache, sources, format, request_format=None,
-        meta_buffer=None, meta_size=None, minimize_meta_requests=False):
+        meta_buffer=None, meta_size=None, minimize_meta_requests=False,
+        concurrent_tile_creators=1):
         self.grid = grid
         self.cache = cache
         self.meta_grid = None
@@ -61,7 +61,7 @@ class TileManager(object):
         self.minimize_meta_requests = minimize_meta_requests
         self._expire_timestamp = None
         self.transparent = self.sources[0].transparent
-        self.concurrent_tile_creators = base_config().cache.concurrent_tile_creators
+        self.concurrent_tile_creators = concurrent_tile_creators
         
         if meta_buffer or (meta_size and not meta_size == [1, 1]):
             if all(source.supports_meta_tiles for source in sources):
