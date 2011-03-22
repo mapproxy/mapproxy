@@ -573,7 +573,8 @@ class WMSSourceConfiguration(SourceConfiguration):
         
         http_method = self.context.globals.get_value('http.method', self.conf)
         
-        request = create_request(self.conf['req'], params, version=version)
+        request = create_request(self.conf['req'], params, version=version,
+            abspath=self.context.globals.abspath)
         http_client, request.url = self.http_client(request.url)
         client = WMSClient(request, supported_srs, http_client=http_client, 
                            http_method=http_method, resampling=resampling, lock=lock,
@@ -596,7 +597,8 @@ class WMSSourceConfiguration(SourceConfiguration):
             if 'featureinfo_format' in wms_opts:
                 params['info_format'] = wms_opts['featureinfo_format']
             fi_request = create_request(self.conf['req'], params,
-                req_type='featureinfo', version=version)
+                req_type='featureinfo', version=version,
+                abspath=self.context.globals.abspath)
             
             fi_transformer = self.fi_xslt_transformer(self.conf.get('wms_opts', {}),
                                                      self.context)
@@ -628,7 +630,8 @@ class WMSSourceConfiguration(SourceConfiguration):
             for lg_layer in lg_layers:
                 lg_req['layer'] = lg_layer
                 lg_request = create_request(lg_req, params,
-                    req_type='legendgraphic', version=version)
+                    req_type='legendgraphic', version=version,
+                    abspath=self.context.globals.abspath)
                 http_client, lg_request.url = self.http_client(lg_request.url)
                 lg_client = WMSLegendClient(lg_request, http_client=http_client)
                 lg_clients.append(lg_client)

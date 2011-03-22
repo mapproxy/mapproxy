@@ -70,7 +70,7 @@ class WMSServer(Server):
         self.srs = srs
                 
     def map(self, map_request):
-        self.check_request(map_request)
+        self.check_map_request(map_request)
         
         params = map_request.params
         query = MapQuery(params.bbox, params.size, SRS(params.srs), params.format)
@@ -148,7 +148,7 @@ class WMSServer(Server):
     
     def featureinfo(self, request):
         infos = []
-        self.check_request(request)
+        self.check_featureinfo_request(request)
         
         p = request.params
         query = InfoQuery(p.bbox, p.size, SRS(p.srs), p.pos,
@@ -219,7 +219,16 @@ class WMSServer(Server):
 
         return Response(resp, mimetype=mimetype)
     
-    def check_request(self, request):
+    def check_map_request(self, request):
+        self.validate_layers(request)
+        request.validate_format(self.image_formats)
+        request.validate_srs(self.srs)
+    
+    def check_featureinfo_request(self, request):
+        self.validate_layers(request)
+        request.validate_srs(self.srs)
+        
+    def validate_layers(self, request):
         query_layers = request.params.query_layers if hasattr(request, 'query_layers') else []
         for layer in chain(request.params.layers, query_layers):
             if layer not in self.layers:
