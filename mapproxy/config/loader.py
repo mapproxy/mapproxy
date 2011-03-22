@@ -744,10 +744,8 @@ class CacheConfiguration(ConfigurationBase):
         
         lock_timeout = self.context.globals.get_value('http.client_timeout', {})
         
-        tile_filter = self._tile_filter()
         return FileCache(cache_dir, file_ext=file_ext(self.conf['format']),
-            pre_store_filter=tile_filter, lock_timeout=lock_timeout,
-            link_single_color_images=link_single_color_images)
+            lock_timeout=lock_timeout, link_single_color_images=link_single_color_images)
     
     def _tile_filter(self):
         filters = []
@@ -780,10 +778,12 @@ class CacheConfiguration(ConfigurationBase):
             assert sources, 'no sources configured for %s' % self.conf['name']
             cache = self._file_cache(grid_conf)
             tile_grid = grid_conf.tile_grid()
+            tile_filter = self._tile_filter()
             mgr = TileManager(tile_grid, cache, sources, file_ext(request_format),
                               meta_size=meta_size, meta_buffer=meta_buffer,
                               minimize_meta_requests=minimize_meta_requests,
-                              concurrent_tile_creators=concurrent_tile_creators)
+                              concurrent_tile_creators=concurrent_tile_creators,
+                              pre_store_filter=tile_filter)
             extent = merge_layer_extents(sources)
             if extent.is_default:
                 extent = map_extent_from_grid(tile_grid)

@@ -31,15 +31,12 @@ class FileCache(object):
     """
     This class is responsible to store and load the actual tile data.
     """
-    def __init__(self, cache_dir, file_ext, lock_dir=None, pre_store_filter=None,
+    def __init__(self, cache_dir, file_ext, lock_dir=None,
                  link_single_color_images=False, lock_timeout=60.0):
         """
         :param cache_dir: the path where the tile will be stored
         :param file_ext: the file extension that will be appended to
             each tile (e.g. 'png')
-        :param pre_store_filter: a list with filter. each filter will be called
-            with a tile before it will be stored to disc. the filter should 
-            return this or a new tile object.
         """
         self.cache_dir = cache_dir
         if lock_dir is None:
@@ -48,9 +45,6 @@ class FileCache(object):
         self.lock_timeout = lock_timeout
         self.file_ext = file_ext
         self._lock_cache_id = None
-        if pre_store_filter is None:
-            pre_store_filter = []
-        self.pre_store_filter = pre_store_filter
         if link_single_color_images and sys.platform == 'win32':
             log.warn('link_single_color_images not supported on windows')
             link_single_color_images = False
@@ -164,9 +158,6 @@ class FileCache(object):
         """
         Add the given `tile` to the file cache. Stores the `Tile.source` to
         `FileCache.tile_location`.
-        
-        All ``pre_store_filter`` will be called with the tile, before
-        it will be stored.
         """
         if tile.stored:
             return
@@ -197,9 +188,7 @@ class FileCache(object):
     def _store(self, tile, location):
         if os.path.islink(location):
             os.unlink(location)
-        
-        for img_filter in self.pre_store_filter:
-            tile = img_filter(tile)
+            
         data = tile.source.as_buffer(format=self.file_ext, seekable=True)
         data.seek(0)
         with open(location, 'wb') as f:

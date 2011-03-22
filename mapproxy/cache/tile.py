@@ -49,9 +49,18 @@ log = logging.getLogger(__name__)
 
 
 class TileManager(object):
+    """
+    Manages tiles for a single grid.
+    Loads tiles from the cache, creates new tiles from sources and stores them
+    into the cache, or removes tiles.
+    
+    :param pre_store_filter: a list with filter. each filter will be called
+        with a tile before it will be stored to disc. the filter should 
+        return this or a new tile object.
+    """
     def __init__(self, grid, cache, sources, format, request_format=None,
         meta_buffer=None, meta_size=None, minimize_meta_requests=False,
-        concurrent_tile_creators=1):
+        pre_store_filter=None, concurrent_tile_creators=1):
         self.grid = grid
         self.cache = cache
         self.meta_grid = None
@@ -61,6 +70,7 @@ class TileManager(object):
         self.minimize_meta_requests = minimize_meta_requests
         self._expire_timestamp = None
         self.transparent = self.sources[0].transparent
+        self.pre_store_filter = pre_store_filter or []
         self.concurrent_tile_creators = concurrent_tile_creators
         
         if meta_buffer or (meta_size and not meta_size == [1, 1]):
@@ -141,6 +151,18 @@ class TileManager(object):
         :note: Returns _expire_timestamp by default.
         """
         return self._expire_timestamp
+    
+    def apply_tile_filter(self, tile):
+        """
+        Apply all `pre_store_filter` to this tile.
+        Returns filtered tile.
+        """
+        if tile.stored:
+            return tile
+        
+        for img_filter in self.pre_store_filter:
+            tile = img_filter(tile)
+        return tile
 
 class TileCreator(object):
     def __init__(self, cache, sources, grid, meta_grid, tile_mgr):
@@ -201,6 +223,7 @@ class TileCreator(object):
                 source = self._query_sources(query)
                 if not source: return []
                 tile.source = source
+                tile = self.tile_mgr.apply_tile_filter(tile)
                 self.cache.store(tile)
             else:
                 self.cache.load(tile)
@@ -253,6 +276,7 @@ class TileCreator(object):
                 splitted_tiles = split_meta_tiles(meta_tile_image, meta_tile.tile_patterns,
                                                   tile_size)
                 for splitted_tile in splitted_tiles:
+                    splitted_tile = self.tile_mgr.apply_tile_filter(splitted_tile)
                     self.cache.store(splitted_tile)
                 return splitted_tiles
         # else
