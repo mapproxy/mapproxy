@@ -1,12 +1,12 @@
-Labeling
-==========
+WMS Labeling
+============
 
 The tiling of rendered vector maps often results in issues with truncated or repeated labels. Some of these issues can be reduced with a proper configuration of MapProxy, but some require changes to the configuration of the source WMS server.
 
 This document describes settings for MapProxy and MapServer, but the problems and solutions are also valid for other for other WMS services. Refer to their documentations on how to configure these settings.
 
 The Problem
------------
+---------
 
 MapProxy always uses small tiles for caching. MapProxy does not pass through incoming requests to the source WMS [#]_, but it always requests images/tiles that are aligned to the internal grid. MapProxy combines, scales and reprojects these tiles for WMS requests and for tiled requests (TMS/KML) the tiles are combined by the client (OpenLayers, etc).
 
@@ -110,8 +110,8 @@ You can reduce some of the labeling issues with meta tiling, and solve the first
 In general, you need to disable the dynamic position of labels and you need to allow the rendering of partial labels.
 
 
-MapServer Settings
-------------------
+MapServer Options
+-----------------
 
 MapServer has lots of settings that affect the rendering. The two most important settings are
 
@@ -203,7 +203,7 @@ If the ``LABEL_NO_CLIP`` option is used, ``PARTIALS`` should be ``TRUE``. Otherw
 ..   .. image:: imgs/mapserver_area_without_labelclipping.png
 
 Lines
------
+~~~~~
 
 By default, labels are repeated on longer line strings. Where these labels are repeated depends on the current view of that line. That placement might differ in two neighboring image requests for long lines.
 

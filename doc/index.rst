@@ -13,6 +13,7 @@ MapProxy Documentation
    coverages
    deployment
    configuration_examples
+   labeling
    auth 
    migrate
    development
