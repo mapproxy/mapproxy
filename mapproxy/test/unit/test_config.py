@@ -96,7 +96,7 @@ class TestDefaultsLoading(object):
 class TestSRSConfig(object):
     def setup(self):
         import mapproxy.config.config
-        mapproxy.config.config._config._pop_object()
+        mapproxy.config.config._config.pop()
     
     def test_user_srs_definitions(self):
         user_yaml = """

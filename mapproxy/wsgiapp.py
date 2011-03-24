@@ -23,11 +23,9 @@ import os
 import sys
 import site
 
-from paste.registry import RegistryManager
-
 from mapproxy.request import Request
 from mapproxy.response import Response
-import mapproxy.config
+from mapproxy.util import local_base_config
 from mapproxy.config.loader import load_configuration
 
 class Modjyhandler(object):
@@ -116,8 +114,7 @@ def make_wsgi_app(services_conf=None):
     conf = load_configuration(mapproxy_conf=services_conf)
     services = conf.configured_services()
 
-    app = MapProxyApp(services, conf.base_config)
-    return RegistryManager(app)
+    return MapProxyApp(services, conf.base_config)
 
 class MapProxyApp(object):
     """
@@ -135,28 +132,26 @@ class MapProxyApp(object):
         resp = None
         req = Request(environ)
         
-        registry = environ['paste.registry']
-        registry.register(mapproxy.config.config._config, self.base_config)
-        
-        match = self.handler_path_re.match(req.path)
-        if match:
-            handler_name = match.group(1)
-            if handler_name in self.handlers:
-                try:
-                    resp = self.handlers[handler_name].handle(req)
-                except Exception:
-                    if self.base_config.debug_mode:
-                        raise
-                    else:
-                        import traceback
-                        traceback.print_exc(file=environ['wsgi.errors'])
-                        resp = Response('internal error', status=500)
-        if resp is None:
-            if req.path in ('', '/'):
-                resp = self.welcome_response(req.script_url)
-            else:
-                resp = Response('not found', mimetype='text/plain', status=404)
-        return resp(environ, start_response)
+        with local_base_config(self.base_config):
+            match = self.handler_path_re.match(req.path)
+            if match:
+                handler_name = match.group(1)
+                if handler_name in self.handlers:
+                    try:
+                        resp = self.handlers[handler_name].handle(req)
+                    except Exception:
+                        if self.base_config.debug_mode:
+                            raise
+                        else:
+                            import traceback
+                            traceback.print_exc(file=environ['wsgi.errors'])
+                            resp = Response('internal error', status=500)
+            if resp is None:
+                if req.path in ('', '/'):
+                    resp = self.welcome_response(req.script_url)
+                else:
+                    resp = Response('not found', mimetype='text/plain', status=404)
+            return resp(environ, start_response)
 
     def welcome_response(self, script_url):
         import mapproxy.version

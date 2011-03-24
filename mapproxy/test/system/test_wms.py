@@ -405,9 +405,9 @@ class TestWMS111(WMSTest):
             eq_(resp.body, 'info')
     
     def test_get_featureinfo_missing_params_strict(self):
-        request_parser = self.app.app.application.handlers['service'].request_parser
+        request_parser = self.app.app.handlers['service'].request_parser
         try:
-            self.app.app.application.handlers['service'].request_parser = \
+            self.app.app.handlers['service'].request_parser = \
                 functools.partial(wms_request, strict=True)
         
             del self.common_fi_req.params['format']
@@ -417,7 +417,7 @@ class TestWMS111(WMSTest):
             assert 'missing parameters' in xml.xpath('//ServiceException/text()')[0]
             assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
         finally:
-            self.app.app.application.handlers['service'].request_parser = request_parser
+            self.app.app.handlers['service'].request_parser = request_parser
     
     def test_get_featureinfo_not_queryable(self):
         self.common_fi_req.params['query_layers'] = 'tms_cache'
