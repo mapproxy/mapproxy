@@ -104,7 +104,7 @@ def init_null_logging():
             pass
     logging.getLogger().addHandler(NullHandler())
 
-def make_wsgi_app(services_conf=None):
+def make_wsgi_app(services_conf=None, debug=False):
     """
     Create a ProxyApp with the given services conf. Also initializes logging.
     
@@ -112,9 +112,21 @@ def make_wsgi_app(services_conf=None):
                           if ``None`` the default is loaded.
     """
     conf = load_configuration(mapproxy_conf=services_conf)
+        
     services = conf.configured_services()
-
-    return MapProxyApp(services, conf.base_config)
+    app = MapProxyApp(services, conf.base_config)
+    if debug:
+        conf.base_config.debug_mode = True
+        try:
+            from werkzeug.debug import DebuggedApplication
+            app = DebuggedApplication(app, evalex=True)
+        except ImportError:
+            try:
+                from paste.evalexception.middleware import EvalException
+                app = EvalException(app)
+            except ImportError:
+                print 'Error: Install Werkzeug or Paste for browser-based debugging.'
+    return app
 
 class MapProxyApp(object):
     """
