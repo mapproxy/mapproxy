@@ -1,0 +1,50 @@
+seeds:
+  myseed1:
+    caches: [osm_cache]
+    grids: [GLOBAL_MERCATOR]
+    coverages: [austria]
+    levels:
+      to: 10
+    refresh_before: 
+      time: 2010-10-21T12:35:00
+      
+  # dach:
+  #   caches: [osm_roads]
+  #   coverages: [germany, austria, switzerland]
+  #   grids: [GLOBAL_MERCATOR, GLOBAL_GEODETIC]
+  #   refresh_before:
+  #     month: 1
+  #   levels:
+  #     from: 11
+  #     to: 15
+
+cleanups: 
+  clean1:
+    caches: [osm_cache]
+    grids: [GLOBAL_MERCATOR]
+    remove_before:
+      days: 7
+      hours: 3
+    levels: [2,3,5,7]
+    
+  # clean2:
+  #   caches: [osm_roads]
+  #   grids: [GLOBAL_MERCATOR]
+  #   coverages: [germany, austria, switzerland]
+  #   remove_before:
+  #     time: 2011-01-31T12:00:00
+  #   levels:
+  #     from: 11
+  #     to: 14
+
+coverages:
+  austria:
+    bbox: [9.36, 46.33, 17.28, 49.09]
+    bbox_srs: EPSG:4326
+  # germany:
+  #   ogr_datasource: 'shps/world_boundaries_m.shp'
+  #   ogr_where: 'CNTRY_NAME = "Germany"'
+  #   ogr_srs: 'EPSG:900913'
+  # switzerland:
+  #   polygons: 'polygons/SZ.txt'
+  #   polygons_srs: EPSG:900913
