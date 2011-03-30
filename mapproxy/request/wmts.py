@@ -17,10 +17,7 @@
 """
 Service requests (parsing, handling, etc).
 """
-from mapproxy.request.wms import exception
-from mapproxy.config import base_config
 from mapproxy.exception import RequestError
-from mapproxy.srs import SRS, make_lin_transf
 from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
 from mapproxy.exception import XMLExceptionHandler
 from mapproxy.template import template_loader
@@ -29,7 +26,6 @@ get_template = template_loader(mapproxy.service.__file__, 'templates')
 
 import logging
 log = logging.getLogger(__name__)
-
 
 
 class WMTS100ExceptionHandler(XMLExceptionHandler):
