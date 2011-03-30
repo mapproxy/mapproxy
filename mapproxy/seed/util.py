@@ -82,7 +82,7 @@ def timestamp():
     return datetime.now().strftime('%H:%M:%S')
 
 def format_bbox(bbox):
-    return ('(%.5f, %.5f, %.5f, %.5f)') % tuple(bbox)
+    return ('%.5f, %.5f, %.5f, %.5f') % tuple(bbox)
 
 def status_symbol(i, total):
     """
@@ -120,12 +120,12 @@ def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
 def format_seed_task(task):
     info = []
     info.append('  %s:' % (task.md['name'], ))
-    info.append("    Seeding cache '%s' with grid '%s' (%s)" % (
+    info.append("    Seeding cache '%s' with grid '%s' in %s" % (
                  task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:
-        info.append('    Limited to: %s' % (format_bbox(task.coverage.extent.llbbox), ))
+        info.append('    Limited to: %s (EPSG:4326)' % (format_bbox(task.coverage.extent.llbbox), ))
     else:
-        info.append('   Complete grid: %s' % (format_bbox(map_extent_from_grid(task.grid).llbbox), ))
+        info.append('   Complete grid: %s (EPSG:4326)' % (format_bbox(map_extent_from_grid(task.grid).llbbox), ))
     info.append('    Levels: %s' % (task.levels, ))
         
     if task.refresh_timestamp:
@@ -139,12 +139,12 @@ def format_seed_task(task):
 def format_cleanup_task(task):
     info = []
     info.append('  %s:' % (task.md['name'], ))
-    info.append("    Cleaning up cache '%s' with grid '%s' (%s)" % (
+    info.append("    Cleaning up cache '%s' with grid '%s' in %s" % (
                  task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:
-        info.append('    Limited to: %s' % (format_bbox(task.coverage.extent.llbbox), ))
+        info.append('    Limited to: %s (EPSG:4326)' % (format_bbox(task.coverage.extent.llbbox), ))
     else:
-        info.append('    Complete grid: %s' % (format_bbox(map_extent_from_grid(task.grid).llbbox), ))
+        info.append('    Complete grid: %s (EPSG:4326)' % (format_bbox(map_extent_from_grid(task.grid).llbbox), ))
     info.append('    Levels: %s' % (task.levels, ))
         
     if task.remove_timestamp:
