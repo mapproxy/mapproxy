@@ -74,9 +74,11 @@
         <ows:Identifier>default</ows:Identifier>
       </Style>
       <Format>image/{{layer.format}}</Format>
+      {{for grid in layer.grids}}
       <TileMatrixSetLink>
-        <TileMatrixSet>{{layer.grid.name}}</TileMatrixSet>
+        <TileMatrixSet>{{grid.name}}</TileMatrixSet>
       </TileMatrixSetLink>
+      {{endfor}}
     </Layer>
 {{endfor}}
 {{for tile_matrix_set in tile_matrix_sets}}

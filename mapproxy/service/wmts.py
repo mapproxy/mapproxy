@@ -42,20 +42,24 @@ class WMTSServer(Server):
     def __init__(self, layers, md, request_parser=None):
         Server.__init__(self)
         self.request_parser = request_parser or wmts_request
-        self.layers = layers
         self.md = md
-        self.matrix_sets = self._matrix_sets()
+        self.layers, self.matrix_sets = self._matrix_sets(layers)
     
-    def _matrix_sets(self):
+    def _matrix_sets(self, layers):
         sets = {}
-        for layer in self.layers.values():
+        layers_grids = {}
+        for layer in layers.values():
             grid = layer.grid
             if grid.name not in sets:
                 try:
                     sets[grid.name] = TileMatrixSet(grid)
                 except AssertionError:
-                    pass # TODO
-        return sets.values()
+                    continue # TODO
+            layers_grids.setdefault(layer.name, {})[grid.name] = layer
+        wmts_layers = {}
+        for layer_name, layers in layers_grids.items():
+            wmts_layers[layer_name] = WMTSTileLayer(layers)
+        return wmts_layers, sets.values()
         
     def capabilities(self, request):
         service = self._service_md(request)
@@ -63,7 +67,9 @@ class WMTSServer(Server):
         return Response(result, mimetype='application/xml')
     
     def tile(self, request):
-        tile_layer = self.layers[request.params.layer]
+        self.check_request(request)
+        tile_layer = self.layers[request.params.layer][request.params.tilematrixset]
+        self.check_request_tilesetmatrix(request, tile_layer)
         request.format = request.params.format # TODO
         request.tile = tuple(map(int, request.params.coord)) # TODO
         request.origin = 'nw'
@@ -72,13 +78,17 @@ class WMTSServer(Server):
         
         return resp
     
-    def check_request(self, request):
-        query_layers = request.params.query_layers if hasattr(request, 'query_layers') else []
-        for layer in chain(request.params.layers, query_layers):
-            if layer not in self.layers:
-                raise RequestError('unknown layer: ' + str(layer), code='LayerNotDefined',
-                                   request=request)
+    def check_request_tilesetmatrix(self, request, tile_layer):
+        print tile_layer
     
+    def check_request(self, request):
+        if request.params.layer not in self.layers:
+            raise RequestError('unknown layer: ' + str(request.params.layer),
+                code='InvalidParameterValue', request=request)
+        if request.params.tilematrixset not in self.layers[request.params.layer]:
+            raise RequestError('unknown tilematrixset: ' + str(request.params.tilematrixset),
+                code='InvalidParameterValue', request=request)
+
     def _service_md(self, tile_request):
         md = dict(self.md)
         md['url'] = tile_request.url
@@ -104,6 +114,24 @@ class Capabilities(object):
         # strip blank lines
         doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())
         return doc
+
+class WMTSTileLayer(object):
+    """
+    Wrap multiple TileLayers for the same cache but with different grids.
+    """
+    def __init__(self, layers):
+        self.grids = [lyr.grid for lyr in layers.values()]
+        self.layers = layers
+        self._layer = layers[layers.keys()[0]]
+    
+    def __getattr__(self, name):
+        return getattr(self._layer, name)
+    
+    def __contains__(self, gridname):
+        return gridname in self.layers
+    
+    def __getitem__(self, gridname):
+        return self.layers[gridname]
 
 from mapproxy.grid import tile_grid
 

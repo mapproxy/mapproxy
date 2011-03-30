@@ -36,6 +36,14 @@ class WMTS100ExceptionHandler(XMLExceptionHandler):
     template_func = get_template
     template_file = 'wmts100exception.xml'
     content_type = 'text/xml'
+    
+    status_codes = {
+        None: 500,
+        'TileOutOfRange': 400,
+        'MissingParameterValue': 400,
+        'InvalidParameterValue': 400,
+        'OperationNotSupported': 501
+    }
 
 class WMTSTileRequestParams(RequestParams):
     """
@@ -184,7 +192,6 @@ class WMTSFeatureInfoRequestParams(WMTSTileRequestParams):
 
 class WMTS100FeatureInfoRequest(WMTS100TileRequest):
     request_params = WMTSFeatureInfoRequestParams
-    xml_exception_handler = WMTS100ExceptionHandler
     request_handler_name = 'featureinfo'
     fixed_params = WMTS100TileRequest.fixed_params.copy()
     fixed_params['request'] = 'GetFeatureInfo'

@@ -90,6 +90,12 @@ class XMLExceptionHandler(ExceptionHandler):
     The HTTP status code.
     """
     
+    status_codes = {}
+    """
+    Mapping of exceptionCodes to status_codes. If not defined
+    status_code is used.
+    """
+    
     mimetype = None
     """
     The mime type of the exception response. (use this or content_type).
@@ -108,10 +114,11 @@ class XMLExceptionHandler(ExceptionHandler):
         
         :type request_error: `RequestError`
         """
+        status_code = self.status_codes.get(request_error.code, self.status_code)
         result = self.template.substitute(exception=request_error.message,
                                           code=request_error.code)
         return Response(result, mimetype=self.mimetype, content_type=self.content_type,
-                        status=self.status_code)
+                        status=status_code)
     
     @property
     def template(self):
