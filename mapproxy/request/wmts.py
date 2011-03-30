@@ -1,4 +1,4 @@
-# This file is part of the TileProxy project.
+# This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
 # 
 # This program is free software: you can redistribute it and/or modify
