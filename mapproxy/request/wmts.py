@@ -197,7 +197,7 @@ class WMTS100FeatureInfoRequest(WMTS100TileRequest):
 
 class WMTS100CapabilitiesRequest(WMTSRequest):
     request_handler_name = 'capabilities'
-    capabilities_template = 'wmts100_capabilities.xml'
+    capabilities_template = 'wmts100capabilities.xml'
     exception_handler = None
     mime_type = 'text/xml'
     fixed_params = {}
