@@ -7,6 +7,7 @@ The following services are available:
 - :ref:`wms_service_label` and :ref:`wmsc_service_label`
 - :ref:`tms_service_label`
 - :ref:`kml_service_label`
+- :ref:`wmts_service_label`
 - :ref:`demo_service_label`
 
 You need to add the service to the ``services`` section of your MapProxy configuration to enable it. Some services take additional options.
@@ -39,6 +40,8 @@ Adds an attribution (copyright) line to all WMS requests.
 
 ``text``
   The text line of the attribution (e.g. some copyright notice, etc).
+
+.. _wms_md:
 
 ``md``
 """"""
@@ -187,6 +190,24 @@ This service takes no further options::
     kml:
 
 
+.. index:: WMTS Service, Tile Service
+.. _wmts_service_label:
+
+Web Map Tile Services
+---------------------
+
+.. versionadded:: 1.1.0
+
+MapProxy supports the OGC WMTS 1.0.0 specification. It only supports KVP requests for ``GetCapabilities`` and ``GetTile`` at the moment.
+
+The service is available at ``/service``.
+
+This service requires no further options::
+
+  services:
+    wmts:
+
+The metadata (ServiceContact, etc. ) of this service is taken from the WMS configuration. You can add ``md`` to the ``wmts`` configuration to replace the WMS metadata. See :ref:`WMS metadata <wms_md>`.
 
 .. index:: Demo Service, OpenLayers
 .. _demo_service_label:
