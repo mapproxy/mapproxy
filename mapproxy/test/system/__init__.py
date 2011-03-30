@@ -42,7 +42,7 @@ def prepare_env(test_config, config_file, with_cache_data=False):
     
 def create_app(test_config):
     app = make_wsgi_app(test_config['config_file'])
-    app.application.base_config.debug_mode = True
+    app.base_config.debug_mode = True
     test_config['app'] = TestApp(app, use_unicode=False)
 
 def module_teardown(test_config):
@@ -53,7 +53,7 @@ def module_teardown(test_config):
     test_config.clear()
     
 def make_base_config(test_config):
-    return lambda: test_config['app'].app.application.base_config
+    return lambda: test_config['app'].app.base_config
 
 class SystemTest(object):
     def setup(self):

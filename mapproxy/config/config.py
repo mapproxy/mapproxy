@@ -21,7 +21,7 @@ from __future__ import with_statement
 import os
 import copy
 import yaml #pylint: disable-msg=F0401
-from paste.registry import StackedObjectProxy
+from mapproxy.util.ext.local import LocalStack
 
 class Options(dict):
     """
@@ -65,12 +65,12 @@ class Options(dict):
     def __deepcopy__(self, memo):
         return Options(copy.deepcopy(self.items(), memo))
 
-_config = StackedObjectProxy(default=None)
+_config = LocalStack()
 def base_config():
     """
     Returns the context-local system-wide configuration.
     """
-    config = _config._current_obj()
+    config = _config.top
     if config is None:
         import warnings
         import sys
@@ -80,7 +80,7 @@ def base_config():
         config = load_default_config()
         config.conf_base_dir = os.getcwd()
         finish_base_config(config)
-        _config._push_object(config)
+        _config.push(config)
     return config
 
 def _to_options_map(mapping):

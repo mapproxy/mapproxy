@@ -77,6 +77,7 @@ class TileURLTemplate(object):
         self.with_quadkey = True if '%(quadkey)' in template else False
         self.with_tc_path = True if '%(tc_path)' in template else False
         self.with_tms_path = True if '%(tms_path)' in template else False
+        self.with_arcgiscache_path = True if '%(arcgiscache_path)' in template else False
     
     def substitute(self, tile_coord, format=None):
         x, y, z = tile_coord
@@ -88,6 +89,8 @@ class TileURLTemplate(object):
             data['tc_path'] = tilecache_path(tile_coord)
         if self.with_tms_path:
             data['tms_path'] = tms_path(tile_coord)
+        if self.with_arcgiscache_path:
+            data['arcgiscache_path'] = arcgiscache_path(tile_coord)
         return self.template % data
     
     def __repr__(self):
@@ -136,3 +139,11 @@ def tms_path(tile_coord):
     '9/1234567/87654321'
     """
     return '%d/%d/%d' % (tile_coord[2], tile_coord[0], tile_coord[1])
+
+def arcgiscache_path(tile_coord):
+   """
+   >>> arcgiscache_path((1234567, 87654321, 9))
+   'L09/R05397fb1/C0012d687'
+   """
+   return 'L%02d/R%08x/C%08x' % (tile_coord[2], tile_coord[1], tile_coord[0])
+

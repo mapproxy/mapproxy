@@ -31,6 +31,7 @@ from mapproxy.test.helper import assert_re, TempFile
 
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
+from nose.plugins.attrib import attr
 
 TESTSERVER_ADDRESS = ('127.0.0.1', 56413)
 TESTSERVER_URL = 'http://%s:%s' % TESTSERVER_ADDRESS
@@ -82,6 +83,7 @@ class TestHTTPClient(object):
         else:
             assert False, 'expected HTTPClientError'
     
+    @attr('online')
     def test_https_no_ssl_module_error(self):
         from mapproxy.client import http
         old_ssl = http.ssl
@@ -96,6 +98,7 @@ class TestHTTPClient(object):
         finally:
             http.ssl = old_ssl
     
+    @attr('online')
     def test_https_no_ssl_module_insecure(self):
         from mapproxy.client import http
         old_ssl = http.ssl
@@ -106,6 +109,7 @@ class TestHTTPClient(object):
         finally:
             http.ssl = old_ssl
     
+    @attr('online')
     def test_https_valid_cert(self):
         try:
             import ssl; ssl
@@ -118,6 +122,7 @@ class TestHTTPClient(object):
             self.client = HTTPClient('https://trac.osgeo.org/', ssl_ca_certs=tmp)
             self.client.open('https://trac.osgeo.org/')
     
+    @attr('online')
     def test_https_invalid_cert(self):
         try:
             import ssl; ssl
@@ -318,6 +323,15 @@ class TestTileClient(object):
         template = TileURLTemplate(TESTSERVER_URL + '/x=%(x)s&y=%(y)s&z=%(z)s&format=%(format)s')
         client = TileClient(template)
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/x=5&y=13&z=9&format=png'},
+                                              {'body': 'tile',
+                                               'headers': {'content-type': 'image/png'}})]):
+            resp = client.get_tile((5, 13, 9)).source.read()
+            eq_(resp, 'tile')
+
+    def test_arcgiscache_path(self):
+        template = TileURLTemplate(TESTSERVER_URL + '/%(arcgiscache_path)s.png')
+        client = TileClient(template)
+        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/L09/R0000000d/C00000005.png'},
                                               {'body': 'tile',
                                                'headers': {'content-type': 'image/png'}})]):
             resp = client.get_tile((5, 13, 9)).source.read()

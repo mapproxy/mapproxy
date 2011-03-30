@@ -20,7 +20,6 @@ Service requests (parsing, handling, etc).
 from __future__ import with_statement
 import codecs
 from mapproxy.request.wms import exception
-from mapproxy.config import base_config, abspath
 from mapproxy.exception import RequestError
 from mapproxy.srs import SRS, make_lin_transf
 from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
@@ -193,8 +192,6 @@ class WMSMapRequest(WMSRequest):
     def validate(self):
         self.validate_param()
         self.validate_bbox()
-        self.validate_format()
-        self.validate_srs()
         self.validate_styles()
     
     def validate_param(self):
@@ -217,15 +214,15 @@ class WMSMapRequest(WMSRequest):
             raise RequestError('invalid bbox ' + self.params.get('bbox', None),
                                request=self)
     
-    def validate_format(self):
+    def validate_format(self, image_formats):
         format = self.params['format'].split(';', 1)[0].strip()
-        if format not in base_config().wms.image_formats:
+        if format not in image_formats:
             format = self.params['format']
             self.params['format'] = 'image/png'
             raise RequestError('unsupported image format: ' + format,
                                code='InvalidFormat', request=self)
-    def validate_srs(self):
-        if self.params['srs'].upper() not in base_config().wms.srs:
+    def validate_srs(self, srs):
+        if self.params['srs'].upper() not in srs:
             raise RequestError('unsupported srs: ' + self.params['srs'],
                                code='InvalidSRS', request=self)
     def validate_styles(self):
@@ -340,10 +337,10 @@ class WMS130MapRequest(WMSMapRequest):
             del params['srs']
         return params
         
-    def validate_srs(self):
+    def validate_srs(self, srs):
         # its called crs in 1.3.0 and we validate before adapt_to_111
-        if self.params['crs'].upper() not in base_config().wms.srs:
-            raise RequestError('unsupported crs: ' + self.params['crs'],
+        if self.params['srs'].upper() not in srs:
+            raise RequestError('unsupported crs: ' + self.params['srs'],
                                code='InvalidCRS', request=self)
     
     def copy_with_request_params(self, req):
@@ -427,7 +424,6 @@ class WMSLegendGraphicRequest(WMSMapRequest):
     
     def validate(self):
         self.validate_param()
-        self.validate_format()
         self.validate_sld_version()
 
     def validate_sld_version(self):
@@ -451,9 +447,9 @@ class WMS130LegendGraphicRequest(WMSLegendGraphicRequest):
 class WMSFeatureInfoRequest(WMSMapRequest):
     non_strict_params = set(['format', 'styles'])
     
-    def validate_format(self):
+    def validate_format(self, image_formats):
         if self.non_strict: return 
-        WMSMapRequest.validate_format(self)
+        WMSMapRequest.validate_format(self, image_formats)
 
 class WMS111FeatureInfoRequest(WMSFeatureInfoRequest):
     version = Version('1.1.1')
@@ -521,9 +517,9 @@ class WMS130FeatureInfoRequest(WMS130MapRequest):
         del params['y']
         return params
 
-    def validate_format(self):
+    def validate_format(self, image_formats):
         if self.non_strict: return 
-        WMSMapRequest.validate_format(self)
+        WMSMapRequest.validate_format(self, image_formats)
 
 class WMSCapabilitiesRequest(WMSRequest):
     request_handler_name = 'capabilities'
@@ -648,9 +644,7 @@ def negotiate_version(version):
         if version >= next_highest_version:
             return next_highest_version
 
-def wms_request(req, validate=True, strict=None):
-    if strict is None:
-        strict = base_config().wms.strict
+def wms_request(req, validate=True, strict=True):
     version = _parse_version(req)
     req_type = _parse_request_type(req)
     
@@ -668,7 +662,7 @@ def wms_request(req, validate=True, strict=None):
                      non_strict=not strict, http=req)
 
 
-def create_request(req_data, param, req_type='map', version='1.1.1'):
+def create_request(req_data, param, req_type='map', version='1.1.1', abspath=None):
     url = req_data['url']
     req_data = req_data.copy()
     del req_data['url']
@@ -686,7 +680,8 @@ def create_request(req_data, param, req_type='map', version='1.1.1'):
     
     if req_data.get('sld', '').startswith('file://'):
         sld_path = req_data['sld'][len('file://'):]
-        sld_path = abspath(sld_path)
+        if abspath:
+            sld_path = abspath(sld_path)
         with codecs.open(sld_path, 'UTF-8') as f:
             req_data['sld_body'] = f.read()
         del req_data['sld']

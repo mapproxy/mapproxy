@@ -377,7 +377,7 @@ class GlobalConfiguration(ConfigurationBase):
             else:
                 target[k] = v
     
-    def get_value(self, key, local, global_key=None, default_key=None):
+    def get_value(self, key, local={}, global_key=None, default_key=None):
         result = dotted_dict_get(key, local)
         if result is None:
             result = dotted_dict_get(global_key or key, self.conf)
@@ -577,7 +577,8 @@ class WMSSourceConfiguration(SourceConfiguration):
         
         http_method = self.context.globals.get_value('http.method', self.conf)
         
-        request = create_request(self.conf['req'], params, version=version)
+        request = create_request(self.conf['req'], params, version=version,
+            abspath=self.context.globals.abspath)
         http_client, request.url = self.http_client(request.url)
         client = WMSClient(request, supported_srs, http_client=http_client, 
                            http_method=http_method, resampling=resampling, lock=lock,
@@ -600,7 +601,8 @@ class WMSSourceConfiguration(SourceConfiguration):
             if 'featureinfo_format' in wms_opts:
                 params['info_format'] = wms_opts['featureinfo_format']
             fi_request = create_request(self.conf['req'], params,
-                req_type='featureinfo', version=version)
+                req_type='featureinfo', version=version,
+                abspath=self.context.globals.abspath)
             
             fi_transformer = self.fi_xslt_transformer(self.conf.get('wms_opts', {}),
                                                      self.context)
@@ -632,7 +634,8 @@ class WMSSourceConfiguration(SourceConfiguration):
             for lg_layer in lg_layers:
                 lg_req['layer'] = lg_layer
                 lg_request = create_request(lg_req, params,
-                    req_type='legendgraphic', version=version)
+                    req_type='legendgraphic', version=version,
+                    abspath=self.context.globals.abspath)
                 http_client, lg_request.url = self.http_client(lg_request.url)
                 lg_client = WMSLegendClient(lg_request, http_client=http_client)
                 lg_clients.append(lg_client)
@@ -656,7 +659,7 @@ class MapServerSourceConfiguration(WMSSourceConfiguration):
         
         # set url to dummy script name, required as identifier
         # for concurrent_request
-        self.conf.setdefault('req', {})['url'] = 'dummy://' + self.script
+        self.conf.setdefault('req', {})['url'] = 'http://localhost' + self.script
     
     def http_client(self, url):
         working_dir = self.context.globals.get_path('mapserver.working_dir', self.conf)
@@ -743,10 +746,10 @@ class CacheConfiguration(ConfigurationBase):
         cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
         link_single_color_images = self.conf.get('link_single_color_images', False)
         
-        tile_filter = self._tile_filter()
+        lock_timeout = self.context.globals.get_value('http.client_timeout', {})
+        
         return FileCache(cache_dir, file_ext=file_ext(self.conf['format']),
-            pre_store_filter=tile_filter,
-            link_single_color_images=link_single_color_images)
+            lock_timeout=lock_timeout, link_single_color_images=link_single_color_images)
     
     def _tile_filter(self):
         filters = []
@@ -767,6 +770,8 @@ class CacheConfiguration(ConfigurationBase):
             global_key='cache.meta_size')
         minimize_meta_requests = self.context.globals.get_value('minimize_meta_requests', self.conf,
             global_key='cache.minimize_meta_requests')
+        concurrent_tile_creators = self.context.globals.get_value('concurrent_tile_creators', self.conf,
+            global_key='cache.concurrent_tile_creators')
         
         for grid_conf in [self.context.grids[g] for g in self.conf['grids']]:
             sources = []
@@ -777,9 +782,12 @@ class CacheConfiguration(ConfigurationBase):
             assert sources, 'no sources configured for %s' % self.conf['name']
             cache = self._file_cache(grid_conf)
             tile_grid = grid_conf.tile_grid()
+            tile_filter = self._tile_filter()
             mgr = TileManager(tile_grid, cache, sources, file_ext(request_format),
                               meta_size=meta_size, meta_buffer=meta_buffer,
-                              minimize_meta_requests=minimize_meta_requests)
+                              minimize_meta_requests=minimize_meta_requests,
+                              concurrent_tile_creators=concurrent_tile_creators,
+                              pre_store_filter=tile_filter)
             extent = merge_layer_extents(sources)
             if extent.is_default:
                 extent = map_extent_from_grid(tile_grid)
@@ -790,13 +798,15 @@ class CacheConfiguration(ConfigurationBase):
     def map_layer(self):
         resampling = self.context.globals.get_value('image.resampling_method', self.conf)
         opacity = self.conf.get('image', {}).get('opacity')
+        max_tile_limit = self.context.globals.get_value('max_tile_limit', self.conf,
+            global_key='cache.max_tile_limit')
         caches = []
         main_grid = None
         for grid, extent, tile_manager in self.caches():
             if main_grid is None:
                 main_grid = grid
             caches.append((CacheMapLayer(tile_manager, extent=extent, resampling=resampling,
-                                         opacity=opacity),
+                                         opacity=opacity, max_tile_limit=max_tile_limit),
                           (grid.srs,)))
         
         if len(caches) == 1:
@@ -956,14 +966,18 @@ class ServiceConfiguration(ConfigurationBase):
     def kml_service(self, conf):
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
+        max_tile_age = self.context.globals.get_value('tiles.expires_hours')
+        max_tile_age *= 60 * 60 # seconds
         layers = self.tile_layers(conf)
-        return KMLServer(layers, md)
+        return KMLServer(layers, md, max_tile_age=max_tile_age)
     
     def tms_service(self, conf):
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
+        max_tile_age = self.context.globals.get_value('tiles.expires_hours')
+        max_tile_age *= 60 * 60 # seconds
         layers = self.tile_layers(conf)
-        return TileServer(layers, md)
+        return TileServer(layers, md, max_tile_age=max_tile_age)
     
     def wmts_service(self, conf):
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
@@ -1007,7 +1021,9 @@ class ServiceConfiguration(ConfigurationBase):
             layers[layer_name] = layer_conf.wms_layer()
         tile_layers = self.tile_layers(conf)
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
-        return DemoServer(layers, md, tile_layers=tile_layers, image_formats=image_formats)
+        srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
+        return DemoServer(layers, md, tile_layers=tile_layers,
+            image_formats=image_formats, srs=srs)
     
 def load_services(conf_file):
     conf = load_configuration(conf_file)

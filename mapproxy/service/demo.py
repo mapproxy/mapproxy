@@ -24,7 +24,6 @@ from collections import defaultdict
 
 from mapproxy.service.base import Server
 from mapproxy.response import Response
-from mapproxy.config import base_config
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
@@ -41,13 +40,13 @@ class DemoServer(Server):
         self.layers = layers
         self.tile_layers = tile_layers or {}
         self.md = md
-        self.image_formats = image_formats or base_config().wms.image_formats
+        self.image_formats = image_formats
         filter_image_format = []
         for format in self.image_formats:
             if 'image/jpeg' == format or 'image/png' == format:
                 filter_image_format.append(format)
         self.image_formats = filter_image_format
-        self.srs = srs or base_config().wms.srs
+        self.srs = srs
 
     def handle(self, req):
         if req.path.startswith('/demo/static/'):

@@ -46,11 +46,11 @@ def local_base_config(conf):
     or seeding).
     """
     import mapproxy.config.config
-    mapproxy.config.config._config._push_object(conf)
+    mapproxy.config.config._config.push(conf)
     try:
         yield
     finally:
-        mapproxy.config.config._config._pop_object()
+        mapproxy.config.config._config.pop()
 
 def reraise_exception(new_exc, exc_info):
     """

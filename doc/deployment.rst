@@ -5,7 +5,7 @@ There are different ways to deploy Python web applications. MapProxy implements 
 
 The WSGI standard allows to choose between a wide range of servers and server integration components.
 
-MapProxy uses :ref:`Paste Deploy <http://pythonpaste.org/deploy/>` to start these servers with a configured MapProxy application. It is a dependency of MapProxy and should be installed already. You can access the tool with ``paster serve``.
+MapProxy uses `Paste Deploy <http://pythonpaste.org/deploy/>`_ to start these servers with a configured MapProxy application. It is a dependency of MapProxy and should be installed already. You can access the tool with ``paster serve``.
 
 Paste Deploy needs a configuration where the application (MapProxy in this case) and the server are defined. The ``etc/`` directory created with ``paster create`` (see :doc:`install`) already contains two example configurations.
 Both configurations define MapProxy as the WSGI application to start and setup some configuration options.

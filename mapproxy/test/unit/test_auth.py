@@ -72,7 +72,8 @@ class TestWMSAuth(object):
                                                   wms_layers['layer2']])
         self.wms_layers = wms_layers
         self.layers = layers
-        self.server = WMSServer(md={}, root_layer=root_layer)
+        self.server = WMSServer(md={}, root_layer=root_layer, srs=['EPSG:4326'],
+            image_formats=['image/png'])
     
 
 # ###

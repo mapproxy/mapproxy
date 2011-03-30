@@ -220,14 +220,16 @@ class TestThreadPool(CommonPoolTests):
 
         # run test in parallel, check1 and check2 should interleave
         # each with their local conf
-
+        
+        error_occured = False
+        
         def check1(x):
-            assert base_config().conf == 1
-            assert 'bar' not in base_config()
+            if base_config().conf != 1 or 'bar' in base_config():
+                error_occured = True
 
         def check2(x):
-            assert base_config().conf == 2
-            assert 'bar' not in base_config()
+            if base_config().conf != 2 or 'bar' in base_config():
+                error_occured = True
 
         assert 'bar' in base_config()
 
@@ -247,36 +249,19 @@ class TestThreadPool(CommonPoolTests):
         t2.start()
         t1.join()
         t2.join()
+        assert not error_occured
         assert 'bar' in base_config()
 
-
-import paste.util.threadinglocal
-from paste.registry import StackedObjectProxy
-import mapproxy.config
 
 class TestEventletPool(CommonPoolTests):
     def setup(self):
         if not _has_eventlet:
             raise SkipTest('eventlet required')
-        
-        # base_config()'s StackedObjectProxy uses a threaded local,
-        # if thread.local was not monkey_patched before import
-        # manualy patch for this test (pretty hacky)
-        self.old_local = paste.util.threadinglocal.local
-        from eventlet.corolocal import local
-        paste.util.threadinglocal.local = local
-        
-        mapproxy.config.config._config = StackedObjectProxy(default=None)
     
     def mk_pool(self):
         if not _has_eventlet:
             raise SkipTest('eventlet required')
         return EventletPool()
-    
-    def teardown(self):
-        # recreate StackedObjectProxy with threaded thread local
-        paste.util.threadinglocal.local = self.old_local
-        mapproxy.config.config._config = StackedObjectProxy(default=None)
     
     def test_base_config(self):
         # test that all concurrent have access to their
@@ -295,14 +280,16 @@ class TestEventletPool(CommonPoolTests):
         # run test in parallel, check1 and check2 should interleave
         # each with their local conf
 
+        error_occured = False
+        
         def check1(x):
-            assert base_config().conf == 1
-            assert 'bar' not in base_config()
+            if base_config().conf != 1 or 'bar' in base_config():
+                error_occured = True
 
         def check2(x):
-            assert base_config().conf == 2
-            assert 'bar' not in base_config()
-
+            if base_config().conf != 2 or 'bar' in base_config():
+                error_occured = True
+                
         assert 'bar' in base_config()
 
         def test1():
@@ -319,6 +306,7 @@ class TestEventletPool(CommonPoolTests):
         t2 = eventlet.spawn(test2)
         t1.wait()
         t2.wait()
+        assert not error_occured
         assert 'bar' in base_config()
 
 

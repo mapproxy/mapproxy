@@ -1,25 +1,24 @@
-Labeling
-==========
+WMS Labeling
+============
 
 The tiling of rendered vector maps often results in issues with truncated or repeated labels. Some of these issues can be reduced with a proper configuration of MapProxy, but some require changes to the configuration of the source WMS server.
 
-
-.. note:: This document describes settings for MapProxy and MapServer, but the problems and solutions are also valid for other tile cache implementations and for other WMS services. Refer to their documentations on how to configure these settings.
+This document describes settings for MapProxy and MapServer, but the problems and solutions are also valid for other for other WMS services. Refer to their documentations on how to configure these settings.
 
 The Problem
------------
+---------
 
-MapProxy always uses small tiles for caching. MapProxy does not pass through incoming requests to the source WMS [#]_, but it always requests images/tiles that are aligned to the internal grid. MapProxy will combine, scale and reproject these tiles for incoming WMS request. For tile requests with TMS or KML your client (e.g. OpenLayers) will do this.
+MapProxy always uses small tiles for caching. MapProxy does not pass through incoming requests to the source WMS [#]_, but it always requests images/tiles that are aligned to the internal grid. MapProxy combines, scales and reprojects these tiles for WMS requests and for tiled requests (TMS/KML) the tiles are combined by the client (OpenLayers, etc).
 
 .. [#] Except for uncached, cascaded WMS requests.
 
-When tiles are combined, the text labels at the boundaries need to be present at both tiles and need to be placed at the exact same (geographical) location.
+When tiles are combined, the text labels at the boundaries need to be present at both tiles and need to be placed at the exact same (geographic) location.
 
 There are three common problems here.
 
 No placement outside the BBOX
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-WMS servers do not draw features that are outside of the map BBOX. For example, a city label that extends into the neighboring map tile will not be drawn in that other tile, because the geographic feature of the city (a single point) is only present in one tile.
+WMS servers do not draw features that are outside of the map bounds. For example, a city label that extends into the neighboring map tile will not be drawn in that other tile, because the geographic feature of the city (a single point) is only present in one tile.
 
 .. image:: imgs/labeling-no-placement.png
 
@@ -71,18 +70,22 @@ You can configure the meta tile size in the ``globals.cache`` section and for ea
       meta_size: [8, 8]
 
 
-This does also work for tiles services. When a client like OpenLayers requests the 20 tiles from the example above in parallel, MapProxy will still requests the two meta tiles. Locking assures that each meta tile will be requested only once.
+This does also work for tiles services. When a client like OpenLayers requests the 20 tiles from the example above in parallel, MapProxy will still requests the two meta tiles. Locking ensures that each meta tile will be requested only once.
 
 Meta Buffer
 ~~~~~~~~~~~
 
-In addition to meta tiles, MapProxy implements a meta buffer. The meta buffer adds extra space at the edges of the requested area. With this buffer, you can solve the first issue, no placement outside the BBOX.
+In addition to meta tiles, MapProxy implements a meta buffer. The meta buffer adds extra space at the edges of the requested area. With this buffer, you can solve the first issue: no placement outside the BBOX.
 
 .. image:: imgs/labeling-meta-buffer.png
 
+You can combine meta tiling and meta buffer. MapProxy then extends the whole meta tile with the configured buffer.
+
 A meta buffer of 100 will add 100 pixels at each edge of the request. With a meta size of 4x4 and a tile size of 256x256, the requested image is extended from 1024x1024 to 1224x1224. The BBOX is also extended to match the new geographical extent.
 
-To solve the first issue, the value should be at least the half of your longest labels: If you have text labels that are up to 200 pixels wide, than you should use a meta buffer of around 120 pixels.
+.. image:: imgs/labeling-metatiling-buffer.png
+
+To solve the first issue, the value should be at least half of your longest labels: If you have text labels that are up to 200 pixels wide, than you should use a meta buffer of around 120 pixels.
 
 You can configure the size of the meta buffer in the ``globals.cache`` section and for each ``cache``. It defaults to ``80``.
 ::
@@ -98,10 +101,6 @@ You can configure the size of the meta buffer in the ``globals.cache`` section a
       meta_size: 150
 
 
-You can combine meta tiling and meta buffer. MapProxy then extends the whole meta tile with the configured buffer.
-
-.. image:: imgs/labeling-metatiling-buffer.png
-
 
 WMS Server Options
 ------------------
@@ -111,17 +110,17 @@ You can reduce some of the labeling issues with meta tiling, and solve the first
 In general, you need to disable the dynamic position of labels and you need to allow the rendering of partial labels.
 
 
-MapServer Settings
-------------------
+MapServer Options
+-----------------
 
 MapServer has lots of settings that affect the rendering. The two most important settings are
 
-``PROCESSING "LABEL_NO_CLIP=ON"`` from the ``LAYER`` configuration
+``PROCESSING "LABEL_NO_CLIP=ON"`` from the ``LAYER`` configuration.
   With this option the labels are fixed to the whole feature and not only the part of the feature that is visible in the current map request. Default is off.
 
 and 
 
-``PARTIALS`` from the ``LABEL`` configuration
+``PARTIALS`` from the ``LABEL`` configuration.
   If this option is true, then labels are rendered beyond the boundaries of the map request. Default is true. 
 
 
@@ -139,7 +138,7 @@ You can improve that with the right set of configuration options for each type o
 Points
 ~~~~~~
 
-As described above, you can use meta buffer to prevent missing labels. You need to set ``PARTIALS TRUE`` (which is the default), and configure a large enough meta buffer. The labels need to be placed at the same position with each request. You can configure that with the ``POSITION`` options. The default is ``auto`` and you should set this to an explicit value, ``cc`` or ``uc`` for example.
+As described above, you can use a meta buffer to prevent missing labels. You need to set ``PARTIALS TRUE`` (which is the default), and configure a large enough meta buffer. The labels need to be placed at the same position with each request. You can configure that with the ``POSITION`` options. The default is ``auto`` and you should set this to an explicit value, ``cc`` or ``uc`` for example.
 
 
 ``example.map``::
@@ -204,7 +203,7 @@ If the ``LABEL_NO_CLIP`` option is used, ``PARTIALS`` should be ``TRUE``. Otherw
 ..   .. image:: imgs/mapserver_area_without_labelclipping.png
 
 Lines
------
+~~~~~
 
 By default, labels are repeated on longer line strings. Where these labels are repeated depends on the current view of that line. That placement might differ in two neighboring image requests for long lines.
 
@@ -229,7 +228,7 @@ Most of the time, the labels will match at the boundaries of the meta tiles, whe
       meta_buffer: 150
       [...]
 
-You can disable repeated labels with ``PROCESSING LABEL_NO_CLIP="ON"``, if don't want to have any truncated labels. Like with polygons, you need set ``PARTIALS TRUE`` and use a meta buffer. The downside of this is that all lines will only have one label in the center of that line.
+You can disable repeated labels with ``PROCESSING LABEL_NO_CLIP="ON"``, if don't want to have any truncated labels. Like with polygons, you need set ``PARTIALS TRUE`` and use a meta buffer. The downside of this is that each lines will only have one label in the center of that line.
 
 
 ``example.map``::
