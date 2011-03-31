@@ -84,7 +84,8 @@ def serve_develop_command(args):
         processes = 4
         threaded = False
     run_simple(host, port, app, use_reloader=True, processes=processes,
-        threaded=threaded, passthrough_errors=True)
+        threaded=threaded, passthrough_errors=True,
+        extra_files=[mapproxy_conf])
 
 
 def parse_bind_address(address, default=('localhost', 8080)):
