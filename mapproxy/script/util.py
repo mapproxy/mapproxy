@@ -24,6 +24,18 @@ import textwrap
 
 from mapproxy.version import version
 
+def setup_logging():
+    import logging
+    imposm_log = logging.getLogger('mapproxy')
+    imposm_log.setLevel(logging.INFO)
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        "[%(asctime)s] %(name)s - %(levelname)s - %(message)s")
+    ch.setFormatter(formatter)
+    imposm_log.addHandler(ch)
+
 def serve_develop_command(args):
     parser = optparse.OptionParser("usage: %prog serve-develop [options] mapproxy.yaml",
         add_help_option=False)
@@ -59,6 +71,8 @@ def serve_develop_command(args):
         #############################################\
         """)
     
+    
+    setup_logging()
     from mapproxy.wsgiapp import make_wsgi_app
     from mapproxy.util.ext.serving import run_simple
     app = make_wsgi_app(mapproxy_conf, debug=options.debug)
@@ -70,7 +84,8 @@ def serve_develop_command(args):
         processes = 4
         threaded = False
     run_simple(host, port, app, use_reloader=True, processes=processes,
-        threaded=threaded, passthrough_errors=True)
+        threaded=threaded, passthrough_errors=True,
+        extra_files=[mapproxy_conf])
 
 
 def parse_bind_address(address, default=('localhost', 8080)):
