@@ -92,10 +92,10 @@ or to get the latest 0.9 version::
  
   pip install "MapProxy>=0.9.0,<=0.9.99"
 
-To check if the MapProxy was successfully installed, you can directly call the `version` module. You should see the installed version number.
+To check if the MapProxy was successfully installed, you can call the `mapproxy-util` command.
 ::
 
-    python -m mapproxy.version
+    mapproxy-util --version
 
 .. _`pip`: http://pip.openplans.org/
 
@@ -107,12 +107,12 @@ Create a configuration
 
 To create a new set of configuration files for MapProxy call::
 
-    paster create -t mapproxy_conf mymapproxy
+    mapproxy-util create -t base-conf mymapproxy
 
-This will create a ``mymapproxy`` directory with an ``etc``, ``var`` and ``tmp`` directory.
-The ``etc`` directory contains all configuration files. Refer to the configuration documentation for more information. With the default configuration all log files and the cached data will be placed in the ``var`` directory.
+This will create a ``mymapproxy`` directory with an example ``mapproxy.yaml`` and ``seed.yaml`` configuration.
 
-.. note:: ``paster create`` takes a project name and not a path. You need to change (``cd``) to the directory where you want the configuration directory to be created.
+Refer to the :doc:`configuration documentation<configuration>` for more information. With the default configuration the cached data will be placed in the ``cache_data`` subdirectory.
+
 
 Start the test server
 ---------------------
@@ -120,7 +120,7 @@ Start the test server
 To start a test server::
 
     cd mymapproxy
-    paster serve etc/develop.ini --reload
+    mapproxy-util serve-develop mapproxy.yaml
 
 There is already a test layer configured that obtains data from the `Omniscale OpenStreetMap WMS`_. Feel free to use this service for testing.
 

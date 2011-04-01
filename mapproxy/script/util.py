@@ -37,11 +37,7 @@ def setup_logging():
     imposm_log.addHandler(ch)
 
 def serve_develop_command(args):
-    parser = optparse.OptionParser("usage: %prog serve-develop [options] mapproxy.yaml",
-        add_help_option=False)
-    parser.add_option('--help', dest='help', action='store_true',
-        default=False, help='show this help message and exit')
-    
+    parser = optparse.OptionParser("usage: %prog serve-develop [options] mapproxy.yaml")
     parser.add_option("-b", "--bind",
                       dest="address", default='127.0.0.1:8080',
                       help="Server socket [127.0.0.1:8080]")
@@ -50,10 +46,6 @@ def serve_develop_command(args):
                       help="Enable debug mode")
     options, args = parser.parse_args(args)
     
-    if options.help:
-        parser.print_help()
-        sys.exit(1)
-        
     if len(args) != 2:
         parser.print_help()
         print "\nERROR: MapProxy configuration required."
