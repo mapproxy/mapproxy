@@ -158,7 +158,6 @@ class WMSServer(Server):
         
         for layer_name in request.params.query_layers:
             layer = self.layers[layer_name]
-            print layer, layer.md, layer.queryable
             if not layer.queryable:
                 raise RequestError('layer %s is not queryable' % layer_name, request=request)
             for layer_name, info_layers in layer.info_layers_for_query(query):
