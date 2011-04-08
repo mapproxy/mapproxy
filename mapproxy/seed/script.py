@@ -24,7 +24,7 @@ import logging
 from optparse import OptionParser
 from textwrap import dedent
 from mapproxy.util import local_base_config
-from mapproxy.config.loader import load_configuration
+from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import load_seed_tasks_conf
 from mapproxy.seed.seeder import seed
 from mapproxy.seed.cleanup import cleanup
@@ -95,14 +95,22 @@ class SeedScript(object):
             self.parser.error('missing mapproxy configuration -f/--proxy-conf')
 
         setup_logging()
-
-        mapproxy_conf = load_configuration(options.conf_file, seed=True)
+        
+        try:
+            mapproxy_conf = load_configuration(options.conf_file, seed=True)
+        except ConfigurationError, ex:
+            print "ERROR: " + '\n\t'.join(str(ex).split('\n'))
+            sys.exit(2)
 
         with local_base_config(mapproxy_conf.base_config):
-            seed_conf = load_seed_tasks_conf(options.seed_file, mapproxy_conf)
-            seed_names, cleanup_names = self.task_names(seed_conf, options)
-            seed_tasks = seed_conf.seeds(seed_names)
-            cleanup_tasks = seed_conf.cleanups(cleanup_names)
+            try:
+                seed_conf = load_seed_tasks_conf(options.seed_file, mapproxy_conf)
+                seed_names, cleanup_names = self.task_names(seed_conf, options)
+                seed_tasks = seed_conf.seeds(seed_names)
+                cleanup_tasks = seed_conf.cleanups(cleanup_names)
+            except ConfigurationError, ex:
+                print "error in configuration: " + '\n\t'.join(str(ex).split('\n'))
+                sys.exit(2)
 
             if options.summary:
                 print '========== Seeding tasks =========='

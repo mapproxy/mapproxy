@@ -20,7 +20,7 @@ System-wide configuration.
 from __future__ import with_statement
 import os
 import copy
-import yaml #pylint: disable-msg=F0401
+from mapproxy.util.yaml import load_yaml_file
 from mapproxy.util.ext.local import LocalStack
 
 class Options(dict):
@@ -169,8 +169,7 @@ def load_config(config, config_file=None, config_dict=None, clear_existing=False
             del config[key] 
     
     if config_dict is None:
-        with open(config_file) as f:
-            config_dict = yaml.load(f)
+        config_dict = load_yaml_file(config_file)
     
     defaults = _to_options_map(config_dict)
     

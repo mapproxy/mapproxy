@@ -9,7 +9,7 @@ from mapproxy.config.loader import (
     ConfigurationError,
 )
 from mapproxy.cache.tile import TileManager
-
+from mapproxy.test.helper import TempFile
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
@@ -466,18 +466,13 @@ class TestWMSSourceConfiguration(object):
     
 class TestConfLoading(object):
     yaml_string = """
-grids:
-  germany:
-    bbox: [6, 45, 12, 51]
-    srs: 'EPSG:4326'
-    tile_size: [512, 512]
+services:
+  wms:
 
-caches:
-  osm_wgs:
-      grids: [germany]
-      image:
-        resampling_method: 'nearest'
-      sources: [osm]
+layers:
+  - name: osm
+    title: OSM
+    sources: [osm]
 
 sources:
   osm:
@@ -489,9 +484,20 @@ sources:
 """
     
     def test_loading(self):
-        f = StringIO(self.yaml_string)
-        wms = load_services(f)
-        print wms
+        with TempFile() as f:
+            open(f, 'w').write(self.yaml_string)
+            services = load_services(f)
+        assert 'wms' in services
+
+    def test_loading_broken_yaml(self):
+        with TempFile() as f:
+            open(f, 'w').write('\tbroken:foo')
+            try:
+                services = load_services(f)
+            except ConfigurationError:
+                pass
+            else:
+                assert False, 'expected configuration error'
 
 
 class TestConfMerger(object):
