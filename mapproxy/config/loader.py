@@ -771,7 +771,10 @@ class CacheConfiguration(ConfigurationBase):
         
         for grid_conf in [self.context.grids[g] for g in self.conf['grids']]:
             sources = []
-            for source_conf in [self.context.sources[s] for s in self.conf['sources']]:
+            for source_name in self.conf['sources']:
+                if not source_name in self.context.sources:
+                    raise ConfigurationError('unknown source %s' % source_name)
+                source_conf = self.context.sources[source_name]
                 source = source_conf.source({'format': request_format})
                 if source:
                     sources.append(source)
