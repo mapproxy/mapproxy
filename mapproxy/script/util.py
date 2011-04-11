@@ -76,9 +76,9 @@ def serve_develop_command(args):
     
     if options.debug:
         processes = 1
-        threaded = False
+        threaded = True
     else:
-        processes = 4
+        processes = 8
         threaded = False
     run_simple(host, port, app, use_reloader=True, processes=processes,
         threaded=threaded, passthrough_errors=True,
