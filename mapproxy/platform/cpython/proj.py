@@ -222,7 +222,11 @@ else:
         y = (c_double * len(y))(*y)
         if z is not None:
             z = (c_double * len(z))(*z)
-    
+        else:
+            # use explicit null pointer instead of None
+            # http://bugs.python.org/issue4606
+            z = c_double_p()
+        
         res = libproj.pj_transform(from_srs._proj, to_srs._proj,
                                    len(x), 0, x, y, z)
     
