@@ -665,7 +665,40 @@ class MapServerSourceConfiguration(WMSSourceConfiguration):
         from mapproxy.client.cgi import CGIClient
         client = CGIClient(script=self.script, working_directory=working_dir)
         return client, url
+
+
+class MapnikSourceConfiguration(SourceConfiguration):
+    source_type = ('mapnik',)
+    optional_keys = set('''type transparent
+        http concurrent_requests coverage seed_only
+        min_res max_res min_scale max_scale'''.split())
+    required_keys = set('mapfile'.split())
     
+    def source(self, params=None):
+        if not self.context.seed and self.conf.get('seed_only'):
+            return DummySource()
+        
+        transparent = self.conf.get('transparent', 'false')
+        transparent = bool(str(transparent).lower() == 'true')
+        
+        opacity = self.conf.get('image', {}).get('opacity')
+        
+        lock = None
+        concurrent_requests = self.context.globals.get_value('concurrent_requests', self.conf,
+                                                        global_key='http.concurrent_requests')
+        if concurrent_requests:
+            lock_dir = self.context.globals.get_path('cache.lock_dir', self.conf)
+            md5 = hashlib.md5(self.conf['mapfile'])
+            lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
+            lock = lambda: SemLock(lock_file, concurrent_requests)
+        
+        coverage = self.coverage()
+        res_range = resolution_range(self.conf)
+        
+        mapfile = self.context.globals.abspath(self.conf['mapfile'])
+        from mapproxy.source.mapnik import MapnikSource
+        return MapnikSource(mapfile, transparent=transparent, coverage=coverage,
+                         res_range=res_range, opacity=opacity)
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
@@ -717,6 +750,7 @@ source_configuration_types = {
     'tile': TileSourceConfiguration,
     'debug': DebugSourceConfiguration,
     'mapserver': MapServerSourceConfiguration,
+    'mapnik': MapnikSourceConfiguration,
 }
 
 
