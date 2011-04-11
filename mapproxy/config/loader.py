@@ -466,7 +466,7 @@ class SourceConfiguration(ConfigurationBase):
         
         subclass = source_configuration_types.get(source_type)
         if not subclass:
-            raise ValueError("unknown source type '%s'" % source_type)
+            raise ConfigurationError("unknown source type '%s'" % source_type)
 
         return subclass(conf, context)
     
