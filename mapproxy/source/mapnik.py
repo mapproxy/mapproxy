@@ -26,7 +26,11 @@ from mapproxy.source import Source, SourceError
 from mapproxy.client.http import HTTPClientError
 from mapproxy.util import reraise_exception
 
-import mapnik
+try:
+    import mapnik
+    mapnik
+except ImportError:
+    mapnik = None
 
 import logging
 log = logging.getLogger(__name__)
