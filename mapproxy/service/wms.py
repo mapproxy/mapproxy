@@ -112,7 +112,7 @@ class WMSServer(Server):
                                  concurrent_rendering=self.concurrent_layer_renderer)
         renderer.render(merger)
         
-        if self.attribution:
+        if self.attribution and not query.tiled_only:
             merger.add(attribution_image(self.attribution['text'], params.size))
         result = merger.merge(params.format, params.size,
                               bgcolor=params.bgcolor,
