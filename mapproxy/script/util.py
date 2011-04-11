@@ -74,14 +74,8 @@ def serve_develop_command(args):
         print "ERROR:\t" + '\n\t'.join(str(ex).split('\n'))
         sys.exit(2)
     
-    if options.debug:
-        processes = 1
-        threaded = True
-    else:
-        processes = 8
-        threaded = False
-    run_simple(host, port, app, use_reloader=True, processes=processes,
-        threaded=threaded, passthrough_errors=True,
+    run_simple(host, port, app, use_reloader=True, processes=1,
+        threaded=True, passthrough_errors=True,
         extra_files=[mapproxy_conf])
 
 
