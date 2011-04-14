@@ -77,8 +77,9 @@ class MapnikSource(Source):
         return self.render_mapfile(mapfile, query)
         
     def render_mapfile(self, mapfile, query):
-        m = mapnik.Map(query.size[0], query.size[1], '+init=%s' % str(query.srs.srs_code.lower()))
+        m = mapnik.Map(query.size[0], query.size[1])
         mapnik.load_map(m, str(mapfile))
+        m.srs = '+init=%s' % str(query.srs.srs_code.lower())
         envelope = mapnik.Envelope(*query.bbox)
         m.zoom_to_box(envelope)
         img = mapnik.Image(query.size[0], query.size[1])
