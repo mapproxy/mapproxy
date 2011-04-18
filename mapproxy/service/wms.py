@@ -90,7 +90,8 @@ class WMSServer(Server):
                 for layer_name, map_layers in layer.map_layers_for_query(query):
                     actual_layers[layer_name] = map_layers
         
-        authorized_map_layers = self.authorized_map_layers(actual_layers.keys(), map_request.http.environ)
+        authorized_map_layers = self.authorized_map_layers(actual_layers.keys(),
+            map_request.http.environ, query_extent=(query.srs.srs_code, query.bbox))
         
         if authorized_map_layers is not PERMIT_ALL_LAYERS:
             requested_layer_names = set(map_request.params.layers)
@@ -164,7 +165,7 @@ class WMSServer(Server):
                 actual_layers[layer_name] = info_layers
         
         authorized_info_layers = self.authorized_info_layers(actual_layers.keys(),
-                                                             request.http.environ)
+            request.http.environ, query_extent=(query.srs, query.bbox))
         
         if authorized_info_layers is not PERMIT_ALL_LAYERS:
             requested_layer_names = set(request.params.layers)
@@ -262,15 +263,18 @@ class WMSServer(Server):
         md['has_legend'] = self.root_layer.has_legend
         return md
     
-    def authorized_map_layers(self, layers, env):
-        return self._authorize_layers('map', layers, env)
+    def authorized_map_layers(self, layers, env, query_extent):
+        return self._authorize_layers('map', layers, env, query_extent)
     
-    def authorized_info_layers(self, layers, env):
-        return self._authorize_layers('featureinfo', layers, env)
+    def authorized_info_layers(self, layers, env, query_extent):
+        return self._authorize_layers('featureinfo', layers, env, query_extent)
     
-    def _authorize_layers(self, feature, layers, env):
+    def _authorize_layers(self, feature, layers, env, query_extent):
         if 'mapproxy.authorize' in env:
-            result = env['mapproxy.authorize']('wms.' + feature, layers[:])
+            result = env['mapproxy.authorize']('wms.' + feature, layers[:],
+                environ=env, query_extent=query_extent)
+            if result['authorized'] == 'unauthenticated':
+                raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
                 return PERMIT_ALL_LAYERS
             layers = set()
@@ -284,7 +288,9 @@ class WMSServer(Server):
     
     def authorized_capability_layers(self, env):
         if 'mapproxy.authorize' in env:
-            result = env['mapproxy.authorize']('wms.capabilities', self.layers.keys())
+            result = env['mapproxy.authorize']('wms.capabilities', self.layers.keys(), environ=env)
+            if result['authorized'] == 'unauthenticated':
+                raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
                 return self.root_layer
             if result['authorized'] == 'partial':

@@ -22,6 +22,7 @@ import mimetypes
 from urllib2 import urlopen
 from collections import defaultdict
 
+from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
 
@@ -60,8 +61,12 @@ class DemoServer(Server):
             return Response(open(static_file, 'rb'), content_type=type)
         
         # we don't authorize the static files (css, js)
-        # since they are not confidetial
-        if not self.authorized_demo(req.environ):
+        # since they are not confidential
+        try:
+            authorized = self.authorized_demo(req.environ)
+        except RequestError, ex:
+            return ex.render()
+        if not authorized:
             return Response('forbidden', content_type='text/plain', status=403)
         
         if 'wms_layer' in req.args:
@@ -141,7 +146,9 @@ class DemoServer(Server):
 
     def authorized_demo(self, environ):
         if 'mapproxy.authorize' in environ:
-            result = environ['mapproxy.authorize']('demo', [])
+            result = environ['mapproxy.authorize']('demo', [], environ=environ)
+            if result['authorized'] == 'unauthenticated':
+                raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
                 return True
             return False
