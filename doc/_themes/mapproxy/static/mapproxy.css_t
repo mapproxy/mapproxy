@@ -215,7 +215,8 @@ a.headerlink {
 
 .doc p a,
 .doc dd a,
-.doc li a
+.doc li a,
+.doc blockquote a
 {
   color: blue;
   text-decoration: underline;

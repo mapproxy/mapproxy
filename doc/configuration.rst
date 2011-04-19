@@ -183,6 +183,8 @@ Configure a URL to an image that should be returned as the legend for this layer
 .. #################################################################################
 .. index:: caches
 
+.. _caches:
+
 caches
 ------
 
@@ -271,6 +273,13 @@ SRS will access the ``EPSG:900913`` cache, requests with geographical SRS will u
 """""""""""""""""""""""""""""""""
 
 Change the ``meta_size`` and ``meta_buffer`` of this cache. See :ref:`global cache options <meta_size>` for more details.
+
+``image``
+"""""""""
+
+``resampling_method``
+
+  The resampling method used for outgoing reprojections. See :ref:`globals.image.resampling_method <image_resampling_method>` for available options.
 
 ``use_direct_from_level`` and ``use_direct_from_res``
 """""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -494,6 +503,8 @@ Here you can define some internals of MapProxy and default values that are used 
 
 Here you can define some options that affect the way MapProxy generates image results.
 
+.. _image_resampling_method:
+
 ``resampling_method``
   The resampling method used when results need to be rescaled or transformed.
   You can use one of nearest, bilinear or bicubic. Nearest is the fastest and
@@ -503,11 +514,19 @@ Here you can define some options that affect the way MapProxy generates image re
   With `bilinear` you should get about 2/3 of the `nearest` performance, with
   `bicubic` 1/3.
   
-  See the examples below for results of `nearest`, `bilinear` and `bicubic`.
+  See the examples below:
   
-  .. image:: imgs/nearest.png
-  .. image:: imgs/bilinear.png
-  .. image:: imgs/bicubic.png
+  ``nearest``:
+  
+    .. image:: imgs/nearest.png
+  
+  ``bilinear``:
+  
+    .. image:: imgs/bilinear.png
+  
+  ``bicubic``:
+  
+    .. image:: imgs/bicubic.png
 
 
 .. _jpeg_quality:
