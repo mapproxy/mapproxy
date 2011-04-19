@@ -20,6 +20,9 @@ import operator
 
 from mapproxy.layer import MapExtent
 
+import logging
+log = logging.getLogger(__name__)
+
 try:
     import shapely.wkt
     import shapely.geometry
@@ -47,7 +50,15 @@ def load_datasource(datasource, where=None):
     
     polygons = []
     for wkt in OGRShapeReader(datasource).wkts(where):
-        polygons.append(shapely.wkt.loads(wkt))
+        geom = shapely.wkt.loads(wkt)
+        if geom.type == 'Polygon':
+            polygons.append(geom)
+        elif geom.type == 'MultiPolygon':
+            for p in geom:
+                polygons.append(p)
+        else:
+            log.warn('skipping %s geometry from %s: not a Polygon/MultiPolygon',
+                geom.type, datasource)
         
     mp = shapely.geometry.MultiPolygon(polygons)
     mp = simplify_geom(mp)
