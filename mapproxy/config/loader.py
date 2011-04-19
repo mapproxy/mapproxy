@@ -755,7 +755,8 @@ source_configuration_types = {
 
 
 class CacheConfiguration(ConfigurationBase):
-    optional_keys = set('''format cache_dir grids link_single_color_images image
+    optional_keys = set('''format request_format cache_dir grids
+        link_single_color_images image
         use_direct_from_res use_direct_from_level meta_buffer meta_size
         minimize_meta_requests disable_storage'''.split())
     optional_keys.update(tile_filter_conf_keys)
