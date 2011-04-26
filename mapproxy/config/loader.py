@@ -1063,9 +1063,6 @@ class ServiceConfiguration(ConfigurationBase):
         return DemoServer(layers, md, tile_layers=tile_layers,
             image_formats=image_formats, srs=srs)
     
-def load_services(conf_file):
-    conf = load_configuration(conf_file)
-    return conf.configured_services()
 
 def load_configuration(mapproxy_conf, seed=False):
     log.info('Reading services configuration: %s' % mapproxy_conf)
