@@ -22,7 +22,6 @@ from __future__ import with_statement, division
 import os
 import hashlib
 import urlparse
-import yaml #pylint: disable-msg=F0401
 from copy import deepcopy
 
 import logging
@@ -32,6 +31,7 @@ from mapproxy.srs import SRS
 from mapproxy.util.ext.odict import odict
 from mapproxy.cache.file import FileCache, DummyCache
 from mapproxy.util.lock import SemLock
+from mapproxy.util.yaml import load_yaml_file, load_yaml, YAMLError
 from mapproxy.config.config import load_default_config
 from mapproxy.client.http import auth_data_from_url, HTTPClient
 
@@ -470,7 +470,7 @@ class SourceConfiguration(ConfigurationBase):
         
         subclass = source_configuration_types.get(source_type)
         if not subclass:
-            raise ValueError("unknown source type '%s'" % source_type)
+            raise ConfigurationError("unknown source type '%s'" % source_type)
 
         return subclass(conf, context)
     
@@ -669,7 +669,40 @@ class MapServerSourceConfiguration(WMSSourceConfiguration):
         from mapproxy.client.cgi import CGIClient
         client = CGIClient(script=self.script, working_directory=working_dir)
         return client, url
+
+
+class MapnikSourceConfiguration(SourceConfiguration):
+    source_type = ('mapnik',)
+    optional_keys = set('''type transparent
+        http concurrent_requests coverage seed_only
+        min_res max_res min_scale max_scale'''.split())
+    required_keys = set('mapfile'.split())
     
+    def source(self, params=None):
+        if not self.context.seed and self.conf.get('seed_only'):
+            return DummySource()
+        
+        transparent = self.conf.get('transparent', 'false')
+        transparent = bool(str(transparent).lower() == 'true')
+        
+        opacity = self.conf.get('image', {}).get('opacity')
+        
+        lock = None
+        concurrent_requests = self.context.globals.get_value('concurrent_requests', self.conf,
+                                                        global_key='http.concurrent_requests')
+        if concurrent_requests:
+            lock_dir = self.context.globals.get_path('cache.lock_dir', self.conf)
+            md5 = hashlib.md5(self.conf['mapfile'])
+            lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
+            lock = lambda: SemLock(lock_file, concurrent_requests)
+        
+        coverage = self.coverage()
+        res_range = resolution_range(self.conf)
+        
+        mapfile = self.context.globals.abspath(self.conf['mapfile'])
+        from mapproxy.source.mapnik import MapnikSource
+        return MapnikSource(mapfile, transparent=transparent, coverage=coverage,
+                         res_range=res_range, opacity=opacity)
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
@@ -721,11 +754,13 @@ source_configuration_types = {
     'tile': TileSourceConfiguration,
     'debug': DebugSourceConfiguration,
     'mapserver': MapServerSourceConfiguration,
+    'mapnik': MapnikSourceConfiguration,
 }
 
 
 class CacheConfiguration(ConfigurationBase):
-    optional_keys = set('''format cache_dir grids link_single_color_images image
+    optional_keys = set('''format request_format cache_dir grids
+        link_single_color_images image
         use_direct_from_res use_direct_from_level meta_buffer meta_size
         minimize_meta_requests disable_storage'''.split())
     optional_keys.update(tile_filter_conf_keys)
@@ -775,7 +810,10 @@ class CacheConfiguration(ConfigurationBase):
         
         for grid_conf in [self.context.grids[g] for g in self.conf['grids']]:
             sources = []
-            for source_conf in [self.context.sources[s] for s in self.conf['sources']]:
+            for source_name in self.conf['sources']:
+                if not source_name in self.context.sources:
+                    raise ConfigurationError('unknown source %s' % source_name)
+                source_conf = self.context.sources[source_name]
                 source = source_conf.source({'format': request_format})
                 if source:
                     sources.append(source)
@@ -1029,28 +1067,19 @@ def load_services(conf_file):
     conf = load_configuration(conf_file)
     return conf.configured_services()
 
-def load_yaml_file(file):
-    if yaml.__with_libyaml__:
-        return yaml.load(file, Loader=yaml.CLoader)
-    else:
-        return yaml.load(file)
-
 def load_configuration(mapproxy_conf, seed=False):
-    if hasattr(mapproxy_conf, 'read'):
-        conf_data = mapproxy_conf.read()
-        conf_base_dir = os.getcwd()
-    else:
-        log.info('Reading services configuration: %s' % mapproxy_conf)
-        conf_data = open(mapproxy_conf).read()
-        conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
-    conf_dict = load_yaml_file(conf_data)
-    if 'base' in conf_dict:
-        with open(os.path.join(conf_base_dir, conf_dict['base'])) as f:
-            base_dict = load_yaml_file(f)
-        if 'base' in base_dict:
-            log.warn('found `base` option in base config but recursive inheritance is not supported.')
-        conf_dict = merge_dict(conf_dict, base_dict)
+    log.info('Reading services configuration: %s' % mapproxy_conf)
+    conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
     
+    try:
+        conf_dict = load_yaml_file(mapproxy_conf)
+        if 'base' in conf_dict:
+            base_dict = load_yaml_file(os.path.join(conf_base_dir, conf_dict['base']))
+            if 'base' in base_dict:
+                log.warn('found `base` option in base config but recursive inheritance is not supported.')
+            conf_dict = merge_dict(conf_dict, base_dict)
+    except YAMLError, ex:
+        raise ConfigurationError(ex)
     return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed)
 
 def merge_dict(conf, base):

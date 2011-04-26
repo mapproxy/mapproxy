@@ -93,7 +93,7 @@ default_bboxs = _default_bboxs()
 def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
               res=None, res_factor=2.0, threshold_res=None,
               num_levels=None, min_res=None, max_res=None,
-              stretch_factor=None, max_shrink_factor=None,
+              stretch_factor=1.15, max_shrink_factor=4.0,
               align_with=None, origin='ll', name=None
               ):
     """

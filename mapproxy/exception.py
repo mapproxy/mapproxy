@@ -28,7 +28,7 @@ class RequestError(Exception):
     """
     def __init__(self, message, code=None, request=None, internal=False, status=None):
         Exception.__init__(self, message)
-        self.message = message
+        self.msg = message
         self.code = code
         self.request = request
         self.internal = internal
@@ -46,12 +46,12 @@ class RequestError(Exception):
             handler = self.request.exception_handler
             return handler.render(self)
         elif self.status is not None:
-            return Response(self.message, status=self.status)
+            return Response(self.msg, status=self.status)
         else:
-            return Response('internal error: %s' % self.message, status=500)
+            return Response('internal error: %s' % self.msg, status=500)
     
     def __str__(self):
-        return 'RequestError("%s", code=%r, request=%r)' % (self.message, self.code,
+        return 'RequestError("%s", code=%r, request=%r)' % (self.msg, self.code,
                                                             self.request)
 
 
@@ -110,12 +110,12 @@ class XMLExceptionHandler(ExceptionHandler):
     def render(self, request_error):
         """
         Render the template of this exception handler. Passes the 
-        ``request_error.message`` and ``request_error.code`` to the template.
+        ``request_error.msg`` and ``request_error.code`` to the template.
         
         :type request_error: `RequestError`
         """
         status_code = self.status_codes.get(request_error.code, self.status_code)
-        result = self.template.substitute(exception=request_error.message,
+        result = self.template.substitute(exception=request_error.msg,
                                           code=request_error.code)
         return Response(result, mimetype=self.mimetype, content_type=self.content_type,
                         status=status_code)
@@ -134,5 +134,5 @@ class PlainExceptionHandler(ExceptionHandler):
     def render(self, request_error):
         if request_error.internal:
             self.status_code = 500
-        return Response(request_error.message, status=self.status_code,
+        return Response(request_error.msg, status=self.status_code,
                         mimetype=self.mimetype)

@@ -88,7 +88,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
 
     def test_root_with_partial_sublayers(self):
         # filter out sublayer layer1b
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(layers, 'layer1a layer1b'.split())
             return {
                 'authorized': 'partial',
@@ -103,7 +103,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
         assert not self.layers['layer1b'].requested
 
     def test_accept_sublayer(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(layers, 'layer1a'.split())
             return {
                 'authorized': 'partial',
@@ -118,7 +118,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
         assert not self.layers['layer1b'].requested
     
     def test_accept_sublayer_w_root_denied(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(layers, 'layer1a'.split())
             return {
                 'authorized': 'partial',
@@ -134,7 +134,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
     
     @raises(RequestError)
     def test_deny_sublayer(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(layers, 'layer1b'.split())
             return {
                 'authorized': 'partial',
@@ -148,7 +148,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
 
     @raises(RequestError)
     def test_deny_group_layer_w_source(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(layers, 'layer2b'.split())
             return {
                 'authorized': 'partial',
@@ -159,7 +159,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
         self.server.map(self.map_request('layer2b', auth))
 
     def test_nested_layers_with_partial_sublayers(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(layers, 'layer1a layer1b layer2a layer2b'.split())
             return {
                 'authorized': 'partial',
@@ -176,6 +176,19 @@ class TestWMSGetMapAuth(TestWMSAuth):
         assert not self.layers['layer2b'].requested
         assert not self.layers['layer1a'].requested
         assert not self.layers['layer1b'].requested
+    
+    def test_unauthenticated(self):
+        def auth(service, layers, **kw):
+            eq_(layers, 'layer1b'.split())
+            return {
+                'authorized': 'unauthenticated',
+            }
+        try:
+            self.server.map(self.map_request('layer1b', auth))
+        except RequestError, ex:
+            assert ex.status == 401, '%s != 401' % (ex.status, )
+        else:
+            assert False, 'expected RequestError'
 
 class TestWMSGetFeatureInfoAuth(TestWMSAuth):
     def fi_request(self, layers, auth):
@@ -186,7 +199,7 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
 
     def test_root_with_partial_sublayers(self):
         # filter out sublayer layer1b
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(layers, 'layer1a layer1b'.split())
             return {
                 'authorized': 'partial',
@@ -201,7 +214,7 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
         assert not self.layers['layer1b'].queried
 
     def test_accept_sublayer(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(layers, 'layer1a'.split())
             return {
                 'authorized': 'partial',
@@ -216,7 +229,7 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
         assert not self.layers['layer1b'].queried
     
     def test_accept_sublayer_w_root_denied(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(layers, 'layer1a'.split())
             return {
                 'authorized': 'partial',
@@ -232,7 +245,7 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
     
     @raises(RequestError)
     def test_deny_sublayer(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(layers, 'layer1b'.split())
             return {
                 'authorized': 'partial',
@@ -246,7 +259,7 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
 
     @raises(RequestError)
     def test_deny_group_layer_w_source(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(layers, 'layer2b'.split())
             return {
                 'authorized': 'partial',
@@ -257,7 +270,7 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
         self.server.featureinfo(self.fi_request('layer2b', auth))
 
     def test_nested_layers_with_partial_sublayers(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(layers, 'layer1a layer1b layer2a layer2b'.split())
             return {
                 'authorized': 'partial',
@@ -304,7 +317,7 @@ class TestTMSAuth(object):
     
     @raises(RequestError)
     def test_deny_all(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(service, self.service)
             eq_(layers, 'layer1'.split())
             return {
@@ -314,7 +327,7 @@ class TestTMSAuth(object):
 
     @raises(RequestError)
     def test_deny_layer(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(service, self.service)
             eq_(layers, 'layer1'.split())
             return {
@@ -327,7 +340,7 @@ class TestTMSAuth(object):
         self.server.map(self.tile_request('layer1/0/0/0.png', auth))
 
     def test_allow_all(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(service, self.service)
             eq_(layers, 'layer1'.split())
             return {
@@ -337,7 +350,7 @@ class TestTMSAuth(object):
         assert self.layers['layer1'].requested
     
     def test_allow_layer(self):
-        def auth(service, layers):
+        def auth(service, layers, **kw):
             eq_(service, self.service)
             eq_(layers, 'layer1'.split())
             return {

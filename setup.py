@@ -1,46 +1,14 @@
-import os
-import sys
 import platform
 from setuptools import setup, find_packages
-from distutils.cmd import Command
-
-class build_api(Command):
-    description = 'Build API documentation'
-    user_options = [('verbose', 'v', 'verbose output')]
-
-    def initialize_options(self): pass
-    def finalize_options(self): pass
-
-    def run(self):
-        conf = os.path.join('doc', 'epydoc.ini')
-        argv_ = sys.argv[1:]
-        try:
-            from epydoc import cli
-            sys.argv[1:] = [
-                '--config=%s' % conf,
-            ]
-            if self.verbose:
-                sys.argv.append('-v')
-            cli.cli()
-        except ImportError:
-            print 'install epydoc to create the API documentation'
-        finally:
-            sys.argv[1:] = argv_
 
 install_requires = [
-    'setuptools>=0.6c9',
-    'Paste>=1.7.2,<1.7.99',
-    'PasteDeploy>=1.3.3,<1.3.99',
-    'PasteScript>=1.7.3,<1.7.99',
+    'PIL>=1.1.6,<1.2.99',
+    'PyYAML>=3.0,<3.99',
 ]
 
-if platform.system() != "Java":
-    if platform.python_version_tuple() < ('2', '6'):
-        install_requires.append('multiprocessing>=2.6')
-    install_requires.extend([
-        'PIL>=1.1.6,<1.2.99',
-        'PyYAML>=3.0,<3.99',
-    ])
+if platform.python_version_tuple() < ('2', '6'):
+    # for mapproxy-seed
+    install_requires.append('multiprocessing>=2.6')
 
 setup(
     name='MapProxy',
@@ -58,7 +26,6 @@ setup(
         'console_scripts': [
             'mapproxy-seed = mapproxy.seed.script:main',
             'mapproxy-util = mapproxy.script.util:main',
-            'mapproxy-cleanup = mapproxy.seed.script:cleanup_main',
         ],
         'paste.app_factory': [
             'app = mapproxy.wsgiapp:app_factory',
@@ -86,5 +53,4 @@ setup(
     ],
     zip_safe=False,
     test_suite='nose.collector',
-    cmdclass={'build_api': build_api},
 )

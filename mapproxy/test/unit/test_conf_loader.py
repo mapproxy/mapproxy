@@ -1,4 +1,20 @@
-from __future__ import division
+# This file is part of the MapProxy project.
+# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import division, with_statement
 import yaml
 from cStringIO import StringIO
 from mapproxy.srs import SRS
@@ -9,7 +25,7 @@ from mapproxy.config.loader import (
     ConfigurationError,
 )
 from mapproxy.cache.tile import TileManager
-
+from mapproxy.test.helper import TempFile
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
@@ -466,18 +482,13 @@ class TestWMSSourceConfiguration(object):
     
 class TestConfLoading(object):
     yaml_string = """
-grids:
-  germany:
-    bbox: [6, 45, 12, 51]
-    srs: 'EPSG:4326'
-    tile_size: [512, 512]
+services:
+  wms:
 
-caches:
-  osm_wgs:
-      grids: [germany]
-      image:
-        resampling_method: 'nearest'
-      sources: [osm]
+layers:
+  - name: osm
+    title: OSM
+    sources: [osm]
 
 sources:
   osm:
@@ -489,9 +500,20 @@ sources:
 """
     
     def test_loading(self):
-        f = StringIO(self.yaml_string)
-        wms = load_services(f)
-        print wms
+        with TempFile() as f:
+            open(f, 'w').write(self.yaml_string)
+            services = load_services(f)
+        assert 'wms' in services
+
+    def test_loading_broken_yaml(self):
+        with TempFile() as f:
+            open(f, 'w').write('\tbroken:foo')
+            try:
+                services = load_services(f)
+            except ConfigurationError:
+                pass
+            else:
+                assert False, 'expected configuration error'
 
 
 class TestConfMerger(object):

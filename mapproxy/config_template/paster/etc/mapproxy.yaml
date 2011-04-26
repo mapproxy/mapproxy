@@ -70,7 +70,7 @@ sources:
   #   http:
   #     ssl_no_cert_checks: true
   #   req:
-  #     url: https://user@password:example.org:81/service?
+  #     url: https://user:password@example.org:81/service?
   #     layers: roads,rails
   #     styles: base,base
   #     transparent: true

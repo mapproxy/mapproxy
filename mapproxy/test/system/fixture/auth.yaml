@@ -1,0 +1,53 @@
+services:
+  tms:
+  kml:
+  demo:
+  wms:
+    md:
+      title: 'My WMS'
+layers:
+  - name: layer1
+    title: layer 1
+    sources: [dummy]
+    layers:
+      - name: layer1a
+        title: layer 1a
+        sources: [dummy]
+      - name: layer1b
+        title: layer 1b
+        sources: [dummy_fi]
+  - name: layer2
+    title: layer 2
+    layers:
+      - name: layer2a
+        title: layer 2a
+        sources: [dummy]
+      - name: layer2b
+        title: layer 2b
+        layers:
+          - name: layer2b1
+            title: layer 2b1
+            sources: [dummy_fi]
+      
+
+caches:
+  dummy:
+    grids: [GLOBAL_MERCATOR]
+    sources: [dummy]
+  dummy_fi:
+    grids: [GLOBAL_MERCATOR]
+    sources: [dummy_fi]
+
+
+sources:
+  dummy:
+    type: debug
+  dummy_fi:
+    type: wms
+    wms_opts:
+      featureinfo: True
+    coverage:
+      bbox: [179, 89, 180, 89.9]
+      bbox_srs: 'EPSG:4326'
+    req:
+      url: http://localhost:42423/service

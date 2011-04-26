@@ -37,11 +37,7 @@ def setup_logging():
     imposm_log.addHandler(ch)
 
 def serve_develop_command(args):
-    parser = optparse.OptionParser("usage: %prog serve-develop [options] mapproxy.yaml",
-        add_help_option=False)
-    parser.add_option('--help', dest='help', action='store_true',
-        default=False, help='show this help message and exit')
-    
+    parser = optparse.OptionParser("usage: %prog serve-develop [options] mapproxy.yaml")
     parser.add_option("-b", "--bind",
                       dest="address", default='127.0.0.1:8080',
                       help="Server socket [127.0.0.1:8080]")
@@ -50,10 +46,6 @@ def serve_develop_command(args):
                       help="Enable debug mode")
     options, args = parser.parse_args(args)
     
-    if options.help:
-        parser.print_help()
-        sys.exit(1)
-        
     if len(args) != 2:
         parser.print_help()
         print "\nERROR: MapProxy configuration required."
@@ -74,17 +66,16 @@ def serve_develop_command(args):
     
     setup_logging()
     from mapproxy.wsgiapp import make_wsgi_app
+    from mapproxy.config.loader import ConfigurationError
     from mapproxy.util.ext.serving import run_simple
-    app = make_wsgi_app(mapproxy_conf, debug=options.debug)
+    try:
+        app = make_wsgi_app(mapproxy_conf, debug=options.debug)
+    except ConfigurationError, ex:
+        print "ERROR:\t" + '\n\t'.join(str(ex).split('\n'))
+        sys.exit(2)
     
-    if options.debug:
-        processes = 1
-        threaded = False
-    else:
-        processes = 4
-        threaded = False
-    run_simple(host, port, app, use_reloader=True, processes=processes,
-        threaded=threaded, passthrough_errors=True,
+    run_simple(host, port, app, use_reloader=True, processes=1,
+        threaded=True, passthrough_errors=True,
         extra_files=[mapproxy_conf])
 
 

@@ -1,0 +1,30 @@
+services:
+  wms:
+
+layers:
+  - name: mapnik
+    title: Mapnik Source
+    sources: [mapnik]
+  - name: mapnik_unknown
+    title: Mapnik Source
+    sources: [mapnik_unknown]
+  - name: mapnik_level
+    title: Mapnik Source
+    sources: [mapnik_level]
+
+sources:
+  mapnik:
+    type: mapnik
+    mapfile: ./mapnik.xml
+    coverage:
+      bbox: [-170, -80, 180, 90]
+      bbox_srs: 'EPSG:4326'
+  
+  mapnik_unknown:
+    type: mapnik
+    mapfile: ./unknown.xml
+    
+  mapnik_level:
+    type: mapnik
+    mapfile: ./mapnik-%(webmercator_level)0.2d.xml
+  

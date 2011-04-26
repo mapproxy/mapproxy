@@ -21,16 +21,17 @@ import sys
 import time
 import operator
 
-import yaml
+from mapproxy.config.loader import ConfigurationError
 from mapproxy.config.coverage import load_coverage
 from mapproxy.srs import SRS
 from mapproxy.util import memoize, timestamp_from_isodate, timestamp_before, local_base_config
 from mapproxy.util.geom import MultiCoverage, BBOXCoverage
+from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
 from mapproxy.seed.seeder import SeedTask, CleanupTask
 
 
-class SeedConfigurationError(Exception):
+class SeedConfigurationError(ConfigurationError):
     pass
 
 
@@ -42,8 +43,10 @@ class SeedConfigurationError(Exception):
 
 
 def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf):
-    with open(seed_conf_filename) as f:
-        conf = yaml.load(f)
+    try:
+        conf = load_yaml_file(seed_conf_filename)
+    except YAMLError, ex:
+        raise SeedConfigurationError(ex)
     
     if 'views' in conf:
         # TODO: deprecate old config
@@ -134,6 +137,9 @@ class SeedingConfiguration(object):
     
     def cache(self, cache_name):
         cache = {}
+        if cache_name not in self.mapproxy_conf.caches:
+            raise SeedConfigurationError('cache %s not found. available caches: %s' % (
+                cache_name, ','.join(self.mapproxy_conf.caches.keys())))
         for tile_grid, extent, tile_mgr in self.mapproxy_conf.caches[cache_name].caches():
             grid_name = self.grids[tile_grid]
             cache[grid_name] = tile_mgr

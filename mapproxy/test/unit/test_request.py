@@ -421,7 +421,7 @@ BBOX=8,4,9,5&WIDTH=984&HEIGHT=708""".replace('\n', ''))
         try:
             wms_request(self.req)
         except RequestError, e:
-            assert 'request' in e.message
+            assert 'request' in e.msg
         else:
             assert False, 'RequestError expected'
     def test_exception_handler(self):

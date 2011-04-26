@@ -69,7 +69,7 @@ class WMSImageExceptionHandler(ExceptionHandler):
         transparent = ('transparent' in params
                        and params['transparent'].lower() == 'true')
         bgcolor = WMSImageExceptionHandler._bgcolor(request.params)
-        result = message_image(request_error.message, size=size, format=format,
+        result = message_image(request_error.msg, size=size, format=format,
                                bgcolor=bgcolor, transparent=transparent)
         return Response(result.as_buffer(), content_type=params.format_mime_type)
     
@@ -95,5 +95,5 @@ class WMSBlankExceptionHandler(WMSImageExceptionHandler):
     """
     
     def render(self, request_error):
-        request_error.message = ''
+        request_error.msg = ''
         return WMSImageExceptionHandler.render(self, request_error)

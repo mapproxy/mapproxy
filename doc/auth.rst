@@ -87,7 +87,7 @@ Here is a more elaborate example that denies requests to all layers that start w
           environ['mapproxy.authorize'] = self.authorize
           return self.app(environ, start_reponse)
 
-      def authorize(self, service, layers=[], **kw):
+      def authorize(self, service, layers=[], environ=None, **kw):
           allowed = denied = False
           if service.startswith('wms.'):
               auth_layers = {}
@@ -126,29 +126,38 @@ MapProxy looks in the request environment for a ``mapproxy.authorize`` entry. Th
 
 The signature of the authorization function:
 
-.. function:: authorize(service, layers=[])
+.. function:: authorize(service, environ, layers=[], **kw)
   
   :param service: service that should be authorized
+  :param environ: the request environ
   :param layers: list of layer names that should be authorized
   :rtype: dictionary with authorization information
 
+  The arguments might get extended in future versions of MapProxy. Therefore you should collect further arguments in a variable keyword argument (i.e. ``**kw``). 
+  
 .. note:: The actual name of the callable is insignificant, only the environment key ``mapproxy.authorize`` is important.
 
 The ``service`` parameter is a string and the content depends on the service that calls the authorize function. Generally, it is the lower-case name of the service (e.g. ``tms`` for TMS service), but it can be different to further control the service (e.g. ``wms.map``).
 
 The function should return a dictionary with the authorization information. The expected content of that dictionary can vary with each service. Only the ``authorized`` key is consistent with all services.
 
-The ``authorized`` entry can have three values.
+The ``authorized`` entry can have four values.
 
 ``full``
   The request for the given `service` and `layers` is fully authorized. MapProxy handles the request as if is no authorization.
 
-``none``
-  The request is denied and MapProxy returns an HTTP 403 response. Your middleware can capture this and ask the requester for authentication.
-
 ``partial``
   Only parts of the request are allowed. The dictionary should contains more information on what parts of the request are allowed and what parts are denied. Depending on the service, MapProxy can then filter the request based on that information, e.g. return WMS Capabilities with permitted layers only.
 
+``none``
+  The request is denied and MapProxy returns an HTTP 403 response.
+
+``unauthenticated``
+  The request(er) was not authenticated and MapProxy returns an HTTP 401 response. Your middleware can capture this and ask the requester for authentication. ``repoze.who``'s ``PluggableAuthenticationMiddleware`` will do this for example.
+
+
+.. versionadded:: 1.1.0
+  The ``environment`` parameter and support for ``authorized: unauthenticated`` results.
 
 WMS Service
 ~~~~~~~~~~~
@@ -182,6 +191,15 @@ The WMS service uses the following service strings:
 This is called for WMS GetMap requests. ``layers`` is a list with the actual layers to render, that means that group layers are resolved.
 The ``map`` feature needs to be set to ``True`` for each permitted layer. 
 The whole request is rejected if any requested layer is not permitted. Resolved layers (i.e. sub layers of a requested group layer) are filtered out if they are not permitted.
+
+.. versionadded:: 1.1.0
+  The ``authorize`` function gets called with an additional ``query_extent`` argument:
+
+  .. function:: authorize(service, environ, layers, query_extent, **kw)
+  
+    :param query_extent: a tuple of the SRS (e.g. ``EPSG:4326``) and the BBOX
+      of the request to authorize.
+
 
 Example
 +++++++
