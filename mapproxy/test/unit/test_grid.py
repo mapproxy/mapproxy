@@ -565,7 +565,7 @@ class TestWGS83TileGridUL(object):
         bbox, grid, tiles = self.grid.get_affected_tiles((-180,-90,0,90), (512, 512))
         eq_(bbox, (-180.0, -90.0, 0.0, 90.0))
         eq_(grid, (2, 2))
-        eq_(list(tiles), [(0, 1, 2), (1, 1, 2), (0, 0, 2), (1, 0, 2)])
+        eq_(list(tiles), [(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)])
     
     def test_affected_level_tiles(self):
         bbox, grid, tiles = self.grid.get_affected_level_tiles((-180,-90,180,90), 1)
@@ -578,7 +578,7 @@ class TestWGS83TileGridUL(object):
         eq_(bbox, (0.0, 0.0, 180.0, 90.0))
         bbox, grid, tiles = self.grid.get_affected_level_tiles((0,-90,180,90), 2)
         eq_(grid, (2, 2))
-        eq_(list(tiles), [(2, 1, 2), (3, 1, 2), (2, 0, 2), (3, 0, 2)])
+        eq_(list(tiles), [(2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)])
         eq_(bbox, (0.0, -90.0, 180.0, 90.0))
 
 class TestGKTileGrid(TileGridTest):

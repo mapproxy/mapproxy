@@ -513,13 +513,12 @@ class TileGrid(object):
         xs = range(x0, x1+1)
         if self.flipped_y_axis:
             y0, y1 = y1, y0
-        ys = range(y1, y0-1, -1)
-        if self.flipped_y_axis:
-            ll = (xs[0], ys[0], level)
-            ur = (xs[-1], ys[-1], level)
+            ys = range(y0, y1+1)
         else:
-            ll = (xs[0], ys[-1], level)
-            ur = (xs[-1], ys[0], level)
+            ys = range(y1, y0-1, -1)
+        
+        ll = (xs[0], ys[-1], level)
+        ur = (xs[-1], ys[0], level)
 
         abbox = self._tiles_bbox([ll, ur])
         return (abbox, (len(xs), len(ys)),
