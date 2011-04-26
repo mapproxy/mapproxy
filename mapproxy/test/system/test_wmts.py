@@ -22,7 +22,8 @@ from cStringIO import StringIO
 from mapproxy.request.wmts import (
     WMTS100TileRequest, WMTS100FeatureInfoRequest, WMTS100CapabilitiesRequest
 )
-from mapproxy.test.image import is_jpeg
+from mapproxy.test.image import is_jpeg, create_tmp_image
+from mapproxy.test.http import MockServ
 from mapproxy.test.helper import validate_with_xsd
 from mapproxy.test.system.test_wms import is_111_exception
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
@@ -56,7 +57,7 @@ class TestWMTS(SystemTest):
         self.common_cap_req = WMTS100CapabilitiesRequest(url='/service?', param=dict(service='WMTS', 
              version='1.0.0', request='GetCapabilities'))
         self.common_tile_req = WMTS100TileRequest(url='/service?', param=dict(service='WMTS', 
-             version='1.0.0', tilerow='0', tilecol='0', tilematrix='1', tilematrixset='GLOBAL_MERCATOR',
+             version='1.0.0', tilerow='0', tilecol='0', tilematrix='01', tilematrixset='GLOBAL_MERCATOR',
              layer='wms_cache', format='image/jpeg', style='', request='GetTile'))
     
     def test_capabilities(self):
@@ -64,8 +65,8 @@ class TestWMTS(SystemTest):
         resp = self.app.get(req)
         xml = resp.lxml
         assert validate_with_xsd(xml, xsd_name='wmts/1.0/wmtsGetCapabilities_response.xsd')
-        eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 3)
-        eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 3)
+        eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 4)
+        eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 4)
     
     def test_get_tile(self):
         resp = self.app.get(str(self.common_tile_req))
@@ -73,6 +74,18 @@ class TestWMTS(SystemTest):
         data = StringIO(resp.body)
         assert is_jpeg(data)
     
+    def test_get_tile_flipped_axis(self):
+        self.common_tile_req.params['layer'] = 'tms_cache_ul'
+        self.common_tile_req.params['tilematrixset'] = 'ulgrid'
+        self.common_tile_req.params['format'] = 'image/png'
+        self.common_tile_req.tile = (0, 0, '01')
+        serv = MockServ(port=42423)
+        serv.expects('/tiles/01/000/000/000/000/000/000.png')
+        serv.returns(create_tmp_image((256, 256)))
+        with serv:
+            resp = self.app.get(str(self.common_tile_req), status=200)
+            eq_(resp.content_type, 'image/png')
+            
     def test_get_tile_source_error(self):
         self.common_tile_req.params['layer'] = 'tms_cache'
         self.common_tile_req.params['format'] = 'image/png'
@@ -81,8 +94,7 @@ class TestWMTS(SystemTest):
         assert validate_with_xsd(xml, xsd_name='ows/1.1.0/owsExceptionReport.xsd')
         eq_xpath_wmts(xml, '/ows:ExceptionReport/ows:Exception/@exceptionCode',
             'NoApplicableCode')
-        
-
+    
     def test_get_tile_out_of_range(self):
         self.common_tile_req.params.coord = -1, 1, 1
         resp = self.app.get(str(self.common_tile_req), status=400)

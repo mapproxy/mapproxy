@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from mapproxy.util.collections import LRU
+from mapproxy.util.collections import LRU, ImmutableDictList
 
 from nose.tools import eq_, raises
 
@@ -91,4 +91,26 @@ class TestLRU(object):
         
         del lru['foo3']
         eq_(len(lru), 1)
-        
+
+
+class TestImmutableDictList(object):
+    def test_named(self):
+        res = ImmutableDictList([('one', 10), ('two', 5), ('three', 3)])
+        assert res[0] == 10
+        assert res[2] == 3
+        assert res['one'] == 10
+        assert res['three'] == 3
+        assert len(res) == 3
+    
+    def test_named_iteritems(self):
+        res = ImmutableDictList([('one', 10), ('two', 5), ('three', 3)])
+        itr = res.iteritems()
+        eq_(itr.next(), ('one', 10))
+        eq_(itr.next(), ('two', 5))
+        eq_(itr.next(), ('three', 3))
+        try:
+            itr.next()
+        except StopIteration:
+            pass
+        else:
+            assert False, 'StopIteration expected'

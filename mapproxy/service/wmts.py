@@ -65,7 +65,7 @@ class WMTSServer(Server):
         tile_layer = self.layers[request.params.layer][request.params.tilematrixset]
         self.check_request_tilesetmatrix(request, tile_layer)
         request.format = request.params.format # TODO
-        request.tile = tuple(map(int, request.params.coord)) # TODO
+        request.tile = (int(request.params.coord[0]), int(request.params.coord[1]), request.params.coord[2]) # TODO
         request.origin = 'nw'
         tile = tile_layer.render(request)
         resp = Response(tile.as_buffer(), content_type='image/' + request.format)
@@ -145,7 +145,7 @@ class TileMatrixSet(object):
         origin = self.grid.origin_tile(0, 'ul')
     
     def __iter__(self):
-        for level, res in enumerate(self.grid.resolutions):
+        for level, res in self.grid.resolutions.iteritems():
             origin = self.grid.origin_tile(level, 'ul')
             bbox = self.grid.tile_bbox(origin)
             grid_size = self.grid.grid_sizes[level]

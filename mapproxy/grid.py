@@ -21,6 +21,7 @@ from __future__ import division
 import math
 
 from mapproxy.srs import SRS, get_epsg_num, merge_bbox
+from mapproxy.util.collections import ImmutableDictList
 
 import logging
 log = logging.getLogger(__name__)
@@ -111,7 +112,11 @@ def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
     
     if res:
         if isinstance(res, list):
-            res = sorted(res, reverse=True)
+            if isinstance(res[0], (tuple, list)):
+                # named resolutions
+                res = sorted(res, key=lambda x: x[1], reverse=True)
+            else:
+                res = sorted(res, reverse=True)
             assert min_res is None
             assert max_res is None
             assert align_with is None
@@ -133,7 +138,7 @@ def aligned_resolutions(min_res=None, max_res=None, res_factor=2.0, num_levels=N
     
     
     alinged_res = align_with.resolutions
-    res = alinged_res[:]
+    res = list(alinged_res)
     
     if not min_res:
         width = bbox[2] - bbox[0]
@@ -222,7 +227,19 @@ def bbox_height(bbox):
 
 def bbox_size(bbox):
     return bbox_width(bbox), bbox_height(bbox)
-    
+
+
+class NamedGridList(ImmutableDictList):
+    def __init__(self, items):
+        tmp = []
+        for i, value in enumerate(items):
+            if isinstance(value, (tuple, list)):
+                name, value = value
+            else:
+                name = str('%02d' % i)
+            tmp.append((name, value))
+        ImmutableDictList.__init__(self, tmp)
+
 class TileGrid(object):
     """
     This class represents a regular tile grid. The first level (0) contains a single
@@ -291,13 +308,8 @@ class TileGrid(object):
             factor = float(res)
             res = self._calc_res(factor=factor)
         
-        if factor is None:
-            factor = self._calc_factor(res)
-        
-        self._res_factor = factor
-        
         self.levels = len(res)
-        self.resolutions = res
+        self.resolutions = NamedGridList(res)
         self.threshold_res = threshold_res
         
         self.grid_sizes = self._calc_grids()
@@ -306,11 +318,11 @@ class TileGrid(object):
         width = self.bbox[2] - self.bbox[0]
         height = self.bbox[3] - self.bbox[1]
         grids = []
-        for res in self.resolutions:
+        for idx, res in self.resolutions.iteritems():
             x = max(math.ceil(width // res / self.tile_size[0]), 1)
             y = max(math.ceil(height // res / self.tile_size[1]), 1)
-            grids.append((int(x), int(y)))
-        return grids
+            grids.append((idx, (int(x), int(y))))
+        return NamedGridList(grids)
     
     def _calc_bbox(self):
         if self.is_geodetic:
@@ -328,18 +340,7 @@ class TileGrid(object):
             return pyramid_res_level(initial_res, levels=self.levels)
         else:
             return pyramid_res_level(initial_res, factor, levels=self.levels)
-    
-    def _calc_factor(self, res):
-        if len(res) < 2:
-            return None
-        factor = res[0]/res[1]
-        last_res = res[1]
-        for next_res in res[2:]:
-            if last_res/next_res != factor:
-                return None
-            last_res = next_res
-        return factor
-    
+
     def resolution(self, level):
         """
         Returns the resolution of the `level` in units/pixel.
@@ -585,9 +586,12 @@ class TileGrid(object):
         (1, 2, 2)
         """
         x, y, z = tile_coord
-        grid = self.grid_sizes[z]
-        if z < 0 or z >= self.levels:
+        if isinstance(z, basestring):
+            if z not in self.grid_sizes:
+                return None
+        elif z < 0 or z >= self.levels:
             return None
+        grid = self.grid_sizes[z]
         if x < 0 or y < 0 or x >= grid[0] or y >= grid[1]:
             return None
         return x, y, z

@@ -353,7 +353,8 @@ class GridConfiguration(ConfigurationBase):
             num_levels=conf.get('num_levels'),
             stretch_factor=stretch_factor,
             max_shrink_factor=max_shrink_factor,
-            align_with = align_with,
+            align_with=align_with,
+            origin=conf.get('origin')
         )
         
         return grid

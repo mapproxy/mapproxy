@@ -58,7 +58,10 @@ class FileCache(object):
         >>> c.level_location(2)
         '/tmp/cache/02'
         """
-        return os.path.join(self.cache_dir, "%02d" % level)
+        if isinstance(level, basestring):
+            return os.path.join(self.cache_dir, level)
+        else:
+            return os.path.join(self.cache_dir, "%02d" % level)
     
     def tile_location(self, tile, create_dir=False):
         """

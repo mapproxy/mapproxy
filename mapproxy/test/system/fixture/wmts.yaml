@@ -41,6 +41,9 @@ layers:
   tms_cache:
     title: TMS Cache Layer
     sources: [tms_cache]
+  tms_cache_ul:
+    title: TMS Cache Layer
+    sources: [tms_cache_ul]
 
 caches:
   wms_cache:
@@ -51,6 +54,9 @@ caches:
     grids: [CustomGridSet, GoogleMapsCompatible]
     sources: [wms_cache_130]
   tms_cache:
+    sources: [tms_cache]
+  tms_cache_ul:
+    grids: [ulgrid]
     sources: [tms_cache]
 
 sources:
@@ -90,3 +96,6 @@ grids:
   CustomGridSet:
     base: GLOBAL_GEODETIC
     min_res: 0.703125
+  ulgrid:
+    base: GLOBAL_MERCATOR
+    origin: ul
