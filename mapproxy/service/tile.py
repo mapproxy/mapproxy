@@ -184,7 +184,8 @@ class TileLayer(object):
         tile_coord = self.grid.internal_tile_coord(tile_request.tile, use_profiles)
         if tile_coord is None:
             raise RequestError('The requested tile is outside the bounding box'
-                               ' of the tile map.', request=tile_request)
+                               ' of the tile map.', request=tile_request,
+                               code='TileOutOfRange')
         if tile_request.origin == 'nw':
             tile_coord = self.grid.flip_tile_coord(tile_coord)
         return tile_coord
@@ -198,7 +199,8 @@ class TileLayer(object):
     def render(self, tile_request, use_profiles=False):
         if tile_request.format != self.format:
             raise RequestError('invalid format (%s). this tile set only supports (%s)'
-                               % (tile_request.format, self.format), request=tile_request)
+                               % (tile_request.format, self.format), request=tile_request,
+                               code='InvalidParameterValue')
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
         try:
             tile = self.tile_manager.load_tile_coord(tile_coord, with_metadata=True)

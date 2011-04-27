@@ -20,7 +20,7 @@ from cStringIO import StringIO
 from mapproxy.srs import SRS
 from mapproxy.config.loader import (
     ProxyConfiguration,
-    load_services,
+    load_configuration,
     merge_dict,
     ConfigurationError,
 )
@@ -479,7 +479,11 @@ class TestWMSSourceConfiguration(object):
         except ImportError:
             raise SkipTest('no ssl support')
         
-    
+
+def load_services(conf_file):
+    conf = load_configuration(conf_file)
+    return conf.configured_services()
+
 class TestConfLoading(object):
     yaml_string = """
 services:
@@ -503,7 +507,7 @@ sources:
         with TempFile() as f:
             open(f, 'w').write(self.yaml_string)
             services = load_services(f)
-        assert 'wms' in services
+        assert 'service' in services[0].names
 
     def test_loading_broken_yaml(self):
         with TempFile() as f:

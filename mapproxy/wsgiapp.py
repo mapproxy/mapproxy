@@ -136,7 +136,7 @@ class MapProxyApp(object):
     def __init__(self, services, base_config):
         self.handlers = {}
         self.base_config = base_config
-        for service in services.itervalues():
+        for service in services:
             for name in service.names:
                 self.handlers[name] = service
     

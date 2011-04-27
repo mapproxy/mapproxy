@@ -44,8 +44,7 @@ class PERMIT_ALL_LAYERS(object):
     pass
 
 class WMSServer(Server):
-    names = ('service',)
-    request_methods = ('map', 'capabilities', 'featureinfo', 'legendgraphic')
+    service = 'wms'
     fi_transformers = None
     
     def __init__(self, root_layer, md, srs, image_formats, layer_merger=None,

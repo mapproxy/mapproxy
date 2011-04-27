@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/wmts/1.0   ../wmtsGetCapabilities_response.xsd" version="1.0.0">
+  <ows:ServiceIdentification>
+    <ows:Title>{{service.title}}</ows:Title>
+    <ows:Abstract>{{service.abstract}}</ows:Abstract>
+    <ows:ServiceType>OGC WMTS</ows:ServiceType>
+    <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
+    <ows:Fees>{{service.get('fees', 'none')}}</ows:Fees>
+    <ows:AccessConstraints>{{service.get('access_constraints', 'none')}}</ows:AccessConstraints>
+  </ows:ServiceIdentification>
+{{if service.contact}}
+{{py:service.contact = bunch(default='', **service.contact)}}
+  <ows:ServiceProvider>
+    <ows:ProviderName>{{service.contact.organization}}</ows:ProviderName>
+    <ows:ProviderSite xlink:href="{{service.online_resource}}"/>
+    <ows:ServiceContact>
+      <ows:IndividualName>{{service.contact.person}}</ows:IndividualName>
+      <ows:PositionName>{{service.contact.position}}</ows:PositionName>
+      <ows:ContactInfo>
+        <ows:Phone>
+          <ows:Voice>{{service.contact.phone}}</ows:Voice>
+          <ows:Facsimile>{{service.contact.fax}}</ows:Facsimile>
+        </ows:Phone>
+        <ows:Address>
+          <ows:DeliveryPoint>{{service.contact.organization}}</ows:DeliveryPoint>
+          <ows:City>{{service.contact.city}}</ows:City>
+          <ows:PostalCode>{{service.contact.postcode}}</ows:PostalCode>
+          <ows:Country>{{service.contact.country}}</ows:Country>
+          <ows:ElectronicMailAddress>{{service.contact.email}}</ows:ElectronicMailAddress>
+        </ows:Address>
+      </ows:ContactInfo>
+    </ows:ServiceContact>
+  </ows:ServiceProvider>
+{{endif}}
+  <ows:OperationsMetadata>
+    <ows:Operation name="GetCapabilities">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="{{service.url}}?">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>KVP</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="GetTile">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="{{service.url}}?">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>KVP</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+  </ows:OperationsMetadata>
+  <Contents>
+{{for layer in layers}}
+    <Layer>
+      <ows:Title>{{layer.title}}</ows:Title>
+      <ows:Abstract></ows:Abstract>
+      <ows:WGS84BoundingBox>
+        <ows:LowerCorner>{{layer.extent.llbbox[0]}} {{layer.extent.llbbox[1]}}</ows:LowerCorner>
+        <ows:UpperCorner>{{layer.extent.llbbox[2]}} {{layer.extent.llbbox[3]}}</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <ows:Identifier>{{layer.name}}</ows:Identifier>
+      <Style>
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/{{layer.format}}</Format>
+      {{for grid in layer.grids}}
+      <TileMatrixSetLink>
+        <TileMatrixSet>{{grid.name}}</TileMatrixSet>
+      </TileMatrixSetLink>
+      {{endfor}}
+    </Layer>
+{{endfor}}
+{{for tile_matrix_set in tile_matrix_sets}}
+    <TileMatrixSet>
+      <ows:Identifier>{{tile_matrix_set.name}}</ows:Identifier>
+      <ows:SupportedCRS>{{tile_matrix_set.srs_name}}</ows:SupportedCRS>
+      <!-- <WellKnownScaleSet>urn:ogc:def:wkss:OGC:1.0:GlobalCRS84Pixel</WellKnownScaleSet> -->
+  {{for matrix in tile_matrix_set}}
+      <TileMatrix>
+        <ows:Identifier>{{matrix.identifier}}</ows:Identifier>
+        <ScaleDenominator>{{matrix.scale_denom}}</ScaleDenominator>
+        <TopLeftCorner>{{matrix.bbox[0]}} {{matrix.bbox[3]}}</TopLeftCorner>
+        <TileWidth>{{matrix.tile_size[0]}}</TileWidth>
+        <TileHeight>{{matrix.tile_size[1]}}</TileHeight>
+        <MatrixWidth>{{matrix.grid_size[0]}}</MatrixWidth>
+        <MatrixHeight>{{matrix.grid_size[1]}}</MatrixHeight>
+      </TileMatrix>
+  {{endfor}}
+    </TileMatrixSet>
+{{endfor}}
+  </Contents>
+</Capabilities>

@@ -76,9 +76,11 @@ from mapproxy.layer import (
 from mapproxy.client.tile import TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient, WMSLegendClient, WMSLegendURLClient
 from mapproxy.service.wms import WMSServer, WMSLayer, WMSGroupLayer
+from mapproxy.service.wmts import WMTSServer
 from mapproxy.service.tile import TileServer, TileLayer
 from mapproxy.service.kml import KMLServer
 from mapproxy.service.demo import DemoServer
+from mapproxy.service.ows import OWSServer
 from mapproxy.source import DebugSource, DummySource
 from mapproxy.source.wms import WMSSource, WMSInfoSource, WMSLegendSource
 from mapproxy.source.tile import TiledSource
@@ -115,10 +117,11 @@ class ProxyConfiguration(object):
     def load_grids(self):
         self.grids = {}
         
-        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(dict(srs='EPSG:4326'), context=self)
-        self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913'), context=self)
+        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(dict(srs='EPSG:4326', name='GLOBAL_GEODETIC'), context=self)
+        self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913', name='GLOBAL_MERCATOR'), context=self)
         
         for grid_name, grid_conf in self.configuration.get('grids', {}).iteritems():
+            grid_conf.setdefault('name', grid_name)
             self.grids[grid_name] = GridConfiguration(grid_conf, context=self)
     
     def load_caches(self):
@@ -337,6 +340,7 @@ class GridConfiguration(ConfigurationBase):
         
         
         grid = tile_grid(
+            name=conf['name'],
             srs=conf.get('srs'),
             tile_size=tile_size,
             min_res=conf.get('min_res'),
@@ -349,7 +353,8 @@ class GridConfiguration(ConfigurationBase):
             num_levels=conf.get('num_levels'),
             stretch_factor=stretch_factor,
             max_shrink_factor=max_shrink_factor,
-            align_with = align_with,
+            align_with=align_with,
+            origin=conf.get('origin')
         )
         
         return grid
@@ -974,12 +979,19 @@ class ServiceConfiguration(ConfigurationBase):
     optional_keys = set('wms tms kml demo'.split())
     
     def services(self):
-        services = {}
+        services = []
+        ows_services = []
         for service_name, service_conf in self.conf.iteritems():
             creator = getattr(self, service_name + '_service', None)
             if not creator:
                 raise ValueError('unknown service: %s' % service_name)
-            services[service_name] = creator(service_conf or {})
+            if service_name in ('wms', 'wmts'):
+                ows_services.append(creator(service_conf or {}))
+            else:
+                services.append(creator(service_conf or {}))
+        
+        if ows_services:
+            services.append(OWSServer(ows_services))
         return services
     
     def tile_layers(self, conf):
@@ -1005,6 +1017,12 @@ class ServiceConfiguration(ConfigurationBase):
         max_tile_age *= 60 * 60 # seconds
         layers = self.tile_layers(conf)
         return TileServer(layers, md, max_tile_age=max_tile_age)
+    
+    def wmts_service(self, conf):
+        md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
+        md.update(conf.get('md', {}))
+        layers = self.tile_layers(conf)
+        return WMTSServer(layers, md)
     
     def wms_service(self, conf):
         md = conf.get('md', {})
@@ -1046,9 +1064,6 @@ class ServiceConfiguration(ConfigurationBase):
         return DemoServer(layers, md, tile_layers=tile_layers,
             image_formats=image_formats, srs=srs)
     
-def load_services(conf_file):
-    conf = load_configuration(conf_file)
-    return conf.configured_services()
 
 def load_configuration(mapproxy_conf, seed=False):
     log.info('Reading services configuration: %s' % mapproxy_conf)
