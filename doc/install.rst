@@ -86,11 +86,11 @@ To install you need to call::
 
 You specify the release version of MapProxy. E.g.::
 
-  pip install MapProxy==0.9.0
+  pip install MapProxy==1.1.0
   
-or to get the latest 0.9 version::
+or to get the latest 1.1.0 version::
  
-  pip install "MapProxy>=0.9.0,<=0.9.99"
+  pip install "MapProxy>=1.1.0,<=1.1.99"
 
 To check if the MapProxy was successfully installed, you can call the `mapproxy-util` command.
 ::
@@ -107,7 +107,7 @@ Create a configuration
 
 To create a new set of configuration files for MapProxy call::
 
-    mapproxy-util create -t base-conf mymapproxy
+    mapproxy-util create -t base-config mymapproxy
 
 This will create a ``mymapproxy`` directory with an example ``mapproxy.yaml`` and ``seed.yaml`` configuration.
 
