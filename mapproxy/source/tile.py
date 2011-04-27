@@ -38,16 +38,22 @@ class TiledSource(Source):
     
     def get_map(self, query):
         if self.grid.tile_size != query.size:
-            raise InvalidSourceQuery()
+            raise InvalidSourceQuery(
+                'tile size of cache and tile source do not match: %s != %s'
+                 % (self.grid.tile_size, query.size)
+            )
         if self.grid.srs != query.srs:
-            raise InvalidSourceQuery()
+            raise InvalidSourceQuery(
+                'SRS of cache and tile source do not match: %s != %s'
+                % (self.grid.srs, query.srs)
+            )
         if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
             raise BlankImage()
         
         _bbox, grid, tiles = self.grid.get_affected_tiles(query.bbox, query.size)
         
         if grid != (1, 1):
-            raise InvalidSourceQuery('bbox does not align to tile')
+            raise InvalidSourceQuery('BBOX does not align to tile')
 
         tile_coord = tiles.next()
         
