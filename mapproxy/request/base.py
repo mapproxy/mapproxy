@@ -177,7 +177,7 @@ class Request(object):
     
     @cached_property
     def args(self):
-        if self.environ['QUERY_STRING']:
+        if self.environ.get('QUERY_STRING'):
             return url_decode(self.environ['QUERY_STRING'], self.charset)
         else:
             return {}
