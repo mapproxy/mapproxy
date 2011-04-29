@@ -202,12 +202,15 @@ MapProxy supports the OGC WMTS 1.0.0 specification. It only supports KVP request
 
 The service is available at ``/service``.
 
+The WMTS service is similar to the TMS service and will use all configured :ref:`layers <layers>` that have a name and single cached source. Unlike the TMS service it only supports caches that form a  regular tile pyramid at the moment (res_factor 2 and the BBOX matches the first tile level). Any layer grouping will be flattened. 
+
 This service requires no further options::
 
   services:
     wmts:
 
 The metadata (ServiceContact, etc. ) of this service is taken from the WMS configuration. You can add ``md`` to the ``wmts`` configuration to replace the WMS metadata. See :ref:`WMS metadata <wms_md>`.
+
 
 .. index:: Demo Service, OpenLayers
 .. _demo_service_label:
