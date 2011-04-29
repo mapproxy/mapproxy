@@ -6,7 +6,7 @@ The tiling of rendered vector maps often results in issues with truncated or rep
 This document describes settings for MapProxy and MapServer, but the problems and solutions are also valid for other for other WMS services. Refer to their documentations on how to configure these settings.
 
 The Problem
----------
+-----------
 
 MapProxy always uses small tiles for caching. MapProxy does not pass through incoming requests to the source WMS [#]_, but it always requests images/tiles that are aligned to the internal grid. MapProxy combines, scales and reprojects these tiles for WMS requests and for tiled requests (TMS/KML) the tiles are combined by the client (OpenLayers, etc).
 
@@ -293,4 +293,4 @@ Other WMS Servers
 
 The most important step for all WMS servers is to disable to dynamic placement of labels. Look into the documentation how to do this for you WMS server.
 
-If you want to contribute to this document then join our `mailing list <http://lists.osgeo.org/mailman/listinfo/mapproxy>`_ or use our `issue tracker <http://bitbucket.org/olt/mapproxy/issues/>`_.
+If you want to contribute to this document then join our `mailing list <http://lists.osgeo.org/mailman/listinfo/mapproxy>`_ or use our `issue tracker <https://bitbucket.org/olt/mapproxy/issues/>`_.

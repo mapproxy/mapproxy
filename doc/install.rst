@@ -73,7 +73,7 @@ lxml
 
   sudo aptitude install python-lxml
 
-.. _`lxml`: http://lxml.org
+.. _`lxml`: http://lxml.de
 
 MapProxy
 ~~~~~~~~
@@ -126,4 +126,4 @@ There is already a test layer configured that obtains data from the `Omniscale O
 
 MapProxy comes with a demo service that lists all configured WMS and TMS layers. You can access that service at http://localhost:8080/demo/
 
-.. _`Omniscale OpenStreetMap WMS`: http://osm.omniscale.net/
+.. _`Omniscale OpenStreetMap WMS`: http://osm.omniscale.de/

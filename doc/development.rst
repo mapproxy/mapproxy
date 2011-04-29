@@ -12,11 +12,11 @@ Releases are available from the `PyPI project page of MapProxy <http://pypi.pyth
 
 MapProxy uses `Mercurial`_ as a source control management tool. If you are new to distributed SCMs or Mercurial we recommend to read `the Mercurial tutorial <http://hginit.com/>`_ by Joel Spolsky. 
 
-The main (authoritative) repository is hosted at http://bitbucket.org/olt/mapproxy/
+The main (authoritative) repository is hosted at https://bitbucket.org/olt/mapproxy/
 
 To get a copy of the repository call::
 
-  hg clone http://bitbucket.org/olt/mapproxy
+  hg clone https://bitbucket.org/olt/mapproxy
 
 If you want to contribute a patch, please consider `creating a "fork"`__ instead. This makes life easier for all of us.
 
