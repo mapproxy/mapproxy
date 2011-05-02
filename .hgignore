@@ -16,3 +16,4 @@ syntax: regexp
 # hidden files
 (^|/)\.
 \.lck$
+examples/
