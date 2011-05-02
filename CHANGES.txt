@@ -3,16 +3,32 @@
 Features:
 - support for tagged WMS source names: wms:lyr1,lyr2
 - new Mapserver source type
+- new Mapnik source type
+- new mapproxy-util command
+- include development server (``mapproxy-util serve-develop``)
+- first WMTS implementation (KVP)
 
 Improvements:
 - tweaked watermarks on transparent images
 - [mapproxy-seed] initialize MapProxy logging before seeding
 - support for ArcGIS tile sources (/L09/R00000005/C0000000d)
+- authentication callbacks get environ and query_extent
+- authentication callbacks can force HTTP 401 returns
+- hide error tracebacks from YAML parser
+- support for multipolygons in coverages
+- add support for HTTP_X_SCRIPT_NAME
 
 Fixes:
 - fixes demo on Windows (loaded static content from wrong path)
 - fixed one-off error with grid.max_res: last resolution is now < max_res
   e.g. min_res: 1000 max_res: 300 -> now [1000, 500], before [1000, 500, 250]
+- add workaround for Python bug #4606 (segfaults during projection on 64bit
+  systems)
+- do not add attribution to WMS-C responses
+
+Other:
+- removed Paste dependencies
+- removed deprecated mapproxy-cleanup tool, feature included in mapproxy-seed
 
 1.0.0 2011-03-03
 
