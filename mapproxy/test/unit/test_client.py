@@ -16,6 +16,7 @@
 
 from __future__ import with_statement
 
+import os
 import time
 import sys
 
@@ -116,11 +117,16 @@ class TestHTTPClient(object):
         except ImportError:
             raise SkipTest()
         
-        with TempFile() as tmp:
-            with open(tmp, 'w') as f:
-                f.write(GOOGLE_ROOT_CERT)
-            self.client = HTTPClient('https://www.google.com/', ssl_ca_certs=tmp)
+        cert_file = '/etc/ssl/certs/ca-certificates.crt'
+        if os.path.exists(cert_file):
+            self.client = HTTPClient('https://www.google.com/', ssl_ca_certs=cert_file)
             self.client.open('https://www.google.com/')
+        else:
+            with TempFile() as tmp:
+                with open(tmp, 'w') as f:
+                    f.write(GOOGLE_ROOT_CERT)
+                self.client = HTTPClient('https://www.google.com/', ssl_ca_certs=tmp)
+                self.client.open('https://www.google.com/')
     
     @attr('online')
     def test_https_invalid_cert(self):
