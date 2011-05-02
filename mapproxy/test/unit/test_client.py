@@ -90,7 +90,7 @@ class TestHTTPClient(object):
         try:
             http.ssl = None
             try:
-                self.client = HTTPClient('https://google.com/')
+                self.client = HTTPClient('https://www.google.com/')
             except ImportError:
                 pass
             else:
@@ -104,8 +104,8 @@ class TestHTTPClient(object):
         old_ssl = http.ssl
         try:
             http.ssl = None
-            self.client = HTTPClient('https://google.com/', insecure=True)
-            self.client.open('https://google.com/')
+            self.client = HTTPClient('https://www.google.com/', insecure=True)
+            self.client.open('https://www.google.com/')
         finally:
             http.ssl = old_ssl
     
@@ -119,8 +119,8 @@ class TestHTTPClient(object):
         with TempFile() as tmp:
             with open(tmp, 'w') as f:
                 f.write(GOOGLE_ROOT_CERT)
-            self.client = HTTPClient('https://google.com/', ssl_ca_certs=tmp)
-            self.client.open('https://google.com/')
+            self.client = HTTPClient('https://www.google.com/', ssl_ca_certs=tmp)
+            self.client.open('https://www.google.com/')
     
     @attr('online')
     def test_https_invalid_cert(self):
@@ -130,9 +130,9 @@ class TestHTTPClient(object):
             raise SkipTest()
         
         with TempFile() as tmp:
-            self.client = HTTPClient('https://google.com/', ssl_ca_certs=tmp)
+            self.client = HTTPClient('https://www.google.com/', ssl_ca_certs=tmp)
             try:
-                self.client.open('https://google.com/')
+                self.client.open('https://www.google.com/')
             except HTTPClientError, e:
                 assert_re(e.args[0], r'Could not verify connection to URL')
         
