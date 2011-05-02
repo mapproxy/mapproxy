@@ -10,8 +10,8 @@ MapProxy supports coverages for :doc:`sources <sources>` and in the :doc:`mappro
 There are three different ways to describe a coverage.
 
 - a simple rectangular bounding box,
-- a text file with one or more polygons in WKT format,
-- polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)
+- a text file with one or more (multi)polygons in WKT format,
+- (multi)polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)
 
 
 Requirements
@@ -43,7 +43,7 @@ Polygon file
 """"""""""""
 
 ``polygons``:
-  Path to a text file with one WKT polygon per line. The path should be relative to
+  Path to a text file with one WKT polygon or multi-polygon per line. The path should be relative to
   the proxy configuration or absolute. You can create your own files or use `one of the files we provide for every country <http://mapproxy.org/static/polygons/>`_. Read `the index <http://mapproxy.org/static/polygons/0-fips-codes.txt>`_ to find your country. 
 
 ``polygons_srs``:
