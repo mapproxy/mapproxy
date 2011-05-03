@@ -16,6 +16,7 @@ class DummyLayer(MapLayer):
     has_legend = False
     queryable = False
     def __init__(self, name):
+        MapLayer.__init__(self)
         self.name = name
         self.requested = False
         self.queried = False

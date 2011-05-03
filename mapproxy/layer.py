@@ -21,6 +21,7 @@ Layers that can get maps/infos from different sources/caches.
 
 from __future__ import division
 from mapproxy.grid import NoTiles, GridError, merge_resolution_range
+from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
 from mapproxy.srs import SRS, bbox_equals, merge_bbox
 
@@ -38,8 +39,25 @@ class MapBBOXError(Exception):
 
 class MapLayer(object):
     res_range = None
-    opacity = None
-    transparent = False
+    
+    def __init__(self, image_opts=None):
+        self.image_opts = image_opts or ImageOptions()
+    
+    def _get_transparent(self):
+        return self.image_opts.transparent
+    
+    def _set_transparent(self, value):
+        self.image_opts.transparent = value
+    
+    transparent = property(_get_transparent, _set_transparent)
+    
+    def _get_opacity(self):
+        return self.image_opts.opacity
+    
+    def _set_opacity(self, value):
+        self.image_opts.opacity = value
+    
+    opacity = property(_get_opacity, _set_opacity)
     
     def is_opaque(self):
         if self.opacity is None:
@@ -161,6 +179,7 @@ def merge_layer_extents(layers):
 
 class ResolutionConditional(MapLayer):
     def __init__(self, one, two, resolution, srs, extent, opacity=None):
+        MapLayer.__init__(self)
         self.one = one
         self.two = two
         self.res_range = merge_layer_res_ranges([one, two])
@@ -193,6 +212,7 @@ class SRSConditional(MapLayer):
     GEOGRAPHIC = 'GEOGRAPHIC'
     
     def __init__(self, layers, extent, transparent=False, opacity=None):
+        MapLayer.__init__(self)
         self.transparent = transparent
         # TODO geographic/projected fallback
         self.srs_map = {}
@@ -231,6 +251,7 @@ class SRSConditional(MapLayer):
 
 class DirectMapLayer(MapLayer):
     def __init__(self, source, extent):
+        MapLayer.__init__(self)
         self.source = source
         self.res_range = getattr(source, 'res_range', None)
         self.extent = extent
@@ -252,6 +273,7 @@ def merge_layer_res_ranges(layers):
 class CacheMapLayer(MapLayer):
     def __init__(self, tile_manager, extent=None, resampling='bicubic', opacity=None,
         max_tile_limit=None):
+        MapLayer.__init__(self)
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
         self.opacity = opacity

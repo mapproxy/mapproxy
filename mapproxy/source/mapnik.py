@@ -37,11 +37,9 @@ log = logging.getLogger(__name__)
 
 class MapnikSource(Source):
     supports_meta_tiles = True
-    def __init__(self, mapfile, transparent=False, coverage=None, res_range=None, opacity=None):
-        Source.__init__(self)
+    def __init__(self, mapfile, image_opts=None, coverage=None, res_range=None):
+        Source.__init__(self, image_opts=image_opts)
         self.mapfile = mapfile
-        self.transparent = transparent
-        self.opacity = opacity
         self.coverage = coverage
         self.res_range = res_range
         if self.coverage:

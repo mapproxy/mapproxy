@@ -34,7 +34,7 @@ from mapproxy.util.lock import SemLock
 from mapproxy.util.yaml import load_yaml_file, load_yaml, YAMLError
 from mapproxy.config.config import load_default_config
 from mapproxy.client.http import auth_data_from_url, HTTPClient
-
+from mapproxy.image.opts import ImageOptions
 
 def loader(loaders, name):
     """
@@ -548,8 +548,8 @@ class WMSSourceConfiguration(SourceConfiguration):
         
         transparent = self.conf['req'].get('transparent', 'false')
         transparent = bool(str(transparent).lower() == 'true')
-        
         opacity = self.conf.get('image', {}).get('opacity')
+        image_opts = ImageOptions(transparent=transparent, opacity=opacity)
         
         resampling = self.context.globals.get_value('image.resampling_method', self.conf)
         
@@ -584,9 +584,8 @@ class WMSSourceConfiguration(SourceConfiguration):
         client = WMSClient(request, supported_srs, http_client=http_client, 
                            http_method=http_method, resampling=resampling, lock=lock,
                            supported_formats=supported_formats or None)
-        return WMSSource(client, transparent=transparent, coverage=coverage,
-                         res_range=res_range, opacity=opacity,
-                         transparent_color=transparent_color,
+        return WMSSource(client, image_opts=image_opts, coverage=coverage,
+                         res_range=res_range, transparent_color=transparent_color,
                          transparent_color_tolerance=transparent_color_tolerance)
     
     def fi_source(self, params=None):
@@ -685,8 +684,8 @@ class MapnikSourceConfiguration(SourceConfiguration):
         
         transparent = self.conf.get('transparent', 'false')
         transparent = bool(str(transparent).lower() == 'true')
-        
         opacity = self.conf.get('image', {}).get('opacity')
+        image_opts = ImageOptions(transparent=transparent, opacity=opacity)
         
         lock = None
         concurrent_requests = self.context.globals.get_value('concurrent_requests', self.conf,
@@ -702,8 +701,8 @@ class MapnikSourceConfiguration(SourceConfiguration):
         
         mapfile = self.context.globals.abspath(self.conf['mapfile'])
         from mapproxy.source.mapnik import MapnikSource
-        return MapnikSource(mapfile, transparent=transparent, coverage=coverage,
-                         res_range=res_range, opacity=opacity)
+        return MapnikSource(mapfile, image_opts=image_opts, coverage=coverage,
+                         res_range=res_range)
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
@@ -730,12 +729,13 @@ class TileSourceConfiguration(SourceConfiguration):
         coverage = self.coverage()
         opacity = self.conf.get('image', {}).get('opacity')
         transparent = self.conf.get('transparent')
+        image_opts = ImageOptions(transparent=transparent, opacity=opacity)
         
         inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
         client = TileClient(TileURLTemplate(url, format=format), http_client=http_client)
-        return TiledSource(grid, client, inverse=inverse, coverage=coverage, opacity=opacity,
-                           transparent=transparent)
+        return TiledSource(grid, client, inverse=inverse, coverage=coverage,
+            image_opts=image_opts)
 
 
 def file_ext(mimetype):

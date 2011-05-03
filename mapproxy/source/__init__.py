@@ -20,6 +20,7 @@ Map/information sources for layers or tile cache.
 
 from mapproxy.layer import MapLayer, MapExtent, MapError, MapBBOXError, BlankImage
 from mapproxy.image.message import message_image
+from mapproxy.image.opts import ImageOptions
 from mapproxy.srs import SRS
 
 class SourceError(MapError):
@@ -33,10 +34,9 @@ class InvalidSourceQuery(ValueError):
 
 class Source(MapLayer):
     supports_meta_tiles = False
-    transparent = False
     
-    def __init__(self):
-        MapLayer.__init__(self)
+    def __init__(self, image_opts=None):
+        MapLayer.__init__(self, image_opts=image_opts)
 
 class InfoSource(object):
     def get_info(self, query):
@@ -48,6 +48,7 @@ class LegendSource(object):
 
 class DebugSource(Source):
     def __init__(self):
+        Source.__init__(self)
         self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
         self.transparent = True
         self.res_range = None
@@ -67,6 +68,7 @@ class DummySource(Source):
     Used internally for 'offline' sources (e.g. seed_only).
     """
     def __init__(self):
+        Source.__init__(self)
         self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
         self.transparent = True
     def get_map(self, query):

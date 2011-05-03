@@ -21,6 +21,7 @@ import sys
 from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
 from mapproxy.image import concat_legends, make_transparent
+from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, LegendQuery
 from mapproxy.source import Source, InfoSource, SourceError, LegendSource
 from mapproxy.client.http import HTTPClientError
@@ -31,14 +32,14 @@ log = logging.getLogger(__name__)
 
 class WMSSource(Source):
     supports_meta_tiles = True
-    def __init__(self, client, transparent=False, coverage=None, res_range=None, opacity=None,
+    def __init__(self, client, image_opts=None, coverage=None, res_range=None,
                  transparent_color=None, transparent_color_tolerance=None):
-        Source.__init__(self)
+        Source.__init__(self, image_opts=image_opts)
         self.client = client
         self.transparent_color = transparent_color
         self.transparent_color_tolerance = transparent_color_tolerance
-        self.transparent = True if transparent_color else transparent
-        self.opacity = opacity
+        if self.transparent_color:
+            self.transparent = True
         self.coverage = coverage
         self.res_range = res_range
         if self.coverage:
@@ -74,7 +75,7 @@ class WMSSource(Source):
         if not client:
             return None
         
-        return WMSSource(client, transparent=self.transparent)
+        return WMSSource(client, image_opts=self.image_opts)
         
 class WMSInfoSource(InfoSource):
     def __init__(self, client, fi_transformer=None):
