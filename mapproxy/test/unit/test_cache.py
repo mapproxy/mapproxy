@@ -28,6 +28,7 @@ from mapproxy.grid import TileGrid, resolution_range
 from mapproxy.srs import SRS
 from mapproxy.client.http import HTTPClient
 from mapproxy.image import ImageSource
+from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import BlankImage
 from mapproxy.request.wms import WMS111MapRequest
 
@@ -514,6 +515,7 @@ class TestTileManagerMultipleSourcesWithMetaTiles(object):
         
         assert self.tile_mgr.meta_grid is None
     
+default_image_opts = ImageOptions(resampling='bicubic')
 
 class TestCacheMapLayer(object):
     def setup(self):
@@ -523,7 +525,7 @@ class TestCacheMapLayer(object):
         self.source = WMSSource(self.client)
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
             meta_size=[2, 2], meta_buffer=0)
-        self.layer = CacheMapLayer(self.tile_mgr)
+        self.layer = CacheMapLayer(self.tile_mgr, image_opts=default_image_opts)
     
     def test_get_map_small(self):
         result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
@@ -552,7 +554,7 @@ class TestCacheMapLayer(object):
         self.source = WMSSource(self.client, res_range=res_range)
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
             meta_size=[2, 2], meta_buffer=0)
-        self.layer = CacheMapLayer(self.tile_mgr)
+        self.layer = CacheMapLayer(self.tile_mgr, image_opts=default_image_opts)
         
         try:
             result = self.layer.get_map(MapQuery(

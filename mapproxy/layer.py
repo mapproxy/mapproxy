@@ -271,13 +271,11 @@ def merge_layer_res_ranges(layers):
 
 
 class CacheMapLayer(MapLayer):
-    def __init__(self, tile_manager, extent=None, resampling='bicubic', opacity=None,
+    def __init__(self, tile_manager, extent=None, image_opts=None,
         max_tile_limit=None):
-        MapLayer.__init__(self)
+        MapLayer.__init__(self, image_opts=image_opts)
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
-        self.opacity = opacity
-        self.resampling = resampling
         self.extent = extent or map_extent_from_grid(self.grid)
         self.res_range = merge_layer_res_ranges(self.tile_manager.sources)
         self.transparent = tile_manager.transparent
@@ -291,7 +289,7 @@ class CacheMapLayer(MapLayer):
         
         tiled_image = self._tiled_image(query)
         result = tiled_image.transform(query.bbox, query.srs, query.size, 
-                                       self.resampling)
+                                       self.image_opts.resampling)
         return result
 
     def _check_tiled(self, query):

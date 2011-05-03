@@ -16,6 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class ImageOptions(object):
-    def __init__(self, transparent=False, opacity=None):
+    def __init__(self, transparent=False, opacity=None, resampling=None):
         self.transparent = transparent
         self.opacity = opacity
+        self.resampling = resampling
+    
+    def __repr__(self):
+        return 'ImageOptions(transparent=%r, opacity=%r, resampling=%r)' % (
+            self.transparent, self.opacity, self.resampling,
+        )

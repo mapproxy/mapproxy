@@ -482,11 +482,13 @@ class SourceConfiguration(ConfigurationBase):
         
     @memoize
     def image_opts(self):
+        resampling = self.context.globals.get_value('image.resampling_method', self.conf)
         transparent = self.conf.get('image', {}).get('transparent')
         if transparent is None:
             transparent = self.conf.get('transparent', False)
         opacity = self.conf.get('image', {}).get('opacity')
-        return ImageOptions(transparent=transparent, opacity=opacity)
+        return ImageOptions(transparent=transparent, opacity=opacity,
+            resampling=resampling)
     
     def http_client(self, url):
         http_client = None
@@ -563,8 +565,6 @@ class WMSSourceConfiguration(SourceConfiguration):
         
         image_opts = self.image_opts()
         
-        resampling = self.context.globals.get_value('image.resampling_method', self.conf)
-        
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         supported_formats = [file_ext(f) for f in self.conf.get('supported_formats', [])]
         version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
@@ -594,7 +594,7 @@ class WMSSourceConfiguration(SourceConfiguration):
             abspath=self.context.globals.abspath)
         http_client, request.url = self.http_client(request.url)
         client = WMSClient(request, supported_srs, http_client=http_client, 
-                           http_method=http_method, resampling=resampling, lock=lock,
+                           http_method=http_method, resampling=image_opts.resampling, lock=lock,
                            supported_formats=supported_formats or None)
         return WMSSource(client, image_opts=image_opts, coverage=coverage,
                          res_range=res_range, transparent_color=transparent_color,
@@ -844,6 +844,7 @@ class CacheConfiguration(ConfigurationBase):
     def map_layer(self):
         resampling = self.context.globals.get_value('image.resampling_method', self.conf)
         opacity = self.conf.get('image', {}).get('opacity')
+        image_opts = ImageOptions(resampling=resampling, opacity=opacity)
         max_tile_limit = self.context.globals.get_value('max_tile_limit', self.conf,
             global_key='cache.max_tile_limit')
         caches = []
@@ -851,8 +852,8 @@ class CacheConfiguration(ConfigurationBase):
         for grid, extent, tile_manager in self.caches():
             if main_grid is None:
                 main_grid = grid
-            caches.append((CacheMapLayer(tile_manager, extent=extent, resampling=resampling,
-                                         opacity=opacity, max_tile_limit=max_tile_limit),
+            caches.append((CacheMapLayer(tile_manager, extent=extent, image_opts=image_opts,
+                                         max_tile_limit=max_tile_limit),
                           (grid.srs,)))
         
         if len(caches) == 1:
