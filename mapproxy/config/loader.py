@@ -479,6 +479,14 @@ class SourceConfiguration(ConfigurationBase):
     def coverage(self):
         if not 'coverage' in self.conf: return None
         return load_coverage(self.conf['coverage'])
+        
+    @memoize
+    def image_opts(self):
+        transparent = self.conf.get('image', {}).get('transparent')
+        if transparent is None:
+            transparent = self.conf.get('transparent', False)
+        opacity = self.conf.get('image', {}).get('opacity')
+        return ImageOptions(transparent=transparent, opacity=opacity)
     
     def http_client(self, url):
         http_client = None
@@ -533,6 +541,13 @@ class WMSSourceConfiguration(SourceConfiguration):
             fi_transformer = XSLTransformer(fi_xslt)
         return fi_transformer
     
+    def image_opts(self):
+        if 'transparent' not in self.conf.get('image', {}):
+            transparent = self.conf['req'].get('transparent', 'false')
+            transparent = bool(str(transparent).lower() == 'true')
+            self.conf.setdefault('image', {})['transparent'] = transparent
+        return SourceConfiguration.image_opts(self)
+    
     def source(self, params=None):
         if not self.conf.get('wms_opts', {}).get('map', True):
             return None
@@ -546,10 +561,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         if request_format:
             params['format'] = request_format
         
-        transparent = self.conf['req'].get('transparent', 'false')
-        transparent = bool(str(transparent).lower() == 'true')
-        opacity = self.conf.get('image', {}).get('opacity')
-        image_opts = ImageOptions(transparent=transparent, opacity=opacity)
+        image_opts = self.image_opts()
         
         resampling = self.context.globals.get_value('image.resampling_method', self.conf)
         
@@ -682,10 +694,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
         if not self.context.seed and self.conf.get('seed_only'):
             return DummySource()
         
-        transparent = self.conf.get('transparent', 'false')
-        transparent = bool(str(transparent).lower() == 'true')
-        opacity = self.conf.get('image', {}).get('opacity')
-        image_opts = ImageOptions(transparent=transparent, opacity=opacity)
+        image_opts = self.image_opts()
         
         lock = None
         concurrent_requests = self.context.globals.get_value('concurrent_requests', self.conf,
@@ -707,7 +716,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
     optional_keys = set('''type grid request_format origin coverage seed_only
-                           transparent http'''.split())
+                           transparent image http'''.split())
     required_keys = set('url'.split())
     defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
     
@@ -727,9 +736,7 @@ class TileSourceConfiguration(SourceConfiguration):
         http_client, url = self.http_client(url)
         grid = self.context.grids[self.conf['grid']].tile_grid()
         coverage = self.coverage()
-        opacity = self.conf.get('image', {}).get('opacity')
-        transparent = self.conf.get('transparent')
-        image_opts = ImageOptions(transparent=transparent, opacity=opacity)
+        image_opts = self.image_opts()
         
         inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
