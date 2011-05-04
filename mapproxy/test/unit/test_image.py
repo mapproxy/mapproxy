@@ -287,25 +287,37 @@ class TestWatermarkTileFilter(object):
 class TestMergeAll(object):
     def setup(self):
         self.cleanup_tiles = []
+
     def test_full_merge(self):
         self.cleanup_tiles = [create_tmp_image_file((100, 100)) for _ in range(9)]
         self.tiles = [ImageSource(tile) for tile in self.cleanup_tiles]
         m = TileMerger(tile_grid=(3, 3), tile_size=(100, 100))
-        result = m.merge(self.tiles)
-        assert result.as_image().size == (300, 300)
+        img_opts = ImageOptions()
+        result = m.merge(self.tiles, img_opts)
+        img = result.as_image()
+        eq_(img.size, (300, 300))
+
     def test_one(self):
         self.cleanup_tiles = [create_tmp_image_file((100, 100))]
         self.tiles = [ImageSource(self.cleanup_tiles[0])]
         m = TileMerger(tile_grid=(1, 1), tile_size=(100, 100))
-        result = m.merge(self.tiles)
-        assert result.as_image().size == (100, 100)
+        img_opts = ImageOptions(transparent=True)
+        result = m.merge(self.tiles, img_opts)
+        img = result.as_image()
+        eq_(img.size, (100, 100))
+        eq_(img.mode, 'RGBA')
+
     def test_missing_tiles(self):
         self.cleanup_tiles = [create_tmp_image_file((100, 100))]
         self.tiles = [ImageSource(self.cleanup_tiles[0])]
         self.tiles.extend([None]*8)
         m = TileMerger(tile_grid=(3, 3), tile_size=(100, 100))
-        result = m.merge(self.tiles)
-        assert result.as_image().size == (300, 300)
+        img_opts = ImageOptions()
+        result = m.merge(self.tiles, img_opts)
+        img = result.as_image()
+        eq_(img.size, (300, 300))
+        eq_(img.getcolors(), [(80000, (255, 255, 255)), (10000, (0, 0, 0)), ])
+
     def test_invalid_tile(self):
         self.cleanup_tiles = [create_tmp_image_file((100, 100)) for _ in range(9)]
         self.tiles = [ImageSource(tile) for tile in self.cleanup_tiles]
@@ -313,14 +325,22 @@ class TestMergeAll(object):
         with open(invalid_tile, 'w') as tmp:
             tmp.write('invalid')
         m = TileMerger(tile_grid=(3, 3), tile_size=(100, 100))
-        result = m.merge(self.tiles)
-        assert result.as_image().size == (300, 300)
+        img_opts = ImageOptions(bgcolor=(200, 0, 50))
+        result = m.merge(self.tiles, img_opts)
+        img = result.as_image()
+        eq_(img.size, (300, 300))
+        eq_(img.getcolors(), [(10000, (200, 0, 50)), (80000, (0, 0, 0))])
         assert not os.path.isfile(invalid_tile)
+
     def test_none_merge(self):
         tiles = [None]
         m = TileMerger(tile_grid=(1, 1), tile_size=(100, 100))
-        result = m.merge(tiles)
-        assert result.as_image().size == (100, 100)
+        img_opts = ImageOptions(mode='RGBA', bgcolor=(200, 100, 30, 40))
+        result = m.merge(tiles, img_opts)
+        img = result.as_image()
+        eq_(img.size, (100, 100))
+        eq_(img.getcolors(), [(100*100, (200, 100, 30, 40))])
+
     def teardown(self):
         for tile_fname in self.cleanup_tiles:
             if tile_fname and os.path.isfile(tile_fname):

@@ -15,14 +15,42 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from mapproxy.platform.image import Image
+
 class ImageOptions(object):
-    def __init__(self, transparent=False, opacity=None, resampling=None, format=None):
+    def __init__(self, mode=None, transparent=False, opacity=None, resampling=None,
+        format=None, bgcolor=None):
         self.transparent = transparent
         self.opacity = opacity
         self.resampling = resampling
         self.format = format
+        self.mode = mode or self.transparent and 'RGBA' or 'RGB'
+        self.bgcolor = bgcolor
     
     def __repr__(self):
-        return 'ImageOptions(transparent=%r, opacity=%r, resampling=%r, format=%r)' % (
-            self.transparent, self.opacity, self.resampling, self.format,
-        )
+        options = []
+        for k in dir(self):
+            if k.startswith('_'):
+                continue
+            v = getattr(self, k)
+            if v:
+                options.append('%s=%r' % (k, v))
+        return 'ImageOptions(%s)' % (', '.join(options), )
+
+def create_image(size, image_opts=None):
+    """
+    Create a new image that is compatible with the given `image_opts`.
+    Takes into account mode, transparent, bgcolor.
+    """
+    if image_opts is None:
+        mode = 'RGB'
+        bgcolor = (255, 255, 255)
+    else:
+        mode = image_opts.mode
+        bgcolor = image_opts.bgcolor or (255, 255, 255)
+        
+        if image_opts.transparent and len(bgcolor) == 3:
+            bgcolor = bgcolor + (0, )
+    
+    
+    return Image.new(mode, size, bgcolor)

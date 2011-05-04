@@ -327,8 +327,7 @@ class CacheMapLayer(MapLayer):
             raise BlankImage()
         tile_sources = [tile.source for tile in tile_collection]
         return TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
-                          tile_grid=tile_grid, tile_size=self.grid.tile_size,
-                          transparent=self.transparent)
+                          tile_grid=tile_grid, tile_size=self.grid.tile_size)
     
 
 class DirectInfoLayer(InfoLayer):

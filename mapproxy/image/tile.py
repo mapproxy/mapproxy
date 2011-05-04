@@ -18,6 +18,7 @@ import os
 from mapproxy.platform.image import Image
 from mapproxy.image import ImageSource
 from mapproxy.image.transform import ImageTransformer
+from mapproxy.image.opts import create_image
 
 import logging
 log = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ class TileMerger(object):
         self.tile_grid = tile_grid
         self.tile_size = tile_size
     
-    def merge(self, ordered_tiles, transparent=False):
+    def merge(self, ordered_tiles, image_opts):
         """
         Merge all tiles into one image.
         
@@ -47,13 +48,10 @@ class TileMerger(object):
             if ordered_tiles[0] is not None:
                 tile = ordered_tiles.pop()
                 return ImageSource(tile.source, size=self.tile_size,
-                                   transparent=transparent)
+                                   transparent=image_opts.transparent)
         src_size = self._src_size()
         
-        if transparent:
-            result = Image.new("RGBA", src_size, (255, 255, 255, 0))
-        else:
-            result = Image.new("RGB", src_size, (255, 255, 255))
+        result = create_image(src_size, image_opts)
 
         for i, source in enumerate(ordered_tiles):
             if source is None:
@@ -61,10 +59,7 @@ class TileMerger(object):
             try:
                 tile = source.as_image()
                 pos = self._tile_offset(i)
-                if transparent:
-                    tile.draft('RGBA', self.tile_size)
-                else:
-                    tile.draft('RGB', self.tile_size)
+                tile.draft(image_opts.mode, self.tile_size)
                 result.paste(tile, pos)
                 source.close_buffers()
             except IOError, e:
@@ -76,7 +71,7 @@ class TileMerger(object):
                             os.remove(source.filename)
                 else:
                     raise
-        return ImageSource(result, size=src_size, transparent=transparent)
+        return ImageSource(result, size=src_size, transparent=image_opts.transparent)
     
     def _src_size(self):
         width = self.tile_grid[0]*self.tile_size[0]
@@ -121,7 +116,7 @@ class TiledImage(object):
     """
     An image built-up from multiple tiles.
     """
-    def __init__(self, tiles, tile_grid, tile_size, src_bbox, src_srs, transparent):
+    def __init__(self, tiles, tile_grid, tile_size, src_bbox, src_srs):
         """
         :param tiles: all tiles (sorted row-wise, top to bottom)
         :param tile_grid: the tile grid size
@@ -136,16 +131,15 @@ class TiledImage(object):
         self.tile_size = tile_size
         self.src_bbox = src_bbox
         self.src_srs = src_srs
-        self.transparent = transparent
     
-    def image(self):
+    def image(self, image_opts):
         """
         Return the tiles as one merged image.
         
         :rtype: `ImageSource`
         """
         tm = TileMerger(self.tile_grid, self.tile_size)
-        return tm.merge(self.tiles, transparent=self.transparent)
+        return tm.merge(self.tiles, image_opts=image_opts)
     
     def transform(self, req_bbox, req_srs, out_size, image_opts):
         """
@@ -157,6 +151,6 @@ class TiledImage(object):
         :rtype: `ImageSource`
         """
         transformer = ImageTransformer(self.src_srs, req_srs)
-        src_img = self.image()
+        src_img = self.image(image_opts)
         return transformer.transform(src_img, self.src_bbox, out_size, req_bbox,
             image_opts)
