@@ -27,6 +27,7 @@ from mapproxy.platform.image import (
 from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image, merge_images
 from mapproxy.image import _make_transparent as make_transparent
 from mapproxy.image.message import message_image, TextDraw
+from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TileMerger
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.tilefilter import watermark_filter
@@ -327,19 +328,35 @@ class TestMergeAll(object):
 
 class TestGetCrop(object):
     def setup(self):
-        self.img = ImageSource(create_tmp_image_file((100, 100)),
+        self.img = ImageSource(create_tmp_image_file((100, 100), two_colored=True),
                                format='png', size=(100, 100))
     def test_perfect_match(self):
         bbox = (-10, -5, 30, 35)
         transformer = ImageTransformer(SRS(4326), SRS(4326))
-        result = transformer.transform(self.img, bbox, (100, 100), bbox)
+        result = transformer.transform(self.img, bbox, (100, 100), bbox, image_opts=None)
         assert self.img == result
-    def test_simple_resize(self):
+    
+    def test_simple_resize_nearest(self):
         bbox = (-10, -5, 30, 35)
         transformer = ImageTransformer(SRS(4326), SRS(4326))
-        result = transformer.transform(self.img, bbox, (200, 200), bbox)
-        assert result.as_image().size == (200, 200)
-
+        result = transformer.transform(self.img, bbox, (200, 200), bbox,
+            image_opts=ImageOptions(resampling='nearest'))
+        img = result.as_image()
+        
+        eq_(img.size, (200, 200))
+        eq_(len(img.getcolors()), 2)
+    
+    def test_simple_resize_bilinear(self):
+        bbox = (-10, -5, 30, 35)
+        transformer = ImageTransformer(SRS(4326), SRS(4326))
+        result = transformer.transform(self.img, bbox, (200, 200), bbox,
+            image_opts=ImageOptions(resampling='bilinear'))
+        img = result.as_image()
+        
+        eq_(img.size, (200, 200))
+        # some shades of grey with bilinear
+        assert len(img.getcolors()) >= 4
+        
 
 class TestLayerMerge(object):
     def test_opacity_merge(self):
@@ -377,7 +394,8 @@ class TestTransform(object):
         self.src_bbox = self.dst_srs.transform_bbox_to(self.src_srs, self.dst_bbox)
     def test_transform(self, mesh_div=4):
         transformer = ImageTransformer(self.src_srs, self.dst_srs, mesh_div=mesh_div)
-        result = transformer.transform(self.src_img, self.src_bbox, self.dst_size, self.dst_bbox)
+        result = transformer.transform(self.src_img, self.src_bbox, self.dst_size, self.dst_bbox,
+            image_opts=ImageOptions(resampling='nearest'))
         assert isinstance(result, ImageSource)
         assert result.as_image() != self.src_img
         assert result.size == (100, 150)

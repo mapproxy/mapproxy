@@ -147,7 +147,7 @@ class TiledImage(object):
         tm = TileMerger(self.tile_grid, self.tile_size)
         return tm.merge(self.tiles, transparent=self.transparent)
     
-    def transform(self, req_bbox, req_srs, out_size, resampling=None):
+    def transform(self, req_bbox, req_srs, out_size, image_opts):
         """
         Return the the tiles as one merged and transformed image.
         
@@ -156,6 +156,7 @@ class TiledImage(object):
         :param out_size: the size in pixel of the output image
         :rtype: `ImageSource`
         """
-        transformer = ImageTransformer(self.src_srs, req_srs, resampling=resampling)
+        transformer = ImageTransformer(self.src_srs, req_srs)
         src_img = self.image()
-        return transformer.transform(src_img, self.src_bbox, out_size, req_bbox)
+        return transformer.transform(src_img, self.src_bbox, out_size, req_bbox,
+            image_opts)

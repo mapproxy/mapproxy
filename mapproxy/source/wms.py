@@ -108,8 +108,8 @@ class WMSSource(Source):
         img = ImageSource(resp, format, size=src_size,
                           transparent=self.image_opts.transparent)
         
-        img = ImageTransformer(src_srs, dst_srs, self.image_opts.resampling).transform(img, src_bbox, 
-            query.size, dst_bbox)
+        img = ImageTransformer(src_srs, dst_srs).transform(img, src_bbox, 
+            query.size, dst_bbox, self.image_opts)
         
         img.format = format
         return img
