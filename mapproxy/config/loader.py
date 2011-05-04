@@ -487,8 +487,9 @@ class SourceConfiguration(ConfigurationBase):
         if transparent is None:
             transparent = self.conf.get('transparent', False)
         opacity = self.conf.get('image', {}).get('opacity')
+        format = self.conf.get('image', {}).get('format')
         return ImageOptions(transparent=transparent, opacity=opacity,
-            resampling=resampling)
+            resampling=resampling, format=format)
     
     def http_client(self, url):
         http_client = None
@@ -548,6 +549,10 @@ class WMSSourceConfiguration(SourceConfiguration):
             transparent = self.conf['req'].get('transparent', 'false')
             transparent = bool(str(transparent).lower() == 'true')
             self.conf.setdefault('image', {})['transparent'] = transparent
+        if 'format' not in self.conf.get('image', {}):
+            format = self.conf['req'].get('format')
+            if format:
+                self.conf.setdefault('image', {})['format'] = format
         return SourceConfiguration.image_opts(self)
     
     def source(self, params=None):
@@ -593,12 +598,13 @@ class WMSSourceConfiguration(SourceConfiguration):
         request = create_request(self.conf['req'], params, version=version,
             abspath=self.context.globals.abspath)
         http_client, request.url = self.http_client(request.url)
-        client = WMSClient(request, supported_srs, http_client=http_client, 
-                           http_method=http_method, resampling=image_opts.resampling, lock=lock,
-                           supported_formats=supported_formats or None)
+        client = WMSClient(request, http_client=http_client, 
+                           http_method=http_method, lock=lock)
         return WMSSource(client, image_opts=image_opts, coverage=coverage,
                          res_range=res_range, transparent_color=transparent_color,
-                         transparent_color_tolerance=transparent_color_tolerance)
+                         transparent_color_tolerance=transparent_color_tolerance,
+                         supported_srs=supported_srs,
+                         supported_formats=supported_formats or None)
     
     def fi_source(self, params=None):
         if params is None: params = {}
