@@ -245,7 +245,7 @@ class TestLayerMerge(object):
         img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)),
             image_opts=ImageOptions(opacity=0.5))
         
-        result = merge_images([img1, img2], transparent=False)
+        result = merge_images([img1, img2], ImageOptions(transparent=False))
         img = result.as_image()
         eq_(img.getpixel((0, 0)), (127, 127, 255))
 
@@ -254,7 +254,7 @@ class TestLayerMerge(object):
         img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)).convert('P'),
             image_opts=ImageOptions(opacity=0.5))
         
-        result = merge_images([img1, img2])
+        result = merge_images([img1, img2], ImageOptions(transparent=True))
         img = result.as_image()
         eq_(img.getpixel((0, 0)), (127, 127, 255, 255))
 
@@ -262,7 +262,7 @@ class TestLayerMerge(object):
         img1 = ImageSource(Image.new('RGB', (10, 10), (255, 0, 255)))
         img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)))
         
-        result = merge_images([img1, img2], transparent=False)
+        result = merge_images([img1, img2], ImageOptions(transparent=False))
         img = result.as_image()
         eq_(img.getpixel((0, 0)), (0, 255, 255))
     

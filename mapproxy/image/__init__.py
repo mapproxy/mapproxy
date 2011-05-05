@@ -47,7 +47,7 @@ class LayerMerger(object):
             for l in layer:
                 self.add(l)
 
-    def merge(self, format='png', size=None, bgcolor='#ffffff', transparent=False):
+    def merge(self, image_opts, size=None):
         """
         Merge the layers. If the format is not 'png' just return the last image.
         
@@ -56,9 +56,10 @@ class LayerMerger(object):
         :rtype: `ImageSource`
         """
         if not self.layers:
-            return BlankImageSource(size=size, image_opts=ImageOptions(bgcolor=bgcolor, transparent=transparent))
+            return BlankImageSource(size=size, image_opts=image_opts)
         if len(self.layers) == 1:
-            if (self.layers[0].image_opts.transparent == transparent):
+            # TODO image_opts: compare with image_opts?!
+            if (self.layers[0].image_opts.transparent == image_opts.transparent):
                 return self.layers[0]
         
         # TODO optimizations
@@ -68,11 +69,8 @@ class LayerMerger(object):
         
         if size is None:
             size = self.layers[0].size
-        bgcolor = ImageColor.getrgb(bgcolor)
-        if transparent:
-            img = Image.new('RGBA', size, bgcolor+(0,))
-        else:
-            img = Image.new('RGB', size, bgcolor)
+        
+        img = create_image(size, image_opts)
         
         for layer in self.layers:
             layer_img = layer.as_image()
@@ -86,9 +84,9 @@ class LayerMerger(object):
                     img.paste(layer_img, (0, 0), layer_img)
                 else:
                     img.paste(layer_img, (0, 0))
-        return ImageSource(img, size=size, image_opts=ImageOptions(format=format, transparent=transparent))
+        return ImageSource(img, size=size, image_opts=image_opts)
 
-def merge_images(images, format='png', size=None, transparent=True):
+def merge_images(images, image_opts, size=None):
     """
     Merge multiple images into one.
     
@@ -100,7 +98,7 @@ def merge_images(images, format='png', size=None, transparent=True):
     """
     merger = LayerMerger()
     merger.add(images)
-    return merger.merge(format=format, size=size, transparent=transparent)
+    return merger.merge(image_opts=image_opts, size=size)
 
 def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transparent=True):
     """

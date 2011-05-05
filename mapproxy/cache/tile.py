@@ -40,6 +40,7 @@ from __future__ import with_statement
 
 from mapproxy.grid import MetaGrid
 from mapproxy.image import merge_images
+from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
 from mapproxy.util import async
@@ -254,7 +255,7 @@ class TileCreator(object):
                 imgs.append(img)
         
         if not imgs: return None
-        return merge_images(imgs, size=query.size)
+        return merge_images(imgs, size=query.size, image_opts=ImageOptions(format=query.format))
     
     def _create_meta_tiles(self, meta_tiles):
         if self.tile_mgr.concurrent_tile_creators > 1 and len(meta_tiles) > 1:
