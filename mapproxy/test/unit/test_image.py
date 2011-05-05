@@ -245,8 +245,8 @@ class TestMessageImage(object):
         eq_([x for x in img.as_image().histogram() if x > 10],
              [14923, 77, 14923, 77, 14923, 77])
     def test_transparent(self):
-        image_opts = PNG_FORMAT.copy()
-        image_opts.transparent = True
+        image_opts = ImageOptions(transparent=True)
+        print image_opts
         img = message_image('', size=(100, 150), image_opts=image_opts)
         assert isinstance(img, ImageSource)
         assert img.size == (100, 150)

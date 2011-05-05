@@ -19,6 +19,7 @@ import os
 
 from mapproxy.platform.image import Image, ImageColor, ImageDraw, ImageFont
 from mapproxy.image import ImageSource
+from mapproxy.image.opts import create_image
 
 _pil_ttf_support = True
 
@@ -148,23 +149,18 @@ class ExceptionImage(MessageImage):
     font_name = 'default'
     font_size = 9
     def __init__(self, message, image_opts):
-        MessageImage.__init__(self, message, image_opts=image_opts)
-        # TODO image_opts
-        self.bgcolor = image_opts.bgcolor or '#ffffff'
-        self.transparent = image_opts.transparent
+        MessageImage.__init__(self, message, image_opts=image_opts.copy())
+        if not self.image_opts.bgcolor:
+            self.image_opts.bgcolor = '#ffffff'
     
     def new_image(self, size):
-        bgcolor = ImageColor.getrgb(self.bgcolor)
-        if self.transparent:
-            bgcolor += (0,)
-            return Image.new('RGBA', size, color=bgcolor)
-        return Image.new('RGB', size, color=bgcolor)
+        return create_image(size, self.image_opts)
     
     @property
     def font_color(self):
-        if self.transparent:
+        if self.image_opts.transparent:
             return ImageColor.getrgb('black')
-        if _luminance(ImageColor.getrgb(self.bgcolor)) < 128:
+        if _luminance(ImageColor.getrgb(self.image_opts.bgcolor)) < 128:
             return ImageColor.getrgb('white')
         return ImageColor.getrgb('black')
     
@@ -207,9 +203,8 @@ class AttributionImage(MessageImage):
     font_size = 10
     placement = 'lr'
     
-    def __init__(self, message, image_opts, transparent=False, inverse=False):
+    def __init__(self, message, image_opts, inverse=False):
         MessageImage.__init__(self, message, image_opts=image_opts)
-        self.transparent = transparent
         self.inverse = inverse
     
     @property
