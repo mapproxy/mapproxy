@@ -59,7 +59,8 @@ class DebugSource(Source):
         res_x = w/query.size[0]
         res_y = h/query.size[1]
         debug_info = "bbox: %r\nres: %.8f(%.8f)" % (bbox, res_x, res_y)
-        return message_image(debug_info, size=query.size, transparent=True)
+        return message_image(debug_info, size=query.size,
+            image_opts=ImageOptions(transparent=True))
 
 class DummySource(Source):
     """

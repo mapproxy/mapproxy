@@ -20,6 +20,7 @@ import os
 import hashlib
 
 from mapproxy.image import ImageSource
+from mapproxy.image.opts import ImageOptions
 from mapproxy.cache.file import _create_dir
 
 import logging
@@ -59,7 +60,7 @@ class LegendCache(object):
             legend.location = os.path.join(self.cache_dir, hash) + '.' + self.file_ext
             _create_dir(legend.location)
         
-        data = legend.source.as_buffer(format=self.file_ext, seekable=True)
+        data = legend.source.as_buffer(ImageOptions(format='image/' + self.file_ext), seekable=True)
         data.seek(0)
         with open(legend.location, 'wb') as f:
             log.debug('writing to %s' % (legend.location))

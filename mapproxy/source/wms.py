@@ -84,8 +84,7 @@ class WMSSource(Source):
             if self.supported_srs[idx] is not query.srs:
                 query.srs = self.supported_srs[idx]
         resp = self.client.retrieve(query, format)
-        return ImageSource(resp, size=query.size, format=format,
-                           transparent=self.image_opts.transparent)
+        return ImageSource(resp, size=query.size, image_opts=self.image_opts)
     
     def _get_transformed(self, query, format):
         dst_srs = query.srs
@@ -105,8 +104,7 @@ class WMSSource(Source):
         src_query = MapQuery(src_bbox, src_size, src_srs, format)
         resp = self.client.retrieve(src_query, format)
         
-        img = ImageSource(resp, format, size=src_size,
-                          transparent=self.image_opts.transparent)
+        img = ImageSource(resp, size=src_size, image_opts=self.image_opts)
         
         img = ImageTransformer(src_srs, dst_srs).transform(img, src_bbox, 
             query.size, dst_bbox, self.image_opts)

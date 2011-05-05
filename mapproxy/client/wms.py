@@ -24,6 +24,7 @@ from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClient
 from mapproxy.srs import make_lin_transf, SRS
 from mapproxy.image import ImageSource
+from mapproxy.image.opts import ImageOptions
 from mapproxy.featureinfo import create_featureinfo_doc
 
 import logging
@@ -163,7 +164,7 @@ class WMSLegendClient(object):
         resp = self._retrieve(query)
         format = split_mime_type(query.format)[1]
         self._check_resp(resp)
-        return ImageSource(resp, format=format)
+        return ImageSource(resp, image_opts=ImageOptions(format=format))
     
     def _retrieve(self, query):
         url = self._query_url(query)
@@ -196,7 +197,7 @@ class WMSLegendURLClient(object):
         resp = self.http_client.open(self.url)
         format = split_mime_type(query.format)[1]
         self._check_resp(resp)
-        return ImageSource(resp, format=format)
+        return ImageSource(resp, image_opts=ImageOptions(format=format))
     
     def _check_resp(self, resp):
         if 'Content-type' not in resp.headers:

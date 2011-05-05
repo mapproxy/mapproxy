@@ -48,7 +48,7 @@ class TileMerger(object):
             if ordered_tiles[0] is not None:
                 tile = ordered_tiles.pop()
                 return ImageSource(tile.source, size=self.tile_size,
-                                   transparent=image_opts.transparent)
+                                   image_opts=image_opts)
         src_size = self._src_size()
         
         result = create_image(src_size, image_opts)
@@ -71,7 +71,7 @@ class TileMerger(object):
                             os.remove(source.filename)
                 else:
                     raise
-        return ImageSource(result, size=src_size, transparent=image_opts.transparent)
+        return ImageSource(result, size=src_size, image_opts=image_opts)
     
     def _src_size(self):
         width = self.tile_grid[0]*self.tile_size[0]

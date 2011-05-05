@@ -119,7 +119,7 @@ class ImageTransformer(object):
             result = src_img.as_image().transform(dst_size, Image.EXTENT,
                                                   (minx, miny, maxx, maxy),
                                                   image_filter[image_opts.resampling])
-        return ImageSource(result, size=dst_size, transparent=image_opts.transparent)
+        return ImageSource(result, size=dst_size, image_opts=image_opts)
     
     def _transform(self, src_img, src_bbox, dst_size, dst_bbox, image_opts):
         """
@@ -151,7 +151,7 @@ class ImageTransformer(object):
 
         result = src_img.as_image().transform(dst_size, Image.MESH, meshes,
                                               image_filter[image_opts.resampling])
-        return ImageSource(result, size=dst_size, transparent=image_opts.transparent)
+        return ImageSource(result, size=dst_size, image_opts=image_opts)
         
     def _no_transformation_needed(self, src_size, src_bbox, dst_size, dst_bbox):
         """

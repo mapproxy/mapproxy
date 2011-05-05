@@ -21,6 +21,7 @@ from cStringIO import StringIO
 
 from mapproxy.grid import tile_grid
 from mapproxy.image import ImageSource
+from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage
 from mapproxy.source import Source, SourceError
 from mapproxy.client.http import HTTPClientError
@@ -83,5 +84,5 @@ class MapnikSource(Source):
         img = mapnik.Image(query.size[0], query.size[1])
         mapnik.render(m, img)
         data = StringIO(img.tostring(str(query.format)))
-        return ImageSource(data, size=query.size,
-            transparent=self.transparent, format=query.format)
+        return ImageSource(data, size=query.size, 
+            image_opts=ImageOptions(transparent=self.transparent, format=query.format))

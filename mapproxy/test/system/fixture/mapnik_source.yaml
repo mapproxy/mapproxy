@@ -27,4 +27,7 @@ sources:
   mapnik_level:
     type: mapnik
     mapfile: ./mapnik-%(webmercator_level)0.2d.xml
-  
+
+globals:
+  image:
+    paletted: False

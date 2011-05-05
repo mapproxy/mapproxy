@@ -488,8 +488,14 @@ class SourceConfiguration(ConfigurationBase):
             transparent = self.conf.get('transparent', False)
         opacity = self.conf.get('image', {}).get('opacity')
         format = self.conf.get('image', {}).get('format')
+        
+        # force 256 colors for image.paletted for backwards compat
+        paletted = self.context.globals.get_value('image.paletted', self.conf)
+        colors = None
+        if paletted:
+            colors = 256
         return ImageOptions(transparent=transparent, opacity=opacity,
-            resampling=resampling, format=format)
+            resampling=resampling, format=format, colors=colors)
     
     def http_client(self, url):
         http_client = None

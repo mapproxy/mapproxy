@@ -1,5 +1,6 @@
 from mapproxy.layer import MapLayer, DefaultMapExtent
 from mapproxy.image import BlankImageSource
+from mapproxy.image.opts import ImageOptions
 from mapproxy.request.base import Request
 from mapproxy.exception import RequestError
 from mapproxy.request.wms import wms_request
@@ -296,7 +297,7 @@ class DummyTileLayer(object):
         self.name = name
     def render(self, tile_request, use_profiles=None):
         self.requested = True
-        resp = BlankImageSource((256, 256), format='png')
+        resp = BlankImageSource((256, 256), image_opts=ImageOptions(format='image/png'))
         resp.timestamp = 0
         return resp
         

@@ -36,6 +36,11 @@ from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image_file,
 from mapproxy.srs import SRS
 from nose.tools import eq_
 
+
+PNG_FORMAT = ImageOptions(format='image/png')
+JPEG_FORMAT = ImageOptions(format='image/jpeg')
+TIFF_FORMAT = ImageOptions(format='image/tiff')
+
 class TestImageSource(object):
     def setup(self):
         self.tmp_filename = create_tmp_image_file((100, 100))
@@ -44,7 +49,7 @@ class TestImageSource(object):
         os.remove(self.tmp_filename)
         
     def test_from_filename(self):
-        ir = ImageSource(self.tmp_filename, 'png')
+        ir = ImageSource(self.tmp_filename, PNG_FORMAT)
         assert is_png(ir.as_buffer())
         assert ir.as_image().size == (100, 100)
 
@@ -56,7 +61,7 @@ class TestImageSource(object):
 
     def test_from_image(self):
         img = Image.new('RGBA', (100, 100))
-        ir = ImageSource(img, 'png')
+        ir = ImageSource(img, (100, 100), PNG_FORMAT)
         assert ir.as_image() == img
         assert is_png(ir.as_buffer())
     
@@ -78,29 +83,31 @@ class TestImageSource(object):
     def test_output_formats(self):
         img = Image.new('RGB', (100, 100))
         for format in ['png', 'gif', 'tiff', 'jpeg', 'GeoTIFF', 'bmp']:
-            ir = ImageSource(img, format)
+            ir = ImageSource(img, (100, 100), image_opts=ImageOptions(format=format))
             yield check_format, ir.as_buffer(), format
     
     def test_converted_output(self):
-        ir = ImageSource(self.tmp_filename, 'png')
+        ir = ImageSource(self.tmp_filename, (100, 100), PNG_FORMAT)
         assert is_png(ir.as_buffer())
-        assert is_jpeg(ir.as_buffer(format='jpeg'))
+        assert is_jpeg(ir.as_buffer(JPEG_FORMAT))
         assert is_jpeg(ir.as_buffer())
-        assert is_tiff(ir.as_buffer(format='tiff'))
+        assert is_tiff(ir.as_buffer(TIFF_FORMAT))
         assert is_tiff(ir.as_buffer())
         
     def test_output_formats_png8(self):
         img = Image.new('RGBA', (100, 100))
-        ir = ImageSource(img, format='png')
-        img = Image.open(ir.as_buffer(paletted=True))
+        ir = ImageSource(img, image_opts=PNG_FORMAT)
+        img = Image.open(ir.as_buffer(ImageOptions(colors=256, transparent=True, format='image/png')))
         assert img.mode == 'P'
         assert img.getpixel((0, 0)) == 255
         
     def test_output_formats_png24(self):
         img = Image.new('RGBA', (100, 100))
-        ir = ImageSource(img, format='png')
-        img = Image.open(ir.as_buffer(paletted=False))
-        assert img.mode == 'RGBA'
+        image_opts = PNG_FORMAT.copy()
+        image_opts.colors = 0 # TODO image_opts
+        ir = ImageSource(img, image_opts=image_opts)
+        img = Image.open(ir.as_buffer())
+        eq_(img.mode, 'RGBA')
         assert img.getpixel((0, 0)) == (0, 0, 0, 0)
 
 class ROnly(object):
@@ -219,7 +226,9 @@ class TestTextDraw(object):
         
 class TestMessageImage(object):
     def test_blank(self):
-        img = message_image('', size=(100, 150), format='png', bgcolor='#113399')
+        image_opts = PNG_FORMAT.copy()
+        image_opts.bgcolor = '#113399'
+        img = message_image('', size=(100, 150), image_opts=image_opts)
         assert isinstance(img, ImageSource)
         eq_(img.size, (100, 150))
         pil_img = img.as_image()
@@ -227,14 +236,18 @@ class TestMessageImage(object):
         # 3 values in histogram (RGB)
         assert [x for x in pil_img.histogram() if x > 0] == [15000, 15000, 15000]
     def test_message(self):
-        img = message_image('test', size=(100, 150), format='png', bgcolor='#113399')
+        image_opts = PNG_FORMAT.copy()
+        image_opts.bgcolor = '#113399'
+        img = message_image('test', size=(100, 150), image_opts=image_opts)
         assert isinstance(img, ImageSource)
         assert img.size == (100, 150)
         # 6 values in histogram (3xRGB for background, 3xRGB for text message)
         eq_([x for x in img.as_image().histogram() if x > 10],
              [14923, 77, 14923, 77, 14923, 77])
     def test_transparent(self):
-        img = message_image('', size=(100, 150), format='png', transparent=True)
+        image_opts = PNG_FORMAT.copy()
+        image_opts.transparent = True
+        img = message_image('', size=(100, 150), image_opts=image_opts)
         assert isinstance(img, ImageSource)
         assert img.size == (100, 150)
         pil_img = img.as_image()
@@ -349,7 +362,7 @@ class TestMergeAll(object):
 class TestGetCrop(object):
     def setup(self):
         self.img = ImageSource(create_tmp_image_file((100, 100), two_colored=True),
-                               format='png', size=(100, 100))
+                               image_opts=ImageOptions(format='image/png'), size=(100, 100))
     def test_perfect_match(self):
         bbox = (-10, -5, 30, 35)
         transformer = ImageTransformer(SRS(4326), SRS(4326))
@@ -381,7 +394,8 @@ class TestGetCrop(object):
 class TestLayerMerge(object):
     def test_opacity_merge(self):
         img1 = ImageSource(Image.new('RGB', (10, 10), (255, 0, 255)))
-        img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)), opacity=0.5)
+        img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)),
+            image_opts=ImageOptions(opacity=0.5))
         
         result = merge_images([img1, img2], transparent=False)
         img = result.as_image()
@@ -389,7 +403,8 @@ class TestLayerMerge(object):
 
     def test_opacity_merge_mixed_modes(self):
         img1 = ImageSource(Image.new('RGBA', (10, 10), (255, 0, 255, 255)))
-        img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)).convert('P'), opacity=0.5)
+        img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)).convert('P'),
+            image_opts=ImageOptions(opacity=0.5))
         
         result = merge_images([img1, img2])
         img = result.as_image()
