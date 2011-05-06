@@ -289,7 +289,7 @@ class CacheMapLayer(MapLayer):
         
         tiled_image = self._tiled_image(query)
         result = tiled_image.transform(query.bbox, query.srs, query.size, 
-                                       self.image_opts)
+                                       self.tile_manager.image_opts)
         return result
 
     def _check_tiled(self, query):

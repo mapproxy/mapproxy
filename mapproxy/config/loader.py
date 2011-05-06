@@ -34,7 +34,7 @@ from mapproxy.util.lock import SemLock
 from mapproxy.util.yaml import load_yaml_file, load_yaml, YAMLError
 from mapproxy.config.config import load_default_config
 from mapproxy.client.http import auth_data_from_url, HTTPClient
-from mapproxy.image.opts import ImageOptions
+from mapproxy.image.opts import ImageOptions, compatible_image_options
 
 def loader(loaders, name):
     """
@@ -307,6 +307,23 @@ class ConfigurationBase(object):
             if k not in self.conf:
                 self.conf[k] = v
 
+class ImageOptionsConfiguration(object):
+    @memoize
+    def image_opts(self):
+        resampling = self.context.globals.get_value('image.resampling_method', self.conf)
+        transparent = self.conf.get('image', {}).get('transparent')
+        opacity = self.conf.get('image', {}).get('opacity')
+        format = self.conf.get('image', {}).get('format')
+        colors = self.conf.get('image', {}).get('colors')
+        mode = self.conf.get('image', {}).get('mode')
+        
+        # force 256 colors for image.paletted for backwards compat
+        paletted = self.context.globals.get_value('image.paletted', self.conf)
+        if colors is None and paletted:
+            colors = 256
+        return ImageOptions(transparent=transparent, opacity=opacity,
+            resampling=resampling, format=format, colors=colors, mode=mode)
+
 class GridConfiguration(ConfigurationBase):
     optional_keys = set('''res srs bbox bbox_srs num_levels tile_size base
         stretch_factor max_shrink_factor align_resolutions_with min_res max_res
@@ -464,7 +481,7 @@ class SourcesCollection(dict):
         return set(layers.split(','))
 
 
-class SourceConfiguration(ConfigurationBase):
+class SourceConfiguration(ConfigurationBase, ImageOptionsConfiguration):
     @classmethod
     def load(cls, conf, context):
         source_type = conf['type']
@@ -480,23 +497,6 @@ class SourceConfiguration(ConfigurationBase):
         if not 'coverage' in self.conf: return None
         return load_coverage(self.conf['coverage'])
         
-    @memoize
-    def image_opts(self):
-        resampling = self.context.globals.get_value('image.resampling_method', self.conf)
-        transparent = self.conf.get('image', {}).get('transparent')
-        if transparent is None:
-            transparent = self.conf.get('transparent', False)
-        opacity = self.conf.get('image', {}).get('opacity')
-        format = self.conf.get('image', {}).get('format')
-        
-        # force 256 colors for image.paletted for backwards compat
-        paletted = self.context.globals.get_value('image.paletted', self.conf)
-        colors = None
-        if paletted:
-            colors = 256
-        return ImageOptions(transparent=transparent, opacity=opacity,
-            resampling=resampling, format=format, colors=colors)
-    
     def http_client(self, url):
         http_client = None
         url, (username, password) = auth_data_from_url(url)
@@ -552,9 +552,10 @@ class WMSSourceConfiguration(SourceConfiguration):
     
     def image_opts(self):
         if 'transparent' not in self.conf.get('image', {}):
-            transparent = self.conf['req'].get('transparent', 'false')
-            transparent = bool(str(transparent).lower() == 'true')
-            self.conf.setdefault('image', {})['transparent'] = transparent
+            transparent = self.conf['req'].get('transparent')
+            if transparent is not None:
+                transparent = bool(str(transparent).lower() == 'true')
+                self.conf.setdefault('image', {})['transparent'] = transparent
         if 'format' not in self.conf.get('image', {}):
             format = self.conf['req'].get('format')
             if format:
@@ -778,7 +779,7 @@ source_configuration_types = {
 }
 
 
-class CacheConfiguration(ConfigurationBase):
+class CacheConfiguration(ConfigurationBase, ImageOptionsConfiguration):
     optional_keys = set('''format request_format cache_dir grids
         link_single_color_images image
         use_direct_from_res use_direct_from_level meta_buffer meta_size
@@ -815,8 +816,16 @@ class CacheConfiguration(ConfigurationBase):
         return filters
     
     @memoize
+    def image_opts(self):
+        if 'format' not in self.conf.get('image', {}):
+            format = self.conf.get('request_format') or self.conf['format']
+            if format:
+                self.conf.setdefault('image', {})['format'] = format
+        return ImageOptionsConfiguration.image_opts(self)
+        
+    @memoize
     def caches(self):
-        request_format = self.conf.get('request_format') or self.conf['format']
+        base_image_opts = self.image_opts()
         caches = []
 
         meta_buffer = self.context.globals.get_value('meta_buffer', self.conf,
@@ -830,18 +839,22 @@ class CacheConfiguration(ConfigurationBase):
         
         for grid_conf in [self.context.grids[g] for g in self.conf['grids']]:
             sources = []
+            source_image_opts = []
             for source_name in self.conf['sources']:
                 if not source_name in self.context.sources:
                     raise ConfigurationError('unknown source %s' % source_name)
                 source_conf = self.context.sources[source_name]
-                source = source_conf.source({'format': request_format})
+                source = source_conf.source({'format': base_image_opts.format})
                 if source:
                     sources.append(source)
+                    source_image_opts.append(source.image_opts)
             assert sources, 'no sources configured for %s' % self.conf['name']
             cache = self._file_cache(grid_conf)
             tile_grid = grid_conf.tile_grid()
             tile_filter = self._tile_filter()
-            mgr = TileManager(tile_grid, cache, sources, file_ext(request_format),
+            image_opts = compatible_image_options(source_image_opts, base_opts=base_image_opts)
+            mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
+                              image_opts=image_opts,
                               meta_size=meta_size, meta_buffer=meta_buffer,
                               minimize_meta_requests=minimize_meta_requests,
                               concurrent_tile_creators=concurrent_tile_creators,

@@ -232,6 +232,7 @@ class ImageSource(object):
                        Existing files will not be re-encoded.
         :rtype: file-like object
         """
+
         if format:
             image_opts = (image_opts or self.image_opts).copy()
             image_opts.format = ImageFormat(format)
@@ -242,7 +243,7 @@ class ImageSource(object):
             self._buf = img_to_buf(self._img, image_opts=image_opts)
         else:
             self._make_seekable_buf() if seekable else self._make_readable_buf()
-            if self.image_opts and image_opts and self.image_opts != image_opts:
+            if self.image_opts and image_opts and self.image_opts.format != image_opts.format:
                 log.debug('converting image from %s -> %s' % (self.image_opts, image_opts))
                 self.source = self.as_image()
                 self._buf = None

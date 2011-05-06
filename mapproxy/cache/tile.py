@@ -59,13 +59,14 @@ class TileManager(object):
         with a tile before it will be stored to disc. the filter should 
         return this or a new tile object.
     """
-    def __init__(self, grid, cache, sources, format, request_format=None,
+    def __init__(self, grid, cache, sources, format, image_opts=None, request_format=None,
         meta_buffer=None, meta_size=None, minimize_meta_requests=False,
         pre_store_filter=None, concurrent_tile_creators=1):
         self.grid = grid
         self.cache = cache
         self.meta_grid = None
         self.format = format
+        self.image_opts = image_opts
         self.request_format = request_format or format
         self.sources = sources
         self.minimize_meta_requests = minimize_meta_requests

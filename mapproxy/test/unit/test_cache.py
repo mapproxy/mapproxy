@@ -523,8 +523,9 @@ class TestCacheMapLayer(object):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = MockWMSClient()
         self.source = WMSSource(self.client)
+        self.image_opts = ImageOptions(resampling='nearest')
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            meta_size=[2, 2], meta_buffer=0)
+            meta_size=[2, 2], meta_buffer=0, image_opts=self.image_opts)
         self.layer = CacheMapLayer(self.tile_mgr, image_opts=default_image_opts)
     
     def test_get_map_small(self):
@@ -553,7 +554,7 @@ class TestCacheMapLayer(object):
         res_range = resolution_range(1000, 10)
         self.source = WMSSource(self.client, res_range=res_range)
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            meta_size=[2, 2], meta_buffer=0)
+            meta_size=[2, 2], meta_buffer=0, image_opts=self.image_opts)
         self.layer = CacheMapLayer(self.tile_mgr, image_opts=default_image_opts)
         
         try:

@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from mapproxy.image.opts import ImageOptions, create_image
+from mapproxy.image.opts import ImageOptions, create_image, compatible_image_options
 from nose.tools import eq_
 
 class TestCreateImage(object):
@@ -60,5 +60,103 @@ class TestCreateImage(object):
         eq_(img.size, (100, 100))
         eq_(img.mode, 'RGBA')
         eq_(img.getcolors(), [(100*100, (200, 100, 0, 30))])
-        
     
+
+class TestCompatibleImageOptions(object):
+    def test_formats(self):
+        img_opts = compatible_image_options([
+            ImageOptions(format='image/png'),
+            ImageOptions(format='image/jpeg'),
+        ])
+        eq_(img_opts.format, 'image/png')
+    
+        img_opts = compatible_image_options([
+            ImageOptions(format='image/png'),
+            ImageOptions(format='image/jpeg'),
+        ],
+        ImageOptions(format='image/tiff'),
+        )
+        eq_(img_opts.format, 'image/tiff')
+    
+    def test_colors(self):
+        img_opts = compatible_image_options([
+            ImageOptions(colors=None),
+            ImageOptions(colors=16),
+        ])
+        eq_(img_opts.colors, 16)
+
+        img_opts = compatible_image_options([
+            ImageOptions(colors=256),
+            ImageOptions(colors=16),
+        ])
+        eq_(img_opts.colors, 256)
+
+        img_opts = compatible_image_options([
+            ImageOptions(colors=256),
+            ImageOptions(colors=16),
+        ],
+        ImageOptions(colors=4)
+        )
+        eq_(img_opts.colors, 4)
+
+        img_opts = compatible_image_options([
+            ImageOptions(colors=256),
+            ImageOptions(colors=0),
+        ])
+        eq_(img_opts.colors, 0)
+    
+    def test_transparent(self):
+        img_opts = compatible_image_options([
+            ImageOptions(transparent=False),
+            ImageOptions(transparent=True),
+        ])
+        eq_(img_opts.transparent, False)
+
+        img_opts = compatible_image_options([
+            ImageOptions(transparent=None),
+            ImageOptions(transparent=True),
+        ])
+        eq_(img_opts.transparent, False)
+
+        img_opts = compatible_image_options([
+            ImageOptions(transparent=None),
+            ImageOptions(transparent=True),
+        ],
+        ImageOptions(transparent=True)
+        )
+        eq_(img_opts.transparent, True)
+        
+        img_opts = compatible_image_options([
+            ImageOptions(transparent=True),
+            ImageOptions(transparent=True),
+        ])
+        eq_(img_opts.transparent, True)
+
+    def test_mode(self):
+        img_opts = compatible_image_options([
+            ImageOptions(mode='RGB'),
+            ImageOptions(mode='P'),
+        ])
+        eq_(img_opts.mode, 'RGB')
+
+        img_opts = compatible_image_options([
+            ImageOptions(mode='RGBA'),
+            ImageOptions(mode='P'),
+        ])
+        eq_(img_opts.mode, 'RGBA')
+
+        img_opts = compatible_image_options([
+            ImageOptions(mode='RGB'),
+            ImageOptions(mode='P'),
+        ])
+        eq_(img_opts.mode, 'RGB')
+
+        img_opts = compatible_image_options([
+            ImageOptions(mode='RGB'),
+            ImageOptions(mode='P'),
+        ],
+        ImageOptions(mode='P')
+        )
+        eq_(img_opts.mode, 'P')
+
+        
