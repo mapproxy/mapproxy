@@ -58,14 +58,10 @@ class LayerMerger(object):
         if not self.layers:
             return BlankImageSource(size=size, image_opts=image_opts)
         if len(self.layers) == 1:
-            # TODO image_opts: compare with image_opts?!
-            if (self.layers[0].image_opts.transparent == image_opts.transparent):
+            layer_opts = self.layers[0].image_opts
+            if not layer_opts.transparent and (not size or size == self.layers[0].size):
+                # layer is opaque, no need to make transparent or add bgcolor
                 return self.layers[0]
-        
-        # TODO optimizations
-        #  - layer with non transparency
-        #         if not format.endswith('png'): #TODO png8?
-        #             return self.layers[-1]
         
         if size is None:
             size = self.layers[0].size

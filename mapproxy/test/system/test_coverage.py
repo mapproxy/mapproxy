@@ -88,7 +88,7 @@ class TestCoverageWMS(SystemTest):
                 resp.content_type = 'image/png'
                 data = StringIO(resp.body)
                 assert is_png(data)
-                assert Image.open(data).mode == 'RGBA'
+                eq_(Image.open(data).mode, 'RGB')
 
 class TestCoverageTMS(SystemTest):
     config = test_config
