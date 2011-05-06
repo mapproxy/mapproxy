@@ -172,7 +172,6 @@ class TestWMS111(WMSTest):
         self.common_map_req.params['styles'] = 'default'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        print resp.body
         data = StringIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGB'
@@ -366,7 +365,6 @@ class TestWMS111(WMSTest):
                         {'body': 'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_fi_req)
-            print resp.body
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, 'info')
 
@@ -391,7 +389,6 @@ class TestWMS111(WMSTest):
             self.common_fi_req.params['bbox'] = '3570269,5540889,3643458,5653553'
             self.common_fi_req.params['srs'] = 'EPSG:31467'
             resp = self.app.get(self.common_fi_req)
-            print resp.body
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, 'info')
 
@@ -455,7 +452,6 @@ class TestWMS111(WMSTest):
         self.common_fi_req.params['query_layers'] = 'tms_cache'
         self.common_fi_req.params['exceptions'] = 'application/vnd.ogc.se_xml'
         resp = self.app.get(self.common_fi_req)
-        print resp.body
         eq_(resp.content_type, 'application/vnd.ogc.se_xml')
         xml = resp.lxml
         eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code'), [])
@@ -603,7 +599,6 @@ class TestWMS110(WMSTest):
                         {'body': 'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_fi_req)
-            print resp.body
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, 'info')
             
@@ -611,7 +606,6 @@ class TestWMS110(WMSTest):
         self.common_fi_req.params['query_layers'] = 'tms_cache'
         self.common_fi_req.params['exceptions'] = 'application/vnd.ogc.se_xml'
         resp = self.app.get(self.common_fi_req)
-        print resp.body
         eq_(resp.content_type, 'application/vnd.ogc.se_xml')
         xml = resp.lxml
         eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code'), [])
@@ -745,7 +739,6 @@ class TestWMS100(WMSTest):
         self.common_fi_req.params['query_layers'] = 'tms_cache'
         self.common_fi_req.params['exceptions'] = 'application/vnd.ogc.se_xml'
         resp = self.app.get(self.common_fi_req)
-        print resp.body
         eq_(resp.content_type, 'text/xml')
         xml = resp.lxml
         assert 'tms_cache is not queryable' in xml.xpath('//WMTException/text()')[0]
