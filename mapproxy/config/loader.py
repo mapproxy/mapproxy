@@ -310,7 +310,7 @@ class ConfigurationBase(object):
 class GridConfiguration(ConfigurationBase):
     optional_keys = set('''res srs bbox bbox_srs num_levels tile_size base
         stretch_factor max_shrink_factor align_resolutions_with min_res max_res
-        res_factor threshold_res
+        res_factor threshold_res name origin
         '''.split())
     
     @memoize
