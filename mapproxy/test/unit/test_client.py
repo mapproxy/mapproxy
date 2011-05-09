@@ -23,6 +23,7 @@ import sys
 from mapproxy.client.http import HTTPClient, HTTPClientError
 from mapproxy.client.tile import TMSClient, TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient
+from mapproxy.grid import tile_grid
 from mapproxy.layer import MapQuery, InfoQuery
 from mapproxy.request.wms import WMS111MapRequest, WMS100MapRequest,\
                                  WMS130MapRequest, WMS111FeatureInfoRequest
@@ -333,6 +334,16 @@ class TestTileClient(object):
                                               {'body': 'tile',
                                                'headers': {'content-type': 'image/png'}})]):
             resp = client.get_tile((5, 13, 9)).source.read()
+            eq_(resp, 'tile')
+
+    def test_bbox(self):
+        grid = tile_grid(4326)
+        template = TileURLTemplate(TESTSERVER_URL + '/service?BBOX=%(bbox)s')
+        client = TileClient(template, grid=grid)
+        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?BBOX=-180.00000000,0.00000000,-90.00000000,90.00000000'},
+                                              {'body': 'tile',
+                                               'headers': {'content-type': 'image/png'}})]):
+            resp = client.get_tile((0, 1, 2)).source.read()
             eq_(resp, 'tile')
 
 class TestCombinedWMSClient(object):

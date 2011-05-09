@@ -753,7 +753,7 @@ class TileSourceConfiguration(SourceConfiguration):
         
         inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
-        client = TileClient(TileURLTemplate(url, format=format), http_client=http_client)
+        client = TileClient(TileURLTemplate(url, format=format), http_client=http_client, grid=grid)
         return TiledSource(grid, client, inverse=inverse, coverage=coverage,
             image_opts=image_opts)
 

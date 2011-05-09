@@ -277,7 +277,7 @@ class TileGrid(object):
         self.origin = origin
         self.name = name
 
-        if origin == 'ul':
+        if origin in ('ul', 'nw'):
             self.flipped_y_axis = True
 
         self.is_geodetic = is_geodetic

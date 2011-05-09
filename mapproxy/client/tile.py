@@ -34,12 +34,13 @@ class TMSClient(object):
         return '%s(%r, %r)' % (self.__class__.__name__, self.url, self.format)
 
 class TileClient(object):
-    def __init__(self, url_template, http_client=None):
+    def __init__(self, url_template, http_client=None, grid=None):
         self.url_template = url_template
         self.http_client = http_client
+        self.grid = grid
     
     def get_tile(self, tile_coord, format=None):
-        url = self.url_template.substitute(tile_coord, format)
+        url = self.url_template.substitute(tile_coord, format, self.grid)
         if self.http_client:
             return self.http_client.open_image(url)
         else:
@@ -78,8 +79,9 @@ class TileURLTemplate(object):
         self.with_tc_path = True if '%(tc_path)' in template else False
         self.with_tms_path = True if '%(tms_path)' in template else False
         self.with_arcgiscache_path = True if '%(arcgiscache_path)' in template else False
-    
-    def substitute(self, tile_coord, format=None):
+        self.with_bbox = True if '%(bbox)' in template else False
+
+    def substitute(self, tile_coord, format=None, grid=None):
         x, y, z = tile_coord
         data = dict(x=x, y=y, z=z)
         data['format'] = format or self.format
@@ -91,6 +93,9 @@ class TileURLTemplate(object):
             data['tms_path'] = tms_path(tile_coord)
         if self.with_arcgiscache_path:
             data['arcgiscache_path'] = arcgiscache_path(tile_coord)
+        if self.with_bbox:
+            data['bbox'] = bbox(tile_coord, grid)
+
         return self.template % data
     
     def __repr__(self):
@@ -147,3 +152,17 @@ def arcgiscache_path(tile_coord):
    """
    return 'L%02d/R%08x/C%08x' % (tile_coord[2], tile_coord[1], tile_coord[0])
 
+def bbox(tile_coord, grid):
+    """
+    >>> from mapproxy.grid import tile_grid
+    >>> grid = tile_grid(4326, bbox=(0, -15, 10, -5))
+    >>> bbox((0, 0, 0), grid)
+    '0.00000000,-15.00000000,10.00000000,-5.00000000'
+    >>> bbox((0, 0, 1), grid)
+    '0.00000000,-15.00000000,5.00000000,-10.00000000'
+    
+    >>> grid = tile_grid(4326, bbox=(0, -15, 10, -5), origin='nw')
+    >>> bbox((0, 0, 1), grid)
+    '0.00000000,-10.00000000,5.00000000,-5.00000000'
+    """
+    return '%.8f,%.8f,%.8f,%.8f' % grid.tile_bbox(tile_coord)
