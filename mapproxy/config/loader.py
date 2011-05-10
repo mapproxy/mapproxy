@@ -34,7 +34,7 @@ from mapproxy.util.lock import SemLock
 from mapproxy.util.yaml import load_yaml_file, load_yaml, YAMLError
 from mapproxy.config.config import load_default_config
 from mapproxy.client.http import auth_data_from_url, HTTPClient
-from mapproxy.image.opts import ImageOptions, compatible_image_options
+from mapproxy.image.opts import ImageOptions, compatible_image_options, ImageFormat
 
 def loader(loaders, name):
     """
@@ -307,7 +307,7 @@ class ConfigurationBase(object):
             if k not in self.conf:
                 self.conf[k] = v
 
-class ImageOptionsConfiguration(object):
+class _ImageOptionsConfiguration(object):
     @memoize
     def image_opts(self):
         resampling = self.context.globals.get_value('image.resampling_method', self.conf)
@@ -386,6 +386,8 @@ class GlobalConfiguration(ConfigurationBase):
         self._copy_conf_values(self.conf, self.base_config)
         self.base_config.conf_base_dir = conf_base_dir
         mapproxy.config.finish_base_config(self.base_config)
+        
+        self.image_options = ImageOptionsConfiguration(self.conf.get('image', {}), context)
     
     def _copy_conf_values(self, d, target):
         for k, v in d.iteritems():
@@ -416,6 +418,82 @@ class GlobalConfiguration(ConfigurationBase):
         
     
 
+default_image_options = {
+    'png8': {
+        'format': 'image/png',
+        'colors': 256,
+        'mode': 'RGB',
+    },
+    'png8a': {
+        'format': 'image/png',
+        'colors': 256,
+        'mode': 'RGBA',
+        'transparent': True
+    },
+    'jpeg': {
+        'format': 'image/jpeg',
+        'mode': 'RGB',
+    },
+}
+
+class ImageOptionsConfiguration(ConfigurationBase):
+    def __init__(self, conf, context):
+        ConfigurationBase.__init__(self, conf, context)
+        self._init_formats()
+    
+    def _init_formats(self):
+        self.formats = {}
+        
+        formats_config = default_image_options.copy()
+        for format, conf in self.conf.get('formats', {}).iteritems():
+            if format in formats_config:
+                tmp = formats_config[format].copy()
+                tmp.update(conf)
+                conf = tmp
+            if 'resampling_method' in conf:
+                conf['resampling'] = conf.pop('resampling_method')
+            formats_config[format] = conf
+        
+        for format, conf in formats_config.iteritems():
+            if 'format' not in conf and format.startswith('image/'):
+                conf['format'] = format
+            self.formats[format] = conf
+    
+    def for_format(self, format):
+        return self.formats[format]
+    
+    def image_opts(self, image_conf, format):
+        conf = {}
+        if format in self.formats:
+            conf = self.formats[format].copy()
+        
+        resampling = image_conf.get('resampling_method') or conf.get('resampling')
+        if resampling is None:
+            resampling = self.context.globals.get_value('image.resampling_method', {})
+        transparent = image_conf.get('transparent')
+        opacity = image_conf.get('opacity')
+        img_format = image_conf.get('format')
+        colors = image_conf.get('colors')
+        mode = image_conf.get('mode')
+        
+        # only overwrite default if it is not None
+        for k, v in dict(transparent=transparent, opacity=opacity, resampling=resampling,
+            format=img_format, colors=colors, mode=mode).iteritems():
+            if v is not None:
+                conf[k] = v
+        
+        if 'format' not in conf and format and format.startswith('image/'):
+            conf['format'] = format
+        
+        # force 256 colors for image.paletted for backwards compat
+        paletted = self.context.globals.get_value('image.paletted', self.conf)
+        if conf.get('colors') is None and 'png' in conf.get('format', '') and paletted:
+            conf['colors'] = 256
+
+        opts = ImageOptions(**conf)
+        return opts
+    
+    
 def dotted_dict_get(key, d):
     """
     >>> dotted_dict_get('foo', {'foo': {'bar': 1}})
@@ -481,7 +559,7 @@ class SourcesCollection(dict):
         return set(layers.split(','))
 
 
-class SourceConfiguration(ConfigurationBase, ImageOptionsConfiguration):
+class SourceConfiguration(ConfigurationBase):
     @classmethod
     def load(cls, conf, context):
         source_type = conf['type']
@@ -496,7 +574,10 @@ class SourceConfiguration(ConfigurationBase, ImageOptionsConfiguration):
     def coverage(self):
         if not 'coverage' in self.conf: return None
         return load_coverage(self.conf['coverage'])
-        
+    
+    def image_opts(self, format=None):
+        return self.context.globals.image_options.image_opts(self.conf.get('image', {}), format)
+    
     def http_client(self, url):
         http_client = None
         url, (username, password) = auth_data_from_url(url)
@@ -550,17 +631,13 @@ class WMSSourceConfiguration(SourceConfiguration):
             fi_transformer = XSLTransformer(fi_xslt)
         return fi_transformer
     
-    def image_opts(self):
+    def image_opts(self, format=None):
         if 'transparent' not in self.conf.get('image', {}):
             transparent = self.conf['req'].get('transparent')
             if transparent is not None:
                 transparent = bool(str(transparent).lower() == 'true')
                 self.conf.setdefault('image', {})['transparent'] = transparent
-        if 'format' not in self.conf.get('image', {}):
-            format = self.conf['req'].get('format')
-            if format:
-                self.conf.setdefault('image', {})['format'] = format
-        return SourceConfiguration.image_opts(self)
+        return SourceConfiguration.image_opts(self, format=format)
     
     def source(self, params=None):
         if not self.conf.get('wms_opts', {}).get('map', True):
@@ -575,7 +652,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         if request_format:
             params['format'] = request_format
         
-        image_opts = self.image_opts()
+        image_opts = self.image_opts(format=params.get('format'))
         
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         supported_formats = [file_ext(f) for f in self.conf.get('supported_formats', [])]
@@ -779,7 +856,7 @@ source_configuration_types = {
 }
 
 
-class CacheConfiguration(ConfigurationBase, ImageOptionsConfiguration):
+class CacheConfiguration(ConfigurationBase):
     optional_keys = set('''format request_format cache_dir grids
         link_single_color_images image
         use_direct_from_res use_direct_from_level meta_buffer meta_size
@@ -817,15 +894,21 @@ class CacheConfiguration(ConfigurationBase, ImageOptionsConfiguration):
     
     @memoize
     def image_opts(self):
+        format = None
         if 'format' not in self.conf.get('image', {}):
             format = self.conf.get('request_format') or self.conf['format']
-            if format:
-                self.conf.setdefault('image', {})['format'] = format
-        return ImageOptionsConfiguration.image_opts(self)
+        image_opts = self.context.globals.image_options.image_opts(self.conf.get('image', {}), format)
+        if image_opts.format is None:
+            if format is not None and format.startswith('image/'):
+                image_opts.format = ImageFormat(format)
+            else:
+                image_opts.format = ImageFormat('image/png')
+        return image_opts
         
     @memoize
     def caches(self):
         base_image_opts = self.image_opts()
+        request_format = self.conf.get('request_format') or base_image_opts.format
         caches = []
 
         meta_buffer = self.context.globals.get_value('meta_buffer', self.conf,
@@ -844,7 +927,7 @@ class CacheConfiguration(ConfigurationBase, ImageOptionsConfiguration):
                 if not source_name in self.context.sources:
                     raise ConfigurationError('unknown source %s' % source_name)
                 source_conf = self.context.sources[source_name]
-                source = source_conf.source({'format': base_image_opts.format})
+                source = source_conf.source({'format': request_format})
                 if source:
                     sources.append(source)
                     source_image_opts.append(source.image_opts)
@@ -867,9 +950,7 @@ class CacheConfiguration(ConfigurationBase, ImageOptionsConfiguration):
     
     @memoize
     def map_layer(self):
-        resampling = self.context.globals.get_value('image.resampling_method', self.conf)
-        opacity = self.conf.get('image', {}).get('opacity')
-        image_opts = ImageOptions(resampling=resampling, opacity=opacity)
+        image_opts = self.image_opts()
         max_tile_limit = self.context.globals.get_value('max_tile_limit', self.conf,
             global_key='cache.max_tile_limit')
         caches = []
@@ -884,7 +965,7 @@ class CacheConfiguration(ConfigurationBase, ImageOptionsConfiguration):
         if len(caches) == 1:
             layer = caches[0][0]
         else:
-            layer = SRSConditional(caches, caches[0][0].extent, caches[0][0].transparent, opacity=opacity)
+            layer = SRSConditional(caches, caches[0][0].extent, caches[0][0].transparent, opacity=image_opts.opacity)
         
         if 'use_direct_from_level' in self.conf:
             self.conf['use_direct_from_res'] = main_grid.resolution(self.conf['use_direct_from_level'])
@@ -893,7 +974,7 @@ class CacheConfiguration(ConfigurationBase, ImageOptionsConfiguration):
                 raise ValueError('use_direct_from_level/res only supports single sources')
             source_conf = self.context.sources[self.conf['sources'][0]]
             layer = ResolutionConditional(layer, source_conf.source(), self.conf['use_direct_from_res'],
-                                          main_grid.srs, layer.extent, opacity=opacity)
+                                          main_grid.srs, layer.extent, opacity=image_opts.opacity)
         return layer
 
 

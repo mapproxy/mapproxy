@@ -544,4 +544,112 @@ class TestConfMerger(object):
         b = {'a': {'aa': 11, 'ab': 13, 'a':{'aaa': 101, 'aab': 101}}}
         m = merge_dict(a, b)
         eq_({'a': {'aa': 12, 'ab': 13, 'a':{'aaa': 100, 'aab': 101}}}, m)
+
+
+class TestImageOptions(object):
+    def test_default_format(self):
+        conf_dict = {
+        }
+        conf = ProxyConfiguration(conf_dict)
+        image_opts = conf.globals.image_options.image_opts({}, 'png8')
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 256)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bicubic')
+    
+    def test_update_default_format(self):
+        conf_dict = {'globals': {'image': {'formats': {
+            'png8': {'colors': 16, 'resampling_method': 'nearest'}
+        }}}}
+        conf = ProxyConfiguration(conf_dict)
+        image_opts = conf.globals.image_options.image_opts({}, 'png8')
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 16)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'nearest')
         
+    def test_custom_format(self):
+        conf_dict = {'globals': {'image': {'resampling_method': 'bilinear',
+            'formats': {
+                'image/foo': {'mode': 'RGBA', 'colors': 42}
+            }
+        }}}
+        conf = ProxyConfiguration(conf_dict)
+        image_opts = conf.globals.image_options.image_opts({}, 'image/foo')
+        eq_(image_opts.format, 'image/foo')
+        eq_(image_opts.mode, 'RGBA')
+        eq_(image_opts.colors, 42)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
+
+    def test_format_grid(self):
+        conf_dict = {
+            'globals': {
+                'image': {
+                    'resampling_method': 'bilinear',
+                    'formats': {
+                        'image/foo': {'mode': 'RGBA', 'colors': 42}
+                    },
+                }
+            },
+            'caches': {
+                'test': {
+                    'sources': [],
+                    'grids': ['GLOBAL_MERCATOR'],
+                    'format': 'png8',
+                }
+            }
+        }
+        conf = ProxyConfiguration(conf_dict)
+        image_opts = conf.caches['test'].image_opts()
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 256)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
+
+    def test_custom_format_grid(self):
+        conf_dict = {
+            'globals': {
+                'image': {
+                    'resampling_method': 'bilinear',
+                    'formats': {
+                        'image/png': {'mode': 'RGBA', 'transparent': True}
+                    },
+                }
+            },
+            'caches': {
+                'test': {
+                    'sources': [],
+                    'grids': ['GLOBAL_MERCATOR'],
+                    'format': 'png8',
+                    'image': {
+                        'colors': 16,
+                    }
+                },
+                'test2': {
+                    'sources': [],
+                    'grids': ['GLOBAL_MERCATOR'],
+                    'format': 'image/png',
+                    'image': {
+                        'colors': 8,
+                    }
+                }
+            }
+        }
+        conf = ProxyConfiguration(conf_dict)
+        image_opts = conf.caches['test'].image_opts()
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 16)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
+
+        image_opts = conf.caches['test2'].image_opts()
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGBA')
+        eq_(image_opts.colors, 8)
+        eq_(image_opts.transparent, True)
+        eq_(image_opts.resampling, 'bilinear')
