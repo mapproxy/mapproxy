@@ -18,7 +18,6 @@
 Filter for tiles (watermark, pngquant, etc.)
 """
 
-from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import ImageSource, WatermarkImage
 
 import logging

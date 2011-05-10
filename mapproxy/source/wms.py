@@ -22,7 +22,6 @@ from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
 from mapproxy.image import concat_legends, make_transparent, ImageSource
 from mapproxy.image.transform import ImageTransformer
-from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, LegendQuery, MapQuery
 from mapproxy.source import Source, InfoSource, SourceError, LegendSource
 from mapproxy.client.http import HTTPClientError

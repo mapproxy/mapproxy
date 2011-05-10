@@ -15,7 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from mapproxy.platform.image import Image
 from mapproxy.image import ImageSource
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.image.opts import create_image
