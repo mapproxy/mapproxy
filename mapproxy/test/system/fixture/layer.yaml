@@ -75,7 +75,8 @@ caches:
     format: png8a
     sources: [wms_cache_transparent]
   wms_cache_link_single:
-    format: image/png
+    format: png24
+    request_format: image/jpeg
     link_single_color_images: True
     sources: [wms_cache]
   wms_cache_100:

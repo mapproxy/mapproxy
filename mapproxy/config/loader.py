@@ -430,6 +430,16 @@ default_image_options = {
         'mode': 'RGBA',
         'transparent': True
     },
+    'png24': {
+        'format': 'image/png; mode=24bit',
+        'mode': 'RGB',
+        'transparent': False
+    },
+    'png32': {
+        'format': 'image/png; mode=32bit',
+        'mode': 'RGBA',
+        'transparent': True
+    },
     'jpeg': {
         'format': 'image/jpeg',
         'mode': 'RGB',

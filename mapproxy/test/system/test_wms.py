@@ -902,15 +902,15 @@ if sys.platform != 'win32':
     
         def test_get_map(self):
             link_name = 'wms_cache_link_single_EPSG900913/01/000/000/001/000/000/001.png'
-            real_name = 'wms_cache_link_single_EPSG900913/single_color_tiles/fe0005.png'
+            real_name = 'wms_cache_link_single_EPSG900913/single_color_tiles/fe00a0.png'
             self.created_tiles.append(link_name)
             self.created_tiles.append(real_name)
-            with tmp_image((256, 256), format='png', color='#fe0005') as img:
-                expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
+            with tmp_image((256, 256), format='jpeg', color='#fe00a0') as img:
+                expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
                                           '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                           '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                           '&WIDTH=256'},
-                                {'body': img.read(), 'headers': {'content-type': 'image/png'}})
+                                {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
                 with mock_httpd(('localhost', 42423), [expected_req]):
                     self.common_map_req.params['bbox'] = '0,0,180,90'
                     resp = self.app.get(self.common_map_req)
