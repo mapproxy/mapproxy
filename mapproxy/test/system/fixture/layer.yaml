@@ -6,6 +6,9 @@ globals:
   image:
     # resampling: 'bicubic'
     paletted: False
+    formats:
+      custom:
+        format: image/jpeg
 services:
   tms:
   kml:
@@ -69,7 +72,7 @@ caches:
     use_direct_from_level: 8
     sources: [wms_cache]
   wms_cache_transparent:
-    format: image/png
+    format: png8a
     sources: [wms_cache_transparent]
   wms_cache_link_single:
     format: image/png
@@ -83,7 +86,7 @@ caches:
     format: image/jpeg
     sources: [wms_cache_130]
   wms_cache_multi:
-    format: image/jpeg
+    format: custom
     grids: [GLOBAL_GEODETIC, GLOBAL_MERCATOR]
     sources: [wms_cache_130]
   tms_cache:

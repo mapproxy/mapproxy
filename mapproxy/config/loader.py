@@ -869,7 +869,7 @@ class CacheConfiguration(ConfigurationBase):
         return self.context.globals.get_path('cache_dir', self.conf,
             global_key='cache.base_dir')
         
-    def _file_cache(self, grid_conf):
+    def _file_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):
             return DummyCache()
         
@@ -881,7 +881,7 @@ class CacheConfiguration(ConfigurationBase):
         
         lock_timeout = self.context.globals.get_value('http.client_timeout', {})
         
-        return FileCache(cache_dir, file_ext=file_ext(self.conf['format']),
+        return FileCache(cache_dir, file_ext=file_ext,
             lock_timeout=lock_timeout, link_single_color_images=link_single_color_images)
     
     def _tile_filter(self):
@@ -932,10 +932,10 @@ class CacheConfiguration(ConfigurationBase):
                     sources.append(source)
                     source_image_opts.append(source.image_opts)
             assert sources, 'no sources configured for %s' % self.conf['name']
-            cache = self._file_cache(grid_conf)
             tile_grid = grid_conf.tile_grid()
             tile_filter = self._tile_filter()
             image_opts = compatible_image_options(source_image_opts, base_opts=base_image_opts)
+            cache = self._file_cache(grid_conf, image_opts.format.ext)
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
                               image_opts=image_opts,
                               meta_size=meta_size, meta_buffer=meta_buffer,
