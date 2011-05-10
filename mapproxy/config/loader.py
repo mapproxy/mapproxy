@@ -653,7 +653,7 @@ class WMSSourceConfiguration(SourceConfiguration):
             params['format'] = request_format
         
         image_opts = self.image_opts(format=params.get('format'))
-        
+
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         supported_formats = [file_ext(f) for f in self.conf.get('supported_formats', [])]
         version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
@@ -896,7 +896,7 @@ class CacheConfiguration(ConfigurationBase):
     def image_opts(self):
         format = None
         if 'format' not in self.conf.get('image', {}):
-            format = self.conf.get('request_format') or self.conf['format']
+            format = self.conf.get('format') or self.conf.get('request_format')
         image_opts = self.context.globals.image_options.image_opts(self.conf.get('image', {}), format)
         if image_opts.format is None:
             if format is not None and format.startswith('image/'):
@@ -908,7 +908,7 @@ class CacheConfiguration(ConfigurationBase):
     @memoize
     def caches(self):
         base_image_opts = self.image_opts()
-        request_format = self.conf.get('request_format') or base_image_opts.format
+        request_format = self.conf.get('request_format') or self.conf.get('format')
         caches = []
 
         meta_buffer = self.context.globals.get_value('meta_buffer', self.conf,

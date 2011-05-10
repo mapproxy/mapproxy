@@ -116,13 +116,13 @@ class TestCompatibleImageOptions(object):
             ImageOptions(transparent=None),
             ImageOptions(transparent=True),
         ])
-        eq_(img_opts.transparent, False)
+        eq_(img_opts.transparent, True)
 
         img_opts = compatible_image_options([
             ImageOptions(transparent=None),
             ImageOptions(transparent=True),
         ],
-        ImageOptions(transparent=True)
+        ImageOptions(transparent=None)
         )
         eq_(img_opts.transparent, True)
         

@@ -653,3 +653,67 @@ class TestImageOptions(object):
         eq_(image_opts.colors, 8)
         eq_(image_opts.transparent, True)
         eq_(image_opts.resampling, 'bilinear')
+
+    def test_custom_format_source(self):
+        conf_dict = {
+            'globals': {
+                'image': {
+                    'resampling_method': 'bilinear',
+                    'formats': {
+                        'image/png': {'mode': 'RGBA', 'transparent': True}
+                    },
+                }
+            },
+            'caches': {
+                'test': {
+                    'sources': ['test_source'],
+                    'grids': ['GLOBAL_MERCATOR'],
+                    'format': 'png8',
+                    'image': {
+                        'colors': 16,
+                    }
+                },
+            },
+            'sources': {
+                'test_source': {
+                    'type': 'wms',
+                    'req': {
+                        'url': 'http://example.org/',
+                        'layers': 'foo',
+                    }
+                }
+            }
+        }
+        conf = ProxyConfiguration(conf_dict)
+        _grid, _extent, tile_mgr = conf.caches['test'].caches()[0]
+        image_opts = tile_mgr.image_opts
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 16)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
+        
+        image_opts = tile_mgr.sources[0].image_opts
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 256)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
+
+        
+        conf_dict['caches']['test']['request_format'] = 'image/tiff'
+        conf = ProxyConfiguration(conf_dict)
+        _grid, _extent, tile_mgr = conf.caches['test'].caches()[0]
+        image_opts = tile_mgr.image_opts
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 16)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
+        
+        image_opts = tile_mgr.sources[0].image_opts
+        eq_(image_opts.format, 'image/tiff')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, None)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
