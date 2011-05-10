@@ -90,11 +90,9 @@ class TileSplitter(object):
     """
     Splits a large image into multiple tiles.
     """
-    def __init__(self, meta_tile, format='png'):
+    def __init__(self, meta_tile, image_opts):
         self.meta_img = meta_tile.as_image()
-        if self.meta_img.mode == 'P' and format in ('png', 'gif'):
-            self.meta_img = self.meta_img.convert('RGBA')
-        self.format = format
+        self.image_opts = image_opts
     
     def get_tile(self, crop_coord, tile_size):
         """
@@ -108,7 +106,7 @@ class TileSplitter(object):
         maxy = miny + tile_size[1]
         
         crop = self.meta_img.crop((minx, miny, maxx, maxy))
-        return ImageSource(crop, self.format)
+        return ImageSource(crop, size=tile_size, image_opts=self.image_opts)
     
 
 class TiledImage(object):

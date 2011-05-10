@@ -23,7 +23,6 @@ import hashlib
 
 from mapproxy.util.lock import FileLock, DummyLock, cleanup_lockdir
 from mapproxy.image import ImageSource, is_single_color_image
-from mapproxy.image.opts import ImageOptions
 
 import logging
 log = logging.getLogger(__name__)
@@ -193,7 +192,7 @@ class FileCache(object):
         if os.path.islink(location):
             os.unlink(location)
             
-        data = tile.source.as_buffer(image_opts=ImageOptions(format='image/'+self.file_ext), seekable=True)
+        data = tile.source.as_buffer(seekable=True)
         data.seek(0)
         with open(location, 'wb') as f:
             log.debug('writing %r to %s' % (tile.coord, location))

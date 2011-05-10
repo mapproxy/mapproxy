@@ -452,8 +452,9 @@ class ImageOptionsConfiguration(ConfigurationBase):
                 conf = tmp
             if 'resampling_method' in conf:
                 conf['resampling'] = conf.pop('resampling_method')
+            if 'encoding_options' in conf:
+                self._check_encoding_options(conf['encoding_options'])
             formats_config[format] = conf
-        
         for format, conf in formats_config.iteritems():
             if 'format' not in conf and format.startswith('image/'):
                 conf['format'] = format
@@ -461,6 +462,20 @@ class ImageOptionsConfiguration(ConfigurationBase):
     
     def for_format(self, format):
         return self.formats[format]
+    
+    def _check_encoding_options(self, options):
+        if not options:
+            return
+        options = options.copy()
+        jpeg_quality = options.pop('jpeg_quality', None)
+        if jpeg_quality and not isinstance(jpeg_quality, int):
+            raise ConfigurationError('jpeg_quality is not an integer')
+        quantizer = options.pop('quantizer', None)
+        if quantizer and quantizer not in ('fastoctree', 'mediancut'):
+            raise ConfigurationError('unknown quantizer')
+        
+        if options:
+            raise ConfigurationError('unknown encoding_options: %r' % options)
     
     def image_opts(self, image_conf, format):
         conf = {}
@@ -475,10 +490,13 @@ class ImageOptionsConfiguration(ConfigurationBase):
         img_format = image_conf.get('format')
         colors = image_conf.get('colors')
         mode = image_conf.get('mode')
+        encoding_options = image_conf.get('encoding_options')
+        
+        self._check_encoding_options(encoding_options)
         
         # only overwrite default if it is not None
         for k, v in dict(transparent=transparent, opacity=opacity, resampling=resampling,
-            format=img_format, colors=colors, mode=mode).iteritems():
+            format=img_format, colors=colors, mode=mode, encoding_options=encoding_options).iteritems():
             if v is not None:
                 conf[k] = v
         
@@ -1070,7 +1088,7 @@ class LayerConfiguration(ConfigurationBase):
                 md['name'] = self.conf['name']
                 md['name_path'] = (self.conf['name'], grid.srs.srs_code.replace(':', '').upper())
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
-                md['format'] = self.context.caches[cache_name].conf['format']
+                md['format'] = self.context.caches[cache_name].image_opts().format
             
                 tile_layers.append(TileLayer(self.conf['name'], self.conf['title'],
                                              md, cache_source))
@@ -1152,8 +1170,12 @@ class ServiceConfiguration(ConfigurationBase):
         concurrent_layer_renderer = self.context.globals.get_value(
             'concurrent_layer_renderer', conf,
             global_key='wms.concurrent_layer_renderer')
-        image_formats = self.context.globals.get_value('image_formats', conf,
+        image_formats_names = self.context.globals.get_value('image_formats', conf,
                                                        global_key='wms.image_formats')
+        image_formats = {}
+        for format in image_formats_names:
+            opts = self.context.globals.image_options.image_opts({}, format)
+            image_formats[opts.format] = opts
         info_types = conf.get('featureinfo_types')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
         self.context.globals.base_config.wms.srs = srs

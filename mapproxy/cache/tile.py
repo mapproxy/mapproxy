@@ -224,6 +224,8 @@ class TileCreator(object):
             if not self.is_cached(tile):
                 source = self._query_sources(query)
                 if not source: return []
+                # call as_buffer to force conversion into cache format
+                source.as_buffer(self.tile_mgr.image_opts)
                 tile.source = source
                 tile = self.tile_mgr.apply_tile_filter(tile)
                 self.cache.store(tile)
@@ -256,7 +258,7 @@ class TileCreator(object):
                 imgs.append(img)
         
         if not imgs: return None
-        return merge_images(imgs, size=query.size, image_opts=ImageOptions(format=query.format))
+        return merge_images(imgs, size=query.size, image_opts=self.tile_mgr.image_opts)
     
     def _create_meta_tiles(self, meta_tiles):
         if self.tile_mgr.concurrent_tile_creators > 1 and len(meta_tiles) > 1:
@@ -276,7 +278,7 @@ class TileCreator(object):
                 meta_tile_image = self._query_sources(query)
                 if not meta_tile_image: return []
                 splitted_tiles = split_meta_tiles(meta_tile_image, meta_tile.tile_patterns,
-                                                  tile_size)
+                                                  tile_size, self.tile_mgr.image_opts)
                 for splitted_tile in splitted_tiles:
                     splitted_tile = self.tile_mgr.apply_tile_filter(splitted_tile)
                     self.cache.store(splitted_tile)
@@ -400,12 +402,12 @@ class TileCollection(object):
         return 'TileCollection(%r)' % self.tiles
 
 
-def split_meta_tiles(meta_tile, tiles, tile_size):
+def split_meta_tiles(meta_tile, tiles, tile_size, image_opts):
     try:
         # TODO png8
         # if not self.transparent and format == 'png':
         #     format = 'png8'
-        splitter = TileSplitter(meta_tile)
+        splitter = TileSplitter(meta_tile, image_opts)
     except IOError:
         # TODO
         raise

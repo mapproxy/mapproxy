@@ -144,7 +144,7 @@ class TestFileCache(object):
     
     def test_single_color_tile_store(self):
         img = Image.new('RGB', (256, 256), color='#ff0105')
-        tile = Tile((0, 0, 0), ImageSource(img))
+        tile = Tile((0, 0, 0), ImageSource(img, image_opts=ImageOptions(format='image/png')))
         self.cache.link_single_color_images = True
         self.cache.store(tile)
         assert self.cache.is_cached(tile)
@@ -166,7 +166,7 @@ class TestFileCache(object):
     
     def test_single_color_tile_store_w_alpha(self):
         img = Image.new('RGBA', (256, 256), color='#ff0105')
-        tile = Tile((0, 0, 0), ImageSource(img))
+        tile = Tile((0, 0, 0), ImageSource(img, image_opts=ImageOptions(format='image/png')))
         self.cache.link_single_color_images = True
         self.cache.store(tile)
         assert self.cache.is_cached(tile)
@@ -241,7 +241,9 @@ class TestTileManagerRemoveTiles(object):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = MockTileClient()
         self.source = TiledSource(self.grid, self.client)
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png')
+        self.image_opts = ImageOptions(format='image/png')
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
+            image_opts=self.image_opts)
     def teardown(self):
         shutil.rmtree(self.cache_dir)
     
@@ -260,7 +262,9 @@ class TestTileManagerTiledSource(object):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = MockTileClient()
         self.source = TiledSource(self.grid, self.client)
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png')
+        self.image_opts = ImageOptions(format='image/png')
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
+            image_opts=self.image_opts)
     
     def test_create_tiles(self):
         self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
@@ -274,7 +278,9 @@ class TestTileManagerDifferentSourceGrid(object):
         self.source_grid = TileGrid(SRS(4326), bbox=[0, -90, 180, 90])
         self.client = MockTileClient()
         self.source = TiledSource(self.source_grid, self.client)
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png')
+        self.image_opts = ImageOptions(format='image/png')
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
+            image_opts=self.image_opts)
     
     def test_create_tiles(self):
         self.tile_mgr.creator().create_tiles([Tile((1, 0, 1))])
@@ -302,7 +308,9 @@ class TestTileManagerSource(object):
         self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.source = MockSource()
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png')
+        self.image_opts = ImageOptions(format='image/png')
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
+            image_opts=self.image_opts)
     
     def test_create_tile(self):
         self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
@@ -325,8 +333,9 @@ class TestTileManagerWMSSource(object):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = MockWMSClient()
         self.source = WMSSource(self.client)
+        self.image_opts = ImageOptions(format='image/png')
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            meta_size=[2, 2], meta_buffer=0)
+            meta_size=[2, 2], meta_buffer=0, image_opts=self.image_opts)
     
     def test_same_lock_for_meta_tile(self):
         eq_(self.tile_mgr.lock(Tile((0, 0, 1))).lock_file,
@@ -417,8 +426,9 @@ class TestTileManagerLocking(object):
         self.file_cache = MockFileCache(self.tile_dir, 'png', lock_dir=tmp_lock_dir)
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.source = SlowMockSource()
+        self.image_opts = ImageOptions(format='image/png')
         self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            meta_size=[2, 2], meta_buffer=0)
+            meta_size=[2, 2], meta_buffer=0, image_opts=self.image_opts)
     
     def test_get_single(self):
         self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
@@ -451,8 +461,10 @@ class TestTileManagerMultipleSources(object):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.source_base = MockSource()
         self.source_overlay = MockSource()
+        self.image_opts = ImageOptions(format='image/png')
         self.tile_mgr = TileManager(self.grid, self.file_cache,
-            [self.source_base, self.source_overlay], 'png')
+            [self.source_base, self.source_overlay], 'png',
+            image_opts=self.image_opts)
         self.layer = CacheMapLayer(self.tile_mgr)
     
     def test_get_single(self):

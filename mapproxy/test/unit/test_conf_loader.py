@@ -27,7 +27,7 @@ from mapproxy.config.loader import (
 from mapproxy.cache.tile import TileManager
 from mapproxy.test.helper import TempFile
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
-from nose.tools import eq_
+from nose.tools import eq_, raises
 from nose.plugins.skip import SkipTest
 
 class TestLayerConfiguration(object):
@@ -560,7 +560,8 @@ class TestImageOptions(object):
     
     def test_update_default_format(self):
         conf_dict = {'globals': {'image': {'formats': {
-            'png8': {'colors': 16, 'resampling_method': 'nearest'}
+            'png8': {'colors': 16, 'resampling_method': 'nearest',
+                     'encoding_options': {'quantizer': 'mediancut'}}
         }}}}
         conf = ProxyConfiguration(conf_dict)
         image_opts = conf.globals.image_options.image_opts({}, 'png8')
@@ -569,6 +570,7 @@ class TestImageOptions(object):
         eq_(image_opts.colors, 16)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'nearest')
+        eq_(image_opts.encoding_options['quantizer'], 'mediancut')
         
     def test_custom_format(self):
         conf_dict = {'globals': {'image': {'resampling_method': 'bilinear',
@@ -589,9 +591,6 @@ class TestImageOptions(object):
             'globals': {
                 'image': {
                     'resampling_method': 'bilinear',
-                    'formats': {
-                        'image/foo': {'mode': 'RGBA', 'colors': 42}
-                    },
                 }
             },
             'caches': {
@@ -717,3 +716,55 @@ class TestImageOptions(object):
         eq_(image_opts.colors, None)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bilinear')
+    
+    def test_encoding_options_errors(self):
+        conf_dict = {
+            'globals': {
+                'image': {
+                    'formats': {
+                        'image/jpeg': {
+                            'encoding_options': {
+                                'foo': 'baz',
+                            }
+                        }
+                    },
+                }
+            },
+        }
+        
+        try:
+            conf = ProxyConfiguration(conf_dict)
+        except ConfigurationError:
+            pass
+        else:
+            raise False, 'expected ConfigurationError'
+        
+        
+        conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {
+            'quantizer': 'foo'
+        }
+        try:
+            conf = ProxyConfiguration(conf_dict)
+        except ConfigurationError:
+            pass
+        else:
+            raise False, 'expected ConfigurationError'
+        
+
+        conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {}
+        conf = ProxyConfiguration(conf_dict)
+        try:
+            conf.globals.image_options.image_opts({'encoding_options': {'quantizer': 'foo'}}, 'image/jpeg')
+        except ConfigurationError:
+            pass
+        else:
+            raise False, 'expected ConfigurationError'
+
+        
+        conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {
+            'quantizer': 'fastoctree'
+        }
+        conf = ProxyConfiguration(conf_dict)
+        
+        conf.globals.image_options.image_opts({}, 'image/jpeg')
+        

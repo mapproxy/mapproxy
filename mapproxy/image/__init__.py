@@ -106,7 +106,7 @@ def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transpar
     :rtype: `ImageSource`
     """
     if not legends:
-        return BlankImageSource(size=(1,1), bgcolor=bgcolor, transparent=transparent)
+        return BlankImageSource(size=(1,1), image_opts=ImageOptions(bgcolor=bgcolor, transparent=transparent))
     if len(legends) == 1:
         return legends[0]
     
@@ -271,15 +271,12 @@ class BlankImageSource(object):
         self.image_opts = image_opts
     
     def as_image(self):
-        image_opts = ImageOptions(transparent=self.image_opts.transparent,
-            bgcolor=self.image_opts.bgcolor)
-        img = create_image(self.size, image_opts)
+        img = create_image(self.size, self.image_opts)
         return img
     
     def as_buffer(self, image_opts=None, format=None, seekable=False):
         image_opts = (image_opts or self.image_opts).copy()
         if format:
-            image_opts = (image_opts or self.image_opts).copy()
             image_opts.format = ImageFormat(format)
         image_opts.colors = 0
         return img_to_buf(self.as_image(), image_opts=image_opts)
@@ -318,28 +315,40 @@ class ReadBufWrapper(object):
 
 def img_to_buf(img, image_opts):
     defaults = {}
+    
     if (image_opts.colors != 0 and (
         image_opts.colors is not None or base_config().image.paletted)):
         # TODO remove image.paletted
         if base_config().image.paletted:
+            image_opts = image_opts.copy()
             image_opts.colors = 256
+        
+        quantizer = None
+        if 'quantizer' in image_opts.encoding_options:
+            quantizer = image_opts.encoding_options['quantizer']
+        
         if image_opts.transparent:
-            img = quantize(img, colors=image_opts.colors, alpha=True, defaults=defaults)
+            img = quantize(img, colors=image_opts.colors, alpha=True,
+                defaults=defaults, quantizer=quantizer)
         else:
-            img = quantize(img, colors=image_opts.colors)
+            img = quantize(img, colors=image_opts.colors,
+                quantizer=quantizer)
         if hasattr(Image, 'RLE'):
             defaults['compress_type'] = Image.RLE
     format = filter_format(image_opts.format.ext)
     buf = StringIO()
     if format == 'jpeg':
         img = img.convert('RGB')
-        defaults['quality'] = base_config().image.jpeg_quality
+        if 'jpeg_quality' in image_opts.encoding_options:
+            defaults['quality'] = image_opts.encoding_options['jpeg_quality']
+        else:
+            defaults['quality'] = base_config().image.jpeg_quality
     img.save(buf, format, **defaults)
     buf.seek(0)
     return buf
 
-def quantize(img, colors=256, alpha=False, defaults=None):
-    if hasattr(Image, 'FASTOCTREE'):
+def quantize(img, colors=256, alpha=False, defaults=None, quantizer=None):
+    if hasattr(Image, 'FASTOCTREE') and quantizer in (None, 'fastoctree'):
         if not alpha:
             img = img.convert('RGB')
         img = img.quantize(colors, Image.FASTOCTREE)

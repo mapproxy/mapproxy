@@ -117,8 +117,8 @@ class WMSServer(Server):
             merger.add(attribution_image(self.attribution['text'], params.size))
         result = merger.merge(size=params.size,
             image_opts=ImageOptions(format=params.format, bgcolor=params.bgcolor, transparent=params.transparent))
-        return Response(result.as_buffer(format=params.format),
-                        content_type=params.format_mime_type)
+        img_opts = self.image_formats[params.format_mime_type]
+        return Response(result.as_buffer(img_opts), content_type=params.format_mime_type)
     
     def capabilities(self, map_request):
         # TODO: debug layer
@@ -254,7 +254,8 @@ class WMSServer(Server):
             mimetype = request.params.format_mime_type
         else:
             mimetype = 'image/png'
-        return Response(result.as_buffer(ImageOptions(format=request.params.format)).read(), mimetype=mimetype)
+        img_opts = self.image_formats[request.params.format_mime_type]
+        return Response(result.as_buffer(img_opts), mimetype=mimetype)
     
     def _service_md(self, map_request):
         md = dict(self.md)

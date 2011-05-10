@@ -20,7 +20,7 @@ from mapproxy.platform.image import Image, ImageColor
 
 class ImageOptions(object):
     def __init__(self, mode=None, transparent=None, opacity=None, resampling=None,
-        format=None, bgcolor=None, colors=None):
+        format=None, bgcolor=None, colors=None, encoding_options=None):
         self.transparent = transparent
         self.opacity = opacity
         self.resampling = resampling
@@ -30,6 +30,7 @@ class ImageOptions(object):
         self.mode = mode or self.transparent and 'RGBA' or 'RGB'
         self.bgcolor = bgcolor
         self.colors = colors
+        self.encoding_options = encoding_options or {}
     
     def __repr__(self):
         options = []
