@@ -809,7 +809,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
         mapfile = self.context.globals.abspath(self.conf['mapfile'])
         from mapproxy.source.mapnik import MapnikSource
         return MapnikSource(mapfile, image_opts=image_opts, coverage=coverage,
-                         res_range=res_range)
+                         res_range=res_range, lock=lock)
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)

@@ -38,11 +38,12 @@ log = logging.getLogger(__name__)
 
 class MapnikSource(Source):
     supports_meta_tiles = True
-    def __init__(self, mapfile, image_opts=None, coverage=None, res_range=None):
+    def __init__(self, mapfile, image_opts=None, coverage=None, res_range=None, lock=None):
         Source.__init__(self, image_opts=image_opts)
         self.mapfile = mapfile
         self.coverage = coverage
         self.res_range = res_range
+        self.lock = lock
         if self.coverage:
             self.extent = MapExtent(self.coverage.bbox, self.coverage.srs)
         else:
@@ -73,8 +74,12 @@ class MapnikSource(Source):
                 query.bbox, query.size, req_srs=query.srs)
             mapfile = mapfile % {'webmercator_level': level}
         
-        return self.render_mapfile(mapfile, query)
-        
+        if self.lock:
+            with self.lock():
+                return self.render_mapfile(mapfile, query)
+        else:
+            return self.render_mapfile(mapfile, query)
+    
     def render_mapfile(self, mapfile, query):
         m = mapnik.Map(query.size[0], query.size[1])
         mapnik.load_map(m, str(mapfile))
