@@ -7,6 +7,7 @@ Features:
 - new mapproxy-util command
 - include development server (``mapproxy-util serve-develop``)
 - first WMTS implementation (KVP)
+- configurable image formats
 
 Improvements:
 - tweaked watermarks on transparent images
@@ -17,6 +18,7 @@ Improvements:
 - hide error tracebacks from YAML parser
 - support for multipolygons in coverages
 - add support for HTTP_X_SCRIPT_NAME
+- support for integer images (e.g. 16bit grayscale PNG)
 
 Fixes:
 - fixes demo on Windows (loaded static content from wrong path)
