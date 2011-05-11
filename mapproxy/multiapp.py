@@ -18,8 +18,6 @@
 from __future__ import with_statement
 import os
 
-from paste.deploy.converters import asbool
-
 from mapproxy.request import Request
 from mapproxy.response import Response
 from mapproxy.util.collections import LRU
@@ -28,6 +26,16 @@ from threading import Lock
 
 import logging
 log = logging.getLogger(__name__)
+
+def asbool(value):
+    """
+    >>> all([asbool(True), asbool('trUE'), asbool('ON'), asbool(1)])
+    True
+    >>> any([asbool(False), asbool('false'), asbool('foo'), asbool(None)])
+    False
+    """
+    value = str(value).lower()
+    return value in ('1', 'true', 'yes', 'on')
 
 def app_factory(global_options, config_dir, allow_listing=False, **local_options):
     """
