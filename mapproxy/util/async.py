@@ -25,6 +25,7 @@ import threading
 try:
     import eventlet
     import eventlet.greenpool
+    import eventlet.tpool
     import eventlet.patcher
     _has_eventlet = True
     
@@ -300,15 +301,37 @@ def starcall_async_threaded(args):
     pool = ThreadPool(min(len(args[0]), MAX_MAP_ASYNC_THREADS))
     return pool.starcall(args)
 
-# socket should be monkey patched if MapProxy runs inside eventlet
+
+def run_non_blocking_eventlet(func, args, kw={}):
+    return eventlet.tpool.execute(func, *args, **kw)
+    
+def run_non_blocking_threaded(func, args, kw={}):
+    return func(*args, **kw)
+
+
+def import_module(module):
+    """
+    Import ``module``. Import patched version if eventlet is used.
+    """
+    if uses_eventlet:
+        return eventlet.import_patched(module)
+    else:
+        return __import__(module)
+
+uses_eventlet = False
+
+# socket should be monkey patched when MapProxy runs inside eventlet
 if _has_eventlet and eventlet.patcher.is_monkey_patched('socket'):
+    uses_eventlet = True
     log.info('using eventlet greenthreads for map_async')
     imap = imap_async_eventlet
     starmap = starmap_async_eventlet
     starcall = starcall_async_eventlet
     Pool = EventletPool
+    run_non_blocking = run_non_blocking_eventlet
 else:
     imap = imap_async_threaded
     starmap = starmap_async_threaded
     starcall = starcall_async_threaded
     Pool = ThreadPool
+    run_non_blocking = run_non_blocking_threaded

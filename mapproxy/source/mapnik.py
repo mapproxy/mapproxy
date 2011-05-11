@@ -26,6 +26,7 @@ from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage
 from mapproxy.source import Source, SourceError
 from mapproxy.client.http import HTTPClientError
 from mapproxy.util import reraise_exception
+from mapproxy.util.async import run_non_blocking
 
 try:
     import mapnik
@@ -81,6 +82,9 @@ class MapnikSource(Source):
             return self.render_mapfile(mapfile, query)
     
     def render_mapfile(self, mapfile, query):
+        return run_non_blocking(self._render_mapfile, (mapfile, query))
+        
+    def _render_mapfile(self, mapfile, query):
         m = mapnik.Map(query.size[0], query.size[1])
         mapnik.load_map(m, str(mapfile))
         m.srs = '+init=%s' % str(query.srs.srs_code.lower())
