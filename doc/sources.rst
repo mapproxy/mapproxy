@@ -6,6 +6,7 @@ MapProxy supports the following sources:
 - :ref:`wms_label`
 - :ref:`tiles_label`
 - :ref:`mapserver_label`
+- :ref:`mapnik_label`
 - :ref:`debug_label`
 
 You need to choose a unique name for each configured source. This name will be used to reference the source in the ``caches`` and ``layers`` configuration.
@@ -347,7 +348,7 @@ Mapserver
 
 Use the type ``mapserver`` to directly call the Mapserver CGI executable. This source is based on :ref:`the WMS source <wms_label>` and most options apply to the Mapserver source too.
 
-The only differences are that it does not support the ``http`` option and the ``req.url`` parameter is ignored. 
+The only differences are that it does not support the ``http`` option and the ``req.url`` parameter is ignored. The ``req.map`` should point to your Mapserver mapfile.
 
 ``mapserver``
 ^^^^^^^^^^^^^
@@ -377,6 +378,35 @@ Example configuration
       binary: /usr/cgi-bin/mapserv
       working_dir: /path/to
 
+
+.. _mapnik_label:
+
+Mapnik
+""""""
+
+.. versionadded:: 1.1.0
+
+Use the type ``mapnik`` to directly call Mapnik without any WMS service. It uses the Mapnik Python API and you need to have a working Mapnik installation that is accessible by the Python installation that runs MapProxy. A call of ``python -c 'import mapnik'`` should return no error. 
+
+``mapfile``
+^^^^^^^^^^^
+
+The filename of you Mapnik XML mapfile.
+
+Other options
+^^^^^^^^^^^^^
+
+The Mapnik source also supports the ``min_res``/``max_res``/``min_scale``/``max_scale``, ``concurrent_requests``, ``seed_only`` and ``coverage`` options. See :ref:`wms_label`.
+
+
+Example configuration
+^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  my_mapnik_source:
+    type: mapnik
+    mapfile: /path/to/mapnik.xml
 
 .. _debug_label:
 
