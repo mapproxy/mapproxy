@@ -6,6 +6,9 @@ globals:
   image:
     # resampling: 'bicubic'
     paletted: False
+    formats:
+      custom:
+        format: image/jpeg
 services:
   tms:
   kml:
@@ -38,6 +41,9 @@ layers:
   wms_cache:
     title: WMS Cache Layer
     sources: [wms_cache]
+  wms_cache_transparent:
+    title: WMS Cache Layer with transparent data
+    sources: [wms_cache_transparent]
   wms_cache_link_single:
     title: WMS Cache Layer (link single)
     sources: [wms_cache_link_single]
@@ -65,8 +71,12 @@ caches:
     format: image/jpeg
     use_direct_from_level: 8
     sources: [wms_cache]
+  wms_cache_transparent:
+    format: png8a
+    sources: [wms_cache_transparent]
   wms_cache_link_single:
-    format: image/png
+    format: png24
+    request_format: image/jpeg
     link_single_color_images: True
     sources: [wms_cache]
   wms_cache_100:
@@ -77,7 +87,7 @@ caches:
     format: image/jpeg
     sources: [wms_cache_130]
   wms_cache_multi:
-    format: image/jpeg
+    format: custom
     grids: [GLOBAL_GEODETIC, GLOBAL_MERCATOR]
     sources: [wms_cache_130]
   tms_cache:
@@ -100,6 +110,15 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: foo,bar
+  wms_cache_transparent:
+    type: wms
+    supported_srs: ['EPSG:900913', 'EPSG:4326']
+    wms_opts:
+      featureinfo: True
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar
+      transparent: true
   wms_cache_100:
     type: wms
     wms_opts:

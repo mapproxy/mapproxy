@@ -54,8 +54,8 @@ def watermark_filter(text, opacity=None, spacing=None, font_size=None):
     """
     def _watermark_filter(tile):
         placement = tile_watermark_placement(tile.coord, spacing == 'wide')
-        wimg = WatermarkImage(text, format=tile.source.format, placement=placement,
-                              opacity=opacity, font_size=font_size)
+        wimg = WatermarkImage(text, image_opts=tile.source.image_opts,
+            placement=placement, opacity=opacity, font_size=font_size)
         tile.source = wimg.draw(img=tile.source, in_place=False)
         return tile
     return _watermark_filter

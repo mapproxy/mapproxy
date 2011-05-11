@@ -104,11 +104,15 @@ def bgcolor_ratio(img_data):
     bgcolor = colors[-1][0]
     return bgcolor/total_colors
 
-def create_tmp_image_file(size):
+def create_tmp_image_file(size, two_colored=False):
     fd, out_file = tempfile.mkstemp(suffix='.png')
     os.close(fd)
     print 'creating temp image %s (%r)' % (out_file, size)
     img = Image.new('RGBA', size)
+    if two_colored:
+        draw = ImageDraw.Draw(img)
+        draw.rectangle((0, 0, img.size[0]//2, img.size[1]),
+            fill=ImageColor.getrgb('white'))
     img.save(out_file, 'png')
     return out_file
 

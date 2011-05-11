@@ -34,7 +34,7 @@ from mapproxy.util.lock import SemLock
 from mapproxy.util.yaml import load_yaml_file, load_yaml, YAMLError
 from mapproxy.config.config import load_default_config
 from mapproxy.client.http import auth_data_from_url, HTTPClient
-
+from mapproxy.image.opts import ImageOptions, compatible_image_options, ImageFormat
 
 def loader(loaders, name):
     """
@@ -307,6 +307,23 @@ class ConfigurationBase(object):
             if k not in self.conf:
                 self.conf[k] = v
 
+class _ImageOptionsConfiguration(object):
+    @memoize
+    def image_opts(self):
+        resampling = self.context.globals.get_value('image.resampling_method', self.conf)
+        transparent = self.conf.get('image', {}).get('transparent')
+        opacity = self.conf.get('image', {}).get('opacity')
+        format = self.conf.get('image', {}).get('format')
+        colors = self.conf.get('image', {}).get('colors')
+        mode = self.conf.get('image', {}).get('mode')
+        
+        # force 256 colors for image.paletted for backwards compat
+        paletted = self.context.globals.get_value('image.paletted', self.conf)
+        if colors is None and paletted:
+            colors = 256
+        return ImageOptions(transparent=transparent, opacity=opacity,
+            resampling=resampling, format=format, colors=colors, mode=mode)
+
 class GridConfiguration(ConfigurationBase):
     optional_keys = set('''res srs bbox bbox_srs num_levels tile_size base
         stretch_factor max_shrink_factor align_resolutions_with min_res max_res
@@ -369,6 +386,8 @@ class GlobalConfiguration(ConfigurationBase):
         self._copy_conf_values(self.conf, self.base_config)
         self.base_config.conf_base_dir = conf_base_dir
         mapproxy.config.finish_base_config(self.base_config)
+        
+        self.image_options = ImageOptionsConfiguration(self.conf.get('image', {}), context)
     
     def _copy_conf_values(self, d, target):
         for k, v in d.iteritems():
@@ -399,6 +418,110 @@ class GlobalConfiguration(ConfigurationBase):
         
     
 
+default_image_options = {
+    'png8': {
+        'format': 'image/png',
+        'colors': 256,
+        'mode': 'RGB',
+    },
+    'png8a': {
+        'format': 'image/png',
+        'colors': 256,
+        'mode': 'RGBA',
+        'transparent': True
+    },
+    'png24': {
+        'format': 'image/png; mode=24bit',
+        'mode': 'RGB',
+        'transparent': False
+    },
+    'png32': {
+        'format': 'image/png; mode=32bit',
+        'mode': 'RGBA',
+        'transparent': True
+    },
+    'jpeg': {
+        'format': 'image/jpeg',
+        'mode': 'RGB',
+    },
+}
+
+class ImageOptionsConfiguration(ConfigurationBase):
+    def __init__(self, conf, context):
+        ConfigurationBase.__init__(self, conf, context)
+        self._init_formats()
+    
+    def _init_formats(self):
+        self.formats = {}
+        
+        formats_config = default_image_options.copy()
+        for format, conf in self.conf.get('formats', {}).iteritems():
+            if format in formats_config:
+                tmp = formats_config[format].copy()
+                tmp.update(conf)
+                conf = tmp
+            if 'resampling_method' in conf:
+                conf['resampling'] = conf.pop('resampling_method')
+            if 'encoding_options' in conf:
+                self._check_encoding_options(conf['encoding_options'])
+            formats_config[format] = conf
+        for format, conf in formats_config.iteritems():
+            if 'format' not in conf and format.startswith('image/'):
+                conf['format'] = format
+            self.formats[format] = conf
+    
+    def for_format(self, format):
+        return self.formats[format]
+    
+    def _check_encoding_options(self, options):
+        if not options:
+            return
+        options = options.copy()
+        jpeg_quality = options.pop('jpeg_quality', None)
+        if jpeg_quality and not isinstance(jpeg_quality, int):
+            raise ConfigurationError('jpeg_quality is not an integer')
+        quantizer = options.pop('quantizer', None)
+        if quantizer and quantizer not in ('fastoctree', 'mediancut'):
+            raise ConfigurationError('unknown quantizer')
+        
+        if options:
+            raise ConfigurationError('unknown encoding_options: %r' % options)
+    
+    def image_opts(self, image_conf, format):
+        conf = {}
+        if format in self.formats:
+            conf = self.formats[format].copy()
+        
+        resampling = image_conf.get('resampling_method') or conf.get('resampling')
+        if resampling is None:
+            resampling = self.context.globals.get_value('image.resampling_method', {})
+        transparent = image_conf.get('transparent')
+        opacity = image_conf.get('opacity')
+        img_format = image_conf.get('format')
+        colors = image_conf.get('colors')
+        mode = image_conf.get('mode')
+        encoding_options = image_conf.get('encoding_options')
+        
+        self._check_encoding_options(encoding_options)
+        
+        # only overwrite default if it is not None
+        for k, v in dict(transparent=transparent, opacity=opacity, resampling=resampling,
+            format=img_format, colors=colors, mode=mode, encoding_options=encoding_options).iteritems():
+            if v is not None:
+                conf[k] = v
+        
+        if 'format' not in conf and format and format.startswith('image/'):
+            conf['format'] = format
+        
+        # force 256 colors for image.paletted for backwards compat
+        paletted = self.context.globals.get_value('image.paletted', self.conf)
+        if conf.get('colors') is None and 'png' in conf.get('format', '') and paletted:
+            conf['colors'] = 256
+
+        opts = ImageOptions(**conf)
+        return opts
+    
+    
 def dotted_dict_get(key, d):
     """
     >>> dotted_dict_get('foo', {'foo': {'bar': 1}})
@@ -480,6 +603,9 @@ class SourceConfiguration(ConfigurationBase):
         if not 'coverage' in self.conf: return None
         return load_coverage(self.conf['coverage'])
     
+    def image_opts(self, format=None):
+        return self.context.globals.image_options.image_opts(self.conf.get('image', {}), format)
+    
     def http_client(self, url):
         http_client = None
         url, (username, password) = auth_data_from_url(url)
@@ -533,6 +659,14 @@ class WMSSourceConfiguration(SourceConfiguration):
             fi_transformer = XSLTransformer(fi_xslt)
         return fi_transformer
     
+    def image_opts(self, format=None):
+        if 'transparent' not in self.conf.get('image', {}):
+            transparent = self.conf['req'].get('transparent')
+            if transparent is not None:
+                transparent = bool(str(transparent).lower() == 'true')
+                self.conf.setdefault('image', {})['transparent'] = transparent
+        return SourceConfiguration.image_opts(self, format=format)
+    
     def source(self, params=None):
         if not self.conf.get('wms_opts', {}).get('map', True):
             return None
@@ -546,13 +680,8 @@ class WMSSourceConfiguration(SourceConfiguration):
         if request_format:
             params['format'] = request_format
         
-        transparent = self.conf['req'].get('transparent', 'false')
-        transparent = bool(str(transparent).lower() == 'true')
-        
-        opacity = self.conf.get('image', {}).get('opacity')
-        
-        resampling = self.context.globals.get_value('image.resampling_method', self.conf)
-        
+        image_opts = self.image_opts(format=params.get('format'))
+
         supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         supported_formats = [file_ext(f) for f in self.conf.get('supported_formats', [])]
         version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
@@ -581,13 +710,13 @@ class WMSSourceConfiguration(SourceConfiguration):
         request = create_request(self.conf['req'], params, version=version,
             abspath=self.context.globals.abspath)
         http_client, request.url = self.http_client(request.url)
-        client = WMSClient(request, supported_srs, http_client=http_client, 
-                           http_method=http_method, resampling=resampling, lock=lock,
-                           supported_formats=supported_formats or None)
-        return WMSSource(client, transparent=transparent, coverage=coverage,
-                         res_range=res_range, opacity=opacity,
-                         transparent_color=transparent_color,
-                         transparent_color_tolerance=transparent_color_tolerance)
+        client = WMSClient(request, http_client=http_client, 
+                           http_method=http_method, lock=lock)
+        return WMSSource(client, image_opts=image_opts, coverage=coverage,
+                         res_range=res_range, transparent_color=transparent_color,
+                         transparent_color_tolerance=transparent_color_tolerance,
+                         supported_srs=supported_srs,
+                         supported_formats=supported_formats or None)
     
     def fi_source(self, params=None):
         if params is None: params = {}
@@ -683,10 +812,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
         if not self.context.seed and self.conf.get('seed_only'):
             return DummySource()
         
-        transparent = self.conf.get('transparent', 'false')
-        transparent = bool(str(transparent).lower() == 'true')
-        
-        opacity = self.conf.get('image', {}).get('opacity')
+        image_opts = self.image_opts()
         
         lock = None
         concurrent_requests = self.context.globals.get_value('concurrent_requests', self.conf,
@@ -702,13 +828,13 @@ class MapnikSourceConfiguration(SourceConfiguration):
         
         mapfile = self.context.globals.abspath(self.conf['mapfile'])
         from mapproxy.source.mapnik import MapnikSource
-        return MapnikSource(mapfile, transparent=transparent, coverage=coverage,
-                         res_range=res_range, opacity=opacity)
+        return MapnikSource(mapfile, image_opts=image_opts, coverage=coverage,
+                         res_range=res_range)
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
     optional_keys = set('''type grid request_format origin coverage seed_only
-                           transparent http'''.split())
+                           transparent image http'''.split())
     required_keys = set('url'.split())
     defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
     
@@ -728,14 +854,13 @@ class TileSourceConfiguration(SourceConfiguration):
         http_client, url = self.http_client(url)
         grid = self.context.grids[self.conf['grid']].tile_grid()
         coverage = self.coverage()
-        opacity = self.conf.get('image', {}).get('opacity')
-        transparent = self.conf.get('transparent')
+        image_opts = self.image_opts()
         
         inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
         client = TileClient(TileURLTemplate(url, format=format), http_client=http_client, grid=grid)
-        return TiledSource(grid, client, inverse=inverse, coverage=coverage, opacity=opacity,
-                           transparent=transparent)
+        return TiledSource(grid, client, inverse=inverse, coverage=coverage,
+            image_opts=image_opts)
 
 
 def file_ext(mimetype):
@@ -772,7 +897,7 @@ class CacheConfiguration(ConfigurationBase):
         return self.context.globals.get_path('cache_dir', self.conf,
             global_key='cache.base_dir')
         
-    def _file_cache(self, grid_conf):
+    def _file_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):
             return DummyCache()
         
@@ -784,7 +909,7 @@ class CacheConfiguration(ConfigurationBase):
         
         lock_timeout = self.context.globals.get_value('http.client_timeout', {})
         
-        return FileCache(cache_dir, file_ext=file_ext(self.conf['format']),
+        return FileCache(cache_dir, file_ext=file_ext,
             lock_timeout=lock_timeout, link_single_color_images=link_single_color_images)
     
     def _tile_filter(self):
@@ -796,8 +921,22 @@ class CacheConfiguration(ConfigurationBase):
         return filters
     
     @memoize
+    def image_opts(self):
+        format = None
+        if 'format' not in self.conf.get('image', {}):
+            format = self.conf.get('format') or self.conf.get('request_format')
+        image_opts = self.context.globals.image_options.image_opts(self.conf.get('image', {}), format)
+        if image_opts.format is None:
+            if format is not None and format.startswith('image/'):
+                image_opts.format = ImageFormat(format)
+            else:
+                image_opts.format = ImageFormat('image/png')
+        return image_opts
+        
+    @memoize
     def caches(self):
-        request_format = self.conf.get('request_format') or self.conf['format']
+        base_image_opts = self.image_opts()
+        request_format = self.conf.get('request_format') or self.conf.get('format')
         caches = []
 
         meta_buffer = self.context.globals.get_value('meta_buffer', self.conf,
@@ -811,6 +950,7 @@ class CacheConfiguration(ConfigurationBase):
         
         for grid_conf in [self.context.grids[g] for g in self.conf['grids']]:
             sources = []
+            source_image_opts = []
             for source_name in self.conf['sources']:
                 if not source_name in self.context.sources:
                     raise ConfigurationError('unknown source %s' % source_name)
@@ -818,11 +958,14 @@ class CacheConfiguration(ConfigurationBase):
                 source = source_conf.source({'format': request_format})
                 if source:
                     sources.append(source)
+                    source_image_opts.append(source.image_opts)
             assert sources, 'no sources configured for %s' % self.conf['name']
-            cache = self._file_cache(grid_conf)
             tile_grid = grid_conf.tile_grid()
             tile_filter = self._tile_filter()
-            mgr = TileManager(tile_grid, cache, sources, file_ext(request_format),
+            image_opts = compatible_image_options(source_image_opts, base_opts=base_image_opts)
+            cache = self._file_cache(grid_conf, image_opts.format.ext)
+            mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
+                              image_opts=image_opts,
                               meta_size=meta_size, meta_buffer=meta_buffer,
                               minimize_meta_requests=minimize_meta_requests,
                               concurrent_tile_creators=concurrent_tile_creators,
@@ -835,8 +978,7 @@ class CacheConfiguration(ConfigurationBase):
     
     @memoize
     def map_layer(self):
-        resampling = self.context.globals.get_value('image.resampling_method', self.conf)
-        opacity = self.conf.get('image', {}).get('opacity')
+        image_opts = self.image_opts()
         max_tile_limit = self.context.globals.get_value('max_tile_limit', self.conf,
             global_key='cache.max_tile_limit')
         caches = []
@@ -844,14 +986,14 @@ class CacheConfiguration(ConfigurationBase):
         for grid, extent, tile_manager in self.caches():
             if main_grid is None:
                 main_grid = grid
-            caches.append((CacheMapLayer(tile_manager, extent=extent, resampling=resampling,
-                                         opacity=opacity, max_tile_limit=max_tile_limit),
+            caches.append((CacheMapLayer(tile_manager, extent=extent, image_opts=image_opts,
+                                         max_tile_limit=max_tile_limit),
                           (grid.srs,)))
         
         if len(caches) == 1:
             layer = caches[0][0]
         else:
-            layer = SRSConditional(caches, caches[0][0].extent, caches[0][0].transparent, opacity=opacity)
+            layer = SRSConditional(caches, caches[0][0].extent, caches[0][0].transparent, opacity=image_opts.opacity)
         
         if 'use_direct_from_level' in self.conf:
             self.conf['use_direct_from_res'] = main_grid.resolution(self.conf['use_direct_from_level'])
@@ -860,7 +1002,7 @@ class CacheConfiguration(ConfigurationBase):
                 raise ValueError('use_direct_from_level/res only supports single sources')
             source_conf = self.context.sources[self.conf['sources'][0]]
             layer = ResolutionConditional(layer, source_conf.source(), self.conf['use_direct_from_res'],
-                                          main_grid.srs, layer.extent, opacity=opacity)
+                                          main_grid.srs, layer.extent, opacity=image_opts.opacity)
         return layer
 
 
@@ -956,7 +1098,7 @@ class LayerConfiguration(ConfigurationBase):
                 md['name'] = self.conf['name']
                 md['name_path'] = (self.conf['name'], grid.srs.srs_code.replace(':', '').upper())
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
-                md['format'] = self.context.caches[cache_name].conf['format']
+                md['format'] = self.context.caches[cache_name].image_opts().format
             
                 tile_layers.append(TileLayer(self.conf['name'], self.conf['title'],
                                              md, cache_source))
@@ -1038,8 +1180,12 @@ class ServiceConfiguration(ConfigurationBase):
         concurrent_layer_renderer = self.context.globals.get_value(
             'concurrent_layer_renderer', conf,
             global_key='wms.concurrent_layer_renderer')
-        image_formats = self.context.globals.get_value('image_formats', conf,
+        image_formats_names = self.context.globals.get_value('image_formats', conf,
                                                        global_key='wms.image_formats')
+        image_formats = {}
+        for format in image_formats_names:
+            opts = self.context.globals.image_options.image_opts({}, format)
+            image_formats[opts.format] = opts
         info_types = conf.get('featureinfo_types')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
         self.context.globals.base_config.wms.srs = srs

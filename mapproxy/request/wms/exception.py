@@ -20,6 +20,7 @@ Service exception handling (WMS exceptions, XML, in_image, etc.).
 from mapproxy.exception import ExceptionHandler, XMLExceptionHandler
 from mapproxy.response import Response
 from mapproxy.image.message import message_image
+from mapproxy.image.opts import ImageOptions
 import mapproxy.service
 from mapproxy.template import template_loader
 get_template = template_loader(mapproxy.service.__file__, 'templates')
@@ -69,8 +70,8 @@ class WMSImageExceptionHandler(ExceptionHandler):
         transparent = ('transparent' in params
                        and params['transparent'].lower() == 'true')
         bgcolor = WMSImageExceptionHandler._bgcolor(request.params)
-        result = message_image(request_error.msg, size=size, format=format,
-                               bgcolor=bgcolor, transparent=transparent)
+        image_opts = ImageOptions(format=format, bgcolor=bgcolor, transparent=transparent)
+        result = message_image(request_error.msg, size=size, image_opts=image_opts)
         return Response(result.as_buffer(), content_type=params.format_mime_type)
     
     @staticmethod

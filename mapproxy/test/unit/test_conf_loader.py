@@ -27,7 +27,7 @@ from mapproxy.config.loader import (
 from mapproxy.cache.tile import TileManager
 from mapproxy.test.helper import TempFile
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
-from nose.tools import eq_
+from nose.tools import eq_, raises
 from nose.plugins.skip import SkipTest
 
 class TestLayerConfiguration(object):
@@ -544,4 +544,227 @@ class TestConfMerger(object):
         b = {'a': {'aa': 11, 'ab': 13, 'a':{'aaa': 101, 'aab': 101}}}
         m = merge_dict(a, b)
         eq_({'a': {'aa': 12, 'ab': 13, 'a':{'aaa': 100, 'aab': 101}}}, m)
+
+
+class TestImageOptions(object):
+    def test_default_format(self):
+        conf_dict = {
+        }
+        conf = ProxyConfiguration(conf_dict)
+        image_opts = conf.globals.image_options.image_opts({}, 'png8')
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 256)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bicubic')
+    
+    def test_update_default_format(self):
+        conf_dict = {'globals': {'image': {'formats': {
+            'png8': {'colors': 16, 'resampling_method': 'nearest',
+                     'encoding_options': {'quantizer': 'mediancut'}}
+        }}}}
+        conf = ProxyConfiguration(conf_dict)
+        image_opts = conf.globals.image_options.image_opts({}, 'png8')
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 16)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'nearest')
+        eq_(image_opts.encoding_options['quantizer'], 'mediancut')
+        
+    def test_custom_format(self):
+        conf_dict = {'globals': {'image': {'resampling_method': 'bilinear',
+            'formats': {
+                'image/foo': {'mode': 'RGBA', 'colors': 42}
+            }
+        }}}
+        conf = ProxyConfiguration(conf_dict)
+        image_opts = conf.globals.image_options.image_opts({}, 'image/foo')
+        eq_(image_opts.format, 'image/foo')
+        eq_(image_opts.mode, 'RGBA')
+        eq_(image_opts.colors, 42)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
+
+    def test_format_grid(self):
+        conf_dict = {
+            'globals': {
+                'image': {
+                    'resampling_method': 'bilinear',
+                }
+            },
+            'caches': {
+                'test': {
+                    'sources': [],
+                    'grids': ['GLOBAL_MERCATOR'],
+                    'format': 'png8',
+                }
+            }
+        }
+        conf = ProxyConfiguration(conf_dict)
+        image_opts = conf.caches['test'].image_opts()
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 256)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
+
+    def test_custom_format_grid(self):
+        conf_dict = {
+            'globals': {
+                'image': {
+                    'resampling_method': 'bilinear',
+                    'formats': {
+                        'image/png': {'mode': 'RGBA', 'transparent': True}
+                    },
+                }
+            },
+            'caches': {
+                'test': {
+                    'sources': [],
+                    'grids': ['GLOBAL_MERCATOR'],
+                    'format': 'png8',
+                    'image': {
+                        'colors': 16,
+                    }
+                },
+                'test2': {
+                    'sources': [],
+                    'grids': ['GLOBAL_MERCATOR'],
+                    'format': 'image/png',
+                    'image': {
+                        'colors': 8,
+                    }
+                }
+            }
+        }
+        conf = ProxyConfiguration(conf_dict)
+        image_opts = conf.caches['test'].image_opts()
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 16)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
+
+        image_opts = conf.caches['test2'].image_opts()
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGBA')
+        eq_(image_opts.colors, 8)
+        eq_(image_opts.transparent, True)
+        eq_(image_opts.resampling, 'bilinear')
+
+    def test_custom_format_source(self):
+        conf_dict = {
+            'globals': {
+                'image': {
+                    'resampling_method': 'bilinear',
+                    'formats': {
+                        'image/png': {'mode': 'RGBA', 'transparent': True}
+                    },
+                }
+            },
+            'caches': {
+                'test': {
+                    'sources': ['test_source'],
+                    'grids': ['GLOBAL_MERCATOR'],
+                    'format': 'png8',
+                    'image': {
+                        'colors': 16,
+                    }
+                },
+            },
+            'sources': {
+                'test_source': {
+                    'type': 'wms',
+                    'req': {
+                        'url': 'http://example.org/',
+                        'layers': 'foo',
+                    }
+                }
+            }
+        }
+        conf = ProxyConfiguration(conf_dict)
+        _grid, _extent, tile_mgr = conf.caches['test'].caches()[0]
+        image_opts = tile_mgr.image_opts
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 16)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
+        
+        image_opts = tile_mgr.sources[0].image_opts
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 256)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
+
+        
+        conf_dict['caches']['test']['request_format'] = 'image/tiff'
+        conf = ProxyConfiguration(conf_dict)
+        _grid, _extent, tile_mgr = conf.caches['test'].caches()[0]
+        image_opts = tile_mgr.image_opts
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, 16)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
+        
+        image_opts = tile_mgr.sources[0].image_opts
+        eq_(image_opts.format, 'image/tiff')
+        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.colors, None)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bilinear')
+    
+    def test_encoding_options_errors(self):
+        conf_dict = {
+            'globals': {
+                'image': {
+                    'formats': {
+                        'image/jpeg': {
+                            'encoding_options': {
+                                'foo': 'baz',
+                            }
+                        }
+                    },
+                }
+            },
+        }
+        
+        try:
+            conf = ProxyConfiguration(conf_dict)
+        except ConfigurationError:
+            pass
+        else:
+            raise False, 'expected ConfigurationError'
+        
+        
+        conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {
+            'quantizer': 'foo'
+        }
+        try:
+            conf = ProxyConfiguration(conf_dict)
+        except ConfigurationError:
+            pass
+        else:
+            raise False, 'expected ConfigurationError'
+        
+
+        conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {}
+        conf = ProxyConfiguration(conf_dict)
+        try:
+            conf.globals.image_options.image_opts({'encoding_options': {'quantizer': 'foo'}}, 'image/jpeg')
+        except ConfigurationError:
+            pass
+        else:
+            raise False, 'expected ConfigurationError'
+
+        
+        conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {
+            'quantizer': 'fastoctree'
+        }
+        conf = ProxyConfiguration(conf_dict)
+        
+        conf.globals.image_options.image_opts({}, 'image/jpeg')
         

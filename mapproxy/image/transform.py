@@ -50,7 +50,7 @@ class ImageTransformer(object):
             ---------------.
             large src image                   large dst image
     """
-    def __init__(self, src_srs, dst_srs, resampling='bicubic', mesh_div=8):
+    def __init__(self, src_srs, dst_srs, mesh_div=8):
         """
         :param src_srs: the srs of the source image
         :param dst_srs: the srs of the target image
@@ -62,11 +62,10 @@ class ImageTransformer(object):
         """
         self.src_srs = src_srs
         self.dst_srs = dst_srs
-        self.resampling = resampling
         self.mesh_div = mesh_div
         self.dst_bbox = self.dst_size = None
     
-    def transform(self, src_img, src_bbox, dst_size, dst_bbox):
+    def transform(self, src_img, src_bbox, dst_size, dst_bbox, image_opts):
         """
         Transforms the `src_img` between the source and destination SRS
         of this ``ImageTransformer`` instance.
@@ -86,11 +85,12 @@ class ImageTransformer(object):
         if self._no_transformation_needed(src_img.size, src_bbox, dst_size, dst_bbox):
             return src_img
         elif self.src_srs == self.dst_srs:
-            return self._transform_simple(src_img, src_bbox, dst_size, dst_bbox)
+            return self._transform_simple(src_img, src_bbox, dst_size, dst_bbox,
+                image_opts)
         else:
-            return self._transform(src_img, src_bbox, dst_size, dst_bbox)
+            return self._transform(src_img, src_bbox, dst_size, dst_bbox, image_opts)
     
-    def _transform_simple(self, src_img, src_bbox, dst_size, dst_bbox):
+    def _transform_simple(self, src_img, src_bbox, dst_size, dst_bbox, image_opts):
         """
         Do a simple crop/extent transformation.
         """
@@ -118,10 +118,10 @@ class ImageTransformer(object):
         else:
             result = src_img.as_image().transform(dst_size, Image.EXTENT,
                                                   (minx, miny, maxx, maxy),
-                                                  image_filter[self.resampling])
-        return ImageSource(result, size=dst_size, transparent=src_img.transparent)
+                                                  image_filter[image_opts.resampling])
+        return ImageSource(result, size=dst_size, image_opts=image_opts)
     
-    def _transform(self, src_img, src_bbox, dst_size, dst_bbox):
+    def _transform(self, src_img, src_bbox, dst_size, dst_bbox, image_opts):
         """
         Do a 'real' transformation with a transformed mesh (see above).
         """
@@ -150,8 +150,8 @@ class ImageTransformer(object):
             meshes.append(dst_quad_to_src(quad))
 
         result = src_img.as_image().transform(dst_size, Image.MESH, meshes,
-                                              image_filter[self.resampling])
-        return ImageSource(result, size=dst_size, transparent=src_img.transparent)
+                                              image_filter[image_opts.resampling])
+        return ImageSource(result, size=dst_size, image_opts=image_opts)
         
     def _no_transformation_needed(self, src_size, src_bbox, dst_size, dst_bbox):
         """

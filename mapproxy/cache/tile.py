@@ -40,6 +40,7 @@ from __future__ import with_statement
 
 from mapproxy.grid import MetaGrid
 from mapproxy.image import merge_images
+from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
 from mapproxy.util import async
@@ -58,13 +59,14 @@ class TileManager(object):
         with a tile before it will be stored to disc. the filter should 
         return this or a new tile object.
     """
-    def __init__(self, grid, cache, sources, format, request_format=None,
+    def __init__(self, grid, cache, sources, format, image_opts=None, request_format=None,
         meta_buffer=None, meta_size=None, minimize_meta_requests=False,
         pre_store_filter=None, concurrent_tile_creators=1):
         self.grid = grid
         self.cache = cache
         self.meta_grid = None
         self.format = format
+        self.image_opts = image_opts
         self.request_format = request_format or format
         self.sources = sources
         self.minimize_meta_requests = minimize_meta_requests
@@ -222,6 +224,8 @@ class TileCreator(object):
             if not self.is_cached(tile):
                 source = self._query_sources(query)
                 if not source: return []
+                # call as_buffer to force conversion into cache format
+                source.as_buffer(self.tile_mgr.image_opts)
                 tile.source = source
                 tile = self.tile_mgr.apply_tile_filter(tile)
                 self.cache.store(tile)
@@ -254,7 +258,7 @@ class TileCreator(object):
                 imgs.append(img)
         
         if not imgs: return None
-        return merge_images(imgs, size=query.size)
+        return merge_images(imgs, size=query.size, image_opts=self.tile_mgr.image_opts)
     
     def _create_meta_tiles(self, meta_tiles):
         if self.tile_mgr.concurrent_tile_creators > 1 and len(meta_tiles) > 1:
@@ -274,7 +278,7 @@ class TileCreator(object):
                 meta_tile_image = self._query_sources(query)
                 if not meta_tile_image: return []
                 splitted_tiles = split_meta_tiles(meta_tile_image, meta_tile.tile_patterns,
-                                                  tile_size)
+                                                  tile_size, self.tile_mgr.image_opts)
                 for splitted_tile in splitted_tiles:
                     splitted_tile = self.tile_mgr.apply_tile_filter(splitted_tile)
                     self.cache.store(splitted_tile)
@@ -398,12 +402,12 @@ class TileCollection(object):
         return 'TileCollection(%r)' % self.tiles
 
 
-def split_meta_tiles(meta_tile, tiles, tile_size):
+def split_meta_tiles(meta_tile, tiles, tile_size, image_opts):
     try:
         # TODO png8
         # if not self.transparent and format == 'png':
         #     format = 'png8'
-        splitter = TileSplitter(meta_tile)
+        splitter = TileSplitter(meta_tile, image_opts)
     except IOError:
         # TODO
         raise

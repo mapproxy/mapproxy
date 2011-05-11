@@ -19,85 +19,26 @@ WMS clients for maps and information.
 """
 from __future__ import with_statement
 from mapproxy.request.base import split_mime_type
-from mapproxy.layer import MapQuery, InfoQuery
+from mapproxy.layer import InfoQuery
 from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClient
 from mapproxy.srs import make_lin_transf, SRS
 from mapproxy.image import ImageSource
-from mapproxy.image.transform import ImageTransformer
+from mapproxy.image.opts import ImageOptions
 from mapproxy.featureinfo import create_featureinfo_doc
 
 import logging
 log = logging.getLogger(__name__)
 
 class WMSClient(object):
-    def __init__(self, request_template, supported_srs=None, http_client=None,
-                 http_method=None, resampling='bicubic', supported_formats=None,
-                 lock=None):
+    def __init__(self, request_template, http_client=None,
+                 http_method=None, lock=None):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
         self.http_method = http_method
-        self.supported_srs = supported_srs or []
-        self.supported_formats = supported_formats or []
-        self.resampling = resampling
         self.lock = lock
     
-    def get_map(self, query):
-        format = self.request_template.params.format
-        if not format:
-            format = query.format
-        if self.supported_formats and format not in self.supported_formats:
-            format = self.supported_formats[0]
-        if self.supported_srs:
-            if query.srs not in self.supported_srs:
-                return self._get_transformed(query, format)
-            # some srs are equal but not the same (e.g. 900913/3857)
-            # use only supported srs so we use the right srs code.
-            idx = self.supported_srs.index(query.srs)
-            if self.supported_srs[idx] is not query.srs:
-                query.srs = self.supported_srs[idx]
-        resp = self._retrieve(query, format)
-        return ImageSource(resp, size=query.size, format=format,
-                           transparent=self.request_template.params.transparent)
-    
-    def _get_transformed(self, query, format):
-        dst_srs = query.srs
-        src_srs = self._best_supported_srs(dst_srs)
-        dst_bbox = query.bbox
-        src_bbox = dst_srs.transform_bbox_to(src_srs, dst_bbox)
-        
-        src_width, src_height = src_bbox[2]-src_bbox[0], src_bbox[3]-src_bbox[1]
-        ratio = src_width/src_height
-        dst_size = query.size
-        xres, yres = src_width/dst_size[0], src_height/dst_size[1]
-        if xres < yres:
-            src_size = dst_size[0], int(dst_size[0]/ratio + 0.5)
-        else:
-            src_size = int(dst_size[1]*ratio +0.5), dst_size[1]
-        
-        src_query = MapQuery(src_bbox, src_size, src_srs, format)
-        resp = self._retrieve(src_query, format)
-        
-        img = ImageSource(resp, format, size=src_size,
-                          transparent=self.request_template.params.transparent)
-        
-        img = ImageTransformer(src_srs, dst_srs, self.resampling).transform(img, src_bbox, 
-            query.size, dst_bbox)
-        
-        img.format = format
-        return img
-    
-    def _best_supported_srs(self, srs):
-        latlong = srs.is_latlong
-        
-        for srs in self.supported_srs:
-            if srs.is_latlong == latlong:
-                return srs
-        
-        # else
-        return self.supported_srs[0]
-    
-    def _retrieve(self, query, format):
+    def retrieve(self, query, format):
         if self.http_method == 'POST':
             request_method = 'POST'
         elif self.http_method == 'GET':
@@ -152,17 +93,10 @@ class WMSClient(object):
         if self.request_template.url != other.request_template.url:
             return None
         
-        if self.supported_srs != other.supported_srs:
-          return None
-        
-        if self.supported_formats != other.supported_formats:
-          return None
-        
         new_req = self.request_template.copy()
         new_req.params.layers = new_req.params.layers + other.request_template.params.layers
         
-        return WMSClient(new_req, http_client=self.http_client, http_method=self.http_method,
-                         resampling=self.resampling)
+        return WMSClient(new_req, http_client=self.http_client, http_method=self.http_method)
         
 
 class WMSInfoClient(object):
@@ -230,7 +164,7 @@ class WMSLegendClient(object):
         resp = self._retrieve(query)
         format = split_mime_type(query.format)[1]
         self._check_resp(resp)
-        return ImageSource(resp, format=format)
+        return ImageSource(resp, image_opts=ImageOptions(format=format))
     
     def _retrieve(self, query):
         url = self._query_url(query)
@@ -263,7 +197,7 @@ class WMSLegendURLClient(object):
         resp = self.http_client.open(self.url)
         format = split_mime_type(query.format)[1]
         self._check_resp(resp)
-        return ImageSource(resp, format=format)
+        return ImageSource(resp, image_opts=ImageOptions(format=format))
     
     def _check_resp(self, resp):
         if 'Content-type' not in resp.headers:

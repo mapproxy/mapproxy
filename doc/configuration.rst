@@ -1,19 +1,15 @@
 Configuration
 #############
 
-There are a few different configuration files used by MapProxy.
+There are two configuration files used by MapProxy.
 
 ``mappproxy.yaml``
     This is the main configuration of MapProxy. It configures all aspects of the server:
     Which servers should be started, where comes the data from, what should be cached,
     etc..
-    
+
 ``seed.yaml``
     This file is the configuration for the ``mapproxy-seed`` tool. See :doc:`seeding documentation <seed>` for more information.
-
-``develop.ini`` or ``config.ini``
-    These are the paster configuration files that are used to start MapProxy in development or production mode. See :doc:`deployment documentation <deployment>` for more information.
-
 
 .. note:: The configuration changed with the 0.9.0 release and you have to update any older configuration. This is a one-time change and further versions will offer backwards-compatibility. Read the :doc:`migration guide <migrate>` for some help.
 
@@ -22,7 +18,7 @@ There are a few different configuration files used by MapProxy.
 mapproxy.yaml
 -------------
 
-The configuration uses the YAML format.
+The configuration uses the YAML format. The Wikipedia contains a `good introduction to YAML <http://en.wikipedia.org/wiki/YAML>`_.
 
 The MapProxy configuration is grouped into six sections, each configures a different aspect of MapProxy. These are the following sections:
 
@@ -277,9 +273,8 @@ Change the ``meta_size`` and ``meta_buffer`` of this cache. See :ref:`global cac
 ``image``
 """""""""
 
-``resampling_method``
+:ref:`See below <image_options>` for all image options.
 
-  The resampling method used for outgoing reprojections. See :ref:`globals.image.resampling_method <image_resampling_method>` for available options.
 
 ``use_direct_from_level`` and ``use_direct_from_res``
 """""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -529,12 +524,8 @@ Here you can define some options that affect the way MapProxy generates image re
     .. image:: imgs/bicubic.png
 
 
-.. _jpeg_quality:
-
-``jpeg_quality``
-  An integer value from 0 to 100. Larger values result in slower performance,
-  larger file sizes but better image quality. You should try values between 75
-  and 90 for good compromise between performance and quality.
+``formats``
+  Modify existing or define new image formats. :ref:`See blow <image_options>` for all image format options. 
 
 ``cache``
 """""""""
@@ -693,6 +684,119 @@ The complete path to the ``mapserv`` executable. Required if you use the ``mapse
 ^^^^^^^^^^^^^^^
 
 Path where the Mapserver should be executed from. It should be the directory where any relative paths in your mapfile are based on. Defaults to the directory of ``binary``.
+
+
+.. _image_options:
+
+Image Format Options
+--------------------
+
+.. versionadded:: 1.1.0
+
+There are a few options that affect how MapProxy encodes and transforms images. You can set these options in the ``globals`` section or individually for each source or cache.
+
+Options
+"""""""
+
+Available options are:
+
+``format``
+  The mime-type of this image format. The format defaults to the name of the image configuration.
+
+``mode``
+  One of ``RGB`` for 24bit images, ``RGBA`` 32bit images with alpha, ``P`` for paletted images or ``I`` for integer images.
+
+``colors``
+  The number of colors to reduce the image before encoding. Use ``0`` to disable color reduction (quantizing).
+
+``transparent``
+  ``true`` if the image should have an alpha channel.
+
+``resampling_method``
+  The resampling method used for scaling or reprojection. One of ``nearest``, ``bilinear`` or ``bicubic``.
+  
+``encoding_options``
+  Options that modify the way MapProxy encodes (saves) images. These options are format dependent. See below.
+  
+``encoding_options``
+^^^^^^^^^^^^^^^^^^^^
+
+The following encoding options are available:
+
+.. _jpeg_quality:
+
+``jpeg_quality``
+  An integer value from 0 to 100 that defines the image quality of JPEG images. Larger values result in slower performance, larger file sizes but better image quality. You should try values between 75 and 90 for good compromise between performance and quality.
+
+``quantizer``
+  The algorithm used to quantize (reduce) the image colors. Quantizing is used for GIF and paletted PNG images. Available quantizers are ``mediancut`` and ``fastoctree``. ``fastoctree`` is much faster and also supports 8bit PNG with full alpha support, but the image quality can be better with ``mediancut`` in some cases.
+  The quantizing is done by the Python Image Library (PIL). ``fastoctree`` is a `new quantizer <fastoctree_mp_blog>`_ that is not yet available in any official PIL release. You need install a development package of PIL::
+  
+    pip install https://bitbucket.org/olt/pil-2009-raclette/get/tip.tar.gz
+
+.. _fastoctree_mp_blog: http://mapproxy.org/blog/improving-the-performance-for-png-requests/
+
+Global
+""""""
+
+You can configure image formats globally with the ``image.formats`` option. Each format has a name and one or more options from the list above. You can choose any name, but you need to specify a ``format`` if the name is not a valid mime-type (e.g. ``myformat`` instead of ``image/png``).
+
+Here is an example that defines a custom format::
+
+  globals:
+    image:
+      formats:
+        my_format:
+          format: image/png
+          mode: P
+          transparent: true
+
+
+You can also modify existing image formats::
+
+  globals:
+    image:
+      formats:
+        image/png:
+          encoding_options:
+            quantizer: fastoctree
+
+
+MapProxy will use your image formats when you are using the format name as the ``format`` of any source or cache.
+
+For example::
+
+  caches:
+    mycache:
+      format: my_format
+      sources: [source1, source2]
+      grids: [my_grid]
+
+
+Local
+"""""
+
+You can change all options individually for each cache or source. You can do this by choosing a base format and changing some options::
+
+  caches:
+    mycache:
+      format: image/jpeg
+      image:
+        encoding_options:
+          jpeg_quality: 80
+      sources: [source1, source2]
+      grids: [my_grid]
+
+You can also configure a the format from scratch::
+
+  caches:
+    mycache:
+      image:
+        format: image/jpeg
+        resampling_method: nearest
+      sources: [source1, source2]
+      grids: [my_grid]
+
 
 Notes
 -----

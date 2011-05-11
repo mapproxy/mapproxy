@@ -131,6 +131,8 @@ Use this option to specify which image formats you source WMS supports. MapProxy
 ``image``
 ^^^^^^^^^
 
+See :ref:`image_options` for other options.
+
 ``transparent_color``
 
   .. versionadded:: 1.0.0
@@ -155,10 +157,6 @@ Use this option to specify which image formats you source WMS supports. MapProxy
 
   Configures the opacity of this source image. This value is used when the image is placed on other layers and it can be used to overlay non-transparent images. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).
 
-``resampling_method``
-  
-  The resampling method used for reprojection of incoming data.  For outgoing transformations see :ref:`caches`.
-  See :ref:`globals.image.resampling_method <image_resampling_method>` for available options.
 
 .. _wms_source_concurrent_requests_label:
 

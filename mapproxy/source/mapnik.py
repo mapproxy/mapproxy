@@ -21,6 +21,7 @@ from cStringIO import StringIO
 
 from mapproxy.grid import tile_grid
 from mapproxy.image import ImageSource
+from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage
 from mapproxy.source import Source, SourceError
 from mapproxy.client.http import HTTPClientError
@@ -37,11 +38,9 @@ log = logging.getLogger(__name__)
 
 class MapnikSource(Source):
     supports_meta_tiles = True
-    def __init__(self, mapfile, transparent=False, coverage=None, res_range=None, opacity=None):
-        Source.__init__(self)
+    def __init__(self, mapfile, image_opts=None, coverage=None, res_range=None):
+        Source.__init__(self, image_opts=image_opts)
         self.mapfile = mapfile
-        self.transparent = transparent
-        self.opacity = opacity
         self.coverage = coverage
         self.res_range = res_range
         if self.coverage:
@@ -85,5 +84,5 @@ class MapnikSource(Source):
         img = mapnik.Image(query.size[0], query.size[1])
         mapnik.render(m, img)
         data = StringIO(img.tostring(str(query.format)))
-        return ImageSource(data, size=query.size,
-            transparent=self.transparent, format=query.format)
+        return ImageSource(data, size=query.size, 
+            image_opts=ImageOptions(transparent=self.transparent, format=query.format))

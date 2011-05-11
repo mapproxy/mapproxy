@@ -19,6 +19,7 @@ import os
 
 from mapproxy.platform.image import Image, ImageColor, ImageDraw, ImageFont
 from mapproxy.image import ImageSource
+from mapproxy.image.opts import create_image
 
 _pil_ttf_support = True
 
@@ -26,7 +27,7 @@ _pil_ttf_support = True
 import logging
 log = logging.getLogger(__name__)
 
-def message_image(message, size, format='png', bgcolor='#ffffff',
+def message_image(message, size, image_opts, bgcolor='#ffffff',
                   transparent=False):
     """
     Creates an image with text (`message`). This can be used
@@ -42,11 +43,10 @@ def message_image(message, size, format='png', bgcolor='#ffffff',
                         return a transparent image
     :rtype: `ImageSource`
     """
-    eimg = ExceptionImage(message, format=format, bgcolor=bgcolor, transparent=transparent)
+    eimg = ExceptionImage(message, image_opts=image_opts)
     return eimg.draw(size=size)
 
-def attribution_image(message, size, format='png',
-                  transparent=False, inverse=False):
+def attribution_image(message, size, image_opts, inverse=False):
     """
     Creates an image with text attribution (`message`).
     
@@ -58,7 +58,7 @@ def attribution_image(message, size, format='png',
                         return a transparent image
     :rtype: `ImageSource`
     """
-    aimg = AttributionImage(message, format=format, transparent=transparent,
+    aimg = AttributionImage(message, image_opts=image_opts,
                             inverse=inverse)
     return aimg.draw(size=size)
 
@@ -80,9 +80,9 @@ class MessageImage(object):
     padding = 3
     placement = 'ul'
     
-    def __init__(self, message, format='png'):
+    def __init__(self, message, image_opts):
         self.message = message
-        self.format = format
+        self.image_opts = image_opts
         self._font = None
     
     @property
@@ -124,7 +124,7 @@ class MessageImage(object):
         if not self.message:
             if img is not None:
                 return img
-            return ImageSource(base_img, size=size, format=self.format)
+            return ImageSource(base_img, size=size, image_opts=self.image_opts)
         
         draw = ImageDraw.Draw(base_img)
         self.draw_msg(draw, size)
@@ -133,7 +133,7 @@ class MessageImage(object):
             img.paste(base_img, (0, 0), base_img)
             base_img = img
         
-        return ImageSource(base_img, size=size, format=self.format)
+        return ImageSource(base_img, size=size, image_opts=self.image_opts)
     
     def draw_msg(self, draw, size):
         td = TextDraw(self.message, font=self.font, bg_color=self.box_color,
@@ -148,23 +148,19 @@ class ExceptionImage(MessageImage):
     """
     font_name = 'default'
     font_size = 9
-    def __init__(self, message, format='png', bgcolor='#000000', transparent=False):
-        MessageImage.__init__(self, message, format=format)
-        self.bgcolor = bgcolor
-        self.transparent = transparent
+    def __init__(self, message, image_opts):
+        MessageImage.__init__(self, message, image_opts=image_opts.copy())
+        if not self.image_opts.bgcolor:
+            self.image_opts.bgcolor = '#ffffff'
     
     def new_image(self, size):
-        bgcolor = ImageColor.getrgb(self.bgcolor)
-        if self.transparent:
-            bgcolor += (0,)
-            return Image.new('RGBA', size, color=bgcolor)
-        return Image.new('RGB', size, color=bgcolor)
+        return create_image(size, self.image_opts)
     
     @property
     def font_color(self):
-        if self.transparent:
+        if self.image_opts.transparent:
             return ImageColor.getrgb('black')
-        if _luminance(ImageColor.getrgb(self.bgcolor)) < 128:
+        if _luminance(ImageColor.getrgb(self.image_opts.bgcolor)) < 128:
             return ImageColor.getrgb('white')
         return ImageColor.getrgb('black')
     
@@ -177,8 +173,8 @@ class WatermarkImage(MessageImage):
     font_size = 24
     font_color = (128, 128, 128)
     
-    def __init__(self, message, format='png', placement='c', opacity=None, font_size=None):
-        MessageImage.__init__(self, message, format)
+    def __init__(self, message, image_opts, placement='c', opacity=None, font_size=None):
+        MessageImage.__init__(self, message, image_opts=image_opts)
         if opacity is None:
             opacity = 30
         if font_size:
@@ -207,9 +203,8 @@ class AttributionImage(MessageImage):
     font_size = 10
     placement = 'lr'
     
-    def __init__(self, message, format='png', transparent=False, inverse=False):
-        MessageImage.__init__(self, message, format)
-        self.transparent = transparent
+    def __init__(self, message, image_opts, inverse=False):
+        MessageImage.__init__(self, message, image_opts=image_opts)
         self.inverse = inverse
     
     @property

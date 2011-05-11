@@ -20,7 +20,8 @@ Image and tile manipulation (transforming, merging, etc).
 from __future__ import with_statement
 from cStringIO import StringIO
 
-from mapproxy.platform.image import Image, ImageColor, ImageChops, quantize
+from mapproxy.platform.image import Image, ImageColor, ImageChops
+from mapproxy.image.opts import create_image, ImageOptions, ImageFormat
 from mapproxy.config import base_config
 
 import logging
@@ -46,7 +47,7 @@ class LayerMerger(object):
             for l in layer:
                 self.add(l)
 
-    def merge(self, format='png', size=None, bgcolor='#ffffff', transparent=False):
+    def merge(self, image_opts, size=None):
         """
         Merge the layers. If the format is not 'png' just return the last image.
         
@@ -55,38 +56,33 @@ class LayerMerger(object):
         :rtype: `ImageSource`
         """
         if not self.layers:
-            return BlankImageSource(size=size, bgcolor=bgcolor, transparent=transparent)
+            return BlankImageSource(size=size, image_opts=image_opts)
         if len(self.layers) == 1:
-            if (self.layers[0].transparent == transparent):
+            layer_opts = self.layers[0].image_opts
+            if not layer_opts.transparent and (not size or size == self.layers[0].size):
+                # layer is opaque, no need to make transparent or add bgcolor
                 return self.layers[0]
-        
-        # TODO optimizations
-        #  - layer with non transparency
-        #         if not format.endswith('png'): #TODO png8?
-        #             return self.layers[-1]
         
         if size is None:
             size = self.layers[0].size
-        bgcolor = ImageColor.getrgb(bgcolor)
-        if transparent:
-            img = Image.new('RGBA', size, bgcolor+(0,))
-        else:
-            img = Image.new('RGB', size, bgcolor)
+        
+        img = create_image(size, image_opts)
         
         for layer in self.layers:
             layer_img = layer.as_image()
-            if layer.opacity is not None and layer.opacity < 1.0:
+            if (layer.image_opts and layer.image_opts.opacity is not None
+                and layer.image_opts.opacity < 1.0):
                 layer_img = layer_img.convert(img.mode)
-                img = Image.blend(img, layer_img, layer.opacity)
+                img = Image.blend(img, layer_img, layer.image_opts.opacity)
             else:
                 if layer_img.mode == 'RGBA':
                     # paste w transparency mask from layer
                     img.paste(layer_img, (0, 0), layer_img)
                 else:
                     img.paste(layer_img, (0, 0))
-        return ImageSource(img, format)
+        return ImageSource(img, size=size, image_opts=image_opts)
 
-def merge_images(images, format='png', size=None, transparent=True):
+def merge_images(images, image_opts, size=None):
     """
     Merge multiple images into one.
     
@@ -98,7 +94,7 @@ def merge_images(images, format='png', size=None, transparent=True):
     """
     merger = LayerMerger()
     merger.add(images)
-    return merger.merge(format=format, size=size, transparent=transparent)
+    return merger.merge(image_opts=image_opts, size=size)
 
 def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transparent=True):
     """
@@ -110,7 +106,7 @@ def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transpar
     :rtype: `ImageSource`
     """
     if not legends:
-        return BlankImageSource(size=(1,1), bgcolor=bgcolor, transparent=transparent)
+        return BlankImageSource(size=(1,1), image_opts=ImageOptions(bgcolor=bgcolor, transparent=transparent))
     if len(legends) == 1:
         return legends[0]
     
@@ -141,7 +137,7 @@ def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transpar
             img.paste(legend_img, (0, legend_position_y[i]), legend_img)
         else:
             img.paste(legend_img, (0, legend_position_y[i]))
-    return ImageSource(img, format)
+    return ImageSource(img, image_opts=ImageOptions(format=format))
 
 class ImageSource(object):
     """
@@ -149,7 +145,7 @@ class ImageSource(object):
     You can access the result as an image (`as_image` ) or a file-like buffer
     object (`as_buffer`).
     """
-    def __init__(self, source, format='png', size=None, transparent=False, opacity=None):
+    def __init__(self, source, size=None, image_opts=None):
         """
         :param source: the image
         :type source: PIL `Image`, image file object, or filename
@@ -160,9 +156,7 @@ class ImageSource(object):
         self._buf = None
         self._fname = None
         self.source = source
-        self.format = format
-        self.transparent = transparent
-        self.opacity = opacity
+        self.image_opts = image_opts
         self._size = size
     
     def _set_source(self, source):
@@ -208,7 +202,7 @@ class ImageSource(object):
                 raise
             self._img = img
         
-        if self.transparent and self._img.mode == 'P':
+        if self.image_opts and self.image_opts.transparent and self._img.mode == 'P':
             self._img = self._img.convert('RGBA')
     
         return self._img
@@ -230,7 +224,7 @@ class ImageSource(object):
         else:
             self._buf.seek(0)
     
-    def as_buffer(self, format=None, paletted=None, seekable=False):
+    def as_buffer(self, image_opts=None, format=None, seekable=False):
         """
         Returns the image as a file object.
         
@@ -238,22 +232,26 @@ class ImageSource(object):
                        Existing files will not be re-encoded.
         :rtype: file-like object
         """
+
+        if format:
+            image_opts = (image_opts or self.image_opts).copy()
+            image_opts.format = ImageFormat(format)
         if not self._buf and not self._fname:
-            if not format:
-                format = self.format
-            log.debug('image -> buf(%s)' % (format,))
-            self._buf = img_to_buf(self._img, format, paletted=paletted)
+            if image_opts is None:
+                image_opts = self.image_opts
+            log.debug('image -> buf(%s)' % (image_opts.format,))
+            self._buf = img_to_buf(self._img, image_opts=image_opts)
         else:
             self._make_seekable_buf() if seekable else self._make_readable_buf()
-            if self.format and format and self.format != format:
-                log.debug('converting image from %s -> %s' % (self.format, format))
+            if self.image_opts and image_opts and self.image_opts.format != image_opts.format:
+                log.debug('converting image from %s -> %s' % (self.image_opts, image_opts))
                 self.source = self.as_image()
                 self._buf = None
-                self.format = format
+                self.image_opts = image_opts
                 # hide fname to prevent as_buffer from reading the file
                 fname = self._fname
                 self._fname = None
-                self.as_buffer(format=format, paletted=paletted)        
+                self.as_buffer(image_opts)
                 self._fname = fname
         return self._buf
 
@@ -268,24 +266,20 @@ class BlankImageSource(object):
     ImageSource for transparent or solid-color images.
     Implements optimized as_buffer() method.
     """
-    def __init__(self, size, bgcolor=None, transparent=True, format=None):
+    def __init__(self, size, image_opts):
         self.size = size
-        self.bgcolor = bgcolor or '#ffffff'
-        self.transparent = transparent
-        self.opacity = 0.0 if transparent else 1.0
-        self.format = format
+        self.image_opts = image_opts
     
     def as_image(self):
-        bgcolor = ImageColor.getrgb(self.bgcolor)
-        if self.transparent:
-            img = Image.new('RGBA', self.size, bgcolor+(0,))
-        else:
-            img = Image.new('RGB', self.size, bgcolor)
-        # set paletted to false, no need to quantize single color image
+        img = create_image(self.size, self.image_opts)
         return img
     
-    def as_buffer(self, format=None, paletted=None, seekable=False):
-        return img_to_buf(self.as_image(), format or self.format, paletted=False)
+    def as_buffer(self, image_opts=None, format=None, seekable=False):
+        image_opts = (image_opts or self.image_opts).copy()
+        if format:
+            image_opts.format = ImageFormat(format)
+        image_opts.colors = 0
+        return img_to_buf(self.as_image(), image_opts=image_opts)
 
 class ReadBufWrapper(object):
     """
@@ -319,30 +313,60 @@ class ReadBufWrapper(object):
             self.stringio = StringIO(self.readbuf.read())
         return getattr(self.stringio, name)
 
-def img_to_buf(img, format='png', paletted=None):
-    defaults = {}    
-    if paletted is None:
-        if format == 'png8':
-            paletted = True
+def img_to_buf(img, image_opts):
+    defaults = {}
+    
+    if (image_opts.colors != 0 and (
+        image_opts.colors is not None or base_config().image.paletted)):
+        # TODO remove image.paletted
+        if base_config().image.paletted:
+            image_opts = image_opts.copy()
+            image_opts.colors = 256
+        
+        quantizer = None
+        if 'quantizer' in image_opts.encoding_options:
+            quantizer = image_opts.encoding_options['quantizer']
+        
+        if image_opts.transparent:
+            img = quantize(img, colors=image_opts.colors, alpha=True,
+                defaults=defaults, quantizer=quantizer)
         else:
-            paletted = base_config().image.paletted
-    if paletted:
-        if format in ('png', 'gif', 'png8'):
-            if img.mode == 'RGBA':
-                img = quantize(img, alpha=True, defaults=defaults)
-            else:
-                img = quantize(img)
-            if hasattr(Image, 'RLE'):
-                defaults['compress_type'] = Image.RLE
-    format = filter_format(format)
+            img = quantize(img, colors=image_opts.colors,
+                quantizer=quantizer)
+        if hasattr(Image, 'RLE'):
+            defaults['compress_type'] = Image.RLE
+    format = filter_format(image_opts.format.ext)
     buf = StringIO()
     if format == 'jpeg':
         img = img.convert('RGB')
-        defaults['quality'] = base_config().image.jpeg_quality
+        if 'jpeg_quality' in image_opts.encoding_options:
+            defaults['quality'] = image_opts.encoding_options['jpeg_quality']
+        else:
+            defaults['quality'] = base_config().image.jpeg_quality
     img.save(buf, format, **defaults)
     buf.seek(0)
     return buf
-    
+
+def quantize(img, colors=256, alpha=False, defaults=None, quantizer=None):
+    if hasattr(Image, 'FASTOCTREE') and quantizer in (None, 'fastoctree'):
+        if not alpha:
+            img = img.convert('RGB')
+        img = img.quantize(colors, Image.FASTOCTREE)
+    else:
+        if alpha and img.mode == 'RGBA':
+            img.load() # split might fail if image is not loaded
+            alpha = img.split()[3]
+            img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors-1)
+            mask = Image.eval(alpha, lambda a: 255 if a <=128 else 0)
+            img.paste(255, mask)
+            if defaults is not None:
+                defaults['transparency'] = 255
+        else:
+            img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
+       
+    return img
+
+
 def filter_format(format):
     if format.lower() == 'geotiff':
         format = 'tiff'

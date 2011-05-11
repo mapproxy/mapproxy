@@ -192,7 +192,7 @@ class FileCache(object):
         if os.path.islink(location):
             os.unlink(location)
             
-        data = tile.source.as_buffer(format=self.file_ext, seekable=True)
+        data = tile.source.as_buffer(seekable=True)
         data.seek(0)
         with open(location, 'wb') as f:
             log.debug('writing %r to %s' % (tile.coord, location))

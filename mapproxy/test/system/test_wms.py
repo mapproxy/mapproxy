@@ -124,8 +124,8 @@ class TestWMS111(WMSTest):
             'http://localhost/service?')
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
-                              'wms_merge', 'tms_cache', 'wms_cache_multi',
-                              'wms_cache_link_single', 'wms_cache_110'])
+            'wms_cache_transparent', 'wms_merge', 'tms_cache', 'wms_cache_multi',
+            'wms_cache_link_single', 'wms_cache_110'])
         eq_(layer_names, expected_names)
         assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
     
@@ -172,7 +172,6 @@ class TestWMS111(WMSTest):
         self.common_map_req.params['styles'] = 'default'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        print resp.body
         data = StringIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGB'
@@ -184,13 +183,44 @@ class TestWMS111(WMSTest):
         assert is_png(data)
         assert Image.open(data).mode == 'RGB'
         
+    def test_get_map_png_transparent_non_transparent_data(self):
+        self.common_map_req.params['transparent'] = 'True'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'image/png')
+        data = StringIO(resp.body)
+        assert is_png(data)
+        img = Image.open(data)
+        eq_(img.mode, 'RGB')
+
     def test_get_map_png_transparent(self):
+        self.common_map_req.params['layers'] = 'wms_cache_transparent'
         self.common_map_req.params['transparent'] = 'True'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGBA'
+
+    def test_get_map_png_w_default_bgcolor(self):
+        self.common_map_req.params['layers'] = 'wms_cache_transparent'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'image/png')
+        data = StringIO(resp.body)
+        assert is_png(data)
+        img = Image.open(data)
+        eq_(img.mode, 'RGB')
+        eq_(img.getcolors()[0][1], (255, 255, 255))
+
+    def test_get_map_png_w_bgcolor(self):
+        self.common_map_req.params['layers'] = 'wms_cache_transparent'
+        self.common_map_req.params['bgcolor'] = '0xff00a0'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'image/png')
+        data = StringIO(resp.body)
+        assert is_png(data)
+        img = Image.open(data)
+        eq_(img.mode, 'RGB')
+        eq_(sorted(img.getcolors())[-1][1], (255, 0, 160))
     
     def test_get_map_jpeg(self):
         self.common_map_req.params['format'] = 'image/jpeg'
@@ -335,7 +365,6 @@ class TestWMS111(WMSTest):
                         {'body': 'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_fi_req)
-            print resp.body
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, 'info')
 
@@ -360,7 +389,6 @@ class TestWMS111(WMSTest):
             self.common_fi_req.params['bbox'] = '3570269,5540889,3643458,5653553'
             self.common_fi_req.params['srs'] = 'EPSG:31467'
             resp = self.app.get(self.common_fi_req)
-            print resp.body
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, 'info')
 
@@ -424,7 +452,6 @@ class TestWMS111(WMSTest):
         self.common_fi_req.params['query_layers'] = 'tms_cache'
         self.common_fi_req.params['exceptions'] = 'application/vnd.ogc.se_xml'
         resp = self.app.get(self.common_fi_req)
-        print resp.body
         eq_(resp.content_type, 'application/vnd.ogc.se_xml')
         xml = resp.lxml
         eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code'), [])
@@ -464,8 +491,8 @@ class TestWMS110(WMSTest):
         
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
-                              'wms_merge', 'tms_cache', 'wms_cache_multi',
-                              'wms_cache_link_single', 'wms_cache_110'])
+            'wms_cache_transparent', 'wms_merge', 'tms_cache', 'wms_cache_multi',
+            'wms_cache_link_single', 'wms_cache_110'])
         eq_(layer_names, expected_names)
         assert validate_with_dtd(xml, dtd_name='wms/1.1.0/capabilities_1_1_0.dtd')
 
@@ -520,14 +547,6 @@ class TestWMS110(WMSTest):
         assert is_png(data)
         assert Image.open(data).mode == 'RGB'
     
-    def test_get_map_png_transparent(self):
-        self.common_map_req.params['transparent'] = 'True'
-        resp = self.app.get(self.common_map_req)
-        eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
-        assert is_png(data)
-        assert Image.open(data).mode == 'RGBA'
-    
     def test_get_map_jpeg(self):
         self.common_map_req.params['format'] = 'image/jpeg'
         resp = self.app.get(self.common_map_req)
@@ -580,7 +599,6 @@ class TestWMS110(WMSTest):
                         {'body': 'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_fi_req)
-            print resp.body
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, 'info')
             
@@ -588,7 +606,6 @@ class TestWMS110(WMSTest):
         self.common_fi_req.params['query_layers'] = 'tms_cache'
         self.common_fi_req.params['exceptions'] = 'application/vnd.ogc.se_xml'
         resp = self.app.get(self.common_fi_req)
-        print resp.body
         eq_(resp.content_type, 'application/vnd.ogc.se_xml')
         xml = resp.lxml
         eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code'), [])
@@ -618,8 +635,8 @@ class TestWMS100(WMSTest):
             'MapProxy test fixture')
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
-                              'wms_merge', 'tms_cache', 'wms_cache_multi',
-                              'wms_cache_link_single', 'wms_cache_110'])
+            'wms_cache_transparent', 'wms_merge', 'tms_cache', 'wms_cache_multi',
+            'wms_cache_link_single', 'wms_cache_110'])
         eq_(layer_names, expected_names)
         #TODO srs
         assert validate_with_dtd(xml, dtd_name='wms/1.0.0/capabilities_1_0_0.dtd')
@@ -682,14 +699,6 @@ class TestWMS100(WMSTest):
         finally:
             base_config().image.paletted = False
             
-    def test_get_map_png_transparent(self):
-        self.common_map_req.params['transparent'] = 'True'
-        resp = self.app.get(self.common_map_req)
-        eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
-        assert is_png(data)
-        assert Image.open(data).mode == 'RGBA'
-    
     def test_get_map_jpeg(self):
         self.common_map_req.params['format'] = 'image/jpeg'
         resp = self.app.get(self.common_map_req)
@@ -730,7 +739,6 @@ class TestWMS100(WMSTest):
         self.common_fi_req.params['query_layers'] = 'tms_cache'
         self.common_fi_req.params['exceptions'] = 'application/vnd.ogc.se_xml'
         resp = self.app.get(self.common_fi_req)
-        print resp.body
         eq_(resp.content_type, 'text/xml')
         xml = resp.lxml
         assert 'tms_cache is not queryable' in xml.xpath('//WMTException/text()')[0]
@@ -769,8 +777,8 @@ class TestWMS130(WMSTest):
         layer_names = set(xml.xpath('//wms:Layer/wms:Layer/wms:Name/text()',
                                     namespaces=ns130))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
-                              'wms_merge', 'tms_cache', 'wms_cache_multi',
-                              'wms_cache_link_single', 'wms_cache_110'])
+            'wms_cache_transparent', 'wms_merge', 'tms_cache', 'wms_cache_multi',
+            'wms_cache_link_single', 'wms_cache_110'])
         eq_(layer_names, expected_names)
         assert is_130_capa(xml)
     
@@ -829,14 +837,6 @@ class TestWMS130(WMSTest):
         assert is_png(data)
         assert Image.open(data).mode == 'RGB'
         
-    def test_get_map_png_transparent(self):
-        self.common_map_req.params['transparent'] = 'True'
-        resp = self.app.get(self.common_map_req)
-        eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
-        assert is_png(data)
-        assert Image.open(data).mode == 'RGBA'
-    
     def test_get_map_jpeg(self):
         self.common_map_req.params['format'] = 'image/jpeg'
         resp = self.app.get(self.common_map_req)
@@ -902,15 +902,15 @@ if sys.platform != 'win32':
     
         def test_get_map(self):
             link_name = 'wms_cache_link_single_EPSG900913/01/000/000/001/000/000/001.png'
-            real_name = 'wms_cache_link_single_EPSG900913/single_color_tiles/fe0005.png'
+            real_name = 'wms_cache_link_single_EPSG900913/single_color_tiles/fe00a0.png'
             self.created_tiles.append(link_name)
             self.created_tiles.append(real_name)
-            with tmp_image((256, 256), format='png', color='#fe0005') as img:
-                expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
+            with tmp_image((256, 256), format='jpeg', color='#fe00a0') as img:
+                expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
                                           '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                           '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                           '&WIDTH=256'},
-                                {'body': img.read(), 'headers': {'content-type': 'image/png'}})
+                                {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
                 with mock_httpd(('localhost', 42423), [expected_req]):
                     self.common_map_req.params['bbox'] = '0,0,180,90'
                     resp = self.app.get(self.common_map_req)

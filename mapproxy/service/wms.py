@@ -27,6 +27,7 @@ from mapproxy.response import Response
 from mapproxy.source import SourceError
 from mapproxy.exception import RequestError
 from mapproxy.image import concat_legends, LayerMerger
+from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError
 from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
@@ -114,11 +115,10 @@ class WMSServer(Server):
         
         if self.attribution and not query.tiled_only:
             merger.add(attribution_image(self.attribution['text'], params.size))
-        result = merger.merge(params.format, params.size,
-                              bgcolor=params.bgcolor,
-                              transparent=params.transparent)
-        return Response(result.as_buffer(format=params.format),
-                        content_type=params.format_mime_type)
+        result = merger.merge(size=params.size,
+            image_opts=ImageOptions(format=params.format, bgcolor=params.bgcolor, transparent=params.transparent))
+        img_opts = self.image_formats[params.format_mime_type]
+        return Response(result.as_buffer(img_opts), content_type=params.format_mime_type)
     
     def capabilities(self, map_request):
         # TODO: debug layer
@@ -254,7 +254,8 @@ class WMSServer(Server):
             mimetype = request.params.format_mime_type
         else:
             mimetype = 'image/png'
-        return Response(result.as_buffer(format=request.params.format).read(), mimetype=mimetype)
+        img_opts = self.image_formats[request.params.format_mime_type]
+        return Response(result.as_buffer(img_opts), mimetype=mimetype)
     
     def _service_md(self, map_request):
         md = dict(self.md)
@@ -405,7 +406,8 @@ class LayerRenderer(object):
             raise RequestError('Could not get retrieve any sources:\n'+errors, request=self.request)
     
         if errors:
-            layer_merger.add(message_image('\n'.join(errors), self.query.size, transparent=True))
+            layer_merger.add(message_image('\n'.join(errors), self.query.size,
+                image_opts=ImageOptions(transparent=True)))
     
     def _render_layer(self, layer):
         try:

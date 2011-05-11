@@ -28,6 +28,7 @@ from mapproxy.layer import MapQuery, InfoQuery
 from mapproxy.request.wms import WMS111MapRequest, WMS100MapRequest,\
                                  WMS130MapRequest, WMS111FeatureInfoRequest
 from mapproxy.srs import SRS
+from mapproxy.test.unit.test_cache import MockHTTPClient
 from mapproxy.test.http import mock_httpd, query_eq, assert_query_eq
 from mapproxy.test.helper import assert_re, TempFile
 
@@ -345,80 +346,16 @@ class TestTileClient(object):
             resp = client.get_tile((0, 1, 2)).source.read()
             eq_(resp, 'tile')
 
-from mapproxy.test.unit.test_cache import MockHTTPClient
-class TestWMSClient(object):
-    def setup(self):
-        self.req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo'})
-        self.http = MockHTTPClient()
-        self.wms = WMSClient(self.req, http_client=self.http, supported_srs=[SRS(4326)])
-    def test_request(self):
-        req = MapQuery((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326), 'png')
-        self.wms.get_map(req)
-        eq_(len(self.http.requested), 1)
-        assert_query_eq(self.http.requested[0],
-            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                           '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
-                           '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512&STYLES=')
-
-    def test_transformed_request(self):
-        req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
-        resp = self.wms.get_map(req)
-        eq_(len(self.http.requested), 1)
-        
-        assert_query_eq(self.http.requested[0], 
-            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                           '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
-                           '&VERSION=1.1.1&WIDTH=512&STYLES='
-                           '&BBOX=-1.79663056824,-1.7963362121,1.79663056824,1.7963362121')
-        img = resp.as_image()
-        assert img.mode in ('P', 'RGB')
-
-    def test_similar_srs(self):
-        # request in 3857 and source supports only 900913
-        # 3857 and 900913 are equal but the client requests must use 900913
-        self.req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
-                                    param={'layers':'foo', 'transparent': 'true'})
-        self.wms = WMSClient(self.req, http_client=self.http, supported_srs=[SRS(900913)])
-
-        req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(3857), 'png')
-        self.wms.get_map(req)
-        eq_(len(self.http.requested), 1)
-        
-        assert_query_eq(self.http.requested[0],
-            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                           '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A900913'
-                           '&VERSION=1.1.1&WIDTH=512&STYLES=&transparent=true'
-                           '&BBOX=-200000,-200000,200000,200000')
-
-    def test_transformed_request_transparent(self):
-        self.req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
-                                    param={'layers':'foo', 'transparent': 'true'})
-        self.wms = WMSClient(self.req, http_client=self.http, supported_srs=[SRS(4326)])
-
-        req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
-        resp = self.wms.get_map(req)
-        eq_(len(self.http.requested), 1)
-        
-        assert_query_eq(self.http.requested[0],
-            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                           '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
-                           '&VERSION=1.1.1&WIDTH=512&STYLES=&transparent=true'
-                           '&BBOX=-1.79663056824,-1.7963362121,1.79663056824,1.7963362121')
-        img = resp.as_image()
-        assert img.mode in ('P', 'RGBA')
-        img = img.convert('RGBA')
-        eq_(img.getpixel((5, 5))[3], 0)
-
 class TestCombinedWMSClient(object):
     def setup(self):
         self.http = MockHTTPClient()
     def test_combine(self):
         req1 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
                                     param={'layers':'foo', 'transparent': 'true'})
-        wms1 = WMSClient(req1, http_client=self.http, supported_srs=[SRS(4326)])
+        wms1 = WMSClient(req1, http_client=self.http)
         req2 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
                                     param={'layers':'bar', 'transparent': 'true'})
-        wms2 = WMSClient(req2, http_client=self.http, supported_srs=[SRS(4326)])
+        wms2 = WMSClient(req2, http_client=self.http)
         
         req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
         
@@ -429,10 +366,10 @@ class TestCombinedWMSClient(object):
     def test_combine_different_url(self):
         req1 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=bar',
                                     param={'layers':'foo', 'transparent': 'true'})
-        wms1 = WMSClient(req1, http_client=self.http, supported_srs=[SRS(4326)])
+        wms1 = WMSClient(req1, http_client=self.http)
         req2 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
                                     param={'layers':'bar', 'transparent': 'true'})
-        wms2 = WMSClient(req2, http_client=self.http, supported_srs=[SRS(4326)])
+        wms2 = WMSClient(req2, http_client=self.http)
         
         req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
         

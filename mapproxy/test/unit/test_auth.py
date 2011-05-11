@@ -1,5 +1,6 @@
 from mapproxy.layer import MapLayer, DefaultMapExtent
 from mapproxy.image import BlankImageSource
+from mapproxy.image.opts import ImageOptions
 from mapproxy.request.base import Request
 from mapproxy.exception import RequestError
 from mapproxy.request.wms import wms_request
@@ -16,6 +17,7 @@ class DummyLayer(MapLayer):
     has_legend = False
     queryable = False
     def __init__(self, name):
+        MapLayer.__init__(self)
         self.name = name
         self.requested = False
         self.queried = False
@@ -73,7 +75,7 @@ class TestWMSAuth(object):
         self.wms_layers = wms_layers
         self.layers = layers
         self.server = WMSServer(md={}, root_layer=root_layer, srs=['EPSG:4326'],
-            image_formats=['image/png'])
+            image_formats={'image/png': ImageOptions(format='image/png')})
     
 
 # ###
@@ -295,7 +297,7 @@ class DummyTileLayer(object):
         self.name = name
     def render(self, tile_request, use_profiles=None):
         self.requested = True
-        resp = BlankImageSource((256, 256), format='png')
+        resp = BlankImageSource((256, 256), image_opts=ImageOptions(format='image/png'))
         resp.timestamp = 0
         return resp
         
