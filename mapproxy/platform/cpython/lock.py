@@ -85,7 +85,7 @@ class FileLock(object):
                     # solved by the first process that got the lock (i.e. the
                     # tile is created)
                     os.remove(self.lock_file)
-                except OSError, ex:
+                except OSError:
                     self._lock.close()
             else:
                 self._lock.close()

@@ -20,6 +20,7 @@ from cStringIO import StringIO
 try:
     from lxml import etree, html
     has_xslt_support = True
+    etree, html # prevent pyflakes warning
 except ImportError:
     has_xslt_support = False
     etree = html = None

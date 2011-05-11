@@ -184,7 +184,6 @@ class ThreadPool(object):
         i = 0
         for i, (func, arg) in enumerate(func_args):
             self.task_queue.put((i, func, arg))
-        total_calls = i
         
         results = {}
         
@@ -228,7 +227,6 @@ class ThreadPool(object):
                             use_result_objects)
     
     def starcall(self, args, **kw):
-        use_result_objects = kw.get('use_result_objects', False)
         def call(func, *args):
             return func(*args)
         return self.starmap(call, args, **kw)

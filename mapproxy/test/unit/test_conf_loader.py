@@ -16,7 +16,6 @@
 
 from __future__ import division, with_statement
 import yaml
-from cStringIO import StringIO
 from mapproxy.srs import SRS
 from mapproxy.config.loader import (
     ProxyConfiguration,
@@ -27,7 +26,7 @@ from mapproxy.config.loader import (
 from mapproxy.cache.tile import TileManager
 from mapproxy.test.helper import TempFile
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
-from nose.tools import eq_, raises
+from nose.tools import eq_
 from nose.plugins.skip import SkipTest
 
 class TestLayerConfiguration(object):
@@ -513,7 +512,7 @@ sources:
         with TempFile() as f:
             open(f, 'w').write('\tbroken:foo')
             try:
-                services = load_services(f)
+                load_services(f)
             except ConfigurationError:
                 pass
             else:

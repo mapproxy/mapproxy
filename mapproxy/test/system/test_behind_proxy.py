@@ -15,7 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement, division
-from nose.tools import eq_, assert_almost_equal
 
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
 

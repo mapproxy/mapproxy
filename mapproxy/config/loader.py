@@ -31,7 +31,7 @@ from mapproxy.srs import SRS
 from mapproxy.util.ext.odict import odict
 from mapproxy.cache.file import FileCache, DummyCache
 from mapproxy.util.lock import SemLock
-from mapproxy.util.yaml import load_yaml_file, load_yaml, YAMLError
+from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.config.config import load_default_config
 from mapproxy.client.http import auth_data_from_url, HTTPClient
 from mapproxy.image.opts import ImageOptions, compatible_image_options, ImageFormat
@@ -307,23 +307,6 @@ class ConfigurationBase(object):
             if k not in self.conf:
                 self.conf[k] = v
 
-class _ImageOptionsConfiguration(object):
-    @memoize
-    def image_opts(self):
-        resampling = self.context.globals.get_value('image.resampling_method', self.conf)
-        transparent = self.conf.get('image', {}).get('transparent')
-        opacity = self.conf.get('image', {}).get('opacity')
-        format = self.conf.get('image', {}).get('format')
-        colors = self.conf.get('image', {}).get('colors')
-        mode = self.conf.get('image', {}).get('mode')
-        
-        # force 256 colors for image.paletted for backwards compat
-        paletted = self.context.globals.get_value('image.paletted', self.conf)
-        if colors is None and paletted:
-            colors = 256
-        return ImageOptions(transparent=transparent, opacity=opacity,
-            resampling=resampling, format=format, colors=colors, mode=mode)
-
 class GridConfiguration(ConfigurationBase):
     optional_keys = set('''res srs bbox bbox_srs num_levels tile_size base
         stretch_factor max_shrink_factor align_resolutions_with min_res max_res
@@ -469,9 +452,6 @@ class ImageOptionsConfiguration(ConfigurationBase):
             if 'format' not in conf and format.startswith('image/'):
                 conf['format'] = format
             self.formats[format] = conf
-    
-    def for_format(self, format):
-        return self.formats[format]
     
     def _check_encoding_options(self, options):
         if not options:

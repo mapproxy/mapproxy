@@ -109,7 +109,6 @@ class HTTPClient(object):
         else:
             self._timeout = None
             _set_global_socket_timeout(timeout)
-        handlers = []
         if url and url.startswith('https'):
             if insecure:
                 ssl_ca_certs = None

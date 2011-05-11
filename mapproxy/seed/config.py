@@ -16,7 +16,6 @@
 
 from __future__ import with_statement
 
-import os
 import sys
 import time
 import operator
@@ -24,7 +23,7 @@ import operator
 from mapproxy.config.loader import ConfigurationError
 from mapproxy.config.coverage import load_coverage
 from mapproxy.srs import SRS
-from mapproxy.util import memoize, timestamp_from_isodate, timestamp_before, local_base_config
+from mapproxy.util import memoize, timestamp_from_isodate, timestamp_before
 from mapproxy.util.geom import MultiCoverage, BBOXCoverage
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict

@@ -638,7 +638,6 @@ class TestGKTileGridUL(TileGridTest):
         assert self.grid.bbox == (3300000, 5300000, 3900000, 6000000)
     
     def test_tile_bbox(self):
-        tile_bbox = self.grid.tile_bbox((0, 0, 0))
         eq_(self.grid.tile_bbox((0, 0, 0)), 
             (3300000.0, 5616000.0, 3684000.0, 6000000.0))
         eq_(self.grid.tile_bbox((1, 0, 0)), 

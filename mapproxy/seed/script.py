@@ -16,13 +16,10 @@
 
 from __future__ import with_statement
 
-import os
 import sys
-import shutil
 import logging
 
 from optparse import OptionParser
-from textwrap import dedent
 from mapproxy.util import local_base_config
 from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import load_seed_tasks_conf

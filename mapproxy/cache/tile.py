@@ -40,7 +40,6 @@ from __future__ import with_statement
 
 from mapproxy.grid import MetaGrid
 from mapproxy.image import merge_images
-from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
 from mapproxy.util import async

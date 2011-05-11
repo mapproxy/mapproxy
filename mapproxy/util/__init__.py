@@ -20,17 +20,11 @@ Utility methods and classes (file locking, asynchronous execution pools, etc.).
 from __future__ import with_statement
 import time
 import os
-import sys
 import errno
-import Queue
-import threading
 import shutil
 import datetime
 import contextlib
 from functools import wraps
-from copy import deepcopy
-
-import mapproxy.config
 
 import logging
 log = logging.getLogger(__name__)

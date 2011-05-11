@@ -20,12 +20,11 @@ import functools
 
 from cStringIO import StringIO
 from mapproxy.request.wmts import (
-    WMTS100TileRequest, WMTS100FeatureInfoRequest, WMTS100CapabilitiesRequest
+    WMTS100TileRequest, WMTS100CapabilitiesRequest
 )
 from mapproxy.test.image import is_jpeg, create_tmp_image
 from mapproxy.test.http import MockServ
 from mapproxy.test.helper import validate_with_xsd
-from mapproxy.test.system.test_wms import is_111_exception
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
 from nose.tools import eq_
 

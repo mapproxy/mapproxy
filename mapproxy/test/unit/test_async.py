@@ -42,7 +42,7 @@ class TestThreaded(object):
             raise Exception()
 
         try:
-            result = list(imap_async_threaded(func, range(40)))
+            list(imap_async_threaded(func, range(40)))
         except Exception:
             pass
         else:
@@ -78,7 +78,7 @@ class TestEventlet(object):
             raise Exception()
 
         try:
-            result = list(imap_async_eventlet(func, range(40)))
+            list(imap_async_eventlet(func, range(40)))
         except Exception:
             pass
         else:
@@ -103,7 +103,7 @@ class CommonPoolTests(object):
     
     def _check_single_arg_raise(self, func):
         try:
-            result = list(func())
+            list(func())
         except ValueError:
             pass
         else:
@@ -224,10 +224,12 @@ class TestThreadPool(CommonPoolTests):
         error_occured = False
         
         def check1(x):
+            global error_occured
             if base_config().conf != 1 or 'bar' in base_config():
                 error_occured = True
 
         def check2(x):
+            global error_occured
             if base_config().conf != 2 or 'bar' in base_config():
                 error_occured = True
 
@@ -283,10 +285,12 @@ class TestEventletPool(CommonPoolTests):
         error_occured = False
         
         def check1(x):
+            global error_occured
             if base_config().conf != 1 or 'bar' in base_config():
                 error_occured = True
 
         def check2(x):
+            global error_occured
             if base_config().conf != 2 or 'bar' in base_config():
                 error_occured = True
                 

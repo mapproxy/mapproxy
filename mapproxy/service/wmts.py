@@ -21,7 +21,6 @@ from mapproxy.request.wmts import wmts_request
 from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
-from mapproxy.image.message import attribution_image
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
@@ -142,7 +141,6 @@ class TileMatrixSet(object):
         self.grid = grid
         self.name = grid.name
         self.srs_name = grid.srs.srs_code
-        origin = self.grid.origin_tile(0, 'ul')
     
     def __iter__(self):
         for level, res in self.grid.resolutions.iteritems():
