@@ -616,7 +616,7 @@ def resolution_range(conf):
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
     optional_keys = set('''type supported_srs supported_formats image
-        wms_opts http concurrent_requests coverage seed_only
+        wms_opts http concurrent_requests coverage seed_only format
         min_res max_res min_scale max_scale'''.split())
     required_keys = set('req'.split())
     
