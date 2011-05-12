@@ -115,9 +115,10 @@ class WMSServer(Server):
         
         if self.attribution and not query.tiled_only:
             merger.add(attribution_image(self.attribution['text'], params.size))
-        result = merger.merge(size=params.size,
-            image_opts=ImageOptions(format=params.format, bgcolor=params.bgcolor, transparent=params.transparent))
-        img_opts = self.image_formats[params.format_mime_type]
+        img_opts = self.image_formats[params.format_mime_type].copy()
+        img_opts.bgcolor = params.bgcolor
+        img_opts.transparent = params.transparent
+        result = merger.merge(size=params.size, image_opts=img_opts)
         return Response(result.as_buffer(img_opts), content_type=params.format_mime_type)
     
     def capabilities(self, map_request):
