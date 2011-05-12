@@ -296,12 +296,12 @@ class ConfigurationBase(object):
         expected_keys.update(self.defaults.keys())
         for k, v in conf.iteritems():
             if k not in expected_keys:
-                log.warn('unexpected key %s', k)
+                log.warn("unexpected key: '%s'", k)
             self.conf[k] = v
         
         for k in self.required_keys:
             if k not in self.conf:
-                raise ConfigurationError('missing key %s' % k)
+                raise ConfigurationError("missing key: '%s'" % k)
         
         for k, v in self.defaults.iteritems():
             if k not in self.conf:
