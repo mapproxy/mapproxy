@@ -430,6 +430,8 @@ default_image_options = {
 }
 
 class ImageOptionsConfiguration(ConfigurationBase):
+    optional_keys = set('formats resampling_method'.split())
+    
     def __init__(self, conf, context):
         ConfigurationBase.__init__(self, conf, context)
         self._init_formats()
