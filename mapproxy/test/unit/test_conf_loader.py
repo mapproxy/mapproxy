@@ -550,22 +550,32 @@ class TestImageOptions(object):
         conf_dict = {
         }
         conf = ProxyConfiguration(conf_dict)
-        image_opts = conf.globals.image_options.image_opts({}, 'png8')
+        image_opts = conf.globals.image_options.image_opts({}, 'image/png')
         eq_(image_opts.format, 'image/png')
-        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.mode, None)
         eq_(image_opts.colors, 256)
+        eq_(image_opts.transparent, None)
+        eq_(image_opts.resampling, 'bicubic')
+
+    def test_default_format_paletted_false(self):
+        conf_dict = {'globals': {'image': { 'paletted': False }}}
+        conf = ProxyConfiguration(conf_dict)
+        image_opts = conf.globals.image_options.image_opts({}, 'image/png')
+        eq_(image_opts.format, 'image/png')
+        eq_(image_opts.mode, None)
+        eq_(image_opts.colors, None)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bicubic')
     
     def test_update_default_format(self):
         conf_dict = {'globals': {'image': {'formats': {
-            'png8': {'colors': 16, 'resampling_method': 'nearest',
+            'image/png': {'colors': 16, 'resampling_method': 'nearest',
                      'encoding_options': {'quantizer': 'mediancut'}}
         }}}}
         conf = ProxyConfiguration(conf_dict)
-        image_opts = conf.globals.image_options.image_opts({}, 'png8')
+        image_opts = conf.globals.image_options.image_opts({}, 'image/png')
         eq_(image_opts.format, 'image/png')
-        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.mode, None)
         eq_(image_opts.colors, 16)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'nearest')
@@ -596,14 +606,14 @@ class TestImageOptions(object):
                 'test': {
                     'sources': [],
                     'grids': ['GLOBAL_MERCATOR'],
-                    'format': 'png8',
+                    'format': 'image/png',
                 }
             }
         }
         conf = ProxyConfiguration(conf_dict)
         image_opts = conf.caches['test'].image_opts()
         eq_(image_opts.format, 'image/png')
-        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.mode, None)
         eq_(image_opts.colors, 256)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bilinear')
@@ -614,6 +624,7 @@ class TestImageOptions(object):
                 'image': {
                     'resampling_method': 'bilinear',
                     'formats': {
+                        'png8': {'mode': 'P', 'colors': 256},
                         'image/png': {'mode': 'RGBA', 'transparent': True}
                     },
                 }
@@ -640,7 +651,7 @@ class TestImageOptions(object):
         conf = ProxyConfiguration(conf_dict)
         image_opts = conf.caches['test'].image_opts()
         eq_(image_opts.format, 'image/png')
-        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.mode, 'P')
         eq_(image_opts.colors, 16)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bilinear')
@@ -658,6 +669,7 @@ class TestImageOptions(object):
                 'image': {
                     'resampling_method': 'bilinear',
                     'formats': {
+                        'png8': {'mode': 'P', 'colors': 256, 'format': 'image/png'},
                         'image/png': {'mode': 'RGBA', 'transparent': True}
                     },
                 }
@@ -686,14 +698,14 @@ class TestImageOptions(object):
         _grid, _extent, tile_mgr = conf.caches['test'].caches()[0]
         image_opts = tile_mgr.image_opts
         eq_(image_opts.format, 'image/png')
-        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.mode, 'P')
         eq_(image_opts.colors, 16)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bilinear')
         
         image_opts = tile_mgr.sources[0].image_opts
         eq_(image_opts.format, 'image/png')
-        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.mode, 'P')
         eq_(image_opts.colors, 256)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bilinear')
@@ -704,14 +716,14 @@ class TestImageOptions(object):
         _grid, _extent, tile_mgr = conf.caches['test'].caches()[0]
         image_opts = tile_mgr.image_opts
         eq_(image_opts.format, 'image/png')
-        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.mode, 'P')
         eq_(image_opts.colors, 16)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bilinear')
         
         image_opts = tile_mgr.sources[0].image_opts
         eq_(image_opts.format, 'image/tiff')
-        eq_(image_opts.mode, 'RGB')
+        eq_(image_opts.mode, None)
         eq_(image_opts.colors, None)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bilinear')

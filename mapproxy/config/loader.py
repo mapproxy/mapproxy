@@ -402,31 +402,6 @@ class GlobalConfiguration(ConfigurationBase):
     
 
 default_image_options = {
-    'png8': {
-        'format': 'image/png',
-        'colors': 256,
-        'mode': 'RGB',
-    },
-    'png8a': {
-        'format': 'image/png',
-        'colors': 256,
-        'mode': 'RGBA',
-        'transparent': True
-    },
-    'png24': {
-        'format': 'image/png; mode=24bit',
-        'mode': 'RGB',
-        'transparent': False
-    },
-    'png32': {
-        'format': 'image/png; mode=32bit',
-        'mode': 'RGBA',
-        'transparent': True
-    },
-    'jpeg': {
-        'format': 'image/jpeg',
-        'mode': 'RGB',
-    },
 }
 
 class ImageOptionsConfiguration(ConfigurationBase):
