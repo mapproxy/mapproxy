@@ -1,4 +1,4 @@
-1.1.0a dev
+1.1.0b1 2011-05-12
 
 Features:
 - support for tagged WMS source names: wms:lyr1,lyr2
@@ -8,12 +8,13 @@ Features:
 - include development server (``mapproxy-util serve-develop``)
 - first WMTS implementation (KVP)
 - configurable image formats
+- support for ArcGIS tile sources (/L09/R00000005/C0000000d)
+- support for bbox parameter for tile sources
 
 Improvements:
 - tweaked watermarks on transparent images
 - [mapproxy-seed] initialize MapProxy logging before seeding
-- support for ArcGIS tile sources (/L09/R00000005/C0000000d)
-- authentication callbacks get environ and query_extent
+- authentication callbacks get environ and qusery_extent
 - authentication callbacks can force HTTP 401 returns
 - hide error tracebacks from YAML parser
 - support for multipolygons in coverages
