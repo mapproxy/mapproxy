@@ -46,8 +46,7 @@ class TestCoverageWMS(SystemTest):
         data = StringIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
-        # TODO? cached data transformed to RGBA because DummySource is transparent
-        eq_(img.mode, 'RGBA')
+        eq_(img.mode, 'RGB')
         # cached image has more that 256 colors, getcolors -> None
         eq_(img.getcolors(), None)
 

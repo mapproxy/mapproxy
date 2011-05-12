@@ -59,7 +59,8 @@ class LayerMerger(object):
             return BlankImageSource(size=size, image_opts=image_opts)
         if len(self.layers) == 1:
             layer_opts = self.layers[0].image_opts
-            if not layer_opts.transparent and (not size or size == self.layers[0].size):
+            if ((not layer_opts.transparent or image_opts.transparent) 
+                and (not size or size == self.layers[0].size)):
                 # layer is opaque, no need to make transparent or add bgcolor
                 return self.layers[0]
         
@@ -315,6 +316,9 @@ class ReadBufWrapper(object):
 
 def img_to_buf(img, image_opts):
     defaults = {}
+    
+    if image_opts.mode and img.mode[0] == 'I' and img.mode != image_opts.mode:
+        img = img.convert(image_opts.mode)
     
     if (image_opts.colors != 0 and (
         image_opts.colors is not None or base_config().image.paletted)):

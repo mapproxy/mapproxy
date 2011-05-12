@@ -27,7 +27,7 @@ class ImageOptions(object):
         if format is not None:
             format = ImageFormat(format)
         self.format = format
-        self.mode = mode or self.transparent and 'RGBA' or 'RGB'
+        self.mode = mode
         self.bgcolor = bgcolor
         self.colors = colors
         self.encoding_options = encoding_options or {}
@@ -88,6 +88,12 @@ def create_image(size, image_opts=None):
         bgcolor = (255, 255, 255)
     else:
         mode = image_opts.mode
+        if mode is None:
+            if image_opts.transparent:
+                mode = 'RGBA'
+            else:
+                mode = 'RGB'
+        
         bgcolor = image_opts.bgcolor or (255, 255, 255)
         
         if isinstance(bgcolor, basestring):
