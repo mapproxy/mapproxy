@@ -29,15 +29,15 @@ from mapproxy.seed.util import format_seed_task, format_cleanup_task
 
 
 def setup_logging():
-    imposm_log = logging.getLogger('mapproxy')
-    imposm_log.setLevel(logging.WARN)
+    mapproxy_log = logging.getLogger('mapproxy')
+    mapproxy_log.setLevel(logging.WARN)
 
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
         "[%(asctime)s] %(name)s - %(levelname)s - %(message)s")
     ch.setFormatter(formatter)
-    imposm_log.addHandler(ch)
+    mapproxy_log.addHandler(ch)
 
 class SeedScript(object):
     usage = "usage: %prog [options] seed_conf"

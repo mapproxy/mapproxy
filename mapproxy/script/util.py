@@ -26,15 +26,15 @@ from mapproxy.version import version
 
 def setup_logging():
     import logging
-    imposm_log = logging.getLogger('mapproxy')
-    imposm_log.setLevel(logging.INFO)
+    mapproxy_log = logging.getLogger('mapproxy')
+    mapproxy_log.setLevel(logging.INFO)
 
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
         "[%(asctime)s] %(name)s - %(levelname)s - %(message)s")
     ch.setFormatter(formatter)
-    imposm_log.addHandler(ch)
+    mapproxy_log.addHandler(ch)
 
 def serve_develop_command(args):
     parser = optparse.OptionParser("usage: %prog serve-develop [options] mapproxy.yaml")
