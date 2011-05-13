@@ -16,7 +16,6 @@
 
 from __future__ import with_statement
 import os
-import sys
 import time
 import errno
 import hashlib
@@ -25,7 +24,7 @@ from mapproxy.util.lock import FileLock, DummyLock, cleanup_lockdir
 from mapproxy.image import ImageSource, is_single_color_image
 
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger('mapproxy.cache.file')
 
 class FileCache(object):
     """
@@ -45,9 +44,6 @@ class FileCache(object):
         self.lock_timeout = lock_timeout
         self.file_ext = file_ext
         self._lock_cache_id = None
-        if link_single_color_images and sys.platform == 'win32':
-            log.warn('link_single_color_images not supported on windows')
-            link_single_color_images = False
         self.link_single_color_images = link_single_color_images
     
     def level_location(self, level):

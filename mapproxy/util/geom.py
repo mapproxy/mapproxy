@@ -21,7 +21,7 @@ import operator
 from mapproxy.layer import MapExtent
 
 import logging
-log = logging.getLogger(__name__)
+log_config = logging.getLogger('mapproxy.config.coverage')
 
 try:
     import shapely.wkt
@@ -57,7 +57,7 @@ def load_datasource(datasource, where=None):
             for p in geom:
                 polygons.append(p)
         else:
-            log.warn('skipping %s geometry from %s: not a Polygon/MultiPolygon',
+            log_config.warn('skipping %s geometry from %s: not a Polygon/MultiPolygon',
                 geom.type, datasource)
         
     mp = shapely.geometry.MultiPolygon(polygons)
@@ -79,11 +79,14 @@ def load_polygons(geom_files):
         with open(geom_file) as f:
             for line in f:
                 geom = shapely.wkt.loads(line)
-                if geom.type != 'Polygon':
-                    print 'ignoring non-polygon geometry (%s) from %s' % \
-                        (geom.type, geom_file)
-                else:
+                if geom.type == 'Polygon':
                     polygons.append(geom)
+                elif geom.type == 'MultiPolygon':
+                    for p in geom:
+                        polygons.append(p)
+                else:
+                    log_config.warn('ignoring non-polygon geometry (%s) from %s',
+                        geom.type, geom_file)
     
     mp = shapely.geometry.MultiPolygon(polygons)
     mp = simplify_geom(mp)

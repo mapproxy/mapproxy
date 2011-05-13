@@ -39,7 +39,7 @@ from mapproxy.config import base_config
 from mapproxy.util import local_base_config
 
 import logging
-log = logging.getLogger(__name__)
+log_system = logging.getLogger(__name__)
 
 class AsyncResult(object):
     def __init__(self, result=None, exception=None):
@@ -323,7 +323,7 @@ uses_eventlet = False
 # socket should be monkey patched when MapProxy runs inside eventlet
 if _has_eventlet and eventlet.patcher.is_monkey_patched('socket'):
     uses_eventlet = True
-    log.info('using eventlet greenthreads for map_async')
+    log_system.info('using eventlet greenthreads for map_async')
     imap = imap_async_eventlet
     starmap = starmap_async_eventlet
     starcall = starcall_async_eventlet

@@ -25,7 +25,7 @@ from mapproxy.image.opts import create_image, ImageOptions, ImageFormat
 from mapproxy.config import base_config
 
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger('mapproxy.image')
 
 
 class LayerMerger(object):

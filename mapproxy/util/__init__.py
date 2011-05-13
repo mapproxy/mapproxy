@@ -26,8 +26,6 @@ import datetime
 import contextlib
 from functools import wraps
 
-import logging
-log = logging.getLogger(__name__)
 
 @contextlib.contextmanager
 def local_base_config(conf):

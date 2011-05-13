@@ -25,8 +25,6 @@ from urllib2 import URLError, HTTPError
 from urlparse import urlsplit
 from datetime import datetime
 import warnings
-import logging
-log = logging.getLogger(__name__)
 
 from mapproxy.version import version
 from mapproxy.image import ImageSource
@@ -122,20 +120,6 @@ class HTTPClient(object):
         self.opener = create_url_opener(ssl_ca_certs, url, username, password)
         self.header_list = headers.items() if headers else []
         
-    def _log(self, url, status, result, duration=None, method='GET'):
-        if not self.log.isEnabledFor(logging.INFO):
-            return
-        _scheme, host, path, query, _frag = urlsplit(url)
-        if query:
-            path = path + '?' + query
-        date = datetime.now().strftime(self.log_datefmt)
-        size = 0
-        if result is not None:
-            size = result.headers.get('Content-length', '-')
-        log_msg = self.log_fmt % dict(date=date, size=size, host=host,
-                                      status=status, path=path)
-        self.log.info(log_msg)
-    
     def open(self, url, data=None):
         code = 500
         result = None

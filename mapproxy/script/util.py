@@ -112,7 +112,10 @@ class CreateCommand(object):
     
     APP_TEMPLATE = textwrap.dedent("""\
     # WSGI module for use with Apache mod_wsgi or gunicorn
-
+    
+    # from logging.config import fileConfig
+    # fileConfig('./log.ini')
+    
     from mapproxy.wsgiapp import make_wsgi_app
     application = make_wsgi_app('%s')
     """)

@@ -30,8 +30,6 @@ from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
 get_template = template_loader(__file__, 'templates', namespace=env)
 
-import logging
-log = logging.getLogger(__name__)
 
 class DemoServer(Server):
     names = ('demo',)

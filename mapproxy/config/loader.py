@@ -20,12 +20,13 @@ Configuration loading and system initializing.
 from __future__ import with_statement, division
 
 import os
+import sys
 import hashlib
 import urlparse
 from copy import deepcopy
 
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger('mapproxy.config')
 
 from mapproxy.srs import SRS
 from mapproxy.util.ext.odict import odict
@@ -863,6 +864,9 @@ class CacheConfiguration(ConfigurationBase):
         suffix = grid_conf.conf['srs'].replace(':', '')
         cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
         link_single_color_images = self.conf.get('link_single_color_images', False)
+        if link_single_color_images and sys.platform == 'win32':
+            log.warn('link_single_color_images not supported on windows')
+            link_single_color_images = False
         
         lock_timeout = self.context.globals.get_value('http.client_timeout', {})
         

@@ -23,9 +23,6 @@ import math
 from mapproxy.srs import SRS, get_epsg_num, merge_bbox
 from mapproxy.util.collections import ImmutableDictList
 
-import logging
-log = logging.getLogger(__name__)
-
 geodetic_epsg_codes = [4326]
 
 class GridError(Exception):

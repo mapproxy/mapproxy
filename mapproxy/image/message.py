@@ -25,7 +25,7 @@ _pil_ttf_support = True
 
 
 import logging
-log = logging.getLogger(__name__)
+log_system = logging.getLogger('mapproxy.system')
 
 def message_image(message, size, image_opts, bgcolor='#ffffff',
                   transparent=False):
@@ -97,7 +97,7 @@ class MessageImage(object):
                         self.font_size)
                 except ImportError:
                     _pil_ttf_support = False
-                    log.warn("Couldn't load TrueType fonts, "
+                    log_system.warn("Couldn't load TrueType fonts, "
                         "PIL needs to be build with freetype support.")
             if self._font is None:
                 self._font = ImageFont.load_default()

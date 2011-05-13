@@ -49,7 +49,7 @@ if mapproxy.platform.is_cpython:
     FINDERCMD = ctypes.CFUNCTYPE(c_char_p, c_char_p)
 
 import logging
-log = logging.getLogger(__name__)
+log_system = logging.getLogger('mapproxy.system')
 
 __all__ = ['Proj', 'transform', 'set_datapath']
 
@@ -143,7 +143,7 @@ if libproj is None:
         try:
             from pyproj import Proj, transform, set_datapath
             Proj, transform, set_datapath #prevent pyflakes arnings
-            log.debug('using pyproj for coordinate transformation')
+            log_system.info('using pyproj for coordinate transformation')
         except ImportError:
             if _use_libproj:
                 raise ImportError('could not found either libproj or pyproj')
@@ -153,7 +153,7 @@ if libproj is None:
     else:
         raise ImportError('could not found libproj')
 else:
-    log.debug('using libproj for coordinate transformation')
+    log_system.info('using libproj for coordinate transformation')
 
     # search_path and finder_func must be defined in module
     # context to avoid garbage collection

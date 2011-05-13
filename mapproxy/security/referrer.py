@@ -18,9 +18,6 @@ import re
 from urlparse import urlparse
 from mapproxy.response import Response
 
-import logging
-log = logging.getLogger(__name__)
-
 
 class _None(object):
     """

@@ -28,7 +28,7 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.featureinfo import create_featureinfo_doc
 
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger('mapproxy.source.wms')
 
 class WMSClient(object):
     def __init__(self, request_template, http_client=None,
@@ -67,7 +67,15 @@ class WMSClient(object):
         if 'Content-type' not in resp.headers:
             raise SourceError('response from source WMS has no Content-type header')
         if not resp.headers['Content-type'].startswith('image/'):
-            log.warn("expected image response, got: %s", resp.read(8000))
+            # log response depending on content-type
+            if resp.headers['Content-type'].startswith(('text/', 'application/vnd.ogc')):
+                log_size = 8000 # larger xml exception
+            else:
+                log_size = 100 # image?
+            data = resp.read(log_size)
+            if len(data) == log_size:
+                data += '... truncated'
+            log.warn("expected image response, got: %s", data)
             raise SourceError('no image returned from source WMS')
     
     def _query_url(self, query, format):

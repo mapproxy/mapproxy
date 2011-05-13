@@ -22,8 +22,6 @@ import cgi
 
 from mapproxy.util import cached_property
 
-import logging
-log = logging.getLogger(__name__)
 
 class NoCaseMultiDict(dict):
     """

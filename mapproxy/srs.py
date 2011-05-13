@@ -27,7 +27,8 @@ from mapproxy.proj import Proj, transform, set_datapath, ProjInitError
 from mapproxy.config import base_config
 
 import logging
-log = logging.getLogger(__name__)
+log_system = logging.getLogger('mapproxy.system')
+log_proj = logging.getLogger('mapproxy.proj')
 
 def get_epsg_num(epsg_code):
     """
@@ -67,7 +68,7 @@ def _init_proj():
     global _proj_initalized
     if not _proj_initalized and 'proj_data_dir' in base_config().srs:
         proj_data_dir = base_config().srs['proj_data_dir']
-        log.info('loading proj data from %s', proj_data_dir)
+        log_system.info('loading proj data from %s', proj_data_dir)
         set_datapath(proj_data_dir)
         _proj_initalized = True
 
@@ -199,7 +200,7 @@ class _SRS(object):
         transf_pts = self.transform_to(other_srs, points)
         result = calculate_bbox(transf_pts)
         
-        log.debug('transformed from %r to %r (%s -> %s)' % 
+        log_proj.debug('transformed from %r to %r (%s -> %s)' % 
                   (self, other_srs, bbox, result))
         
         return result

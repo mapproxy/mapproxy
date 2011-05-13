@@ -38,8 +38,6 @@ from mapproxy.service import template_helper
 
 get_template = template_loader(__file__, 'templates', namespace=template_helper.__dict__)
 
-import logging
-log = logging.getLogger(__name__)
 
 class PERMIT_ALL_LAYERS(object):
     pass

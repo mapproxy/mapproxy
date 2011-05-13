@@ -44,9 +44,6 @@ from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
 from mapproxy.util import async
 
-import logging
-log = logging.getLogger(__name__)
-
 
 class TileManager(object):
     """
