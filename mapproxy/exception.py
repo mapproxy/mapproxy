@@ -17,6 +17,7 @@
 """
 Service exception handling (WMS exceptions, XML, in_image, etc.).
 """
+import cgi
 from mapproxy.response import Response
 
 class RequestError(Exception):
@@ -115,7 +116,9 @@ class XMLExceptionHandler(ExceptionHandler):
         :type request_error: `RequestError`
         """
         status_code = self.status_codes.get(request_error.code, self.status_code)
-        result = self.template.substitute(exception=request_error.msg,
+        # escape &<> in error message (e.g. URL params)
+        msg = cgi.escape(request_error.msg)
+        result = self.template.substitute(exception=msg,
                                           code=request_error.code)
         return Response(result, mimetype=self.mimetype, content_type=self.content_type,
                         status=status_code)
