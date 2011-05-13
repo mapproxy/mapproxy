@@ -19,7 +19,7 @@ import os
 
 from mapproxy.platform.image import Image, ImageColor, ImageDraw, ImageFont
 from mapproxy.image import ImageSource
-from mapproxy.image.opts import create_image
+from mapproxy.image.opts import create_image, ImageOptions
 
 _pil_ttf_support = True
 
@@ -46,7 +46,7 @@ def message_image(message, size, image_opts, bgcolor='#ffffff',
     eimg = ExceptionImage(message, image_opts=image_opts)
     return eimg.draw(size=size)
 
-def attribution_image(message, size, image_opts, inverse=False):
+def attribution_image(message, size, image_opts=None, inverse=False):
     """
     Creates an image with text attribution (`message`).
     
@@ -58,6 +58,8 @@ def attribution_image(message, size, image_opts, inverse=False):
                         return a transparent image
     :rtype: `ImageSource`
     """
+    if image_opts is None:
+        image_opts = ImageOptions(transparent=True)
     aimg = AttributionImage(message, image_opts=image_opts,
                             inverse=inverse)
     return aimg.draw(size=size)
