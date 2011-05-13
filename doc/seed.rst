@@ -184,7 +184,7 @@ Examples::
 
   # relative from the start time of the seed process
   refresh_before:
-    month: 1
+    weeks: 1
     days: 7
     hours: 4
     minutes: 15
@@ -209,7 +209,7 @@ Example
       coverages: [niedersachsen, bremen, hamburg]
       grids: [GLOBAL_MERCATOR]
       refresh_before:
-        month: 1
+        weeks: 3
       levels:
         from: 11
         to: 15
@@ -275,7 +275,7 @@ Examples::
 
   # relative from the start time of the seed process
   remove_before:
-    month: 1
+    weeks: 1
     days: 7
     hours: 4
     minutes: 15
