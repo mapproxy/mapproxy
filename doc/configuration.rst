@@ -523,6 +523,10 @@ Here you can define some options that affect the way MapProxy generates image re
   
     .. image:: imgs/bicubic.png
 
+.. _image_paletted:
+
+``paletted``
+  Enable paletted (8bit) PNG images. It defaults to ``true`` for backwards compatibility. You should set this to ``false`` if you need 24bit PNG files. You can enable 8bit PNGs for single caches with a custom format (``colors: 256``).
 
 ``formats``
   Modify existing or define new image formats. :ref:`See blow <image_options>` for all image format options. 
@@ -707,7 +711,7 @@ Available options are:
   One of ``RGB`` for 24bit images, ``RGBA`` 32bit images with alpha, ``P`` for paletted images or ``I`` for integer images.
 
 ``colors``
-  The number of colors to reduce the image before encoding. Use ``0`` to disable color reduction (quantizing).
+  The number of colors to reduce the image before encoding. Use ``0`` to disable color reduction (quantizing) for this format and ``256`` for paletted images. See also :ref:`globals.image.paletted <image_paletted>`.
 
 ``transparent``
   ``true`` if the image should have an alpha channel.
