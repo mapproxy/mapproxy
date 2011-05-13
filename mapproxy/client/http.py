@@ -18,6 +18,7 @@
 Tile retrieval (WMS, TMS, etc.).
 """
 import sys
+import time
 import httplib
 import urllib2
 from urllib2 import URLError, HTTPError
@@ -30,6 +31,7 @@ log = logging.getLogger(__name__)
 from mapproxy.version import version
 from mapproxy.image import ImageSource
 from mapproxy.util import reraise_exception
+from mapproxy.client.log import log_request
 
 import socket
 
@@ -98,10 +100,6 @@ class _URLOpenerCache(object):
 create_url_opener = _URLOpenerCache()
 
 class HTTPClient(object):
-    log = logging.getLogger(__name__ + '.http')
-    log_fmt = '%(host)s - - [%(date)s] "GET %(path)s HTTP/1.1" %(status)d %(size)s "-" ""'
-    log_datefmt = '%d/%b/%Y:%H:%M:%S %z'
-    
     def __init__(self, url=None, username=None, password=None, insecure=False,
                  ssl_ca_certs=None, timeout=None, headers=None):
         if _urllib2_has_timeout:
@@ -124,7 +122,7 @@ class HTTPClient(object):
         self.opener = create_url_opener(ssl_ca_certs, url, username, password)
         self.header_list = headers.items() if headers else []
         
-    def _log(self, url, status, result):
+    def _log(self, url, status, result, duration=None, method='GET'):
         if not self.log.isEnabledFor(logging.INFO):
             return
         _scheme, host, path, query, _frag = urlsplit(url)
@@ -145,6 +143,7 @@ class HTTPClient(object):
         for key, value in self.header_list:
             req.add_header(key, value)
         try:
+            start_time = time.time()
             if self._timeout is not None:
                 result = self.opener.open(req, timeout=self._timeout)
             else:
@@ -174,7 +173,7 @@ class HTTPClient(object):
             code = getattr(result, 'code', 200)
             return result
         finally:
-            self._log(url, code, result)
+            log_request(url, code, result, duration=time.time()-start_time, method=req.get_method())
     
     def open_image(self, url, data=None):
         resp = self.open(url, data=data)

@@ -17,6 +17,7 @@
 from __future__ import with_statement, absolute_import
 
 import sys
+import time
 from cStringIO import StringIO
 
 from mapproxy.grid import tile_grid
@@ -25,6 +26,7 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage
 from mapproxy.source import Source, SourceError
 from mapproxy.client.http import HTTPClientError
+from mapproxy.client.log import log_request
 from mapproxy.util import reraise_exception
 from mapproxy.util.async import run_non_blocking
 
@@ -85,13 +87,23 @@ class MapnikSource(Source):
         return run_non_blocking(self._render_mapfile, (mapfile, query))
         
     def _render_mapfile(self, mapfile, query):
-        m = mapnik.Map(query.size[0], query.size[1])
-        mapnik.load_map(m, str(mapfile))
-        m.srs = '+init=%s' % str(query.srs.srs_code.lower())
-        envelope = mapnik.Envelope(*query.bbox)
-        m.zoom_to_box(envelope)
-        img = mapnik.Image(query.size[0], query.size[1])
-        mapnik.render(m, img)
-        data = StringIO(img.tostring(str(query.format)))
-        return ImageSource(data, size=query.size, 
+        start_time = time.time()
+        data = None
+        try:
+            m = mapnik.Map(query.size[0], query.size[1])
+            mapnik.load_map(m, str(mapfile))
+            m.srs = '+init=%s' % str(query.srs.srs_code.lower())
+            envelope = mapnik.Envelope(*query.bbox)
+            m.zoom_to_box(envelope)
+            img = mapnik.Image(query.size[0], query.size[1])
+            mapnik.render(m, img)
+            data = img.tostring(str(query.format))
+        finally:
+            size = None
+            if data:
+                size = len(data)
+            log_request('%s:%s:%s:%s' % (mapfile, query.bbox, query.srs.srs_code, query.size),
+                status='200' if data else '500', size=size, method='API', duration=time.time()-start_time)
+            
+        return ImageSource(StringIO(data), size=query.size, 
             image_opts=ImageOptions(transparent=self.transparent, format=query.format))

@@ -28,28 +28,28 @@ from nose.tools import eq_
 
 class TestSplitHTTPResponse(object):
     def test_n(self):
-        eq_(split_http_response('header1: foo\nheader2: bar\n\ncontent\n\ncontent'),
-            ({'Header1':'foo', 'Header2': 'bar'}, 'content\n\ncontent'))
+        eq_(split_http_response('HTTP/1.0 200 OK\nheader1: foo\nheader2: bar\n\ncontent\n\ncontent'),
+            ('HTTP/1.0 200 OK', {'Header1':'foo', 'Header2': 'bar'}, 'content\n\ncontent'))
     def test_rn(self):
-        eq_(split_http_response('header1\r\nheader2\r\n\r\ncontent\r\n\r\ncontent'),
-            ({'Header1': None, 'Header2': None}, 'content\r\n\r\ncontent'))
+        eq_(split_http_response('HTTP/1.0 200 OK\r\nheader1\r\nheader2\r\n\r\ncontent\r\n\r\ncontent'),
+            ('HTTP/1.0 200 OK', {'Header1': None, 'Header2': None}, 'content\r\n\r\ncontent'))
     def test_mixed(self):
-        eq_(split_http_response('header1: bar:foo\r\nheader2\n\r\ncontent\r\n\r\ncontent'),
-            ({'Header1': 'bar:foo', 'Header2': None}, 'content\r\n\r\ncontent'))
-        eq_(split_http_response('header1\r\nheader2\n\ncontent\r\n\r\ncontent'),
-            ({'Header1': None, 'Header2': None}, 'content\r\n\r\ncontent'))
-        eq_(split_http_response('header1\nheader2\r\n\r\ncontent\r\n\r\ncontent'),
-            ({'Header1': None, 'Header2': None}, 'content\r\n\r\ncontent'))
+        eq_(split_http_response('HTTP/1.0 200 OK\nheader1: bar:foo\r\nheader2\n\r\ncontent\r\n\r\ncontent'),
+            ('HTTP/1.0 200 OK', {'Header1': 'bar:foo', 'Header2': None}, 'content\r\n\r\ncontent'))
+        eq_(split_http_response('HTTP/1.0 200 OK\nheader1\r\nheader2\n\ncontent\r\n\r\ncontent'),
+            ('HTTP/1.0 200 OK', {'Header1': None, 'Header2': None}, 'content\r\n\r\ncontent'))
+        eq_(split_http_response('HTTP/1.0 200 OK\r\nheader1\nheader2\r\n\r\ncontent\r\n\r\ncontent'),
+            ('HTTP/1.0 200 OK', {'Header1': None, 'Header2': None}, 'content\r\n\r\ncontent'))
     def test_no_header(self):
         eq_(split_http_response('content\r\ncontent'),
-            ({}, 'content\r\ncontent'))
+            ('', {}, 'content\r\ncontent'))
 
 
 TEST_CGI_SCRIPT = r"""#! /usr/bin/env python
 import sys
 import os
 w = sys.stdout.write
-w("Content-type: text/plain\r\n")
+w("HTTP/1.0 200 OK\r\nContent-type: text/plain\r\n")
 w("\r\n")
 w(os.environ['QUERY_STRING'])
 """

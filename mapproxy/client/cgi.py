@@ -18,12 +18,15 @@
 HTTP client that directly calls CGI executable.
 """
 
-import os
 import errno
+import os
+import re
+import time
 
 from mapproxy.source import SourceError
 from mapproxy.image import ImageSource
 from mapproxy.client.http import HTTPClientError
+from mapproxy.client.log import log_request
 from mapproxy.util.async import import_module
 from StringIO import StringIO
 from urlparse import urlparse
@@ -40,11 +43,11 @@ def split_http_response(data):
         next_line_begin = data[next_n+1:next_n+3]
         headers.append(data[prev_n:next_n].rstrip('\r'))
         if next_line_begin[0] == '\n':
-            return headers_dict(headers), data[next_n+2:]
+            return headers[0], headers_dict(headers[1:]), data[next_n+2:]
         elif next_line_begin == '\r\n':
-            return headers_dict(headers), data[next_n+3:]
+            return headers[0], headers_dict(headers[1:]), data[next_n+3:]
         prev_n = next_n+1
-    return {}, data
+    return '', {}, data
 
 def headers_dict(header_lines):
     headers = {}
@@ -79,6 +82,7 @@ class CGIClient(object):
             'SERVER_SOFTWARE': 'MapProxy',
         }
         
+        start_time = time.time()
         try:
             p = subprocess.Popen([self.script], env=environ,
                 stdout=subprocess.PIPE,
@@ -102,10 +106,18 @@ class CGIClient(object):
             content = stdout
             headers = dict()
         else:
-            headers, content = split_http_response(stdout)
+            status, headers, content = split_http_response(stdout)
         
+        status_match = re.match(' (\d\d\d) ', status)
+        if status_match:
+            status_code = status_match.group(1)
+        else:
+            status_code = '-'
+        size = len(content)
         content = StringIO(content)
         content.headers = headers
+        
+        log_request(url, status_code, size=size, method='CGI', duration=time.time()-start_time)
         return content
     
     def open_image(self, url, data=None):
