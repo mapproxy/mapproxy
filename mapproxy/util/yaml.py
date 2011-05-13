@@ -39,5 +39,6 @@ def load_yaml(doc):
             return yaml.load(doc, Loader=yaml.CLoader)
         else:
             return yaml.load(doc)
-    except yaml.scanner.ScannerError, ex:
+    except (yaml.scanner.ScannerError, yaml.parser.ParserError), ex:
         raise YAMLError(str(ex))
+
