@@ -71,7 +71,6 @@ def serve_develop_command(args):
     try:
         app = make_wsgi_app(mapproxy_conf, debug=options.debug)
     except ConfigurationError, ex:
-        print "ERROR:\t" + '\n\t'.join(str(ex).split('\n'))
         sys.exit(2)
     
     run_simple(host, port, app, use_reloader=True, processes=1,

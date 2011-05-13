@@ -121,7 +121,7 @@ class HTTPClient(object):
         self.header_list = headers.items() if headers else []
         
     def open(self, url, data=None):
-        code = 500
+        code = None
         result = None
         req = urllib2.Request(url, data=data)
         for key, value in self.header_list:
@@ -134,24 +134,24 @@ class HTTPClient(object):
                 result = self.opener.open(req)
         except HTTPError, e:
             code = e.code
-            reraise_exception(HTTPClientError('HTTP Error (%.30s...): %d' 
+            reraise_exception(HTTPClientError('HTTP Error "%s": %d' 
                                               % (url, e.code)), sys.exc_info())
         except URLError, e:
             if ssl and isinstance(e.reason, ssl.SSLError):
-                e = HTTPClientError('Could not verify connection to URL (%.30s...): %s'
+                e = HTTPClientError('Could not verify connection to URL "%s": %s'
                                      % (url, e.reason.args[1]))
                 reraise_exception(e, sys.exc_info())
             try:
                 reason = e.reason.args[1]
             except (AttributeError, IndexError):
                 reason = e.reason
-            reraise_exception(HTTPClientError('No response from URL (%.30s...): %s'
+            reraise_exception(HTTPClientError('No response from URL "%s": %s'
                                               % (url, reason)), sys.exc_info())
         except ValueError, e:
-            reraise_exception(HTTPClientError('URL not correct (%.30s...): %s' 
+            reraise_exception(HTTPClientError('URL not correct "%s": %s' 
                                               % (url, e.args[0])), sys.exc_info())
         except Exception, e:
-            reraise_exception(HTTPClientError('Internal HTTP error (%.30s...): %r'
+            reraise_exception(HTTPClientError('Internal HTTP error "%s": %r'
                                               % (url, e)), sys.exc_info())
         else:
             code = getattr(result, 'code', 200)

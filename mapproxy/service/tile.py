@@ -39,9 +39,6 @@ log = logging.getLogger(__name__)
 from mapproxy.template import template_loader, bunch
 get_template = template_loader(__file__, 'templates')
 
-import logging
-log = logging.getLogger(__name__)
-
 class TileServer(Server):
     """
     A Tile Server. Supports strict TMS and non-TMS requests. The difference is the
@@ -207,7 +204,6 @@ class TileLayer(object):
             if tile.source is None: return self.empty_response()
             return TileResponse(tile)
         except SourceError, e:
-            log.error(e)
             raise RequestError(e.args[0], request=tile_request, internal=True)
 
 class ImageResponse(object):

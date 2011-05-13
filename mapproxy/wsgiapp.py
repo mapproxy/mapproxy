@@ -26,7 +26,10 @@ import site
 from mapproxy.request import Request
 from mapproxy.response import Response
 from mapproxy.util import local_base_config
-from mapproxy.config.loader import load_configuration
+from mapproxy.config.loader import load_configuration, ConfigurationError
+
+import logging
+log = logging.getLogger('mapproxy.config')
 
 class Modjyhandler(object):
     def __init__(self):
@@ -111,9 +114,13 @@ def make_wsgi_app(services_conf=None, debug=False):
     :param services_conf: the file name of the services.yaml configuration,
                           if ``None`` the default is loaded.
     """
-    conf = load_configuration(mapproxy_conf=services_conf)
-        
-    services = conf.configured_services()
+    try:
+        conf = load_configuration(mapproxy_conf=services_conf)
+        services = conf.configured_services()
+    except ConfigurationError, e:
+        log.fatal(e)
+        raise
+    
     app = MapProxyApp(services, conf.base_config)
     if debug:
         conf.base_config.debug_mode = True

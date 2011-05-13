@@ -1173,7 +1173,7 @@ class ServiceConfiguration(ConfigurationBase):
     
 
 def load_configuration(mapproxy_conf, seed=False):
-    log.info('Reading services configuration: %s' % mapproxy_conf)
+    log.info('reading: %s' % mapproxy_conf)
     conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
     
     try:

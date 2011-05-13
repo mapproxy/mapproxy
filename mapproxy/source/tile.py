@@ -26,6 +26,9 @@ from mapproxy.source import InvalidSourceQuery
 from mapproxy.layer import BlankImage, map_extent_from_grid
 from mapproxy.util import reraise_exception
 
+import logging
+log = logging.getLogger('mapproxy.source.tile')
+log_config = logging.getLogger('mapproxy.config')
 class TiledSource(Source):
     def __init__(self, grid, client, inverse=False, coverage=None, image_opts=None):
         Source.__init__(self, image_opts=image_opts)
@@ -38,15 +41,21 @@ class TiledSource(Source):
     
     def get_map(self, query):
         if self.grid.tile_size != query.size:
-            raise InvalidSourceQuery(
+            ex = InvalidSourceQuery(
                 'tile size of cache and tile source do not match: %s != %s'
                  % (self.grid.tile_size, query.size)
             )
+            log_config.error(ex)
+            raise ex
+            
         if self.grid.srs != query.srs:
-            raise InvalidSourceQuery(
-                'SRS of cache and tile source do not match: %s != %s'
+            ex = InvalidSourceQuery(
+                'SRS of cache and tile source do not match: %r != %r'
                 % (self.grid.srs, query.srs)
             )
+            log_config.error(ex)
+            raise ex
+
         if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
             raise BlankImage()
         
@@ -62,4 +71,5 @@ class TiledSource(Source):
         try:
             return self.client.get_tile(tile_coord, format=query.format)
         except HTTPClientError, e:
+            log.warn('could not retrieve tile: %s', e)
             reraise_exception(SourceError(e.args[0]), sys.exc_info())

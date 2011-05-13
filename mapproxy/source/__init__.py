@@ -29,7 +29,7 @@ class SourceError(MapError):
 class SourceBBOXError(SourceError, MapBBOXError):
     pass
 
-class InvalidSourceQuery(ValueError):
+class InvalidSourceQuery(SourceError):
     pass
 
 class Source(MapLayer):

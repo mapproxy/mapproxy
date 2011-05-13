@@ -28,7 +28,7 @@ from mapproxy.client.http import HTTPClientError
 from mapproxy.util import reraise_exception
 
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger('mapproxy.source.wms')
 
 class WMSSource(Source):
     supports_meta_tiles = True
@@ -66,6 +66,7 @@ class WMSSource(Source):
             return resp
             
         except HTTPClientError, e:
+            log.warn('could not retrieve WMS map: %s', e)
             reraise_exception(SourceError(e.args[0]), sys.exc_info())
     
     def _get_map(self, query):
