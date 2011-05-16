@@ -1145,7 +1145,14 @@ class ServiceConfiguration(ConfigurationBase):
                                                        global_key='wms.image_formats')
         image_formats = {}
         for format in image_formats_names:
-            opts = self.context.globals.image_options.image_opts({}, format)
+            if format.startswith('image/'):
+                opts = ImageOptions(format=format)
+            else:
+                # lookup custom format
+                opts = self.context.globals.image_options.image_opts({}, format)
+            if opts.format in image_formats:
+                log.warn('duplicate mime-type for WMS image_formats: "%s" already configured',
+                    opts.format)
             image_formats[opts.format] = opts
         info_types = conf.get('featureinfo_types')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
