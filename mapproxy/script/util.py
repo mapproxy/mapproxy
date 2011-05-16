@@ -107,18 +107,9 @@ class CreateCommand(object):
     templates = {
         'base-config': {},
         'wsgi-app': {},
+        'log-ini': {},
     }
     
-    APP_TEMPLATE = textwrap.dedent("""\
-    # WSGI module for use with Apache mod_wsgi or gunicorn
-    
-    # from logging.config import fileConfig
-    # fileConfig('./log.ini')
-    
-    from mapproxy.wsgiapp import make_wsgi_app
-    application = make_wsgi_app('%s')
-    """)
-
     def __init__(self, args):
         parser = optparse.OptionParser("usage: %prog create [options] [destination]")
         parser.add_option("-t", "--template", dest="template",
@@ -166,6 +157,13 @@ class CreateCommand(object):
             sys.exit(1)
         return os.path.abspath(self.options.mapproxy_conf)
     
+    def template_dir(self):
+        import mapproxy.config_template
+        template_dir = os.path.join(
+            os.path.dirname(mapproxy.config_template.__file__),
+            'base_config')
+        return template_dir
+    
     def template_wsgi_app(self):
         app_filename = self.args[1]
         if '.' not in os.path.basename(app_filename):
@@ -176,8 +174,11 @@ class CreateCommand(object):
             return 1
 
         print "writing MapProxy app to %s" % (app_filename, )
+
+        template_dir = self.template_dir()
+        app_template = open(os.path.join(template_dir, 'config.wsgi')).read()
         with open(app_filename, 'w') as f:
-            f.write(self.APP_TEMPLATE % (mapproxy_conf, ))
+            f.write(app_template % (mapproxy_conf, ))
         
         return 0
     
@@ -186,10 +187,7 @@ class CreateCommand(object):
         if not os.path.exists(outdir):
             os.makedirs(outdir)
         
-        import mapproxy.config_template
-        template_dir = os.path.join(
-            os.path.dirname(mapproxy.config_template.__file__),
-            'base_config')
+        template_dir = self.template_dir()
         
         for filename in ('mapproxy.yaml', 'seed.yaml'):
             to = os.path.join(outdir, filename)
@@ -199,6 +197,20 @@ class CreateCommand(object):
                 return 1
             print "writing %s" % (to, )
             shutil.copy(from_, to)
+    
+    def template_log_ini(self):
+        log_filename = self.args[1]
+
+        if os.path.exists(log_filename) and not self.options.force:
+            self.log_error("%s already exists, use --force", log_filename)
+            return 1
+        
+        template_dir = self.template_dir()
+        log_template = open(os.path.join(template_dir, 'log.ini')).read()
+        with open(log_filename, 'w') as f:
+            f.write(log_template)
+        
+        return 0
             
 commands = {
     'serve-develop': {

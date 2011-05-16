@@ -38,7 +38,7 @@ setup(
             'lighttpd_root_fix = mapproxy.util.wsgi:lighttpd_root_fix_filter_factory',
         ],
     },
-    package_data = {'': ['*.xml', '*.yaml', '*.ttf']},
+    package_data = {'': ['*.xml', '*.yaml', '*.ttf', '*.wsgi', '*.ini']},
     install_requires=install_requires,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
