@@ -182,7 +182,17 @@ class TestWMS111(WMSTest):
         data = StringIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGB'
-        
+
+    def test_get_map_png8_custom_format(self):
+        self.common_map_req.params['layers'] = 'wms_cache'
+        self.common_map_req.params['format'] = 'image/png; mode=8bit'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.headers['Content-type'], 'image/png; mode=8bit')
+        data = StringIO(resp.body)
+        assert is_png(data)
+        img = Image.open(data)
+        eq_(img.mode, 'P')
+
     def test_get_map_png_transparent_non_transparent_data(self):
         self.common_map_req.params['transparent'] = 'True'
         resp = self.app.get(self.common_map_req)

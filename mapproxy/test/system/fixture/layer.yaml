@@ -9,11 +9,15 @@ globals:
     formats:
       custom:
         format: image/jpeg
+      png8:
+        format: 'image/png; mode=8bit'
+        colors: 256
 services:
   tms:
   kml:
   wmts:
   wms:
+    image_formats: ['image/png', 'image/jpeg', 'png8']
     md:
       title: MapProxy test fixture
       abstract: This is MapProxy.

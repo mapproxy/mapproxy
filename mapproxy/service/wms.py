@@ -117,7 +117,7 @@ class WMSServer(Server):
         img_opts.bgcolor = params.bgcolor
         img_opts.transparent = params.transparent
         result = merger.merge(size=params.size, image_opts=img_opts)
-        return Response(result.as_buffer(img_opts), content_type=params.format_mime_type)
+        return Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
     
     def capabilities(self, map_request):
         # TODO: debug layer
