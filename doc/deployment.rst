@@ -353,6 +353,51 @@ The examples above are all minimal and you should read the documentation of your
 .. index:: MultiMapProxy
 .. _multimapproxy:
 
+Logging
+-------
+
+MapProxy uses the Python logging library for the reporting of runtime information, errors and warnings. You can configure the logging with Python code or with an ini-style configuration. Read the `logging documentation for more information <http://docs.python.org/howto/logging.html#configuring-logging>`_.
+
+
+Loggers
+~~~~~~~
+
+MapProxy uses multiple loggers for different parts of the system. The loggers build a hierarchy and are named in dotted-notation. ``mapproxy`` is the logger for everything, ``mapproxy.source`` is the logger for all sources, ``mapproxy.source.wms`` is the logger for all WMS sources, etc. If you configure on logger (e.g. ``mapproxy``) then all sub-loggers will also use this configuration.
+
+Here are the most important loggers:
+
+``mapproxy.system``
+  Logs information about the system and the installation (e.g. used projection library).
+
+``mapproxy.config``
+  Logs information about the configuration.
+
+``mapproxy.source.XXX``
+  Logs errors and warnings for service ``XXX``.
+
+``mapproxy.source.request``
+  Logs all requests to sources with URL, size in kB and duration in milliseconds.
+
+
+Enabling logging
+~~~~~~~~~~~~~~~~
+
+The :ref:`test server <deployment_testing>` is already configured to log all messages to the console (``stdout``). The other deployment options require a logging configuration.
+
+Paste Deploy
+""""""""""""
+You can add the logging configuration to your deployment ``.ini`` file if you use :ref:`paste_deploy`.
+
+Server Script
+"""""""""""""
+
+You can use the Python logging API or load an ``.ini`` configuration if you have a :ref:`server script <server_script>` for deployment.
+
+The example script created with ``mapproxy-util create -t wsgi-app`` already contains code to load an ``.ini`` file. You just need to uncomment the lines and create a ``log.ini`` file. You can create an example ``log.ini`` with::
+
+  mapproxy-util create -t log-ini log.ini
+
+
 MultiMapProxy
 -------------
 
