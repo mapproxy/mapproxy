@@ -300,6 +300,10 @@ content: ':';
   font-weight: bold;
 }
 
+.doc dd p.first {
+  margin-top: 0;
+}
+
 
 .doc dd table.field-list ul,
 .doc dd table.field-list p

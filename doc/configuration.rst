@@ -544,21 +544,25 @@ Here you can define some options that affect the way MapProxy generates image re
   pixels in each direction. This can solve cases where labels are cut-off at
   the edge of tiles.
 
-
 ``base_dir``
   The base directory where all cached tiles will be stored. The path can
   either be absolute (e.g. ``/var/mapproxy/cache``) or relative to the
   mapproxy.yaml file.
+  
+  .. note::
+    Defaults to ``../var/cache_data`` but this will be changed with 1.2.0.
+    You should configure this value for production use.
+    
 
 ``lock_dir``
-  MapProxy uses locking to prevent multiple request for the same meta-tile.
+  MapProxy uses locking to limit multiple request to the same service. See ``concurrent_requests``.
   This option defines where the temporary lock files will be stored. The path
   can either be absolute (e.g. ``/tmp/lock/mapproxy``) or relative to the
   mapproxy.yaml file.
-  
-  .. note:: 
-    Old locks will not be removed immediately but when new locks are created.
-    So you will always find some old lock files in this directory.
+
+  .. note::
+    Defaults to ``../tmp/tile_locks`` but this will be changed with 1.2.0.
+    You should configure this value for production use.
 
 ``concurrent_tile_creators``
   This limits the number of parallel requests MapProxy will make to a source WMS. This limit is per request and not for all MapProxy requests. To limit the requests MapProxy makes to a single server use the ``concurrent_requests`` option.
