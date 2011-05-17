@@ -60,15 +60,12 @@ class MapnikSource(Source):
             raise BlankImage()
         
         try:
-            try:
-                resp = self.render(query)
-            except RuntimeError, ex:
-                raise SourceError(ex.args[0])
-            resp.opacity = self.opacity
-            return resp
-            
-        except HTTPClientError, e:
-            reraise_exception(SourceError(e.args[0]), sys.exc_info())
+            resp = self.render(query)
+        except RuntimeError, ex:
+            log.error('could not render Mapnik map: %s', ex)
+            reraise_exception(SourceError(ex.args[0]), sys.exc_info())
+        resp.opacity = self.opacity
+        return resp
     
     def render(self, query):
         mapfile = self.mapfile
