@@ -90,6 +90,7 @@ from mapproxy.cache.tile import TileManager
 from mapproxy.cache.legend import LegendCache
 from mapproxy.util import local_base_config, memoize
 from mapproxy.config.coverage import load_coverage
+from mapproxy.config.spec import validate_mapproxy_conf
 from mapproxy.featureinfo import XSLTransformer, has_xslt_support
 
 class ConfigurationError(Exception):
@@ -281,8 +282,6 @@ class ConfigurationBase(object):
     """
     Base class for all configurations.
     """
-    optional_keys = set()
-    required_keys = set()
     defaults = {}
     
     def __init__(self, conf, context):
@@ -291,30 +290,13 @@ class ConfigurationBase(object):
         :param context: the complete proxy configuration
         :type context: ProxyConfiguration
         """
-        self.conf = {}
+        self.conf = conf
         self.context = context
-        expected_keys = set(self.optional_keys)
-        expected_keys.update(self.required_keys)
-        expected_keys.update(self.defaults.keys())
-        for k, v in conf.iteritems():
-            if k not in expected_keys:
-                log.warn("unexpected key: '%s'", k)
-            self.conf[k] = v
-        
-        for k in self.required_keys:
-            if k not in self.conf:
-                raise ConfigurationError("missing key: '%s'" % k)
-        
         for k, v in self.defaults.iteritems():
             if k not in self.conf:
                 self.conf[k] = v
 
 class GridConfiguration(ConfigurationBase):
-    optional_keys = set('''res srs bbox bbox_srs num_levels tile_size base
-        stretch_factor max_shrink_factor align_resolutions_with min_res max_res
-        res_factor threshold_res name origin
-        '''.split())
-    
     @memoize
     def tile_grid(self):
         if 'base' in self.conf:
@@ -363,8 +345,6 @@ class GridConfiguration(ConfigurationBase):
 
 
 class GlobalConfiguration(ConfigurationBase):
-    optional_keys = set('image grid srs http cache mapserver'.split())
-    
     def __init__(self, conf_base_dir, conf, context):
         ConfigurationBase.__init__(self, conf, context)
         self.base_config = load_default_config()
@@ -407,8 +387,6 @@ default_image_options = {
 }
 
 class ImageOptionsConfiguration(ConfigurationBase):
-    optional_keys = set('formats resampling_method paletted'.split())
-    
     def __init__(self, conf, context):
         ConfigurationBase.__init__(self, conf, context)
         self._init_formats()
@@ -592,10 +570,6 @@ def resolution_range(conf):
 
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
-    optional_keys = set('''type supported_srs supported_formats image
-        wms_opts http concurrent_requests coverage seed_only format
-        min_res max_res min_scale max_scale'''.split())
-    required_keys = set('req'.split())
     
     @staticmethod
     def static_legend_source(url, context):
@@ -735,8 +709,6 @@ class WMSSourceConfiguration(SourceConfiguration):
 
 class MapServerSourceConfiguration(WMSSourceConfiguration):
     source_type = ('mapserver',)
-    required_keys = WMSSourceConfiguration.required_keys - set(['req'])
-    optional_keys = WMSSourceConfiguration.optional_keys | set(['mapserver', 'http'])
     
     def __init__(self, conf, context):
         WMSSourceConfiguration.__init__(self, conf, context)
@@ -762,10 +734,6 @@ class MapServerSourceConfiguration(WMSSourceConfiguration):
 
 class MapnikSourceConfiguration(SourceConfiguration):
     source_type = ('mapnik',)
-    optional_keys = set('''type transparent
-        http concurrent_requests coverage seed_only
-        min_res max_res min_scale max_scale'''.split())
-    required_keys = set('mapfile'.split())
     
     def source(self, params=None):
         if not self.context.seed and self.conf.get('seed_only'):
@@ -792,9 +760,6 @@ class MapnikSourceConfiguration(SourceConfiguration):
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
-    optional_keys = set('''type grid request_format origin coverage seed_only
-                           transparent image http'''.split())
-    required_keys = set('url'.split())
     defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
     
     def source(self, params=None):
@@ -844,12 +809,6 @@ source_configuration_types = {
 
 
 class CacheConfiguration(ConfigurationBase):
-    optional_keys = set('''format request_format cache_dir grids
-        link_single_color_images image
-        use_direct_from_res use_direct_from_level meta_buffer meta_size
-        minimize_meta_requests disable_storage'''.split())
-    optional_keys.update(tile_filter_conf_keys)
-    required_keys = set('name sources'.split())
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
     
     def cache_dir(self):
@@ -973,10 +932,6 @@ class CacheConfiguration(ConfigurationBase):
 
 
 class WMSLayerConfiguration(ConfigurationBase):
-    optional_keys = set('name layers min_res max_res min_scale '
-                        'max_scale legendurl sources'.split())
-    required_keys = set('title'.split())
-    
     @memoize
     def wms_layer(self):
         layers = []
@@ -1001,9 +956,6 @@ class WMSLayerConfiguration(ConfigurationBase):
         return layer
 
 class LayerConfiguration(ConfigurationBase):
-    optional_keys = set('min_res max_res min_scale max_scale legendurl sources layers'.split())
-    required_keys = set('name title'.split())
-
     @memoize
     def wms_layer(self):
         sources = []
@@ -1084,8 +1036,6 @@ def fi_xslt_transformers(conf, context):
     return fi_transformers
 
 class ServiceConfiguration(ConfigurationBase):
-    optional_keys = set('wms tms kml demo'.split())
-    
     def services(self):
         services = []
         ows_services = []
@@ -1191,12 +1141,18 @@ def load_configuration(mapproxy_conf, seed=False):
     try:
         conf_dict = load_yaml_file(mapproxy_conf)
         if 'base' in conf_dict:
-            base_dict = load_yaml_file(os.path.join(conf_base_dir, conf_dict['base']))
+            base_conf_file = conf_dict.pop('base')
+            base_dict = load_yaml_file(os.path.join(conf_base_dir, base_conf_file))
             if 'base' in base_dict:
                 log.warn('found `base` option in base config but recursive inheritance is not supported.')
             conf_dict = merge_dict(conf_dict, base_dict)
     except YAMLError, ex:
         raise ConfigurationError(ex)
+    errors, informal_only = validate_mapproxy_conf(conf_dict)
+    for error in errors:
+        log.warn(error)
+    if not informal_only:
+        raise ConfigurationError('invalid configuration')
     return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed)
 
 def merge_dict(conf, base):

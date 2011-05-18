@@ -2,9 +2,9 @@ services:
   wms:
 
 layers:
-  name: root
-  title: Root Layer
-  layers:
+  - name: root
+    title: Root Layer
+    layers:
     - name: layer1
       title: layer 1
       sources: [dummy]

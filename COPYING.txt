@@ -46,6 +46,11 @@ mapproxy/util/ext/(local|serving).py
 Copyright (c) 2010 by the Werkzeug Team
 Modified "3-clause" BSD license.
 
+mapproxy/util/ext/dictspec/*.py
+------------------------------
+(c) 2011 by Oliver Tonnhofer, Omniscale.
+MIT license.
+
 mapproxy/test/schemas/*
 -----------------------
 Copyright (c) 1994 - 2010 Open Geospatial Consortium, Inc
