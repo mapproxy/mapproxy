@@ -148,7 +148,7 @@ mapproxy_yaml_spec = {
             'use_direct_from_res': number(),
             'link_single_color_images': bool(),
             'watermark': {
-                'text': str(),
+                'text': basestring,
                 'font_size': number(),
                 'opacity': number(),
                 'spacing': str(),
@@ -164,7 +164,7 @@ mapproxy_yaml_spec = {
             'srs': [str()],
             'image_formats': [str()],
             'attribution': {
-                'text': str(),
+                'text': basestring,
             },
             'featureinfo_types': [str()],
             'featureinfo_xslt': {
@@ -172,12 +172,12 @@ mapproxy_yaml_spec = {
             },
             'source_errors': str(),
             'md': {
-                'title': str(),
-                'abstract': str(),
-                'online_resource': str(),
+                'title': basestring,
+                'abstract': basestring,
+                'online_resource': basestring,
                 'contact': anything(),
-                'fees': str(),
-                'access_constraints': str(),
+                'fees': basestring,
+                'access_constraints': basestring,
             },
         },
     },
@@ -253,7 +253,7 @@ mapproxy_yaml_spec = {
         recursive([combined(scale_hints, {
             'sources': [str()],
             'name': str(),
-            required('title'): str(),
+            required('title'): basestring,
             'legendurl': str(),
             'layers': [recursive()],
             
