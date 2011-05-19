@@ -642,7 +642,7 @@ class TestWMS100(WMSTest):
         eq_(resp.content_type, 'text/xml')
         xml = resp.lxml
         eq_(xml.xpath('/WMT_MS_Capabilities/Service/Title/text()')[0],
-            'MapProxy test fixture')
+            u'MapProxy test fixture \u2603')
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
             'wms_cache_transparent', 'wms_merge', 'tms_cache', 'wms_cache_multi',
@@ -783,7 +783,7 @@ class TestWMS130(WMSTest):
         eq_(resp.content_type, 'text/xml')
         xml = resp.lxml
         eq_xpath_wms130(xml, '/wms:WMS_Capabilities/wms:Service/wms:Title/text()',
-                        'MapProxy test fixture')
+            u'MapProxy test fixture \u2603')
         layer_names = set(xml.xpath('//wms:Layer/wms:Layer/wms:Name/text()',
                                     namespaces=ns130))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',

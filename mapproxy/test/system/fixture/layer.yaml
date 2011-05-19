@@ -19,7 +19,7 @@ services:
   wms:
     image_formats: ['image/png', 'image/jpeg', 'png8']
     md:
-      title: MapProxy test fixture
+      title: MapProxy test fixture ☃
       abstract: This is MapProxy.
       online_resource: http://mapproxy.org/
       contact:
