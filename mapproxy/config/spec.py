@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2011 Omniscale <http://omniscale.de>
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -36,7 +36,9 @@ coverage = {
     'polygons_srs': str(),
     'bbox': one_off(str(), [number()]),
     'bbox_srs': str(),
-
+    'ogr_datasource': str(),
+    'ogr_where': str(),
+    'ogr_srs': str(),
 }
 image_opts = {
     'mode': str(),

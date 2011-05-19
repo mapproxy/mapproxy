@@ -28,6 +28,7 @@ from mapproxy.util.geom import MultiCoverage, BBOXCoverage
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
 from mapproxy.seed.seeder import SeedTask, CleanupTask
+from mapproxy.seed.spec import validate_seed_conf
 
 
 class SeedConfigurationError(ConfigurationError):
@@ -41,6 +42,9 @@ class SeedConfigurationError(ConfigurationError):
 #             ' required for polygon/ogr seed areas')
 
 
+import logging
+log = logging.getLogger('mapproxy.seed.config')
+
 def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf):
     try:
         conf = load_yaml_file(seed_conf_filename)
@@ -51,6 +55,11 @@ def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf):
         # TODO: deprecate old config
         seed_conf = LegacySeedingConfiguration(conf, mapproxy_conf=mapproxy_conf)
     else:
+        errors, informal_only = validate_seed_conf(conf)
+        for error in errors:
+            log.warn(error)
+        if not informal_only:
+            raise SeedConfigurationError('invalid configuration')
         seed_conf = SeedingConfiguration(conf, mapproxy_conf=mapproxy_conf)
     return seed_conf
 
