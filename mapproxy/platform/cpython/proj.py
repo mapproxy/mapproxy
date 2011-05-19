@@ -107,8 +107,8 @@ class SearchPath(object):
         if self.path is None:
             return None
         
-        if name in self.path:
-            result = self.path[name]
+        if name in self.finder_results:
+            result = self.finder_results[name]
         else:
             sysname = os.path.join(self.path, name)
             result = self.finder_results[name] = create_string_buffer(sysname)
