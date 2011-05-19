@@ -1,3 +1,4 @@
+# -:- encoding: utf8 -:-
 # Copyright (c) 2011, Oliver Tonnhofer <olt@omniscale.de>
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -58,6 +59,11 @@ class TestSimpleDict(object):
     def test_invalid_one_off(self):
         spec = {'hello': one_off(1, False)}
         validate(spec, {'hello': []})
+
+    def test_instances_and_types(self):
+        spec = {'str()': str(), 'basestring': basestring, 'int': int, 'int()': int()}
+        validate(spec, {'str()': 'str', 'basestring': u'☃', 'int': 1, 'int()': 1})
+
 
 class TestLists(object):
     def test_list(self):
@@ -135,6 +141,20 @@ class TestTypeSpec(object):
         validate(spec, {'type': 'bar', 'one': 2})
 
 class TestErrors(object):
+    def test_invalid_types(self):
+        spec = {'str': str, 'str()': str(), 'basestring': basestring, '1': 1, 'int': int}
+        try:
+            validate(spec, {'str': 1, 'str()': 1, 'basestring': 1, '1': 'a', 'int': 'int'})
+        except ValidationError, ex:
+            ex.errors.sort()
+            assert ex.errors[0] == "'a' in 1 not of type int"
+            assert ex.errors[1] == "'int' in int not of type int"
+            assert ex.errors[2] == '1 in basestring not of type basestring'
+            assert ex.errors[3] == '1 in str not of type str'
+            assert ex.errors[4] == '1 in str() not of type str'
+        else:
+            assert False
+
     def test_invalid_key(self):
         spec = {'world': {'europe': {}}}
         try:
@@ -143,13 +163,13 @@ class TestErrors(object):
             assert 'world.europe' in str(ex)
         else:
             assert False
-    
+
     def test_invalid_list_item(self):
         spec = {'numbers': [number()]}
         try:
             validate(spec, {'numbers': [1, 2, 3, 'foo']})
         except ValidationError, ex:
-            assert 'numbers[3]' in str(ex), str(ex)
+            assert 'numbers[3] not of type number' in str(ex), str(ex)
         else:
             assert False
 
@@ -159,7 +179,7 @@ class TestErrors(object):
             validate(spec, {'numbers': [1, True, 3, 'foo']})
         except ValidationError, ex:
             assert '2 validation errors' in str(ex), str(ex)
-            assert 'numbers[1]' in ex.errors[0]
-            assert 'numbers[3]' in ex.errors[1]
+            assert 'numbers[1] not of type number' in ex.errors[0]
+            assert 'numbers[3] not of type number' in ex.errors[1]
         else:
             assert False
