@@ -1,3 +1,9 @@
+1.1.0b2 2011-05-19
+
+Improvements:
+- unified logging
+- verify mapproxy/seed configurations
+
 1.1.0b1 2011-05-12
 
 Features:
