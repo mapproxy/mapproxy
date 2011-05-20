@@ -117,7 +117,7 @@ mapproxy_yaml_spec = {
             'srs': str(),
             'bbox': one_off(str(), [number()]),
             'bbox_srs': str(),
-            'num_levels': str(),
+            'num_levels': int(),
             'res': [number()],
             'res_factor': one_off(number(), str()),
             'max_res': number(),
