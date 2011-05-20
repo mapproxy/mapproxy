@@ -575,7 +575,7 @@ Here you can define some options that affect the way MapProxy generates image re
 ``proj_data_dir``
   MapProxy uses Proj4 for all coordinate transformations. If you need custom projections
   or need to tweak existing definitions (e.g. add towgs parameter set) you can point
-  MapProxy yo your own set of proj4 init files. The path should contain a ``epsg`` file
+  MapProxy to your own set of proj4 init files. The path should contain an ``epsg`` file
   with the EPSG definitions.
   
   The configured path can be absolute or relative to the mapproxy.yaml.
