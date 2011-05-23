@@ -17,6 +17,7 @@
 from __future__ import division
 import os
 
+from mapproxy.config import base_config, abspath
 from mapproxy.platform.image import Image, ImageColor, ImageDraw, ImageFont
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import create_image, ImageOptions
@@ -311,9 +312,13 @@ class TextDraw(object):
         return self._move_bboxes([total_bbox], offsets)[0], self._move_bboxes(boxes, offsets)
 
 def font_file(font_name):
+    font_dir = base_config().image.font_dir
+    if font_dir:
+        abspath(font_dir)
+    else:
+        font_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts')
     font_name = font_name.replace(' ', '')
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                'fonts', font_name + '.ttf')
+    path = os.path.join(font_dir, font_name + '.ttf')
     return path
     
 
