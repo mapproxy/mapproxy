@@ -62,7 +62,6 @@ class WMTSServer(Server):
     def tile(self, request):
         self.check_request(request)
         tile_layer = self.layers[request.params.layer][request.params.tilematrixset]
-        self.check_request_tilesetmatrix(request, tile_layer)
         request.format = request.params.format # TODO
         request.tile = (int(request.params.coord[0]), int(request.params.coord[1]), request.params.coord[2]) # TODO
         request.origin = 'nw'
@@ -70,9 +69,6 @@ class WMTSServer(Server):
         resp = Response(tile.as_buffer(), content_type='image/' + request.format)
         
         return resp
-    
-    def check_request_tilesetmatrix(self, request, tile_layer):
-        print tile_layer
     
     def check_request(self, request):
         if request.params.layer not in self.layers:
