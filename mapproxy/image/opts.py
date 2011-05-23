@@ -88,7 +88,7 @@ def create_image(size, image_opts=None):
         bgcolor = (255, 255, 255)
     else:
         mode = image_opts.mode
-        if mode is None:
+        if mode in (None, 'P'):
             if image_opts.transparent:
                 mode = 'RGBA'
             else:
