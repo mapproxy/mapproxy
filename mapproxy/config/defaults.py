@@ -43,6 +43,7 @@ image = dict(
     max_shrink_factor = 4.0,
     paletted = True,
     transparent_color_tolerance = 5,
+    font_dir = None,
 )
 # number of concurrent requests to a tile source
 
