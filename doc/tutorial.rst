@@ -167,7 +167,7 @@ Starting the development server
 That's it for the first configuration, you can now start MapProxy.
 ::
 
-  paster serve etc/develop.ini --reload
+  mapproxy-util serve-develop mapproxy.yaml
   
 
 
