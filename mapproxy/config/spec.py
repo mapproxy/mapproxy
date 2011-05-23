@@ -87,7 +87,8 @@ mapproxy_yaml_spec = {
             'jpeg_quality': number(),
             'formats': {
                 anything(): image_opts,
-            }
+            },
+            'font_dir': str(),
         },
         'http': {
             'timeout': number(),
