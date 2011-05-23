@@ -1,0 +1,5 @@
+mapproxy (1.1.0) unstable; urgency=low
+
+  * Initial release of the debian-files
+
+ -- Stephan Holl <stephan.holl@intevation.de>  Mon, 23 May 2011 09:50:26 +0200

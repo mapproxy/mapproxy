@@ -1,0 +1,18 @@
+Source: mapproxy
+Section: python
+Priority: optional
+Maintainer: Stephan Holl <stephan.holl@intevation.de>
+Build-Depends: debhelper (>=7.0.50~), python-support (>= 0.6), cdbs (>= 0.4.49), python-all-dev, python-setuptools, libgdal1-dev, libgeos-dev
+Standards-Version: 3.8.4
+
+Package: mapproxy
+Architecture: all
+Homepage: http://www.mapproxy.org
+Depends: ${misc:Depends}, ${python:Depends},  python-imaging, python-yaml, libproj0, python-gdal
+Suggests: python-lxml, python-shapely, python-pastedeploy
+Description: This programm MapProxy is an open source proxy for geospatial data. It caches,
+ accelerates and transforms data from existing map services and serves any
+ desktop or web GIS client. 
+ MapProxy is a tile cache solution, but also offers many new and innovative
+ features like full support for WMS clients. It is released under the GNU AGPL
+ License 3.0, runs on Unix/Linux and Windows.
