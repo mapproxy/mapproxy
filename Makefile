@@ -6,7 +6,7 @@
 PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/mapproxy
-PROJECT=mapproxy
+PROJECT=MapProxy
 VERSION=1.1.0
 
 all:
