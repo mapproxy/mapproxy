@@ -13,7 +13,7 @@ seeds:
   #   coverages: [germany, austria, switzerland]
   #   grids: [GLOBAL_MERCATOR, GLOBAL_GEODETIC]
   #   refresh_before:
-  #     month: 1
+  #     weeks: 1
   #   levels:
   #     from: 11
   #     to: 15
