@@ -30,6 +30,7 @@ from mapproxy.source import SourceError
 from mapproxy.srs import SRS
 from mapproxy.grid import default_bboxs
 from mapproxy.image import BlankImageSource
+from mapproxy.image.opts import ImageOptions
 from mapproxy.util.ext.odict import odict
 
 import logging
@@ -189,8 +190,9 @@ class TileLayer(object):
     
     def empty_response(self):
         if not self._empty_tile:
-            img = BlankImageSource(size=self.grid.tile_size, transparent=True)
-            self._empty_tile = img.as_buffer(self.format)
+            img = BlankImageSource(size=self.grid.tile_size,
+                image_opts=ImageOptions(format=self.format, transparent=True))
+            self._empty_tile = img.as_buffer()
         return ImageResponse(self._empty_tile, time.time())
     
     def render(self, tile_request, use_profiles=False):

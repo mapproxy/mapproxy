@@ -19,7 +19,7 @@ from __future__ import with_statement, division
 from cStringIO import StringIO
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.platform.image import Image
-from mapproxy.test.image import is_png
+from mapproxy.test.image import is_png, is_jpeg
 from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from nose.tools import eq_
 
@@ -31,7 +31,7 @@ def setup_module():
 def teardown_module():
     module_teardown(test_config)
 
-class TestCoverageWMS(SystemTest):
+class TestSeedOnlyWMS(SystemTest):
     config = test_config
     def setup(self):
         SystemTest.setup(self)
@@ -59,3 +59,25 @@ class TestCoverageWMS(SystemTest):
         img = Image.open(data)
         eq_(img.mode, 'RGBA')
         eq_(img.getcolors(), [(200*200, (255, 255, 255, 0))])
+
+class TestSeedOnlyTMS(SystemTest):
+    config = test_config
+
+    def test_get_tile_cached(self):
+        resp = self.app.get('/tms/1.0.0/wms_cache/0/0/1.jpeg')
+        resp.content_type = 'image/jpeg'
+        data = StringIO(resp.body)
+        assert is_jpeg(data)
+        img = Image.open(data)
+        eq_(img.mode, 'RGB')
+        # cached image has more that 256 colors, getcolors -> None
+        eq_(img.getcolors(), None)
+
+    def test_get_tile_uncached(self):
+        resp = self.app.get('/tms/1.0.0/wms_cache/0/0/0.jpeg')
+        resp.content_type = 'image/jpeg'
+        data = StringIO(resp.body)
+        assert is_jpeg(data)
+        img = Image.open(data)
+        eq_(img.mode, 'RGB')
+        eq_(img.getcolors(), [(256*256, (255, 255, 255))])
