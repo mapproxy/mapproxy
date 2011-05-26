@@ -117,7 +117,8 @@ class CGIClient(object):
         content = StringIO(content)
         content.headers = headers
         
-        log_request(url, status_code, size=size, method='CGI', duration=time.time()-start_time)
+        log_request('%s:%s' % (self.script, parsed_url.query),
+            status_code, size=size, method='CGI', duration=time.time()-start_time)
         return content
     
     def open_image(self, url, data=None):
