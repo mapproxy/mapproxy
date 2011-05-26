@@ -1,3 +1,12 @@
+1.1.0rc1 2011-05-26
+
+Improvements:
+- add template to build MapProxy .deb package
+- font dir is now configurable with globals.image.font_dir
+
+Fixes:
+- fixed errors in config spec
+
 1.1.0b2 2011-05-19
 
 Improvements:
