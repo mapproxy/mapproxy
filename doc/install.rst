@@ -3,80 +3,104 @@ Installation
 
 This tutorial guides you to the MapProxy installation process on Unix systems. For Windows refer to :doc:`install_windows`.
 
-This tutorial was created and tested with Debian 5.0, if you're installing MapProxy on a different system you might need to change some package names. 
+This tutorial was created and tested with Debian 5.0/6.0 and Ubuntu 10.04 LTS, if you're installing MapProxy on a different system you might need to change some package names.
 
+MapProxy is `registered at the Python Package Index <http://pypi.python.org/pypi/MapProxy>`_ (PyPI). If you have installed Python setuptools (``python-setuptools`` on Debian) you can install MapProxy with ``sudo easy_install MapProxy``. 
 
-MapProxy is `registered at the Python Package Index <http://pypi.python.org/pypi/MapProxy>`_ (PyPI). If you have installed Python setuptools (``python-setuptools`` on Debian) you can install MapProxy with ``sudo easy_install MapProxy``. This is really easy `but` we recommend to **not** use this method. 
+This is really easy `but` we recommend to install MapProxy into a `virtual Python environment`_. A ``virtualenv`` is a self-contained Python installation where you can install arbitrary Python packages without affecting the system installation. You also don't need root permissions for the installation.
 
-We highly advise you to install MapProxy into a `virtual Python environment`_. 
 `Read about virtualenv <http://virtualenv.openplans.org/#what-it-does>`_ if you want to know more about the benefits.
+
 
 .. _`virtual Python environment`: http://guide.python-distribute.org/virtualenv.html
 
 Create a new virtual environment
 --------------------------------
 
-If you don't have `virtualenv` installed, you can download a self-contained version::
+``virtualenv`` is available as ``python-virtualenv`` on most Linux systems. You can also download a self-contained version::
 
-    wget http://bitbucket.org/ianb/virtualenv/raw/1.5.1/virtualenv.py
+    wget https://github.com/pypa/virtualenv/raw/1.6.1/virtualenv.py
     
-Next we create a new virtual environment for our proxy installation. It is a good idea to organize all your environments into a single directory. I use ``~/venv`` for that. To create a new environment with the name ``mapproxy`` and to activate it call::
+To create a new environment with the name ``mapproxy`` call::
 
-    python virtualenv.py --distribute ~/venv/mapproxy
-    source ~/venv/mapproxy/bin/activate
+    virtualenv mapproxy
+    # or
+    python virtualenv.py mapproxy
 
-.. note::
-  The last step is required every time you start working with your MapProxy installation.
+You should now have a Python installation under ``mapproxy/bin/python``.
+You need to either prefix all commands with ``mapproxy/bin``, set your ``PATH`` variable to include the bin directory or `activate` the virtualenv with::
+
+    source mapproxy/bin/activate
+
+This will change the ``PATH`` for you and will last for that terminal session.
 
 .. _`distribute`: http://packages.python.org/distribute/
 
-Install MapProxy
-----------------
+Install Dependencies
+--------------------
 
-MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 2.5, 2.6 and 2.7.
+MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 2.5, 2.6 and 2.7, which should already be installed with most Linux distributions.
 
-MapProxy has some dependencies, other libraries that are required to run. Most dependencies are small Python libraries that will be installed automatically when you install MapProxy. There are two exceptions for the base of MapProxy (libproj and PIL) and some for more advanced functionality (Shapely, GEOS, GDAL, lxml).
+MapProxy has some dependencies, other libraries that are required to run. There are different ways to install each dependency. Read :ref:`dependency_details` for a list of all required and optional dependencies.
+
+Installation
+^^^^^^^^^^^^
+
+On a Debian or Ubuntu system, you need to install the following packages::
+
+  sudo aptitude install python-imaging python-yaml libproj0
+
+To get all optional packages::
+
+  sudo aptitude install libgeos-dev python-lxml libgdal-dev python-shapely
+
+.. note::
+  Check that the ``python-shapely`` package is ``>=1.2``, if it is not
+  you need to install it with ``pip install Shapely``.
+
+.. _dependency_details:
+
+Dependency details
+^^^^^^^^^^^^^^^^^^
 
 libproj
 ~~~~~~~
-MapProxy uses the Proj4 C Library for all coordinate transformation tasks. Most distributions offer this library as a binary package. On Debian or Ubuntu you can install it with::
-  
-   sudo aptitude install libproj0
-  
+MapProxy uses the Proj4 C Library for all coordinate transformation tasks. It is included in most distributions as ``libproj0``.
 
 PIL
 ~~~
-The Python Image Library (PIL) is also included in most distributions. On Debian or Ubuntu you can install it with::
-  
-    sudo aptitude install python-imaging
+The Python Image Library (PIL) is used for the image processing and it is included in most distributions as ``python-imaging``.
 
+The development version of PIL `contains some enhancements for PNGs <http://mapproxy.org/blog/improving-the-performance-for-png-requests/>`_. You can install this version from source with::
 
-Shapely and GEOS
-~~~~~~~~~~~~~~~~
-You will need Shapely to use the :doc:`coverage feature <coverages>` of MapProxy. Shapely offers Python bindings for the GEOS library. You need Shapely >= 1.2.0 and GEOS >= 3.1.0::
+  sudo aptitude install build-essential python-dev libjpeg-dev \
+    zlib1g-dev libfreetype6-dev
+  pip install https://bitbucket.org/olt/pil-2009-raclette/get/default.tar.gz
 
-    sudo aptitude install libgeos-dev
-    pip install Shapely
-
-GDAL
+YAML
 ~~~~
-The :doc:`coverage feature <coverages>` allows you to read geometries from OGR datasources (Shapefiles, PostGIS, etc.). This package is optional and only required for OGR datasource support. OGR is part of GDAL::
 
-    sudo aptitude install libgdal-dev
+MapProxy uses YAML for the configuration parsing. It is available as ``python-yaml``, but you can also install it as a Python package with ``pip install PyYAML``.
+
+Shapely and GEOS *(optional)*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You will need Shapely to use the :doc:`coverage feature <coverages>` of MapProxy. Shapely offers Python bindings for the GEOS library. You need Shapely (``python-shapely``) and GEOS (``libgeos-dev``). You can install Shapely as a Python package with ``pip install Shapely`` if you system does not provide a recent (>= 1.2.0) version of Shapely.
+
+GDAL *(optional)*
+~~~~~~~~~~~~~~~~~
+The :doc:`coverage feature <coverages>` allows you to read geometries from OGR datasources (Shapefiles, PostGIS, etc.). This package is optional and only required for OGR datasource support. OGR is part of GDAL (``libgdal-dev``).
 
 .. _lxml_install:
 
-lxml
-~~~~
+lxml *(optional)*
+~~~~~~~~~~~~~~~~~
 
-`lxml`_ is used for more advanced WMS FeatureInformation operations like XSL transformation or the concatenation of multiple documents. On Debian or Ubuntu you can install it with::
-
-  sudo aptitude install python-lxml
+`lxml`_ is used for more advanced WMS FeatureInformation operations like XSL transformation or the concatenation of multiple XML/HTML documents. It is available as ``python-lxml``.
 
 .. _`lxml`: http://lxml.de
 
-MapProxy
-~~~~~~~~
+Install MapProxy
+----------------
 
 Your virtual environment should already contain `pip`_, a tool to install Python packages. If not, ``easy_install pip`` is enough to get it.
 
