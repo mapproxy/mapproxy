@@ -7,23 +7,19 @@ We advise you to install MapProxy into a `virtual Python environment`_.
 `Read about virtualenv <http://virtualenv.openplans.org/#what-it-does>`_ if you want to now more about the benefits.
 
 A self-contained version of virtualenv is available at:
-http://bitbucket.org/ianb/virtualenv/raw/1.5.1/virtualenv.py
+https://github.com/pypa/virtualenv/raw/1.6.1/virtualenv.py
 
 .. _`virtual Python environment`: http://guide.python-distribute.org/virtualenv.html
 
 To create a new virtual environment for our proxy installation and to activate it go to the command line and call::
  
- C:\Python26\python path\to\virtualenv.py c:\mapproxy_venv
+ C:\Python27\python path\to\virtualenv.py c:\mapproxy_venv
  C:\mapproxy_venv\Scripts\activate.bat
 
 .. note::
   The last step is required every time you start working with your MapProxy installation. Alternatively you can always explicitly call ``\mapproxy_venv\Scripts\<command>``.
 
 .. note:: Apache mod_wsgi does not work with virtualenv on Windows. If you want to use mod_wsgi for deployment, then you should skip the creation the virtualenv. You need to `install the distribute package <http://pypi.python.org/pypi/distribute#distribute-setup-py>`_ to get the ``easy_install`` command.
-
-.. note::
-  If you put you virtual environment in a directory that contains a space in the name (e.g. "Documents and Settings" or "Program Files"), you will not be able to use the ``--reload`` option of `paster` unless you `install the appropriate win32api module <http://sourceforge.net/projects/pywin32/files/>`_.
-
 
 After you activated the new environment, you have access to ``python`` and ``easy_install``.
 To install MapProxy with most dependencies call::
@@ -48,7 +44,7 @@ If you run into troubles during installation, because it is trying to compile so
 
 You can install the ``.exe`` packages with ``pip`` or ``easy_install``::
   
-  pip install path\to\package-xxx.exe
+  easy_install path\to\package-xxx.exe
 
 
 Check installation
@@ -57,7 +53,7 @@ Check installation
 To check if the MapProxy was successfully installed you can directly call the `version` module. You should see the installed version number.
 ::
 
-    python -m mapproxy.version
+    mapproxy-util --version
 
 
 Now continue with :ref:`Create a configuration <create_configuration>` from the installation documentation.
