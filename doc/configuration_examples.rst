@@ -64,11 +64,11 @@ Example::
   
   sources:
     fast_source:
-      request_format: image/tiff
       type: cache_wms
       req:
         url: http://localhost/mapserv/?map=/home/map/roads.map
         layers: roads
+        format: image/tiff
         transparent: true
 
 
