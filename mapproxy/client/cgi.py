@@ -76,7 +76,7 @@ class CGIClient(object):
             'QUERY_STRING': parsed_url.query,
             'REQUEST_METHOD': 'GET',
             'GATEWAY_INTERFACE': 'CGI/1.1',
-            'SERVER_ADDR': '127.0.0.0',
+            'SERVER_ADDR': '127.0.0.1',
             'SERVER_NAME': 'localhost',
             'SERVER_PROTOCOL': 'HTTP/1.0',
             'SERVER_SOFTWARE': 'MapProxy',
