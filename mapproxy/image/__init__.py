@@ -320,13 +320,13 @@ def img_to_buf(img, image_opts):
     if image_opts.mode and img.mode[0] == 'I' and img.mode != image_opts.mode:
         img = img.convert(image_opts.mode)
     
-    if (image_opts.colors != 0 and (
-        image_opts.colors is not None or base_config().image.paletted)):
-        # TODO remove image.paletted
-        if base_config().image.paletted:
-            image_opts = image_opts.copy()
-            image_opts.colors = 256
-        
+    if (image_opts.colors is None and base_config().image.paletted
+        and image_opts.format.endswith('png')):
+        # force 255 colors for png with globals.image.paletted
+        image_opts = image_opts.copy()
+        image_opts.colors = 255
+    
+    if image_opts.colors:
         quantizer = None
         if 'quantizer' in image_opts.encoding_options:
             quantizer = image_opts.encoding_options['quantizer']
