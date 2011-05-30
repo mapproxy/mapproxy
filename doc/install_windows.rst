@@ -26,7 +26,7 @@ To install MapProxy with most dependencies call::
 
   easy_install MapProxy
 
-This might take some minutes.
+This might take a while.
 
 Since libproj4 is generally not available on a Windows system, you will also need to install the Python package ``pyproj``.
 
@@ -38,11 +38,11 @@ Since libproj4 is generally not available on a Windows system, you will also nee
 Platform dependent packages
 ---------------------------
 
-All Python packages are downloaded from http://pypi.python.org/, but not all platform combinations might be available for a package, especially if you run a 64bit version of Windows.
+All Python packages are downloaded from http://pypi.python.org/, but not all platform combinations might be available as a binary package, especially if you run a 64bit version of Windows.
 
 If you run into troubles during installation, because it is trying to compile something (e.g. complaining about ``vcvarsall.bat``), you should look at Christoph Gohlke's `Unofficial Windows Binaries for Python Extension Packages <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_.
 
-You can install the ``.exe`` packages with ``pip`` or ``easy_install``::
+You can install the ``.exe`` packages with ``easy_install``::
   
   easy_install path\to\package-xxx.exe
 
@@ -50,7 +50,7 @@ You can install the ``.exe`` packages with ``pip`` or ``easy_install``::
 Check installation
 ------------------
 
-To check if the MapProxy was successfully installed you can directly call the `version` module. You should see the installed version number.
+To check if the MapProxy was successfully installed you can call ``mapproxy-util``. You should see the installed version number.
 ::
 
     mapproxy-util --version
