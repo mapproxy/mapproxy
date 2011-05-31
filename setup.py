@@ -18,7 +18,7 @@ setup(
     author='Oliver Tonnhofer',
     author_email='olt@omniscale.de',
     url='http://mapproxy.org',
-    license='GNU Affero General Public License v3 (AGPLv3)',
+    license='Apache Software License 2.0',
     namespace_packages = ['mapproxy'],
     packages=find_packages(),
     include_package_data=True,
@@ -42,7 +42,7 @@ setup(
     install_requires=install_requires,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-        "License :: OSI Approved :: GNU Affero General Public License v3",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.5",
         "Programming Language :: Python :: 2.6",
