@@ -15,17 +15,16 @@
 
 from __future__ import with_statement
 import os
-import time
 import errno
-import hashlib
 
-from mapproxy.util.lock import FileLock, DummyLock, cleanup_lockdir
+from mapproxy.util.lock import DummyLock
 from mapproxy.image import ImageSource, is_single_color_image
+from mapproxy.cache.base import TileCache, FileBasedLocking
 
 import logging
 log = logging.getLogger('mapproxy.cache.file')
 
-class FileCache(object):
+class FileCache(TileCache, FileBasedLocking):
     """
     This class is responsible to store and load the actual tile data.
     """
@@ -36,6 +35,7 @@ class FileCache(object):
         :param file_ext: the file extension that will be appended to
             each tile (e.g. 'png')
         """
+        super(FileCache, self).__init__()
         self.cache_dir = cache_dir
         if lock_dir is None:
             lock_dir = os.path.join(cache_dir, 'tile_locks')
@@ -102,14 +102,7 @@ class FileCache(object):
             _create_dir(location)
         return location
     
-    def timestamp_created(self, tile):
-        """
-        Return the timestamp of the last modification of the tile.
-        """
-        self._update_tile_metadata(tile)
-        return tile.timestamp
-    
-    def _update_tile_metadata(self, tile):
+    def load_tile_metadata(self, tile):
         location = self.tile_location(tile)
         stats = os.lstat(location)
         tile.timestamp = stats.st_mtime
@@ -128,7 +121,7 @@ class FileCache(object):
         else:
             return True
     
-    def load(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False):
         """
         Fills the `Tile.source` of the `tile` if it is cached.
         If it is not cached or if the ``.coord`` is ``None``, nothing happens.
@@ -140,19 +133,19 @@ class FileCache(object):
         
         if os.path.exists(location):
             if with_metadata:
-                self._update_tile_metadata(tile)
+                self.load_tile_metadata(tile)
             tile.source = ImageSource(location)
             return True
         return False
     
-    def remove(self, tile):
+    def remove_tile(self, tile):
         location = self.tile_location(tile)
         try:
             os.remove(location)
         except OSError, ex:
             if ex.errno != errno.ENOENT: raise
     
-    def store(self, tile):
+    def store_tile(self, tile):
         """
         Add the given `tile` to the file cache. Stores the `Tile.source` to
         `FileCache.tile_location`.
@@ -187,33 +180,10 @@ class FileCache(object):
         if os.path.islink(location):
             os.unlink(location)
             
-        data = tile.source.as_buffer(seekable=True)
-        data.seek(0)
-        with open(location, 'wb') as f:
-            log.debug('writing %r to %s' % (tile.coord, location))
-            f.write(data.read())
-        tile.size = data.tell()
-        tile.timestamp = time.time()
-        data.seek(0)
-        # tile.source = ImageSource(data)
-        tile.stored = True
-    
-    def lock_filename(self, tile):
-        if self._lock_cache_id is None:
-            md5 = hashlib.md5()
-            md5.update(self.cache_dir)
-            self._lock_cache_id = md5.hexdigest()
-        return os.path.join(self.lock_dir, self._lock_cache_id + '-' +
-                            '-'.join(map(str, tile.coord)) + '.lck')
-        
-    def lock(self, tile):
-        """
-        Returns a lock object for this tile.
-        """
-        lock_filename = self.lock_filename(tile)
-        cleanup_lockdir(self.lock_dir, force=False)
-        return FileLock(lock_filename, timeout=self.lock_timeout,
-            remove_on_unlock=True)
+        with self.tile_buffer(tile) as buf:
+            with open(location, 'wb') as f:
+                log.debug('writing %r to %s' % (tile.coord, location))
+                f.write(buf.read())
     
     def __repr__(self):
         return '%s(%r, %r)' % (self.__class__.__name__, self.cache_dir, self.file_ext)

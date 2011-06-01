@@ -115,7 +115,9 @@ def create_tmp_image_file(size, two_colored=False):
     img.save(out_file, 'png')
     return out_file
 
-def create_tmp_image(size, format='png', color=None, mode='RGB'):
+
+
+def create_tmp_image_buf(size, format='png', color=None, mode='RGB'):
     if color is not None:
         img = Image.new(mode, size, color=color)
     else:
@@ -123,6 +125,10 @@ def create_tmp_image(size, format='png', color=None, mode='RGB'):
     data = StringIO()
     img.save(data, format)
     data.seek(0)
+    return data
+    
+def create_tmp_image(size, format='png', color=None, mode='RGB'):
+    data = create_tmp_image_buf(size, format, color, mode)
     return data.read()
     
 

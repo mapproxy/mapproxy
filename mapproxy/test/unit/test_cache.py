@@ -1,3 +1,18 @@
+# This file is part of the MapProxy project.
+# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#    http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from __future__ import with_statement
 import os
 import re
@@ -88,114 +103,21 @@ class TestTiledSourceGlobalGeodetic(object):
     def test_wrong_srs(self):
         self.source.get_map(MapQuery([-180, -90, 0, 90], (512, 256), SRS(4326)))
 
-
-class TestFileCache(object):
-    def setup(self):
-        self.cache_dir = tempfile.mkdtemp()
-        self.cache = FileCache(cache_dir=self.cache_dir, file_ext='png')
-    def teardown(self):
-        shutil.rmtree(self.cache_dir)
-    
-    def test_is_cached_miss(self):
-        assert not self.cache.is_cached(Tile((0, 0, 0)))
-    
-    def test_is_cached_hit(self):
-        tile = Tile((0, 0, 0))
-        self._create_cached_tile(tile)
-        assert self.cache.is_cached(Tile((0, 0, 0)))
-    
-    def test_is_cached_none(self):
-        assert self.cache.is_cached(Tile(None))
-    
-    def test_remove(self):
-        tile = Tile((0, 0, 0))
-        self._create_cached_tile(tile)
-        assert self.cache.is_cached(Tile((0, 0, 0)))
-        
-        self.cache.remove(Tile((0, 0, 0)))
-        assert not self.cache.is_cached(Tile((0, 0, 0)))
-    
-    def test_load_tile_not_cached(self):
-        tile = Tile((0, 0, 0))
-        assert self.cache.load(tile) == False
-        assert tile.is_missing()
-    
-    def test_load_tile_cached(self):
-        tile = Tile((0, 0, 0))
-        self._create_cached_tile(tile)
-        assert self.cache.load(tile) == True
-        assert not tile.is_missing()
-    
-    def test_store(self):
-        tile = Tile((0, 0, 0), ImageSource(StringIO('foo')))
-        self.cache.store(tile)
-        assert self.cache.is_cached(tile)
-        loc = self.cache.tile_location(tile)
-        with open(loc) as f:
-            assert f.read() == 'foo'
-        assert tile.stored
-    
-    def test_store_tile_already_stored(self):
-        tile = Tile((0, 0, 0), StringIO('foo'))
-        tile.stored = True
-        self.cache.store(tile)
-        loc = self.cache.tile_location(tile)
-        assert not os.path.exists(loc)
-    
-    def test_single_color_tile_store(self):
-        img = Image.new('RGB', (256, 256), color='#ff0105')
-        tile = Tile((0, 0, 0), ImageSource(img, image_opts=ImageOptions(format='image/png')))
-        self.cache.link_single_color_images = True
-        self.cache.store(tile)
-        assert self.cache.is_cached(tile)
-        loc = self.cache.tile_location(tile)
-        assert os.path.islink(loc)
-        assert os.path.realpath(loc).endswith('ff0105.png')
-        assert is_png(open(loc, 'rb'))
-        
-        tile2 = Tile((0, 0, 1), ImageSource(img))
-        self.cache.store(tile2)
-        assert self.cache.is_cached(tile2)
-        loc2 = self.cache.tile_location(tile2)
-        assert os.path.islink(loc2)
-        assert os.path.realpath(loc2).endswith('ff0105.png')
-        assert is_png(open(loc2, 'rb'))
-        
-        assert_not_equal(loc, loc2)
-        assert os.path.samefile(loc, loc2)
-    
-    def test_single_color_tile_store_w_alpha(self):
-        img = Image.new('RGBA', (256, 256), color='#ff0105')
-        tile = Tile((0, 0, 0), ImageSource(img, image_opts=ImageOptions(format='image/png')))
-        self.cache.link_single_color_images = True
-        self.cache.store(tile)
-        assert self.cache.is_cached(tile)
-        loc = self.cache.tile_location(tile)
-        assert os.path.islink(loc)
-        assert os.path.realpath(loc).endswith('ff0105ff.png')
-        assert is_png(open(loc, 'rb'))
-    
-    def _create_cached_tile(self, tile):
-        loc = self.cache.tile_location(tile, create_dir=True)
-        with open(loc, 'w') as f:
-            f.write('foo')
-
-
 class MockFileCache(FileCache):
     def __init__(self, *args, **kw):
-        FileCache.__init__(self, *args, **kw)
+        super(MockFileCache, self).__init__(*args, **kw)
         self.stored_tiles = set()
         self.loaded_tiles = counting_set([])
     
-    def store(self, tile):
+    def store_tile(self, tile):
         assert tile.coord not in self.stored_tiles
         self.stored_tiles.add(tile.coord)
         if self.cache_dir != '/dev/null':
-            FileCache.store(self, tile)
+            FileCache.store_tile(self, tile)
     
-    def load(self, tile):
+    def load_tile(self, tile, with_metadata=False):
         self.loaded_tiles.add(tile.coord)
-        return FileCache.load(self, tile)
+        return FileCache.load_tile(self, tile, with_metadata)
     
     def is_cached(self, tile):
         return tile.coord in self.stored_tiles

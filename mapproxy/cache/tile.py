@@ -86,7 +86,7 @@ class TileManager(object):
         for tile in tiles:
             # TODO cache eviction
             if self.is_cached(tile):
-                self.cache.load(tile, with_metadata)
+                self.cache.load_tile(tile, with_metadata)
             elif tile.coord is not None:
                 uncached_tiles.append(tile)
         
@@ -101,8 +101,7 @@ class TileManager(object):
     
     def remove_tile_coords(self, tile_coords):
         tiles = TileCollection(tile_coords)
-        for tile in tiles:
-            self.cache.remove(tile)
+        self.cache.remove_tiles(tiles)
     
     def creator(self):
         return TileCreator(self.cache, self.sources, self.grid, self.meta_grid, self)
@@ -121,7 +120,8 @@ class TileManager(object):
         cached = self.cache.is_cached(tile)
         max_mtime = self.expire_timestamp(tile)
         if cached and max_mtime is not None:
-            stale = self.cache.timestamp_created(tile) < max_mtime
+            self.cache.load_tile_metadata(tile)
+            stale = tile.timestamp < max_mtime
             if stale:
                 cached = False
         return cached
@@ -223,9 +223,9 @@ class TileCreator(object):
                 source.as_buffer(self.tile_mgr.image_opts)
                 tile.source = source
                 tile = self.tile_mgr.apply_tile_filter(tile)
-                self.cache.store(tile)
+                self.cache.store_tile(tile)
             else:
-                self.cache.load(tile)
+                self.cache.load_tile(tile)
         return [tile]
     
     def _query_sources(self, query):
@@ -274,14 +274,12 @@ class TileCreator(object):
                 if not meta_tile_image: return []
                 splitted_tiles = split_meta_tiles(meta_tile_image, meta_tile.tile_patterns,
                                                   tile_size, self.tile_mgr.image_opts)
-                for splitted_tile in splitted_tiles:
-                    splitted_tile = self.tile_mgr.apply_tile_filter(splitted_tile)
-                    self.cache.store(splitted_tile)
+                splitted_tiles = map(self.tile_mgr.apply_tile_filter, splitted_tiles)
+                self.cache.store_tiles(splitted_tiles)
                 return splitted_tiles
         # else
         tiles = [Tile(coord) for coord in meta_tile.tiles]
-        for tile in tiles:
-            self.cache.load(tile)
+        self.cache.load_tiles(tiles)
         return tiles
         
 class Tile(object):
