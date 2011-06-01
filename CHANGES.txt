@@ -1,3 +1,12 @@
+1.1.0 2011-06-01
+
+Other:
+- Changed license to Apache Software License 2.0
+
+Fixes:
+- fixed image quantization for non-png images with
+  globals.image.paletted=True
+
 1.1.0rc1 2011-05-26
 
 Improvements:
