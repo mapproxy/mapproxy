@@ -20,7 +20,7 @@ import hashlib
 
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.cache.file import _create_dir
+from mapproxy.util import ensure_directory
 
 import logging
 log = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ class LegendCache(object):
         if legend.location is None:
             hash = legend_hash(legend.id, legend.scale)
             legend.location = os.path.join(self.cache_dir, hash) + '.' + self.file_ext
-            _create_dir(legend.location)
+            ensure_directory(legend.location)
         
         data = legend.source.as_buffer(ImageOptions(format='image/' + self.file_ext), seekable=True)
         data.seek(0)

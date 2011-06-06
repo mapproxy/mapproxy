@@ -21,8 +21,7 @@ from contextlib import contextmanager
 
 from mapproxy.util.lock import FileLock, cleanup_lockdir
 
-
-class TileCache(object):
+class TileCacheBase(object):
     """
     Base implementation of a tile cache.
     """

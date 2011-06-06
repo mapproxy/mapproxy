@@ -30,7 +30,8 @@ log = logging.getLogger('mapproxy.config')
 
 from mapproxy.srs import SRS
 from mapproxy.util.ext.odict import odict
-from mapproxy.cache.file import FileCache, DummyCache
+from mapproxy.cache.file import FileCache
+from mapproxy.cache.dummy import DummyCache
 from mapproxy.util.lock import SemLock
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.config.config import load_default_config

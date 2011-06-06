@@ -17,14 +17,14 @@ from __future__ import with_statement
 import os
 import errno
 
-from mapproxy.util.lock import DummyLock
+from mapproxy.util import ensure_directory
 from mapproxy.image import ImageSource, is_single_color_image
-from mapproxy.cache.base import TileCache, FileBasedLocking
+from mapproxy.cache.base import TileCacheBase, FileBasedLocking
 
 import logging
 log = logging.getLogger('mapproxy.cache.file')
 
-class FileCache(TileCache, FileBasedLocking):
+class FileCache(TileCacheBase, FileBasedLocking):
     """
     This class is responsible to store and load the actual tile data.
     """
@@ -83,7 +83,7 @@ class FileCache(TileCache, FileBasedLocking):
                      "%03d.%s" % (int(y) % 1000, self.file_ext))
             tile.location = os.path.join(*parts)
         if create_dir:
-            _create_dir(tile.location)
+            ensure_directory(tile.location)
         return tile.location
     
     def _single_color_tile_location(self, color, create_dir=False):
@@ -99,7 +99,7 @@ class FileCache(TileCache, FileBasedLocking):
         )
         location = os.path.join(*parts)
         if create_dir:
-            _create_dir(location)
+            ensure_directory(location)
         return location
     
     def load_tile_metadata(self, tile):
@@ -158,23 +158,11 @@ class FileCache(TileCache, FileBasedLocking):
         if self.link_single_color_images:
             color = is_single_color_image(tile.source.as_image())
             if color:
-                real_tile_loc = self._single_color_tile_location(color, create_dir=True)
-                if not os.path.exists(real_tile_loc):
-                    self._store(tile, real_tile_loc)
-                
-                log.debug('linking %r from %s to %s',
-                          tile.coord, real_tile_loc, tile_loc)
-                
-                # remove any file before symlinking.
-                # exists() returns False if it links to non-
-                # existing file, islink() test to check that
-                if os.path.exists(tile_loc) or os.path.islink(tile_loc):
-                    os.unlink(tile_loc)
-                
-                os.symlink(real_tile_loc, tile_loc)
-                return
-        
-        self._store(tile, tile_loc)
+                self._store_single_color_tile(tile, tile_loc, color)
+            else:
+                self._store(tile, tile_loc)
+        else:
+            self._store(tile, tile_loc)
     
     def _store(self, tile, location):
         if os.path.islink(location):
@@ -185,25 +173,23 @@ class FileCache(TileCache, FileBasedLocking):
                 log.debug('writing %r to %s' % (tile.coord, location))
                 f.write(buf.read())
     
+    def _store_single_color_tile(self, tile, tile_loc, color):
+        real_tile_loc = self._single_color_tile_location(color, create_dir=True)
+        if not os.path.exists(real_tile_loc):
+            self._store(tile, real_tile_loc)
+        
+        log.debug('linking %r from %s to %s',
+                  tile.coord, real_tile_loc, tile_loc)
+        
+        # remove any file before symlinking.
+        # exists() returns False if it links to non-
+        # existing file, islink() test to check that
+        if os.path.exists(tile_loc) or os.path.islink(tile_loc):
+            os.unlink(tile_loc)
+        
+        os.symlink(real_tile_loc, tile_loc)
+        return
+    
     def __repr__(self):
         return '%s(%r, %r)' % (self.__class__.__name__, self.cache_dir, self.file_ext)
 
-
-class DummyCache(object):
-    def is_cached(self, tile):
-        return False
-    
-    def lock(self, tile):
-        return DummyLock()
-    
-    def store(self, tile):
-        pass
-
-def _create_dir(file_name):
-    dir_name = os.path.dirname(file_name)
-    if not os.path.exists(dir_name):
-        try:
-            os.makedirs(dir_name)
-        except OSError, e:
-            if e.errno != errno.EEXIST:
-                raise e

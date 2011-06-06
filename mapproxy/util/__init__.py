@@ -183,6 +183,19 @@ def remove_dir_if_emtpy(directory):
     except OSError, ex:
         if ex.errno != errno.ENOENT and ex.errno != errno.ENOTEMPTY: raise
 
+def ensure_directory(file_name):
+    """
+    Create directory if it does not exist, else do nothing.
+    """
+    dir_name = os.path.dirname(file_name)
+    if not os.path.exists(dir_name):
+        try:
+            os.makedirs(dir_name)
+        except OSError, e:
+            if e.errno != errno.EEXIST:
+                raise e
+
+
 def replace_instancemethod(old_method, new_method):
     """
     Replace an instance method.
