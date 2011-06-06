@@ -1,0 +1,25 @@
+globals:
+  cache:
+    base_dir: cache_data/
+
+services:
+  tms:
+  kml:
+  wms:
+    md:
+      title: MapProxy test fixture
+
+layers:
+  tiles:
+    title: Tiles without cache (disable_storage)
+    sources: [tile_cache]
+
+caches:
+  tile_cache:
+    disable_storage: true
+    sources: [tile_source]
+
+sources:
+  tile_source:
+    type: tile
+    url: http://localhost:42423/tile.png

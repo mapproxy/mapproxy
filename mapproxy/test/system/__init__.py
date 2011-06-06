@@ -34,10 +34,11 @@ def prepare_env(test_config, config_file, with_cache_data=False):
         test_config['base_dir'] = os.path.join(test_config['tmp_dir'], 'etc')
         os.mkdir(test_config['base_dir'])
     test_config['config_file'] = os.path.join(test_config['base_dir'], config_file)
+    test_config['cache_dir'] =  os.path.join(test_config['base_dir'], 'cache_data')
     shutil.copy(fixture_layer_conf, test_config['config_file'])
     if with_cache_data:
         shutil.copytree(os.path.join(fixture_dir, 'cache_data'),
-                        os.path.join(test_config['base_dir'], 'cache_data'))
+                        test_config['cache_dir'])
     
 def create_app(test_config):
     app = make_wsgi_app(test_config['config_file'])
