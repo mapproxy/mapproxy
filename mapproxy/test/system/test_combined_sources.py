@@ -57,7 +57,7 @@ class TestCoverageWMS(SystemTest):
             with mock_httpd(('localhost', 42423), expected_req):
                 self.common_map_req.params.layers = 'combinable'
                 resp = self.app.get(self.common_map_req)
-                resp.content_type = 'image/png'
+                eq_(resp.content_type, 'image/png')
                 data = StringIO(resp.body)
                 assert is_png(data)
 
@@ -80,7 +80,7 @@ class TestCoverageWMS(SystemTest):
             with mock_httpd(('localhost', 42423), expected_req):
                 self.common_map_req.params.layers = 'uncombinable'
                 resp = self.app.get(self.common_map_req)
-                resp.content_type = 'image/png'
+                eq_(resp.content_type, 'image/png')
                 data = StringIO(resp.body)
                 assert is_png(data)
     
@@ -103,9 +103,8 @@ class TestCoverageWMS(SystemTest):
                              
             with mock_httpd(('localhost', 42423), expected_req):
                 self.common_map_req.params.layers = 'uncombinable,single'
-                print self.common_map_req
                 resp = self.app.get(self.common_map_req)
-                resp.content_type = 'image/png'
+                eq_(resp.content_type, 'image/png')
                 data = StringIO(resp.body)
                 assert is_png(data)
     
@@ -129,7 +128,7 @@ class TestCoverageWMS(SystemTest):
         with mock_httpd(('localhost', 42423), expected_req):
             self.common_map_req.params.layers = 'opacity_base,opacity_overlay'
             resp = self.app.get(self.common_map_req)
-            resp.content_type = 'image/png'
+            eq_(resp.content_type, 'image/png')
             data = StringIO(resp.body)
             assert is_png(data)
             img = Image.open(data)
