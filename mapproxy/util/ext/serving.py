@@ -415,10 +415,16 @@ def _reloader_inotify(fnames, interval=None):
     changed = [False]
 
     # Setup inotify watches
+    import pyinotify
     from pyinotify import WatchManager, EventsCodes, Notifier
     wm = WatchManager()
     mask = "IN_DELETE_SELF IN_MOVE_SELF IN_MODIFY IN_ATTRIB".split()
-    mask = reduce(lambda m, a: m | getattr(EventsCodes, a), mask, 0)
+    try:
+        # pyinotify 0.7
+        mask = reduce(lambda m, a: m | getattr(EventsCodes, a), mask, 0)
+    except AttributeError:
+        # pyinotify 0.8 and up
+        mask = reduce(lambda m, a: m | getattr(pyinotify, a), mask, 0)
 
     def signal_changed(event):
         if changed[0]:
