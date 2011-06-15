@@ -422,14 +422,23 @@ def _make_transparent(img, color, tolerance=10):
     img.load()
     
     if img.mode == 'P':
-        img = img.convert('RGB')
+        img = img.convert('RGBA')
     
     channels = img.split()
     mask_channels = []
     for ch, c in zip(channels, color):
+        # create bit mask for each matched color
         low_c, high_c = c-tolerance, c+tolerance
         mask_channels.append(Image.eval(ch, lambda x: 255 if low_c <= x <= high_c else 0))
-        
+    
+    # multiply channel bit masks to get a single mask
     alpha = reduce(ImageChops.multiply, mask_channels)
-    img.putalpha(ImageChops.invert(alpha))
+    # invert to get alpha channel
+    alpha = ImageChops.invert(alpha)
+
+    if len(channels) == 4:
+        # multiply with existing alpha
+        alpha = ImageChops.multiply(alpha, channels[-1])
+    
+    img.putalpha(alpha)
     return img
