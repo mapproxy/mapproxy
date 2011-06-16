@@ -1119,3 +1119,13 @@ class TestResolutionRange(object):
         res_range = merge_resolution_range(
             ResolutionRange(10000, 10), None)
         eq_(res_range, None)
+    
+    def test_eq(self):
+        assert resolution_range(None, None) == resolution_range(None, None)
+        assert resolution_range(None, 100) == resolution_range(None, 100.0)
+        assert resolution_range(None, 100) != resolution_range(None, 100.1)
+        assert resolution_range(1000, 100) == resolution_range(1000, 100)
+        assert resolution_range(1000, 100) == resolution_range(1000.0, 100)
+        assert resolution_range(1000, 100) != resolution_range(1000.1, 100)
+        
+        

@@ -31,6 +31,14 @@ layers:
     title: opacity test overlay layer
     sources: [wms_opacity2]
 
+  layer_image_opts1:
+    title: layer with transparent_color
+    sources: [wms_iopts1]
+  layer_image_opts2:
+    title: layer with transparent_color
+    sources: [wms_iopts2]
+
+
 caches:
   wms_cache:
     grids: [GLOBAL_MERCATOR]
@@ -74,3 +82,21 @@ sources:
     req:
       url: http://localhost:42423/service_a
       layers: a_two
+
+  wms_iopts1:
+    type: wms
+    image:
+      transparent_color: [255, 0, 0]
+    req:
+      url: http://localhost:42423/service_a
+      layers: a_iopts_one
+      transparent: True
+  
+  wms_iopts2:
+    type: wms
+    image:
+      transparent_color: [255, 0, 0]
+    req:
+      url: http://localhost:42423/service_a
+      layers: a_iopts_two
+      transparent: True

@@ -133,3 +133,50 @@ class TestCoverageWMS(SystemTest):
             assert is_png(data)
             img = Image.open(data)
             eq_(img.getcolors()[0], ((200*200),(127, 0, 64)))
+
+    def test_combined_transp_color(self):
+        # merged to one request because both layers share the same transparent_color
+        common_params = (r'?SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
+                                  '&VERSION=1.1.1&BBOX=9.0,50.0,10.0,51.0'
+                                  '&WIDTH=200&transparent=True')
+        
+        with tmp_image((200, 200), color=(255, 0, 0), format='png') as img:
+            img = img.read()
+            expected_req = [({'path': '/service_a' + common_params + '&layers=a_iopts_one,a_iopts_two'},
+                             {'body': img, 'headers': {'content-type': 'image/png'}}),
+                            ]
+                            
+            with mock_httpd(('localhost', 42423), expected_req):
+                self.common_map_req.params.layers = 'layer_image_opts1,layer_image_opts2'
+                self.common_map_req.params.transparent = True
+                resp = self.app.get(self.common_map_req)
+                resp.content_type = 'image/png'
+                data = StringIO(resp.body)
+                assert is_png(data)
+                img = Image.open(data)
+                eq_(img.getcolors()[0], ((200*200),(255, 0, 0, 0)))
+    
+    def test_combined_mixed_transp_color(self):
+        # not merged to one request because only one layer has transparent_color
+        common_params = (r'?SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
+                                  '&VERSION=1.1.1&BBOX=9.0,50.0,10.0,51.0'
+                                  '&WIDTH=200&transparent=True')
+        
+        with tmp_image((200, 200), color=(255, 0, 0), format='png') as img:
+            img = img.read()
+            expected_req = [({'path': '/service_a' + common_params + '&layers=a_four'},
+                             {'body': img, 'headers': {'content-type': 'image/png'}}),
+                            ({'path': '/service_a' + common_params + '&layers=a_iopts_one'},
+                             {'body': img, 'headers': {'content-type': 'image/png'}}),
+                            ]
+                            
+            with mock_httpd(('localhost', 42423), expected_req):
+                self.common_map_req.params.layers = 'single,layer_image_opts1'
+                self.common_map_req.params.transparent = True
+                resp = self.app.get(self.common_map_req)
+                resp.content_type = 'image/png'
+                data = StringIO(resp.body)
+                assert is_png(data)
+                

@@ -416,7 +416,10 @@ def make_transparent(img, color, tolerance=10):
     :param tolerance: tolerance applied to each color value
     """
     result = _make_transparent(img.as_image(), color, tolerance)
-    return ImageSource(result, size=result.size, transparent=True)
+    image_opts = img.image_opts.copy()
+    image_opts.transparent = True
+    image_opts.mode = 'RGBA'
+    return ImageSource(result, size=result.size, image_opts=image_opts)
 
 def _make_transparent(img, color, tolerance=10):
     img.load()
