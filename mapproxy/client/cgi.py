@@ -32,7 +32,7 @@ from urlparse import urlparse
 
 subprocess = import_module('subprocess')
 
-def split_http_response(data):
+def split_cgi_response(data):
     headers = []
     prev_n = 0
     while True:
@@ -42,11 +42,11 @@ def split_http_response(data):
         next_line_begin = data[next_n+1:next_n+3]
         headers.append(data[prev_n:next_n].rstrip('\r'))
         if next_line_begin[0] == '\n':
-            return headers[0], headers_dict(headers[1:]), data[next_n+2:]
+            return headers_dict(headers), data[next_n+2:]
         elif next_line_begin == '\r\n':
-            return headers[0], headers_dict(headers[1:]), data[next_n+3:]
+            return headers_dict(headers), data[next_n+3:]
         prev_n = next_n+1
-    return '', {}, data
+    return {}, data
 
 def headers_dict(header_lines):
     headers = {}
@@ -105,9 +105,9 @@ class CGIClient(object):
             content = stdout
             headers = dict()
         else:
-            status, headers, content = split_http_response(stdout)
+            headers, content = split_cgi_response(stdout)
         
-        status_match = re.match(' (\d\d\d) ', status)
+        status_match = re.match('(\d\d\d) ', headers.get('Status', ''))
         if status_match:
             status_code = status_match.group(1)
         else:

@@ -53,7 +53,7 @@ class TestCoverageWMS(SystemTest):
         self.common_map_req.params.bbox = -90, 0, 0, 90
         self.common_map_req.params['bgcolor'] = '0xff0005'
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/png'
+        eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
@@ -64,7 +64,7 @@ class TestCoverageWMS(SystemTest):
         self.common_map_req.params.bbox = -90, 0, 0, 90
         self.common_map_req.params.transparent = True
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/png'
+        eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
@@ -84,7 +84,7 @@ class TestCoverageWMS(SystemTest):
                 self.common_map_req.params.bbox = 0, 0, 40, 40
                 self.common_map_req.params.transparent = True
                 resp = self.app.get(self.common_map_req)
-                resp.content_type = 'image/png'
+                eq_(resp.content_type, 'image/png')
                 data = StringIO(resp.body)
                 assert is_png(data)
                 eq_(Image.open(data).mode, 'RGB')

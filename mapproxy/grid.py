@@ -1030,6 +1030,18 @@ class ResolutionRange(object):
         
         return True
     
+    def __eq__(self, other):
+        if not isinstance(other, ResolutionRange):
+            return NotImplemented
+        
+        return (self.min_res == other.min_res
+            and self.max_res == other.max_res)
+
+    def __ne__(self, other):
+        if not isinstance(other, ResolutionRange):
+            return NotImplemented
+        return not self == other
+
     def __repr__(self):
         return '<ResolutionRange(min_res=%.3f, max_res=%.3f)>' % (
             self.min_res, self.max_res)

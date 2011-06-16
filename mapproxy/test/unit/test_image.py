@@ -365,9 +365,13 @@ class TestMakeTransparent(object):
     
     def test_from_transparent(self):
         img = self._make_transp_test_image()
+        draw = ImageDraw.Draw(img)
+        draw.rectangle((0, 0, 4, 4), fill=(130, 100, 120, 0))
+        draw.rectangle((5, 5, 9, 9), fill=(130, 150, 120, 255))
         img = make_transparent(img, (130, 150, 120, 120), tolerance=5)
         assert img.mode == 'RGBA'
         assert img.size == (50, 50)
-        colors = img.getcolors()
-        eq_(colors, [(1600, (130, 140, 120, 255)), (900, (130, 150, 120, 0))])
+        colors = sorted(img.getcolors(), reverse=True)
+        eq_(colors, [(1550, (130, 140, 120, 100)), (900, (130, 150, 120, 0)),
+            (25, (130, 150, 120, 255)), (25, (130, 100, 120, 0))])
     

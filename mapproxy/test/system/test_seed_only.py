@@ -41,7 +41,7 @@ class TestSeedOnlyWMS(SystemTest):
             
     def test_get_map_cached(self):
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/png'
+        eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
@@ -52,7 +52,7 @@ class TestSeedOnlyWMS(SystemTest):
     def test_get_map_uncached(self):
         self.common_map_req.params['bbox'] = '10,10,20,20'
         resp = self.app.get(self.common_map_req)
-        resp.content_type = 'image/png'
+        eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
@@ -64,7 +64,7 @@ class TestSeedOnlyTMS(SystemTest):
 
     def test_get_tile_cached(self):
         resp = self.app.get('/tms/1.0.0/wms_cache/0/0/1.jpeg')
-        resp.content_type = 'image/jpeg'
+        eq_(resp.content_type, 'image/jpeg')
         data = StringIO(resp.body)
         assert is_jpeg(data)
         img = Image.open(data)
@@ -74,7 +74,7 @@ class TestSeedOnlyTMS(SystemTest):
 
     def test_get_tile_uncached(self):
         resp = self.app.get('/tms/1.0.0/wms_cache/0/0/0.jpeg')
-        resp.content_type = 'image/jpeg'
+        eq_(resp.content_type, 'image/jpeg')
         data = StringIO(resp.body)
         assert is_jpeg(data)
         img = Image.open(data)
