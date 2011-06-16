@@ -159,6 +159,27 @@ class MultiCoverage(object):
     def transform_to(self, srs):
         return MultiCoverage([c.transform_to(srs) for c in self.coverages])
     
+    def __eq__(self, other):
+        if not isinstance(other, MultiCoverage):
+            return NotImplemented
+        
+        if self.bbox != other.bbox:
+            return False
+        
+        if len(self.coverages) != len(other.coverages):
+            return False
+        
+        for a, b in zip(self.coverages, other.coverages):
+            if a != b:
+                return False
+        
+        return True
+    
+    def __ne__(self, other):
+        if not isinstance(other, MultiCoverage):
+            return NotImplemented
+        return not self.__eq__(other)
+    
     def __repr__(self):
         return '<MultiCoverage %r: %r>' % (self.extent.llbbox, self.coverages)
 
@@ -192,6 +213,23 @@ class BBOXCoverage(object):
         bbox = self.srs.transform_bbox_to(srs, self.bbox)
         return BBOXCoverage(bbox, srs)
     
+    def __eq__(self, other):
+        if not isinstance(other, BBOXCoverage):
+            return NotImplemented
+
+        if self.srs != other.srs:
+            return False
+        
+        if self.bbox != other.bbox:
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        if not isinstance(other, BBOXCoverage):
+            return NotImplemented
+        return not self.__eq__(other)
+
     def __repr__(self):
         return '<BBOXCoverage %r/%r>' % (self.extent.llbbox, self.bbox)
 
@@ -244,6 +282,26 @@ class GeomCoverage(object):
         bbox = self._bbox_poly_in_coverage_srs(bbox, srs)
         return self.prepared_geom.contains(bbox)
     
+    def __eq__(self, other):
+        if not isinstance(other, GeomCoverage):
+            return NotImplemented
+        
+        if self.srs != other.srs:
+            return False
+        
+        if self.bbox != other.bbox:
+            return False
+        
+        if not self.geom.equals(other.geom):
+            return False
+        
+        return True
+    
+    def __ne__(self, other):
+        if not isinstance(other, GeomCoverage):
+            return NotImplemented
+        return not self.__eq__(other)
+
     def __repr__(self):
         return '<GeomCoverage %r: %r>' % (self.extent.llbbox, self.geom)
 

@@ -178,6 +178,17 @@ class TestGeomCoverage(object):
         self.coverage._prepared_max = 100
         for i in xrange(110):
             assert self.coverage.intersects((-30, 10, -8, 70), SRS(4326))
+    
+    def test_eq(self):
+        g1 = shapely.wkt.loads("POLYGON((10 10, 10 50, -10 60, 10 80, 80 80, 80 10, 10 10))")
+        g2 = shapely.wkt.loads("POLYGON((10 10, 10 50, -10 60, 10 80, 80 80, 80 10, 10 10))")
+        assert coverage(g1, SRS(4326)) == coverage(g2, SRS(4326))
+        assert coverage(g1, SRS(4326)) != coverage(g2, SRS(31467))
+        g3 = shapely.wkt.loads("POLYGON((10.0 10, 10 50.0, -10 60, 10 80, 80 80, 80 10, 10 10))")
+        assert coverage(g1, SRS(4326)) == coverage(g3, SRS(4326))
+        g4 = shapely.wkt.loads("POLYGON((10 10, 10.1 50, -10 60, 10 80, 80 80, 80 10, 10 10))")
+        assert coverage(g1, SRS(4326)) != coverage(g4, SRS(4326))
+
 
 class TestBBOXCoverage(object):
     def setup(self):
@@ -203,7 +214,13 @@ class TestBBOXCoverage(object):
         
         assert not self.coverage.intersects((0, 0, 1000, 1000), SRS(900913))
         assert self.coverage.intersects((0, 0, 1500000, 1500000), SRS(900913))
-        
+    
+    def test_eq(self):
+        assert coverage([-10, 10, 80, 80], SRS(4326)) == coverage([-10, 10, 80, 80], SRS(4326))
+        assert coverage([-10, 10, 80, 80], SRS(4326)) == coverage([-10, 10.0, 80.0, 80], SRS(4326))
+        assert coverage([-10, 10, 80, 80], SRS(4326)) != coverage([-10.1, 10.0, 80.0, 80], SRS(4326))
+        assert coverage([-10, 10, 80, 80], SRS(4326)) != coverage([-10, 10.0, 80.0, 80], SRS(31467))
+    
 
 class TestMultiCoverage(object):
     def setup(self):
@@ -235,4 +252,13 @@ class TestMultiCoverage(object):
         
         assert self.coverage.intersects((110, 5, 115, 15), SRS(4326))
         assert self.coverage.intersects((90, 5, 105, 15), SRS(4326))
-        
+  
+    def test_eq(self):
+        g1 = shapely.wkt.loads("POLYGON((10 10, 10 50, -10 60, 10 80, 80 80, 80 10, 10 10))")
+        g2 = shapely.wkt.loads("POLYGON((10 10, 10 50, -10 60, 10 80, 80 80, 80 10, 10 10))")
+        assert MultiCoverage([coverage(g1, SRS(4326))]) == MultiCoverage([coverage(g2, SRS(4326))])
+        assert MultiCoverage([coverage(g1, SRS(4326))]) != MultiCoverage([coverage(g2, SRS(31467))])
+        c = coverage([-10, 10, 80, 80], SRS(4326))
+        assert MultiCoverage([c, coverage(g1, SRS(4326))]) != MultiCoverage([c, coverage(g2, SRS(31467))])
+
+       

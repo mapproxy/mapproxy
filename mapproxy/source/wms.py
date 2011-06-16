@@ -121,25 +121,47 @@ class WMSSource(Source):
         # else
         return self.supported_srs[0]
     
-    def combined_layer(self, other, query):
+    def _is_compatible(self, other):
         if not isinstance(other, WMSSource):
-            return None
+            return False
         
         if self.opacity is not None or other.opacity is not None:
-            return None
+            return False
         
         if self.supported_srs != other.supported_srs:
-          return None
+            return False
 
         if self.supported_formats != other.supported_formats:
-          return None
+            return False
         
+        if self.transparent_color != other.transparent_color:
+            return False
+        
+        if self.transparent_color_tolerance != other.transparent_color_tolerance:
+            return False
+        
+        if self.res_range != other.res_range:
+            return False
+        
+        if self.coverage != other.coverage:
+            return False
+        
+        return True
+        
+    def combined_layer(self, other, query):
+        if not self._is_compatible(other):
+            return None
         
         client = self.client.combined_client(other.client, query)
         if not client:
             return None
         
-        return WMSSource(client, image_opts=self.image_opts)
+        return WMSSource(client, image_opts=self.image_opts,
+            transparent_color=self.transparent_color,
+            transparent_color_tolerance=self.transparent_color_tolerance,
+            res_range=self.res_range,
+            coverage=self.coverage,
+        )
         
 class WMSInfoSource(InfoSource):
     def __init__(self, client, fi_transformer=None):
