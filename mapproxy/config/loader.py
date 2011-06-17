@@ -884,7 +884,9 @@ class CacheConfiguration(ConfigurationBase):
                 if source:
                     sources.append(source)
                     source_image_opts.append(source.image_opts)
-            assert sources, 'no sources configured for %s' % self.conf['name']
+            if not sources:
+                sources = [DummySource()]
+                source_image_opts.append(sources[0].image_opts)
             tile_grid = grid_conf.tile_grid()
             tile_filter = self._tile_filter()
             image_opts = compatible_image_options(source_image_opts, base_opts=base_image_opts)
