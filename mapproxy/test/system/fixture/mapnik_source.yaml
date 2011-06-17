@@ -5,6 +5,9 @@ layers:
   - name: mapnik
     title: Mapnik Source
     sources: [mapnik]
+  - name: mapnik_transparent
+    title: Mapnik Source
+    sources: [mapnik_transparent]
   - name: mapnik_unknown
     title: Mapnik Source
     sources: [mapnik_unknown]
@@ -16,6 +19,13 @@ sources:
   mapnik:
     type: mapnik
     mapfile: ./mapnik.xml
+    coverage:
+      bbox: [-170, -80, 180, 90]
+      bbox_srs: 'EPSG:4326'
+  
+  mapnik_transparent:
+    type: mapnik
+    mapfile: ./mapnik-transparent.xml
     coverage:
       bbox: [-170, -80, 180, 90]
       bbox_srs: 'EPSG:4326'
