@@ -14,8 +14,9 @@
 # limitations under the License.
 
 from mapproxy.config.config import (
-    base_config, abspath, load_base_config,
+    base_config, abspath, load_base_config, load_default_config,
     finish_base_config, Options
 )
 
-__all__ = ['base_config', 'abspath', 'load_base_config', 'finish_base_config', 'Options']
+__all__ = ['base_config', 'abspath', 'load_base_config', 'load_default_config',
+           'finish_base_config', 'Options']
