@@ -837,6 +837,23 @@ class CacheConfiguration(ConfigurationBase):
         return FileCache(cache_dir, file_ext=file_ext,
             lock_timeout=lock_timeout, link_single_color_images=link_single_color_images)
     
+    def _mbtiles_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.mbtiles import MBTilesCache
+
+        filename = self.conf['cache'].get('filename')
+        if not filename:
+            filename = self.conf['name'] + '.mbtiles'
+        
+        if filename.startswith('.' + os.sep):
+            mbfile_path = self.context.globals.abspath(filename)
+        else:
+            mbfile_path = os.path.join(self.cache_dir(), filename)
+        return MBTilesCache(mbfile_path)
+
+    def _tile_cache(self, grid_conf, file_ext):
+        cache_type = self.conf.get('cache', {}).get('type', 'file')
+        return getattr(self, '_%s_cache' % cache_type)(grid_conf, file_ext)
+    
     def _tile_filter(self):
         filters = []
         for tile_filter in tile_filters:
@@ -890,7 +907,7 @@ class CacheConfiguration(ConfigurationBase):
             tile_grid = grid_conf.tile_grid()
             tile_filter = self._tile_filter()
             image_opts = compatible_image_options(source_image_opts, base_opts=base_image_opts)
-            cache = self._file_cache(grid_conf, image_opts.format.ext)
+            cache = self._tile_cache(grid_conf, image_opts.format.ext)
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
                               image_opts=image_opts,
                               meta_size=meta_size, meta_buffer=meta_buffer,

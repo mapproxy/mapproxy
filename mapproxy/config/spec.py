@@ -76,6 +76,14 @@ source_commons = combined(
     }
 )
 
+cache_types = {
+    'file': {
+    },
+    'mbtiles': {
+        'filename': str()
+    }
+}
+
 mapproxy_yaml_spec = {
     'globals': {
         'image': {
@@ -152,7 +160,8 @@ mapproxy_yaml_spec = {
                 'font_size': number(),
                 'opacity': number(),
                 'spacing': str(),
-            }
+            },
+            'cache': type_spec('type', cache_types)
         }
     },
     'services': {

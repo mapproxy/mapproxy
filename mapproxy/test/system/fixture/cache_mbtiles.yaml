@@ -1,0 +1,27 @@
+globals:
+  cache:
+    base_dir: cache_data/
+
+services:
+  tms:
+  wms:
+    md:
+      title: MapProxy test fixture
+
+layers:
+  mb:
+    title: TMS Cache Layer
+    sources: [mb_cache]
+
+caches:
+  mb_cache:
+    cache:
+      type: mbtiles
+      filename: ./cache.mbtiles
+    sources: [tms]
+
+sources:
+  tms:
+    type: tile
+    url: http://localhost:42423/tiles/%(tc_path)s.png
+
