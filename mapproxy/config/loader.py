@@ -38,35 +38,6 @@ from mapproxy.config.config import load_default_config
 from mapproxy.client.http import auth_data_from_url, HTTPClient
 from mapproxy.image.opts import ImageOptions, compatible_image_options, ImageFormat
 
-def loader(loaders, name):
-    """
-    Return named class/function from loaders map.
-    """
-    entry_point = loaders[name]
-    module_name, class_name = entry_point.split(':')
-    module = __import__(module_name, {}, {}, class_name)
-    return getattr(module, class_name)
-
-
-tile_filter_loaders = {
-    'watermark': 'mapproxy.tilefilter:WaterMarkTileFilter',
-    'pngquant': 'mapproxy.tilefilter:PNGQuantTileFilter',
-}
-
-def load_tile_filters():
-    filters = []
-    for key in tile_filter_loaders:
-        filters.append(loader(tile_filter_loaders, key))
-    filters.sort(key=lambda x: x.priority, reverse=True)
-    conf_keys = set()
-    for f in filters:
-        conf_keys.update(f.cache_conf_keys)
-    return filters, conf_keys
-
-tile_filters, tile_filter_conf_keys = load_tile_filters()
-del load_tile_filters
-
-
 import mapproxy.config
 from mapproxy.grid import tile_grid, resolution_range as _resolution_range
 from mapproxy.request.base import split_mime_type
@@ -86,6 +57,7 @@ from mapproxy.service.ows import OWSServer
 from mapproxy.source import DebugSource, DummySource
 from mapproxy.source.wms import WMSSource, WMSInfoSource, WMSLegendSource
 from mapproxy.source.tile import TiledSource
+from mapproxy.tilefilter import create_watermark_filter
 from mapproxy.cache.tile import TileManager
 from mapproxy.cache.legend import LegendCache
 from mapproxy.util import local_base_config, memoize
@@ -856,9 +828,9 @@ class CacheConfiguration(ConfigurationBase):
     
     def _tile_filter(self):
         filters = []
-        for tile_filter in tile_filters:
-            f = tile_filter().create_filter(self.conf, self.context)
-            if f is not None:
+        if 'watermark' in self.conf:
+            f = create_watermark_filter(self.conf, self.context)
+            if f:
                 filters.append(f)
         return filters
     
