@@ -23,5 +23,8 @@ class DummyCache(TileCacheBase):
     def lock(self, tile):
         return DummyLock()
     
+    def load_tile(self, tile, with_metadata=False):
+        pass
+    
     def store_tile(self, tile):
         pass
