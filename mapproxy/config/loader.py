@@ -540,6 +540,8 @@ class SourceConfiguration(ConfigurationBase):
         return load_coverage(self.conf['coverage'])
     
     def image_opts(self, format=None):
+        if 'transparent' in self.conf:
+            self.conf.setdefault('image', {})['transparent'] = self.conf['transparent']
         return self.context.globals.image_options.image_opts(self.conf.get('image', {}), format)
     
     def http_client(self, url):
