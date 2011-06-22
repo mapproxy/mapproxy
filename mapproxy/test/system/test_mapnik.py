@@ -40,6 +40,13 @@ mapnik_l2_xml = """
 </Map>
 """.strip()
 
+mapnik_transp_xml = """
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map>
+<Map bgcolor="transparent" srs="+proj=latlong +datum=WGS84">
+</Map>
+""".strip()
+
 def setup_module():
 
     try:
@@ -54,6 +61,8 @@ def setup_module():
         f.write(mapnik_xml)
     with open(os.path.join(test_config['base_dir'], 'mapnik-02.xml'), 'w') as f:
         f.write(mapnik_l2_xml)
+    with open(os.path.join(test_config['base_dir'], 'mapnik-transparent.xml'), 'w') as f:
+        f.write(mapnik_transp_xml)
 
 
 def teardown_module():
@@ -85,7 +94,7 @@ class TestMapnikSource(SystemTest):
         data = StringIO(resp.body)
         img = Image.open(data)
         colors = img.getcolors(1)
-        # wms reqeust bg color
+        # wms request bg color
         eq_(colors[0], (40000, (0, 255, 0)))
 
     def test_get_map_unknown_file(self):
@@ -96,18 +105,16 @@ class TestMapnikSource(SystemTest):
         
         resp = self.app.get(req)
         assert 'unknown.xml' in resp.body, resp.body
-    
-    
-    def test_get_map_with_level(self):
-        req = (r'/service?LAYERs=mapnik_level&SERVICE=WMS&FORMAT=image%2Fpng'
+
+    def test_get_map_transparent(self):
+        req = (r'/service?LAYERs=mapnik_transparent&SERVICE=WMS&FORMAT=image%2Fpng'
                 '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
                 '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
-                '&WIDTH=200&&BGCOLOR=0x00ff00')
+                '&WIDTH=200&transparent=True')
         
         resp = self.app.get(req)
         data = StringIO(resp.body)
         img = Image.open(data)
         colors = img.getcolors(1)
-        # wms reqeust bg color
-        eq_(colors[0], (40000, (0, 0, 255, 255)))    
-    
+        eq_(colors[0], (40000, (0, 0, 0, 0)))
+

@@ -237,6 +237,7 @@ mapproxy_yaml_spec = {
             'tile': combined(source_commons, {
                 required('url'): str(),
                 'transparent': bool(),
+                'image': image_opts,
                 'grid': str(),
                 'request_format': str(),
                 'origin': str(),
@@ -245,6 +246,7 @@ mapproxy_yaml_spec = {
             'mapnik': combined(source_commons, {
                 required('mapfile'): str(),
                 'transparent': bool(),
+                'image': image_opts,
             }),
             'debug': {
             },
