@@ -247,6 +247,7 @@ mapproxy_yaml_spec = {
                 required('mapfile'): str(),
                 'transparent': bool(),
                 'image': image_opts,
+                'layers': one_off(str(), [str()]),
             }),
             'debug': {
             },

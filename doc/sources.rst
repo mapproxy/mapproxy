@@ -55,7 +55,7 @@ All other options are added to the query string of the request.
 
 You can also configure ``sld`` or ``sld_body`` parameters, in this case you can omit ``layers``. ``sld`` can also point to a ``file://``-URL. MapProxy will read this file and use the content as the ``sld_body``. See :ref:`sources with SLD <sld_example>` for more information.
 
-You can omit layers if you use :ref:`tagged_wms_source_names`.
+You can omit layers if you use :ref:`tagged_source_names`.
 
 ``wms_opts``
 ^^^^^^^^^^^^
@@ -186,14 +186,14 @@ See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 
   MapProxy checks the SSL server certificates for any ``req.url`` that use HTTPS. You need to supply a file (see) that includes that certificate, otherwise MapProxy will fail to establish the connection. You can set the ``http.ssl_no_cert_check`` options to ``true`` to disable this verification.
 
-.. _tagged_wms_source_names:
+.. _tagged_source_names:
 
 Tagged source names
 ^^^^^^^^^^^^^^^^^^^
 
 .. versionadded:: 1.1.0
 
-MapProxy supports tagged source names for all WMS sources. This allows you to define the layers of a source in the caches or (WMS)-layers configuration.
+MapProxy supports tagged source names for most sources. This allows you to define the layers of a source in the caches or (WMS)-layers configuration.
 
 Instead of referring to a source by the name alone, you can add a list of comma delimited layers: ``sourcename:lyr1,lyr2``. You need to use quotes for tagged source names.
 
@@ -385,6 +385,8 @@ Mapnik
 """"""
 
 .. versionadded:: 1.1.0
+.. versionchanged:: 1.2.0
+  New ``layers`` option and support for :ref:`tagged sources <tagged_source_names>`.
 
 Use the type ``mapnik`` to directly call Mapnik without any WMS service. It uses the Mapnik Python API and you need to have a working Mapnik installation that is accessible by the Python installation that runs MapProxy. A call of ``python -c 'import mapnik'`` should return no error. 
 
@@ -392,6 +394,12 @@ Use the type ``mapnik`` to directly call Mapnik without any WMS service. It uses
 ^^^^^^^^^^^
 
 The filename of you Mapnik XML mapfile.
+
+``layers``
+^^^^^^^^^^
+
+A list of layer names you want to render. MapProxy disables each layer that is not included in this list. It does not reorder the layers and unnamed layers (`Unknown`) are always rendered.
+
 
 Other options
 ^^^^^^^^^^^^^

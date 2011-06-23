@@ -440,21 +440,28 @@ class SourcesCollection(dict):
         if not layers:
             return source
 
-        if source.conf.get('type') not in ('wms', 'mapserver'):
-            raise ConfigurationError("found ':' in non-WMS source name: '%s'."
-                " tagged sources only supported for WMS" % key)
+        if source.conf.get('type') not in ('wms', 'mapserver', 'mapnik'):
+            raise ConfigurationError("found ':' in: '%s'."
+                " tagged sources only supported for WMS/Mapserver/Mapnik" % key)
 
+        uses_req = source.conf.get('type') != 'mapnik'
         source = deepcopy(source)
         
-        supported_layers = source.conf['req'].get('layers', [])
+        if uses_req:
+            supported_layers = source.conf['req'].get('layers', [])
+        else:
+            supported_layers = source.conf.get('layers', [])
         supported_layer_set = SourcesCollection.layer_set(supported_layers)
         layer_set = SourcesCollection.layer_set(layers)
 
         if supported_layer_set and not layer_set.issubset(supported_layer_set):
             raise ConfigurationError('layers (%s) not supported by source (%s)' % (
-                layers, supported_layers))
-
-        source.conf['req']['layers'] = layers
+                layers, ','.join(supported_layer_set)))
+        
+        if uses_req:
+            source.conf['req']['layers'] = layers
+        else:
+            source.conf['layers'] = layers
         return source
 
     def __contains__(self, key):
@@ -729,10 +736,14 @@ class MapnikSourceConfiguration(SourceConfiguration):
         coverage = self.coverage()
         res_range = resolution_range(self.conf)
         
+        layers = self.conf.get('layers', None)
+        if isinstance(layers, basestring):
+            layers = layers.split(',')
+        
         mapfile = self.context.globals.abspath(self.conf['mapfile'])
         from mapproxy.source.mapnik import MapnikSource
-        return MapnikSource(mapfile, image_opts=image_opts, coverage=coverage,
-                         res_range=res_range, lock=lock)
+        return MapnikSource(mapfile, layers=layers, image_opts=image_opts,
+            coverage=coverage, res_range=res_range, lock=lock)
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)

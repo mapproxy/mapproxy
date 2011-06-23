@@ -40,11 +40,12 @@ log = logging.getLogger(__name__)
 
 class MapnikSource(Source):
     supports_meta_tiles = True
-    def __init__(self, mapfile, image_opts=None, coverage=None, res_range=None, lock=None):
+    def __init__(self, mapfile, layers=None, image_opts=None, coverage=None, res_range=None, lock=None):
         Source.__init__(self, image_opts=image_opts)
         self.mapfile = mapfile
         self.coverage = coverage
         self.res_range = res_range
+        self.layers = set(layers) if layers else None
         self.lock = lock
         if self.coverage:
             self.extent = MapExtent(self.coverage.bbox, self.coverage.srs)
@@ -91,6 +92,15 @@ class MapnikSource(Source):
             m.srs = '+init=%s' % str(query.srs.srs_code.lower())
             envelope = mapnik.Envelope(*query.bbox)
             m.zoom_to_box(envelope)
+
+            if self.layers:
+                i = 0
+                for layer in m.layers[:]:
+                    if layer.name != 'Unkown' and layer.name not in self.layers:
+                        del m.layers[i]
+                    else:
+                        i += 1
+            
             img = mapnik.Image(query.size[0], query.size[1])
             mapnik.render(m, img)
             data = img.tostring(str(query.format))
