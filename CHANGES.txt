@@ -1,3 +1,12 @@
+1.1.1 2011-06-26
+
+Fixes:
+- add back transparent option for mapnik/tile sources (in addition
+  to image.transparent)
+- keep alpha channel when handling image.transparent_color
+- fixed combining of multiple WMS layers with transparent_color
+- fixed header parsing for MapServer CGI source
+
 1.1.0 2011-06-01
 
 Other:
