@@ -12,7 +12,7 @@ if platform.python_version_tuple() < ('2', '6'):
 
 setup(
     name='MapProxy',
-    version="1.1.0a",
+    version="1.1.2a",
     description='An accelerating proxy for web map services',
     long_description=open('README.txt').read(),
     author='Oliver Tonnhofer',
