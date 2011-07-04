@@ -286,9 +286,7 @@ class CacheMapLayer(MapLayer):
         if query.tiled_only:
             self._check_tiled(query)
         
-        tiled_image = self._tiled_image(query)
-        result = tiled_image.transform(query.bbox, query.srs, query.size, 
-                                       self.tile_manager.image_opts)
+        result = self._image(query)
         return result
 
     def _check_tiled(self, query):
@@ -297,8 +295,7 @@ class CacheMapLayer(MapLayer):
         if query.size != self.grid.tile_size:
             raise MapError("invalid tile size (use %dx%d)" % self.grid.tile_size)
     
-    
-    def _tiled_image(self, query):
+    def _image(self, query):
         try:
             src_bbox, tile_grid, affected_tile_coords = \
                 self.grid.get_affected_tiles(query.bbox, query.size,
@@ -324,10 +321,17 @@ class CacheMapLayer(MapLayer):
         tile_collection = self.tile_manager.load_tile_coords(affected_tile_coords)
         if tile_collection.empty:
             raise BlankImage()
+        
+        if query.tiled_only:
+            tile = tile_collection[0].source
+            tile.image_opts = self.tile_manager.image_opts
+            return tile
+        
         tile_sources = [tile.source for tile in tile_collection]
-        return TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
+        tiled_image = TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
                           tile_grid=tile_grid, tile_size=self.grid.tile_size)
-    
+        return tiled_image.transform(query.bbox, query.srs, query.size, 
+                                       self.tile_manager.image_opts)
 
 class DirectInfoLayer(InfoLayer):
     def __init__(self, source):

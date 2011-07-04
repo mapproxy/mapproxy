@@ -34,7 +34,7 @@ def load_yaml(doc):
     Load yaml from file object or string.
     """
     try:
-        if yaml.__with_libyaml__:
+        if getattr(yaml, '__with_libyaml__', False):
             return yaml.load(doc, Loader=yaml.CLoader)
         else:
             return yaml.load(doc)
