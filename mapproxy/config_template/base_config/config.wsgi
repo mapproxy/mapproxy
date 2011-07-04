@@ -5,4 +5,4 @@
 # fileConfig('./log.ini', {'here': os.path.dirname(__file__)})
 
 from mapproxy.wsgiapp import make_wsgi_app
-application = make_wsgi_app('%s')
+application = make_wsgi_app(r'%s')
