@@ -1,13 +1,17 @@
 1.1.2 2011-07-06
+~~~~~~~~~~~~~~~~
 
 Fixes:
+
 - compatibility with older PyYAML versions
 - do not try to transform tiled=true requests
 - escape Windows path in wsgi-app template
 
 1.1.1 2011-06-26
+~~~~~~~~~~~~~~~~
 
 Fixes:
+
 - add back transparent option for mapnik/tile sources (in addition
   to image.transparent)
 - keep alpha channel when handling image.transparent_color
@@ -15,32 +19,42 @@ Fixes:
 - fixed header parsing for MapServer CGI source
 
 1.1.0 2011-06-01
+~~~~~~~~~~~~~~~~
 
 Other:
+
 - Changed license to Apache Software License 2.0
 
 Fixes:
+
 - fixed image quantization for non-png images with
   globals.image.paletted=True
 
 1.1.0rc1 2011-05-26
+~~~~~~~~~~~~~~~~~~~
 
 Improvements:
+
 - add template to build MapProxy .deb package
 - font dir is now configurable with globals.image.font_dir
 
 Fixes:
+
 - fixed errors in config spec
 
 1.1.0b2 2011-05-19
+~~~~~~~~~~~~~~~~~~
 
 Improvements:
+
 - unified logging
 - verify mapproxy/seed configurations
 
 1.1.0b1 2011-05-12
+~~~~~~~~~~~~~~~~~~
 
 Features:
+
 - support for tagged WMS source names: wms:lyr1,lyr2
 - new Mapserver source type
 - new Mapnik source type
@@ -52,6 +66,7 @@ Features:
 - support for bbox parameter for tile sources
 
 Improvements:
+
 - tweaked watermarks on transparent images
 - [mapproxy-seed] initialize MapProxy logging before seeding
 - authentication callbacks get environ and qusery_extent
@@ -62,6 +77,7 @@ Improvements:
 - support for integer images (e.g. 16bit grayscale PNG)
 
 Fixes:
+
 - fixes demo on Windows (loaded static content from wrong path)
 - fixed one-off error with grid.max_res: last resolution is now < max_res
   e.g. min_res: 1000 max_res: 300 -> now [1000, 500], before [1000, 500, 250]
@@ -70,38 +86,48 @@ Fixes:
 - do not add attribution to WMS-C responses
 
 Other:
+
 - removed Paste dependencies
 - removed deprecated mapproxy-cleanup tool, feature included in mapproxy-seed
 
 1.0.0 2011-03-03
+~~~~~~~~~~~~~~~~
 
 - no changes since 1.0.0rc1
 
 1.0.0rc1 2011-02-25
+~~~~~~~~~~~~~~~~~~~
 
 Improvements:
+
 - handle epsg:102100 and 102113 as equivalents to 900913/3857
 
 Fixes:
+
 - fixed attribution placement and padding
 
 1.0.0b2 2011-02-18
+~~~~~~~~~~~~~~~~~~
 
 Improvements:
+
 - [mapproxy-seed] support for configuration includes in mapproxy.yaml (base)
 - [mapproxy-seed] updated config templates
 - KML: reduce number of required KML requests
 - KML: improve superoverlays with res_factor != 2
 
 Fixes:
+
 - [mapproxy-seed] apply globals from mapproxy.yaml during seed
 - fix tile_lock cleanup
 - merging of cache sources with only tile sources failed
 
 
 1.0.0b1 2011-02-09
+~~~~~~~~~~~~~~~~~~
 
 Features:
+
 - [mapproxy-seed] separated seed and cleanup tasks; call tasks independently 
 - XSL transformation of WMS FeatureInfo responses
 - content aware merging of multiple XML/HTML FeatureInfo repsonses
@@ -121,6 +147,7 @@ Features:
   options, headers, timeout)
 
 Improvements:
+
 - [mapproxy-seed] enhanced CLI (summary and interactive mode)
 - combine requests to the same WMS URL
 - support for local SLD files (sld: file://sld.xml)
@@ -132,30 +159,38 @@ Improvements:
   with tilted views
 
 Fixes:
+
 - rounding errors in meta-tile size calculation for meta_buffer=0
 - work with upcomming PIL 1.2 release
 
 0.9.1 2011-01-10
+~~~~~~~~~~~~~~~~
 
 Fixes:
+
 - fixed regression in mapproxy_seed
 - resolve direct WMS request issues with equal but not same
   SRS (e.g. 900913/3857)
 
 0.9.1rc2 2010-12-20
+~~~~~~~~~~~~~~~~~~~
 
 Improvements:
+
 - Allow nested layer configurations (layer groups/trees)
 - Support custom path to libproj/libgdal with MAPPROXY_LIB_PATH environ
 - Look for xxx if libxxx returned no results.
 - Limit lat/lon bbox in WMS capabilities to +-89.999999 north/south values
 
 Fixes:
+
 - bug fix for threshold_res that overlap with the stretch_factor
 
 0.9.1rc1 2010-12-07
+~~~~~~~~~~~~~~~~~~~
 
 Features:
+
 - WMS 1.1.0 support
 - Coverage support (limit sources to areas via WKT/OGC polygons)
 - new base option to reuse configurations
@@ -169,6 +204,7 @@ Features:
 - SLD support for WMS sources
 
 Improvements:
+
 - concurrent_requests limit is now per unique hostname and not per URL
 - concurrent_requests can be set with globals.http.concurrent_requests
 - font_size of watermark is now configurable
@@ -182,6 +218,7 @@ Improvements:
 - support for http.client_timeout for each WMS source (Python >=2.6)
 
 Fixes:
+
 - removed start up error on systems where proj4 misses EPSG:3857
 - fixed color error for transparent PNG8 files
 - fixed links in demo service when URL is not /demo/
@@ -190,10 +227,12 @@ Fixes:
 - tests work without Shapely
 
 0.9.0 2010-10-18
+~~~~~~~~~~~~~~~~
 
 - minor bug fixes
 
 0.9.0rc1 2010-10-13
+~~~~~~~~~~~~~~~~~~~
 
 - new OpenLayers-based '/demo' service that shows all configured WMS/TMS layers
 - display welcome message at '/' instead of 'not found' error
@@ -202,11 +241,13 @@ Fixes:
 - updated tempita to 0.5
 
 0.9.0b2 2010-09-20
+~~~~~~~~~~~~~~~~~~
 
 - new minimize_meta_requests option
 - moved python implementation dependent code to mapproxy.platform module
 
 0.9.0b1 2010-08-30
+~~~~~~~~~~~~~~~~~~
 
 - Improved support for EPSG:3857
 - Source requests now never go beyond the grid BBOX even with meta_buffers/meta_tiles
@@ -222,6 +263,7 @@ Fixes:
 - minor bug fixes
 
 0.9.0a1 2010-07-27
+~~~~~~~~~~~~~~~~~~
 
 - new configuration format (merged proxy.yaml and service.yaml)
 - refactoring of the caching (sources and layers)
@@ -233,6 +275,7 @@ Fixes:
 - more options to define tile grids (min_res, max_res, etc.)
 
 0.8.4 2010-08-01
+~~~~~~~~~~~~~~~~
 
 - Extra newline at the end of all templates. Some deployment setups
   removed the last characters.
@@ -240,11 +283,13 @@ Fixes:
 - New concurrent_requests option to limit requests for each source WMS server.
 
 0.8.3 2010-06-01
+~~~~~~~~~~~~~~~~
 
 - Some bug fixes regarding feature info
 - The configured resolutions are sorted
 
 0.8.3rc2 2010-05-25
+~~~~~~~~~~~~~~~~~~~
 
 - HTTPS support with certificate verification and HTTP Basic-
   Authentication.
@@ -259,6 +304,7 @@ Fixes:
   reproject WMS on-the-fly.
 
 0.8.3rc1 2010-04-30
+~~~~~~~~~~~~~~~~~~~
 
 - new improved seed tool
   
@@ -277,10 +323,12 @@ Fixes:
   for layers with smaler BBOXs
 
 0.8.2 2010-04-13
+~~~~~~~~~~~~~~~~
 
 - no changes since 0.8.2rc1
 
 0.8.2rc1 2010-04-01
+~~~~~~~~~~~~~~~~~~~
 
 - add fallback if PIL is missing TrueType support
 - use zc.lockfile for locking
@@ -291,10 +339,12 @@ Fixes:
   - do not enable ConcurrentLogHandler by default
 
 0.8.1 2010-03-25
+~~~~~~~~~~~~~~~~
 
 - improved performance for simple image transformation
   (same srs and same resolution) #4
 
 0.8.0 2010-03-22
+~~~~~~~~~~~~~~~~
 
 - initial release
