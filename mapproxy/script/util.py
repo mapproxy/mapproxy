@@ -22,6 +22,7 @@ import sys
 import textwrap
 
 from mapproxy.version import version
+from mapproxy.script.scales import scales_command
 
 def setup_logging():
     import logging
@@ -219,6 +220,10 @@ commands = {
     'create': {
         'func': create_command,
         'help': 'Create example configurations.'
+    },
+    'scales': {
+        'func': scales_command,
+        'help': 'Convert between scales and resolutions.'
     },
 }
 
