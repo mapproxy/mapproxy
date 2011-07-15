@@ -1048,6 +1048,7 @@ class LayerConfiguration(ConfigurationBase):
                 md['name_path'] = (self.conf['name'], grid.srs.srs_code.replace(':', '').upper())
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
                 md['format'] = self.context.caches[cache_name].image_opts().format
+                md['extent'] = extent
             
                 tile_layers.append(TileLayer(self.conf['name'], self.conf['title'],
                                              md, cache_source))

@@ -5,6 +5,11 @@ import textwrap
 wrapper = textwrap.TextWrapper(replace_whitespace=False, width=90,
                                break_long_words=False)
 
+def approx_bbox(layer, srs):
+    from mapproxy.srs import SRS
+    extent = layer.md['extent'].bbox_for(SRS(srs))
+    return ', '.join(map(lambda x: '%.2f' % x, extent))
+
 menu_title= "TMS %s %s"%(layer.name, srs)
 }}
 {{def jscript}}
@@ -31,7 +36,7 @@ function init(){
     });
     
     map.addLayer(layer)
-    map.zoomToMaxExtent(); 
+    map.zoomToExtent(new OpenLayers.Bounds({{approx_bbox(layer, srs)}}));
 }
 </script>     
 {{enddef}}
