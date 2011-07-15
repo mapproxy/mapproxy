@@ -893,7 +893,12 @@ class MetaGrid(object):
         meta_size = self._meta_size(level)
         
         xs = range(x0, x1+1, meta_size[0])
-        ys = range(y1, y0-1, -1 * meta_size[1])
+        if self.grid.flipped_y_axis:
+            y0, y1 = y1, y0
+            ys = range(y0, y1+1, meta_size[1])
+        else:
+            ys = range(y1, y0-1, -meta_size[1])
+            
         ll = (xs[0], ys[-1], level)
         ur = (xs[-1], ys[0], level)
         # add meta_size to get full affected bbox
