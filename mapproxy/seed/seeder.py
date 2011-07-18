@@ -15,6 +15,7 @@
 
 from __future__ import with_statement, division
 import sys
+import time
 
 from mapproxy.config import base_config
 from mapproxy.grid import MetaGrid
@@ -47,36 +48,46 @@ class TileWorkerPool(object):
     Manages multiple TileWorker.
     """
     def __init__(self, task, worker_class, size=2, dry_run=False):
-        self.tiles_queue = queue_class(32)
+        self.tiles_queue = queue_class(size)
         self.task = task
         self.dry_run = dry_run
         self.procs = []
+        self.lastlog = time.time()
         conf = base_config()
         for _ in xrange(size):
-            worker = worker_class(self.task, self.tiles_queue, conf, dry_run=dry_run)
+            worker = worker_class(self.task, self.tiles_queue, conf)
             worker.start()
             self.procs.append(worker)
     
     def process(self, tiles, progress):
-        self.tiles_queue.put((tiles, progress))
+        if not self.dry_run:
+            self.tiles_queue.put(tiles)
+        
+        if (self.lastlog + .1) < time.time():
+            # log progress at most every 100ms
+            print '[%s] %6.2f%% %s \tETA: %s\r' % (
+                timestamp(), progress[1]*100, progress[0],
+                progress[2]
+            ),
+            sys.stdout.flush()
+            self.lastlog = time.time()
     
     def stop(self):
         for _ in xrange(len(self.procs)):
-            self.tiles_queue.put((None, None))
+            self.tiles_queue.put(None)
         
         for proc in self.procs:
             proc.join()
 
 
 class TileWorker(proc_class):
-    def __init__(self, task, tiles_queue, conf, dry_run=False):
+    def __init__(self, task, tiles_queue, conf):
         proc_class.__init__(self)
         proc_class.daemon = True
         self.task = task
         self.tile_mgr = task.tile_manager
         self.tiles_queue = tiles_queue
         self.conf = conf
-        self.dry_run = dry_run
     
     def run(self):
         with local_base_config(self.conf):
@@ -88,31 +99,19 @@ class TileWorker(proc_class):
 class TileSeedWorker(TileWorker):
     def work_loop(self):
         while True:
-            tiles, progress = self.tiles_queue.get()
+            tiles = self.tiles_queue.get()
             if tiles is None:
                 return
-            print '[%s] %6.2f%% %s \tETA: %s\r' % (
-                timestamp(), progress[1]*100, progress[0],
-                progress[2]
-            ),
-            sys.stdout.flush()
-            if not self.dry_run:
-                exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
-                            exceptions=(SourceError, IOError))
+            exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
+                        exceptions=(SourceError, IOError))
 
 class TileCleanupWorker(TileWorker):
     def work_loop(self):
         while True:
-            tiles, progress = self.tiles_queue.get()
+            tiles = self.tiles_queue.get()
             if tiles is None:
                 return
-            print '[%s] %6.2f%% %s \tETA: %s\r' % (
-                timestamp(), progress[1]*100, progress[0],
-                progress[2]
-            ),
-            sys.stdout.flush()
-            if not self.dry_run:
-                self.tile_mgr.remove_tile_coords(tiles)
+            self.tile_mgr.remove_tile_coords(tiles)
                 
 class TileWalker(object):
     def __init__(self, task, worker_pool, handle_stale=False, handle_uncached=False,
