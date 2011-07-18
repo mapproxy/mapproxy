@@ -78,6 +78,7 @@ source_commons = combined(
 
 cache_types = {
     'file': {
+        'directory_layout': str()
     },
     'mbtiles': {
         'filename': str()

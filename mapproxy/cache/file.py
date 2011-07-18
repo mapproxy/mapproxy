@@ -28,7 +28,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
     """
     This class is responsible to store and load the actual tile data.
     """
-    def __init__(self, cache_dir, file_ext, lock_dir=None,
+    def __init__(self, cache_dir, file_ext, lock_dir=None, directory_layout='tc',
                  link_single_color_images=False, lock_timeout=60.0):
         """
         :param cache_dir: the path where the tile will be stored
@@ -44,7 +44,14 @@ class FileCache(TileCacheBase, FileBasedLocking):
         self.file_ext = file_ext
         self._lock_cache_id = None
         self.link_single_color_images = link_single_color_images
-    
+        
+        if directory_layout == 'tc':
+            self.tile_location = self._tile_location_tc
+        elif directory_layout == 'tms':
+            self.tile_location = self._tile_location_tms
+        else:
+            raise ValueError('unknown directory_layout "%s"' % directory_layout)
+        
     def level_location(self, level):
         """
         Return the path where all tiles for `level` will be stored.
@@ -58,7 +65,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
         else:
             return os.path.join(self.cache_dir, "%02d" % level)
     
-    def tile_location(self, tile, create_dir=False):
+    def _tile_location_tc(self, tile, create_dir=False):
         """
         Return the location of the `tile`. Caches the result as ``location``
         property of the `tile`.
@@ -82,6 +89,30 @@ class FileCache(TileCacheBase, FileBasedLocking):
                      "%03d" % (int(y / 1000) % 1000),
                      "%03d.%s" % (int(y) % 1000, self.file_ext))
             tile.location = os.path.join(*parts)
+        if create_dir:
+            ensure_directory(tile.location)
+        return tile.location
+    
+    def _tile_location_tms(self, tile, create_dir=False):
+        """
+        Return the location of the `tile`. Caches the result as ``location``
+        property of the `tile`.
+        
+        :param tile: the tile object
+        :param create_dir: if True, create all necessary directories
+        :return: the full filename of the tile
+        
+        >>> from mapproxy.cache.tile import Tile
+        >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png')
+        >>> c.tile_location(Tile((3, 4, 2))).replace('\\\\', '/')
+        '/tmp/cache/02/000/000/003/000/000/004.png'
+        """
+        if tile.location is None:
+            x, y, z = tile.coord
+            tile.location = os.path.join(
+                self.level_location(str(z)),
+                str(x), str(y) + '.' + self.file_ext
+            )
         if create_dir:
             ensure_directory(tile.location)
         return tile.location
