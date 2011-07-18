@@ -178,7 +178,8 @@ class CreateCommand(object):
         template_dir = self.template_dir()
         app_template = open(os.path.join(template_dir, 'config.wsgi')).read()
         with open(app_filename, 'w') as f:
-            f.write(app_template % (mapproxy_conf, ))
+            f.write(app_template % {'mapproxy_conf': mapproxy_conf, 
+                'here': os.path.dirname(mapproxy_conf)})
         
         return 0
     
