@@ -78,7 +78,8 @@ class TestWMTS(SystemTest):
         self.common_tile_req.params['format'] = 'image/png'
         self.common_tile_req.tile = (0, 0, '01')
         serv = MockServ(port=42423)
-        serv.expects('/tiles/01/000/000/000/000/000/000.png')
+        # source is ll, cache/service ul
+        serv.expects('/tiles/01/000/000/000/000/000/001.png')
         serv.returns(create_tmp_image((256, 256)))
         with serv:
             resp = self.app.get(str(self.common_tile_req), status=200)

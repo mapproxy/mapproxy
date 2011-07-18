@@ -183,7 +183,7 @@ class TileLayer(object):
             raise RequestError('The requested tile is outside the bounding box'
                                ' of the tile map.', request=tile_request,
                                code='TileOutOfRange')
-        if tile_request.origin == 'nw' and self.grid.origin not in ('ul', 'nw', None):
+        if tile_request.origin == 'nw' and self.grid.origin not in ('ul', 'nw'):
             tile_coord = self.grid.flip_tile_coord(tile_coord)
         elif tile_request.origin == 'sw' and self.grid.origin not in ('ll', 'sw', None):
             tile_coord = self.grid.flip_tile_coord(tile_coord)
