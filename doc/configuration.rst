@@ -582,7 +582,7 @@ Here you can define some options that affect the way MapProxy generates image re
 
 .. _axis_order:
 
-``axis_order_ne`` and ``axis_order_ne``
+``axis_order_ne`` and ``axis_order_en``
   The axis ordering defines in which order coordinates are given, i.e. lon/lat or lat/lon.
   The ordering is dependent to the SRS. Most clients and servers did not respected the
   ordering and everyone used lon/lat ordering. With the WMS 1.3.0 specification the OGC
