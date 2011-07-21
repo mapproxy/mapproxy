@@ -52,9 +52,14 @@ image_opts = {
 
 http_opts = {
     'method': str(),
-    'timeout': number(),
+    'client_timeout': number(),
     'ssl_no_cert_checks': bool(),
+    'ssl_ca_certs': str(),
+    'headers': {
+        anything(): str()
+    },
 }
+
 mapserver_opts = {
     'binary': str(),
     'working_dir': str(),
@@ -89,9 +94,7 @@ mapproxy_yaml_spec = {
             },
             'font_dir': str(),
         },
-        'http': {
-            'timeout': number(),
-        },
+        'http': http_opts,
         'cache': {
             'base_dir': str(),
             'lock_dir': str(),
@@ -107,6 +110,9 @@ mapproxy_yaml_spec = {
           'axis_order_ne': [str()],
           'axis_order_en': [str()],
           'proj_data_dir': str(),
+        },
+        'tiles': {
+            'expires_hours': number(),
         },
         'mapserver': mapserver_opts,
     },
