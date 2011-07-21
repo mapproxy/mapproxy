@@ -1,3 +1,9 @@
+mapproxy (1.1.2) unstable; urgency=low
+
+  * First debian release.
+
+ -- Bjoern Schilberg <bjoern.schilberg@intevation.de>  Fri, 24 Jun 2011 09:49:44 +0200
+
 mapproxy (1.1.0) unstable; urgency=low
 
   * Initial release of the debian-files
