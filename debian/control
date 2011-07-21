@@ -8,7 +8,7 @@ Standards-Version: 3.8.4
 Package: mapproxy
 Architecture: all
 Homepage: http://www.mapproxy.org
-Depends: ${misc:Depends}, ${python:Depends},  python-imaging, python-yaml, libproj0, ttf-dejavu, ttf-dejavu-extra
+Depends: ${misc:Depends}, ${python:Depends}, python-pkg-resources, python-setuptools, python-imaging, python-yaml, libproj0, ttf-dejavu, ttf-dejavu-extra
 Suggests: python-lxml, python-shapely, python-pastedeploy, libgdal1
 Description: This programm MapProxy is an open source proxy for geospatial data. It caches,
  accelerates and transforms data from existing map services and serves any
