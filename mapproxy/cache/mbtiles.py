@@ -20,7 +20,7 @@ import threading
 from cStringIO import StringIO
 
 from mapproxy.image import ImageSource
-from mapproxy.cache.base import TileCacheBase, FileBasedLocking
+from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer
 from mapproxy.util.times import parse_httpdate
 from mapproxy.util.lock import FileLock
 
@@ -82,7 +82,7 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             return False
     
     def store_tile(self, tile):
-        with self.tile_buffer(tile) as buf:
+        with tile_buffer(tile) as buf:
             content = buffer(buf.read())
             x, y, level = tile.coord
             cursor = self.db.cursor()

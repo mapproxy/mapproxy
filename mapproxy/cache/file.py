@@ -19,7 +19,7 @@ import errno
 
 from mapproxy.util import ensure_directory
 from mapproxy.image import ImageSource, is_single_color_image
-from mapproxy.cache.base import TileCacheBase, FileBasedLocking
+from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer
 
 import logging
 log = logging.getLogger('mapproxy.cache.file')
@@ -199,7 +199,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
         if os.path.islink(location):
             os.unlink(location)
             
-        with self.tile_buffer(tile) as buf:
+        with tile_buffer(tile) as buf:
             with open(location, 'wb') as f:
                 log.debug('writing %r to %s' % (tile.coord, location))
                 f.write(buf.read())

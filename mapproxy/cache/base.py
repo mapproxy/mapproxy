@@ -21,6 +21,16 @@ from contextlib import contextmanager
 
 from mapproxy.util.lock import FileLock, cleanup_lockdir
 
+@contextmanager
+def tile_buffer(tile):
+    data = tile.source.as_buffer(seekable=True)
+    data.seek(0)
+    yield data
+    tile.size = data.tell()
+    tile.timestamp = time.time()
+    data.seek(0)
+    tile.stored = True
+
 class TileCacheBase(object):
     """
     Base implementation of a tile cache.
@@ -66,15 +76,6 @@ class TileCacheBase(object):
         """
         raise NotImplementedError()
     
-    @contextmanager
-    def tile_buffer(self, tile):
-        data = tile.source.as_buffer(seekable=True)
-        data.seek(0)
-        yield data
-        tile.size = data.tell()
-        tile.timestamp = time.time()
-        data.seek(0)
-        tile.stored = True
 
 class FileBasedLocking(object):
     """
