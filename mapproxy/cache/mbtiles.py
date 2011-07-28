@@ -71,6 +71,9 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
     def is_cached(self, tile):
         if tile.coord is None:
             return True
+        if tile.source:
+            return True
+        
         cur = self.db.cursor()
         cur.execute('''SELECT 1 FROM tiles
             WHERE tile_column = ? AND
@@ -82,6 +85,8 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             return False
     
     def store_tile(self, tile):
+        if tile.stored:
+            return True
         with tile_buffer(tile) as buf:
             content = buffer(buf.read())
             x, y, level = tile.coord
@@ -117,6 +122,9 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
         content = cur.fetchone()
         if content:
             tile.source = ImageSource(StringIO(content[0]))
+            return True
+        else:
+            return False
     
     def load_tiles_(self, tiles, with_metadata=False):
         #associate the right tiles with the cursor
@@ -144,3 +152,12 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             tile.source = ImageSource(StringIO(data), size=tile.size)
         cursor.close()
         return tiles
+    
+    def remove_tile(self, tile):
+        cursor = self.db.cursor()
+        cursor.execute(
+            "DELETE FROM tiles WHERE (zoom_level = ? AND tile_column = ? AND tile_row = ?)",
+            tile.coord)
+        if cursor.rowcount:
+            return True
+        return False
