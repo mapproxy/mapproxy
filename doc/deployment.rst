@@ -350,8 +350,6 @@ The examples above are all minimal and you should read the documentation of your
 .. _eventlet: http://pypi.python.org/pypi/eventlet
 .. _Apache: http://httpd.apache.org/
 
-.. index:: MultiMapProxy
-.. _multimapproxy:
 
 Logging
 -------
@@ -397,6 +395,9 @@ The example script created with ``mapproxy-util create -t wsgi-app`` already con
 
   mapproxy-util create -t log-ini log.ini
 
+
+.. index:: MultiMapProxy
+.. _multimapproxy:
 
 MultiMapProxy
 -------------
