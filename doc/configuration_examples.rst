@@ -376,6 +376,30 @@ You can disable the certificate verification if you you don't need it.
       layers: securelayer
   
 
+Access sources through HTTP proxy
+=================================
+
+MapProxy can use an HTTP proxy to make requests to your sources, if your system does not allow direct access to the source. You need to set the ``http_proxy`` environment variable to the proxy URL.
+
+On Linux/Unix::
+
+  $ export http_proxy="http://example.com:3128"
+  $ mapproxy-util serve-develop mapproxy.yaml
+
+On Windows::
+
+  c:\> set http_proxy="http://example.com:3128"
+  c:\> mapproxy-util serve-develop mapproxy.yaml
+
+
+You can also set this in your :ref:`server script <server_script>`::
+
+  import os
+  os.environ["http_proxy"] = "http://example.com:3128"
+
+Add a username and password to the URL if your HTTP proxy requires authentication. For example ``http://username:password@example.com:3128``.
+
+
 .. _paster_urlmap:
 
 Serve multiple MapProxy instances
