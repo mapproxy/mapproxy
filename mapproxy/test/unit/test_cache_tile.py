@@ -26,6 +26,7 @@ from PIL import Image
 
 from mapproxy.cache.tile import Tile
 from mapproxy.cache.file import FileCache
+from mapproxy.cache.mbtiles import MBTilesCache
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.test.image import create_tmp_image_buf, is_png
@@ -37,6 +38,13 @@ def timestamp_is_now(timestamp, delta=5):
     return abs(timestamp - time.time()) <= delta
 
 class TileCacheTestBase(object):
+    def setup(self):
+        self.cache_dir = tempfile.mkdtemp()
+    
+    def teardown(self):
+        if hasattr(self, 'cache_dir') and os.path.exists(self.cache_dir):
+            shutil.rmtree(self.cache_dir)
+
     def create_tile(self, coord=(0, 0, 0)):
         return Tile(coord,
             ImageSource(tile_image,
@@ -51,7 +59,7 @@ class TileCacheTestBase(object):
         assert not self.cache.is_cached(Tile((0, 0, 0)))
     
     def test_is_cached_hit(self):
-        tile = Tile((0, 0, 0))
+        tile = self.create_tile()
         self.create_cached_tile(tile)
         assert self.cache.is_cached(Tile((0, 0, 0)))
     
@@ -65,8 +73,9 @@ class TileCacheTestBase(object):
         assert tile.is_missing()
     
     def test_load_tile_cached(self):
-        tile = Tile((0, 0, 0))
+        tile = self.create_tile()
         self.create_cached_tile(tile)
+        tile = Tile((0, 0, 0))
         assert self.cache.load_tile(tile) == True
         assert not tile.is_missing()
 
@@ -90,8 +99,10 @@ class TileCacheTestBase(object):
         assert tile.source is None
         assert self.cache.load_tile(tile, with_metadata=True)
         assert tile.source is not None
-        assert timestamp_is_now(tile.timestamp, delta=5)
-        assert tile.size == size
+        if tile.timestamp:
+            assert timestamp_is_now(tile.timestamp, delta=5)
+        if tile.size:
+            assert tile.size == size
         
     def test_overwrite_tile(self):
         tile = self.create_tile((5, 12, 2))
@@ -115,7 +126,7 @@ class TileCacheTestBase(object):
     def test_store_tile_already_stored(self):
         # tile object is marked as stored, do not save
         # (used for disable_storage)
-        tile = Tile((0, 0, 0), StringIO('foo'))
+        tile = Tile((0, 0, 0), ImageSource(StringIO('foo')))
         tile.stored = True
         self.cache.store_tile(tile)
         
@@ -125,17 +136,19 @@ class TileCacheTestBase(object):
         assert not self.cache.is_cached(tile)
     
     def test_remove(self):
-        tile = Tile((0, 0, 0))
+        tile = self.create_tile((0, 0, 0))
         self.create_cached_tile(tile)
         assert self.cache.is_cached(Tile((0, 0, 0)))
         
-        self.cache.remove_tile(Tile((0, 0, 0)))
+        self.cache.remove_tile(self.create_tile())
         assert not self.cache.is_cached(Tile((0, 0, 0)))
     
+    def create_cached_tile(self, tile):
+        self.cache.store_tile(tile)
     
 class TestFileTileCache(TileCacheTestBase):
     def setup(self):
-        self.cache_dir = tempfile.mkdtemp()
+        TileCacheTestBase.setup(self)
         self.cache = FileCache(self.cache_dir, 'png')
     
     def test_store_tile(self):
@@ -177,13 +190,14 @@ class TestFileTileCache(TileCacheTestBase):
         assert os.path.islink(loc)
         assert os.path.realpath(loc).endswith('ff0105ff.png')
         assert is_png(open(loc, 'rb'))
-    
-    
-    def teardown(self):
-        shutil.rmtree(self.cache_dir)
 
     def create_cached_tile(self, tile):
         loc = self.cache.tile_location(tile, create_dir=True)
         with open(loc, 'w') as f:
             f.write('foo')
+
+class TestMBTileCache(TileCacheTestBase):
+    def setup(self):
+        TileCacheTestBase.setup(self)
+        self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'))
         
