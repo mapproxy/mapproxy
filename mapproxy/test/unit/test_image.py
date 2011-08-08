@@ -21,7 +21,7 @@ from mapproxy.platform.image import Image, ImageDraw
 from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image, merge_images
 from mapproxy.image import _make_transparent as make_transparent
 from mapproxy.image.opts import ImageOptions
-from mapproxy.image.tile import TileMerger
+from mapproxy.image.tile import TileMerger, TileSplitter
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image_file, check_format, create_debug_img
 from mapproxy.srs import SRS
@@ -374,4 +374,40 @@ class TestMakeTransparent(object):
         colors = sorted(img.getcolors(), reverse=True)
         eq_(colors, [(1550, (130, 140, 120, 100)), (900, (130, 150, 120, 0)),
             (25, (130, 150, 120, 255)), (25, (130, 100, 120, 0))])
-    
+
+
+class TestTileSplitter(object):
+    def test_background_larger_crop(self):
+        img = ImageSource(Image.new('RGB', (356, 266), (130, 140, 120)))
+        img_opts = ImageOptions('RGB')
+        splitter = TileSplitter(img, img_opts)
+        
+        tile = splitter.get_tile((0, 0), (256, 256))
+        
+        eq_(tile.size, (256, 256))
+        colors = tile.as_image().getcolors()
+        eq_(colors, [(256*256, (130, 140, 120))])
+        
+        tile = splitter.get_tile((256, 256), (256, 256))
+        
+        eq_(tile.size, (256, 256))
+        colors = tile.as_image().getcolors()
+        eq_(sorted(colors), [(10*100, (130, 140, 120)), (256*256-10*100, (255, 255, 255))])
+        
+    def test_background_larger_crop_with_transparent(self):
+        img = ImageSource(Image.new('RGBA', (356, 266), (130, 140, 120, 255)))
+        img_opts = ImageOptions('RGBA', transparent=True)
+        splitter = TileSplitter(img, img_opts)
+        
+        tile = splitter.get_tile((0, 0), (256, 256))
+        
+        eq_(tile.size, (256, 256))
+        colors = tile.as_image().getcolors()
+        eq_(colors, [(256*256, (130, 140, 120, 255))])
+        
+        tile = splitter.get_tile((256, 256), (256, 256))
+        
+        eq_(tile.size, (256, 256))
+        colors = tile.as_image().getcolors()
+        eq_(sorted(colors), [(10*100, (130, 140, 120, 255)), (256*256-10*100, (255, 255, 255, 0))])
+   

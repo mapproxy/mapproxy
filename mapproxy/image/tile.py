@@ -92,7 +92,7 @@ class TileSplitter(object):
     def __init__(self, meta_tile, image_opts):
         self.meta_img = meta_tile.as_image()
         self.image_opts = image_opts
-    
+
     def get_tile(self, crop_coord, tile_size):
         """
         Return the cropped tile.
@@ -104,7 +104,19 @@ class TileSplitter(object):
         maxx = minx + tile_size[0]
         maxy = miny + tile_size[1]
         
-        crop = self.meta_img.crop((minx, miny, maxx, maxy))
+        if (minx < 0 or miny < 0 or maxx > self.meta_img.size[0]
+            or maxy > self.meta_img.size[1]):
+
+            crop = self.meta_img.crop((
+                max(minx, 0),
+                max(miny, 0),
+                min(maxx, self.meta_img.size[0]),
+                min(maxy, self.meta_img.size[1])))
+            result = create_image(tile_size, self.image_opts)
+            result.paste(crop, (0, 0))
+            crop = result
+        else:
+            crop = self.meta_img.crop((minx, miny, maxx, maxy))
         return ImageSource(crop, size=tile_size, image_opts=self.image_opts)
     
 
