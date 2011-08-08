@@ -113,7 +113,7 @@ class TileSplitter(object):
                 min(maxx, self.meta_img.size[0]),
                 min(maxy, self.meta_img.size[1])))
             result = create_image(tile_size, self.image_opts)
-            result.paste(crop, (0, 0))
+            result.paste(crop, (abs(min(minx, 0)), abs(min(miny, 0))))
             crop = result
         else:
             crop = self.meta_img.crop((minx, miny, maxx, maxy))
