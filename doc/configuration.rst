@@ -816,7 +816,10 @@ Scale vs. resolution
 
 Scale is the ratio of a distance on a map and the corresponding distance on the ground. This implies that the map distance and the ground distance are measured in the same unit. For MapProxy a `map` is just a collection of pixels and the pixels do not have any size/dimension. They do correspond to a ground size but the size on the `map` is depended of the physical output format. MapProxy can thus only work with resolutions (pixel per ground unit) and not scales.
 
-This applies to all servers and the OGC WMS standard as well. Some neglect this fact and assume a fixed pixel dimension (like 72dpi), the OCG WMS 1.3.0 standard uses a pixel size of 0.28 mm/px (around 96dpi). But you need to understand that a `scale` will differ if you print a map (200, 300 or more dpi) or if you show it on a computer display (typical 90-120 dpi, but there are mobile devices with more than 300 dpi).
+This applies to all servers and the OGC WMS standard as well. Some neglect this fact and assume a fixed pixel dimension (like 72dpi), the OCG WMS 1.3.0 standard uses a pixel size of 0.28 mm/px (around 91dpi). But you need to understand that a `scale` will differ if you print a map (200, 300 or more dpi) or if you show it on a computer display (typical 90-120 dpi, but there are mobile devices with more than 300 dpi).
+
+You can convert between scales and resolutions with the :ref:`mapproxy-util scales tool<mapproxy_util_scales>`.
+
 
 MapProxy will use the OCG value (0.28mm/px) if it's necessary to use a scale value (e.g. MinScaleDenominator in WMS 1.3.0 capabilities), but you should always use resolutions within MapProxy.
 
