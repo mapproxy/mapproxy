@@ -91,23 +91,9 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             content = buffer(buf.read())
             x, y, level = tile.coord
             cursor = self.db.cursor()
-            stmt = "INSERT INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
-            try:
-                cursor.execute(stmt, (level, x, y, buffer(content)))
-                self.db.commit()
-            except (sqlite3.IntegrityError, sqlite3.OperationalError), e:
-                #tile is already present, updating data
-                stmt = """UPDATE tiles SET tile_data = ?
-                    WHERE tile_column = ? AND
-                          tile_row = ? AND
-                          zoom_level = ?"""
-                try:
-                    cursor.execute(stmt, (buffer(content), x, y, level))
-                    self.db.commit()
-                except sqlite3.OperationalError, e:
-                    #database is locked
-                    print e
-                    return False
+            stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
+            cursor.execute(stmt, (level, x, y, buffer(content)))
+            self.db.commit()
             return True
     
     def load_tile(self, tile, with_metadata=False):
@@ -126,7 +112,7 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
         else:
             return False
     
-    def load_tiles_(self, tiles, with_metadata=False):
+    def load_tiles(self, tiles, with_metadata=False):
         #associate the right tiles with the cursor
         tile_dict = {}
         coords = []
