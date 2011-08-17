@@ -190,7 +190,7 @@ Available options are:
 ``sources``
 """""""""""
 
-A list with one or more source names. The sources needs to be defined in the ``sources`` configuration. This parameter is `required`. MapProxy will merge multiple sources from left (bottom) to right (top) before they are stored on disk.
+A list with source names. The sources needs to be defined in the ``sources`` configuration. This parameter is `required`. MapProxy will merge multiple sources from left (bottom) to right (top) before they are stored on disk.
 
 WMS and Mapserver sources also support tagged names (``wms:lyr1,lyr2``). See :ref:`tagged_source_names`.
 
@@ -292,6 +292,47 @@ even if the there are matching tiles in the cache. See :ref:`seed_only <wms_seed
 
 .. note:: Be careful when using a cache with disabled storage in tile services when the cache uses WMS sources with metatiling.
 
+``cache``
+"""""""""
+
+.. versionadded:: 1.3.0
+
+Configure the type of the background tile cache. You configure the type with the ``type`` option. The following types are available.
+
+``file``
+^^^^^^^^
+
+This is the default cache type and it uses a single file for each tile. Available options:
+
+``directory_layout``:
+  The structure MapProxy will store tiles on disk. Defaults to ``tc`` which uses a TileCache compatible directory layout (``zz/xxx/xxx/xxx/yyy/yyy/yyy.format``). ``tms`` uses TMS compatible directories (``zz/xxxx/yyyy.format``).
+
+
+``mbtiles``
+^^^^^^^^^^^
+
+Use a single SQLite file for this cache. It uses the `MBTile specification <http://mbtiles.org/>`_.
+
+Available options:
+
+``filename``:
+  The path to the MBTiles file. Defaults to ``cachename.mbtiles``.
+
+
+You can set the ``sources`` to an empty list, if you use an existing MBTiles file and do not have a source.
+
+::
+
+  caches:
+    mbtiles_cache:
+      sources: []
+      grids: [GLOBAL_MERCATOR]
+      cache:
+        type: mbtiles
+        filename: /path/to/bluemarble.mbtiles
+
+
+
 Example ``caches`` configuration
 """"""""""""""""""""""""""""""""
 ::
@@ -309,7 +350,9 @@ Example ``caches`` configuration
       text: MapProxy
     request_format: image/tiff
     format: image/jpeg
-  
+    cache:
+      type: file
+      directory_layout: tms
 
 
 .. #################################################################################
