@@ -1,3 +1,20 @@
+1.2.0b1 2011-08-17
+~~~~~~~~~~~~~~~~~~
+
+Features:
+
+- support for MBTiles cache
+- support for (tagged-) layers for Mapnik sources
+- configurable cache layout (tilecache/TMS)
+- new `mapproxy-util scales` tool
+- use MultiMapProxy with server scripts
+ (mapproxy.multiapp.make_wsgi_app)
+
+Fixes:
+
+- prevent black borders for some custom grid configurations
+- all fixes from 1.1.x
+
 1.1.2 2011-07-06
 ~~~~~~~~~~~~~~~~
 
