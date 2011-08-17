@@ -1,6 +1,8 @@
 try:
     from nose.plugins.skip import SkipTest
-    raise SkipTest()
+    import sys
+    if 'nosetest' in ''.join(sys.argv):
+        raise SkipTest()
 except ImportError:
     pass
 
