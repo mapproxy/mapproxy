@@ -108,10 +108,9 @@ def init_null_logging():
 
 def make_wsgi_app(services_conf=None, debug=False):
     """
-    Create a ProxyApp with the given services conf. Also initializes logging.
+    Create a MapProxyApp with the given services conf.
     
-    :param services_conf: the file name of the services.yaml configuration,
-                          if ``None`` the default is loaded.
+    :param services_conf: the file name of the mapproxy.yaml configuration
     """
     try:
         conf = load_configuration(mapproxy_conf=services_conf)

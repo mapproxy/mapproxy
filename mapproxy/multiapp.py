@@ -20,7 +20,7 @@ import os
 from mapproxy.request import Request
 from mapproxy.response import Response
 from mapproxy.util.collections import LRU
-from mapproxy.wsgiapp import make_wsgi_app
+from mapproxy.wsgiapp import make_wsgi_app as make_mapproxy_wsgi_app
 from threading import Lock
 
 import logging
@@ -43,8 +43,20 @@ def app_factory(global_options, config_dir, allow_listing=False, **local_options
     :param config_dir: directory with all mapproxy configurations
     :param allow_listing: allow to list all available apps
     """
+    return make_wsgi_app(config_dir, asbool(allow_listing))
+
+def make_wsgi_app(config_dir, allow_listing=True):
+    """
+    Create a MultiMapProxy with the given config directory.
+    
+    :param config_dir: the directory with all project configurations.
+    :param allow_listing: True if MapProxy should list all instances
+        at the root URL
+    """
+    config_dir = os.path.abspath(config_dir)
     loader = DirectoryConfLoader(config_dir)
-    return MultiMapProxy(loader, list_apps=asbool(allow_listing))
+    return MultiMapProxy(loader, list_apps=allow_listing)
+
 
 class MultiMapProxy(object):
     
@@ -114,7 +126,7 @@ class MultiMapProxy(object):
         mapproxy_conf = self.loader.app_conf(proj_name)['mapproxy_conf']
         m_time = os.path.getmtime(mapproxy_conf)
         log.info('initializing project app %s with %s', proj_name, mapproxy_conf)
-        app = make_wsgi_app(mapproxy_conf)
+        app = make_mapproxy_wsgi_app(mapproxy_conf)
         return app, m_time
 
 

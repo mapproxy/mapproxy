@@ -403,7 +403,6 @@ MultiMapProxy
 -------------
 
 .. versionadded:: 0.9.1
-.. note:: The interface/configuration of MultiMapProxy is not stable yet and might change with future releases.
 
 You can run multiple MapProxy instances (configurations) within one process. You can either manually map URLs to a MapProxy configuration as :ref:`described in the configuration examples <paster_urlmap>` or you can use the MultiMapProxy application.
 
@@ -411,7 +410,7 @@ MultiMapProxy can dynamically load configurations. You can put all configuration
 
 Each configuration will be loaded on demand and MapProxy caches each loaded instance. The configuration will be reloaded if the file changes.
 
-You can use Paste deploy, as described above, to configure and start MultiMapProxy. The application takes the following options:
+MultiMapProxy as the following options:
 
 ``config_dir``
   The directory where MapProxy should look for configurations.
@@ -420,9 +419,28 @@ You can use Paste deploy, as described above, to configure and start MultiMapPro
   If set to ``true``, MapProxy will list all available configurations at the root URL of your MapProxy. Defaults to ``false``.
 
 
+Server Script
+~~~~~~~~~~~~~
+
+.. versionadded:: 1.3.0
+
+There is a ``make_wsgi_app`` function in the ``mapproxy.multiapp`` package that creates configured MultiMapProxy WSGI application.
+
+::
+  
+  from mapproxy.multiapp import make_wsgi_app
+  application = make_wsgi_app('/path/to.projects', allow_listing=True)
+
+
+Paste Deploy
+~~~~~~~~~~~~
+
+You can use Paste deploy, as described above, to configure and start MultiMapProxy. You need to use ``egg:MapProxy#multiapp`` instead of ``egg:MapProxy#app`` and you need to change the options.
+
 Example ``config.ini``::
 
   [app:main]
   use = egg:MapProxy#multiapp
   config_dir = %(here)s/projects
   allow_listing = true
+
