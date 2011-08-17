@@ -295,7 +295,7 @@ even if the there are matching tiles in the cache. See :ref:`seed_only <wms_seed
 ``cache``
 """""""""
 
-.. versionadded:: 1.3.0
+.. versionadded:: 1.2.0
 
 Configure the type of the background tile cache. You configure the type with the ``type`` option. The following types are available.
 

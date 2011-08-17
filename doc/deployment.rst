@@ -422,7 +422,7 @@ MultiMapProxy as the following options:
 Server Script
 ~~~~~~~~~~~~~
 
-.. versionadded:: 1.3.0
+.. versionadded:: 1.2.0
 
 There is a ``make_wsgi_app`` function in the ``mapproxy.multiapp`` package that creates configured MultiMapProxy WSGI application.
 
