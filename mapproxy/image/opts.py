@@ -15,7 +15,6 @@
 # limitations under the License.
 
 import copy
-from mapproxy.platform.image import Image, ImageColor
 
 class ImageOptions(object):
     def __init__(self, mode=None, transparent=None, opacity=None, resampling=None,
@@ -82,6 +81,8 @@ def create_image(size, image_opts=None):
     Create a new image that is compatible with the given `image_opts`.
     Takes into account mode, transparent, bgcolor.
     """
+    from mapproxy.platform.image import Image, ImageColor
+    
     if image_opts is None:
         mode = 'RGB'
         bgcolor = (255, 255, 255)

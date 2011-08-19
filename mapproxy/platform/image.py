@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import platform
+import warnings
 
 __all__ = ['Image', 'ImageColor', 'ImageDraw', 'ImageFont', 'ImagePalette',
            'ImageChops', 'quantize']
@@ -39,9 +40,27 @@ else:
         # prevent pyflakes warnings
         Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops
     except ImportError:
-        import Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops
-        # prevent pyflakes warnings
-        Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops
+        try:
+            import Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops
+            # prevent pyflakes warnings
+            Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops
+        except ImportError:
+            # allow MapProxy to start without PIL (for tilecache only).
+            # issue warning and raise ImportError on first use of
+            # a function that requires PIL
+            warnings.warn('PIL is not available')
+            class NoPIL(object):
+                def __getattr__(self, name):
+                    if name.startswith('__'):
+                        raise AttributeError()
+                    raise ImportError('PIL is not available')
+            ImageDraw = ImageFont = ImagePalette = ImageChops = NoPIL()
+            # add some dummy stuff required on import/load time
+            Image = NoPIL()
+            Image.NEAREST = Image.BILINEAR = Image.BICUBIC = 1
+            Image.Image = NoPIL
+            ImageColor = NoPIL()
+            ImageColor.getrgb = lambda x: x
     
     def quantize_pil(img, colors=256, alpha=False, defaults=None):
         if hasattr(Image, 'FASTOCTREE'):
