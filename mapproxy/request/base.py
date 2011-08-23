@@ -174,6 +174,7 @@ class Request(object):
         
         script_name = environ.get('HTTP_X_SCRIPT_NAME', '')
         if script_name:
+            del environ['HTTP_X_SCRIPT_NAME']
             environ['SCRIPT_NAME'] = script_name
             path_info = environ['PATH_INFO']
             if path_info.startswith(script_name):
