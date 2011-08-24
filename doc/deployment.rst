@@ -152,7 +152,7 @@ You can either use a dedicated HTTP proxy like Varnish_ or a general HTTP web se
 
 You need to set some HTTP headers so that MapProxy can generate capability documents with the URL of the proxy, instead of the local URL of the MapProxy application.
 
-* ``HOST`` – is the hostname that clients use to acces MapProxy (i.e. the proxy)
+* ``Host`` – is the hostname that clients use to acces MapProxy (i.e. the proxy)
 * ``X-Script-Name`` – path of MapProxy when the URL is not ``/`` (e.g. ``/mapproxy``)
 * ``X-Forwarded-Host`` – alternative to ``HOST``
 * ``X-Forwarded-Proto`` – should be ``https`` when the client connects with HTTPS
@@ -170,6 +170,23 @@ Here is an example for the Nginx_ webserver with the included proxy module. It f
       proxy_set_header X-Script-Name /mapproxy;
     }
   }
+
+Apache
+""""""
+
+Here is an example for the Apache_ webserver with the included ``mod_proxy`` and ``mod_headers`` modules. It forwards all requests to ``example.org/mapproxy`` to ``localhost:8181/``.::
+
+  <IfModule mod_proxy.c>
+    <IfModule mod_headers.c>
+          <Location /mapproxy>
+                  ProxyPass http://localhost:8181
+                  ProxyPassReverse  http://localhost:8181
+                  RequestHeader add X-Script-Name "/mapproxy"
+          </Location>
+    </IfModule>
+  </IfModule>
+
+You need to make sure that both modules are loaded. The ``Host`` is already set to the right value by default.
 
 FastCGI
 -------
