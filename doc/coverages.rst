@@ -91,7 +91,7 @@ Use the ``coverage`` option to define a coverage for a WMS or tile source.
 mapproxy-seed
 """""""""""""
 
-To define a seed-area in the ``seed.yaml``, add the coverage directly to the views.
+To define a seed-area in the ``seed.yaml``, add the coverage directly to the view.
 
 ::
 
@@ -102,3 +102,17 @@ To define a seed-area in the ``seed.yaml``, add the coverage directly to the vie
       ogr_srs: 'EPSG:900913'
       level: [0, 14]
       srs: ['EPSG:900913', 'EPSG:4326']
+
+.. index:: PostGIS, PostgreSQL
+
+And here is the same example with a PostGIS source::
+
+  views:
+    germany:
+      ogr_datasource: "PG: dbname='db' host='host' user='user'
+    password='password'"
+      ogr_where: "select * from coverages where country='germany'"
+      ogr_srs: 'EPSG:900913'
+      level: [0, 14]
+      srs: ['EPSG:900913', 'EPSG:4326']
+
