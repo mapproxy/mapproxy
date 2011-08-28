@@ -38,6 +38,8 @@ def timestamp_is_now(timestamp, delta=5):
     return abs(timestamp - time.time()) <= delta
 
 class TileCacheTestBase(object):
+    always_loads_metadata = False
+    
     def setup(self):
         self.cache_dir = tempfile.mkdtemp()
     
@@ -45,29 +47,32 @@ class TileCacheTestBase(object):
         if hasattr(self, 'cache_dir') and os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
 
-    def create_tile(self, coord=(0, 0, 0)):
+    def create_tile(self, coord=(0, 0, 4)):
         return Tile(coord,
             ImageSource(tile_image,
                 image_opts=ImageOptions(format='image/png')))
     
-    def create_another_tile(self, coord=(0, 0, 0)):
+    def create_another_tile(self, coord=(0, 0, 4)):
         return Tile(coord,
             ImageSource(tile_image2,
                 image_opts=ImageOptions(format='image/png')))
     
     def test_is_cached_miss(self):
-        assert not self.cache.is_cached(Tile((0, 0, 0)))
+        assert not self.cache.is_cached(Tile((0, 0, 4)))
     
     def test_is_cached_hit(self):
         tile = self.create_tile()
         self.create_cached_tile(tile)
-        assert self.cache.is_cached(Tile((0, 0, 0)))
+        assert self.cache.is_cached(Tile((0, 0, 4)))
     
     def test_is_cached_none(self):
         assert self.cache.is_cached(Tile(None))
 
+    def test_load_tile_none(self):
+        assert self.cache.load_tile(Tile(None))
+    
     def test_load_tile_not_cached(self):
-        tile = Tile((0, 0, 0))
+        tile = Tile((0, 0, 4))
         assert not self.cache.load_tile(tile)
         assert tile.source is None
         assert tile.is_missing()
@@ -75,27 +80,53 @@ class TileCacheTestBase(object):
     def test_load_tile_cached(self):
         tile = self.create_tile()
         self.create_cached_tile(tile)
-        tile = Tile((0, 0, 0))
+        tile = Tile((0, 0, 4))
         assert self.cache.load_tile(tile) == True
         assert not tile.is_missing()
 
+    def test_load_tiles(self):
+        tile = self.create_tile((1, 0, 4))
+        self.create_cached_tile(tile)
+        tiles = [Tile(None), Tile((0, 0, 4)), Tile((1, 0, 4))]
+        assert self.cache.load_tiles(tiles) == False
+        assert not tiles[0].is_missing()
+        assert tiles[1].is_missing()
+        assert not tiles[2].is_missing()
+
+    def test_store_tiles(self):
+        tiles = [self.create_tile((x, 0, 4)) for x in range(4)]
+        tiles[0].stored = True
+        self.cache.store_tiles(tiles)
+        
+        tiles = [Tile((x, 0, 4)) for x in range(4)]
+        assert tiles[0].is_missing()
+        assert self.cache.load_tile(tiles[0]) == False
+        assert tiles[0].is_missing()
+    
+        for tile in tiles[1:]:
+            assert tile.is_missing()
+            assert self.cache.load_tile(tile) == True
+            assert not tile.is_missing()
+
     def test_load_stored_tile(self):
-        tile = self.create_tile((5, 12, 2))
+        tile = self.create_tile((5, 12, 4))
         self.cache.store_tile(tile)
         size = tile.size
         
         # check stored tile
-        tile = Tile((5, 12, 2))
+        tile = Tile((5, 12, 4))
         assert tile.source is None
+        
         assert self.cache.load_tile(tile)
-        assert tile.source is not None
-        assert tile.timestamp is None
-        assert tile.size is None
+        if not self.always_loads_metadata:
+            assert tile.source is not None
+            assert tile.timestamp is None
+            assert tile.size is None
         stored_size = len(tile.source.as_buffer().read())
         assert stored_size == size
         
         # check loading of metadata (timestamp, size)
-        tile = Tile((5, 12, 2))
+        tile = Tile((5, 12, 4))
         assert tile.source is None
         assert self.cache.load_tile(tile, with_metadata=True)
         assert tile.source is not None
@@ -105,18 +136,18 @@ class TileCacheTestBase(object):
             assert tile.size == size
         
     def test_overwrite_tile(self):
-        tile = self.create_tile((5, 12, 2))
+        tile = self.create_tile((5, 12, 4))
         self.cache.store_tile(tile)
         
-        tile = Tile((5, 12, 2))
+        tile = Tile((5, 12, 4))
         self.cache.load_tile(tile)
         tile1_content = tile.source.as_buffer().read()
         assert tile1_content == tile_image.getvalue()
         
-        tile = self.create_another_tile((5, 12, 2))
+        tile = self.create_another_tile((5, 12, 4))
         self.cache.store_tile(tile)
         
-        tile = Tile((5, 12, 2))
+        tile = Tile((5, 12, 4))
         self.cache.load_tile(tile)
         tile2_content = tile.source.as_buffer().read()
         assert tile2_content == tile_image2.getvalue()
@@ -124,24 +155,25 @@ class TileCacheTestBase(object):
         assert tile1_content != tile2_content
 
     def test_store_tile_already_stored(self):
-        # tile object is marked as stored, do not save
+        # tile object is marked as stored,
+        # check that is is not stored 'again'
         # (used for disable_storage)
-        tile = Tile((0, 0, 0), ImageSource(StringIO('foo')))
+        tile = Tile((0, 0, 4), ImageSource(StringIO('foo')))
         tile.stored = True
         self.cache.store_tile(tile)
         
         assert self.cache.is_cached(tile)
         
-        tile = Tile((0, 0, 0))
+        tile = Tile((0, 0, 4))
         assert not self.cache.is_cached(tile)
     
     def test_remove(self):
-        tile = self.create_tile((0, 0, 0))
+        tile = self.create_tile((1, 0, 4))
         self.create_cached_tile(tile)
-        assert self.cache.is_cached(Tile((0, 0, 0)))
+        assert self.cache.is_cached(Tile((1, 0, 4)))
         
-        self.cache.remove_tile(self.create_tile())
-        assert not self.cache.is_cached(Tile((0, 0, 0)))
+        self.cache.remove_tile(Tile((1, 0, 4)))
+        assert not self.cache.is_cached(Tile((1, 0, 4)))
     
     def create_cached_tile(self, tile):
         self.cache.store_tile(tile)
@@ -152,15 +184,15 @@ class TestFileTileCache(TileCacheTestBase):
         self.cache = FileCache(self.cache_dir, 'png')
     
     def test_store_tile(self):
-        tile = self.create_tile((5, 12, 2))
+        tile = self.create_tile((5, 12, 4))
         self.cache.store_tile(tile)
         tile_location = os.path.join(self.cache_dir,
-            '02', '000', '000', '005', '000', '000', '012.png' )
+            '04', '000', '000', '005', '000', '000', '012.png' )
         assert os.path.exists(tile_location), tile_location
     
     def test_single_color_tile_store(self):
         img = Image.new('RGB', (256, 256), color='#ff0105')
-        tile = Tile((0, 0, 0), ImageSource(img, image_opts=ImageOptions(format='image/png')))
+        tile = Tile((0, 0, 4), ImageSource(img, image_opts=ImageOptions(format='image/png')))
         self.cache.link_single_color_images = True
         self.cache.store_tile(tile)
         assert self.cache.is_cached(tile)
@@ -182,7 +214,7 @@ class TestFileTileCache(TileCacheTestBase):
     
     def test_single_color_tile_store_w_alpha(self):
         img = Image.new('RGBA', (256, 256), color='#ff0105')
-        tile = Tile((0, 0, 0), ImageSource(img, image_opts=ImageOptions(format='image/png')))
+        tile = Tile((0, 0, 4), ImageSource(img, image_opts=ImageOptions(format='image/png')))
         self.cache.link_single_color_images = True
         self.cache.store_tile(tile)
         assert self.cache.is_cached(tile)
@@ -196,8 +228,9 @@ class TestFileTileCache(TileCacheTestBase):
         with open(loc, 'w') as f:
             f.write('foo')
 
+
 class TestMBTileCache(TileCacheTestBase):
     def setup(self):
         TileCacheTestBase.setup(self)
         self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'))
-        
+      

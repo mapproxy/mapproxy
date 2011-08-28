@@ -24,7 +24,10 @@ def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
         print format_cleanup_task(task)
         
         if not task.coverage:
-            simple_cleanup(task, dry_run=dry_run)
+            if hasattr(task.tile_manager.cache, 'remove_tiles_before'):
+                cache_cleanup(task, dry_run=dry_run)
+            else:
+                simple_cleanup(task, dry_run=dry_run)
         else:
             coverage_cleanup(task, dry_run=dry_run, concurrency=concurrency,
                              skip_geoms_for_last_levels=skip_geoms_for_last_levels)
@@ -43,6 +46,13 @@ def simple_cleanup(task, dry_run):
         print 'removing old tiles in ' + normpath(level_dir)
         cleanup_directory(level_dir, task.remove_timestamp,
             file_handler=file_handler, remove_empty_dirs=True)
+
+def cache_cleanup(task, dry_run):
+    for level in task.levels:
+        print 'removing old tiles for level %s' % level
+        if not dry_run:
+            task.tile_manager.cache.remove_tiles_before(task.remove_timestamp)
+            task.tile_manager.cleanup()
 
 def normpath(path):
     # only supported with >= Python 2.6

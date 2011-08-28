@@ -34,14 +34,22 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
         self.lock_timeout = 60
         self.mbtile_file = mbtile_file
         self.ensure_mbtile()
-        self._db_cache = threading.local()
+        self._db_conn_cache = threading.local()
     
     @property
     def db(self):
-        if not hasattr(self._db_cache, 'db'):
+        if not hasattr(self._db_conn_cache, 'dbs'):
             self.ensure_mbtile()
-            self._db_cache.db = sqlite3.connect(self.mbtile_file)
-        return self._db_cache.db
+            self._db_conn_cache.dbs = sqlite3.connect(self.mbtile_file)
+        return self._db_conn_cache.dbs
+    
+    def cleanup(self):
+        """
+        Close all open connection and remove them from cache.
+        """
+        for db in self._db_conn_cache.dbs.itervalues():
+            db[0].close()
+        self._db_conn_cache.dbs.clear()
     
     def ensure_mbtile(self):
         if not os.path.exists(self.mbtile_file):
@@ -98,7 +106,7 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
     
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
-            return
+            return True
         
         cur = self.db.cursor()
         cur.execute('''SELECT tile_data FROM tiles
@@ -120,29 +128,31 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             if tile.source or tile.coord is None:
                 continue
             x, y, level = tile.coord
-            coords.append(level)
             coords.append(x)
             coords.append(y)
+            coords.append(level)
             tile_dict[(x, y)] = tile
 
         stmt = "SELECT tile_column, tile_row, tile_data FROM tiles WHERE " 
-        stmt += ' OR '.join(['(zoom_level = ? AND tile_column = ? AND tile_row = ?)'] * (len(coords)//3))
+        stmt += ' OR '.join(['(tile_column = ? AND tile_row = ? AND zoom_level = ?)'] * (len(coords)//3))
 
         cursor = self.db.cursor()
         cursor.execute(stmt, coords)
         
+        loaded_tiles = 0
         for row in cursor:
+            loaded_tiles += 1
             tile = tile_dict[(row[0], row[1])]
             data = row[2]
             tile.size = len(data)
             tile.source = ImageSource(StringIO(data), size=tile.size)
         cursor.close()
-        return tiles
-    
+        return loaded_tiles == len(tile_dict)
+        
     def remove_tile(self, tile):
         cursor = self.db.cursor()
         cursor.execute(
-            "DELETE FROM tiles WHERE (zoom_level = ? AND tile_column = ? AND tile_row = ?)",
+            "DELETE FROM tiles WHERE (tile_column = ? AND tile_row = ? AND zoom_level = ?)",
             tile.coord)
         if cursor.rowcount:
             return True

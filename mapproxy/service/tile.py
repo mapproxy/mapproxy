@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
+from __future__ import division, with_statement
 
 import math
 import time
@@ -204,7 +204,8 @@ class TileLayer(object):
                                code='InvalidParameterValue')
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
         try:
-            tile = self.tile_manager.load_tile_coord(tile_coord, with_metadata=True)
+            with self.tile_manager.session():
+                tile = self.tile_manager.load_tile_coord(tile_coord, with_metadata=True)
             if tile.source is None: return self.empty_response()
             return TileResponse(tile)
         except SourceError, e:

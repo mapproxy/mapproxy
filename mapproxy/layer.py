@@ -18,7 +18,7 @@
 Layers that can get maps/infos from different sources/caches. 
 """
 
-from __future__ import division
+from __future__ import division, with_statement
 from mapproxy.grid import NoTiles, GridError, merge_resolution_range
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
@@ -318,7 +318,9 @@ class CacheMapLayer(MapLayer):
                                                (bbox[3]-bbox[1]/query.size[1]/10)):
                 raise MapBBOXError("query does not align to tile boundaries")
         
-        tile_collection = self.tile_manager.load_tile_coords(affected_tile_coords)
+        with self.tile_manager.session():
+            tile_collection = self.tile_manager.load_tile_coords(affected_tile_coords)
+        
         if tile_collection.empty:
             raise BlankImage()
         

@@ -37,6 +37,8 @@ Tile caching (creation, caching and retrieval of tiles).
 
 from __future__ import with_statement
 
+from contextlib import contextmanager
+
 from mapproxy.grid import MetaGrid
 from mapproxy.image import merge_images
 from mapproxy.image.tile import TileSplitter
@@ -76,6 +78,23 @@ class TileManager(object):
             elif any(source.supports_meta_tiles for source in sources):
                 raise ValueError('meta tiling configured but not supported by all sources')
     
+    @contextmanager
+    def session(self):
+        """
+        Context manager for access to the cache. Cleans up after usage
+        for connection based caches.
+        
+        >>> with tile_manager.session(): #doctest: +SKIP
+        ...    tile_manager.load_tile_coords(tile_coords)
+        
+        """
+        yield
+        self.cleanup()
+    
+    def cleanup(self):
+        if hasattr(self.cache, 'cleanup'):
+            self.cache.cleanup()
+    
     def load_tile_coord(self, tile_coord, with_metadata=False):
         return self.load_tile_coords([tile_coord], with_metadata)[0]
     
@@ -83,11 +102,12 @@ class TileManager(object):
         tiles = TileCollection(tile_coords)
         uncached_tiles = []
         
+        # load all in batch
+        self.cache.load_tiles(tiles, with_metadata)
+        
         for tile in tiles:
-            # TODO cache eviction
-            if self.is_cached(tile):
-                self.cache.load_tile(tile, with_metadata)
-            elif tile.coord is not None:
+            if tile.coord is not None and not self.is_cached(tile):
+                # missing or staled
                 uncached_tiles.append(tile)
         
         if uncached_tiles:
@@ -117,6 +137,8 @@ class TileManager(object):
         """
         if isinstance(tile, tuple):
             tile = Tile(tile)
+        if tile.coord is None:
+            return True
         cached = self.cache.is_cached(tile)
         max_mtime = self.expire_timestamp(tile)
         if cached and max_mtime is not None:

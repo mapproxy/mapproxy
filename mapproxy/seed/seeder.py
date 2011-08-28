@@ -17,6 +17,8 @@ from __future__ import with_statement, division
 import sys
 import time
 
+from contextlib import contextmanager
+
 from mapproxy.config import base_config
 from mapproxy.grid import MetaGrid
 from mapproxy.source import SourceError
@@ -102,7 +104,8 @@ class TileSeedWorker(TileWorker):
             tiles = self.tiles_queue.get()
             if tiles is None:
                 return
-            exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
+            with self.tile_mgr.session():
+                exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
                         exceptions=(SourceError, IOError))
 
 class TileCleanupWorker(TileWorker):
@@ -111,7 +114,8 @@ class TileCleanupWorker(TileWorker):
             tiles = self.tiles_queue.get()
             if tiles is None:
                 return
-            self.tile_mgr.remove_tile_coords(tiles)
+            with self.tile_mgr.session():
+                self.tile_mgr.remove_tile_coords(tiles)
                 
 class TileWalker(object):
     def __init__(self, task, worker_pool, handle_stale=False, handle_uncached=False,
@@ -195,6 +199,10 @@ class TileWalker(object):
             if not levels:
                 self.progress += progress
         
+        if len(levels) >= 4:
+            # call cleanup to close open caches
+            # for connection based caches
+            self.tile_mgr.cleanup()
         self.eta.update(self.progress)
     
     def report_progress(self, level, bbox):
@@ -222,7 +230,6 @@ class TileWalker(object):
                     yield subtile, sub_bbox, intersection
                 else: 
                     yield None, None, None
-
 
 class SeedTask(object):
     def __init__(self, md, tile_manager, levels, refresh_timestamp, coverage):
