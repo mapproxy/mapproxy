@@ -96,7 +96,18 @@ class TileManager(object):
             self.cache.cleanup()
     
     def load_tile_coord(self, tile_coord, with_metadata=False):
-        return self.load_tile_coords([tile_coord], with_metadata)[0]
+        tile = Tile(tile_coord)
+        self.cache.load_tile(tile, with_metadata)
+        
+        if tile.coord is not None and not self.is_cached(tile):
+            # missing or staled
+            creator = self.creator()
+            created_tiles = creator.create_tiles([tile])
+            for created_tile in created_tiles:
+                if created_tile.coord == tile_coord:
+                    return created_tile
+        
+        return tile    
     
     def load_tile_coords(self, tile_coords, with_metadata=False):
         tiles = TileCollection(tile_coords)
