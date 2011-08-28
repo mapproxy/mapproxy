@@ -38,19 +38,19 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
     
     @property
     def db(self):
-        if not hasattr(self._db_conn_cache, 'dbs'):
+        if not getattr(self._db_conn_cache, 'db', None):
             self.ensure_mbtile()
-            self._db_conn_cache.dbs = sqlite3.connect(self.mbtile_file)
-        return self._db_conn_cache.dbs
+            self._db_conn_cache.db = sqlite3.connect(self.mbtile_file)
+        return self._db_conn_cache.db
     
     def cleanup(self):
         """
         Close all open connection and remove them from cache.
         """
-        for db in self._db_conn_cache.dbs.itervalues():
-            db[0].close()
-        self._db_conn_cache.dbs.clear()
-    
+        if getattr(self._db_conn_cache, 'db', None):
+            self._db_conn_cache.db.close()
+        self._db_conn_cache.db = None
+        
     def ensure_mbtile(self):
         if not os.path.exists(self.mbtile_file):
             with FileLock(os.path.join(self.lock_dir, 'init.lck'),
