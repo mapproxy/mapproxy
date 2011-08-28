@@ -84,15 +84,6 @@ class TileCacheTestBase(object):
         assert self.cache.load_tile(tile) == True
         assert not tile.is_missing()
 
-    def test_load_tiles(self):
-        tile = self.create_tile((1, 0, 4))
-        self.create_cached_tile(tile)
-        tiles = [Tile(None), Tile((0, 0, 4)), Tile((1, 0, 4))]
-        assert self.cache.load_tiles(tiles) == False
-        assert not tiles[0].is_missing()
-        assert tiles[1].is_missing()
-        assert not tiles[2].is_missing()
-
     def test_store_tiles(self):
         tiles = [self.create_tile((x, 0, 4)) for x in range(4)]
         tiles[0].stored = True
@@ -107,6 +98,24 @@ class TileCacheTestBase(object):
             assert tile.is_missing()
             assert self.cache.load_tile(tile) == True
             assert not tile.is_missing()
+
+    def test_load_tiles_cached(self):
+        self.cache.store_tile(self.create_tile((0, 0, 1)))
+        self.cache.store_tile(self.create_tile((0, 1, 1)))
+        tiles = [Tile((0, 0, 1)), Tile((0, 1, 1))]
+        assert self.cache.load_tiles(tiles)
+        
+        assert not tiles[0].is_missing()
+        assert not tiles[1].is_missing()
+
+    def test_load_tiles_mixed(self):
+        tile = self.create_tile((1, 0, 4))
+        self.create_cached_tile(tile)
+        tiles = [Tile(None), Tile((0, 0, 4)), Tile((1, 0, 4))]
+        assert self.cache.load_tiles(tiles) == False
+        assert not tiles[0].is_missing()
+        assert tiles[1].is_missing()
+        assert not tiles[2].is_missing()
 
     def test_load_stored_tile(self):
         tile = self.create_tile((5, 12, 4))
@@ -131,7 +140,7 @@ class TileCacheTestBase(object):
         assert self.cache.load_tile(tile, with_metadata=True)
         assert tile.source is not None
         if tile.timestamp:
-            assert timestamp_is_now(tile.timestamp, delta=5)
+            assert timestamp_is_now(tile.timestamp, delta=10)
         if tile.size:
             assert tile.size == size
         
