@@ -15,7 +15,7 @@ Features:
 - configurable cache layout (tilecache/TMS)
 - new `mapproxy-util scales` tool
 - use MultiMapProxy with server scripts
- (mapproxy.multiapp.make_wsgi_app)
+  (mapproxy.multiapp.make_wsgi_app)
 
 Fixes:
 
