@@ -1,0 +1,50 @@
+globals:
+  cache:
+    base_dir: cache_data/
+    meta_size: [1, 1]
+    meta_buffer: 0
+  image:
+    paletted: False
+    # resampling: 'bicubic'
+
+services:
+  tms:
+
+layers:
+  watermark:
+    title: Layer with watermark
+    sources: [wms_cache]
+
+  watermark_transp:
+    title: Layer with watermark
+    sources: [wms_transp_cache]
+
+caches:
+  wms_cache:
+    grids: [GLOBAL_GEODETIC]
+    sources: [wms_source]
+    watermark:
+       text: foo
+       opacity: 100
+       font_size: 30
+
+  wms_transp_cache:
+    grids: [GLOBAL_GEODETIC]
+    sources: [wms_source]
+    watermark:
+       text: foo
+       opacity: 100
+       font_size: 30
+
+sources:
+  wms_source:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: blank
+
+  wms_source_transp:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: blank
