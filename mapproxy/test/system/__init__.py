@@ -17,8 +17,16 @@ from __future__ import with_statement, division
 import os
 import tempfile
 import shutil
-from webtest import TestApp
+from webtest import TestApp as TestApp_
 from mapproxy.wsgiapp import make_wsgi_app 
+
+class TestApp(TestApp_):
+    """
+    Wraps webtest.TestApp and explicitly converts URLs to strings.
+    Behavior changed with webtest from 1.2->1.3.
+    """
+    def get(self, url, *args, **kw):
+        return TestApp_.get(self, str(url), *args, **kw)
 
 def module_setup(test_config, config_file, with_cache_data=False):
     prepare_env(test_config, config_file, with_cache_data)

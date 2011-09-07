@@ -265,7 +265,7 @@ mapproxy_yaml_spec = {
         {
             anything(): combined(scale_hints, {
                 'sources': [str()],
-                required('title'): str(),
+                required('title'): basestring,
                 'legendurl': str(),
             })
         },

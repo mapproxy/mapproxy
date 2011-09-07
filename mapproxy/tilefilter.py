@@ -19,7 +19,7 @@ Filter for tiles (watermark, etc.)
 
 from mapproxy.image.message import WatermarkImage
 
-def create_watermark_filter(self, conf, context, **kw):
+def create_watermark_filter(conf, context, **kw):
     text = conf['watermark'].get('text', '')
     opacity = conf['watermark'].get('opacity')
     font_size = conf['watermark'].get('font_size')
