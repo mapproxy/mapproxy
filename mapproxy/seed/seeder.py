@@ -25,7 +25,7 @@ from mapproxy.source import SourceError
 from mapproxy.util import local_base_config
 from mapproxy.seed.util import format_seed_task
 
-from mapproxy.seed.util import (timestamp, exp_backoff, ETA, limit_sub_bbox,
+from mapproxy.seed.util import (exp_backoff, ETA, limit_sub_bbox,
     status_symbol, format_bbox)
 
 NONE = 0
@@ -49,12 +49,12 @@ class TileWorkerPool(object):
     """
     Manages multiple TileWorker.
     """
-    def __init__(self, task, worker_class, size=2, dry_run=False):
+    def __init__(self, task, worker_class, size=2, dry_run=False, progress_logger=None):
         self.tiles_queue = queue_class(size)
         self.task = task
         self.dry_run = dry_run
         self.procs = []
-        self.lastlog = time.time()
+        self.progress_logger = progress_logger
         conf = base_config()
         for _ in xrange(size):
             worker = worker_class(self.task, self.tiles_queue, conf)
@@ -65,14 +65,8 @@ class TileWorkerPool(object):
         if not self.dry_run:
             self.tiles_queue.put(tiles)
         
-        if (self.lastlog + .1) < time.time():
-            # log progress at most every 100ms
-            print '[%s] %6.2f%% %s \tETA: %s\r' % (
-                timestamp(), progress[1]*100, progress[0],
-                progress[2]
-            ),
-            sys.stdout.flush()
-            self.lastlog = time.time()
+        if self.progress_logger:
+            self.progress_logger.log_step(progress)
     
     def stop(self):
         for _ in xrange(len(self.procs)):
@@ -119,7 +113,7 @@ class TileCleanupWorker(TileWorker):
                 
 class TileWalker(object):
     def __init__(self, task, worker_pool, handle_stale=False, handle_uncached=False,
-                 work_on_metatiles=True, skip_geoms_for_last_levels=0):
+                 work_on_metatiles=True, skip_geoms_for_last_levels=0, progress_logger=None):
         self.tile_mgr = task.tile_manager
         self.task = task
         self.worker_pool = worker_pool
@@ -127,6 +121,7 @@ class TileWalker(object):
         self.handle_uncached = handle_uncached
         self.work_on_metatiles = work_on_metatiles
         self.skip_geoms_for_last_levels = skip_geoms_for_last_levels
+        self.progress_logger = progress_logger
         
         num_seed_levels = len(task.levels)
         self.report_till_level = task.levels[int(num_seed_levels * 0.8)]
@@ -206,11 +201,10 @@ class TileWalker(object):
         self.eta.update(self.progress)
     
     def report_progress(self, level, bbox):
-        print '[%s] %2s %6.2f%% %s (%d tiles) ETA: %s' % (
-            timestamp(), level, self.progress*100,
-            format_bbox(bbox), self.count * self.tiles_per_metatile, self.eta)
-        sys.stdout.flush()
-    
+        if self.progress_logger:
+            self.progress_logger.log_progress(self.progress, level, bbox,
+                self.count * self.tiles_per_metatile, self.eta)
+
     def _filter_subtiles(self, subtiles, all_subtiles):
         """
         Return an iterator with all sub tiles.
@@ -261,14 +255,16 @@ class CleanupTask(object):
         return NONE
 
 def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
-               verbose=True):
+    progress_logger=None):
     for task in tasks:
         print format_seed_task(task)
         if task.refresh_timestamp:
             task.tile_manager._expire_timestamp = task.refresh_timestamp
         task.tile_manager.minimize_meta_requests = False
-        tile_worker_pool = TileWorkerPool(task, TileSeedWorker, dry_run=dry_run, size=concurrency)
-        tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=True, skip_geoms_for_last_levels=skip_geoms_for_last_levels)
+        tile_worker_pool = TileWorkerPool(task, TileSeedWorker, dry_run=dry_run,
+            size=concurrency, progress_logger=progress_logger)
+        tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=True,
+            skip_geoms_for_last_levels=skip_geoms_for_last_levels, progress_logger=progress_logger)
         tile_walker.walk()
         tile_worker_pool.stop()
 

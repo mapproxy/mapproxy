@@ -24,7 +24,7 @@ from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import load_seed_tasks_conf
 from mapproxy.seed.seeder import seed
 from mapproxy.seed.cleanup import cleanup
-from mapproxy.seed.util import format_seed_task, format_cleanup_task
+from mapproxy.seed.util import format_seed_task, format_cleanup_task, ProgressLog
 
 
 def setup_logging():
@@ -42,7 +42,7 @@ class SeedScript(object):
     usage = "usage: %prog [options] seed_conf"
     parser = OptionParser(usage)
     parser.add_option("-q", "--quiet",
-                      action="store_false", dest="verbose", default=True,
+                      action="count", dest="quiet", default=0,
                       help="don't print status messages to stdout")
     parser.add_option("-s", "--seed-conf",
                       dest="seed_file", default=None,
@@ -125,7 +125,8 @@ class SeedScript(object):
                     print '========== Seeding tasks =========='
                     print 'Start seeding process (%d task%s)' % (
                         len(seed_tasks), 's' if len(seed_tasks) > 1 else '')
-                    seed(seed_tasks, verbose=options.verbose, dry_run=options.dry_run,
+                    logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2)
+                    seed(seed_tasks, progress_logger=logger, dry_run=options.dry_run,
                          concurrency=options.concurrency,
                          skip_geoms_for_last_levels=options.geom_levels)
                 if cleanup_tasks:

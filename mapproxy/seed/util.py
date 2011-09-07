@@ -63,6 +63,34 @@ class ETA(object):
     def __str__(self):
         return self.eta_string()
 
+class ProgressLog(object):
+    def __init__(self, out=None, silent=False, verbose=True):
+        if not out:
+            out = sys.stdout
+        self.out = out
+        self.lastlog = time.time()
+        self.verbose = verbose
+        self.silent = silent
+        
+    def log_step(self, progress):
+        if not self.verbose:
+            return
+        if (self.lastlog + .1) < time.time():
+            # log progress at most every 100ms
+            self.out.write('[%s] %6.2f%% %s \tETA: %s\r' % (
+                timestamp(), progress[1]*100, progress[0],
+                progress[2]
+            ))
+            self.out.flush()
+            self.lastlog = time.time()
+    
+    def log_progress(self, progress, level, bbox, tiles, eta):
+        if self.silent:
+            return
+        self.out.write('[%s] %2s %6.2f%% %s (%d tiles) ETA: %s\n' % (
+            timestamp(), level, progress*100,
+            format_bbox(bbox), tiles, eta))
+        self.out.flush()
 
 def limit_sub_bbox(bbox, sub_bbox):
     """
