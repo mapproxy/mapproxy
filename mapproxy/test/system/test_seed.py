@@ -62,7 +62,7 @@ class SeedTestBase(object):
     def test_seed_dry_run(self):
         seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
         tasks, cleanup_tasks = seed_conf.seeds(), seed_conf.cleanups()
-        seed(tasks, verbose=False, dry_run=True)
+        seed(tasks, dry_run=True)
         cleanup(cleanup_tasks, verbose=False, dry_run=True)
     
     def test_seed(self):
@@ -75,7 +75,7 @@ class SeedTestBase(object):
             with mock_httpd(('localhost', 42423), [expected_req]):
                 seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
                 tasks, cleanup_tasks = seed_conf.seeds(), seed_conf.cleanups()
-                seed(tasks, verbose=False, dry_run=False)
+                seed(tasks, dry_run=False)
                 cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
     def test_reseed_uptodate(self):
@@ -83,7 +83,7 @@ class SeedTestBase(object):
         self.make_tile((0, 0, 0))
         seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
         tasks, cleanup_tasks = seed_conf.seeds(), seed_conf.cleanups()
-        seed(tasks, verbose=False, dry_run=False)
+        seed(tasks, dry_run=False)
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
 class TestSeedOldConfiguration(SeedTestBase):
@@ -106,7 +106,7 @@ class TestSeedOldConfiguration(SeedTestBase):
             with mock_httpd(('localhost', 42423), [expected_req]):
                 seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
                 tasks, cleanup_tasks = seed_conf.seeds(), seed_conf.cleanups()
-                seed(tasks, verbose=True, dry_run=False)
+                seed(tasks, dry_run=False)
                 cleanup(cleanup_tasks, verbose=False, dry_run=False)
         
         assert os.path.exists(t000)
