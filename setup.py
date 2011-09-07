@@ -33,7 +33,7 @@ def long_description(changelog_releases=10):
 
 setup(
     name='MapProxy',
-    version="1.2.0a",
+    version="1.2.2a",
     description='An accelerating proxy for web map services',
     long_description=long_description(7),
     author='Oliver Tonnhofer',
