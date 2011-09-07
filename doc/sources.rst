@@ -400,6 +400,13 @@ The filename of you Mapnik XML mapfile.
 
 A list of layer names you want to render. MapProxy disables each layer that is not included in this list. It does not reorder the layers and unnamed layers (`Unknown`) are always rendered.
 
+``use_mapnik2``
+^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.3.0
+
+Use Mapnik 2 if set to ``true``. 
+
 
 Other options
 ^^^^^^^^^^^^^

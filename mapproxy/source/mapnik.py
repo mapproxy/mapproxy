@@ -35,11 +35,19 @@ try:
 except ImportError:
     mapnik = None
 
+try:
+    import mapnik2
+    mapnik2
+except ImportError:
+    mapnik2 = None
+
+
 import logging
 log = logging.getLogger(__name__)
 
 class MapnikSource(Source):
     supports_meta_tiles = True
+    mapnik = mapnik
     def __init__(self, mapfile, layers=None, image_opts=None, coverage=None, res_range=None, lock=None):
         Source.__init__(self, image_opts=image_opts)
         self.mapfile = mapfile
@@ -87,10 +95,10 @@ class MapnikSource(Source):
         start_time = time.time()
         data = None
         try:
-            m = mapnik.Map(query.size[0], query.size[1])
-            mapnik.load_map(m, str(mapfile))
+            m = self.mapnik.Map(query.size[0], query.size[1])
+            self.mapnik.load_map(m, str(mapfile))
             m.srs = '+init=%s' % str(query.srs.srs_code.lower())
-            envelope = mapnik.Envelope(*query.bbox)
+            envelope = self.mapnik.Envelope(*query.bbox)
             m.zoom_to_box(envelope)
 
             if self.layers:
@@ -101,8 +109,8 @@ class MapnikSource(Source):
                     else:
                         i += 1
             
-            img = mapnik.Image(query.size[0], query.size[1])
-            mapnik.render(m, img)
+            img = self.mapnik.Image(query.size[0], query.size[1])
+            self.mapnik.render(m, img)
             data = img.tostring(str(query.format))
         finally:
             size = None
@@ -113,3 +121,8 @@ class MapnikSource(Source):
             
         return ImageSource(StringIO(data), size=query.size, 
             image_opts=ImageOptions(transparent=self.transparent, format=query.format))
+
+
+class Mapnik2Source(MapnikSource):
+    mapnik = mapnik2
+

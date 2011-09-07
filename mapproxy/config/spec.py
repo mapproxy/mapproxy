@@ -255,6 +255,7 @@ mapproxy_yaml_spec = {
                 'transparent': bool(),
                 'image': image_opts,
                 'layers': one_off(str(), [str()]),
+                'use_mapnik2': bool(),
             }),
             'debug': {
             },

@@ -741,7 +741,11 @@ class MapnikSourceConfiguration(SourceConfiguration):
             layers = layers.split(',')
         
         mapfile = self.context.globals.abspath(self.conf['mapfile'])
-        from mapproxy.source.mapnik import MapnikSource
+        
+        if self.conf.get('use_mapnik2', False):
+            from mapproxy.source.mapnik import Mapnik2Source as MapnikSource
+        else:
+            from mapproxy.source.mapnik import MapnikSource
         return MapnikSource(mapfile, layers=layers, image_opts=image_opts,
             coverage=coverage, res_range=res_range, lock=lock)
 
