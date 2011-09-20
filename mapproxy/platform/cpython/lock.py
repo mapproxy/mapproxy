@@ -104,7 +104,9 @@ def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300, force=True):
     if not force and _cleanup_counter % 50 != 0:
         return
     expire_time = time.time() - max_lock_time
-    if not os.path.exists(lockdir) or not os.path.isdir(lockdir):
+    if not os.path.exists(lockdir):
+        return
+    if not os.path.isdir(lockdir):
         log.warn('lock dir not a directory: %s', lockdir)
         return
     for entry in os.listdir(lockdir):
