@@ -123,6 +123,9 @@
     {{py: extent = limit_llbbox(layer.extent.llbbox)}}
     <LatLonBoundingBox minx="{{ extent[0] }}" miny="{{ extent[1] }}" maxx="{{ extent[2] }}" maxy="{{ extent[3] }}" />
     <BoundingBox SRS="EPSG:4326" minx="{{ extent[0] }}" miny="{{ extent[1] }}" maxx="{{ extent[2] }}" maxy="{{ extent[3] }}" />
+    {{if layer.extent.srs.srs_code != 'EPSG:4326'}}
+    <BoundingBox SRS="{{layer.extent.srs.srs_code}}" minx="{{ layer.extent.bbox[0] }}" miny="{{ layer.extent.bbox[1] }}" maxx="{{ layer.extent.bbox[2] }}" maxy="{{ layer.extent.bbox[3] }}" />
+    {{endif}}
     {{if layer.is_active and layer.has_legend}}
     <Style>
         <Name>default</Name>
