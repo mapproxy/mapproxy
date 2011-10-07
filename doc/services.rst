@@ -90,6 +90,14 @@ See :ref:`FeatureInformation for more informaiton <fi_xslt>`.
 
 Some WMS clients do not send all required parameters in feature info requests, MapProxy ignores these errors unless you set ``strict`` to ``true``.
 
+``max_output_pixels``
+"""""""""""""""""""""
+
+.. versionadded:: 1.3.0
+
+The maximum output size for a WMS requests in pixel. MapProxy returns an WMS exception in XML format for requests that are larger. Defaults to ``[4000, 4000]`` which will limit the maximum output size to 16 million pixels (i.e. 5000x3000 is still allowed).
+
+
 Full example
 """"""""""""
 ::
