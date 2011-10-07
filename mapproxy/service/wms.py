@@ -48,7 +48,7 @@ class WMSServer(Server):
     def __init__(self, root_layer, md, srs, image_formats, layer_merger=None,
         request_parser=None, tile_layers=None, attribution=None, 
         info_types=None, strict=False, on_error='raise',
-        concurrent_layer_renderer=1):
+        concurrent_layer_renderer=1, max_output_pixel=None):
         Server.__init__(self)
         self.request_parser = request_parser or partial(wms_request, strict=strict)
         self.root_layer = root_layer
@@ -65,6 +65,7 @@ class WMSServer(Server):
         self.image_formats = image_formats
         self.info_types = info_types
         self.srs = srs
+        self.max_output_pixel = max_output_pixel
                 
     def map(self, map_request):
         self.check_map_request(map_request)
@@ -217,6 +218,11 @@ class WMSServer(Server):
         return Response(resp, mimetype=mimetype)
     
     def check_map_request(self, request):
+        if self.max_output_pixel and \
+            (request.params.size[0] * request.params.size[1]) > self.max_output_pixel:
+            request.prevent_image_exception = True
+            raise RequestError("image size too large", request=request)
+        
         self.validate_layers(request)
         request.validate_format(self.image_formats)
         request.validate_srs(self.srs)

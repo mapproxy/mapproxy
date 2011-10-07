@@ -183,6 +183,7 @@ class WMSMapRequest(WMSRequest):
                       'width', 'height', 'format']
     #pylint: disable-msg=E1102
     xml_exception_handler = None
+    prevent_image_exception = False
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
         WMSRequest.__init__(self, param=param, url=url, validate=validate,
@@ -234,6 +235,8 @@ class WMSMapRequest(WMSRequest):
     
     @property
     def exception_handler(self):
+        if self.prevent_image_exception:
+            return self.xml_exception_handler()
         if 'exceptions' in self.params:
             if 'image' in self.params['exceptions'].lower():
                 return exception.WMSImageExceptionHandler()

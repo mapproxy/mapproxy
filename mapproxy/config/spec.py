@@ -109,6 +109,7 @@ mapproxy_yaml_spec = {
             'lock_dir': str(),
             'meta_size': [number()],
             'meta_buffer': number(),
+            'max_tile_limit': number(),
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
         },
@@ -187,6 +188,7 @@ mapproxy_yaml_spec = {
                 anything(): str()
             },
             'source_errors': str(),
+            'max_output_pixel': one_off(number(), [number()]),
             'md': {
                 'title': basestring,
                 'abstract': basestring,
