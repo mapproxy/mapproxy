@@ -22,7 +22,7 @@ wms = dict(
     request_parser = 'default',
     client_request = 'default',
     concurrent_layer_renderer = 1,
-    max_output_pixel = 4000*4000,
+    max_output_pixels = 4000*4000,
 )
 debug_mode = False
 

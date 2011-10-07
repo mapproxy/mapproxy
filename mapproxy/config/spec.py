@@ -188,7 +188,7 @@ mapproxy_yaml_spec = {
                 anything(): str()
             },
             'source_errors': str(),
-            'max_output_pixel': one_off(number(), [number()]),
+            'max_output_pixels': one_off(number(), [number()]),
             'md': {
                 'title': basestring,
                 'abstract': basestring,
