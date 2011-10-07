@@ -134,6 +134,13 @@ class TestWMS111(WMSTest):
         eq_(resp.content_type, 'application/vnd.ogc.se_xml')
         is_111_exception(resp.lxml, 'unknown layer: invalid', 'LayerNotDefined')
     
+    def test_invalid_layer_img_exception(self):
+        self.common_map_req.params['layers'] = 'invalid'
+        self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'image/png')
+        assert is_png(StringIO(resp.body))
+    
     def test_invalid_format(self):
         self.common_map_req.params['format'] = 'image/ascii'
         resp = self.app.get(self.common_map_req)
@@ -166,6 +173,14 @@ class TestWMS111(WMSTest):
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'application/vnd.ogc.se_xml')
         is_111_exception(resp.lxml, 'unsupported styles: unknown', 'StyleNotDefined')
+
+    def test_get_map_too_large(self):
+        self.common_map_req.params.size = (5000, 5000)
+        self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
+        resp = self.app.get(self.common_map_req)
+        # is xml, even if inimage was requested
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        is_111_exception(resp.lxml, 'image size too large')
     
     def test_get_map_default_style(self):
         self.common_map_req.params['styles'] = 'default'
