@@ -187,7 +187,7 @@ mapproxy_yaml_spec = {
             'featureinfo_xslt': {
                 anything(): str()
             },
-            'source_errors': str(),
+            'on_source_errors': str(),
             'max_output_pixels': one_off(number(), [number()]),
             'strict': bool(),
             'md': {
