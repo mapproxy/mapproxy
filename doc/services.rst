@@ -90,6 +90,12 @@ See :ref:`FeatureInformation for more informaiton <fi_xslt>`.
 
 Some WMS clients do not send all required parameters in feature info requests, MapProxy ignores these errors unless you set ``strict`` to ``true``.
 
+``on_source_errors``
+""""""""""""""""""""
+
+Configure what MapProxy should do when one or more sources return errors or no response at all (e.g. timeout). The default is ``notify``, which adds a text line in the image response for each erroneous source, but only if a least one source was successful. When ``on_source_errors`` is set to ``raise``, MapProxy will return an OGC service exception in any error case.
+
+
 ``max_output_pixels``
 """""""""""""""""""""
 
