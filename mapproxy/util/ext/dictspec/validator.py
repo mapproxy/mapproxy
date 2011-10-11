@@ -139,7 +139,7 @@ class Validator(object):
 
         for k, v in data.iteritems():
             if accept_any_key:
-                with self.context.pos('.' + k):
+                with self.context.pos('.' + str(k)):
                     self._validate_part(any_key_spec, v)
 
             else:

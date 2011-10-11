@@ -21,12 +21,24 @@
 
 from __future__ import absolute_import
 
+import unittest
+
 from ..validator import validate, ValidationError, SpecError
-from ..spec import required, one_off, number, recursive, type_spec
+from ..spec import required, one_off, number, recursive, type_spec, anything
 
-from nose.tools import raises
 
-class TestSimpleDict(object):
+def raises(exception):
+    def wrapper(f):
+        def _wrapper(self):
+            try:
+                f(self)
+            except exception:
+                pass
+            else:
+                raise AssertionError('expected exception %s', exception)
+    return wrapper
+
+class TestSimpleDict(unittest.TestCase):
     def test_validate_simple_dict(self):
         spec = {'hello': 1, 'world': True}
         validate(spec, {'hello': 34, 'world': False})
@@ -65,7 +77,7 @@ class TestSimpleDict(object):
         validate(spec, {'str()': 'str', 'basestring': u'☃', 'int': 1, 'int()': 1})
 
 
-class TestLists(object):
+class TestLists(unittest.TestCase):
     def test_list(self):
         spec = [1]
         validate(spec, [1, 2, 3, 4, -9])
@@ -79,7 +91,7 @@ class TestLists(object):
         spec = [1]
         validate(spec, [1, 'hello'])
 
-class TestNumber(object):
+class TestNumber(unittest.TestCase):
     def check_valid(self, spec, data):
         validate(spec, data)
     
@@ -88,7 +100,7 @@ class TestNumber(object):
         for i in (0, 1, 23e999, int(10e20), 23.1, -0.0000000001):
             yield self.check_valid, spec, i
 
-class TestNested(object):
+class TestNested(unittest.TestCase):
     def check_valid(self, spec, data):
         validate(spec, data)
     
@@ -118,7 +130,7 @@ class TestNested(object):
         yield self.check_invalid, spec, {'globals': {'image': {'foo': {'png': {'mode': 'P'}}}}}
         yield self.check_invalid, spec, {'globals': {'image': {'png': {'png': {'mode': 1}}}}}
 
-class TestRecursive(object):
+class TestRecursive(unittest.TestCase):
     def test(self):
         spec = recursive({'hello': str(), 'more': recursive()})
         validate(spec, {'hello': 'world', 'more': {'hello': 'foo', 'more': {'more': {}}}})
@@ -134,13 +146,13 @@ class TestRecursive(object):
         spec = {'a': recursive()}
         validate(spec, {'a': {'a': {}}})
 
-class TestTypeSpec(object):
+class TestTypeSpec(unittest.TestCase):
     def test(self):
         spec = type_spec('type', {'foo': {'alpha': str()}, 'bar': {'one': 1, 'two': str()}})
         validate(spec, {'type': 'foo', 'alpha': 'yes'})
         validate(spec, {'type': 'bar', 'one': 2})
 
-class TestErrors(object):
+class TestErrors(unittest.TestCase):
     def test_invalid_types(self):
         spec = {'str': str, 'str()': str(), 'basestring': basestring, '1': 1, 'int': int}
         try:
@@ -183,3 +195,16 @@ class TestErrors(object):
             assert 'numbers[3] not of type number' in ex.errors[1]
         else:
             assert False
+
+    def test_error_in_non_string_key(self):
+        spec = {anything(): bool()}
+        try:
+            validate(spec, {1: 'not a bool'})
+        except ValidationError, ex:
+            assert "'not a bool' in 1 not of type bool" in ex.errors[0]
+        else:
+            assert False
+
+if __name__ == '__main__':
+    unittest.main()
+
