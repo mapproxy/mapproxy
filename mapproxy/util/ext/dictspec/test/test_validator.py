@@ -197,6 +197,15 @@ class TestErrors(unittest.TestCase):
             assert False
 
     def test_error_in_non_string_key(self):
+        spec = {1: bool()}
+        try:
+            validate(spec, {1: 'not a bool'})
+        except ValidationError, ex:
+            assert "'not a bool' in 1 not of type bool" in ex.errors[0]
+        else:
+            assert False
+    
+    def test_error_in_non_string_key_with_anything_key_spec(self):
         spec = {anything(): bool()}
         try:
             validate(spec, {1: 'not a bool'})

@@ -147,7 +147,7 @@ class Validator(object):
                     self._handle_error("unknown '%s' in %s" %
                         (k, self.context.current_pos), info_only=True)
                     continue
-                with self.context.pos('.' + k):
+                with self.context.pos('.' + str(k)):
                     self._validate_part(spec[k], v)
 
     def _validate_list(self, spec, data):
