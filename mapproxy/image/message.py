@@ -175,12 +175,14 @@ class WatermarkImage(MessageImage):
     font_size = 24
     font_color = (128, 128, 128)
     
-    def __init__(self, message, image_opts, placement='c', opacity=None, font_size=None):
+    def __init__(self, message, image_opts, placement='c', opacity=None, font_color=None, font_size=None):
         MessageImage.__init__(self, message, image_opts=image_opts)
         if opacity is None:
             opacity = 30
         if font_size:
             self.font_size = font_size
+        if font_color:
+            self.font_color = font_color
         self.font_color = self.font_color + tuple([opacity])
         self.placement = placement
     

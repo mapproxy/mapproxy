@@ -166,6 +166,7 @@ mapproxy_yaml_spec = {
             'watermark': {
                 'text': basestring,
                 'font_size': number(),
+                'color': one_off(str(), [number()]),
                 'opacity': number(),
                 'spacing': str(),
             },

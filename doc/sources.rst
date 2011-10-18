@@ -138,7 +138,7 @@ See :ref:`image_options` for other options.
 
   .. versionadded:: 1.0.0
 
-  Specify a color that should be converted to full transparency. Can be either a list of color (``[255, 255, 255]``) values or a hex string (``#ffffff``).
+  Specify a color that should be converted to full transparency. Can be either a list of color values (``[255, 255, 255]``) or a hex string (``#ffffff``).
 
 ``transparent_color_tolerance``
 

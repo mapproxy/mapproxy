@@ -859,6 +859,8 @@ class CacheConfiguration(ConfigurationBase):
         filters = []
         if 'watermark' in self.conf:
             from mapproxy.tilefilter import create_watermark_filter
+            if self.conf['watermark'].get('color'):
+                self.conf['watermark']['color'] = parse_color(self.conf['watermark']['color'])
             f = create_watermark_filter(self.conf, self.context)
             if f:
                 filters.append(f)

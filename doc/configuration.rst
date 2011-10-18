@@ -238,6 +238,9 @@ Add a watermark right into the cached tiles. The watermark is thus also present 
 ``font_size``
   Font size of the watermark text.
 
+``color``
+  Color of the watermark text. Default is grey which works good for vector images. Can be either a list of color values (``[255, 255, 255]``) or a hex string (``#ffffff``).
+
 ``spacing``
   Configure the spacing between repeated watermarks. By default the watermark will be placed on
   every tile, with ``wide`` the watermark will be placed on every second tile.
