@@ -83,11 +83,13 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             return True
         
         cur = self.db.cursor()
-        cur.execute('''SELECT 1 FROM tiles
+        cur.execute('''SELECT tile_data FROM tiles
             WHERE tile_column = ? AND
                   tile_row = ? AND
                   zoom_level = ?''', tile.coord)
-        if cur.fetchone():
+        content = cur.fetchone()
+        if content:
+            tile.source = ImageSource(StringIO(content[0]))
             return True
         else:
             return False
