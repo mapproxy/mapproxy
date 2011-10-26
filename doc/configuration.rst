@@ -841,7 +841,7 @@ You can change all options individually for each cache or source. You can do thi
       sources: [source1, source2]
       grids: [my_grid]
 
-You can also configure a the format from scratch::
+You can also configure the format from scratch::
 
   caches:
     mycache:
