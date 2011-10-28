@@ -77,6 +77,30 @@ def serve_develop_command(args):
         threaded=True, passthrough_errors=True,
         extra_files=[mapproxy_conf])
 
+def serve_multiapp_develop_command(args):
+    parser = optparse.OptionParser("usage: %prog serve-multiapp-develop [options] projects/")
+    parser.add_option("-b", "--bind",
+                      dest="address", default='127.0.0.1:8080',
+                      help="Server socket [127.0.0.1:8080]")
+    options, args = parser.parse_args(args)
+    
+    if len(args) != 2:
+        parser.print_help()
+        print "\nERROR: MapProxy projects directory required."
+        sys.exit(1)
+        
+    mapproxy_conf_dir = args[1]
+    
+    host, port = parse_bind_address(options.address)
+    
+    setup_logging()
+    from mapproxy.multiapp import make_wsgi_app
+    from mapproxy.util.ext.serving import run_simple
+    app = make_wsgi_app(mapproxy_conf_dir)
+    
+    run_simple(host, port, app, use_reloader=True, processes=1,
+        threaded=True, passthrough_errors=True)
+
 
 def parse_bind_address(address, default=('localhost', 8080)):
     """
@@ -217,6 +241,10 @@ commands = {
     'serve-develop': {
         'func': serve_develop_command,
         'help': 'Run MapProxy development server.'
+    },
+    'serve-multiapp-develop': {
+        'func': serve_multiapp_develop_command,
+        'help': 'Run MultiMapProxy development server.'
     },
     'create': {
         'func': create_command,

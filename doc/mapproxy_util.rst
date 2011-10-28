@@ -97,10 +97,39 @@ Example
   mapproxy-util serve-develop ./mapproxy.yaml
 
 
+``serve-multiapp-develop``
+==========================
+
+.. versionadded:: 1.3.0
+
+
+This sub-command is similar to ``serve-develop`` but it starts a :ref:`MultiMapProxy <multimapproxy>` instance.
+
+You need to pass a directory of your MapProxy configurations as an argument. The server will automatically reload if you change any configuration or any of the MapProxy source code.
+
+
+.. program:: mapproxy-util serve-multiapp-develop
+
+.. cmdoption:: -b <address>, --bind <address>
+  
+  The server address where the HTTP server should listen for incomming connections. Can be a port (``:8080``), a host (``localhost``) or both (``localhost:8081``). The default is ``localhost:8080``. You need to use ``0.0.0.0`` to be able to connect to the server from external clients.
+
+
+Example
+-------
+
+::
+
+  mapproxy-util serve-multiapp-develop my_projects/
+
+
+
 .. _mapproxy_util_scales:
 
 ``scales``
 ==========
+
+.. versionadded:: 1.2.0
 
 This sub-command helps to convert between scales and resolutions.
 
