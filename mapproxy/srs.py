@@ -424,7 +424,9 @@ def bbox_equals(src_bbox, dst_bbox, x_delta, y_delta=None):
 def make_lin_transf(src_bbox, dst_bbox):
     """
     Create a transformation function that transforms linear between two
-    cartesian coordinate systems.
+    plane coordinate systems.
+    One needs to be cartesian (0, 0 at the lower left, x goes up) and one
+    needs to be an image coordinate system (0, 0 at the top left, x goes down).
     
     :return: function that takes src x/y and returns dest x/y coordinates
     
