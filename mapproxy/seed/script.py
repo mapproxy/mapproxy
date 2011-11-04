@@ -133,7 +133,7 @@ class SeedScript(object):
                     print '========== Cleanup tasks =========='
                     print 'Start cleanup process (%d task%s)' % (
                         len(cleanup_tasks), 's' if len(cleanup_tasks) > 1 else '')
-                    cleanup(cleanup_tasks, verbose=options.verbose, dry_run=options.dry_run,
+                    cleanup(cleanup_tasks, verbose=options.quiet==0, dry_run=options.dry_run,
                             concurrency=options.concurrency,
                             skip_geoms_for_last_levels=options.geom_levels)
             except KeyboardInterrupt:
