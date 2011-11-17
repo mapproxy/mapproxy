@@ -334,7 +334,10 @@ You can set the ``sources`` to an empty list, if you use an existing MBTiles fil
         type: mbtiles
         filename: /path/to/bluemarble.mbtiles
 
+.. note::
 
+  The MBTiles format does not include any timestamps for each tile and the seeding function is limited therefore. If you include any ``refresh_before`` time in a seed task, all tiles will be recreated regardless of the value. The cleanup process does not support any ``remove_before`` times for MBTiles and it always removes all tiles.
+  Use the ``--summary`` option of the ``mapproxy-seed`` tool.
 
 Example ``caches`` configuration
 """"""""""""""""""""""""""""""""

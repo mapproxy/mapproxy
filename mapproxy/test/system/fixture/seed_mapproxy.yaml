@@ -6,9 +6,20 @@ caches:
     sources: [source_a]
     grids: [GLOBAL_GEODETIC]
 
+  mbtile_cache:
+    sources: [source_b]
+    grids: [GLOBAL_GEODETIC]
+    cache:
+      type: mbtiles
+
 sources:
   source_a:
     type: wms
     req:
       url: http://localhost:42423/service?
       layers: foo
+  source_b:
+    type: wms
+    req:
+      url: http://localhost:42423/service?
+      layers: bar

@@ -241,13 +241,18 @@ class SeedTask(object):
 
 
 class CleanupTask(object):
-    def __init__(self, md, tile_manager, levels, remove_timestamp, coverage):
+    """
+    :param coverage: area for the cleanup
+    :param complete_extent: ``True`` if `coverage` equals the extent of the grid
+    """
+    def __init__(self, md, tile_manager, levels, remove_timestamp, coverage, complete_extent=False):
         self.md = md
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
         self.levels = levels
         self.remove_timestamp = remove_timestamp
         self.coverage = coverage
+        self.complete_extent = complete_extent
     
     def intersects(self, bbox):
         if self.coverage.contains(bbox, self.grid.srs): return CONTAINS
@@ -258,7 +263,7 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
     progress_logger=None):
     for task in tasks:
         print format_seed_task(task)
-        if task.refresh_timestamp:
+        if task.refresh_timestamp is not None:
             task.tile_manager._expire_timestamp = task.refresh_timestamp
         task.tile_manager.minimize_meta_requests = False
         tile_worker_pool = TileWorkerPool(task, TileSeedWorker, dry_run=dry_run,

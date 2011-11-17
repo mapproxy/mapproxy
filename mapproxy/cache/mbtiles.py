@@ -28,6 +28,8 @@ import logging
 log = logging.getLogger(__name__)
 
 class MBTilesCache(TileCacheBase, FileBasedLocking):
+    supports_timestamp = False
+    
     def __init__(self, mbtile_file):
         self.lock_cache_id = mbtile_file
         self.lock_dir = mbtile_file + '.locks'
@@ -156,6 +158,15 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
         cursor.execute(
             "DELETE FROM tiles WHERE (tile_column = ? AND tile_row = ? AND zoom_level = ?)",
             tile.coord)
+        self.db.commit()
         if cursor.rowcount:
             return True
         return False
+    
+    def load_tile_metadata(self, tile):
+        """
+        MBTiles specification does not include timestamps.
+        This sets the timestamp of the tile to epoch (1970s)
+        """
+        tile.timestamp = -1
+        

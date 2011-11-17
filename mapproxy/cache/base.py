@@ -36,6 +36,8 @@ class TileCacheBase(object):
     Base implementation of a tile cache.
     """
     
+    supports_timestamp = True
+    
     def load_tile(self, tile, with_metadata=False):
         raise NotImplementedError()
     

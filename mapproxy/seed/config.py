@@ -101,14 +101,18 @@ class LegacySeedingConfiguration(object):
                     if cache_srs and grid.srs not in cache_srs: continue
                     md = dict(name=view, cache_name=cache_name, grid_name=self.grids[grid])
                     levels = range(level[0], level[1]+1)
-                    seed_coverage = None
                     if coverage:
                         seed_coverage = coverage.transform_to(grid.srs)
+                    else:
+                        seed_coverage = BBOXCoverage(grid.bbox, grid.srs)
+                    
                     self.seed_tasks.append(SeedTask(md, tile_mgr, levels, remove_before, seed_coverage))
             
                     if remove_before:
                         levels = range(grid.levels)
-                        self.cleanup_tasks.append(CleanupTask(md, tile_mgr, levels, remove_before, None))
+                        complete_extent = bool(coverage)
+                        self.cleanup_tasks.append(CleanupTask(md, tile_mgr, levels, remove_before,
+                            seed_coverage, complete_extent=complete_extent))
                         
     def seed_tasks_names(self):
         return self.conf['seeds'].keys()
@@ -260,17 +264,25 @@ class SeedConfiguration(ConfigurationBase):
                 else:
                     levels = list(xrange(0, grid.levels))
                 
+                if not tile_manager.cache.supports_timestamp:
+                    if self.refresh_timestamp:
+                        # remove everything
+                        self.refresh_timestamp = 0
+                
                 md = dict(name=self.name, cache_name=cache_name, grid_name=grid_name)
                 yield SeedTask(md, tile_manager, levels, self.refresh_timestamp, coverage)
 
 class CleanupConfiguration(ConfigurationBase):
     def __init__(self, name, conf, seeding_conf):
         ConfigurationBase.__init__(self, name, conf, seeding_conf)
+        self.init_time = time.time()
         
         if 'remove_before' in self.conf:
             self.remove_timestamp = before_timestamp_from_options(self.conf['remove_before'])
         else:
-            self.remove_timestamp = time.time()
+            # use now as remove_before date. this should not remove
+            # fresh seeded tiles, since this should be configured before seeding
+            self.remove_timestamp = self.init_time
     
     def cleanup_tasks(self):
         for grid_name in self.grids:
@@ -279,15 +291,26 @@ class CleanupConfiguration(ConfigurationBase):
                 grid = self.seeding_conf.grids[grid_name]
                 if self.coverage:
                     coverage = self.coverage.transform_to(grid.srs)
+                    complete_extent = False
                 else:
-                    coverage = None
+                    coverage = BBOXCoverage(grid.bbox, grid.srs)
+                    complete_extent = True
                 if self.levels:
                     levels = self.levels.for_grid(grid)
                 else:
                     levels = list(xrange(0, grid.levels))
                 
+                if not tile_manager.cache.supports_timestamp:
+                    # for caches without timestamp support (like MBTiles)
+                    if self.remove_timestamp is self.init_time:
+                        # remove everything
+                        self.remove_timestamp = 0
+                    else:
+                        raise SeedConfigurationError("cleanup does not support remove_before for '%s'"
+                            " because cache '%s' does not support timestamps" % (self.name, cache_name))
                 md = dict(name=self.name, cache_name=cache_name, grid_name=grid_name)
-                yield CleanupTask(md, tile_manager, levels, self.remove_timestamp, coverage)
+                yield CleanupTask(md, tile_manager, levels, self.remove_timestamp, 
+                    coverage=coverage, complete_extent=complete_extent)
     
 
 def levels_from_options(conf):

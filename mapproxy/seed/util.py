@@ -158,6 +158,8 @@ def format_seed_task(task):
     if task.refresh_timestamp:
         info.append('    Overwriting: tiles older than %s' %
                     datetime.fromtimestamp(task.refresh_timestamp))
+    elif task.refresh_timestamp == 0:
+        info.append('    Overwriting: all tiles')
     else:
         info.append('    Overwriting: no tiles')
     

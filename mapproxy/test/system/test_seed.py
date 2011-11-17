@@ -19,12 +19,15 @@ import time
 import shutil
 import tempfile
 from mapproxy.config.loader import load_configuration
+from mapproxy.cache.tile import Tile
+from mapproxy.image import ImageSource
+from mapproxy.image.opts import ImageOptions
 from mapproxy.seed.seeder import seed
 from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.config import load_seed_tasks_conf
 
 from mapproxy.test.http import mock_httpd
-from mapproxy.test.image import tmp_image
+from mapproxy.test.image import tmp_image, create_tmp_image_buf
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 
@@ -61,7 +64,7 @@ class SeedTestBase(object):
 
     def test_seed_dry_run(self):
         seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        tasks, cleanup_tasks = seed_conf.seeds(), seed_conf.cleanups()
+        tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
         seed(tasks, dry_run=True)
         cleanup(cleanup_tasks, verbose=False, dry_run=True)
     
@@ -74,7 +77,7 @@ class SeedTestBase(object):
                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-                tasks, cleanup_tasks = seed_conf.seeds(), seed_conf.cleanups()
+                tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
                 seed(tasks, dry_run=False)
                 cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
@@ -82,7 +85,7 @@ class SeedTestBase(object):
         # tile already there.
         self.make_tile((0, 0, 0))
         seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        tasks, cleanup_tasks = seed_conf.seeds(), seed_conf.cleanups()
+        tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
         seed(tasks, dry_run=False)
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
@@ -112,6 +115,9 @@ class TestSeedOldConfiguration(SeedTestBase):
         assert os.path.exists(t000)
         assert os.path.getmtime(t000) - 5 < time.time() < os.path.getmtime(t000) + 5
         assert not os.path.exists(t001)
+
+
+tile_image = create_tmp_image_buf((256, 256), color='blue')
 
 class TestSeed(SeedTestBase):
     seed_conf_name = 'seed.yaml'
@@ -149,4 +155,54 @@ class TestSeed(SeedTestBase):
         assert not self.tile_exists((2, 0, 3))
         assert self.tile_exists((4, 0, 3))
 
+    def test_seed_mbtile(self):
+        with tmp_image((256, 256), format='png') as img:
+            img_data = img.read()
+            expected_req = ({'path': r'/service?LAYERS=bar&SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                                  '&width=256&height=128&srs=EPSG:4326'},
+                            {'body': img_data, 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+                tasks, cleanup_tasks = seed_conf.seeds(['mbtile_cache']), seed_conf.cleanups(['cleanup_mbtile_cache'])
+                seed(tasks, dry_run=False)
+                cleanup(cleanup_tasks, verbose=False, dry_run=False)
+    
+    def create_tile(self, coord=(0, 0, 0)):
+        return Tile(coord,
+            ImageSource(tile_image,
+                image_opts=ImageOptions(format='image/png')))
+    
+    def test_reseed_mbtiles(self):
+        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        tasks, cleanup_tasks = seed_conf.seeds(['mbtile_cache']), seed_conf.cleanups(['cleanup_mbtile_cache'])
+        
+        cache = tasks[0].tile_manager.cache
+        cache.store_tile(self.create_tile())
+        # no refresh before
+        seed(tasks, dry_run=False)
+
+    def test_reseed_mbtiles_with_refresh(self):
+        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        tasks, cleanup_tasks = seed_conf.seeds(['mbtile_cache_refresh']), seed_conf.cleanups(['cleanup_mbtile_cache'])
+        
+        cache = tasks[0].tile_manager.cache
+        cache.store_tile(self.create_tile())
+
+        expected_req = ({'path': r'/service?LAYERS=bar&SERVICE=WMS&FORMAT=image%2Fpng'
+                          '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                          '&width=256&height=128&srs=EPSG:4326'},
+                        {'body': tile_image.read(), 'headers': {'content-type': 'image/png'}})
+        with mock_httpd(('localhost', 42423), [expected_req]):
+            # mbtiles does not support timestamps, refresh all tiles
+            seed(tasks, dry_run=False)
+
+    def test_cleanup_mbtiles(self):
+        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        tasks, cleanup_tasks = seed_conf.seeds(['mbtile_cache_refresh']), seed_conf.cleanups(['cleanup_mbtile_cache'])
+        
+        cache = tasks[0].tile_manager.cache
+        cache.store_tile(self.create_tile())
+
+        cleanup(cleanup_tasks, verbose=False, dry_run=False)
 

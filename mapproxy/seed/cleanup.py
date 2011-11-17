@@ -23,14 +23,16 @@ def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
     for task in tasks:
         print format_cleanup_task(task)
         
-        if not task.coverage:
-            if hasattr(task.tile_manager.cache, 'remove_tiles_before'):
-                cache_cleanup(task, dry_run=dry_run)
-            else:
+        if task.complete_extent:
+            if hasattr(task.tile_manager.cache, 'level_location'):
                 simple_cleanup(task, dry_run=dry_run)
-        else:
-            coverage_cleanup(task, dry_run=dry_run, concurrency=concurrency,
-                             skip_geoms_for_last_levels=skip_geoms_for_last_levels)
+                continue
+            elif hasattr(task.tile_manager.cache, 'remove_tiles_before'):
+                cache_cleanup(task, dry_run=dry_run)
+                continue
+
+        tilewalker_cleanup(task, dry_run=dry_run, concurrency=concurrency,
+                         skip_geoms_for_last_levels=skip_geoms_for_last_levels)
 
 def simple_cleanup(task, dry_run):
     """
@@ -63,7 +65,7 @@ def normpath(path):
         path = os.path.abspath(path)
     return path
 
-def coverage_cleanup(task, dry_run, concurrency, skip_geoms_for_last_levels):
+def tilewalker_cleanup(task, dry_run, concurrency, skip_geoms_for_last_levels):
     """
     Cleanup tiles with tile traversal.
     """
