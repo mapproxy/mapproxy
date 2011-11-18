@@ -19,7 +19,7 @@ WMS service handler
 from itertools import chain
 from functools import partial
 from mapproxy.request.wms import (wms_request, WMS111LegendGraphicRequest,
-    mimetype_from_infotype, infotype_from_mimetype)
+    mimetype_from_infotype, infotype_from_mimetype, switch_bbox_epsg_axis_order)
 from mapproxy.srs import SRS, TransformationError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
@@ -48,7 +48,8 @@ class WMSServer(Server):
     def __init__(self, root_layer, md, srs, image_formats, layer_merger=None,
         request_parser=None, tile_layers=None, attribution=None, 
         info_types=None, strict=False, on_error='raise',
-        concurrent_layer_renderer=1, max_output_pixels=None):
+        concurrent_layer_renderer=1, max_output_pixels=None,
+        bbox_srs=None):
         Server.__init__(self)
         self.request_parser = request_parser or partial(wms_request, strict=strict)
         self.root_layer = root_layer
@@ -65,6 +66,7 @@ class WMSServer(Server):
         self.image_formats = image_formats
         self.info_types = info_types
         self.srs = srs
+        self.bbox_srs = bbox_srs
         self.max_output_pixels = max_output_pixels
                 
     def map(self, map_request):
@@ -141,8 +143,9 @@ class WMSServer(Server):
         elif self.fi_transformers:
             info_types = self.fi_transformers.keys()
         info_formats = [mimetype_from_infotype(map_request.version, info_type) for info_type in info_types]
-        
-        result = Capabilities(service, root_layer, tile_layers, self.image_formats, info_formats, self.srs).render(map_request)
+        result = Capabilities(service, root_layer, tile_layers,
+            self.image_formats, info_formats, srs=self.srs, bbox_srs=self.bbox_srs
+            ).render(map_request)
         return Response(result, mimetype=map_request.mime_type)
     
     def featureinfo(self, request):
@@ -332,13 +335,31 @@ class Capabilities(object):
     """
     Renders WMS capabilities documents.
     """
-    def __init__(self, server_md, layers, tile_layers, image_formats, info_formats, srs):
+    def __init__(self, server_md, layers, tile_layers, image_formats, info_formats,
+        srs, bbox_srs=None, epsg_axis_order=False):
         self.service = server_md
         self.layers = layers
         self.tile_layers = tile_layers
         self.image_formats = image_formats
         self.info_formats = info_formats
         self.srs = srs
+        self.bbox_srs = bbox_srs or ['EPSG:3857', 'EPSG:4326', 'EPSG:900913']
+        self.bbox_srs = list(set(self.bbox_srs).intersection(self.srs))
+    
+    def layer_srs_bbox(self, layer, epsg_axis_order=False):
+        layer_srs_code = layer.extent.srs.srs_code
+        for srs in self.bbox_srs:
+            bbox = layer.extent.bbox_for(SRS(srs))
+            if epsg_axis_order:
+                bbox = switch_bbox_epsg_axis_order(bbox, srs)
+            yield srs, bbox
+        
+        # add native srs
+        if layer_srs_code not in self.bbox_srs:
+            bbox = switch_bbox_epsg_axis_order(layer.extent.bbox, layer_srs_code)
+            if epsg_axis_order:
+                bbox = switch_bbox_epsg_axis_order(bbox, srs)
+            yield layer_srs_code, bbox
     
     def render(self, _map_request):
         return self._render_template(_map_request.capabilities_template)
@@ -350,7 +371,9 @@ class Capabilities(object):
                                    formats=self.image_formats,
                                    info_formats=self.info_formats,
                                    srs=self.srs,
-                                   tile_layers=self.tile_layers)
+                                   tile_layers=self.tile_layers,
+                                   layer_srs_bbox=self.layer_srs_bbox,
+        )
         # strip blank lines
         doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())
         return doc

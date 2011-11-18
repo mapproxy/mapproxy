@@ -57,6 +57,15 @@ The ``srs`` option defines which SRS the WMS service supports.::
 
 See :ref:`axis order<axis_order>` for further configuration that might be needed for WMS 1.3.0.
 
+``bbox_srs``
+""""""""""""
+
+.. versionadded:: 1.3.0
+
+The ``bbox_srs`` option controls in which SRS the BBOX is advertised in the capabilities document. It should only contain SRS that are configured in the ``srs`` option.
+
+You need to make sure that all layer extents are valid for these SRS. E.g. you can't choose a local SRS like UTM if you're using a global grid without limiting all sources with a ``coverage``.
+
 
 ``image_formats``
 """""""""""""""""

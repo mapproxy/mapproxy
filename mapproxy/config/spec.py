@@ -180,6 +180,7 @@ mapproxy_yaml_spec = {
         'wmts': {},
         'wms': {
             'srs': [str()],
+            'bbox_srs': [str()],
             'image_formats': [str()],
             'attribution': {
                 'text': basestring,

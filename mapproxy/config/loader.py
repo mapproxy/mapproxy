@@ -1162,6 +1162,7 @@ class ServiceConfiguration(ConfigurationBase):
         info_types = conf.get('featureinfo_types')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
         self.context.globals.base_config.wms.srs = srs
+        bbox_srs = conf.get('bbox_srs')
         
         max_output_pixels = self.context.globals.get_value('max_output_pixels', conf,
             global_key='wms.max_output_pixels')
@@ -1172,7 +1173,7 @@ class ServiceConfiguration(ConfigurationBase):
             image_formats=image_formats, info_types=info_types,
             srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors,
             concurrent_layer_renderer=concurrent_layer_renderer,
-            max_output_pixels=max_output_pixels)
+            max_output_pixels=max_output_pixels, bbox_srs=bbox_srs)
         
         server.fi_transformers = fi_xslt_transformers(conf, self.context)
         

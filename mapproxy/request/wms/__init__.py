@@ -300,15 +300,17 @@ class WMS111MapRequest(WMSMapRequest):
     def adapt_to_111(self):
         del self.params['wmtver']
 
-def _switch_bbox(self):
-    if self.bbox is not None and self.srs is not None:
+def switch_bbox_epsg_axis_order(bbox, srs):
+    if bbox is not None and srs is not None:
         try:
-            if SRS(self.srs).is_axis_order_ne:
-                bbox = self.bbox
-                bbox = bbox[1], bbox[0], bbox[3], bbox[2]
-                self.bbox = bbox
+            if SRS(srs).is_axis_order_ne:
+                return bbox[1], bbox[0], bbox[3], bbox[2]
         except RuntimeError:
-            log.warn('unknown SRS %s' % self.srs)
+            log.warn('unknown SRS %s' % srs)
+    return bbox
+    
+def _switch_bbox(self):
+    self.bbox = switch_bbox_epsg_axis_order(self.bbox, self.srs)
 
 class WMS130MapRequestParams(WMSMapRequestParams):
     """
