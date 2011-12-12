@@ -29,6 +29,7 @@ from mapproxy.config.loader import load_configuration, ConfigurationError
 
 import logging
 log = logging.getLogger('mapproxy.config')
+log_wsgiapp = logging.getLogger('mapproxy.wsgiapp')
 
 class Modjyhandler(object):
     def __init__(self):
@@ -156,10 +157,12 @@ class MapProxyApp(object):
                 if handler_name in self.handlers:
                     try:
                         resp = self.handlers[handler_name].handle(req)
-                    except Exception:
+                    except Exception, ex:
                         if self.base_config.debug_mode:
                             raise
                         else:
+                            log_wsgiapp.fatal('fatal error in %s for %s %s',
+                                handler_name, environ.get('PATH_INFO'), environ.get('QUERY_STRING'), exc_info=True)
                             import traceback
                             traceback.print_exc(file=environ['wsgi.errors'])
                             resp = Response('internal error', status=500)
