@@ -295,6 +295,11 @@ even if the there are matching tiles in the cache. See :ref:`seed_only <wms_seed
 
 .. note:: Be careful when using a cache with disabled storage in tile services when the cache uses WMS sources with metatiling.
 
+``cache_dir``
+"""""""""""""
+
+Directory where MapProxy should store tiles for this cache. Uses the value of ``globals.cache.base_dir`` by default.
+
 ``cache``
 """""""""
 
