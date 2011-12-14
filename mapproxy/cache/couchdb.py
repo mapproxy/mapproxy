@@ -24,7 +24,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         self.file_ext = file_ext
         self.tile_grid = tile_grid
         self.store_document = store_document
-        self.couch_url = '%s/%s' % (url.rstrip('/'), db_name)
+        self.couch_url = '%s/%s' % (url.rstrip('/'), db_name.lower())
         self.init_db()
         self.tile_path_template = tile_path_template
 
