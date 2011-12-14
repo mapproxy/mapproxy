@@ -80,10 +80,11 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
     def is_cached(self, tile):
         if tile.coord is None or tile.source:
             return True
-        url = self.tile_url(tile.coord)
+        url = self.document_url(tile.coord)
         resp = requests.get(url)
         if resp.status_code == 200:
-            tile.source = ImageSource(StringIO(resp.content))
+            doc = json.loads(resp.content)
+            tile.timestamp = doc.get(self.md_template.timestamp_key)
             return True
         if resp.status_code == 404:
             return False
@@ -103,10 +104,9 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         tile_doc['_attachments'] = {
             'tile': {
                 'content_type': 'image/' + self.file_ext,
-                'data': data.encode('base64'),
+                'data': data.encode('base64').replace('\n', ''),
             }
         }
-        
         return tile_id, tile_doc
         
     def _store_bulk(self, tiles):
@@ -167,14 +167,24 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
     def store_tiles(self, tiles):
         tiles = [t for t in tiles if not t.stored]
         return self._store_bulk(tiles)
-
+    
+    def load_tile_metadata(self, tile):
+        if tile.timestamp:
+            return 
+        
+        # is_cached loads metadata
+        self.is_cached(tile)
+    
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
             return True
-        url = self.tile_url(tile.coord)
-        resp = requests.get(url)
+        url = self.document_url(tile.coord) + '?attachments=true'
+        resp = requests.get(url, headers={'Accept': 'application/json'})
         if resp.status_code == 200:
-            tile.source = ImageSource(StringIO(resp.content))
+            doc = json.loads(resp.content)
+            tile_data = StringIO(doc['_attachments']['tile']['data'].decode('base64'))
+            tile.source = ImageSource(tile_data)
+            tile.timestamp = doc.get(self.md_template.timestamp_key)
             return True
         return False
     
