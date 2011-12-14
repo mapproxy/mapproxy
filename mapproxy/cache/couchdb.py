@@ -69,15 +69,21 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             'zoom_level': z,
         }
     
-    def _store_tile_document(self, tile):
+    def _store_with_document(self, tile, data, content_type):
         tile_document = self.tile_document(tile)
         url = self.document_url(tile.coord)
-        content_type = 'application/json'
+        
+        tile_document['_attachments'] = {
+            'tile': {
+                'content_type': content_type,
+                'data': data.encode('base64'),
+            }
+        }
         
         body = json.dumps(tile_document)
         
         resp = requests.put(url,
-            headers={'Content-type': content_type},
+            headers={'Content-type': 'application/json'},
             data=body)
         
         if resp.status_code == 409:
@@ -86,20 +92,19 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             tile_document['_rev'] = rev_id
             body = json.dumps(tile_document)
             resp = requests.put(url,
-                headers={'Content-type': content_type},
+                headers={'Content-type': 'application/json'},
                 data=body)
         elif resp.status_code != 201:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
         
         return resp.headers['etag'].strip('"')
     
-    def _store_tile(self, url, data, content_type, rev_id=None):
-        if rev_id:
-            url += '?rev=' + rev_id
+    def _store(self, tile, data, content_type):
+        url = self.tile_url(tile.coord)
         resp = requests.put(url,
             headers={'Content-type': 'image/' + self.file_ext},
             data=data)
-        if resp.status_code == 409 and not rev_id:
+        if resp.status_code == 409:
             resp = requests.head(url)
             rev_id = resp.headers['etag']
             url += '?rev=' + rev_id.strip('"')
@@ -108,21 +113,18 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
                 data=data)
         elif resp.status_code != 201:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
-        
-        return resp.headers['etag'].strip('"')
     
     def store_tile(self, tile):
         if tile.stored:
             return True
             
         with tile_buffer(tile) as buf:
-            url = self.tile_url(tile.coord)
             data = buf.read()
             
-            rev_id = None
             if self.store_document:
-                rev_id = self._store_tile_document(tile)
-            self._store_tile(url, data, 'image/' + self.file_ext, rev_id=rev_id)
+                self._store_with_document(tile, data, 'image/' + self.file_ext)
+            else:
+                self._store(tile, data, 'image/' + self.file_ext)
             return True
 
     def load_tile(self, tile, with_metadata=False):
