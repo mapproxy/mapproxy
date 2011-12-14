@@ -847,7 +847,7 @@ class CacheConfiguration(ConfigurationBase):
         return MBTilesCache(mbfile_path)
 
     def _couchdb_cache(self, grid_conf, file_ext):
-        from mapproxy.cache.couchdb import CouchDBCache
+        from mapproxy.cache.couchdb import CouchDBCache, CouchDBMDTemplate
         
         cache_dir = self.cache_dir()
         
@@ -860,12 +860,12 @@ class CacheConfiguration(ConfigurationBase):
         if not url:
             url = 'http://127.0.0.1:5984'
         
-        store_document = self.conf['cache'].get('tile_document', False)
+        md_template = CouchDBMDTemplate(self.conf['cache'].get('tile_metadata', {}))
         tile_path = self.conf['cache'].get('tile_path')
         
         return CouchDBCache(url=url, db_name=db_name,
             lock_dir=cache_dir, file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
-            store_document=store_document, tile_path_template=tile_path)
+            md_template=md_template, tile_path_template=tile_path)
 
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):

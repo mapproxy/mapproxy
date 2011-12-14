@@ -91,7 +91,9 @@ cache_types = {
     'couchdb': {
         'url': str(),
         'db_name': str(),
-        'tile_document': bool(),
+        'tile_metadata': {
+            anything(): anything()
+        },
         'tile_path': str(),
     },
 }

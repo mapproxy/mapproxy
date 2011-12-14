@@ -1,5 +1,20 @@
-import requests
+# This file is part of the MapProxy project.
+# Copyright (C) 2011 Omniscale <http://omniscale.de>
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#    http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
+import time
 import threading
 
 from cStringIO import StringIO
@@ -11,19 +26,28 @@ from mapproxy.cache.base import (
 from mapproxy.source import SourceError
 from mapproxy.util.times import parse_httpdate
 
+try:
+    import requests
+except ImportError:
+    requests = None
+
 class UnexpectedResponse(CacheBackendError):
     pass
 
 class CouchDBCache(TileCacheBase, FileBasedLocking):
     def __init__(self, url, db_name, lock_dir,
-        file_ext, tile_grid, store_document=False,
+        file_ext, tile_grid, md_template=None,
         tile_path_template=None):
+        
+        if requests is None:
+            raise ImportError("CochDB backend requires 'requests' package.")
+        
         self.lock_cache_id = url + db_name
         self.lock_dir = lock_dir
         self.lock_timeout = 60
         self.file_ext = file_ext
         self.tile_grid = tile_grid
-        self.store_document = store_document
+        self.md_template = md_template
         self.couch_url = '%s/%s' % (url.rstrip('/'), db_name.lower())
         self.init_db()
         self.tile_path_template = tile_path_template
@@ -65,24 +89,11 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             return False
         raise SourceError('%r: %r' % (resp.status_code, resp.content))
     
-    def tile_document(self, tile):
-        tile_bbox = self.tile_grid.tile_bbox(tile.coord)
-        centroid = (
-            tile_bbox[0] + (tile_bbox[2]-tile_bbox[0])/2,
-            tile_bbox[1] + (tile_bbox[3]-tile_bbox[1])/2
-        )
-        x, y, z = tile.coord
-        return {
-            'centroid': centroid,
-            'tile_row': x,
-            'tile_column': y,
-            'zoom_level': z,
-        }
-
-    def _tile_doc(self, tile, with_metadata=False):
+    
+    def _tile_doc(self, tile):
         tile_id = self.document_url(tile.coord, relative=True)
-        if with_metadata:
-            tile_doc = self.tile_document(tile)
+        if self.md_template:
+            tile_doc = self.md_template.doc(tile, self.tile_grid)
         else:
             tile_doc = {}
         tile_doc['_id'] = tile_id
@@ -98,10 +109,10 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         
         return tile_id, tile_doc
         
-    def _store_bulk(self, tiles, with_metadata=False):
+    def _store_bulk(self, tiles):
         tile_docs = {}
         for tile in tiles:
-            tile_id, tile_doc = self._tile_doc(tile, with_metadata)
+            tile_id, tile_doc = self._tile_doc(tile)
             tile_docs[tile_id] = tile_doc
         
         duplicate_tiles = self._post_bulk(tile_docs)
@@ -118,7 +129,6 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         """
         doc = {'docs': tile_docs.values()}
         data = json.dumps(doc)
-        print '\n', len(data), len(tile_docs)
         resp = requests.post(self.couch_url + '/_bulk_docs', data=data, headers={'Content-type': 'application/json'})
         if resp.status_code != 201:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
@@ -152,11 +162,11 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         if tile.stored:
             return True
             
-        return self._store_bulk([tile], with_metadata=self.store_document)
+        return self._store_bulk([tile])
 
     def store_tiles(self, tiles):
         tiles = [t for t in tiles if not t.stored]
-        return self._store_bulk(tiles, with_metadata=self.store_document)
+        return self._store_bulk(tiles)
 
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
@@ -171,7 +181,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
     def remove_tile(self, tile):
         if tile.coord is None:
             return True
-        url = self.tile_url(tile.coord)
+        url = self.document_url(tile.coord)
         resp = requests.head(url)
         if resp.status_code == 404:
             # already removed
@@ -183,3 +193,41 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             return True
         return False
         
+
+class CouchDBMDTemplate(object):
+    def __init__(self, attributes):
+        self.attributes = attributes
+        for key, value in attributes.iteritems():
+            if value == '{{timestamp}}':
+                self.timestamp_key = key
+                break
+        else:
+            attributes['timestamp'] = '{{timestamp}}'
+            self.timestamp_key = 'timestamp'
+    
+    def doc(self, tile, grid):
+        doc = {}
+        x, y, z = tile.coord
+        for key, value in self.attributes.iteritems():
+            if not isinstance(value, basestring) or not value.startswith('{{'):
+                doc[key] = value
+                continue
+            
+            if value == '{{wgs_tile_centroid}}':
+                tile_bbox = grid.tile_bbox(tile.coord)
+                centroid = (
+                    tile_bbox[0] + (tile_bbox[2]-tile_bbox[0])/2,
+                    tile_bbox[1] + (tile_bbox[3]-tile_bbox[1])/2
+                )
+                doc[key] = centroid
+            elif value == '{{x}}':
+                doc[key] = x
+            elif value == '{{y}}':
+                doc[key] = y
+            elif value in ('{{z}}', '{{level}}'):
+                doc[key] = z
+            elif value == '{{timestamp}}':
+                doc[key] = time.time()
+            else:
+                raise ValueError('unknown CouchDB tile_metadata value: %r' % (value, ))
+        return doc
