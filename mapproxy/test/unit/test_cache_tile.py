@@ -16,7 +16,6 @@
 from __future__ import with_statement
 
 import os
-import random
 import shutil
 import tempfile
 import time
@@ -25,12 +24,9 @@ from cStringIO import StringIO
 
 from PIL import Image
 
-from nose.plugins.skip import SkipTest
-
 from mapproxy.cache.tile import Tile
 from mapproxy.cache.file import FileCache
 from mapproxy.cache.mbtiles import MBTilesCache
-from mapproxy.grid import tile_grid
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.test.image import create_tmp_image_buf, is_png
@@ -247,49 +243,3 @@ class TestMBTileCache(TileCacheTestBase):
         TileCacheTestBase.setup(self)
         self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'))
 
-
-class TestCouchDBCache(TileCacheTestBase):
-    always_loads_metadata = True
-    def setup(self):
-        if not os.environ.get('MAPPROXY_TEST_COUCHDB'):
-            raise SkipTest()
-        
-        couch_address = os.environ['MAPPROXY_TEST_COUCHDB']
-        db_name = 'mapproxy_test_%d' % random.randint(0, 100000)
-        
-        from mapproxy.cache.couchdb import CouchDBCache
-        TileCacheTestBase.setup(self)
-        self.cache = CouchDBCache(couch_address, db_name, lock_dir=self.cache_dir,
-            file_ext='png', tile_grid=tile_grid(3857, name='global-webmarcator'), store_document=True)
-
-    def teardown(self):
-        import requests
-        requests.delete(self.cache.couch_url)
-        TileCacheTestBase.teardown(self)
-    
-    def test_store_bulk_with_overwrite(self):
-        tile = self.create_tile((0, 0, 4))
-        self.create_cached_tile(tile)
-        
-        assert self.cache.is_cached(Tile((0, 0, 4)))
-        loaded_tile = Tile((0, 0, 4))
-        assert self.cache.load_tile(loaded_tile)
-        assert loaded_tile.source_buffer().read() == tile.source_buffer().read()
-        
-        assert not self.cache.is_cached(Tile((1, 0, 4)))
-        
-        tiles = [self.create_another_tile((x, 0, 4)) for x in range(2)]
-        assert self.cache.store_tiles(tiles)
-    
-        assert self.cache.is_cached(Tile((0, 0, 4)))
-        loaded_tile = Tile((0, 0, 4))
-        assert self.cache.load_tile(loaded_tile)
-        # check that tile is overwritten
-        assert loaded_tile.source_buffer().read() != tile.source_buffer().read()
-        assert loaded_tile.source_buffer().read() == tiles[0].source_buffer().read()
-
-    def test_double_remove(self):
-        tile = self.create_tile()
-        self.create_cached_tile(tile)
-        assert self.cache.remove_tile(tile)
-        assert self.cache.remove_tile(tile)
