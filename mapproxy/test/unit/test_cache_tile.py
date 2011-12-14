@@ -263,7 +263,6 @@ class TestCouchDBCache(TileCacheTestBase):
             file_ext='png', tile_grid=tile_grid(3857, name='global-webmarcator'), store_document=True)
 
     def teardown(self):
-        import httplib2
-        h = httplib2.Http()
-        h.request(self.cache.couch_url, 'DELETE')
+        import requests
+        requests.delete(self.cache.couch_url)
         TileCacheTestBase.teardown(self)

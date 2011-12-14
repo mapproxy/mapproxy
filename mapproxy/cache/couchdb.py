@@ -1,4 +1,4 @@
-import httplib2
+import requests
 import json
 import threading
 
@@ -27,20 +27,9 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         self.couch_url = '%s/%s' % (url.rstrip('/'), db_name)
         self.init_db()
         self.tile_path_template = tile_path_template
-        self._h_cache = threading.local()
 
     def init_db(self):
-        h = httplib2.Http()
-        h.request(self.couch_url, 'PUT')
-    
-    @property
-    def h(self):
-        """
-        Context local HTTP client
-        """
-        if not hasattr(self._h_cache, 'h'):
-            self._h_cache.h = httplib2.Http()
-        return self._h_cache.h
+        requests.put(self.couch_url)
     
     def tile_url(self, coord):
         return self.document_url(coord) + '/tile'
@@ -58,13 +47,13 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         if tile.coord is None or tile.source:
             return True
         url = self.tile_url(tile.coord)
-        resp, content = self.h.request(url, 'GET')
-        if resp.status == 200:
-            tile.source = ImageSource(StringIO(content))
+        resp = requests.get(url)
+        if resp.status_code == 200:
+            tile.source = ImageSource(StringIO(resp.content))
             return True
-        if resp.status == 404:
+        if resp.status_code == 404:
             return False
-        raise SourceError('%r: %r' % (resp, content))
+        raise SourceError('%r: %r' % (resp.status_code, resp.content))
     
     def tile_document(self, tile):
         tile_bbox = self.tile_grid.tile_bbox(tile.coord)
@@ -87,40 +76,40 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         
         body = json.dumps(tile_document)
         
-        resp, content = self.h.request(url, 'PUT',
+        resp = requests.put(url,
             headers={'Content-type': content_type},
-            body=body)
+            data=body)
         
-        if resp.status == 409:
-            resp, content = self.h.request(url, 'HEAD')
-            rev_id = resp['etag'].strip('"')
+        if resp.status_code == 409:
+            resp = requests.head(url)
+            rev_id = resp.headers['etag'].strip('"')
             tile_document['_rev'] = rev_id
             body = json.dumps(tile_document)
-            resp, content = self.h.request(url, 'PUT',
+            resp = requests.put(url,
                 headers={'Content-type': content_type},
-                body=body)
-        elif resp.status != 201:
-            raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status, content))
+                data=body)
+        elif resp.status_code != 201:
+            raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
         
-        return resp['etag'].strip('"')
+        return resp.headers['etag'].strip('"')
     
     def _store_tile(self, url, data, content_type, rev_id=None):
         if rev_id:
             url += '?rev=' + rev_id
-        resp, content = self.h.request(url, 'PUT',
+        resp = requests.put(url,
             headers={'Content-type': 'image/' + self.file_ext},
-            body=data)
-        if resp.status == 409 and not rev_id:
-            resp, content = self.h.request(url, 'HEAD')
-            rev_id = resp['etag']
+            data=data)
+        if resp.status_code == 409 and not rev_id:
+            resp = requests.head(url)
+            rev_id = resp.headers['etag']
             url += '?rev=' + rev_id.strip('"')
-            resp, content = self.h.request(url, 'PUT',
+            resp = requests.put(url,
                 headers={'Content-type': 'image/' + self.file_ext},
-                body=data)
-        elif resp.status != 201:
-            raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status, content))
+                data=data)
+        elif resp.status_code != 201:
+            raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
         
-        return resp['etag'].strip('"')
+        return resp.headers['etag'].strip('"')
     
     def store_tile(self, tile):
         if tile.stored:
@@ -140,9 +129,9 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         if tile.source or tile.coord is None:
             return True
         url = self.tile_url(tile.coord)
-        resp, content = self.h.request(url, 'GET')
-        if resp.status == 200:
-            tile.source = ImageSource(StringIO(content))
+        resp = requests.get(url)
+        if resp.status_code == 200:
+            tile.source = ImageSource(StringIO(resp.content))
             return True
         return False
     
@@ -150,11 +139,11 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         if tile.coord is None:
             return True
         url = self.tile_url(tile.coord)
-        resp, content = self.h.request(url, 'HEAD')
-        rev_id = resp['etag']
+        resp = requests.head(url)
+        rev_id = resp.headers['etag']
         url += '?rev=' + rev_id.strip('"')
-        resp, content = self.h.request(url, 'DELETE')
-        if resp.status == 200:
+        resp = requests.delete(url)
+        if resp.status_code == 200:
             return True
         return False
         
