@@ -34,14 +34,24 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
     def tile_url(self, coord):
         return self.document_url(coord) + '/tile'
         
-    def document_url(self, coord):
+    def document_url(self, coord, relative=False):
         x, y, z = coord
         matrix_set = self.tile_grid.name
         couch_url = self.couch_url
-        if self.tile_path_template:
-            return self.tile_path_template % locals()
+        if relative:
+            if self.tile_path_template:
+                if self.tile_path_template.startswith('%(couch_url)s/'):
+                    tile_path_template = self.tile_path_template[len('%(couch_url)s/'):]
+                else:
+                    tile_path_template = self.tile_path_template
+                return tile_path_template % locals()
+            else:
+                return '%(matrix_set)s-%(z)d-%(x)d-%(y)d' % locals()
         else:
-            return '%(couch_url)s/%(matrix_set)s-%(z)d-%(x)d-%(y)d' % locals()
+            if self.tile_path_template:
+                return self.tile_path_template % locals()
+            else:
+                return '%(couch_url)s/%(matrix_set)s-%(z)d-%(x)d-%(y)d' % locals()
     
     def is_cached(self, tile):
         if tile.coord is None or tile.source:
@@ -114,6 +124,64 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         elif resp.status_code != 201:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
     
+    def _store_bulk(self, tiles):
+        tile_docs = {}
+        for tile in tiles:
+            tile_id = self.document_url(tile.coord, relative=True)
+            tile_doc = {'_id': tile_id}
+            with tile_buffer(tile) as buf:
+                data = buf.read()
+            tile_doc['_attachments'] = {
+                'tile': {
+                    'content_type': 'image/' + self.file_ext,
+                    'data': data.encode('base64'),
+                }
+            }
+            tile_docs[tile_id] = tile_doc
+        
+        duplicate_tiles = self._post_bulk(tile_docs)
+
+        if duplicate_tiles:
+            self._fill_rev_ids(duplicate_tiles)
+            self._post_bulk(duplicate_tiles, no_conflicts=True)
+            
+        return True
+    
+    def _post_bulk(self, tile_docs, no_conflicts=False):
+        """
+        POST multiple tiles, returns all tile docs with conflicts during POST.
+        """
+        doc = {'docs': tile_docs.values()}
+        data = json.dumps(doc)
+        resp = requests.post(self.couch_url + '/_bulk_docs', data=data, headers={'Content-type': 'application/json'})
+        if resp.status_code != 201:
+            raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
+        
+        resp_doc = json.loads(resp.content)
+        duplicate_tiles = {}
+        for tile in resp_doc:
+            if tile.get('error', 'false') == 'conflict':
+                duplicate_tiles[tile['id']] = tile_docs[tile['id']]
+        
+        if no_conflicts and duplicate_tiles:
+            raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
+        
+        return duplicate_tiles
+    
+    def _fill_rev_ids(self, tile_docs):
+        """
+        Request all revs for tile_docs and insert it into the tile_docs.
+        """
+        keys_doc = {'keys': tile_docs.keys()}
+        data = json.dumps(keys_doc)
+        resp = requests.post(self.couch_url + '/_all_docs', data=data, headers={'Content-type': 'application/json'})
+        if resp.status_code != 200:
+            raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
+        
+        resp_doc = json.loads(resp.content)
+        for tile in resp_doc['rows']:
+            tile_docs[tile['id']]['_rev'] = tile['value']['rev']
+    
     def store_tile(self, tile):
         if tile.stored:
             return True
@@ -126,6 +194,11 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             else:
                 self._store(tile, data, 'image/' + self.file_ext)
             return True
+
+    def store_tiles(self, tiles):
+        tiles = [t for t in tiles if not t.stored]
+        print tiles
+        return self._store_bulk(tiles)
 
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:

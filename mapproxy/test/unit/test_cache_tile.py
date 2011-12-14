@@ -266,6 +266,27 @@ class TestCouchDBCache(TileCacheTestBase):
         import requests
         requests.delete(self.cache.couch_url)
         TileCacheTestBase.teardown(self)
+    
+    def test_store_bulk_with_overwrite(self):
+        tile = self.create_tile((0, 0, 4))
+        self.create_cached_tile(tile)
+        
+        assert self.cache.is_cached(Tile((0, 0, 4)))
+        loaded_tile = Tile((0, 0, 4))
+        assert self.cache.load_tile(loaded_tile)
+        assert loaded_tile.source_buffer().read() == tile.source_buffer().read()
+        
+        assert not self.cache.is_cached(Tile((1, 0, 4)))
+        
+        tiles = [self.create_another_tile((x, 0, 4)) for x in range(2)]
+        assert self.cache.store_tiles(tiles)
+    
+        assert self.cache.is_cached(Tile((0, 0, 4)))
+        loaded_tile = Tile((0, 0, 4))
+        assert self.cache.load_tile(loaded_tile)
+        # check that tile is overwritten
+        assert loaded_tile.source_buffer().read() != tile.source_buffer().read()
+        assert loaded_tile.source_buffer().read() == tiles[0].source_buffer().read()
 
     def test_double_remove(self):
         tile = self.create_tile()
