@@ -266,3 +266,9 @@ class TestCouchDBCache(TileCacheTestBase):
         import requests
         requests.delete(self.cache.couch_url)
         TileCacheTestBase.teardown(self)
+
+    def test_double_remove(self):
+        tile = self.create_tile()
+        self.create_cached_tile(tile)
+        assert self.cache.remove_tile(tile)
+        assert self.cache.remove_tile(tile)

@@ -140,6 +140,9 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             return True
         url = self.tile_url(tile.coord)
         resp = requests.head(url)
+        if resp.status_code == 404:
+            # already removed
+            return True
         rev_id = resp.headers['etag']
         url += '?rev=' + rev_id.strip('"')
         resp = requests.delete(url)
