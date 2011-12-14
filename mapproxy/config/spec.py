@@ -87,7 +87,13 @@ cache_types = {
     },
     'mbtiles': {
         'filename': str()
-    }
+    },
+    'couchdb': {
+        'url': str(),
+        'db_name': str(),
+        'tile_document': bool(),
+        'tile_path': str(),
+    },
 }
 
 mapproxy_yaml_spec = {

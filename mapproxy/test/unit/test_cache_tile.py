@@ -16,6 +16,7 @@
 from __future__ import with_statement
 
 import os
+import random
 import shutil
 import tempfile
 import time
@@ -24,9 +25,12 @@ from cStringIO import StringIO
 
 from PIL import Image
 
+from nose.plugins.skip import SkipTest
+
 from mapproxy.cache.tile import Tile
 from mapproxy.cache.file import FileCache
 from mapproxy.cache.mbtiles import MBTilesCache
+from mapproxy.grid import tile_grid
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.test.image import create_tmp_image_buf, is_png
@@ -242,4 +246,24 @@ class TestMBTileCache(TileCacheTestBase):
     def setup(self):
         TileCacheTestBase.setup(self)
         self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'))
-      
+
+
+class TestCouchDBCache(TileCacheTestBase):
+    always_loads_metadata = True
+    def setup(self):
+        if not os.environ.get('MAPPROXY_TEST_COUCHDB'):
+            raise SkipTest()
+        
+        couch_address = os.environ['MAPPROXY_TEST_COUCHDB']
+        db_name = 'mapproxy_test_%d' % random.randint(0, 100000)
+        
+        from mapproxy.cache.couchdb import CouchDBCache
+        TileCacheTestBase.setup(self)
+        self.cache = CouchDBCache(couch_address, db_name, lock_dir=self.cache_dir,
+            file_ext='png', tile_grid=tile_grid(3857, name='global-webmarcator'), store_document=True)
+
+    def teardown(self):
+        import httplib2
+        h = httplib2.Http()
+        h.request(self.cache.couch_url, 'DELETE')
+        TileCacheTestBase.teardown(self)

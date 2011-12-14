@@ -21,6 +21,9 @@ from contextlib import contextmanager
 
 from mapproxy.util.lock import FileLock, cleanup_lockdir
 
+class CacheBackendError(Exception):
+    pass
+
 @contextmanager
 def tile_buffer(tile):
     data = tile.source.as_buffer(seekable=True)
