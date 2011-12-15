@@ -177,7 +177,11 @@ mapproxy_yaml_spec = {
         'demo': {},
         'kml': {},
         'tms': {},
-        'wmts': {},
+        'wmts': {
+            'kvp': bool(),
+            'restful': bool(),
+            'restful_template': str(),
+        },
         'wms': {
             'srs': [str()],
             'bbox_srs': [str()],

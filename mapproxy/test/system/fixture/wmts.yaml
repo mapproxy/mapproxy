@@ -10,6 +10,7 @@ services:
   tms:
   kml:
   wmts:
+    restful_template: '/myrest/{{Layer}}/{{TileMatrixSet}}/{{TileMatrix}}/{{TileCol}}/{{TileRow}}.{{Format}}'
   wms:
     md:
       title: MapProxy test fixture

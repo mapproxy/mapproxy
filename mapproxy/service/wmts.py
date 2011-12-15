@@ -16,7 +16,10 @@
 """
 WMS service handler
 """
-from mapproxy.request.wmts import wmts_request
+
+from functools import partial
+
+from mapproxy.request.wmts import wmts_request, make_wmts_rest_request_parser
 from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
@@ -35,7 +38,9 @@ class WMTSServer(Server):
         Server.__init__(self)
         self.request_parser = request_parser or wmts_request
         self.md = md
+        self.max_tile_age = None # TODO
         self.layers, self.matrix_sets = self._matrix_sets(layers)
+        self.capabilities_class = Capabilities
     
     def _matrix_sets(self, layers):
         sets = {}
@@ -55,32 +60,53 @@ class WMTSServer(Server):
         
     def capabilities(self, request):
         service = self._service_md(request)
-        result = Capabilities(service, self.layers.values(), self.matrix_sets).render(request)
+        result = self.capabilities_class(service, self.layers.values(), self.matrix_sets).render(request)
         return Response(result, mimetype='application/xml')
     
     def tile(self, request):
         self.check_request(request)
-        tile_layer = self.layers[request.params.layer][request.params.tilematrixset]
-        request.format = request.params.format # TODO
-        request.tile = (int(request.params.coord[0]), int(request.params.coord[1]), request.params.coord[2]) # TODO
-        request.origin = 'nw'
+        tile_layer = self.layers[request.layer][request.tilematrixset]
+        if not request.format:
+            request.format = tile_layer.format
+
         tile = tile_layer.render(request)
         resp = Response(tile.as_buffer(), content_type='image/' + request.format)
-        
+        resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
+                           max_age=self.max_tile_age)
+        resp.make_conditional(request.http)
         return resp
     
     def check_request(self, request):
-        if request.params.layer not in self.layers:
-            raise RequestError('unknown layer: ' + str(request.params.layer),
+        request.make_tile_request()
+        if request.layer not in self.layers:
+            raise RequestError('unknown layer: ' + str(request.layer),
                 code='InvalidParameterValue', request=request)
-        if request.params.tilematrixset not in self.layers[request.params.layer]:
-            raise RequestError('unknown tilematrixset: ' + str(request.params.tilematrixset),
+        if request.tilematrixset not in self.layers[request.layer]:
+            raise RequestError('unknown tilematrixset: ' + str(request.tilematrixset),
                 code='InvalidParameterValue', request=request)
 
     def _service_md(self, tile_request):
         md = dict(self.md)
         md['url'] = tile_request.url
         return md
+
+
+class WMTSRestServer(WMTSServer):
+    """
+    OGC WMTS 1.0.0 RESTful Server 
+    """
+    service = None
+    names = ('wmts',)
+    request_methods = ('tile', 'capabilities')
+    default_template = '/{{Layer}}/{{TileMatrixSet}}/{{TileMatrix}}/{{TileCol}}/{{TileRow}}.{{Format}}'
+    
+    def __init__(self, layers, md, max_tile_age=None, template=None):
+        WMTSServer.__init__(self, layers, md)
+        self.max_tile_age = max_tile_age
+        self.template = template or self.default_template
+        self.request_parser = make_wmts_rest_request_parser(self.template)
+        self.capabilities_class = partial(RestfulCapabilities, template=self.template)
+    
 
 class Capabilities(object):
     """
@@ -94,14 +120,38 @@ class Capabilities(object):
     def render(self, _map_request):
         return self._render_template(_map_request.capabilities_template)
     
+    def template_context(self):
+        return dict(service=bunch(default='', **self.service),
+                    restful=False,
+                    layers=self.layers,
+                    tile_matrix_sets=self.matrix_sets)
+
     def _render_template(self, template):
         template = get_template(template)
-        doc = template.substitute(service=bunch(default='', **self.service),
-                                   layers=self.layers,
-                                   tile_matrix_sets=self.matrix_sets)
+        doc = template.substitute(**self.template_context())
         # strip blank lines
         doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())
         return doc
+
+class RestfulCapabilities(Capabilities):
+    def __init__(self, server_md, layers, matrix_sets, template):
+        Capabilities.__init__(self, server_md, layers, matrix_sets)
+        self.template = template
+    
+    def template_context(self):
+        return dict(service=bunch(default='', **self.service),
+                    restful=True,
+                    layers=self.layers,
+                    tile_matrix_sets=self.matrix_sets,
+                    resource_template=self.template,
+                    format_resource_template=format_resource_template,
+                    )
+
+def format_resource_template(layer, template, service):
+    if '{{Format}}' in template:
+        template = template.replace('{{Format}}', layer.format)
+    
+    return service.url + template
 
 class WMTSTileLayer(object):
     """
@@ -120,6 +170,7 @@ class WMTSTileLayer(object):
     
     def __getitem__(self, gridname):
         return self.layers[gridname]
+    
 
 from mapproxy.grid import tile_grid
 

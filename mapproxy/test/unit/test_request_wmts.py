@@ -14,9 +14,10 @@
 # limitations under the License.
 
 from mapproxy.request.wmts import wmts_request, WMTS100CapabilitiesRequest
+from mapproxy.request.wmts import URLTemplateConverter, InvalidWMTSTemplate
 from mapproxy.request.base import url_decode
 
-from nose.tools import eq_
+from nose.tools import eq_, raises
 
 def dummy_req(url):
     return DummyRequest(url_decode(url.replace('\n', '')))
@@ -41,4 +42,27 @@ def test_capabilities_request():
     req = wmts_request(dummy_req(url))
     
     assert isinstance(req, WMTS100CapabilitiesRequest)
-    
+
+def test_template_converter():
+    regexp = URLTemplateConverter('/{{Layer}}/{{Style}}/{{TileMatrixSet}}-{{TileMatrix}}-{{TileCol}}-{{TileRow}}/tile').regexp()
+    match = regexp.match('/test/bar/foo-EPSG4326-4-12-99/tile')
+    assert match
+    assert match.groupdict()['Layer'] == 'test'
+    assert match.groupdict()['TileMatrixSet'] == 'foo-EPSG4326'
+    assert match.groupdict()['TileMatrix'] == '4'
+    assert match.groupdict()['TileCol'] == '12'
+    assert match.groupdict()['TileRow'] == '99'
+    assert match.groupdict()['Style'] == 'bar'
+
+@raises(InvalidWMTSTemplate)
+def test_template_converter_missing_vars():
+    URLTemplateConverter('/wmts/{{Style}}/{{TileMatrixSet}}/{{TileCol}}.png').regexp()
+
+def test_template_converter_unknown_var():
+    try:
+        regexp = URLTemplateConverter('/{{Unknown}}/{{TileMatrixSet}}-{{TileMatrix}}-{{TileCol}}-{{TileRow}}/tile').regexp()
+    except InvalidWMTSTemplate, ex:
+        assert 'unknown variable Unknown in /{{Unknown}}/{{TileMatrixSet}}' in ex.args[0]
+    else:
+        assert False, 'expected InvalidWMTSTemplate'
+

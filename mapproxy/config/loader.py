@@ -1083,10 +1083,17 @@ class ServiceConfiguration(ConfigurationBase):
             creator = getattr(self, service_name + '_service', None)
             if not creator:
                 raise ValueError('unknown service: %s' % service_name)
-            if service_name in ('wms', 'wmts'):
-                ows_services.append(creator(service_conf or {}))
-            else:
-                services.append(creator(service_conf or {}))
+            
+            new_services = creator(service_conf or {})
+            # a creator can return a list of services...
+            if not isinstance(new_services, (list, tuple)):
+                new_services = [new_services]
+            
+            for new_service in new_services:
+                if getattr(new_service, 'service', None):
+                    ows_services.append(new_service)
+                else:
+                    services.append(new_service)
         
         if ows_services:
             from mapproxy.service.ows import OWSServer
@@ -1122,12 +1129,26 @@ class ServiceConfiguration(ConfigurationBase):
         return TileServer(layers, md, max_tile_age=max_tile_age)
     
     def wmts_service(self, conf):
-        from mapproxy.service.wmts import WMTSServer
+        from mapproxy.service.wmts import WMTSServer, WMTSRestServer
         
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
         layers = self.tile_layers(conf)
-        return WMTSServer(layers, md)
+        
+        kvp = self.conf.get('kvp')
+        restful = self.conf.get('restful')
+        
+        if kvp is None and restful is None:
+            kvp = restful = True
+        
+        services = []
+        if kvp:
+            services.append(WMTSServer(layers, md))
+        if restful:
+            template = self.conf.get('restful_template')
+            services.append(WMTSRestServer(layers, md, template=template))
+        
+        return services
     
     def wms_service(self, conf):
         from mapproxy.service.wms import WMSServer
