@@ -1,0 +1,172 @@
+Caches
+######
+
+.. versionadded:: 1.2.0
+
+MapProxy supports multiple backends to store the internal tiles. The default backend is file based and does not require any further configuration.
+
+Configuration
+=============
+
+You can configure a backend for each cache with the ``cache`` option.
+Each backend has a ``type`` and one or more options.
+
+::
+
+  caches:
+    mycache:
+      sources: [...]
+      grids: [...]
+      cache:
+        type: backendtype
+        backendoption1: value
+        backendoption2: value
+        
+
+The following backend types are available.
+
+``file``
+========
+
+This is the default cache type and it uses a single file for each tile. Available options are:
+
+``directory_layout``:
+  The directory layout MapProxy uses to store tiles on disk. Defaults to ``tc`` which uses a TileCache compatible directory layout (``zz/xxx/xxx/xxx/yyy/yyy/yyy.format``). ``tms`` uses TMS compatible directories (``zz/xxxx/yyyy.format``).
+
+  .. note:: 
+    ``tms`` layout is not suited for large caches, since it will create directories with thousands of files, which most file systems do not handle well.
+
+
+``mbtiles``
+===========
+
+Use a single SQLite file for this cache. It uses the `MBTile specification <http://mbtiles.org/>`_.
+
+Available options:
+
+``filename``:
+  The path to the MBTiles file. Defaults to ``cachename.mbtiles``.
+
+
+You can set the ``sources`` to an empty list, if you use an existing MBTiles file and do not have a source.
+
+::
+
+  caches:
+    mbtiles_cache:
+      sources: []
+      grids: [GLOBAL_MERCATOR]
+      cache:
+        type: mbtiles
+        filename: /path/to/bluemarble.mbtiles
+
+.. note::
+
+  The MBTiles format specification does not include any timestamps for each tile and the seeding function is limited therefore. If you include any ``refresh_before`` time in a seed task, all tiles will be recreated regardless of the value. The cleanup process does not support any ``remove_before`` times for MBTiles and it always removes all tiles.
+  Use the ``--summary`` option of the ``mapproxy-seed`` tool.
+
+``couchdb``
+===========
+
+.. versionadded:: 1.3.0
+
+Store tiles inside a `CouchDB <http://couchdb.apache.org/>`_. MapProxy creates a JSON document for each tile. This document contains metadata, like timestamps, and the tile image itself as a attachment.
+
+You can configure the database and database name and the tile ID and additional metadata.
+
+Available options:
+
+``url``:
+  The URL of the CouchDB server. Defaults to ``http://localhost:5984``.
+
+``db_name``:
+  The name of the database MapProxy uses for this cache. Defaults to the name of the cache.
+
+``tile_id``:
+  Each tile document needs a unique ID. You can change the format with a Python format string that expects the following keys:
+  
+  ``x``, ``y``, ``z``:
+    The tile coordinate.
+  
+  ``grid_name``:
+    The name of the grid.
+  
+  The default ID uses the following format::
+  
+    %(grid_name)s-%(z)d-%(x)d-%(y)d
+  
+  .. note:: You can't use slashes (``/``) in CouchDB IDs.
+
+``tile_metadata``:
+  MapProxy stores a JSON document for each tile in CouchDB and you can add additional key-value pairs  with metadata to each document.
+  There are a few predefined values that MapProxy will replace with  tile-depended values, all other values will be added as they are.
+  
+  Predefined values:
+  
+  ``{{x}}``, ``{{y}}``, ``{{z}}``:
+    The tile coordinate.
+  
+  ``{{timestamp}}``:
+    The creation time of the tile as seconds since epoch. MapProxy will add a ``timestamp`` key for you, if you don't provide a custom timestamp key.
+  
+  ``{{utc_iso}}``:
+    The creation time of the tile in UTC in ISO format. For example: ``2011-12-31T23:59:59Z``.
+
+  ``{{tile_centroid}}``:
+    The center coordinate of the tile in the cache's coordinate system as a list of long/lat or x/y values.
+
+  ``{{wgs_tile_centroid}}``:
+    The center coordinate of the tile in WGS 84 as a list of long/lat values.
+
+Example
+-------
+
+::
+
+  caches:
+    mycouchdbcache:
+      sources: [mywms]
+      grids: [mygrid]
+      cache:
+        type: couchdb
+        url: http://localhost:9999
+        db_name: mywms_tiles
+        tile_metadata:
+          mydata: myvalue
+          tile_col: '{{x}}'
+          tile_row: '{{y}}'
+          tile_level: '{{z}}'
+          created_ts: '{{timestamp}}'
+          created: '{{utc_iso}}'
+          center: '{{wgs_tile_centroid}}'
+
+
+
+MapProxy will place the JSON document for tile z=3, x=1, y=2 at ``http://localhost:9999/mywms_tiles/mygrid-3-1-2``. The document will look like::
+
+  {
+      "_attachments": {
+          "tile": {
+              "content_type": "image/png", 
+              "digest": "md5-ch4j5Piov6a5FlAZtwPVhQ==", 
+              "length": 921, 
+              "revpos": 2, 
+              "stub": true
+          }
+      }, 
+      "_id": "mygrid-3-1-2", 
+      "_rev": "2-9932acafd060e10bc0db23231574f933", 
+      "center": [
+          -112.5, 
+          -55.7765730186677
+      ],
+      "created": "2011-12-15T12:56:21Z", 
+      "created_ts": 1323953781.531889, 
+      "mydata": "myvalue", 
+      "tile_col": 1, 
+      "tile_level": 3, 
+      "tile_row": 2
+  }
+
+
+The ``_attachments``-part is the internal structure of CouchDB where the tile itself is stored. You can access the tile directly at: ``http://localhost:9999/mywms_tiles/mygrid-3-1-2/tile``.

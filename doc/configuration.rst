@@ -305,44 +305,8 @@ Directory where MapProxy should store tiles for this cache. Uses the value of ``
 
 .. versionadded:: 1.2.0
 
-Configure the type of the background tile cache. You configure the type with the ``type`` option. The following types are available.
+Configure the type of the background tile cache. You configure the type with the ``type`` option.  The default type is ``file`` and you can leave out the ``cache`` option if you want to use the file cache. Read :doc:`caches` for a detailed list of all available cache backends.
 
-``file``
-^^^^^^^^
-
-This is the default cache type and it uses a single file for each tile. Available options:
-
-``directory_layout``:
-  The structure MapProxy will store tiles on disk. Defaults to ``tc`` which uses a TileCache compatible directory layout (``zz/xxx/xxx/xxx/yyy/yyy/yyy.format``). ``tms`` uses TMS compatible directories (``zz/xxxx/yyyy.format``).
-
-
-``mbtiles``
-^^^^^^^^^^^
-
-Use a single SQLite file for this cache. It uses the `MBTile specification <http://mbtiles.org/>`_.
-
-Available options:
-
-``filename``:
-  The path to the MBTiles file. Defaults to ``cachename.mbtiles``.
-
-
-You can set the ``sources`` to an empty list, if you use an existing MBTiles file and do not have a source.
-
-::
-
-  caches:
-    mbtiles_cache:
-      sources: []
-      grids: [GLOBAL_MERCATOR]
-      cache:
-        type: mbtiles
-        filename: /path/to/bluemarble.mbtiles
-
-.. note::
-
-  The MBTiles format does not include any timestamps for each tile and the seeding function is limited therefore. If you include any ``refresh_before`` time in a seed task, all tiles will be recreated regardless of the value. The cleanup process does not support any ``remove_before`` times for MBTiles and it always removes all tiles.
-  Use the ``--summary`` option of the ``mapproxy-seed`` tool.
 
 Example ``caches`` configuration
 """"""""""""""""""""""""""""""""
