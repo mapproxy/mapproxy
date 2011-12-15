@@ -19,7 +19,7 @@ from mapproxy.util import cleanup_directory
 from mapproxy.seed.seeder import TileWorkerPool, TileWalker, TileCleanupWorker
 
 def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
-               verbose=True):
+               verbose=True, progress_logger=None):
     for task in tasks:
         print format_cleanup_task(task)
         
@@ -32,7 +32,8 @@ def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
                 continue
 
         tilewalker_cleanup(task, dry_run=dry_run, concurrency=concurrency,
-                         skip_geoms_for_last_levels=skip_geoms_for_last_levels)
+                         skip_geoms_for_last_levels=skip_geoms_for_last_levels,
+                         progress_logger=progress_logger)
 
 def simple_cleanup(task, dry_run):
     """
@@ -65,13 +66,14 @@ def normpath(path):
         path = os.path.abspath(path)
     return path
 
-def tilewalker_cleanup(task, dry_run, concurrency, skip_geoms_for_last_levels):
+def tilewalker_cleanup(task, dry_run, concurrency, skip_geoms_for_last_levels,
+    progress_logger=None):
     """
     Cleanup tiles with tile traversal.
     """
     task.tile_manager._expire_timestamp = task.remove_timestamp
     task.tile_manager.minimize_meta_requests = False
-    tile_worker_pool = TileWorkerPool(task, TileCleanupWorker,
+    tile_worker_pool = TileWorkerPool(task, TileCleanupWorker, progress_logger=progress_logger,
                                       dry_run=dry_run, size=concurrency)
     tile_walker = TileWalker(task, tile_worker_pool, handle_stale=True,
                              work_on_metatiles=False,
