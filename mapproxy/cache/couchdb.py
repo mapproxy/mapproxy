@@ -25,6 +25,7 @@ from mapproxy.cache.base import (
     TileCacheBase, FileBasedLocking,
     tile_buffer, CacheBackendError,)
 from mapproxy.source import SourceError
+from mapproxy.srs import SRS
 from mapproxy.util.times import parse_httpdate
 
 try:
@@ -61,7 +62,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         
     def document_url(self, coord, relative=False):
         x, y, z = coord
-        matrix_set = self.tile_grid.name
+        grid_name = self.tile_grid.name
         couch_url = self.couch_url
         if relative:
             if self.tile_id_template:
@@ -71,12 +72,12 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
                     tile_id_template = self.tile_id_template
                 return tile_id_template % locals()
             else:
-                return '%(matrix_set)s-%(z)d-%(x)d-%(y)d' % locals()
+                return '%(grid_name)s-%(z)d-%(x)d-%(y)d' % locals()
         else:
             if self.tile_id_template:
                 return self.tile_id_template % locals()
             else:
-                return '%(couch_url)s/%(matrix_set)s-%(z)d-%(x)d-%(y)d' % locals()
+                return '%(couch_url)s/%(grid_name)s-%(z)d-%(x)d-%(y)d' % locals()
     
     def is_cached(self, tile):
         if tile.coord is None or tile.source:
@@ -231,23 +232,31 @@ class CouchDBMDTemplate(object):
                 doc[key] = value
                 continue
             
-            if value == '{{wgs_tile_centroid}}':
-                tile_bbox = grid.tile_bbox(tile.coord)
-                centroid = (
-                    tile_bbox[0] + (tile_bbox[2]-tile_bbox[0])/2,
-                    tile_bbox[1] + (tile_bbox[3]-tile_bbox[1])/2
-                )
-                doc[key] = centroid
+            if value == '{{timestamp}}':
+                doc[key] = time.time()
             elif value == '{{x}}':
                 doc[key] = x
             elif value == '{{y}}':
                 doc[key] = y
             elif value in ('{{z}}', '{{level}}'):
                 doc[key] = z
-            elif value == '{{timestamp}}':
-                doc[key] = time.time()
             elif value == '{{utc_iso}}':
                 doc[key] = utc_now_isoformat()
+            elif value == '{{wgs_tile_centroid}}':
+                tile_bbox = grid.tile_bbox(tile.coord)
+                centroid = (
+                    tile_bbox[0] + (tile_bbox[2]-tile_bbox[0])/2,
+                    tile_bbox[1] + (tile_bbox[3]-tile_bbox[1])/2
+                )
+                centroid = grid.srs.transform_to(SRS(4326), centroid)
+                doc[key] = centroid
+            elif value == '{{tile_centroid}}':
+                tile_bbox = grid.tile_bbox(tile.coord)
+                centroid = (
+                    tile_bbox[0] + (tile_bbox[2]-tile_bbox[0])/2,
+                    tile_bbox[1] + (tile_bbox[3]-tile_bbox[1])/2
+                )
+                doc[key] = centroid
             else:
                 raise ValueError('unknown CouchDB tile_metadata value: %r' % (value, ))
         return doc
