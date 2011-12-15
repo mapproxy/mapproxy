@@ -72,6 +72,15 @@ You can set the ``sources`` to an empty list, if you use an existing MBTiles fil
 
 Store tiles inside a `CouchDB <http://couchdb.apache.org/>`_. MapProxy creates a JSON document for each tile. This document contains metadata, like timestamps, and the tile image itself as a attachment.
 
+
+Requirements
+------------
+
+Besides a running CouchDB you will need the `Python requests package <http://python-requests.org/>`_. You can install it the usual way, for example ``pip install requests``.
+
+Configuration
+-------------
+
 You can configure the database and database name and the tile ID and additional metadata.
 
 Available options:
