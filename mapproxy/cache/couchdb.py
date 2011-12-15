@@ -16,7 +16,6 @@
 from __future__ import with_statement
 
 import datetime
-import json
 import threading
 import time
 
@@ -35,6 +34,14 @@ try:
 except ImportError:
     requests = None
 
+try:
+    import simplejson as json
+except ImportError:
+    try:
+        import json
+    except ImportError:
+        json = None
+
 class UnexpectedResponse(CacheBackendError):
     pass
 
@@ -45,6 +52,9 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         
         if requests is None:
             raise ImportError("CouchDB backend requires 'requests' package.")
+
+        if json is None:
+            raise ImportError("CouchDB backend requires 'simplejson' package or Python 2.6+.")
         
         self.lock_cache_id = url + db_name
         self.lock_dir = lock_dir
