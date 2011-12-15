@@ -15,6 +15,7 @@
 
 from __future__ import with_statement
 
+import re
 import os
 import time
 import random
@@ -100,7 +101,8 @@ class TestCouchDBMDTemplate(object):
 
     def test_template_values(self):
         template = CouchDBMDTemplate({'row': '{{y}}', 'tile_column': '{{x}}',
-            'zoom': '{{level}}', 'time': '{{timestamp}}', 'coord': '{{wgs_tile_centroid}}'})
+            'zoom': '{{level}}', 'time': '{{timestamp}}', 'coord': '{{wgs_tile_centroid}}',
+            'datetime': '{{utc_iso}}'})
         doc = template.doc(Tile((1, 0, 2)), tile_grid(4326))
         
         assert_almost_equal(doc['time'], time.time(), 2)
@@ -109,4 +111,4 @@ class TestCouchDBMDTemplate(object):
         eq_(doc['tile_column'], 1)
         eq_(doc['zoom'], 2)
         eq_(doc['coord'], (-45.0 , -45.0))
-        
+        assert re.match('20\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ', doc['datetime']), doc['datetime']

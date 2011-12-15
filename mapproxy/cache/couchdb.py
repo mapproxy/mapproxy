@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import json
-import time
 import threading
+import time
 
 from cStringIO import StringIO
 
@@ -204,6 +205,13 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         return False
         
 
+def utc_now_isoformat():
+    now = datetime.datetime.utcnow()
+    now = now.isoformat()
+    # remove milliseconds, add Zulu timezone
+    now = now.rsplit('.', 1)[0] + 'Z'
+    return now
+
 class CouchDBMDTemplate(object):
     def __init__(self, attributes):
         self.attributes = attributes
@@ -238,6 +246,8 @@ class CouchDBMDTemplate(object):
                 doc[key] = z
             elif value == '{{timestamp}}':
                 doc[key] = time.time()
+            elif value == '{{utc_iso}}':
+                doc[key] = utc_now_isoformat()
             else:
                 raise ValueError('unknown CouchDB tile_metadata value: %r' % (value, ))
         return doc
