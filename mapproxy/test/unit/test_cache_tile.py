@@ -242,4 +242,4 @@ class TestMBTileCache(TileCacheTestBase):
     def setup(self):
         TileCacheTestBase.setup(self)
         self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'))
-      
+

@@ -9,6 +9,7 @@ MapProxy Documentation
    configuration
    services
    sources
+   caches
    seed
    coverages
    mapproxy_util

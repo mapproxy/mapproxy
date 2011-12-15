@@ -820,7 +820,6 @@ class CacheConfiguration(ConfigurationBase):
         from mapproxy.cache.file import FileCache
         
         cache_dir = self.cache_dir()
-        grid_conf.tile_grid() #create to resolve `base` in grid_conf.conf
         directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tc')
         suffix = grid_conf.conf['srs'].replace(':', '')
         cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
@@ -847,11 +846,33 @@ class CacheConfiguration(ConfigurationBase):
             mbfile_path = os.path.join(self.cache_dir(), filename)
         return MBTilesCache(mbfile_path)
 
+    def _couchdb_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.couchdb import CouchDBCache, CouchDBMDTemplate
+        
+        cache_dir = self.cache_dir()
+        
+        db_name = self.conf['cache'].get('db_name')
+        if not db_name:
+            suffix = grid_conf.conf['srs'].replace(':', '')
+            db_name = self.conf['name'] + '_' + suffix
+        
+        url = self.conf['cache'].get('url')
+        if not url:
+            url = 'http://127.0.0.1:5984'
+        
+        md_template = CouchDBMDTemplate(self.conf['cache'].get('tile_metadata', {}))
+        tile_id = self.conf['cache'].get('tile_id')
+        
+        return CouchDBCache(url=url, db_name=db_name,
+            lock_dir=cache_dir, file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
+            md_template=md_template, tile_id_template=tile_id)
+
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):
             from mapproxy.cache.dummy import DummyCache
             return DummyCache()
         
+        grid_conf.tile_grid() #create to resolve `base` in grid_conf.conf
         cache_type = self.conf.get('cache', {}).get('type', 'file')
         return getattr(self, '_%s_cache' % cache_type)(grid_conf, file_ext)
     
