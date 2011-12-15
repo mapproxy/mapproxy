@@ -861,11 +861,11 @@ class CacheConfiguration(ConfigurationBase):
             url = 'http://127.0.0.1:5984'
         
         md_template = CouchDBMDTemplate(self.conf['cache'].get('tile_metadata', {}))
-        tile_path = self.conf['cache'].get('tile_path')
+        tile_id = self.conf['cache'].get('tile_id')
         
         return CouchDBCache(url=url, db_name=db_name,
             lock_dir=cache_dir, file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
-            md_template=md_template, tile_path_template=tile_path)
+            md_template=md_template, tile_id_template=tile_id)
 
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):

@@ -38,10 +38,10 @@ class UnexpectedResponse(CacheBackendError):
 class CouchDBCache(TileCacheBase, FileBasedLocking):
     def __init__(self, url, db_name, lock_dir,
         file_ext, tile_grid, md_template=None,
-        tile_path_template=None):
+        tile_id_template=None):
         
         if requests is None:
-            raise ImportError("CochDB backend requires 'requests' package.")
+            raise ImportError("CouchDB backend requires 'requests' package.")
         
         self.lock_cache_id = url + db_name
         self.lock_dir = lock_dir
@@ -51,7 +51,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         self.md_template = md_template
         self.couch_url = '%s/%s' % (url.rstrip('/'), db_name.lower())
         self.init_db()
-        self.tile_path_template = tile_path_template
+        self.tile_id_template = tile_id_template
 
     def init_db(self):
         requests.put(self.couch_url)
@@ -64,17 +64,17 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         matrix_set = self.tile_grid.name
         couch_url = self.couch_url
         if relative:
-            if self.tile_path_template:
-                if self.tile_path_template.startswith('%(couch_url)s/'):
-                    tile_path_template = self.tile_path_template[len('%(couch_url)s/'):]
+            if self.tile_id_template:
+                if self.tile_id_template.startswith('%(couch_url)s/'):
+                    tile_id_template = self.tile_id_template[len('%(couch_url)s/'):]
                 else:
-                    tile_path_template = self.tile_path_template
-                return tile_path_template % locals()
+                    tile_id_template = self.tile_id_template
+                return tile_id_template % locals()
             else:
                 return '%(matrix_set)s-%(z)d-%(x)d-%(y)d' % locals()
         else:
-            if self.tile_path_template:
-                return self.tile_path_template % locals()
+            if self.tile_id_template:
+                return self.tile_id_template % locals()
             else:
                 return '%(couch_url)s/%(matrix_set)s-%(z)d-%(x)d-%(y)d' % locals()
     

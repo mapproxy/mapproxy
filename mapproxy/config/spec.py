@@ -94,7 +94,7 @@ cache_types = {
         'tile_metadata': {
             anything(): anything()
         },
-        'tile_path': str(),
+        'tile_id': str(),
     },
 }
 
