@@ -16,8 +16,11 @@
 """
 Service requests (parsing, handling, etc).
 """
+import re
+
 from mapproxy.exception import RequestError
 from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
+from mapproxy.request.tile import TileRequest
 from mapproxy.exception import XMLExceptionHandler
 from mapproxy.template import template_loader
 import mapproxy.service
@@ -134,6 +137,13 @@ class WMTS100TileRequest(WMTSRequest):
         WMTSRequest.__init__(self, param=param, url=url, validate=validate,
                             non_strict=non_strict, **kw)
     
+    def make_tile_request(self):
+        self.layer = self.params.layer
+        self.tilematrixset = self.params.tilematrixset
+        self.format = self.params.format # TODO
+        self.tile = (int(self.params.coord[0]), int(self.params.coord[1]), self.params.coord[2]) # TODO
+        self.origin = 'nw'
+    
     def validate(self):
         missing_param = []
         for param in self.expected_param:
@@ -244,3 +254,105 @@ def create_request(req_data, param, req_type='tile'):
     # req_data['srs'] = param['srs']
     
     return request_mapping[req_type](url=url, param=req_data)
+
+
+class InvalidWMTSTemplate(Exception):
+    pass
+
+class URLTemplateConverter(object):
+    var_re = re.compile(r'\\{\\{(\w+)\\}\\}')
+    
+    variables = {
+        'TileMatrixSet': r'[\w_-]+',
+        'TileMatrix': r'\d+',
+        'TileRow': r'-?\d+',
+        'TileCol': r'-?\d+',
+        'Style': r'[\w_-]+',
+        'Layer': r'[\w_-]+',
+        'Format': r'\w+'
+    }
+    
+    required = set(['TileCol', 'TileRow', 'TileMatrix', 'TileMatrixSet', 'Layer'])
+    
+    def __init__(self, template):
+        self.template = template
+        self.found = set()
+    
+    def substitute_var(self, match):
+        var = match.group(1)
+        if var not in self.variables:
+            raise InvalidWMTSTemplate('unknown variable %s in %s' % (var, self.template))
+        var_type_re = self.variables[var]
+        self.found.add(var)
+        return r'(?P<%s>%s)' % (var, var_type_re)
+    
+    def regexp(self):
+        converted_re = self.var_re.sub(self.substitute_var, re.escape(self.template))
+        wmts_re = re.compile(converted_re)
+        if not self.found.issuperset(self.required):
+            raise InvalidWMTSTemplate('missing required variables in WMTS restful template: %s' % 
+                self.required.difference(self.found))
+        
+        return wmts_re
+
+class WMTS100RestTileRequest(TileRequest):
+    """
+    Class for TMS-like KML requests.
+    """
+    xml_exception_handler = WMTS100ExceptionHandler
+    request_handler_name = 'tile'
+    origin = 'nw'
+    
+    def __init__(self, request):
+        self.http = request
+        self.url = request.base_url
+    
+    def make_tile_request(self):
+        """
+        Initialize tile request. Sets ``tile`` and ``layer`` and ``format``.
+        :raise RequestError: if the format does not match the URL template``
+        """
+        match = self.tile_req_re.search(self.http.path)
+        if not match:
+            raise RequestError('invalid request (%s)' % (self.http.path), request=self)
+        
+        req_vars = match.groupdict()
+         
+        self.layer = req_vars['Layer']
+        self.tile = int(req_vars['TileCol']), int(req_vars['TileRow']), int(req_vars['TileMatrix'])
+        self.format = req_vars.get('Format')
+        self.tilematrixset = req_vars['TileMatrixSet']
+    
+    @property
+    def exception_handler(self):
+        return self.xml_exception_handler()
+
+RESTFUL_CAPABILITIES_PATH = '/1.0.0/WMTSCapabilities.xml'
+
+class WMTS100RestCapabilitiesRequest(object):
+    """
+    Class for RESTful WMTS capabilities requests.
+    """
+    xml_exception_handler = WMTS100ExceptionHandler
+    request_handler_name = 'capabilities'
+    capabilities_template = 'wmts100capabilities.xml'
+    
+    def __init__(self, request):
+        self.http = request
+        self.url = request.base_url[:-len(RESTFUL_CAPABILITIES_PATH)]
+    
+    @property
+    def exception_handler(self):
+        return self.xml_exception_handler()
+
+
+def make_wmts_rest_request_parser(template):
+    class WMTSRequestWrapper(WMTS100RestTileRequest):
+        tile_req_re = URLTemplateConverter(template).regexp()
+        
+    def wmts_request(req):
+        if req.path.endswith(RESTFUL_CAPABILITIES_PATH):
+            return WMTS100RestCapabilitiesRequest(req)
+        return WMTSRequestWrapper(req)
+    
+    return wmts_request
