@@ -279,7 +279,7 @@ class BlankImageSource(object):
         if format:
             image_opts.format = ImageFormat(format)
         image_opts.colors = 0
-        return img_to_buf(self.as_image(), image_opts=image_opts)
+        return img_to_buf(self.as_image(), image_opts=image_opts).read()
 
 class ReadBufWrapper(object):
     """
