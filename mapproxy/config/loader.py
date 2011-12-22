@@ -751,7 +751,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
 
 class TileSourceConfiguration(SourceConfiguration):
     source_type = ('tile',)
-    defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
+    defaults = {'grid': 'GLOBAL_MERCATOR'}
     
     def source(self, params=None):
         from mapproxy.client.tile import TileClient, TileURLTemplate
@@ -764,18 +764,23 @@ class TileSourceConfiguration(SourceConfiguration):
         if params is None: params = {}
         
         url = self.conf['url']
-        origin = self.conf['origin']
+        
+        origin = self.conf.get('origin')
+        
+        if origin is not None:
+            warnings.warn('origin for tile sources is deprecated. '
+            'use grid with correct origin.', FutureWarning)
+        # TODO remove origin with 1.4
         if origin not in ('sw', 'nw'):
             log.error("ignoring origin '%s', only supports sw and nw")
             origin = 'sw'
-            # TODO raise some configuration exception
+        inverse = True if origin == 'nw' else False
         
         http_client, url = self.http_client(url)
         grid = self.context.grids[self.conf['grid']].tile_grid()
         coverage = self.coverage()
         image_opts = self.image_opts()
         
-        inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
         client = TileClient(TileURLTemplate(url, format=format), http_client=http_client, grid=grid)
         return TiledSource(grid, client, inverse=inverse, coverage=coverage,

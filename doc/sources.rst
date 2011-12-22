@@ -286,6 +286,10 @@ This source takes a ``url`` option that contains a URL template. The template fo
 
 ``origin``
 ^^^^^^^^^^
+
+.. deprecated:: 1.3.0
+  Use grid with the ``origin`` option.
+  
 The origin of the tile grid (i.e. the location of the 0,0 tile). Supported values are ``sw`` for south-west (lower-left) origin or ``nw`` for north-west (upper-left) origin. ``sw`` is the default.
 
 ``grid``
