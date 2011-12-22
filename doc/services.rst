@@ -216,23 +216,75 @@ This service takes no further options::
 .. index:: WMTS Service, Tile Service
 .. _wmts_service_label:
 
-Web Map Tile Services
----------------------
+Web Map Tile Services (WMTS)
+----------------------------
 
 .. versionadded:: 1.1.0
 
-MapProxy supports the OGC WMTS 1.0.0 specification. It only supports KVP requests for ``GetCapabilities`` and ``GetTile`` at the moment.
 
-The service is available at ``/service``.
+MapProxy supports the OGC WMTS 1.0.0 specification.
 
-The WMTS service is similar to the TMS service and will use all configured :ref:`layers <layers>` that have a name and single cached source. Unlike the TMS service it only supports caches that form a  regular tile pyramid at the moment (res_factor 2 and the BBOX matches the first tile level). Any layer grouping will be flattened. 
+The WMTS service is similar to the TMS service and will use all configured :ref:`layers <layers>` that have a name and single cached source. Any layer grouping will be flattened.
 
-This service requires no further options::
+There are some limitations depending on the grid configuration you use. Please refer to :ref:`grid.origin <grid_origin>` for more information.
+
+The metadata (ServiceContact, etc. ) of this service is taken from the WMS configuration. You can add ``md`` to the ``wmts`` configuration to replace the WMS metadata. See :ref:`WMS metadata <wms_md>`.
+
+WMTS defines different access methods and MapProxy supports KVP and RESTful access. Both are enabled by default.
+
+
+KVP
+"""
+
+MapProxy supports ``GetCapabilities`` and ``GetTile`` KVP requests.
+The KVP service is available at ``/service``.
+
+You can enable or disable the KVP service with the ``kvp`` option. It is enabled by default and you need to enable ``restful`` if you disable this one.
+
+::
 
   services:
     wmts:
+      kvp: false
+      restful: true
 
-The metadata (ServiceContact, etc. ) of this service is taken from the WMS configuration. You can add ``md`` to the ``wmts`` configuration to replace the WMS metadata. See :ref:`WMS metadata <wms_md>`.
+
+RESTful
+"""""""
+
+.. versionadded:: 1.3.0
+
+MapProxy supports RESTful WMTS requests with custom URL templates.
+The RESTful service capabilities are available at ``/wmts/1.0.0/WMTSCapabilities.xml``.
+
+You can enable or disable the RESTful service with the ``restful`` option. It is enabled by default and you need to enable ``kvp`` if you disable this one.
+
+::
+
+  services:
+    wmts:
+      restful: false
+      kvp: true
+
+
+URL Template
+~~~~~~~~~~~~
+
+WMTS RESTful services can support custom tile URLs. You can configure your own URL template with the ``restful_template`` option.
+
+The default template is ``/{{Layer}}/{{TileMatrixSet}}/{{TileMatrix}}/{{TileCol}}/{{TileRow}}.{{Format}}``
+
+The template variables are identical with the WMTS specification. ``TileMatrixSet`` is the grid name, ``TileMatrix`` is the zoom level, ``TileCol`` and ``TileRow`` are the x and y of the tile. 
+
+
+You can access the a the tile x=3, y=9, z=4 at ``http://example.org//1.0.0/mylayer-mygrid/4-3-9/tile``
+with the following configuration::
+
+  services:
+    wmts:
+      restful: true
+      restful_template:
+          '/1.0.0/{{Layer}}-{{TileMatrixSet}}/{{TileMatrix}}-{{TileCol}}-{{TileRow}}/tile'
 
 
 .. index:: Demo Service, OpenLayers

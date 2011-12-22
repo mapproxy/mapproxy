@@ -325,6 +325,7 @@ Example ``caches`` configuration
       text: MapProxy
     request_format: image/tiff
     format: image/jpeg
+    origin: ul
     cache:
       type: file
       directory_layout: tms
@@ -407,6 +408,28 @@ The extent of your grid. You can use either a list or a string with the lower le
 """"""""""""
 
 The SRS of the grid bbox. See above.
+
+.. index:: origin
+
+.. _grid_origin:
+
+``origin``
+""""""""""
+
+.. versionadded:: 1.3.0
+
+The default origin (x=0, y=0) of the tile grid is the lower left corner, similar to TMS. WMTS defines the tile origin in the upper left corner. MapProxy can translate between services and caches with different tile origins, but there are some limitations for grids with custom BBOX and resolutions that are not of factor 2. You can only use one service in these cases and need to use the matching ``origin`` for that service.
+
+The following values are supported:
+
+``ll`` or ``sw``:
+
+  If the x=0, y=0 tile is in the lower-left/south-west corner of the tile grid. This is the default.
+
+``ul`` or ``nw``:
+
+  If the x=0, y=0 tile is in the upper-left/north-west corner of the tile grid.
+
 
 ``num_levels``
 """"""""""""""
