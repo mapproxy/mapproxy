@@ -766,13 +766,13 @@ class TileSourceConfiguration(SourceConfiguration):
         url = self.conf['url']
         
         origin = self.conf.get('origin')
-        
+
         if origin is not None:
             warnings.warn('origin for tile sources is deprecated. '
             'use grid with correct origin.', FutureWarning)
         # TODO remove origin with 1.4
-        if origin not in ('sw', 'nw'):
-            log.error("ignoring origin '%s', only supports sw and nw")
+        if origin not in ('sw', 'nw', None):
+            log.error("ignoring origin '%s', only supports sw and nw", origin)
             origin = 'sw'
         inverse = True if origin == 'nw' else False
         
