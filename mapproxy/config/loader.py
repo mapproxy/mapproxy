@@ -1161,8 +1161,8 @@ class ServiceConfiguration(ConfigurationBase):
         md.update(conf.get('md', {}))
         layers = self.tile_layers(conf)
         
-        kvp = self.conf.get('kvp')
-        restful = self.conf.get('restful')
+        kvp = conf.get('kvp')
+        restful = conf.get('restful')
         
         if kvp is None and restful is None:
             kvp = restful = True
@@ -1171,7 +1171,7 @@ class ServiceConfiguration(ConfigurationBase):
         if kvp:
             services.append(WMTSServer(layers, md))
         if restful:
-            template = self.conf.get('restful_template')
+            template = conf.get('restful_template')
             services.append(WMTSRestServer(layers, md, template=template))
         
         return services
