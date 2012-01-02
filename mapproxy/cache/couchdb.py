@@ -190,6 +190,9 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         self.is_cached(tile)
     
     def load_tile(self, tile, with_metadata=False):
+        # bulk loading with load_tiles is not implemented, because
+        # CouchDB's /all_docs? does not include attachments
+        
         if tile.source or tile.coord is None:
             return True
         url = self.document_url(tile.coord) + '?attachments=true'
