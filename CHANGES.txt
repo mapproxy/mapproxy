@@ -1,7 +1,35 @@
+1.3.0rc1 2012-01-03
+~~~~~~~~~~~~~~~~~~~
+
+Features:
+
+- support for RESTful WMTS requests with custom URL templates
+- support for CouchDB as tile backend
+- support for Mapnik 2 sources
+- limit maximum WMS response size with max_output_pixels
+- new color option for watermarks
+- new ``mapproxy-util serve-multiapp-develop`` command
+- new wms.bbox_srs option for bounding boxes in multiple SRS in WMS
+  capabilities
+
+Improvements:
+- log exceptions when returning internal errors (500)
+
+Fixes:
+- fix BBOX in WMS-C capabilities
+- prevent exception for WMS requests with unsupported image formats with
+  mime-type options (like 'image/png; mode=24bit')
+- fixed blank image results for servers that call .close() on the
+  response (like gunicorn)
+
+Other:
+- origin option for tile sources is deprecated. use a custom grid with
+  the appropriate origin.
+
 1.2.1 2011-09-01
 ~~~~~~~~~~~~~~~~
 
-Bug fix:
+Fixes:
 
 - fixed configuration of watermarks
 - support for unicode title in old-style layer configuration
@@ -9,7 +37,7 @@ Bug fix:
 1.2.0 2011-08-31
 ~~~~~~~~~~~~~~~~
 
-Bug fix:
+Fixes:
 
 - fixed links in demo service when running as MultiMapProxy
 
