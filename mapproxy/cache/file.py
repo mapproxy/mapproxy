@@ -103,9 +103,9 @@ class FileCache(TileCacheBase, FileBasedLocking):
         :return: the full filename of the tile
         
         >>> from mapproxy.cache.tile import Tile
-        >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png')
+        >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png', directory_layout='tms')
         >>> c.tile_location(Tile((3, 4, 2))).replace('\\\\', '/')
-        '/tmp/cache/02/000/000/003/000/000/004.png'
+        '/tmp/cache/2/3/4.png'
         """
         if tile.location is None:
             x, y, z = tile.coord
