@@ -17,7 +17,7 @@
 Map/information sources for layers or tile cache.
 """
 
-from mapproxy.layer import MapLayer, MapExtent, MapError, MapBBOXError, BlankImage
+from mapproxy.layer import MapLayer, MapExtent, MapError, MapBBOXError, BlankImage, InfoLayer
 from mapproxy.image.message import message_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.srs import SRS
@@ -37,7 +37,7 @@ class Source(MapLayer):
     def __init__(self, image_opts=None):
         MapLayer.__init__(self, image_opts=image_opts)
 
-class InfoSource(object):
+class InfoSource(InfoLayer):
     def get_info(self, query):
         raise NotImplementedError
 

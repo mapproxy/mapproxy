@@ -33,20 +33,14 @@ class LayerMerger(object):
     """
     def __init__(self):
         self.layers = []
-    def add(self, layer):
+    def add(self, layer_img, layer=None):
         """
-        Add one or more layers to merge. Bottom-layers first.
+        Add one layer image to merge. Bottom-layers first.
         """
-        try:
-            layer = iter(layer)
-        except TypeError:
-            if layer is not None:
-                self.layers.append(layer)
-        else:
-            for l in layer:
-                self.add(l)
+        if layer_img is not None:
+            self.layers.append((layer_img, layer))
 
-    def merge(self, image_opts, size=None):
+    def merge(self, image_opts, size=None, bbox=None, bbox_srs=None):
         """
         Merge the layers. If the format is not 'png' just return the last image.
         
@@ -57,30 +51,38 @@ class LayerMerger(object):
         if not self.layers:
             return BlankImageSource(size=size, image_opts=image_opts)
         if len(self.layers) == 1:
-            layer_opts = self.layers[0].image_opts
+            layer_img, layer = self.layers[0]
+            layer_opts = layer_img.image_opts
             if ((not layer_opts.transparent or image_opts.transparent) 
-                and (not size or size == self.layers[0].size)):
+                and (not size or size == layer_img.size)
+                and (layer and not layer.limited_to)):
                 # layer is opaque, no need to make transparent or add bgcolor
-                return self.layers[0]
+                return layer_img
         
         if size is None:
-            size = self.layers[0].size
+            size = self.layers[0][0].size
         
-        img = create_image(size, image_opts)
+        result = create_image(size, image_opts)
         
-        for layer in self.layers:
-            layer_img = layer.as_image()
-            if (layer.image_opts and layer.image_opts.opacity is not None
-                and layer.image_opts.opacity < 1.0):
-                layer_img = layer_img.convert(img.mode)
-                img = Image.blend(img, layer_img, layer.image_opts.opacity)
+        for layer_img, layer in self.layers:
+            img = layer_img.as_image()
+            layer_image_opts = layer_img.image_opts
+            
+            if layer and layer.limited_to:
+                from mapproxy.image.mask import mask_image
+                img = mask_image(img, bbox, bbox_srs, layer.coverage)
+                
+            if (layer_image_opts and layer_image_opts.opacity is not None
+                and layer_image_opts.opacity < 1.0):
+                img = img.convert(result.mode)
+                result = Image.blend(result, img, layer_image_opts.opacity)
             else:
-                if layer_img.mode == 'RGBA':
+                if img.mode == 'RGBA':
                     # paste w transparency mask from layer
-                    img.paste(layer_img, (0, 0), layer_img)
+                    result.paste(img, (0, 0), img)
                 else:
-                    img.paste(layer_img, (0, 0))
-        return ImageSource(img, size=size, image_opts=image_opts)
+                    result.paste(img, (0, 0))
+        return ImageSource(result, size=size, image_opts=image_opts)
 
 def merge_images(images, image_opts, size=None):
     """
@@ -93,7 +95,8 @@ def merge_images(images, image_opts, size=None):
     :rtype: `ImageSource`
     """
     merger = LayerMerger()
-    merger.add(images)
+    for img in images:
+        merger.add(img)
     return merger.merge(image_opts=image_opts, size=size)
 
 def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transparent=True):

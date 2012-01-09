@@ -51,3 +51,4 @@ sources:
       bbox_srs: 'EPSG:4326'
     req:
       url: http://localhost:42423/service
+      layers: fi

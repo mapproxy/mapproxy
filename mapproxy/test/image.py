@@ -91,6 +91,11 @@ def is_transparent(img_data):
         'assert_is_transparent works only for RGBA images, got %s image' % img.mode)
         
 
+def img_from_buf(buf):
+    data = StringIO(buf)
+    return Image.open(data)
+    
+
 def bgcolor_ratio(img_data):
     """
     Return the ratio of the primary/bg color. 1 == only bg color.

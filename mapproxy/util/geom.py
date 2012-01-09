@@ -17,7 +17,7 @@ from __future__ import division, with_statement
 from functools import partial
 import operator
 
-from mapproxy.layer import MapExtent
+from mapproxy.srs import SRS
 
 import logging
 log_config = logging.getLogger('mapproxy.config.coverage')
@@ -91,6 +91,19 @@ def load_polygons(geom_files):
     mp = simplify_geom(mp)
     return mp.bounds, mp
 
+def load_limited_to(limited_to):
+    srs = SRS(limited_to['srs'])
+    geom = limited_to['geometry']
+    
+    if not hasattr(geom, 'type'): # not a Shapely geometry
+        if isinstance(geom, (list, tuple)):
+            geom = bbox_polygon(geom)
+        else:
+            geom = shapely.wkt.loads(geom)
+            assert geom.type in ('Polygon', 'MultiPolygon')
+    
+    return GeomCoverage(geom, srs)
+    
 def simplify_geom(geom):
     bounds = geom.bounds
     w, h = bounds[2] - bounds[0], bounds[3] - bounds[1]
@@ -191,6 +204,8 @@ class BBOXCoverage(object):
     
     @property
     def extent(self):
+        from mapproxy.layer import MapExtent
+        
         return MapExtent(self.bbox, self.srs)
     
     def _bbox_in_coverage_srs(self, bbox, srs):
@@ -239,33 +254,38 @@ class GeomCoverage(object):
         self.geom = geom
         self.bbox = geom.bounds
         self.srs = srs
-        self._prepared_geom = shapely.prepared.prep(geom)
+        self._prepared_geom = None
         self._prepared_counter = 0
         self._prepared_max = 10000
     
     @property
     def extent(self):
+        from mapproxy.layer import MapExtent
         return MapExtent(self.bbox, self.srs)
     
     @property
     def prepared_geom(self):
         # GEOS internal data structure for prepared geometries grows over time,
         # recreate to limit memory consumption
-        if self._prepared_counter > self._prepared_max:
+        if not self._prepared_geom or self._prepared_counter > self._prepared_max:
             self._prepared_geom = shapely.prepared.prep(self.geom)
             self._prepared_counter = 0
         self._prepared_counter += 1
         return self._prepared_geom
     
-    def _bbox_poly_in_coverage_srs(self, bbox, srs):
-        if isinstance(bbox, shapely.geometry.base.BaseGeometry):
+    def _geom_in_coverage_srs(self, geom, srs):
+        if isinstance(geom, shapely.geometry.base.BaseGeometry):
             if srs != self.srs:
-                bbox = transform_geometry(srs, self.srs, bbox)
+                geom = transform_geometry(srs, self.srs, geom)
+        elif len(geom) == 2:
+            if srs != self.srs:
+                geom = srs.transform_to(self.srs, geom)
+            geom = shapely.geometry.Point(geom)
         else:
             if srs != self.srs:
-                bbox = srs.transform_bbox_to(self.srs, bbox)
-            bbox = bbox_polygon(bbox)
-        return bbox
+                geom = srs.transform_bbox_to(self.srs, geom)
+            geom = bbox_polygon(geom)
+        return geom
     
     def transform_to(self, srs):
         if srs == self.srs:
@@ -275,11 +295,15 @@ class GeomCoverage(object):
         return GeomCoverage(geom, srs)
     
     def intersects(self, bbox, srs):
-        bbox = self._bbox_poly_in_coverage_srs(bbox, srs)
+        bbox = self._geom_in_coverage_srs(bbox, srs)
         return self.prepared_geom.intersects(bbox)
     
+    def intersection(self, bbox, srs):
+        bbox = self._geom_in_coverage_srs(bbox, srs)
+        return GeomCoverage(self.geom.intersection(bbox), self.srs)
+    
     def contains(self, bbox, srs):
-        bbox = self._bbox_poly_in_coverage_srs(bbox, srs)
+        bbox = self._geom_in_coverage_srs(bbox, srs)
         return self.prepared_geom.contains(bbox)
     
     def __eq__(self, other):

@@ -22,7 +22,8 @@ from __future__ import division, with_statement
 from mapproxy.grid import NoTiles, GridError, merge_resolution_range
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
-from mapproxy.srs import SRS, bbox_equals, merge_bbox
+from mapproxy.srs import SRS, bbox_equals, merge_bbox, make_lin_transf
+from mapproxy.util.geom import load_limited_to
 
 import logging
 log = logging.getLogger(__name__)
@@ -38,6 +39,8 @@ class MapBBOXError(Exception):
 
 class MapLayer(object):
     res_range = None
+    
+    limited_to = None
     
     def __init__(self, image_opts=None):
         self.image_opts = image_opts or ImageOptions()
@@ -74,6 +77,32 @@ class MapLayer(object):
     def combined_layer(self, other, query):
         return None
 
+class LimitedLayer(object):
+    """
+    Wraps an existing layer temporary and stores additional
+    attributes for geographical limits.
+    """
+    def __init__(self, layer, limited_to):
+        self._layer = layer
+        self.limited_to = limited_to
+        self.coverage = limited_to
+    
+    def __getattr__(self, name):
+        return getattr(self._layer, name)
+
+    def combined_layer(self, other, query):
+        if hasattr(other, 'limited_to') and self.limited_to == other.limited_to:
+            combined = self._layer.combined_layer(other, query)
+            if combined:
+                return LimitedLayer(combined, self.limited_to)
+        return None
+    
+    def get_info(self, query):
+        if self.coverage:
+            if not self.coverage.contains(query.coord, query.srs):
+                return None
+        return self._layer.get_info(query)
+
 class InfoLayer(object):
     def get_info(self, query):
         raise NotImplementedError
@@ -102,6 +131,10 @@ class InfoQuery(object):
         self.info_format = info_format
         self.format = format
 
+    @property
+    def coord(self):
+        return make_lin_transf((0, self.size[1], self.size[0], 0), self.bbox)(self.pos)
+        
 class LegendQuery(object):
     def __init__(self, format, scale):
         self.format = format
