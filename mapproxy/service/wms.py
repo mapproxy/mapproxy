@@ -88,22 +88,10 @@ class WMSServer(Server):
                 for layer_name, map_layers in layer.map_layers_for_query(query):
                     actual_layers[layer_name] = map_layers
         
-        authorized_map_layers = self.authorized_map_layers(actual_layers.keys(),
+        authorized_layers = self.authorized_layers('map', actual_layers.keys(),
             map_request.http.environ, query_extent=(query.srs.srs_code, query.bbox))
         
-        if authorized_map_layers is not PERMIT_ALL_LAYERS:
-            requested_layer_names = set(map_request.params.layers)
-            for layer_name in actual_layers.keys():
-                if layer_name not in authorized_map_layers:
-                    # check whether layer was requested explicit...
-                    if layer_name in requested_layer_names:
-                        raise RequestError('forbidden', status=403)
-                    # or implicit (part of group layer)
-                    else:
-                        del actual_layers[layer_name]
-                elif authorized_map_layers[layer_name] is not None:
-                    limited_to = load_limited_to(authorized_map_layers[layer_name])
-                    actual_layers[layer_name] = [LimitedLayer(lyr, limited_to) for lyr in actual_layers[layer_name]]
+        self.filter_actual_layers(actual_layers, map_request.params.layers, authorized_layers)
                     
         render_layers = []
         for layers in actual_layers.values():
@@ -125,7 +113,7 @@ class WMSServer(Server):
         result = merger.merge(size=params.size, image_opts=img_opts,
             bbox=params.bbox, bbox_srs=params.srs)
         return Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
-    
+
     def capabilities(self, map_request):
         # TODO: debug layer
         # if '__debug__' in map_request.params:
@@ -170,20 +158,9 @@ class WMSServer(Server):
             for layer_name, info_layers in layer.info_layers_for_query(query):
                 actual_layers[layer_name] = info_layers
         
-        authorized_info_layers = self.authorized_info_layers(actual_layers.keys(),
+        authorized_layers = self.authorized_layers('featureinfo', actual_layers.keys(),
             request.http.environ, query_extent=(query.srs.srs_code, query.bbox))
-        
-        if authorized_info_layers is not PERMIT_ALL_LAYERS:
-            requested_layer_names = set(request.params.layers)
-            for layer_name in actual_layers.keys():
-                if layer_name not in authorized_info_layers:
-                    if layer_name in requested_layer_names:
-                        raise RequestError('forbidden', status=403)
-                    else:
-                        del actual_layers[layer_name]
-                elif authorized_info_layers[layer_name] is not None:
-                    limited_to = load_limited_to(authorized_info_layers[layer_name])
-                    actual_layers[layer_name] = [LimitedLayer(lyr, limited_to) for lyr in actual_layers[layer_name]]
+        self.filter_actual_layers(actual_layers, request.params.layers, authorized_layers)
 
         info_layers = []
         for layers in actual_layers.values():
@@ -278,13 +255,7 @@ class WMSServer(Server):
         md['has_legend'] = self.root_layer.has_legend
         return md
     
-    def authorized_map_layers(self, layers, env, query_extent):
-        return self._authorize_layers('map', layers, env, query_extent)
-    
-    def authorized_info_layers(self, layers, env, query_extent):
-        return self._authorize_layers('featureinfo', layers, env, query_extent)
-    
-    def _authorize_layers(self, feature, layers, env, query_extent):
+    def authorized_layers(self, feature, layers, env, query_extent):
         if 'mapproxy.authorize' in env:
             result = env['mapproxy.authorize']('wms.' + feature, layers[:],
                 environ=env, query_extent=query_extent)
@@ -300,6 +271,21 @@ class WMSServer(Server):
             return layers
         else:
             return PERMIT_ALL_LAYERS
+    
+    def filter_actual_layers(self, actual_layers, requested_layers, authorized_layers):
+        if authorized_layers is not PERMIT_ALL_LAYERS:
+            requested_layer_names = set(requested_layers)
+            for layer_name in actual_layers.keys():
+                if layer_name not in authorized_layers:
+                    # check whether layer was requested explicit...
+                    if layer_name in requested_layer_names:
+                        raise RequestError('forbidden', status=403)
+                    # or implicit (part of group layer)
+                    else:
+                        del actual_layers[layer_name]
+                elif authorized_layers[layer_name] is not None:
+                    limited_to = load_limited_to(authorized_layers[layer_name])
+                    actual_layers[layer_name] = [LimitedLayer(lyr, limited_to) for lyr in actual_layers[layer_name]]
     
     def authorized_capability_layers(self, env):
         if 'mapproxy.authorize' in env:
