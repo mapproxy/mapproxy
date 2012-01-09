@@ -161,6 +161,29 @@ class TestWMSAuth(SystemTest):
         # right part authorized, bgcolor + text
         assert len(img.crop((100, 0, 200, 100)).getcolors()) >= 2
 
+    def test_get_map_authorized_global_limited(self):
+        def auth(service, layers, query_extent, **kw):
+            eq_(query_extent, ('EPSG:4326', (-80.0, -40.0, 0.0, 0.0)))
+            eq_(service, 'wms.map')
+            eq_(len(layers), 1)
+            return {
+                'authorized': 'partial',
+                'limited_to': {'srs': 'EPSG:4326', 'geometry': [-20.0, -40.0, 0.0, 0.0]},
+                'layers': {
+                    'layer1': {
+                        'map': True,
+                        'limited_to': {'srs': 'EPSG:4326', 'geometry': [-40.0, -40.0, 0.0, 0.0]},
+                    },
+                }
+            }
+        resp = self.app.get(MAP_REQ + 'layers=layer1', extra_environ={'mapproxy.authorize': auth})
+        eq_(resp.content_type, 'image/png')
+        img = img_from_buf(resp.body)
+        # left part not authorized, only bgcolor
+        assert len(img.crop((0, 0, 100, 100)).getcolors()) == 1
+        # right part authorized, bgcolor + text
+        assert len(img.crop((100, 0, 200, 100)).getcolors()) >= 2
+
     def test_get_map_authorized_none(self):
         def auth(service, layers, query_extent, **kw):
             eq_(query_extent, ('EPSG:4326', (-80.0, -40.0, 0.0, 0.0)))
@@ -204,6 +227,22 @@ class TestWMSAuth(SystemTest):
                 'layers': {
                     'layer1b': {'featureinfo': True, 'limited_to':  {'srs': 'EPSG:4326', 'geometry': [-40.0, -40.0, 0.0, 0.0]}},
                 }
+            }
+        resp = self.app.get(FI_REQ + 'query_layers=layer1b&layers=layer1b', extra_environ={'mapproxy.authorize': auth})
+        # empty response, FI request is outside of limited_to geometry
+        eq_(resp.body, '')
+
+    def test_get_featureinfo_global_limited(self):
+        def auth(service, layers, query_extent, **kw):
+            eq_(query_extent, ('EPSG:4326', (-80.0, -40.0, 0.0, 0.0)))
+            eq_(service, 'wms.featureinfo')
+            eq_(len(layers), 1)
+            return {
+                'authorized': 'partial',
+                'limited_to':  {'srs': 'EPSG:4326', 'geometry': [-40.0, -40.0, 0.0, 0.0]},
+                'layers': {
+                    'layer1b': {'featureinfo': True},
+                },
             }
         resp = self.app.get(FI_REQ + 'query_layers=layer1b&layers=layer1b', extra_environ={'mapproxy.authorize': auth})
         # empty response, FI request is outside of limited_to geometry

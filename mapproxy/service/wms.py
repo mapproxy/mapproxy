@@ -88,7 +88,7 @@ class WMSServer(Server):
                 for layer_name, map_layers in layer.map_layers_for_query(query):
                     actual_layers[layer_name] = map_layers
         
-        authorized_layers = self.authorized_layers('map', actual_layers.keys(),
+        authorized_layers, coverage = self.authorized_layers('map', actual_layers.keys(),
             map_request.http.environ, query_extent=(query.srs.srs_code, query.bbox))
         
         self.filter_actual_layers(actual_layers, map_request.params.layers, authorized_layers)
@@ -111,7 +111,7 @@ class WMSServer(Server):
         img_opts.bgcolor = params.bgcolor
         img_opts.transparent = params.transparent
         result = merger.merge(size=params.size, image_opts=img_opts,
-            bbox=params.bbox, bbox_srs=params.srs)
+            bbox=params.bbox, bbox_srs=params.srs, coverage=coverage)
         return Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
 
     def capabilities(self, map_request):
@@ -158,20 +158,24 @@ class WMSServer(Server):
             for layer_name, info_layers in layer.info_layers_for_query(query):
                 actual_layers[layer_name] = info_layers
         
-        authorized_layers = self.authorized_layers('featureinfo', actual_layers.keys(),
+        authorized_layers, coverage = self.authorized_layers('featureinfo', actual_layers.keys(),
             request.http.environ, query_extent=(query.srs.srs_code, query.bbox))
         self.filter_actual_layers(actual_layers, request.params.layers, authorized_layers)
 
-        info_layers = []
-        for layers in actual_layers.values():
-            info_layers.extend(layers)
-        
-        for layer in info_layers:
-            info = layer.get_info(query)
-            if info is None:
-                continue
-            infos.append(info)
-        
+        # outside of auth-coverage
+        if coverage and not coverage.contains(query.coord, query.srs):
+            infos = []
+        else:
+            info_layers = []
+            for layers in actual_layers.values():
+                info_layers.extend(layers)
+            
+            for layer in info_layers:
+                info = layer.get_info(query)
+                if info is None:
+                    continue
+                infos.append(info)
+                
         mimetype = None
         if 'info_format' in request.params:
             mimetype = request.params.info_format
@@ -268,9 +272,14 @@ class WMSServer(Server):
                 for layer_name, permissions in result['layers'].iteritems():
                     if permissions.get(feature, False) == True:
                         layers[layer_name] = permissions.get('limited_to')
-            return layers
+            limited_to = result.get('limited_to')
+            if limited_to:
+                coverage = load_limited_to(limited_to)
+            else:
+                coverage = None
+            return layers, coverage
         else:
-            return PERMIT_ALL_LAYERS
+            return PERMIT_ALL_LAYERS, None
     
     def filter_actual_layers(self, actual_layers, requested_layers, authorized_layers):
         if authorized_layers is not PERMIT_ALL_LAYERS:

@@ -18,15 +18,6 @@ from mapproxy.srs import SRS, make_lin_transf
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import create_image
 
-def mask_image_source(img_source, bbox, bbox_srs, geom, geom_srs):
-    img = img_source.as_image()
-    
-    img = mask_image(img, bbox, bbox_srs, geom, geom_srs)
-    result = create_image(img.size, img_source.image_opts)
-    
-    result.paste(img, (0, 0), img)
-    return ImageSource(result, image_opts=img_source.image_opts)
-
 def mask_image_source_from_coverage(img_source, bbox, bbox_srs, coverage):
     img = img_source.as_image()
     img = mask_image(img, bbox, bbox_srs, coverage)

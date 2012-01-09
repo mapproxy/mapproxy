@@ -39,7 +39,7 @@ class LayerMerger(object):
         if layer_img is not None:
             self.layers.append((layer_img, layer))
 
-    def merge(self, image_opts, size=None, bbox=None, bbox_srs=None):
+    def merge(self, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None):
         """
         Merge the layers. If the format is not 'png' just return the last image.
         
@@ -80,6 +80,14 @@ class LayerMerger(object):
                     result.paste(img, (0, 0), img)
                 else:
                     result.paste(img, (0, 0))
+        
+        # apply global clip coverage
+        if coverage:
+            bg = create_image(size, image_opts)
+            mask = mask_image(result, bbox, bbox_srs, coverage)
+            bg.paste(result, (0, 0), mask)
+            result = bg
+
         return ImageSource(result, size=size, image_opts=image_opts)
 
 def merge_images(images, image_opts, size=None):
