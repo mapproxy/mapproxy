@@ -23,7 +23,6 @@ from mapproxy.grid import NoTiles, GridError, merge_resolution_range
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
 from mapproxy.srs import SRS, bbox_equals, merge_bbox, make_lin_transf
-from mapproxy.util.geom import load_limited_to
 
 import logging
 log = logging.getLogger(__name__)
@@ -40,7 +39,7 @@ class MapBBOXError(Exception):
 class MapLayer(object):
     res_range = None
     
-    limited_to = None
+    coverage = None
     
     def __init__(self, image_opts=None):
         self.image_opts = image_opts or ImageOptions()
@@ -82,19 +81,18 @@ class LimitedLayer(object):
     Wraps an existing layer temporary and stores additional
     attributes for geographical limits.
     """
-    def __init__(self, layer, limited_to):
+    def __init__(self, layer, coverage):
         self._layer = layer
-        self.limited_to = limited_to
-        self.coverage = limited_to
+        self.coverage = coverage
     
     def __getattr__(self, name):
         return getattr(self._layer, name)
 
     def combined_layer(self, other, query):
-        if hasattr(other, 'limited_to') and self.limited_to == other.limited_to:
+        if self.coverage == other.coverage:
             combined = self._layer.combined_layer(other, query)
             if combined:
-                return LimitedLayer(combined, self.limited_to)
+                return LimitedLayer(combined, self.coverage)
         return None
     
     def get_info(self, query):

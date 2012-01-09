@@ -55,7 +55,7 @@ class LayerMerger(object):
             layer_opts = layer_img.image_opts
             if ((not layer_opts.transparent or image_opts.transparent) 
                 and (not size or size == layer_img.size)
-                and (layer and not layer.limited_to)):
+                and (layer and not layer.coverage or not layer.coverage.clip)):
                 # layer is opaque, no need to make transparent or add bgcolor
                 return layer_img
         
@@ -68,7 +68,7 @@ class LayerMerger(object):
             img = layer_img.as_image()
             layer_image_opts = layer_img.image_opts
             
-            if layer and layer.limited_to:
+            if layer and layer.coverage and layer.coverage.clip:
                 from mapproxy.image.mask import mask_image
                 img = mask_image(img, bbox, bbox_srs, layer.coverage)
                 

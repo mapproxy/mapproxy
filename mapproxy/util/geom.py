@@ -102,7 +102,7 @@ def load_limited_to(limited_to):
             geom = shapely.wkt.loads(geom)
             assert geom.type in ('Polygon', 'MultiPolygon')
     
-    return GeomCoverage(geom, srs)
+    return GeomCoverage(geom, srs, clip=True)
     
 def simplify_geom(geom):
     bounds = geom.bounds
@@ -154,6 +154,7 @@ def coverage(geom, srs):
         return GeomCoverage(geom, srs)
 
 class MultiCoverage(object):
+    clip = False
     """Aggregates multiple coverages"""
     def __init__(self, coverages):
         self.coverages = coverages
@@ -197,6 +198,7 @@ class MultiCoverage(object):
         return '<MultiCoverage %r: %r>' % (self.extent.llbbox, self.coverages)
 
 class BBOXCoverage(object):
+    clip = False
     def __init__(self, bbox, srs):
         self.bbox = bbox
         self.srs = srs
@@ -250,10 +252,11 @@ class BBOXCoverage(object):
 
 
 class GeomCoverage(object):
-    def __init__(self, geom, srs):
+    def __init__(self, geom, srs, clip=False):
         self.geom = geom
         self.bbox = geom.bounds
         self.srs = srs
+        self.clip = clip
         self._prepared_geom = None
         self._prepared_counter = 0
         self._prepared_max = 10000
