@@ -13,13 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from mapproxy.platform.image import Image, ImageDraw, ImageChops
+from mapproxy.platform.image import Image, ImageDraw
 from mapproxy.srs import SRS, make_lin_transf
 from mapproxy.image import ImageSource
-from mapproxy.image.opts import ImageOptions, create_image
-from mapproxy.util.geom import transform_geometry, bbox_polygon, load_polygons
-
-from shapely import wkt
+from mapproxy.image.opts import create_image
 
 def mask_image_source(img_source, bbox, bbox_srs, geom, geom_srs):
     img = img_source.as_image()
@@ -64,39 +61,4 @@ def image_mask_from_geom(img, bbox, polygons):
             draw.polygon([transf(coord) for coord in ring.coords], fill=255)
     
     return mask
-
-if __name__ == '__main__':
-    
-    img_opts = ImageOptions(transparent=False, bgcolor=(255, 255, 200))
-    
-    img = ImageSource(Image.open('./examples/map.png'), image_opts=img_opts)
-    
-    # img = Image.open('./examples/map_alpha.png')
-    
-    img_bg = mask_image_source(img, [629789.4377791,6675910.0948916,1411893.1110529,7284960.3361588], SRS(3857),
-        load_polygons('/Users/olt/dev/world_boundaries/polygons/GM.txt')[1], SRS(3857))
-    # ri = RestricedImage(img, img_opts, [5.65749477734,51.3077351406,12.683251612,54.6017808717], SRS(4326))
-    # mask = ri.mask(bbox_polygon([5.65749477734, 51.3077351406, 12.683251612, 54.6017808717]), SRS(4326))
-    
-    # p1 = Polygon([(50, 50), (50, 800), (700, 650), (900, 100)], [[(200, 200), (400, 600), (400, 400)]])
-    # p2 = Polygon([(700, 700), (700, 900), (900, 900), (900, 700)], [[(710, 710), (710, 730), (730, 730), (730, 710)]])
-    # 
-    # geom = MultiPolygon([p1, p2])
-    
-    # mask = ImageChops.invert(mask)
-    # mask.show()
-    # img = img.convert('RGBA')
-    # if img.mode == 'RGBA': # TODO png8a
-    #     img.split()[3].show()
-    #     mask = ImageChops.multiply(mask, img.split()[3])
-    # mask.show()
-
-    # img.putalpha(maks.split()[3])
-    
-    # img_bg.paste(img, (0, 0), mask)
-    # img_bg = img_bg.quantize(256, Image.FASTOCTREE)
-    img_bg.save("/tmp/out.jpeg")
-    
-    # import os
-    # os.system("open /tmp/out.png")
     

@@ -25,7 +25,7 @@ from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.source import SourceError
 from mapproxy.exception import RequestError
-from mapproxy.image import concat_legends, LayerMerger
+from mapproxy.image.merge import concat_legends, LayerMerger
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, LimitedLayer

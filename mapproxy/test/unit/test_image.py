@@ -18,7 +18,8 @@ from __future__ import with_statement
 
 import os
 from mapproxy.platform.image import Image, ImageDraw
-from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image, merge_images
+from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image
+from mapproxy.image.merge import merge_images
 from mapproxy.image import _make_transparent as make_transparent
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TileMerger, TileSplitter
