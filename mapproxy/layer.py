@@ -368,10 +368,3 @@ class CacheMapLayer(MapLayer):
         return tiled_image.transform(query.bbox, query.srs, query.size, 
                                        self.tile_manager.image_opts)
 
-class DirectInfoLayer(InfoLayer):
-    def __init__(self, source):
-        self.source = source
-    
-    def get_info(self, query):
-        return self.source.get_info(query)
-
