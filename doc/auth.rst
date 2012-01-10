@@ -39,7 +39,8 @@ A simple middleware that authorizes random requests might look like::
           if random.randint(0, 1) == 1:
             return self.app(environ, start_reponse)
           else:
-            start_reponse('403 Forbidden', [('content-type', 'text/plain')])
+            start_reponse('403 Forbidden',
+              [('content-type', 'text/plain')])
             return ['no luck today']
 
 
@@ -160,7 +161,7 @@ The ``authorized`` entry can have four values.
   The ``environment`` parameter and support for ``authorized: unauthenticated`` results.
 
 WMS Service
-~~~~~~~~~~~
+-----------
 
 The WMS service expects a ``layers`` entry in the authorization dictionary for ``partial`` results. ``layers`` itself should be a dictionary with all layers. All missing layers are interpreted as denied layers.
 
@@ -182,6 +183,77 @@ Here is an example result of a call to the authorize function::
     }
   }
 
+
+``limited_to``
+~~~~~~~~~~~~~~
+
+.. versionadded:: 1.4.0
+
+You can restrict the geographical area for each request. This feature works for `GetCapabilities`, `GetMap` and `GetFeatureInfo` requests. MapProxy will modify the bounding box of each restricted layer for `GetCapabilities` requests. `GetFeatureInfo` requests will only return data if the info coordinate is inside the permitted area. For `GetMap` requests, MapProxy will clip each layer to the provided geometry – areas outside of the permitted area are transparent or in the background color of the WMS request.
+
+MapProxy supports this clipping for the whole request or for each layer. You need to provide a dictionary with ``bbox`` and ``geometry``. The following geometry values are supported:
+
+BBOX:
+  Bounding box as a list of minx, miny, maxx, maxy.
+
+WKT polygons:
+  String with one or more polygons and multipolygons as WKT. Multiple WKTs must be delimited by a new line character.
+  Return this type if you are getting the geometries from a spatial database.
+
+Shapely geometry:
+  Shapely geometry object. Return this type if you already processing the geometries in your Python code with `Shapely <http://toblerity.github.com/shapely/>`_.
+
+You can provide the geometry for each layer or for the whole request.
+
+Here is an example callback result with two limited layers and one unlimited layer::
+
+  {
+    'authorized': 'partial',
+    'layers': {
+      'layer1': {
+        'map': True,
+        'limited_to': {
+          'srs': 'EPSG:4326', 'geometry': [-10, 0, 30, 50]
+        },
+      },
+      'layer2': {
+        'map': True,
+        'limited_to': {
+          'srs': 'EPSG:4326', 'geometry': 'POLYGON((...))'
+        },
+      },
+      'layer3': {
+        'map': True,
+      }
+    }
+  }
+
+
+Here is an example callback result where the complete request is limited::
+
+  {
+    'authorized': 'partial',
+    'limited_to': {
+      'srs': 'EPSG:4326', 
+      'geometry': shapely.geometry.Polygon(
+        [(-10, 0), (30, -5), (30, 50), (20, 50)]),
+    },
+    'layers': {
+      'layer1': {
+        'map': True,
+      },
+    }
+  }
+
+
+Performance
+^^^^^^^^^^^
+
+The clipping is quite fast, but if you notice that the overhead is to large, you should reduce the complexity of the geometries returned by your authorization callback. You can improve the performance by returning the geometry in the projection from ``query_extent`` (``ST_Transform``), by limiting it to the ``query_extent`` (``ST_Intersection``) and by simplify it (``ST_Simplify``).
+
+
+Service types
+~~~~~~~~~~~~~
 
 The WMS service uses the following service strings:
 
@@ -279,7 +351,7 @@ Results in the following abbreviated capabilities::
 
 
 TMS/Tile Service
-~~~~~~~~~~~~~~~~
+----------------
 
 The TMS service expects a ``layers`` entry in the authorization dictionary for ``partial`` results. ``layers`` itself should be a dictionary with all layers. All missing layers are interpreted as denied layers.
 
@@ -301,7 +373,7 @@ The TMS service uses ``tms`` as the service string for all authorization request
 Only layers with the ``tile`` feature set to ``True`` are included in the TMS capabilities document (``/tms/1.0.0``). Missing layers are not included.
 
 KML Service
-~~~~~~~~~~~
+-----------
 
 The KML authorization is similar to the TMS authorization.
 
@@ -309,7 +381,7 @@ The KML service uses ``kml`` as the service string for all authorization request
 
 
 Demo Service
-~~~~~~~~~~~~
+------------
 
 The demo service only supports ``full`` or ``none`` authorization. ``layers`` is always an empty list. The demo service does not authorize the services and layers that are listed in the overview page. If you permit a user to access the demo service, then he can see all services and layers names. However, access to these services is still restricted to the according authorization.
 
@@ -317,7 +389,7 @@ The service string is ``demo``.
 
 
 MultiMapProxy
-~~~~~~~~~~~~~
+-------------
 
 The :ref:`MultiMapProxy <multimapproxy>` application stores the instance name in the environment as ``mapproxy.instance_name``. This information in not available when your middleware gets called, but you can use it in your authorization function.
 
