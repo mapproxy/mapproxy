@@ -76,7 +76,7 @@ def load_polygons(geom_files):
     
     for geom_file in geom_files:
         with open(geom_file) as f:
-            polygons.extend(load_polygon_lines(f), source=geom_files)
+            polygons.extend(load_polygon_lines(f, source=geom_files))
     
     mp = shapely.geometry.MultiPolygon(polygons)
     mp = simplify_geom(mp)
