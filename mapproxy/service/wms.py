@@ -30,7 +30,7 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, LimitedLayer
 from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
-from mapproxy.util import async
+from mapproxy.util import async, cached_property
 from mapproxy.util.geom import load_limited_to
 from mapproxy.util.ext.odict import odict
 from mapproxy.template import template_loader, bunch
@@ -317,7 +317,7 @@ class FilteredRootLayer(object):
     def __getattr__(self, name):
         return getattr(self.root_layer, name)
 
-    @property
+    @cached_property
     def extent(self):
         layer_name = self.root_layer.name
         limited_to = self.permissions.get(layer_name, {}).get('limited_to')
