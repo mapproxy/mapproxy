@@ -213,13 +213,15 @@ Here is an example callback result with two limited layers and one unlimited lay
       'layer1': {
         'map': True,
         'limited_to': {
-          'srs': 'EPSG:4326', 'geometry': [-10, 0, 30, 50]
+          'geometry': [-10, 0, 30, 50],
+          'srs': 'EPSG:4326',
         },
       },
       'layer2': {
         'map': True,
         'limited_to': {
-          'srs': 'EPSG:4326', 'geometry': 'POLYGON((...))'
+          'geometry': 'POLYGON((...))',
+          'srs': 'EPSG:4326',
         },
       },
       'layer3': {
@@ -234,9 +236,9 @@ Here is an example callback result where the complete request is limited::
   {
     'authorized': 'partial',
     'limited_to': {
-      'srs': 'EPSG:4326', 
       'geometry': shapely.geometry.Polygon(
         [(-10, 0), (30, -5), (30, 50), (20, 50)]),
+      'srs': 'EPSG:4326', 
     },
     'layers': {
       'layer1': {
