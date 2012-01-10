@@ -42,7 +42,6 @@ class TestWMSAuth(SystemTest):
     # ###
     # see mapproxy.test.unit.test_auth for WMS GetMap request tests
     # ###
-    
     def test_capabilities_authorize_all(self):
         def auth(service, layers, **kw):
             eq_(service, 'wms.capabilities')
@@ -137,7 +136,6 @@ class TestWMSAuth(SystemTest):
             }
         resp = self.app.get(MAP_REQ + 'layers=layer1', extra_environ={'mapproxy.authorize': auth})
         eq_(resp.content_type, 'image/png')
-        img = img_from_buf(resp.body)
         
     def test_get_map_authorized_limited(self):
         def auth(service, layers, query_extent, **kw):
@@ -228,6 +226,7 @@ class TestWMSAuth(SystemTest):
                     'layer1b': {'featureinfo': True, 'limited_to':  {'srs': 'EPSG:4326', 'geometry': [-40.0, -40.0, 0.0, 0.0]}},
                 }
             }
+        
         resp = self.app.get(FI_REQ + 'query_layers=layer1b&layers=layer1b', extra_environ={'mapproxy.authorize': auth})
         # empty response, FI request is outside of limited_to geometry
         eq_(resp.body, '')
