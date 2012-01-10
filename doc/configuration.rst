@@ -766,6 +766,10 @@ Available options are:
   
 ``encoding_options``
   Options that modify the way MapProxy encodes (saves) images. These options are format dependent. See below.
+
+``opacity``
+  Configures the opacity of a layer or cache. This value is used when the source or cache is placed on other layers and it can be used to overlay non-transparent images. It does not alter the image itself, and only effects when multiple layers are merged to one image. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered). 
+
   
 ``encoding_options``
 ^^^^^^^^^^^^^^^^^^^^
