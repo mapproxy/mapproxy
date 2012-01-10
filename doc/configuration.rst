@@ -184,7 +184,7 @@ Configure a URL to an image that should be returned as the legend for this layer
 caches
 ------
 
-Here you can configure wich sources should be cached.
+Here you can configure which sources should be cached.
 Available options are:
 
 ``sources``
