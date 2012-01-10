@@ -76,20 +76,26 @@ def load_polygons(geom_files):
     
     for geom_file in geom_files:
         with open(geom_file) as f:
-            for line in f:
-                geom = shapely.wkt.loads(line)
-                if geom.type == 'Polygon':
-                    polygons.append(geom)
-                elif geom.type == 'MultiPolygon':
-                    for p in geom:
-                        polygons.append(p)
-                else:
-                    log_config.warn('ignoring non-polygon geometry (%s) from %s',
-                        geom.type, geom_file)
+            polygons.extend(load_polygon_lines(f), source=geom_files)
     
     mp = shapely.geometry.MultiPolygon(polygons)
     mp = simplify_geom(mp)
     return mp.bounds, mp
+
+def load_polygon_lines(line_iter, source='<string>'):
+    polygons = []
+    for line in line_iter:
+        geom = shapely.wkt.loads(line)
+        if geom.type == 'Polygon':
+            polygons.append(geom)
+        elif geom.type == 'MultiPolygon':
+            for p in geom:
+                polygons.append(p)
+        else:
+            log_config.warn('ignoring non-polygon geometry (%s) from %s',
+                geom.type, source)
+
+    return polygons    
 
 def load_limited_to(limited_to):
     srs = SRS(limited_to['srs'])
@@ -99,9 +105,12 @@ def load_limited_to(limited_to):
         if isinstance(geom, (list, tuple)):
             geom = bbox_polygon(geom)
         else:
-            geom = shapely.wkt.loads(geom)
-            assert geom.type in ('Polygon', 'MultiPolygon')
-    
+            polygons = load_polygon_lines(geom.split('\n'))    
+            if len(polygons) == 1:
+                geom = polygons[0]
+            else:
+                geom = shapely.geometry.MultiPolygon(polygons)
+
     return GeomCoverage(geom, srs, clip=True)
     
 def simplify_geom(geom):
