@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from mapproxy.platform.image import Image, ImageDraw, ImageChops
+from mapproxy.platform.image import Image
 from mapproxy.srs import SRS
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
