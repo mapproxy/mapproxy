@@ -304,15 +304,21 @@ class WMSServer(Server):
             if result['authorized'] == 'full':
                 return self.root_layer
             if result['authorized'] == 'partial':
-                return FilteredRootLayer(self.root_layer, result['layers'])
+                limited_to = result.get('limited_to')
+                if limited_to:
+                    coverage = load_limited_to(limited_to)
+                else:
+                    coverage = None
+                return FilteredRootLayer(self.root_layer, result['layers'], coverage=coverage)
             raise RequestError('forbidden', status=403)
         else:
             return self.root_layer
 
 class FilteredRootLayer(object):
-    def __init__(self, root_layer, permissions):
+    def __init__(self, root_layer, permissions, coverage=None):
         self.root_layer = root_layer
         self.permissions = permissions
+        self.coverage = coverage
     
     def __getattr__(self, name):
         return getattr(self.root_layer, name)
@@ -322,12 +328,16 @@ class FilteredRootLayer(object):
         layer_name = self.root_layer.name
         limited_to = self.permissions.get(layer_name, {}).get('limited_to')
         extent = self.root_layer.extent
+
         if limited_to:
             coverage = load_limited_to(limited_to)
             limited_coverage = coverage.intersection(extent.bbox, extent.srs)
-            return limited_coverage.extent
-        else:
-            return extent
+            extent = limited_coverage.extent
+        
+        if self.coverage:
+            limited_coverage = self.coverage.intersection(extent.bbox, extent.srs)
+            extent = limited_coverage.extent
+        return extent
     
     @property
     def queryable(self):
@@ -338,12 +348,32 @@ class FilteredRootLayer(object):
             return True
         return False
     
-    @property
+    def layer_permitted(self, layer):
+        if not self.permissions.get(layer.name, {}).get('map', False):
+            return False
+        extent = layer.extent
+
+        limited_to = self.permissions.get(layer.name, {}).get('limited_to')
+        if limited_to:
+            coverage = load_limited_to(limited_to)
+            if not coverage.intersects(extent.bbox, extent.srs):
+                return False
+
+        if self.coverage:
+            if not self.coverage.intersects(extent.bbox, extent.srs):
+                return False
+        return True
+    
+    @cached_property
     def layers(self):
         layers = []
         for layer in self.root_layer.layers:
-            if not layer.name or self.permissions.get(layer.name, {}).get('map', False):
-                layers.append(FilteredRootLayer(layer, self.permissions))
+            if not layer.name or self.layer_permitted(layer):
+                filtered_layer = FilteredRootLayer(layer, self.permissions, self.coverage)
+                if filtered_layer.is_active or filtered_layer.layers:
+                    # add filtered_layer only if it is active (no grouping layer)
+                    # or if it contains other active layers
+                    layers.append(filtered_layer)
         return layers
 
 class Capabilities(object):

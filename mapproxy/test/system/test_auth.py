@@ -106,7 +106,33 @@ class TestWMSAuth(SystemTest):
         eq_(float(limited_bbox.attrib['miny']), -50.0)
         eq_(float(limited_bbox.attrib['maxx']), 0.0)
         eq_(float(limited_bbox.attrib['maxy']), 5.0)
-        
+ 
+    def test_capabilities_authorize_partial_global_limited(self):
+        def auth(service, layers, **kw):
+            eq_(service, 'wms.capabilities')
+            eq_(len(layers), 7)
+            return {
+                'authorized': 'partial',
+                'limited_to': {'srs': 'EPSG:4326', 'geometry': [-40.0, -50.0, 0.0, 5.0]},
+                'layers': {
+                    'layer1': {'map': True},
+                    'layer1a': {'map': True},
+                    'layer2': {'map': True},
+                    'layer2b': {'map': True},
+                    'layer2b1': {'map': True},
+                }
+            }
+        resp = self.app.get(CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth})
+        xml = resp.lxml
+        # print resp.body
+        # layer2/2b/2b1 not included because coverage of 2b1 is outside of global limited_to 
+        eq_(xml.xpath('//Layer/Name/text()'), ['layer1', 'layer1a'])
+        limited_bbox = xml.xpath('//Layer/LatLonBoundingBox')[1]
+        eq_(float(limited_bbox.attrib['minx']), -40.0)
+        eq_(float(limited_bbox.attrib['miny']), -50.0)
+        eq_(float(limited_bbox.attrib['maxx']), 0.0)
+        eq_(float(limited_bbox.attrib['maxy']), 5.0)
+       
     def test_capabilities_authorize_partial_with_fi(self):
         def auth(service, layers, **kw):
             eq_(service, 'wms.capabilities')
@@ -117,11 +143,20 @@ class TestWMSAuth(SystemTest):
                     'layer1': {'map': True},
                     'layer1a': {'map': True},
                     'layer2': {'map': True, 'featureinfo': True},
+                    'layer2b': {'map': True, 'featureinfo': True},
+                    'layer2b1': {'map': True, 'featureinfo': True},
                 }
             }
         resp = self.app.get(CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth})
         xml = resp.lxml
-        eq_(xml.xpath('//Layer/Name/text()'), ['layer1', 'layer1a', 'layer2'])
+        eq_(xml.xpath('//Layer/Name/text()'), ['layer1', 'layer1a', 'layer2', 'layer2b', 'layer2b1'])
+        layers = xml.xpath('//Layer')
+        assert layers[3][0].text == 'layer2'
+        assert layers[3].attrib['queryable'] == '1'
+        assert layers[4][0].text == 'layer2b'
+        assert layers[4].attrib['queryable'] == '1'
+        assert layers[5][0].text == 'layer2b1'
+        assert layers[5].attrib['queryable'] == '1'
     
     def test_get_map_authorized(self):
         def auth(service, layers, query_extent, **kw):
