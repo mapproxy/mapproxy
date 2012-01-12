@@ -98,6 +98,7 @@ def load_polygon_lines(line_iter, source='<string>'):
     return polygons    
 
 def load_limited_to(limited_to):
+    require_geom_support()
     srs = SRS(limited_to['srs'])
     geom = limited_to['geometry']
     
