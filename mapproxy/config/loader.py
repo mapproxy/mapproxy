@@ -817,7 +817,7 @@ class CacheConfiguration(ConfigurationBase):
         if ('cache_dir' not in self.conf 
             and 'base_dir' not in self.context.globals.conf.get('cache', {})):
             warnings.warn('globals.cache.base_dir not defined. default value '
-            '(../var/cache_data) will be changed with 1.2.0.', FutureWarning)
+            '(../var/cache_data) will be changed with 1.4.0.', FutureWarning)
         return self.context.globals.get_path('cache_dir', self.conf,
             global_key='cache.base_dir')
         
