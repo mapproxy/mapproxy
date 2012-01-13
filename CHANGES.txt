@@ -4,7 +4,7 @@
 No changes since 1.3.0b1
 
 1.3.0b1 2012-01-03
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 Features:
 
@@ -18,9 +18,11 @@ Features:
   capabilities
 
 Improvements:
+
 - log exceptions when returning internal errors (500)
 
 Fixes:
+
 - fix BBOX in WMS-C capabilities
 - prevent exception for WMS requests with unsupported image formats with
   mime-type options (like 'image/png; mode=24bit')
@@ -28,6 +30,7 @@ Fixes:
   response (like gunicorn)
 
 Other:
+
 - origin option for tile sources is deprecated. use a custom grid with
   the appropriate origin.
 
