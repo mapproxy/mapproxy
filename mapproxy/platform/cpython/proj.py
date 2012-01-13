@@ -29,23 +29,20 @@ MAPPROXY_USE_LIBPROJ or MAPPROXY_USE_PYPROJ to any value.
 import os
 from mapproxy.util.lib import load_library
 
-import mapproxy.platform
+import ctypes
+from ctypes import (
+   c_void_p,
+   c_char_p,
+   c_int,
+   c_double,
+   c_long,
+   POINTER,
+   create_string_buffer,
+   addressof,
+)
 
-if mapproxy.platform.is_cpython:
-    import ctypes
-    from ctypes import (
-       c_void_p,
-       c_char_p,
-       c_int,
-       c_double,
-       c_long,
-       POINTER,
-       create_string_buffer,
-       addressof,
-    )
-
-    c_double_p = POINTER(c_double)
-    FINDERCMD = ctypes.CFUNCTYPE(c_char_p, c_char_p)
+c_double_p = POINTER(c_double)
+FINDERCMD = ctypes.CFUNCTYPE(c_char_p, c_char_p)
 
 import logging
 log_system = logging.getLogger('mapproxy.system')
