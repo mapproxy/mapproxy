@@ -28,12 +28,12 @@ from mapproxy.util import reraise_exception
 import logging
 log = logging.getLogger('mapproxy.source.tile')
 log_config = logging.getLogger('mapproxy.config')
+
 class TiledSource(Source):
-    def __init__(self, grid, client, inverse=False, coverage=None, image_opts=None):
+    def __init__(self, grid, client, coverage=None, image_opts=None):
         Source.__init__(self, image_opts=image_opts)
         self.grid = grid
         self.client = client
-        self.inverse = inverse
         self.image_opts = image_opts or ImageOptions()
         self.coverage = coverage
         self.extent = coverage.extent if coverage else map_extent_from_grid(grid)
@@ -65,8 +65,6 @@ class TiledSource(Source):
 
         tile_coord = tiles.next()
         
-        if self.inverse:
-            tile_coord = self.grid.flip_tile_coord(tile_coord)
         try:
             return self.client.get_tile(tile_coord, format=query.format)
         except HTTPClientError, e:

@@ -264,7 +264,7 @@ mapproxy_yaml_spec = {
                 'image': image_opts,
                 'grid': str(),
                 'request_format': str(),
-                'origin': str(),
+                'origin': str(), # TODO: remove with 1.5
                 'http': http_opts,
             }),
             'mapnik': combined(source_commons, {

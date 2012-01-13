@@ -765,16 +765,9 @@ class TileSourceConfiguration(SourceConfiguration):
         
         url = self.conf['url']
         
-        origin = self.conf.get('origin')
-
-        if origin is not None:
-            warnings.warn('origin for tile sources is deprecated. '
-            'use grid with correct origin.', FutureWarning)
-        # TODO remove origin with 1.4
-        if origin not in ('sw', 'nw', None):
-            log.error("ignoring origin '%s', only supports sw and nw", origin)
-            origin = 'sw'
-        inverse = True if origin == 'nw' else False
+        if self.conf.get('origin'):
+            warnings.warn('origin for tile sources is deprecated since 1.3.0 '
+            'and will be ignored. use grid with correct origin.', RuntimeWarning)
         
         http_client, url = self.http_client(url)
         grid = self.context.grids[self.conf['grid']].tile_grid()
@@ -783,8 +776,7 @@ class TileSourceConfiguration(SourceConfiguration):
         
         format = file_ext(params['format'])
         client = TileClient(TileURLTemplate(url, format=format), http_client=http_client, grid=grid)
-        return TiledSource(grid, client, inverse=inverse, coverage=coverage,
-            image_opts=image_opts)
+        return TiledSource(grid, client, coverage=coverage, image_opts=image_opts)
 
 
 def file_ext(mimetype):
