@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import with_statement
 
 import multiprocessing
 import os
@@ -20,8 +21,6 @@ import tempfile
 import time
 
 from mapproxy.seed.cachelock import CacheLocker, CacheLockedError
-
-from nose.tools import assert_raises
 
 class TestCacheLock(object):
     
