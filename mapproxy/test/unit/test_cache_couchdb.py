@@ -16,6 +16,7 @@
 from __future__ import with_statement
 
 import re
+import glob
 import os
 import time
 import random
@@ -83,6 +84,10 @@ class TestCouchDBCache(TileCacheTestBase):
         assert self.cache.remove_tile(tile)
         assert self.cache.remove_tile(tile)
 
+    def test_lock(self):
+        with self.cache.lock(Tile((0, 0, 0))):
+            lockfile = glob.glob(os.path.join(self.cache_dir, 'couchdb-*-0-0-0.lck'))[0]
+            assert re.match('.*/couchdb-[0-9a-f]+-0-0-0.lck$', lockfile)
 
 class TestCouchDBMDTemplate(object):
     def test_empty(self):
