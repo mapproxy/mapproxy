@@ -135,9 +135,14 @@ class FileCache(TileCacheBase, FileBasedLocking):
     
     def load_tile_metadata(self, tile):
         location = self.tile_location(tile)
-        stats = os.lstat(location)
-        tile.timestamp = stats.st_mtime
-        tile.size = stats.st_size
+        try:
+            stats = os.lstat(location)
+            tile.timestamp = stats.st_mtime
+            tile.size = stats.st_size
+        except OSError, ex:
+            if ex.errno != errno.ENOENT: raise
+            tile.timestamp = 0
+            tile.size = 0
     
     def is_cached(self, tile):
         """
