@@ -1000,7 +1000,7 @@ class WMSLayerConfiguration(ConfigurationBase):
             layer = this_layer
         else:
             layer = WMSGroupLayer(name=self.conf.get('name'), title=self.conf.get('title'),
-                                  this=this_layer, layers=layers)
+                                  this=this_layer, layers=layers, md=self.conf.get('md'))
         return layer
 
 class LayerConfiguration(ConfigurationBase):
@@ -1050,7 +1050,7 @@ class LayerConfiguration(ConfigurationBase):
         res_range = resolution_range(self.conf)
         
         layer = WMSLayer(self.conf.get('name'), self.conf.get('title'),
-                         sources, fi_sources, lg_sources, res_range=res_range)
+                         sources, fi_sources, lg_sources, res_range=res_range, md=self.conf.get('md'))
         return layer
     
     @memoize
