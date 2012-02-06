@@ -128,11 +128,13 @@ def status_symbol(i, total):
         return symbols[int(math.ceil(i/(total/4)))]
 
 def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2, 
-        exceptions=(Exception,)):
+        exceptions=(Exception,), ignore_exceptions=tuple()):
     n = 0
     while True:
         try:
             result = func(*args, **kw)
+        except ignore_exceptions:
+            time.sleep(0.01)
         except exceptions, ex:
             if (n+1) >= max_repeat:
                 raise
