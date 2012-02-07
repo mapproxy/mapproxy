@@ -595,10 +595,11 @@ class WMSSourceConfiguration(SourceConfiguration):
         if concurrent_requests:
             from mapproxy.util.lock import SemLock
             lock_dir = self.context.globals.get_path('cache.lock_dir', self.conf)
+            lock_timeout = self.context.globals.get_value('http.client_timeout', self.conf)
             url = urlparse.urlparse(self.conf['req']['url'])
             md5 = hashlib.md5(url.netloc)
             lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
-            lock = lambda: SemLock(lock_file, concurrent_requests)
+            lock = lambda: SemLock(lock_file, concurrent_requests, timeout=lock_timeout)
         
         coverage = self.coverage()
         res_range = resolution_range(self.conf)

@@ -27,11 +27,11 @@ from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.config import load_seed_tasks_conf
 
 from mapproxy.test.http import mock_httpd
-from mapproxy.test.image import tmp_image, create_tmp_image_buf
+from mapproxy.test.image import tmp_image, create_tmp_image_buf, create_tmp_image
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 
-class SeedTestBase(object):
+class SeedTestEnvironment(object):
     def setup(self):
         self.dir = tempfile.mkdtemp()
         shutil.copy(os.path.join(FIXTURE_DIR, self.seed_conf_name), self.dir)
@@ -61,6 +61,8 @@ class SeedTestBase(object):
                                 (coord[2], coord[0]))
         tile = os.path.join(tile_dir + '%03d.png' % coord[1])
         return os.path.exists(tile)
+
+class SeedTestBase(SeedTestEnvironment):
 
     def test_seed_dry_run(self):
         seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
@@ -117,7 +119,8 @@ class TestSeedOldConfiguration(SeedTestBase):
         assert not os.path.exists(t001)
 
 
-tile_image = create_tmp_image_buf((256, 256), color='blue')
+tile_image_buf = create_tmp_image_buf((256, 256), color='blue')
+tile_image = create_tmp_image((256, 256), color='blue')
 
 class TestSeed(SeedTestBase):
     seed_conf_name = 'seed.yaml'
@@ -170,7 +173,7 @@ class TestSeed(SeedTestBase):
     
     def create_tile(self, coord=(0, 0, 0)):
         return Tile(coord,
-            ImageSource(tile_image,
+            ImageSource(tile_image_buf,
                 image_opts=ImageOptions(format='image/png')))
     
     def test_reseed_mbtiles(self):
@@ -192,7 +195,7 @@ class TestSeed(SeedTestBase):
         expected_req = ({'path': r'/service?LAYERS=bar&SERVICE=WMS&FORMAT=image%2Fpng'
                           '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
                           '&width=256&height=128&srs=EPSG:4326'},
-                        {'body': tile_image.read(), 'headers': {'content-type': 'image/png'}})
+                        {'body': tile_image, 'headers': {'content-type': 'image/png'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             # mbtiles does not support timestamps, refresh all tiles
             seed(tasks, dry_run=False)
@@ -206,3 +209,36 @@ class TestSeed(SeedTestBase):
 
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
+class TestConcurrentRequestsSeed(SeedTestEnvironment):
+    seed_conf_name = 'seed_timeouts.yaml'
+    mapproxy_conf_name = 'seed_timeouts_mapproxy.yaml'
+
+    def test_timeout(self):
+        # test concurrent seeding where seed concurrency is higher than the permitted
+        # concurrent_request value of the source and a lock times out
+
+        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        tasks = seed_conf.seeds(['test'])
+        
+        expected_req1 = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                          '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                          '&width=256&height=128&srs=EPSG:4326'},
+                        {'body': tile_image, 'headers': {'content-type': 'image/png'}, 'duration': 0.1})
+        
+        expected_req2 = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                          '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                          '&width=512&height=256&srs=EPSG:4326'},
+                        {'body': tile_image, 'headers': {'content-type': 'image/png'}, 'duration': 0.1})
+
+        expected_req3 = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                          '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                          '&width=1024&height=512&srs=EPSG:4326'},
+                        {'body': tile_image, 'headers': {'content-type': 'image/png'}, 'duration': 0.1})
+
+
+        with mock_httpd(('localhost', 42423), [expected_req1, expected_req2, expected_req3], unordered=True):
+            seed(tasks, dry_run=False, concurrency=3)
+            # concurrency=3, concurrent_request=1, client_timeout=0.2, response delay=0.1
+            # the third request should time out (3x0.1 > 0.2), but exp_backoff() in the seeder ignores this
+            # timeout exception and tries a second time
+        

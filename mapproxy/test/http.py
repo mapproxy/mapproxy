@@ -20,6 +20,7 @@ import sys
 import cgi
 import socket
 import errno
+import time
 from cStringIO import StringIO
 from urlparse import urlsplit
 from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
@@ -38,12 +39,12 @@ class HTTPServer(HTTPServer_):
         HTTPServer_.handle_error(self, request, client_address)
 
 class ThreadedStopableHTTPServer(threading.Thread):
-    def __init__(self, address, requests_responses):
+    def __init__(self, address, requests_responses, unordered=False):
         threading.Thread.__init__(self, **{'group': None})
         self.requests_responses = requests_responses
         self.sucess = False
         self.shutdown = False
-        self.httpd = HTTPServer(address, mock_http_handler(requests_responses))
+        self.httpd = HTTPServer(address, mock_http_handler(requests_responses, unordered=unordered))
         self.httpd.timeout = 1.0
         self.out = self.httpd.out = StringIO()
     
@@ -65,7 +66,7 @@ class ThreadedStopableHTTPServer(threading.Thread):
         # force socket close so next test can bind to same address
         self.httpd.socket.close()
 
-def mock_http_handler(requests_responses):
+def mock_http_handler(requests_responses, unordered=False):
     class MockHTTPHandler(BaseHTTPRequestHandler):
         def do_GET(self):
             self.query_data = self.path
@@ -75,10 +76,25 @@ def mock_http_handler(requests_responses):
             length = int(self.headers['content-length'])
             self.query_data = self.path + '?' + self.rfile.read(length)
             return self.do_mock_request('POST')
-            
+        
+        def _matching_req_resp(self):
+            if len(requests_responses) == 0:
+                return None, None
+            if unordered:
+                for req_resp in requests_responses:
+                    req, resp = req_resp
+                    if query_eq(req['path'], self.query_data):
+                        requests_responses.remove(req_resp)
+                        return req, resp
+                return None, None
+            else:
+                return requests_responses.pop(0)
+
         def do_mock_request(self, method):
-            assert len(requests_responses) > 0, 'got unexpected request (%s)' % self.query_data
-            req, resp = requests_responses.pop(0)
+            req, resp = self._matching_req_resp()
+            if not req:
+                print >>self.server.out, 'got unexpected request      ', self.query_data
+                raise AssertionError
             if 'method' in req:
                 if req['method'] != method:
                     print >>self.server.out, 'expected %s request, got %s' % (req['method'], method)
@@ -103,6 +119,8 @@ def mock_http_handler(requests_responses):
                 if not req['req_assert_function'](self):
                     print >>self.server.out, 'req_assert_function failed'
                     self.server.shutdown = True
+            if 'duration' in resp:
+                time.sleep(float(resp['duration']))
             self.start_response(resp)
             if resp.get('body_file'):
                 with open(resp['body_file'], 'rb') as f:
@@ -124,12 +142,12 @@ def mock_http_handler(requests_responses):
     return MockHTTPHandler
 
 class MockServ(object):
-    def __init__(self, port=0, host='localhost'):
+    def __init__(self, port=0, host='localhost', unordered=False):
         self.port = port
         self.host = host
         self.requests_responses = []
         self._thread = ThreadedStopableHTTPServer((self.host, self.port),
-            self.requests_responses)
+            self.requests_responses, unordered=unordered)
         if self.port == 0:
             self.port = self._thread.http_port
         self.address = (host, self.port)
@@ -229,8 +247,8 @@ def assert_url_eq(url1, url2):
     assert parts1[4] == parts2[4], '%s != %s (%s)' % (url1, url2, 'fragment')
 
 @contextmanager
-def mock_httpd(address, requests_responses):
-    t = ThreadedStopableHTTPServer(address, requests_responses)
+def mock_httpd(address, requests_responses, unordered=False):
+    t = ThreadedStopableHTTPServer(address, requests_responses, unordered=unordered)
     t.start()
     try:
         yield
