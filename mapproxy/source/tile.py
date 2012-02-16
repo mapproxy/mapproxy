@@ -30,13 +30,14 @@ log = logging.getLogger('mapproxy.source.tile')
 log_config = logging.getLogger('mapproxy.config')
 
 class TiledSource(Source):
-    def __init__(self, grid, client, coverage=None, image_opts=None):
+    def __init__(self, grid, client, coverage=None, image_opts=None, error_handler=None):
         Source.__init__(self, image_opts=image_opts)
         self.grid = grid
         self.client = client
         self.image_opts = image_opts or ImageOptions()
         self.coverage = coverage
         self.extent = coverage.extent if coverage else map_extent_from_grid(grid)
+        self.error_handler = error_handler
     
     def get_map(self, query):
         if self.grid.tile_size != query.size:
@@ -68,5 +69,9 @@ class TiledSource(Source):
         try:
             return self.client.get_tile(tile_coord, format=query.format)
         except HTTPClientError, e:
+            if self.error_handler:
+                resp = self.error_handler.handle(e.response_code, query)
+                if resp:
+                    return resp
             log.warn('could not retrieve tile: %s', e)
             reraise_exception(SourceError(e.args[0]), sys.exc_info())

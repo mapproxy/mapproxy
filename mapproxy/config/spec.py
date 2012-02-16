@@ -98,6 +98,13 @@ cache_types = {
     },
 }
 
+on_error = {
+    anything(): {
+        required('response'): one_off([int], str),
+        'cache': bool,
+    }
+}
+
 mapproxy_yaml_spec = {
     'globals': {
         'image': {
@@ -266,6 +273,7 @@ mapproxy_yaml_spec = {
                 'request_format': str(),
                 'origin': str(), # TODO: remove with 1.5
                 'http': http_opts,
+                'on_error': on_error,
             }),
             'mapnik': combined(source_commons, {
                 required('mapfile'): str(),

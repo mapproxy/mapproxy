@@ -1,6 +1,6 @@
 globals:
   cache:
-    base_dir: /tmp/cache_data/
+    base_dir: ./cache_data/
     meta_size: [1, 1]
     meta_buffer: 0
   image:
@@ -9,7 +9,8 @@ globals:
 
 services:
   wms:
-    source_errors: notify
+    on_source_errors: notify
+  tms:
 
 layers:
   online:
@@ -21,11 +22,18 @@ layers:
   mixed:
     title: on- and offline layers
     sources: [wms1, wms2, wms3]
+  tilesource:
+    title: Tilesource with 404/204 handling
+    sources: [tilesource_cache]
 
 caches:
   wms_cache:
     grids: [GLOBAL_MERCATOR]
     sources: [wms1, wms2, wms3]
+
+  tilesource_cache:
+    grids: [GLOBAL_GEODETIC]
+    sources: [tilesource]
 
 sources:
   wms1:
@@ -46,3 +54,14 @@ sources:
       url: http://localhost:99999/service_c
       layers: c_one
       transparent: True
+  tilesource:
+    type: tile
+    url: http://localhost:42423/foo/%(tms_path)s.png
+    grid: GLOBAL_GEODETIC
+    on_error:
+      404:
+        response: '#ff0080'
+        cache: False
+      204:
+        response: [100, 200, 50, 250]
+        cache: True

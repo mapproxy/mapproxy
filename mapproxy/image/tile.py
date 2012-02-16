@@ -45,8 +45,7 @@ class TileMerger(object):
             assert len(ordered_tiles) == 1
             if ordered_tiles[0] is not None:
                 tile = ordered_tiles.pop()
-                return ImageSource(tile.source, size=self.tile_size,
-                                   image_opts=image_opts)
+                return tile
         src_size = self._src_size()
         
         result = create_image(src_size, image_opts)
