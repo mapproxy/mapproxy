@@ -14,6 +14,8 @@
 # limitations under the License.
 
 from __future__ import division, with_statement
+
+import codecs
 from functools import partial
 import operator
 
@@ -75,7 +77,8 @@ def load_polygons(geom_files):
         geom_files = [geom_files]
     
     for geom_file in geom_files:
-        with open(geom_file) as f:
+        # open with utf-8-sig encoding to get rid of UTF8 BOM from MS Notepad
+        with codecs.open(geom_file, encoding='utf-8-sig') as f:
             for line in f:
                 geom = shapely.wkt.loads(line)
                 if geom.type == 'Polygon':
