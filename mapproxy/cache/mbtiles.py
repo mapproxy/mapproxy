@@ -149,7 +149,7 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             tile = tile_dict[(row[0], row[1])]
             data = row[2]
             tile.size = len(data)
-            tile.source = ImageSource(StringIO(data), size=tile.size)
+            tile.source = ImageSource(StringIO(data))
         cursor.close()
         return loaded_tiles == len(tile_dict)
         
