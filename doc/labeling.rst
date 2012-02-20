@@ -40,6 +40,8 @@ MapProxy Options
 
 There are two options that help with these issues.
 
+.. _meta_tiles:
+
 Meta Tiles
 ~~~~~~~~~~
 
@@ -72,6 +74,8 @@ You can configure the meta tile size in the ``globals.cache`` section and for ea
 
 This does also work for tiles services. When a client like OpenLayers requests the 20 tiles from the example above in parallel, MapProxy will still requests the two meta tiles. Locking ensures that each meta tile will be requested only once.
 
+.. _meta_buffer:
+
 Meta Buffer
 ~~~~~~~~~~~
 
@@ -98,7 +102,7 @@ You can configure the size of the meta buffer in the ``globals.cache`` section a
     mycache:
       sources: [...]
       grids: [...]
-      meta_size: 150
+      meta_buffer: 150
 
 
 
