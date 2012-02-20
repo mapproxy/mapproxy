@@ -3,6 +3,7 @@
 .class
 .orig
 .rej
+.*~
 pip-log.txt
 MapProxy.egg-info
 dist/

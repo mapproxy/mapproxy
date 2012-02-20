@@ -1,3 +1,5 @@
+.. _configuration_examples:
+
 ######################
 Configuration examples
 ######################
@@ -100,6 +102,8 @@ Cache vector data
 =================
 
 You have a WMS server that renders vector data like road maps. 
+
+.. _cache_resolutions:
 
 Cache resolutions
 -----------------
