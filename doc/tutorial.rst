@@ -210,7 +210,7 @@ That's it for the first configuration, you can now :ref:`start MapProxy <mapprox
 When you type `localhost:8080/demo/` in the URL of your webbrowser you should 
 see a demo site like shown below.
 
-.. image:: imgs/mapproxy-demo.jpg
+.. image:: imgs/mapproxy-demo.png
 
 Here you can see the capabilities of your configured service and watch it in action.
 
