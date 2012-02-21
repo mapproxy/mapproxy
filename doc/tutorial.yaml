@@ -52,7 +52,7 @@ grids:
   #start res grid
   res_grid:
     base: GLOBAL_GEODETIC
-    res: [10000, 7500, 5000, 3500, 2500]
+    res: [1, 0.5, 0.25, 0.125, 0.0625]
   #end res grid
   #start germany grid
   germany:

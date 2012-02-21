@@ -113,7 +113,7 @@ The values will also apear in the capabilities documents (i.e. WMS ScaleHint and
 
 Pleas read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
 
-.. _supported_srs-label:
+.. _supported_srs:
 
 ``supported_srs``
 ^^^^^^^^^^^^^^^^^
