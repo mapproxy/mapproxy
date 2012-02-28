@@ -805,6 +805,11 @@ class TestWMS130(WMSTest):
         xml = resp.lxml
         eq_xpath_wms130(xml, '/wms:WMS_Capabilities/wms:Service/wms:Title/text()',
             u'MapProxy test fixture \u2603')
+
+        # test for extended layer metadata
+        eq_xpath_wms130(xml, '/wms:WMS_Capabilities/wms:Capability/wms:Layer/wms:Layer/wms:Attribution/wms:Title/text()',
+            u'My attribution title')
+
         layer_names = set(xml.xpath('//wms:Layer/wms:Layer/wms:Name/text()',
                                     namespaces=ns130))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',

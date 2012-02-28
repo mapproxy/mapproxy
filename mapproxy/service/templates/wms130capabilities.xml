@@ -148,7 +148,7 @@
     {{endfor}}
     {{for idf in md.identifier}}
     {{py:idf=bunch(default='', **idf)}}
-    <Identifier authority="{{idf.name}}" />
+    <Identifier authority="{{idf.name}}">{{idf.value}}</Identifier>
     {{endfor}}
     {{endif}}
 {{if md.metadata}}{{ layer_meta_tag('MetadataURL', md.metadata) }}{{endif}}

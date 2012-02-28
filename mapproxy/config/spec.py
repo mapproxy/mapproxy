@@ -105,6 +105,54 @@ on_error = {
     }
 }
 
+wms_130_layer_md = {
+    'abstract': basestring,
+    'keyword_list': [
+        {
+            'vocabulary': basestring,
+            'keywords': [basestring],
+        }
+    ],
+    'attribution': {
+        'title': basestring,
+        'url':    str,
+        'logo': {
+            'url':    str,
+            'width':  int,
+            'height': int,
+            'format': basestring,
+       }
+    },
+    'identifier': [
+        {
+            'url': str,
+            'name': basestring,
+            'value': basestring,
+        }
+    ],
+    'metadata': [
+        {
+            'url': str,
+            'type': str,
+            'format': str,
+        },
+    ],
+    'data': [
+        {
+            'url': str,
+            'format': str,
+        }
+
+    ],
+    'feature_list': [
+        {
+            'url': str,
+            'format': str,
+        }
+    ],
+}
+
+
 mapproxy_yaml_spec = {
     'globals': {
         'image': {
@@ -293,6 +341,7 @@ mapproxy_yaml_spec = {
                 'sources': [str()],
                 required('title'): basestring,
                 'legendurl': str(),
+                'md': wms_130_layer_md,
             })
         },
         recursive([combined(scale_hints, {
@@ -301,7 +350,7 @@ mapproxy_yaml_spec = {
             required('title'): basestring,
             'legendurl': str(),
             'layers': [recursive()],
-            
+            'md': wms_130_layer_md,
         })])
     ),
 }
