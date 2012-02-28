@@ -1021,7 +1021,7 @@ class WMSLayerConfiguration(ConfigurationBase):
             layer = this_layer
         else:
             layer = WMSGroupLayer(name=self.conf.get('name'), title=self.conf.get('title'),
-                                  this=this_layer, layers=layers)
+                                  this=this_layer, layers=layers, md=self.conf.get('md'))
         return layer
 
 class LayerConfiguration(ConfigurationBase):
@@ -1071,7 +1071,7 @@ class LayerConfiguration(ConfigurationBase):
         res_range = resolution_range(self.conf)
         
         layer = WMSLayer(self.conf.get('name'), self.conf.get('title'),
-                         sources, fi_sources, lg_sources, res_range=res_range)
+                         sources, fi_sources, lg_sources, res_range=res_range, md=self.conf.get('md'))
         return layer
     
     @memoize
@@ -1250,7 +1250,7 @@ class ServiceConfiguration(ConfigurationBase):
             image_formats=image_formats, srs=srs)
     
 
-def load_configuration(mapproxy_conf, seed=False):
+def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True):
     log.info('reading: %s' % mapproxy_conf)
     conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
     
@@ -1267,7 +1267,7 @@ def load_configuration(mapproxy_conf, seed=False):
     errors, informal_only = validate_mapproxy_conf(conf_dict)
     for error in errors:
         log.warn(error)
-    if not informal_only:
+    if not informal_only or (errors and not ignore_warnings):
         raise ConfigurationError('invalid configuration')
     return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed)
 

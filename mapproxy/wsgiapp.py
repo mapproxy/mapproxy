@@ -81,14 +81,14 @@ def init_null_logging():
             pass
     logging.getLogger().addHandler(NullHandler())
 
-def make_wsgi_app(services_conf=None, debug=False):
+def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True):
     """
     Create a MapProxyApp with the given services conf.
     
     :param services_conf: the file name of the mapproxy.yaml configuration
     """
     try:
-        conf = load_configuration(mapproxy_conf=services_conf)
+        conf = load_configuration(mapproxy_conf=services_conf, ignore_warnings=ignore_config_warnings)
         services = conf.configured_services()
     except ConfigurationError, e:
         log.fatal(e)

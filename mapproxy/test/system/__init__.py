@@ -49,7 +49,7 @@ def prepare_env(test_config, config_file, with_cache_data=False):
                         test_config['cache_dir'])
     
 def create_app(test_config):
-    app = make_wsgi_app(test_config['config_file'])
+    app = make_wsgi_app(test_config['config_file'], ignore_config_warnings=False)
     app.base_config.debug_mode = True
     test_config['app'] = TestApp(app, use_unicode=False)
 
