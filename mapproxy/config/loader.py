@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2012 Omniscale <http://omniscale.de>
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -516,6 +516,25 @@ class SourceConfiguration(ConfigurationBase):
                                  ssl_ca_certs=ssl_ca_certs, timeout=timeout,
                                  headers=headers)
         return http_client, url
+    
+    @memoize
+    def on_error_handler(self):
+        if not 'on_error' in self.conf: return None
+        from mapproxy.source.error import HTTPSourceErrorHandler
+
+        error_handler = HTTPSourceErrorHandler()
+        for status_code, response_conf in self.conf['on_error'].iteritems():
+            if not isinstance(status_code, int):
+                raise ConfigurationError("invalid error code %r in on_error", status_code)
+            cacheable = response_conf.get('cache', False)
+            color = response_conf.get('response', 'transparent')
+            if color == 'transparent':
+                color = (255, 255, 255, 0)
+            else:
+                color = parse_color(color)
+            error_handler.add_handler(status_code, color, cacheable)
+        
+        return error_handler
 
 def resolution_range(conf):
     from mapproxy.grid import resolution_range as _resolution_range
@@ -595,10 +614,11 @@ class WMSSourceConfiguration(SourceConfiguration):
         if concurrent_requests:
             from mapproxy.util.lock import SemLock
             lock_dir = self.context.globals.get_path('cache.lock_dir', self.conf)
+            lock_timeout = self.context.globals.get_value('http.client_timeout', self.conf)
             url = urlparse.urlparse(self.conf['req']['url'])
             md5 = hashlib.md5(url.netloc)
             lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
-            lock = lambda: SemLock(lock_file, concurrent_requests)
+            lock = lambda: SemLock(lock_file, concurrent_requests, timeout=lock_timeout)
         
         coverage = self.coverage()
         res_range = resolution_range(self.conf)
@@ -773,10 +793,11 @@ class TileSourceConfiguration(SourceConfiguration):
         grid = self.context.grids[self.conf['grid']].tile_grid()
         coverage = self.coverage()
         image_opts = self.image_opts()
+        error_handler = self.on_error_handler()
         
         format = file_ext(params['format'])
         client = TileClient(TileURLTemplate(url, format=format), http_client=http_client, grid=grid)
-        return TiledSource(grid, client, coverage=coverage, image_opts=image_opts)
+        return TiledSource(grid, client, coverage=coverage, image_opts=image_opts, error_handler=error_handler)
 
 
 def file_ext(mimetype):
@@ -1272,11 +1293,13 @@ def parse_color(color):
     (255, 5, 48)
     >>> parse_color('#FF0530')
     (255, 5, 48)
+    >>> parse_color('#FF053080')
+    (255, 5, 48, 128)
     """
-    if isinstance(color, (list, tuple)):
-        return color
+    if isinstance(color, (list, tuple)) and 3 <= len(color) <= 4:
+        return tuple(color)
     if not isinstance(color, basestring):
-        raise ValueError('color needs to be a tuple/list or 0xrrggbb/#rrggbb string')
+        raise ValueError('color needs to be a tuple/list or 0xrrggbb/#rrggbb(aa) string, got %r' % color)
     
     if color.startswith('0x'):
         color = color[2:]
@@ -1284,6 +1307,10 @@ def parse_color(color):
         color = color[1:]
     
     r, g, b = map(lambda x: int(x, 16), [color[:2], color[2:4], color[4:6]])
+    
+    if len(color) == 8:
+        a = int(color[6:8], 16) 
+        return r, g, b, a
     
     return r, g, b
     

@@ -15,8 +15,10 @@
 
 from __future__ import with_statement, division
 
+import os
+
 from mapproxy.request.wms import WMS111MapRequest
-from mapproxy.test.image import is_transparent, create_tmp_image, bgcolor_ratio
+from mapproxy.test.image import is_transparent, create_tmp_image, bgcolor_ratio, img_from_buf
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from mapproxy.test.system.test_wms import is_111_exception
@@ -97,4 +99,83 @@ class TestWMS(SystemTest):
         eq_(resp.content_type, 'application/vnd.ogc.se_xml')
         is_111_exception(resp.lxml, re_msg='no response from url')
 
+class TestTileErrors(SystemTest):
+    config = test_config
+    def setup(self):
+        SystemTest.setup(self)
+        self.common_map_req = WMS111MapRequest(url='/service?', param=dict(service='WMS', 
+             version='1.1.1', bbox='0,-90,180,90', width='250', height='250',
+             layers='tilesource', srs='EPSG:4326', format='image/png',
+             styles='', request='GetMap', transparent=True))
+        
+        self.common_tile_req = '/tiles/tilesource/EPSG4326/1/1/0.png'
+    
+    def test_wms_uncached_response(self):
+        expected_req = [({'path': '/foo/1/1/0.png'},
+                         {'body': 'not found', 'status': 404, 'headers': {'content-type': 'text/plain'}}),
+                        ]
+                         
+        with mock_httpd(('localhost', 42423), expected_req):
+            resp = self.app.get(self.common_map_req)
+            eq_(resp.content_type, 'image/png')
+            img = img_from_buf(resp.body)
+            eq_(img.getcolors(), [(250 * 250, (255, 0, 128))])
+            assert not os.path.exists(os.path.join(self.base_config().cache.base_dir, 
+                'tilesource_cache_EPSG4326/01/000/000/001/000/000/000.png'))
 
+    def test_wms_cached_response(self):
+        expected_req = [({'path': '/foo/1/1/0.png'},
+                         {'body': 'no content', 'status': 204, 'headers': {'content-type': 'text/plain'}}),
+                        ]
+                         
+        with mock_httpd(('localhost', 42423), expected_req):
+            resp = self.app.get(self.common_map_req)
+            eq_(resp.content_type, 'image/png')
+            img = img_from_buf(resp.body)
+            eq_(img.getcolors(), [(250 * 250, (100, 200, 50, 250))])
+            self.created_tiles.append('tilesource_cache_EPSG4326/01/000/000/001/000/000/000.png')
+
+    def test_wms_unhandled_error_code(self):
+        expected_req = [({'path': '/foo/1/1/0.png'},
+                         {'body': 'error', 'status': 500, 'headers': {'content-type': 'text/plain'}}),
+                        ]
+                         
+        with mock_httpd(('localhost', 42423), expected_req):
+            resp = self.app.get(self.common_map_req)
+            eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+            assert '500' in resp.body
+
+    def test_tile_uncached_response(self):
+        expected_req = [({'path': '/foo/1/1/0.png'},
+                         {'body': 'not found', 'status': 404, 'headers': {'content-type': 'text/plain'}}),
+                        ]
+                         
+        with mock_httpd(('localhost', 42423), expected_req):
+            resp = self.app.get(self.common_tile_req)
+            eq_(resp.content_type, 'image/png')
+            img = img_from_buf(resp.body)
+            eq_(img.getcolors(), [(256 * 256, (255, 0, 128))])
+            assert not os.path.exists(os.path.join(self.base_config().cache.base_dir, 
+                'tilesource_cache_EPSG4326/01/000/000/001/000/000/000.png'))
+
+    def test_tile_cached_response(self):
+        expected_req = [({'path': '/foo/1/1/0.png'},
+                         {'body': 'no content', 'status': 204, 'headers': {'content-type': 'text/plain'}}),
+                        ]
+                         
+        with mock_httpd(('localhost', 42423), expected_req):
+            resp = self.app.get(self.common_tile_req)
+            eq_(resp.content_type, 'image/png')
+            img = img_from_buf(resp.body)
+            eq_(img.getcolors(), [(256 * 256, (100, 200, 50, 250))])
+            self.created_tiles.append('tilesource_cache_EPSG4326/01/000/000/001/000/000/000.png')
+
+    def test_tile_unhandled_error_code(self):
+        expected_req = [({'path': '/foo/1/1/0.png'},
+                         {'body': 'error', 'status': 500, 'headers': {'content-type': 'text/plain'}}),
+                        ]
+                         
+        with mock_httpd(('localhost', 42423), expected_req):
+            resp = self.app.get(self.common_tile_req, status=500)
+            eq_(resp.content_type, 'text/plain')
+            assert '500' in resp.body

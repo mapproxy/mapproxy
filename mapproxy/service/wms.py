@@ -475,7 +475,7 @@ class LayerRenderer(object):
     
         if render_layers and not rendered:
             errors = '\n'.join(errors)
-            raise RequestError('Could not get retrieve any sources:\n'+errors, request=self.request)
+            raise RequestError('Could not get any sources:\n'+errors, request=self.request)
     
         if errors:
             layer_merger.add(message_image('\n'.join(errors), self.query.size,

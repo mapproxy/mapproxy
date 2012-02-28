@@ -33,8 +33,9 @@ from mapproxy.client.log import log_request
 import socket
 
 class HTTPClientError(Exception):
-    pass
-    
+    def __init__(self, arg, response_code=None):
+        Exception.__init__(self, arg)
+        self.response_code = response_code
 
 if sys.version_info >= (2, 6):
     _urllib2_has_timeout = True
@@ -134,7 +135,7 @@ class HTTPClient(object):
         except HTTPError, e:
             code = e.code
             reraise_exception(HTTPClientError('HTTP Error "%s": %d' 
-                                              % (url, e.code)), sys.exc_info())
+                % (url, e.code), response_code=code), sys.exc_info())
         except URLError, e:
             if ssl and isinstance(e.reason, ssl.SSLError):
                 e = HTTPClientError('Could not verify connection to URL "%s": %s'
@@ -154,6 +155,8 @@ class HTTPClient(object):
                                               % (url, e)), sys.exc_info())
         else:
             code = getattr(result, 'code', 200)
+            if code == 204:
+                raise HTTPClientError('HTTP Error "204 No Content"', response_code=204)
             return result
         finally:
             log_request(url, code, result, duration=time.time()-start_time, method=req.get_method())

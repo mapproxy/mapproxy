@@ -1,3 +1,5 @@
+.. _sources:
+
 Sources
 #######
 
@@ -111,7 +113,7 @@ The values will also apear in the capabilities documents (i.e. WMS ScaleHint and
 
 Pleas read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
 
-.. _supported_srs-label:
+.. _supported_srs:
 
 ``supported_srs``
 ^^^^^^^^^^^^^^^^^
@@ -317,6 +319,40 @@ See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 ``seed_only``
 ^^^^^^^^^^^^^
 See :ref:`seed_only <wms_seed_only>`
+
+``on_error``
+^^^^^^^^^^^^
+
+.. versionadded:: 1.4.0
+
+You can configure what MapProxy should do when the tile service returns an error. Instead of raising an error, MapProxy can generate a single color tile. You can configure if MapProxy should cache this tile, or if it should use it only to generate a tile or WMS response.
+
+You can configure multiple status codes within the ``on_error`` option. Each status code takes the following options:
+
+``response``
+  
+  Specify the color of the tile that should be returned in case of this error. Can be either a list of color values (``[255, 255, 255]``, ``[255, 255, 255, 0]``)) or a hex string (``'#ffffff'``, ``'#fa1fbb00'``) with RGBA values, or the string ``transparent``.
+ 
+``cache``
+
+  Set this to ``True`` if MapProxy should cache the single color tile. Otherwise (``False``) MapProxy will use this generated tile only for this request. This is the default. 
+
+You need to enable ``transparent`` for your source, if you use ``on_error`` responses with transparency.
+
+::
+
+  my_tile_source:
+    type: tile
+    url: http://localhost:8080/tiles/%(tms_path)s.png
+    transparent: true
+    on_error:
+      204:
+        response: transparent
+        cache: True
+      502:
+        response: '#ede9e3'
+        cache: False
+            
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^

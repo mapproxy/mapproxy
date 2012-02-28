@@ -33,6 +33,10 @@ class ImageSource(object):
     You can access the result as an image (`as_image` ) or a file-like buffer
     object (`as_buffer`).
     """
+
+    "Allow this image to be cached."
+    cacheable = True
+
     def __init__(self, source, size=None, image_opts=None):
         """
         :param source: the image
@@ -154,20 +158,29 @@ class BlankImageSource(object):
     ImageSource for transparent or solid-color images.
     Implements optimized as_buffer() method.
     """
+    cacheable = False
     def __init__(self, size, image_opts):
         self.size = size
         self.image_opts = image_opts
+        self._buf = None
+        self._img = None
     
     def as_image(self):
-        img = create_image(self.size, self.image_opts)
-        return img
+        if not self._img:
+            self._img = create_image(self.size, self.image_opts)
+        return self._img
     
     def as_buffer(self, image_opts=None, format=None, seekable=False):
-        image_opts = (image_opts or self.image_opts).copy()
-        if format:
-            image_opts.format = ImageFormat(format)
-        image_opts.colors = 0
-        return img_to_buf(self.as_image(), image_opts=image_opts).read()
+        if not self._buf:
+            image_opts = (image_opts or self.image_opts).copy()
+            if format:
+                image_opts.format = ImageFormat(format)
+            image_opts.colors = 0
+            self._buf = img_to_buf(self.as_image(), image_opts=image_opts)
+        return self._buf
+    
+    def close_buffers(self):
+        pass
 
 class ReadBufWrapper(object):
     """

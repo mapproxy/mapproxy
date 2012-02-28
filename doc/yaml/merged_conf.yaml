@@ -1,4 +1,5 @@
 services:
+  demo:
   wms:
     md:
         title: MapProxy WMS Proxy
@@ -21,49 +22,6 @@ services:
             as Creative Commons Attribution-Share Alike 2.0
             (http://creativecommons.org/licenses/by-sa/2.0/)
         fees: 'None'
-#end services
-
-sources:
-  #start source
-  test_wms:
-    type: wms
-    req:
-      url: http://osm.omniscale.net/proxy/service?
-      layers: osm
-  #end source
-#start caches
-caches:
-  test_wms_cache:
-    sources: [test_wms]
-    grids: [GLOBAL_GEODETIC]
-#end caches
-layers:
-  #start cascaded layer
-  - name: cascaded_test
-    title: Cascaded Test Layer
-    sources: [test_wms]
-  #end cascaded layer
-  #start cached layer
-  - name: test_wms_cache
-    title: Cached Test Layer
-    sources: [test_wms_cache]
-  #end cached layer
-grids:
-  #start res grid
-  res_grid:
-    base: GLOBAL_GEODETIC
-    res: [1, 0.5, 0.25, 0.125, 0.0625]
-  #end res grid
-  #start germany grid
-  germany:
-    srs: 'EPSG:25832'
-    bbox: [6, 47.3, 15.1, 55]
-    bbox_srs: 'EPSG:4326'
-  #end germany grid
-#start combined sources
-service:
-  wms:
-  demo:
     
 sources:
   test_wms:
@@ -87,23 +45,3 @@ layers:
   - name: cached_test_wms_with_roads
     title: Cached Test WMS with Roads
     sources: [combined_cache]
-#end combined sources
-#start coverage
-sources:
-  test_wms:
-    type: wms
-    req:
-      url: http://osm.omniscale.net/proxy/service?
-      layers: osm
-    coverage:
-      bbox: [5.5, 47.4, 15.2, 54.8]
-      bbox_srs: 'EPSG:4326'
-#end coverage
-#start meta
-caches:
-  meta_cache:
-    sources: [test_wms]
-    grids: [GLOBAL_GEODETIC]
-    meta_size: [4, 4]
-    meta_buffer: 100
-#end meta

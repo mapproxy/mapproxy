@@ -1,3 +1,5 @@
+.. _mapproxy-util:
+
 #############
 mapproxy-util
 #############

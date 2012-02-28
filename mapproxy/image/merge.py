@@ -52,7 +52,8 @@ class LayerMerger(object):
         if len(self.layers) == 1:
             layer_img, layer = self.layers[0]
             layer_opts = layer_img.image_opts
-            if ((not layer_opts.transparent or image_opts.transparent) 
+
+            if (((layer_opts and not layer_opts.transparent) or image_opts.transparent) 
                 and (not size or size == layer_img.size)
                 and (layer and not layer.coverage or not layer.coverage.clip)):
                 # layer is opaque, no need to make transparent or add bgcolor

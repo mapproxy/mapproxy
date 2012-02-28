@@ -15,19 +15,17 @@
 
 from __future__ import with_statement, division
 import sys
-import time
-
-from contextlib import contextmanager
 
 from mapproxy.config import base_config
 from mapproxy.grid import MetaGrid
 from mapproxy.source import SourceError
 from mapproxy.util import local_base_config
+from mapproxy.util.lock import LockTimeout
 from mapproxy.seed.util import format_seed_task
 from mapproxy.seed.cachelock import DummyCacheLocker, CacheLockedError
 
 from mapproxy.seed.util import (exp_backoff, ETA, limit_sub_bbox,
-    status_symbol, format_bbox)
+    status_symbol)
 
 NONE = 0
 CONTAINS = -1
@@ -101,7 +99,7 @@ class TileSeedWorker(TileWorker):
                 return
             with self.tile_mgr.session():
                 exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
-                        exceptions=(SourceError, IOError))
+                        exceptions=(SourceError, IOError), ignore_exceptions=(LockTimeout, ))
 
 class TileCleanupWorker(TileWorker):
     def work_loop(self):
