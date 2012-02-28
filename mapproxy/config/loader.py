@@ -1250,7 +1250,7 @@ class ServiceConfiguration(ConfigurationBase):
             image_formats=image_formats, srs=srs)
     
 
-def load_configuration(mapproxy_conf, seed=False):
+def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True):
     log.info('reading: %s' % mapproxy_conf)
     conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
     
@@ -1267,7 +1267,7 @@ def load_configuration(mapproxy_conf, seed=False):
     errors, informal_only = validate_mapproxy_conf(conf_dict)
     for error in errors:
         log.warn(error)
-    if not informal_only:
+    if not informal_only or (errors and not ignore_warnings):
         raise ConfigurationError('invalid configuration')
     return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed)
 
