@@ -169,6 +169,55 @@ Pleas read :ref:`scale vs. resolution <scale_resolution>` for some notes on `sca
 
 Configure a URL to an image that should be returned as the legend for this layer. Local URLs (``file://``) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a ``legendurl`` here.
 
+``md``
+""""""
+
+.. versionadded:: 1.4.0
+
+Add additional metadata for this layer. This metadata appears in the WMS 1.3.0 capabilities documents. Refer to the OGC 1.3.0 specification for a description of each option.
+
+Here is an example layer with extended layer capabilities::
+
+  layers:
+    - name: md_layer
+      title: WMS layer with extended capabilities
+      sources: [wms_source]
+      md:
+        abstract: Some abstract
+        keyword_list:
+          - vocabulary: Name of the vocabulary
+            keywords:   [keyword1, keyword2]
+          - vocabulary: Name of another vocabulary
+            keywords:   [keyword1, keyword2]
+          - keywords:   ["keywords without vocabulary"]
+        attribution:
+          title: My attribution title
+          url:   http://example.org/
+        logo:
+           url:    http://example.org/logo.jpg
+           width:  100
+           height: 100
+           format: image/jpeg
+        identifier:
+          - url:    http://example.org/
+            name:   HKU1234
+            value:  Some value
+        metadata:
+          - url:    http://example.org/metadata2.xml
+            type:   INSPIRE
+            format: application/xml
+          - url:    http://example.org/metadata2.xml
+            type:   ISO19115:2003
+            format: application/xml
+        data:
+          - url:    http://example.org/datasets/test.shp
+            format: application/octet-stream
+          - url:    http://example.org/datasets/test.gml
+            format: text/xml; subtype=gml/3.2.1
+        feature_list:
+          - url:    http://example.org/datasets/test.pdf
+            format: application/pdf
+
 .. ``attribution``
 .. """"""""""""""""
 .. 
