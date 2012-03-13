@@ -302,13 +302,18 @@ mapproxy_yaml_spec = {
                         'featureinfo': bool(),
                         'legendgraphic': bool(),
                         'legendurl': str(),
+                        'featureinfo_format': str(),
+                        'featureinfo_xslt': str(),
                     },
                     'image': combined(image_opts, {
                         'opacity':number(),
                         'transparent_color': one_off(str(), [number()]),
                         'transparent_color_tolerance': number(),
                     }),
+                    'supported_formats': [str()],
+                    'supported_srs': [str()],
                     'req': {
+                        required('map'): str(),
                         anything(): anything()
                     },
                     'mapserver': mapserver_opts,
