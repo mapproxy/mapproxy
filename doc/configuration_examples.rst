@@ -379,11 +379,12 @@ You can disable the certificate verification if you you don't need it.
       url: https://username:mypassword@example.org/service?
       layers: securelayer
   
+.. _http_proxy:
 
 Access sources through HTTP proxy
 =================================
 
-MapProxy can use an HTTP proxy to make requests to your sources, if your system does not allow direct access to the source. You need to set the ``http_proxy`` environment variable to the proxy URL.
+MapProxy can use an HTTP proxy to make requests to your sources, if your system does not allow direct access to the source. You need to set the ``http_proxy`` environment variable to the proxy URL. This also applies if you install MapProxy with ``pip`` or ``easy_install``.
 
 On Linux/Unix::
 
