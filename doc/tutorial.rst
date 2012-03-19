@@ -107,9 +107,11 @@ of MapProxy. There are the following keys:
 - ``layers``: Configure the layers that MapProxy offers. Each layer can consist 
               of multiple sources and caches.
 
-- ``sources``: Define where MapProxy can retrieve new data.
+- ``sources``: 
+    Define where MapProxy can retrieve new data.
 
-- ``caches``: Here you can configure the internal caches.
+- ``caches``:
+    Here you can configure the internal caches.
 
 - ``grids``: MapProxy aligns all cached images to a grid. Here you can define 
              that grid.
@@ -204,7 +206,7 @@ That's it for the first configuration, you can now :ref:`start MapProxy <mapprox
 
   mapproxy-util serve-develop mapproxy.yaml
 
-:download:`You can get the configuration discussed above here. <yaml/simple_conf.yaml>`
+You can :download:`download the configuration <yaml/simple_conf.yaml>`.
 
 
 When you type `localhost:8080/demo/` in the URL of your webbrowser you should 
@@ -251,8 +253,9 @@ The layer configuration should now look like:
   :start-after: #start cached layer
   :end-before: #end cached layer
   
-:download:`You can get the configuration discussed above here. <yaml/cache_conf.yaml>`
-  
+You can :download:`download the configuration <yaml/cache_conf.yaml>`.
+
+
 Defining Resolutions
 --------------------
 
@@ -316,7 +319,7 @@ MapProxy request the source in the projection of the grid. You can configure
 takes care of any transformations if the `srs` of our grid is 
 different from the data source.
 
-:download:`You can get the configuration discussed above here. <yaml/grid_conf.yaml>`
+You can :download:`download the configuration <yaml/grid_conf.yaml>`.
 
 Merging Multiple Layers
 -----------------------
@@ -333,7 +336,7 @@ cache and one layer:
   :start-after: #start combined sources
   :end-before: #end combined sources
   
-:download:`You can get the configuration discussed above here. <yaml/merged_conf.yaml>`
+You can :download:`download the configuration <yaml/merged_conf.yaml>`.
 
 Coverages
 ---------
@@ -395,9 +398,7 @@ As you see in the ``coverages`` section the ``polygons`` option point to a
 text file. This text file contains polygons in Well-Known-Text (WKT) form. The third option tells 
 ``mapproxy-seed`` the ``srs`` of the WKT polygons.
 
-:download:`You can get the configuration discussed above here. <yaml/seed.yaml>`
-
-:download:`Here you can get the neccessary Polygon file for this example <GM.txt>`
+You can :download:`download the configuration <yaml/seed.yaml>` and the :download:`polygon file <GM.txt>`.
 
 Start Seeding
 ~~~~~~~~~~~~~
@@ -423,6 +424,6 @@ more ideas what MapProxy can do.
 MapProxy has lots of small features that might be useful for your projects, so it is a good idea
 to read the other chapters of the documentation after that.
 
-If you have any questions? We have a `mailing list and IRC channel <http://mapproxy.org/support.html>`
+If you have any questions? We have a `mailing list and IRC channel <http://mapproxy.org/support.html>`_
 where you can get support.
 
