@@ -3,6 +3,7 @@ services:
   kml:
   tms:
     # needs no arguments
+  wmts:
   wms:
     # srs: ['EPSG:4326', 'EPSG:900913']
     # image_formats: ['image/jpeg', 'image/png']
