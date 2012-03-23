@@ -23,6 +23,7 @@ from mapproxy.grid import NoTiles, GridError, merge_resolution_range
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
 from mapproxy.srs import SRS, bbox_equals, merge_bbox, make_lin_transf
+from mapproxy.platform.proj import ProjError
 
 import logging
 log = logging.getLogger(__name__)
@@ -365,6 +366,10 @@ class CacheMapLayer(MapLayer):
         tile_sources = [tile.source for tile in tile_collection]
         tiled_image = TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
                           tile_grid=tile_grid, tile_size=self.grid.tile_size)
-        return tiled_image.transform(query.bbox, query.srs, query.size, 
-                                       self.tile_manager.image_opts)
+        try:
+            return tiled_image.transform(query.bbox, query.srs, query.size, 
+                self.tile_manager.image_opts)
+        except ProjError:
+            raise MapBBOXError("could not transform query BBOX")
+
 

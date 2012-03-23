@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__all__ = ['Proj', 'transform', 'set_datapath', 'ProjInitError']
+__all__ = ['Proj', 'transform', 'set_datapath', 'ProjInitError', 'ProjError']
 
 from mapproxy.platform.cpython.proj import (
-    Proj, transform, set_datapath, ProjInitError
+    Proj, transform, set_datapath, ProjInitError, ProjError
 )
