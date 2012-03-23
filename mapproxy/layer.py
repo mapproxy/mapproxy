@@ -179,6 +179,8 @@ class MapExtent(object):
             raise NotImplemented
         if other.is_default:
             return self
+        if self.is_default:
+            return other
         return MapExtent(merge_bbox(self.llbbox, other.llbbox), SRS(4326))
 
 class DefaultMapExtent(MapExtent):

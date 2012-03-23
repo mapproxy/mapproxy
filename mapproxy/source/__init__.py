@@ -17,7 +17,9 @@
 Map/information sources for layers or tile cache.
 """
 
-from mapproxy.layer import MapLayer, MapExtent, MapError, MapBBOXError, BlankImage, InfoLayer
+from mapproxy.layer import (
+    MapLayer, MapExtent, DefaultMapExtent, MapError, MapBBOXError, BlankImage, InfoLayer
+)
 from mapproxy.image.message import message_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.srs import SRS
@@ -48,7 +50,7 @@ class LegendSource(object):
 class DebugSource(Source):
     def __init__(self):
         Source.__init__(self)
-        self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
+        self.extent = DefaultMapExtent()
         self.transparent = True
         self.res_range = None
     def get_map(self, query):
