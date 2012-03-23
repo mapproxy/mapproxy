@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from mapproxy.util.ext.dictspec.validator import validate, ValidationError
-from mapproxy.util.ext.dictspec.spec import one_off, anything, number
+from mapproxy.util.ext.dictspec.spec import one_of, anything, number
 from mapproxy.util.ext.dictspec.spec import recursive, required, type_spec, combined
 
 
@@ -33,7 +33,7 @@ def validate_mapproxy_conf(conf_dict):
 coverage = {
     'polygons': str(),
     'polygons_srs': str(),
-    'bbox': one_off(str(), [number()]),
+    'bbox': one_of(str(), [number()]),
     'bbox_srs': str(),
     'ogr_datasource': str(),
     'ogr_where': str(),
@@ -100,7 +100,7 @@ cache_types = {
 
 on_error = {
     anything(): {
-        required('response'): one_off([int], str),
+        required('response'): one_of([int], str),
         'cache': bool,
     }
 }
@@ -194,11 +194,11 @@ mapproxy_yaml_spec = {
             'base': str(),
             'name': str(),
             'srs': str(),
-            'bbox': one_off(str(), [number()]),
+            'bbox': one_of(str(), [number()]),
             'bbox_srs': str(),
             'num_levels': int(),
             'res': [number()],
-            'res_factor': one_off(number(), str()),
+            'res_factor': one_of(number(), str()),
             'max_res': number(),
             'min_res': number(),
             'stretch_factor': number(),
@@ -229,7 +229,7 @@ mapproxy_yaml_spec = {
             'watermark': {
                 'text': basestring,
                 'font_size': number(),
-                'color': one_off(str(), [number()]),
+                'color': one_of(str(), [number()]),
                 'opacity': number(),
                 'spacing': str(),
             },
@@ -257,7 +257,7 @@ mapproxy_yaml_spec = {
                 anything(): str()
             },
             'on_source_errors': str(),
-            'max_output_pixels': one_off(number(), [number()]),
+            'max_output_pixels': one_of(number(), [number()]),
             'strict': bool(),
             'md': {
                 'title': basestring,
@@ -284,7 +284,7 @@ mapproxy_yaml_spec = {
                 },
                 'image': combined(image_opts, {
                     'opacity':number(),
-                    'transparent_color': one_off(str(), [number()]),
+                    'transparent_color': one_of(str(), [number()]),
                     'transparent_color_tolerance': number(),
                 }),
                 'supported_formats': [str()],
@@ -307,7 +307,7 @@ mapproxy_yaml_spec = {
                     },
                     'image': combined(image_opts, {
                         'opacity':number(),
-                        'transparent_color': one_off(str(), [number()]),
+                        'transparent_color': one_of(str(), [number()]),
                         'transparent_color_tolerance': number(),
                     }),
                     'supported_formats': [str()],
@@ -332,7 +332,7 @@ mapproxy_yaml_spec = {
                 required('mapfile'): str(),
                 'transparent': bool(),
                 'image': image_opts,
-                'layers': one_off(str(), [str()]),
+                'layers': one_of(str(), [str()]),
                 'use_mapnik2': bool(),
             }),
             'debug': {
@@ -340,7 +340,7 @@ mapproxy_yaml_spec = {
         })
     },
     
-    'layers': one_off(
+    'layers': one_of(
         {
             anything(): combined(scale_hints, {
                 'sources': [str()],
