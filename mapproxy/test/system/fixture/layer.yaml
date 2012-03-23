@@ -39,10 +39,10 @@ services:
         (http://creativecommons.org/licenses/by-sa/2.0/)
 
 layers:
-  direct:
+  - name: direct
     title: Direct Layer
     sources: [direct]
-  wms_cache:
+  - name: wms_cache
     title: WMS Cache Layer
     sources: [wms_cache]
     md:
@@ -81,28 +81,28 @@ layers:
        - url:    http://some.url/datasets/test.pdf
          format: application/pdf
 
-  wms_cache_transparent:
+  - name: wms_cache_transparent
     title: WMS Cache Layer with transparent data
     sources: [wms_cache_transparent]
-  wms_cache_link_single:
+  - name: wms_cache_link_single
     title: WMS Cache Layer (link single)
     sources: [wms_cache_link_single]
-  wms_cache_100:
+  - name: wms_cache_100
     title: WMS Cache Layer
     sources: [wms_cache_100]
-  wms_cache_130:
+  - name: wms_cache_130
     title: WMS Cache Layer
     sources: [wms_cache_130]
-  wms_cache_multi:
+  - name: wms_cache_multi
     title: WMS Cache Multi Layer
     sources: [wms_cache_multi]
-  tms_cache:
+  - name: tms_cache
     title: TMS Cache Layer
     sources: [tms_cache]
-  wms_merge:
+  - name: wms_merge
     title: WMS Cache + Direct Layer
     sources: [direct, wms_cache]
-  wms_cache_110:
+  - name: wms_cache_110
     title: WMS Cache Layer
     sources: [wms_cache_110]
 

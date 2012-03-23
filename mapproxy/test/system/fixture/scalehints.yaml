@@ -31,13 +31,13 @@ services:
         (http://creativecommons.org/licenses/by-sa/2.0/)
 
 layers:
- - res:
+ -  name: res
     title: Cache Layer with min/max res
     sources: [res_cache]
- - scale:
+ -  name: scale
     title: Cache Layer with min/max scale
     sources: [scale_cache]
- - scale2:
+ -  name: scale2
     title: Cache Layer with min/max scale
     min_scale: 1000
     max_scale: 10000

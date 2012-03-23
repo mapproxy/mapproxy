@@ -2,7 +2,7 @@ services:
   tms:
 
 layers:
-  app2_layer:
+  - name: app2_layer
     title: WMS Cache Layer
     sources: [app2_cache]
 

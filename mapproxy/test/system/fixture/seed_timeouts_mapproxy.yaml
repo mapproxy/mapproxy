@@ -6,7 +6,7 @@ globals:
     paletted: False
 
 layers:
-  wms_cache:
+  - name: wms_cache
     title: WMS Cache Layer
     sources: [wms_cache]
 

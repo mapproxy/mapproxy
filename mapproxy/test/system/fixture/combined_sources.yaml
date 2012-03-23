@@ -11,30 +11,30 @@ services:
   wms:
 
 layers:
-  combinable:
+  - name: combinable
     title: Uncached combined layers
     sources: [wms1, wms3, wms4, wms2]
-  uncombinable:
+  - name: uncombinable
     title: Uncached layers
     sources: [wms1, wms2, wms3]
-  single:
+  - name: single
     title: Uncached combined layers
     sources: [wms4]
-  cached:
+  - name: cached
     title: Cached combined layers
     sources: [wms_cache]
 
-  opacity_base:
+  - name: opacity_base
     title: opacity test base layer
     sources: [wms_opacity1]
-  opacity_overlay:
+  - name: opacity_overlay
     title: opacity test overlay layer
     sources: [wms_opacity2]
 
-  layer_image_opts1:
+  - name: layer_image_opts1
     title: layer with transparent_color
     sources: [wms_iopts1]
-  layer_image_opts2:
+  - name: layer_image_opts2
     title: layer with transparent_color
     sources: [wms_iopts2]
 

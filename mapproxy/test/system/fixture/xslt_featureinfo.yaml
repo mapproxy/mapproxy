@@ -5,13 +5,13 @@ services:
       xml: ./fi_out.xsl
 
 layers:
-  fi_layer:
+  - name: fi_layer
     title: Layer with fi source
     sources: [fi_wms1]
-  fi_without_xslt_layer:
+  - name: fi_without_xslt_layer
     title: Layer with fi source
     sources: [fi_without_xslt]
-  fi_multi_layer:
+  - name: fi_multi_layer
     title: Layer with fi source
     sources: [fi_wms1, fi_wms2, fi_wms3]
 

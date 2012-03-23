@@ -82,30 +82,34 @@ Layers should be configured as a list (``-`` in YAML), where each layer configur
 
 Each layer contains information about the layer and where the data comes from.
 
+.. versionchanged:: 1.4.0
+
+The old syntax to configure each layer as a dictionary with the key as the name is deprecated.
+
+::
+
+  layers:
+    mylayer:
+      title: My Layer
+      source: [mysoruce]
+
+should become
+
+::
+
+  layers:
+    - name: mylayer
+      title: My Layer
+      source: [mysoruce]
+
+The mixed format where the layers are a list (``-``) but each layer is still a dictionary is no longer supported (e.g. ``- mylayer:`` becomes ``- name: mylayer``).
+
 .. _layers_name:
 
 ``name``
 """""""""
 
 The name of the layer. You can omit the name for group layers (e.g. layers with ``layers``), in this case the layer is not addressable in WMS and used only for grouping.
-
-.. versionchanged:: 0.9.1
-
-The old syntax to configure each layer as a dictionary with the key as the name is deprecated but still supported.
-
-::
-
- - mylayer:
-    title: My Layer
-    source: [mysoruce]
-
-should become
-
-::
-
- - name: mylayer
-   title: My Layer
-   source: [mysoruce]
 
 
 ``title``

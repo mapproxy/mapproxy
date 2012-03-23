@@ -31,19 +31,19 @@ services:
         (http://creativecommons.org/licenses/by-sa/2.0/)
 
 layers:
-  wms_legend:
+  - name: wms_legend
     title: Layer with legendgraphic support
     sources: [legend_cache]
-  wms_mult_sources:
+  - name: wms_mult_sources
     title: Layer with multiple sources
     sources: [legend_cache, legend_cache_2]
-  wms_no_legend:
+  - name: wms_no_legend
     title: Layer without legendgraphic support
     sources: [wms_cache]
-  wms_source_static_url:
+  - name: wms_source_static_url
     title: Layer with a static LegendURL
     sources: [legendurl_static]
-  wms_layer_static_url:
+  - name: wms_layer_static_url
     title: Layer with a static LegendURL
     legendurl: http://localhost:42423/staticlegend_layer.png
     sources: [legendurl_static_2]

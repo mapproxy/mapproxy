@@ -30,13 +30,13 @@ services:
         (http://creativecommons.org/licenses/by-sa/2.0/)
 
 layers:
-  jpeg_cache_tiff_source:
+  - name: jpeg_cache_tiff_source
     title: JPEG cache with TIFF source
     sources: [jpeg_cache_tiff_source]
-  png_cache_all_source:
+  - name: png_cache_all_source
     title: PNG cache with all source
     sources: [png_cache_all_source]
-  jpeg_cache_png_jpeg_source:
+  - name: jpeg_cache_png_jpeg_source
     title: JPEG cache with png and jpeg source
     sources: [jpeg_cache_png_jpeg_source]
 

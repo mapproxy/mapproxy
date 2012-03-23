@@ -120,6 +120,8 @@ class ProxyConfiguration(object):
                sources: []
         
         """
+        warnings.warn('old layer configuration syntax is deprecated since 1.4.0. '
+            'use list of dictionaries as documented', RuntimeWarning)
         layers = []
         layers_conf = self.configuration.get('layers')
         if not layers_conf: return None # TODO config error

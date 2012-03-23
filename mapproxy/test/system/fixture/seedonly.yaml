@@ -31,7 +31,7 @@ services:
         (http://creativecommons.org/licenses/by-sa/2.0/)
 
 layers:
-  wms_cache:
+  - name: wms_cache
     title: WMS Cache Layer
     sources: [wms_cache]
 

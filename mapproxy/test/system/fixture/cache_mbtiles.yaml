@@ -9,7 +9,7 @@ services:
       title: MapProxy test fixture
 
 layers:
-  mb:
+  - name: mb
     title: TMS Cache Layer
     sources: [mb_cache]
 

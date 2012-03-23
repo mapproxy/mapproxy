@@ -31,10 +31,10 @@ services:
         (http://creativecommons.org/licenses/by-sa/2.0/)
 
 layers:
-  wms_cache:
+  - name: wms_cache
     title: WMS Cache Layer
     sources: [wms_cache]
-  tms_cache:
+  - name: tms_cache
     title: TMS Cache Layer
     sources: [tms_cache]
 

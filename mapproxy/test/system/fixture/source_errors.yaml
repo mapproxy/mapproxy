@@ -13,16 +13,16 @@ services:
   tms:
 
 layers:
-  online:
+  - name: online
     title: all sources online
     sources: [wms1]
-  all_offline:
+  - name: all_offline
     title: all sources offline
     sources: [wms2, wms3]
-  mixed:
+  - name: mixed
     title: on- and offline layers
     sources: [wms1, wms2, wms3]
-  tilesource:
+  - name: tilesource
     title: Tilesource with 404/204 handling
     sources: [tilesource_cache]
 

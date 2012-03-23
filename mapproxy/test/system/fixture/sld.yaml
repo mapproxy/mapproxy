@@ -2,13 +2,13 @@ services:
   wms:
 
 layers:
- - sld_url:
+ -  name: sld_url
     title: Layer with sld
     sources: [sld_url_wms]
- - sld_file:
+ -  name: sld_file
     title: Layer with file
     sources: [sld_file_wms]
- - sld_body:
+ -  name: sld_body
     title: Layer with sld body
     sources: [sld_body_wms]
 
