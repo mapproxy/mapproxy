@@ -23,7 +23,7 @@ from __future__ import with_statement
 import re
 from contextlib import contextmanager
 
-from .spec import required, one_off, anything, recursive
+from .spec import required, one_of, anything, recursive
 
 class Context(object):
     def __init__(self):
@@ -106,12 +106,12 @@ class Validator(object):
         if data is None:
             data = {}
 
-        if isinstance(spec, one_off):
+        if isinstance(spec, one_of):
             # check if at least one spec type matches
             for subspec in spec.specs:
                 if type_matches(subspec, data):
-                    spec = subspec
-                    break
+                    self._validate_part(subspec, data)
+                    return
             else:
                 return self._handle_error("%r in %s not of any type %s" %
                     (data, self.context.current_pos, ', '.join(map(type_str, spec.specs))))
