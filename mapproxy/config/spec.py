@@ -354,7 +354,7 @@ mapproxy_yaml_spec = {
             'name': str(),
             required('title'): basestring,
             'legendurl': str(),
-            'layers': [recursive()],
+            'layers': recursive(),
             'md': wms_130_layer_md,
         })])
     ),
