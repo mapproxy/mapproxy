@@ -480,6 +480,9 @@ class SourcesCollection(dict):
 
 
 class SourceConfiguration(ConfigurationBase):
+
+    supports_meta_tiles = True
+
     @classmethod
     def load(cls, conf, context):
         source_type = conf['type']
@@ -772,6 +775,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
             coverage=coverage, res_range=res_range, lock=lock)
 
 class TileSourceConfiguration(SourceConfiguration):
+    supports_meta_tiles = False
     source_type = ('tile',)
     defaults = {'grid': 'GLOBAL_MERCATOR'}
     
@@ -1049,7 +1053,11 @@ class LayerConfiguration(ConfigurationBase):
                 fi_source_names = self.context.caches[source_name].conf['sources']
                 lg_source_names = self.context.caches[source_name].conf['sources']
             elif source_name in self.context.sources:
-                map_layer = self.context.sources[source_name].source()
+                source_conf = self.context.sources[source_name]
+                if not source_conf.supports_meta_tiles:
+                    raise ConfigurationError('source "%s" of layer "%s" does not support un-tiled access'
+                        % (source_name, self.conf.get('name')))
+                map_layer = source_conf.source()
                 fi_source_names = [source_name]
                 lg_source_names = [source_name]
             else:
