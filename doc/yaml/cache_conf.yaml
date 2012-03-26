@@ -29,7 +29,7 @@ sources:
     req:
       url: http://osm.omniscale.net/proxy/service?
       layers: osm
-      
+
 caches:
   test_wms_cache:
     sources: [test_wms]
@@ -39,5 +39,3 @@ layers:
   - name: cached_test
     title: Cached Test Layer
     sources: [test_wms_cache]
-    
-    

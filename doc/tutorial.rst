@@ -113,7 +113,7 @@ of MapProxy. There are the following keys:
 - ``caches``:
     Here you can configure the internal caches.
 
-- ``grids``: MapProxy aligns all cached images to a grid. Here you can define 
+- ``grids``: MapProxy aligns all cached images (tiles) to a grid. Here you can define 
              that grid.
 
 - ``globals``:  Here you can define some internals of MapProxy and default values 
@@ -166,7 +166,7 @@ Adding a Source
 ----------------
 
 Next you need to :ref:`define the source <sources>` of your data. Every source has
-a name and a type. Lets add a WMS source:
+a name and a type. Let's add a WMS source:
 
 .. literalinclude:: tutorial.yaml
   :prepend: sources:
@@ -295,7 +295,7 @@ Defining a Grid
 
 In the previous section we saw how to extend a grid to provide self defined
 resolutions, but sometimes `GLOBAL_GEODETIC` grid is not useful because it covers
-the hole world and we want only a part of it. So let's see how to :ref:`define our own grid <grids>`.
+the whole world and we want only a part of it. So let's see how to :ref:`define our own grid <grids>`.
 
 For this example we define a grid for Germany. We need a spatial reference system (`srs`)
 that match the region of Germany and a bounding box (`bbox`) around Germany to limit 

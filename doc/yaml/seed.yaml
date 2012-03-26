@@ -5,7 +5,7 @@ seeds:
       from: 6
       to: 16
     coverages: [germany]
-      
+
 coverages:
   germany:
     polygons: ./GM.txt
