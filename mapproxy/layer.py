@@ -177,7 +177,23 @@ class MapExtent(object):
     def __repr__(self):
         return "%s(%r, %r)" % (self.__class__.__name__, self.bbox, self.srs)
     
-    
+    def __eq__(self, other):
+        if not isinstance(other, MapExtent):
+            return NotImplemented
+
+        if self.srs != other.srs:
+            return False
+        
+        if self.bbox != other.bbox:
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        if not isinstance(other, MapExtent):
+            return NotImplemented
+        return not self.__eq__(other)
+
     def __add__(self, other):
         if not isinstance(other, MapExtent):
             raise NotImplemented

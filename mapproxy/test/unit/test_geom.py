@@ -24,6 +24,7 @@ from mapproxy.util.geom import (
     MultiCoverage,
     bbox_polygon,
 )
+from mapproxy.layer import MapExtent
 from mapproxy.test.helper import TempFile
 
 if not geom_support:
@@ -262,4 +263,33 @@ class TestMultiCoverage(object):
         c = coverage([-10, 10, 80, 80], SRS(4326))
         assert MultiCoverage([c, coverage(g1, SRS(4326))]) != MultiCoverage([c, coverage(g2, SRS(31467))])
 
-       
+
+class TestMapExtent(object):
+    def setup(self):
+        self.extent = MapExtent([-10, 10, 80, 80], SRS(4326))
+    
+    def test_bbox(self):
+        assert bbox_equals(self.extent.bbox, [-10, 10, 80, 80], 0.0001)
+    
+    def test_contains(self):
+        assert self.extent.contains(MapExtent((15, 15, 20, 20), SRS(4326)))
+        assert self.extent.contains(MapExtent((15, 15, 79, 20), SRS(4326)))
+        assert self.extent.contains(MapExtent((9, 10, 20, 20), SRS(4326)))
+        assert not self.extent.contains(MapExtent((9, 9.99999999, 20, 20), SRS(4326)))
+    
+    def test_intersects(self):
+        assert self.extent.intersects(MapExtent((15, 15, 20, 20), SRS(4326)))
+        assert self.extent.intersects(MapExtent((15, 15, 80, 20), SRS(4326)))
+        assert self.extent.intersects(MapExtent((9, 10, 20, 20), SRS(4326)))
+        assert self.extent.intersects(MapExtent((-30, 10, -8, 70), SRS(4326)))
+        assert not self.extent.intersects(MapExtent((-30, 10, -11, 70), SRS(4326)))
+        
+        assert not self.extent.intersects(MapExtent((0, 0, 1000, 1000), SRS(900913)))
+        assert self.extent.intersects(MapExtent((0, 0, 1500000, 1500000), SRS(900913)))
+    
+    def test_eq(self):
+        assert MapExtent([-10, 10, 80, 80], SRS(4326)) == MapExtent([-10, 10, 80, 80], SRS(4326))
+        assert MapExtent([-10, 10, 80, 80], SRS(4326)) == MapExtent([-10, 10.0, 80.0, 80], SRS(4326))
+        assert MapExtent([-10, 10, 80, 80], SRS(4326)) != MapExtent([-10.1, 10.0, 80.0, 80], SRS(4326))
+        assert MapExtent([-10, 10, 80, 80], SRS(4326)) != MapExtent([-10, 10.0, 80.0, 80], SRS(31467))
+
