@@ -1,3 +1,35 @@
+1.4.0rc1 2012-03-xx
+~~~~~~~~~~~~~~~~~~~
+
+Features:
+
+- support clipping of requests to polygon geometries in security API 
+- support for WMS 1.3.0 extended layer capabilities
+- on_error handling for tile sources. fallback to empty/transparent
+  tiles when the source returns HTTP codes like 404 or 204
+
+Improvements:
+
+- WMS source requests and requests to cached tiles are now clipped
+  to the extent. this should prevent projection errors when requesting
+  large bbox (e.g. over 180/90 in EPSG:4326)
+- improved lock timeouts in mapproxy-seed
+- the debug source does not overwrite the layer extent anymore
+
+Fixes:
+
+- support loading of WKT polygon files with UTF8 encoding and BOM header
+- upgraded dictspec module with fix for some nested configuration specs.
+  a bug prevented checking of the layers configuration
+
+Other:
+
+- the documentation now contains a tutorial
+- old layer configuration syntax is now deprecated
+- EPSG:4326/900913/3857 are now always initialized with the +over proj4
+  option to prevent distortions at the dateline
+  see: http://fwarmerdam.blogspot.de/2010/02/world-mapping.html
+
 1.3.0 2012-01-13
 ~~~~~~~~~~~~~~~~
 
