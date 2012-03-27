@@ -22,6 +22,7 @@ from cStringIO import StringIO
 from mapproxy.platform.image import Image, ImageChops
 from mapproxy.image.opts import create_image, ImageFormat
 from mapproxy.config import base_config
+from mapproxy.srs import make_lin_transf
 
 import logging
 log = logging.getLogger('mapproxy.image')
@@ -152,6 +153,16 @@ class ImageSource(object):
         if self._size is None:
             self._size = self.as_image().size
         return self._size
+
+def SubImageSource(source, size, offset, image_opts):
+    new_image_opts = image_opts.copy()
+    new_image_opts.transparent = True
+    img = create_image(size, new_image_opts)
+    if not hasattr(source, 'as_image'):
+        source = ImageSource(source)
+    subimg = source.as_image()
+    img.paste(subimg, offset)
+    return ImageSource(img, size=size, image_opts=image_opts)
 
 class BlankImageSource(object):
     """
@@ -346,3 +357,40 @@ def _make_transparent(img, color, tolerance=10):
     
     img.putalpha(alpha)
     return img
+
+def bbox_position_in_image(bbox, size, src_bbox):
+    """
+    Calculate the position of ``bbox`` in an image of ``size`` and ``src_bbox``.
+    Returns the sub-image size and the offset in pixel from top-left corner
+    and the sub-bbox.
+
+    >>> bbox_position_in_image((-180, -90, 180, 90), (600, 300), (-180, -90, 180, 90))
+    ((600, 300), (0, 0), (-180, -90, 180, 90))
+    >>> bbox_position_in_image((-200, -100, 200, 100), (600, 300), (-180, -90, 180, 90))
+    ((540, 270), (30, 15), (-180, -90, 180, 90))
+    >>> bbox_position_in_image((-200, -50, 200, 100), (600, 300), (-180, -90, 180, 90))
+    ((540, 280), (30, 20), (-180, -50, 180, 90))
+    """
+    coord_to_px = make_lin_transf(bbox, (0, 0) + size)
+    offsets = [0.0, float(size[1]), float(size[0]), 0.0]
+    sub_bbox = list(bbox)
+    if src_bbox[0] > bbox[0]:
+        sub_bbox[0] = src_bbox[0]
+        x, y = coord_to_px((src_bbox[0], 0))
+        offsets[0] = x
+    if src_bbox[1] > bbox[1]:
+        sub_bbox[1] = src_bbox[1]
+        x, y = coord_to_px((0, src_bbox[1]))
+        offsets[1] = y
+
+    if src_bbox[2] < bbox[2]:
+        sub_bbox[2] = src_bbox[2]
+        x, y = coord_to_px((src_bbox[2], 0))
+        offsets[2] = x
+    if src_bbox[3] < bbox[3]:
+        sub_bbox[3] = src_bbox[3]
+        x, y = coord_to_px((0, src_bbox[3]))
+        offsets[3] = y
+
+    size = int(offsets[2] - offsets[0]), int(offsets[1] - offsets[3])
+    return size, (int(offsets[0]), int(offsets[3])), tuple(sub_bbox)

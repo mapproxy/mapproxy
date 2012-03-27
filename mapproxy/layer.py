@@ -19,7 +19,8 @@ Layers that can get maps/infos from different sources/caches.
 """
 
 from __future__ import division, with_statement
-from mapproxy.grid import NoTiles, GridError, merge_resolution_range
+from mapproxy.grid import NoTiles, GridError, merge_resolution_range, bbox_intersects, bbox_contains
+from mapproxy.image import SubImageSource, bbox_position_in_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
 from mapproxy.srs import SRS, bbox_equals, merge_bbox, make_lin_transf
@@ -120,6 +121,8 @@ class MapQuery(object):
         self.transparent = transparent
         self.tiled_only = tiled_only
 
+    def __repr__(self):
+        return "MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s)" % self.__dict__
 
 class InfoQuery(object):
     def __init__(self, bbox, size, srs, pos, info_format, format=None):
@@ -183,6 +186,16 @@ class MapExtent(object):
         if self.is_default:
             return other
         return MapExtent(merge_bbox(self.llbbox, other.llbbox), SRS(4326))
+
+    def contains(self, other):
+        if not isinstance(other, MapExtent):
+            raise NotImplemented
+        return bbox_contains(self.bbox, other.bbox_for(self.srs))
+
+    def intersects(self, other):
+        if not isinstance(other, MapExtent):
+            raise NotImplemented
+        return bbox_intersects(self.bbox, other.bbox_for(self.srs))
 
 class DefaultMapExtent(MapExtent):
     """
@@ -320,7 +333,16 @@ class CacheMapLayer(MapLayer):
         if query.tiled_only:
             self._check_tiled(query)
         
-        result = self._image(query)
+        query_extent = MapExtent(query.bbox, query.srs)
+        if self.extent and not self.extent.contains(query_extent):
+            if not self.extent.intersects(query_extent):
+                raise BlankImage()
+            size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
+            src_query = MapQuery(bbox, size, query.srs, query.format)
+            resp = self._image(src_query)
+            result = SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts)
+        else:
+            result = self._image(query)
         return result
 
     def _check_tiled(self, query):

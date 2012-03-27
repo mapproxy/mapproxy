@@ -76,9 +76,9 @@ class TestCoverageWMS(SystemTest):
         self.created_tiles.append('wms_cache_EPSG4326/03/000/000/004/000/000/002.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&styles='
-                                      '&VERSION=1.1.1&BBOX=0.0,0.0,45.0,45.0'
-                                      '&WIDTH=256'},
+                                      '&REQUEST=GetMap&HEIGHT=91&SRS=EPSG%3A4326&styles='
+                                      '&VERSION=1.1.1&BBOX=10,15,30,31'
+                                      '&WIDTH=113'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 self.common_map_req.params.bbox = 0, 0, 40, 40
@@ -87,7 +87,7 @@ class TestCoverageWMS(SystemTest):
                 eq_(resp.content_type, 'image/png')
                 data = StringIO(resp.body)
                 assert is_png(data)
-                eq_(Image.open(data).mode, 'RGB')
+                eq_(Image.open(data).mode, 'RGBA')
 
 class TestCoverageTMS(SystemTest):
     config = test_config
@@ -95,9 +95,9 @@ class TestCoverageTMS(SystemTest):
     def test_get_tile_intersections(self):
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
-                                      '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
-                                      '&WIDTH=256'},
+                                      '&REQUEST=GetMap&HEIGHT=24&SRS=EPSG%3A900913&styles='
+                                      '&VERSION=1.1.1&BBOX=1113194.90793,1689200.13961,3339584.7238,3632749.14338'
+                                      '&WIDTH=28'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 resp = self.app.get('/tms/1.0.0/wms_cache/0/1/1.jpeg')

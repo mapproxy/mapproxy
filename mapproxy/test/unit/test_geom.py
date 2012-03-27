@@ -203,7 +203,8 @@ class TestBBOXCoverage(object):
     def test_contains(self):
         assert self.coverage.contains((15, 15, 20, 20), SRS(4326))
         assert self.coverage.contains((15, 15, 79, 20), SRS(4326))
-        assert not self.coverage.contains((9, 10, 20, 20), SRS(4326))
+        assert self.coverage.contains((9, 10, 20, 20), SRS(4326))
+        assert not self.coverage.contains((9, 9.99999999, 20, 20), SRS(4326))
     
     def test_intersects(self):
         assert self.coverage.intersects((15, 15, 20, 20), SRS(4326))
