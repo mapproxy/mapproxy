@@ -155,9 +155,15 @@ class ImageSource(object):
         return self._size
 
 def SubImageSource(source, size, offset, image_opts):
+    """
+    Create a new ImageSource with `size` and `image_opts` and
+    place `source` image at `offset`.
+    """
+    # force new image to contain alpha channel
     new_image_opts = image_opts.copy()
     new_image_opts.transparent = True
     img = create_image(size, new_image_opts)
+    
     if not hasattr(source, 'as_image'):
         source = ImageSource(source)
     subimg = source.as_image()
