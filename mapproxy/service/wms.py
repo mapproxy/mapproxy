@@ -401,9 +401,9 @@ class Capabilities(object):
         
         # add native srs
         if layer_srs_code not in self.bbox_srs:
-            bbox = switch_bbox_epsg_axis_order(layer.extent.bbox, layer_srs_code)
+            bbox = layer.extent.bbox
             if epsg_axis_order:
-                bbox = switch_bbox_epsg_axis_order(bbox, srs)
+                bbox = switch_bbox_epsg_axis_order(bbox, layer_srs_code)
             yield layer_srs_code, bbox
     
     def render(self, _map_request):
