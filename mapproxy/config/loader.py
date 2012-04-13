@@ -1242,16 +1242,12 @@ def load_configuration(mapproxy_conf, seed=False):
     
     try:
         conf_dict = load_yaml_file(mapproxy_conf)
-        if 'import' in conf_dict:
-            import_dict = import_configuration(conf_dict.pop('import'), conf_base_dir);
-            conf_dict = merge_dict(conf_dict, import_dict)
-
         if 'base' in conf_dict:
-            base_conf_file = conf_dict.pop('base')
-            base_dict = load_yaml_file(os.path.join(conf_base_dir, base_conf_file))
-            if 'base' in base_dict:
-                log.warn('found `base` option in base config but recursive inheritance is not supported.')
-            conf_dict = merge_dict(conf_dict, base_dict)
+	    base_files =  conf_dict.pop('base')
+            if type(base_files) is str:
+                base_files = [base_files]
+            import_dict = import_configuration(base_files, conf_base_dir)
+            conf_dict = merge_dict(conf_dict, import_dict)
     except YAMLError, ex:
         raise ConfigurationError(ex)
     errors, informal_only = validate_mapproxy_conf(conf_dict)
@@ -1269,9 +1265,12 @@ def import_configuration(files, working_dir):
     for conf_file in files:
         log.info('reading: %s' % os.path.join(working_dir, conf_file))
         current_dict = load_yaml_file(os.path.join(working_dir, conf_file))
-        if 'import' in current_dict:
+        if 'base' in current_dict:
             current_working_dir = os.path.dirname(os.path.join(working_dir, conf_file))
-            imported_dict = import_configuration(current_dict.pop('import'), current_working_dir)
+            base_files = current_dict.pop('base')
+            if type(base_files) is str:
+                base_files = [base_files]
+            imported_dict = import_configuration(base_files, current_working_dir)
             current_dict = merge_dict(current_dict, imported_dict)
 
         conf_dict = merge_dict(conf_dict, current_dict)

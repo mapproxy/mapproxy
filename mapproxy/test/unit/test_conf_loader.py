@@ -551,7 +551,7 @@ globals:
         with TempFile() as gp:
             open(gp, 'w').write(self.yaml_grand_parent)
             self.yaml_parent = """
-import:
+base:
   - %s
 %s
 """ % (gp, self.yaml_parent)
@@ -560,7 +560,7 @@ import:
                 open(p, 'w').write(self.yaml_parent)
 
                 self.yaml_string = """
-import: [%s]
+base: [%s]
 %s
 """ % (p, self.yaml_string)
 
