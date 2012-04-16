@@ -1264,17 +1264,10 @@ class ServiceConfiguration(ConfigurationBase):
     
 
 def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True):
-    log.info('reading: %s' % mapproxy_conf)
     conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
     
     try:
-        conf_dict = load_yaml_file(mapproxy_conf)
-        if 'base' in conf_dict:
-            base_conf_file = conf_dict.pop('base')
-            base_dict = load_yaml_file(os.path.join(conf_base_dir, base_conf_file))
-            if 'base' in base_dict:
-                log.warn('found `base` option in base config but recursive inheritance is not supported.')
-            conf_dict = merge_dict(conf_dict, base_dict)
+        conf_dict = load_configuration_file([mapproxy_conf], conf_base_dir)
     except YAMLError, ex:
         raise ConfigurationError(ex)
     errors, informal_only = validate_mapproxy_conf(conf_dict)
@@ -1283,6 +1276,27 @@ def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True):
     if not informal_only or (errors and not ignore_warnings):
         raise ConfigurationError('invalid configuration')
     return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed)
+
+def load_configuration_file(files, working_dir):
+    """
+    Return configuration dict from imported files
+    """
+    conf_dict = {}
+    for conf_file in files:
+        conf_file = os.path.normpath(os.path.join(working_dir, conf_file))
+        log.info('reading: %s' % conf_file)
+        current_dict = load_yaml_file(conf_file)
+        if 'base' in current_dict:
+            current_working_dir = os.path.dirname(conf_file)
+            base_files = current_dict.pop('base')
+            if isinstance(base_files, basestring):
+                base_files = [base_files]
+            imported_dict = load_configuration_file(base_files, current_working_dir)
+            current_dict = merge_dict(current_dict, imported_dict)
+
+        conf_dict = merge_dict(conf_dict, current_dict)
+
+    return conf_dict
 
 def merge_dict(conf, base):
     """

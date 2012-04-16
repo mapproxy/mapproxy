@@ -39,6 +39,22 @@ The order of the sections is not important, so you can organize it your way.
 
 .. note:: The indentation is significant and shall only contain space characters. Tabulators are **not** permitted for indentation.
 
+
+``base``
+""""""""
+
+You can split a configuration into multiple files with the ``base`` option. The ``base`` option loads the other files and merges the loaded configuration dictionaries together – it is not a literal include of the other files.
+
+For example::
+
+  base: [mygrids.yaml, mycaches_sources.yaml]
+  service: ...
+  layers: ...
+
+
+.. versionchanged:: 1.4.0
+  Support for recursive imports and for multiple files. 
+
 .. #################################################################################
 
 .. index:: services

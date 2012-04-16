@@ -518,6 +518,66 @@ sources:
                 assert False, 'expected configuration error'
 
 
+class TestConfImport(object):
+
+    yaml_string = """
+globals:
+  http:
+    client_timeout: 1
+    headers:
+      baz: quux
+"""
+
+    yaml_parent = """
+globals:
+  http:
+    client_timeout: 2
+    headers:
+      foo: bar
+      bar: qux
+      baz: qax
+"""
+
+    yaml_grand_parent = """
+globals:
+  http:
+    client_timeout: 3
+    method: GET
+    headers:
+      bar: baz
+"""
+    
+    def test_loading(self):
+        with TempFile() as gp:
+            open(gp, 'w').write(self.yaml_grand_parent)
+            self.yaml_parent = """
+base:
+  - %s
+%s
+""" % (gp, self.yaml_parent)
+
+            with TempFile() as p:
+                open(p, 'w').write(self.yaml_parent)
+
+                self.yaml_string = """
+base: [%s]
+%s
+""" % (p, self.yaml_string)
+
+                with TempFile() as cfg:
+                    open(cfg, 'w').write(self.yaml_string)
+
+        
+                    config = load_configuration(cfg)
+        
+                    http = config.globals.get_value('http')
+                    eq_(http['client_timeout'], 1)
+                    eq_(http['headers']['bar'], 'qux')
+                    eq_(http['headers']['foo'], 'bar')
+                    eq_(http['headers']['baz'], 'quux')
+                    eq_(http['method'], 'GET')
+
+
 class TestConfMerger(object):
     def test_empty_base(self):
         a = {'a': 1, 'b': [12, 13]}
