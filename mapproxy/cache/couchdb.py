@@ -18,6 +18,7 @@ from __future__ import with_statement
 import datetime
 import threading
 import time
+import hashlib
 
 from cStringIO import StringIO
 
@@ -56,7 +57,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         if json is None:
             raise ImportError("CouchDB backend requires 'simplejson' package or Python 2.6+.")
         
-        self.lock_cache_id = url + db_name
+        self.lock_cache_id = 'couchdb-' + hashlib.md5(url + db_name).hexdigest()
         self.lock_dir = lock_dir
         self.lock_timeout = 60
         self.file_ext = file_ext
@@ -190,6 +191,9 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         self.is_cached(tile)
     
     def load_tile(self, tile, with_metadata=False):
+        # bulk loading with load_tiles is not implemented, because
+        # CouchDB's /all_docs? does not include attachments
+        
         if tile.source or tile.coord is None:
             return True
         url = self.document_url(tile.coord) + '?attachments=true'

@@ -336,6 +336,9 @@ You need to modify your Apache ``httpd.conf`` as follows::
     Allow from all
   </Directory>
 
+
+``mod_wsgi`` has a lot of options for more fine tuning. ``WSGIPythonHome`` lets you configure your ``virtualenv`` and  ``WSGIDaemonProcess``/``WSGIProcessGroup`` allows you to start multiple processes. See the `mod_wsgi configuration directives documentation <http://code.google.com/p/modwsgi/wiki/ConfigurationDirectives>`_.
+
 .. _`mod_wsgi`: http://code.google.com/p/modwsgi/
 .. _`mod_wsgi installation`: http://code.google.com/p/modwsgi/wiki/InstallationInstructions
 

@@ -33,16 +33,16 @@ services:
         (http://creativecommons.org/licenses/by-sa/2.0/)
 
 layers:
-  wms_cache:
+  - name: wms_cache
     title: WMS Cache Layer
     sources: [wms_cache]
-  wms_cache_multi:
+  - name: wms_cache_multi
     title: WMS Cache Multi Layer
     sources: [wms_cache_multi]
-  tms_cache:
+  - name: tms_cache
     title: TMS Cache Layer
     sources: [tms_cache]
-  tms_cache_ul:
+  - name: tms_cache_ul
     title: TMS Cache Layer
     sources: [tms_cache_ul]
 

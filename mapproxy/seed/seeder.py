@@ -15,18 +15,17 @@
 
 from __future__ import with_statement, division
 import sys
-import time
-
-from contextlib import contextmanager
 
 from mapproxy.config import base_config
 from mapproxy.grid import MetaGrid
 from mapproxy.source import SourceError
 from mapproxy.util import local_base_config
+from mapproxy.util.lock import LockTimeout
 from mapproxy.seed.util import format_seed_task
+from mapproxy.seed.cachelock import DummyCacheLocker, CacheLockedError
 
 from mapproxy.seed.util import (exp_backoff, ETA, limit_sub_bbox,
-    status_symbol, format_bbox)
+    status_symbol)
 
 NONE = 0
 CONTAINS = -1
@@ -100,7 +99,7 @@ class TileSeedWorker(TileWorker):
                 return
             with self.tile_mgr.session():
                 exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
-                        exceptions=(SourceError, IOError))
+                        exceptions=(SourceError, IOError), ignore_exceptions=(LockTimeout, ))
 
 class TileCleanupWorker(TileWorker):
     def work_loop(self):
@@ -260,18 +259,38 @@ class CleanupTask(object):
         return NONE
 
 def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
-    progress_logger=None):
-    for task in tasks:
+    progress_logger=None, cache_locker=None):
+    if cache_locker is None:
+        cache_locker = DummyCacheLocker()
+    
+    active_tasks = tasks[::-1]
+    while active_tasks:
+        task = active_tasks[-1]
         print format_seed_task(task)
-        if task.refresh_timestamp is not None:
-            task.tile_manager._expire_timestamp = task.refresh_timestamp
-        task.tile_manager.minimize_meta_requests = False
-        tile_worker_pool = TileWorkerPool(task, TileSeedWorker, dry_run=dry_run,
-            size=concurrency, progress_logger=progress_logger)
-        tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=True,
-            skip_geoms_for_last_levels=skip_geoms_for_last_levels, progress_logger=progress_logger)
-        tile_walker.walk()
-        tile_worker_pool.stop()
+        
+        wait = len(active_tasks) == 1
+        try:
+            with cache_locker.lock(task.md['cache_name'], no_block=not wait):
+                _seed_task(task, concurrency, dry_run, skip_geoms_for_last_levels, progress_logger)
+        except CacheLockedError:
+            print '    ...cache is locked, skipping'
+            active_tasks = [task] + active_tasks[:-1]
+        else:
+            active_tasks.pop()
+        
+
+def _seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
+    progress_logger=None):
+    if task.refresh_timestamp is not None:
+        task.tile_manager._expire_timestamp = task.refresh_timestamp
+    task.tile_manager.minimize_meta_requests = False
+    tile_worker_pool = TileWorkerPool(task, TileSeedWorker, dry_run=dry_run,
+        size=concurrency, progress_logger=progress_logger)
+    tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=True,
+        skip_geoms_for_last_levels=skip_geoms_for_last_levels, progress_logger=progress_logger)
+    tile_walker.walk()
+    tile_worker_pool.stop()
+
 
 # class CacheSeeder(object):
 #     """

@@ -1,0 +1,21 @@
+MapProxy is written and maintained by Omniscale and
+various contributors:
+
+Development Lead
+----------------
+
+- Oliver Tonnhofer <olt@omniscale.de>
+
+Contributors
+------------
+
+- Dominik Helle <helle@omniscale.de>
+- Marcel Radischat <radischat@omniscale.de>
+
+Patches and Suggestions
+-----------------------
+
+- Josh Doe
+- Stephan Holl
+- Kai Culemann
+- Miloslav Kmeť

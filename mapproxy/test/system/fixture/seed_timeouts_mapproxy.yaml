@@ -1,0 +1,27 @@
+globals:
+  cache:
+    base_dir: cache_data/
+  image:
+    # resampling: 'bicubic'
+    paletted: False
+
+layers:
+  - name: wms_cache
+    title: WMS Cache Layer
+    sources: [wms_cache]
+
+caches:
+  wms_cache:
+    sources: [wms_cache]
+    grids: [GLOBAL_GEODETIC]
+
+
+sources:
+  wms_cache:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: foo
+    concurrent_requests: 1
+    http:
+      client_timeout: 0.2

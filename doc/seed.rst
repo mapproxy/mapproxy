@@ -70,7 +70,7 @@ Print summary of all seed tasks and exit::
 
     mapproxy-seed -f mapproxy.yaml -s seed.yaml --summary --seed ALL
 
-Interactively select wich tasks should be seeded::
+Interactively select which tasks should be seeded::
 
     mapproxy-seed -f mapproxy.yaml -s seed.yaml -i
 

@@ -16,6 +16,8 @@ caches:
 sources:
   ms_cgi:
     type: mapserver
+    req:
+      map: ./foo.map
     mapserver:
       binary: ./cgi.py
       working_dir: ./tmp

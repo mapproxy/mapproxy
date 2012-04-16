@@ -46,13 +46,14 @@ from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import BlankImage
 from mapproxy.request.wms import WMS111MapRequest
+from mapproxy.util.geom import BBOXCoverage
 
 from mapproxy.test.image import create_debug_img, is_png, tmp_image
 from mapproxy.test.http import assert_query_eq, query_eq, mock_httpd
 
 from collections import defaultdict
 
-from nose.tools import eq_, raises, assert_not_equal
+from nose.tools import eq_, raises, assert_not_equal, assert_raises
 
 TEST_SERVER_ADDRESS = ('127.0.0.1', 56413)
 GLOBAL_GEOGRAPHIC_EXTENT = MapExtent((-180, -90, 180, 90), SRS(4326))
@@ -507,7 +508,36 @@ class TestCacheMapLayer(object):
         eq_(self.file_cache.stored_tiles,
             set([(512, 257, 10), (513, 256, 10), (512, 256, 10), (513, 257, 10)]))
         eq_(result.size, (50, 50))
+
+class TestCacheMapLayerWithExtent(object):
+    def setup(self):
+        self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
+        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        self.client = MockWMSClient()
+        self.source = WMSSource(self.client)
+        self.image_opts = ImageOptions(resampling='nearest', format='png')
+        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
+            meta_size=[1, 1], meta_buffer=0, image_opts=self.image_opts)
+        self.layer = CacheMapLayer(self.tile_mgr, image_opts=default_image_opts)
+        self.layer.extent = BBOXCoverage([0, 0, 90, 45], SRS(4326)).extent
     
+    def test_get_outside_extent(self):
+        assert_raises(BlankImage, self.layer.get_map, MapQuery((-180, -90, 0, 0), (300, 150), SRS(4326), 'png'))
+
+    def test_get_map_small(self):
+        result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
+        eq_(self.file_cache.stored_tiles, set([(1, 0, 1)]))
+        # source requests one tile (no meta-tiling configured)
+        eq_(self.client.requested, [((0.0, -90.0, 180.0, 90.0), (256, 256), SRS('EPSG:4326'))])
+        eq_(result.size, (300, 150))
+
+    def test_get_map_small_with_source_extent(self):
+        self.source.extent = BBOXCoverage([0, 0, 90, 45], SRS(4326)).extent
+        result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
+        eq_(self.file_cache.stored_tiles, set([(1, 0, 1)]))
+        # source requests one tile (no meta-tiling configured) limited to source.extent
+        eq_(self.client.requested, [((0, 0, 90, 45), (128, 64), (SRS(4326)))])
+        eq_(result.size, (300, 150))
 
 class TestDirectMapLayer(object):
     def setup(self):

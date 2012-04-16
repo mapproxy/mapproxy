@@ -19,125 +19,14 @@ Image and tile manipulation (transforming, merging, etc).
 from __future__ import with_statement
 from cStringIO import StringIO
 
-from mapproxy.platform.image import Image, ImageColor, ImageChops
-from mapproxy.image.opts import create_image, ImageOptions, ImageFormat
+from mapproxy.platform.image import Image, ImageChops
+from mapproxy.image.opts import create_image, ImageFormat
 from mapproxy.config import base_config
+from mapproxy.srs import make_lin_transf
 
 import logging
 log = logging.getLogger('mapproxy.image')
 
-
-class LayerMerger(object):
-    """
-    Merge multiple layers into one image.
-    """
-    def __init__(self):
-        self.layers = []
-    def add(self, layer):
-        """
-        Add one or more layers to merge. Bottom-layers first.
-        """
-        try:
-            layer = iter(layer)
-        except TypeError:
-            if layer is not None:
-                self.layers.append(layer)
-        else:
-            for l in layer:
-                self.add(l)
-
-    def merge(self, image_opts, size=None):
-        """
-        Merge the layers. If the format is not 'png' just return the last image.
-        
-        :param format: The image format for the result.
-        :param size: The size for the merged output.
-        :rtype: `ImageSource`
-        """
-        if not self.layers:
-            return BlankImageSource(size=size, image_opts=image_opts)
-        if len(self.layers) == 1:
-            layer_opts = self.layers[0].image_opts
-            if ((not layer_opts.transparent or image_opts.transparent) 
-                and (not size or size == self.layers[0].size)):
-                # layer is opaque, no need to make transparent or add bgcolor
-                return self.layers[0]
-        
-        if size is None:
-            size = self.layers[0].size
-        
-        img = create_image(size, image_opts)
-        
-        for layer in self.layers:
-            layer_img = layer.as_image()
-            if (layer.image_opts and layer.image_opts.opacity is not None
-                and layer.image_opts.opacity < 1.0):
-                layer_img = layer_img.convert(img.mode)
-                img = Image.blend(img, layer_img, layer.image_opts.opacity)
-            else:
-                if layer_img.mode == 'RGBA':
-                    # paste w transparency mask from layer
-                    img.paste(layer_img, (0, 0), layer_img)
-                else:
-                    img.paste(layer_img, (0, 0))
-        return ImageSource(img, size=size, image_opts=image_opts)
-
-def merge_images(images, image_opts, size=None):
-    """
-    Merge multiple images into one.
-    
-    :param images: list of `ImageSource`, bottom image first
-    :param format: the format of the output `ImageSource`
-    :param size: size of the merged image, if ``None`` the size
-                 of the first image is used
-    :rtype: `ImageSource`
-    """
-    merger = LayerMerger()
-    merger.add(images)
-    return merger.merge(image_opts=image_opts, size=size)
-
-def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transparent=True):
-    """
-    Merge multiple legends into one
-    :param images: list of `ImageSource`, bottom image first
-    :param format: the format of the output `ImageSource`
-    :param size: size of the merged image, if ``None`` the size
-                 will be calculated
-    :rtype: `ImageSource`
-    """
-    if not legends:
-        return BlankImageSource(size=(1,1), image_opts=ImageOptions(bgcolor=bgcolor, transparent=transparent))
-    if len(legends) == 1:
-        return legends[0]
-    
-    legends = legends[:]
-    legends.reverse()
-    if size is None:
-        legend_width = 0
-        legend_height = 0
-        legend_position_y = []
-        #iterate through all legends, last to first, calc img size and remember the y-position
-        for legend in legends:
-            legend_position_y.append(legend_height)
-            tmp_img = legend.as_image()
-            legend_width = max(legend_width, tmp_img.size[0])
-            legend_height += tmp_img.size[1] #images shall not overlap themselfs
-            
-        size = [legend_width, legend_height]
-    bgcolor = ImageColor.getrgb(bgcolor)
-    
-    if transparent:
-        img = Image.new('RGBA', size, bgcolor+(0,))
-    else:
-        img = Image.new('RGB', size, bgcolor)
-    for i in range(len(legends)):
-        legend_img = legends[i].as_image()
-        if legend_img.mode == 'RGBA':
-            # paste w transparency mask from layer
-            img.paste(legend_img, (0, legend_position_y[i]), legend_img)
-        else:
-            img.paste(legend_img, (0, legend_position_y[i]))
-    return ImageSource(img, image_opts=ImageOptions(format=format))
 
 class ImageSource(object):
     """
@@ -145,6 +34,10 @@ class ImageSource(object):
     You can access the result as an image (`as_image` ) or a file-like buffer
     object (`as_buffer`).
     """
+
+    "Allow this image to be cached."
+    cacheable = True
+
     def __init__(self, source, size=None, image_opts=None):
         """
         :param source: the image
@@ -261,25 +154,50 @@ class ImageSource(object):
             self._size = self.as_image().size
         return self._size
 
+def SubImageSource(source, size, offset, image_opts):
+    """
+    Create a new ImageSource with `size` and `image_opts` and
+    place `source` image at `offset`.
+    """
+    # force new image to contain alpha channel
+    new_image_opts = image_opts.copy()
+    new_image_opts.transparent = True
+    img = create_image(size, new_image_opts)
+    
+    if not hasattr(source, 'as_image'):
+        source = ImageSource(source)
+    subimg = source.as_image()
+    img.paste(subimg, offset)
+    return ImageSource(img, size=size, image_opts=image_opts)
+
 class BlankImageSource(object):
     """
     ImageSource for transparent or solid-color images.
     Implements optimized as_buffer() method.
     """
+    cacheable = False
     def __init__(self, size, image_opts):
         self.size = size
         self.image_opts = image_opts
+        self._buf = None
+        self._img = None
     
     def as_image(self):
-        img = create_image(self.size, self.image_opts)
-        return img
+        if not self._img:
+            self._img = create_image(self.size, self.image_opts)
+        return self._img
     
     def as_buffer(self, image_opts=None, format=None, seekable=False):
-        image_opts = (image_opts or self.image_opts).copy()
-        if format:
-            image_opts.format = ImageFormat(format)
-        image_opts.colors = 0
-        return img_to_buf(self.as_image(), image_opts=image_opts)
+        if not self._buf:
+            image_opts = (image_opts or self.image_opts).copy()
+            if format:
+                image_opts.format = ImageFormat(format)
+            image_opts.colors = 0
+            self._buf = img_to_buf(self.as_image(), image_opts=image_opts)
+        return self._buf
+    
+    def close_buffers(self):
+        pass
 
 class ReadBufWrapper(object):
     """
@@ -445,3 +363,40 @@ def _make_transparent(img, color, tolerance=10):
     
     img.putalpha(alpha)
     return img
+
+def bbox_position_in_image(bbox, size, src_bbox):
+    """
+    Calculate the position of ``bbox`` in an image of ``size`` and ``src_bbox``.
+    Returns the sub-image size and the offset in pixel from top-left corner
+    and the sub-bbox.
+
+    >>> bbox_position_in_image((-180, -90, 180, 90), (600, 300), (-180, -90, 180, 90))
+    ((600, 300), (0, 0), (-180, -90, 180, 90))
+    >>> bbox_position_in_image((-200, -100, 200, 100), (600, 300), (-180, -90, 180, 90))
+    ((540, 270), (30, 15), (-180, -90, 180, 90))
+    >>> bbox_position_in_image((-200, -50, 200, 100), (600, 300), (-180, -90, 180, 90))
+    ((540, 280), (30, 20), (-180, -50, 180, 90))
+    """
+    coord_to_px = make_lin_transf(bbox, (0, 0) + size)
+    offsets = [0.0, float(size[1]), float(size[0]), 0.0]
+    sub_bbox = list(bbox)
+    if src_bbox[0] > bbox[0]:
+        sub_bbox[0] = src_bbox[0]
+        x, y = coord_to_px((src_bbox[0], 0))
+        offsets[0] = x
+    if src_bbox[1] > bbox[1]:
+        sub_bbox[1] = src_bbox[1]
+        x, y = coord_to_px((0, src_bbox[1]))
+        offsets[1] = y
+
+    if src_bbox[2] < bbox[2]:
+        sub_bbox[2] = src_bbox[2]
+        x, y = coord_to_px((src_bbox[2], 0))
+        offsets[2] = x
+    if src_bbox[3] < bbox[3]:
+        sub_bbox[3] = src_bbox[3]
+        x, y = coord_to_px((0, src_bbox[3]))
+        offsets[3] = y
+
+    size = int(offsets[2] - offsets[0]), int(offsets[1] - offsets[3])
+    return size, (int(offsets[0]), int(offsets[3])), tuple(sub_bbox)

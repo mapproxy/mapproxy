@@ -19,7 +19,8 @@ Retrieve maps/information from WMS servers.
 import sys
 from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
-from mapproxy.image import concat_legends, make_transparent, ImageSource
+from mapproxy.image import make_transparent, ImageSource, SubImageSource, bbox_position_in_image
+from mapproxy.image.merge import concat_legends
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, LegendQuery, MapQuery
 from mapproxy.source import Source, InfoSource, SourceError, LegendSource
@@ -82,9 +83,17 @@ class WMSSource(Source):
             idx = self.supported_srs.index(query.srs)
             if self.supported_srs[idx] is not query.srs:
                 query.srs = self.supported_srs[idx]
+        if self.extent and not self.extent.contains(MapExtent(query.bbox, query.srs)):
+            return self._get_sub_query(query, format)
         resp = self.client.retrieve(query, format)
         return ImageSource(resp, size=query.size, image_opts=self.image_opts)
     
+    def _get_sub_query(self, query, format):
+        size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
+        src_query = MapQuery(bbox, size, query.srs, format)
+        resp = self.client.retrieve(src_query, format)
+        return SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts)
+
     def _get_transformed(self, query, format):
         dst_srs = query.srs
         src_srs = self._best_supported_srs(dst_srs)
@@ -101,9 +110,12 @@ class WMSSource(Source):
             src_size = int(dst_size[1]*ratio +0.5), dst_size[1]
         
         src_query = MapQuery(src_bbox, src_size, src_srs, format)
-        resp = self.client.retrieve(src_query, format)
-        
-        img = ImageSource(resp, size=src_size, image_opts=self.image_opts)
+
+        if self.coverage and not self.coverage.contains(src_bbox, src_srs):
+            img = self._get_sub_query(src_query, format)
+        else:
+            resp = self.client.retrieve(src_query, format)
+            img = ImageSource(resp, size=src_size, image_opts=self.image_opts)
         
         img = ImageTransformer(src_srs, dst_srs).transform(img, src_bbox, 
             query.size, dst_bbox, self.image_opts)

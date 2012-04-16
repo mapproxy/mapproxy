@@ -20,7 +20,6 @@ from __future__ import with_statement
 import re
 import os
 import sys
-import site
 
 from mapproxy.request import Request
 from mapproxy.response import Response
@@ -30,31 +29,6 @@ from mapproxy.config.loader import load_configuration, ConfigurationError
 import logging
 log = logging.getLogger('mapproxy.config')
 log_wsgiapp = logging.getLogger('mapproxy.wsgiapp')
-
-class Modjyhandler(object):
-    def __init__(self):
-        self.app = None
-    
-    def init_app(self, environ):
-        #log_conf = environ.get("modjy.param.proxy_log_conf")
-        #if log_conf.startswith('$'): # support for relative path
-        #    log_conf = log_conf.lstrip('$/')
-        #    app_url = environ.get("modjy.param.app_directory")
-        #    log_conf = os.path.join(app_url, log_conf)
-            
-        mapproxy_conf = environ.get("modjy.param.mapproxy_conf")
-        if mapproxy_conf.startswith('$'): # support for relative path
-            mapproxy_conf = mapproxy_conf.lstrip('$/')
-            app_url = environ.get("modjy.param.app_directory")
-            mapproxy_conf = os.path.join(app_url, mapproxy_conf)
-        
-        #init_logging_system(log_conf)            
-        self.app = make_wsgi_app(mapproxy_conf)
-    
-    def __call__(self, environ, start_response):
-        if not self.app:
-            self.init_app(environ)
-        return self.app(environ, start_response)
 
 def app_factory(global_options, mapproxy_conf, **local_options):
     """
@@ -107,14 +81,14 @@ def init_null_logging():
             pass
     logging.getLogger().addHandler(NullHandler())
 
-def make_wsgi_app(services_conf=None, debug=False):
+def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True):
     """
     Create a MapProxyApp with the given services conf.
     
     :param services_conf: the file name of the mapproxy.yaml configuration
     """
     try:
-        conf = load_configuration(mapproxy_conf=services_conf)
+        conf = load_configuration(mapproxy_conf=services_conf, ignore_warnings=ignore_config_warnings)
         services = conf.configured_services()
     except ConfigurationError, e:
         log.fatal(e)

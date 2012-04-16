@@ -77,6 +77,8 @@ Here is an example::
 .. #################################################################################
 .. index:: layers
 
+.. _layers_section:
+
 layers
 ------
 
@@ -96,30 +98,34 @@ Layers should be configured as a list (``-`` in YAML), where each layer configur
 
 Each layer contains information about the layer and where the data comes from.
 
+.. versionchanged:: 1.4.0
+
+The old syntax to configure each layer as a dictionary with the key as the name is deprecated.
+
+::
+
+  layers:
+    mylayer:
+      title: My Layer
+      source: [mysoruce]
+
+should become
+
+::
+
+  layers:
+    - name: mylayer
+      title: My Layer
+      source: [mysoruce]
+
+The mixed format where the layers are a list (``-``) but each layer is still a dictionary is no longer supported (e.g. ``- mylayer:`` becomes ``- name: mylayer``).
+
 .. _layers_name:
 
 ``name``
 """""""""
 
 The name of the layer. You can omit the name for group layers (e.g. layers with ``layers``), in this case the layer is not addressable in WMS and used only for grouping.
-
-.. versionchanged:: 0.9.1
-
-The old syntax to configure each layer as a dictionary with the key as the name is deprecated but still supported.
-
-::
-
- - mylayer:
-    title: My Layer
-    source: [mysoruce]
-
-should become
-
-::
-
- - name: mylayer
-   title: My Layer
-   source: [mysoruce]
 
 
 ``title``
@@ -183,6 +189,55 @@ Pleas read :ref:`scale vs. resolution <scale_resolution>` for some notes on `sca
 
 Configure a URL to an image that should be returned as the legend for this layer. Local URLs (``file://``) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a ``legendurl`` here.
 
+``md``
+""""""
+
+.. versionadded:: 1.4.0
+
+Add additional metadata for this layer. This metadata appears in the WMS 1.3.0 capabilities documents. Refer to the OGC 1.3.0 specification for a description of each option.
+
+Here is an example layer with extended layer capabilities::
+
+  layers:
+    - name: md_layer
+      title: WMS layer with extended capabilities
+      sources: [wms_source]
+      md:
+        abstract: Some abstract
+        keyword_list:
+          - vocabulary: Name of the vocabulary
+            keywords:   [keyword1, keyword2]
+          - vocabulary: Name of another vocabulary
+            keywords:   [keyword1, keyword2]
+          - keywords:   ["keywords without vocabulary"]
+        attribution:
+          title: My attribution title
+          url:   http://example.org/
+        logo:
+           url:    http://example.org/logo.jpg
+           width:  100
+           height: 100
+           format: image/jpeg
+        identifier:
+          - url:    http://example.org/
+            name:   HKU1234
+            value:  Some value
+        metadata:
+          - url:    http://example.org/metadata2.xml
+            type:   INSPIRE
+            format: application/xml
+          - url:    http://example.org/metadata2.xml
+            type:   ISO19115:2003
+            format: application/xml
+        data:
+          - url:    http://example.org/datasets/test.shp
+            format: application/octet-stream
+          - url:    http://example.org/datasets/test.gml
+            format: text/xml; subtype=gml/3.2.1
+        feature_list:
+          - url:    http://example.org/datasets/test.pdf
+            format: application/pdf
+
 .. ``attribution``
 .. """"""""""""""""
 .. 
@@ -200,7 +255,7 @@ Configure a URL to an image that should be returned as the legend for this layer
 caches
 ------
 
-Here you can configure wich sources should be cached.
+Here you can configure which sources should be cached.
 Available options are:
 
 ``sources``
@@ -341,6 +396,7 @@ Example ``caches`` configuration
       text: MapProxy
     request_format: image/tiff
     format: image/jpeg
+    origin: ul
     cache:
       type: file
       directory_layout: tms
@@ -348,6 +404,8 @@ Example ``caches`` configuration
 
 .. #################################################################################
 .. index:: grids
+
+.. _grids:
 
 grids
 -----
@@ -423,6 +481,28 @@ The extent of your grid. You can use either a list or a string with the lower le
 """"""""""""
 
 The SRS of the grid bbox. See above.
+
+.. index:: origin
+
+.. _grid_origin:
+
+``origin``
+""""""""""
+
+.. versionadded:: 1.3.0
+
+The default origin (x=0, y=0) of the tile grid is the lower left corner, similar to TMS. WMTS defines the tile origin in the upper left corner. MapProxy can translate between services and caches with different tile origins, but there are some limitations for grids with custom BBOX and resolutions that are not of factor 2. You can only use one service in these cases and need to use the matching ``origin`` for that service.
+
+The following values are supported:
+
+``ll`` or ``sw``:
+
+  If the x=0, y=0 tile is in the lower-left/south-west corner of the tile grid. This is the default.
+
+``ul`` or ``nw``:
+
+  If the x=0, y=0 tile is in the upper-left/north-west corner of the tile grid.
+
 
 ``num_levels``
 """"""""""""""
@@ -759,6 +839,10 @@ Available options are:
   
 ``encoding_options``
   Options that modify the way MapProxy encodes (saves) images. These options are format dependent. See below.
+
+``opacity``
+  Configures the opacity of a layer or cache. This value is used when the source or cache is placed on other layers and it can be used to overlay non-transparent images. It does not alter the image itself, and only effects when multiple layers are merged to one image. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered). 
+
   
 ``encoding_options``
 ^^^^^^^^^^^^^^^^^^^^

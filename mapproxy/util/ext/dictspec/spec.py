@@ -47,16 +47,19 @@ class recursive(object):
     def compare_type(self, data):
         return isinstance(data, type(self.spec))
 
-class one_off(object):
+class one_of(object):
     """
-    One off the given types.
+    One of the given types.
 
     >>> from .validator import validate
-    >>> validate(one_off(str(), number()), 'foo')
-    >>> validate(one_off(str(), number()), 32)
+    >>> validate(one_of(str(), number()), 'foo')
+    >>> validate(one_of(str(), number()), 32)
     """
     def __init__(self, *specs):
         self.specs = specs
+
+# typo, backwards compatibility
+one_off = one_of
 
 def combined(*dicts):
     """

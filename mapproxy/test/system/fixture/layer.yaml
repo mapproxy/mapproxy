@@ -39,34 +39,70 @@ services:
         (http://creativecommons.org/licenses/by-sa/2.0/)
 
 layers:
-  direct:
+  - name: direct
     title: Direct Layer
     sources: [direct]
-  wms_cache:
+  - name: wms_cache
     title: WMS Cache Layer
     sources: [wms_cache]
-  wms_cache_transparent:
+    md:
+      abstract: Some abstract
+      keyword_list:
+       - vocabulary: Name of the vocabulary
+         keywords:   [keyword1, keyword2]
+       - vocabulary: Name of another vocabulary
+         keywords:   [keyword1, keyword2]
+       - keywords:   ["keywords without vocabulary"]
+      attribution:
+       title: My attribution title
+       url:   http://some.url/
+       logo:
+         url:    http://some.url/logo.jpg
+         width:  100
+         height: 100
+         format: image/jpeg
+      identifier:
+       - url:    http://some.url/
+         name:   HKU1234
+         value:  Some value
+      metadata:
+       - url:    http://some.url/
+         type:   INSPIRE
+         format: application/xml
+       - url:    http://some.url/
+         type:   ISO19115:2003
+         format: application/xml
+      data:
+       - url:    http://some.url/datasets/test.shp
+         format: application/octet-stream
+       - url:    http://some.url/datasets/test.gml
+         format: text/xml; subtype=gml/3.2.1
+      feature_list:
+       - url:    http://some.url/datasets/test.pdf
+         format: application/pdf
+
+  - name: wms_cache_transparent
     title: WMS Cache Layer with transparent data
     sources: [wms_cache_transparent]
-  wms_cache_link_single:
+  - name: wms_cache_link_single
     title: WMS Cache Layer (link single)
     sources: [wms_cache_link_single]
-  wms_cache_100:
+  - name: wms_cache_100
     title: WMS Cache Layer
     sources: [wms_cache_100]
-  wms_cache_130:
+  - name: wms_cache_130
     title: WMS Cache Layer
     sources: [wms_cache_130]
-  wms_cache_multi:
+  - name: wms_cache_multi
     title: WMS Cache Multi Layer
     sources: [wms_cache_multi]
-  tms_cache:
+  - name: tms_cache
     title: TMS Cache Layer
     sources: [tms_cache]
-  wms_merge:
+  - name: wms_merge
     title: WMS Cache + Direct Layer
     sources: [direct, wms_cache]
-  wms_cache_110:
+  - name: wms_cache_110
     title: WMS Cache Layer
     sources: [wms_cache_110]
 

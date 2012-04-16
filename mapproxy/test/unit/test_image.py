@@ -18,12 +18,13 @@ from __future__ import with_statement
 
 import os
 from mapproxy.platform.image import Image, ImageDraw
-from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image, merge_images
-from mapproxy.image import _make_transparent as make_transparent
+from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image
+from mapproxy.image.merge import merge_images
+from mapproxy.image import _make_transparent as make_transparent, SubImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TileMerger, TileSplitter
 from mapproxy.image.transform import ImageTransformer
-from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image_file, check_format, create_debug_img
+from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image_file, check_format, create_debug_img, create_image
 from mapproxy.srs import SRS
 from nose.tools import eq_
 
@@ -100,6 +101,32 @@ class TestImageSource(object):
         img = Image.open(ir.as_buffer())
         eq_(img.mode, 'RGBA')
         assert img.getpixel((0, 0)) == (0, 0, 0, 0)
+
+class TestSubImageSource(object):
+    def test_full(self):
+        sub_img = create_image((100, 100), color=[100, 120, 130, 140])
+        img = SubImageSource(sub_img, size=(100, 100), offset=(0, 0), image_opts=ImageOptions()).as_image()
+        eq_(img.getcolors(), [(100*100, (100, 120, 130, 140))])
+
+    def test_larger(self):
+        sub_img = create_image((150, 150), color=[100, 120, 130, 140])
+        img = SubImageSource(sub_img, size=(100, 100), offset=(0, 0), image_opts=ImageOptions()).as_image()
+        eq_(img.getcolors(), [(100*100, (100, 120, 130, 140))])
+
+    def test_negative_offset(self):
+        sub_img = create_image((150, 150), color=[100, 120, 130, 140])
+        img = SubImageSource(sub_img, size=(100, 100), offset=(-50, 0), image_opts=ImageOptions()).as_image()
+        eq_(img.getcolors(), [(100*100, (100, 120, 130, 140))])
+
+    def test_overlap_right(self):
+        sub_img = create_image((50, 50), color=[100, 120, 130, 140])
+        img = SubImageSource(sub_img, size=(100, 100), offset=(75, 25), image_opts=ImageOptions(transparent=True)).as_image()
+        eq_(sorted(img.getcolors()), [(25*50, (100, 120, 130, 140)), (100*100-25*50, (255, 255, 255, 0))])
+        
+    def test_outside(self):
+        sub_img = create_image((50, 50), color=[100, 120, 130, 140])
+        img = SubImageSource(sub_img, size=(100, 100), offset=(200, 0), image_opts=ImageOptions(transparent=True)).as_image()
+        eq_(img.getcolors(), [(100*100, (255, 255, 255, 0))])
 
 class ROnly(object):
     def __init__(self):

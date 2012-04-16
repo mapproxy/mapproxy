@@ -1008,6 +1008,12 @@ class TestBBOXContains(object):
         assert bbox_contains(b1, b2)
         assert not bbox_contains(b2, b1)
 
+    def test_contains_touch(self):
+        b1 = (0, 0, 10, 10)
+        b2 = (0, 0, 8, 8)
+        assert bbox_contains(b1, b2)
+        assert not bbox_contains(b2, b1)
+
     def test_overlap(self):
         b1 = (0, 0, 10, 10)
         b2 = (-5, -5, 5, 5)

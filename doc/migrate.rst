@@ -12,7 +12,7 @@ This guide should help you to migrate your existing MapProxy configuration to th
 develop.ini and config.ini
 """"""""""""""""""""""""""
 
-We removed the distinction between the services (``service.yaml``) and global (``proxy.yaml``) configuration. There is now a single configuration file wich is named ``mapproxy.yaml`` by default.
+We removed the distinction between the services (``service.yaml``) and global (``proxy.yaml``) configuration. There is now a single configuration file which is named ``mapproxy.yaml`` by default.
 
 You need to update your ``develop.ini`` and ``config.ini`` if you use ``paster serve`` for deployment or testing and point MapProxy to the new configuration.
 

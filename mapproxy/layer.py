@@ -19,10 +19,12 @@ Layers that can get maps/infos from different sources/caches.
 """
 
 from __future__ import division, with_statement
-from mapproxy.grid import NoTiles, GridError, merge_resolution_range
+from mapproxy.grid import NoTiles, GridError, merge_resolution_range, bbox_intersects, bbox_contains
+from mapproxy.image import SubImageSource, bbox_position_in_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
-from mapproxy.srs import SRS, bbox_equals, merge_bbox
+from mapproxy.srs import SRS, bbox_equals, merge_bbox, make_lin_transf
+from mapproxy.platform.proj import ProjError
 
 import logging
 log = logging.getLogger(__name__)
@@ -38,6 +40,8 @@ class MapBBOXError(Exception):
 
 class MapLayer(object):
     res_range = None
+    
+    coverage = None
     
     def __init__(self, image_opts=None):
         self.image_opts = image_opts or ImageOptions()
@@ -74,6 +78,31 @@ class MapLayer(object):
     def combined_layer(self, other, query):
         return None
 
+class LimitedLayer(object):
+    """
+    Wraps an existing layer temporary and stores additional
+    attributes for geographical limits.
+    """
+    def __init__(self, layer, coverage):
+        self._layer = layer
+        self.coverage = coverage
+    
+    def __getattr__(self, name):
+        return getattr(self._layer, name)
+
+    def combined_layer(self, other, query):
+        if self.coverage == other.coverage:
+            combined = self._layer.combined_layer(other, query)
+            if combined:
+                return LimitedLayer(combined, self.coverage)
+        return None
+    
+    def get_info(self, query):
+        if self.coverage:
+            if not self.coverage.contains(query.coord, query.srs):
+                return None
+        return self._layer.get_info(query)
+
 class InfoLayer(object):
     def get_info(self, query):
         raise NotImplementedError
@@ -92,6 +121,8 @@ class MapQuery(object):
         self.transparent = transparent
         self.tiled_only = tiled_only
 
+    def __repr__(self):
+        return "MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s)" % self.__dict__
 
 class InfoQuery(object):
     def __init__(self, bbox, size, srs, pos, info_format, format=None):
@@ -102,6 +133,10 @@ class InfoQuery(object):
         self.info_format = info_format
         self.format = format
 
+    @property
+    def coord(self):
+        return make_lin_transf((0, self.size[1], self.size[0], 0), self.bbox)(self.pos)
+        
 class LegendQuery(object):
     def __init__(self, format, scale):
         self.format = format
@@ -142,13 +177,41 @@ class MapExtent(object):
     def __repr__(self):
         return "%s(%r, %r)" % (self.__class__.__name__, self.bbox, self.srs)
     
-    
+    def __eq__(self, other):
+        if not isinstance(other, MapExtent):
+            return NotImplemented
+
+        if self.srs != other.srs:
+            return False
+        
+        if self.bbox != other.bbox:
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        if not isinstance(other, MapExtent):
+            return NotImplemented
+        return not self.__eq__(other)
+
     def __add__(self, other):
         if not isinstance(other, MapExtent):
             raise NotImplemented
         if other.is_default:
             return self
+        if self.is_default:
+            return other
         return MapExtent(merge_bbox(self.llbbox, other.llbbox), SRS(4326))
+
+    def contains(self, other):
+        if not isinstance(other, MapExtent):
+            raise NotImplemented
+        return bbox_contains(self.bbox, other.bbox_for(self.srs))
+
+    def intersects(self, other):
+        if not isinstance(other, MapExtent):
+            raise NotImplemented
+        return bbox_intersects(self.bbox, other.bbox_for(self.srs))
 
 class DefaultMapExtent(MapExtent):
     """
@@ -286,7 +349,16 @@ class CacheMapLayer(MapLayer):
         if query.tiled_only:
             self._check_tiled(query)
         
-        result = self._image(query)
+        query_extent = MapExtent(query.bbox, query.srs)
+        if self.extent and not self.extent.contains(query_extent):
+            if not self.extent.intersects(query_extent):
+                raise BlankImage()
+            size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
+            src_query = MapQuery(bbox, size, query.srs, query.format)
+            resp = self._image(src_query)
+            result = SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts)
+        else:
+            result = self._image(query)
         return result
 
     def _check_tiled(self, query):
@@ -332,13 +404,10 @@ class CacheMapLayer(MapLayer):
         tile_sources = [tile.source for tile in tile_collection]
         tiled_image = TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
                           tile_grid=tile_grid, tile_size=self.grid.tile_size)
-        return tiled_image.transform(query.bbox, query.srs, query.size, 
-                                       self.tile_manager.image_opts)
+        try:
+            return tiled_image.transform(query.bbox, query.srs, query.size, 
+                self.tile_manager.image_opts)
+        except ProjError:
+            raise MapBBOXError("could not transform query BBOX")
 
-class DirectInfoLayer(InfoLayer):
-    def __init__(self, source):
-        self.source = source
-    
-    def get_info(self, query):
-        return self.source.get_info(query)
 

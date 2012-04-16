@@ -52,8 +52,8 @@ services_conf = 'services.yaml'
 log_conf = 'log.ini'
 
 cache = dict(
-    base_dir = '../var/cache_data',
-    lock_dir = '../tmp/tile_locks',
+    base_dir = './cache_data',
+    lock_dir = './cache_data/tile_locks',
     max_tile_limit = 500,
     concurrent_tile_creators = 2,
     meta_size = (4, 4),

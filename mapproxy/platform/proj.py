@@ -13,16 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import platform
+__all__ = ['Proj', 'transform', 'set_datapath', 'ProjInitError', 'ProjError']
 
-__all__ = ['Proj', 'transform', 'set_datapath', 'ProjInitError']
-
-if platform.system() == "Java":
-    from mapproxy.platform.jython.proj import (
-        Proj, transform, set_datapath, ProjInitError
-    )
-    Proj, transform, set_datapath, ProjInitError # prevent pyflake warnings
-else:
-    from mapproxy.platform.cpython.proj import (
-        Proj, transform, set_datapath, ProjInitError
-    )
+from mapproxy.platform.cpython.proj import (
+    Proj, transform, set_datapath, ProjInitError, ProjError
+)

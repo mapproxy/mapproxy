@@ -79,11 +79,26 @@
     <Format>BLANK</Format>
   </Exception>
 {{def layer_capabilities(layer, with_srs)}}
+  {{py: md = bunch(default='', **layer.md)}}
+
   <Layer{{if layer.queryable}} queryable="1"{{endif}}>
     {{if layer.name}}
     <Name>{{ layer.name }}</Name>
     {{endif}}
     <Title>{{ layer.title }}</Title>
+    {{if md.abstract}}
+    <Abstract>{{md.abstract}}</Abstract>
+    {{endif}}
+    {{if md.keyword_list and len(md.keyword_list) > 0}}
+    <KeywordList>
+    {{for list in md.keyword_list}}
+      {{py: kw=bunch(default='', **list)}}
+      {{for keyword in kw.keywords}}
+      <Keyword{{if kw.vocabulary}} vocabulary="{{kw.vocabulary}}"{{endif}}>{{keyword}}</Keyword>
+      {{endfor}}
+    {{endfor}}
+    </KeywordList>
+    {{endif}}
     {{if with_srs}}
     {{for s in srs}}
     <CRS>{{s}}</CRS>
@@ -100,6 +115,45 @@
     {{for srs_code, bbox in layer_srs_bbox(layer, epsg_axis_order=True)}}
     <BoundingBox CRS="{{srs_code}}" minx="{{ bbox[0] }}" miny="{{ bbox[1] }}" maxx="{{ bbox[2] }}" maxy="{{ bbox[3] }}" />
     {{endfor}}
+    {{if md.attribution}}
+    {{py: attribution = bunch(default='', **md.attribution)}}
+    <Attribution>
+      {{if attribution.title}}
+      <Title>{{attribution.title}}</Title>
+      {{endif}}
+      {{if attribution.url}}
+      <OnlineResource xlink:href="{{attribution.url|escape}}"/>
+      {{endif}}
+      {{if attribution.logo}}
+      {{py: logo = bunch(default='', **attribution.logo)}}
+      <LogoURL{{if logo.width}} width="{{logo.width}}"{{endif}}{{if logo.height}} height="{{logo.height}}"{{endif}}>
+        {{if logo.format}}
+        <Format>{{logo.format}}</Format>
+        {{endif}}
+        {{if logo.url}}
+        <OnlineResource xlink:href="{{logo.url|escape}}"/>
+        {{endif}}  
+      </LogoURL>
+      {{endif}}
+    </Attribution>
+    {{endif}}
+    {{if md.identifier}}
+    {{for idf in md.identifier}}
+    {{py: idf=bunch(default='', **idf)}}
+    <AuthorityURL name="{{idf.name}}">
+    {{if idf.url}}
+      <OnlineResource xlink:href="{{idf.url|escape}}" />
+    {{endif}}
+    </AuthorityURL>
+    {{endfor}}
+    {{for idf in md.identifier}}
+    {{py:idf=bunch(default='', **idf)}}
+    <Identifier authority="{{idf.name}}">{{idf.value}}</Identifier>
+    {{endfor}}
+    {{endif}}
+{{if md.metadata}}{{ layer_meta_tag('MetadataURL', md.metadata) }}{{endif}}
+{{if md.data}}{{layer_meta_tag('DataURL', md.data)}}{{endif}}
+{{if md.feature_list}}{{layer_meta_tag('FeatureListURL', md.feature_list)}}{{endif}}    
 {{if layer.is_active and layer.has_legend}}
     <Style>
       <Name>default</Name>
@@ -119,6 +173,18 @@
 {{layer_capabilities(layer, False)|indent}}
     {{endfor}}
   </Layer>
+{{enddef}}
+
+{{def layer_meta_tag(tag, config)}}
+  {{for data in config}}
+  {{py: data=bunch(default='', **data)}}
+    <{{tag}}{{if data.type}} type="{{data.type|escape}}"{{endif}}>
+      {{if data.format}}
+      <Format>{{data.format}}</Format>
+      {{endif}}
+      <OnlineResource xlink:href="{{data.url|escape}}"/>
+    </{{tag}}>
+  {{endfor}}
 {{enddef}}
 
 {{layer_capabilities(layers, True)}}

@@ -123,6 +123,9 @@ To check if the MapProxy was successfully installed, you can call the `mapproxy-
 
 .. _`pip`: http://pip.openplans.org/
 
+.. note::
+
+  ``pip`` and ``easy_install`` will download packages from the `Python Package Index <http://pypi.python.org>`_ and therefore they require full internet access. You need to set the ``http_proxy`` environment variable if you only have access to the internet via an HTTP proxy. See :ref:`http_proxy` for more information.
 
 .. _create_configuration:
 

@@ -113,7 +113,7 @@ class TestWMS(SystemTest):
         eq_(xml.xpath('//Request/GetLegendGraphic')[0].tag, 'GetLegendGraphic')
         legend_sizes = (xml.xpath('//Layer/Style/LegendURL/@width'),
                         xml.xpath('//Layer/Style/LegendURL/@height'))
-        assert legend_sizes == (['256', '256', '256', '256'],['256', '768', '512', '256'])
+        assert legend_sizes == (['256', '256', '256', '256'],['512', '768', '256', '256'])
         layer_urls = xml.xpath('//Layer/Style/LegendURL/OnlineResource/@xlink:href',
                          namespaces=ns130)
         for layer_url in layer_urls:

@@ -111,7 +111,7 @@ def scales_command(args=None):
     
     if options.as_res_config:
         print '    res: ['
-        print '         #  res            level        scale'
+        print '         #  res            level     scale @%.1f DPI' % dpi
         format = format_list
     else:
         format = format_simple

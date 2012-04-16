@@ -3,7 +3,7 @@ services:
   demo:
 
 layers:
-  app1_layer:
+  - name: app1_layer
     title: WMS Cache Layer
     sources: [app1_cache]
 

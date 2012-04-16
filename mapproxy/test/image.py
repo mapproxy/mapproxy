@@ -91,6 +91,11 @@ def is_transparent(img_data):
         'assert_is_transparent works only for RGBA images, got %s image' % img.mode)
         
 
+def img_from_buf(buf):
+    data = StringIO(buf)
+    return Image.open(data)
+    
+
 def bgcolor_ratio(img_data):
     """
     Return the ratio of the primary/bg color. 1 == only bg color.
@@ -115,13 +120,22 @@ def create_tmp_image_file(size, two_colored=False):
     img.save(out_file, 'png')
     return out_file
 
-
-
-def create_tmp_image_buf(size, format='png', color=None, mode='RGB'):
+def create_image(size, color=None, mode=None):
     if color is not None:
-        img = Image.new(mode, size, color=color)
+        if isinstance(color, basestring):
+            if mode is None:
+                mode = 'RGB'
+            img = Image.new(mode, size, color=color)
+        else:
+            if mode is None:
+                mode = 'RGBA' if len(color) == 4 else 'RGB'
+            img = Image.new(mode, size, color=tuple(color))
     else:
         img = create_debug_img(size)
+    return img
+
+def create_tmp_image_buf(size, format='png', color=None, mode='RGB'):
+    img = create_image(size, color, mode)
     data = StringIO()
     img.save(data, format)
     data.seek(0)

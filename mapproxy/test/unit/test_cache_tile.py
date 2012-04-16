@@ -231,6 +231,12 @@ class TestFileTileCache(TileCacheTestBase):
         assert os.path.islink(loc)
         assert os.path.realpath(loc).endswith('ff0105ff.png')
         assert is_png(open(loc, 'rb'))
+    
+    def test_load_metadata_missing_tile(self):
+        tile = Tile((0, 0, 0))
+        self.cache.load_tile_metadata(tile)
+        assert tile.timestamp == 0
+        assert tile.size == 0
 
     def create_cached_tile(self, tile):
         loc = self.cache.tile_location(tile, create_dir=True)

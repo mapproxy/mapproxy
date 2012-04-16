@@ -1,0 +1,47 @@
+services:
+  demo:
+  wms:
+    md:
+      title: MapProxy WMS Proxy
+      abstract: This is the fantastic MapProxy.
+      online_resource: http://mapproxy.org/
+      contact:
+        person: Your Name Here
+        position: Technical Director
+        organization: 
+        address: Fakestreet 123
+        city: Somewhere
+        postcode: 12345
+        country: Germany
+        phone: +49(0)000-000000-0
+        fax: +49(0)000-000000-0
+        email: info@omniscale.de
+      access_constraints:
+        This service is intended for private and
+        evaluation use only. The data is licensed
+        as Creative Commons Attribution-Share Alike 2.0
+        (http://creativecommons.org/licenses/by-sa/2.0/)
+      fees: 'None'
+
+sources:
+  test_wms:
+    type: wms
+    req:
+      url: http://osm.omniscale.net/proxy/service?
+      layers: osm
+  roads_wms:
+    type: wms
+    req:
+      url: http://osm.omniscale.net/proxy/service?
+      layers: osm_roads
+      transparent: true
+
+caches:
+  combined_cache:
+    sources: [test_wms, roads_wms]
+    grids: [GLOBAL_GEODETIC]
+
+layers:
+  - name: cached_test_wms_with_roads
+    title: Cached Test WMS with Roads
+    sources: [combined_cache]

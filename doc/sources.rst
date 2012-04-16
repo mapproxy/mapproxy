@@ -1,3 +1,5 @@
+.. _sources:
+
 Sources
 #######
 
@@ -111,7 +113,7 @@ The values will also apear in the capabilities documents (i.e. WMS ScaleHint and
 
 Pleas read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
 
-.. _supported_srs-label:
+.. _supported_srs:
 
 ``supported_srs``
 ^^^^^^^^^^^^^^^^^
@@ -151,13 +153,6 @@ See :ref:`image_options` for other options.
     image:
       transparent_color: '#ffffff'
       transparent_color_tolerance: 20
-
-``opacity``
-
-  .. versionadded:: 1.0.0
-
-  Configures the opacity of this source image. This value is used when the image is placed on other layers and it can be used to overlay non-transparent images. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).
-
 
 .. _wms_source_concurrent_requests_label:
 
@@ -286,6 +281,10 @@ This source takes a ``url`` option that contains a URL template. The template fo
 
 ``origin``
 ^^^^^^^^^^
+
+.. deprecated:: 1.3.0
+  Use grid with the ``origin`` option.
+  
 The origin of the tile grid (i.e. the location of the 0,0 tile). Supported values are ``sw`` for south-west (lower-left) origin or ``nw`` for north-west (upper-left) origin. ``sw`` is the default.
 
 ``grid``
@@ -303,12 +302,6 @@ Define the covered area of the source. The source will only be requested if ther
 
 You need to set this to ``true`` if you want to use this source as an overlay.
 
-``image.opacity``
-^^^^^^^^^^^^^^^^^^
-
-.. versionadded:: 1.0.0
-
-Configures the opacity of this source image. This value is used when the image is placed on other layers and it can be used to overlay non-transparent images. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).
 
 ``http``
 ^^^^^^^^
@@ -326,6 +319,40 @@ See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 ``seed_only``
 ^^^^^^^^^^^^^
 See :ref:`seed_only <wms_seed_only>`
+
+``on_error``
+^^^^^^^^^^^^
+
+.. versionadded:: 1.4.0
+
+You can configure what MapProxy should do when the tile service returns an error. Instead of raising an error, MapProxy can generate a single color tile. You can configure if MapProxy should cache this tile, or if it should use it only to generate a tile or WMS response.
+
+You can configure multiple status codes within the ``on_error`` option. Each status code takes the following options:
+
+``response``
+  
+  Specify the color of the tile that should be returned in case of this error. Can be either a list of color values (``[255, 255, 255]``, ``[255, 255, 255, 0]``)) or a hex string (``'#ffffff'``, ``'#fa1fbb00'``) with RGBA values, or the string ``transparent``.
+ 
+``cache``
+
+  Set this to ``True`` if MapProxy should cache the single color tile. Otherwise (``False``) MapProxy will use this generated tile only for this request. This is the default. 
+
+You need to enable ``transparent`` for your source, if you use ``on_error`` responses with transparency.
+
+::
+
+  my_tile_source:
+    type: tile
+    url: http://localhost:8080/tiles/%(tms_path)s.png
+    transparent: true
+    on_error:
+      204:
+        response: transparent
+        cache: True
+      502:
+        response: '#ede9e3'
+        cache: False
+            
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^

@@ -34,13 +34,6 @@ class SeedConfigurationError(ConfigurationError):
     pass
 
 
-# TODO
-# def check_shapely():
-#     if not shapely_present:
-#         raise ImportError('could not import shapley.'
-#             ' required for polygon/ogr seed areas')
-
-
 import logging
 log = logging.getLogger('mapproxy.seed.config')
 

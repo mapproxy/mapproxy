@@ -40,7 +40,7 @@ from __future__ import with_statement
 from contextlib import contextmanager
 
 from mapproxy.grid import MetaGrid
-from mapproxy.image import merge_images
+from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
 from mapproxy.util import async
@@ -256,7 +256,8 @@ class TileCreator(object):
                 source.as_buffer(self.tile_mgr.image_opts)
                 tile.source = source
                 tile = self.tile_mgr.apply_tile_filter(tile)
-                self.cache.store_tile(tile)
+                if source.cacheable:
+                    self.cache.store_tile(tile)
             else:
                 self.cache.load_tile(tile)
         return [tile]
@@ -308,7 +309,8 @@ class TileCreator(object):
                 splitted_tiles = split_meta_tiles(meta_tile_image, meta_tile.tile_patterns,
                                                   tile_size, self.tile_mgr.image_opts)
                 splitted_tiles = map(self.tile_mgr.apply_tile_filter, splitted_tiles)
-                self.cache.store_tiles(splitted_tiles)
+                if meta_tile_image.cacheable:
+                    self.cache.store_tiles(splitted_tiles)
                 return splitted_tiles
         # else
         tiles = [Tile(coord) for coord in meta_tile.tiles]

@@ -215,7 +215,7 @@ class WMSMapRequest(WMSRequest):
                                request=self)
     
     def validate_format(self, image_formats):
-        format = self.params['format'].split(';', 1)[0].strip()
+        format = self.params['format']
         if format not in image_formats:
             format = self.params['format']
             self.params['format'] = 'image/png'

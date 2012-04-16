@@ -1,3 +1,5 @@
+.. _configuration_examples:
+
 ######################
 Configuration examples
 ######################
@@ -77,7 +79,7 @@ Cache raster data
 
 You have a WMS server that offers raster data like aerial images. By default MapProxy uses PNG images as the caching format. The encoding process for PNG files is very computing intensive and thus the caching process itself takes longer. For aerial images the quality of lose-less image formats like PNG is often not required. For best performance you should use JPEG as the cache format.
 
-By default MapProxy uses `bicubic` resampling. This resampling method also sharpens the image wich is important for vector images. Arial images do not need this, so you can use `bilinear` or even Nearest Neighbor (`nearest`) resampling.
+By default MapProxy uses `bicubic` resampling. This resampling method also sharpens the image which is important for vector images. Arial images do not need this, so you can use `bilinear` or even Nearest Neighbor (`nearest`) resampling.
 ::
 
   caches:
@@ -100,6 +102,8 @@ Cache vector data
 =================
 
 You have a WMS server that renders vector data like road maps. 
+
+.. _cache_resolutions:
 
 Cache resolutions
 -----------------
@@ -126,7 +130,7 @@ You can specify a different factor that is used to calculate the resolutions. By
     custom_factor:
       res_factor: 1.6
 
-The third options is a convenient variation of the previous option. A factor of 1.41421, the square root of two, would get resolutions of 10, 7.07, 5, 3.54, 2.5,…. Notice that every second resolution is identical to the power-of-two resolutions. This comes in handy if you use the layer not only in classic WMS clients but also want to use it in tile-based clients like OpenLayers, wich only request in these resolutions.
+The third options is a convenient variation of the previous option. A factor of 1.41421, the square root of two, would get resolutions of 10, 7.07, 5, 3.54, 2.5,…. Notice that every second resolution is identical to the power-of-two resolutions. This comes in handy if you use the layer not only in classic WMS clients but also want to use it in tile-based clients like OpenLayers, which only request in these resolutions.
 ::
 
   grids:
@@ -375,11 +379,12 @@ You can disable the certificate verification if you you don't need it.
       url: https://username:mypassword@example.org/service?
       layers: securelayer
   
+.. _http_proxy:
 
 Access sources through HTTP proxy
 =================================
 
-MapProxy can use an HTTP proxy to make requests to your sources, if your system does not allow direct access to the source. You need to set the ``http_proxy`` environment variable to the proxy URL.
+MapProxy can use an HTTP proxy to make requests to your sources, if your system does not allow direct access to the source. You need to set the ``http_proxy`` environment variable to the proxy URL. This also applies if you install MapProxy with ``pip`` or ``easy_install``.
 
 On Linux/Unix::
 

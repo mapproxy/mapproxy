@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2012 Omniscale <http://omniscale.de>
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -120,6 +120,8 @@ class ProxyConfiguration(object):
                sources: []
         
         """
+        warnings.warn('old layer configuration syntax is deprecated since 1.4.0. '
+            'use list of dictionaries as documented', RuntimeWarning)
         layers = []
         layers_conf = self.configuration.get('layers')
         if not layers_conf: return None # TODO config error
@@ -478,6 +480,9 @@ class SourcesCollection(dict):
 
 
 class SourceConfiguration(ConfigurationBase):
+
+    supports_meta_tiles = True
+
     @classmethod
     def load(cls, conf, context):
         source_type = conf['type']
@@ -516,6 +521,25 @@ class SourceConfiguration(ConfigurationBase):
                                  ssl_ca_certs=ssl_ca_certs, timeout=timeout,
                                  headers=headers)
         return http_client, url
+    
+    @memoize
+    def on_error_handler(self):
+        if not 'on_error' in self.conf: return None
+        from mapproxy.source.error import HTTPSourceErrorHandler
+
+        error_handler = HTTPSourceErrorHandler()
+        for status_code, response_conf in self.conf['on_error'].iteritems():
+            if not isinstance(status_code, int):
+                raise ConfigurationError("invalid error code %r in on_error", status_code)
+            cacheable = response_conf.get('cache', False)
+            color = response_conf.get('response', 'transparent')
+            if color == 'transparent':
+                color = (255, 255, 255, 0)
+            else:
+                color = parse_color(color)
+            error_handler.add_handler(status_code, color, cacheable)
+        
+        return error_handler
 
 def resolution_range(conf):
     from mapproxy.grid import resolution_range as _resolution_range
@@ -595,10 +619,11 @@ class WMSSourceConfiguration(SourceConfiguration):
         if concurrent_requests:
             from mapproxy.util.lock import SemLock
             lock_dir = self.context.globals.get_path('cache.lock_dir', self.conf)
+            lock_timeout = self.context.globals.get_value('http.client_timeout', self.conf)
             url = urlparse.urlparse(self.conf['req']['url'])
             md5 = hashlib.md5(url.netloc)
             lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
-            lock = lambda: SemLock(lock_file, concurrent_requests)
+            lock = lambda: SemLock(lock_file, concurrent_requests, timeout=lock_timeout)
         
         coverage = self.coverage()
         res_range = resolution_range(self.conf)
@@ -701,7 +726,10 @@ class MapServerSourceConfiguration(WMSSourceConfiguration):
         
         # set url to dummy script name, required as identifier
         # for concurrent_request
-        self.conf.setdefault('req', {})['url'] = 'http://localhost' + self.script
+        self.conf['req']['url'] = 'http://localhost' + self.script
+        
+        mapfile = self.context.globals.abspath(self.conf['req']['map'])
+        self.conf['req']['map'] = mapfile
     
     def http_client(self, url):
         working_dir = self.context.globals.get_path('mapserver.working_dir', self.conf)
@@ -750,8 +778,9 @@ class MapnikSourceConfiguration(SourceConfiguration):
             coverage=coverage, res_range=res_range, lock=lock)
 
 class TileSourceConfiguration(SourceConfiguration):
+    supports_meta_tiles = False
     source_type = ('tile',)
-    defaults = {'origin': 'sw', 'grid': 'GLOBAL_MERCATOR'}
+    defaults = {'grid': 'GLOBAL_MERCATOR'}
     
     def source(self, params=None):
         from mapproxy.client.tile import TileClient, TileURLTemplate
@@ -764,22 +793,20 @@ class TileSourceConfiguration(SourceConfiguration):
         if params is None: params = {}
         
         url = self.conf['url']
-        origin = self.conf['origin']
-        if origin not in ('sw', 'nw'):
-            log.error("ignoring origin '%s', only supports sw and nw")
-            origin = 'sw'
-            # TODO raise some configuration exception
+        
+        if self.conf.get('origin'):
+            warnings.warn('origin for tile sources is deprecated since 1.3.0 '
+            'and will be ignored. use grid with correct origin.', RuntimeWarning)
         
         http_client, url = self.http_client(url)
         grid = self.context.grids[self.conf['grid']].tile_grid()
         coverage = self.coverage()
         image_opts = self.image_opts()
+        error_handler = self.on_error_handler()
         
-        inverse = True if origin == 'nw' else False
         format = file_ext(params['format'])
         client = TileClient(TileURLTemplate(url, format=format), http_client=http_client, grid=grid)
-        return TiledSource(grid, client, inverse=inverse, coverage=coverage,
-            image_opts=image_opts)
+        return TiledSource(grid, client, coverage=coverage, image_opts=image_opts, error_handler=error_handler)
 
 
 def file_ext(mimetype):
@@ -809,10 +836,6 @@ class CacheConfiguration(ConfigurationBase):
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
     
     def cache_dir(self):
-        if ('cache_dir' not in self.conf 
-            and 'base_dir' not in self.context.globals.conf.get('cache', {})):
-            warnings.warn('globals.cache.base_dir not defined. default value '
-            '(../var/cache_data) will be changed with 1.2.0.', FutureWarning)
         return self.context.globals.get_path('cache_dir', self.conf,
             global_key='cache.base_dir')
         
@@ -1007,7 +1030,7 @@ class WMSLayerConfiguration(ConfigurationBase):
             layer = this_layer
         else:
             layer = WMSGroupLayer(name=self.conf.get('name'), title=self.conf.get('title'),
-                                  this=this_layer, layers=layers)
+                                  this=this_layer, layers=layers, md=self.conf.get('md'))
         return layer
 
 class LayerConfiguration(ConfigurationBase):
@@ -1033,7 +1056,11 @@ class LayerConfiguration(ConfigurationBase):
                 fi_source_names = self.context.caches[source_name].conf['sources']
                 lg_source_names = self.context.caches[source_name].conf['sources']
             elif source_name in self.context.sources:
-                map_layer = self.context.sources[source_name].source()
+                source_conf = self.context.sources[source_name]
+                if not source_conf.supports_meta_tiles:
+                    raise ConfigurationError('source "%s" of layer "%s" does not support un-tiled access'
+                        % (source_name, self.conf.get('name')))
+                map_layer = source_conf.source()
                 fi_source_names = [source_name]
                 lg_source_names = [source_name]
             else:
@@ -1057,7 +1084,7 @@ class LayerConfiguration(ConfigurationBase):
         res_range = resolution_range(self.conf)
         
         layer = WMSLayer(self.conf.get('name'), self.conf.get('title'),
-                         sources, fi_sources, lg_sources, res_range=res_range)
+                         sources, fi_sources, lg_sources, res_range=res_range, md=self.conf.get('md'))
         return layer
     
     @memoize
@@ -1156,8 +1183,8 @@ class ServiceConfiguration(ConfigurationBase):
         md.update(conf.get('md', {}))
         layers = self.tile_layers(conf)
         
-        kvp = self.conf.get('kvp')
-        restful = self.conf.get('restful')
+        kvp = conf.get('kvp')
+        restful = conf.get('restful')
         
         if kvp is None and restful is None:
             kvp = restful = True
@@ -1166,7 +1193,7 @@ class ServiceConfiguration(ConfigurationBase):
         if kvp:
             services.append(WMTSServer(layers, md))
         if restful:
-            template = self.conf.get('restful_template')
+            template = conf.get('restful_template')
             services.append(WMTSRestServer(layers, md, template=template))
         
         return services
@@ -1236,7 +1263,7 @@ class ServiceConfiguration(ConfigurationBase):
             image_formats=image_formats, srs=srs)
     
 
-def load_configuration(mapproxy_conf, seed=False):
+def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True):
     conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
     
     try:
@@ -1246,7 +1273,7 @@ def load_configuration(mapproxy_conf, seed=False):
     errors, informal_only = validate_mapproxy_conf(conf_dict)
     for error in errors:
         log.warn(error)
-    if not informal_only:
+    if not informal_only or (errors and not ignore_warnings):
         raise ConfigurationError('invalid configuration')
     return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed)
 
@@ -1293,11 +1320,13 @@ def parse_color(color):
     (255, 5, 48)
     >>> parse_color('#FF0530')
     (255, 5, 48)
+    >>> parse_color('#FF053080')
+    (255, 5, 48, 128)
     """
-    if isinstance(color, (list, tuple)):
-        return color
+    if isinstance(color, (list, tuple)) and 3 <= len(color) <= 4:
+        return tuple(color)
     if not isinstance(color, basestring):
-        raise ValueError('color needs to be a tuple/list or 0xrrggbb/#rrggbb string')
+        raise ValueError('color needs to be a tuple/list or 0xrrggbb/#rrggbb(aa) string, got %r' % color)
     
     if color.startswith('0x'):
         color = color[2:]
@@ -1305,6 +1334,10 @@ def parse_color(color):
         color = color[1:]
     
     r, g, b = map(lambda x: int(x, 16), [color[:2], color[2:4], color[4:6]])
+    
+    if len(color) == 8:
+        a = int(color[6:8], 16) 
+        return r, g, b, a
     
     return r, g, b
     

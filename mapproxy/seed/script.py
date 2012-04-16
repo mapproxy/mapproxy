@@ -25,6 +25,7 @@ from mapproxy.seed.config import load_seed_tasks_conf
 from mapproxy.seed.seeder import seed
 from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.util import format_seed_task, format_cleanup_task, ProgressLog
+from mapproxy.seed.cachelock import CacheLocker
 
 
 def setup_logging():
@@ -78,6 +79,11 @@ class SeedScript(object):
                       action="append", dest="cleanup_names", metavar='task1,task2,...',
                       help="cleanup only the named tasks. seeding is disabled unless "
                       "--seed is used. use ALL to select all tasks")
+    
+    parser.add_option("--use-cache-lock",
+                      action="store_true", default=False,
+                      help="use locking to prevent multiple mapproxy-seed calls "
+                      "to seed the same cache")
 
     def __call__(self):
         (options, args) = self.parser.parse_args()
@@ -97,6 +103,11 @@ class SeedScript(object):
         except ConfigurationError, ex:
             print "ERROR: " + '\n\t'.join(str(ex).split('\n'))
             sys.exit(2)
+        
+        if options.use_cache_lock:
+            cache_locker = CacheLocker('.mapproxy_seed.lck')
+        else:
+            cache_locker = None
 
         with local_base_config(mapproxy_conf.base_config):
             try:
@@ -116,7 +127,7 @@ class SeedScript(object):
                 for task in cleanup_tasks:
                     print format_cleanup_task(task)
                 return 0
-
+            
             try:
                 if options.interactive:
                     seed_tasks, cleanup_tasks = self.interactive(seed_tasks, cleanup_tasks)
@@ -127,7 +138,7 @@ class SeedScript(object):
                         len(seed_tasks), 's' if len(seed_tasks) > 1 else '')
                     logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2)
                     seed(seed_tasks, progress_logger=logger, dry_run=options.dry_run,
-                         concurrency=options.concurrency,
+                         concurrency=options.concurrency, cache_locker=cache_locker,
                          skip_geoms_for_last_levels=options.geom_levels)
                 if cleanup_tasks:
                     print '========== Cleanup tasks =========='

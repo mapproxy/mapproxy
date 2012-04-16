@@ -155,6 +155,13 @@ class TestWMS111(WMSTest):
         eq_(resp.content_type, 'image/png')
         assert is_png(StringIO(resp.body))
     
+    def test_invalid_format_options_img_exception(self):
+        self.common_map_req.params['format'] = 'image/png; mode=12bit'
+        self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'image/png')
+        assert is_png(StringIO(resp.body))
+    
     def test_missing_format_img_exception(self):
         del self.common_map_req.params['format']
         self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
@@ -798,6 +805,11 @@ class TestWMS130(WMSTest):
         xml = resp.lxml
         eq_xpath_wms130(xml, '/wms:WMS_Capabilities/wms:Service/wms:Title/text()',
             u'MapProxy test fixture \u2603')
+
+        # test for extended layer metadata
+        eq_xpath_wms130(xml, '/wms:WMS_Capabilities/wms:Capability/wms:Layer/wms:Layer/wms:Attribution/wms:Title/text()',
+            u'My attribution title')
+
         layer_names = set(xml.xpath('//wms:Layer/wms:Layer/wms:Name/text()',
                                     namespaces=ns130))
         expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',

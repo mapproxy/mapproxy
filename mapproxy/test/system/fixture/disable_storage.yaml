@@ -10,7 +10,7 @@ services:
       title: MapProxy test fixture
 
 layers:
-  tiles:
+  - name: tiles
     title: Tiles without cache (disable_storage)
     sources: [tile_cache]
 

@@ -25,7 +25,7 @@ from mapproxy.config.loader import (
 from mapproxy.cache.tile import TileManager
 from mapproxy.test.helper import TempFile
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
-from nose.tools import eq_
+from nose.tools import eq_, assert_raises
 from nose.plugins.skip import SkipTest
 
 class TestLayerConfiguration(object):
@@ -602,6 +602,18 @@ class TestConfMerger(object):
         b = {'a': {'aa': 11, 'ab': 13, 'a':{'aaa': 101, 'aab': 101}}}
         m = merge_dict(a, b)
         eq_({'a': {'aa': 12, 'ab': 13, 'a':{'aaa': 100, 'aab': 101}}}, m)
+
+
+class TestLoadConfiguration(object):
+    def test_with_warnings(object):
+        with TempFile() as f:
+            open(f, 'w').write("""
+services:
+  unknown:
+                """)
+            load_configuration(f) # defaults to ignore_warnings=True
+            
+            assert_raises(ConfigurationError, load_configuration, f, ignore_warnings=False)
 
 
 class TestImageOptions(object):
