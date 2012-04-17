@@ -120,8 +120,8 @@ def load_limited_to(limited_to):
 def simplify_geom(geom):
     bounds = geom.bounds
     w, h = bounds[2] - bounds[0], bounds[3] - bounds[1]
-    tolerance = min((w/1e5, h/1e5))
-    return geom.simplify(tolerance, preserve_topology=False)
+    tolerance = min((w/1e6, h/1e6))
+    return geom.simplify(tolerance, preserve_topology=True)
 
 def bbox_polygon(bbox):
     """
