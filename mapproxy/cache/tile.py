@@ -255,6 +255,7 @@ class TileCreator(object):
                 # call as_buffer to force conversion into cache format
                 source.as_buffer(self.tile_mgr.image_opts)
                 tile.source = source
+                tile.cacheable = source.cacheable
                 tile = self.tile_mgr.apply_tile_filter(tile)
                 if source.cacheable:
                     self.cache.store_tile(tile)
@@ -324,11 +325,12 @@ class Tile(object):
     :ivar source: the data of this tile
     :type source: ImageSource
     """
-    def __init__(self, coord, source=None):
+    def __init__(self, coord, source=None, cacheable=True):
         self.coord = coord
         self.source = source
         self.location = None
         self.stored = False
+        self.cacheable = cacheable
         self.size = None
         self.timestamp = None
     
@@ -444,7 +446,7 @@ def split_meta_tiles(meta_tile, tiles, tile_size, image_opts):
         tile_coord, crop_coord = tile
         if tile_coord is None: continue
         data = splitter.get_tile(crop_coord, tile_size)
-        new_tile = Tile(tile_coord)
+        new_tile = Tile(tile_coord, cacheable=meta_tile.cacheable)
         new_tile.source = data
         split_tiles.append(new_tile)
     return split_tiles

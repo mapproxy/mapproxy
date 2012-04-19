@@ -145,6 +145,18 @@ class TestTileErrors(SystemTest):
             eq_(resp.content_type, 'application/vnd.ogc.se_xml')
             assert '500' in resp.body
 
+    def test_wms_catchall_error_no_image_response(self):
+        expected_req = [({'path': '/foo/1/1/0.png'},
+                         {'body': 'error', 'status': 200, 'headers': {'content-type': 'text/plain'}}),
+                        ]
+                         
+        with mock_httpd(('localhost', 42423), expected_req):
+            self.common_map_req.params['layers'] = 'tilesource_catchall'
+            resp = self.app.get(self.common_map_req)
+            eq_(resp.content_type, 'image/png')
+            img = img_from_buf(resp.body)
+            eq_(img.getcolors(), [(250 * 250, (100, 50, 50))])
+
     def test_tile_uncached_response(self):
         expected_req = [({'path': '/foo/1/1/0.png'},
                          {'body': 'not found', 'status': 404, 'headers': {'content-type': 'text/plain'}}),
@@ -152,6 +164,7 @@ class TestTileErrors(SystemTest):
                          
         with mock_httpd(('localhost', 42423), expected_req):
             resp = self.app.get(self.common_tile_req)
+            assert_no_cache(resp)
             eq_(resp.content_type, 'image/png')
             img = img_from_buf(resp.body)
             eq_(img.getcolors(), [(256 * 256, (255, 0, 128))])
@@ -165,6 +178,7 @@ class TestTileErrors(SystemTest):
                          
         with mock_httpd(('localhost', 42423), expected_req):
             resp = self.app.get(self.common_tile_req)
+            assert 'public' in resp.headers['Cache-Control']
             eq_(resp.content_type, 'image/png')
             img = img_from_buf(resp.body)
             eq_(img.getcolors(), [(256 * 256, (100, 200, 50, 250))])
@@ -177,5 +191,27 @@ class TestTileErrors(SystemTest):
                          
         with mock_httpd(('localhost', 42423), expected_req):
             resp = self.app.get(self.common_tile_req, status=500)
+            # no assert_no_cache(resp): returns XML exception that bypasses cache control setting
             eq_(resp.content_type, 'text/plain')
             assert '500' in resp.body
+
+    def test_tile_catchall_error_no_image_response(self):
+        expected_req = [({'path': '/foo/1/1/0.png'},
+                         {'body': 'error', 'status': 200, 'headers': {'content-type': 'text/plain'}}),
+                        ]
+                         
+        with mock_httpd(('localhost', 42423), expected_req):
+            resp = self.app.get(self.common_tile_req.replace('tilesource', 'tilesource_catchall'))
+            assert_no_cache(resp)
+            eq_(resp.content_type, 'image/png')
+            img = img_from_buf(resp.body)
+            eq_(img.getcolors(), [(256 * 256, (100, 50, 50))])
+
+def assert_no_cache(resp):
+    eq_(resp.headers['Pragma'], 'no-cache')
+    eq_(resp.headers['Expires'], '-1')
+    eq_(resp.cache_control.max_age, 0)
+    eq_(resp.cache_control.must_revalidate, True)
+    eq_(resp.cache_control.no_store, True)
+
+

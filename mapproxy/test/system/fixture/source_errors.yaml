@@ -25,6 +25,9 @@ layers:
   - name: tilesource
     title: Tilesource with 404/204 handling
     sources: [tilesource_cache]
+  - name: tilesource_catchall
+    title: Tilesource with 'other' on_error handling
+    sources: [tilesource_catchall_cache]
 
 caches:
   wms_cache:
@@ -34,6 +37,10 @@ caches:
   tilesource_cache:
     grids: [GLOBAL_GEODETIC]
     sources: [tilesource]
+
+  tilesource_catchall_cache:
+    grids: [GLOBAL_GEODETIC]
+    sources: [tilesource_catchall]
 
 sources:
   wms1:
@@ -65,3 +72,11 @@ sources:
       204:
         response: [100, 200, 50, 250]
         cache: True
+  tilesource_catchall:
+    type: tile
+    url: http://localhost:42423/foo/%(tms_path)s.png
+    grid: GLOBAL_GEODETIC
+    on_error:
+      other:
+        response: [100, 50, 50]
+        cache: False

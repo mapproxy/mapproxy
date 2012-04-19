@@ -67,8 +67,11 @@ class TileServer(Server):
         layer = self.layer(tile_request)
         tile = layer.render(tile_request, use_profiles=tile_request.use_profiles)
         resp = Response(tile.as_buffer(), content_type='image/' + tile_request.format)
-        resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
-                           max_age=self.max_tile_age)
+        if tile.cacheable:
+            resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
+                               max_age=self.max_tile_age)
+        else:
+            resp.cache_headers(no_cache=True)
         resp.make_conditional(tile_request.http)
         return resp
     
@@ -219,6 +222,7 @@ class ImageResponse(object):
         self.img = img
         self.timestamp = 0
         self.size = 0
+        self.cacheable = False
     
     def as_buffer(self):
         return self.img
@@ -230,18 +234,12 @@ class TileResponse(object):
     """
     def __init__(self, tile, timestamp=None):
         self.tile = tile
+        self.timestamp = tile.timestamp
+        self.size = tile.size
+        self.cacheable = tile.cacheable
     
     def as_buffer(self):
         return self.tile.source_buffer()
-    
-    @property
-    def timestamp(self):
-        return self.tile.timestamp
-    
-    @property
-    def size(self):
-        return self.tile.size
-    
 
 class TileServiceGrid(object):
     """

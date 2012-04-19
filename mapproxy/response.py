@@ -68,7 +68,7 @@ class Response(object):
     
     etag = property(_etag_get, _etag_set)
     
-    def cache_headers(self, timestamp=None, etag_data=None, max_age=None):
+    def cache_headers(self, timestamp=None, etag_data=None, max_age=None, no_cache=False):
         """
         Set cache-related headers.
         
@@ -78,10 +78,17 @@ class Response(object):
             calls the str function on each item.
         :param max_age: the maximum cache age in seconds 
         """
-        self.last_modified = timestamp
         if etag_data:
             hash_src = ''.join((str(x) for x in etag_data))
             self.etag = hashlib.md5(hash_src).hexdigest()
+
+        if no_cache:
+            assert not timestamp and not max_age
+            self.headers['Cache-Control'] = 'max-age=0, must-revalidate, no-cache, no-store'
+            self.headers['Pragma'] = 'no-cache'
+            self.headers['Expires'] = '-1'
+
+        self.last_modified = timestamp
         if (timestamp or etag_data) and max_age is not None:
             self.headers['Cache-control'] = 'max-age=%d public' % max_age
     
