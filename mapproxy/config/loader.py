@@ -529,7 +529,7 @@ class SourceConfiguration(ConfigurationBase):
 
         error_handler = HTTPSourceErrorHandler()
         for status_code, response_conf in self.conf['on_error'].iteritems():
-            if not isinstance(status_code, int):
+            if not isinstance(status_code, int) and status_code != 'other':
                 raise ConfigurationError("invalid error code %r in on_error", status_code)
             cacheable = response_conf.get('cache', False)
             color = response_conf.get('response', 'transparent')

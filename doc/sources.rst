@@ -327,7 +327,9 @@ See :ref:`seed_only <wms_seed_only>`
 
 You can configure what MapProxy should do when the tile service returns an error. Instead of raising an error, MapProxy can generate a single color tile. You can configure if MapProxy should cache this tile, or if it should use it only to generate a tile or WMS response.
 
-You can configure multiple status codes within the ``on_error`` option. Each status code takes the following options:
+You can configure multiple status codes within the ``on_error`` option. You can also use the catch-all value ``other``. This will not only catch all other HTTP status codes, but also source errors like HTTP timeouts or non-image responses. 
+
+Each status code takes the following options:
 
 ``response``
   
@@ -351,6 +353,9 @@ You need to enable ``transparent`` for your source, if you use ``on_error`` resp
         cache: True
       502:
         response: '#ede9e3'
+        cache: False
+      other:
+        response: '#ff0000'
         cache: False
             
 
