@@ -356,7 +356,8 @@ class CacheMapLayer(MapLayer):
             size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
             src_query = MapQuery(bbox, size, query.srs, query.format)
             resp = self._image(src_query)
-            result = SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts)
+            result = SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts,
+                cacheable=resp.cacheable)
         else:
             result = self._image(query)
         return result

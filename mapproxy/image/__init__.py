@@ -152,7 +152,7 @@ class ImageSource(object):
             self._size = self.as_image().size
         return self._size
 
-def SubImageSource(source, size, offset, image_opts):
+def SubImageSource(source, size, offset, image_opts, cacheable=True):
     """
     Create a new ImageSource with `size` and `image_opts` and
     place `source` image at `offset`.
@@ -166,7 +166,7 @@ def SubImageSource(source, size, offset, image_opts):
         source = ImageSource(source)
     subimg = source.as_image()
     img.paste(subimg, offset)
-    return ImageSource(img, size=size, image_opts=image_opts)
+    return ImageSource(img, size=size, image_opts=image_opts, cacheable=cacheable)
 
 class BlankImageSource(object):
     """
