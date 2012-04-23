@@ -18,6 +18,7 @@ WMS service handler
 """
 from itertools import chain
 from functools import partial
+from mapproxy.cache.tile import CacheInfo
 from mapproxy.request.wms import (wms_request, WMS111LegendGraphicRequest,
     mimetype_from_infotype, infotype_from_mimetype, switch_bbox_epsg_axis_order)
 from mapproxy.srs import SRS, TransformationError
@@ -97,7 +98,7 @@ class WMSServer(Server):
         render_layers = []
         for layers in actual_layers.values():
             render_layers.extend(layers)
-        
+
         raise_source_errors =  True if self.on_error == 'raise' else False
         renderer = LayerRenderer(render_layers, query, map_request,
                                  raise_source_errors=raise_source_errors,
@@ -116,7 +117,7 @@ class WMSServer(Server):
 
         resp =  Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
 
-        if query.tiled_only and result.cacheable:
+        if query.tiled_only and isinstance(result.cacheable, CacheInfo):
             cache_info = result.cacheable
             resp.cache_headers(cache_info.timestamp, etag_data=(cache_info.timestamp, cache_info.size),
                                max_age=self.max_tile_age)

@@ -350,7 +350,7 @@ class CacheMapLayer(MapLayer):
             self._check_tiled(query)
         
         query_extent = MapExtent(query.bbox, query.srs)
-        if self.extent and not self.extent.contains(query_extent):
+        if not query.tiled_only and self.extent and not self.extent.contains(query_extent):
             if not self.extent.intersects(query_extent):
                 raise BlankImage()
             size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
@@ -392,7 +392,7 @@ class CacheMapLayer(MapLayer):
                 raise MapBBOXError("query does not align to tile boundaries")
         
         with self.tile_manager.session():
-            tile_collection = self.tile_manager.load_tile_coords(affected_tile_coords)
+            tile_collection = self.tile_manager.load_tile_coords(affected_tile_coords, with_metadata=query.tiled_only)
         
         if tile_collection.empty:
             raise BlankImage()
