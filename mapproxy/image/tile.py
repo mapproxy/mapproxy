@@ -50,10 +50,14 @@ class TileMerger(object):
         
         result = create_image(src_size, image_opts)
 
+        cacheable = True
+
         for i, source in enumerate(ordered_tiles):
             if source is None:
                 continue
             try:
+                if not source.cacheable:
+                    cacheable = False
                 tile = source.as_image()
                 pos = self._tile_offset(i)
                 tile.draft(image_opts.mode, self.tile_size)
@@ -68,7 +72,7 @@ class TileMerger(object):
                             os.remove(source.filename)
                 else:
                     raise
-        return ImageSource(result, size=src_size, image_opts=image_opts)
+        return ImageSource(result, size=src_size, image_opts=image_opts, cacheable=cacheable)
     
     def _src_size(self):
         width = self.tile_grid[0]*self.tile_size[0]

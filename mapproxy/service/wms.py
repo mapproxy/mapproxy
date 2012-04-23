@@ -112,7 +112,13 @@ class WMSServer(Server):
         img_opts.transparent = params.transparent
         result = merger.merge(size=params.size, image_opts=img_opts,
             bbox=params.bbox, bbox_srs=params.srs, coverage=coverage)
-        return Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
+
+        resp =  Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
+
+        if not result.cacheable:
+            resp.cache_headers(no_cache=True)
+
+        return resp
 
     def capabilities(self, map_request):
         # TODO: debug layer

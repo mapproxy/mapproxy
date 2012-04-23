@@ -32,6 +32,8 @@ class LayerMerger(object):
     """
     def __init__(self):
         self.layers = []
+        self.cacheable = True
+
     def add(self, layer_img, layer=None):
         """
         Add one layer image to merge. Bottom-layers first.
@@ -62,9 +64,12 @@ class LayerMerger(object):
         if size is None:
             size = self.layers[0][0].size
         
+        cacheable = True
         result = create_image(size, image_opts)
         
         for layer_img, layer in self.layers:
+            if not layer_img.cacheable:
+                cacheable = False
             img = layer_img.as_image()
             layer_image_opts = layer_img.image_opts
             
@@ -89,7 +94,7 @@ class LayerMerger(object):
             bg.paste(result, (0, 0), mask)
             result = bg
 
-        return ImageSource(result, size=size, image_opts=image_opts)
+        return ImageSource(result, size=size, image_opts=image_opts, cacheable=cacheable)
 
 def merge_images(images, image_opts, size=None):
     """

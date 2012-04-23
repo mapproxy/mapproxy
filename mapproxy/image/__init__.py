@@ -35,10 +35,7 @@ class ImageSource(object):
     object (`as_buffer`).
     """
 
-    "Allow this image to be cached."
-    cacheable = True
-
-    def __init__(self, source, size=None, image_opts=None):
+    def __init__(self, source, size=None, image_opts=None, cacheable=True):
         """
         :param source: the image
         :type source: PIL `Image`, image file object, or filename
@@ -51,6 +48,7 @@ class ImageSource(object):
         self.source = source
         self.image_opts = image_opts
         self._size = size
+        self.cacheable = cacheable
     
     def _set_source(self, source):
         self._img = None
