@@ -58,6 +58,7 @@ class TestWMSC(SystemTest):
     
     def test_get_tile(self):
         resp = self.app.get(str(self.common_map_req) + '&tiled=true')
+        assert 'public' in resp.headers['Cache-Control']
         eq_(resp.content_type, 'image/jpeg')
         data = StringIO(resp.body)
         assert is_jpeg(data)
@@ -65,6 +66,7 @@ class TestWMSC(SystemTest):
     def test_get_tile_w_rounded_bbox(self):
         self.common_map_req.params.bbox = '-20037400,0.0,0.0,20037400'
         resp = self.app.get(str(self.common_map_req) + '&tiled=true')
+        assert 'public' in resp.headers['Cache-Control']
         eq_(resp.content_type, 'image/jpeg')
         data = StringIO(resp.body)
         assert is_jpeg(data)
@@ -72,14 +74,17 @@ class TestWMSC(SystemTest):
     def test_get_tile_wrong_bbox(self):
         self.common_map_req.params.bbox = '-20037508,0.0,200000.0,20037508'
         resp = self.app.get(str(self.common_map_req) + '&tiled=true')
+        assert 'Cache-Control' not in resp.headers
         is_111_exception(resp.lxml, re_msg='.*invalid bbox')
     
     def test_get_tile_wrong_fromat(self):
         self.common_map_req.params.format = 'image/png'
         resp = self.app.get(str(self.common_map_req) + '&tiled=true')
+        assert 'Cache-Control' not in resp.headers
         is_111_exception(resp.lxml, re_msg='Invalid request: invalid.*format.*jpeg')
     
     def test_get_tile_wrong_size(self):
         self.common_map_req.params.size = (256, 255)
         resp = self.app.get(str(self.common_map_req) + '&tiled=true')
+        assert 'Cache-Control' not in resp.headers
         is_111_exception(resp.lxml, re_msg='Invalid request: invalid.*size.*256x256')

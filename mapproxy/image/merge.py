@@ -64,9 +64,9 @@ class LayerMerger(object):
         if size is None:
             size = self.layers[0][0].size
         
-        cacheable = True
+        cacheable = self.cacheable
         result = create_image(size, image_opts)
-        
+
         for layer_img, layer in self.layers:
             if not layer_img.cacheable:
                 cacheable = False

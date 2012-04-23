@@ -399,6 +399,7 @@ class CacheMapLayer(MapLayer):
         if query.tiled_only:
             tile = tile_collection[0].source
             tile.image_opts = self.tile_manager.image_opts
+            tile.cacheable = tile_collection[0].cacheable
             return tile
         
         tile_sources = [tile.source for tile in tile_collection]

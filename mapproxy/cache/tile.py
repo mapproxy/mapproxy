@@ -330,10 +330,24 @@ class Tile(object):
         self.source = source
         self.location = None
         self.stored = False
-        self.cacheable = cacheable
+        self._cacheable = cacheable
         self.size = None
         self.timestamp = None
     
+    def _cacheable_get(self):
+        return CacheInfo(cacheable=self._cacheable, timestamp=self.timestamp,
+            size=self.size)
+
+    def _cacheable_set(self, cacheable):
+        if isinstance(cacheable, bool):
+            self._cacheable = cacheable
+        else: # assume cacheable is CacheInfo
+            self._cacheable = cacheable.cacheable
+            self.timestamp = cacheable.timestamp
+            self.size = cacheable.size
+
+    cacheable = property(_cacheable_get, _cacheable_set)
+
     def source_buffer(self, *args, **kw):
         if self.source is not None:
             return self.source.as_buffer(*args, **kw)
@@ -393,6 +407,15 @@ class Tile(object):
     
     def __repr__(self):
         return 'Tile(%r, source=%r)' % (self.coord, self.source)
+
+class CacheInfo(object):
+    def __init__(self, cacheable=True, timestamp=None, size=None):
+        self.cacheable = cacheable
+        self.timestamp = timestamp
+        self.size = size
+
+    def __nonzero__(self):
+        return self.cacheable
 
 class TileCollection(object):
     def __init__(self, tile_coords):

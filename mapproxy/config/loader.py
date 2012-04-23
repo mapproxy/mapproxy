@@ -1237,12 +1237,16 @@ class ServiceConfiguration(ConfigurationBase):
             global_key='wms.max_output_pixels')
         if isinstance(max_output_pixels, list):
             max_output_pixels = max_output_pixels[0] * max_output_pixels[1]
-        
+
+        max_tile_age = self.context.globals.get_value('tiles.expires_hours')
+        max_tile_age *= 60 * 60 # seconds
+
         server = WMSServer(root_layer, md, attribution=attribution,
             image_formats=image_formats, info_types=info_types,
             srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors,
             concurrent_layer_renderer=concurrent_layer_renderer,
-            max_output_pixels=max_output_pixels, bbox_srs=bbox_srs)
+            max_output_pixels=max_output_pixels, bbox_srs=bbox_srs,
+            max_tile_age=max_tile_age)
         
         server.fi_transformers = fi_xslt_transformers(conf, self.context)
         
