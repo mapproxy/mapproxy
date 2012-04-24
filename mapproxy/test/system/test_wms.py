@@ -199,6 +199,7 @@ class TestWMS111(WMSTest):
     
     def test_get_map_png(self):
         resp = self.app.get(self.common_map_req)
+        assert 'Cache-Control' not in resp.headers
         eq_(resp.content_type, 'image/png')
         data = StringIO(resp.body)
         assert is_png(data)

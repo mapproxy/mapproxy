@@ -350,13 +350,14 @@ class CacheMapLayer(MapLayer):
             self._check_tiled(query)
         
         query_extent = MapExtent(query.bbox, query.srs)
-        if self.extent and not self.extent.contains(query_extent):
+        if not query.tiled_only and self.extent and not self.extent.contains(query_extent):
             if not self.extent.intersects(query_extent):
                 raise BlankImage()
             size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
             src_query = MapQuery(bbox, size, query.srs, query.format)
             resp = self._image(src_query)
-            result = SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts)
+            result = SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts,
+                cacheable=resp.cacheable)
         else:
             result = self._image(query)
         return result
@@ -391,7 +392,7 @@ class CacheMapLayer(MapLayer):
                 raise MapBBOXError("query does not align to tile boundaries")
         
         with self.tile_manager.session():
-            tile_collection = self.tile_manager.load_tile_coords(affected_tile_coords)
+            tile_collection = self.tile_manager.load_tile_coords(affected_tile_coords, with_metadata=query.tiled_only)
         
         if tile_collection.empty:
             raise BlankImage()
@@ -399,6 +400,7 @@ class CacheMapLayer(MapLayer):
         if query.tiled_only:
             tile = tile_collection[0].source
             tile.image_opts = self.tile_manager.image_opts
+            tile.cacheable = tile_collection[0].cacheable
             return tile
         
         tile_sources = [tile.source for tile in tile_collection]

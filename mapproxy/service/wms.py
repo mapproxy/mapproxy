@@ -18,6 +18,7 @@ WMS service handler
 """
 from itertools import chain
 from functools import partial
+from mapproxy.cache.tile import CacheInfo
 from mapproxy.request.wms import (wms_request, WMS111LegendGraphicRequest,
     mimetype_from_infotype, infotype_from_mimetype, switch_bbox_epsg_axis_order)
 from mapproxy.srs import SRS, TransformationError
@@ -50,7 +51,7 @@ class WMSServer(Server):
         request_parser=None, tile_layers=None, attribution=None, 
         info_types=None, strict=False, on_error='raise',
         concurrent_layer_renderer=1, max_output_pixels=None,
-        bbox_srs=None):
+        bbox_srs=None, max_tile_age=None):
         Server.__init__(self)
         self.request_parser = request_parser or partial(wms_request, strict=strict)
         self.root_layer = root_layer
@@ -66,6 +67,7 @@ class WMSServer(Server):
         self.srs = srs
         self.bbox_srs = bbox_srs
         self.max_output_pixels = max_output_pixels
+        self.max_tile_age = max_tile_age
                 
     def map(self, map_request):
         self.check_map_request(map_request)
@@ -96,7 +98,7 @@ class WMSServer(Server):
         render_layers = []
         for layers in actual_layers.values():
             render_layers.extend(layers)
-        
+
         raise_source_errors =  True if self.on_error == 'raise' else False
         renderer = LayerRenderer(render_layers, query, map_request,
                                  raise_source_errors=raise_source_errors,
@@ -112,7 +114,19 @@ class WMSServer(Server):
         img_opts.transparent = params.transparent
         result = merger.merge(size=params.size, image_opts=img_opts,
             bbox=params.bbox, bbox_srs=params.srs, coverage=coverage)
-        return Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
+
+        resp =  Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
+
+        if query.tiled_only and isinstance(result.cacheable, CacheInfo):
+            cache_info = result.cacheable
+            resp.cache_headers(cache_info.timestamp, etag_data=(cache_info.timestamp, cache_info.size),
+                               max_age=self.max_tile_age)
+            resp.make_conditional(map_request.http)
+
+        if not result.cacheable:
+            resp.cache_headers(no_cache=True)
+
+        return resp
 
     def capabilities(self, map_request):
         # TODO: debug layer
@@ -466,6 +480,7 @@ class LayerRenderer(object):
                     layer_merger.add(layer_img, layer=layer)
                 rendered += 1
             else:
+                layer_merger.cacheable = False
                 ex = layer_task.exception
                 if isinstance(ex[1], SourceError):
                     errors.append(ex[1].args[0])

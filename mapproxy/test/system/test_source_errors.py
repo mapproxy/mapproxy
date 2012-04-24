@@ -57,6 +57,7 @@ class TestWMS(SystemTest):
         with mock_httpd(('localhost', 42423), expected_req):
             self.common_map_req.params.layers = 'online'
             resp = self.app.get(self.common_map_req)
+            assert 'Cache-Control' not in resp.headers
             eq_(resp.content_type, 'image/png')
             assert is_transparent(resp.body)
 
@@ -73,6 +74,7 @@ class TestWMS(SystemTest):
         with mock_httpd(('localhost', 42423), expected_req):
             self.common_map_req.params.layers = 'mixed'
             resp = self.app.get(self.common_map_req)
+            assert_no_cache(resp)
             eq_(resp.content_type, 'image/png')
             assert 0.99 > bgcolor_ratio(resp.body) > 0.95
 
@@ -89,6 +91,7 @@ class TestWMS(SystemTest):
         with mock_httpd(('localhost', 42423), expected_req):
             self.common_map_req.params.layers = 'online,all_offline'
             resp = self.app.get(self.common_map_req)
+            assert_no_cache(resp)
             eq_(resp.content_type, 'image/png')
             assert 0.99 > bgcolor_ratio(resp.body) > 0.95
             # open('/tmp/foo.png', 'wb').write(resp.body)
@@ -118,6 +121,7 @@ class TestTileErrors(SystemTest):
         with mock_httpd(('localhost', 42423), expected_req):
             resp = self.app.get(self.common_map_req)
             eq_(resp.content_type, 'image/png')
+            assert_no_cache(resp)
             img = img_from_buf(resp.body)
             eq_(img.getcolors(), [(250 * 250, (255, 0, 128))])
             assert not os.path.exists(os.path.join(self.base_config().cache.base_dir, 
@@ -131,6 +135,7 @@ class TestTileErrors(SystemTest):
         with mock_httpd(('localhost', 42423), expected_req):
             resp = self.app.get(self.common_map_req)
             eq_(resp.content_type, 'image/png')
+            assert 'Cache-Control' not in resp.headers
             img = img_from_buf(resp.body)
             eq_(img.getcolors(), [(250 * 250, (100, 200, 50, 250))])
             self.created_tiles.append('tilesource_cache_EPSG4326/01/000/000/001/000/000/000.png')
@@ -142,6 +147,7 @@ class TestTileErrors(SystemTest):
                          
         with mock_httpd(('localhost', 42423), expected_req):
             resp = self.app.get(self.common_map_req)
+            assert 'Cache-Control' not in resp.headers
             eq_(resp.content_type, 'application/vnd.ogc.se_xml')
             assert '500' in resp.body
 
@@ -153,6 +159,7 @@ class TestTileErrors(SystemTest):
         with mock_httpd(('localhost', 42423), expected_req):
             self.common_map_req.params['layers'] = 'tilesource_catchall'
             resp = self.app.get(self.common_map_req)
+            assert_no_cache(resp)
             eq_(resp.content_type, 'image/png')
             img = img_from_buf(resp.body)
             eq_(img.getcolors(), [(250 * 250, (100, 50, 50))])
@@ -191,6 +198,7 @@ class TestTileErrors(SystemTest):
                          
         with mock_httpd(('localhost', 42423), expected_req):
             resp = self.app.get(self.common_tile_req, status=500)
+            assert 'Cache-Control' not in resp.headers
             # no assert_no_cache(resp): returns XML exception that bypasses cache control setting
             eq_(resp.content_type, 'text/plain')
             assert '500' in resp.body
@@ -207,11 +215,10 @@ class TestTileErrors(SystemTest):
             img = img_from_buf(resp.body)
             eq_(img.getcolors(), [(256 * 256, (100, 50, 50))])
 
+
 def assert_no_cache(resp):
     eq_(resp.headers['Pragma'], 'no-cache')
     eq_(resp.headers['Expires'], '-1')
     eq_(resp.cache_control.max_age, 0)
     eq_(resp.cache_control.must_revalidate, True)
     eq_(resp.cache_control.no_store, True)
-
-

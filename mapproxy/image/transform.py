@@ -83,11 +83,15 @@ class ImageTransformer(object):
         """
         if self._no_transformation_needed(src_img.size, src_bbox, dst_size, dst_bbox):
             return src_img
-        elif self.src_srs == self.dst_srs:
-            return self._transform_simple(src_img, src_bbox, dst_size, dst_bbox,
+        
+        if self.src_srs == self.dst_srs:
+            result = self._transform_simple(src_img, src_bbox, dst_size, dst_bbox,
                 image_opts)
         else:
-            return self._transform(src_img, src_bbox, dst_size, dst_bbox, image_opts)
+            result = self._transform(src_img, src_bbox, dst_size, dst_bbox, image_opts)
+
+        result.cacheable = src_img.cacheable
+        return result
     
     def _transform_simple(self, src_img, src_bbox, dst_size, dst_bbox, image_opts):
         """

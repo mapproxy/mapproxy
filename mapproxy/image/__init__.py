@@ -35,10 +35,7 @@ class ImageSource(object):
     object (`as_buffer`).
     """
 
-    "Allow this image to be cached."
-    cacheable = True
-
-    def __init__(self, source, size=None, image_opts=None):
+    def __init__(self, source, size=None, image_opts=None, cacheable=True):
         """
         :param source: the image
         :type source: PIL `Image`, image file object, or filename
@@ -51,6 +48,7 @@ class ImageSource(object):
         self.source = source
         self.image_opts = image_opts
         self._size = size
+        self.cacheable = cacheable
     
     def _set_source(self, source):
         self._img = None
@@ -154,7 +152,7 @@ class ImageSource(object):
             self._size = self.as_image().size
         return self._size
 
-def SubImageSource(source, size, offset, image_opts):
+def SubImageSource(source, size, offset, image_opts, cacheable=True):
     """
     Create a new ImageSource with `size` and `image_opts` and
     place `source` image at `offset`.
@@ -168,19 +166,19 @@ def SubImageSource(source, size, offset, image_opts):
         source = ImageSource(source)
     subimg = source.as_image()
     img.paste(subimg, offset)
-    return ImageSource(img, size=size, image_opts=image_opts)
+    return ImageSource(img, size=size, image_opts=image_opts, cacheable=cacheable)
 
 class BlankImageSource(object):
     """
     ImageSource for transparent or solid-color images.
     Implements optimized as_buffer() method.
     """
-    cacheable = False
-    def __init__(self, size, image_opts):
+    def __init__(self, size, image_opts, cacheable=False):
         self.size = size
         self.image_opts = image_opts
         self._buf = None
         self._img = None
+        self.cacheable = cacheable
     
     def as_image(self):
         if not self._img:

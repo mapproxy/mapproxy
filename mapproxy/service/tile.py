@@ -220,9 +220,9 @@ class ImageResponse(object):
     """
     def __init__(self, img, timestamp):
         self.img = img
-        self.timestamp = 0
+        self.timestamp = timestamp
         self.size = 0
-        self.cacheable = False
+        self.cacheable = True
     
     def as_buffer(self):
         return self.img
