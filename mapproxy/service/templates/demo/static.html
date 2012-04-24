@@ -6,7 +6,7 @@
         <link rel="stylesheet" type="text/css" href="static/site.css" />
         
   </head>
-  {{if jscript !=None }}
+  {{if jscript_openlayers !=None }}
     <body onload="init()">
   {{else}}
     <body>
@@ -28,6 +28,7 @@
 {{self.body}}
         </div>
         </div>
-{{jscript}}
+{{jscript_openlayers}}
+{{jscript_functions}}
     </body>
 </html>

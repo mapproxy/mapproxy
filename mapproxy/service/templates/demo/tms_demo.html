@@ -11,8 +11,9 @@ def approx_bbox(layer, srs):
     return ', '.join(map(lambda x: '%.2f' % x, extent))
 
 menu_title= "TMS %s %s"%(layer.name, srs)
+jscript_functions=None
 }}
-{{def jscript}}
+{{def jscript_openlayers}}
 <script src="static/OpenLayers.js"></script>
 <script type="text/javascript">        
 var map;
@@ -45,7 +46,7 @@ function init(){
                 <table>
                     <tr><th>Coordinate System</th><th>Image format</th></tr>
                     <tr><td>
-                            <select name="srs" size="1" onchange="this.form.submit()"> {{format}}
+                            <select name="srs" size="1" onchange="this.form.submit()">
                                 {{for tms_layer in all_tile_layers.values()}}
                                     {{if tms_layer.name == layer.name}}
                                         {{if tms_layer.md['name_internal'] == layer.md['name_internal']}}
@@ -74,7 +75,7 @@ function init(){
             </table>
             <h3>JavaScript code</h3>
             <pre>
-{{for line in jscript().split('\n')}}
+{{for line in jscript_openlayers().split('\n')}}
 {{cgi.escape(wrapper.fill(line))}}
 {{endfor}}
             </pre>

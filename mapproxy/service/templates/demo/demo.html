@@ -9,8 +9,24 @@ def replace(s):
     return s.replace(':','')
     
 menu_title=None
-jscript=None
+jscript_openlayers=None
 }}
+{{def jscript_functions}}
+<script type="text/javascript">
+    /**
+    * Getting the closest parent with the given tag name.
+    */
+    function NeighborFormSubmit(obj)
+    {
+        var obj_parent = obj.parentNode;
+        if (!obj_parent) return false;
+        if (obj_parent.tagName.toLowerCase() != 'tr') return NeighborFormSubmit(obj_parent);
+        var forms = obj_parent.getElementsByTagName('form');
+        if (!forms) return false;
+        forms[0].submit()
+    }
+</script>
+{{enddef}}
             <h2>About</h2>
             <p>MapProxy Version {{version}}</p>
             <h2>WMS</h2>
@@ -20,14 +36,30 @@ jscript=None
             <span><a href="../demo/?wms_capabilities">(view as html)</a></span>
             </div>
             <table class="code">
-                <tr><th>Layer</th><th>Image-Format</th></tr>
+                <tr>
+                  <th>Layer</th>
+                  <th>Coordinate-System</th>
+                  <th>Image-Format</th>
+                </tr>
                 {{for layer in layers.values()}}
-                <tr><td rowspan="{{len(formats)}}">{{layer.name}}</td>
+                <tr>
+                    <td rowspan="{{len(formats)}}">{{layer.name}}</td>
                     {{for loop, format in looper(formats)}}
-                        {{if not loop.first}}
-                            <tr>
-                        {{endif}}
-                    <td class="value"><a href="../demo/?wms_layer={{layer.name}}&format={{format | quote_plus}}">{{format | strip}}</a></td></tr>
+                    <td class="value epsg-codes">
+                            <form action="" method="GET">
+                            <select name="srs" onchange="this.form.submit()">
+                                {{for srs_name, srs_code in layer_srs(layer)}}
+                                <option value="{{srs_code}}">{{srs_name}}</option>
+                                {{endfor}}
+                            </select>
+                            <input type="hidden" name="format" value="{{format}}">
+                            <input type="hidden" name="wms_layer" value="{{layer.name}}">
+                            </form>
+                    </td>
+                    <td class="value">
+                        <a href="#" onclick="NeighborFormSubmit(this)">{{format | strip}}</a>
+                    </td>
+                </tr>
                     {{endfor}}
                 {{endfor}}
             </table>
@@ -56,9 +88,9 @@ jscript=None
                     {{if not loop.first}}
                         <tr>
                     {{endif}}
-                    <td class="value">{{layer.grid.srs.srs_code}}</td>
+                    <td class="value"><a href="../demo/?tms_layer={{layer.name}}&format={{layer.format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.grid.srs.srs_code}}</a></td>
                     <td class="value"><a href="../demo/?tms_layer={{layer.name}}&format={{layer.format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.format}}</a></td>
                     <td class="value"><a href="../demo/?tms_capabilities&layer={{layer.name}}&srs={{layer.grid.srs.srs_code | replace}}">click here</a></td></tr>
-                {{endfor}}            
+                {{endfor}}
             {{endfor}}
             </table>
