@@ -34,6 +34,5 @@ class HTTPSourceErrorHandler(object):
 
 		transparent = len(color) == 4
 		image_opts = ImageOptions(bgcolor=color, transparent=transparent)
-		img_source = BlankImageSource(query.size, image_opts)
-		img_source.cacheable = cacheable
+		img_source = BlankImageSource(query.size, image_opts, cacheable=cacheable)
 		return img_source

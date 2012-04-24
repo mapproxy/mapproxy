@@ -50,7 +50,7 @@ class LayerMerger(object):
         :rtype: `ImageSource`
         """
         if not self.layers:
-            return BlankImageSource(size=size, image_opts=image_opts)
+            return BlankImageSource(size=size, image_opts=image_opts, cacheable=True)
         if len(self.layers) == 1:
             layer_img, layer = self.layers[0]
             layer_opts = layer_img.image_opts
