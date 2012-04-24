@@ -219,6 +219,4 @@ class TestTileErrors(SystemTest):
 def assert_no_cache(resp):
     eq_(resp.headers['Pragma'], 'no-cache')
     eq_(resp.headers['Expires'], '-1')
-    eq_(resp.cache_control.max_age, 0)
-    eq_(resp.cache_control.must_revalidate, True)
     eq_(resp.cache_control.no_store, True)
