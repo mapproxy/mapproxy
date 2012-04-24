@@ -24,6 +24,9 @@ from collections import defaultdict
 from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
+from mapproxy.srs import SRS, get_epsg_num
+from mapproxy.layer import SRSConditional, CacheMapLayer, ResolutionConditional
+from mapproxy.source.wms import WMSSource
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
@@ -93,22 +96,63 @@ class DemoServer(Server):
             resp.headers['Location'] = req.script_url.rstrip('/') + '/demo/'
             return resp
         return Response(demo, content_type='text/html')
-
+        
+    def layer_srs(self, layer):
+        cached_srs = []
+        for map_layer in layer.map_layers:
+            if isinstance(map_layer, SRSConditional):
+                for srs_key in map_layer.srs_map.keys():
+                    cached_srs.append(srs_key.srs_code)
+            elif isinstance(map_layer, CacheMapLayer):
+                cached_srs.append(map_layer.grid.srs.srs_code)
+            elif isinstance(map_layer, ResolutionConditional):
+                cached_srs.append(map_layer.srs.srs_code)
+            elif isinstance(map_layer, WMSSource):
+                if map_layer.supported_srs:
+                    for supported_srs in map_layer.supported_srs:
+                        ached_srs.append(supported_srs)
+                        
+        uncached_srs = []
+        
+        for srs_code in self.srs:
+            if srs_code not in cached_srs:
+                uncached_srs.append(srs_code)
+        
+        sorted_cached_srs = sorted(cached_srs, key=lambda epsg_code:get_epsg_num(epsg_code))
+        sorted_uncached_srs = sorted(uncached_srs, key=lambda epsg_code:get_epsg_num(epsg_code))
+        
+        sorted_cached_srs = [(s + '*', s) for s in sorted_cached_srs]
+        sorted_uncached_srs = [(s, s) for s in sorted_uncached_srs]
+        return sorted_cached_srs + sorted_uncached_srs
+        
     def _render_template(self, template):
         template = get_template(template, default_inherit="demo/static.html")
         tms_tile_layers = defaultdict(list)
         for layer in self.tile_layers:
             name = self.tile_layers[layer].md.get('name')
             tms_tile_layers[name].append(self.tile_layers[layer])
-
+        
         return template.substitute(layers = self.layers,
                                    formats = self.image_formats,
+                                   srs = self.srs,
+                                   layer_srs = self.layer_srs,
                                    tms_layers = tms_tile_layers)
 
     def _render_wms_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
-        return template.substitute(layer = self.layers[req.args['wms_layer']],
-                                   format = req.args['format'])
+        layer = self.layers[req.args['wms_layer']]
+        srs = req.args['srs']
+        bbox = layer.extent.bbox_for(SRS(srs))
+        width = bbox[2] - bbox[0]
+        height = bbox[3] - bbox[1]
+        min_res = max(width/256, height/256)
+        return template.substitute(layer = layer,
+                                   image_formats = self.image_formats,
+                                   format = req.args['format'],
+                                   srs = srs,
+                                   layer_srs = self.layer_srs,
+                                   bbox = bbox,
+                                   res = min_res)
 
     def _render_tms_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
