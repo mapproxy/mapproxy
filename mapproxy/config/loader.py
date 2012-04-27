@@ -1250,7 +1250,7 @@ class ServiceConfiguration(ConfigurationBase):
 
     def demo_service(self, conf):
         from mapproxy.service.demo import DemoServer
-        
+        services = self.context.services.conf.keys()
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
         layers = odict()
@@ -1260,7 +1260,7 @@ class ServiceConfiguration(ConfigurationBase):
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
         return DemoServer(layers, md, tile_layers=tile_layers,
-            image_formats=image_formats, srs=srs)
+            image_formats=image_formats, srs=srs, services=services)
     
 
 def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True):
