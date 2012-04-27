@@ -36,7 +36,7 @@ get_template = template_loader(__file__, 'templates', namespace=env)
 class DemoServer(Server):
     names = ('demo',)
     def __init__(self, layers, md, request_parser=None, tile_layers=None,
-                 srs=None, image_formats=None):
+                 srs=None, image_formats=None, services=None):
         Server.__init__(self)
         self.layers = layers
         self.tile_layers = tile_layers or {}
@@ -48,6 +48,7 @@ class DemoServer(Server):
                 filter_image_format.append(format)
         self.image_formats = filter_image_format
         self.srs = srs
+        self.services = services or []
 
     def handle(self, req):
         if req.path.startswith('/demo/static/'):
@@ -73,6 +74,8 @@ class DemoServer(Server):
             demo = self._render_wms_template('demo/wms_demo.html', req)
         elif 'tms_layer' in req.args:
             demo = self._render_tms_template('demo/tms_demo.html', req)
+        elif 'wmts_layer' in req.args:
+            demo = self._render_wmts_template('demo/wmts_demo.html', req)
         elif 'wms_capabilities' in req.args:
             url = '%s/service?REQUEST=GetCapabilities'%(req.script_url)
             capabilities = urlopen(url)
@@ -81,13 +84,16 @@ class DemoServer(Server):
             url = '%s/service?REQUEST=GetCapabilities&tiled=true'%(req.script_url)
             capabilities = urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS-C', url)
+        elif 'wmts_capabilities' in req.args:
+            url = '%s/wmts/1.0.0/WMTSCapabilities.xml' % (req.script_url)
+            capabilities = urlopen(url)
+            demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMTS', url)
         elif 'tms_capabilities' in req.args:
             if 'layer' in req.args and 'srs' in req.args:
                 url = '%s/tms/1.0.0/%s_%s'%(req.script_url, req.args['layer'], req.args['srs'])
-                capabilities = urlopen(url)
             else:
                 url = '%s/tms/1.0.0/'%(req.script_url)
-                capabilities = urlopen(url)
+            capabilities = urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'TMS', url)
         elif req.path == '/demo/':
             demo = self._render_template('demo/demo.html')
@@ -131,12 +137,14 @@ class DemoServer(Server):
         for layer in self.tile_layers:
             name = self.tile_layers[layer].md.get('name')
             tms_tile_layers[name].append(self.tile_layers[layer])
-        
+        wmts_layers = tms_tile_layers.copy()
         return template.substitute(layers = self.layers,
                                    formats = self.image_formats,
                                    srs = self.srs,
                                    layer_srs = self.layer_srs,
-                                   tms_layers = tms_tile_layers)
+                                   tms_layers = tms_tile_layers,
+                                   wmts_layers = wmts_layers,
+                                   services = self.services)
 
     def _render_wms_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
@@ -178,7 +186,29 @@ class DemoServer(Server):
                                    units = units,
                                    add_res_to_options = add_res_to_options,
                                    all_tile_layers = self.tile_layers)
+    
+    def _render_wmts_template(self, template, req):
+        template = get_template(template, default_inherit="demo/static.html")
+        wmts_layer = self.tile_layers['_'.join([req.args['wmts_layer'], req.args['srs'].replace(':','')])]
+        resolutions = wmts_layer.grid.tile_sets
+        res = []
+        for level, resolution in resolutions:
+            res.append(resolution)
 
+        if wmts_layer.grid.srs.is_latlong:
+            units = 'degree'
+        else:
+            units = 'm'
+        matrix_ids = [str(tile_set[0]) if tile_set[0] > 9 else "0%d" % (tile_set[0]) for tile_set in wmts_layer.grid.tile_sets ]
+        return template.substitute(layer = wmts_layer,
+                                   matrix_set = wmts_layer.grid.name,
+                                   matrix_ids = matrix_ids,
+                                   format = req.args['format'],
+                                   srs = req.args['srs'],
+                                   max_resolution = res[0],
+                                   units = units,
+                                   all_tile_layers = self.tile_layers)
+    
     def _render_capabilities_template(self, template, xmlfile, service, url):
         template = get_template(template, default_inherit="demo/static.html")
         return template.substitute(capabilities = xmlfile,
