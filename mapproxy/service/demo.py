@@ -106,8 +106,13 @@ class DemoServer(Server):
         return Response(demo, content_type='text/html')
         
     def layer_srs(self, layer):
+        """
+        Return a list tuples with title and name of all SRS for the layer.
+        The title of SRS that are native to the layer are suffixed with a '*'.
+        """
         cached_srs = []
         for map_layer in layer.map_layers:
+            # TODO unify map_layers interface
             if isinstance(map_layer, SRSConditional):
                 for srs_key in map_layer.srs_map.keys():
                     cached_srs.append(srs_key.srs_code)
@@ -118,7 +123,7 @@ class DemoServer(Server):
             elif isinstance(map_layer, WMSSource):
                 if map_layer.supported_srs:
                     for supported_srs in map_layer.supported_srs:
-                        ached_srs.append(supported_srs)
+                        cached_srs.append(supported_srs)
                         
         uncached_srs = []
         
