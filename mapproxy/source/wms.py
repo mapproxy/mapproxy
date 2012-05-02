@@ -90,6 +90,8 @@ class WMSSource(Source):
     
     def _get_sub_query(self, query, format):
         size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
+        if size[0] == 0 or size[1] == 0:
+            raise BlankImage()
         src_query = MapQuery(bbox, size, query.srs, format)
         resp = self.client.retrieve(src_query, format)
         return SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts)
