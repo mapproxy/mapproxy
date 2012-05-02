@@ -20,7 +20,7 @@ var map;
 function init(){                
     var mapOptions = {
     projection: new OpenLayers.Projection('{{srs}}'),    
-    maxResolution: {{max_resolution}},
+    resolutions: [{{', '.join(str(r) for r in resolutions)}}],
     units: '{{units}}',
     maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}})
     };
@@ -33,7 +33,6 @@ function init(){
      getURL: tileUrl,
      layer: '{{layer.name}}',
      matrixSet: '{{matrix_set}}',
-     //matrixIds: {{matrix_ids}},
      format: '{{format}}',
      isBaseLayer: true,
      style: 'default',

@@ -197,22 +197,16 @@ class DemoServer(Server):
     def _render_wmts_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
         wmts_layer = self.tile_layers['_'.join([req.args['wmts_layer'], req.args['srs'].replace(':','')])]
-        resolutions = wmts_layer.grid.tile_sets
-        res = []
-        for level, resolution in resolutions:
-            res.append(resolution)
 
         if wmts_layer.grid.srs.is_latlong:
             units = 'degree'
         else:
             units = 'm'
-        matrix_ids = [str(tile_set[0]) if tile_set[0] > 9 else "0%d" % (tile_set[0]) for tile_set in wmts_layer.grid.tile_sets ]
         return template.substitute(layer=wmts_layer,
                                    matrix_set=wmts_layer.grid.name,
-                                   matrix_ids=matrix_ids,
                                    format=req.args['format'],
                                    srs=req.args['srs'],
-                                   max_resolution=res[0],
+                                   resolutions=wmts_layer.grid.resolutions,
                                    units=units,
                                    all_tile_layers=self.tile_layers)
     
