@@ -1271,7 +1271,7 @@ def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True):
     conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
     
     try:
-        conf_dict = load_configuration_file([mapproxy_conf], conf_base_dir)
+        conf_dict = load_configuration_file([os.path.basename(mapproxy_conf)], conf_base_dir)
     except YAMLError, ex:
         raise ConfigurationError(ex)
     errors, informal_only = validate_mapproxy_conf(conf_dict)
