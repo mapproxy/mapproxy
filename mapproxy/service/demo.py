@@ -145,13 +145,13 @@ class DemoServer(Server):
             name = self.tile_layers[layer].md.get('name')
             tms_tile_layers[name].append(self.tile_layers[layer])
         wmts_layers = tms_tile_layers.copy()
-        return template.substitute(layers = self.layers,
-                                   formats = self.image_formats,
-                                   srs = self.srs,
-                                   layer_srs = self.layer_srs,
-                                   tms_layers = tms_tile_layers,
-                                   wmts_layers = wmts_layers,
-                                   services = self.services)
+        return template.substitute(layers=self.layers,
+                                   formats=self.image_formats,
+                                   srs=self.srs,
+                                   layer_srs=self.layer_srs,
+                                   tms_layers=tms_tile_layers,
+                                   wmts_layers=wmts_layers,
+                                   services=self.services)
 
     def _render_wms_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
@@ -161,13 +161,13 @@ class DemoServer(Server):
         width = bbox[2] - bbox[0]
         height = bbox[3] - bbox[1]
         min_res = max(width/256, height/256)
-        return template.substitute(layer = layer,
-                                   image_formats = self.image_formats,
-                                   format = req.args['format'],
-                                   srs = srs,
-                                   layer_srs = self.layer_srs,
-                                   bbox = bbox,
-                                   res = min_res)
+        return template.substitute(layer=layer,
+                                   image_formats=self.image_formats,
+                                   format=req.args['format'],
+                                   srs=srs,
+                                   layer_srs=self.layer_srs,
+                                   bbox=bbox,
+                                   res=min_res)
 
     def _render_tms_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
@@ -186,13 +186,13 @@ class DemoServer(Server):
             add_res_to_options = True
         else:
             add_res_to_options = False
-        return template.substitute(layer = tile_layer,
-                                   srs = req.args['srs'],
-                                   format = req.args['format'],
-                                   resolutions = res,
-                                   units = units,
-                                   add_res_to_options = add_res_to_options,
-                                   all_tile_layers = self.tile_layers)
+        return template.substitute(layer=tile_layer,
+                                   srs=req.args['srs'],
+                                   format=req.args['format'],
+                                   resolutions=res,
+                                   units=units,
+                                   add_res_to_options=add_res_to_options,
+                                   all_tile_layers=self.tile_layers)
     
     def _render_wmts_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
@@ -207,14 +207,14 @@ class DemoServer(Server):
         else:
             units = 'm'
         matrix_ids = [str(tile_set[0]) if tile_set[0] > 9 else "0%d" % (tile_set[0]) for tile_set in wmts_layer.grid.tile_sets ]
-        return template.substitute(layer = wmts_layer,
-                                   matrix_set = wmts_layer.grid.name,
-                                   matrix_ids = matrix_ids,
-                                   format = req.args['format'],
-                                   srs = req.args['srs'],
-                                   max_resolution = res[0],
-                                   units = units,
-                                   all_tile_layers = self.tile_layers)
+        return template.substitute(layer=wmts_layer,
+                                   matrix_set=wmts_layer.grid.name,
+                                   matrix_ids=matrix_ids,
+                                   format=req.args['format'],
+                                   srs=req.args['srs'],
+                                   max_resolution=res[0],
+                                   units=units,
+                                   all_tile_layers=self.tile_layers)
     
     def _render_capabilities_template(self, template, xmlfile, service, url):
         template = get_template(template, default_inherit="demo/static.html")
