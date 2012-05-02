@@ -10,7 +10,7 @@ def approx_bbox(layer, srs):
     extent = layer.md['extent'].bbox_for(SRS(srs))
     return ', '.join(map(lambda x: '%.2f' % x, extent))
 
-menu_title= "TMS %s %s"%(layer.name, srs)
+menu_title= "WMTS %s %s"%(layer.name, srs)
 jscript_functions=None
 }}
 {{def jscript_openlayers}}
@@ -20,59 +20,58 @@ var map;
 function init(){                
     var mapOptions = {
     projection: new OpenLayers.Projection('{{srs}}'),    
-    maxResolution: {{resolutions[0]}},
-    {{if add_res_to_options}}
-    resolutions: [{{', '.join(str(r) for r in resolutions)}}],
-    {{endif}}
+    maxResolution: {{max_resolution}},
     units: '{{units}}',
-    numZoomLevels: {{len(resolutions)}},
     maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}})
     };
     
     map = new OpenLayers.Map('map', mapOptions);
     
-    var layer = new OpenLayers.Layer.TMS('TMS {{layer.name}}', '../tms/',
-        {layername: '{{layer.md["name_internal"]}}', type: '{{format}}',
-         tileSize: new OpenLayers.Size{{layer.grid.tile_size}}
-    });
+    var layer = new OpenLayers.Layer.WMTS({
+     name: "WMTS {{layer.name}}",
+     url: '../wmts/{{layer.name}}',
+     getURL: tileUrl,
+     layer: '{{layer.name}}',
+     matrixSet: '{{matrix_set}}',
+     //matrixIds: {{matrix_ids}},
+     format: '{{format}}',
+     isBaseLayer: true,
+     style: 'default',
+     requestEncoding: 'REST'
+    }); 
     
     map.addLayer(layer)
     map.zoomToExtent(new OpenLayers.Bounds({{approx_bbox(layer, srs)}}));
 }
+function tileUrl(bounds) {
+     var tileInfo = this.getTileInfo(bounds.getCenterLonLat());
+     return this.url + '/' + this.matrixSet + '/' + this.matrix.identifier + '/' + tileInfo.col + '/' + tileInfo.row + '.{{layer.format}}';
+ }
 </script>     
 {{enddef}}
             <h2>Openlayers Client - Layer {{layer.name}}</h2>
-            <form action="" method="GET">
-                <table>
-                    <tr><th>Coordinate System</th><th>Image format</th></tr>
-                    <tr><td>
-                            <select name="srs" size="1" onchange="this.form.submit()">
-                                {{for tms_layer in all_tile_layers.values()}}
-                                    {{if tms_layer.name == layer.name}}
-                                        {{if tms_layer.md['name_internal'] == layer.md['name_internal']}}
+            <table>
+                <tr><th>Coordinate System</th><th>Image format</th></tr>
+                <tr><td>
+                        <select name="srs" size="1" onchange="this.form.submit()">
+                                {{for wmts_layer in all_tile_layers.values()}}
+                                    {{if wmts_layer.name == layer.name}}
+                                        {{if wmts_layer.md['name_internal'] == layer.md['name_internal']}}
                                             <option selected value="{{srs}}">{{srs}}</option>
                                         {{else}}
-                                            <option value="{{tms_layer.grid.srs.srs_code}}">{{tms_layer.grid.srs.srs_code}}</option>
+                                            <option value="{{wmts_layer.grid.srs.srs_code}}">{{wmts_layer.grid.srs.srs_code}}</option>
                                         {{endif}}
                                     {{endif}}
                                 {{endfor}}
                             </select>
                             <input type="hidden" name="format" value="png">
-                            <input type="hidden" name="tms_layer" value="{{layer.name}}">
-                        </td>
-                        <td>{{format}}</td></tr>
-                </table>
-              </form>
+                            <input type="hidden" name="wmts_layer" value="{{layer.name}}">
+                    </td>
+                    <td>{{layer.format}}</td></tr>
+            </table>
             <div id='map'></div>
             <h3>Bounding Box</h3>
             <p class="code">{{', '.join(str(s) for s in layer.grid.bbox)}}</p>
-            <h3>Level and Resolutions</h3>
-            <table class="code">
-                <tr><th>Level</th><th>Resolution</th></tr>
-                {{for level, res in layer.grid.tile_sets}}
-                <tr><td>{{level}}</td><td>{{res}}</td></tr>
-                {{endfor}}
-            </table>
             <h3>JavaScript code</h3>
             <pre>
 {{for line in jscript_openlayers().split('\n')}}
