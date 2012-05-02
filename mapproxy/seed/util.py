@@ -34,15 +34,32 @@ class bidict(dict):
 class ETA(object):
     def __init__(self):
         self.avgs = []
-        self.start_time = time.time()
+        self.last_tick_start = time.time()
         self.progress = 0.0
-        self.ticks = 1000
+        self.ticks = 10000
+        self.tick_duration_sums = 0.0
+        self.tick_duration_divisor = 0.0
+        self.tick_count = 0
 
     def update(self, progress):
         self.progress = progress
-        if (self.progress*self.ticks-1) > len(self.avgs):
-            self.avgs.append((time.time()-self.start_time))
-            self.start_time = time.time()
+        missing_ticks = (self.progress * self.ticks) - self.tick_count
+        if missing_ticks:
+            tick_duration = (time.time() - self.last_tick_start) / missing_ticks
+
+            while missing_ticks > 0:
+
+                self.tick_duration_sums *= 0.99
+                self.tick_duration_divisor *= 0.99
+
+                self.tick_count += 1
+
+                self.tick_duration_sums += tick_duration
+                self.tick_duration_divisor += 1
+
+                missing_ticks -= 1
+
+            self.last_tick_start = time.time()
 
     def eta_string(self):
         timestamp = self.eta()
@@ -51,14 +68,9 @@ class ETA(object):
         return time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(timestamp))
 
     def eta(self):
-        if not self.avgs: return
-        count = 0
-        avg_sum = 0
-        for i, avg in enumerate(self.avgs):
-            multiplicator = (i+1)**1.2
-            count += multiplicator
-            avg_sum += avg*multiplicator
-        return time.time() + (1-self.progress) * (avg_sum/count)*self.ticks
+        if not self.tick_count: return
+        return (self.last_tick_start + 
+                (1-self.progress) * (self.tick_duration_sums/self.tick_duration_divisor) * self.ticks)
 
     def __str__(self):
         return self.eta_string()
