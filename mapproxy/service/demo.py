@@ -16,6 +16,8 @@
 """
 Demo service handler
 """
+from __future__ import division
+
 import os
 import mimetypes
 from urllib2 import urlopen
