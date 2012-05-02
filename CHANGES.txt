@@ -19,6 +19,9 @@ Improvements:
   makes it more usable in demo/wms clients
 - support for multiple files and recursion in base option
 - mapproxy-seed ETA output is now more responsive to changes in seed speed
+- improved demo service
+  - choose different SRS for WMS layers
+  - support for WMTS
 
 Fixes:
 
