@@ -297,7 +297,7 @@ class TestWMS111(WMSTest):
                 assert 35000 < int(resp.headers['Content-length']) < 75000
                 eq_(resp.content_type, 'image/png')
     
-    def test_get_map_use_direct(self):
+    def test_get_map_use_direct_from_level(self):
         with tmp_image((200, 200), format='png') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                       '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
@@ -312,7 +312,7 @@ class TestWMS111(WMSTest):
                 is_png(img)
                 eq_(resp.content_type, 'image/png')
         
-    def test_get_map_use_direct_with_transform(self):
+    def test_get_map_use_direct_from_level_with_transform(self):
         with tmp_image((200, 200), format='png') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                       '&REQUEST=GetMap&HEIGHT=303&SRS=EPSG%3A900913&styles='

@@ -43,7 +43,7 @@ layers:
     title: Direct Layer
     sources: [direct]
   - name: wms_cache
-    title: WMS Cache Layer
+    title: WMS Cache Layer with direct access from level 8
     sources: [wms_cache]
     md:
       abstract: Some abstract
