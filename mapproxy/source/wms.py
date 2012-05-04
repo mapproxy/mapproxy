@@ -34,11 +34,12 @@ class WMSSource(Source):
     supports_meta_tiles = True
     def __init__(self, client, image_opts=None, coverage=None, res_range=None,
                  transparent_color=None, transparent_color_tolerance=None,
-                 supported_srs=None, supported_formats=None):
+                 supported_srs=None, supported_formats=None, fwd_req_params=None):
         Source.__init__(self, image_opts=image_opts)
         self.client = client
         self.supported_srs = supported_srs or []
         self.supported_formats = supported_formats or []
+        self.fwd_req_params = fwd_req_params or set()
         
         self.transparent_color = transparent_color
         self.transparent_color_tolerance = transparent_color_tolerance

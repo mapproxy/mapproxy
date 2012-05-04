@@ -99,6 +99,12 @@ class WMSServer(Server):
         for layers in actual_layers.values():
             render_layers.extend(layers)
 
+        # forward relevant request params into MapQuery.dimension_params
+        for l in render_layers:
+            for p in getattr(l, 'fwd_req_params', set()):
+                if p in params:
+                    query.set_dimension_param(p, params[p])
+
         raise_source_errors =  True if self.on_error == 'raise' else False
         renderer = LayerRenderer(render_layers, query, map_request,
                                  raise_source_errors=raise_source_errors,
