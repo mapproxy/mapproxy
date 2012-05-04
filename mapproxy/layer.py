@@ -107,19 +107,30 @@ class InfoLayer(object):
     def get_info(self, query):
         raise NotImplementedError
 
-
 class MapQuery(object):
     """
     Internal query for a map with a specific extent, size, srs, etc.
     """
     def __init__(self, bbox, size, srs, format='image/png', transparent=False,
-                 tiled_only=False):
+                 tiled_only=False, **dimension_params):
         self.bbox = bbox
         self.size = size
         self.srs = srs
         self.format = format
         self.transparent = transparent
         self.tiled_only = tiled_only
+        self.dimension_params = dimension_params
+
+    def get_dimension_param(self, dparam):
+        return self.dimension_params.get(dparam, None)
+
+    def set_dimension_param(self, dparam, value):
+        self.dimension_params[dparam] = value
+
+    def get_dimension_params(self, keys=None):
+        keys = set(keys or ())
+        dparams = self.dimension_params
+        return dict((k, dparams[k]) for k in keys if k in dparams)
 
     def __repr__(self):
         return "MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s)" % self.__dict__
