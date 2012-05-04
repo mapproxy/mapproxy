@@ -23,6 +23,7 @@ import textwrap
 
 from mapproxy.version import version
 from mapproxy.script.scales import scales_command
+from mapproxy.script.grids import grids_command
 
 def setup_logging():
     import logging
@@ -253,6 +254,10 @@ commands = {
     'scales': {
         'func': scales_command,
         'help': 'Convert between scales and resolutions.'
+    },
+    'grids': {
+        'func': grids_command,
+        'help': 'Display detailed informations for configured grids'
     },
 }
 
