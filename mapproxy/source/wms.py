@@ -136,7 +136,7 @@ class WMSSource(Source):
         # else
         return self.supported_srs[0]
     
-    def _is_compatible(self, other):
+    def _is_compatible(self, other, query):
         if not isinstance(other, WMSSource):
             return False
         
@@ -160,11 +160,15 @@ class WMSSource(Source):
         
         if self.coverage != other.coverage:
             return False
-        
+
+        if query.get_dimension_params(self.fwd_req_params) != \
+                query.get_dimension_params(other.fwd_req_params):
+            return False
+
         return True
         
     def combined_layer(self, other, query):
-        if not self._is_compatible(other):
+        if not self._is_compatible(other, query):
             return None
         
         client = self.client.combined_client(other.client, query)
@@ -174,8 +178,8 @@ class WMSSource(Source):
         return WMSSource(client, image_opts=self.image_opts,
             transparent_color=self.transparent_color,
             transparent_color_tolerance=self.transparent_color_tolerance,
-            res_range=self.res_range,
-            coverage=self.coverage,
+            res_range=self.res_range, coverage=self.coverage,
+            fwd_req_params=self.fwd_req_params,
         )
         
 class WMSInfoSource(InfoSource):

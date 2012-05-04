@@ -106,7 +106,8 @@ class WMSClient(object):
         new_req = self.request_template.copy()
         new_req.params.layers = new_req.params.layers + other.request_template.params.layers
         
-        return WMSClient(new_req, http_client=self.http_client, http_method=self.http_method)
+        return WMSClient(new_req, http_client=self.http_client,
+                http_method=self.http_method, fwd_req_params=self.fwd_req_params)
         
 
 class WMSInfoClient(object):
