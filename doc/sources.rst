@@ -111,7 +111,7 @@ Limit the source to the given min and max resolution or scale. MapProxy will ret
 
 The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator). The boundaries will be regarded for each source, but the values in the capabilities might differ if you combine multiple sources or if the MapProxy layer already has a ``min/max_res`` configuration.
 
-Pleas read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
+Please read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
 
 .. _supported_srs:
 
@@ -125,6 +125,13 @@ You don't need to configure this if you only use this WMS as a cache source and 
 If MapProxy needs to reproject and the source has multiple ``supported_srs``, then it will use the fist projected SRS for requests in projected SRS, or the fist geographic SRS for requests in geographic SRS. E.g when `supported_srs` is ``['EPSG:4326', 'EPSG:31467']`` caches with EPSG:900913 will use EPSG:32467.
     
   ..  .. note:: For the configuration of SRS for MapProxy see `srs_configuration`_.
+
+``forward-req-params``
+^^^^^^^^^^^^^^^^^^^^^^
+
+A list with request parameters that will be forwarded to the source server (if available in the original request). A typical use case of this feature would be to forward the `TIME` parameter when working with a WMS-T server.
+
+Please note that this feature is currently not supported when working with caches: you should confugre a :ref:`direct source <direct_source>` instead.
 
 ``supported_format``
 ^^^^^^^^^^^^^^^^^^^^
