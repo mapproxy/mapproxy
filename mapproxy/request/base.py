@@ -36,7 +36,7 @@ class NoCaseMultiDict(dict):
     >>> 'a' in d and 'b' in d
     True
     """
-    def __init__(self, mapping=()):
+    def _gen_dict(self, mapping=()):
         """A `NoCaseMultiDict` can be constructed from an iterable of
         ``(key, value)`` tuples or a dict.
         """
@@ -51,8 +51,21 @@ class NoCaseMultiDict(dict):
                 itr = iter(mapping)
             for key, value in itr:
                 tmp.setdefault(key.lower(), (key, []))[1].append(value)
-        dict.__init__(self, tmp)
-    
+        return tmp
+
+    def __init__(self, mapping=()):
+        """A `NoCaseMultiDict` can be constructed from an iterable of
+        ``(key, value)`` tuples or a dict.
+        """
+        dict.__init__(self, self._gen_dict(mapping))
+
+    def update(self, mapping=(), append=False):
+        """A `NoCaseMultiDict` can be updated from an iterable of
+        ``(key, value)`` tuples or a dict.
+        """
+        for _, (key, values) in self._gen_dict(mapping).iteritems():
+            self.set(key, values, append=append, unpack=True)
+
     def __getitem__(self, key):
         """
         Return the first data value for this key.
@@ -283,6 +296,16 @@ class RequestParams(object):
         """
         self.params.set(key, value, append=append, unpack=unpack)
     
+    def update(self, mapping=(), append=False):
+        """
+        Update internal request parameters from an iterable of ``(key, value)``
+        tuples or a dict.
+
+        If `append` is ``True`` the value will be added to other values for
+        this `key`.
+        """
+        self.params.update(mapping, append=append)
+
     def __getattr__(self, name):
         if name in self:
             return self[name]

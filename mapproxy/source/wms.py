@@ -34,11 +34,12 @@ class WMSSource(Source):
     supports_meta_tiles = True
     def __init__(self, client, image_opts=None, coverage=None, res_range=None,
                  transparent_color=None, transparent_color_tolerance=None,
-                 supported_srs=None, supported_formats=None):
+                 supported_srs=None, supported_formats=None, fwd_req_params=None):
         Source.__init__(self, image_opts=image_opts)
         self.client = client
         self.supported_srs = supported_srs or []
         self.supported_formats = supported_formats or []
+        self.fwd_req_params = fwd_req_params or set()
         
         self.transparent_color = transparent_color
         self.transparent_color_tolerance = transparent_color_tolerance
@@ -135,7 +136,7 @@ class WMSSource(Source):
         # else
         return self.supported_srs[0]
     
-    def _is_compatible(self, other):
+    def _is_compatible(self, other, query):
         if not isinstance(other, WMSSource):
             return False
         
@@ -159,11 +160,15 @@ class WMSSource(Source):
         
         if self.coverage != other.coverage:
             return False
-        
+
+        if query.get_dimension_params(self.fwd_req_params) != \
+                query.get_dimension_params(other.fwd_req_params):
+            return False
+
         return True
         
     def combined_layer(self, other, query):
-        if not self._is_compatible(other):
+        if not self._is_compatible(other, query):
             return None
         
         client = self.client.combined_client(other.client, query)
@@ -173,8 +178,8 @@ class WMSSource(Source):
         return WMSSource(client, image_opts=self.image_opts,
             transparent_color=self.transparent_color,
             transparent_color_tolerance=self.transparent_color_tolerance,
-            res_range=self.res_range,
-            coverage=self.coverage,
+            res_range=self.res_range, coverage=self.coverage,
+            fwd_req_params=self.fwd_req_params,
         )
         
 class WMSInfoSource(InfoSource):

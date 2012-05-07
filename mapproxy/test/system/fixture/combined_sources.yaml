@@ -38,6 +38,12 @@ layers:
     title: layer with transparent_color
     sources: [wms_iopts2]
 
+  - name: layer_fwdparams1
+    title: Uncached layer with fwdparams 1
+    sources: [wms_fwdparams1, wms_fwdparams2]
+  - name: layer_fwdparams2
+    title: Uncached layer with fwdparams 2
+    sources: [wms_fwdparams3]
 
 caches:
   wms_cache:
@@ -99,4 +105,26 @@ sources:
     req:
       url: http://localhost:42423/service_a
       layers: a_iopts_two
+      transparent: True
+
+  wms_fwdparams1:
+    type: wms
+    forward_req_params: ['time']
+    req:
+      url: http://localhost:42423/service_a
+      layers: a_one
+      transparent: True
+  wms_fwdparams2:
+    type: wms
+    forward_req_params: ['time', 'vendor']
+    req:
+      url: http://localhost:42423/service_a
+      layers: a_two
+      transparent: True
+  wms_fwdparams3:
+    type: wms
+    forward_req_params: ['time', 'vendor']
+    req:
+      url: http://localhost:42423/service_a
+      layers: a_three,a_four
       transparent: True

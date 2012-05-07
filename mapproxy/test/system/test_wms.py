@@ -122,8 +122,9 @@ class TestWMS111(WMSTest):
                       namespaces=dict(xlink="http://www.w3.org/1999/xlink"))[0],
             'http://localhost/service?')
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
-        expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
-            'wms_cache_transparent', 'wms_merge', 'tms_cache', 'wms_cache_multi',
+        expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
+            'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
+            'wms_merge', 'tms_cache', 'wms_cache_multi',
             'wms_cache_link_single', 'wms_cache_110'])
         eq_(layer_names, expected_names)
         assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
@@ -296,7 +297,18 @@ class TestWMS111(WMSTest):
                 resp = self.app.get(self.common_map_req)
                 assert 35000 < int(resp.headers['Content-length']) < 75000
                 eq_(resp.content_type, 'image/png')
-    
+
+    def test_get_map_direct_fwd_params_layer(self):
+        expected_req = ({'path': r'/service?LAYERs=bar&SERVICE=WMS&FORMAT=image%2Fpng'
+                                    '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
+                                    '&VERSION=1.1.1&BBOX=-180.0,0.0,0.0,80.0'
+                                    '&WIDTH=200&TIME=20041012'},
+                        {'body': 'whatever'})
+        with mock_httpd(('localhost', 42423), [expected_req]):
+            self.common_map_req.params['layers'] = 'direct_fwd_params'
+            self.common_map_req.params['time'] = '20041012'
+            resp = self.app.get(self.common_map_req)
+
     def test_get_map_use_direct_from_level(self):
         with tmp_image((200, 200), format='png') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
@@ -311,7 +323,7 @@ class TestWMS111(WMSTest):
                 assert resp.body == img.read()
                 is_png(img)
                 eq_(resp.content_type, 'image/png')
-        
+
     def test_get_map_use_direct_from_level_with_transform(self):
         with tmp_image((200, 200), format='png') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
@@ -522,8 +534,9 @@ class TestWMS110(WMSTest):
         assert_almost_equal(float(llbox.attrib['maxx']), 180.0, 6)
         
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
-        expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
-            'wms_cache_transparent', 'wms_merge', 'tms_cache', 'wms_cache_multi',
+        expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
+            'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
+            'wms_merge', 'tms_cache', 'wms_cache_multi',
             'wms_cache_link_single', 'wms_cache_110'])
         eq_(layer_names, expected_names)
         assert validate_with_dtd(xml, dtd_name='wms/1.1.0/capabilities_1_1_0.dtd')
@@ -666,8 +679,9 @@ class TestWMS100(WMSTest):
         eq_(xml.xpath('/WMT_MS_Capabilities/Service/Title/text()')[0],
             u'MapProxy test fixture \u2603')
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
-        expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
-            'wms_cache_transparent', 'wms_merge', 'tms_cache', 'wms_cache_multi',
+        expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
+            'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
+            'wms_merge', 'tms_cache', 'wms_cache_multi',
             'wms_cache_link_single', 'wms_cache_110'])
         eq_(layer_names, expected_names)
         #TODO srs
@@ -813,8 +827,9 @@ class TestWMS130(WMSTest):
 
         layer_names = set(xml.xpath('//wms:Layer/wms:Layer/wms:Name/text()',
                                     namespaces=ns130))
-        expected_names = set(['direct', 'wms_cache', 'wms_cache_100', 'wms_cache_130',
-            'wms_cache_transparent', 'wms_merge', 'tms_cache', 'wms_cache_multi',
+        expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
+            'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
+            'wms_merge', 'tms_cache', 'wms_cache_multi',
             'wms_cache_link_single', 'wms_cache_110'])
         eq_(layer_names, expected_names)
         assert is_130_capa(xml)
@@ -962,4 +977,4 @@ if sys.platform != 'win32':
                 self.common_map_req.params['format'] = 'image/png'
                 resp = self.app.get(self.common_map_req)
                 eq_(resp.content_type, 'image/png')
-            
+

@@ -179,4 +179,73 @@ class TestCoverageWMS(SystemTest):
                 resp.content_type = 'image/png'
                 data = StringIO(resp.body)
                 assert is_png(data)
-                
+
+    def test_combined_same_fwd_req_params(self):
+        # merged to one request because all layers share the same time param in
+        # fwd_req_params config
+        with tmp_image((200, 200), format='png') as img:
+            img = img.read()
+            expected_req = [({'path': '/service_a?SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
+                                  '&VERSION=1.1.1&BBOX=9.0,50.0,10.0,51.0'
+                                  '&WIDTH=200&transparent=True&TIME=20041012'
+                                  '&layers=a_one,a_two,a_three,a_four'},
+                             {'body': img, 'headers': {'content-type': 'image/png'}}),
+                            ]
+
+            with mock_httpd(('localhost', 42423), expected_req):
+                self.common_map_req.params.layers = 'layer_fwdparams1,layer_fwdparams2'
+                self.common_map_req.params['time'] = '20041012'
+                self.common_map_req.params.transparent = True
+                resp = self.app.get(self.common_map_req)
+                resp.content_type = 'image/png'
+                data = StringIO(resp.body)
+                assert is_png(data)
+
+    def test_combined_no_fwd_req_params(self):
+        # merged to one request because no vendor param is set
+        with tmp_image((200, 200), format='png') as img:
+            img = img.read()
+            expected_req = [({'path': '/service_a?SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
+                                  '&VERSION=1.1.1&BBOX=9.0,50.0,10.0,51.0'
+                                  '&WIDTH=200&transparent=True'
+                                  '&layers=a_one,a_two,a_four'},
+                             {'body': img, 'headers': {'content-type': 'image/png'}}),
+                            ]
+
+            with mock_httpd(('localhost', 42423), expected_req):
+                self.common_map_req.params.layers = 'layer_fwdparams1,single'
+                self.common_map_req.params.transparent = True
+                resp = self.app.get(self.common_map_req)
+                resp.content_type = 'image/png'
+                data = StringIO(resp.body)
+                assert is_png(data)
+
+    def test_combined_mixed_fwd_req_params(self):
+        # not merged to one request because fwd_req_params are different
+        common_params = (r'/service_a?SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
+                                  '&VERSION=1.1.1&BBOX=9.0,50.0,10.0,51.0'
+                                  '&WIDTH=200&transparent=True')
+
+        with tmp_image((200, 200), format='png') as img:
+            img = img.read()
+            expected_req = [({'path': common_params + '&layers=a_one&TIME=20041012'},
+                             {'body': img, 'headers': {'content-type': 'image/png'}}),
+                             ({'path': common_params + '&layers=a_two&TIME=20041012&VENDOR=foo'},
+                             {'body': img, 'headers': {'content-type': 'image/png'}}),
+                             ({'path': common_params + '&layers=a_four'},
+                             {'body': img, 'headers': {'content-type': 'image/png'}}),
+                            ]
+
+            with mock_httpd(('localhost', 42423), expected_req):
+                self.common_map_req.params.layers = 'layer_fwdparams1,single'
+                self.common_map_req.params['time'] = '20041012'
+                self.common_map_req.params['vendor'] = 'foo'
+                self.common_map_req.params.transparent = True
+                resp = self.app.get(self.common_map_req)
+                resp.content_type = 'image/png'
+                data = StringIO(resp.body)
+                assert is_png(data)
+
