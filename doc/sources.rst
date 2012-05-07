@@ -131,7 +131,7 @@ If MapProxy needs to reproject and the source has multiple ``supported_srs``, th
 
 A list with request parameters that will be forwarded to the source server (if available in the original request). A typical use case of this feature would be to forward the `TIME` parameter when working with a WMS-T server.
 
-Please note that this feature is currently not supported when working with caches: you should confugre a :ref:`direct source <direct_source>` instead.
+Please note that this feature is currently not supported when working with caches: you should configure a :ref:`direct source <direct_source>` instead.
 
 ``supported_format``
 ^^^^^^^^^^^^^^^^^^^^
