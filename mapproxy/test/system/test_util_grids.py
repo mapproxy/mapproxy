@@ -16,6 +16,7 @@
 from __future__ import with_statement
 import os
 import sys
+import contextlib
 
 from cStringIO import StringIO
 from nose.tools import assert_raises
@@ -30,38 +31,39 @@ GRID_NAMES = [
     'another_grid_full_example'
 ]
 
+@contextlib.contextmanager
+def capture_stderr(io=None):
+    if io is None:
+        io = StringIO()
+    old_stderr = sys.stderr
+    sys.stderr = io
+    try:
+        yield io
+    finally:
+        sys.stderr = old_stderr
+
 class TestUtilGrids(object):
     def setup(self):
-        self.old_stdout = sys.stdout
-        self.old_stderr = sys.stderr
-        sys.stdout = sys.stderr = StringIO()
         self.mapproxy_config_file = os.path.join(FIXTURE_DIR, 'util_grids.yaml')
-        self.args = ['-f', self.mapproxy_config_file]
-
-    def teardown(self):
-        sys.stdout = self.old_stdout
-        sys.stderr = self.old_stderr
+        self.args = ['command_dummy', '-f', self.mapproxy_config_file]
 
     def test_config_not_found(self):
-        self.args = ['-f', 'foo.bar']
-        with assert_raises(SystemExit) as cm:
-            grids_command(self.args)
-        assert sys.stdout.getvalue().startswith("ERROR:")
+        self.args = ['command_dummy', '-f', 'foo.bar']
+        with capture_stderr() as err:
+            with assert_raises(SystemExit):
+                grids_command(self.args)
+        assert err.getvalue().startswith("ERROR:")
         
     def test_list_configured(self):
         self.args.append('-l')
         grids_command(self.args)
         captured_output = sys.stdout.getvalue()
-        assert "Configured Grids" in captured_output
         for grid in GRID_NAMES:
             assert grid in captured_output
 
-        number_of_lines = 0
-        for line in captured_output.split('\n'):
-            if line: #last line is emtpy
-                number_of_lines += 1
-        # 5 entries plus one header
-        assert number_of_lines == 6        
+        number_of_lines = sum(1 for line in captured_output.split('\n') if line)
+
+        assert number_of_lines == 5
 
     def test_display_single_grid(self):
         self.args.append('-g')
@@ -81,6 +83,6 @@ class TestUtilGrids(object):
         grids_command(self.args)
         captured_output = sys.stdout.getvalue()
         assert "GLOBAL_MERCATOR" in captured_output
-        assert "origin: 'sw'" in captured_output
+        assert "origin*: 'sw'" in captured_output
 
 

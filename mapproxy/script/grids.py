@@ -16,58 +16,62 @@
 import sys
 import optparse
 
-from mapproxy.config.loader import load_configuration, ConfigurationError
+from mapproxy.config.loader import load_configuration
 
-def wrap_with_single_quotation(value):
-    if isinstance(value, basestring):
-        value = "'%s'" % (value,)
-    return value
+def format_conf_value(value):
+    if isinstance(value, tuple):
+        # YAMl only supports lists, convert for clarity
+        value = list(value)
+    return repr(value)
 
-def default_origin(origin):
-    if origin is None:
-        origin = 'sw'
-    return wrap_with_single_quotation(origin)
-
-def format(grid_conf):
+def display_grid(grid_conf):
     print '%s:' % (grid_conf.conf['name'],)
     print '    Configuration:'
-    for key, value in grid_conf.conf.items():
+    conf_dict = grid_conf.conf.copy()
+    
+    tile_grid = grid_conf.tile_grid()
+    if 'tile_size' not in conf_dict:
+        conf_dict['tile_size*'] = tile_grid.tile_size
+    if 'bbox' not in conf_dict:
+        conf_dict['bbox*'] = tile_grid.bbox
+    if 'origin' not in conf_dict:
+        conf_dict['origin*'] = tile_grid.origin or 'sw'
+
+    for key in sorted(conf_dict):
         if key == 'name':
             continue
-        print '        %s: %s' % (key, wrap_with_single_quotation(value))
-    tile_grid = grid_conf.tile_grid()
-    print '        tile_size: [%d, %d]' % (tile_grid.tile_size[0], tile_grid.tile_size[1])
-    print '        origin: %s' % (default_origin(tile_grid.origin),)
+        print '        %s: %s' % (key, format_conf_value(conf_dict[key]))
     print '    Levels/Resolutions:'
     for level, res in enumerate(tile_grid.resolutions):
         print "        %.2d:  %r" % (level, res)
 
-def display(grids, detailed_grid=None, list_grids=False):
-    print '========== Configured Grids =========='
-    if list_grids:
-        for grid_name in grids.keys():
-            print grid_name
-    else:
-        for grid_name, grid_conf in grids.items():
-            if detailed_grid is not None:
-                if grid_name == detailed_grid:
-                    format(grid_conf)
-            else:
-                format(grid_conf)
+
+def display_grids_list(grids):
+    for grid_name in grids.keys():
+        print grid_name
+
+def display_grids(grids, detailed_grid=None):
+    for i, (grid_name, grid_conf) in enumerate(grids.items()):
+        if i != 0:
+            print
+        display_grid(grid_conf)
 
 def grids_command(args=None):
     parser = optparse.OptionParser("%prog grids [options] mapproxy_conf")
     parser.add_option("-f", "--mapproxy-conf", dest="mapproxy_conf",
-        help="Existing MapProxy configuration.")
+        help="MapProxy configuration.")
     parser.add_option("-g", "--grid", dest="grid_name",
-        help="Display only informations about the specific grid.")
+        help="Display only information about the specified grid.")
     parser.add_option("-l", "--list", dest="list_grids", action="store_true", default=False, help="List names of configured grids")
+
     if args:
         args = args[1:] # remove script name
+
     (options, args) = parser.parse_args(args)
     if not options.mapproxy_conf:
         if len(args) != 1:
             parser.print_help()
+            sys.exit(1)
         else:
             options.mapproxy_conf = args[0]
     try:
@@ -85,7 +89,12 @@ def grids_command(args=None):
             print 'grid not found: %s' % (options.grid_name,)
             sys.exit(1)
 
-    display(grids, detailed_grid=options.grid_name, list_grids=options.list_grids)
+    if options.list_grids:
+        display_grids_list(grids)
+    elif options.grid_name:
+        display_grids({options.grid_name: grids[options.grid_name]})
+    else:
+        display_grids(grids)
     
 
 
