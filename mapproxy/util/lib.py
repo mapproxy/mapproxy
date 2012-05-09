@@ -32,7 +32,11 @@ default_locations = dict(
     win32=dict(
         paths = [os.path.dirname(os.__file__) + '/../../../DLLs'],
         exts = ['.dll']
-    )
+    ),
+    other=dict(
+        paths = [], # MAPPROXY_LIB_PATH will add paths here
+        exts = ['.so']
+    ),
 )
 
 additional_lib_path = os.environ.get('MAPPROXY_LIB_PATH')
@@ -67,6 +71,10 @@ def load_library_(lib_name, locations_conf=default_locations):
     if sys.platform in locations_conf:
         paths = locations_conf[sys.platform]['paths']
         exts = locations_conf[sys.platform]['exts']
+        lib_path = find_library(lib_name, paths, exts)
+    else:
+        paths = locations_conf['other']['paths']
+        exts = locations_conf['other']['exts']
         lib_path = find_library(lib_name, paths, exts)
     
     if lib_path:

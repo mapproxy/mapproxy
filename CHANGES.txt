@@ -1,4 +1,12 @@
-1.4.0rc1 2012-04-02
+1.4.0x 2012-05-xx
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- use MAPPROXY_LIB_PATH on platforms other that win32 and darwin
+- raise config error for mapnik sources when mapnik could not be imported
+
+1.4.0rc1 2012-05-02
 ~~~~~~~~~~~~~~~~~~~
 
 Features:

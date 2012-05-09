@@ -161,8 +161,9 @@ class WMSSource(Source):
         if self.coverage != other.coverage:
             return False
 
-        if query.get_dimension_params(self.fwd_req_params) != \
-                query.get_dimension_params(other.fwd_req_params):
+
+        if (query.dimensions_for_params(self.fwd_req_params) != 
+            query.dimensions_for_params(other.fwd_req_params)):
             return False
 
         return True
