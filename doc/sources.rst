@@ -126,12 +126,14 @@ If MapProxy needs to reproject and the source has multiple ``supported_srs``, th
     
   ..  .. note:: For the configuration of SRS for MapProxy see `srs_configuration`_.
 
-``forward-req-params``
+``forward_req_params``
 ^^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.5.0
 
 A list with request parameters that will be forwarded to the source server (if available in the original request). A typical use case of this feature would be to forward the `TIME` parameter when working with a WMS-T server.
 
-Please note that this feature is currently not supported when working with caches: you should configure a :ref:`direct source <direct_source>` instead.
+This feature only works with :ref:`uncached sources <direct_source>`.
 
 ``supported_format``
 ^^^^^^^^^^^^^^^^^^^^
@@ -246,6 +248,7 @@ Full example::
     coverage:
        polygons: GM.txt
        polygons_srs: EPSG:900913
+    forward_req_params: ['TIME', 'CUSTOM']
     req:
       url: http://localhost:8080/service?mycustomparam=foo
       layers: roads
