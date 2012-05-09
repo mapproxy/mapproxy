@@ -237,7 +237,7 @@ class WMSServer(Server):
         request.validate_srs(self.srs)
     
     def update_query_with_fwd_params(self, query, params, layers):
-        # forward relevant request params into MapQuery.dimension_params
+        # forward relevant request params into MapQuery.dimensions
         for layer in layers:
             if not hasattr(layer, 'fwd_req_params'):
                 continue
