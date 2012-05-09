@@ -112,25 +112,24 @@ class MapQuery(object):
     Internal query for a map with a specific extent, size, srs, etc.
     """
     def __init__(self, bbox, size, srs, format='image/png', transparent=False,
-                 tiled_only=False, **dimension_params):
+                 tiled_only=False, dimensions=None):
         self.bbox = bbox
         self.size = size
         self.srs = srs
         self.format = format
         self.transparent = transparent
         self.tiled_only = tiled_only
-        self.dimension_params = dimension_params
+        self.dimensions = dimensions or {}
 
-    def get_dimension_param(self, dparam):
-        return self.dimension_params.get(dparam, None)
+    def dimensions_for_params(self, params):
+        """
+        Return subset of the dimensions.
 
-    def set_dimension_param(self, dparam, value):
-        self.dimension_params[dparam] = value
-
-    def get_dimension_params(self, keys=None):
-        keys = set(keys or ())
-        dparams = self.dimension_params
-        return dict((k, dparams[k]) for k in keys if k in dparams)
+        >>> mq = MapQuery(None, None, None, dimensions={'foo': 1, 'bar': 2})
+        >>> mq.dimensions_for_params(set(['foo', 'baz']))
+        {'foo': 1}
+        """
+        return dict((k, v) for k, v in self.dimensions.iteritems() if k in params)
 
     def __repr__(self):
         return "MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s)" % self.__dict__
