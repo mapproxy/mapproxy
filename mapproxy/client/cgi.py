@@ -71,7 +71,8 @@ class CGIClient(object):
         assert data is None, 'POST requests not supported by CGIClient'
         
         parsed_url = urlparse(url)
-        environ = {
+        environ = os.environ.copy()
+        environ.update({
             'QUERY_STRING': parsed_url.query,
             'REQUEST_METHOD': 'GET',
             'GATEWAY_INTERFACE': 'CGI/1.1',
@@ -79,7 +80,7 @@ class CGIClient(object):
             'SERVER_NAME': 'localhost',
             'SERVER_PROTOCOL': 'HTTP/1.0',
             'SERVER_SOFTWARE': 'MapProxy',
-        }
+        })
         
         start_time = time.time()
         try:
