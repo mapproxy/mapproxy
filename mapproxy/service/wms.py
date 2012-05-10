@@ -292,7 +292,7 @@ class WMSServer(Server):
             if result['authorized'] == 'unauthenticated':
                 raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
-                return PERMIT_ALL_LAYERS
+                return PERMIT_ALL_LAYERS, None
             layers = {}
             if result['authorized'] == 'partial':
                 for layer_name, permissions in result['layers'].iteritems():
