@@ -316,17 +316,17 @@ class TestWMS111(WMSTest):
         with tmp_image((200, 200), format='png') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                       '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A900913&styles='
-                                      '&VERSION=1.1.1&BBOX=908822.945624,7004479.85652,920282.144964,7014491.63726'
+                                      '&VERSION=1.1.1&BBOX=908822.944624,7004479.85652,920282.144964,7014491.63726'
                                       '&WIDTH=229'},
                             {'body': img.read(), 'headers': {'content-type': 'image/png'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 self.common_map_req.params['bbox'] = '444122.311736,5885498.04243,450943.508884,5891425.10484'
                 self.common_map_req.params['srs'] = 'EPSG:25832'
                 resp = self.app.get(self.common_map_req)
                 img.seek(0)
                 assert resp.body != img.read()
                 is_png(img)
-                # eq_(resp.content_type, 'image/png')
+                eq_(resp.content_type, 'image/png')
     
     def test_get_map_invalid_bbox(self):
         # min x larger than max x
@@ -419,7 +419,7 @@ class TestWMS111(WMSTest):
         assert abs(SRS(25832).transform_to(SRS(900913), p_25832)[0] - p_900913[0]) < 570/2
         assert abs(SRS(25832).transform_to(SRS(900913), p_25832)[1] - p_900913[1]) < 570/2
         
-        with mock_httpd(('localhost', 42423), [expected_req]):
+        with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
             self.common_fi_req.params['bbox'] = '3570269,5540889,3643458,5614078'
             self.common_fi_req.params['srs'] = 'EPSG:25832'
             self.common_fi_req.params.pos = 10, 20
