@@ -39,12 +39,13 @@ class HTTPServer(HTTPServer_):
         HTTPServer_.handle_error(self, request, client_address)
 
 class ThreadedStopableHTTPServer(threading.Thread):
-    def __init__(self, address, requests_responses, unordered=False):
+    def __init__(self, address, requests_responses, unordered=False, query_comparator=None):
         threading.Thread.__init__(self, **{'group': None})
         self.requests_responses = requests_responses
         self.sucess = False
         self.shutdown = False
-        self.httpd = HTTPServer(address, mock_http_handler(requests_responses, unordered=unordered))
+        self.httpd = HTTPServer(address,mock_http_handler(requests_responses,
+            unordered=unordered, query_comparator=query_comparator))
         self.httpd.timeout = 1.0
         self.out = self.httpd.out = StringIO()
     
@@ -66,7 +67,9 @@ class ThreadedStopableHTTPServer(threading.Thread):
         # force socket close so next test can bind to same address
         self.httpd.socket.close()
 
-def mock_http_handler(requests_responses, unordered=False):
+def mock_http_handler(requests_responses, unordered=False, query_comparator=None):
+    if query_comparator is None:
+        query_comparator = query_eq
     class MockHTTPHandler(BaseHTTPRequestHandler):
         def do_GET(self):
             self.query_data = self.path
@@ -83,7 +86,7 @@ def mock_http_handler(requests_responses, unordered=False):
             if unordered:
                 for req_resp in requests_responses:
                     req, resp = req_resp
-                    if query_eq(req['path'], self.query_data):
+                    if query_comparator(req['path'], self.query_data):
                         requests_responses.remove(req_resp)
                         return req, resp
                 return None, None
@@ -107,7 +110,7 @@ def mock_http_handler(requests_responses, unordered=False):
                     self.end_headers()
                     self.wfile.write('no access')
                     return
-            if not query_eq(req['path'], self.query_data):
+            if not query_comparator(req['path'], self.query_data):
                 print >>self.server.out, 'got request      ', self.query_data
                 print >>self.server.out, 'expected request ', req['path']
                 query_actual = set(query_to_dict(self.query_data).items())
@@ -180,6 +183,42 @@ class MockServ(object):
         assert self._thread.sucess, ('requests to mock httpd did not '
             'match expectations:\n' + self._thread.out.read())
 
+
+def wms_query_eq(expected, actual):
+    """
+    >>> wms_query_eq('bAR=baz&foo=bizz&bbOX=0,0,100000,100000', 'foO=bizz&BBOx=-.0001,0.01,99999.99,100000.09&bar=baz')
+    True
+    >>> wms_query_eq('bAR=baz&foo=bizz&bbOX=0,0,100000,100000', 'foO=bizz&BBOx=-.0001,0.01,99999.99,100000.11&bar=baz')
+    False
+    >>> wms_query_eq('/service?bar=baz&fOO=bizz', 'foo=bizz&bar=baz')
+    False
+    >>> wms_query_eq('/1/2/3.png', '/1/2/3.png')
+    True
+    >>> wms_query_eq('/1/2/3.png', '/1/2/0.png')
+    False
+    """
+    from mapproxy.srs import bbox_equals
+    if path_from_query(expected) != path_from_query(actual):
+        return False
+
+    expected = query_to_dict(expected)
+    actual = query_to_dict(actual)
+    
+    if 'bbox' in expected and 'bbox' in actual:
+        expected = expected.copy()
+        expected_bbox = map(float, expected.pop('bbox').split(','))
+        actual = actual.copy()
+        actual_bbox = map(float, actual.pop('bbox').split(','))
+        if expected != actual:
+            return False
+        if not bbox_equals(expected_bbox, actual_bbox):
+            return False
+    else:
+        if expected != actual:
+            return False
+    
+    return True
+
 def query_eq(expected, actual):
     """
     >>> query_eq('bAR=baz&foo=bizz', 'foO=bizz&bar=baz')
@@ -247,8 +286,13 @@ def assert_url_eq(url1, url2):
     assert parts1[4] == parts2[4], '%s != %s (%s)' % (url1, url2, 'fragment')
 
 @contextmanager
-def mock_httpd(address, requests_responses, unordered=False):
-    t = ThreadedStopableHTTPServer(address, requests_responses, unordered=unordered)
+def mock_httpd(address, requests_responses, unordered=False, bbox_aware_query_comparator=False):
+    if bbox_aware_query_comparator:
+        query_comparator = wms_query_eq
+    else:
+        query_comparator = query_eq
+    t = ThreadedStopableHTTPServer(address, requests_responses, unordered=unordered,
+        query_comparator=query_comparator)
     t.start()
     try:
         yield
