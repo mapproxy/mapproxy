@@ -636,16 +636,20 @@ class WMSSourceConfiguration(SourceConfiguration):
         
         http_method = self.context.globals.get_value('http.method', self.conf)
         
+        fwd_req_params = set(self.conf.get('forward_req_params', []))
+
         request = create_request(self.conf['req'], params, version=version,
             abspath=self.context.globals.abspath)
         http_client, request.url = self.http_client(request.url)
         client = WMSClient(request, http_client=http_client, 
-                           http_method=http_method, lock=lock)
+                           http_method=http_method, lock=lock,
+                           fwd_req_params=fwd_req_params)
         return WMSSource(client, image_opts=image_opts, coverage=coverage,
                          res_range=res_range, transparent_color=transparent_color,
                          transparent_color_tolerance=transparent_color_tolerance,
                          supported_srs=supported_srs,
-                         supported_formats=supported_formats or None)
+                         supported_formats=supported_formats or None,
+                         fwd_req_params=fwd_req_params)
     
     def fi_source(self, params=None):
         from mapproxy.client.wms import WMSInfoClient
@@ -771,9 +775,11 @@ class MapnikSourceConfiguration(SourceConfiguration):
         mapfile = self.context.globals.abspath(self.conf['mapfile'])
         
         if self.conf.get('use_mapnik2', False):
-            from mapproxy.source.mapnik import Mapnik2Source as MapnikSource
+            from mapproxy.source.mapnik import Mapnik2Source as MapnikSource, mapnik2 as mapnik_api
         else:
-            from mapproxy.source.mapnik import MapnikSource
+            from mapproxy.source.mapnik import MapnikSource, mapnik as mapnik_api
+        if mapnik_api is None:
+            raise ConfigurationError('Could not import Mapnik, please verify it is installed!')
         return MapnikSource(mapfile, layers=layers, image_opts=image_opts,
             coverage=coverage, res_range=res_range, lock=lock)
 

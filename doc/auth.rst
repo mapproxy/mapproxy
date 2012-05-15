@@ -127,11 +127,11 @@ MapProxy looks in the request environment for a ``mapproxy.authorize`` entry. Th
 
 The signature of the authorization function:
 
-.. function:: authorize(service, environ, layers=[], **kw)
+.. function:: authorize(service, layers=[], environ=None, **kw)
   
   :param service: service that should be authorized
-  :param environ: the request environ
   :param layers: list of layer names that should be authorized
+  :param environ: the request environ
   :rtype: dictionary with authorization information
 
   The arguments might get extended in future versions of MapProxy. Therefore you should collect further arguments in a variable keyword argument (i.e. ``**kw``). 

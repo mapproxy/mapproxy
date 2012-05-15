@@ -123,7 +123,7 @@ class DemoServer(Server):
             elif isinstance(map_layer, WMSSource):
                 if map_layer.supported_srs:
                     for supported_srs in map_layer.supported_srs:
-                        cached_srs.append(supported_srs)
+                        cached_srs.append(supported_srs.srs_code)
                         
         uncached_srs = []
         
@@ -131,9 +131,8 @@ class DemoServer(Server):
             if srs_code not in cached_srs:
                 uncached_srs.append(srs_code)
         
-        sorted_cached_srs = sorted(cached_srs, key=lambda epsg_code:get_epsg_num(epsg_code))
-        sorted_uncached_srs = sorted(uncached_srs, key=lambda epsg_code:get_epsg_num(epsg_code))
-        
+        sorted_cached_srs = sorted(cached_srs, key=lambda srs: get_epsg_num(srs))
+        sorted_uncached_srs = sorted(uncached_srs, key=lambda srs: get_epsg_num(srs))
         sorted_cached_srs = [(s + '*', s) for s in sorted_cached_srs]
         sorted_uncached_srs = [(s, s) for s in sorted_uncached_srs]
         return sorted_cached_srs + sorted_uncached_srs

@@ -31,11 +31,12 @@ log = logging.getLogger('mapproxy.source.wms')
 
 class WMSClient(object):
     def __init__(self, request_template, http_client=None,
-                 http_method=None, lock=None):
+                 http_method=None, lock=None, fwd_req_params=None):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
         self.http_method = http_method
         self.lock = lock
+        self.fwd_req_params = fwd_req_params or set()
     
     def retrieve(self, query, format):
         if self.http_method == 'POST':
@@ -90,6 +91,8 @@ class WMSClient(object):
         req.params.size = query.size
         req.params.srs = query.srs.srs_code
         req.params.format = format
+        # also forward dimension request params if available in the query
+        req.params.update(query.dimensions_for_params(self.fwd_req_params))
         return req
     
     def combined_client(self, other, query):
@@ -103,7 +106,8 @@ class WMSClient(object):
         new_req = self.request_template.copy()
         new_req.params.layers = new_req.params.layers + other.request_template.params.layers
         
-        return WMSClient(new_req, http_client=self.http_client, http_method=self.http_method)
+        return WMSClient(new_req, http_client=self.http_client,
+                http_method=self.http_method, fwd_req_params=self.fwd_req_params)
         
 
 class WMSInfoClient(object):
@@ -215,5 +219,4 @@ class WMSLegendURLClient(object):
     @property
     def identifier(self):
         return (self.url, None)
-        
         
