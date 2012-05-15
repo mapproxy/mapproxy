@@ -50,8 +50,7 @@ class TestUtilGrids(object):
     def test_config_not_found(self):
         self.args = ['command_dummy', '-f', 'foo.bar']
         with capture_stderr() as err:
-            with assert_raises(SystemExit):
-                grids_command(self.args)
+            assert_raises(SystemExit, grids_command, self.args)
         assert err.getvalue().startswith("ERROR:")
         
     def test_list_configured(self):
