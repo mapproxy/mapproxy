@@ -198,3 +198,127 @@ With multiple scale values and custom DPI:
           6.6145833333, #  2       25000.00000000
           2.6458333333, #  3       10000.00000000
   ]
+
+.. _mapproxy_util_grids:
+
+``grids``
+==========
+
+.. versionadded:: 1.5.0
+
+This sub-command helps to display information about configured grids.
+
+The command takes a MapProxy configuration file and returns all configured grids. In Addition only the configured grid names or one specific grid can be displayed.
+Keep in mind, that MapProxy will have the two following grids configured:
+
+  - GLOBAL_GEODETIC
+  - GLOBAL_MERCATOR
+
+Furthermore default values for each grid will be displayed, if they are not defined explicitly.
+All labels with default values will end with an asterix.
+
+.. program:: mapproxy-util grids
+
+.. cmdoption:: -f <path/to/config>, --mapproxy-config <path/to/config>
+
+  Display all configured grids for this MapProxy configuration with detailed informations.
+  If this option is not set, the sub-command will try to use the last given argument as mapproxy-config. 
+
+.. cmdoption:: -l, --list 
+
+  Display only the names of the configured grids for the given configuration
+
+.. cmdoption:: -g <grid_name>, --grid <grid_name>
+
+  Display detailed information only for this grid for the given configuration.
+  The sub-command will exit, if the given grid name is not found.
+
+Example
+-------
+
+An examplary configuration snippet:
+::
+
+  grids:
+    localgrid:
+      srs: EPSG:31467
+      bbox: [5,50,10,55]
+      bbox_srs: EPSG:4326
+      min_res: 10000
+      res_factor: sqrt2
+    localgrid2:
+      base: localgrid
+      srs: EPSG:25832
+      tile_size: [512, 512]
+
+
+List all configured grids:
+::
+
+  mapproxy-util grids --list --mapproxy-config /path/to/mapproxy.yaml
+
+::
+
+    GLOBAL_MERCATOR
+    localgrid
+    GLOBAL_GEODETIC
+    localgrid2
+
+
+Display detailed information for one specific grid:
+::
+
+  mapproxy-util grids --grid localgrid --mapproxy-config /path/to/mapproxy.yaml
+  
+::
+
+  localgrid:
+    Configuration:
+        bbox: [5, 50, 10, 55]
+        bbox_srs: 'EPSG:4326'
+        min_res: 10000
+        origin*: 'sw'
+        res_factor: 'sqrt2'
+        srs: 'EPSG:31467'
+        tile_size*: [256, 256]
+    Levels/Resolutions:
+        00:  10000
+        01:  7071.067811865475
+        02:  4999.999999999999
+        03:  3535.5339059327366
+        04:  2499.999999999999
+        05:  1767.766952966368
+        06:  1249.9999999999993
+        07:  883.8834764831838
+        08:  624.9999999999995
+        09:  441.94173824159185
+        10:  312.4999999999997
+        11:  220.9708691207959
+        12:  156.24999999999986
+        13:  110.48543456039795
+        14:  78.12499999999993
+        15:  55.242717280198974
+        16:  39.062499999999964
+        17:  27.621358640099487
+        18:  19.531249999999982
+        19:  13.810679320049744
+        20:  9.765624999999991
+        21:  6.905339660024872
+        22:  4.882812499999996
+        23:  3.452669830012436
+        24:  2.441406249999998
+        25:  1.726334915006218
+        26:  1.220703124999999
+        27:  0.863167457503109
+        28:  0.6103515624999994
+        29:  0.4315837287515545
+        30:  0.3051757812499997
+        31:  0.21579186437577724
+        32:  0.15258789062499986
+        33:  0.10789593218788862
+        34:  0.07629394531249993
+        35:  0.05394796609394431
+        36:  0.038146972656249965
+        37:  0.026973983046972155
+        38:  0.019073486328124983
+        39:  0.013486991523486078
