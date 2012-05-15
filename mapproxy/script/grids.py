@@ -47,14 +47,14 @@ def display_grid(grid_conf):
 
 
 def display_grids_list(grids):
-    for grid_name in grids.keys():
+    for grid_name in sorted(grids.keys()):
         print grid_name
 
 def display_grids(grids, detailed_grid=None):
-    for i, (grid_name, grid_conf) in enumerate(grids.items()):
+    for i, grid_name in enumerate(sorted(grids.keys())):
         if i != 0:
             print
-        display_grid(grid_conf)
+        display_grid(grids[grid_name])
 
 def grids_command(args=None):
     parser = optparse.OptionParser("%prog grids [options] mapproxy_conf")
