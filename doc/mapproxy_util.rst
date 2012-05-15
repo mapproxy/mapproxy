@@ -5,7 +5,7 @@ mapproxy-util
 #############
 
 
-The commandline tool ``mapproxy-util`` provides three sub-commands that are helpful when working with MapProxy.
+The commandline tool ``mapproxy-util`` provides sub-commands that are helpful when working with MapProxy.
 
 To get a list of all sub-commands call::
  
@@ -206,37 +206,37 @@ With multiple scale values and custom DPI:
 
 .. versionadded:: 1.5.0
 
-This sub-command helps to display information about configured grids.
+This sub-command displays information about configured grids.
 
-The command takes a MapProxy configuration file and returns all configured grids. In Addition only the configured grid names or one specific grid can be displayed.
-Keep in mind, that MapProxy will have the two following grids configured:
+The command takes a MapProxy configuration file and returns all configured grids.
+Keep in mind that it will include have the following two default grids:
 
   - GLOBAL_GEODETIC
   - GLOBAL_MERCATOR
 
 Furthermore default values for each grid will be displayed, if they are not defined explicitly.
-All labels with default values will end with an asterix.
+All options with default values are marked with an asterisk.
 
 .. program:: mapproxy-util grids
 
 .. cmdoption:: -f <path/to/config>, --mapproxy-config <path/to/config>
 
-  Display all configured grids for this MapProxy configuration with detailed informations.
-  If this option is not set, the sub-command will try to use the last given argument as mapproxy-config. 
+  Display all configured grids for this MapProxy configuration with detailed information.
+  If this option is not set, the sub-command will try to use the last argument as the mapproxy config. 
 
 .. cmdoption:: -l, --list 
 
-  Display only the names of the configured grids for the given configuration
+  Display only the names of the grids for the given configuration.
 
 .. cmdoption:: -g <grid_name>, --grid <grid_name>
 
-  Display detailed information only for this grid for the given configuration.
-  The sub-command will exit, if the given grid name is not found.
+  Display information only for a single grid.
+  The tool will exit, if the grid name is not found.
 
 Example
 -------
 
-An examplary configuration snippet:
+With the following MapProxy grid configuration:
 ::
 
   grids:
@@ -259,9 +259,9 @@ List all configured grids:
 
 ::
 
+    GLOBAL_GEODETIC
     GLOBAL_MERCATOR
     localgrid
-    GLOBAL_GEODETIC
     localgrid2
 
 
