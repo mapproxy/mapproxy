@@ -22,7 +22,16 @@ Each sub-command provides additional information::
   mapproxy-util subcommand --help
   
 
+The current sub-commands are:
 
+- :ref:`mapproxy_util_create`
+- :ref:`mapproxy_util_serve_develop`
+- :ref:`mapproxy_util_serve_multiapp_develop`
+- :ref:`mapproxy_util_scales`
+- :ref:`mapproxy_util_grids`
+
+
+.. _mapproxy_util_create:
 
 ``create``
 ==========
@@ -75,6 +84,8 @@ Example
   mapproxy-util create -t base-config ./
 
 
+.. index:: testing, development, server
+.. _mapproxy_util_serve_develop:
 
 ``serve-develop``
 =================
@@ -98,6 +109,8 @@ Example
 
   mapproxy-util serve-develop ./mapproxy.yaml
 
+.. index:: testing, development, server, multiapp
+.. _mapproxy_util_serve_multiapp_develop:
 
 ``serve-multiapp-develop``
 ==========================
@@ -126,6 +139,8 @@ Example
 
 
 
+
+.. index:: scales, resolutions
 .. _mapproxy_util_scales:
 
 ``scales``
@@ -209,12 +224,12 @@ With multiple scale values and custom DPI:
 This sub-command displays information about configured grids.
 
 The command takes a MapProxy configuration file and returns all configured grids.
-Keep in mind that it will include have the following two default grids:
+Keep in mind that it will include the following two default grids:
 
   - GLOBAL_GEODETIC
   - GLOBAL_MERCATOR
 
-Furthermore default values for each grid will be displayed, if they are not defined explicitly.
+Furthermore, default values for each grid will be displayed if they are not defined explicitly.
 All options with default values are marked with an asterisk.
 
 .. program:: mapproxy-util grids
