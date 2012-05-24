@@ -297,4 +297,4 @@ Other WMS Servers
 
 The most important step for all WMS servers is to disable to dynamic placement of labels. Look into the documentation how to do this for you WMS server.
 
-If you want to contribute to this document then join our `mailing list <http://lists.osgeo.org/mailman/listinfo/mapproxy>`_ or use our `issue tracker <https://bitbucket.org/olt/mapproxy/issues/>`_.
+If you want to contribute to this document then join our `mailing list <http://lists.osgeo.org/mailman/listinfo/mapproxy>`_ or use our `issue tracker <https://github.com/mapproxy/mapproxy/issues/>`_.

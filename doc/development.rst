@@ -10,18 +10,18 @@ Source
 
 Releases are available from the `PyPI project page of MapProxy <http://pypi.python.org/pypi/MapProxy>`_. There is also `an archive of all releases <http://pypi.python.org/packages/source/M/MapProxy/>`_.
 
-MapProxy uses `Mercurial`_ as a source control management tool. If you are new to distributed SCMs or Mercurial we recommend to read `the Mercurial tutorial <http://hginit.com/>`_ by Joel Spolsky. 
+MapProxy uses `Git`_ as a source control management tool. If you are new to distributed SCMs or Git we recommend to read `Pro Git <http://git-scm.com/book>`_. 
 
-The main (authoritative) repository is hosted at https://bitbucket.org/olt/mapproxy/
+The main (authoritative) repository is hosted at http://github.com/mapproxy/mapproxy
 
 To get a copy of the repository call::
 
-  hg clone https://bitbucket.org/olt/mapproxy
+  git clone https://github.com/mapproxy/mapproxy
 
 If you want to contribute a patch, please consider `creating a "fork"`__ instead. This makes life easier for all of us.
 
-.. _`Mercurial`: http://mercurial.selenic.com/
-.. _`fork`: http://bitbucket.org/help/Collaborating#forking
+.. _`Git`: http://git-scm.com/
+.. _`fork`: http://help.github.com/fork-a-repo/
 
 __ fork_
 
@@ -50,7 +50,7 @@ This is the documentation you are reading right now. The raw files can be found 
 Issue Tracker
 -------------
 
-We are using `the issue tracker at BitBucket <http://bitbucket.org/olt/mapproxy/issues/>`_ to manage all bug reports, enhancements and new feature requests for MapProxy. Go ahead and `create new tickets <http://bitbucket.org/olt/mapproxy/issues/new/>`_. Feel free to post to the `mailing list`_ first, if you are not sure if you really found a bug or if a feature request is in the scope of MapProxy.
+We are using `the issue tracker at GitHub <https://github.com/mapproxy/mapproxy/issues>`_ to manage all bug reports, enhancements and new feature requests for MapProxy. Go ahead and `create new tickets <https://github.com/mapproxy/mapproxy/issues/new>`_. Feel free to post to the `mailing list`_ first, if you are not sure if you really found a bug or if a feature request is in the scope of MapProxy.
 
 Tests
 -----
