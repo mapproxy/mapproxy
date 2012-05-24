@@ -1,4 +1,13 @@
-1.4.0rc1 2012-03-xx
+1.4.0 2012-05-15
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- fix TypeError exception when auth callback returns {authorized:'full'}
+- use MAPPROXY_LIB_PATH on platforms other that win32 and darwin
+- raise config error for mapnik sources when mapnik could not be imported
+
+1.4.0rc1 2012-05-02
 ~~~~~~~~~~~~~~~~~~~
 
 Features:
@@ -7,6 +16,7 @@ Features:
 - support for WMS 1.3.0 extended layer capabilities
 - on_error handling for tile sources. fallback to empty/transparent
   tiles when the source returns HTTP codes like 404 or 204
+- add HTTP Cache-Control header to WMS-C responses
 
 Improvements:
 
@@ -14,7 +24,13 @@ Improvements:
   to the extent. this should prevent projection errors when requesting
   large bbox (e.g. over 180/90 in EPSG:4326)
 - improved lock timeouts in mapproxy-seed
-- the debug source does not overwrite the layer extent anymore
+- the debug source does not overwrite the layer extent anymore.
+  makes it more usable in demo/wms clients
+- support for multiple files and recursion in base option
+- mapproxy-seed ETA output is now more responsive to changes in seed speed
+- improved demo service
+  - choose different SRS for WMS layers
+  - support for WMTS
 
 Fixes:
 

@@ -367,12 +367,13 @@ def merge_bbox(bbox1, bbox2):
     maxy = max(bbox1[3], bbox2[3])
     return (minx, miny, maxx, maxy)
 
-def bbox_equals(src_bbox, dst_bbox, x_delta, y_delta=None):
+def bbox_equals(src_bbox, dst_bbox, x_delta=None, y_delta=None):
     """
     Compares two bbox and checks if they are equal, or nearly equal.
     
     :param x_delta: how precise the comparison should be.
-                    should be reasonable small, like a tenth of a pixle
+                    should be reasonable small, like a tenth of a pixel.
+                    defaults to 1/1.000.000th of the width.
     :type x_delta: bbox units
     
     >>> src_bbox = (939258.20356824622, 6887893.4928338043, 
@@ -384,13 +385,14 @@ def bbox_equals(src_bbox, dst_bbox, x_delta, y_delta=None):
     >>> bbox_equals(src_bbox, dst_bbox, 0.0001)
     False
     """
+    if x_delta is None:
+        x_delta = abs(src_bbox[0] - src_bbox[2]) / 1000000.0
     if y_delta is None:
         y_delta = x_delta
     return (abs(src_bbox[0] - dst_bbox[0]) < x_delta and
             abs(src_bbox[1] - dst_bbox[1]) < x_delta and
             abs(src_bbox[2] - dst_bbox[2]) < y_delta and
             abs(src_bbox[3] - dst_bbox[3]) < y_delta)
-
 
 def make_lin_transf(src_bbox, dst_bbox):
     """

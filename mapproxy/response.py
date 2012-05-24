@@ -84,7 +84,7 @@ class Response(object):
 
         if no_cache:
             assert not timestamp and not max_age
-            self.headers['Cache-Control'] = 'max-age=0, must-revalidate, no-cache, no-store'
+            self.headers['Cache-Control'] = 'no-cache, no-store'
             self.headers['Pragma'] = 'no-cache'
             self.headers['Expires'] = '-1'
 

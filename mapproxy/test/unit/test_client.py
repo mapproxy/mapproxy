@@ -379,7 +379,7 @@ class TestWMSInfoClient(object):
     def test_transform_fi_request_supported_srs(self):
         req = WMS111FeatureInfoRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo'})
         http = MockHTTPClient()
-        wms = WMSInfoClient(req, http_client=http, supported_srs=[SRS(31467)])
+        wms = WMSInfoClient(req, http_client=http, supported_srs=[SRS(25832)])
         fi_req = InfoQuery((8, 50, 9, 51), (512, 512),
                            SRS(4326), (256, 256), 'text/plain')
         
@@ -387,13 +387,13 @@ class TestWMSInfoClient(object):
         
         assert_query_eq(http.requested[0],
             TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                           '&REQUEST=GetFeatureInfo&HEIGHT=512&SRS=EPSG%3A31467&info_format=text/plain'
+                           '&REQUEST=GetFeatureInfo&HEIGHT=512&SRS=EPSG%3A25832&info_format=text/plain'
                            '&query_layers=foo'
                            '&VERSION=1.1.1&WIDTH=512&STYLES=&x=259&y=255'
-                           '&BBOX=3428376.92835,5540409.81393,3500072.08248,5652124.61616')
+                           '&BBOX=428333.552496,5538630.70275,500000.0,5650300.78652')
 
     def test_transform_fi_request(self):
-        req = WMS111FeatureInfoRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo', 'srs': 'EPSG:31467'})
+        req = WMS111FeatureInfoRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo', 'srs': 'EPSG:25832'})
         http = MockHTTPClient()
         wms = WMSInfoClient(req, http_client=http)
         fi_req = InfoQuery((8, 50, 9, 51), (512, 512),
@@ -403,10 +403,10 @@ class TestWMSInfoClient(object):
         
         assert_query_eq(http.requested[0],
             TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                           '&REQUEST=GetFeatureInfo&HEIGHT=512&SRS=EPSG%3A31467&info_format=text/plain'
+                           '&REQUEST=GetFeatureInfo&HEIGHT=512&SRS=EPSG%3A25832&info_format=text/plain'
                            '&query_layers=foo'
                            '&VERSION=1.1.1&WIDTH=512&STYLES=&x=259&y=255'
-                           '&BBOX=3428376.92835,5540409.81393,3500072.08248,5652124.61616')
+                           '&BBOX=428333.552496,5538630.70275,500000.0,5650300.78652')
 
 class TestWMSMapRequest100(object):
     def setup(self):

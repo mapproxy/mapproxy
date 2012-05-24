@@ -88,6 +88,14 @@ class TestWMSGetMapAuth(TestWMSAuth):
         req = Request(env)
         return wms_request(req)
 
+    def test_allow_all(self):
+        def auth(service, layers, **kw):
+            eq_(layers, 'layer1a layer1b'.split())
+            return { 'authorized': 'full' }
+        self.server.map(self.map_request('layer1', auth))
+        assert self.layers['layer1a'].requested
+        assert self.layers['layer1b'].requested
+
     def test_root_with_partial_sublayers(self):
         # filter out sublayer layer1b
         def auth(service, layers, **kw):

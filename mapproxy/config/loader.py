@@ -636,16 +636,20 @@ class WMSSourceConfiguration(SourceConfiguration):
         
         http_method = self.context.globals.get_value('http.method', self.conf)
         
+        fwd_req_params = set(self.conf.get('forward_req_params', []))
+
         request = create_request(self.conf['req'], params, version=version,
             abspath=self.context.globals.abspath)
         http_client, request.url = self.http_client(request.url)
         client = WMSClient(request, http_client=http_client, 
-                           http_method=http_method, lock=lock)
+                           http_method=http_method, lock=lock,
+                           fwd_req_params=fwd_req_params)
         return WMSSource(client, image_opts=image_opts, coverage=coverage,
                          res_range=res_range, transparent_color=transparent_color,
                          transparent_color_tolerance=transparent_color_tolerance,
                          supported_srs=supported_srs,
-                         supported_formats=supported_formats or None)
+                         supported_formats=supported_formats or None,
+                         fwd_req_params=fwd_req_params)
     
     def fi_source(self, params=None):
         from mapproxy.client.wms import WMSInfoClient
@@ -771,9 +775,11 @@ class MapnikSourceConfiguration(SourceConfiguration):
         mapfile = self.context.globals.abspath(self.conf['mapfile'])
         
         if self.conf.get('use_mapnik2', False):
-            from mapproxy.source.mapnik import Mapnik2Source as MapnikSource
+            from mapproxy.source.mapnik import Mapnik2Source as MapnikSource, mapnik2 as mapnik_api
         else:
-            from mapproxy.source.mapnik import MapnikSource
+            from mapproxy.source.mapnik import MapnikSource, mapnik as mapnik_api
+        if mapnik_api is None:
+            raise ConfigurationError('Could not import Mapnik, please verify it is installed!')
         return MapnikSource(mapfile, layers=layers, image_opts=image_opts,
             coverage=coverage, res_range=res_range, lock=lock)
 
@@ -1254,7 +1260,7 @@ class ServiceConfiguration(ConfigurationBase):
 
     def demo_service(self, conf):
         from mapproxy.service.demo import DemoServer
-        
+        services = self.context.services.conf.keys()
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
         layers = odict()
@@ -1264,14 +1270,14 @@ class ServiceConfiguration(ConfigurationBase):
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
         return DemoServer(layers, md, tile_layers=tile_layers,
-            image_formats=image_formats, srs=srs)
+            image_formats=image_formats, srs=srs, services=services)
     
 
 def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True):
     conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
     
     try:
-        conf_dict = load_configuration_file([mapproxy_conf], conf_base_dir)
+        conf_dict = load_configuration_file([os.path.basename(mapproxy_conf)], conf_base_dir)
     except YAMLError, ex:
         raise ConfigurationError(ex)
     errors, informal_only = validate_mapproxy_conf(conf_dict)

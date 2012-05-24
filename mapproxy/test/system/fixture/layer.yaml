@@ -42,8 +42,11 @@ layers:
   - name: direct
     title: Direct Layer
     sources: [direct]
+  - name: direct_fwd_params
+    title: Direct Forward Params Layer
+    sources: [direct_fwd_params]
   - name: wms_cache
-    title: WMS Cache Layer
+    title: WMS Cache Layer with direct access from level 8
     sources: [wms_cache]
     md:
       abstract: Some abstract
@@ -142,6 +145,12 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: bar
+  direct_fwd_params:
+    type: wms
+    forward_req_params: ['time']
+    req:
+      url: http://localhost:42423/service
+      layers: bar
   wms_cache:
     type: wms
     supported_srs: ['EPSG:900913', 'EPSG:4326']
@@ -188,4 +197,4 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: foo,bar
-      
+

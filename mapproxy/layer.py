@@ -107,19 +107,29 @@ class InfoLayer(object):
     def get_info(self, query):
         raise NotImplementedError
 
-
 class MapQuery(object):
     """
     Internal query for a map with a specific extent, size, srs, etc.
     """
     def __init__(self, bbox, size, srs, format='image/png', transparent=False,
-                 tiled_only=False):
+                 tiled_only=False, dimensions=None):
         self.bbox = bbox
         self.size = size
         self.srs = srs
         self.format = format
         self.transparent = transparent
         self.tiled_only = tiled_only
+        self.dimensions = dimensions or {}
+
+    def dimensions_for_params(self, params):
+        """
+        Return subset of the dimensions.
+
+        >>> mq = MapQuery(None, None, None, dimensions={'foo': 1, 'bar': 2})
+        >>> mq.dimensions_for_params(set(['foo', 'baz']))
+        {'foo': 1}
+        """
+        return dict((k, v) for k, v in self.dimensions.iteritems() if k in params)
 
     def __repr__(self):
         return "MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s)" % self.__dict__
@@ -354,6 +364,8 @@ class CacheMapLayer(MapLayer):
             if not self.extent.intersects(query_extent):
                 raise BlankImage()
             size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
+            if size[0] == 0 or size[1] == 0:
+                raise BlankImage()
             src_query = MapQuery(bbox, size, query.srs, query.format)
             resp = self._image(src_query)
             result = SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts,

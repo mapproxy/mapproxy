@@ -194,6 +194,7 @@ You can also configure the raw SLD with the ``sld_body`` option. You need to ind
 
 MapProxy will use HTTP POST requests in this case. You can change ``http.method``, if you want to force GET requests.
 
+.. _direct_source:
 
 Add highly dynamic layers
 =========================

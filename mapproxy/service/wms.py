@@ -99,6 +99,9 @@ class WMSServer(Server):
         for layers in actual_layers.values():
             render_layers.extend(layers)
 
+        self.update_query_with_fwd_params(query, params=params,
+            layers=render_layers)
+
         raise_source_errors =  True if self.on_error == 'raise' else False
         renderer = LayerRenderer(render_layers, query, map_request,
                                  raise_source_errors=raise_source_errors,
@@ -233,6 +236,15 @@ class WMSServer(Server):
         request.validate_format(self.image_formats)
         request.validate_srs(self.srs)
     
+    def update_query_with_fwd_params(self, query, params, layers):
+        # forward relevant request params into MapQuery.dimensions
+        for layer in layers:
+            if not hasattr(layer, 'fwd_req_params'):
+                continue
+            for p in layer.fwd_req_params:
+                if p in params:
+                    query.dimensions[p] = params[p]
+
     def check_featureinfo_request(self, request):
         self.validate_layers(request)
         request.validate_srs(self.srs)
@@ -280,7 +292,7 @@ class WMSServer(Server):
             if result['authorized'] == 'unauthenticated':
                 raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
-                return PERMIT_ALL_LAYERS
+                return PERMIT_ALL_LAYERS, None
             layers = {}
             if result['authorized'] == 'partial':
                 for layer_name, permissions in result['layers'].iteritems():

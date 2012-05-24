@@ -19,3 +19,4 @@ Patches and Suggestions
 - Stephan Holl
 - Kai Culemann
 - Miloslav Kmeť
+- Bruno Binet

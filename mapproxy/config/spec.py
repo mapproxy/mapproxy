@@ -290,6 +290,7 @@ mapproxy_yaml_spec = {
                 'supported_formats': [str()],
                 'supported_srs': [str()],
                 'http': http_opts,
+                'forward_req_params': [str()],
                 required('req'): {
                     required('url'): str(),
                     anything(): anything()
