@@ -198,3 +198,103 @@ With multiple scale values and custom DPI:
           6.6145833333, #  2       25000.00000000
           2.6458333333, #  3       10000.00000000
   ]
+
+.. _mapproxy_util_wms_capabilities:
+
+``wms_capabilities``
+==========
+
+.. versionadded:: 1.5.0
+
+This sub-command parses a valid capabilites document from an URL and displays all available layers.
+
+This tool does not create a MapProxy configuration, instead the displayed values shall help you to set up/modify your MapProxy configuration.
+
+The command takes any valid URL, if errors occur during the parsing process or opening of the URL, an error message will be shown.
+
+.. program:: mapproxy-util wms_capabilities
+
+.. cmdoption:: --host <URL>
+
+  Display all available Layers for this service. Each new layer will be marked with a hyphen and all sublayers are indented.
+
+
+Example
+-------
+
+With the following MapProxy layer configuration:
+::
+
+  layers:
+    - name: osm
+      title: Omniscale OSM WMS - osm.omniscale.net
+      sources: [osm_cache]
+    - name: foo
+      title: Group Layer
+      layers:
+        - name: layer1a
+          title: Title of Layer 1a
+          sources: [osm_cache]
+        - name: layer1b
+          title: Title of Layer 1b
+          sources: [osm_cache]
+
+Parsed capabilities document:
+::
+
+  mapproxy-util wms-capabilities http://127.0.0.1:8080/service?REQUEST=GetCapabilities
+
+::
+
+  Root-Layer:
+    - title: MapProxy WMS Proxy
+      url: http://127.0.0.1:8080/service?
+      opaque: False
+      srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:4326', 'EPSG:25831', 'EPSG:25833', 'EPSG:25832', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+      bbox: 
+          EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
+          EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+      queryable: False
+      llbbox: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+      layers: 
+        - name: osm
+          title: Omniscale OSM WMS - osm.omniscale.net
+          url: http://127.0.0.1:8080/service?
+          opaque: False
+          srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:25831', 'EPSG:25833', 'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+          bbox: 
+              EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
+              EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+          queryable: False
+          llbbox: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+        - name: foobar
+          title: Group Layer
+          url: http://127.0.0.1:8080/service?
+          opaque: False
+          srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:25831', 'EPSG:25833', 'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+          bbox: 
+              EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
+              EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+          queryable: False
+          llbbox: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+          layers: 
+            - name: layer1a
+              title: Title of Layer 1a
+              url: http://127.0.0.1:8080/service?
+              opaque: False
+              srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:4326', 'EPSG:25831', 'EPSG:25833', 'EPSG:25832', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+              bbox: 
+                  EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
+                  EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+              queryable: False
+              llbbox: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+            - name: layer1b
+              title: Title of Layer 1b
+              url: http://127.0.0.1:8080/service?
+              opaque: False
+              srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:4326', 'EPSG:25831', 'EPSG:25833', 'EPSG:25832', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+              bbox: 
+                  EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
+                  EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+              queryable: False
+              llbbox: [-180.0, -85.0511287798, 180.0, 85.0511287798]
