@@ -24,17 +24,27 @@ from mapproxy.client.http import open_url, HTTPClientError
 class PrettyPrinter(object):
     def __init__(self, indent=4):
         self.indent = indent
-        self.print_order = ['name', 'title']
+        self.print_order = ['name', 'title', 'url', 'srs', 'llbbox', 'bbox']
         self.marker = '- '
 
-    def print_line(self, indent, key, value=None, marker=False):
+    def print_line(self, indent, key, value=None, mark_first=False):
+        marker = ''
         if value is None:
             value = ''
-        if marker:
+        if mark_first:
             indent = indent - len(self.marker)
-            print "%s%s%s: %s" % (' '*indent, self.marker, key, value)
+            marker = self.marker
+        print "%s%s%s: %s" % (' '*indent, marker, key, value)
+
+    def _format_output(self, key, value, indent, mark_first=False):
+        if key == 'bbox':
+            self.print_line(indent, key)
+            for srs_code, bbox in value.iteritems():
+                self.print_line(indent+self.indent, srs_code, value=bbox, mark_first=mark_first)
         else:
-            print "%s%s: %s" % (' '*indent, key, value)
+            if isinstance(value, set):
+                value = list(value)
+            self.print_line(indent, key, value=value, mark_first=mark_first)
 
     def print_layers(self, layer_list, indent=None, root=False):
         if root:
@@ -47,22 +57,15 @@ class PrettyPrinter(object):
             for item in self.print_order:
                 if layer.get(item, False):
                     if not marked_first:
-                        self.print_line(indent, item, value=layer[item], marker=True)
                         marked_first = True
+                        self._format_output(item, layer[item], indent, mark_first=marked_first)
                     else:
-                        self.print_line(indent, item, value=layer[item])
+                        self._format_output(item, layer[item], indent)
             # print remaining items except sublayers
             for key, value in layer.iteritems():
                 if key in self.print_order or key == 'layers':
                     continue
-                if key == 'bbox':
-                    self.print_line(indent, key)
-                    for srs_code, bbox in value.iteritems():
-                        self.print_line(indent+self.indent, srs_code, value=bbox)
-                else:
-                    if isinstance(value, set):
-                        value = list(value)
-                    self.print_line(indent, key, value=value)
+                self._format_output(key, value, indent)
             # print the sublayers now
             if layer.get('layers', False):
                 self.print_line(indent, 'layers')
