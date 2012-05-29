@@ -23,6 +23,7 @@ import textwrap
 
 from mapproxy.version import version
 from mapproxy.script.scales import scales_command
+from mapproxy.script.wms_capabilities import wms_capabilities_command
 
 def setup_logging():
     import logging
@@ -253,6 +254,10 @@ commands = {
     'scales': {
         'func': scales_command,
         'help': 'Convert between scales and resolutions.'
+    },
+    'wms-capabilities': {
+        'func': wms_capabilities_command,
+        'help': 'Display WMS capabilites',
     },
 }
 
