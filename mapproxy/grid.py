@@ -440,7 +440,7 @@ class TileGrid(object):
             return False
     
     def origin_tile(self, level, origin):
-        assert self.supports_access_with_origin(origin), 'TODO error exception'
+        assert self.supports_access_with_origin(origin), 'tile origins are incompatible'
         tile = (0, 0, level)
         if self.origin != origin:
             tile = self.flip_tile_coord(tile)
