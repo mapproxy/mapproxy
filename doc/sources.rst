@@ -377,7 +377,6 @@ Example configuration
     type: tile
     grid: mygrid
     url: http://localhost:8080/tile?x=%(x)s&y=%(y)s&z=%(z)s&format=%(format)s
-    origin: nw
 
 
 .. _mapserver_label:
