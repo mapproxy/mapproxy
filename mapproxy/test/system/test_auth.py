@@ -19,6 +19,7 @@ from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from mapproxy.test.image import img_from_buf
 from mapproxy.test.http import MockServ
 from nose.tools import eq_
+from mapproxy.util.geom import geom_support
 
 test_config = {}
 
@@ -35,6 +36,9 @@ MAP_REQ = ("/service?request=GetMap&service=WMS&Version=1.1.1&SRS=EPSG:4326"
 FI_REQ = ("/service?request=GetFeatureInfo&service=WMS&Version=1.1.1&SRS=EPSG:4326"
     "&BBOX=-80,-40,0,0&WIDTH=200&HEIGHT=100&styles=&FORMAT=image/png&X=10&Y=10&")
 
+if not geom_support:
+    from nose.plugins.skip import SkipTest
+    raise SkipTest('requires Shapely')
 
 class TestWMSAuth(SystemTest):
     config = test_config
