@@ -41,10 +41,13 @@ def display_grid(grid_conf):
         if key == 'name':
             continue
         print '        %s: %s' % (key, format_conf_value(conf_dict[key]))
-    print '    Levels/Resolutions:'
+    print '    Levels: Resolutions, # Tiles x * Tiles y = total tiles:' 
+    max_digits = max([len("%r" % (res,)) for level, res in enumerate(tile_grid.resolutions)])
     for level, res in enumerate(tile_grid.resolutions):
-        print "        %.2d:  %r" % (level, res)
-
+        tiles_in_x, tiles_in_y = tile_grid.grid_sizes[level]
+        total_tiles = tiles_in_x * tiles_in_y
+        spaces = max_digits - len("%r" % (res,)) + 1
+        print "        %.2d:  %r,%s# %d * %d = %d" % (level, res, ' '*spaces, tiles_in_x, tiles_in_y, total_tiles)
 
 def display_grids_list(grids):
     for grid_name in sorted(grids.keys()):
