@@ -398,6 +398,10 @@ class ImageOptionsConfiguration(ConfigurationBase):
         if 'format' not in conf and format and format.startswith('image/'):
             conf['format'] = format
         
+        # TODO check if format shall be renamed to image/mixed even if it is not a real format
+        if format == 'mixed':
+            conf['format'] = format
+        
         # force 256 colors for image.paletted for backwards compat
         paletted = self.context.globals.get_value('image.paletted', self.conf)
         if conf.get('colors') is None and 'png' in conf.get('format', '') and paletted:
