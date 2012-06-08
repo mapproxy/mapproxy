@@ -19,7 +19,16 @@ from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.mask import mask_image_source_from_coverage
 from mapproxy.util.geom import load_limited_to
-from shapely.geometry import Polygon
+
+try:
+    from shapely.geometry import Polygon
+    geom_support = True
+except ImportError:
+    geom_support = False
+
+if not geom_support:
+    from nose.plugins.skip import SkipTest
+    raise SkipTest('requires Shapely')
 
 from nose.tools import eq_
 
