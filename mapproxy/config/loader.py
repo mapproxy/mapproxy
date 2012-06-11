@@ -1184,7 +1184,7 @@ class ServiceConfiguration(ConfigurationBase):
         max_tile_age *= 60 * 60 # seconds
         use_grid_names = conf.get('use_grid_names', False)
         layers = self.tile_layers(conf, use_grid_names=use_grid_names)
-        return KMLServer(layers, md, max_tile_age=max_tile_age)
+        return KMLServer(layers, md, max_tile_age=max_tile_age, use_dimension_layers=use_grid_names)
     
     def tms_service(self, conf):
         from mapproxy.service.tile import TileServer

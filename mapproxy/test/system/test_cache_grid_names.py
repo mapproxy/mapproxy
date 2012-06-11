@@ -29,7 +29,7 @@ def setup_module():
 def teardown_module():
     module_teardown(test_config)
 
-class TestTMS(SystemTest):
+class TestCacheGridNames(SystemTest):
     config = test_config
     
     def test_tms_capabilities(self):
@@ -47,6 +47,10 @@ class TestTMS(SystemTest):
         assert 'wms_cache_utm32n' not in resp
         xml = resp.lxml
         eq_(xml.xpath('count(//TileSet)'), 12)
+
+    def test_kml(self):
+        resp = self.app.get('/kml/wms_cache/utm32n/4/2/2.kml')
+        assert 'wms_cache/utm32n' in resp.body
         
     def test_get_tile(self):
         with tmp_image((256, 256), format='jpeg') as img:

@@ -54,11 +54,12 @@ class KMLServer(Server):
     request_parser = staticmethod(kml_request)
     request_methods = ('map', 'kml')
 
-    def __init__(self, layers, md, max_tile_age=None):
+    def __init__(self, layers, md, max_tile_age=None, use_dimension_layers=False):
         Server.__init__(self)
         self.layers = layers
         self.md = md
         self.max_tile_age = max_tile_age
+        self.use_dimension_layers = use_dimension_layers
     
     def map(self, map_request):
         """
@@ -85,15 +86,32 @@ class KMLServer(Server):
                 if result['layers'].get(layer_name, {}).get('tile', False) == True:
                     return
             raise RequestError('forbidden', status=403)
+
+    def _internal_layer(self, tile_request):
+        if tile_request.dimensions:
+            name = tile_request.layer + '_' + '_'.join(tile_request.dimensions)
+        else:
+            name = tile_request.layer
+        if name in self.layers:
+            return self.layers[name]
+        if name + '_EPSG4326' in self.layers:
+            return self.layers[name + '_EPSG4326']
+        if name + '_EPSG900913' in self.layers:
+            return self.layers[name + '_EPSG900913']
+        return None
     
+    def _internal_dimension_layer(self, tile_request):
+        key = (tile_request.layer, ) + tile_request.dimensions
+        return self.layers.get(key)
+
     def layer(self, tile_request):
-        if tile_request.layer in self.layers:
-            return self.layers[tile_request.layer]
-        if tile_request.layer + '_EPSG4326' in self.layers:
-            return self.layers[tile_request.layer + '_EPSG4326']
-        if tile_request.layer + '_EPSG900913' in self.layers:
-            return self.layers[tile_request.layer + '_EPSG900913']
-        raise RequestError('unknown layer: ' + tile_request.layer, request=tile_request)
+        if self.use_dimension_layers:
+            internal_layer = self._internal_dimension_layer(tile_request)
+        else:
+            internal_layer = self._internal_layer(tile_request)
+        if internal_layer is None:
+            raise RequestError('unknown layer: ' + tile_request.layer, request=tile_request)
+        return internal_layer
 
     def kml(self, map_request):
         """
