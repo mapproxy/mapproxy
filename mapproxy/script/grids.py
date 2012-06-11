@@ -16,7 +16,7 @@
 import sys
 import optparse
 
-from mapproxy.config.loader import load_configuration
+from mapproxy.config.loader import load_configuration, ConfigurationError
 
 def format_conf_value(value):
     if isinstance(value, tuple):
@@ -69,6 +69,10 @@ def grids_command(args=None):
         help="Show also grids that are not referenced by any cache.")
     parser.add_option("-l", "--list", dest="list_grids", action="store_true", default=False, help="List names of configured grids")
 
+    from mapproxy.script.util import setup_logging
+    import logging
+    setup_logging(logging.WARN)
+
     if args:
         args = args[1:] # remove script name
 
@@ -83,6 +87,9 @@ def grids_command(args=None):
         proxy_configuration = load_configuration(options.mapproxy_conf)
     except IOError, e:
         print >>sys.stderr, 'ERROR: ', "%s: '%s'" % (e.strerror, e.filename)
+        sys.exit(2)
+    except ConfigurationError, e:
+        print >>sys.stderr, 'ERROR: invalid configuration (see above)'
         sys.exit(2)
 
     if options.show_all or options.grid_name:
