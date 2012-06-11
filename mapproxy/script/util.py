@@ -20,15 +20,15 @@ import re
 import shutil
 import sys
 import textwrap
+import logging
 
 from mapproxy.version import version
 from mapproxy.script.scales import scales_command
 from mapproxy.script.grids import grids_command
 
-def setup_logging():
-    import logging
+def setup_logging(level=logging.INFO):
     mapproxy_log = logging.getLogger('mapproxy')
-    mapproxy_log.setLevel(logging.INFO)
+    mapproxy_log.setLevel(level)
 
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
