@@ -850,8 +850,11 @@ class CacheConfiguration(ConfigurationBase):
         
         cache_dir = self.cache_dir()
         directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tc')
-        suffix = grid_conf.conf['srs'].replace(':', '')
-        cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
+        if self.conf.get('cache', {}).get('use_grid_names'):
+            cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
+        else:
+            suffix = grid_conf.conf['srs'].replace(':', '')
+            cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
         link_single_color_images = self.conf.get('link_single_color_images', False)
         if link_single_color_images and sys.platform == 'win32':
             log.warn('link_single_color_images not supported on windows')
