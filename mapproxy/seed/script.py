@@ -87,6 +87,11 @@ class SeedScript(object):
 
     def __call__(self):
         (options, args) = self.parser.parse_args()
+        
+        if len(args) != 1 and not options.seed_file:
+            self.parser.print_help()
+            sys.exit(1)
+
         if not options.seed_file:
             if len(args) != 1:
                 self.parser.error('missing seed_conf file as last argument or --seed-conf option')
