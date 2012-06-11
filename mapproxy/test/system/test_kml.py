@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2012 Omniscale <http://omniscale.de>
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -171,17 +171,3 @@ class TestKML(SystemTest):
                 eq_(resp.content_type, 'image/jpeg')
                 self.created_tiles.append('wms_cache_EPSG900913/01/000/000/000/000/000/000.jpeg')
     
-    def created_tiles_filenames(self):
-        base_dir = base_config().cache.base_dir
-        for filename in self.created_tiles:
-            yield os.path.join(base_dir, filename)
-    
-    def test_created_tiles(self):
-        for filename in self.created_tiles_filenames():
-            if not os.path.exists(filename):
-                assert False, "didn't found tile " + filename
-    
-    def teardown(self):
-        for filename in self.created_tiles_filenames():
-            if os.path.exists(filename):
-                os.remove(filename)
