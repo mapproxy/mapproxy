@@ -950,7 +950,7 @@ class CacheConfiguration(ConfigurationBase):
         concurrent_tile_creators = self.context.globals.get_value('concurrent_tile_creators', self.conf,
             global_key='cache.concurrent_tile_creators')
         
-        for grid_conf in [self.context.grids[g] for g in self.conf['grids']]:
+        for grid_name, grid_conf in self.grid_confs():
             sources = []
             source_image_opts = []
             for source_name in self.conf['sources']:
@@ -980,7 +980,11 @@ class CacheConfiguration(ConfigurationBase):
                 extent = map_extent_from_grid(tile_grid)
             caches.append((tile_grid, extent, mgr))
         return caches
-    
+
+    @memoize
+    def grid_confs(self):
+        return [(g, self.context.grids[g]) for g in self.conf['grids']]
+
     @memoize
     def map_layer(self):
         from mapproxy.layer import CacheMapLayer, SRSConditional, ResolutionConditional

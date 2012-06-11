@@ -1,3 +1,8 @@
+caches:
+    test_cache:
+        grids: [global_geodetic_sqrt2, grid_full_example, another_grid_full_example]
+        sources: []
+
 grids:
   global_geodetic_sqrt2:
     base: GLOBAL_GEODETIC
