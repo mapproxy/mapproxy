@@ -16,7 +16,7 @@
 import sys
 import optparse
 
-from mapproxy.config.loader import load_configuration
+from mapproxy.config.loader import load_configuration, ConfigurationError
 
 def format_conf_value(value):
     if isinstance(value, tuple):
@@ -65,7 +65,13 @@ def grids_command(args=None):
         help="MapProxy configuration.")
     parser.add_option("-g", "--grid", dest="grid_name",
         help="Display only information about the specified grid.")
+    parser.add_option("--all", dest="show_all", action="store_true", default=False,
+        help="Show also grids that are not referenced by any cache.")
     parser.add_option("-l", "--list", dest="list_grids", action="store_true", default=False, help="List names of configured grids")
+
+    from mapproxy.script.util import setup_logging
+    import logging
+    setup_logging(logging.WARN)
 
     if args:
         args = args[1:] # remove script name
@@ -79,15 +85,26 @@ def grids_command(args=None):
             options.mapproxy_conf = args[0]
     try:
         proxy_configuration = load_configuration(options.mapproxy_conf)
-        grids = proxy_configuration.grids
     except IOError, e:
         print >>sys.stderr, 'ERROR: ', "%s: '%s'" % (e.strerror, e.filename)
         sys.exit(2)
+    except ConfigurationError, e:
+        print >>sys.stderr, 'ERROR: invalid configuration (see above)'
+        sys.exit(2)
+
+    if options.show_all or options.grid_name:
+        grids = proxy_configuration.grids
+    else:
+        caches = proxy_configuration.caches
+        grids = {}
+        for cache in caches.values():
+            grids.update(cache.grid_confs())
+        grids = dict(grids)
 
     if options.grid_name:
         options.grid_name = options.grid_name.lower()
         # ignore case for keys
-        grids = dict((key.lower(), value) for (key, value) in grids.items())
+        grids = dict((key.lower(), value) for (key, value) in grids.iteritems())
         if not grids.get(options.grid_name, False):
             print 'grid not found: %s' % (options.grid_name,)
             sys.exit(1)

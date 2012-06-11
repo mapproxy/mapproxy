@@ -25,11 +25,14 @@ from mapproxy.script.grids import grids_command
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 GRID_NAMES = [
     'global_geodetic_sqrt2',
-    'GLOBAL_GEODETIC',
-    'GLOBAL_MERCATOR',
     'grid_full_example',
     'another_grid_full_example'
 ]
+UNUSED_GRID_NAMES = [
+    'GLOBAL_GEODETIC',
+    'GLOBAL_MERCATOR',
+]
+
 
 @contextlib.contextmanager
 def capture_stderr(io=None):
@@ -62,7 +65,19 @@ class TestUtilGrids(object):
 
         number_of_lines = sum(1 for line in captured_output.split('\n') if line)
 
-        assert number_of_lines == 5
+        assert number_of_lines == len(GRID_NAMES)
+
+    def test_list_configured_all(self):
+        self.args.append('-l')
+        self.args.append('--all')
+        grids_command(self.args)
+        captured_output = sys.stdout.getvalue()
+        for grid in GRID_NAMES + UNUSED_GRID_NAMES:
+            assert grid in captured_output
+
+        number_of_lines = sum(1 for line in captured_output.split('\n') if line)
+
+        assert number_of_lines == len(UNUSED_GRID_NAMES) + len(GRID_NAMES)
 
     def test_display_single_grid(self):
         self.args.append('-g')
