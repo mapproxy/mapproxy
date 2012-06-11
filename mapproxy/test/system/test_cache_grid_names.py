@@ -35,12 +35,16 @@ class TestTMS(SystemTest):
     def test_tms_capabilities(self):
         resp = self.app.get('/tms/1.0.0/')
         assert 'Cached Layer' in resp
+        assert 'wms_cache/utm32n' in resp
+        assert 'wms_cache_utm32n' not in resp
         xml = resp.lxml
         assert xml.xpath('count(//TileMap)') == 2
 
     def test_tms_layer_capabilities(self):
         resp = self.app.get('/tms/1.0.0/wms_cache/utm32n')
         assert 'Cached Layer' in resp
+        assert 'wms_cache/utm32n' in resp
+        assert 'wms_cache_utm32n' not in resp
         xml = resp.lxml
         eq_(xml.xpath('count(//TileSet)'), 12)
         

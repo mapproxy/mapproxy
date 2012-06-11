@@ -1169,7 +1169,8 @@ class ServiceConfiguration(ConfigurationBase):
                 if not tile_layer: continue
                 if use_grid_names:
                     # new style layer names are tuples
-                    layers[(tile_layer.md['name'], tile_layer.md['grid_name'])] = tile_layer
+                    tile_layer.md['name_path'] = (tile_layer.md['name'], tile_layer.md['grid_name'])
+                    layers[tile_layer.md['name_path']] = tile_layer
                 else:
                     layers[tile_layer.md['name_internal']] = tile_layer
         return layers
