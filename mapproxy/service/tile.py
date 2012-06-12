@@ -53,18 +53,21 @@ class TileServer(Server):
     template_file = 'tms_capabilities.xml'
     layer_template_file = 'tms_tilemap_capabilities.xml'
 
-    def __init__(self, layers, md, max_tile_age=None, use_dimension_layers=False):
+    def __init__(self, layers, md, max_tile_age=None, use_dimension_layers=False, origin=None):
         Server.__init__(self)
         self.layers = layers
         self.md = md
         self.max_tile_age = max_tile_age
         self.use_dimension_layers = use_dimension_layers
+        self.origin = origin
     
     def map(self, tile_request):
         """
         :return: the requested tile
         :rtype: Response
         """
+        if self.origin and not tile_request.origin:
+            tile_request.origin = self.origin
         layer = self.layer(tile_request)
         tile = layer.render(tile_request, use_profiles=tile_request.use_profiles)
         resp = Response(tile.as_buffer(), content_type='image/' + tile_request.format)

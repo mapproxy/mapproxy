@@ -38,14 +38,16 @@ class TileRequest(object):
             (?P<y>-?\d+)\.(?P<format>\w+)''', re.VERBOSE)
     use_profiles = False
     req_prefix = '/tiles'
-    origin = 'sw'
+    origin = None
     
     def __init__(self, request):
+        self.tile = None
+        self.format = None
         self.http = request
         self._init_request()
-        self.origin = self.http.args.get('origin', 'sw')
-        if self.origin not in ('sw', 'nw'):
-            self.origin = 'sw'
+        self.origin = self.http.args.get('origin')
+        if self.origin not in ('sw', 'nw', None):
+            self.origin = None
     
     def _init_request(self):
         """
@@ -60,8 +62,10 @@ class TileRequest(object):
         self.dimensions = tuple()
         if match.group('layer_spec') is not None:
             self.dimensions = (match.group('layer_spec'), )
-        self.tile = tuple([int(match.group(v)) for v in ['x', 'y', 'z']])
-        self.format = match.group('format')
+        if not self.tile:
+            self.tile = tuple([int(match.group(v)) for v in ['x', 'y', 'z']])
+        if not self.format:
+            self.format = match.group('format')
     
     @property
     def exception_handler(self):
@@ -80,7 +84,11 @@ class TMSRequest(TileRequest):
         (/(?P<layer_spec>[^/]+))?
         $''', re.VERBOSE)
     use_profiles = True
+    origin = 'sw'
+    
     def __init__(self, request):
+        self.tile = None
+        self.format = None
         self.http = request
         cap_match = self.capabilities_re.match(request.path)
         if cap_match:

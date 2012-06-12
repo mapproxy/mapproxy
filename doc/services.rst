@@ -205,11 +205,20 @@ Alternatively, you can use the OpenLayers TMS option ``zoomOffset`` to compensat
 
 Google Maps
 """""""""""
-The TMS standard counts tiles starting from the lower left corner of the tile grid, while Google Maps starts at the upper left corner. The ``/tiles`` service accepts an ``origin`` parameter that flips the y-axis accordingly. You can set it to either ``sw`` (south-west), the default, or to ``nw`` (north-west), required for Google Maps.
+The TMS standard counts tiles starting from the lower left corner of the tile grid, while Google Maps and compatible services start at the upper left corner. The ``/tiles`` service accepts an ``origin`` parameter that flips the y-axis accordingly. You can set it to either ``sw`` (south-west), the default, or to ``nw`` (north-west), required for Google Maps.
 
 Example::
   
   http://localhost:8080/tiles/osm_EPSG900913/1/0/1.png?origin=nw
+
+.. versionadded:: 1.5.0
+  You can use the ``origin`` option of the TMS service to change the default origin of the tiles service. If you set it to ``nw`` then you can leave the ``?origin=nw`` parameter from the URL. This only works for the tiles service at ``/tiles``, not for the TMS at ``/tms/1.0.0/``.
+
+  Example::
+
+    services:
+      tms:
+        origin: 'nw'
 
 .. _`Tile Map Service Specification`: http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification
 
@@ -222,6 +231,9 @@ Keyhole Markup Language (OGC KML)
 
 MapProxy supports KML version 2.2 for integration into Google Earth. Each layer is available as a Super Overlay – image tiles are loaded on demand when the user zooms to a specific region. The initial KML file is available at ``/kml/layername/EPSG1234/0/0/0.kml``. The tiles are also available under the layer name ``layername_EPSG1234`` when ``use_grid_names`` is false or unset.
 
+.. versionadded:: 1.5.0
+  
+  The initial KML is also available at ``/kml/layername_EPSG1234`` and ``/kml/layername/EPSG1234``.
 
 ``use_grid_names``
 """"""""""""""""""
@@ -233,8 +245,6 @@ Tiles will then be available under ``/kml/mylayer/mygrid/`` instead of ``/kml/my
 
 Example
 """""""
-
-::
 
   services:
     kml:

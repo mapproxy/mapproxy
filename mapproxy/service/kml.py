@@ -33,7 +33,7 @@ class KMLRequest(TileRequest):
             (?P<z>-?\d+)/
             (?P<x>-?\d+)/
             (?P<y>-?\d+)\.(?P<format>\w+)''', re.VERBOSE)
-    
+
     def __init__(self, request):
         TileRequest.__init__(self, request)
         if self.format == 'kml':
@@ -43,8 +43,34 @@ class KMLRequest(TileRequest):
     def exception_handler(self):
         return PlainExceptionHandler()
 
+class KMLInitRequest(TileRequest):
+    """
+    Class for TMS-like KML requests.
+    """
+    request_handler_name = 'map'
+    req_prefix = '/kml'
+    tile_req_re = re.compile(r'''^(?P<begin>/kml)/
+            (?P<layer>[^/]+)
+            (/(?P<layer_spec>[^/]+))?
+            /?$
+    ''', re.VERBOSE)
+
+    def __init__(self, request):
+        self.http = request
+        self.tile = (0, 0, 0)
+        self.format = 'kml'
+        self.request_handler_name = 'kml'
+        self._init_request()
+
+    @property
+    def exception_handler(self):
+        return PlainExceptionHandler()
+
 def kml_request(req):
-    return KMLRequest(req)
+    if KMLInitRequest.tile_req_re.match(req.path):
+        return KMLInitRequest(req)
+    else:
+        return KMLRequest(req)
 
 class KMLServer(Server):
     """
@@ -65,6 +91,8 @@ class KMLServer(Server):
         """
         :return: the requested tile
         """
+        # force 'sw' origin for kml
+        map_request.origin = 'sw'
         layer = self.layer(map_request)
         self.authorize_tile_layer(layer.name, map_request.http.environ)
         tile = layer.render(map_request)

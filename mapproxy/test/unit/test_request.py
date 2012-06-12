@@ -489,7 +489,7 @@ class TestTileRequest(object):
         tile_req = tile_request(req)
         assert isinstance(tile_req, TileRequest)
         eq_(tile_req.tile, (2, 3, 5))
-        eq_(tile_req.origin, 'sw')
+        eq_(tile_req.origin, None)
         eq_(tile_req.format, 'png')
         eq_(tile_req.layer, 'osm')
         eq_(tile_req.dimensions, tuple())

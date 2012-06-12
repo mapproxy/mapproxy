@@ -244,6 +244,7 @@ mapproxy_yaml_spec = {
         },
         'tms': {
             'use_grid_names': bool(),
+            'origin': str(),
         },
         'wmts': {
             'kvp': bool(),

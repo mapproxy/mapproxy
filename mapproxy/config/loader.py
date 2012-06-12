@@ -1193,9 +1193,12 @@ class ServiceConfiguration(ConfigurationBase):
         md.update(conf.get('md', {}))
         max_tile_age = self.context.globals.get_value('tiles.expires_hours')
         max_tile_age *= 60 * 60 # seconds
+
+        origin = conf.get('origin')
         use_grid_names = conf.get('use_grid_names', False)
         layers = self.tile_layers(conf, use_grid_names=use_grid_names)
-        return TileServer(layers, md, max_tile_age=max_tile_age, use_dimension_layers=use_grid_names)
+        return TileServer(layers, md, max_tile_age=max_tile_age, use_dimension_layers=use_grid_names,
+            origin=origin)
     
     def wmts_service(self, conf):
         from mapproxy.service.wmts import WMTSServer, WMTSRestServer
