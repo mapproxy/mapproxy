@@ -64,6 +64,8 @@ class KMLServer(Server):
         """
         :return: the requested tile
         """
+        # force 'sw' origin for kml
+        map_request.origin = 'sw'
         layer = self.layer(map_request)
         self.authorize_tile_layer(layer.name, map_request.http.environ)
         tile = layer.render(map_request)

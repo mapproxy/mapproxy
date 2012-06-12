@@ -38,14 +38,14 @@ class TileRequest(object):
             (?P<y>-?\d+)\.(?P<format>\w+)''', re.VERBOSE)
     use_profiles = False
     req_prefix = '/tiles'
-    origin = 'sw'
+    origin = None
     
     def __init__(self, request):
         self.http = request
         self._init_request()
-        self.origin = self.http.args.get('origin', 'sw')
-        if self.origin not in ('sw', 'nw'):
-            self.origin = 'sw'
+        self.origin = self.http.args.get('origin')
+        if self.origin not in ('sw', 'nw', None):
+            self.origin = None
     
     def _init_request(self):
         """
@@ -79,6 +79,8 @@ class TMSRequest(TileRequest):
         (/(?P<layer_spec>[^/]+))?
         $''', re.VERBOSE)
     use_profiles = True
+    origin = 'sw'
+    
     def __init__(self, request):
         self.http = request
         cap_match = self.capabilities_re.match(request.path)
