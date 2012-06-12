@@ -209,6 +209,10 @@ Keyhole Markup Language (OGC KML)
 
 MapProxy supports KML version 2.2 for integration into Google Earth. Each layer is available as a Super Overlay – image tiles are loaded on demand when the user zooms to a specific region. The initial KML file is available at ``/kml/layername_EPSG1234/0/0/0.kml``.
 
+.. versionadded:: 1.5.0
+  
+  The initial KML is also available at ``/kml/layername_EPSG1234`` and ``/kml/layername/EPSG1234``.
+
 This service takes no further options::
 
   services:

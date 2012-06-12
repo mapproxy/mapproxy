@@ -94,7 +94,7 @@ class TestKML(SystemTest):
         resp = self.app.get('/kml/wms_cache/1/0/1.jpeg')
         self._check_cache_control_headers(resp, etag, max_age)
         self._check_tile_resp(resp)
-    
+
     def test_if_none_match(self):
         etag, max_age = self._update_timestamp()
         resp = self.app.get('/kml/wms_cache/1/0/1.jpeg',
@@ -134,7 +134,26 @@ class TestKML(SystemTest):
         resp = self.app.get('/kml/wms_cache/0/0/0.kml',
                             headers={'If-None-Match': etag})
         eq_(resp.status, '304 Not Modified')
-    
+
+    def test_get_kml_init(self):
+        resp = self.app.get('/kml/wms_cache')
+        xml = resp.lxml
+        assert validate_with_xsd(xml, 'kml/2.2.0/ogckml22.xsd')
+        eq_(xml.xpath('/kml:kml/kml:Document/kml:GroundOverlay/kml:Icon/kml:href/text()',
+                      namespaces=ns),
+            ['http://localhost/kml/wms_cache/EPSG900913/1/0/1.jpeg',
+             'http://localhost/kml/wms_cache/EPSG900913/1/1/1.jpeg',
+             'http://localhost/kml/wms_cache/EPSG900913/1/0/0.jpeg',
+             'http://localhost/kml/wms_cache/EPSG900913/1/1/0.jpeg']
+        )
+        eq_(xml.xpath('/kml:kml/kml:Document/kml:NetworkLink/kml:Link/kml:href/text()',
+                      namespaces=ns),
+              ['http://localhost/kml/wms_cache/EPSG900913/1/0/1.kml',
+               'http://localhost/kml/wms_cache/EPSG900913/1/1/1.kml',
+               'http://localhost/kml/wms_cache/EPSG900913/1/0/0.kml',
+               'http://localhost/kml/wms_cache/EPSG900913/1/1/0.kml']
+        )        
+
     def test_get_kml2(self):
         resp = self.app.get('/kml/wms_cache/1/0/1.kml')
         xml = resp.lxml

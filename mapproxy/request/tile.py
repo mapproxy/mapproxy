@@ -41,6 +41,8 @@ class TileRequest(object):
     origin = 'sw'
     
     def __init__(self, request):
+        self.tile = None
+        self.format = None
         self.http = request
         self._init_request()
         self.origin = self.http.args.get('origin', 'sw')
@@ -59,8 +61,10 @@ class TileRequest(object):
         self.layer = match.group('layer')
         if match.group('layer_spec') is not None:
             self.layer += '_' + match.group('layer_spec')
-        self.tile = tuple([int(match.group(v)) for v in ['x', 'y', 'z']])
-        self.format = match.group('format')
+        if not self.tile:
+            self.tile = tuple([int(match.group(v)) for v in ['x', 'y', 'z']])
+        if not self.format:
+            self.format = match.group('format')
     
     @property
     def exception_handler(self):
@@ -80,6 +84,8 @@ class TMSRequest(TileRequest):
         $''', re.VERBOSE)
     use_profiles = True
     def __init__(self, request):
+        self.tile = None
+        self.format = None
         self.http = request
         cap_match = self.capabilities_re.match(request.path)
         if cap_match:
