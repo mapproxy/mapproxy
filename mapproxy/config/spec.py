@@ -239,7 +239,9 @@ mapproxy_yaml_spec = {
     'services': {
         'demo': {},
         'kml': {},
-        'tms': {},
+        'tms': {
+            'origin': str(),
+        },
         'wmts': {
             'kvp': bool(),
             'restful': bool(),
