@@ -30,7 +30,8 @@ def tile_buffer(tile):
     data.seek(0)
     yield data
     tile.size = data.tell()
-    tile.timestamp = time.time()
+    if not tile.timestamp:
+        tile.timestamp = time.time()
     data.seek(0)
     tile.stored = True
 
