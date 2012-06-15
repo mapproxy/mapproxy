@@ -83,7 +83,8 @@ source_commons = combined(
 
 cache_types = {
     'file': {
-        'directory_layout': str()
+        'directory_layout': str(),
+        'use_grid_names': bool(),
     },
     'mbtiles': {
         'filename': str()
@@ -238,8 +239,11 @@ mapproxy_yaml_spec = {
     },
     'services': {
         'demo': {},
-        'kml': {},
+        'kml': {
+            'use_grid_names': bool(),
+        },
         'tms': {
+            'use_grid_names': bool(),
             'origin': str(),
         },
         'wmts': {
