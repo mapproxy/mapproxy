@@ -1,16 +1,8 @@
 import platform
 from setuptools import setup, find_packages
-from pkg_resources import require, DistributionNotFound
-
-try:
-    require('PIL>=1.1.6,<1.2.99')
-    imaging_lib = 'PIL>=1.1.6,<1.2.99'
-except DistributionNotFound:
-    imaging_lib = 'Pillow>=1.7.0,<1.99'
-
 
 install_requires = [
-    imaging_lib,
+    'PIL>=1.1.6,<1.2.99',
     'PyYAML>=3.0,<3.99',
 ]
 
@@ -31,7 +23,7 @@ def long_description(changelog_releases=10):
                 break
             changelog_releases -= 1
         changes.append(line)
-
+    
     changes.append(textwrap.dedent('''
         Older changes
         -------------
