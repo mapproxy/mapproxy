@@ -70,7 +70,8 @@ class WMTSServer(Server):
             request.format = tile_layer.format
 
         tile = tile_layer.render(request)
-        resp = Response(tile.as_buffer(), content_type='image/' + request.format)
+        # set the content_type to tile.format and not to request.format ( to support mixed_mode)
+        resp = Response(tile.as_buffer(), content_type='image/' + tile.format)
         resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
                            max_age=self.max_tile_age)
         resp.make_conditional(request.http)
