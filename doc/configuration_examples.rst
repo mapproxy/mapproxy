@@ -98,6 +98,38 @@ You might also want to experiment with different compression levels of JPEG. A h
     jpeg_quality: 80
 
 
+Cache with mixed mode
+---------------------
+
+As described above, you may also want to store arial images with transparency and use those as an overlay layer for your maps. A neccessary step would be to process all images as PNG files to maintain the transparency of the raster data. Yet not every image acutally has transparent pixels and it would be better to cache this data in an approriate format like JPEG to increase performance.
+
+MapProxy offers a possibility to cache raster data in a mixed mode and to decode every image with transparent pixel to PNG and every fully opaque image to JPEG.
+To enable a mixed cache, you have to set ``format`` to ``mixed`` and ``request_format`` to ``image/png``
+
+.. note:: The source of your cache must also request transparent images and the corresponding option has to be enabled.
+
+::
+
+  caches:
+    mixed_cache:
+      format: mixed
+      sources: [wms_source]
+      request_format: image/png
+
+  sources:
+    wms_source:
+      type: wms
+      req:
+        url: http://localhost:42423/service
+        layers: aerial_overlay
+        transparent: true
+
+You can now use the cache for every WMS, TMS or WMTS. WMS GetMap requests will return the image with the requested format.
+With TMS and WMTS you can only request PNG tiles, but the actual content type may differ, depending on the content of the image. You can check the real content-type of the image by reading the header of the respone. Fully opaque tiles have the content-type ``image/jpeg`` and tiles with transparency have the type ``image/png``.
+
+See :ref:`mapproxy.yaml configuration <caches> for further configuration informations for caches.
+
+
 Cache vector data
 =================
 
