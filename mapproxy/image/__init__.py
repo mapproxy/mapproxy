@@ -295,7 +295,6 @@ def quantize(img, colors=256, alpha=False, defaults=None, quantizer=None):
             mask = Image.eval(alpha, lambda a: 255 if a <=128 else 0)
             img.paste(255, mask)
             if defaults is not None:
-                print 'foo'
                 defaults['transparency'] = 255
         else:
             img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
