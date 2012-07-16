@@ -75,13 +75,7 @@ def is_transparent(img_data):
     data = StringIO(img_data)
     img = Image.open(data)
     if img.mode == 'RGBA':
-        colors = img.getcolors()
-        if len(colors) != 1:
-            return False
-        count, color = colors[0]
-        if color[3] != 0:
-            return False
-        return True
+        return any(img.histogram()[-255:])
     elif img.mode == 'P':
         colors = img.getcolors()
         if len(colors) != 1:
