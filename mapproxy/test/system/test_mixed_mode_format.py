@@ -68,7 +68,8 @@ class TestWMS(SystemTest):
 
                 eq_(resp.content_type, 'image/'+req_format)
                 check_format(StringIO(resp.body), req_format)
-                assert is_transparent(resp.body)
+                # GetMap Request is fully within the opaque tile
+                assert not is_transparent(resp.body)
 
                 # check cache formats
                 cache_dir = base_config().cache.base_dir
@@ -140,8 +141,8 @@ def create_mixed_mode_img(size, format='png'):
     # has transparency
     draw = ImageDraw.Draw(img)
     w, h = size
-    black_color = ImageColor.getrgb("black")
-    draw.rectangle((w/4, 0, w, h), fill=black_color)
+    red_color = ImageColor.getrgb("red")
+    draw.rectangle((w/4, 0, w, h), fill=red_color)
 
     data = StringIO()
     img.save(data, format)
