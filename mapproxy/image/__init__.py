@@ -227,15 +227,14 @@ class ReadBufWrapper(object):
         return getattr(self.stringio, name)
 
 def img_has_transparency(img):
-    if img.mode == 'RGBA':
-        alpha = img.split()[3]
-        # check extrema or (getcolors(1) is None or getcolors(1)[0][1] == 0)
-        if alpha.getextrema()[0] == 0:
-            return True
     if img.mode == 'P':
-        # we assume, if a palette has 4*256 entries it must be RGBA
-        if len(img.getpalette()) == 1024:
+        if img.info.get('transparency', False):
             return True
+        # convert to RGBA and check alpha channel 
+        img = img.convert('RGBA')
+    if img.mode == 'RGBA':
+        # any alpha except fully opaque
+        return any(img.histogram()[-256:-1])    
     return False
 
 def img_to_buf(img, image_opts):
