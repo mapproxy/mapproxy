@@ -174,7 +174,7 @@ A list with coverage names. Limits the seed area to the coverages. By default, t
 ``refresh_before``
 ~~~~~~~~~~~~~~~~~~
 
-Regenerate all tiles that are older than the given date. The date can either be absolute or relative. By default, existing tiles will be refreshed.
+Regenerate all tiles that are older than the given date. The date can either be absolute or relative. By default, existing tiles will not be refreshed.
 
 Examples::
 
