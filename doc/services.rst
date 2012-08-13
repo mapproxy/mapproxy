@@ -169,14 +169,27 @@ MapProxy supports the `Tile Map Service Specification`_ from the OSGeo. The TMS 
 
 The TMS service will use all configured :ref:`layers <layers>` that have a name and single cached source. Any layer grouping will be flattened.
 
-Here is an example TMS request: ``/tms/1.0.0/base_EPSG900913/3/1/0.png``. ``png`` is the internal format of the cached tiles. ``base`` is the name of the layer and ``EPSG900913`` is the SRS of the layer. You can only select a SRS that your layer is caching.
+Here is an example TMS request: ``/tms/1.0.0/base/EPSG900913/3/1/0.png``. ``png`` is the internal format of the cached tiles. ``base`` is the name of the layer and ``EPSG900913`` is the SRS of the layer. The tiles are also available under the layer name ``base_EPSG900913`` when ``use_grid_names`` is false or unset.
 
 A request to ``/tms/1.0.0`` will return the TMS metadata as XML. ``/tms/1.0.0/layername`` will return information about the bounding box, resolutions and tile size of this specific layer.
 
-This service takes no further options::
+
+``use_grid_names``
+""""""""""""""""""
+
+.. versionadded:: 1.5.0
+
+When set to `true`, MapProxy uses the actual name of the grid as the grid identifier instead of the SRS code.
+Tiles will then be available under ``/tms/1.0.0/mylayer/mygrid/`` instead of ``/tms/1.0.0/mylayer/EPSG1234/`` or ``/tms/1.0.0/mylayer_EPSG1234/``.
+
+Example
+"""""""
+
+::
 
   services:
     tms:
+      use_grid_names: true
 
 
 .. index:: OpenLayers
@@ -192,11 +205,20 @@ Alternatively, you can use the OpenLayers TMS option ``zoomOffset`` to compensat
 
 Google Maps
 """""""""""
-The TMS standard counts tiles starting from the lower left corner of the tile grid, while Google Maps starts at the upper left corner. The ``/tiles`` service accepts an ``origin`` parameter that flips the y-axis accordingly. You can set it to either ``sw`` (south-west), the default, or to ``nw`` (north-west), required for Google Maps.
+The TMS standard counts tiles starting from the lower left corner of the tile grid, while Google Maps and compatible services start at the upper left corner. The ``/tiles`` service accepts an ``origin`` parameter that flips the y-axis accordingly. You can set it to either ``sw`` (south-west), the default, or to ``nw`` (north-west), required for Google Maps.
 
 Example::
   
   http://localhost:8080/tiles/osm_EPSG900913/1/0/1.png?origin=nw
+
+.. versionadded:: 1.5.0
+  You can use the ``origin`` option of the TMS service to change the default origin of the tiles service. If you set it to ``nw`` then you can leave the ``?origin=nw`` parameter from the URL. This only works for the tiles service at ``/tiles``, not for the TMS at ``/tms/1.0.0/``.
+
+  Example::
+
+    services:
+      tms:
+        origin: 'nw'
 
 .. _`Tile Map Service Specification`: http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification
 
@@ -207,12 +229,26 @@ Example::
 Keyhole Markup Language (OGC KML)
 ---------------------------------
 
-MapProxy supports KML version 2.2 for integration into Google Earth. Each layer is available as a Super Overlay – image tiles are loaded on demand when the user zooms to a specific region. The initial KML file is available at ``/kml/layername/0/0/0.kml``.
+MapProxy supports KML version 2.2 for integration into Google Earth. Each layer is available as a Super Overlay – image tiles are loaded on demand when the user zooms to a specific region. The initial KML file is available at ``/kml/layername/EPSG1234/0/0/0.kml``. The tiles are also available under the layer name ``layername_EPSG1234`` when ``use_grid_names`` is false or unset.
 
-This service takes no further options::
+.. versionadded:: 1.5.0
+  
+  The initial KML is also available at ``/kml/layername_EPSG1234`` and ``/kml/layername/EPSG1234``.
+
+``use_grid_names``
+""""""""""""""""""
+
+.. versionadded:: 1.5.0
+
+When set to `true`, MapProxy uses the actual name of the grid as the grid identifier instead of the SRS code.
+Tiles will then be available under ``/kml/mylayer/mygrid/`` instead of ``/kml/mylayer/EPSG1234/``.
+
+Example
+"""""""
 
   services:
     kml:
+      use_grid_names: true
 
 
 .. index:: WMTS Service, Tile Service

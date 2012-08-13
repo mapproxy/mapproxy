@@ -101,8 +101,15 @@ jscript_openlayers=None
                     {{if not loop.first}}
                         <tr>
                     {{endif}}
+                    {{if layer.grid.supports_access_with_origin('nw')}}
                     <td class="value"><a href="../demo/?wmts_layer={{layer.name}}&format={{format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.grid.srs.srs_code}}</a></td>
-                    <td class="value"><a href="../demo/?wmts_layer={{layer.name}}&format={{format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.format}}</a></td>
+                    <td class="value"><a href="../demo/?wmts_layer={{layer.name}}&format={{format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.format}}</a>
+                    {{else}}
+                    <td class="value" colspan="2">
+                        {{layer.grid.name}} not compatible with WMTS
+                    </td>
+                    {{endif}}
+                    </tr>
                 {{endfor}}
             {{endfor}}
             </table>
@@ -131,9 +138,16 @@ jscript_openlayers=None
                     {{if not loop.first}}
                         <tr>
                     {{endif}}
+                    {{if layer.grid.supports_access_with_origin('sw')}}
                     <td class="value"><a href="../demo/?tms_layer={{layer.name}}&format={{layer.format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.grid.srs.srs_code}}</a></td>
                     <td class="value"><a href="../demo/?tms_layer={{layer.name}}&format={{layer.format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.format}}</a></td>
-                    <td class="value"><a href="../demo/?tms_capabilities&layer={{layer.name}}&srs={{layer.grid.srs.srs_code | replace}}">click here</a></td></tr>
+                    <td class="value"><a href="../demo/?tms_capabilities&layer={{layer.name}}&srs={{layer.grid.srs.srs_code | replace}}">click here</a></td>
+                    {{else}}
+                    <td class="value" colspan="3">
+                        {{layer.grid.name}} not compatible with TMS
+                    </td>
+                    {{endif}}
+                    </tr>
                 {{endfor}}
             {{endfor}}
             </table>

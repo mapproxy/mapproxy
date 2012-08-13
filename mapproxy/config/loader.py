@@ -850,8 +850,11 @@ class CacheConfiguration(ConfigurationBase):
         
         cache_dir = self.cache_dir()
         directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tc')
-        suffix = grid_conf.conf['srs'].replace(':', '')
-        cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
+        if self.conf.get('cache', {}).get('use_grid_names'):
+            cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
+        else:
+            suffix = grid_conf.conf['srs'].replace(':', '')
+            cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
         link_single_color_images = self.conf.get('link_single_color_images', False)
         if link_single_color_images and sys.platform == 'win32':
             log.warn('link_single_color_images not supported on windows')
@@ -950,7 +953,7 @@ class CacheConfiguration(ConfigurationBase):
         concurrent_tile_creators = self.context.globals.get_value('concurrent_tile_creators', self.conf,
             global_key='cache.concurrent_tile_creators')
         
-        for grid_conf in [self.context.grids[g] for g in self.conf['grids']]:
+        for grid_name, grid_conf in self.grid_confs():
             sources = []
             source_image_opts = []
             for source_name in self.conf['sources']:
@@ -980,7 +983,11 @@ class CacheConfiguration(ConfigurationBase):
                 extent = map_extent_from_grid(tile_grid)
             caches.append((tile_grid, extent, mgr))
         return caches
-    
+
+    @memoize
+    def grid_confs(self):
+        return [(g, self.context.grids[g]) for g in self.conf['grids']]
+
     @memoize
     def map_layer(self):
         from mapproxy.layer import CacheMapLayer, SRSConditional, ResolutionConditional
@@ -1107,6 +1114,7 @@ class LayerConfiguration(ConfigurationBase):
                 md['title'] = self.conf['title']
                 md['name'] = self.conf['name']
                 md['name_path'] = (self.conf['name'], grid.srs.srs_code.replace(':', '').upper())
+                md['grid_name'] = grid.name
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['extent'] = extent
@@ -1154,12 +1162,17 @@ class ServiceConfiguration(ConfigurationBase):
             services.append(OWSServer(ows_services))
         return services
     
-    def tile_layers(self, conf):
+    def tile_layers(self, conf, use_grid_names=False):
         layers = odict()
         for layer_name, layer_conf in self.context.layers.iteritems():
             for tile_layer in layer_conf.tile_layers():
                 if not tile_layer: continue
-                layers[tile_layer.md['name_internal']] = tile_layer
+                if use_grid_names:
+                    # new style layer names are tuples
+                    tile_layer.md['name_path'] = (tile_layer.md['name'], tile_layer.md['grid_name'])
+                    layers[tile_layer.md['name_path']] = tile_layer
+                else:
+                    layers[tile_layer.md['name_internal']] = tile_layer
         return layers
     
     def kml_service(self, conf):
@@ -1169,8 +1182,9 @@ class ServiceConfiguration(ConfigurationBase):
         md.update(conf.get('md', {}))
         max_tile_age = self.context.globals.get_value('tiles.expires_hours')
         max_tile_age *= 60 * 60 # seconds
-        layers = self.tile_layers(conf)
-        return KMLServer(layers, md, max_tile_age=max_tile_age)
+        use_grid_names = conf.get('use_grid_names', False)
+        layers = self.tile_layers(conf, use_grid_names=use_grid_names)
+        return KMLServer(layers, md, max_tile_age=max_tile_age, use_dimension_layers=use_grid_names)
     
     def tms_service(self, conf):
         from mapproxy.service.tile import TileServer
@@ -1179,8 +1193,12 @@ class ServiceConfiguration(ConfigurationBase):
         md.update(conf.get('md', {}))
         max_tile_age = self.context.globals.get_value('tiles.expires_hours')
         max_tile_age *= 60 * 60 # seconds
-        layers = self.tile_layers(conf)
-        return TileServer(layers, md, max_tile_age=max_tile_age)
+
+        origin = conf.get('origin')
+        use_grid_names = conf.get('use_grid_names', False)
+        layers = self.tile_layers(conf, use_grid_names=use_grid_names)
+        return TileServer(layers, md, max_tile_age=max_tile_age, use_dimension_layers=use_grid_names,
+            origin=origin)
     
     def wmts_service(self, conf):
         from mapproxy.service.wmts import WMTSServer, WMTSRestServer

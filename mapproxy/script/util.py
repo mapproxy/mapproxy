@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,15 +20,16 @@ import re
 import shutil
 import sys
 import textwrap
+import logging
 
 from mapproxy.version import version
 from mapproxy.script.scales import scales_command
 from mapproxy.script.wms_capabilities import wms_capabilities_command
+from mapproxy.script.grids import grids_command
 
-def setup_logging():
-    import logging
+def setup_logging(level=logging.INFO):
     mapproxy_log = logging.getLogger('mapproxy')
-    mapproxy_log.setLevel(logging.INFO)
+    mapproxy_log.setLevel(level)
 
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
@@ -46,16 +47,16 @@ def serve_develop_command(args):
                       dest="debug",
                       help="Enable debug mode")
     options, args = parser.parse_args(args)
-    
+
     if len(args) != 2:
         parser.print_help()
         print "\nERROR: MapProxy configuration required."
         sys.exit(1)
-        
+
     mapproxy_conf = args[1]
-    
+
     host, port = parse_bind_address(options.address)
-    
+
     if options.debug and host not in ('localhost', '127.0.0.1'):
         print textwrap.dedent("""\
         ################# WARNING! ##################
@@ -63,8 +64,8 @@ def serve_develop_command(args):
         is a serious security vulnerability.
         #############################################\
         """)
-    
-    
+
+
     setup_logging()
     from mapproxy.wsgiapp import make_wsgi_app
     from mapproxy.config.loader import ConfigurationError
@@ -73,7 +74,7 @@ def serve_develop_command(args):
         app = make_wsgi_app(mapproxy_conf, debug=options.debug)
     except ConfigurationError, ex:
         sys.exit(2)
-    
+
     run_simple(host, port, app, use_reloader=True, processes=1,
         threaded=True, passthrough_errors=True,
         extra_files=[mapproxy_conf])
@@ -84,21 +85,21 @@ def serve_multiapp_develop_command(args):
                       dest="address", default='127.0.0.1:8080',
                       help="Server socket [127.0.0.1:8080]")
     options, args = parser.parse_args(args)
-    
+
     if len(args) != 2:
         parser.print_help()
         print "\nERROR: MapProxy projects directory required."
         sys.exit(1)
-        
+
     mapproxy_conf_dir = args[1]
-    
+
     host, port = parse_bind_address(options.address)
-    
+
     setup_logging()
     from mapproxy.multiapp import make_wsgi_app
     from mapproxy.util.ext.serving import run_simple
     app = make_wsgi_app(mapproxy_conf_dir)
-    
+
     run_simple(host, port, app, use_reloader=True, processes=1,
         threaded=True, passthrough_errors=True)
 
@@ -134,7 +135,7 @@ class CreateCommand(object):
         'wsgi-app': {},
         'log-ini': {},
     }
-    
+
     def __init__(self, args):
         parser = optparse.OptionParser("usage: %prog create [options] [destination]")
         parser.add_option("-t", "--template", dest="template",
@@ -152,9 +153,9 @@ class CreateCommand(object):
 
     def log_error(self, msg, *args):
         print >>sys.stderr, 'ERROR:', msg % args
-        
+
     def run(self):
-        
+
         if self.options.list_templates:
             print_items(self.templates, title="Available templates")
             sys.exit(1)
@@ -162,11 +163,11 @@ class CreateCommand(object):
             if self.options.template not in self.templates:
                 self.log_error("unknown template " + self.options.template)
                 sys.exit(1)
-            
+
             if len(self.args) != 2:
                 self.log_error("template requires destination argument")
                 sys.exit(1)
-                
+
             sys.exit(
                 getattr(self, 'template_' + self.options.template.replace('-', '_'))()
             )
@@ -181,14 +182,14 @@ class CreateCommand(object):
             self.log_error("template requires --mapproxy-conf option")
             sys.exit(1)
         return os.path.abspath(self.options.mapproxy_conf)
-    
+
     def template_dir(self):
         import mapproxy.config_template
         template_dir = os.path.join(
             os.path.dirname(mapproxy.config_template.__file__),
             'base_config')
         return template_dir
-    
+
     def template_wsgi_app(self):
         app_filename = self.args[1]
         if '.' not in os.path.basename(app_filename):
@@ -203,18 +204,18 @@ class CreateCommand(object):
         template_dir = self.template_dir()
         app_template = open(os.path.join(template_dir, 'config.wsgi')).read()
         with open(app_filename, 'w') as f:
-            f.write(app_template % {'mapproxy_conf': mapproxy_conf, 
+            f.write(app_template % {'mapproxy_conf': mapproxy_conf,
                 'here': os.path.dirname(mapproxy_conf)})
-        
+
         return 0
-    
+
     def template_base_config(self):
         outdir = self.args[1]
         if not os.path.exists(outdir):
             os.makedirs(outdir)
-        
+
         template_dir = self.template_dir()
-        
+
         for filename in ('mapproxy.yaml', 'seed.yaml'):
             to = os.path.join(outdir, filename)
             from_ = os.path.join(template_dir, filename)
@@ -223,21 +224,21 @@ class CreateCommand(object):
                 return 1
             print "writing %s" % (to, )
             shutil.copy(from_, to)
-    
+
     def template_log_ini(self):
         log_filename = self.args[1]
 
         if os.path.exists(log_filename) and not self.options.force:
             self.log_error("%s already exists, use --force", log_filename)
             return 1
-        
+
         template_dir = self.template_dir()
         log_template = open(os.path.join(template_dir, 'log.ini')).read()
         with open(log_filename, 'w') as f:
             f.write(log_template)
-        
+
         return 0
-            
+
 commands = {
     'serve-develop': {
         'func': serve_develop_command,
@@ -258,6 +259,10 @@ commands = {
     'wms-capabilities': {
         'func': wms_capabilities_command,
         'help': 'Display WMS capabilites',
+    },
+    'grids': {
+        'func': grids_command,
+        'help': 'Display detailed informations for configured grids'
     },
 }
 
@@ -287,11 +292,11 @@ class NonStrictOptionParser(optparse.OptionParser):
                     return
             except optparse.BadOptionError:
                 largs.append(arg)
-    
+
 
 def print_items(data, title='Commands'):
     name_len = max(len(name) for name in data)
-    
+
     if title:
         print >>sys.stdout, '%s:' % (title, )
     for name, item in data.iteritems():
@@ -305,13 +310,13 @@ def main():
     parser = NonStrictOptionParser("usage: %prog COMMAND [options]",
         version='MapProxy ' + version, add_help_option=False)
     options, args = parser.parse_args()
-    
+
     if len(args) < 1 or args[0] in ('--help', '-h'):
         parser.print_help()
         print
         print_items(commands)
         sys.exit(1)
-        
+
     command = args[0]
     if command not in commands:
         parser.print_help()
@@ -319,9 +324,9 @@ def main():
         print_items(commands)
         print >>sys.stdout, '\nERROR: unknown command %s' % (command,)
         sys.exit(1)
-    
+
     args = sys.argv[0:1] + sys.argv[2:]
     commands[command]['func'](args)
-    
+
 if __name__ == '__main__':
     main()

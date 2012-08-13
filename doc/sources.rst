@@ -75,7 +75,7 @@ This option affects what request MapProxy sends to the source WMS server.
 
 ``map``
   If this is set to ``false``, MapProxy will not request images from this source. You can use this option in combination with ``featureinfo: true`` to create a source that is only used for feature info requests.
-  
+
 ``featureinfo``
   If this is set to ``true``, MapProxy will mark the layer as queryable and incoming `GetFeatureInfo` requests will be forwarded to the source server.
 
@@ -83,7 +83,7 @@ This option affects what request MapProxy sends to the source WMS server.
   Path to an XSLT script that should be used to transform incoming feature information.
 
 ``featureinfo_format``
-  The ``INFO_FORMAT`` for FeatureInfo requests. By default MapProxy will use the same format as requested by the client.  
+  The ``INFO_FORMAT`` for FeatureInfo requests. By default MapProxy will use the same format as requested by the client.
 
 .. versionadded:: 1.0.0
   ``featureinfo_xslt`` and ``featureinfo_format``
@@ -106,7 +106,7 @@ Disable this source in regular mode. If set to ``true``, this source will always
 ``min_res``, ``max_res`` or ``min_scale``, ``max_scale``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. NOTE paragraph also in configuration/layers section
- 
+
 Limit the source to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries. You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`. Resolutions should be in meters per pixel.
 
 The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator). The boundaries will be regarded for each source, but the values in the capabilities might differ if you combine multiple sources or if the MapProxy layer already has a ``min/max_res`` configuration.
@@ -121,9 +121,9 @@ Please read :ref:`scale vs. resolution <scale_resolution>` for some notes on `sc
 A list with SRSs that the WMS source supports. MapProxy will only query the source in these SRSs. It will reproject data if it needs to get data from this layer in any other SRS.
 
 You don't need to configure this if you only use this WMS as a cache source and the WMS supports all SRS of the cache.
-    
+
 If MapProxy needs to reproject and the source has multiple ``supported_srs``, then it will use the fist projected SRS for requests in projected SRS, or the fist geographic SRS for requests in geographic SRS. E.g when `supported_srs` is ``['EPSG:4326', 'EPSG:31467']`` caches with EPSG:900913 will use EPSG:32467.
-    
+
   ..  .. note:: For the configuration of SRS for MapProxy see `srs_configuration`_.
 
 ``forward_req_params``
@@ -135,7 +135,7 @@ A list with request parameters that will be forwarded to the source server (if a
 
 This feature only works with :ref:`uncached sources <direct_source>`.
 
-``supported_format``
+``supported_formats``
 ^^^^^^^^^^^^^^^^^^^^
 
 Use this option to specify which image formats you source WMS supports. MapProxy only requests images in one of these formats, and will convert any image if it needs another format. If you do not supply this options, MapProxy assumes that the source supports all formats.
@@ -156,9 +156,9 @@ See :ref:`image_options` for other options.
   .. versionadded:: 1.0.0
 
   Tolerance for the ``transparent_color`` substitution. The value defines the tolerance in each direction. E.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.
-  
+
   ::
-  
+
     image:
       transparent_color: '#ffffff'
       transparent_color_tolerance: 20
@@ -180,15 +180,15 @@ You can configure the following HTTP related options for this source:
 - ``headers``
 - ``client_timeout``
 - ``ssl_ca_certs``
-- ``ssl_no_cert_check`` (see below)
+- ``ssl_no_cert_checks`` (see below)
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 
-.. _wms_source-ssl_no_cert_check:
+.. _wms_source-ssl_no_cert_checks:
 
-``ssl_no_cert_check``
+``ssl_no_cert_checks``
 
-  MapProxy checks the SSL server certificates for any ``req.url`` that use HTTPS. You need to supply a file (see) that includes that certificate, otherwise MapProxy will fail to establish the connection. You can set the ``http.ssl_no_cert_check`` options to ``true`` to disable this verification.
+  MapProxy checks the SSL server certificates for any ``req.url`` that use HTTPS. You need to supply a file (see) that includes that certificate, otherwise MapProxy will fail to establish the connection. You can set the ``http.ssl_no_cert_checks`` options to ``true`` to disable this verification.
 
 .. _tagged_source_names:
 
@@ -202,12 +202,12 @@ MapProxy supports tagged source names for most sources. This allows you to defin
 Instead of referring to a source by the name alone, you can add a list of comma delimited layers: ``sourcename:lyr1,lyr2``. You need to use quotes for tagged source names.
 
 This works for layers and caches::
-  
+
   layers:
     - name: test
       title: Test Layer
       sources: ['wms1:lyr1,lyr2']
-  
+
   caches:
     cache1:
       sources: ['wms1:lyrA,lyrB']
@@ -227,7 +227,7 @@ Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 
 Minimal example::
-  
+
   my_minimal_wmssource:
     type: wms
     req:
@@ -235,7 +235,7 @@ Minimal example::
       layers: base
 
 Full example::
-  
+
   my_wmssource:
     type: wms
     wms_opts:
@@ -261,7 +261,7 @@ Full example::
 Tiles
 """""
 
-Use the type ``tile`` to request data from from existing tile servers like TileCache and GeoWebCache. You can also use this source cascade MapProxy installations. 
+Use the type ``tile`` to request data from from existing tile servers like TileCache and GeoWebCache. You can also use this source cascade MapProxy installations.
 
 ``url``
 ^^^^^^^
@@ -294,7 +294,7 @@ This source takes a ``url`` option that contains a URL template. The template fo
 
 .. deprecated:: 1.3.0
   Use grid with the ``origin`` option.
-  
+
 The origin of the tile grid (i.e. the location of the 0,0 tile). Supported values are ``sw`` for south-west (lower-left) origin or ``nw`` for north-west (upper-left) origin. ``sw`` is the default.
 
 ``grid``
@@ -321,7 +321,7 @@ You can configure the following HTTP related options for this source:
 - ``headers``
 - ``client_timeout``
 - ``ssl_ca_certs``
-- ``ssl_no_cert_check`` (:ref:`see above <wms_source-ssl_no_cert_check>`)
+- ``ssl_no_cert_checks`` (:ref:`see above <wms_source-ssl_no_cert_checks>`)
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 
@@ -337,17 +337,17 @@ See :ref:`seed_only <wms_seed_only>`
 
 You can configure what MapProxy should do when the tile service returns an error. Instead of raising an error, MapProxy can generate a single color tile. You can configure if MapProxy should cache this tile, or if it should use it only to generate a tile or WMS response.
 
-You can configure multiple status codes within the ``on_error`` option. You can also use the catch-all value ``other``. This will not only catch all other HTTP status codes, but also source errors like HTTP timeouts or non-image responses. 
+You can configure multiple status codes within the ``on_error`` option. You can also use the catch-all value ``other``. This will not only catch all other HTTP status codes, but also source errors like HTTP timeouts or non-image responses.
 
 Each status code takes the following options:
 
 ``response``
-  
+
   Specify the color of the tile that should be returned in case of this error. Can be either a list of color values (``[255, 255, 255]``, ``[255, 255, 255, 0]``)) or a hex string (``'#ffffff'``, ``'#fa1fbb00'``) with RGBA values, or the string ``transparent``.
- 
+
 ``cache``
 
-  Set this to ``True`` if MapProxy should cache the single color tile. Otherwise (``False``) MapProxy will use this generated tile only for this request. This is the default. 
+  Set this to ``True`` if MapProxy should cache the single color tile. Otherwise (``False``) MapProxy will use this generated tile only for this request. This is the default.
 
 You need to enable ``transparent`` for your source, if you use ``on_error`` responses with transparency.
 
@@ -367,17 +367,16 @@ You need to enable ``transparent`` for your source, if you use ``on_error`` resp
       other:
         response: '#ff0000'
         cache: False
-            
+
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 ::
-  
+
   my_tile_source:
     type: tile
     grid: mygrid
     url: http://localhost:8080/tile?x=%(x)s&y=%(y)s&z=%(z)s&format=%(format)s
-    origin: nw
 
 
 .. _mapserver_label:
@@ -430,7 +429,7 @@ Mapnik
 .. versionchanged:: 1.2.0
   New ``layers`` option and support for :ref:`tagged sources <tagged_source_names>`.
 
-Use the type ``mapnik`` to directly call Mapnik without any WMS service. It uses the Mapnik Python API and you need to have a working Mapnik installation that is accessible by the Python installation that runs MapProxy. A call of ``python -c 'import mapnik'`` should return no error. 
+Use the type ``mapnik`` to directly call Mapnik without any WMS service. It uses the Mapnik Python API and you need to have a working Mapnik installation that is accessible by the Python installation that runs MapProxy. A call of ``python -c 'import mapnik'`` should return no error.
 
 ``mapfile``
 ^^^^^^^^^^^
@@ -447,7 +446,7 @@ A list of layer names you want to render. MapProxy disables each layer that is n
 
 .. versionadded:: 1.3.0
 
-Use Mapnik 2 if set to ``true``. 
+Use Mapnik 2 if set to ``true``.
 
 
 Other options

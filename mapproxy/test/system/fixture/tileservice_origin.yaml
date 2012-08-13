@@ -1,0 +1,26 @@
+globals:
+  cache:
+    base_dir: cache_data/
+    meta_size: [1, 1]
+    meta_buffer: 0
+
+services:
+  tms:
+    origin: 'nw'
+
+layers:
+  - name: wms_cache
+    title: Direct Layer
+    sources: [wms_cache]
+
+caches:
+  wms_cache:
+    format: image/jpeg
+    sources: [wms_source]
+
+sources:
+  wms_source:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: bar

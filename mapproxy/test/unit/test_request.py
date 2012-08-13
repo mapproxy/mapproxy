@@ -478,6 +478,7 @@ class TestTileRequest(object):
         eq_(tms.tile, (2, 3, 5))
         eq_(tms.format, 'png')
         eq_(tms.layer, 'osm')
+        eq_(tms.dimensions, tuple())
 
     def test_tile_request(self):
         env = {
@@ -488,9 +489,10 @@ class TestTileRequest(object):
         tile_req = tile_request(req)
         assert isinstance(tile_req, TileRequest)
         eq_(tile_req.tile, (2, 3, 5))
-        eq_(tile_req.origin, 'sw')
+        eq_(tile_req.origin, None)
         eq_(tile_req.format, 'png')
         eq_(tile_req.layer, 'osm')
+        eq_(tile_req.dimensions, tuple())
 
     def test_tile_request_flipped_y(self):
         env = {
@@ -504,6 +506,7 @@ class TestTileRequest(object):
         eq_(tile_req.origin, 'nw')
         eq_(tile_req.format, 'png')
         eq_(tile_req.layer, 'osm')
+        eq_(tile_req.dimensions, tuple())
         
     def test_tile_request_w_epsg(self):
         env = {
@@ -515,7 +518,8 @@ class TestTileRequest(object):
         assert isinstance(tile_req, TileRequest)
         eq_(tile_req.tile, (2, 3, 5))
         eq_(tile_req.format, 'png')
-        eq_(tile_req.layer, 'osm_EPSG4326')
+        eq_(tile_req.layer, 'osm')
+        eq_(tile_req.dimensions, ('EPSG4326', ))
 
 def test_request_params_pickle():
     params = RequestParams(dict(foo='bar', zing='zong'))

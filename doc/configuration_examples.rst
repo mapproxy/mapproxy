@@ -20,11 +20,11 @@ Example::
     - name: combined_layer
       title: Aerial image + roads overlay
       sources: [combined_cache]
-  
+
   caches:
     combined_cache:
       sources: [base, aerial]
-  
+
   sources:
     base:
       type: wms
@@ -63,7 +63,7 @@ Access local servers
 By default MapProxy will request data in the same format it uses to cache the data, if you cache files in PNG MapProxy will request all images from the source WMS in PNG. This encoding is quite CPU intensive for your WMS server but reduces the amount of data than needs to be transfered between you WMS and MapProxy. You can use uncompressed TIFF as the request format, if both servers are on the same host or if they are connected with high bandwidth.
 
 Example::
-  
+
   sources:
     fast_source:
       type: cache_wms
@@ -72,6 +72,70 @@ Example::
         layers: roads
         format: image/tiff
         transparent: true
+
+Create WMS from existing tile server
+====================================
+
+You can use MapProxy to create a WMS server with data from an existing tile server. That tile server could be a WMTS, TMS or any other tile service where you can access tiles by simple HTTP requests. You always need to configure a cache in MapProxy to get a WMS from a tile source, since the cache is the part that does the tile stitching and reprojection.
+
+
+Here is a minimal example::
+
+ layers:
+  - name: my_layer
+    title: WMS layer from tiles
+    sources: [mycache]
+
+ caches:
+   mycache:
+     grids: [GLOBAL_MERCATOR]
+     sources: [my_tile_source]
+
+ sources:
+   my_tile_source:
+     type: tile
+     url: http://tileserver/%(tms_path)s.png
+
+You need to modify the ``url`` template parameter to match the URLs of your server. You can use ``x``, ``y``, ``z`` variables in the template, but MapProxy also supports the ``quadkey`` variable for Bing compatible tile service and ``bbox`` for WMS-C services. See the :ref:`tile source documentation <tiles_label>` for all possible template values.
+
+Here is an example of a WMTS source::
+
+ sources:
+   my_tile_source:
+     type: tile
+     url: http://tileserver/wmts?SERVICE=WMTS&REQUEST=GetTile&
+        VERSION=1.0.0&LAYER=layername&TILEMATRIXSET=WEBMERCATOR&
+        TILEMATRIX=%(z)s&TILEROW=%(y)s&TILECOL=%(x)s&FORMAT=image%%2Fpng
+
+.. note:: You need to escape percent signs (``%``) in the URL by repeating them (``%%``).
+
+
+It is also very likely that you need to change the grid of the source. Most TMS services should be compatible with the ``GLOBAL_MERCATOR`` definition, but OpenStreetMap or Google Maps start to count tiles from a different origin (north west, instead of south west). Other tile services will use different SRS, bounding boxes or resolutions. You need to check the capabilities of your service and :ref:`configure a compatible grid <grids>`.
+
+Example configuration for an OpenStreetMap tile service::
+
+ layers:
+  - name: my_layer
+    title: WMS layer from tiles
+    sources: [mycache]
+
+ caches:
+   mycache:
+     grids: [tile_grid_of_source]
+     sources: [my_tile_source]
+
+ sources:
+   my_tile_source:
+     type: tile
+     grid: tile_grid_of_source
+     url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
+
+ grids:
+   tile_grid_of_source:
+     base: GLOBAL_MERCATOR
+     origin: nw
+
+.. note:: Please make sure you are allowed to access the tile service. Commercial tile provider often prohibit the direct access to tiles. The tile service from OpenStreetMap has a strict `Tile Usage Prolicy <http://wiki.openstreetmap.org/wiki/Tile_usage_policy>`_.
 
 
 Cache raster data
@@ -101,7 +165,7 @@ You might also want to experiment with different compression levels of JPEG. A h
 Cache vector data
 =================
 
-You have a WMS server that renders vector data like road maps. 
+You have a WMS server that renders vector data like road maps.
 
 .. _cache_resolutions:
 
@@ -118,12 +182,12 @@ You can set every cache resolution in the ``res`` option of a layer.
     custom_res_cache:
       grids: [custom_res]
       sources: [vector_source]
-  
+
   grids:
     custom_res_cache:
       srs: 'EPSG:31467'
       res: [10000, 7500, 5000, 3500, 2500]
-  
+
 You can specify a different factor that is used to calculate the resolutions. By default a factor of 2 is used (10, 5, 2.5,…) but you can set smaller values like 1.6 (10, 6.25, 3.9,…)::
 
   grids:
@@ -136,7 +200,7 @@ The third options is a convenient variation of the previous option. A factor of 
   grids:
     sqrt2:
       res_factor: sqrt2
-    
+
 .. note:: This does not improve the quality of aerial images or scanned maps, so you should avoid it for these images.
 
 Resampling method
@@ -151,11 +215,11 @@ You can configure the method MapProxy uses for resampling when it scales or tran
       # [...]
 
   # or
-  
+
   globals:
     image:
       resampling: bicubic
-  
+
 
 .. _sld_example:
 
@@ -199,20 +263,20 @@ MapProxy will use HTTP POST requests in this case. You can change ``http.method`
 Add highly dynamic layers
 =========================
 
-You have dynamic layers that change constantly and you do not want to cache these. You can use a direct source. See next example. 
+You have dynamic layers that change constantly and you do not want to cache these. You can use a direct source. See next example.
 
 Reproject WMS layers
 ====================
 
 If you do not want to cache data but still want to use MapProxy's ability to reproject WMS layers on the fly, you can use a direct layer. Add your source directly to your layer instead of a cache.
 
-You should explicitly define the SRS the source WMS supports. Requests in other SRS will be reprojected. You should specify at least one geographic and one projected SRS to limit the distortions from reprojection. 
+You should explicitly define the SRS the source WMS supports. Requests in other SRS will be reprojected. You should specify at least one geographic and one projected SRS to limit the distortions from reprojection.
 ::
 
   layers:
     - name: direct_layer
       sources: [direct_wms]
-  
+
   sources:
     direct_wms:
       type: wms
@@ -220,7 +284,7 @@ You should explicitly define the SRS the source WMS supports. Requests in other 
       req:
         url: http://wms.example.org/service?
         layers: layer0,layer1
-    
+
 
 .. _fi_xslt:
 
@@ -242,7 +306,7 @@ MapProxy can pass-through FeatureInformation requests to your WMS sources. You n
 
 MapProxy will mark all layers that use this source as ``queryable``. It also works for sources that are used with caching.
 
-.. note:: The more advanced features :ref:`require the lxml library <lxml_install>`. 
+.. note:: The more advanced features :ref:`require the lxml library <lxml_install>`.
 
 Concatenation
 -------------
@@ -375,11 +439,11 @@ You can disable the certificate verification if you you don't need it.
   secure_source:
     type: wms
     http:
-      ssl_no_cert_check: True
+      ssl_no_cert_checks: True
     req:
       url: https://username:mypassword@example.org/service?
       layers: securelayer
-  
+
 .. _http_proxy:
 
 Access sources through HTTP proxy

@@ -1,0 +1,50 @@
+globals:
+  cache:
+    meta_size: [1, 1]
+    meta_buffer: 0
+services:
+  demo:
+  tms:
+    use_grid_names: True
+  kml:
+    use_grid_names: True  
+
+layers:
+  - name: wms_cache
+    title: Cached Layer
+    sources: [wms_cache]
+
+  - name: wms_cache_no_grid_name
+    title: Cached Layer (not grid name)
+    sources: [wms_cache_no_grid_name]
+
+
+caches:
+  wms_cache:
+    format: image/jpeg
+    sources: [wms_source]
+    grids: [utm32n]
+    cache:
+      type: file
+      use_grid_names: True
+  wms_cache_no_grid_name:
+    format: image/jpeg
+    sources: [wms_source]
+    grids: [utm32n]
+    cache:
+      type: file
+      use_grid_names: False
+
+grids:
+  utm32n:
+    srs: 'EPSG:25832'
+    bbox: [5,50,10,55]
+    bbox_srs: EPSG:4326
+    num_levels: 12
+
+sources:
+  wms_source:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: bar
