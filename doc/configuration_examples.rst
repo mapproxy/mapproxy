@@ -439,7 +439,7 @@ You can disable the certificate verification if you you don't need it.
   secure_source:
     type: wms
     http:
-      ssl_no_cert_check: True
+      ssl_no_cert_checks: True
     req:
       url: https://username:mypassword@example.org/service?
       layers: securelayer

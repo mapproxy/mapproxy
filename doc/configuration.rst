@@ -23,7 +23,7 @@ The configuration uses the YAML format. The Wikipedia contains a `good introduct
 The MapProxy configuration is grouped into six sections, each configures a different aspect of MapProxy. These are the following sections:
 
 - ``globals``:  Internals of MapProxy and default values that are used in the other configuration sections.
-  
+
 - ``services``:
   The services MapProxy offers, e.g. WMS or TMS.
 
@@ -32,9 +32,9 @@ The MapProxy configuration is grouped into six sections, each configures a diffe
 - ``caches``: Configure the internal caches.
 
 - ``layers``: Configure the layers that MapProxy offers. Each layer can consist of multiple sources and caches.
-  
+
 - ``grids``: Define the grids that MapProxy uses to aligns cached images.
-  
+
 The order of the sections is not important, so you can organize it your way.
 
 .. note:: The indentation is significant and shall only contain space characters. Tabulators are **not** permitted for indentation.
@@ -53,7 +53,7 @@ For example::
 
 
 .. versionchanged:: 1.4.0
-  Support for recursive imports and for multiple files. 
+  Support for recursive imports and for multiple files.
 
 .. #################################################################################
 
@@ -177,7 +177,7 @@ WMS and Mapserver sources also support tagged names (``wms:lyr1,lyr2``). See :re
 ``min_res``, ``max_res`` or ``min_scale``, ``max_scale``
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 .. NOTE paragraph also in sources/wms section
- 
+
 Limit the layer to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries. You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`. Resolutions should be in meters per pixel.
 
 The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).
@@ -240,9 +240,9 @@ Here is an example layer with extended layer capabilities::
 
 .. ``attribution``
 .. """"""""""""""""
-.. 
+..
 .. Overwrite the system-wide attribution line for this layer.
-.. 
+..
 .. ``inverse``
 ..   If this option is set to ``true``, the colors of the attribution will be inverted. Use this if the normal attribution is hard to on this layer (i.e. on aerial imagery).
 
@@ -361,7 +361,7 @@ Requests below the configured resolution or level will be passed to the underlyi
 
 .. versionadded:: 1.0.0
 
-If set to ``true``, MapProxy will not store any tiles for this cache. MapProxy will re-request all required tiles for each incoming request, 
+If set to ``true``, MapProxy will not store any tiles for this cache. MapProxy will re-request all required tiles for each incoming request,
 even if the there are matching tiles in the cache. See :ref:`seed_only <wms_seed_only>` if you need an *offline* mode.
 
 .. note:: Be careful when using a cache with disabled storage in tile services when the cache uses WMS sources with metatiling.
@@ -436,7 +436,7 @@ The size of each tile. Defaults to 256x256 pixel.
 
 A list with all resolutions that MapProxy should cache.
 ::
-  
+
   res: [1000, 500, 200, 100]
 
 .. index:: res_factor
@@ -445,7 +445,7 @@ A list with all resolutions that MapProxy should cache.
 """"""""""""""
 
 Here you can define a factor between each resolution.
-It should be either a number or the term ``sqrt2``. 
+It should be either a number or the term ``sqrt2``.
 ``sqrt2`` is a shorthand for a resolution factor of 1.4142, the square root of two. With this factor the resolution doubles every second level.
 Compared to the default factor 2 you will get another cached level between all standard
 levels. This is suited for free zooming in vector-based layers where the results might
@@ -524,7 +524,7 @@ performance but will look blurry when the value is to large (> 1.2).
 Example: Your MapProxy caches 10m and 5m resolutions. Requests with 9m
 resolution will be generated from the 10m level, requests for 8m from the 5m
 level.
-  
+
 ``max_shrink_factor``
 """"""""""""""""""""""
 This factor only applies for the first level and defines the maximum factor
@@ -570,7 +570,7 @@ Example ``grids`` configuration
       base: localgrid
       srs: EPSG:25832
       tile_size: [512, 512]
-      
+
 
 .. #################################################################################
 .. index:: sources
@@ -619,22 +619,22 @@ Here you can define some options that affect the way MapProxy generates image re
   You can use one of nearest, bilinear or bicubic. Nearest is the fastest and
   bicubic the slowest. The results will look best with bilinear or bicubic.
   Bicubic enhances the contrast at edges and should be used for vector images.
-  
+
   With `bilinear` you should get about 2/3 of the `nearest` performance, with
   `bicubic` 1/3.
-  
+
   See the examples below:
-  
+
   ``nearest``:
-  
+
     .. image:: imgs/nearest.png
-  
+
   ``bilinear``:
-  
+
     .. image:: imgs/bilinear.png
-  
+
   ``bicubic``:
-  
+
     .. image:: imgs/bicubic.png
 
 .. _image_paletted:
@@ -643,7 +643,7 @@ Here you can define some options that affect the way MapProxy generates image re
   Enable paletted (8bit) PNG images. It defaults to ``true`` for backwards compatibility. You should set this to ``false`` if you need 24bit PNG files. You can enable 8bit PNGs for single caches with a custom format (``colors: 256``).
 
 ``formats``
-  Modify existing or define new image formats. :ref:`See blow <image_options>` for all image format options. 
+  Modify existing or define new image formats. :ref:`See blow <image_options>` for all image format options.
 
 ``cache``
 """""""""
@@ -652,7 +652,7 @@ Here you can define some options that affect the way MapProxy generates image re
 
 ``meta_size``
   MapProxy does not make a single request for every tile but will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source WMS.
-  
+
 ``meta_buffer``
   MapProxy will increase the size of each meta-tile request by this number of
   pixels in each direction. This can solve cases where labels are cut-off at
@@ -662,11 +662,11 @@ Here you can define some options that affect the way MapProxy generates image re
   The base directory where all cached tiles will be stored. The path can
   either be absolute (e.g. ``/var/mapproxy/cache``) or relative to the
   mapproxy.yaml file.
-  
+
   .. note::
     Defaults to ``../var/cache_data`` but this will be changed with 1.2.0.
     You should configure this value for production use.
-    
+
 
 ``lock_dir``
   MapProxy uses locking to limit multiple request to the same service. See ``concurrent_requests``.
@@ -691,7 +691,7 @@ Here you can define some options that affect the way MapProxy generates image re
   or need to tweak existing definitions (e.g. add towgs parameter set) you can point
   MapProxy to your own set of proj4 init files. The path should contain an ``epsg`` file
   with the EPSG definitions.
-  
+
   The configured path can be absolute or relative to the mapproxy.yaml.
 
 .. _axis_order:
@@ -700,14 +700,14 @@ Here you can define some options that affect the way MapProxy generates image re
   The axis ordering defines in which order coordinates are given, i.e. lon/lat or lat/lon.
   The ordering is dependent to the SRS. Most clients and servers did not respected the
   ordering and everyone used lon/lat ordering. With the WMS 1.3.0 specification the OGC
-  emphasized that the axis ordering of the SRS should be used. 
+  emphasized that the axis ordering of the SRS should be used.
 
   Here you can define the axis ordering of your SRS. This might be required for proper
   WMS 1.3.0 support if you use any SRS that is not in the default configuration.
-  
+
   By default MapProxy assumes lat/long (north/east) order for all geographic and x/y
   (east/north) order for all projected SRS.
-  
+
   You need to add the SRS name to the appropriate parameter, if that is not the case for
   your SRS.::
 
@@ -716,8 +716,8 @@ Here you can define some options that affect the way MapProxy generates image re
      axis_order_ne: ['EPSG:9999', 'EPSG:9998']
      # for East/North ordering
      axis_order_en: ['EPSG:0000', 'EPSG:0001']
-     
-  
+
+
   If you need to override one of the default values, then you need to define both axis
   order options, even if one is empty.
 
@@ -743,11 +743,11 @@ See the `Python SSL documentation <http://docs.python.org/dev/library/ssl.html#s
   http:
     ssl_ca_certs: /etc/ssl/certs/ca-certificates.crt
 
-If you want to use SSL but do not need certificate verification, then you can disable it with the ``ssl_no_cert_check`` option. You can also disable this check on a source level, see :ref:`WMS source options <wms_source-ssl_no_cert_check>`.
+If you want to use SSL but do not need certificate verification, then you can disable it with the ``ssl_no_cert_checks`` option. You can also disable this check on a source level, see :ref:`WMS source options <wms_source-ssl_no_cert_checks>`.
 ::
 
   http:
-    ssl_no_cert_check: True
+    ssl_no_cert_checks: True
 
 ``client_timeout``
 ^^^^^^^^^^^^^^^^^^
@@ -836,14 +836,14 @@ Available options are:
 
 ``resampling_method``
   The resampling method used for scaling or reprojection. One of ``nearest``, ``bilinear`` or ``bicubic``.
-  
+
 ``encoding_options``
   Options that modify the way MapProxy encodes (saves) images. These options are format dependent. See below.
 
 ``opacity``
-  Configures the opacity of a layer or cache. This value is used when the source or cache is placed on other layers and it can be used to overlay non-transparent images. It does not alter the image itself, and only effects when multiple layers are merged to one image. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered). 
+  Configures the opacity of a layer or cache. This value is used when the source or cache is placed on other layers and it can be used to overlay non-transparent images. It does not alter the image itself, and only effects when multiple layers are merged to one image. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).
 
-  
+
 ``encoding_options``
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -857,7 +857,7 @@ The following encoding options are available:
 ``quantizer``
   The algorithm used to quantize (reduce) the image colors. Quantizing is used for GIF and paletted PNG images. Available quantizers are ``mediancut`` and ``fastoctree``. ``fastoctree`` is much faster and also supports 8bit PNG with full alpha support, but the image quality can be better with ``mediancut`` in some cases.
   The quantizing is done by the Python Image Library (PIL). ``fastoctree`` is a `new quantizer <fastoctree_mp_blog>`_ that is not yet available in any official PIL release. You need install a development package of PIL::
-  
+
     pip install https://bitbucket.org/olt/pil-2009-raclette/get/tip.tar.gz
 
 .. _fastoctree_mp_blog: http://mapproxy.org/blog/improving-the-performance-for-png-requests/
