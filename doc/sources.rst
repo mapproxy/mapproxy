@@ -136,7 +136,7 @@ A list with request parameters that will be forwarded to the source server (if a
 This feature only works with :ref:`uncached sources <direct_source>`.
 
 ``supported_formats``
-^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
 Use this option to specify which image formats you source WMS supports. MapProxy only requests images in one of these formats, and will convert any image if it needs another format. If you do not supply this options, MapProxy assumes that the source supports all formats.
 
