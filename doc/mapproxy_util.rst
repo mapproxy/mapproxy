@@ -221,11 +221,11 @@ With multiple scale values and custom DPI:
 
 .. versionadded:: 1.5.0
 
-This sub-command parses a valid capabilites document from an URL and displays all available layers.
+This sub-command parses a valid capabilites document from a URL and displays all available layers.
 
-This tool does not create a MapProxy configuration, instead the displayed values shall help you to set up/modify your MapProxy configuration.
+This tool does not create a MapProxy configuration, but the output should help you to set up or modify your MapProxy configuration.
 
-The command takes any valid URL, if errors occur during the parsing process or opening of the URL, an error message will be shown.
+The command takes a valid URL GetCapabilities URL.
 
 .. program:: mapproxy-util wms_capabilities
 
@@ -266,7 +266,8 @@ Parsed capabilities document:
     - title: MapProxy WMS Proxy
       url: http://127.0.0.1:8080/service?
       opaque: False
-      srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:4326', 'EPSG:25831', 'EPSG:25833', 'EPSG:25832', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+      srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:4326', 'EPSG:25831', 'EPSG:25833',
+            'EPSG:25832', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
       bbox:
           EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
           EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
@@ -277,7 +278,8 @@ Parsed capabilities document:
           title: Omniscale OSM WMS - osm.omniscale.net
           url: http://127.0.0.1:8080/service?
           opaque: False
-          srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:25831', 'EPSG:25833', 'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+          srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:25831', 'EPSG:25833',
+                'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
           bbox:
               EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
               EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
@@ -287,7 +289,8 @@ Parsed capabilities document:
           title: Group Layer
           url: http://127.0.0.1:8080/service?
           opaque: False
-          srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:25831', 'EPSG:25833', 'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+          srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:25831', 'EPSG:25833',
+                'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
           bbox:
               EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
               EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
@@ -298,7 +301,8 @@ Parsed capabilities document:
               title: Title of Layer 1a
               url: http://127.0.0.1:8080/service?
               opaque: False
-              srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:4326', 'EPSG:25831', 'EPSG:25833', 'EPSG:25832', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+              srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:25831', 'EPSG:25833',
+                    'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
               bbox:
                   EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
                   EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
@@ -308,7 +312,8 @@ Parsed capabilities document:
               title: Title of Layer 1b
               url: http://127.0.0.1:8080/service?
               opaque: False
-              srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:4326', 'EPSG:25831', 'EPSG:25833', 'EPSG:25832', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+              srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:25831', 'EPSG:25833',
+                    'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
               bbox:
                   EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
                   EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
