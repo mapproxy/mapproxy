@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -78,7 +78,7 @@ class WMS111Capabilities(object):
     def __init__(self, capabilities):
         self.capabilities = capabilities
         self.tree = self._parse_capabilities()
-    
+
     def _parse_capabilities(self):
         try:
             tree = etree.parse(self.capabilities)
@@ -93,7 +93,7 @@ class WMS111Capabilities(object):
         title = self.tree.findtext('Service/Title')
         abstract = self.tree.findtext('Service/Abstract')
         return dict(name=name, title=title, abstract=abstract)
-    
+
     def layers(self):
         #catch errors
         root_layer = self.tree.find('Capability/Layer')
@@ -106,12 +106,12 @@ class WMS111Capabilities(object):
             raise CapabilitiesParserError('XML-Element has no such attribute (%s).' %
              (ex.args[0],))
         return layers
-    
+
     def requests(self):
         requests_elem = self.tree.find('Capability/Request')
         resource = requests_elem.find('GetMap/DCPType/HTTP/Get/OnlineResource')
         return resource.attrib['{http://www.w3.org/1999/xlink}href']
-    
+
     def parse_layers(self, root_layer, parent_layer):
         layers = []
         layer_dict = self.parse_layer(root_layer, parent_layer)
@@ -120,7 +120,7 @@ class WMS111Capabilities(object):
         layer_dict['layers'] = []
         for layer in sub_layers:
             layer_dict['layers'].extend(self.parse_layers(layer, layer_dict))
-      
+
         return layers
 
     def parse_layer(self, layer_elem, parent_layer):
@@ -174,21 +174,26 @@ def parse_capabilities(capabilities_url):
         log_error('ERROR: %s', ex.message)
         sys.exit(1)
 
-    # after parsing capabilities_response will be empty, therefore cache it 
+    # after parsing capabilities_response will be empty, therefore cache it
     capabilities = StringIO(capabilities_response.read())
 
     try:
         wms_capabilities = WMS111Capabilities(capabilities)
-        layers = wms_capabilities.layers()
+        wms_capabilities.layers()
     except CapabilitiesParserError, ex:
         log_error('%s\n%s\n%s\n%s\n%s', 'Recieved document:', '-'*80, capabilities.getvalue(), '-'*80, ex.message)
         sys.exit(1)
-    
+
+    print "# Note: This is not a valid MapProxy configuration!"
+
     printer = PrettyPrinter(indent=4)
     printer.print_layers(wms_capabilities.layers(), root=True)
 
 def wms_capabilities_command(args=None):
-    parser = optparse.OptionParser("%prog wms-capabilities [options] URL")
+    parser = optparse.OptionParser("%prog wms-capabilities [options] URL",
+        description="Read and parse WMS 1.1.1 capabilities and print out"
+        " information about each layer. It does _not_ return a valid"
+        " MapProxy configuration.")
     parser.add_option("--host", dest="capabilites_url",
         help="WMS Capabilites URL")
 
@@ -201,6 +206,6 @@ def wms_capabilities_command(args=None):
             parser.print_help()
             sys.exit(2)
         else:
-            options.capabilites_url = args[0]   
+            options.capabilites_url = args[0]
 
     parse_capabilities(options.capabilites_url)
