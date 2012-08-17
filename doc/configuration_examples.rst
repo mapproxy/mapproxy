@@ -469,6 +469,11 @@ You can also set this in your :ref:`server script <server_script>`::
 
 Add a username and password to the URL if your HTTP proxy requires authentication. For example ``http://username:password@example.com:3128``.
 
+You can use the ``no_proxy`` environment variable if you need to bypass the proxy for some hosts::
+
+  $ export no_proxy="localhost,127.0.0.1,196.168.1.99"
+
+``no_proxy`` is available since Python 2.6.3.
 
 .. _paster_urlmap:
 
