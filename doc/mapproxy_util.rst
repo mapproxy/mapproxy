@@ -8,19 +8,19 @@ mapproxy-util
 The commandline tool ``mapproxy-util`` provides sub-commands that are helpful when working with MapProxy.
 
 To get a list of all sub-commands call::
- 
+
  mapproxy-util
- 
+
 
 To call a sub-command::
-  
+
   mapproxy-util subcommand
 
 
 Each sub-command provides additional information::
 
   mapproxy-util subcommand --help
-  
+
 
 The current sub-commands are:
 
@@ -98,7 +98,7 @@ You need to pass the MapProxy configuration as an argument. The server will auto
 .. program:: mapproxy-util serve-develop
 
 .. cmdoption:: -b <address>, --bind <address>
-  
+
   The server address where the HTTP server should listen for incomming connections. Can be a port (``:8080``), a host (``localhost``) or both (``localhost:8081``). The default is ``localhost:8080``. You need to use ``0.0.0.0`` to be able to connect to the server from external clients.
 
 
@@ -126,7 +126,7 @@ You need to pass a directory of your MapProxy configurations as an argument. The
 .. program:: mapproxy-util serve-multiapp-develop
 
 .. cmdoption:: -b <address>, --bind <address>
-  
+
   The server address where the HTTP server should listen for incomming connections. Can be a port (``:8080``), a host (``localhost``) or both (``localhost:8081``). The default is ``localhost:8080``. You need to use ``0.0.0.0`` to be able to connect to the server from external clients.
 
 
@@ -203,7 +203,7 @@ With multiple scale values and custom DPI:
 
   mapproxy-util scales --dpi 96 --as-res-config \
       100000 50000 25000 10000
-  
+
 ::
 
   res: [
@@ -214,10 +214,117 @@ With multiple scale values and custom DPI:
           2.6458333333, #  3       10000.00000000
   ]
 
+.. _mapproxy_util_wms_capabilities:
+
+``wms-capabilities``
+====================
+
+.. versionadded:: 1.5.0
+
+This sub-command parses a valid capabilites document from a URL and displays all available layers.
+
+This tool does not create a MapProxy configuration, but the output should help you to set up or modify your MapProxy configuration.
+
+The command takes a valid URL GetCapabilities URL.
+
+.. program:: mapproxy-util wms_capabilities
+
+.. cmdoption:: --host <URL>
+
+  Display all available Layers for this service. Each new layer will be marked with a hyphen and all sublayers are indented.
+
+
+
+Example
+-------
+
+With the following MapProxy layer configuration:
+::
+
+  layers:
+    - name: osm
+      title: Omniscale OSM WMS - osm.omniscale.net
+      sources: [osm_cache]
+    - name: foo
+      title: Group Layer
+      layers:
+        - name: layer1a
+          title: Title of Layer 1a
+          sources: [osm_cache]
+        - name: layer1b
+          title: Title of Layer 1b
+          sources: [osm_cache]
+
+Parsed capabilities document:
+::
+
+  mapproxy-util wms-capabilities http://127.0.0.1:8080/service?REQUEST=GetCapabilities
+
+::
+
+  Root-Layer:
+    - title: MapProxy WMS Proxy
+      url: http://127.0.0.1:8080/service?
+      opaque: False
+      srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:4326', 'EPSG:25831', 'EPSG:25833',
+            'EPSG:25832', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+      bbox:
+          EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
+          EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+      queryable: False
+      llbbox: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+      layers:
+        - name: osm
+          title: Omniscale OSM WMS - osm.omniscale.net
+          url: http://127.0.0.1:8080/service?
+          opaque: False
+          srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:25831', 'EPSG:25833',
+                'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+          bbox:
+              EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
+              EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+          queryable: False
+          llbbox: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+        - name: foobar
+          title: Group Layer
+          url: http://127.0.0.1:8080/service?
+          opaque: False
+          srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:25831', 'EPSG:25833',
+                'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+          bbox:
+              EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
+              EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+          queryable: False
+          llbbox: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+          layers:
+            - name: layer1a
+              title: Title of Layer 1a
+              url: http://127.0.0.1:8080/service?
+              opaque: False
+              srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:25831', 'EPSG:25833',
+                    'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+              bbox:
+                  EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
+                  EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+              queryable: False
+              llbbox: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+            - name: layer1b
+              title: Title of Layer 1b
+              url: http://127.0.0.1:8080/service?
+              opaque: False
+              srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:25831', 'EPSG:25833',
+                    'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258']
+              bbox:
+                  EPSG:900913: [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
+                  EPSG:4326: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+              queryable: False
+              llbbox: [-180.0, -85.0511287798, 180.0, 85.0511287798]
+
+
 .. _mapproxy_util_grids:
 
 ``grids``
-==========
+=========
 
 .. versionadded:: 1.5.0
 
@@ -237,9 +344,9 @@ All options with default values are marked with an asterisk.
 .. cmdoption:: -f <path/to/config>, --mapproxy-config <path/to/config>
 
   Display all configured grids for this MapProxy configuration with detailed information.
-  If this option is not set, the sub-command will try to use the last argument as the mapproxy config. 
+  If this option is not set, the sub-command will try to use the last argument as the mapproxy config.
 
-.. cmdoption:: -l, --list 
+.. cmdoption:: -l, --list
 
   Display only the names of the grids for the given configuration.
 
@@ -284,7 +391,7 @@ Display detailed information for one specific grid:
 ::
 
   mapproxy-util grids --grid localgrid --mapproxy-config /path/to/mapproxy.yaml
-  
+
 ::
 
   localgrid:
@@ -337,4 +444,3 @@ Display detailed information for one specific grid:
         37:  0.026973983046972155, # 51908 * 81629 = 4237198132
         38:  0.019073486328124983, # 73409 * 115441 = 8474408369
         39:  0.013486991523486078, # 103815 * 163258 = 16948629270
-
