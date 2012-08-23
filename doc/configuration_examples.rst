@@ -6,6 +6,7 @@ Configuration examples
 
 This document will show you some usage scenarios of MapProxy and will explain some combinations of configuration options that might be useful for you.
 
+.. _merge_layers:
 
 Merge multiple layers
 =====================
@@ -109,34 +110,102 @@ Here is an example of a WMTS source::
 
 .. note:: You need to escape percent signs (``%``) in the URL by repeating them (``%%``).
 
+.. _osm_tile_conf:
 
 It is also very likely that you need to change the grid of the source. Most TMS services should be compatible with the ``GLOBAL_MERCATOR`` definition, but OpenStreetMap or Google Maps start to count tiles from a different origin (north west, instead of south west). Other tile services will use different SRS, bounding boxes or resolutions. You need to check the capabilities of your service and :ref:`configure a compatible grid <grids>`.
 
 Example configuration for an OpenStreetMap tile service::
 
- layers:
-  - name: my_layer
-    title: WMS layer from tiles
-    sources: [mycache]
+  layers:
+    - name: my_layer
+      title: WMS layer from tiles
+      sources: [mycache]
 
- caches:
-   mycache:
-     grids: [tile_grid_of_source]
-     sources: [my_tile_source]
+  caches:
+    mycache:
+      grids: [tile_grid_of_source]
+      sources: [my_tile_source]
 
- sources:
-   my_tile_source:
-     type: tile
-     grid: tile_grid_of_source
-     url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
+  sources:
+    my_tile_source:
+      type: tile
+      grid: tile_grid_of_source
+      url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
  grids:
-   tile_grid_of_source:
-     base: GLOBAL_MERCATOR
-     origin: nw
+  tile_grid_of_source:
+    base: GLOBAL_MERCATOR
+    origin: nw
 
 .. note:: Please make sure you are allowed to access the tile service. Commercial tile provider often prohibit the direct access to tiles. The tile service from OpenStreetMap has a strict `Tile Usage Prolicy <http://wiki.openstreetmap.org/wiki/Tile_usage_policy>`_.
 
+.. _overlay_tiles_osm_openlayers:
+
+Overlay tiles with OpenStreetMap or Google Maps in OpenLayers
+=============================================================
+
+You need to take care of a few options when you want to overlay your MapProxy tiles in OpenLayers with existing OpenStreetMap or Google Maps tiles.
+
+The basic configuration for this use-case with MapProxy may look like this::
+
+  layers:
+    - name: street_layer
+      title: TMS layer with street data
+      sources: [street_cache]
+
+  caches:
+    street_cache:
+      sources: [street_tile_source]
+
+  sources:
+    street_tile_source:
+      type: tile
+      url: http://osm.omniscale.net/proxy/tiles/⏎
+        1.0.0/osm_roads_EPSG900913/%(z)s/%(x)s/%(y)s.png
+      transparent: true
+
+All you need to do now is to configure your OpenLayers client.
+The first example creates a simple OpenLayers map in webmercator projection, adds an OSM base layer and a TMS overlay layer with our MapProxy tile service.::
+
+  <script src="http://openlayers.org/api/OpenLayers.js"></script>
+  <script type="text/javascript">
+    var map;
+    function init(){
+        map = new OpenLayers.Map('map', {
+            projection: new OpenLayers.Projection("EPSG:900913")
+        });
+
+        var base_layer = new OpenLayers.Layer.OSM();
+
+        var overlay_layer = new OpenLayers.Layer.TMS(
+            'TMS street_layer',
+            'http://127.0.0.1:8080/tiles/',
+            {layername: 'street_layer_EPSG900913',
+             type: 'png', isBaseLayer: false}
+        );
+
+        map.addLayer(base_layer);
+        map.addLayer(overlay_layer);
+        map.zoomToMaxExtent();
+    };
+  </script>
+
+Note that we used the ``/tiles`` service instead of ``/tms`` here. See :ref:`the tile service documentation <open_layers_label>` for more information.
+
+Also remember that OpenStreetMap and Google Maps tiles have the origin in the upper left corner of the map, instead of the lower left corner as TMS does. Have a look at the :ref:`example configuration for OpenStreetMap tiles<osm_tile_conf>` for more information on that topic. The OpenLayers TMS and OSM layers already handle the difference.
+
+You can change how MapProxy calculates the origin of the tile coordinates, if you want to use your MapProxy tile service with the OpenLayers OSM layer class or if you want to use a client that does not have a TMS layer.
+
+The following example uses the class OpenLayers.Layer.OSM::
+
+    var overlay_layer = new OpenLayers.Layer.OSM("OSM osm_layer",
+        "http://x.osm.omniscale.net/proxy/tiles/⏎
+        osm_roads_EPSG900913/${z}/${x}/${y}.png?origin=nw",
+        {isBaseLayer: false, tileOptions: {crossOriginKeyword: null}}
+    );
+
+The origin parameter at the end of the URL tells MapProxy that the client expects the origin in the upper left corner (north/west).
+You can change the default origin of all MapProxy tile layers by using the ``origin`` option of the ``tms`` service. See the :ref:`TMS standard tile origin<google_maps_label>` for more informations.
 
 Cache raster data
 =================
