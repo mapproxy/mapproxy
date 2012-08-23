@@ -70,7 +70,7 @@ class TileServer(Server):
             tile_request.origin = self.origin
         layer = self.layer(tile_request)
         tile = layer.render(tile_request, use_profiles=tile_request.use_profiles)
-        resp = Response(tile.as_buffer(), content_type='image/' + tile_request.format)
+        resp = Response(tile.as_buffer(), content_type='image/' + tile.format)
         if tile.cacheable:
             resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
                                max_age=self.max_tile_age)
@@ -177,6 +177,7 @@ class TileLayer(object):
         self.grid = TileServiceGrid(tile_manager.grid)
         self.extent = map_extent_from_grid(self.grid)
         self._empty_tile = None
+        self._mixed_format = True if self.md.get('format', False) == 'mixed' else False
     
     @property
     def bbox(self):
@@ -193,6 +194,9 @@ class TileLayer(object):
     
     @property
     def format_mime_type(self):
+        # force png format for capabilities & requests if mixed format
+        if self._mixed_format:
+            return 'image/png'
         return self.md.get('format', 'image/png')
     
     def _internal_tile_coord(self, tile_request, use_profiles=False):
@@ -219,13 +223,17 @@ class TileLayer(object):
         if tile_request.format != self.format:
             raise RequestError('invalid format (%s). this tile set only supports (%s)'
                                % (tile_request.format, self.format), request=tile_request,
-                               code='InvalidParameterValue')
+                               code='InvalidParameterValue')        
+
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
         try:
             with self.tile_manager.session():
                 tile = self.tile_manager.load_tile_coord(tile_coord, with_metadata=True)
-            if tile.source is None: return self.empty_response()
-            return TileResponse(tile)
+            if tile.source is None:
+                return self.empty_response()
+
+            format = None if self._mixed_format else tile_request.format
+            return TileResponse(tile, format=format)
         except SourceError, e:
             raise RequestError(e.args[0], request=tile_request, internal=True)
 
@@ -247,14 +255,25 @@ class TileResponse(object):
     """
     Response from a Tile.
     """
-    def __init__(self, tile, timestamp=None):
+    def __init__(self, tile, format=None, timestamp=None):
         self.tile = tile
         self.timestamp = tile.timestamp
         self.size = tile.size
         self.cacheable = tile.cacheable
+        self._buf = self.tile.source_buffer()
+        self.format = format or self._format_from_magic_bytes()
+       
     
     def as_buffer(self):
-        return self.tile.source_buffer()
+        return self._buf
+
+    def _format_from_magic_bytes(self):
+        #read the 2 magic bytes from the buffer
+        magic_bytes = self._buf.read(2)
+        self._buf.seek(0)
+        if magic_bytes == '\xFF\xD8':
+            return 'jpeg'
+        return 'png'
 
 class TileServiceGrid(object):
     """
