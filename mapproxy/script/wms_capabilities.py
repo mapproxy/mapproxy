@@ -82,7 +82,9 @@ class WMS111Capabilities(object):
     def _parse_capabilities(self):
         try:
             tree = etree.parse(self.capabilities)
-        except etree.ParseError, ex:
+        except Exception, ex:
+             # catch all, etree.ParseError only avail since Python 2.7
+             # 2.5 and 2.6 raises exc from underlying implementation like expat
             raise CapabilitiesParserError('Could not parse the document (%s)' %
              (ex.args[0],))
         return tree
