@@ -173,7 +173,7 @@ def parse_capabilities(capabilities_url):
     try:
         capabilities_response = open_url(capabilities_url)
     except HTTPClientError, ex:
-        log_error('ERROR: %s', ex.message)
+        log_error('ERROR: %s', ex.args[0])
         sys.exit(1)
 
     # after parsing capabilities_response will be empty, therefore cache it
