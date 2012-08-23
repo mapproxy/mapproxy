@@ -21,7 +21,7 @@ import contextlib
 from cStringIO import StringIO
 from nose.tools import assert_raises
 
-from mapproxy.client.http import HTTPClient, HTTPClientError
+from mapproxy.client.http import HTTPClient
 from mapproxy.script.wms_capabilities import wms_capabilities_command
 from mapproxy.test.http import mock_httpd
 
@@ -33,9 +33,6 @@ SERVICE_EXCEPTION_FILE = os.path.join(os.path.dirname(__file__), 'fixture', 'uti
 
 @contextlib.contextmanager
 def capture_out():
-    import sys
-    from cStringIO import StringIO
-
     old_stdout = sys.stdout
     old_stderr = sys.stderr
     try:
