@@ -599,7 +599,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         
         if not self.context.seed and self.conf.get('seed_only'):
             from mapproxy.source import DummySource
-            return DummySource()
+            return DummySource(coverage=self.coverage())
         
         if params is None: params = {}
         
@@ -751,7 +751,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
     def source(self, params=None):
         if not self.context.seed and self.conf.get('seed_only'):
             from mapproxy.source import DummySource
-            return DummySource()
+            return DummySource(coverage=self.coverage())
         
         image_opts = self.image_opts()
         
@@ -794,7 +794,7 @@ class TileSourceConfiguration(SourceConfiguration):
         
         if not self.context.seed and self.conf.get('seed_only'):
             from mapproxy.source import DummySource
-            return DummySource()
+            return DummySource(coverage=self.coverage())
         
         if params is None: params = {}
         

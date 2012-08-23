@@ -69,9 +69,10 @@ class DummySource(Source):
     
     Used internally for 'offline' sources (e.g. seed_only).
     """
-    def __init__(self):
+    def __init__(self, coverage=None):
         Source.__init__(self)
         self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
         self.transparent = True
+        self.extent = MapExtent(coverage.bbox, coverage.srs) if coverage else DefaultMapExtent()
     def get_map(self, query):
         raise BlankImage()
