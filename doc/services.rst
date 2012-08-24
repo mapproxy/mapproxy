@@ -90,7 +90,7 @@ You can define XSLT scripts to transform outgoing feature information. You can d
 
 ``html``
   Define a script for ``INFO_FORMAT=text/html`` requests.
-  
+
 ``xml``
   Define a script for ``INFO_FORMAT=application/vnd.ogc.gml`` and ``INFO_FORMAT=text/xml`` requests.
 
@@ -118,7 +118,7 @@ The maximum output size for a WMS requests in pixel. MapProxy returns an WMS exc
 Full example
 """"""""""""
 ::
-  
+
   services:
     wms:
       srs: ['EPSG:4326', 'CRS:83', 'EPSG:900913']
@@ -132,7 +132,7 @@ Full example
         contact:
           person: Your Name Here
           position: Technical Director
-          organization: 
+          organization:
           address: Fakestreet 123
           city: Somewhere
           postcode: 12345
@@ -142,7 +142,7 @@ Full example
           email: you@example.org
         access_constraints: This service is intended for private and evaluation use only.
         fees: 'None'
-            
+
 
 
 .. index:: WMS-C Service
@@ -165,7 +165,7 @@ MapProxy will limit the WMS support when ``tiled=true`` is added to the `GetMap`
 Tiled Map Services (TMS)
 ------------------------
 
-MapProxy supports the `Tile Map Service Specification`_ from the OSGeo. The TMS is available at ``/tms/1.0.0``. 
+MapProxy supports the `Tile Map Service Specification`_ from the OSGeo. The TMS is available at ``/tms/1.0.0``.
 
 The TMS service will use all configured :ref:`layers <layers>` that have a name and single cached source. Any layer grouping will be flattened.
 
@@ -194,6 +194,7 @@ Example
 
 .. index:: OpenLayers
 .. _open_layers_label:
+
 OpenLayers
 """"""""""
 When you create a map in OpenLayers with an explicit ``mapExtent``, it will request only a single tile for the first (z=0) level.
@@ -201,16 +202,17 @@ TMS begins with two or four tiles by default, depending on the SRS. MapProxy sup
 
 Alternatively, you can use the OpenLayers TMS option ``zoomOffset`` to compensate the difference. The option is available since OpenLayers 2.10.
 
-There is an example configuration is available at :ref:`the configuration-examples section<overlay_tiles_osm_openlayers>, which shows the use of OpenLayers in combination with an overlay of tiles on top of OpenStreetMap tiles.
+There is an example available at :ref:`the configuration-examples section<overlay_tiles_osm_openlayers>`, which shows the use of OpenLayers in combination with an overlay of tiles on top of OpenStreetMap tiles.
 
 .. index:: Google Maps
 .. _google_maps_label:
+
 Google Maps
 """""""""""
 The TMS standard counts tiles starting from the lower left corner of the tile grid, while Google Maps and compatible services start at the upper left corner. The ``/tiles`` service accepts an ``origin`` parameter that flips the y-axis accordingly. You can set it to either ``sw`` (south-west), the default, or to ``nw`` (north-west), required for Google Maps.
 
 Example::
-  
+
   http://localhost:8080/tiles/osm_EPSG900913/1/0/1.png?origin=nw
 
 .. versionadded:: 1.5.0
@@ -234,7 +236,7 @@ Keyhole Markup Language (OGC KML)
 MapProxy supports KML version 2.2 for integration into Google Earth. Each layer is available as a Super Overlay – image tiles are loaded on demand when the user zooms to a specific region. The initial KML file is available at ``/kml/layername/EPSG1234/0/0/0.kml``. The tiles are also available under the layer name ``layername_EPSG1234`` when ``use_grid_names`` is false or unset.
 
 .. versionadded:: 1.5.0
-  
+
   The initial KML is also available at ``/kml/layername_EPSG1234`` and ``/kml/layername/EPSG1234``.
 
 ``use_grid_names``
@@ -247,6 +249,8 @@ Tiles will then be available under ``/kml/mylayer/mygrid/`` instead of ``/kml/my
 
 Example
 """""""
+
+::
 
   services:
     kml:
@@ -314,7 +318,7 @@ WMTS RESTful services can support custom tile URLs. You can configure your own U
 
 The default template is ``/{{Layer}}/{{TileMatrixSet}}/{{TileMatrix}}/{{TileCol}}/{{TileRow}}.{{Format}}``
 
-The template variables are identical with the WMTS specification. ``TileMatrixSet`` is the grid name, ``TileMatrix`` is the zoom level, ``TileCol`` and ``TileRow`` are the x and y of the tile. 
+The template variables are identical with the WMTS specification. ``TileMatrixSet`` is the grid name, ``TileMatrix`` is the zoom level, ``TileCol`` and ``TileRow`` are the x and y of the tile.
 
 
 You can access the a the tile x=3, y=9, z=4 at ``http://example.org//1.0.0/mylayer-mygrid/4-3-9/tile``
