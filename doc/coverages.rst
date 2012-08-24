@@ -46,7 +46,7 @@ Polygon file
 
 ``polygons``:
   Path to a text file with one WKT polygon or multi-polygon per line. The path should be relative to
-  the proxy configuration or absolute. You can create your own files or use `one of the files we provide for every country <http://mapproxy.org/static/polygons/>`_. Read `the index <http://mapproxy.org/static/polygons/0-fips-codes.txt>`_ to find your country. 
+  the proxy configuration or absolute. You can create your own files or use `one of the files we provide for every country <http://mapproxy.org/static/polygons/>`_. Read `the index <http://mapproxy.org/static/polygons/0-fips-codes.txt>`_ to find your country.
 
 ``polygons_srs``:
   The SRS of the polygons.
@@ -97,24 +97,20 @@ To define a seed-area in the ``seed.yaml``, add the coverage directly to the vie
 
 ::
 
-  views:
+  coverages:
     germany:
       ogr_datasource: 'shps/world_boundaries_m.shp'
       ogr_where: 'CNTRY_NAME = "Germany"'
       ogr_srs: 'EPSG:900913'
-      level: [0, 14]
-      srs: ['EPSG:900913', 'EPSG:4326']
 
 .. index:: PostGIS, PostgreSQL
 
 And here is the same example with a PostGIS source::
 
-  views:
+  coverages:
     germany:
       ogr_datasource: "PG: dbname='db' host='host' user='user'
     password='password'"
       ogr_where: "select * from coverages where country='germany'"
       ogr_srs: 'EPSG:900913'
-      level: [0, 14]
-      srs: ['EPSG:900913', 'EPSG:4326']
 
