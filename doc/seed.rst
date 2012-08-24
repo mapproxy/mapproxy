@@ -20,40 +20,40 @@ Options
 
 
 .. option:: -s <seed.yaml>, --seed-conf==<seed.yaml>
-  
+
   The seed configuration. You can also pass the configration as the last argument to ``mapproxy-seed``
 
 .. option:: -f <mapproxy.yaml>, --proxy-conf=<mapproxy.yaml>
-  
+
   The MapProxy configuration to use. This file should describe all caches and grids that the seed configuration references.
-  
+
 .. option:: -c N, --concurrency N
-  
+
   The number of concurrent seed worker. Some parts of the seed tool are CPU intensive
   (image splitting and encoding), use this option to distribute that load across multiple
   CPUs. To limit the concurrent requests to the source WMS see
   :ref:`wms_source_concurrent_requests_label`
 
 .. option:: -n, --dry-run
-  
+
   This will simulate the seed/cleanup process without requesting, creating or removing any tiles.
 
 .. option:: --summary
-  
+
   Print a summary of all seeding and cleanup tasks and exit.
 
 .. option:: -i, --interactive
-  
+
   Print a summary of each seeding and cleanup task and ask if ``mapproxy-seed`` should seed/cleanup that task. It will query for each task before it starts.
 
 .. option:: --seed=<task1,task2,..>
-  
+
   Only seed the named seeding tasks. You can select multiple tasks with a list of comma seperated names, or you can use the ``--seed`` option multiple times.
   You can use ``ALL`` to select all tasks.
   This disables all cleanup tasks unless you also use the ``--cleanup`` option.
 
 .. option:: --cleanup=<task1,task2,..>
-  
+
   Only cleanup the named tasks. You can select multiple tasks with a list of comma seperated names, or you can use the ``--cleanup`` option multiple times.
   You can use ``ALL`` to select all tasks.
   This disables all seeding tasks unless you also use the ``--seed`` option.
@@ -139,7 +139,7 @@ A list with the caches that should be seeded for this task. The names should mat
 
 ``grids``
 ~~~~~~~~~
-A list with the grid names that should be seeded for the ``caches``. 
+A list with the grid names that should be seeded for the ``caches``.
 The names should match the grid names in your mapproxy configuration.
 All caches of this tasks need to support the grids you specify here.
 By default, the grids that are common to all configured caches will be seeded.
@@ -153,7 +153,7 @@ Examples::
 
   # seed multiple levels
   levels: [2, 3, 4, 8, 9]
-  
+
   # seed a single level
   levels: [3]
 
@@ -174,7 +174,7 @@ A list with coverage names. Limits the seed area to the coverages. By default, t
 ``refresh_before``
 ~~~~~~~~~~~~~~~~~~
 
-Regenerate all tiles that are older than the given date. The date can either be absolute or relative. By default, existing tiles will be refreshed.
+Regenerate all tiles that are older than the given date. The date can either be absolute or relative. By default, existing tiles will not be refreshed.
 
 Examples::
 
@@ -203,7 +203,7 @@ Example
       grids: [GLOBAL_MERCATOR]
       levels:
         to: 10
-    
+
     myseed2
       caches: [osm_cache]
       coverages: [niedersachsen, bremen, hamburg]
@@ -213,7 +213,7 @@ Example
       levels:
         from: 11
         to: 15
-    
+
 ``cleanups``
 ------------
 
@@ -226,9 +226,9 @@ A list with the caches where you want to cleanup old tiles. The names should mat
 
 ``grids``
 ~~~~~~~~~
-A list with the grid names for the ``caches`` where you want to cleanup. 
+A list with the grid names for the ``caches`` where you want to cleanup.
 The names should match the grid names in your mapproxy configuration.
-All caches of this tasks need to support the grids you specify here. 
+All caches of this tasks need to support the grids you specify here.
 By default, the grids that are common to all configured caches will be used.
 
 ``levels``
@@ -240,7 +240,7 @@ Examples::
 
   # cleanup multiple levels
   levels: [2, 3, 4, 8, 9]
-  
+
   # cleanup a single level
   levels: [3]
 
@@ -302,7 +302,7 @@ Example
       levels:
         from: 14
         to: 18
-    
+
 
 
 ``coverages``
@@ -312,7 +312,7 @@ There are three different ways to describe the extent of a seeding or cleanup ta
 
 - a simple rectangular bounding box,
 - a text file with one or more polygons in WKT format,
-- polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)
+- polygons from any data source readable with OGR (e.g. Shapefile, GeoJSON, PostGIS)
 
 Read the :doc:`coverage documentation <coverages>` for more information.
 
@@ -364,7 +364,7 @@ Contains a dictionary with layer/view mapping.::
             views: ['world', 'germany']
             remove_before:
                 time: '2009-04-01T14:45:00'
-                # or 
+                # or
                 minutes: 15
                 hours: 4
                 days: 9
@@ -373,7 +373,7 @@ Contains a dictionary with layer/view mapping.::
 `remove_before`:
     If present, recreate tiles if they are older than the date or time delta. At the
     end of the seeding process all tiles that are older will be removed.
-    
+
     You can either define a fixed time or a time delta. The `time` is a ISO-like date
     string (no time-zones, no abbreviations). To define time delta use one or more
     `minutes`, `hours`, `days`, `weeks` entries.

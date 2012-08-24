@@ -428,7 +428,7 @@ class TileGrid(object):
         return (x, self.grid_sizes[z][1]-1-y, z)
     
     def supports_access_with_origin(self, origin):
-        if self.origin == origin:
+        if (origin or 'sw') == (self.origin or 'sw'):
             return True
         grid_size = self.grid_sizes[0]
         level_0_bbox = self._tiles_bbox([(0, 0, 0), 
@@ -440,7 +440,7 @@ class TileGrid(object):
             return False
     
     def origin_tile(self, level, origin):
-        assert self.supports_access_with_origin(origin), 'TODO error exception'
+        assert self.supports_access_with_origin(origin), 'tile origins are incompatible'
         tile = (0, 0, level)
         if self.origin != origin:
             tile = self.flip_tile_coord(tile)

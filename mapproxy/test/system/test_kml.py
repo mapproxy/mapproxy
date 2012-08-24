@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2012 Omniscale <http://omniscale.de>
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ class TestKML(SystemTest):
         resp = self.app.get('/kml/wms_cache/1/0/1.jpeg')
         self._check_cache_control_headers(resp, etag, max_age)
         self._check_tile_resp(resp)
-    
+
     def test_if_none_match(self):
         etag, max_age = self._update_timestamp()
         resp = self.app.get('/kml/wms_cache/1/0/1.jpeg',
@@ -134,7 +134,26 @@ class TestKML(SystemTest):
         resp = self.app.get('/kml/wms_cache/0/0/0.kml',
                             headers={'If-None-Match': etag})
         eq_(resp.status, '304 Not Modified')
-    
+
+    def test_get_kml_init(self):
+        resp = self.app.get('/kml/wms_cache')
+        xml = resp.lxml
+        assert validate_with_xsd(xml, 'kml/2.2.0/ogckml22.xsd')
+        eq_(xml.xpath('/kml:kml/kml:Document/kml:GroundOverlay/kml:Icon/kml:href/text()',
+                      namespaces=ns),
+            ['http://localhost/kml/wms_cache/EPSG900913/1/0/1.jpeg',
+             'http://localhost/kml/wms_cache/EPSG900913/1/1/1.jpeg',
+             'http://localhost/kml/wms_cache/EPSG900913/1/0/0.jpeg',
+             'http://localhost/kml/wms_cache/EPSG900913/1/1/0.jpeg']
+        )
+        eq_(xml.xpath('/kml:kml/kml:Document/kml:NetworkLink/kml:Link/kml:href/text()',
+                      namespaces=ns),
+              ['http://localhost/kml/wms_cache/EPSG900913/1/0/1.kml',
+               'http://localhost/kml/wms_cache/EPSG900913/1/1/1.kml',
+               'http://localhost/kml/wms_cache/EPSG900913/1/0/0.kml',
+               'http://localhost/kml/wms_cache/EPSG900913/1/1/0.kml']
+        )        
+
     def test_get_kml2(self):
         resp = self.app.get('/kml/wms_cache/1/0/1.kml')
         xml = resp.lxml
@@ -171,17 +190,3 @@ class TestKML(SystemTest):
                 eq_(resp.content_type, 'image/jpeg')
                 self.created_tiles.append('wms_cache_EPSG900913/01/000/000/000/000/000/000.jpeg')
     
-    def created_tiles_filenames(self):
-        base_dir = base_config().cache.base_dir
-        for filename in self.created_tiles:
-            yield os.path.join(base_dir, filename)
-    
-    def test_created_tiles(self):
-        for filename in self.created_tiles_filenames():
-            if not os.path.exists(filename):
-                assert False, "didn't found tile " + filename
-    
-    def teardown(self):
-        for filename in self.created_tiles_filenames():
-            if os.path.exists(filename):
-                os.remove(filename)

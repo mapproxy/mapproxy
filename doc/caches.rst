@@ -36,6 +36,12 @@ This is the default cache type and it uses a single file for each tile. Availabl
   .. note:: 
     ``tms`` layout is not suited for large caches, since it will create directories with thousands of files, which most file systems do not handle well.
 
+``use_grid_names``:
+
+  .. versionadded:: 1.5.0
+  
+  When ``true`` MapProxy will use the actual grid name in the path instead of the SRS code. E.g. tiles will be stored in ``./cache_data/mylayer/mygrid/`` instead of ``./cache_data/mylayer/EPSG1234/``.
+
 
 ``mbtiles``
 ===========

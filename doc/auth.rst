@@ -11,12 +11,12 @@ As you can see, the options to choose when implementing a system for authenticat
 
 Therefore, MapProxy does not come with any embedded authentication or authorization. But it comes with a flexible authorization interface that allows you (the SDI developer) to implement custom tailored systems.
 
-Luckily, there are lots of existing toolkits that can be used to build systems that match your requirements. For authentication there is the `repoze.who`_ package with `plugins for HTTP Basic Authentication, HTTP cookies, etc <repoze.who_plugins>`_. For authorization there is the `repoze.what`_ package with `plugins for SQL datastores, etc <repoze.what_plugins>`_.
+Luckily, there are lots of existing toolkits that can be used to build systems that match your requirements. For authentication there is the `repoze.who`_ package with `plugins for HTTP Basic Authentication, HTTP cookies, etc`_. For authorization there is the `repoze.what`_ package with `plugins for SQL datastores, etc`_.
 
 .. _`repoze.who`: http://docs.repoze.org/who/
-.. _`repoze.who_plugins`: http://pypi.python.org/pypi?:action=search&term=repoze.who
+.. _`plugins for HTTP Basic Authentication, HTTP cookies, etc`: http://pypi.python.org/pypi?:action=search&term=repoze.who
 .. _`repoze.what`: http://docs.repoze.org/what/
-.. _`repoze.what_plugins`: http://pypi.python.org/pypi?:action=search&term=repoze.what
+.. _`plugins for SQL datastores, etc`: http://pypi.python.org/pypi?:action=search&term=repoze.what
 
 
 .. note:: Developing custom authentication and authorization system requires a bit Python programming and knowledge of `WSGI <http://wsgi.org>`_ and WSGI middleware.

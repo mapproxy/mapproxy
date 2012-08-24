@@ -37,6 +37,9 @@ layers:
   - name: tms_cache
     title: TMS Cache Layer
     sources: [tms_cache]
+  - name: seed_only_cache
+    title: Seed Only Layer
+    sources: [seed_only_cache]
 
 caches:
   wms_cache:
@@ -47,6 +50,9 @@ caches:
     format: image/jpeg
     grids: [GLOBAL_MERCATOR]
     sources: [tms_cache]
+  seed_only_cache:
+    grids: [GLOBAL_MERCATOR]
+    sources: [seed_only_source]
 
 sources:
   wms_cache:
@@ -62,5 +68,12 @@ sources:
     type: tile
     coverage:
       bbox: [12, 10, 35, 30]
+      bbox_srs: 'EPSG:4326'
+    url: http://localhost:42423/tms/1.0.0/foo/%(tms_path)s.jpeg
+  seed_only_source:
+    type: tile
+    seed_only: true
+    coverage:
+      bbox: [14, 13, 24, 23]
       bbox_srs: 'EPSG:4326'
     url: http://localhost:42423/tms/1.0.0/foo/%(tms_path)s.jpeg

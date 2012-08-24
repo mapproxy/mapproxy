@@ -1,13 +1,13 @@
 # -:- encoding: utf-8 -:-
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,7 +39,7 @@ def asbool(value):
 def app_factory(global_options, config_dir, allow_listing=False, **local_options):
     """
     Create a new MultiMapProxy app.
-    
+
     :param config_dir: directory with all mapproxy configurations
     :param allow_listing: allow to list all available apps
     """
@@ -48,7 +48,7 @@ def app_factory(global_options, config_dir, allow_listing=False, **local_options
 def make_wsgi_app(config_dir, allow_listing=True):
     """
     Create a MultiMapProxy with the given config directory.
-    
+
     :param config_dir: the directory with all project configurations.
     :param allow_listing: True if MapProxy should list all instances
         at the root URL
@@ -59,38 +59,38 @@ def make_wsgi_app(config_dir, allow_listing=True):
 
 
 class MultiMapProxy(object):
-    
+
     def __init__(self, loader, list_apps=False, app_cache_size=100):
         self.loader = loader
         self.list_apps = list_apps
         self._app_init_lock = Lock()
         self.apps = LRU(app_cache_size)
-    
+
     def __call__(self, environ, start_response):
         req = Request(environ)
         return self.handle(req)(environ, start_response)
-    
+
     def handle(self, req):
         app_name = req.pop_path()
         if not app_name:
             return self.index_list()
-        
+
         if not app_name or (
                 app_name not in self.apps and not self.loader.app_available(app_name)
             ):
             return Response('not found', status=404)
-        
+
         # safe instance/app name for authorization
         req.environ['mapproxy.instance_name'] = app_name
         return self.proj_app(app_name)
-    
+
     def index_list(self):
         """
         Return greeting response with a list of available apps (if enabled with list_apps).
         """
         import mapproxy.version
         html = "<html><body><h1>Welcome to MapProxy %s</h1>" % mapproxy.version.version
-        
+
         if self.list_apps:
             html += "<h2>available instances:</h2><ul>"
             html += '\n'.join('<li><a href="%(name)s/">%(name)s</a></li>' % {'name': app}
@@ -104,21 +104,22 @@ class MultiMapProxy(object):
         Return the (cached) project app.
         """
         proj_app, timestamp = self.apps.get(proj_name, (None, None))
-        
+
         if proj_app:
             if self.loader.needs_reload(proj_name, timestamp):
                 # discard cached app
                 proj_app = None
-                del self.apps[proj_name]
-        
+
         if not proj_app:
             with self._app_init_lock:
-                if proj_name not in self.apps:
+                if self.loader.needs_reload(proj_name, timestamp):
                     proj_app, m_time = self.create_app(proj_name)
                     self.apps[proj_name] = proj_app, m_time
-        
+                else:
+                    proj_app = self.apps[proj_name]
+
         return proj_app
-    
+
     def create_app(self, proj_name):
         """
         Returns a new configured MapProxy app and the timestamp of the configuration.
@@ -137,29 +138,29 @@ class ConfLoader(object):
         since `timestamp`.
         """
         raise NotImplementedError()
-        
+
     def app_available(self, app_name):
         """
         Returns ``True`` if `app_name` is available.
         """
         raise NotImplementedError()
-        
+
     def available_apps(self):
         """
         Returns a list with all available lists.
         """
         raise NotImplementedError()
-    
+
     def app_conf(self, app_name):
         """
         Returns a configuration dict for the given `app_name`,
         None if the app is not found.
-        
+
         The configuration dict contains at least 'mapproxy_conf'
         with the filename of the configuration.
         """
         raise NotImplementedError()
-    
+
 
 class DirectoryConfLoader(ConfLoader):
     """
@@ -168,14 +169,14 @@ class DirectoryConfLoader(ConfLoader):
     def __init__(self, base_dir, suffix='.yaml'):
         self.base_dir = base_dir
         self.suffix = suffix
-    
+
     def needs_reload(self, app_name, timestamp):
         conf_file = self.filename_from_app_name(app_name)
         m_time = os.path.getmtime(conf_file)
         if m_time > timestamp:
             return True
         return False
-    
+
     def _is_conf_file(self, fname):
         if not os.path.isfile(fname):
             return False
@@ -183,7 +184,7 @@ class DirectoryConfLoader(ConfLoader):
             return fname.lower().endswith(self.suffix)
         else:
             return True
-    
+
     def app_name_from_filename(self, fname):
         """
         >>> DirectoryConfLoader('/tmp/').app_name_from_filename('/tmp/foobar.yaml')
@@ -192,14 +193,14 @@ class DirectoryConfLoader(ConfLoader):
         _path, fname = os.path.split(fname)
         app_name, _ext = os.path.splitext(fname)
         return app_name
-    
+
     def filename_from_app_name(self, app_name):
         """
         >>> DirectoryConfLoader('/tmp/').filename_from_app_name('foobar')
         '/tmp/foobar.yaml'
         """
         return os.path.join(self.base_dir, app_name + self.suffix or '')
-        
+
     def available_apps(self):
         apps = []
         for f in os.listdir(self.base_dir):
@@ -207,11 +208,11 @@ class DirectoryConfLoader(ConfLoader):
                 app_name = self.app_name_from_filename(f)
                 apps.append(app_name)
         return apps
-    
+
     def app_available(self, app_name):
         conf_file = self.filename_from_app_name(app_name)
         return self._is_conf_file(conf_file)
-    
+
     def app_conf(self, app_name):
         conf_file = self.filename_from_app_name(app_name)
         if not self._is_conf_file(conf_file):

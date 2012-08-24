@@ -33,7 +33,7 @@ class KMLRequest(TileRequest):
             (?P<z>-?\d+)/
             (?P<x>-?\d+)/
             (?P<y>-?\d+)\.(?P<format>\w+)''', re.VERBOSE)
-    
+
     def __init__(self, request):
         TileRequest.__init__(self, request)
         if self.format == 'kml':
@@ -43,8 +43,34 @@ class KMLRequest(TileRequest):
     def exception_handler(self):
         return PlainExceptionHandler()
 
+class KMLInitRequest(TileRequest):
+    """
+    Class for TMS-like KML requests.
+    """
+    request_handler_name = 'map'
+    req_prefix = '/kml'
+    tile_req_re = re.compile(r'''^(?P<begin>/kml)/
+            (?P<layer>[^/]+)
+            (/(?P<layer_spec>[^/]+))?
+            /?$
+    ''', re.VERBOSE)
+
+    def __init__(self, request):
+        self.http = request
+        self.tile = (0, 0, 0)
+        self.format = 'kml'
+        self.request_handler_name = 'kml'
+        self._init_request()
+
+    @property
+    def exception_handler(self):
+        return PlainExceptionHandler()
+
 def kml_request(req):
-    return KMLRequest(req)
+    if KMLInitRequest.tile_req_re.match(req.path):
+        return KMLInitRequest(req)
+    else:
+        return KMLRequest(req)
 
 class KMLServer(Server):
     """
@@ -54,16 +80,19 @@ class KMLServer(Server):
     request_parser = staticmethod(kml_request)
     request_methods = ('map', 'kml')
 
-    def __init__(self, layers, md, max_tile_age=None):
+    def __init__(self, layers, md, max_tile_age=None, use_dimension_layers=False):
         Server.__init__(self)
         self.layers = layers
         self.md = md
         self.max_tile_age = max_tile_age
+        self.use_dimension_layers = use_dimension_layers
     
     def map(self, map_request):
         """
         :return: the requested tile
         """
+        # force 'sw' origin for kml
+        map_request.origin = 'sw'
         layer = self.layer(map_request)
         self.authorize_tile_layer(layer.name, map_request.http.environ)
         tile = layer.render(map_request)
@@ -85,15 +114,32 @@ class KMLServer(Server):
                 if result['layers'].get(layer_name, {}).get('tile', False) == True:
                     return
             raise RequestError('forbidden', status=403)
+
+    def _internal_layer(self, tile_request):
+        if tile_request.dimensions:
+            name = tile_request.layer + '_' + '_'.join(tile_request.dimensions)
+        else:
+            name = tile_request.layer
+        if name in self.layers:
+            return self.layers[name]
+        if name + '_EPSG4326' in self.layers:
+            return self.layers[name + '_EPSG4326']
+        if name + '_EPSG900913' in self.layers:
+            return self.layers[name + '_EPSG900913']
+        return None
     
+    def _internal_dimension_layer(self, tile_request):
+        key = (tile_request.layer, ) + tile_request.dimensions
+        return self.layers.get(key)
+
     def layer(self, tile_request):
-        if tile_request.layer in self.layers:
-            return self.layers[tile_request.layer]
-        if tile_request.layer + '_EPSG4326' in self.layers:
-            return self.layers[tile_request.layer + '_EPSG4326']
-        if tile_request.layer + '_EPSG900913' in self.layers:
-            return self.layers[tile_request.layer + '_EPSG900913']
-        raise RequestError('unknown layer: ' + tile_request.layer, request=tile_request)
+        if self.use_dimension_layers:
+            internal_layer = self._internal_dimension_layer(tile_request)
+        else:
+            internal_layer = self._internal_layer(tile_request)
+        if internal_layer is None:
+            raise RequestError('unknown layer: ' + tile_request.layer, request=tile_request)
+        return internal_layer
 
     def kml(self, map_request):
         """

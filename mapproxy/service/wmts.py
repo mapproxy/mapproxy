@@ -47,6 +47,10 @@ class WMTSServer(Server):
         layers_grids = {}
         for layer in layers.values():
             grid = layer.grid
+            if not grid.supports_access_with_origin('nw'):
+                log.warn("grid '%s' is not compatible with WMTS, skipping for layer '%s'",
+                    grid.name, layer.name)
+                continue
             if grid.name not in sets:
                 try:
                     sets[grid.name] = TileMatrixSet(grid)

@@ -1,0 +1,23 @@
+caches:
+    test_cache:
+        grids: [global_geodetic_sqrt2, grid_full_example, another_grid_full_example]
+        sources: []
+
+grids:
+  global_geodetic_sqrt2:
+    base: GLOBAL_GEODETIC
+    res_factor: 'sqrt2'
+  grid_full_example:
+    tile_size: [512, 512]
+    srs: 'EPSG:900913'
+    bbox: [5, 45, 15, 55]
+    bbox_srs: 'EPSG:4326'
+    min_res: 2000 #m/px
+    max_res: 50 #m/px
+    align_resolutions_with: GLOBAL_MERCATOR
+  another_grid_full_example:
+    srs: 'EPSG:900913'
+    bbox: [5, 45, 15, 55]
+    bbox_srs: 'EPSG:4326'
+    res_factor: 1.5
+    num_levels: 25

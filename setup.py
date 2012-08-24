@@ -14,7 +14,7 @@ def long_description(changelog_releases=10):
     import re
     import textwrap
 
-    readme = open('README.txt').read()
+    readme = open('README.rst').read()
     changes = ['Changes\n-------\n']
     version_line_re = re.compile('^\d\.\d+\.\d+\S*\s20\d\d-\d\d-\d\d')
     for line in open('CHANGES.txt'):
@@ -33,7 +33,7 @@ def long_description(changelog_releases=10):
 
 setup(
     name='MapProxy',
-    version="1.4.0a",
+    version="1.5.0a",
     description='An accelerating proxy for web map services',
     long_description=long_description(7),
     author='Oliver Tonnhofer',

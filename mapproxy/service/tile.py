@@ -53,17 +53,21 @@ class TileServer(Server):
     template_file = 'tms_capabilities.xml'
     layer_template_file = 'tms_tilemap_capabilities.xml'
 
-    def __init__(self, layers, md, max_tile_age=None):
+    def __init__(self, layers, md, max_tile_age=None, use_dimension_layers=False, origin=None):
         Server.__init__(self)
         self.layers = layers
         self.md = md
         self.max_tile_age = max_tile_age
+        self.use_dimension_layers = use_dimension_layers
+        self.origin = origin
     
     def map(self, tile_request):
         """
         :return: the requested tile
         :rtype: Response
         """
+        if self.origin and not tile_request.origin:
+            tile_request.origin = self.origin
         layer = self.layer(tile_request)
         tile = layer.render(tile_request, use_profiles=tile_request.use_profiles)
         resp = Response(tile.as_buffer(), content_type='image/' + tile.format)
@@ -75,7 +79,11 @@ class TileServer(Server):
         resp.make_conditional(tile_request.http)
         return resp
     
-    def _internal_layer(self, name):
+    def _internal_layer(self, tile_request):
+        if tile_request.dimensions:
+            name = tile_request.layer + '_' + '_'.join(tile_request.dimensions)
+        else:
+            name = tile_request.layer
         if name in self.layers:
             return self.layers[name]
         if name + '_EPSG900913' in self.layers:
@@ -84,8 +92,15 @@ class TileServer(Server):
             return self.layers[name + '_EPSG4326']
         return None
     
+    def _internal_dimension_layer(self, tile_request):
+        key = (tile_request.layer, ) + tile_request.dimensions
+        return self.layers.get(key)
+
     def layer(self, tile_request):
-        internal_layer = self._internal_layer(tile_request.layer)
+        if self.use_dimension_layers:
+            internal_layer = self._internal_dimension_layer(tile_request)
+        else:
+            internal_layer = self._internal_layer(tile_request)
         if internal_layer is None:
             raise RequestError('unknown layer: ' + tile_request.layer, request=tile_request)
         self.authorize_tile_layer(internal_layer.name, tile_request.http.environ)

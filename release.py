@@ -78,6 +78,9 @@ def upload_sdist_command():
 def upload_final_sdist_command():
     sh('python setup.py egg_info -b "" -D sdist upload')
 
+def register_command():
+    sh('python setup.py egg_info -b "" -D register')
+
 def link_latest_command(ver=None):
     if ver is None:
         ver = version()
