@@ -13,7 +13,7 @@ There are three different ways to describe a coverage.
 
 - a simple rectangular bounding box,
 - a text file with one or more (multi)polygons in WKT format,
-- (multi)polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)
+- (multi)polygons from any data source readable with OGR (e.g. Shapefile, GeoJSON, PostGIS)
 
 
 Requirements
@@ -105,7 +105,7 @@ To define a seed-area in the ``seed.yaml``, add the coverage directly to the vie
 
 .. index:: PostGIS, PostgreSQL
 
-And here is the same example with a PostGIS source::
+Here is the same example with a PostGIS source::
 
   coverages:
     germany:
@@ -114,3 +114,14 @@ And here is the same example with a PostGIS source::
       ogr_where: "select * from coverages where country='germany'"
       ogr_srs: 'EPSG:900913'
 
+
+.. index:: GeoJSON
+
+And here is an example with a GeoJSON source::
+
+  coverages:
+    germany:
+      ogr_datasource: 'boundary.geojson'
+      ogr_srs: 'EPSG:4326'
+
+See `the OGR driver list <http://www.gdal.org/ogr/ogr_formats.html>`_ for all supported formats.
