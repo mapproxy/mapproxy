@@ -20,7 +20,7 @@ import os
 from mapproxy.platform.image import Image, ImageDraw
 from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image
 from mapproxy.image.merge import merge_images
-from mapproxy.image import _make_transparent as make_transparent, SubImageSource
+from mapproxy.image import _make_transparent as make_transparent, SubImageSource, img_has_transparency, quantize
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TileMerger, TileSplitter
 from mapproxy.image.transform import ImageTransformer
@@ -438,3 +438,20 @@ class TestTileSplitter(object):
         colors = tile.as_image().getcolors()
         eq_(sorted(colors), [(10*100, (130, 140, 120, 255)), (256*256-10*100, (255, 255, 255, 0))])
    
+class TestHasTransparency(object):
+    def test_rgb(self):
+        if hasattr(Image, 'FASTOCTREE'):
+            img = Image.new('RGB', (10, 10))             
+            assert not img_has_transparency(img)
+
+            img = quantize(img, alpha=False)
+            assert not img_has_transparency(img)
+
+    def test_rbga(self):
+        if hasattr(Image, 'FASTOCTREE'):
+            img = Image.new('RGBA', (10, 10), (100, 200, 50, 255))
+            img.paste((255, 50, 50, 0), (3, 3, 7, 7))  
+            assert img_has_transparency(img)
+
+            img = quantize(img, alpha=True)
+            assert img_has_transparency(img)

@@ -210,9 +210,9 @@ You can change the default origin of all MapProxy tile layers by using the ``ori
 Cache raster data
 =================
 
-You have a WMS server that offers raster data like aerial images. By default MapProxy uses PNG images as the caching format. The encoding process for PNG files is very computing intensive and thus the caching process itself takes longer. For aerial images the quality of lose-less image formats like PNG is often not required. For best performance you should use JPEG as the cache format.
+You have a WMS server that offers raster data like aerial images. By default MapProxy uses PNG images as the caching format. The encoding process for PNG files is very CPU intensive and thus the caching process itself takes longer. For aerial images the quality of loss-less image formats like PNG is often not required. For best performance you should use JPEG as the cache format.
 
-By default MapProxy uses `bicubic` resampling. This resampling method also sharpens the image which is important for vector images. Arial images do not need this, so you can use `bilinear` or even Nearest Neighbor (`nearest`) resampling.
+By default MapProxy uses `bicubic` resampling. This resampling method also sharpens the image which is important for vector images. Aerial images do not need this, so you can use `bilinear` or even Nearest Neighbor (`nearest`) resampling.
 ::
 
   caches:
@@ -230,6 +230,34 @@ You might also want to experiment with different compression levels of JPEG. A h
   globals:
     jpeg_quality: 80
 
+
+Mixed mode
+----------
+
+You need to store images with transparency when you want to overlay them over other images, e.g. at the boundaries of your aerial image coverage. PNG supports transparency but it is not efficient with arial images, while JPEG is efficient for aerial images but doesn't support transparency.
+
+MapProxy :ref:`has a mixed image format <mixed_image_format>` for this case. With the ``mixed`` format, MapProxy stores tiles as either PNG or JPEG, depending on the transparency of each tile. Images with transparency will be stored as PNG, fully opaque images as JPEG.
+
+.. note:: The source of your cache must support transparent images and you need to set the corresponding options.
+
+::
+
+  caches:
+    mixed_cache:
+      format: mixed
+      sources: [wms_source]
+      request_format: image/png
+
+  sources:
+    wms_source:
+      type: wms
+      req:
+        url: http://localhost:42423/service
+        layers: aerial
+        transparent: true
+
+You can now use the cache in all MapProxy services. WMS GetMap requests will return the image with the requested format.
+With TMS or WMTS you can only request PNG tiles, but the actual response image is either PNG or JPEG. The HTTP `content-type` header is set accordingly. This is supported by all web browsers.
 
 Cache vector data
 =================

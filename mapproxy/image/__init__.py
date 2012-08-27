@@ -92,10 +92,8 @@ class ImageSource(object):
                 self.close_buffers()
                 raise
             self._img = img
-        
         if self.image_opts and self.image_opts.transparent and self._img.mode == 'P':
             self._img = self._img.convert('RGBA')
-    
         return self._img
     
     def _make_seekable_buf(self):
@@ -123,7 +121,6 @@ class ImageSource(object):
                        Existing files will not be re-encoded.
         :rtype: file-like object
         """
-
         if format:
             image_opts = (image_opts or self.image_opts).copy()
             image_opts.format = ImageFormat(format)
@@ -229,23 +226,41 @@ class ReadBufWrapper(object):
             self.stringio = StringIO(self.readbuf.read())
         return getattr(self.stringio, name)
 
+def img_has_transparency(img):
+    if img.mode == 'P':
+        if img.info.get('transparency', False):
+            return True
+        # convert to RGBA and check alpha channel 
+        img = img.convert('RGBA')
+    if img.mode == 'RGBA':
+        # any alpha except fully opaque
+        return any(img.histogram()[-256:-1])    
+    return False
+
 def img_to_buf(img, image_opts):
     defaults = {}
-    
+    image_opts = image_opts.copy()
     if image_opts.mode and img.mode[0] == 'I' and img.mode != image_opts.mode:
         img = img.convert(image_opts.mode)
     
     if (image_opts.colors is None and base_config().image.paletted
         and image_opts.format.endswith('png')):
         # force 255 colors for png with globals.image.paletted
-        image_opts = image_opts.copy()
         image_opts.colors = 255
-    
+
+    format = filter_format(image_opts.format.ext)
+    if format == 'mixed':
+        if img_has_transparency(img):
+            format = 'png'
+        else:
+            format = 'jpeg'
+            image_opts.colors = None
+            image_opts.transparent = False
+
     if image_opts.colors:
         quantizer = None
         if 'quantizer' in image_opts.encoding_options:
             quantizer = image_opts.encoding_options['quantizer']
-        
         if image_opts.transparent:
             img = quantize(img, colors=image_opts.colors, alpha=True,
                 defaults=defaults, quantizer=quantizer)
@@ -253,9 +268,9 @@ def img_to_buf(img, image_opts):
             img = quantize(img, colors=image_opts.colors,
                 quantizer=quantizer)
         if hasattr(Image, 'RLE'):
-            defaults['compress_type'] = Image.RLE
-    format = filter_format(image_opts.format.ext)
-    buf = StringIO()
+            defaults['compress_type'] = Image.RLE    
+
+    buf = StringIO()    
     if format == 'jpeg':
         img = img.convert('RGB')
         if 'jpeg_quality' in image_opts.encoding_options:
