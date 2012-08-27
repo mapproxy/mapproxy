@@ -265,22 +265,25 @@ A list with source names. The sources needs to be defined in the ``sources`` con
 
 WMS and Mapserver sources also support tagged names (``wms:lyr1,lyr2``). See :ref:`tagged_source_names`.
 
+.. _mixed_image_format:
+
 ``format``
 """"""""""
 
-The internal image format for the cache. The default is ``image/png``.
+The internal image format for the cache. Available options are ``image/png``, ``image/jpeg`` etc. and ``mixed``.
+The default is ``image/png``.
 
-``mixed``
-With MapProxy version 1.x.x it is possible to store images in a mixed mode. If you set the format to mixed, every image with transparency will be stored as PNG and every other image, which is fully opaque, is saved as JPEG.
-Furthermore the ``request_format`` option has to be set to ``image/png`` when images shall be cached in this mode::
+.. versionadded:: 1.5.0
+
+With the ``mixed`` format, MapProxy stores tiles as either PNG or JPEG, depending on the transparency of each tile.
+Images with transparency will be stored as PNG, fully opaque images as JPEG.
+You need to set the ``request_format`` to ``image/png`` when using ``mixed``-mode::
 
     caches:
       mixed_mode_cache:
         format: mixed
         request_format: image/png
         ...
-
-.. versionadded:: 1.x.x
 
 
 ``request_format``

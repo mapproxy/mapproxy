@@ -210,9 +210,9 @@ You can change the default origin of all MapProxy tile layers by using the ``ori
 Cache raster data
 =================
 
-You have a WMS server that offers raster data like aerial images. By default MapProxy uses PNG images as the caching format. The encoding process for PNG files is very computing intensive and thus the caching process itself takes longer. For aerial images the quality of lose-less image formats like PNG is often not required. For best performance you should use JPEG as the cache format.
+You have a WMS server that offers raster data like aerial images. By default MapProxy uses PNG images as the caching format. The encoding process for PNG files is very CPU intensive and thus the caching process itself takes longer. For aerial images the quality of loss-less image formats like PNG is often not required. For best performance you should use JPEG as the cache format.
 
-By default MapProxy uses `bicubic` resampling. This resampling method also sharpens the image which is important for vector images. Arial images do not need this, so you can use `bilinear` or even Nearest Neighbor (`nearest`) resampling.
+By default MapProxy uses `bicubic` resampling. This resampling method also sharpens the image which is important for vector images. Aerial images do not need this, so you can use `bilinear` or even Nearest Neighbor (`nearest`) resampling.
 ::
 
   caches:
@@ -231,15 +231,14 @@ You might also want to experiment with different compression levels of JPEG. A h
     jpeg_quality: 80
 
 
-Cache with mixed mode
----------------------
+Mixed mode
+----------
 
-As described above, you may also want to store arial images with transparency and use those as an overlay layer for your maps. A neccessary step would be to process all images as PNG files to maintain the transparency of the raster data. Yet not every image acutally has transparent pixels and it would be better to cache this data in an approriate format like JPEG to increase performance.
+You need to store images with transparency when you want to overlay them over other images, e.g. at the boundaries of your aerial image coverage. PNG supports transparency but it is not efficient with arial images, while JPEG is efficient for aerial images but doesn't support transparency.
 
-MapProxy offers a possibility to cache raster data in a mixed mode and to decode every image with transparent pixel to PNG and every fully opaque image to JPEG.
-To enable a mixed cache, you have to set ``format`` to ``mixed`` and ``request_format`` to ``image/png``
+MapProxy :ref:`has a mixed image format <mixed_image_format>` for this case. With the ``mixed`` format, MapProxy stores tiles as either PNG or JPEG, depending on the transparency of each tile. Images with transparency will be stored as PNG, fully opaque images as JPEG.
 
-.. note:: The source of your cache must also request transparent images and the corresponding option has to be enabled.
+.. note:: The source of your cache must support transparent images and you need to set the corresponding options.
 
 ::
 
@@ -254,14 +253,11 @@ To enable a mixed cache, you have to set ``format`` to ``mixed`` and ``request_f
       type: wms
       req:
         url: http://localhost:42423/service
-        layers: aerial_overlay
+        layers: aerial
         transparent: true
 
-You can now use the cache for every WMS, TMS or WMTS. WMS GetMap requests will return the image with the requested format.
-With TMS and WMTS you can only request PNG tiles, but the actual content type may differ, depending on the content of the image. You can check the real content-type of the image by reading the header of the respone. Fully opaque tiles have the content-type ``image/jpeg`` and tiles with transparency have the type ``image/png``.
-
-See :ref:`mapproxy.yaml configuration <caches> for further configuration informations for caches.
-
+You can now use the cache in all MapProxy services. WMS GetMap requests will return the image with the requested format.
+With TMS or WMTS you can only request PNG tiles, but the actual response image is either PNG or JPEG. The HTTP `content-type` header is set accordingly. This is supported by all web browsers.
 
 Cache vector data
 =================
