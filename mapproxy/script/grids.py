@@ -17,6 +17,7 @@ from __future__ import division
 import sys
 import optparse
 
+from mapproxy.util import local_base_config
 from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import (
     load_seed_tasks_conf, SeedConfigurationError, SeedingConfiguration
@@ -144,17 +145,18 @@ def grids_command(args=None):
 
     coverage = None
     if options.coverage and options.seed_config:
-        try:
-            seed_conf = load_seed_tasks_conf(options.seed_config, proxy_configuration)
-        except SeedConfigurationError, e:
-            print >>sys.stderr, 'ERROR: invalid configuration (see above)'
-            sys.exit(2)
+        with local_base_config(proxy_configuration.base_config):
+            try:
+                seed_conf = load_seed_tasks_conf(options.seed_config, proxy_configuration)
+            except SeedConfigurationError, e:
+                print >>sys.stderr, 'ERROR: invalid configuration (see above)'
+                sys.exit(2)
 
-        if not isinstance(seed_conf, SeedingConfiguration):
-            print 'Old seed configuration format not supported'
-            sys.exit(1)
+            if not isinstance(seed_conf, SeedingConfiguration):
+                print 'Old seed configuration format not supported'
+                sys.exit(1)
 
-        coverage = seed_conf.coverage(options.coverage)
+            coverage = seed_conf.coverage(options.coverage)
 
     elif (options.coverage and not options.seed_config) or (not options.coverage and options.seed_config):
         print '--coverage and --seed-conf can only be used together'
