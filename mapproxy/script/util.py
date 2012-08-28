@@ -224,6 +224,8 @@ class CreateCommand(object):
                 return 1
             print "writing %s" % (to, )
             shutil.copy(from_, to)
+            
+        return 0
 
     def template_log_ini(self):
         log_filename = self.args[1]
