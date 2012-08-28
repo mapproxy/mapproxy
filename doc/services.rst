@@ -194,6 +194,7 @@ Example
 
 .. index:: OpenLayers
 .. _open_layers_label:
+
 OpenLayers
 """"""""""
 When you create a map in OpenLayers with an explicit ``mapExtent``, it will request only a single tile for the first (z=0) level.
@@ -201,10 +202,11 @@ TMS begins with two or four tiles by default, depending on the SRS. MapProxy sup
 
 Alternatively, you can use the OpenLayers TMS option ``zoomOffset`` to compensate the difference. The option is available since OpenLayers 2.10.
 
-There is an example configuration is available at :ref:`the configuration-examples section<overlay_tiles_osm_openlayers>, which shows the use of OpenLayers in combination with an overlay of tiles on top of OpenStreetMap tiles.
+There is an example configuration is available at :ref:`the configuration-examples section<overlay_tiles_osm_openlayers>`, which shows the use of OpenLayers in combination with an overlay of tiles on top of OpenStreetMap tiles.
 
 .. index:: Google Maps
 .. _google_maps_label:
+
 Google Maps
 """""""""""
 The TMS standard counts tiles starting from the lower left corner of the tile grid, while Google Maps and compatible services start at the upper left corner. The ``/tiles`` service accepts an ``origin`` parameter that flips the y-axis accordingly. You can set it to either ``sw`` (south-west), the default, or to ``nw`` (north-west), required for Google Maps.
@@ -227,6 +229,7 @@ Example::
 
 .. index:: KML Service, Super Overlay
 .. _kml_service_label:
+
 
 Keyhole Markup Language (OGC KML)
 ---------------------------------
