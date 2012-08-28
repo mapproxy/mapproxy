@@ -331,13 +331,9 @@ Parsed capabilities document:
 This sub-command displays information about configured grids.
 
 The command takes a MapProxy configuration file and returns all configured grids.
-Keep in mind that it will include the following two default grids:
-
-  - GLOBAL_GEODETIC
-  - GLOBAL_MERCATOR
 
 Furthermore, default values for each grid will be displayed if they are not defined explicitly.
-All options with default values are marked with an asterisk.
+All default values are marked with an asterisk in the output.
 
 .. program:: mapproxy-util grids
 
@@ -359,14 +355,14 @@ All options with default values are marked with an asterisk.
   Display information only for a single grid.
   The tool will exit, if the grid name is not found.
 
-.. cmdoption:: -c <name of configured coverage>, --coverage <name of configured coverage>
-  
-  Display an approximate number of tiles for each level, which are within this coverage.
+.. cmdoption:: -c <coverage name>, --coverage <coverage name>
+
+  Display an approximation of the number of tiles for each level that  which are within this coverage.
   The coverage must be defined in Seed configuration.
 
-.. cmdoption:: -s <path/to/seed.yaml>, --seed-conf <path/to/seed.yaml>
-  
-  This option loads the Seed configuration at the given location and is needed if you use the ``--coverage`` option.
+.. cmdoption:: -s <seed.yaml>, --seed-conf <seed.yaml>
+
+  This option loads the seed configuration and is needed if you use the ``--coverage`` option.
 
 Example
 -------
@@ -380,10 +376,10 @@ With the following MapProxy grid configuration:
       bbox: [5,50,10,55]
       bbox_srs: EPSG:4326
       min_res: 10000
-      res_factor: sqrt2
     localgrid2:
       base: localgrid
       srs: EPSG:25832
+      res_factor: sqrt2
       tile_size: [512, 512]
 
 
@@ -403,57 +399,36 @@ List all configured grids:
 Display detailed information for one specific grid:
 ::
 
-  mapproxy-util grids --grid localgrid --mapproxy-config /path/to/mapproxy.yaml
+  mapproxy-util grids --grid localgrid --mapproxy-conf /path/to/mapproxy.yaml
 
 ::
 
-  localgrid:
-    Configuration:
-        bbox: [5, 50, 10, 55]
-        bbox_srs: 'EPSG:4326'
-        min_res: 10000
-        origin*: 'sw'
-        res_factor: 'sqrt2'
-        srs: 'EPSG:31467'
-        tile_size*: [256, 256]
-    Levels: Resolutions, # Tiles x * Tiles y = total tiles:
-        00:  10000,                # 1 * 1 = 1
-        01:  7071.067811865475,    # 1 * 1 = 1
-        02:  4999.999999999999,    # 1 * 1 = 1
-        03:  3535.5339059327366,   # 1 * 1 = 1
-        04:  2499.999999999999,    # 1 * 1 = 1
-        05:  1767.766952966368,    # 1 * 2 = 2
-        06:  1249.9999999999993,   # 2 * 2 = 4
-        07:  883.8834764831838,    # 2 * 3 = 6
-        08:  624.9999999999995,    # 3 * 4 = 12
-        09:  441.94173824159185,   # 4 * 5 = 20
-        10:  312.4999999999997,    # 5 * 8 = 40
-        11:  220.9708691207959,    # 7 * 10 = 70
-        12:  156.24999999999986,   # 9 * 15 = 135
-        13:  110.48543456039795,   # 13 * 20 = 260
-        14:  78.12499999999993,    # 18 * 29 = 522
-        15:  55.242717280198974,   # 26 * 40 = 1040
-        16:  39.062499999999964,   # 36 * 57 = 2052
-        17:  27.621358640099487,   # 51 * 80 = 4080
-        18:  19.531249999999982,   # 72 * 113 = 8136
-        19:  13.810679320049744,   # 102 * 160 = 16320
-        20:  9.765624999999991,    # 144 * 226 = 32544
-        21:  6.905339660024872,    # 203 * 319 = 64757
-        22:  4.882812499999996,    # 287 * 451 = 129437
-        23:  3.452669830012436,    # 406 * 638 = 259028
-        24:  2.441406249999998,    # 574 * 902 = 517748
-        25:  1.726334915006218,    # 812 * 1276 = 1036112
-        26:  1.220703124999999,    # 1147 * 1804 = 2069188
-        27:  0.863167457503109,    # 1623 * 2551 = 4140273
-        28:  0.6103515624999994,   # 2295 * 3608 = 8280360
-        29:  0.4315837287515545,   # 3245 * 5102 = 16555990
-        30:  0.3051757812499997,   # 4589 * 7216 = 33114224
-        31:  0.21579186437577724,  # 6489 * 10204 = 66213756
-        32:  0.15258789062499986,  # 9177 * 14431 = 132433287
-        33:  0.10789593218788862,  # 12977 * 20408 = 264834616
-        34:  0.07629394531249993,  # 18353 * 28861 = 529685933
-        35:  0.05394796609394431,  # 25954 * 40815 = 1059312510
-        36:  0.038146972656249965, # 36705 * 57721 = 2118649305
-        37:  0.026973983046972155, # 51908 * 81629 = 4237198132
-        38:  0.019073486328124983, # 73409 * 115441 = 8474408369
-        39:  0.013486991523486078, # 103815 * 163258 = 16948629270
+    localgrid:
+        Configuration:
+            bbox: [5, 50, 10, 55]
+            bbox_srs: 'EPSG:4326'
+            min_res: 10000
+            origin*: 'sw'
+            srs: 'EPSG:31467'
+            tile_size*: [256, 256]
+        Levels: Resolutions, # x * y = total tiles
+            00:  10000,             #      1 * 1      =        1
+            01:  5000.0,            #      1 * 1      =        1
+            02:  2500.0,            #      1 * 1      =        1
+            03:  1250.0,            #      2 * 2      =        4
+            04:  625.0,             #      3 * 4      =       12
+            05:  312.5,             #      5 * 8      =       40
+            06:  156.25,            #      9 * 15     =      135
+            07:  78.125,            #     18 * 29     =      522
+            08:  39.0625,           #     36 * 57     =   2.052K
+            09:  19.53125,          #     72 * 113    =   8.136K
+            10:  9.765625,          #    144 * 226    =  32.544K
+            11:  4.8828125,         #    287 * 451    = 129.437K
+            12:  2.44140625,        #    574 * 902    = 517.748K
+            13:  1.220703125,       #   1148 * 1804   =   2.071M
+            14:  0.6103515625,      #   2295 * 3607   =   8.278M
+            15:  0.30517578125,     #   4589 * 7213   =  33.100M
+            16:  0.152587890625,    #   9178 * 14426  = 132.402M
+            17:  0.0762939453125,   #  18355 * 28851  = 529.560M
+            18:  0.03814697265625,  #  36709 * 57701  =   2.118G
+            19:  0.019073486328125, #  73417 * 115402 =   8.472G
