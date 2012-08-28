@@ -1,13 +1,13 @@
 # -:- encoding: utf-8 -:-
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -60,7 +60,7 @@ class TileServer(Server):
         self.max_tile_age = max_tile_age
         self.use_dimension_layers = use_dimension_layers
         self.origin = origin
-    
+
     def map(self, tile_request):
         """
         :return: the requested tile
@@ -70,7 +70,8 @@ class TileServer(Server):
             tile_request.origin = self.origin
         layer = self.layer(tile_request)
         tile = layer.render(tile_request, use_profiles=tile_request.use_profiles)
-        resp = Response(tile.as_buffer(), content_type='image/' + tile_request.format)
+        tile_format = getattr(tile, 'format', tile_request.format)
+        resp = Response(tile.as_buffer(), content_type='image/' + tile_format)
         if tile.cacheable:
             resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
                                max_age=self.max_tile_age)
@@ -78,7 +79,7 @@ class TileServer(Server):
             resp.cache_headers(no_cache=True)
         resp.make_conditional(tile_request.http)
         return resp
-    
+
     def _internal_layer(self, tile_request):
         if tile_request.dimensions:
             name = tile_request.layer + '_' + '_'.join(tile_request.dimensions)
@@ -91,7 +92,7 @@ class TileServer(Server):
         if name + '_EPSG4326' in self.layers:
             return self.layers[name + '_EPSG4326']
         return None
-    
+
     def _internal_dimension_layer(self, tile_request):
         key = (tile_request.layer, ) + tile_request.dimensions
         return self.layers.get(key)
@@ -105,7 +106,7 @@ class TileServer(Server):
             raise RequestError('unknown layer: ' + tile_request.layer, request=tile_request)
         self.authorize_tile_layer(internal_layer.name, tile_request.http.environ)
         return internal_layer
-    
+
     def authorize_tile_layer(self, layer_name, env):
         if 'mapproxy.authorize' in env:
             result = env['mapproxy.authorize']('tms', [layer_name], environ=env)
@@ -117,7 +118,7 @@ class TileServer(Server):
                 if result['layers'].get(layer_name, {}).get('tile', False) == True:
                     return
             raise RequestError('forbidden', status=403)
-    
+
     def authorized_tile_layers(self, env):
         if 'mapproxy.authorize' in env:
             result = env['mapproxy.authorize']('tms', [l for l in self.layers], environ=env)
@@ -134,7 +135,7 @@ class TileServer(Server):
             return allowed_layers
         else:
             return self.layers
-    
+
     def tms_capabilities(self, tms_request):
         """
         :return: the rendered tms capabilities
@@ -150,16 +151,16 @@ class TileServer(Server):
             result = self._render_template(layers, service)
 
         return Response(result, mimetype='text/xml')
-    
+
     def _service_md(self, map_request):
         md = dict(self.md)
         md['url'] = map_request.http.base_url
         return md
-    
+
     def _render_template(self, layers, service):
         template = get_template(self.template_file)
         return template.substitute(service=bunch(default='', **service), layers=layers)
-    
+
     def _render_layer_template(self, layer, service):
         template = get_template(self.layer_template_file)
         return template.substitute(service=bunch(default='', **service), layer=layer)
@@ -177,7 +178,8 @@ class TileLayer(object):
         self.grid = TileServiceGrid(tile_manager.grid)
         self.extent = map_extent_from_grid(self.grid)
         self._empty_tile = None
-    
+        self._mixed_format = True if self.md.get('format', False) == 'mixed' else False
+
     @property
     def bbox(self):
         return self.grid.bbox
@@ -185,16 +187,19 @@ class TileLayer(object):
     @property
     def srs(self):
         return self.grid.srs
-    
+
     @property
     def format(self):
         _mime_class, format, _options = split_mime_type(self.format_mime_type)
         return format
-    
+
     @property
     def format_mime_type(self):
+        # force png format for capabilities & requests if mixed format
+        if self._mixed_format:
+            return 'image/png'
         return self.md.get('format', 'image/png')
-    
+
     def _internal_tile_coord(self, tile_request, use_profiles=False):
         tile_coord = self.grid.internal_tile_coord(tile_request.tile, use_profiles)
         if tile_coord is None:
@@ -207,25 +212,29 @@ class TileLayer(object):
             tile_coord = self.grid.flip_tile_coord(tile_coord)
 
         return tile_coord
-    
+
     def empty_response(self):
         if not self._empty_tile:
             img = BlankImageSource(size=self.grid.tile_size,
                 image_opts=ImageOptions(format=self.format, transparent=True))
             self._empty_tile = img.as_buffer()
         return ImageResponse(self._empty_tile, time.time())
-    
+
     def render(self, tile_request, use_profiles=False):
         if tile_request.format != self.format:
             raise RequestError('invalid format (%s). this tile set only supports (%s)'
                                % (tile_request.format, self.format), request=tile_request,
                                code='InvalidParameterValue')
+
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
         try:
             with self.tile_manager.session():
                 tile = self.tile_manager.load_tile_coord(tile_coord, with_metadata=True)
-            if tile.source is None: return self.empty_response()
-            return TileResponse(tile)
+            if tile.source is None:
+                return self.empty_response()
+
+            format = None if self._mixed_format else tile_request.format
+            return TileResponse(tile, format=format)
         except SourceError, e:
             raise RequestError(e.args[0], request=tile_request, internal=True)
 
@@ -238,23 +247,34 @@ class ImageResponse(object):
         self.timestamp = timestamp
         self.size = 0
         self.cacheable = True
-    
+
     def as_buffer(self):
         return self.img
-    
+
 
 class TileResponse(object):
     """
     Response from a Tile.
     """
-    def __init__(self, tile, timestamp=None):
+    def __init__(self, tile, format=None, timestamp=None):
         self.tile = tile
         self.timestamp = tile.timestamp
         self.size = tile.size
         self.cacheable = tile.cacheable
-    
+        self._buf = self.tile.source_buffer()
+        self.format = format or self._format_from_magic_bytes()
+
+
     def as_buffer(self):
-        return self.tile.source_buffer()
+        return self._buf
+
+    def _format_from_magic_bytes(self):
+        #read the 2 magic bytes from the buffer
+        magic_bytes = self._buf.read(2)
+        self._buf.seek(0)
+        if magic_bytes == '\xFF\xD8':
+            return 'jpeg'
+        return 'png'
 
 class TileServiceGrid(object):
     """
@@ -263,12 +283,12 @@ class TileServiceGrid(object):
     def __init__(self, grid):
         self.grid = grid
         self.profile = None
-        
+
         if self.grid.srs == SRS(900913) and self.grid.bbox == default_bboxs[SRS((900913))]:
             self.profile = 'global-mercator'
             self.srs_name = 'OSGEO:41001' # as required by TMS 1.0.0
             self._skip_first_level = True
-        
+
         elif self.grid.srs == SRS(4326) and self.grid.bbox == default_bboxs[SRS((4326))]:
             self.profile = 'global-geodetic'
             self.srs_name = 'EPSG:4326'
@@ -277,13 +297,13 @@ class TileServiceGrid(object):
             self.profile = 'local'
             self.srs_name = self.grid.srs.srs_code
             self._skip_first_level = False
-        
+
         self._skip_odd_level = False
 
         res_factor = self.grid.resolutions[0]/self.grid.resolutions[1]
         if res_factor == math.sqrt(2):
             self._skip_odd_level = True
-    
+
     def internal_level(self, level):
         """
         :return: the internal level
@@ -295,7 +315,7 @@ class TileServiceGrid(object):
         if self._skip_odd_level:
             level *= 2
         return level
-    
+
     @property
     def bbox(self):
         """
@@ -303,17 +323,17 @@ class TileServiceGrid(object):
         """
         first_level = self.internal_level(0)
         grid_size = self.grid.grid_sizes[first_level]
-        return self.grid._get_bbox([(0, 0, first_level), 
+        return self.grid._get_bbox([(0, 0, first_level),
                                     (grid_size[0]-1, grid_size[1]-1, first_level)])
-    
+
     def __getattr__(self, key):
         return getattr(self.grid, key)
-    
+
     @property
     def tile_sets(self):
         """
         Get all public tile sets for this layer.
-        :return: the order and resolution of each tile set 
+        :return: the order and resolution of each tile set
         """
         tile_sets = []
         num_levels = self.grid.levels
@@ -329,13 +349,13 @@ class TileServiceGrid(object):
         for order, level in enumerate(range(start, num_levels, step)):
             tile_sets.append((order, self.grid.resolutions[level]))
         return tile_sets
-    
+
     def internal_tile_coord(self, tile_coord, use_profiles):
         """
         Converts public tile coords to internal tile coords.
-        
+
         :param tile_coord: the public tile coord
-        :param use_profiles: True if the tile service supports global 
+        :param use_profiles: True if the tile service supports global
                              profiles (see `mapproxy.core.server.TileServer`)
         """
         x, y, z = tile_coord
@@ -346,13 +366,13 @@ class TileServiceGrid(object):
         if self._skip_odd_level:
             z *= 2
         return self.grid.limit_tile((x, y, z))
-    
+
     def external_tile_coord(self, tile_coord, use_profiles):
         """
         Converts internal tile coords to external tile coords.
-        
+
         :param tile_coord: the internal tile coord
-        :param use_profiles: True if the tile service supports global 
+        :param use_profiles: True if the tile service supports global
                              profiles (see `mapproxy.core.server.TileServer`)
         """
         x, y, z = tile_coord

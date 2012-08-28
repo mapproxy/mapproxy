@@ -398,6 +398,10 @@ class ImageOptionsConfiguration(ConfigurationBase):
         if 'format' not in conf and format and format.startswith('image/'):
             conf['format'] = format
 
+        # caches shall be able to store png and jpeg tiles with mixed format
+        if format == 'mixed':
+            conf['format'] = format
+
         # force 256 colors for image.paletted for backwards compat
         paletted = self.context.globals.get_value('image.paletted', self.conf)
         if conf.get('colors') is None and 'png' in conf.get('format', '') and paletted:
@@ -941,6 +945,8 @@ class CacheConfiguration(ConfigurationBase):
         from mapproxy.layer import map_extent_from_grid, merge_layer_extents
 
         base_image_opts = self.image_opts()
+        if self.conf.get('format') == 'mixed' and not self.conf.get('request_format') == 'image/png':
+            raise ConfigurationError('request_format must be set to image/png if mixed mode is enabled')
         request_format = self.conf.get('request_format') or self.conf.get('format')
         caches = []
 
@@ -1129,7 +1135,6 @@ class LayerConfiguration(ConfigurationBase):
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['extent'] = extent
-
                 tile_layers.append(TileLayer(self.conf['name'], self.conf['title'],
                                              md, cache_source))
 

@@ -13,7 +13,7 @@ There are three different ways to describe a coverage.
 
 - a simple rectangular bounding box,
 - a text file with one or more (multi)polygons in WKT format,
-- (multi)polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)
+- (multi)polygons from any data source readable with OGR (e.g. Shapefile, GeoJSON, PostGIS)
 
 
 Requirements
@@ -46,7 +46,7 @@ Polygon file
 
 ``polygons``:
   Path to a text file with one WKT polygon or multi-polygon per line. The path should be relative to
-  the proxy configuration or absolute. You can create your own files or use `one of the files we provide for every country <http://mapproxy.org/static/polygons/>`_. Read `the index <http://mapproxy.org/static/polygons/0-fips-codes.txt>`_ to find your country. 
+  the proxy configuration or absolute. You can create your own files or use `one of the files we provide for every country <http://mapproxy.org/static/polygons/>`_. Read `the index <http://mapproxy.org/static/polygons/0-fips-codes.txt>`_ to find your country.
 
 ``polygons_srs``:
   The SRS of the polygons.
@@ -97,24 +97,31 @@ To define a seed-area in the ``seed.yaml``, add the coverage directly to the vie
 
 ::
 
-  views:
+  coverages:
     germany:
       ogr_datasource: 'shps/world_boundaries_m.shp'
       ogr_where: 'CNTRY_NAME = "Germany"'
       ogr_srs: 'EPSG:900913'
-      level: [0, 14]
-      srs: ['EPSG:900913', 'EPSG:4326']
 
 .. index:: PostGIS, PostgreSQL
 
-And here is the same example with a PostGIS source::
+Here is the same example with a PostGIS source::
 
-  views:
+  coverages:
     germany:
       ogr_datasource: "PG: dbname='db' host='host' user='user'
     password='password'"
       ogr_where: "select * from coverages where country='germany'"
       ogr_srs: 'EPSG:900913'
-      level: [0, 14]
-      srs: ['EPSG:900913', 'EPSG:4326']
 
+
+.. index:: GeoJSON
+
+And here is an example with a GeoJSON source::
+
+  coverages:
+    germany:
+      ogr_datasource: 'boundary.geojson'
+      ogr_srs: 'EPSG:4326'
+
+See `the OGR driver list <http://www.gdal.org/ogr/ogr_formats.html>`_ for all supported formats.
