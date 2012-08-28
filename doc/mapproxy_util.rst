@@ -348,12 +348,25 @@ All options with default values are marked with an asterisk.
 
 .. cmdoption:: -l, --list
 
-  Display only the names of the grids for the given configuration.
+  Display only the names of the grids for the given configuration, which are used by any grid.
+
+.. cmdoption:: --all
+
+  Show also grids that are not referenced by any cache.
 
 .. cmdoption:: -g <grid_name>, --grid <grid_name>
 
   Display information only for a single grid.
   The tool will exit, if the grid name is not found.
+
+.. cmdoption:: -c <name of configured coverage>, --coverage <name of configured coverage>
+  
+  Display an approximate number of tiles for each level, which are within this coverage.
+  The coverage must be defined in Seed configuration.
+
+.. cmdoption:: -s <path/to/seed.yaml>, --seed-conf <path/to/seed.yaml>
+  
+  This option loads the Seed configuration at the given location and is needed if you use the ``--coverage`` option.
 
 Example
 -------
