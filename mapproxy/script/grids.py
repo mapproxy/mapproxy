@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,7 +47,7 @@ def display_grid(grid_conf, coverage=None):
     print '%s:' % (grid_conf.conf['name'],)
     print '    Configuration:'
     conf_dict = grid_conf.conf.copy()
-    
+
     tile_grid = grid_conf.tile_grid()
     if 'tile_size' not in conf_dict:
         conf_dict['tile_size*'] = tile_grid.tile_size
@@ -65,9 +65,10 @@ def display_grid(grid_conf, coverage=None):
             continue
         print '        %s: %s' % (key, format_conf_value(conf_dict[key]))
     if coverage:
+        print '    Coverage: %s covers aprox. %.4f%% of the grid BBOX' % (coverage.name, area_ratio * 100)
         print '    Levels: Resolutions, # Tiles x * Tiles y = total tiles # Approximation of tiles within coverage:'
     else:
-        print '    Levels: Resolutions, # Tiles x * Tiles y = total tiles:' 
+        print '    Levels: Resolutions, # Tiles x * Tiles y = total tiles:'
     max_digits = max([len("%r" % (res,)) for level, res in enumerate(tile_grid.resolutions)])
     for level, res in enumerate(tile_grid.resolutions):
         tiles_in_x, tiles_in_y = tile_grid.grid_sizes[level]
@@ -157,6 +158,7 @@ def grids_command(args=None):
                 sys.exit(1)
 
             coverage = seed_conf.coverage(options.coverage)
+            coverage.name = options.coverage
 
     elif (options.coverage and not options.seed_config) or (not options.coverage and options.seed_config):
         print '--coverage and --seed-conf can only be used together'
@@ -168,6 +170,6 @@ def grids_command(args=None):
         display_grids({options.grid_name: grids[options.grid_name]}, coverage=coverage)
     else:
         display_grids(grids, coverage=coverage)
-    
+
 
 
