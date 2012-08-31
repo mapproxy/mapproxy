@@ -5,6 +5,9 @@ coverages:
   west:
     bbox: [-180, -90, 0, 90]
     bbox_srs: 'EPSG:4326'
+  empty_geom:
+    ogr_datasource: 'mapproxy/test/system/fixture/empty_ogrdata.geojson'
+    ogr_srs: "EPSG:4326"
 
 seeds:
   one:
@@ -25,6 +28,12 @@ seeds:
     levels: [0]
     refresh_before:
       days: 1
+
+  with_empty_coverage:
+    caches: [mbtile_cache]
+    grids: [GLOBAL_GEODETIC]
+    coverages: [empty_geom]
+    levels: [0]
 
 
 cleanups:
