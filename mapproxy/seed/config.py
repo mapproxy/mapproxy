@@ -95,6 +95,8 @@ class LegacySeedingConfiguration(object):
                     md = dict(name=view, cache_name=cache_name, grid_name=self.grids[grid])
                     levels = range(level[0], level[1]+1)
                     if coverage:
+                        if coverage.geom.is_empty:
+                            continue
                         seed_coverage = coverage.transform_to(grid.srs)
                     else:
                         seed_coverage = BBOXCoverage(grid.bbox, grid.srs)
@@ -249,6 +251,8 @@ class SeedConfiguration(ConfigurationBase):
                 tile_manager = cache[grid_name]
                 grid = self.seeding_conf.grids[grid_name]
                 if self.coverage:
+                    if self.coverage.geom.is_empty:
+                        continue
                     coverage = self.coverage.transform_to(grid.srs)
                 else:
                     coverage = BBOXCoverage(grid.bbox, grid.srs)
