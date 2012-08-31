@@ -60,9 +60,12 @@ def load_datasource(datasource, where=None):
         else:
             log_config.warn('skipping %s geometry from %s: not a Polygon/MultiPolygon',
                 geom.type, datasource)
-        
-    mp = shapely.geometry.MultiPolygon(polygons)
-    mp = simplify_geom(mp)
+    
+    if polygons:
+        mp = shapely.geometry.MultiPolygon(polygons)
+        mp = simplify_geom(mp)
+    else:
+        mp = shapely.geometry.Polygon()
     return mp.bounds, mp
 
 def load_polygons(geom_files):
@@ -345,4 +348,4 @@ class GeomCoverage(object):
     def __repr__(self):
         return '<GeomCoverage %r: %r>' % (self.extent.llbbox, self.geom)
 
-    
+
