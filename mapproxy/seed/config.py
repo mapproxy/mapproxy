@@ -23,7 +23,7 @@ from mapproxy.config.loader import ConfigurationError
 from mapproxy.config.coverage import load_coverage
 from mapproxy.srs import SRS
 from mapproxy.util import memoize, timestamp_from_isodate, timestamp_before
-from mapproxy.util.geom import MultiCoverage, BBOXCoverage
+from mapproxy.util.geom import MultiCoverage, BBOXCoverage, GeomCoverage
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
 from mapproxy.seed.seeder import SeedTask, CleanupTask
@@ -95,7 +95,7 @@ class LegacySeedingConfiguration(object):
                     md = dict(name=view, cache_name=cache_name, grid_name=self.grids[grid])
                     levels = range(level[0], level[1]+1)
                     if coverage:
-                        if coverage.geom.is_empty:
+                        if isinstance(coverage, GeomCoverage) and coverage.geom.is_empty:
                             continue
                         seed_coverage = coverage.transform_to(grid.srs)
                     else:
@@ -251,7 +251,7 @@ class SeedConfiguration(ConfigurationBase):
                 tile_manager = cache[grid_name]
                 grid = self.seeding_conf.grids[grid_name]
                 if self.coverage:
-                    if self.coverage.geom.is_empty:
+                    if isinstance(self.coverage, GeomCoverage) and self.coverage.geom.is_empty:
                         continue
                     coverage = self.coverage.transform_to(grid.srs)
                 else:
