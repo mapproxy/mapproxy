@@ -249,6 +249,8 @@ class SeedConfiguration(ConfigurationBase):
                 tile_manager = cache[grid_name]
                 grid = self.seeding_conf.grids[grid_name]
                 if self.coverage:
+                    if self.coverage.geom.is_empty:
+                        continue
                     coverage = self.coverage.transform_to(grid.srs)
                 else:
                     coverage = BBOXCoverage(grid.bbox, grid.srs)
