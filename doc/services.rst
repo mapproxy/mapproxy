@@ -230,6 +230,7 @@ Example::
 .. index:: KML Service, Super Overlay
 .. _kml_service_label:
 
+
 Keyhole Markup Language (OGC KML)
 ---------------------------------
 
