@@ -209,6 +209,11 @@ class TestSeed(SeedTestBase):
 
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
+    def test_active_seed_tasks(self):
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        assert len(seed_conf.seed_tasks_names()) == 4
+        assert len(seed_conf.seeds()) == 3
+
 class TestConcurrentRequestsSeed(SeedTestEnvironment):
     seed_conf_name = 'seed_timeouts.yaml'
     mapproxy_conf_name = 'seed_timeouts_mapproxy.yaml'
