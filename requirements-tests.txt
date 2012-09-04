@@ -1,4 +1,5 @@
-WebTest>=1.2.2
+WebTest>=1.2.2,<1.2.99
+webob==1.1.1
 coverage>=2.85
 lxml>=2.1.3
 mocker>=0.10.1

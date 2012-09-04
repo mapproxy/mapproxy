@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ from functools import wraps
 def local_base_config(conf):
     """
     Temporarily set the global configuration (mapproxy.config.base_config).
-    
+
     The global mapproxy.config.base_config object is thread-local and
     is set per-request in the MapProxyApp. Use `local_base_config` to
     set base_config outside of a request context (e.g. system loading
@@ -97,9 +97,9 @@ def swap_dir(src_dir, dst_dir, keep_old=False, backup_ext='.tmp'):
     tmp_dir = dst_dir + backup_ext
     if os.path.exists(dst_dir):
         os.rename(dst_dir, tmp_dir)
-    
+
     _force_rename_dir(src_dir, dst_dir)
-    
+
     if os.path.exists(tmp_dir) and not keep_old:
         shutil.rmtree(tmp_dir)
 
@@ -139,8 +139,10 @@ def timestamp_before(weeks=0, days=0, hours=0, minutes=0):
 
 def timestamp_from_isodate(isodate):
     """
-    >>> timestamp_from_isodate('2009-06-09T10:57:00')
-    1244537820.0
+    >>> ts = timestamp_from_isodate('2009-06-09T10:57:00')
+    >>> # we don't know which timezone the test will run
+    >>> (1244537820.0 - 14 * 3600) < ts < (1244537820.0 + 14 * 3600)
+    True
     >>> timestamp_from_isodate('2009-06-09T10:57') #doctest: +ELLIPSIS
     Traceback (most recent call last):
     ...
@@ -152,7 +154,7 @@ def timestamp_from_isodate(isodate):
         date = datetime.datetime.strptime(isodate, "%Y-%m-%dT%H:%M:%S")
     return time.mktime(date.timetuple())
 
-def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True, 
+def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
                       file_handler=None):
     if file_handler is None:
         file_handler = os.remove
@@ -173,7 +175,7 @@ def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
 
             if remove_empty_dirs:
                 remove_dir_if_emtpy(dirpath)
-    
+
         if remove_empty_dirs:
             remove_dir_if_emtpy(directory)
 
@@ -199,7 +201,7 @@ def ensure_directory(file_name):
 def replace_instancemethod(old_method, new_method):
     """
     Replace an instance method.
-    
+
     >>> class Foo(object):
     ...    val = 'bar'
     ...    def bar(self):
