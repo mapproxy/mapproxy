@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,7 @@ from mapproxy.image.message import message_image
 from mapproxy.image.opts import ImageOptions
 import mapproxy.service
 from mapproxy.template import template_loader
-get_template = template_loader(mapproxy.service.__file__, 'templates')
+get_template = template_loader(mapproxy.service.__name__, 'templates')
 
 class WMSXMLExceptionHandler(XMLExceptionHandler):
     template_func = get_template
@@ -72,7 +72,7 @@ class WMSImageExceptionHandler(ExceptionHandler):
         image_opts = ImageOptions(format=format, bgcolor=bgcolor, transparent=transparent)
         result = message_image(request_error.msg, size=size, image_opts=image_opts)
         return Response(result.as_buffer(), content_type=params.format_mime_type)
-    
+
     @staticmethod
     def _bgcolor(params):
         """
@@ -93,7 +93,7 @@ class WMSBlankExceptionHandler(WMSImageExceptionHandler):
     """
     Exception handler for blank image exceptions.
     """
-    
+
     def render(self, request_error):
         request_error.msg = ''
         return WMSImageExceptionHandler.render(self, request_error)

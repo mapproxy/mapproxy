@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,14 +26,14 @@ from mapproxy.exception import RequestError
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
-get_template = template_loader(__file__, 'templates', namespace=env)
+get_template = template_loader(__name__, 'templates', namespace=env)
 
 import logging
 log = logging.getLogger(__name__)
 
 class WMTSServer(Server):
     service = 'wmts'
-    
+
     def __init__(self, layers, md, request_parser=None):
         Server.__init__(self)
         self.request_parser = request_parser or wmts_request
@@ -41,7 +41,7 @@ class WMTSServer(Server):
         self.max_tile_age = None # TODO
         self.layers, self.matrix_sets = self._matrix_sets(layers)
         self.capabilities_class = Capabilities
-    
+
     def _matrix_sets(self, layers):
         sets = {}
         layers_grids = {}
@@ -61,12 +61,12 @@ class WMTSServer(Server):
         for layer_name, layers in layers_grids.items():
             wmts_layers[layer_name] = WMTSTileLayer(layers)
         return wmts_layers, sets.values()
-        
+
     def capabilities(self, request):
         service = self._service_md(request)
         result = self.capabilities_class(service, self.layers.values(), self.matrix_sets).render(request)
         return Response(result, mimetype='application/xml')
-    
+
     def tile(self, request):
         self.check_request(request)
         tile_layer = self.layers[request.layer][request.tilematrixset]
@@ -80,7 +80,7 @@ class WMTSServer(Server):
                            max_age=self.max_tile_age)
         resp.make_conditional(request.http)
         return resp
-    
+
     def check_request(self, request):
         request.make_tile_request()
         if request.layer not in self.layers:
@@ -98,20 +98,20 @@ class WMTSServer(Server):
 
 class WMTSRestServer(WMTSServer):
     """
-    OGC WMTS 1.0.0 RESTful Server 
+    OGC WMTS 1.0.0 RESTful Server
     """
     service = None
     names = ('wmts',)
     request_methods = ('tile', 'capabilities')
     default_template = '/{{Layer}}/{{TileMatrixSet}}/{{TileMatrix}}/{{TileCol}}/{{TileRow}}.{{Format}}'
-    
+
     def __init__(self, layers, md, max_tile_age=None, template=None):
         WMTSServer.__init__(self, layers, md)
         self.max_tile_age = max_tile_age
         self.template = template or self.default_template
         self.request_parser = make_wmts_rest_request_parser(self.template)
         self.capabilities_class = partial(RestfulCapabilities, template=self.template)
-    
+
 
 class Capabilities(object):
     """
@@ -121,10 +121,10 @@ class Capabilities(object):
         self.service = server_md
         self.layers = layers
         self.matrix_sets = matrix_sets
-    
+
     def render(self, _map_request):
         return self._render_template(_map_request.capabilities_template)
-    
+
     def template_context(self):
         return dict(service=bunch(default='', **self.service),
                     restful=False,
@@ -142,7 +142,7 @@ class RestfulCapabilities(Capabilities):
     def __init__(self, server_md, layers, matrix_sets, template):
         Capabilities.__init__(self, server_md, layers, matrix_sets)
         self.template = template
-    
+
     def template_context(self):
         return dict(service=bunch(default='', **self.service),
                     restful=True,
@@ -155,7 +155,7 @@ class RestfulCapabilities(Capabilities):
 def format_resource_template(layer, template, service):
     if '{{Format}}' in template:
         template = template.replace('{{Format}}', layer.format)
-    
+
     return service.url + template
 
 class WMTSTileLayer(object):
@@ -166,16 +166,16 @@ class WMTSTileLayer(object):
         self.grids = [lyr.grid for lyr in layers.values()]
         self.layers = layers
         self._layer = layers[layers.keys()[0]]
-    
+
     def __getattr__(self, name):
         return getattr(self._layer, name)
-    
+
     def __contains__(self, gridname):
         return gridname in self.layers
-    
+
     def __getitem__(self, gridname):
         return self.layers[gridname]
-    
+
 
 from mapproxy.grid import tile_grid
 
@@ -192,7 +192,7 @@ class TileMatrixSet(object):
         self.grid = grid
         self.name = grid.name
         self.srs_name = grid.srs.srs_code
-    
+
     def __iter__(self):
         for level, res in self.grid.resolutions.iteritems():
             origin = self.grid.origin_tile(level, 'ul')

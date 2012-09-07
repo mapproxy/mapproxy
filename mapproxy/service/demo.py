@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,7 +18,7 @@ Demo service handler
 """
 from __future__ import division
 
-import os
+import pkg_resources
 import mimetypes
 from urllib2 import urlopen
 from collections import defaultdict
@@ -32,7 +32,7 @@ from mapproxy.source.wms import WMSSource
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
-get_template = template_loader(__file__, 'templates', namespace=env)
+get_template = template_loader(__name__, 'templates', namespace=env)
 
 
 class DemoServer(Server):
@@ -55,14 +55,11 @@ class DemoServer(Server):
     def handle(self, req):
         if req.path.startswith('/demo/static/'):
             filename = req.path.lstrip('/')
-            template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-            static_file = os.path.abspath(os.path.join(template_dir, filename))
-            if (not static_file.startswith(template_dir) or
-                not os.path.isfile(static_file)):
+            if not pkg_resources.resource_exists(__name__, 'templates/' + filename):
                 return Response('file not found', content_type='text/plain', status=404)
             type, encoding = mimetypes.guess_type(filename)
-            return Response(open(static_file, 'rb'), content_type=type)
-        
+            return Response(pkg_resources.resource_string(__name__, 'templates/' + filename), content_type=type)
+
         # we don't authorize the static files (css, js)
         # since they are not confidential
         try:
@@ -71,7 +68,7 @@ class DemoServer(Server):
             return ex.render()
         if not authorized:
             return Response('forbidden', content_type='text/plain', status=403)
-        
+
         if 'wms_layer' in req.args:
             demo = self._render_wms_template('demo/wms_demo.html', req)
         elif 'tms_layer' in req.args:
@@ -104,7 +101,7 @@ class DemoServer(Server):
             resp.headers['Location'] = req.script_url.rstrip('/') + '/demo/'
             return resp
         return Response(demo, content_type='text/html')
-        
+
     def layer_srs(self, layer):
         """
         Return a list tuples with title and name of all SRS for the layer.
@@ -124,19 +121,19 @@ class DemoServer(Server):
                 if map_layer.supported_srs:
                     for supported_srs in map_layer.supported_srs:
                         cached_srs.append(supported_srs.srs_code)
-                        
+
         uncached_srs = []
-        
+
         for srs_code in self.srs:
             if srs_code not in cached_srs:
                 uncached_srs.append(srs_code)
-        
+
         sorted_cached_srs = sorted(cached_srs, key=lambda srs: get_epsg_num(srs))
         sorted_uncached_srs = sorted(uncached_srs, key=lambda srs: get_epsg_num(srs))
         sorted_cached_srs = [(s + '*', s) for s in sorted_cached_srs]
         sorted_uncached_srs = [(s, s) for s in sorted_uncached_srs]
         return sorted_cached_srs + sorted_uncached_srs
-        
+
     def _render_template(self, template):
         template = get_template(template, default_inherit="demo/static.html")
         tms_tile_layers = defaultdict(list)
@@ -192,7 +189,7 @@ class DemoServer(Server):
                                    units=units,
                                    add_res_to_options=add_res_to_options,
                                    all_tile_layers=self.tile_layers)
-    
+
     def _render_wmts_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
         wmts_layer = self.tile_layers['_'.join([req.args['wmts_layer'], req.args['srs'].replace(':','')])]
@@ -208,7 +205,7 @@ class DemoServer(Server):
                                    resolutions=wmts_layer.grid.resolutions,
                                    units=units,
                                    all_tile_layers=self.tile_layers)
-    
+
     def _render_capabilities_template(self, template, xmlfile, service, url):
         template = get_template(template, default_inherit="demo/static.html")
         return template.substitute(capabilities = xmlfile,
