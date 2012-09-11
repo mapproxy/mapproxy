@@ -56,12 +56,7 @@ def load_datasource(datasource, where=None):
             log_config.warn('skipping %s geometry from %s: not a Polygon/MultiPolygon',
                 geom.type, datasource)
     
-    if polygons:
-        mp = shapely.geometry.MultiPolygon(polygons)
-        mp = simplify_geom(mp)
-    else:
-        mp = shapely.geometry.Polygon()
-    return mp.bounds, mp
+    return polygons
 
 def load_polygons(geom_files):
     """
@@ -79,9 +74,7 @@ def load_polygons(geom_files):
         with codecs.open(geom_file, encoding='utf-8-sig') as f:
             polygons.extend(load_polygon_lines(f, source=geom_files))
     
-    mp = shapely.geometry.MultiPolygon(polygons)
-    mp = simplify_geom(mp)
-    return mp.bounds, mp
+    return polygons
 
 def load_polygon_lines(line_iter, source='<string>'):
     polygons = []
@@ -95,11 +88,20 @@ def load_polygon_lines(line_iter, source='<string>'):
             for p in geom:
                 polygons.append(p)
         else:
-            log.warn('ignoring non-polygon geometry (%s) from %s',
+            log_config.warn('ignoring non-polygon geometry (%s) from %s',
                 geom.type, source)
 
     return polygons
-    
+
+def build_multipolygon(polygons, simplify=False):
+    if polygons:
+        mp = shapely.geometry.MultiPolygon(polygons)
+        if simplify:
+            mp = simplify_geom(mp)
+    else:
+        mp = shapely.geometry.Polygon()
+    return mp.bounds, mp
+
 def simplify_geom(geom):
     bounds = geom.bounds
     w, h = bounds[2] - bounds[0], bounds[3] - bounds[1]

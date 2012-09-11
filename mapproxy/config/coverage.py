@@ -17,7 +17,12 @@ import re
 
 from mapproxy.srs import SRS
 from mapproxy.config import abspath
-from mapproxy.util.geom import load_datasource, load_polygons, require_geom_support
+from mapproxy.util.geom import (
+    load_datasource,
+    load_polygons,
+    require_geom_support,
+    build_multipolygon,
+)
 from mapproxy.util.coverage import coverage
 
 def load_coverage(conf):
@@ -30,11 +35,13 @@ def load_coverage(conf):
             # make absolute path
             datasource = abspath(datasource)
         where = conf.get('ogr_where', None)
-        bbox, geom = load_datasource(datasource, where)
+        geom = load_datasource(datasource, where)
+        bbox, geom = build_multipolygon(geom, simplify=True)
     elif 'polygons' in conf:
         require_geom_support()
         srs = conf['polygons_srs']
-        bbox, geom = load_polygons(abspath(conf['polygons']))
+        geom = load_polygons(abspath(conf['polygons']))
+        bbox, geom = build_multipolygon(geom, simplify=True)
     else:
         srs = conf['bbox_srs']
         bbox = conf['bbox']
