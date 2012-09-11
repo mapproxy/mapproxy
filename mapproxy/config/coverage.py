@@ -17,7 +17,8 @@ import re
 
 from mapproxy.srs import SRS
 from mapproxy.config import abspath
-from mapproxy.util.geom import load_datasource, load_polygons, require_geom_support, coverage
+from mapproxy.util.geom import load_datasource, load_polygons, require_geom_support
+from mapproxy.util.coverage import coverage
 
 def load_coverage(conf):
     if 'ogr_datasource' in conf:

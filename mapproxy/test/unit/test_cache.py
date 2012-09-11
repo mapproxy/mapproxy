@@ -46,7 +46,7 @@ from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import BlankImage
 from mapproxy.request.wms import WMS111MapRequest
-from mapproxy.util.geom import BBOXCoverage
+from mapproxy.util.coverage import BBOXCoverage
 
 from mapproxy.test.image import create_debug_img, is_png, tmp_image
 from mapproxy.test.http import assert_query_eq, query_eq, mock_httpd

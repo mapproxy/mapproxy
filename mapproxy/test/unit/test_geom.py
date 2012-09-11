@@ -20,10 +20,9 @@ from mapproxy.util.geom import (
     load_polygons,
     transform_geometry,
     geom_support,
-    coverage,
-    MultiCoverage,
-    bbox_polygon,
+    bbox_polygon
 )
+from mapproxy.util.coverage import coverage, MultiCoverage
 from mapproxy.layer import MapExtent
 from mapproxy.test.helper import TempFile
 

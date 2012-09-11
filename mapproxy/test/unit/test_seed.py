@@ -5,7 +5,7 @@ from mapproxy.source.tile import TiledSource
 from mapproxy.grid import tile_grid_for_epsg
 from mapproxy.grid import TileGrid
 from mapproxy.srs import SRS
-from mapproxy.util.geom import BBOXCoverage, GeomCoverage
+from mapproxy.util.coverage import BBOXCoverage, GeomCoverage
 from mapproxy.seed.config import LevelsList, LevelsRange, LevelsResolutionList, LevelsResolutionRange
 from collections import defaultdict
 from nose.tools import eq_
