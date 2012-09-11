@@ -1,0 +1,237 @@
+# This file is part of the MapProxy project.
+# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#    http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import operator
+
+from mapproxy.grid import bbox_intersects, bbox_contains
+from mapproxy.util import cached_property
+from mapproxy.util.geom import (
+    require_geom_support,
+    load_polygon_lines,
+    transform_geometry,
+    bbox_polygon,
+)
+from mapproxy.srs import SRS
+
+import logging
+log_config = logging.getLogger('mapproxy.config.coverage')
+
+try:
+    import shapely.geometry
+    import shapely.prepared
+except ImportError:
+    log_config.warning('Shapely not found')
+
+def coverage(geom, srs):
+    if isinstance(geom, (list, tuple)):
+        return BBOXCoverage(geom, srs)
+    else:
+        return GeomCoverage(geom, srs)
+
+def load_limited_to(limited_to):
+    require_geom_support()
+    srs = SRS(limited_to['srs'])
+    geom = limited_to['geometry']
+    
+    if not hasattr(geom, 'type'): # not a Shapely geometry
+        if isinstance(geom, (list, tuple)):
+            geom = bbox_polygon(geom)
+        else:
+            polygons = load_polygon_lines(geom.split('\n'))    
+            if len(polygons) == 1:
+                geom = polygons[0]
+            else:
+                geom = shapely.geometry.MultiPolygon(polygons)
+
+    return GeomCoverage(geom, srs, clip=True)
+
+class MultiCoverage(object):
+    clip = False
+    """Aggregates multiple coverages"""
+    def __init__(self, coverages):
+        self.coverages = coverages
+        self.bbox = self.extent.bbox
+    
+    @cached_property
+    def extent(self):
+        return reduce(operator.add, [c.extent for c in self.coverages])
+    
+    def intersects(self, bbox, srs):
+        return any(c.intersects(bbox, srs) for c in self.coverages)
+
+    def contains(self, bbox, srs):
+        return any(c.contains(bbox, srs) for c in self.coverages)
+    
+    def transform_to(self, srs):
+        return MultiCoverage([c.transform_to(srs) for c in self.coverages])
+    
+    def __eq__(self, other):
+        if not isinstance(other, MultiCoverage):
+            return NotImplemented
+        
+        if self.bbox != other.bbox:
+            return False
+        
+        if len(self.coverages) != len(other.coverages):
+            return False
+        
+        for a, b in zip(self.coverages, other.coverages):
+            if a != b:
+                return False
+        
+        return True
+    
+    def __ne__(self, other):
+        if not isinstance(other, MultiCoverage):
+            return NotImplemented
+        return not self.__eq__(other)
+    
+    def __repr__(self):
+        return '<MultiCoverage %r: %r>' % (self.extent.llbbox, self.coverages)
+
+class BBOXCoverage(object):
+    clip = False
+    def __init__(self, bbox, srs):
+        self.bbox = bbox
+        self.srs = srs
+        self.geom = None
+    
+    @property
+    def extent(self):
+        from mapproxy.layer import MapExtent
+        
+        return MapExtent(self.bbox, self.srs)
+    
+    def _bbox_in_coverage_srs(self, bbox, srs):
+        if srs != self.srs:
+            bbox = srs.transform_bbox_to(self.srs, bbox)
+        return bbox
+    
+    def intersects(self, bbox, srs):
+        bbox = self._bbox_in_coverage_srs(bbox, srs)
+        return bbox_intersects(self.bbox, bbox)
+    
+    def contains(self, bbox, srs):
+        bbox = self._bbox_in_coverage_srs(bbox, srs)
+        return bbox_contains(self.bbox, bbox)
+    
+    def transform_to(self, srs):
+        if srs == self.srs:
+            return self
+        
+        bbox = self.srs.transform_bbox_to(srs, self.bbox)
+        return BBOXCoverage(bbox, srs)
+    
+    def __eq__(self, other):
+        if not isinstance(other, BBOXCoverage):
+            return NotImplemented
+
+        if self.srs != other.srs:
+            return False
+        
+        if self.bbox != other.bbox:
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        if not isinstance(other, BBOXCoverage):
+            return NotImplemented
+        return not self.__eq__(other)
+
+    def __repr__(self):
+        return '<BBOXCoverage %r/%r>' % (self.extent.llbbox, self.bbox)
+
+
+class GeomCoverage(object):
+    def __init__(self, geom, srs, clip=False):
+        self.geom = geom
+        self.bbox = geom.bounds
+        self.srs = srs
+        self.clip = clip
+        self._prepared_geom = None
+        self._prepared_counter = 0
+        self._prepared_max = 10000
+    
+    @property
+    def extent(self):
+        from mapproxy.layer import MapExtent
+        return MapExtent(self.bbox, self.srs)
+    
+    @property
+    def prepared_geom(self):
+        # GEOS internal data structure for prepared geometries grows over time,
+        # recreate to limit memory consumption
+        if not self._prepared_geom or self._prepared_counter > self._prepared_max:
+            self._prepared_geom = shapely.prepared.prep(self.geom)
+            self._prepared_counter = 0
+        self._prepared_counter += 1
+        return self._prepared_geom
+    
+    def _geom_in_coverage_srs(self, geom, srs):
+        if isinstance(geom, shapely.geometry.base.BaseGeometry):
+            if srs != self.srs:
+                geom = transform_geometry(srs, self.srs, geom)
+        elif len(geom) == 2:
+            if srs != self.srs:
+                geom = srs.transform_to(self.srs, geom)
+            geom = shapely.geometry.Point(geom)
+        else:
+            if srs != self.srs:
+                geom = srs.transform_bbox_to(self.srs, geom)
+            geom = bbox_polygon(geom)
+        return geom
+    
+    def transform_to(self, srs):
+        if srs == self.srs:
+            return self
+        
+        geom = transform_geometry(self.srs, srs, self.geom)
+        return GeomCoverage(geom, srs)
+    
+    def intersects(self, bbox, srs):
+        bbox = self._geom_in_coverage_srs(bbox, srs)
+        return self.prepared_geom.intersects(bbox)
+    
+    def intersection(self, bbox, srs):
+        bbox = self._geom_in_coverage_srs(bbox, srs)
+        return GeomCoverage(self.geom.intersection(bbox), self.srs)
+    
+    def contains(self, bbox, srs):
+        bbox = self._geom_in_coverage_srs(bbox, srs)
+        return self.prepared_geom.contains(bbox)
+    
+    def __eq__(self, other):
+        if not isinstance(other, GeomCoverage):
+            return NotImplemented
+        
+        if self.srs != other.srs:
+            return False
+        
+        if self.bbox != other.bbox:
+            return False
+        
+        if not self.geom.equals(other.geom):
+            return False
+        
+        return True
+    
+    def __ne__(self, other):
+        if not isinstance(other, GeomCoverage):
+            return NotImplemented
+        return not self.__eq__(other)
+
+    def __repr__(self):
+        return '<GeomCoverage %r: %r>' % (self.extent.llbbox, self.geom)
