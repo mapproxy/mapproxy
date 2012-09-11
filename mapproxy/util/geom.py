@@ -86,6 +86,8 @@ def load_polygons(geom_files):
 def load_polygon_lines(line_iter, source='<string>'):
     polygons = []
     for line in line_iter:
+        if not line.strip():
+            continue
         geom = shapely.wkt.loads(line)
         if geom.type == 'Polygon':
             polygons.append(geom)
@@ -93,12 +95,10 @@ def load_polygon_lines(line_iter, source='<string>'):
             for p in geom:
                 polygons.append(p)
         else:
-            log_config.warn('ignoring non-polygon geometry (%s) from %s',
+            log.warn('ignoring non-polygon geometry (%s) from %s',
                 geom.type, source)
 
-    return polygons    
-
-
+    return polygons
     
 def simplify_geom(geom):
     bounds = geom.bounds
