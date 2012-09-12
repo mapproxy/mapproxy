@@ -37,7 +37,7 @@ log = logging.getLogger(__name__)
 
 
 from mapproxy.template import template_loader, bunch
-get_template = template_loader(__file__, 'templates')
+get_template = template_loader(__name__, 'templates')
 
 class TileServer(Server):
     """
