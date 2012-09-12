@@ -18,7 +18,7 @@ from mapproxy.srs import SRS
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.mask import mask_image_source_from_coverage
-from mapproxy.util.geom import load_limited_to
+from mapproxy.util.coverage import load_limited_to
 
 try:
     from shapely.geometry import Polygon

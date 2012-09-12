@@ -20,10 +20,10 @@ from mapproxy.util.geom import (
     load_polygons,
     transform_geometry,
     geom_support,
-    coverage,
-    MultiCoverage,
     bbox_polygon,
+    build_multipolygon,
 )
+from mapproxy.util.coverage import coverage, MultiCoverage
 from mapproxy.layer import MapExtent
 from mapproxy.test.helper import TempFile
 
@@ -84,7 +84,8 @@ class TestPolygonLoading(object):
         with TempFile() as fname:
             with open(fname, 'w') as f:
                 f.write(VALID_POLYGON1)
-            bbox, polygon = load_polygons(fname)
+            polygon = load_polygons(fname)
+            bbox, polygon = build_multipolygon(polygon, simplify=True)
             eq_(polygon.type, 'Polygon')
 
     def test_loading_multipolygon(self):
@@ -93,7 +94,8 @@ class TestPolygonLoading(object):
                 f.write(VALID_POLYGON1)
                 f.write('\n')
                 f.write(VALID_POLYGON2)
-            bbox, polygon = load_polygons(fname)
+            polygon = load_polygons(fname)
+            bbox, polygon = build_multipolygon(polygon, simplify=True)
             eq_(polygon.type, 'MultiPolygon')
     
     @raises(shapely.geos.ReadingError)
@@ -101,14 +103,16 @@ class TestPolygonLoading(object):
         with TempFile() as fname:
             with open(fname, 'w') as f:
                 f.write("POLYGON((")
-            bbox, polygon = load_polygons(fname)
+            polygon = load_polygons(fname)
+            bbox, polygon = build_multipolygon(polygon, simplify=True)
     
     def test_loading_skip_non_polygon(self):
         with TempFile() as fname:
             with open(fname, 'w') as f:
                 f.write("POINT(0 0)\n")
                 f.write(VALID_POLYGON1)
-            bbox, polygon = load_polygons(fname)
+            polygon = load_polygons(fname)
+            bbox, polygon = build_multipolygon(polygon, simplify=True)
             eq_(polygon.type, 'Polygon')
 
 class TestTransform(object):

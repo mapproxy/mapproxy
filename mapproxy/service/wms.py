@@ -32,7 +32,7 @@ from mapproxy.image.message import attribution_image, message_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, LimitedLayer
 from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
 from mapproxy.util import async, cached_property
-from mapproxy.util.geom import load_limited_to
+from mapproxy.util.coverage import load_limited_to
 from mapproxy.util.ext.odict import odict
 from mapproxy.template import template_loader, bunch
 from mapproxy.service import template_helper
