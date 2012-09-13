@@ -1,3 +1,6 @@
 *.egg-info
 *.pyc
 build/
+.DS_Store
+doc/_build
+examples
