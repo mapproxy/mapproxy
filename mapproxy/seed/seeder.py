@@ -120,7 +120,7 @@ class SeedProgress(object):
         self.level_progresses = []
         self.progress_str_parts = []
         self.old_level_progresses = None
-        if old_progress_identifier:
+        if old_progress_identifier is not None:
             self.old_level_progresses = self.parse_progress_identifier(old_progress_identifier)
 
     def step_forward(self, subtiles=1):
@@ -142,7 +142,10 @@ class SeedProgress(object):
         self.level_progresses.pop()
 
     def already_processed(self):
-        if not self.old_level_progresses:
+        if self.old_level_progresses == []:
+            return True
+
+        if self.old_level_progresses is None:
             return False
 
         if self.progress_is_behind(self.old_level_progresses, self.level_progresses):
@@ -166,11 +169,15 @@ class SeedProgress(object):
     @staticmethod
     def parse_progress_identifier(identifier):
         """
+        >>> SeedProgress.parse_progress_identifier('')
+        []
         >>> SeedProgress.parse_progress_identifier('0-1')
         [(0, 1)]
         >>> SeedProgress.parse_progress_identifier('0-1|2-4')
         [(0, 1), (2, 4)]
         """
+        if not identifier:
+            return []
         levels = []
         for level in identifier.split('|'):
             level = level.split('-')
@@ -183,6 +190,8 @@ class SeedProgress(object):
         Return True if the `current_progress` is behind the `old_progress` -
         when it isn't as far as the old progress.
 
+        >>> SeedProgress.progress_is_behind([], [(0, 1)])
+        True
         >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1)])
         False
         >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1), (0, 4)])
@@ -224,7 +233,11 @@ class TileWalker(object):
     def walk(self):
         assert self.handle_stale or self.handle_uncached
         bbox = self.task.coverage.extent.bbox_for(self.tile_mgr.grid.srs)
-        self._walk(bbox, self.task.levels)
+        if self.seed_progress.already_processed():
+            # nothing to seed
+            self.seed_progress.step_forward()
+        else:
+            self._walk(bbox, self.task.levels)
         self.report_progress(self.task.levels[0], self.task.coverage.bbox)
 
     def _walk(self, cur_bbox, levels, all_subtiles=False):
