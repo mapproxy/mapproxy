@@ -351,8 +351,11 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
         wait = len(active_tasks) == 1
         try:
             with cache_locker.lock(task.md['cache_name'], no_block=not wait):
-                progress_logger.current_task_id = task.id
-                start_progress = progress_logger.progress_store.get(task.id)
+                if progress_logger and progress_logger.progress_store:
+                    progress_logger.current_task_id = task.id
+                    start_progress = progress_logger.progress_store.get(task.id)
+                else:
+                    start_progress = None
                 _seed_task(task, concurrency, dry_run, skip_geoms_for_last_levels, progress_logger, start_progress=start_progress)
         except CacheLockedError:
             print '    ...cache is locked, skipping'
