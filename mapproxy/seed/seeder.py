@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010, 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,8 @@
 
 from __future__ import with_statement, division
 import sys
+from contextlib import contextmanager
+from itertools import izip_longest
 
 from mapproxy.config import base_config
 from mapproxy.grid import MetaGrid
@@ -59,18 +61,18 @@ class TileWorkerPool(object):
             worker = worker_class(self.task, self.tiles_queue, conf)
             worker.start()
             self.procs.append(worker)
-    
+
     def process(self, tiles, progress):
         if not self.dry_run:
             self.tiles_queue.put(tiles)
-        
-        if self.progress_logger:
-            self.progress_logger.log_step(progress)
-    
+
+            if self.progress_logger:
+                self.progress_logger.log_step(progress)
+
     def stop(self):
         for _ in xrange(len(self.procs)):
             self.tiles_queue.put(None)
-        
+
         for proc in self.procs:
             proc.join()
 
@@ -83,7 +85,7 @@ class TileWorker(proc_class):
         self.tile_mgr = task.tile_manager
         self.tiles_queue = tiles_queue
         self.conf = conf
-    
+
     def run(self):
         with local_base_config(self.conf):
             try:
@@ -109,10 +111,99 @@ class TileCleanupWorker(TileWorker):
                 return
             with self.tile_mgr.session():
                 self.tile_mgr.remove_tile_coords(tiles)
-                
+
+class SeedProgress(object):
+    def __init__(self, old_progress_identifier=None):
+        self.progress = 0.0
+        self.eta = ETA()
+        self.level_progress_percentages = [1.0]
+        self.level_progresses = []
+        self.progress_str_parts = []
+        self.old_level_progresses = None
+        if old_progress_identifier:
+            self.old_level_progresses = self.parse_progress_identifier(old_progress_identifier)
+
+    def step_forward(self, subtiles=1):
+        self.progress += self.level_progress_percentages[-1] / subtiles
+        self.eta.update(self.progress)
+
+    @property
+    def progress_str(self):
+        return ''.join(self.progress_str_parts)
+
+    @contextmanager
+    def step_down(self, i, subtiles):
+        self.level_progresses.append((i, subtiles))
+        self.progress_str_parts.append(status_symbol(i, subtiles))
+        self.level_progress_percentages.append(self.level_progress_percentages[-1] / subtiles)
+        yield
+        self.level_progress_percentages.pop()
+        self.progress_str_parts.pop()
+        self.level_progresses.pop()
+
+    def already_processed(self):
+        if not self.old_level_progresses:
+            return False
+
+        if self.progress_is_behind(self.old_level_progresses, self.level_progresses):
+            return True
+        else:
+            return False
+
+    def current_progress_identifier(self):
+        return self.progress_identifier(self.level_progresses)
+
+    @staticmethod
+    def progress_identifier(level_progresses):
+        """
+        >>> SeedProgress.progress_identifier([(0, 1)])
+        '0-1'
+        >>> SeedProgress.progress_identifier([(0, 1), (2, 4)])
+        '0-1|2-4'
+        """
+        return '|'.join('%d-%d' % lvl for lvl in level_progresses)
+
+    @staticmethod
+    def parse_progress_identifier(identifier):
+        """
+        >>> SeedProgress.parse_progress_identifier('0-1')
+        [(0, 1)]
+        >>> SeedProgress.parse_progress_identifier('0-1|2-4')
+        [(0, 1), (2, 4)]
+        """
+        levels = []
+        for level in identifier.split('|'):
+            level = level.split('-')
+            levels.append((int(level[0]), int(level[1])))
+        return levels
+
+    @staticmethod
+    def progress_is_behind(old_progress, current_progress):
+        """
+        Return True if the `current_progress` is behind the `old_progress` -
+        when it isn't as far as the old progress.
+
+        >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1)])
+        False
+        >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1), (0, 4)])
+        True
+        >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1), (1, 4)])
+        True
+        >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1), (3, 4)])
+        False
+
+        """
+        for old, current in izip_longest(old_progress, current_progress, fillvalue=(9e15, 9e15)):
+            if old < current:
+                return False
+            if old > current:
+                return True
+        return True
+
 class TileWalker(object):
     def __init__(self, task, worker_pool, handle_stale=False, handle_uncached=False,
-                 work_on_metatiles=True, skip_geoms_for_last_levels=0, progress_logger=None):
+                 work_on_metatiles=True, skip_geoms_for_last_levels=0, progress_logger=None,
+                 start_progress=None):
         self.tile_mgr = task.tile_manager
         self.task = task
         self.worker_pool = worker_pool
@@ -121,23 +212,22 @@ class TileWalker(object):
         self.work_on_metatiles = work_on_metatiles
         self.skip_geoms_for_last_levels = skip_geoms_for_last_levels
         self.progress_logger = progress_logger
-        
+
         num_seed_levels = len(task.levels)
         self.report_till_level = task.levels[int(num_seed_levels * 0.8)]
         meta_size = self.tile_mgr.meta_grid.meta_size if self.tile_mgr.meta_grid else (1, 1)
         self.tiles_per_metatile = meta_size[0] * meta_size[1]
         self.grid = MetaGrid(self.tile_mgr.grid, meta_size=meta_size, meta_buffer=0)
-        self.progress = 0.0
-        self.eta = ETA()
         self.count = 0
-    
+        self.seed_progress = SeedProgress(old_progress_identifier=start_progress)
+
     def walk(self):
         assert self.handle_stale or self.handle_uncached
         bbox = self.task.coverage.extent.bbox_for(self.tile_mgr.grid.srs)
         self._walk(bbox, self.task.levels)
         self.report_progress(self.task.levels[0], self.task.coverage.bbox)
 
-    def _walk(self, cur_bbox, levels, progess_str='', progress=1.0, all_subtiles=False):
+    def _walk(self, cur_bbox, levels, all_subtiles=False):
         """
         :param cur_bbox: the bbox to seed in this call
         :param levels: list of levels to seed
@@ -147,36 +237,39 @@ class TileWalker(object):
         current_level, levels = levels[0], levels[1:]
         bbox_, tiles, subtiles = self.grid.get_affected_level_tiles(cur_bbox, current_level)
         total_subtiles = tiles[0] * tiles[1]
-        
+
         if len(levels) < self.skip_geoms_for_last_levels:
             # do not filter in last levels
             all_subtiles = True
         subtiles = self._filter_subtiles(subtiles, all_subtiles)
-        
+
         if current_level <= self.report_till_level:
             self.report_progress(current_level, cur_bbox)
-        
-        progress = progress / total_subtiles
+
         for i, (subtile, sub_bbox, intersection) in enumerate(subtiles):
             if subtile is None: # no intersection
-                self.progress += progress
+                self.seed_progress.step_forward(total_subtiles)
                 continue
             if levels: # recurse to next level
                 sub_bbox = limit_sub_bbox(cur_bbox, sub_bbox)
-                cur_progess_str = progess_str + status_symbol(i, total_subtiles)
                 if intersection == CONTAINS:
                     all_subtiles = True
                 else:
                     all_subtiles = False
-                self._walk(sub_bbox, levels, cur_progess_str,
-                           all_subtiles=all_subtiles, progress=progress)
-            
+
+                with self.seed_progress.step_down(i, total_subtiles):
+                    if self.seed_progress.already_processed():
+                        self.seed_progress.step_forward()
+                    else:
+                        self._walk(sub_bbox, levels,
+                            all_subtiles=all_subtiles)
+
             if not self.work_on_metatiles:
                 # collect actual tiles
                 handle_tiles = self.grid.tile_list(subtile)
             else:
                 handle_tiles = [subtile]
-            
+
             if self.handle_uncached:
                 handle_tiles = [t for t in handle_tiles if
                                     t is not None and
@@ -187,22 +280,20 @@ class TileWalker(object):
                                     self.tile_mgr.is_stale(t)]
             if handle_tiles:
                 self.count += 1
-                self.worker_pool.process(handle_tiles,
-                    (progess_str, self.progress, self.eta))
-                
+                self.worker_pool.process(handle_tiles, self.seed_progress)
+
             if not levels:
-                self.progress += progress
-        
+                self.seed_progress.step_forward(total_subtiles)
+
         if len(levels) >= 4:
             # call cleanup to close open caches
             # for connection based caches
             self.tile_mgr.cleanup()
-        self.eta.update(self.progress)
-    
+
     def report_progress(self, level, bbox):
         if self.progress_logger:
-            self.progress_logger.log_progress(self.progress, level, bbox,
-                self.count * self.tiles_per_metatile, self.eta)
+            self.progress_logger.log_progress(self.seed_progress, level, bbox,
+                self.count * self.tiles_per_metatile)
 
     def _filter_subtiles(self, subtiles, all_subtiles):
         """
@@ -221,7 +312,7 @@ class TileWalker(object):
                     intersection = self.task.intersects(sub_bbox)
                 if intersection:
                     yield subtile, sub_bbox, intersection
-                else: 
+                else:
                     yield None, None, None
 
 class SeedTask(object):
@@ -232,7 +323,7 @@ class SeedTask(object):
         self.levels = levels
         self.refresh_timestamp = refresh_timestamp
         self.coverage = coverage
-    
+
     def intersects(self, bbox):
         if self.coverage.contains(bbox, self.grid.srs): return CONTAINS
         if self.coverage.intersects(bbox, self.grid.srs): return INTERSECTS
@@ -252,7 +343,7 @@ class CleanupTask(object):
         self.remove_timestamp = remove_timestamp
         self.coverage = coverage
         self.complete_extent = complete_extent
-    
+
     def intersects(self, bbox):
         if self.coverage.contains(bbox, self.grid.srs): return CONTAINS
         if self.coverage.intersects(bbox, self.grid.srs): return INTERSECTS
@@ -262,12 +353,12 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
     progress_logger=None, cache_locker=None):
     if cache_locker is None:
         cache_locker = DummyCacheLocker()
-    
+
     active_tasks = tasks[::-1]
     while active_tasks:
         task = active_tasks[-1]
         print format_seed_task(task)
-        
+
         wait = len(active_tasks) == 1
         try:
             with cache_locker.lock(task.md['cache_name'], no_block=not wait):
@@ -277,7 +368,7 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
             active_tasks = [task] + active_tasks[:-1]
         else:
             active_tasks.pop()
-        
+
 
 def _seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
     progress_logger=None):
@@ -304,7 +395,7 @@ def _seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
 #         self.concurrency = concurrency
 #         self.seeded_caches = []
 #         self.skip_geoms_for_last_levels = skip_geoms_for_last_levels
-#     
+#
 #     def seed_view(self, bbox, level, bbox_srs, cache_srs, geom=None):
 #         for srs, tile_mgr in self.caches.iteritems():
 #             if not cache_srs or srs in cache_srs:
@@ -318,7 +409,7 @@ def _seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
 #                 seeder = TileWalker(tile_mgr, seed_task, seed_pool, self.skip_geoms_for_last_levels)
 #                 seeder.seed()
 #                 seed_pool.stop()
-#     
+#
 #     def cleanup(self):
 #         for tile_mgr in self.seeded_caches:
 #             for i in range(tile_mgr.grid.levels):

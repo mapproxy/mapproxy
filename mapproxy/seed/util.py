@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010, 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,8 +49,9 @@ class ETA(object):
 
             while missing_ticks > 0:
 
-                self.tick_duration_sums *= 0.99
-                self.tick_duration_divisor *= 0.99
+                # reduce the influence of older messurements
+                self.tick_duration_sums *= 0.999
+                self.tick_duration_divisor *= 0.999
 
                 self.tick_count += 1
 
@@ -69,8 +70,9 @@ class ETA(object):
 
     def eta(self):
         if not self.tick_count: return
-        return (self.last_tick_start + 
-                (1-self.progress) * (self.tick_duration_sums/self.tick_duration_divisor) * self.ticks)
+        return (self.last_tick_start +
+                ((self.tick_duration_sums/self.tick_duration_divisor)
+                 * (self.ticks - self.tick_count)))
 
     def __str__(self):
         return self.eta_string()
@@ -83,25 +85,25 @@ class ProgressLog(object):
         self.lastlog = time.time()
         self.verbose = verbose
         self.silent = silent
-        
+
     def log_step(self, progress):
         if not self.verbose:
             return
         if (self.lastlog + .1) < time.time():
             # log progress at most every 100ms
-            self.out.write('[%s] %6.2f%% %s \tETA: %s\r' % (
-                timestamp(), progress[1]*100, progress[0],
-                progress[2]
+            self.out.write('[%s] %6.2f%%\t%-20s ETA: %s\r' % (
+                timestamp(), progress.progress*100, progress.progress_str,
+                progress.eta
             ))
             self.out.flush()
             self.lastlog = time.time()
-    
-    def log_progress(self, progress, level, bbox, tiles, eta):
+
+    def log_progress(self, progress, level, bbox, tiles):
         if self.silent:
             return
         self.out.write('[%s] %2s %6.2f%% %s (%d tiles) ETA: %s\n' % (
-            timestamp(), level, progress*100,
-            format_bbox(bbox), tiles, eta))
+            timestamp(), level, progress.progress*100,
+            format_bbox(bbox), tiles, progress.eta))
         self.out.flush()
 
 def limit_sub_bbox(bbox, sub_bbox):
@@ -116,7 +118,7 @@ def limit_sub_bbox(bbox, sub_bbox):
     maxx = min(bbox[2], sub_bbox[2])
     maxy = min(bbox[3], sub_bbox[3])
     return minx, miny, maxx, maxy
-    
+
 def timestamp():
     return datetime.now().strftime('%H:%M:%S')
 
@@ -139,7 +141,7 @@ def status_symbol(i, total):
     else:
         return symbols[int(math.ceil(i/(total/4)))]
 
-def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2, 
+def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
         exceptions=(Exception,), ignore_exceptions=tuple()):
     n = 0
     while True:
@@ -151,7 +153,7 @@ def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
             if (n+1) >= max_repeat:
                 raise
             wait_for = start_backoff_sec * 2**n
-            print >>sys.stderr, ("An error occured. Retry in %d seconds: %r" % 
+            print >>sys.stderr, ("An error occured. Retry in %d seconds: %r" %
                 (wait_for, ex))
             time.sleep(wait_for)
             n += 1
@@ -168,7 +170,7 @@ def format_seed_task(task):
     else:
         info.append('   Complete grid: %s (EPSG:4326)' % (format_bbox(map_extent_from_grid(task.grid).llbbox), ))
     info.append('    Levels: %s' % (task.levels, ))
-        
+
     if task.refresh_timestamp:
         info.append('    Overwriting: tiles older than %s' %
                     datetime.fromtimestamp(task.refresh_timestamp))
@@ -176,7 +178,7 @@ def format_seed_task(task):
         info.append('    Overwriting: all tiles')
     else:
         info.append('    Overwriting: no tiles')
-    
+
     return '\n'.join(info)
 
 def format_cleanup_task(task):
@@ -189,11 +191,11 @@ def format_cleanup_task(task):
     else:
         info.append('    Complete grid: %s (EPSG:4326)' % (format_bbox(map_extent_from_grid(task.grid).llbbox), ))
     info.append('    Levels: %s' % (task.levels, ))
-        
+
     if task.remove_timestamp:
         info.append('    Remove: tiles older than %s' %
                     datetime.fromtimestamp(task.remove_timestamp))
     else:
         info.append('    Remove: all tiles')
-    
+
     return '\n'.join(info)
