@@ -7,6 +7,9 @@ from mapproxy.grid import TileGrid
 from mapproxy.srs import SRS
 from mapproxy.util.coverage import BBOXCoverage, GeomCoverage
 from mapproxy.seed.config import LevelsList, LevelsRange, LevelsResolutionList, LevelsResolutionRange
+from mapproxy.seed.util import ProgressStore
+from mapproxy.test.helper import TempFile
+
 from collections import defaultdict
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
@@ -124,7 +127,7 @@ class TestSeeder(object):
 
     def test_seed_full_bbox_continue(self):
         task = self.make_bbox_task([-180, -90, 180, 90], SRS(4326), [0, 1, 2])
-        seeder = TileWalker(task, self.seed_pool, handle_uncached=True, start_progress='0-1|0-2')
+        seeder = TileWalker(task, self.seed_pool, handle_uncached=True, start_progress=[(0, 1), (0, 2)])
         seeder.walk()
 
         eq_(len(self.seed_pool.seeded_tiles), 3)
@@ -173,3 +176,28 @@ class TestLevels(object):
         levels = LevelsResolutionList([1000, 100, 500])
         eq_(levels.for_grid(tile_grid_for_epsg(900913)),
             [8, 9, 11])
+
+
+class TestProgressStore(object):
+    def test_load_empty(self):
+        store = ProgressStore('doesnotexist.no_realy.txt')
+        store.load()
+        assert store.get(('foo', 'bar', 'baz')) == None
+
+    def test_load_store(self):
+        with TempFile(no_create=True) as tmp:
+            with open(tmp, 'w') as f:
+                f.write("""
+                    [[["view", "cache", "grid"], "0-1|2-4"]]
+                """)
+            store = ProgressStore(tmp)
+            assert store.get(('view', 'cache', 'grid')) == [(0, 1), (2, 4)]
+            assert store.get(('view', 'cache', 'grid2')) == None
+            store.add(('view', 'cache', 'grid'), [])
+            store.add(('view', 'cache', 'grid2'), [(0, 1)])
+            store.write()
+
+            store = ProgressStore(tmp)
+            assert store.get(('view', 'cache', 'grid')) == []
+            assert store.get(('view', 'cache', 'grid2')) == [(0, 1)]
+

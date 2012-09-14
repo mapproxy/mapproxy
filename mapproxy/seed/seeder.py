@@ -121,7 +121,7 @@ class SeedProgress(object):
         self.progress_str_parts = []
         self.old_level_progresses = None
         if old_progress_identifier is not None:
-            self.old_level_progresses = self.parse_progress_identifier(old_progress_identifier)
+            self.old_level_progresses = old_progress_identifier
 
     def step_forward(self, subtiles=1):
         self.progress += self.level_progress_percentages[-1] / subtiles
@@ -154,35 +154,7 @@ class SeedProgress(object):
             return False
 
     def current_progress_identifier(self):
-        return self.progress_identifier(self.level_progresses)
-
-    @staticmethod
-    def progress_identifier(level_progresses):
-        """
-        >>> SeedProgress.progress_identifier([(0, 1)])
-        '0-1'
-        >>> SeedProgress.progress_identifier([(0, 1), (2, 4)])
-        '0-1|2-4'
-        """
-        return '|'.join('%d-%d' % lvl for lvl in level_progresses)
-
-    @staticmethod
-    def parse_progress_identifier(identifier):
-        """
-        >>> SeedProgress.parse_progress_identifier('')
-        []
-        >>> SeedProgress.parse_progress_identifier('0-1')
-        [(0, 1)]
-        >>> SeedProgress.parse_progress_identifier('0-1|2-4')
-        [(0, 1), (2, 4)]
-        """
-        if not identifier:
-            return []
-        levels = []
-        for level in identifier.split('|'):
-            level = level.split('-')
-            levels.append((int(level[0]), int(level[1])))
-        return levels
+        return self.level_progresses
 
     @staticmethod
     def progress_is_behind(old_progress, current_progress):
@@ -337,6 +309,10 @@ class SeedTask(object):
         self.refresh_timestamp = refresh_timestamp
         self.coverage = coverage
 
+    @property
+    def id(self):
+        return self.md['name'], self.md['cache_name'], self.md['grid_name']
+
     def intersects(self, bbox):
         if self.coverage.contains(bbox, self.grid.srs): return CONTAINS
         if self.coverage.intersects(bbox, self.grid.srs): return INTERSECTS
@@ -375,7 +351,9 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
         wait = len(active_tasks) == 1
         try:
             with cache_locker.lock(task.md['cache_name'], no_block=not wait):
-                _seed_task(task, concurrency, dry_run, skip_geoms_for_last_levels, progress_logger)
+                progress_logger.current_task_id = task.id
+                start_progress = progress_logger.progress_store.get(task.id)
+                _seed_task(task, concurrency, dry_run, skip_geoms_for_last_levels, progress_logger, start_progress=start_progress)
         except CacheLockedError:
             print '    ...cache is locked, skipping'
             active_tasks = [task] + active_tasks[:-1]
@@ -384,14 +362,15 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
 
 
 def _seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
-    progress_logger=None):
+    progress_logger=None, start_progress=None):
     if task.refresh_timestamp is not None:
         task.tile_manager._expire_timestamp = task.refresh_timestamp
     task.tile_manager.minimize_meta_requests = False
     tile_worker_pool = TileWorkerPool(task, TileSeedWorker, dry_run=dry_run,
         size=concurrency, progress_logger=progress_logger)
     tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=True,
-        skip_geoms_for_last_levels=skip_geoms_for_last_levels, progress_logger=progress_logger)
+        skip_geoms_for_last_levels=skip_geoms_for_last_levels, progress_logger=progress_logger,
+        start_progress=start_progress)
     tile_walker.walk()
     tile_worker_pool.stop()
 

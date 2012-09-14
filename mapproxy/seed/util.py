@@ -15,9 +15,11 @@
 
 from __future__ import with_statement, division
 
+import os
 import sys
 import math
 import time
+import json
 from datetime import datetime
 
 from mapproxy.layer import map_extent_from_grid
@@ -77,14 +79,90 @@ class ETA(object):
     def __str__(self):
         return self.eta_string()
 
+class ProgressStore(object):
+    """
+    Reads and stores seed progresses to a file.
+    """
+    def __init__(self, filename=None):
+        self.filename = filename
+        self.status = self.load()
+
+    def load(self):
+        if not os.path.exists(self.filename):
+            return {}
+        else:
+            with open(self.filename) as f:
+                return self._status_from_list(json.load(f))
+
+    def write(self):
+        with open(self.filename + '.tmp', 'w') as f:
+            f.write(json.dumps(self._status_as_list(self.status)))
+            f.flush()
+            os.fsync(f.fileno())
+        os.rename(self.filename + '.tmp', self.filename)
+
+    def remove(self):
+        self.status = {}
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
+
+    def get(self, task_identifier):
+        return self.status.get(task_identifier, None)
+
+    def add(self, task_identifier, progress_identifier):
+        self.status[task_identifier] = progress_identifier
+
+    def _status_as_list(self, status):
+        result = []
+        for k, v in status.iteritems():
+            result.append([k, self.progress_identifier(v)])
+
+        return result
+
+    def _status_from_list(self, list):
+        result = {}
+        for k, v in list:
+            result[tuple(k)] = self.parse_progress_identifier(v)
+        return result
+
+    @staticmethod
+    def progress_identifier(level_progresses):
+        """
+        >>> ProgressStore.progress_identifier([(0, 1)])
+        '0-1'
+        >>> ProgressStore.progress_identifier([(0, 1), (2, 4)])
+        '0-1|2-4'
+        """
+        return '|'.join('%d-%d' % lvl for lvl in level_progresses)
+
+    @staticmethod
+    def parse_progress_identifier(identifier):
+        """
+        >>> ProgressStore.parse_progress_identifier('')
+        []
+        >>> ProgressStore.parse_progress_identifier('0-1')
+        [(0, 1)]
+        >>> ProgressStore.parse_progress_identifier('0-1|2-4')
+        [(0, 1), (2, 4)]
+        """
+        if not identifier:
+            return []
+        levels = []
+        for level in identifier.split('|'):
+            level = level.split('-')
+            levels.append((int(level[0]), int(level[1])))
+        return levels
+
 class ProgressLog(object):
-    def __init__(self, out=None, silent=False, verbose=True):
+    def __init__(self, out=None, silent=False, verbose=True, progress_store=None):
         if not out:
             out = sys.stdout
         self.out = out
         self.lastlog = time.time()
         self.verbose = verbose
         self.silent = silent
+        self.current_task_id = None
+        self.progress_store = progress_store
 
     def log_step(self, progress):
         if not self.verbose:
@@ -99,12 +177,18 @@ class ProgressLog(object):
             self.lastlog = time.time()
 
     def log_progress(self, progress, level, bbox, tiles):
+        if self.progress_store and self.current_task_id:
+            self.progress_store.add(self.current_task_id,
+                progress.current_progress_identifier())
+            self.progress_store.write()
+
         if self.silent:
             return
         self.out.write('[%s] %2s %6.2f%% %s (%d tiles) ETA: %s\n' % (
             timestamp(), level, progress.progress*100,
             format_bbox(bbox), tiles, progress.eta))
         self.out.flush()
+
 
 def limit_sub_bbox(bbox, sub_bbox):
     """
