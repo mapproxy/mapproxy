@@ -1,4 +1,20 @@
-from __future__ import division
+# This file is part of the MapProxy project.
+# Copyright (C) 2010-2012 Omniscale <http://omniscale.de>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from __future__ import with_statement, division
+import cPickle as pickle
 from mapproxy.seed.seeder import TileWalker, SeedTask
 from mapproxy.cache.tile import TileManager
 from mapproxy.source.tile import TiledSource
@@ -187,9 +203,7 @@ class TestProgressStore(object):
     def test_load_store(self):
         with TempFile(no_create=True) as tmp:
             with open(tmp, 'w') as f:
-                f.write("""
-                    [[["view", "cache", "grid"], "0-1|2-4"]]
-                """)
+                f.write(pickle.dumps({("view", "cache", "grid"): [(0, 1), (2, 4)]}))
             store = ProgressStore(tmp)
             assert store.get(('view', 'cache', 'grid')) == [(0, 1), (2, 4)]
             assert store.get(('view', 'cache', 'grid2')) == None
@@ -201,3 +215,11 @@ class TestProgressStore(object):
             assert store.get(('view', 'cache', 'grid')) == []
             assert store.get(('view', 'cache', 'grid2')) == [(0, 1)]
 
+    def test_load_broken(self):
+        with TempFile(no_create=True) as tmp:
+            with open(tmp, 'w') as f:
+                f.write('##invaliddata')
+                f.write(pickle.dumps({("view", "cache", "grid"): [(0, 1), (2, 4)]}))
+
+            store = ProgressStore(tmp)
+            assert store.status == {}

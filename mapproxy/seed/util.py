@@ -17,12 +17,16 @@ from __future__ import with_statement, division
 
 import os
 import sys
+import stat
 import math
 import time
-import json
+import cPickle as pickle
 from datetime import datetime
 
 from mapproxy.layer import map_extent_from_grid
+
+import logging
+log = logging.getLogger(__name__)
 
 class bidict(dict):
     """
@@ -89,14 +93,24 @@ class ProgressStore(object):
 
     def load(self):
         if not os.path.exists(self.filename):
-            return {}
+            pass
+        elif os.stat(self.filename).st_mode & stat.S_IWOTH:
+            log.error('progress file (%s) is world writable, ignoring file',
+                self.filename)
         else:
             with open(self.filename) as f:
-                return self._status_from_list(json.load(f))
+                try:
+                    return pickle.load(f)
+                except (pickle.UnpicklingError, AttributeError,
+                    EOFError, ImportError, IndexError):
+                    log.error('unable to read progress file (%s), ignoring file',
+                        self.filename)
+
+        return {}
 
     def write(self):
         with open(self.filename + '.tmp', 'w') as f:
-            f.write(json.dumps(self._status_as_list(self.status)))
+            f.write(pickle.dumps(self.status))
             f.flush()
             os.fsync(f.fileno())
         os.rename(self.filename + '.tmp', self.filename)
@@ -111,47 +125,6 @@ class ProgressStore(object):
 
     def add(self, task_identifier, progress_identifier):
         self.status[task_identifier] = progress_identifier
-
-    def _status_as_list(self, status):
-        result = []
-        for k, v in status.iteritems():
-            result.append([k, self.progress_identifier(v)])
-
-        return result
-
-    def _status_from_list(self, list):
-        result = {}
-        for k, v in list:
-            result[tuple(k)] = self.parse_progress_identifier(v)
-        return result
-
-    @staticmethod
-    def progress_identifier(level_progresses):
-        """
-        >>> ProgressStore.progress_identifier([(0, 1)])
-        '0-1'
-        >>> ProgressStore.progress_identifier([(0, 1), (2, 4)])
-        '0-1|2-4'
-        """
-        return '|'.join('%d-%d' % lvl for lvl in level_progresses)
-
-    @staticmethod
-    def parse_progress_identifier(identifier):
-        """
-        >>> ProgressStore.parse_progress_identifier('')
-        []
-        >>> ProgressStore.parse_progress_identifier('0-1')
-        [(0, 1)]
-        >>> ProgressStore.parse_progress_identifier('0-1|2-4')
-        [(0, 1), (2, 4)]
-        """
-        if not identifier:
-            return []
-        levels = []
-        for level in identifier.split('|'):
-            level = level.split('-')
-            levels.append((int(level[0]), int(level[1])))
-        return levels
 
 class ProgressLog(object):
     def __init__(self, out=None, silent=False, verbose=True, progress_store=None):
