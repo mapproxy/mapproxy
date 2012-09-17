@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,10 +34,10 @@ def get_resolution(bbox, size):
     """
     Calculate the highest resolution needed to draw the bbox
     into an image with given size.
-    
+
     >>> get_resolution((-180,-90,180,90), (256, 256))
     0.703125
-    
+
     :returns: the resolution
     :rtype: float
     """
@@ -48,7 +48,7 @@ def get_resolution(bbox, size):
 def tile_grid_for_epsg(epsg, bbox=None, tile_size=(256, 256), res=None):
     """
     Create a tile grid that matches the given epsg code:
-    
+
     :param epsg: the epsg code
     :type epsg: 'EPSG:0000', '0000' or 0000
     :param bbox: the bbox of the grid
@@ -98,14 +98,14 @@ def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
     """
     if srs is None: srs = 'EPSG:900913'
     srs = SRS(srs)
-    
+
     if not bbox:
         bbox = default_bboxs.get(srs)
         if not bbox:
             raise ValueError('need a bbox for grid with %s' % srs)
-    
+
     bbox = grid_bbox(bbox, srs=srs, bbox_srs=bbox_srs)
-    
+
     if res:
         if isinstance(res, list):
             if isinstance(res[0], (tuple, list)):
@@ -124,31 +124,31 @@ def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
                                   align_with)
     else:
         res = resolutions(min_res, max_res, res_factor, num_levels, bbox, tile_size)
-    
+
     return TileGrid(srs, bbox=bbox, tile_size=tile_size, res=res, threshold_res=threshold_res,
                     stretch_factor=stretch_factor, max_shrink_factor=max_shrink_factor,
                     origin=origin, name=name)
 
 def aligned_resolutions(min_res=None, max_res=None, res_factor=2.0, num_levels=None,
                 bbox=None, tile_size=(256, 256), align_with=None):
-    
-    
+
+
     alinged_res = align_with.resolutions
     res = list(alinged_res)
-    
+
     if not min_res:
         width = bbox[2] - bbox[0]
         height = bbox[3] - bbox[1]
         min_res = max(width/tile_size[0], height/tile_size[1])
-        
+
     res = [r for r in res if r <= min_res]
-    
+
     if max_res:
         res = [r for r in res if r >= max_res]
 
     if num_levels:
         res = res[:num_levels]
-    
+
     factor_calculated = res[0]/res[1]
     if res_factor == 'sqrt2' and round(factor_calculated, 8) != round(math.sqrt(2), 8):
         if round(factor_calculated, 8) == 2.0:
@@ -173,7 +173,7 @@ def resolutions(min_res=None, max_res=None, res_factor=2.0, num_levels=None,
         width = bbox[2] - bbox[0]
         height = bbox[3] - bbox[1]
         min_res = max(width/tile_size[0], height/tile_size[1])
-    
+
     if max_res:
         if num_levels:
             res_step = (math.log10(min_res) - math.log10(max_res)) / (num_levels-1)
@@ -191,7 +191,7 @@ def resolutions(min_res=None, max_res=None, res_factor=2.0, num_levels=None,
         res = [min_res]
         while len(res) < num_levels:
             res.append(res[-1]/res_factor)
-        
+
     return res
 
 def grid_bbox(bbox, bbox_srs, srs):
@@ -199,20 +199,20 @@ def grid_bbox(bbox, bbox_srs, srs):
     if bbox_srs:
         bbox = SRS(bbox_srs).transform_bbox_to(srs, bbox)
     return bbox
-    
+
 def bbox_tuple(bbox):
     """
     >>> bbox_tuple('20,-30,40,-10')
     (20.0, -30.0, 40.0, -10.0)
     >>> bbox_tuple([20,-30,40,-10])
     (20.0, -30.0, 40.0, -10.0)
-    
+
     """
     if isinstance(bbox, basestring):
         bbox = bbox.split(',')
     bbox = tuple(map(float, bbox))
     return bbox
-    
+
 
 
 def bbox_width(bbox):
@@ -240,7 +240,7 @@ class TileGrid(object):
     """
     This class represents a regular tile grid. The first level (0) contains a single
     tile, the origin is bottom-left.
-    
+
     :ivar levels: the number of levels
     :ivar tile_size: the size of each tile in pixel
     :type tile_size: ``int(with), int(height)``
@@ -248,10 +248,10 @@ class TileGrid(object):
     :type srs: `SRS`
     :ivar bbox: the bbox of the grid, tiles may overlap this bbox
     """
-    
+
     spheroid_a = 6378137.0 # for 900913
     flipped_y_axis = False
-    
+
     def __init__(self, srs=900913, bbox=None, tile_size=(256, 256), res=None,
                  threshold_res=None, is_geodetic=False, levels=None,
                  stretch_factor=1.15, max_shrink_factor=4.0, origin='ll',
@@ -261,7 +261,7 @@ class TileGrid(object):
             before the next level will be selected
         :param max_shrink_factor: allow images to be scaled down by this
             factor before NoTiles is raised
-        
+
         >>> grid = TileGrid(srs=900913)
         >>> [round(x, 2) for x in grid.bbox]
         [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
@@ -277,21 +277,21 @@ class TileGrid(object):
             self.flipped_y_axis = True
 
         self.is_geodetic = is_geodetic
-        
+
         self.stretch_factor = stretch_factor
         self.max_shrink_factor = max_shrink_factor
-        
+
         if levels is None:
             self.levels = 20
         else:
             self.levels = levels
-        
+
         if bbox is None:
             bbox = self._calc_bbox()
         self.bbox = bbox
-        
+
         factor = None
-        
+
         if res is None:
             factor = 2.0
             res = self._calc_res(factor=factor)
@@ -303,13 +303,13 @@ class TileGrid(object):
         elif is_float(res):
             factor = float(res)
             res = self._calc_res(factor=factor)
-        
+
         self.levels = len(res)
         self.resolutions = NamedGridList(res)
         self.threshold_res = threshold_res
-        
+
         self.grid_sizes = self._calc_grids()
-    
+
     def _calc_grids(self):
         width = self.bbox[2] - self.bbox[0]
         height = self.bbox[3] - self.bbox[1]
@@ -319,7 +319,7 @@ class TileGrid(object):
             y = max(math.ceil(height // res / self.tile_size[1]), 1)
             grids.append((idx, (int(x), int(y))))
         return NamedGridList(grids)
-    
+
     def _calc_bbox(self):
         if self.is_geodetic:
             return (-180.0, -90.0, 180.0, 90.0)
@@ -327,7 +327,7 @@ class TileGrid(object):
             circum = 2 * math.pi * self.spheroid_a
             offset = circum / 2.0
             return (-offset, -offset, offset, offset)
-    
+
     def _calc_res(self, factor=None):
         width = self.bbox[2] - self.bbox[0]
         height = self.bbox[3] - self.bbox[1]
@@ -340,9 +340,9 @@ class TileGrid(object):
     def resolution(self, level):
         """
         Returns the resolution of the `level` in units/pixel.
-        
+
         :param level: the zoom level index (zero is top)
-        
+
         >>> grid = TileGrid(SRS(900913))
         >>> '%.5f' % grid.resolution(0)
         '156543.03393'
@@ -352,14 +352,14 @@ class TileGrid(object):
         '9783.93962'
         """
         return self.resolutions[level]
-    
+
     def closest_level(self, res):
         """
         Returns the level index that offers the required resolution.
-        
+
         :param res: the required resolution
         :returns: the level with the requested or higher resolution
-        
+
         >>> grid = TileGrid(SRS(900913))
         >>> grid.stretch_factor = 1.1
         >>> l1_res = grid.resolution(1)
@@ -373,7 +373,7 @@ class TileGrid(object):
         if self.threshold_res:
             thresholds = self.threshold_res[::-1]
             threshold = thresholds.pop()
-        
+
         threshold_result = None
         for level, l_res in enumerate(self.resolutions):
             if threshold and prev_l_res > threshold >= l_res:
@@ -382,7 +382,7 @@ class TileGrid(object):
                 elif res >= l_res:
                     return level
                 threshold = thresholds.pop() if thresholds else None
-            
+
             if threshold_result is not None:
                 return threshold_result
 
@@ -390,11 +390,11 @@ class TileGrid(object):
                 threshold_result = level
             prev_l_res = l_res
         return level
-    
+
     def tile(self, x, y, level):
         """
         Returns the tile id for the given point.
-        
+
         >>> grid = TileGrid(SRS(900913))
         >>> grid.tile(1000, 1000, 0)
         (0, 0, 0)
@@ -413,12 +413,12 @@ class TileGrid(object):
         tile_x = x/float(res*self.tile_size[0])
         tile_y = y/float(res*self.tile_size[1])
         return (int(math.floor(tile_x)), int(math.floor(tile_y)), level)
-    
+
     def flip_tile_coord(self, (x, y, z)):
         """
         Flip the tile coord on the y-axis. (Switch between bottom-left and top-left
         origin.)
-        
+
         >>> grid = TileGrid(SRS(900913))
         >>> grid.flip_tile_coord((0, 1, 1))
         (0, 0, 1)
@@ -426,34 +426,34 @@ class TileGrid(object):
         (1, 0, 2)
         """
         return (x, self.grid_sizes[z][1]-1-y, z)
-    
+
     def supports_access_with_origin(self, origin):
         if (origin or 'sw') == (self.origin or 'sw'):
             return True
         grid_size = self.grid_sizes[0]
-        level_0_bbox = self._tiles_bbox([(0, 0, 0), 
+        level_0_bbox = self._tiles_bbox([(0, 0, 0),
             (grid_size[0] - 1, grid_size[1] - 1, 0)])
-        
+
         if self.bbox[1] == level_0_bbox[1] and self.bbox[3] == level_0_bbox[3]:
             return True
         else:
             return False
-    
+
     def origin_tile(self, level, origin):
         assert self.supports_access_with_origin(origin), 'tile origins are incompatible'
         tile = (0, 0, level)
         if self.origin != origin:
             tile = self.flip_tile_coord(tile)
-        
+
         return tile
-        
+
     def get_affected_tiles(self, bbox, size, req_srs=None):
         """
         Get a list with all affected tiles for a bbox and output size.
-        
+
         :returns: the bbox, the size and a list with tile coordinates, sorted row-wise
         :rtype: ``bbox, (xs, yz), [(x, y, z), ...]``
-        
+
         >>> grid = TileGrid()
         >>> bbox = (-20037508.34, -20037508.34, 20037508.34, 20037508.34)
         >>> tile_size = (256, 256)
@@ -465,24 +465,24 @@ class TileGrid(object):
         """
         src_bbox, level = self.get_affected_bbox_and_level(bbox, size, req_srs=req_srs)
         return self.get_affected_level_tiles(src_bbox, level)
-    
+
     def get_affected_bbox_and_level(self, bbox, size, req_srs=None):
         if req_srs and req_srs != self.srs:
             src_bbox = req_srs.transform_bbox_to(self.srs, bbox)
         else:
             src_bbox = bbox
-        
+
         if not bbox_intersects(self.bbox, src_bbox):
             raise NoTiles()
-        
+
         res = get_resolution(src_bbox, size)
         level = self.closest_level(res)
-        
+
         if res > self.resolutions[0]*self.max_shrink_factor:
             raise NoTiles()
-        
+
         return src_bbox, level
-    
+
     def get_affected_level_tiles(self, bbox, level):
         """
         Get a list with all affected tiles for a `bbox` in the given `level`.
@@ -505,7 +505,7 @@ class TileGrid(object):
             return self._tile_iter(x0, y0, x1, y1, level)
         except IndexError:
             raise GridError('Invalid BBOX')
-        
+
     def _tile_iter(self, x0, y0, x1, y1, level):
         xs = range(x0, x1+1)
         if self.flipped_y_axis:
@@ -513,30 +513,30 @@ class TileGrid(object):
             ys = range(y0, y1+1)
         else:
             ys = range(y1, y0-1, -1)
-        
+
         ll = (xs[0], ys[-1], level)
         ur = (xs[-1], ys[0], level)
 
         abbox = self._tiles_bbox([ll, ur])
         return (abbox, (len(xs), len(ys)),
                 _create_tile_list(xs, ys, level, self.grid_sizes[level]))
-        
+
     def _tiles_bbox(self, tiles):
         """
         Returns the bbox of multiple tiles.
         The tiles should be ordered row-wise, bottom-up.
-        
+
         :param tiles: ordered list of tiles
         :returns: the bbox of all tiles
         """
         ll_bbox = self.tile_bbox(tiles[0])
         ur_bbox = self.tile_bbox(tiles[-1])
         return merge_bbox(ll_bbox, ur_bbox)
-    
+
     def tile_bbox(self, tile_coord, limit=False):
         """
         Returns the bbox of the given tile.
-        
+
         >>> grid = TileGrid(SRS(900913))
         >>> [round(x, 2) for x in grid.tile_bbox((0, 0, 0))]
         [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
@@ -545,17 +545,17 @@ class TileGrid(object):
         """
         x, y, z = tile_coord
         res = self.resolution(z)
-        
+
         x0 = self.bbox[0] + round(x * res * self.tile_size[0], 12)
         x1 = x0 + round(res * self.tile_size[0], 12)
-        
+
         if self.flipped_y_axis:
             y1 = self.bbox[3] - round(y * res * self.tile_size[1], 12)
             y0 = y1 - round(res * self.tile_size[1], 12)
         else:
             y0 = self.bbox[1] + round(y * res * self.tile_size[1], 12)
             y1 = y0 + round(res * self.tile_size[1], 12)
-        
+
         if limit:
             return (
                 max(x0, self.bbox[0]),
@@ -565,14 +565,14 @@ class TileGrid(object):
             )
 
         return x0, y0, x1, y1
-    
+
     def limit_tile(self, tile_coord):
         """
         Check if the `tile_coord` is in the grid.
-        
+
         :returns: the `tile_coord` if it is within the ``grid``,
                   otherwise ``None``.
-        
+
         >>> grid = TileGrid(SRS(900913))
         >>> grid.limit_tile((-1, 0, 2)) == None
         True
@@ -591,11 +591,53 @@ class TileGrid(object):
         if x < 0 or y < 0 or x >= grid[0] or y >= grid[1]:
             return None
         return x, y, z
-    
+
     def __repr__(self):
         return '%s(%r, (%.4f, %.4f, %.4f, %.4f),...)' % (self.__class__.__name__,
             self.srs, self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3])
 
+    def is_subset_of(self, other):
+        """
+        Returns ``True`` if every tile in `self` is present in `other`.
+        Tile coordinates might differ and `other` may contain more
+        tiles (more levels, larger bbox).
+        """
+        if self.srs != other.srs:
+            return False
+
+        if self.tile_size != other.tile_size:
+            return False
+
+        other_res = list(other.resolutions)
+
+        for res in self.resolutions:
+            while other_res and other_res[0] != res:
+                other_res.pop(0)
+            if not other_res:
+                return False
+
+
+        if self.bbox != other.bbox:
+            # check if level 0 tiles from self align with (affected)
+            # tiles from other
+            level0_size = (
+                self.grid_sizes[0][0] * self.tile_size[0],
+                self.grid_sizes[0][1] * self.tile_size[1]
+            )
+            level0_bbox = self._tiles_bbox([
+                (0, 0, 0),
+                (self.grid_sizes[0][0] - 1, self.grid_sizes[0][1] - 1, 0)
+            ])
+
+            bbox, level = other.get_affected_bbox_and_level(level0_bbox, level0_size)
+            bbox, grid_size, tiles = other.get_affected_level_tiles(level0_bbox, level)
+
+            if other.resolution(level) != self.resolution(0):
+                return False
+            if bbox != level0_bbox:
+                return False
+
+        return True
 
 def _create_tile_list(xs, ys, level, grid_size):
     """
@@ -622,11 +664,11 @@ def is_float(x):
 def pyramid_res_level(initial_res, factor=2.0, levels=20):
     """
     Return resolutions of an image pyramid.
-    
+
     :param initial_res: the resolution of the top level (0)
     :param factor: the factor between each level, for tms access 2
     :param levels: number of resolutions to generate
-    
+
     >>> pyramid_res_level(10000, levels=5)
     [10000.0, 5000.0, 2500.0, 1250.0, 625.0]
     >>> map(lambda x: round(x, 4),
@@ -638,7 +680,7 @@ def pyramid_res_level(initial_res, factor=2.0, levels=20):
 class MetaGrid(object):
     """
     This class contains methods to calculate bbox, etc. of metatiles.
-    
+
     :param grid: the grid to use for the metatiles
     :param meta_size: the number of tiles a metatile consist
     :type meta_size: ``(x_size, y_size)``
@@ -651,13 +693,13 @@ class MetaGrid(object):
         self.grid = grid
         self.meta_size = meta_size or 0
         self.meta_buffer = meta_buffer
-    
+
     def _meta_bbox(self, tile_coord=None, tiles=None, limit_to_bbox=True):
         """
         Returns the bbox of the metatile that contains `tile_coord`.
-        
+
         :type tile_coord: ``(x, y, z)``
-        
+
         >>> mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))
         >>> [round(x, 2) for x in mgrid._meta_bbox((0, 0, 2))[0]]
         [-20037508.34, -20037508.34, 0.0, 0.0]
@@ -673,19 +715,19 @@ class MetaGrid(object):
             level = tile_coord[2]
             bbox = self.unbuffered_meta_bbox(tile_coord)
         return self._buffered_bbox(bbox, level, limit_to_bbox)
-    
-    
+
+
     def unbuffered_meta_bbox(self, tile_coord):
         x, y, z = tile_coord
-        
+
         meta_size = self._meta_size(z)
 
-        return self.grid._tiles_bbox([(tile_coord), 
+        return self.grid._tiles_bbox([(tile_coord),
             (x+meta_size[0]-1, y+meta_size[1]-1, z)])
-    
+
     def _buffered_bbox(self, bbox, level, limit_to_grid_bbox=True):
         minx, miny, maxx, maxy = bbox
-        
+
         buffers = (0, 0, 0, 0)
         if self.meta_buffer > 0:
             res = self.grid.resolution(level)
@@ -694,7 +736,7 @@ class MetaGrid(object):
             maxx += self.meta_buffer * res
             maxy += self.meta_buffer * res
             buffers = [self.meta_buffer, self.meta_buffer, self.meta_buffer, self.meta_buffer]
-            
+
             if limit_to_grid_bbox:
                 if self.grid.bbox[0] > minx:
                     delta = self.grid.bbox[0] - minx
@@ -713,7 +755,7 @@ class MetaGrid(object):
                     buffers[3] = buffers[3] - int(round(delta / res, 5))
                     maxy = self.grid.bbox[3]
         return (minx, miny, maxx, maxy), tuple(buffers)
-    
+
     def meta_tile(self, tile_coord):
         """
         Returns the meta tile for `tile_coord`.
@@ -723,26 +765,26 @@ class MetaGrid(object):
         bbox, buffers = self._meta_bbox(tile_coord)
         grid_size = self._meta_size(level)
         size = self._size_from_buffered_bbox(bbox, level)
-        
+
         tile_patterns = self._tiles_pattern(tile=tile_coord, grid_size=grid_size, buffers=buffers)
-        
+
         return MetaTile(bbox=bbox, size=size, tile_patterns=tile_patterns,
             grid_size=grid_size
         )
-    
+
     def minimal_meta_tile(self, tiles):
         """
         Returns a MetaTile that contains all `tiles` plus ``meta_buffer``,
         but nothing more.
         """
-        
+
         tiles, grid_size, bounds = self._full_tile_list(tiles)
         tiles = list(tiles)
         bbox, buffers = self._meta_bbox(tiles=bounds)
-        
+
         level = tiles[0][2]
         size = self._size_from_buffered_bbox(bbox, level)
-        
+
         tile_pattern = self._tiles_pattern(tiles=tiles, grid_size=grid_size, buffers=buffers)
 
         return MetaTile(
@@ -759,11 +801,11 @@ class MetaGrid(object):
         width = int(round((bbox[2] - bbox[0]) / res))
         height = int(round((bbox[3] - bbox[1]) / res))
         return width, height
-    
+
     def _full_tile_list(self, tiles):
         """
         Return a complete list of all tiles that a minimal meta tile with `tiles` contains.
-        
+
         >>> mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))
         >>> mgrid._full_tile_list([(0, 0, 2), (1, 1, 2)])
         ([(0, 1, 2), (1, 1, 2), (0, 0, 2), (1, 0, 2)], (2, 2), ((0, 0, 2), (1, 1, 2)))
@@ -772,40 +814,40 @@ class MetaGrid(object):
         z = tile[2]
         minx = maxx = tile[0]
         miny = maxy = tile[1]
-        
+
         for tile in tiles:
             x, y = tile[:2]
             minx = min(minx, x)
             maxx = max(maxx, x)
             miny = min(miny, y)
             maxy = max(maxy, y)
-        
+
         grid_size = 1+maxx-minx, 1+maxy-miny
-        
+
         if self.grid.flipped_y_axis:
             ys = xrange(miny, maxy+1)
         else:
             ys = xrange(maxy, miny-1, -1)
         xs = xrange(minx, maxx+1)
-        
+
         bounds = (minx, miny, z), (maxx, maxy, z)
-        
+
         return list(_create_tile_list(xs, ys, z, (maxx+1, maxy+1))), grid_size, bounds
 
     def main_tile(self, tile_coord):
         x, y, z = tile_coord
-        
+
         meta_size = self._meta_size(z)
-        
+
         x0 = x//meta_size[0] * meta_size[0]
         y0 = y//meta_size[1] * meta_size[1]
-        
+
         return x0, y0, z
-    
+
     def tile_list(self, main_tile):
         tile_grid = self._meta_size(main_tile[2])
         return self._meta_tile_list(main_tile, tile_grid)
-    
+
     def _meta_tile_list(self, main_tile, tile_grid):
         """
         >>> mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))
@@ -820,15 +862,15 @@ class MetaGrid(object):
         else:
             ys = xrange(maxy, miny-1, -1)
         xs = xrange(minx, maxx+1)
-        
+
         return list(_create_tile_list(xs, ys, z, self.grid.grid_sizes[z]))
-        
+
     def _tiles_pattern(self, grid_size, buffers, tile=None, tiles=None):
         """
         Returns the tile pattern for the given list of tiles.
         The result contains for each tile the ``tile_coord`` and the upper-left
         pixel coordinate of the tile in the meta tile image.
-        
+
         >>> mgrid = MetaGrid(grid=TileGrid(), meta_size=(2, 2))
         >>> tiles = list(mgrid._tiles_pattern(tiles=[(0, 1, 2), (1, 1, 2)],
         ...                                   grid_size=(2, 1),
@@ -851,18 +893,18 @@ class MetaGrid(object):
                 yield tiles[j+i*grid_size[0]], (
                             j*self.grid.tile_size[0] + buffers[0],
                             i*self.grid.tile_size[1] + buffers[3])
-    
+
     def _meta_size(self, level):
         grid_size = self.grid.grid_sizes[level]
         return min(self.meta_size[0], grid_size[0]), min(self.meta_size[1], grid_size[1])
-    
+
     def get_affected_level_tiles(self, bbox, level):
         """
         Get a list with all affected tiles for a `bbox` in the given `level`.
-        
+
         :returns: the bbox, the size and a list with tile coordinates, sorted row-wise
         :rtype: ``bbox, (xs, yz), [(x, y, z), ...]``
-        
+
         >>> grid = MetaGrid(TileGrid(), (2, 2))
         >>> bbox = (-20037508.34, -20037508.34, 20037508.34, 20037508.34)
         >>> grid.get_affected_level_tiles(bbox, 0)
@@ -871,34 +913,34 @@ class MetaGrid(object):
           20037508.342789244, 20037508.342789244), (1, 1),\
           <generator object ...>)
         """
-        
+
         # remove 1/10 of a pixel so we don't get a tiles we only touch
         delta = self.grid.resolutions[level] / 10.0
         x0, y0, _ = self.grid.tile(bbox[0]+delta, bbox[1]+delta, level)
         x1, y1, _ = self.grid.tile(bbox[2]-delta, bbox[3]-delta, level)
-        
+
         meta_size = self._meta_size(level)
-        
+
         x0 = x0//meta_size[0] * meta_size[0]
         x1 = x1//meta_size[0] * meta_size[0]
         y0 = y0//meta_size[1] * meta_size[1]
         y1 = y1//meta_size[1] * meta_size[1]
-        
+
         try:
             return self._tile_iter(x0, y0, x1, y1, level)
         except IndexError:
             raise GridError('Invalid BBOX')
-        
+
     def _tile_iter(self, x0, y0, x1, y1, level):
         meta_size = self._meta_size(level)
-        
+
         xs = range(x0, x1+1, meta_size[0])
         if self.grid.flipped_y_axis:
             y0, y1 = y1, y0
             ys = range(y0, y1+1, meta_size[1])
         else:
             ys = range(y1, y0-1, -meta_size[1])
-            
+
         ll = (xs[0], ys[-1], level)
         ur = (xs[-1], ys[0], level)
         # add meta_size to get full affected bbox
@@ -914,17 +956,17 @@ class MetaTile(object):
         self.size = size
         self.tile_patterns = list(tile_patterns)
         self.grid_size = grid_size
-    
+
     @property
     def tiles(self):
         return [t[0] for t in self.tile_patterns]
-    
+
     @property
     def main_tile_coord(self):
         """
         Returns the "main" tile of the meta tile. This tile(coord) can be used
         for locking.
-        
+
         >>> t = MetaTile(None, None, [((0, 0, 0), (0, 0)), ((1, 0, 0), (100, 0))], (2, 1))
         >>> t.main_tile_coord
         (0, 0, 0)
@@ -935,35 +977,35 @@ class MetaTile(object):
         for t in self.tiles:
             if t is not None:
                 return t
-    
+
     def __repr__(self):
         return "MetaTile(%r, %r, %r, %r)" % (self.bbox, self.size, self.grid_size,
                                              self.tile_patterns)
-    
+
 def bbox_intersects(one, two):
     a_x0, a_y0, a_x1, a_y1 = one
     b_x0, b_y0, b_x1, b_y1 = two
-    
+
     if (
         a_x0 < b_x1 and
         a_x1 > b_x0 and
         a_y0 < b_y1 and
         a_y1 > b_y0
         ): return True
-    
+
     return False
 
 def bbox_contains(one, two):
     a_x0, a_y0, a_x1, a_y1 = one
     b_x0, b_y0, b_x1, b_y1 = two
-    
+
     if (
         a_x0 <= b_x0 and
         a_x1 >= b_x1 and
         a_y0 <= b_y0 and
         a_y1 >= b_y1
         ): return True
-    
+
     return False
 
 def deg_to_m(deg):
@@ -987,22 +1029,22 @@ def resolution_range(min_res=None, max_res=None, max_scale=None, min_scale=None)
             min_res = ogc_scale_to_res(max_scale)
             max_res = ogc_scale_to_res(min_scale)
             return ResolutionRange(min_res, max_res)
-            
+
     raise ValueError('requires either min_res/max_res or max_scale/min_scale')
 
 class ResolutionRange(object):
     def __init__(self, min_res, max_res):
         self.min_res = min_res
         self.max_res = max_res
-        
+
         if min_res and max_res:
             assert min_res > max_res
-    
+
     def scale_denominator(self):
         min_scale = res_to_ogc_scale(self.max_res) if self.max_res else None
         max_scale = res_to_ogc_scale(self.min_res) if self.min_res else None
         return min_scale, max_scale
-    
+
     def scale_hint(self):
         """
         Returns the min and max diagonal resolution.
@@ -1014,16 +1056,16 @@ class ResolutionRange(object):
         if max_res:
             max_res = math.sqrt(2*max_res**2)
         return min_res, max_res
-    
+
     def contains(self, bbox, size, srs):
         width, height = bbox_size(bbox)
         if srs.is_latlong:
             width = deg_to_m(width)
             height = deg_to_m(height)
-        
+
         x_res = width/size[0]
         y_res = height/size[1]
-        
+
         if self.min_res:
             min_res = self.min_res + 1e-6
             if min_res <= x_res or min_res <= y_res:
@@ -1032,13 +1074,13 @@ class ResolutionRange(object):
             max_res = self.max_res - 1e-6
             if max_res > x_res or max_res > y_res:
                 return False
-        
+
         return True
-    
+
     def __eq__(self, other):
         if not isinstance(other, ResolutionRange):
             return NotImplemented
-        
+
         return (self.min_res == other.min_res
             and self.max_res == other.max_res)
 
@@ -1050,7 +1092,7 @@ class ResolutionRange(object):
     def __repr__(self):
         return '<ResolutionRange(min_res=%.3f, max_res=%.3f)>' % (
             self.min_res, self.max_res)
-    
+
 
 def max_with_none(a, b):
     if a is None or b is None:
