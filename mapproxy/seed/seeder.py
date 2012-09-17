@@ -16,12 +16,12 @@
 from __future__ import with_statement, division
 import sys
 from contextlib import contextmanager
-from itertools import izip_longest
 
 from mapproxy.config import base_config
 from mapproxy.grid import MetaGrid
 from mapproxy.source import SourceError
 from mapproxy.util import local_base_config
+from mapproxy.util.ext.itertools import izip_longest
 from mapproxy.util.lock import LockTimeout
 from mapproxy.seed.util import format_seed_task
 from mapproxy.seed.cachelock import DummyCacheLocker, CacheLockedError
