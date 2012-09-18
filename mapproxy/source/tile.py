@@ -19,19 +19,19 @@ Retrieve tiles from different tile servers (TMS/TileCache/etc.).
 
 import sys
 from mapproxy.image.opts import ImageOptions
-from mapproxy.source import Source, SourceError
+from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClientError
 from mapproxy.source import InvalidSourceQuery
-from mapproxy.layer import BlankImage, map_extent_from_grid, CacheMapLayer
+from mapproxy.layer import BlankImage, map_extent_from_grid, CacheMapLayer, MapLayer
 from mapproxy.util import reraise_exception
 
 import logging
 log = logging.getLogger('mapproxy.source.tile')
 log_config = logging.getLogger('mapproxy.config')
 
-class TiledSource(Source):
+class TiledSource(MapLayer):
     def __init__(self, grid, client, coverage=None, image_opts=None, error_handler=None):
-        Source.__init__(self, image_opts=image_opts)
+        MapLayer.__init__(self, image_opts=image_opts)
         self.grid = grid
         self.client = client
         self.image_opts = image_opts or ImageOptions()

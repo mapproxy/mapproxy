@@ -39,6 +39,8 @@ class MapBBOXError(Exception):
     pass
 
 class MapLayer(object):
+    supports_meta_tiles = False
+
     res_range = None
 
     coverage = None
@@ -271,6 +273,7 @@ def merge_layer_extents(layers):
     return extent
 
 class ResolutionConditional(MapLayer):
+    supports_meta_tiles = True
     def __init__(self, one, two, resolution, srs, extent, opacity=None):
         MapLayer.__init__(self)
         self.one = one
@@ -301,6 +304,7 @@ class ResolutionConditional(MapLayer):
             return self.two.get_map(query)
 
 class SRSConditional(MapLayer):
+    supports_meta_tiles = True
     PROJECTED = 'PROJECTED'
     GEOGRAPHIC = 'GEOGRAPHIC'
 
@@ -343,6 +347,8 @@ class SRSConditional(MapLayer):
 
 
 class DirectMapLayer(MapLayer):
+    supports_meta_tiles = True
+
     def __init__(self, source, extent):
         MapLayer.__init__(self)
         self.source = source
@@ -364,6 +370,8 @@ def merge_layer_res_ranges(layers):
 
 
 class CacheMapLayer(MapLayer):
+    supports_meta_tiles = True
+
     def __init__(self, tile_manager, extent=None, image_opts=None,
         max_tile_limit=None):
         MapLayer.__init__(self, image_opts=image_opts)
