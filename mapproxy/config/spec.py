@@ -38,6 +38,9 @@ coverage = {
     'ogr_datasource': str(),
     'ogr_where': str(),
     'ogr_srs': str(),
+    'datasource': one_of(str(), [number()]),
+    'where': str(),
+    'srs': str(),
 }
 image_opts = {
     'mode': str(),

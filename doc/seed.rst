@@ -329,15 +329,15 @@ Example
 
   coverages:
     germany:
-      ogr_datasource: 'shps/world_boundaries_m.shp'
-      ogr_where: 'CNTRY_NAME = "Germany"'
-      ogr_srs: 'EPSG:900913'
+      datasource: 'shps/world_boundaries_m.shp'
+      where: 'CNTRY_NAME = "Germany"'
+      srs: 'EPSG:900913'
     switzerland:
-      polygons: 'polygons/SZ.txt'
-      polygons_srs: EPSG:900913
+      datasource: 'polygons/SZ.txt'
+      srs: 'EPSG:900913'
     austria:
       bbox: [9.36, 46.33, 17.28, 49.09]
-      bbox_srs: EPSG:4326
+      srs: 'EPSG:4326'
 
 
 .. _seed_old_configuration:
