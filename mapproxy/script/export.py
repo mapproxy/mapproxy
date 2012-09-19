@@ -1,0 +1,142 @@
+# This file is part of the MapProxy project.
+# Copyright (C) 2012 Omniscale <http://omniscale.de>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+from __future__ import with_statement, division
+
+import re
+import sys
+import optparse
+
+from mapproxy.config.loader import load_configuration, ConfigurationError, CacheConfiguration
+from mapproxy.util.coverage import  BBOXCoverage
+
+from mapproxy.seed.util import ProgressLog
+from mapproxy.seed.seeder import SeedTask, seed_task
+
+
+def parse_levels(level_str):
+    """
+    >>> parse_levels('1,2,3,6')
+    [1, 2, 3, 6]
+    >>> parse_levels('1..6')
+    [1, 2, 3, 4, 5, 6]
+    >>> parse_levels('1..6, 8, 9, 13..14')
+    [1, 2, 3, 4, 5, 6, 8, 9, 13, 14]
+    """
+    levels = set()
+    for part in level_str.split(','):
+        part = part.strip()
+        if re.match('\d+..\d+', part):
+            from_level, to_level = part.split('..')
+            levels.update(range(int(from_level), int(to_level) + 1))
+        else:
+            levels.add(int(part))
+
+    return sorted(levels)
+
+def export_command(args=None):
+    parser = optparse.OptionParser("%prog grids [options] mapproxy_conf")
+    parser.add_option("-f", "--mapproxy-conf", dest="mapproxy_conf",
+        help="MapProxy configuration.")
+
+    parser.add_option("--source", dest="source",
+        help="source to export (source or cache)")
+
+    parser.add_option("-g", "--grid", dest="grid",
+        help="Grid for export")
+
+    parser.add_option("--dest", dest="dest",
+        help="destination of the export (path, filename or URL)")
+
+    parser.add_option("--type", dest="type",
+        help="type of the export format")
+
+    parser.add_option("--levels", dest="levels",
+        help="levels to export: e.g 1,2,3 or 1..10")
+
+    parser.add_option("--fetch-missing-tiles", dest="fetch_missing_tiles",
+        action='store_true', default=False,
+        help="if missing tiles should be fetched from the sources")
+
+
+    from mapproxy.script.util import setup_logging
+    import logging
+    setup_logging(logging.WARN)
+
+    if args:
+        args = args[1:] # remove script name
+
+    (options, args) = parser.parse_args(args)
+    if not options.mapproxy_conf:
+        if len(args) != 1:
+            parser.print_help()
+            sys.exit(1)
+        else:
+            options.mapproxy_conf = args[0]
+    try:
+        conf = load_configuration(options.mapproxy_conf)
+    except IOError, e:
+        print >>sys.stderr, 'ERROR: ', "%s: '%s'" % (e.strerror, e.filename)
+        sys.exit(2)
+    except ConfigurationError, e:
+        print >>sys.stderr, 'ERROR: invalid configuration (see above)'
+        sys.exit(2)
+
+
+    cache_conf = {
+        'name': 'export',
+        'grids': [options.grid],
+        'sources': [options.source],
+    }
+    if options.type == 'mbtile':
+        cache_conf['cache'] = {
+            'type': 'mbtiles',
+            'filename': options.dest,
+        }
+    elif options.type == 'tc':
+        cache_conf['cache'] = {
+            'type': 'file',
+            'directory': options.dest,
+        }
+    elif options.type in ('tms', None):
+        cache_conf['cache'] = {
+            'type': 'file',
+            'directory_layout': 'tms',
+            'directory': options.dest,
+        }
+    else:
+        print >>sys.stderr, 'ERROR: unsupported --type %s' % (options.type, )
+        sys.exit(2)
+
+
+    if not options.fetch_missing_tiles:
+        for source in conf.sources.values():
+            source.conf['seed_only'] = True
+
+    tile_grid, extent, mgr = CacheConfiguration(cache_conf, conf).caches()[0]
+
+    levels = parse_levels(options.levels)
+
+    seed_coverage = BBOXCoverage(tile_grid.bbox, tile_grid.srs)
+    md = dict(name='export', cache_name='cache', grid_name='grid_name')
+    task = SeedTask(md, mgr, levels, None, seed_coverage)
+
+    logger = ProgressLog(verbose=True, silent=False)
+    try:
+        seed_task(task, progress_logger=logger, dry_run=False,
+             concurrency=1)
+    except KeyboardInterrupt:
+        print >>sys.stderr, 'stopping...'
+        sys.exit(2)
+
