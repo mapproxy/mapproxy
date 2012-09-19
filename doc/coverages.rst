@@ -29,44 +29,52 @@ On Debian::
   pip install Shapely
 
 
+Configuration
+-------------
+
+All coverages are configured by defining the source of the coverage and the SRS.
+The configuration of the coverage depends on the type. The SRS can allways be configured with the ``srs`` option.
+
+.. versionadded:: 1.5
+    MapProxy can autodetect the type of the coverage. You can now use ``coverage`` instead of the ``bbox``, ``polygons`` or ``ogr_datasource`` option.
+    The old options are still supported.
+
 Coverage Types
 --------------
 
 Bounding box
 """"""""""""
 
-``bbox``:
-    A simple BBOX as a list, e.g: `[4, -30, 10, -28]`.
+For simple box coverages.
 
-``bbox_srs``:
-    The SRS of the BBOX.
+`bbox`` or ``datasource``:
+    A simple BBOX as a list, e.g: `[4, -30, 10, -28]` or as a string `4,-30,10,-28`.
 
 Polygon file
 """"""""""""
 
-``polygons``:
-  Path to a text file with one WKT polygon or multi-polygon per line. The path should be relative to
-  the proxy configuration or absolute. You can create your own files or use `one of the files we provide for every country <http://mapproxy.org/static/polygons/>`_. Read `the index <http://mapproxy.org/static/polygons/0-fips-codes.txt>`_ to find your country.
+Text files with one WKT polygon or multi-polygon per line.
+You can create your own files or use `one of the files we provide for every country <http://mapproxy.org/static/polygons/>`_. Read `the index <http://mapproxy.org/static/polygons/0-fips-codes.txt>`_ to find your country.
 
-``polygons_srs``:
-  The SRS of the polygons.
+``datasource``:
+ The path to the polygon file. Should be relative to the proxy configuration or absolute.
 
 OGR datasource
 """"""""""""""
 
-``ogr_datasource``:
+Any polygon datasource that is supported by OGR (e.g. Shapefile, GeoJSON, PostGIS).
+
+
+``datasource``:
   The name of the datasource. Refer to the `OGR format page
   <http://www.gdal.org/ogr/ogr_formats.html>`_ for a list of all supported
   datasources. File paths should be relative to the proxy configuration or absolute.
 
-``ogr_where``:
+``where``:
   Restrict which polygons should be loaded from the datasource. Either a simple where
   statement (e.g. ``'CNTRY_NAME="Germany"'``) or a full select statement. Refer to the
   `OGR SQL support documentation <http://www.gdal.org/ogr/ogr_sql.html>`_. If this
   option is unset, the first layer from the datasource will be used.
-
-``ogr_srs``:
-  The SRS of the polygons.
 
 
 Examples
@@ -87,7 +95,7 @@ Use the ``coverage`` option to define a coverage for a WMS or tile source.
         layers: base
       coverage:
         bbox: [5, 50, 10, 55]
-        bbox_srs: 'EPSG:4326'
+        srs: 'EPSG:4326'
 
 
 mapproxy-seed
@@ -99,9 +107,9 @@ To define a seed-area in the ``seed.yaml``, add the coverage directly to the vie
 
   coverages:
     germany:
-      ogr_datasource: 'shps/world_boundaries_m.shp'
-      ogr_where: 'CNTRY_NAME = "Germany"'
-      ogr_srs: 'EPSG:900913'
+      datasource: 'shps/world_boundaries_m.shp'
+      where: 'CNTRY_NAME = "Germany"'
+      srs: 'EPSG:900913'
 
 .. index:: PostGIS, PostgreSQL
 
@@ -109,10 +117,10 @@ Here is the same example with a PostGIS source::
 
   coverages:
     germany:
-      ogr_datasource: "PG: dbname='db' host='host' user='user'
+      datasource: "PG: dbname='db' host='host' user='user'
     password='password'"
-      ogr_where: "select * from coverages where country='germany'"
-      ogr_srs: 'EPSG:900913'
+      where: "select * from coverages where country='germany'"
+      srs: 'EPSG:900913'
 
 
 .. index:: GeoJSON
@@ -121,7 +129,7 @@ And here is an example with a GeoJSON source::
 
   coverages:
     germany:
-      ogr_datasource: 'boundary.geojson'
-      ogr_srs: 'EPSG:4326'
+      datasource: 'boundary.geojson'
+      srs: 'EPSG:4326'
 
 See `the OGR driver list <http://www.gdal.org/ogr/ogr_formats.html>`_ for all supported formats.

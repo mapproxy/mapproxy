@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,7 @@
 
 from __future__ import division, with_statement
 
+import os
 import codecs
 from functools import partial
 
@@ -37,13 +38,28 @@ def require_geom_support():
 
 def load_datasource(datasource, where=None):
     """
+    Loads polygons from WKT text files or OGR datasources.
+
+    Returns a list of Shapely Polygons.
+    """
+    # check if it is a  wkt file
+    if os.path.exists(os.path.abspath(datasource)):
+        with open(os.path.abspath(datasource), 'r') as fp:
+            data = fp.read(50)
+        if data.lower().lstrip().startswith(('polygon', 'multipolygon')):
+            return load_polygons(datasource)
+
+    # otherwise pass to OGR
+    return load_ogr_datasource(datasource)
+
+def load_ogr_datasource(datasource, where=None):
+    """
     Loads polygons from any OGR datasource.
-    
-    Returns the bbox and a Shapely MultiPolygon with
-    the loaded geometries.
+
+    Returns a list of Shapely Polygons.
     """
     from mapproxy.util.ogr import OGRShapeReader
-    
+
     polygons = []
     for wkt in OGRShapeReader(datasource).wkts(where):
         geom = shapely.wkt.loads(wkt)
@@ -55,25 +71,24 @@ def load_datasource(datasource, where=None):
         else:
             log_config.warn('skipping %s geometry from %s: not a Polygon/MultiPolygon',
                 geom.type, datasource)
-    
+
     return polygons
 
 def load_polygons(geom_files):
     """
     Loads WKT polygons from one or more text files.
-    
-    Returns the bbox and a Shapely MultiPolygon with
-    the loaded geometries.
+
+    Returns a list of Shapely Polygons.
     """
     polygons = []
     if isinstance(geom_files, basestring):
         geom_files = [geom_files]
-    
+
     for geom_file in geom_files:
         # open with utf-8-sig encoding to get rid of UTF8 BOM from MS Notepad
         with codecs.open(geom_file, encoding='utf-8-sig') as f:
             polygons.extend(load_polygon_lines(f, source=geom_files))
-    
+
     return polygons
 
 def load_polygon_lines(line_iter, source='<string>'):
@@ -121,13 +136,13 @@ def bbox_polygon(bbox):
 
 def transform_geometry(from_srs, to_srs, geometry):
     transf = partial(transform_xy, from_srs, to_srs)
-    
+
     if geometry.type == 'Polygon':
         return transform_polygon(transf, geometry)
-    
+
     if geometry.type == 'MultiPolygon':
         return transform_multipolygon(transf, geometry)
-    
+
     raise ValueError('cannot transform %s' % geometry.type)
 
 def transform_polygon(transf, polygon):
