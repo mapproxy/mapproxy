@@ -846,6 +846,13 @@ class CacheConfiguration(ConfigurationBase):
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
 
     def cache_dir(self):
+        cache_dir = self.conf.get('cache', {}).get('directory')
+        if cache_dir:
+            if self.conf.get('cache_dir'):
+                log.warn('found cache.dir and cache_dir option for %s, ignoring cache_dir',
+                self.conf['name'])
+            return self.context.globals.abspath(cache_dir)
+
         return self.context.globals.get_path('cache_dir', self.conf,
             global_key='cache.base_dir')
 
@@ -854,7 +861,9 @@ class CacheConfiguration(ConfigurationBase):
 
         cache_dir = self.cache_dir()
         directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tc')
-        if self.conf.get('cache', {}).get('use_grid_names'):
+        if self.conf.get('cache', {}).get('directory'):
+            pass
+        elif self.conf.get('cache', {}).get('use_grid_names'):
             cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
         else:
             suffix = grid_conf.conf['srs'].replace(':', '')
