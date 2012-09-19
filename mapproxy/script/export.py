@@ -14,13 +14,15 @@
 # limitations under the License.
 from __future__ import with_statement, division
 
+import os
 import re
 import sys
 import optparse
 
+from mapproxy.srs import SRS
+from mapproxy.config.coverage import load_coverage
 from mapproxy.config.loader import load_configuration, ConfigurationError, CacheConfiguration
 from mapproxy.util.coverage import  BBOXCoverage
-
 from mapproxy.seed.util import ProgressLog
 from mapproxy.seed.seeder import SeedTask, seed_task
 
@@ -53,22 +55,27 @@ def export_command(args=None):
     parser.add_option("--source", dest="source",
         help="source to export (source or cache)")
 
-    parser.add_option("-g", "--grid", dest="grid",
+    parser.add_option("-g", "--grid",
         help="Grid for export")
 
-    parser.add_option("--dest", dest="dest",
+    parser.add_option("--dest",
         help="destination of the export (path, filename or URL)")
 
-    parser.add_option("--type", dest="type",
+    parser.add_option("--type",
         help="type of the export format")
 
-    parser.add_option("--levels", dest="levels",
+    parser.add_option("--levels",
         help="levels to export: e.g 1,2,3 or 1..10")
 
     parser.add_option("--fetch-missing-tiles", dest="fetch_missing_tiles",
         action='store_true', default=False,
         help="if missing tiles should be fetched from the sources")
 
+
+    parser.add_option("--coverage",
+        help="if missing tiles should be fetched from the sources")
+    parser.add_option("--srs",
+        help="if missing tiles should be fetched from the sources")
 
     from mapproxy.script.util import setup_logging
     import logging
@@ -104,7 +111,7 @@ def export_command(args=None):
             'type': 'mbtiles',
             'filename': options.dest,
         }
-    elif options.type == 'tc':
+    elif options.type in ('tc', 'mapproxy'):
         cache_conf['cache'] = {
             'type': 'file',
             'directory': options.dest,
@@ -128,7 +135,18 @@ def export_command(args=None):
 
     levels = parse_levels(options.levels)
 
-    seed_coverage = BBOXCoverage(tile_grid.bbox, tile_grid.srs)
+    if options.srs:
+        srs = SRS(options.srs)
+    else:
+        srs = tile_grid.srs
+
+    if options.coverage:
+        seed_coverage = load_coverage({'datasource': options.coverage, 'srs': srs}, base_path=os.getcwd())
+    else:
+        seed_coverage = BBOXCoverage(tile_grid.bbox, tile_grid.srs)
+
+
+
     md = dict(name='export', cache_name='cache', grid_name='grid_name')
     task = SeedTask(md, mgr, levels, None, seed_coverage)
 
