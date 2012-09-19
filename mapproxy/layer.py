@@ -428,14 +428,12 @@ class CacheMapLayer(MapLayer):
             if num_tiles > 1:
                 raise MapBBOXError("not a single tile")
             bbox = query.bbox
-            if not bbox_equals(bbox, src_bbox, (bbox[2]-bbox[0]/query.size[0]/10),
-                                               (bbox[3]-bbox[1]/query.size[1]/10)):
+            if not bbox_equals(bbox, src_bbox, abs((bbox[2]-bbox[0])/query.size[0]/10),
+                                               abs((bbox[3]-bbox[1])/query.size[1]/10)):
                 raise MapBBOXError("query does not align to tile boundaries")
 
         with self.tile_manager.session():
             tile_collection = self.tile_manager.load_tile_coords(affected_tile_coords, with_metadata=query.tiled_only)
-
-
 
         if tile_collection.empty:
             raise BlankImage()

@@ -44,7 +44,7 @@ from mapproxy.srs import SRS
 from mapproxy.client.http import HTTPClient
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import BlankImage, MapLayer
+from mapproxy.layer import BlankImage, MapLayer, MapBBOXError
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.util.coverage import BBOXCoverage
 
@@ -484,6 +484,18 @@ class TestCacheMapLayer(object):
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
                  (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)]))
         eq_(result.size, (500, 500))
+
+    def test_single_tile_match(self):
+        result = self.layer.get_map(MapQuery(
+            (0.001, 0, 90, 90), (256, 256), SRS(4326), 'png', tiled_only=True))
+        eq_(self.file_cache.stored_tiles,
+            set([(3, 0, 2), (2, 0, 2), (3, 1, 2), (2, 1, 2)]))
+        eq_(result.size, (256, 256))
+
+    @raises(MapBBOXError)
+    def test_single_tile_no_match(self):
+        self.layer.get_map(MapQuery(
+            (0.1, 0, 90, 90), (256, 256), SRS(4326), 'png', tiled_only=True))
 
     def test_get_map_with_res_range(self):
         res_range = resolution_range(1000, 10)
