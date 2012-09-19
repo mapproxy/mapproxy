@@ -21,7 +21,7 @@ Each backend has a ``type`` and one or more options.
         type: backendtype
         backendoption1: value
         backendoption2: value
-        
+
 
 The following backend types are available.
 
@@ -33,13 +33,12 @@ This is the default cache type and it uses a single file for each tile. Availabl
 ``directory_layout``:
   The directory layout MapProxy uses to store tiles on disk. Defaults to ``tc`` which uses a TileCache compatible directory layout (``zz/xxx/xxx/xxx/yyy/yyy/yyy.format``). ``tms`` uses TMS compatible directories (``zz/xxxx/yyyy.format``).
 
-  .. note:: 
+  .. note::
     ``tms`` layout is not suited for large caches, since it will create directories with thousands of files, which most file systems do not handle well.
 
 ``use_grid_names``:
-
   .. versionadded:: 1.5.0
-  
+
   When ``true`` MapProxy will use the actual grid name in the path instead of the SRS code. E.g. tiles will be stored in ``./cache_data/mylayer/mygrid/`` instead of ``./cache_data/mylayer/EPSG1234/``.
 
 
@@ -99,31 +98,31 @@ Available options:
 
 ``tile_id``:
   Each tile document needs a unique ID. You can change the format with a Python format string that expects the following keys:
-  
+
   ``x``, ``y``, ``z``:
     The tile coordinate.
-  
+
   ``grid_name``:
     The name of the grid.
-  
+
   The default ID uses the following format::
-  
+
     %(grid_name)s-%(z)d-%(x)d-%(y)d
-  
+
   .. note:: You can't use slashes (``/``) in CouchDB IDs.
 
 ``tile_metadata``:
   MapProxy stores a JSON document for each tile in CouchDB and you can add additional key-value pairs  with metadata to each document.
   There are a few predefined values that MapProxy will replace with  tile-depended values, all other values will be added as they are.
-  
+
   Predefined values:
-  
+
   ``{{x}}``, ``{{y}}``, ``{{z}}``:
     The tile coordinate.
-  
+
   ``{{timestamp}}``:
     The creation time of the tile as seconds since epoch. MapProxy will add a ``timestamp`` key for you, if you don't provide a custom timestamp key.
-  
+
   ``{{utc_iso}}``:
     The creation time of the tile in UTC in ISO format. For example: ``2011-12-31T23:59:59Z``.
 
@@ -162,24 +161,24 @@ MapProxy will place the JSON document for tile z=3, x=1, y=2 at ``http://localho
   {
       "_attachments": {
           "tile": {
-              "content_type": "image/png", 
-              "digest": "md5-ch4j5Piov6a5FlAZtwPVhQ==", 
-              "length": 921, 
-              "revpos": 2, 
+              "content_type": "image/png",
+              "digest": "md5-ch4j5Piov6a5FlAZtwPVhQ==",
+              "length": 921,
+              "revpos": 2,
               "stub": true
           }
-      }, 
-      "_id": "mygrid-3-1-2", 
-      "_rev": "2-9932acafd060e10bc0db23231574f933", 
+      },
+      "_id": "mygrid-3-1-2",
+      "_rev": "2-9932acafd060e10bc0db23231574f933",
       "center": [
-          -112.5, 
+          -112.5,
           -55.7765730186677
       ],
-      "created": "2011-12-15T12:56:21Z", 
-      "created_ts": 1323953781.531889, 
-      "mydata": "myvalue", 
-      "tile_col": 1, 
-      "tile_level": 3, 
+      "created": "2011-12-15T12:56:21Z",
+      "created_ts": 1323953781.531889,
+      "mydata": "myvalue",
+      "tile_col": 1,
+      "tile_level": 3,
       "tile_row": 2
   }
 
