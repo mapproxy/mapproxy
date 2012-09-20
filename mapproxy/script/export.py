@@ -100,6 +100,9 @@ def export_command(args=None):
         action='store_true', default=False,
         help="if missing tiles should be fetched from the sources")
 
+    parser.add_option("--force",
+        action='store_true', default=False,
+        help="overwrite/append to existing --dest files/directories")
 
     parser.add_option("--coverage",
         help="the coverage for the export as a BBOX string, WKT file "
@@ -141,6 +144,12 @@ def export_command(args=None):
             sys.exit(2)
         options.grid = 'tmp_mapproxy_export_grid'
         conf.grids[options.grid] = GridConfiguration(grid_conf, conf)
+
+
+    if os.path.exists(options.dest) and not options.force:
+        print >>sys.stderr, 'ERROR: destination exists, remove first or use --force'
+        sys.exit(2)
+
 
     cache_conf = {
         'name': 'export',
