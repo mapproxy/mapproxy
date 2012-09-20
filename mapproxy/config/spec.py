@@ -157,6 +157,24 @@ wms_130_layer_md = {
     ],
 }
 
+grid_opts = {
+    'base': str(),
+    'name': str(),
+    'srs': str(),
+    'bbox': one_of(str(), [number()]),
+    'bbox_srs': str(),
+    'num_levels': int(),
+    'res': [number()],
+    'res_factor': one_of(number(), str()),
+    'max_res': number(),
+    'min_res': number(),
+    'stretch_factor': number(),
+    'max_shrink_factor': number(),
+    'align_resolutions_with': str(),
+    'origin': str(),
+    'tile_size': [int()],
+    'threshold_res': [number()],
+}
 
 mapproxy_yaml_spec = {
     'globals': {
@@ -195,24 +213,7 @@ mapproxy_yaml_spec = {
         'mapserver': mapserver_opts,
     },
     'grids': {
-        anything(): {
-            'base': str(),
-            'name': str(),
-            'srs': str(),
-            'bbox': one_of(str(), [number()]),
-            'bbox_srs': str(),
-            'num_levels': int(),
-            'res': [number()],
-            'res_factor': one_of(number(), str()),
-            'max_res': number(),
-            'min_res': number(),
-            'stretch_factor': number(),
-            'max_shrink_factor': number(),
-            'align_resolutions_with': str(),
-            'origin': str(),
-            'tile_size': [int()],
-            'threshold_res': [number()],
-        }
+        anything(): grid_opts,
     },
     'caches': {
         anything(): {

@@ -16,15 +16,23 @@ from __future__ import with_statement, division
 
 import os
 import re
+import shlex
 import sys
 import optparse
 
+import yaml
+
 from mapproxy.srs import SRS
 from mapproxy.config.coverage import load_coverage
-from mapproxy.config.loader import load_configuration, ConfigurationError, CacheConfiguration
+from mapproxy.config.loader import (
+    load_configuration, ConfigurationError,
+    CacheConfiguration, GridConfiguration,
+)
 from mapproxy.util.coverage import  BBOXCoverage
 from mapproxy.seed.util import ProgressLog
 from mapproxy.seed.seeder import SeedTask, seed_task
+from mapproxy.config import spec as conf_spec
+from mapproxy.util.ext.dictspec.validator import validate, ValidationError
 
 
 def parse_levels(level_str):
@@ -47,6 +55,21 @@ def parse_levels(level_str):
 
     return sorted(levels)
 
+def parse_grid_definition(args):
+    """
+    >>> parse_grid_definition(['res=[10000,1000,100,10]',
+    ...     'srs=EPSG:4326', 'bbox=5,50,10,60'])
+    {'res': [10000, 1000, 100, 10], 'bbox': '5,50,10,60', 'srs': 'EPSG:4326'}
+    """
+    grid_conf = {}
+    for arg in args:
+        key, value = arg.split('=')
+        value = yaml.load(value)
+        grid_conf[key] = value
+
+    validate(conf_spec.grid_opts, grid_conf)
+    return grid_conf
+
 def supports_tiled_access(mgr):
     if len(mgr.sources) == 1 and getattr(mgr.sources[0], 'supports_meta_tiles') == False:
         return True
@@ -55,16 +78,17 @@ def supports_tiled_access(mgr):
 def export_command(args=None):
     parser = optparse.OptionParser("%prog grids [options] mapproxy_conf")
     parser.add_option("-f", "--mapproxy-conf", dest="mapproxy_conf",
-        help="MapProxy configuration.")
+        help="MapProxy configuration")
 
     parser.add_option("--source", dest="source",
         help="source to export (source or cache)")
 
-    parser.add_option("-g", "--grid",
-        help="Grid for export")
+    parser.add_option("--grid",
+        help="grid for export. either the name of an existing grid or "
+        "the grid definition as a string")
 
     parser.add_option("--dest",
-        help="destination of the export (path, filename or URL)")
+        help="destination of the export (directory or filename)")
 
     parser.add_option("--type",
         help="type of the export format")
@@ -78,9 +102,10 @@ def export_command(args=None):
 
 
     parser.add_option("--coverage",
-        help="if missing tiles should be fetched from the sources")
+        help="the coverage for the export as a BBOX string, WKT file "
+        "or OGR datasource")
     parser.add_option("--srs",
-        help="if missing tiles should be fetched from the sources")
+        help="the SRS of the coverage")
 
     from mapproxy.script.util import setup_logging
     import logging
@@ -106,6 +131,17 @@ def export_command(args=None):
         sys.exit(2)
 
 
+    if '=' in options.grid:
+        try:
+            grid_conf = parse_grid_definition(shlex.split(options.grid))
+        except ValidationError, ex:
+            print >>sys.stderr, 'ERROR: invalid grid configuration'
+            for error in ex.errors:
+                print >>sys.stderr, ' ', error
+            sys.exit(2)
+        options.grid = 'tmp_mapproxy_export_grid'
+        conf.grids[options.grid] = GridConfiguration(grid_conf, conf)
+
     cache_conf = {
         'name': 'export',
         'grids': [options.grid],
@@ -121,7 +157,7 @@ def export_command(args=None):
             'type': 'file',
             'directory': options.dest,
         }
-    elif options.type in ('tms', None):
+    elif options.type in ('tms', None): # default
         cache_conf['cache'] = {
             'type': 'file',
             'directory_layout': 'tms',
@@ -131,14 +167,17 @@ def export_command(args=None):
         print >>sys.stderr, 'ERROR: unsupported --type %s' % (options.type, )
         sys.exit(2)
 
-
     if not options.fetch_missing_tiles:
         for source in conf.sources.values():
             source.conf['seed_only'] = True
 
     tile_grid, extent, mgr = CacheConfiguration(cache_conf, conf).caches()[0]
 
+
     levels = parse_levels(options.levels)
+    if levels[-1] >= tile_grid.levels:
+        print >>sys.stderr, 'ERROR: destination grid only has %d levels' % tile_grid.levels
+        sys.exit(2)
 
     if options.srs:
         srs = SRS(options.srs)
