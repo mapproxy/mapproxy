@@ -152,6 +152,7 @@ def export_command(args=None):
                 print >>sys.stderr, ' ', error
             sys.exit(2)
         options.grid = 'tmp_mapproxy_export_grid'
+        grid_conf['name'] = options.grid
         conf.grids[options.grid] = GridConfiguration(grid_conf, conf)
 
 
