@@ -47,6 +47,11 @@ def parse_levels(level_str):
 
     return sorted(levels)
 
+def supports_tiled_access(mgr):
+    if len(mgr.sources) == 1 and getattr(mgr.sources[0], 'supports_meta_tiles') == False:
+        return True
+    return False
+
 def export_command(args=None):
     parser = optparse.OptionParser("%prog grids [options] mapproxy_conf")
     parser.add_option("-f", "--mapproxy-conf", dest="mapproxy_conf",
@@ -145,7 +150,8 @@ def export_command(args=None):
     else:
         seed_coverage = BBOXCoverage(tile_grid.bbox, tile_grid.srs)
 
-
+    if not supports_tiled_access(mgr):
+        print >>sys.stderr, 'WARN: grids are incompatible. needs to scale/reproject tiles for export.'
 
     md = dict(name='export', cache_name='cache', grid_name='grid_name')
     task = SeedTask(md, mgr, levels, None, seed_coverage)
