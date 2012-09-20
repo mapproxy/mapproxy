@@ -109,6 +109,8 @@ def export_command(args=None):
         "or OGR datasource")
     parser.add_option("--srs",
         help="the SRS of the coverage")
+    parser.add_option("--where",
+        help="filter for OGR coverages")
 
     from mapproxy.script.util import setup_logging
     import logging
@@ -207,7 +209,9 @@ def export_command(args=None):
         srs = tile_grid.srs
 
     if options.coverage:
-        seed_coverage = load_coverage({'datasource': options.coverage, 'srs': srs}, base_path=os.getcwd())
+        seed_coverage = load_coverage(
+            {'datasource': options.coverage, 'srs': srs, 'where': options.where},
+            base_path=os.getcwd())
     else:
         seed_coverage = BBOXCoverage(tile_grid.bbox, tile_grid.srs)
 
