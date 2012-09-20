@@ -462,7 +462,7 @@ Required arguments:
 
 .. cmdoption:: --grid
 
-  Name of the grid to be used by the export cache. This grid needs to be defined in the MapProxy configuration.
+  The tile grid for the export. The option can either be the name of the grid as defined in the in the MapProxy configuration, or it can be the grid definition itself. You can define a grid as a single string of the key-value pairs. The grid definition :ref:`supports all grid parameters <grids>`. See below for examples.
 
 .. cmdoption:: --dest
 
@@ -478,15 +478,9 @@ Other options:
 
   If MapProxy should request missing tiles from the source. By default, the export tool will only existing tiles.
 
+.. cmdoption:: --coverage, --srs, --where
 
-.. cmdoption:: --bbox, --bbox-srs
-
-  Limit the export to this BBOX. Use ``--bbox-srs`` to define the SRS of the specified BBOX.
-
-.. cmdoption:: --coverage, --coverage-srs
-
-  Limit the export to this coverage. Use ``--coverage-srs`` to define the SRS of the specified coverage.
-
+  Limit the export to this coverage. You can use a BBOX, WKT files or OGR datasources. See :doc:`coverages`.
 
 
 
@@ -503,4 +497,32 @@ Export types
     Exports tiles into a MBTile file.
 
 
+
+Examples
+--------
+
+Export tiles into a TMS directory structure under ``./cache/``. Limit export to the BBOX and levels 0 to 6.
+
+::
+
+    mapproxy-util export -f mapproxy.yaml --grid osm_grid \
+        --source osm_cache --dest ./cache/ \
+        --levels 1..6 --coverage 5,50,10,60 --srs 4326
+
+Export tiles into an MBTiles file. Limit export to a shape coverage.
+
+::
+
+    mapproxy-util export -f mapproxy.yaml --grid osm_grid \
+        --source osm_cache --dest osm.mbtiles --type mbtile \
+        --levels 1..6 --coverage boundaries.shp \
+        --where 'CNTRY_NAME = "Germany"' --srs 3857
+
+Export tiles into an MBTiles file using a custom grid definition.
+
+::
+
+    mapproxy-util export -f mapproxy.yaml --levels 1..6 \
+        --grid "srs='EPSG:4326' bbox=[5,50,10,60] tile_size=[512,512]" \
+        --source osm_cache --dest osm.mbtiles --type mbtile \
 
