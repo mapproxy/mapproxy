@@ -55,12 +55,12 @@ def parse_levels(level_str):
 
     return sorted(levels)
 
-def parse_grid_definition(args):
+def parse_grid_definition(definition):
     """
-    >>> parse_grid_definition(['res=[10000,1000,100,10]',
-    ...     'srs=EPSG:4326', 'bbox=5,50,10,60'])
+    >>> parse_grid_definition("res=[10000,1000,100,10] srs=EPSG:4326 bbox=5,50,10,60")
     {'res': [10000, 1000, 100, 10], 'bbox': '5,50,10,60', 'srs': 'EPSG:4326'}
     """
+    args = shlex.split(definition)
     grid_conf = {}
     for arg in args:
         key, value = arg.split('=')
@@ -145,11 +145,14 @@ def export_command(args=None):
 
     if '=' in options.grid:
         try:
-            grid_conf = parse_grid_definition(shlex.split(options.grid))
+            grid_conf = parse_grid_definition(options.grid)
         except ValidationError, ex:
             print >>sys.stderr, 'ERROR: invalid grid configuration'
             for error in ex.errors:
                 print >>sys.stderr, ' ', error
+            sys.exit(2)
+        except ValueError:
+            print >>sys.stderr, 'ERROR: invalid grid configuration'
             sys.exit(2)
         options.grid = 'tmp_mapproxy_export_grid'
         grid_conf['name'] = options.grid
