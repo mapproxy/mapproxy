@@ -118,12 +118,21 @@ def export_command(args=None):
         args = args[1:] # remove script name
 
     (options, args) = parser.parse_args(args)
+
     if not options.mapproxy_conf:
         if len(args) != 1:
             parser.print_help()
             sys.exit(1)
         else:
             options.mapproxy_conf = args[0]
+
+    required_options = ['mapproxy_conf', 'grid', 'source', 'dest', 'levels']
+    for required in required_options:
+        if not getattr(options, required):
+            print >>sys.stderr, 'ERROR: missing required option --%s' % required.replace('_', '-')
+            parser.print_help()
+            sys.exit(1)
+
     try:
         conf = load_configuration(options.mapproxy_conf)
     except IOError, e:
