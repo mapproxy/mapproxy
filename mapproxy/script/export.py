@@ -29,7 +29,7 @@ from mapproxy.config.loader import (
     CacheConfiguration, GridConfiguration,
 )
 from mapproxy.util.coverage import  BBOXCoverage
-from mapproxy.seed.util import ProgressLog
+from mapproxy.seed.util import ProgressLog, format_bbox
 from mapproxy.seed.seeder import SeedTask, seed_task
 from mapproxy.config import spec as conf_spec
 from mapproxy.util.ext.dictspec.validator import validate, ValidationError
@@ -74,6 +74,22 @@ def supports_tiled_access(mgr):
     if len(mgr.sources) == 1 and getattr(mgr.sources[0], 'supports_meta_tiles') == False:
         return True
     return False
+
+
+def format_export_task(task, custom_grid):
+    info = []
+    if custom_grid:
+        grid = "custom grid"
+    else:
+        grid = "grid '%s'" % task.md['grid_name']
+
+    info.append("Exporting cache '%s' to '%s' with %s in %s" % (
+                 task.md['cache_name'], task.md['dest'], grid, task.grid.srs.srs_code))
+    if task.coverage:
+        info.append('  Limited to: %s (EPSG:4326)' % (format_bbox(task.coverage.extent.llbbox), ))
+    info.append('  Levels: %s' % (task.levels, ))
+
+    return '\n'.join(info)
 
 def export_command(args=None):
     parser = optparse.OptionParser("%prog grids [options] mapproxy_conf")
@@ -158,8 +174,10 @@ def export_command(args=None):
             sys.exit(2)
         options.grid = 'tmp_mapproxy_export_grid'
         grid_conf['name'] = options.grid
+        custom_grid = True
         conf.grids[options.grid] = GridConfiguration(grid_conf, conf)
-
+    else:
+        custom_grid = False
 
     if os.path.exists(options.dest) and not options.force:
         print >>sys.stderr, 'ERROR: destination exists, remove first or use --force'
@@ -218,8 +236,10 @@ def export_command(args=None):
     if not supports_tiled_access(mgr):
         print >>sys.stderr, 'WARN: grids are incompatible. needs to scale/reproject tiles for export.'
 
-    md = dict(name='export', cache_name='cache', grid_name='grid_name')
+    md = dict(name='export', cache_name='cache', grid_name=options.grid, dest=options.dest)
     task = SeedTask(md, mgr, levels, None, seed_coverage)
+
+    print format_export_task(task, custom_grid=custom_grid)
 
     logger = ProgressLog(verbose=True, silent=False)
     try:
