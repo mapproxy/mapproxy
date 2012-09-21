@@ -19,7 +19,7 @@
 from __future__ import division
 import math
 
-from mapproxy.srs import SRS, get_epsg_num, merge_bbox
+from mapproxy.srs import SRS, get_epsg_num, merge_bbox, bbox_equals
 from mapproxy.util.collections import ImmutableDictList
 
 geodetic_epsg_codes = [4326]
@@ -618,24 +618,25 @@ class TileGrid(object):
 
 
         if self.bbox != other.bbox:
-            # check if level 0 tiles from self align with (affected)
+            # check if all level tiles from self align with (affected)
             # tiles from other
-            level0_size = (
-                self.grid_sizes[0][0] * self.tile_size[0],
-                self.grid_sizes[0][1] * self.tile_size[1]
-            )
-            level0_bbox = self._tiles_bbox([
-                (0, 0, 0),
-                (self.grid_sizes[0][0] - 1, self.grid_sizes[0][1] - 1, 0)
-            ])
+            for self_level, self_level_res in self.resolutions.iteritems():
+                level_size = (
+                    self.grid_sizes[self_level][0] * self.tile_size[0],
+                    self.grid_sizes[self_level][1] * self.tile_size[1]
+                )
+                level_bbox = self._tiles_bbox([
+                    (0, 0, self_level),
+                    (self.grid_sizes[self_level][0] - 1, self.grid_sizes[self_level][1] - 1, self_level)
+                ])
 
-            bbox, level = other.get_affected_bbox_and_level(level0_bbox, level0_size)
-            bbox, grid_size, tiles = other.get_affected_level_tiles(level0_bbox, level)
+                bbox, level = other.get_affected_bbox_and_level(level_bbox, level_size)
+                bbox, grid_size, tiles = other.get_affected_level_tiles(level_bbox, level)
 
-            if other.resolution(level) != self.resolution(0):
-                return False
-            if bbox != level0_bbox:
-                return False
+                if other.resolution(level) != self_level_res:
+                    return False
+                if not bbox_equals(bbox, level_bbox):
+                    return False
 
         return True
 
