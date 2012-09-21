@@ -120,6 +120,10 @@ def export_command(args=None):
         action='store_true', default=False,
         help="overwrite/append to existing --dest files/directories")
 
+    parser.add_option("-n", "--dry-run",
+        action="store_true", default=False,
+        help="do not export, just print output")
+
     parser.add_option("--coverage",
         help="the coverage for the export as a BBOX string, WKT file "
         "or OGR datasource")
@@ -243,7 +247,7 @@ def export_command(args=None):
 
     logger = ProgressLog(verbose=True, silent=False)
     try:
-        seed_task(task, progress_logger=logger, dry_run=False,
+        seed_task(task, progress_logger=logger, dry_run=options.dry_run,
              concurrency=1)
     except KeyboardInterrupt:
         print >>sys.stderr, 'stopping...'
