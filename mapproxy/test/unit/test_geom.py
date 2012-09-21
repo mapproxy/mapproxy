@@ -306,5 +306,5 @@ class TestMapExtent(object):
 
         sub = MapExtent((0, 0, 10, 10), SRS(4326)).intersection(MapExtent((-1000, -1000, 100000, 100000), SRS(3857)))
         bbox = SRS(3857).transform_bbox_to(SRS(4326), (0, 0, 100000, 100000), 0)
-        eq_(bbox, sub.bbox)
+        assert bbox_equals(bbox, sub.bbox)
 
