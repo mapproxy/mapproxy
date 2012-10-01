@@ -181,10 +181,16 @@ class SeedProgress(object):
                 return True
         return True
 
+    def running(self):
+        return True
+
+class StopProcess(Exception):
+    pass
+
 class TileWalker(object):
     def __init__(self, task, worker_pool, handle_stale=False, handle_uncached=False,
                  work_on_metatiles=True, skip_geoms_for_last_levels=0, progress_logger=None,
-                 start_progress=None):
+                 seed_progress=None):
         self.tile_mgr = task.tile_manager
         self.task = task
         self.worker_pool = worker_pool
@@ -200,7 +206,7 @@ class TileWalker(object):
         self.tiles_per_metatile = meta_size[0] * meta_size[1]
         self.grid = MetaGrid(self.tile_mgr.grid, meta_size=meta_size, meta_buffer=0)
         self.count = 0
-        self.seed_progress = SeedProgress(old_progress_identifier=start_progress)
+        self.seed_progress = seed_progress or SeedProgress()
 
     def walk(self):
         assert self.handle_stale or self.handle_uncached
@@ -209,7 +215,10 @@ class TileWalker(object):
             # nothing to seed
             self.seed_progress.step_forward()
         else:
-            self._walk(bbox, self.task.levels)
+            try:
+                self._walk(bbox, self.task.levels)
+            except StopProcess:
+                pass
         self.report_progress(self.task.levels[0], self.task.coverage.bbox)
 
     def _walk(self, cur_bbox, levels, all_subtiles=False):
@@ -230,6 +239,11 @@ class TileWalker(object):
 
         if current_level <= self.report_till_level:
             self.report_progress(current_level, cur_bbox)
+
+        if not self.seed_progress.running():
+            self.report_progress(current_level, cur_bbox)
+            self.tile_mgr.cleanup()
+            raise StopProcess()
 
         for i, (subtile, sub_bbox, intersection) in enumerate(subtiles):
             if subtile is None: # no intersection
@@ -356,7 +370,9 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
                     start_progress = progress_logger.progress_store.get(task.id)
                 else:
                     start_progress = None
-                _seed_task(task, concurrency, dry_run, skip_geoms_for_last_levels, progress_logger, start_progress=start_progress)
+                seed_progress = SeedProgress(old_progress_identifier=start_progress)
+                _seed_task(task, concurrency, dry_run, skip_geoms_for_last_levels, progress_logger,
+                    seed_progress=seed_progress)
         except CacheLockedError:
             print '    ...cache is locked, skipping'
             active_tasks = [task] + active_tasks[:-1]
@@ -365,7 +381,7 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
 
 
 def _seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
-    progress_logger=None, start_progress=None):
+    progress_logger=None, seed_progress=None):
     if task.refresh_timestamp is not None:
         task.tile_manager._expire_timestamp = task.refresh_timestamp
     task.tile_manager.minimize_meta_requests = False
@@ -373,7 +389,7 @@ def _seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
         size=concurrency, progress_logger=progress_logger)
     tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=True,
         skip_geoms_for_last_levels=skip_geoms_for_last_levels, progress_logger=progress_logger,
-        start_progress=start_progress)
+        seed_progress=seed_progress)
     tile_walker.walk()
     tile_worker_pool.stop()
 
