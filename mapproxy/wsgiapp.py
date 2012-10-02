@@ -119,7 +119,10 @@ class ReloaderApp(object):
         if self.last_reload < os.path.getmtime(self.timestamp_file):
             with self._app_init_lock:
                 if self.last_reload < os.path.getmtime(self.timestamp_file):
-                    self.app = self.make_app_func()
+                    try:
+                        self.app = self.make_app_func()
+                    except ConfigurationError:
+                        pass
                     self.last_reload = time.time()
 
         return self.app(environ, start_response)
