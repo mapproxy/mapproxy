@@ -15,7 +15,7 @@
 
 from __future__ import with_statement, division
 import cPickle as pickle
-from mapproxy.seed.seeder import TileWalker, SeedTask
+from mapproxy.seed.seeder import TileWalker, SeedTask, SeedProgress
 from mapproxy.cache.tile import TileManager
 from mapproxy.source.tile import TiledSource
 from mapproxy.grid import tile_grid_for_epsg
@@ -143,7 +143,8 @@ class TestSeeder(object):
 
     def test_seed_full_bbox_continue(self):
         task = self.make_bbox_task([-180, -90, 180, 90], SRS(4326), [0, 1, 2])
-        seeder = TileWalker(task, self.seed_pool, handle_uncached=True, start_progress=[(0, 1), (0, 2)])
+        seed_progress = SeedProgress([(0, 1), (0, 2)])
+        seeder = TileWalker(task, self.seed_pool, handle_uncached=True, seed_progress=seed_progress)
         seeder.walk()
 
         eq_(len(self.seed_pool.seeded_tiles), 3)
