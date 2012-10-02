@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,6 +43,9 @@ except ImportError:
     except ImportError:
         json = None
 
+import logging
+log = logging.getLogger(__name__)
+
 class UnexpectedResponse(CacheBackendError):
     pass
 
@@ -50,13 +53,13 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
     def __init__(self, url, db_name, lock_dir,
         file_ext, tile_grid, md_template=None,
         tile_id_template=None):
-        
+
         if requests is None:
             raise ImportError("CouchDB backend requires 'requests' package.")
 
         if json is None:
             raise ImportError("CouchDB backend requires 'simplejson' package or Python 2.6+.")
-        
+
         self.lock_cache_id = 'couchdb-' + hashlib.md5(url + db_name).hexdigest()
         self.lock_dir = lock_dir
         self.lock_timeout = 60
@@ -68,11 +71,14 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         self.tile_id_template = tile_id_template
 
     def init_db(self):
-        requests.put(self.couch_url)
-    
+        try:
+            requests.put(self.couch_url)
+        except requests.exceptions.RequestException, ex:
+            log.warn('unable to initialize CouchDB: %s', ex)
+
     def tile_url(self, coord):
         return self.document_url(coord) + '/tile'
-        
+
     def document_url(self, coord, relative=False):
         x, y, z = coord
         grid_name = self.tile_grid.name
@@ -91,7 +97,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
                 return self.tile_id_template % locals()
             else:
                 return '%(couch_url)s/%(grid_name)s-%(z)d-%(x)d-%(y)d' % locals()
-    
+
     def is_cached(self, tile):
         if tile.coord is None or tile.source:
             return True
@@ -104,8 +110,8 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         if resp.status_code == 404:
             return False
         raise SourceError('%r: %r' % (resp.status_code, resp.content))
-    
-    
+
+
     def _tile_doc(self, tile):
         tile_id = self.document_url(tile.coord, relative=True)
         if self.md_template:
@@ -113,7 +119,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         else:
             tile_doc = {}
         tile_doc['_id'] = tile_id
-        
+
         with tile_buffer(tile) as buf:
             data = buf.read()
         tile_doc['_attachments'] = {
@@ -123,21 +129,21 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             }
         }
         return tile_id, tile_doc
-        
+
     def _store_bulk(self, tiles):
         tile_docs = {}
         for tile in tiles:
             tile_id, tile_doc = self._tile_doc(tile)
             tile_docs[tile_id] = tile_doc
-        
+
         duplicate_tiles = self._post_bulk(tile_docs)
 
         if duplicate_tiles:
             self._fill_rev_ids(duplicate_tiles)
             self._post_bulk(duplicate_tiles, no_conflicts=True)
-            
+
         return True
-    
+
     def _post_bulk(self, tile_docs, no_conflicts=False):
         """
         POST multiple tiles, returns all tile docs with conflicts during POST.
@@ -147,18 +153,18 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         resp = requests.post(self.couch_url + '/_bulk_docs', data=data, headers={'Content-type': 'application/json'})
         if resp.status_code != 201:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
-        
+
         resp_doc = json.loads(resp.content)
         duplicate_tiles = {}
         for tile in resp_doc:
             if tile.get('error', 'false') == 'conflict':
                 duplicate_tiles[tile['id']] = tile_docs[tile['id']]
-        
+
         if no_conflicts and duplicate_tiles:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
-        
+
         return duplicate_tiles
-    
+
     def _fill_rev_ids(self, tile_docs):
         """
         Request all revs for tile_docs and insert it into the tile_docs.
@@ -168,32 +174,32 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         resp = requests.post(self.couch_url + '/_all_docs', data=data, headers={'Content-type': 'application/json'})
         if resp.status_code != 200:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
-        
+
         resp_doc = json.loads(resp.content)
         for tile in resp_doc['rows']:
             tile_docs[tile['id']]['_rev'] = tile['value']['rev']
-    
+
     def store_tile(self, tile):
         if tile.stored:
             return True
-            
+
         return self._store_bulk([tile])
 
     def store_tiles(self, tiles):
         tiles = [t for t in tiles if not t.stored]
         return self._store_bulk(tiles)
-    
+
     def load_tile_metadata(self, tile):
         if tile.timestamp:
-            return 
-        
+            return
+
         # is_cached loads metadata
         self.is_cached(tile)
-    
+
     def load_tile(self, tile, with_metadata=False):
         # bulk loading with load_tiles is not implemented, because
         # CouchDB's /all_docs? does not include attachments
-        
+
         if tile.source or tile.coord is None:
             return True
         url = self.document_url(tile.coord) + '?attachments=true'
@@ -205,7 +211,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             tile.timestamp = doc.get(self.md_template.timestamp_key)
             return True
         return False
-    
+
     def remove_tile(self, tile):
         if tile.coord is None:
             return True
@@ -220,7 +226,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         if resp.status_code == 200:
             return True
         return False
-        
+
 
 def utc_now_isoformat():
     now = datetime.datetime.utcnow()
@@ -239,7 +245,7 @@ class CouchDBMDTemplate(object):
         else:
             attributes['timestamp'] = '{{timestamp}}'
             self.timestamp_key = 'timestamp'
-    
+
     def doc(self, tile, grid):
         doc = {}
         x, y, z = tile.coord
@@ -247,7 +253,7 @@ class CouchDBMDTemplate(object):
             if not isinstance(value, basestring) or not value.startswith('{{'):
                 doc[key] = value
                 continue
-            
+
             if value == '{{timestamp}}':
                 doc[key] = time.time()
             elif value == '{{x}}':
