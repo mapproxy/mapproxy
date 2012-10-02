@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,8 @@ from __future__ import with_statement
 import re
 import os
 import sys
+import time
+import threading
 
 from mapproxy.request import Request
 from mapproxy.response import Response
@@ -40,9 +42,9 @@ def app_factory(global_options, mapproxy_conf, **local_options):
     reload_files = conf.get('reload_files', None)
     if reload_files is not None:
         init_paster_reload_files(reload_files)
-    
+
     init_logging_system(log_conf, os.path.dirname(mapproxy_conf))
-    
+
     return make_wsgi_app(mapproxy_conf)
 
 def init_paster_reload_files(reload_files):
@@ -55,12 +57,12 @@ def init_paster_file_watcher(file_patterns):
     for pattern in file_patterns:
         files = glob(pattern)
         _add_files_to_paster_file_watcher(files)
-    
+
 def _add_files_to_paster_file_watcher(files):
     import paste.reloader
     for file in files:
         paste.reloader.watch_file(file)
-    
+
 def init_logging_system(log_conf, base_dir):
     import logging.config
     try:
@@ -81,31 +83,62 @@ def init_null_logging():
             pass
     logging.getLogger().addHandler(NullHandler())
 
-def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True):
+def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True, reloader=False):
     """
     Create a MapProxyApp with the given services conf.
-    
+
     :param services_conf: the file name of the mapproxy.yaml configuration
+    :param reloader: reload mapproxy.yaml when it changed
     """
+    if reloader:
+        make_app = lambda: make_wsgi_app(services_conf=services_conf, debug=debug,
+            reloader=False)
+        return ReloaderApp(services_conf, make_app)
+
     try:
         conf = load_configuration(mapproxy_conf=services_conf, ignore_warnings=ignore_config_warnings)
         services = conf.configured_services()
     except ConfigurationError, e:
         log.fatal(e)
         raise
-    
+
     app = MapProxyApp(services, conf.base_config)
     if debug:
-        conf.base_config.debug_mode = True
+        app = wrap_wsgi_debug(app, conf)
+    return app
+
+class ReloaderApp(object):
+    def __init__(self, timestamp_file, make_app_func):
+        self.timestamp_file = timestamp_file
+        self.make_app_func = make_app_func
+        self.app = make_app_func()
+        self.last_reload = os.path.getmtime(self.timestamp_file)
+        self._app_init_lock = threading.Lock()
+
+    def __call__(self, environ, start_response):
+        if self.last_reload < os.path.getmtime(self.timestamp_file):
+            with self._app_init_lock:
+                if self.last_reload < os.path.getmtime(self.timestamp_file):
+                    try:
+                        self.app = self.make_app_func()
+                    except ConfigurationError:
+                        pass
+                    self.last_reload = time.time()
+
+        return self.app(environ, start_response)
+
+def wrap_wsgi_debug(app, conf):
+    conf.base_config.debug_mode = True
+    try:
+        from werkzeug.debug import DebuggedApplication
+        app = DebuggedApplication(app, evalex=True)
+    except ImportError:
         try:
-            from werkzeug.debug import DebuggedApplication
-            app = DebuggedApplication(app, evalex=True)
+            from paste.evalexception.middleware import EvalException
+            app = EvalException(app)
         except ImportError:
-            try:
-                from paste.evalexception.middleware import EvalException
-                app = EvalException(app)
-            except ImportError:
-                print 'Error: Install Werkzeug or Paste for browser-based debugging.'
+            print 'Error: Install Werkzeug or Paste for browser-based debugging.'
+
     return app
 
 class MapProxyApp(object):
@@ -119,11 +152,11 @@ class MapProxyApp(object):
         for service in services:
             for name in service.names:
                 self.handlers[name] = service
-    
+
     def __call__(self, environ, start_response):
         resp = None
         req = Request(environ)
-        
+
         with local_base_config(self.base_config):
             match = self.handler_path_re.match(req.path)
             if match:

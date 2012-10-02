@@ -22,7 +22,6 @@ from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import (
     load_seed_tasks_conf, SeedConfigurationError, SeedingConfiguration
 )
-from mapproxy.layer import MapExtent
 
 def format_conf_value(value):
     if isinstance(value, tuple):
@@ -35,12 +34,15 @@ def _area_from_bbox(bbox):
     height = bbox[3] - bbox[1]
     return width * height
 
-def grid_coverage_ratio(grid_extent, coverage_extent):
-    coverage_bbox = coverage_extent.bbox_for(grid_extent.srs)
-    grid_bbox = grid_extent.bbox
+def grid_coverage_ratio(bbox, srs, coverage):
+    coverage = coverage.transform_to(srs)
+    grid_area = _area_from_bbox(bbox)
 
-    coverage_area = _area_from_bbox(coverage_bbox)
-    grid_area = _area_from_bbox(grid_bbox)
+    if coverage.geom:
+        coverage_area = coverage.geom.area
+    else:
+        coverage_area = _area_from_bbox(coverage.bbox)
+
     return coverage_area / grid_area
 
 def display_grid(grid_conf, coverage=None):
@@ -57,8 +59,8 @@ def display_grid(grid_conf, coverage=None):
         conf_dict['origin*'] = tile_grid.origin or 'sw'
     area_ratio = None
     if coverage:
-        bbox = conf_dict.get('bbox', tile_grid.bbox)
-        area_ratio = grid_coverage_ratio(MapExtent(bbox, tile_grid.srs), MapExtent(coverage.bbox, coverage.srs))
+        bbox = tile_grid.bbox
+        area_ratio = grid_coverage_ratio(bbox, tile_grid.srs, coverage)
 
     for key in sorted(conf_dict):
         if key == 'name':
