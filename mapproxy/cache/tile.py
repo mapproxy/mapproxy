@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,10 +17,10 @@
 Tile caching (creation, caching and retrieval of tiles).
 
 .. digraph:: Schematic Call Graph
-    
+
     ranksep = 0.1;
-    node [shape="box", height="0", width="0"] 
-    
+    node [shape="box", height="0", width="0"]
+
     cl  [label="CacheMapLayer" href="<mapproxy.core.layer.CacheMapLayer>"]
     tm  [label="TileManager",  href="<TileManager>"];
     fc      [label="FileCache", href="<FileCache>"];
@@ -31,7 +31,7 @@ Tile caching (creation, caching and retrieval of tiles).
         tm -> fc [label="load\\nstore\\nis_cached"];
         tm -> s  [label="get_map"]
     }
-    
+
 
 """
 
@@ -51,9 +51,9 @@ class TileManager(object):
     Manages tiles for a single grid.
     Loads tiles from the cache, creates new tiles from sources and stores them
     into the cache, or removes tiles.
-    
+
     :param pre_store_filter: a list with filter. each filter will be called
-        with a tile before it will be stored to disc. the filter should 
+        with a tile before it will be stored to disc. the filter should
         return this or a new tile object.
     """
     def __init__(self, grid, cache, sources, format, image_opts=None, request_format=None,
@@ -71,34 +71,34 @@ class TileManager(object):
         self.transparent = self.sources[0].transparent
         self.pre_store_filter = pre_store_filter or []
         self.concurrent_tile_creators = concurrent_tile_creators
-        
+
         if meta_buffer or (meta_size and not meta_size == [1, 1]):
             if all(source.supports_meta_tiles for source in sources):
                 self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
             elif any(source.supports_meta_tiles for source in sources):
                 raise ValueError('meta tiling configured but not supported by all sources')
-    
+
     @contextmanager
     def session(self):
         """
         Context manager for access to the cache. Cleans up after usage
         for connection based caches.
-        
+
         >>> with tile_manager.session(): #doctest: +SKIP
         ...    tile_manager.load_tile_coords(tile_coords)
-        
+
         """
         yield
         self.cleanup()
-    
+
     def cleanup(self):
         if hasattr(self.cache, 'cleanup'):
             self.cache.cleanup()
-    
+
     def load_tile_coord(self, tile_coord, with_metadata=False):
         tile = Tile(tile_coord)
         self.cache.load_tile(tile, with_metadata)
-        
+
         if tile.coord is not None and not self.is_cached(tile):
             # missing or staled
             creator = self.creator()
@@ -106,42 +106,42 @@ class TileManager(object):
             for created_tile in created_tiles:
                 if created_tile.coord == tile_coord:
                     return created_tile
-        
-        return tile    
-    
+
+        return tile
+
     def load_tile_coords(self, tile_coords, with_metadata=False):
         tiles = TileCollection(tile_coords)
         uncached_tiles = []
-        
+
         # load all in batch
         self.cache.load_tiles(tiles, with_metadata)
-        
+
         for tile in tiles:
             if tile.coord is not None and not self.is_cached(tile):
                 # missing or staled
                 uncached_tiles.append(tile)
-        
+
         if uncached_tiles:
             creator = self.creator()
             created_tiles = creator.create_tiles(uncached_tiles)
             for created_tile in created_tiles:
                 if created_tile.coord in tiles:
                     tiles[created_tile.coord].source = created_tile.source
-        
+
         return tiles
-    
+
     def remove_tile_coords(self, tile_coords):
         tiles = TileCollection(tile_coords)
         self.cache.remove_tiles(tiles)
-    
+
     def creator(self):
         return TileCreator(self.cache, self.sources, self.grid, self.meta_grid, self)
-    
+
     def lock(self, tile):
         if self.meta_grid:
             tile = Tile(self.meta_grid.main_tile(tile.coord))
         return self.cache.lock(tile)
-    
+
     def is_cached(self, tile):
         """
         Return True if the tile is cached.
@@ -158,7 +158,7 @@ class TileManager(object):
             if stale:
                 cached = False
         return cached
-    
+
     def is_stale(self, tile):
         """
         Return True if tile exists _and_ is expired.
@@ -172,16 +172,16 @@ class TileManager(object):
                 return True
             return False
         return False
-    
+
     def expire_timestamp(self, tile=None):
         """
         Return the timestamp until which a tile should be accepted as up-to-date,
         or ``None`` if the tiles should not expire.
-        
+
         :note: Returns _expire_timestamp by default.
         """
         return self._expire_timestamp
-    
+
     def apply_tile_filter(self, tile):
         """
         Apply all `pre_store_filter` to this tile.
@@ -189,7 +189,7 @@ class TileManager(object):
         """
         if tile.stored:
             return tile
-        
+
         for img_filter in self.pre_store_filter:
             tile = img_filter(tile)
         return tile
@@ -201,13 +201,13 @@ class TileCreator(object):
         self.grid = grid
         self.meta_grid = meta_grid
         self.tile_mgr = tile_mgr
-    
+
     def is_cached(self, tile):
         """
         Return True if the tile is cached.
         """
         return self.tile_mgr.is_cached(tile)
-    
+
     def create_tiles(self, tiles):
         if not self.meta_grid:
             created_tiles = self._create_single_tiles(tiles)
@@ -223,27 +223,27 @@ class TileCreator(object):
                 if meta_tile.bbox not in meta_bboxes:
                     meta_tiles.append(meta_tile)
                     meta_bboxes.add(meta_tile.bbox)
-            
+
             created_tiles = self._create_meta_tiles(meta_tiles)
-        
+
         return created_tiles
 
     def _create_single_tiles(self, tiles):
         if self.tile_mgr.concurrent_tile_creators > 1 and len(tiles) > 1:
             return self._create_threaded(self._create_single_tile, tiles)
-        
+
         created_tiles = []
         for tile in tiles:
             created_tiles.extend(self._create_single_tile(tile))
         return created_tiles
-    
+
     def _create_threaded(self, create_func, tiles):
         result = []
         async_pool = async.Pool(self.tile_mgr.concurrent_tile_creators)
         for new_tiles in async_pool.imap(create_func, tiles):
             result.extend(new_tiles)
         return result
-    
+
     def _create_single_tile(self, tile):
         tile_bbox = self.grid.tile_bbox(tile.coord)
         query = MapQuery(tile_bbox, self.grid.tile_size, self.grid.srs,
@@ -262,7 +262,7 @@ class TileCreator(object):
             else:
                 self.cache.load_tile(tile)
         return [tile]
-    
+
     def _query_sources(self, query):
         """
         Query all sources and return the results as a single ImageSource.
@@ -273,7 +273,7 @@ class TileCreator(object):
                 return self.sources[0].get_map(query)
             except BlankImage:
                 return None
-        
+
         def get_map_from_source(source):
             try:
                 img = source.get_map(query)
@@ -281,24 +281,24 @@ class TileCreator(object):
                 return None
             else:
                 return img
-        
+
         imgs = []
         for img in async.imap(get_map_from_source, self.sources):
             if img is not None:
                 imgs.append(img)
-        
+
         if not imgs: return None
         return merge_images(imgs, size=query.size, image_opts=self.tile_mgr.image_opts)
-    
+
     def _create_meta_tiles(self, meta_tiles):
         if self.tile_mgr.concurrent_tile_creators > 1 and len(meta_tiles) > 1:
             return self._create_threaded(self._create_meta_tile, meta_tiles)
-        
+
         created_tiles = []
         for meta_tile in meta_tiles:
             created_tiles.extend(self._create_meta_tile(meta_tile))
         return created_tiles
-    
+
     def _create_meta_tile(self, meta_tile):
         tile_size = self.grid.tile_size
         query = MapQuery(meta_tile.bbox, meta_tile.size, self.grid.srs, self.tile_mgr.request_format)
@@ -317,11 +317,11 @@ class TileCreator(object):
         tiles = [Tile(coord) for coord in meta_tile.tiles]
         self.cache.load_tiles(tiles)
         return tiles
-        
+
 class Tile(object):
     """
     Internal data object for all tiles. Stores the tile-``coord`` and the tile data.
-    
+
     :ivar source: the data of this tile
     :type source: ImageSource
     """
@@ -333,7 +333,7 @@ class Tile(object):
         self._cacheable = cacheable
         self.size = None
         self.timestamp = None
-    
+
     def _cacheable_get(self):
         return CacheInfo(cacheable=self._cacheable, timestamp=self.timestamp,
             size=self.size)
@@ -353,18 +353,18 @@ class Tile(object):
             return self.source.as_buffer(*args, **kw)
         else:
             return None
-    
+
     def source_image(self, *args, **kw):
         if self.source is not None:
             return self.source.as_image(*args, **kw)
         else:
             return None
-    
+
     def is_missing(self):
         """
         Returns ``True`` when the tile has no ``data``, except when the ``coord``
         is ``None``. It doesn't check if the tile exists.
-        
+
         >>> Tile((1, 2, 3)).is_missing()
         True
         >>> Tile((1, 2, 3), './tmp/foo').is_missing()
@@ -375,7 +375,7 @@ class Tile(object):
         if self.coord is None:
             return False
         return self.source is None
-    
+
     def __eq__(self, other):
         """
         >>> Tile((0, 0, 1)) == Tile((0, 0, 1))
@@ -404,7 +404,7 @@ class Tile(object):
             return NotImplemented
         else:
             return not equal_result
-    
+
     def __repr__(self):
         return 'Tile(%r, source=%r)' % (self.coord, self.source)
 
@@ -423,34 +423,34 @@ class TileCollection(object):
         self.tiles_dict = {}
         for tile in self.tiles:
             self.tiles_dict[tile.coord] = tile
-    
+
     def __getitem__(self, idx_or_coord):
         if isinstance(idx_or_coord, int):
             return self.tiles[idx_or_coord]
         if idx_or_coord in self.tiles_dict:
             return self.tiles_dict[idx_or_coord]
         return Tile(idx_or_coord)
-    
+
     def __contains__(self, tile_or_coord):
         if isinstance(tile_or_coord, tuple):
             return tile_or_coord in self.tiles_dict
         if hasattr(tile_or_coord, 'coord'):
             return tile_or_coord.coord in self.tiles_dict
         return False
-    
+
     def __len__(self):
         return len(self.tiles)
-    
+
     def __iter__(self):
         return iter(self.tiles)
-    
+
     @property
     def empty(self):
         """
         Returns True if no tile in this collection contains a source.
         """
         return all((t.source is None for t in self.tiles))
-    
+
     def __repr__(self):
         return 'TileCollection(%r)' % self.tiles
 

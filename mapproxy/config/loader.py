@@ -846,6 +846,13 @@ class CacheConfiguration(ConfigurationBase):
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
 
     def cache_dir(self):
+        cache_dir = self.conf.get('cache', {}).get('directory')
+        if cache_dir:
+            if self.conf.get('cache_dir'):
+                log.warn('found cache.dir and cache_dir option for %s, ignoring cache_dir',
+                self.conf['name'])
+            return self.context.globals.abspath(cache_dir)
+
         return self.context.globals.get_path('cache_dir', self.conf,
             global_key='cache.base_dir')
 
@@ -854,7 +861,9 @@ class CacheConfiguration(ConfigurationBase):
 
         cache_dir = self.cache_dir()
         directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tc')
-        if self.conf.get('cache', {}).get('use_grid_names'):
+        if self.conf.get('cache', {}).get('directory'):
+            pass
+        elif self.conf.get('cache', {}).get('use_grid_names'):
             cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
         else:
             suffix = grid_conf.conf['srs'].replace(':', '')
@@ -938,6 +947,30 @@ class CacheConfiguration(ConfigurationBase):
                 image_opts.format = ImageFormat('image/png')
         return image_opts
 
+    def source(self, params=None, tile_grid=None):
+        from mapproxy.source.tile import CacheSource
+        from mapproxy.layer import map_extent_from_grid
+
+        caches = self.caches()
+        if len(caches) > 1:
+            # cache with multiple grids/sources
+            source = self.map_layer()
+            source.supports_meta_tiles = True
+            return source
+
+        cache_grid, extent, tile_manager = caches[0]
+        if tile_grid.is_subset_of(cache_grid):
+            tiled_only = True
+        else:
+            tiled_only = False
+
+        cache_extent = map_extent_from_grid(tile_grid)
+        cache_extent = extent.intersection(cache_extent)
+
+        source = CacheSource(tile_manager, extent=cache_extent,
+            image_opts=self.image_opts(), tiled_only=tiled_only)
+        return source
+
     @memoize
     def caches(self):
         from mapproxy.cache.tile import TileManager
@@ -963,10 +996,15 @@ class CacheConfiguration(ConfigurationBase):
             sources = []
             source_image_opts = []
             for source_name in self.conf['sources']:
-                if not source_name in self.context.sources:
+                if source_name in self.context.sources:
+                    source_conf = self.context.sources[source_name]
+                    source = source_conf.source({'format': request_format})
+                elif source_name in self.context.caches:
+                    cache_conf = self.context.caches[source_name]
+                    source = cache_conf.source({'format': request_format},
+                        tile_grid=grid_conf.tile_grid())
+                else:
                     raise ConfigurationError('unknown source %s' % source_name)
-                source_conf = self.context.sources[source_name]
-                source = source_conf.source({'format': request_format})
                 if source:
                     sources.append(source)
                     source_image_opts.append(source.image_opts)
@@ -1089,12 +1127,14 @@ class LayerConfiguration(ConfigurationBase):
                 sources.append(map_layer)
 
             for fi_source_name in fi_source_names:
+                if fi_source_name not in self.context.sources: continue
                 if not hasattr(self.context.sources[fi_source_name], 'fi_source'): continue
                 fi_source = self.context.sources[fi_source_name].fi_source()
                 if fi_source:
                     fi_sources.append(fi_source)
             if not lg_sources_configured:
                 for lg_source_name in lg_source_names:
+                    if lg_source_name not in self.context.sources: continue
                     if not hasattr(self.context.sources[lg_source_name], 'lg_source'): continue
                     lg_source = self.context.sources[lg_source_name].lg_source()
                     if lg_source:
