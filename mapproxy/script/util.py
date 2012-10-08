@@ -26,6 +26,8 @@ from mapproxy.version import version
 from mapproxy.script.scales import scales_command
 from mapproxy.script.wms_capabilities import wms_capabilities_command
 from mapproxy.script.grids import grids_command
+from mapproxy.script.export import export_command
+
 
 def setup_logging(level=logging.INFO):
     mapproxy_log = logging.getLogger('mapproxy')
@@ -224,7 +226,7 @@ class CreateCommand(object):
                 return 1
             print "writing %s" % (to, )
             shutil.copy(from_, to)
-            
+
         return 0
 
     def template_log_ini(self):
@@ -265,6 +267,10 @@ commands = {
     'grids': {
         'func': grids_command,
         'help': 'Display detailed informations for configured grids'
+    },
+    'export': {
+        'func': export_command,
+        'help': 'Export existing caches'
     },
 }
 

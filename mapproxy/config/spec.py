@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -88,6 +88,7 @@ cache_types = {
     'file': {
         'directory_layout': str(),
         'use_grid_names': bool(),
+        'directory': str(),
     },
     'mbtiles': {
         'filename': str()
@@ -156,6 +157,24 @@ wms_130_layer_md = {
     ],
 }
 
+grid_opts = {
+    'base': str(),
+    'name': str(),
+    'srs': str(),
+    'bbox': one_of(str(), [number()]),
+    'bbox_srs': str(),
+    'num_levels': int(),
+    'res': [number()],
+    'res_factor': one_of(number(), str()),
+    'max_res': number(),
+    'min_res': number(),
+    'stretch_factor': number(),
+    'max_shrink_factor': number(),
+    'align_resolutions_with': str(),
+    'origin': str(),
+    'tile_size': [int()],
+    'threshold_res': [number()],
+}
 
 mapproxy_yaml_spec = {
     'globals': {
@@ -194,24 +213,7 @@ mapproxy_yaml_spec = {
         'mapserver': mapserver_opts,
     },
     'grids': {
-        anything(): {
-            'base': str(),
-            'name': str(),
-            'srs': str(),
-            'bbox': one_of(str(), [number()]),
-            'bbox_srs': str(),
-            'num_levels': int(),
-            'res': [number()],
-            'res_factor': one_of(number(), str()),
-            'max_res': number(),
-            'min_res': number(),
-            'stretch_factor': number(),
-            'max_shrink_factor': number(),
-            'align_resolutions_with': str(),
-            'origin': str(),
-            'tile_size': [int()],
-            'threshold_res': [number()],
-        }
+        anything(): grid_opts,
     },
     'caches': {
         anything(): {
@@ -278,7 +280,7 @@ mapproxy_yaml_spec = {
             },
         },
     },
-    
+
     'sources': {
         anything(): type_spec('type', {
             'wms': combined(source_commons, {
@@ -349,7 +351,7 @@ mapproxy_yaml_spec = {
             },
         })
     },
-    
+
     'layers': one_of(
         {
             anything(): combined(scale_hints, {

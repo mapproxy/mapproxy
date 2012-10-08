@@ -29,6 +29,7 @@ The current sub-commands are:
 - :ref:`mapproxy_util_serve_multiapp_develop`
 - :ref:`mapproxy_util_scales`
 - :ref:`mapproxy_util_grids`
+- :ref:`mapproxy_util_export`
 
 
 .. _mapproxy_util_create:
@@ -432,3 +433,96 @@ Display detailed information for one specific grid:
             17:  0.0762939453125,   #  18355 * 28851  = 529.560M
             18:  0.03814697265625,  #  36709 * 57701  =   2.118G
             19:  0.019073486328125, #  73417 * 115402 =   8.472G
+
+
+.. _mapproxy_util_export:
+
+``export``
+==========
+
+This sub-command exports tiles from one cache to another. This is similar to the seed tool, but you don't need to edit the configuration. The destination cache, grid and the coverage can be defined on the command line.
+
+
+.. program:: mapproxy-util export
+
+
+Required arguments:
+
+.. cmdoption:: -f, --mapproxy-conf
+
+  The path to the MapProxy configuration of the source cache.
+
+.. cmdoption:: --source
+
+  Name of the source or cache to export.
+
+.. cmdoption:: --levels
+
+  Comma separated list of levels to export. You can also define a range of levels. For example ``'1,2,3,4,5'``, ``'1..10'`` or ``'1,3,4,6..8'``.
+
+.. cmdoption:: --grid
+
+  The tile grid for the export. The option can either be the name of the grid as defined in the in the MapProxy configuration, or it can be the grid definition itself. You can define a grid as a single string of the key-value pairs. The grid definition :ref:`supports all grid parameters <grids>`. See below for examples.
+
+.. cmdoption:: --dest
+
+  Destination of the export. Can be a filename, directory or URL, depending on the export ``--type``.
+
+.. cmdoption:: --type
+
+  Choose the export type. See below for a list of all options.
+
+Other options:
+
+.. cmdoption:: --fetch-missing-tiles
+
+  If MapProxy should request missing tiles from the source. By default, the export tool will only existing tiles.
+
+.. cmdoption:: --coverage, --srs, --where
+
+  Limit the export to this coverage. You can use a BBOX, WKT files or OGR datasources. See :doc:`coverages`.
+
+
+
+Export types
+------------
+
+``tms``:
+    Export tiles in a TMS like directory structure.
+
+``mapproxy`` or ``tc``:
+    Export tiles like the internal cache directory structure. This is compatible with TileCache.
+
+``mbtile``:
+    Exports tiles into a MBTile file.
+
+
+
+Examples
+--------
+
+Export tiles into a TMS directory structure under ``./cache/``. Limit export to the BBOX and levels 0 to 6.
+
+::
+
+    mapproxy-util export -f mapproxy.yaml --grid osm_grid \
+        --source osm_cache --dest ./cache/ \
+        --levels 1..6 --coverage 5,50,10,60 --srs 4326
+
+Export tiles into an MBTiles file. Limit export to a shape coverage.
+
+::
+
+    mapproxy-util export -f mapproxy.yaml --grid osm_grid \
+        --source osm_cache --dest osm.mbtiles --type mbtile \
+        --levels 1..6 --coverage boundaries.shp \
+        --where 'CNTRY_NAME = "Germany"' --srs 3857
+
+Export tiles into an MBTiles file using a custom grid definition.
+
+::
+
+    mapproxy-util export -f mapproxy.yaml --levels 1..6 \
+        --grid "srs='EPSG:4326' bbox=[5,50,10,60] tile_size=[512,512]" \
+        --source osm_cache --dest osm.mbtiles --type mbtile \
+
