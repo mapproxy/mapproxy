@@ -88,7 +88,11 @@ class SeedScript(object):
 
     parser.add_option("--continue", dest='continue_seed',
                       action="store_true", default=False,
-                      help="")
+                      help="continue an aborted seed progress")
+
+    parser.add_option("--progress-file", dest='progress_file',
+                      default=".mapproxy_seed_progress",
+                      help="filename for storing the seed progress (for --continue option)")
 
     def __call__(self):
         (options, args) = self.parser.parse_args()
@@ -139,8 +143,13 @@ class SeedScript(object):
                 return 0
 
             progress = None
-            if options.continue_seed:
-                progress = ProgressStore('.mapproxy_seed_progress')
+            if options.continue_seed or options.progress_file:
+                if options.progress_file:
+                    progress_file = options.progress_file
+                else:
+                    progress_file = '.mapproxy_seed_progress'
+                progress = ProgressStore(progress_file,
+                    continue_seed=options.continue_seed)
 
             try:
                 if options.interactive:

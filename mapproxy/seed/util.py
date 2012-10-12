@@ -87,9 +87,12 @@ class ProgressStore(object):
     """
     Reads and stores seed progresses to a file.
     """
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, continue_seed=True):
         self.filename = filename
-        self.status = self.load()
+        if continue_seed:
+            self.status = self.load()
+        else:
+            self.status = {}
 
     def load(self):
         if not os.path.exists(self.filename):
