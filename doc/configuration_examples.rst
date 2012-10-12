@@ -160,7 +160,7 @@ The basic configuration for this use-case with MapProxy may look like this::
   sources:
     street_tile_source:
       type: tile
-      url: http://osm.omniscale.net/proxy/tiles/⏎
+      url: http://osm.omniscale.net/proxy/tiles/ \
         1.0.0/osm_roads_EPSG900913/%(z)s/%(x)s/%(y)s.png
       transparent: true
 
@@ -199,7 +199,7 @@ You can change how MapProxy calculates the origin of the tile coordinates, if yo
 The following example uses the class OpenLayers.Layer.OSM::
 
     var overlay_layer = new OpenLayers.Layer.OSM("OSM osm_layer",
-        "http://x.osm.omniscale.net/proxy/tiles/⏎
+        "http://x.osm.omniscale.net/proxy/tiles/ \
         osm_roads_EPSG900913/${z}/${x}/${y}.png?origin=nw",
         {isBaseLayer: false, tileOptions: {crossOriginKeyword: null}}
     );
