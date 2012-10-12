@@ -1,5 +1,21 @@
-from __future__ import division
-from mapproxy.seed.seeder import TileWalker, SeedTask
+# This file is part of the MapProxy project.
+# Copyright (C) 2010-2012 Omniscale <http://omniscale.de>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from __future__ import with_statement, division
+import cPickle as pickle
+from mapproxy.seed.seeder import TileWalker, SeedTask, SeedProgress
 from mapproxy.cache.tile import TileManager
 from mapproxy.source.tile import TiledSource
 from mapproxy.grid import tile_grid_for_epsg
@@ -7,6 +23,9 @@ from mapproxy.grid import TileGrid
 from mapproxy.srs import SRS
 from mapproxy.util.coverage import BBOXCoverage, GeomCoverage
 from mapproxy.seed.config import LevelsList, LevelsRange, LevelsResolutionList, LevelsResolutionRange
+from mapproxy.seed.util import ProgressStore
+from mapproxy.test.helper import TempFile
+
 from collections import defaultdict
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
@@ -23,7 +42,7 @@ class MockSeedPool(object):
     def process(self, tiles, progess):
         for x, y, level in tiles:
             self.seeded_tiles[level].add((x, y))
-            
+
 class MockCache(object):
     def is_cached(self, tile):
         return False
@@ -34,7 +53,7 @@ class TestSeeder(object):
         self.source = TiledSource(self.grid, None)
         self.tile_mgr = TileManager(self.grid, MockCache(), [self.source], 'png')
         self.seed_pool = MockSeedPool()
-    
+
     def make_bbox_task(self, bbox, srs, levels):
         md = dict(name='', cache_name='', grid_name='')
         coverage = BBOXCoverage(bbox, srs)
@@ -44,48 +63,48 @@ class TestSeeder(object):
         md = dict(name='', cache_name='', grid_name='')
         coverage = GeomCoverage(geom, srs)
         return SeedTask(md, self.tile_mgr, levels, refresh_timestamp=None, coverage=coverage)
-    
+
     def test_seed_full_bbox(self):
         task = self.make_bbox_task([-180, -90, 180, 90], SRS(4326), [0, 1, 2])
         seeder = TileWalker(task, self.seed_pool, handle_uncached=True)
         seeder.walk()
-        
+
         eq_(len(self.seed_pool.seeded_tiles), 3)
         eq_(self.seed_pool.seeded_tiles[0], set([(0, 0)]))
         eq_(self.seed_pool.seeded_tiles[1], set([(0, 0), (1, 0)]))
         eq_(self.seed_pool.seeded_tiles[2], set([(0, 0), (1, 0), (2, 0), (3, 0),
                                                  (0, 1), (1, 1), (2, 1), (3, 1)]))
-    
+
     def test_seed_small_bbox(self):
         task = self.make_bbox_task([-45, 0, 180, 90], SRS(4326), [0, 1, 2])
         seeder = TileWalker(task, self.seed_pool, handle_uncached=True)
         seeder.walk()
-        
+
         eq_(len(self.seed_pool.seeded_tiles), 3)
         eq_(self.seed_pool.seeded_tiles[0], set([(0, 0)]))
         eq_(self.seed_pool.seeded_tiles[1], set([(0, 0), (1, 0)]))
         eq_(self.seed_pool.seeded_tiles[2], set([(1, 1), (2, 1), (3, 1)]))
-    
+
     def test_seed_small_bbox_iregular_levels(self):
         task = self.make_bbox_task([-45, 0, 180, 90], SRS(4326), [0, 2])
         seeder = TileWalker(task, self.seed_pool, handle_uncached=True)
         seeder.walk()
-        
+
         eq_(len(self.seed_pool.seeded_tiles), 2)
         eq_(self.seed_pool.seeded_tiles[0], set([(0, 0)]))
         eq_(self.seed_pool.seeded_tiles[2], set([(1, 1), (2, 1), (3, 1)]))
-    
+
     def test_seed_small_bbox_transformed(self):
         bbox = SRS(4326).transform_bbox_to(SRS(900913), [-45, 0, 179, 80])
         task = self.make_bbox_task(bbox, SRS(900913), [0, 1, 2])
         seeder = TileWalker(task, self.seed_pool, handle_uncached=True)
         seeder.walk()
-        
+
         eq_(len(self.seed_pool.seeded_tiles), 3)
         eq_(self.seed_pool.seeded_tiles[0], set([(0, 0)]))
         eq_(self.seed_pool.seeded_tiles[1], set([(0, 0), (1, 0)]))
         eq_(self.seed_pool.seeded_tiles[2], set([(1, 1), (2, 1), (3, 1)]))
-    
+
     def test_seed_with_geom(self):
         if not load_wkt: raise SkipTest('no shapely installed')
         # box from 10 10 to 80 80 with small spike/corner to -10 60 (upper left)
@@ -93,26 +112,26 @@ class TestSeeder(object):
         task = self.make_geom_task(geom, SRS(4326), [0, 1, 2, 3, 4])
         seeder = TileWalker(task, self.seed_pool, handle_uncached=True)
         seeder.walk()
-        
+
         eq_(len(self.seed_pool.seeded_tiles), 5)
         eq_(self.seed_pool.seeded_tiles[0], set([(0, 0)]))
         eq_(self.seed_pool.seeded_tiles[1], set([(0, 0), (1, 0)]))
         eq_(self.seed_pool.seeded_tiles[2], set([(1, 1), (2, 1)]))
         eq_(self.seed_pool.seeded_tiles[3], set([(4, 2), (5, 2), (4, 3), (5, 3), (3, 3)]))
-        eq_(len(self.seed_pool.seeded_tiles[4]), 4*4+2) 
-    
+        eq_(len(self.seed_pool.seeded_tiles[4]), 4*4+2)
+
     def test_seed_with_res_list(self):
         if not load_wkt: raise SkipTest('no shapely installed')
         # box from 10 10 to 80 80 with small spike/corner to -10 60 (upper left)
         geom = load_wkt("POLYGON((10 10, 10 50, -10 60, 10 80, 80 80, 80 10, 10 10))")
-        
+
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90],
                              res=[360/256, 360/720, 360/2000, 360/5000, 360/8000])
         self.tile_mgr = TileManager(self.grid, MockCache(), [self.source], 'png')
         task = self.make_geom_task(geom, SRS(4326), [0, 1, 2, 3, 4])
         seeder = TileWalker(task, self.seed_pool, handle_uncached=True)
         seeder.walk()
-        
+
         eq_(len(self.seed_pool.seeded_tiles), 5)
         eq_(self.seed_pool.seeded_tiles[0], set([(0, 0)]))
         eq_(self.grid.grid_sizes[1], (3, 2))
@@ -122,6 +141,17 @@ class TestSeeder(object):
         eq_(self.grid.grid_sizes[3], (20, 10))
         eq_(len(self.seed_pool.seeded_tiles[3]), 5*5+2)
 
+    def test_seed_full_bbox_continue(self):
+        task = self.make_bbox_task([-180, -90, 180, 90], SRS(4326), [0, 1, 2])
+        seed_progress = SeedProgress([(0, 1), (0, 2)])
+        seeder = TileWalker(task, self.seed_pool, handle_uncached=True, seed_progress=seed_progress)
+        seeder.walk()
+
+        eq_(len(self.seed_pool.seeded_tiles), 3)
+        eq_(self.seed_pool.seeded_tiles[0], set([(0, 0)]))
+        eq_(self.seed_pool.seeded_tiles[1], set([(0, 0), (1, 0)]))
+        eq_(self.seed_pool.seeded_tiles[2], set([(2, 0), (3, 0),
+                                                 (2, 1), (3, 1)]))
 
 class TestLevels(object):
     def test_level_list(self):
@@ -133,7 +163,7 @@ class TestLevels(object):
         levels = LevelsRange([1, 5])
         eq_(levels.for_grid(tile_grid_for_epsg(4326)),
             [1, 2, 3, 4, 5])
-    
+
     def test_level_range_open_from(self):
         levels = LevelsRange([None, 5])
         eq_(levels.for_grid(tile_grid_for_epsg(4326)),
@@ -158,8 +188,39 @@ class TestLevels(object):
         levels = LevelsResolutionRange([1000, None])
         eq_(levels.for_grid(tile_grid_for_epsg(900913)),
             [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
-    
+
     def test_resolution_list(self):
         levels = LevelsResolutionList([1000, 100, 500])
         eq_(levels.for_grid(tile_grid_for_epsg(900913)),
             [8, 9, 11])
+
+
+class TestProgressStore(object):
+    def test_load_empty(self):
+        store = ProgressStore('doesnotexist.no_realy.txt')
+        store.load()
+        assert store.get(('foo', 'bar', 'baz')) == None
+
+    def test_load_store(self):
+        with TempFile(no_create=True) as tmp:
+            with open(tmp, 'w') as f:
+                f.write(pickle.dumps({("view", "cache", "grid"): [(0, 1), (2, 4)]}))
+            store = ProgressStore(tmp)
+            assert store.get(('view', 'cache', 'grid')) == [(0, 1), (2, 4)]
+            assert store.get(('view', 'cache', 'grid2')) == None
+            store.add(('view', 'cache', 'grid'), [])
+            store.add(('view', 'cache', 'grid2'), [(0, 1)])
+            store.write()
+
+            store = ProgressStore(tmp)
+            assert store.get(('view', 'cache', 'grid')) == []
+            assert store.get(('view', 'cache', 'grid2')) == [(0, 1)]
+
+    def test_load_broken(self):
+        with TempFile(no_create=True) as tmp:
+            with open(tmp, 'w') as f:
+                f.write('##invaliddata')
+                f.write(pickle.dumps({("view", "cache", "grid"): [(0, 1), (2, 4)]}))
+
+            store = ProgressStore(tmp)
+            assert store.status == {}
