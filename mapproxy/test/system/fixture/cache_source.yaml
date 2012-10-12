@@ -1,0 +1,57 @@
+services:
+  tms:
+  wms:
+    md:
+        title: test
+
+layers:
+  - name: tms_transf
+    title: transformed tile source
+    sources: [tms_cache_out]
+  - name: new_cache
+    title: access to existing cache
+    sources: [new_cache]
+
+caches:
+  tms_cache_out:
+    grids: [utm32n]
+    meta_buffer: 0
+    meta_size: [2, 2]
+    sources: [tms_cache_in]
+
+  tms_cache_in:
+    grids: [osm_grid]
+    disable_storage: true
+    sources: [tms_source]
+
+  new_cache:
+    grids: [sub_grid]
+    sources: [old_cache]
+
+  old_cache:
+    grids: [osm_grid]
+    sources: [tms_source]
+
+sources:
+  tms_source:
+    type: tile
+    url: http://localhost:42423/tiles/%(tc_path)s.png
+
+
+grids:
+  utm32n:
+    srs: 'EPSG:25832'
+    bbox: [4, 46, 16, 56]
+    bbox_srs: 'EPSG:4326'
+    min_res: 5700
+
+  osm_grid:
+    base: GLOBAL_MERCATOR
+    srs: 'EPSG:3857'
+    origin: nw
+
+  sub_grid:
+    base: osm_grid
+    bbox: [0, 0, 20037508.342789244, 20037508.342789244]
+    min_res: 78271.51696402048
+    num_levels: 18

@@ -371,7 +371,7 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
                 else:
                     start_progress = None
                 seed_progress = SeedProgress(old_progress_identifier=start_progress)
-                _seed_task(task, concurrency, dry_run, skip_geoms_for_last_levels, progress_logger,
+                seed_task(task, concurrency, dry_run, skip_geoms_for_last_levels, progress_logger,
                     seed_progress=seed_progress)
         except CacheLockedError:
             print '    ...cache is locked, skipping'
@@ -380,7 +380,7 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
             active_tasks.pop()
 
 
-def _seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
+def seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
     progress_logger=None, seed_progress=None):
     if task.refresh_timestamp is not None:
         task.tile_manager._expire_timestamp = task.refresh_timestamp
