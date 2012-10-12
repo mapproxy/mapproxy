@@ -59,6 +59,19 @@ Options
   This disables all seeding tasks unless you also use the ``--seed`` option.
 
 
+.. option:: --continue
+
+  Continue an interrupted seed progress. MapProxy will start the seeding progress at the begining if the progress file (``--progress-file``) was not found.  MapProxy can only continue if the previous seed was started with the ``--progress-file`` or ``--continue`` option.
+
+.. option:: --progress-file
+
+  Filename where MapProxy stores the seeding progress for the ``--continue`` option. Defaults to ``.mapproxy_seed_progress`` in the current working directory. MapProxy will remove that file after a successful seed.
+
+
+.. versionadded:: 1.5.0
+  ``--continue`` and ``--progress-file`` option
+
+
 Examples
 ~~~~~~~~
 
