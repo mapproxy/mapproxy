@@ -106,6 +106,7 @@
     :copyright: (c) 2008 by Armin Ronacher and PEP 273 authors.
     :license: modified BSD license.
 """
+from __future__ import absolute_import
 from itertools import izip, imap
 from copy import deepcopy
 
@@ -130,7 +131,7 @@ class odict(dict):
     >>> d.update({'foo': 'bar'})
     >>> d
     odict.odict([('a', 'b'), ('c', 'd'), ('foo', 'bar')])
-    
+
     Keep in mind that when updating from dict-literals the order is not
     preserved as these dicts are unsorted!
 
@@ -179,7 +180,7 @@ class odict(dict):
     >>> d.reverse()
     >>> d
     odict.odict([('spam', []), ('foo', 'bar'), ('c', 'd'), ('a', 'b')])
-    
+
     And sort it like a list:
 
     >>> d.sort(key=lambda x: x[0].lower())

@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,8 @@ from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import load_seed_tasks_conf
 from mapproxy.seed.seeder import seed
 from mapproxy.seed.cleanup import cleanup
-from mapproxy.seed.util import format_seed_task, format_cleanup_task, ProgressLog
+from mapproxy.seed.util import (format_seed_task, format_cleanup_task,
+    ProgressLog, ProgressStore)
 from mapproxy.seed.cachelock import CacheLocker
 
 
@@ -56,7 +57,7 @@ class SeedScript(object):
                       help="number of parallel seed processes")
     parser.add_option("-n", "--dry-run",
                       action="store_true", dest="dry_run", default=False,
-                      help="do not seed, just print output")    
+                      help="do not seed, just print output")
     parser.add_option("-l", "--skip-geoms-for-last-levels",
                       type="int", dest="geom_levels", default=0,
                       metavar="N",
@@ -69,7 +70,7 @@ class SeedScript(object):
     parser.add_option("-i", "--interactive",
                       action="store_true", dest="interactive", default=False,
                       help="print each task description and ask if it should be seeded")
-    
+
     parser.add_option("--seed",
                       action="append", dest="seed_names", metavar='task1,task2,...',
                       help="seed only the named tasks. cleanup is disabled unless "
@@ -79,15 +80,23 @@ class SeedScript(object):
                       action="append", dest="cleanup_names", metavar='task1,task2,...',
                       help="cleanup only the named tasks. seeding is disabled unless "
                       "--seed is used. use ALL to select all tasks")
-    
+
     parser.add_option("--use-cache-lock",
                       action="store_true", default=False,
                       help="use locking to prevent multiple mapproxy-seed calls "
                       "to seed the same cache")
 
+    parser.add_option("--continue", dest='continue_seed',
+                      action="store_true", default=False,
+                      help="continue an aborted seed progress")
+
+    parser.add_option("--progress-file", dest='progress_file',
+                      default=".mapproxy_seed_progress",
+                      help="filename for storing the seed progress (for --continue option)")
+
     def __call__(self):
         (options, args) = self.parser.parse_args()
-        
+
         if len(args) != 1 and not options.seed_file:
             self.parser.print_help()
             sys.exit(1)
@@ -97,18 +106,18 @@ class SeedScript(object):
                 self.parser.error('missing seed_conf file as last argument or --seed-conf option')
             else:
                 options.seed_file = args[0]
-    
+
         if not options.conf_file:
             self.parser.error('missing mapproxy configuration -f/--proxy-conf')
 
         setup_logging()
-        
+
         try:
             mapproxy_conf = load_configuration(options.conf_file, seed=True)
         except ConfigurationError, ex:
             print "ERROR: " + '\n\t'.join(str(ex).split('\n'))
             sys.exit(2)
-        
+
         if options.use_cache_lock:
             cache_locker = CacheLocker('.mapproxy_seed.lck')
         else:
@@ -132,7 +141,16 @@ class SeedScript(object):
                 for task in cleanup_tasks:
                     print format_cleanup_task(task)
                 return 0
-            
+
+            progress = None
+            if options.continue_seed or options.progress_file:
+                if options.progress_file:
+                    progress_file = options.progress_file
+                else:
+                    progress_file = '.mapproxy_seed_progress'
+                progress = ProgressStore(progress_file,
+                    continue_seed=options.continue_seed)
+
             try:
                 if options.interactive:
                     seed_tasks, cleanup_tasks = self.interactive(seed_tasks, cleanup_tasks)
@@ -141,7 +159,8 @@ class SeedScript(object):
                     print '========== Seeding tasks =========='
                     print 'Start seeding process (%d task%s)' % (
                         len(seed_tasks), 's' if len(seed_tasks) > 1 else '')
-                    logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2)
+                    logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2,
+                        progress_store=progress)
                     seed(seed_tasks, progress_logger=logger, dry_run=options.dry_run,
                          concurrency=options.concurrency, cache_locker=cache_locker,
                          skip_geoms_for_last_levels=options.geom_levels)
@@ -156,10 +175,13 @@ class SeedScript(object):
             except KeyboardInterrupt:
                 print '\nexiting...'
                 return 2
-    
+
+            if progress:
+                progress.remove()
+
     def task_names(self, seed_conf, options):
         seed_names = cleanup_names = []
-    
+
         if options.seed_names:
             seed_names = split_comma_seperated_option(options.seed_names)
             if seed_names == ['ALL']:
@@ -187,7 +209,7 @@ class SeedScript(object):
                     sys.exit(1)
         elif not options.seed_names:
             cleanup_names = None # cleanup all
-    
+
         return seed_names, cleanup_names
 
     def interactive(self, seed_tasks, cleanup_tasks):
