@@ -207,6 +207,95 @@ The following example uses the class OpenLayers.Layer.OSM::
 The origin parameter at the end of the URL tells MapProxy that the client expects the origin in the upper left corner (north/west).
 You can change the default origin of all MapProxy tile layers by using the ``origin`` option of the ``tms`` service. See the :ref:`TMS standard tile origin<google_maps_label>` for more informations.
 
+.. _using_existing_caches:
+
+Using existing caches
+=====================
+
+.. versionadded:: 1.5
+
+In some special use-cases you might want to use a cache as the source of another cache. For example, you might need to change the grid of an existing cache
+to cover a larger bounding box, or to support tile clients that expect a different grid, but you don't want to seed the data again.
+
+Here is an example of a cache in UTM that uses data from an existing cache in web-mercator projection.
+
+::
+
+    layers:
+      - name: lyr1
+        title: Layer using data from existing_cache
+        sources: [new_cache]
+
+    caches:
+      new_cache:
+        grids: [new_grid]
+        sources: [existing_cache]
+
+      existing_cache:
+        grids: [old_grid]
+        sources: [my_source]
+
+    grids:
+      utm32n:
+        srs: 'EPSG:25832'
+        bbox: [4, 46, 16, 56]
+        bbox_srs: 'EPSG:4326'
+        origin: 'nw'
+        min_res: 5700
+
+      osm_grid:
+        base: GLOBAL_MERCATOR
+        origin: nw
+
+
+Reprojecting Tiles
+==================
+
+.. versionadded:: 1.5
+
+When you need to access tiles in a different projection that you source tile server offers, then you can use the feature from above.
+Here is an example that uses OSM tiles as a source and offers them in UTM projection. The `disable_storage` option prevents MapProxy from building up two caches. The `meta_size` makes MapProxy to reproject multiple tiles at once.
+
+
+Here is an example that makes OSM tiles available as tiles in UTM. Note that reprojecting vector data results in quality loss. For better results you need to find similar resolutions between both grids.
+
+::
+
+    layers:
+      - name: osm
+        title: OSM in UTM
+        sources: [osm_cache]
+
+    caches:
+      osm_cache:
+        grids: [utm32n]
+        meta_size: [4, 4]
+        sources: [osm_cache_in]
+
+      osm_cache_in:
+        grids: [osm_grid]
+        disable_storage: true
+        sources: [osm_source]
+
+    sources:
+      osm_source:
+        type: tile
+        grid: osm_grid
+        url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
+
+    grids:
+      utm32n:
+        srs: 'EPSG:25832'
+        bbox: [4, 46, 16, 56]
+        bbox_srs: 'EPSG:4326'
+        origin: 'nw'
+        min_res: 5700
+
+      osm_grid:
+        base: GLOBAL_MERCATOR
+        origin: nw
+
+
 Cache raster data
 =================
 

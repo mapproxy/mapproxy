@@ -261,9 +261,20 @@ Available options are:
 ``sources``
 """""""""""
 
-A list with source names. The sources needs to be defined in the ``sources`` configuration. This parameter is `required`. MapProxy will merge multiple sources from left (bottom) to right (top) before they are stored on disk.
+A list of data sources for this cache. You can use sources defined in the ``sources`` and ``caches`` section. This parameter is `required`. MapProxy will merge multiple sources from left (bottom) to right (top) before they are stored on disk.
 
 WMS and Mapserver sources also support tagged names (``wms:lyr1,lyr2``). See :ref:`tagged_source_names`.
+
+Cache souces
+^^^^^^^^^^^^
+.. versionadded:: 1.5
+
+You can also use other caches as a source. MapProxy loads tiles directly from that cache if the grid of the target cache is identical or *compatible* with the grid of the source cache. You have a compatible grid when all tiles in the cache grid are also available in source grid, even if the tile coordinates (X/Y/Z) are different.
+
+When the grids are not compatible, e.g. when they use different projections, then MapProxy will access the source cache as if it is a WMS source and it will use meta-requests and do image reprojection as necessary.
+
+See :ref:`using_existing_caches` for more information.
+
 
 .. _mixed_image_format:
 

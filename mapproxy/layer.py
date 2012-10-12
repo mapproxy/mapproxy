@@ -39,6 +39,8 @@ class MapBBOXError(Exception):
     pass
 
 class MapLayer(object):
+    supports_meta_tiles = False
+
     res_range = None
 
     coverage = None
@@ -223,6 +225,27 @@ class MapExtent(object):
             raise NotImplemented
         return bbox_intersects(self.bbox, other.bbox_for(self.srs))
 
+    def intersection(self, other):
+        """
+        Returns the intersection of `self` and `other`.
+
+        >>> e = DefaultMapExtent().intersection(MapExtent((0, 0, 10, 10), SRS(4326)))
+        >>> e.bbox, e.srs
+        ((0, 0, 10, 10), SRS('EPSG:4326'))
+        """
+        if not self.intersects(other):
+            return None
+
+        source = self.bbox
+        sub = other.bbox_for(self.srs)
+
+        return MapExtent((
+            max(source[0], sub[0]),
+            max(source[1], sub[1]),
+            min(source[2], sub[2]),
+            min(source[3], sub[3])),
+            self.srs)
+
 class DefaultMapExtent(MapExtent):
     """
     Default extent that covers the whole world.
@@ -250,6 +273,7 @@ def merge_layer_extents(layers):
     return extent
 
 class ResolutionConditional(MapLayer):
+    supports_meta_tiles = True
     def __init__(self, one, two, resolution, srs, extent, opacity=None):
         MapLayer.__init__(self)
         self.one = one
@@ -280,6 +304,7 @@ class ResolutionConditional(MapLayer):
             return self.two.get_map(query)
 
 class SRSConditional(MapLayer):
+    supports_meta_tiles = True
     PROJECTED = 'PROJECTED'
     GEOGRAPHIC = 'GEOGRAPHIC'
 
@@ -322,6 +347,8 @@ class SRSConditional(MapLayer):
 
 
 class DirectMapLayer(MapLayer):
+    supports_meta_tiles = True
+
     def __init__(self, source, extent):
         MapLayer.__init__(self)
         self.source = source
@@ -343,6 +370,8 @@ def merge_layer_res_ranges(layers):
 
 
 class CacheMapLayer(MapLayer):
+    supports_meta_tiles = True
+
     def __init__(self, tile_manager, extent=None, image_opts=None,
         max_tile_limit=None):
         MapLayer.__init__(self, image_opts=image_opts)

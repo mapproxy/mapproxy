@@ -47,7 +47,7 @@ Bounding box
 
 For simple box coverages.
 
-`bbox`` or ``datasource``:
+``bbox`` or ``datasource``:
     A simple BBOX as a list, e.g: `[4, -30, 10, -28]` or as a string `4,-30,10,-28`.
 
 Polygon file

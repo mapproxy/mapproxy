@@ -1,0 +1,12 @@
+globals:
+    cache:
+        meta_size: [1, 1]
+caches:
+  tms_cache:
+    sources: [tms_source]
+
+sources:
+  tms_source:
+    type: tile
+    url: http://localhost:42423/tiles/%(z)s/%(x)s/%(y)s.png
+

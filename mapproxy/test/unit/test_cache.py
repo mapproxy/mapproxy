@@ -32,7 +32,7 @@ from mapproxy.layer import (
     MapExtent,
     MapQuery,
 )
-from mapproxy.source import Source, InvalidSourceQuery, SourceError
+from mapproxy.source import InvalidSourceQuery, SourceError
 from mapproxy.client.wms import WMSClient
 from mapproxy.source.wms import WMSSource
 from mapproxy.source.tile import TiledSource
@@ -44,7 +44,7 @@ from mapproxy.srs import SRS
 from mapproxy.client.http import HTTPClient
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.layer import BlankImage, MapBBOXError
+from mapproxy.layer import BlankImage, MapLayer, MapBBOXError
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.util.coverage import BBOXCoverage
 
@@ -214,9 +214,9 @@ class TestTileManagerDifferentSourceGrid(object):
     def test_create_tiles_out_of_bounds(self):
         self.tile_mgr.creator().create_tiles([Tile((0, 0, 0))])
 
-class MockSource(Source):
+class MockSource(MapLayer):
     def __init__(self, *args):
-        Source.__init__(self, *args)
+        MapLayer.__init__(self, *args)
         self.requested = []
 
     def _image(self, size):
