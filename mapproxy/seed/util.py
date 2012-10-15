@@ -72,7 +72,11 @@ class ETA(object):
         timestamp = self.eta()
         if timestamp is None:
             return 'N/A'
-        return time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(timestamp))
+        try:
+            return time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(timestamp))
+        except ValueError:
+            # raised when time is out of range (e.g. year >2038)
+            return 'N/A'
 
     def eta(self):
         if not self.tick_count: return
