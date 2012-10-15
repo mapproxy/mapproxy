@@ -104,7 +104,7 @@
       <Format>{{layer.md['format']}}</Format>
       <Layers>{{layer.name}}</Layers>
       <Styles></Styles>
-    </TileSet>  
+    </TileSet>
 {{endfor}}
   </VendorSpecificCapabilities>
 {{endif}}
@@ -125,6 +125,20 @@
     {{for srs_code, bbox in layer_srs_bbox(layer)}}
     <BoundingBox SRS="{{srs_code}}" minx="{{ bbox[0] }}" miny="{{ bbox[1] }}" maxx="{{ bbox[2] }}" maxy="{{ bbox[3] }}" />
     {{endfor}}
+    {{py: md = bunch(default='', **layer.md)}}
+    {{if md.metadata}}
+      {{for data in md.metadata}}
+          {{py: data = bunch(default='', **data)}}
+          {{if wms111metadatatype(data.type)}}
+    <MetadataURL type="{{wms111metadatatype(data.type)|escape}}">
+      {{if data.format}}
+      <Format>{{data.format}}</Format>
+      {{endif}}
+      <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{data.url|escape}}"/>
+    </MetadataURL>
+          {{endif}}
+      {{endfor}}
+    {{endif}}
     {{if layer.is_active and layer.has_legend}}
     <Style>
         <Name>default</Name>
