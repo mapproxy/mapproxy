@@ -108,6 +108,9 @@ layers:
   - name: wms_cache_110
     title: WMS Cache Layer
     sources: [wms_cache_110]
+  - name: watermark_cache
+    title: TMS Cache + watermark
+    sources: [watermark_cache]
 
 caches:
   wms_cache:
@@ -138,6 +141,11 @@ caches:
   wms_cache_110:
     format: image/jpeg
     sources: [wms_cache_110]
+  watermark_cache:
+    sources: [tms_cache]
+    disable_storage: true
+    watermark:
+      text: '@ Omniscale'
 
 sources:
   direct:
