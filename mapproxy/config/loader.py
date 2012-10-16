@@ -811,12 +811,15 @@ class TileSourceConfiguration(SourceConfiguration):
         http_client, url = self.http_client(url)
         grid = self.context.grids[self.conf['grid']].tile_grid()
         coverage = self.coverage()
+        res_range = resolution_range(self.conf)
+
         image_opts = self.image_opts()
         error_handler = self.on_error_handler()
 
         format = file_ext(params['format'])
         client = TileClient(TileURLTemplate(url, format=format), http_client=http_client, grid=grid)
-        return TiledSource(grid, client, coverage=coverage, image_opts=image_opts, error_handler=error_handler)
+        return TiledSource(grid, client, coverage=coverage, image_opts=image_opts,
+            error_handler=error_handler, res_range=res_range)
 
 
 def file_ext(mimetype):

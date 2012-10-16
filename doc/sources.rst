@@ -103,11 +103,13 @@ Define the covered area of the source. The source will only be requested if ther
 
 Disable this source in regular mode. If set to ``true``, this source will always return a blank/transparent image. The source will only be requested during the seeding process. You can use this option to run MapProxy in an offline mode.
 
+.. _source_minmax_res:
+
 ``min_res``, ``max_res`` or ``min_scale``, ``max_scale``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. NOTE paragraph also in configuration/layers section
 
-Limit the source to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries. You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`. Resolutions should be in meters per pixel.
+Limit the source to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries (``min_res`` is inclusive, ``max_res`` exclusive). You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`. Resolutions should be in meters per pixel.
 
 The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator). The boundaries will be regarded for each source, but the values in the capabilities might differ if you combine multiple sources or if the MapProxy layer already has a ``min/max_res`` configuration.
 
@@ -329,6 +331,14 @@ See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 ``seed_only``
 ^^^^^^^^^^^^^
 See :ref:`seed_only <wms_seed_only>`
+
+``min_res``, ``max_res`` or ``min_scale``, ``max_scale``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.5.0
+
+See :ref:`source_minmax_res`.
+
 
 ``on_error``
 ^^^^^^^^^^^^
