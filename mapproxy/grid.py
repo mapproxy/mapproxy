@@ -428,7 +428,9 @@ class TileGrid(object):
         return (x, self.grid_sizes[z][1]-1-y, z)
 
     def supports_access_with_origin(self, origin):
-        if (origin or 'sw') == (self.origin or 'sw'):
+        if origin in (None, 'sw', 'll') and self.origin in (None, 'sw', 'll'):
+            return True
+        if origin in (None, 'nw', 'ul') and self.origin in (None, 'nw', 'ul'):
             return True
         grid_size = self.grid_sizes[0]
         level_0_bbox = self._tiles_bbox([(0, 0, 0),
