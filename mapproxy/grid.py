@@ -1072,7 +1072,7 @@ class ResolutionRange(object):
             if min_res <= x_res or min_res <= y_res:
                 return False
         if self.max_res:
-            max_res = self.max_res - 1e-6
+            max_res = self.max_res
             if max_res > x_res or max_res > y_res:
                 return False
 
