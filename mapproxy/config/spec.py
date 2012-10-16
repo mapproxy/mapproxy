@@ -324,6 +324,7 @@ mapproxy_yaml_spec = {
                     }),
                     'supported_formats': [str()],
                     'supported_srs': [str()],
+                    'forward_req_params': [str()],
                     required('req'): {
                         required('map'): str(),
                         anything(): anything()
