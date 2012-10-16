@@ -17,6 +17,7 @@ from __future__ import with_statement
 import os
 import hashlib
 from cStringIO import StringIO
+from mapproxy.platform.image import Image
 from mapproxy.test.image import is_jpeg, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
@@ -40,7 +41,7 @@ class TestTMS(SystemTest):
         assert 'WMS Cache Multi Layer' in resp
         assert 'TMS Cache Layer' in resp
         xml = resp.lxml
-        assert xml.xpath('count(//TileMap)') == 9
+        assert xml.xpath('count(//TileMap)') == 10
         
         # without trailing space
         resp2 = self.app.get('/tms/1.0.0')
@@ -95,7 +96,7 @@ class TestTMS(SystemTest):
                                       '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                       '&VERSION=1.1.1&BBOX=-20037508.3428,-20037508.3428,0.0,0.0'
                                       '&WIDTH=256'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
+                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 resp = self.app.get('/tms/1.0.0/wms_cache/0/0/0.jpeg')
                 eq_(resp.content_type, 'image/jpeg')
@@ -109,6 +110,18 @@ class TestTMS(SystemTest):
                 resp = self.app.get('/tms/1.0.0/tms_cache/0/0/1.png')
                 eq_(resp.content_type, 'image/png')
                 self.created_tiles.append('tms_cache_EPSG900913/01/000/000/000/000/000/001.png')
+
+    def test_get_tile_with_watermark_cache(self):
+        with tmp_image((256, 256), format='png', color=(0, 0, 0)) as img:
+            expected_req = ({'path': r'/tiles/01/000/000/000/000/000/000.png'},
+                             {'body': img.read(), 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                resp = self.app.get('/tms/1.0.0/watermark_cache/0/0/0.png')
+                eq_(resp.content_type, 'image/png')
+                img = Image.open(StringIO(resp.body))
+                colors = img.getcolors()
+                assert len(colors) >= 2
+                eq_(sorted(colors)[-1][1], (0, 0, 0))
 
 class TestTileService(SystemTest):
     config = test_config
@@ -219,7 +232,7 @@ class TestTileService(SystemTest):
                                       '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                       '&VERSION=1.1.1&BBOX=-20037508.3428,-20037508.3428,0.0,0.0'
                                       '&WIDTH=256'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
+                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 resp = self.app.get('/tiles/wms_cache/1/0/0.jpeg')
                 eq_(resp.content_type, 'image/jpeg')

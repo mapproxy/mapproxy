@@ -234,7 +234,7 @@ class TileLayer(object):
                 return self.empty_response()
 
             format = None if self._mixed_format else tile_request.format
-            return TileResponse(tile, format=format)
+            return TileResponse(tile, format=format, image_opts=self.tile_manager.image_opts)
         except SourceError, e:
             raise RequestError(e.args[0], request=tile_request, internal=True)
 
@@ -256,14 +256,13 @@ class TileResponse(object):
     """
     Response from a Tile.
     """
-    def __init__(self, tile, format=None, timestamp=None):
+    def __init__(self, tile, format=None, timestamp=None, image_opts=None):
         self.tile = tile
         self.timestamp = tile.timestamp
         self.size = tile.size
         self.cacheable = tile.cacheable
-        self._buf = self.tile.source_buffer()
-        self.format = format or self._format_from_magic_bytes()
-
+        self._buf = self.tile.source_buffer(format=format, image_opts=image_opts)
+        self.format = format or self._format_from_magic_bytes()        
 
     def as_buffer(self):
         return self._buf

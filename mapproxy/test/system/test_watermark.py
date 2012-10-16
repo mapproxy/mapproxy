@@ -49,7 +49,7 @@ class WatermarkTest(SystemTest):
                                        '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&styles='
                                        '&VERSION=1.1.1&BBOX=-180.0,-90.0,0.0,90.0'
                                        '&WIDTH=256'},
-                             {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
+                             {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 resp = self.app.get('/tms/1.0.0/watermark/EPSG4326/0/0/0.png')
                 eq_(resp.content_type, 'image/png')
@@ -64,7 +64,7 @@ class WatermarkTest(SystemTest):
                                        '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326&styles='
                                        '&VERSION=1.1.1&BBOX=-180.0,-90.0,0.0,90.0'
                                        '&WIDTH=256'},
-                             {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
+                             {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 resp = self.app.get('/tms/1.0.0/watermark_transp/EPSG4326/0/0/0.png')
                 eq_(resp.content_type, 'image/png')

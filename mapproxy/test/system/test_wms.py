@@ -133,7 +133,7 @@ class TestWMS111(WMSTest):
         expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
             'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
             'wms_merge', 'tms_cache', 'wms_cache_multi',
-            'wms_cache_link_single', 'wms_cache_110'])
+            'wms_cache_link_single', 'wms_cache_110', 'watermark_cache'])
         eq_(layer_names, expected_names)
         assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
 
@@ -387,7 +387,7 @@ class TestWMS111(WMSTest):
                                       '&REQUEST=GetMap&HEIGHT=256&CRS=EPSG%3A900913&styles='
                                       '&VERSION=1.3.0&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
+                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 self.common_map_req.params['bbox'] = '0,0,180,90'
                 self.common_map_req.params['layers'] = 'wms_cache_130'
@@ -402,7 +402,7 @@ class TestWMS111(WMSTest):
                                       '&REQUEST=GetMap&HEIGHT=256&CRS=EPSG%3A4326&styles='
                                       '&VERSION=1.3.0&BBOX=0.0,90.0,90.0,180.0'
                                       '&WIDTH=256'},
-                            {'body': img, 'headers': {'content-type': 'image/jgeg'}}),]
+                            {'body': img, 'headers': {'content-type': 'image/jpeg'}}),]
             with mock_httpd(('localhost', 42423), expected_reqs):
                 self.common_map_req.params['bbox'] = '90,0,180,90'
                 self.common_map_req.params['layers'] = 'wms_cache_multi'
@@ -548,7 +548,7 @@ class TestWMS110(WMSTest):
         expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
             'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
             'wms_merge', 'tms_cache', 'wms_cache_multi',
-            'wms_cache_link_single', 'wms_cache_110'])
+            'wms_cache_link_single', 'wms_cache_110', 'watermark_cache'])
         eq_(layer_names, expected_names)
         assert validate_with_dtd(xml, dtd_name='wms/1.1.0/capabilities_1_1_0.dtd')
 
@@ -693,7 +693,7 @@ class TestWMS100(WMSTest):
         expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
             'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
             'wms_merge', 'tms_cache', 'wms_cache_multi',
-            'wms_cache_link_single', 'wms_cache_110'])
+            'wms_cache_link_single', 'wms_cache_110', 'watermark_cache'])
         eq_(layer_names, expected_names)
         #TODO srs
         assert validate_with_dtd(xml, dtd_name='wms/1.0.0/capabilities_1_0_0.dtd')
@@ -775,7 +775,7 @@ class TestWMS100(WMSTest):
                                       '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                       '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
+                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 self.common_map_req.params['bbox'] = '0,0,180,90'
                 resp = self.app.get(self.common_map_req)
@@ -841,7 +841,7 @@ class TestWMS130(WMSTest):
         expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
             'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
             'wms_merge', 'tms_cache', 'wms_cache_multi',
-            'wms_cache_link_single', 'wms_cache_110'])
+            'wms_cache_link_single', 'wms_cache_110', 'watermark_cache'])
         eq_(layer_names, expected_names)
         assert is_130_capa(xml)
 
@@ -923,7 +923,7 @@ class TestWMS130(WMSTest):
                                       '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                       '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
+                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 self.common_map_req.params['bbox'] = '0,0,180,90' #internal axis-order
                 resp = self.app.get(self.common_map_req)
