@@ -1,3 +1,40 @@
+1.5.0 2012-xx-xx
+~~~~~~~~~~~~~~~~
+
+Features:
+
+- `mapproxy-util grids` tool to analyze grid configurations
+- `mapproxy-util wms-capabilities` tool
+- `mapproxy-util export` tool
+- use_grid_names option to access Tiles/TMS/KML layers by grid
+  name instead of EPSGXXXX
+- origin option for TMS to change default origin of the /tiles service
+- mixed_image mode that automatically chooses between PNG/JPEG
+- continue stopped/interrupted seed processes
+- support min_res/max_res for tile sources
+- use caches as source for other caches
+
+Improvements:
+
+- do not show layers with incompatible grids in WMTS/TMS demo
+- make 0/0/0.kml optional for the initial KML file
+- use BBOX of coverage for capabilities in seed_only layers
+- ignore debug layer when loading tile layers
+- simplified coverage configuration
+- add reloader option to make_wsgi_app()
+- add MetadataURL to WMS 1.1.1 capabilities
+- improved WMTS services with custom grids (origin)
+- use in_image exceptions in WMS demo client
+
+Fixes:
+
+- fixed reloading of multiapps in threaded servers
+- fixed BBOX check for single tile requests
+
+Other:
+
+- deprecated `origin` option for tile sources was removed
+
 1.4.0 2012-05-15
 ~~~~~~~~~~~~~~~~~
 
@@ -12,7 +49,7 @@ Fixes:
 
 Features:
 
-- support clipping of requests to polygon geometries in security API 
+- support clipping of requests to polygon geometries in security API
 - support for WMS 1.3.0 extended layer capabilities
 - on_error handling for tile sources. fallback to empty/transparent
   tiles when the source returns HTTP codes like 404 or 204
@@ -244,7 +281,7 @@ Fixes:
 
 Features:
 
-- [mapproxy-seed] separated seed and cleanup tasks; call tasks independently 
+- [mapproxy-seed] separated seed and cleanup tasks; call tasks independently
 - XSL transformation of WMS FeatureInfo responses
 - content aware merging of multiple XML/HTML FeatureInfo repsonses
 - FeatureInfo types are configurable with wms.featureinfo_types
@@ -271,7 +308,7 @@ Improvements:
   images
 - support for transparent/overlayed tile sources
 - renamed thread_pool_size to concurrent_tile_creators
-- tweaked KML level of detail parameters to fix render issues in Google Earth 
+- tweaked KML level of detail parameters to fix render issues in Google Earth
   with tilted views
 
 Fixes:
@@ -423,7 +460,7 @@ Fixes:
 ~~~~~~~~~~~~~~~~~~~
 
 - new improved seed tool
-  
+
   - seed polygon areas instead BBOX (from shapefiles, etc)
   - advanced seeding strategy
   - multiprocessing

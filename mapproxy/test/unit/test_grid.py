@@ -698,6 +698,15 @@ class TestOrigins(object):
         assert grid.supports_access_with_origin('ll')
         assert grid.supports_access_with_origin('ul')
 
+    def test_basic_mixed_name(self):
+        grid = tile_grid(4326, bbox=(-180, -90, 180, 90), origin='ll')
+        assert grid.supports_access_with_origin('sw')
+        assert not grid.supports_access_with_origin('nw')
+
+        grid = tile_grid(4326, bbox=(-180, -90, 180, 90), origin='ul')
+        assert not grid.supports_access_with_origin('sw')
+        assert grid.supports_access_with_origin('nw')
+
     def test_custom_with_match(self):
         # height is divisible by res*tile_size
         grid = tile_grid(4326, bbox=(0, 0, 1024, 1024), origin='ll',

@@ -192,8 +192,12 @@ class TileMatrixSet(object):
         self.grid = grid
         self.name = grid.name
         self.srs_name = grid.srs.srs_code
+        self.tile_matrices = list(self._tile_matrices())
 
     def __iter__(self):
+        return iter(self.tile_matrices)
+
+    def _tile_matrices(self):
         for level, res in self.grid.resolutions.iteritems():
             origin = self.grid.origin_tile(level, 'ul')
             bbox = self.grid.tile_bbox(origin)
