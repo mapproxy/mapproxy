@@ -1070,8 +1070,7 @@ class TestResolutionRange(object):
 
     def test_none(self):
         res_range = resolution_range(None, None)
-        assert res_range.contains([0, 0, 100000, 100000], (1, 1), SRS(900913))
-        assert res_range.contains([0, 0, 100000, 100000], (1000000, 100000), SRS(900913))
+        assert res_range == None
 
     def test_from_scale(self):
         res_range = resolution_range(max_scale=1e6, min_scale=1e3)
@@ -1100,8 +1099,7 @@ class TestResolutionRange(object):
     def test_merge_resolutions(self):
         res_range = merge_resolution_range(
             ResolutionRange(None, 10), ResolutionRange(1000, None))
-        eq_(res_range.min_res, None)
-        eq_(res_range.max_res, None)
+        eq_(res_range, None)
 
         res_range = merge_resolution_range(
             ResolutionRange(10000, 10), ResolutionRange(1000, None))
@@ -1115,8 +1113,7 @@ class TestResolutionRange(object):
 
         res_range = merge_resolution_range(
             ResolutionRange(10000, 10), ResolutionRange(None, None))
-        eq_(res_range.min_res, None)
-        eq_(res_range.max_res, None)
+        eq_(res_range, None)
 
         res_range = merge_resolution_range(
             None, ResolutionRange(None, None))
