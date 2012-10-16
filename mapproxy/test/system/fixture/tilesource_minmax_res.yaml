@@ -1,0 +1,22 @@
+services:
+  tms:
+
+layers:
+    - name: tms_cache
+      title: min_res/max_res source
+      sources: [tms_cache]
+
+caches:
+  tms_cache:
+    grids: [GLOBAL_MERCATOR]
+    sources: [tms_source_a, tms_source_b]
+
+sources:
+  tms_source_a:
+    type: tile
+    url: http://localhost:42423/tiles_a/%(tc_path)s.png
+    max_res: 1222.99245256282
+  tms_source_b:
+    type: tile
+    url: http://localhost:42423/tiles_b/%(tc_path)s.png
+    min_res: 1222.99245256282

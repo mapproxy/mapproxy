@@ -30,13 +30,15 @@ log = logging.getLogger('mapproxy.source.tile')
 log_config = logging.getLogger('mapproxy.config')
 
 class TiledSource(MapLayer):
-    def __init__(self, grid, client, coverage=None, image_opts=None, error_handler=None):
+    def __init__(self, grid, client, coverage=None, image_opts=None, error_handler=None,
+        res_range=None):
         MapLayer.__init__(self, image_opts=image_opts)
         self.grid = grid
         self.client = client
         self.image_opts = image_opts or ImageOptions()
         self.coverage = coverage
         self.extent = coverage.extent if coverage else map_extent_from_grid(grid)
+        self.res_range = res_range
         self.error_handler = error_handler
 
     def get_map(self, query):
@@ -56,6 +58,9 @@ class TiledSource(MapLayer):
             log_config.error(ex)
             raise ex
 
+        if self.res_range and not self.res_range.contains(query.bbox, query.size,
+                                                          query.srs):
+            raise BlankImage()
         if self.coverage and not self.coverage.intersects(query.bbox, query.srs):
             raise BlankImage()
 

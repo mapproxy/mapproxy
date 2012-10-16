@@ -103,6 +103,8 @@ Define the covered area of the source. The source will only be requested if ther
 
 Disable this source in regular mode. If set to ``true``, this source will always return a blank/transparent image. The source will only be requested during the seeding process. You can use this option to run MapProxy in an offline mode.
 
+.. _source_minmax_res:
+
 ``min_res``, ``max_res`` or ``min_scale``, ``max_scale``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. NOTE paragraph also in configuration/layers section
@@ -329,6 +331,14 @@ See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 ``seed_only``
 ^^^^^^^^^^^^^
 See :ref:`seed_only <wms_seed_only>`
+
+``min_res``, ``max_res`` or ``min_scale``, ``max_scale``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.5.0
+
+See :ref:`source_minmax_res`.
+
 
 ``on_error``
 ^^^^^^^^^^^^
