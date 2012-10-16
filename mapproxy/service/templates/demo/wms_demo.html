@@ -6,7 +6,7 @@ wrapper = textwrap.TextWrapper(replace_whitespace=False, width=90,
                                break_long_words=False)
 def strip(s):
     return s.split('/')[1]
-    
+
 menu_title = "WMS %s %s" % (layer.name,srs)
 jscript_functions=None
 }}
@@ -16,16 +16,18 @@ jscript_functions=None
     var map;
     function init(){
         OpenLayers.Util.onImageLoadErrorColor = "transparent";
-        
+
         map = new OpenLayers.Map('map', {
           maxResolution: {{res}},
           maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in bbox)}}),
           projection: new OpenLayers.Projection("{{srs}}")
         });
-        var layer = new OpenLayers.Layer.WMS( "WMS {{layer.name}}", 
-            "../service?", {layers: "{{layer.name}}", format: "{{format}}", srs:"{{srs}}"}, 
+        var layer = new OpenLayers.Layer.WMS( "WMS {{layer.name}}",
+            "../service?",
+            {layers: "{{layer.name}}", format: "{{format}}", srs:"{{srs}}",
+             exceptions: "application/vnd.ogc.se_inimage"},
             {singleTile: true, ratio: 1}, {isBaseLayer: true} );
-        
+
         map.addLayer(layer);
         map.zoomToMaxExtent();
     }
