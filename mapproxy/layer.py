@@ -362,7 +362,8 @@ class DirectMapLayer(MapLayer):
 
 def merge_layer_res_ranges(layers):
     ranges = [s.res_range for s in layers
-              if hasattr(s, 'res_range')]
+              if getattr(s, 'res_range', None)]
+
     if ranges:
         ranges = reduce(merge_resolution_range, ranges)
 

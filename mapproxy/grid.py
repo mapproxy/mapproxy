@@ -1021,7 +1021,7 @@ def res_to_ogc_scale(res):
 
 def resolution_range(min_res=None, max_res=None, max_scale=None, min_scale=None):
     if min_scale == max_scale == min_res == max_res == None:
-        return ResolutionRange(None, None)
+        return None
     if min_res or max_res:
         if not max_scale and not min_scale:
             return ResolutionRange(min_res, max_res)
@@ -1072,7 +1072,7 @@ class ResolutionRange(object):
             if min_res <= x_res or min_res <= y_res:
                 return False
         if self.max_res:
-            max_res = self.max_res - 1e-6
+            max_res = self.max_res
             if max_res > x_res or max_res > y_res:
                 return False
 
@@ -1092,7 +1092,7 @@ class ResolutionRange(object):
 
     def __repr__(self):
         return '<ResolutionRange(min_res=%.3f, max_res=%.3f)>' % (
-            self.min_res, self.max_res)
+            self.min_res or 9e99, self.max_res or 0)
 
 
 def max_with_none(a, b):
@@ -1103,5 +1103,6 @@ def max_with_none(a, b):
 
 def merge_resolution_range(a, b):
     if a and b:
-        return ResolutionRange(max_with_none(a.min_res, b.min_res), min(a.max_res, b.max_res))
+        return resolution_range(min_res=max_with_none(a.min_res, b.min_res),
+            max_res=min(a.max_res, b.max_res))
     return None

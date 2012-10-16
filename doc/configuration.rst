@@ -178,7 +178,7 @@ WMS and Mapserver sources also support tagged names (``wms:lyr1,lyr2``). See :re
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 .. NOTE paragraph also in sources/wms section
 
-Limit the layer to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries. You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`. Resolutions should be in meters per pixel.
+Limit the layer to the given min and max resolution or scale. MapProxy will return a blank image for requests outside of these boundaries (``min_res`` is inclusive, ``max_res`` exclusive). You can use either the resolution or the scale values, missing values will be interpreted as `unlimited`. Resolutions should be in meters per pixel.
 
 The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).
 
