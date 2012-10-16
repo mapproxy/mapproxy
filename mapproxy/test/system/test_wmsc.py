@@ -54,7 +54,7 @@ class TestWMSC(SystemTest):
         resp = self.app.get(req)
         xml = resp.lxml
         assert validate_with_dtd(xml, dtd_name='wmsc/1.1.1/WMS_MS_Capabilities.dtd')
-        eq_(len(xml.xpath('//TileSet')), 9)
+        eq_(len(xml.xpath('//TileSet')), 10)
     
     def test_get_tile(self):
         resp = self.app.get(str(self.common_map_req) + '&tiled=true')
