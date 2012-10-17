@@ -58,7 +58,7 @@ class TestCacheGridNames(SystemTest):
                                       '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A25832&styles='
                                       '&VERSION=1.1.1&BBOX=283803.311362,5609091.90862,319018.942566,5644307.53982'
                                       '&WIDTH=256'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
+                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 resp = self.app.get('/tms/1.0.0/wms_cache/utm32n/4/2/2.jpeg')
                 eq_(resp.content_type, 'image/jpeg')
@@ -71,7 +71,7 @@ class TestCacheGridNames(SystemTest):
                                       '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A25832&styles='
                                       '&VERSION=1.1.1&BBOX=283803.311362,5609091.90862,319018.942566,5644307.53982'
                                       '&WIDTH=256'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jgeg'}})
+                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 resp = self.app.get('/tms/1.0.0/wms_cache_no_grid_name/utm32n/4/2/2.jpeg')
                 eq_(resp.content_type, 'image/jpeg')
