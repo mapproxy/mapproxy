@@ -23,6 +23,7 @@ from mapproxy.request.wmts import wmts_request, make_wmts_rest_request_parser
 from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
+from mapproxy.util.ext.odict import odict
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
@@ -64,7 +65,8 @@ class WMTSServer(Server):
 
     def capabilities(self, request):
         service = self._service_md(request)
-        result = self.capabilities_class(service, self.layers.values(), self.matrix_sets).render(request)
+        layers = self.authorized_tile_layers(request.http.environ)
+        result = self.capabilities_class(service, layers, self.matrix_sets).render(request)
         return Response(result, mimetype='application/xml')
 
     def tile(self, request):
@@ -73,6 +75,7 @@ class WMTSServer(Server):
         if not request.format:
             request.format = tile_layer.format
 
+        self.authorize_tile_layer(request.layer, request.http.environ)
         tile = tile_layer.render(request)
         # set the content_type to tile.format and not to request.format ( to support mixed_mode)
         resp = Response(tile.as_buffer(), content_type='image/' + tile.format)
@@ -80,6 +83,35 @@ class WMTSServer(Server):
                            max_age=self.max_tile_age)
         resp.make_conditional(request.http)
         return resp
+
+    def authorize_tile_layer(self, layer_name, env):
+        if 'mapproxy.authorize' in env:
+            result = env['mapproxy.authorize']('wmts', [layer_name], environ=env)
+            if result['authorized'] == 'unauthenticated':
+                raise RequestError('unauthorized', status=401)
+            if result['authorized'] == 'full':
+                return
+            if result['authorized'] == 'partial':
+                if result['layers'].get(layer_name, {}).get('tile', False) == True:
+                    return
+            raise RequestError('forbidden', status=403)
+
+    def authorized_tile_layers(self, env):
+        if 'mapproxy.authorize' in env:
+            result = env['mapproxy.authorize']('wmts', [l for l in self.layers], environ=env)
+            if result['authorized'] == 'unauthenticated':
+                raise RequestError('unauthorized', status=401)
+            if result['authorized'] == 'full':
+                return self.layers.values()
+            if result['authorized'] == 'none':
+                raise RequestError('forbidden', status=403)
+            allowed_layers = []
+            for layer in self.layers.itervalues():
+                if result['layers'].get(layer.name, {}).get('tile', False) == True:
+                    allowed_layers.append(layer)
+            return allowed_layers
+        else:
+            return self.layers.values()
 
     def check_request(self, request):
         request.make_tile_request()

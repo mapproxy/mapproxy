@@ -1,6 +1,7 @@
 services:
   tms:
   kml:
+  wmts:
   demo:
   wms:
     md:
@@ -28,7 +29,7 @@ layers:
           - name: layer2b1
             title: layer 2b1
             sources: [dummy_fi]
-      
+
 
 caches:
   dummy:
