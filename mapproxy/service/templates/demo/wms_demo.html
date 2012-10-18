@@ -25,8 +25,8 @@ jscript_functions=None
         var layer = new OpenLayers.Layer.WMS( "WMS {{layer.name}}",
             "../service?",
             {layers: "{{layer.name}}", format: "{{format}}", srs:"{{srs}}",
-             exceptions: "application/vnd.ogc.se_inimage"},
-            {singleTile: true, ratio: 1}, {isBaseLayer: true} );
+             exceptions: "application/vnd.ogc.se_inimage"{{if format == 'image/png'}}, transparent: true{{endif}}},
+            {singleTile: true, ratio: 1, isBaseLayer: true} );
 
         map.addLayer(layer);
         map.zoomToMaxExtent();

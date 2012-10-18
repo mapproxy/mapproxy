@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010,2012 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,7 +44,7 @@ class LayerMerger(object):
     def merge(self, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None):
         """
         Merge the layers. If the format is not 'png' just return the last image.
-        
+
         :param format: The image format for the result.
         :param size: The size for the merged output.
         :rtype: `ImageSource`
@@ -54,15 +54,16 @@ class LayerMerger(object):
         if len(self.layers) == 1:
             layer_img, layer = self.layers[0]
             layer_opts = layer_img.image_opts
-            if (((layer_opts and not layer_opts.transparent) or image_opts.transparent) 
+            if (((layer_opts and not layer_opts.transparent) or image_opts.transparent)
                 and (not size or size == layer_img.size)
-                and (not layer or not layer.coverage or not layer.coverage.clip)):
+                and (not layer or not layer.coverage or not layer.coverage.clip)
+                and not coverage):
                 # layer is opaque, no need to make transparent or add bgcolor
                 return layer_img
-        
+
         if size is None:
             size = self.layers[0][0].size
-        
+
         cacheable = self.cacheable
         result = create_image(size, image_opts)
 
@@ -71,10 +72,10 @@ class LayerMerger(object):
                 cacheable = False
             img = layer_img.as_image()
             layer_image_opts = layer_img.image_opts
-            
+
             if layer and layer.coverage and layer.coverage.clip:
                 img = mask_image(img, bbox, bbox_srs, layer.coverage)
-                
+
             if (layer_image_opts and layer_image_opts.opacity is not None
                 and layer_image_opts.opacity < 1.0):
                 img = img.convert(result.mode)
@@ -85,7 +86,7 @@ class LayerMerger(object):
                     result.paste(img, (0, 0), img)
                 else:
                     result.paste(img, (0, 0))
-        
+
         # apply global clip coverage
         if coverage:
             bg = create_image(size, image_opts)
@@ -98,7 +99,7 @@ class LayerMerger(object):
 def merge_images(images, image_opts, size=None):
     """
     Merge multiple images into one.
-    
+
     :param images: list of `ImageSource`, bottom image first
     :param format: the format of the output `ImageSource`
     :param size: size of the merged image, if ``None`` the size
@@ -123,7 +124,7 @@ def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transpar
         return BlankImageSource(size=(1,1), image_opts=ImageOptions(bgcolor=bgcolor, transparent=transparent))
     if len(legends) == 1:
         return legends[0]
-    
+
     legends = legends[:]
     legends.reverse()
     if size is None:
@@ -136,10 +137,10 @@ def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transpar
             tmp_img = legend.as_image()
             legend_width = max(legend_width, tmp_img.size[0])
             legend_height += tmp_img.size[1] #images shall not overlap themselfs
-            
+
         size = [legend_width, legend_height]
     bgcolor = ImageColor.getrgb(bgcolor)
-    
+
     if transparent:
         img = Image.new('RGBA', size, bgcolor+(0,))
     else:

@@ -1,10 +1,11 @@
 
 body {
-    background-color: #ddd;
+    background-color: #EEEEEC;
     font-family: Verdana, sans-serif;
     font-size: 12px;
     line-height: 1.3em;
-    width: 700px;
+    width: 70%;
+    min-width: 700px;
     margin: 1em auto;
     color: #2e3436;
 }
@@ -66,7 +67,7 @@ div#content h3
 
 p {
     margin-top: 0.5em;
-    margin-right: 5em;
+    margin-right: 5%;
 }
 
 div#menu {
@@ -99,14 +100,16 @@ pre {
     background: #eeeeec;
     font-size: small;
     padding: 1em;
+    margin-right: 5%;
 }
 div#map {
     border: 1px solid black;
-    width: 600px;
-    height: 400px;
+    width: 95%;
+    height: 600px;
+    background-color: #EEEEEC;
 }
 
-.code {    
+.code {
     border: dotted black 1px;
     background: #eeeeec;
     font-size: small;
@@ -118,9 +121,9 @@ th {
 }
 
 td.value{
-    padding: 0 2em;    
+    padding: 0 2em;
 }
-.capabilities {    
+.capabilities {
     padding: 1em;
 }
 
