@@ -30,7 +30,9 @@ from mapproxy.srs import SRS
 from mapproxy.grid import default_bboxs
 from mapproxy.image import BlankImageSource
 from mapproxy.image.opts import ImageOptions
+from mapproxy.image.mask import mask_image_source_from_coverage
 from mapproxy.util.ext.odict import odict
+from mapproxy.util.coverage import load_limited_to
 
 import logging
 log = logging.getLogger(__name__)
@@ -68,8 +70,8 @@ class TileServer(Server):
         """
         if self.origin and not tile_request.origin:
             tile_request.origin = self.origin
-        layer = self.layer(tile_request)
-        tile = layer.render(tile_request, use_profiles=tile_request.use_profiles)
+        layer, limit_to = self.layer(tile_request)
+        tile = layer.render(tile_request, use_profiles=tile_request.use_profiles, coverage=limit_to)
         tile_format = getattr(tile, 'format', tile_request.format)
         resp = Response(tile.as_buffer(), content_type='image/' + tile_format)
         if tile.cacheable:
@@ -104,8 +106,8 @@ class TileServer(Server):
             internal_layer = self._internal_layer(tile_request)
         if internal_layer is None:
             raise RequestError('unknown layer: ' + tile_request.layer, request=tile_request)
-        self.authorize_tile_layer(internal_layer.name, tile_request.http.environ)
-        return internal_layer
+        limit_to = self.authorize_tile_layer(internal_layer.name, tile_request.http.environ)
+        return internal_layer, limit_to
 
     def authorize_tile_layer(self, layer_name, env):
         if 'mapproxy.authorize' in env:
@@ -116,7 +118,11 @@ class TileServer(Server):
                 return
             if result['authorized'] == 'partial':
                 if result['layers'].get(layer_name, {}).get('tile', False) == True:
-                    return
+                    limited_to = result.get('limited_to')
+                    if limited_to:
+                        return load_limited_to(limited_to)
+                    else:
+                        return None
             raise RequestError('forbidden', status=403)
 
     def authorized_tile_layers(self, env):
@@ -143,8 +149,7 @@ class TileServer(Server):
         """
         service = self._service_md(tms_request)
         if hasattr(tms_request, 'layer'):
-            layer = self.layer(tms_request)
-            self.authorize_tile_layer(layer.name, tms_request.http.environ)
+            layer, limit_to = self.layer(tms_request)
             result = self._render_layer_template(layer, service)
         else:
             layers = self.authorized_tile_layers(tms_request.http.environ)
@@ -227,11 +232,35 @@ class TileLayer(object):
                                code='InvalidParameterValue')
 
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
+
+        coverage_intersects = False
+        if coverage:
+            tile_bbox = self.grid.tile_bbox(tile_coord)
+
+            if coverage.contains(tile_bbox, self.grid.srs):
+                pass
+            elif coverage.intersects(tile_bbox, self.grid.srs):
+                coverage_intersects = True
+            else:
+                return self.empty_response()
+
         try:
             with self.tile_manager.session():
                 tile = self.tile_manager.load_tile_coord(tile_coord, with_metadata=True)
             if tile.source is None:
                 return self.empty_response()
+
+            if coverage_intersects:
+                if self.empty_response_as_png:
+                    format = 'png'
+                    image_opts = ImageOptions(transparent=True, format='png')
+                else:
+                    format = self.format
+                    image_opts = tile.source.image_opts
+
+                tile.source = mask_image_source_from_coverage(
+                    tile.source, tile_bbox, self.grid.srs, coverage, image_opts)
+                return TileResponse(tile, format=format, image_opts=image_opts)
 
             format = None if self._mixed_format else tile_request.format
             return TileResponse(tile, format=format, image_opts=self.tile_manager.image_opts)
@@ -242,9 +271,10 @@ class ImageResponse(object):
     """
     Response from an image.
     """
-    def __init__(self, img, timestamp):
+    def __init__(self, img, format, timestamp):
         self.img = img
         self.timestamp = timestamp
+        self.format = format
         self.size = 0
         self.cacheable = True
 

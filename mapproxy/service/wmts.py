@@ -23,7 +23,7 @@ from mapproxy.request.wmts import wmts_request, make_wmts_rest_request_parser
 from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
-from mapproxy.util.ext.odict import odict
+from mapproxy.util.coverage import load_limited_to
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
@@ -75,8 +75,9 @@ class WMTSServer(Server):
         if not request.format:
             request.format = tile_layer.format
 
-        self.authorize_tile_layer(request.layer, request.http.environ)
-        tile = tile_layer.render(request)
+        limited_to = self.authorize_tile_layer(request.layer, request.http.environ)
+        tile = tile_layer.render(request, coverage=limited_to)
+
         # set the content_type to tile.format and not to request.format ( to support mixed_mode)
         resp = Response(tile.as_buffer(), content_type='image/' + tile.format)
         resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
@@ -93,7 +94,11 @@ class WMTSServer(Server):
                 return
             if result['authorized'] == 'partial':
                 if result['layers'].get(layer_name, {}).get('tile', False) == True:
-                    return
+                    limited_to = result.get('limited_to')
+                    if limited_to:
+                        return load_limited_to(limited_to)
+                    else:
+                        return None
             raise RequestError('forbidden', status=403)
 
     def authorized_tile_layers(self, env):

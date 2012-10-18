@@ -69,14 +69,14 @@ class TestWMSAuth(object):
                                               [wms_layers['layer2b1']])
         wms_layers['layer2'] = WMSGroupLayer('layer2', None, None,
                                              [wms_layers['layer2a'], wms_layers['layer2b']])
-        
+
         root_layer = WMSGroupLayer(None, 'root layer', None, [wms_layers['layer1'],
                                                   wms_layers['layer2']])
         self.wms_layers = wms_layers
         self.layers = layers
         self.server = WMSServer(md={}, root_layer=root_layer, srs=['EPSG:4326'],
             image_formats={'image/png': ImageOptions(format='image/png')})
-    
+
 
 # ###
 # see mapproxy.test.system.test_auth for WMS GetCapabilities request tests
@@ -126,7 +126,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
         self.server.map(self.map_request('layer1a', auth))
         assert self.layers['layer1a'].requested
         assert not self.layers['layer1b'].requested
-    
+
     def test_accept_sublayer_w_root_denied(self):
         def auth(service, layers, **kw):
             eq_(layers, 'layer1a'.split())
@@ -141,7 +141,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
         self.server.map(self.map_request('layer1a', auth))
         assert self.layers['layer1a'].requested
         assert not self.layers['layer1b'].requested
-    
+
     @raises(RequestError)
     def test_deny_sublayer(self):
         def auth(service, layers, **kw):
@@ -186,7 +186,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
         assert not self.layers['layer2b'].requested
         assert not self.layers['layer1a'].requested
         assert not self.layers['layer1b'].requested
-    
+
     def test_unauthenticated(self):
         def auth(service, layers, **kw):
             eq_(layers, 'layer1b'.split())
@@ -237,7 +237,7 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
         self.server.featureinfo(self.fi_request('layer1a', auth))
         assert self.layers['layer1a'].queried
         assert not self.layers['layer1b'].queried
-    
+
     def test_accept_sublayer_w_root_denied(self):
         def auth(service, layers, **kw):
             eq_(layers, 'layer1a'.split())
@@ -252,7 +252,7 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
         self.server.featureinfo(self.fi_request('layer1a', auth))
         assert self.layers['layer1a'].queried
         assert not self.layers['layer1b'].queried
-    
+
     @raises(RequestError)
     def test_deny_sublayer(self):
         def auth(service, layers, **kw):
@@ -303,28 +303,28 @@ class DummyTileLayer(object):
     def __init__(self, name):
         self.requested = False
         self.name = name
-    def render(self, tile_request, use_profiles=None):
+    def render(self, tile_request, use_profiles=None, coverage=None):
         self.requested = True
         resp = BlankImageSource((256, 256), image_opts=ImageOptions(format='image/png'))
         resp.timestamp = 0
         return resp
-        
+
 class TestTMSAuth(object):
     service = 'tms'
     def setup(self):
         self.layers = {}
-        
+
         self.layers['layer1'] = DummyTileLayer('layer1')
         self.layers['layer2'] = DummyTileLayer('layer2')
         self.layers['layer3'] = DummyTileLayer('layer3')
         self.server = TileServer(self.layers, {})
-    
+
     def tile_request(self, tile, auth):
         env = make_wsgi_env('', extra_environ={'mapproxy.authorize': auth,
                                                'PATH_INFO': '/tms/1.0.0/'+tile})
         req = Request(env)
         return tile_request(req)
-    
+
     @raises(RequestError)
     def test_deny_all(self):
         def auth(service, layers, **kw):
@@ -358,7 +358,7 @@ class TestTMSAuth(object):
             }
         self.server.map(self.tile_request('layer1/0/0/0.png', auth))
         assert self.layers['layer1'].requested
-    
+
     def test_allow_layer(self):
         def auth(service, layers, **kw):
             eq_(service, self.service)
@@ -372,7 +372,7 @@ class TestTMSAuth(object):
             }
         self.server.map(self.tile_request('layer1/0/0/0.png', auth))
         assert self.layers['layer1'].requested
- 
+
 class TestTileAuth(TestTMSAuth):
     def tile_request(self, tile, auth):
         env = make_wsgi_env('', extra_environ={'mapproxy.authorize': auth,
@@ -385,9 +385,9 @@ class TestKMLAuth(TestTMSAuth):
     def setup(self):
         TestTMSAuth.setup(self)
         self.server = KMLServer(self.layers, {})
-    
+
     def tile_request(self, tile, auth):
         env = make_wsgi_env('', extra_environ={'mapproxy.authorize': auth,
                                                'PATH_INFO': '/kml/'+tile})
         req = Request(env)
-        return kml_request(req) 
+        return kml_request(req)
