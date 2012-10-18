@@ -179,6 +179,7 @@ class TileLayer(object):
         self.extent = map_extent_from_grid(self.grid)
         self._empty_tile = None
         self._mixed_format = True if self.md.get('format', False) == 'mixed' else False
+        self.empty_response_as_png = True
 
     @property
     def bbox(self):
@@ -214,13 +215,17 @@ class TileLayer(object):
         return tile_coord
 
     def empty_response(self):
+        if self.empty_response_as_png:
+            format = 'png'
+        else:
+            format = self.format
         if not self._empty_tile:
             img = BlankImageSource(size=self.grid.tile_size,
-                image_opts=ImageOptions(format=self.format, transparent=True))
+                image_opts=ImageOptions(format=format, transparent=True))
             self._empty_tile = img.as_buffer()
-        return ImageResponse(self._empty_tile, time.time())
+        return ImageResponse(self._empty_tile, format=format, timestamp=time.time())
 
-    def render(self, tile_request, use_profiles=False):
+    def render(self, tile_request, use_profiles=False, coverage=None):
         if tile_request.format != self.format:
             raise RequestError('invalid format (%s). this tile set only supports (%s)'
                                % (tile_request.format, self.format), request=tile_request,
@@ -262,7 +267,7 @@ class TileResponse(object):
         self.size = tile.size
         self.cacheable = tile.cacheable
         self._buf = self.tile.source_buffer(format=format, image_opts=image_opts)
-        self.format = format or self._format_from_magic_bytes()        
+        self.format = format or self._format_from_magic_bytes()
 
     def as_buffer(self):
         return self._buf
