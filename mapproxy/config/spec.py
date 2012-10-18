@@ -211,6 +211,9 @@ mapproxy_yaml_spec = {
             'expires_hours': number(),
         },
         'mapserver': mapserver_opts,
+        'renderd': {
+            'address': str(),
+        }
     },
     'grids': {
         anything(): grid_opts,

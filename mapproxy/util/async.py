@@ -17,6 +17,7 @@ from __future__ import with_statement
 
 MAX_MAP_ASYNC_THREADS = 20
 
+import os
 import Queue
 import sys
 import threading
@@ -334,3 +335,24 @@ else:
     starcall = starcall_async_threaded
     Pool = ThreadPool
     run_non_blocking = run_non_blocking_threaded
+
+
+try:
+    if uses_eventlet:
+        from eventlet.green import zmq
+    else:
+        import zmq
+except ImportError:
+    zmq = None
+
+
+_contexts = {}
+_context_lock = threading.Lock()
+def zmq_proc_context():
+    pid = os.getpid()
+    if pid not in _contexts:
+        with _context_lock:
+            context = zmq.Context()
+            _contexts.clear()
+            _contexts[pid] = context
+    return _contexts[pid]

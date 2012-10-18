@@ -19,10 +19,10 @@ import sys
 import logging
 
 from optparse import OptionParser
-from mapproxy.util import local_base_config
 from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import load_seed_tasks_conf
 from mapproxy.seed.seeder import seed
+from mapproxy.seed.renderd import TileRenderdProcessor
 from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.util import (format_seed_task, format_cleanup_task,
     ProgressLog, ProgressStore)
@@ -85,6 +85,8 @@ class SeedScript(object):
                       action="store_true", default=False,
                       help="use locking to prevent multiple mapproxy-seed calls "
                       "to seed the same cache")
+    
+    parser.add_option("--renderd")
 
     parser.add_option("--continue", dest='continue_seed',
                       action="store_true", default=False,
@@ -123,7 +125,7 @@ class SeedScript(object):
         else:
             cache_locker = None
 
-        with local_base_config(mapproxy_conf.base_config):
+        with mapproxy_conf:
             try:
                 seed_conf = load_seed_tasks_conf(options.seed_file, mapproxy_conf)
                 seed_names, cleanup_names = self.task_names(seed_conf, options)
@@ -163,6 +165,7 @@ class SeedScript(object):
                         progress_store=progress)
                     seed(seed_tasks, progress_logger=logger, dry_run=options.dry_run,
                          concurrency=options.concurrency, cache_locker=cache_locker,
+                         renderd=options.renderd,
                          skip_geoms_for_last_levels=options.geom_levels)
                 if cleanup_tasks:
                     print '========== Cleanup tasks =========='
@@ -229,6 +232,7 @@ class SeedScript(object):
                 selected_cleanup_tasks.append(task)
         cleanup_tasks = selected_cleanup_tasks
         return seed_tasks, cleanup_tasks
+
 
 def main():
     return SeedScript()()

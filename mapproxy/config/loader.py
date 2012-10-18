@@ -24,6 +24,7 @@ import hashlib
 import urlparse
 import warnings
 from copy import deepcopy
+from functools import partial
 
 import logging
 log = logging.getLogger('mapproxy.config')
@@ -38,9 +39,10 @@ class ConfigurationError(Exception):
     pass
 
 class ProxyConfiguration(object):
-    def __init__(self, conf, conf_base_dir=None, seed=False):
+    def __init__(self, conf, conf_base_dir=None, seed=False, renderd=False):
         self.configuration = conf
         self.seed = seed
+        self.renderd = renderd
 
         if conf_base_dir is None:
             conf_base_dir = os.getcwd()
@@ -201,9 +203,18 @@ class ProxyConfiguration(object):
         self.services = ServiceConfiguration(self.configuration.get('services', {}), context=self)
 
     def configured_services(self):
-        from mapproxy.util import local_base_config
-        with local_base_config(self.base_config):
+        with self:
             return self.services.services()
+
+    def __enter__(self):
+        # push local base_config onto config stack
+        import mapproxy.config.config
+        mapproxy.config.config._config.push(self.base_config)
+
+    def __exit__(self, type, value, traceback):
+        # pop local base_config from config stack
+        import mapproxy.config.config
+        mapproxy.config.config._config.pop()
 
     @property
     def base_config(self):
@@ -299,6 +310,7 @@ class GlobalConfiguration(ConfigurationBase):
         finish_base_config(self.base_config)
 
         self.image_options = ImageOptionsConfiguration(self.conf.get('image', {}), context)
+        self.renderd_address = self.get_value('renderd.address')
 
     def _copy_conf_values(self, d, target):
         for k, v in d.iteritems():
@@ -995,6 +1007,8 @@ class CacheConfiguration(ConfigurationBase):
         concurrent_tile_creators = self.context.globals.get_value('concurrent_tile_creators', self.conf,
             global_key='cache.concurrent_tile_creators')
 
+        renderd_address = self.context.globals.get_value('renderd.address', self.conf)
+
         for grid_name, grid_conf in self.grid_confs():
             sources = []
             source_image_opts = []
@@ -1019,12 +1033,23 @@ class CacheConfiguration(ConfigurationBase):
             tile_filter = self._tile_filter()
             image_opts = compatible_image_options(source_image_opts, base_opts=base_image_opts)
             cache = self._tile_cache(grid_conf, image_opts.format.ext)
+            identifier = self.conf['name'] + '_' + tile_grid.name
+
+            tile_creator_class = None
+            if not self.context.renderd and renderd_address:
+                from mapproxy.cache.renderd import RenderdTileCreator
+                if self.context.seed:
+                    priority = 10
+                else:
+                    priority = 100
+                tile_creator_class = partial(RenderdTileCreator, renderd_address, priority=priority)
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
-                              image_opts=image_opts,
+                              image_opts=image_opts, identifier=identifier,
                               meta_size=meta_size, meta_buffer=meta_buffer,
                               minimize_meta_requests=minimize_meta_requests,
                               concurrent_tile_creators=concurrent_tile_creators,
-                              pre_store_filter=tile_filter)
+                              pre_store_filter=tile_filter,
+                              tile_creator_class=tile_creator_class)
             extent = merge_layer_extents(sources)
             if extent.is_default:
                 extent = map_extent_from_grid(tile_grid)
@@ -1350,7 +1375,7 @@ class ServiceConfiguration(ConfigurationBase):
             image_formats=image_formats, srs=srs, services=services)
 
 
-def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True):
+def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=False):
     conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
 
     try:
@@ -1362,7 +1387,8 @@ def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True):
         log.warn(error)
     if not informal_only or (errors and not ignore_warnings):
         raise ConfigurationError('invalid configuration')
-    return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed)
+    return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed,
+        renderd=renderd)
 
 def load_configuration_file(files, working_dir):
     """
