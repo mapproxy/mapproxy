@@ -54,7 +54,7 @@ function tileUrl(bounds) {
                 <tr><td>
                         <select name="srs" size="1" onchange="this.form.submit()">
                                 {{for wmts_layer in all_tile_layers.values()}}
-                                    {{if wmts_layer.name == layer.name}}
+                                    {{if wmts_layer.name == layer.name and wmts_layer.grid.supports_access_with_origin('nw')}}
                                         {{if wmts_layer.md['name_internal'] == layer.md['name_internal']}}
                                             <option selected value="{{srs}}">{{srs}}</option>
                                         {{else}}

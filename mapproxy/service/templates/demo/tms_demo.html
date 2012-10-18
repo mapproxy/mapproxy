@@ -48,7 +48,7 @@ function init(){
                     <tr><td>
                             <select name="srs" size="1" onchange="this.form.submit()">
                                 {{for tms_layer in all_tile_layers.values()}}
-                                    {{if tms_layer.name == layer.name}}
+                                    {{if tms_layer.name == layer.name and tms_layer.grid.supports_access_with_origin('sw')}}
                                         {{if tms_layer.md['name_internal'] == layer.md['name_internal']}}
                                             <option selected value="{{srs}}">{{srs}}</option>
                                         {{else}}
