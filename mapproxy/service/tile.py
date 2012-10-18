@@ -241,7 +241,6 @@ class TileLayer(object):
         coverage_intersects = False
         if coverage:
             tile_bbox = self.grid.tile_bbox(tile_coord)
-
             if coverage.contains(tile_bbox, self.grid.srs):
                 pass
             elif coverage.intersects(tile_bbox, self.grid.srs):

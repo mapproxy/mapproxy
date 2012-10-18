@@ -16,10 +16,11 @@
 from __future__ import with_statement, division
 
 from mapproxy.test.system import module_setup, module_teardown, SystemTest
-from mapproxy.test.image import img_from_buf
+from mapproxy.test.image import img_from_buf, create_tmp_image, is_transparent
 from mapproxy.test.http import MockServ
 from nose.tools import eq_
 from mapproxy.util.geom import geom_support
+
 
 test_config = {}
 
@@ -49,31 +50,31 @@ class TestWMSAuth(SystemTest):
     def test_capabilities_authorize_all(self):
         def auth(service, layers, **kw):
             eq_(service, 'wms.capabilities')
-            eq_(len(layers), 7)
+            eq_(len(layers), 8)
             return {'authorized': 'full'}
 
         resp = self.app.get(CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth})
         xml = resp.lxml
-        eq_(xml.xpath('//Layer/Name/text()'), ['layer1', 'layer1a', 'layer1b', 'layer2', 'layer2a', 'layer2b', 'layer2b1'])
+        eq_(xml.xpath('//Layer/Name/text()'), ['layer1', 'layer1a', 'layer1b', 'layer2', 'layer2a', 'layer2b', 'layer2b1', 'layer3'])
 
     def test_capabilities_authorize_none(self):
         def auth(service, layers, **kw):
             eq_(service, 'wms.capabilities')
-            eq_(len(layers), 7)
+            eq_(len(layers), 8)
             return {'authorized': 'none'}
         self.app.get(CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth}, status=403)
 
     def test_capabilities_unauthenticated(self):
         def auth(service, layers, **kw):
             eq_(service, 'wms.capabilities')
-            eq_(len(layers), 7)
+            eq_(len(layers), 8)
             return {'authorized': 'unauthenticated'}
         self.app.get(CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth}, status=401)
 
     def test_capabilities_authorize_partial(self):
         def auth(service, layers, **kw):
             eq_(service, 'wms.capabilities')
-            eq_(len(layers), 7)
+            eq_(len(layers), 8)
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -91,7 +92,7 @@ class TestWMSAuth(SystemTest):
     def test_capabilities_authorize_partial_limited_to(self):
         def auth(service, layers, **kw):
             eq_(service, 'wms.capabilities')
-            eq_(len(layers), 7)
+            eq_(len(layers), 8)
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -114,7 +115,7 @@ class TestWMSAuth(SystemTest):
     def test_capabilities_authorize_partial_global_limited(self):
         def auth(service, layers, **kw):
             eq_(service, 'wms.capabilities')
-            eq_(len(layers), 7)
+            eq_(len(layers), 8)
             return {
                 'authorized': 'partial',
                 'limited_to': {'srs': 'EPSG:4326', 'geometry': [-40.0, -50.0, 0.0, 5.0]},
@@ -140,7 +141,7 @@ class TestWMSAuth(SystemTest):
     def test_capabilities_authorize_partial_with_fi(self):
         def auth(service, layers, **kw):
             eq_(service, 'wms.capabilities')
-            eq_(len(layers), 7)
+            eq_(len(layers), 8)
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -296,31 +297,31 @@ class TestTMSAuth(SystemTest):
         def auth(service, layers, environ, **kw):
             eq_(environ['PATH_INFO'], '/tms/1.0.0')
             eq_(service, 'tms')
-            eq_(len(layers), 5)
+            eq_(len(layers), 6)
             return {'authorized': 'full'}
 
         resp = self.app.get(TMS_CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth})
         xml = resp.lxml
-        eq_(xml.xpath('//TileMap/@title'), ['layer 1a', 'layer 1b', 'layer 1', 'layer 2a', 'layer 2b1'])
+        eq_(xml.xpath('//TileMap/@title'), ['layer 1a', 'layer 1b', 'layer 1', 'layer 2a', 'layer 2b1', 'layer 3'])
 
     def test_capabilities_authorize_none(self):
         def auth(service, layers, **kw):
             eq_(service, 'tms')
-            eq_(len(layers), 5)
+            eq_(len(layers), 6)
             return {'authorized': 'none'}
         self.app.get(TMS_CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth}, status=403)
 
     def test_capabilities_unauthenticated(self):
         def auth(service, layers, **kw):
             eq_(service, 'tms')
-            eq_(len(layers), 5)
+            eq_(len(layers), 6)
             return {'authorized': 'unauthenticated'}
         self.app.get(TMS_CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth}, status=401)
 
     def test_capabilities_authorize_partial(self):
         def auth(service, layers, **kw):
             eq_(service, 'tms')
-            eq_(len(layers), 5)
+            eq_(len(layers), 6)
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -395,6 +396,37 @@ class TestTMSAuth(SystemTest):
         resp = self.app.get(TMS_CAPABILITIES_REQ + '/layer1/0/0/0.png', extra_environ={'mapproxy.authorize': auth})
         eq_(resp.content_type, 'image/png')
         assert resp.content_length > 1000
+
+    def test_get_tile_limited_to(self):
+        def auth(service, layers, environ, **kw):
+            eq_(environ['PATH_INFO'], '/tms/1.0.0/layer3/0/0/0.jpeg')
+            eq_(service, 'tms')
+            eq_(len(layers), 1)
+            return {
+                'authorized': 'partial',
+                'limited_to': {
+                    'geometry': [-180, -89, -90, 89],
+                    'srs': 'EPSG:4326',
+                },
+                'layers': {
+                    'layer3': {'tile': True},
+                }
+            }
+
+        serv = MockServ(port=42423)
+        serv.expects('/1/0/0.png')
+        serv.returns(create_tmp_image((256, 256), color=(255, 0, 0)), headers={'content-type': 'image/png'})
+        with serv:
+            resp = self.app.get(TMS_CAPABILITIES_REQ + '/layer3/0/0/0.jpeg', extra_environ={'mapproxy.authorize': auth})
+
+        eq_(resp.content_type, 'image/png')
+
+        img = img_from_buf(resp.body)
+        img = img.convert('RGBA')
+        # left part authorized, transparent
+        eq_(img.crop((0, 0, 127, 255)).getcolors()[0], (127*255, (255, 0, 0, 255)))
+        # right part not authorized, red
+        eq_(img.crop((129, 0, 255, 255)).getcolors()[0], (126*255, (255, 255, 255, 0)))
 
     def test_get_tile_authorize_none(self):
         def auth(service, layers, **kw):
@@ -471,33 +503,33 @@ class TestWMTSAuth(SystemTest):
         def auth(service, layers, environ, **kw):
             eq_(environ['PATH_INFO'], '/wmts/1.0.0/WMTSCapabilities.xml')
             eq_(service, 'wmts')
-            eq_(len(layers), 5)
+            eq_(len(layers), 6)
             return {'authorized': 'full'}
 
         resp = self.app.get(WMTS_CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth})
         xml = resp.lxml
         eq_(set(xml.xpath('//wmts:Layer/ows:Title/text()',
             namespaces={'wmts': 'http://www.opengis.net/wmts/1.0', 'ows': 'http://www.opengis.net/ows/1.1'})),
-            set(['layer 1b', 'layer 1a', 'layer 2a', 'layer 2b1', 'layer 1']))
+            set(['layer 1b', 'layer 1a', 'layer 2a', 'layer 2b1', 'layer 1', 'layer 3']))
 
     def test_capabilities_authorize_none(self):
         def auth(service, layers, **kw):
             eq_(service, 'wmts')
-            eq_(len(layers), 5)
+            eq_(len(layers), 6)
             return {'authorized': 'none'}
         self.app.get(WMTS_CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth}, status=403)
 
     def test_capabilities_unauthenticated(self):
         def auth(service, layers, **kw):
             eq_(service, 'wmts')
-            eq_(len(layers), 5)
+            eq_(len(layers), 6)
             return {'authorized': 'unauthenticated'}
         self.app.get(WMTS_CAPABILITIES_REQ, extra_environ={'mapproxy.authorize': auth}, status=401)
 
     def test_capabilities_authorize_partial(self):
         def auth(service, layers, **kw):
             eq_(service, 'wmts')
-            eq_(len(layers), 5)
+            eq_(len(layers), 6)
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -528,6 +560,85 @@ class TestWMTSAuth(SystemTest):
         resp = self.app.get('/wmts/layer1/GLOBAL_MERCATOR/0/0/0.png', extra_environ={'mapproxy.authorize': auth})
         eq_(resp.content_type, 'image/png')
         assert resp.content_length > 1000
+
+    def test_get_tile_limited_to(self):
+        def auth(service, layers, environ, **kw):
+            eq_(environ['PATH_INFO'], '/wmts/layer3/GLOBAL_MERCATOR/1/0/0.jpeg')
+            eq_(service, 'wmts')
+            eq_(len(layers), 1)
+            return {
+                'authorized': 'partial',
+                'limited_to': {
+                    'geometry': [-180, -89, -90, 89],
+                    'srs': 'EPSG:4326',
+                },
+                'layers': {
+                    'layer3': {'tile': True},
+                }
+            }
+
+        serv = MockServ(port=42423)
+        serv.expects('/1/0/1.png')
+        serv.returns(create_tmp_image((256, 256), color=(255, 0, 0)), headers={'content-type': 'image/png'})
+        with serv:
+            resp = self.app.get('/wmts/layer3/GLOBAL_MERCATOR/1/0/0.jpeg', extra_environ={'mapproxy.authorize': auth})
+
+        eq_(resp.content_type, 'image/png')
+
+        img = img_from_buf(resp.body)
+        img = img.convert('RGBA')
+        # left part authorized, transparent
+        eq_(img.crop((0, 0, 127, 255)).getcolors()[0], (127*255, (255, 0, 0, 255)))
+        # right part not authorized, red
+        eq_(img.crop((129, 0, 255, 255)).getcolors()[0], (126*255, (255, 255, 255, 0)))
+
+    def test_get_tile_limited_to_outside(self):
+        def auth(service, layers, environ, **kw):
+            eq_(environ['PATH_INFO'], '/wmts/layer3/GLOBAL_MERCATOR/2/0/0.jpeg')
+            eq_(service, 'wmts')
+            eq_(len(layers), 1)
+            return {
+                'authorized': 'partial',
+                'limited_to': {
+                    'geometry': [0, -89, 90, 89],
+                    'srs': 'EPSG:4326',
+                },
+                'layers': {
+                    'layer3': {'tile': True},
+                }
+            }
+
+        resp = self.app.get('/wmts/layer3/GLOBAL_MERCATOR/2/0/0.jpeg', extra_environ={'mapproxy.authorize': auth})
+
+        eq_(resp.content_type, 'image/png')
+        is_transparent(resp.body)
+
+    def test_get_tile_limited_to_inside(self):
+        def auth(service, layers, environ, **kw):
+            eq_(environ['PATH_INFO'], '/wmts/layer3/GLOBAL_MERCATOR/1/0/0.jpeg')
+            eq_(service, 'wmts')
+            eq_(len(layers), 1)
+            return {
+                'authorized': 'partial',
+                'limited_to': {
+                    'geometry': [-180, -89, 180, 89],
+                    'srs': 'EPSG:4326',
+                },
+                'layers': {
+                    'layer3': {'tile': True},
+                }
+            }
+
+        serv = MockServ(port=42423)
+        serv.expects('/1/0/1.png')
+        serv.returns(create_tmp_image((256, 256), color=(255, 0, 0)), headers={'content-type': 'image/png'})
+        with serv:
+            resp = self.app.get('/wmts/layer3/GLOBAL_MERCATOR/1/0/0.jpeg', extra_environ={'mapproxy.authorize': auth})
+
+        eq_(resp.content_type, 'image/jpeg')
+
+        img = img_from_buf(resp.body)
+        eq_(img.getcolors()[0], (256*256, (255, 0, 0)))
 
     def test_get_tile_kvp(self):
         def auth(service, layers, environ, **kw):

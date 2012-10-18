@@ -29,9 +29,18 @@ layers:
           - name: layer2b1
             title: layer 2b1
             sources: [dummy_fi]
-
+  - name: layer3
+    title: layer 3
+    sources: [cache]
 
 caches:
+  cache:
+    grids: [GLOBAL_MERCATOR]
+    format: 'image/jpeg'
+    disable_storage: True
+    meta_size: [1, 1]
+    meta_buffer: 0
+    sources: [source]
   dummy:
     grids: [GLOBAL_MERCATOR]
     sources: [dummy]
@@ -53,3 +62,6 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: fi
+  source:
+    type: tile
+    url: http://localhost:42423/%(tms_path)s.png

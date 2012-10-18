@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,7 @@ def assert_image_mode(img, mode):
         eq_(img.mode, mode)
     finally:
         img.seek(pos)
-    
+
 
 def check_format(img, format):
     assert globals()['is_' + format.lower()](img), 'img is not %s' % format
@@ -74,21 +74,19 @@ del create_is_x_functions
 def is_transparent(img_data):
     data = StringIO(img_data)
     img = Image.open(data)
+    if img.mode == 'P':
+        img = img.convert('RGBA')
     if img.mode == 'RGBA':
-        return any(img.histogram()[-256:-1])        
-    elif img.mode == 'P':
-        colors = img.getcolors()
-        if len(colors) != 1:
-            return False
-    
+        return any(img.histogram()[-256:-1])
+
     raise NotImplementedError(
         'assert_is_transparent works only for RGBA images, got %s image' % img.mode)
-        
+
 
 def img_from_buf(buf):
     data = StringIO(buf)
     return Image.open(data)
-    
+
 
 def bgcolor_ratio(img_data):
     """
@@ -134,18 +132,18 @@ def create_tmp_image_buf(size, format='png', color=None, mode='RGB'):
     img.save(data, format)
     data.seek(0)
     return data
-    
+
 def create_tmp_image(size, format='png', color=None, mode='RGB'):
     data = create_tmp_image_buf(size, format, color, mode)
     return data.read()
-    
+
 
 def create_debug_img(size, transparent=True):
     if transparent:
         img = Image.new("RGBA", size)
     else:
         img = Image.new("RGB", size, ImageColor.getrgb("#EEE"))
-    
+
     draw = ImageDraw.Draw(img)
     draw_pattern(draw, size)
     return img
