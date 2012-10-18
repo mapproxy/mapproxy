@@ -15,18 +15,18 @@ jscript_functions=None
 }}
 {{def jscript_openlayers}}
 <script src="static/OpenLayers.js"></script>
-<script type="text/javascript">        
+<script type="text/javascript">
 var map;
-function init(){                
+function init(){
     var mapOptions = {
-    projection: new OpenLayers.Projection('{{srs}}'),    
+    projection: new OpenLayers.Projection('{{srs}}'),
     resolutions: [{{', '.join(str(r) for r in resolutions)}}],
     units: '{{units}}',
     maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}})
     };
-    
+
     map = new OpenLayers.Map('map', mapOptions);
-    
+
     var layer = new OpenLayers.Layer.WMTS({
      name: "WMTS {{layer.name}}",
      url: '../wmts/{{layer.name}}',
@@ -37,8 +37,8 @@ function init(){
      isBaseLayer: true,
      style: 'default',
      requestEncoding: 'REST'
-    }); 
-    
+    });
+
     map.addLayer(layer)
     map.zoomToExtent(new OpenLayers.Bounds({{approx_bbox(layer, srs)}}));
 }
@@ -46,7 +46,7 @@ function tileUrl(bounds) {
      var tileInfo = this.getTileInfo(bounds.getCenterLonLat());
      return this.url + '/' + this.matrixSet + '/' + this.matrix.identifier + '/' + tileInfo.col + '/' + tileInfo.row + '.{{layer.format}}';
  }
-</script>     
+</script>
 {{enddef}}
             <h2>Openlayers Client - Layer {{layer.name}}</h2>
             <table>
@@ -63,7 +63,7 @@ function tileUrl(bounds) {
                                     {{endif}}
                                 {{endfor}}
                             </select>
-                            <input type="hidden" name="format" value="png">
+                            <input type="hidden" name="format" value="{{format}}">
                             <input type="hidden" name="wmts_layer" value="{{layer.name}}">
                     </td>
                     <td>{{layer.format}}</td></tr>

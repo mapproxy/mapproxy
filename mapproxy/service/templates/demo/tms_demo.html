@@ -15,11 +15,11 @@ jscript_functions=None
 }}
 {{def jscript_openlayers}}
 <script src="static/OpenLayers.js"></script>
-<script type="text/javascript">        
+<script type="text/javascript">
 var map;
-function init(){                
+function init(){
     var mapOptions = {
-    projection: new OpenLayers.Projection('{{srs}}'),    
+    projection: new OpenLayers.Projection('{{srs}}'),
     maxResolution: {{resolutions[0]}},
     {{if add_res_to_options}}
     resolutions: [{{', '.join(str(r) for r in resolutions)}}],
@@ -28,18 +28,18 @@ function init(){
     numZoomLevels: {{len(resolutions)}},
     maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}})
     };
-    
+
     map = new OpenLayers.Map('map', mapOptions);
-    
+
     var layer = new OpenLayers.Layer.TMS('TMS {{layer.name}}', '../tms/',
         {layername: '{{layer.md["name_internal"]}}', type: '{{format}}',
          tileSize: new OpenLayers.Size{{layer.grid.tile_size}}
     });
-    
+
     map.addLayer(layer)
     map.zoomToExtent(new OpenLayers.Bounds({{approx_bbox(layer, srs)}}));
 }
-</script>     
+</script>
 {{enddef}}
             <h2>Openlayers Client - Layer {{layer.name}}</h2>
             <form action="" method="GET">
@@ -57,7 +57,7 @@ function init(){
                                     {{endif}}
                                 {{endfor}}
                             </select>
-                            <input type="hidden" name="format" value="png">
+                            <input type="hidden" name="format" value="{{format}}">
                             <input type="hidden" name="tms_layer" value="{{layer.name}}">
                         </td>
                         <td>{{format}}</td></tr>
