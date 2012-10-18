@@ -53,7 +53,7 @@ One way to add that middleware in front of MapProxy is the ``filter-with`` optio
 
   [filter:auth]
   paste.filter_app_factory = myauthmodule:RandomAuthFilter
-  
+
   [server:main]
   ...
 
@@ -75,7 +75,7 @@ Here is a more elaborate example that denies requests to all layers that start w
   class SimpleAuthFilter(object):
       """
       Simple MapProxy authorization middleware.
-      
+
       It authorizes WMS requests for layers where the name does
       not start with `prefix`.
       """
@@ -105,7 +105,7 @@ Here is a more elaborate example that denies requests to all layers that start w
                       allowed = True
           else: # other services are denied
             return {'authorized': 'none'}
-          
+
           if allowed and not denied:
               return {'authorized': 'full'}
           if denied and not allowed:
@@ -113,7 +113,7 @@ Here is a more elaborate example that denies requests to all layers that start w
           return {'authorized': 'partial', 'layers': auth_layers}
 
 
-And here is the part of the ``config.ini`` where we define the filter and pass custom options:: 
+And here is the part of the ``config.ini`` where we define the filter and pass custom options::
 
   [filter:auth]
   paste.filter_app_factory = myfiltermodule:SimpleAuthFilter
@@ -128,14 +128,14 @@ MapProxy looks in the request environment for a ``mapproxy.authorize`` entry. Th
 The signature of the authorization function:
 
 .. function:: authorize(service, layers=[], environ=None, **kw)
-  
+
   :param service: service that should be authorized
   :param layers: list of layer names that should be authorized
   :param environ: the request environ
   :rtype: dictionary with authorization information
 
-  The arguments might get extended in future versions of MapProxy. Therefore you should collect further arguments in a variable keyword argument (i.e. ``**kw``). 
-  
+  The arguments might get extended in future versions of MapProxy. Therefore you should collect further arguments in a variable keyword argument (i.e. ``**kw``).
+
 .. note:: The actual name of the callable is insignificant, only the environment key ``mapproxy.authorize`` is important.
 
 The ``service`` parameter is a string and the content depends on the service that calls the authorize function. Generally, it is the lower-case name of the service (e.g. ``tms`` for TMS service), but it can be different to further control the service (e.g. ``wms.map``).
@@ -238,7 +238,7 @@ Here is an example callback result where the complete request is limited::
     'limited_to': {
       'geometry': shapely.geometry.Polygon(
         [(-10, 0), (30, -5), (30, 50), (20, 50)]),
-      'srs': 'EPSG:4326', 
+      'srs': 'EPSG:4326',
     },
     'layers': {
       'layer1': {
@@ -263,14 +263,14 @@ The WMS service uses the following service strings:
 ^^^^^^^^^^^
 
 This is called for WMS GetMap requests. ``layers`` is a list with the actual layers to render, that means that group layers are resolved.
-The ``map`` feature needs to be set to ``True`` for each permitted layer. 
+The ``map`` feature needs to be set to ``True`` for each permitted layer.
 The whole request is rejected if any requested layer is not permitted. Resolved layers (i.e. sub layers of a requested group layer) are filtered out if they are not permitted.
 
 .. versionadded:: 1.1.0
   The ``authorize`` function gets called with an additional ``query_extent`` argument:
 
   .. function:: authorize(service, environ, layers, query_extent, **kw)
-  
+
     :param query_extent: a tuple of the SRS (e.g. ``EPSG:4326``) and the BBOX
       of the request to authorize.
 
@@ -382,6 +382,14 @@ The KML authorization is similar to the TMS authorization.
 The KML service uses ``kml`` as the service string for all authorization requests.
 
 
+WMTS Service
+------------
+
+The WMTS authorization is similar to the TMS authorization.
+
+The WMTS service uses ``wmts`` as the service string for all authorization requests.
+
+
 Demo Service
 ------------
 
@@ -406,12 +414,12 @@ Example that rejects MapProxy instances where the name starts with ``secure``.
       def __call__(self, environ, start_reponse):
           environ['mapproxy.authorize'] = self.authorize
           return self.app(environ, start_reponse)
-      
+
       def authorize(self, service, layers=[]):
           instance_name = environ.get('mapproxy.instance_name', '')
           if instance_name.startswith('secure'):
               return {'authorized': 'none'}
           else:
               return {'authorized': 'full'}
-          
+
 
