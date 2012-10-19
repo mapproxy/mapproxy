@@ -160,6 +160,62 @@ The ``authorized`` entry can have four values.
 .. versionadded:: 1.1.0
   The ``environment`` parameter and support for ``authorized: unauthenticated`` results.
 
+.. _limited_to:
+
+``limited_to``
+~~~~~~~~~~~~~~
+
+You can restrict the geographical area for each request. MapProxy will clip each request to the provided geometry – areas outside of the permitted area become transparent.
+
+Depending on the service, MapProxy supports this clipping for the whole request or for each layer. You need to provide a dictionary with ``bbox`` or ``geometry`` and the ``srs`` of the geometry. The following geometry values are supported:
+
+BBOX:
+  Bounding box as a list of minx, miny, maxx, maxy.
+
+WKT polygons:
+  String with one or more polygons and multipolygons as WKT. Multiple WKTs must be delimited by a new line character.
+  Return this type if you are getting the geometries from a spatial database.
+
+Shapely geometry:
+  Shapely geometry object. Return this type if you already processing the geometries in your Python code with `Shapely <http://toblerity.github.com/shapely/>`_.
+
+
+Here is an example callback result for a WMS `GetMap` request with all three geometry types. See below for examples for other services::
+
+  {
+    'authorized': 'partial',
+    'layers': {
+      'layer1': {
+        'map': True,
+        'limited_to': {
+          'geometry': [-10, 0, 30, 50],
+          'srs': 'EPSG:4326',
+        },
+      },
+      'layer2': {
+        'map': True,
+        'limited_to': {
+          'geometry': 'POLYGON((...))',
+          'srs': 'EPSG:4326',
+        },
+      },
+      'layer3': {
+        'map': True,
+        'limited_to': {
+          'geometry': shapely.geometry.Polygon(
+            [(-10, 0), (30, -5), (30, 50), (20, 50)]),
+          'srs': 'EPSG:4326',
+        }
+      }
+    }
+  }
+
+Performance
+^^^^^^^^^^^
+
+The clipping is quite fast, but if you notice that the overhead is to large, you should reduce the complexity of the geometries returned by your authorization callback. You can improve the performance by returning the geometry in the projection from ``query_extent``, by limiting it to the ``query_extent`` and by simplifing the geometry. Refer to the ``ST_Transform``, ``ST_Intersection`` and ``ST_SimplifyPreserveTopology`` functions when you query the geometries from PostGIS.
+
+
 WMS Service
 -----------
 
@@ -189,21 +245,11 @@ Here is an example result of a call to the authorize function::
 
 .. versionadded:: 1.4.0
 
-You can restrict the geographical area for each request. This feature works for `GetCapabilities`, `GetMap` and `GetFeatureInfo` requests. MapProxy will modify the bounding box of each restricted layer for `GetCapabilities` requests. `GetFeatureInfo` requests will only return data if the info coordinate is inside the permitted area. For `GetMap` requests, MapProxy will clip each layer to the provided geometry – areas outside of the permitted area are transparent or in the background color of the WMS request.
-
-MapProxy supports this clipping for the whole request or for each layer. You need to provide a dictionary with ``bbox`` and ``geometry``. The following geometry values are supported:
-
-BBOX:
-  Bounding box as a list of minx, miny, maxx, maxy.
-
-WKT polygons:
-  String with one or more polygons and multipolygons as WKT. Multiple WKTs must be delimited by a new line character.
-  Return this type if you are getting the geometries from a spatial database.
-
-Shapely geometry:
-  Shapely geometry object. Return this type if you already processing the geometries in your Python code with `Shapely <http://toblerity.github.com/shapely/>`_.
+The WMS service supports ``limited_to`` for `GetCapabilities`, `GetMap` and `GetFeatureInfo` requests. MapProxy will modify the bounding box of each restricted layer for `GetCapabilities` requests. `GetFeatureInfo` requests will only return data if the info coordinate is inside the permitted area. For `GetMap` requests, MapProxy will clip each layer to the provided geometry – areas outside of the permitted area become transparent or colored in the `bgcolor` of the WMS request.
 
 You can provide the geometry for each layer or for the whole request.
+
+See :ref:`limited_to` for more details.
 
 Here is an example callback result with two limited layers and one unlimited layer::
 
@@ -246,12 +292,6 @@ Here is an example callback result where the complete request is limited::
       },
     }
   }
-
-
-Performance
-^^^^^^^^^^^
-
-The clipping is quite fast, but if you notice that the overhead is to large, you should reduce the complexity of the geometries returned by your authorization callback. You can improve the performance by returning the geometry in the projection from ``query_extent`` (``ST_Transform``), by limiting it to the ``query_extent`` (``ST_Intersection``) and by simplify it (``ST_Simplify``).
 
 
 Service types
@@ -374,10 +414,45 @@ The TMS service uses ``tms`` as the service string for all authorization request
 
 Only layers with the ``tile`` feature set to ``True`` are included in the TMS capabilities document (``/tms/1.0.0``). Missing layers are not included.
 
+The ``authorize`` function gets called with an additional ``query_extent`` argument for all tile requests:
+
+.. function:: authorize(service, environ, layers, query_extent=None, **kw)
+
+  :param query_extent: a tuple of the SRS (e.g. ``EPSG:4326``) and the BBOX
+    of the request to authorize, or ``None`` for capabilities requests.
+
+
+``limited_to``
+~~~~~~~~~~~~~~
+
+.. versionadded:: 1.5.0
+
+MapProxy will clip each tile to the provided geometry – areas outside of the permitted area become transparent. MapProxy will return PNG images in this case.
+
+Here is an example callback result where the tile request is limited::
+
+  {
+    'authorized': 'partial',
+    'limited_to': {
+      'geometry': shapely.geometry.Polygon(
+        [(-10, 0), (30, -5), (30, 50), (20, 50)]),
+      'srs': 'EPSG:4326',
+    },
+    'layers': {
+      'layer1': {
+        'tile': True,
+      },
+    }
+  }
+
+
+See :ref:`limited_to` for more details.
+
+
 KML Service
 -----------
 
-The KML authorization is similar to the TMS authorization.
+The KML authorization is similar to the TMS authorization, including the ``limited_to`` option.
 
 The KML service uses ``kml`` as the service string for all authorization requests.
 
@@ -385,7 +460,7 @@ The KML service uses ``kml`` as the service string for all authorization request
 WMTS Service
 ------------
 
-The WMTS authorization is similar to the TMS authorization.
+The WMTS authorization is similar to the TMS authorization, including the ``limited_to`` option.
 
 The WMTS service uses ``wmts`` as the service string for all authorization requests.
 
