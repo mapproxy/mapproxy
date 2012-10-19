@@ -1,13 +1,11 @@
 Authentication and Authorization
 ================================
 
-.. warning:: This page and the described feautures of MapProxy are a work in progess and might change anytime.
-
 Authentication is the process of mapping a request to a user. There are different ways to do this, from simple HTTP Basic Authentication to cookies or token based systems.
 
 Authorization is the process that defines what an authenticated user is allowed to do. A datastore is required to store this authorization information for everything but trivial systems. These datastores can range from really simple text files (all users in this text file are allowed to do everything) to complex schemas with relational databases (user A is allowed to do B but not C, etc.).
 
-As you can see, the options to choose when implementing a system for authentication and authorization are diverse. Developers (of SDIs, not the software itself) often have specific constraints, like existing user data in a database or an existing login on a website for a Web-GIS. So it is hard to offer a one-size-fits-all solution.
+As you can see, the options to choose when implementing a system for authentication and authorization are diverse. Developers (of SDIs, not the software itself) often have specific constraints, like existing user data in a database or an existing login page on a website for a Web-GIS. So it is hard to offer a one-size-fits-all solution.
 
 Therefore, MapProxy does not come with any embedded authentication or authorization. But it comes with a flexible authorization interface that allows you (the SDI developer) to implement custom tailored systems.
 
@@ -44,7 +42,12 @@ A simple middleware that authorizes random requests might look like::
             return ['no luck today']
 
 
-One way to add that middleware in front of MapProxy is the ``filter-with`` option of `PasteDeploy`_. The ``config.ini`` looks like::
+You need to wrap the MapProxy application with your custom auth middleware. For deployment scripts it might look like::
+
+    application = make_wsgi_app('./mapproxy.yaml')
+    application = RandomAuthFilter(application)
+
+For `PasteDeploy`_ you can use the ``filter-with`` option. The ``config.ini`` looks like::
 
   [app:mapproxy]
   use = egg:MapProxy#app
@@ -66,7 +69,7 @@ Authorization Callback
 
 Authorization is a bit more complex, because your middleware would need to interpret the request to get information required for the authorization (e.g. layer names for WMS GetMap requests). Limiting the GetCapabilities response to certain layers would even require the middleware to manipulate the XML document. So it's obvious that some parts of the authorization should be handled by MapProxy.
 
-MapProxy can call the middleware back for authorization as soon as it knows what to ask for (e.g. the layer names of a WMS GetMap request). You have to pass that function into the environment so that MapProxy knows what to call.
+MapProxy can call the middleware back for authorization as soon as it knows what to ask for (e.g. the layer names of a WMS GetMap request). You have to pass a callback function to the environment so that MapProxy knows what to call.
 
 Here is a more elaborate example that denies requests to all layers that start with a specific prefix. These layers are also hidden from capability documents.
 
@@ -79,7 +82,7 @@ Here is a more elaborate example that denies requests to all layers that start w
       It authorizes WMS requests for layers where the name does
       not start with `prefix`.
       """
-      def __init__(self, app, global_conf, prefix='secure'):
+      def __init__(self, app, prefix='secure'):
           self.app = app
           self.prefix = prefix
 
@@ -113,17 +116,16 @@ Here is a more elaborate example that denies requests to all layers that start w
           return {'authorized': 'partial', 'layers': auth_layers}
 
 
-And here is the part of the ``config.ini`` where we define the filter and pass custom options::
+And here is the part of the ``config.py`` where we define the filter and pass custom options::
 
-  [filter:auth]
-  paste.filter_app_factory = myfiltermodule:SimpleAuthFilter
-  prefix = foo
+    application = make_wsgi_app('./mapproxy.yaml')
+    application = SimpleAuthFilter(application, prefix='secure')
 
 
 MapProxy Authorization API
 --------------------------
 
-MapProxy looks in the request environment for a ``mapproxy.authorize`` entry. This entry should contain a callable (function or method). If it does not find any callable, then MapProxy assumes that authorization is not enabled and all requests are allowed.
+MapProxy looks in the request environment for a ``mapproxy.authorize`` entry. This entry should contain a callable (function or method). If it does not find any callable, then MapProxy assumes that authorization is not enabled and that all requests are allowed.
 
 The signature of the authorization function:
 
@@ -134,7 +136,7 @@ The signature of the authorization function:
   :param environ: the request environ
   :rtype: dictionary with authorization information
 
-  The arguments might get extended in future versions of MapProxy. Therefore you should collect further arguments in a variable keyword argument (i.e. ``**kw``).
+  The arguments might get extended in future versions of MapProxy. Therefore you should collect further arguments in a catch-all keyword argument (i.e. ``**kw``).
 
 .. note:: The actual name of the callable is insignificant, only the environment key ``mapproxy.authorize`` is important.
 
@@ -145,13 +147,13 @@ The function should return a dictionary with the authorization information. The 
 The ``authorized`` entry can have four values.
 
 ``full``
-  The request for the given `service` and `layers` is fully authorized. MapProxy handles the request as if is no authorization.
+  The request for the given `service` and `layers` is fully authorized. MapProxy handles the request as if there is no authorization.
 
 ``partial``
   Only parts of the request are allowed. The dictionary should contains more information on what parts of the request are allowed and what parts are denied. Depending on the service, MapProxy can then filter the request based on that information, e.g. return WMS Capabilities with permitted layers only.
 
 ``none``
-  The request is denied and MapProxy returns an HTTP 403 response.
+  The request is denied and MapProxy returns an HTTP 403 (Forbidden) response.
 
 ``unauthenticated``
   The request(er) was not authenticated and MapProxy returns an HTTP 401 response. Your middleware can capture this and ask the requester for authentication. ``repoze.who``'s ``PluggableAuthenticationMiddleware`` will do this for example.
