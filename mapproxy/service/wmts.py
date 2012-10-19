@@ -75,7 +75,7 @@ class WMTSServer(Server):
         if not request.format:
             request.format = tile_layer.format
 
-        limited_to = self.authorize_tile_layer(request.layer, request.http.environ)
+        limited_to = self.authorize_tile_layer(tile_layer, request)
         tile = tile_layer.render(request, coverage=limited_to)
 
         # set the content_type to tile.format and not to request.format ( to support mixed_mode)
@@ -85,15 +85,17 @@ class WMTSServer(Server):
         resp.make_conditional(request.http)
         return resp
 
-    def authorize_tile_layer(self, layer_name, env):
-        if 'mapproxy.authorize' in env:
-            result = env['mapproxy.authorize']('wmts', [layer_name], environ=env)
+    def authorize_tile_layer(self, tile_layer, request):
+        if 'mapproxy.authorize' in request.http.environ:
+            query_extent = tile_layer.grid.srs.srs_code, tile_layer.tile_bbox(request)
+            result = request.http.environ['mapproxy.authorize']('wmts', [request.layer],
+                query_extent=query_extent, environ=request.http.environ)
             if result['authorized'] == 'unauthenticated':
                 raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
                 return
             if result['authorized'] == 'partial':
-                if result['layers'].get(layer_name, {}).get('tile', False) == True:
+                if result['layers'].get(request.layer, {}).get('tile', False) == True:
                     limited_to = result.get('limited_to')
                     if limited_to:
                         return load_limited_to(limited_to)

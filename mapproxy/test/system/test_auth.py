@@ -20,6 +20,7 @@ from mapproxy.test.image import img_from_buf, create_tmp_image, is_transparent
 from mapproxy.test.http import MockServ
 from nose.tools import eq_
 from mapproxy.util.geom import geom_support
+from mapproxy.srs import bbox_equals
 
 
 test_config = {}
@@ -383,9 +384,11 @@ class TestTMSAuth(SystemTest):
         self.app.get(TMS_CAPABILITIES_REQ + '/layer1', extra_environ={'mapproxy.authorize': auth}, status=403)
 
     def test_get_tile(self):
-        def auth(service, layers, environ, **kw):
+        def auth(service, layers, environ, query_extent, **kw):
             eq_(environ['PATH_INFO'], '/tms/1.0.0/layer1/0/0/0.png')
             eq_(service, 'tms')
+            eq_(query_extent[0], 'EPSG:900913')
+            assert bbox_equals(query_extent[1], (-20037508.342789244, -20037508.342789244, 0, 0))
             eq_(len(layers), 1)
             return {
                 'authorized': 'partial',
@@ -398,10 +401,13 @@ class TestTMSAuth(SystemTest):
         assert resp.content_length > 1000
 
     def test_get_tile_limited_to(self):
-        def auth(service, layers, environ, **kw):
+        def auth(service, layers, environ, query_extent, **kw):
             eq_(environ['PATH_INFO'], '/tms/1.0.0/layer3/0/0/0.jpeg')
             eq_(service, 'tms')
             eq_(len(layers), 1)
+            eq_(query_extent[0], 'EPSG:900913')
+            assert bbox_equals(query_extent[1], (-20037508.342789244, -20037508.342789244, 0, 0))
+
             return {
                 'authorized': 'partial',
                 'limited_to': {
@@ -469,9 +475,12 @@ class TestKMLAuth(SystemTest):
         self.app.get('/kml/layer1/0/0/0.kml', extra_environ={'mapproxy.authorize': auth}, status=401)
 
     def test_superoverlay_authorize_partial(self):
-        def auth(service, layers, **kw):
+        def auth(service, layers, query_extent, **kw):
             eq_(service, 'kml')
             eq_(len(layers), 1)
+            eq_(query_extent[0], 'EPSG:900913')
+            assert bbox_equals(query_extent[1], (-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244))
+
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -493,6 +502,39 @@ class TestKMLAuth(SystemTest):
                 }
             }
         self.app.get('/kml/layer1/0/0/0.kml', extra_environ={'mapproxy.authorize': auth}, status=403)
+
+    def test_get_tile_limited_to(self):
+        def auth(service, layers, environ, query_extent, **kw):
+            eq_(environ['PATH_INFO'], '/kml/layer3/1/0/0.jpeg')
+            eq_(service, 'kml')
+            eq_(len(layers), 1)
+            eq_(query_extent[0], 'EPSG:900913')
+            assert bbox_equals(query_extent[1], (-20037508.342789244, -20037508.342789244, 0, 0))
+            return {
+                'authorized': 'partial',
+                'limited_to': {
+                    'geometry': [-180, -89, -90, 89],
+                    'srs': 'EPSG:4326',
+                },
+                'layers': {
+                    'layer3': {'tile': True},
+                }
+            }
+
+        serv = MockServ(port=42423)
+        serv.expects('/1/0/0.png')
+        serv.returns(create_tmp_image((256, 256), color=(255, 0, 0)), headers={'content-type': 'image/png'})
+        with serv:
+            resp = self.app.get('/kml/layer3/1/0/0.jpeg', extra_environ={'mapproxy.authorize': auth})
+
+        eq_(resp.content_type, 'image/png')
+
+        img = img_from_buf(resp.body)
+        img = img.convert('RGBA')
+        # left part authorized, transparent
+        eq_(img.crop((0, 0, 127, 255)).getcolors()[0], (127*255, (255, 0, 0, 255)))
+        # right part not authorized, red
+        eq_(img.crop((129, 0, 255, 255)).getcolors()[0], (126*255, (255, 255, 255, 0)))
 
 WMTS_CAPABILITIES_REQ = '/wmts/1.0.0/WMTSCapabilities.xml'
 
@@ -547,10 +589,12 @@ class TestWMTSAuth(SystemTest):
             set(['layer 1a', 'layer 2b1']))
 
     def test_get_tile(self):
-        def auth(service, layers, environ, **kw):
+        def auth(service, layers, environ, query_extent, **kw):
             eq_(environ['PATH_INFO'], '/wmts/layer1/GLOBAL_MERCATOR/0/0/0.png')
             eq_(service, 'wmts')
             eq_(len(layers), 1)
+            eq_(query_extent[0], 'EPSG:900913')
+            assert bbox_equals(query_extent[1], (-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244))
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -562,10 +606,12 @@ class TestWMTSAuth(SystemTest):
         assert resp.content_length > 1000
 
     def test_get_tile_limited_to(self):
-        def auth(service, layers, environ, **kw):
+        def auth(service, layers, environ, query_extent, **kw):
             eq_(environ['PATH_INFO'], '/wmts/layer3/GLOBAL_MERCATOR/1/0/0.jpeg')
             eq_(service, 'wmts')
             eq_(len(layers), 1)
+            eq_(query_extent[0], 'EPSG:900913')
+            assert bbox_equals(query_extent[1], (-20037508.342789244, 0, 0, 20037508.342789244))
             return {
                 'authorized': 'partial',
                 'limited_to': {

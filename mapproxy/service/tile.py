@@ -106,18 +106,25 @@ class TileServer(Server):
             internal_layer = self._internal_layer(tile_request)
         if internal_layer is None:
             raise RequestError('unknown layer: ' + tile_request.layer, request=tile_request)
-        limit_to = self.authorize_tile_layer(internal_layer.name, tile_request.http.environ)
+
+        limit_to = self.authorize_tile_layer(internal_layer, tile_request)
         return internal_layer, limit_to
 
-    def authorize_tile_layer(self, layer_name, env):
-        if 'mapproxy.authorize' in env:
-            result = env['mapproxy.authorize']('tms', [layer_name], environ=env)
+    def authorize_tile_layer(self, tile_layer, request):
+        if 'mapproxy.authorize' in request.http.environ:
+            if request.tile:
+                query_extent = (tile_layer.grid.srs.srs_code,
+                    tile_layer.tile_bbox(request, use_profiles=request.use_profiles))
+            else:
+                query_extent = None # for layer capabilities
+            result = request.http.environ['mapproxy.authorize']('tms', [request.layer],
+                query_extent=query_extent, environ=request.http.environ)
             if result['authorized'] == 'unauthenticated':
                 raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
                 return
             if result['authorized'] == 'partial':
-                if result['layers'].get(layer_name, {}).get('tile', False) == True:
+                if result['layers'].get(tile_layer.name, {}).get('tile', False) == True:
                     limited_to = result.get('limited_to')
                     if limited_to:
                         return load_limited_to(limited_to)
@@ -229,6 +236,10 @@ class TileLayer(object):
                 image_opts=ImageOptions(format=format, transparent=True))
             self._empty_tile = img.as_buffer()
         return ImageResponse(self._empty_tile, format=format, timestamp=time.time())
+
+    def tile_bbox(self, tile_request, use_profiles=False):
+        tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
+        return self.grid.tile_bbox(tile_coord)
 
     def render(self, tile_request, use_profiles=False, coverage=None):
         if tile_request.format != self.format:

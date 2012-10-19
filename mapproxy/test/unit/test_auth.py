@@ -1,3 +1,4 @@
+from mapproxy.grid import tile_grid
 from mapproxy.layer import MapLayer, DefaultMapExtent
 from mapproxy.image import BlankImageSource
 from mapproxy.image.opts import ImageOptions
@@ -303,6 +304,12 @@ class DummyTileLayer(object):
     def __init__(self, name):
         self.requested = False
         self.name = name
+        self.grid = tile_grid(900913)
+
+    def tile_bbox(self, request, use_profiles=False):
+        # this dummy code does not handle profiles and different tile origins!
+        return self.grid.tile_bbox(request.tile)
+
     def render(self, tile_request, use_profiles=None, coverage=None):
         self.requested = True
         resp = BlankImageSource((256, 256), image_opts=ImageOptions(format='image/png'))
