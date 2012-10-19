@@ -247,9 +247,10 @@ class ImageResponse(object):
     """
     Response from an image.
     """
-    def __init__(self, img, timestamp):
+    def __init__(self, img, format, timestamp):
         self.img = img
         self.timestamp = timestamp
+        self.format = format
         self.size = 0
         self.cacheable = True
 
