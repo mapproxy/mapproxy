@@ -134,7 +134,8 @@ class TileServer(Server):
 
     def authorized_tile_layers(self, env):
         if 'mapproxy.authorize' in env:
-            result = env['mapproxy.authorize']('tms', [l for l in self.layers], environ=env)
+            result = env['mapproxy.authorize']('tms', [l for l in self.layers],
+                query_extent=None, environ=env)
             if result['authorized'] == 'unauthenticated':
                 raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
