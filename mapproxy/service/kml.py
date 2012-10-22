@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,7 @@ from mapproxy.exception import RequestError, PlainExceptionHandler
 from mapproxy.service.base import Server
 from mapproxy.request.tile import TileRequest
 from mapproxy.srs import SRS
+from mapproxy.util.coverage import load_limited_to
 
 class KMLRequest(TileRequest):
     """
@@ -38,7 +39,7 @@ class KMLRequest(TileRequest):
         TileRequest.__init__(self, request)
         if self.format == 'kml':
             self.request_handler_name = 'kml'
-    
+
     @property
     def exception_handler(self):
         return PlainExceptionHandler()
@@ -74,7 +75,7 @@ def kml_request(req):
 
 class KMLServer(Server):
     """
-    OGC KML 2.2 Server 
+    OGC KML 2.2 Server
     """
     names = ('kml',)
     request_parser = staticmethod(kml_request)
@@ -86,7 +87,7 @@ class KMLServer(Server):
         self.md = md
         self.max_tile_age = max_tile_age
         self.use_dimension_layers = use_dimension_layers
-    
+
     def map(self, map_request):
         """
         :return: the requested tile
@@ -94,26 +95,38 @@ class KMLServer(Server):
         # force 'sw' origin for kml
         map_request.origin = 'sw'
         layer = self.layer(map_request)
-        self.authorize_tile_layer(layer.name, map_request.http.environ)
-        tile = layer.render(map_request)
+        limit_to = self.authorize_tile_layer(layer, map_request)
+        tile = layer.render(map_request, coverage=limit_to)
+        tile_format = getattr(tile, 'format', map_request.format)
         resp = Response(tile.as_buffer(),
-                        content_type='image/' + map_request.format)
+                        content_type='image/' + tile_format)
         resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
                            max_age=self.max_tile_age)
         resp.make_conditional(map_request.http)
         return resp
-    
-    def authorize_tile_layer(self, layer_name, env):
-        if 'mapproxy.authorize' in env:
-            result = env['mapproxy.authorize']('kml', [layer_name], environ=env)
+
+    def authorize_tile_layer(self, tile_layer, request):
+        if 'mapproxy.authorize' in request.http.environ:
+            if request.tile:
+                query_extent = (tile_layer.grid.srs.srs_code,
+                    tile_layer.tile_bbox(request, use_profiles=request.use_profiles))
+            else:
+                query_extent = None # for layer capabilities
+            result = request.http.environ['mapproxy.authorize']('kml', [request.layer],
+                query_extent=query_extent, environ=request.http.environ)
             if result['authorized'] == 'unauthenticated':
                 raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
                 return
             if result['authorized'] == 'partial':
-                if result['layers'].get(layer_name, {}).get('tile', False) == True:
-                    return
+                if result['layers'].get(tile_layer.name, {}).get('tile', False) == True:
+                    limited_to = result.get('limited_to')
+                    if limited_to:
+                        return load_limited_to(limited_to)
+                    else:
+                        return None
             raise RequestError('forbidden', status=403)
+
 
     def _internal_layer(self, tile_request):
         if tile_request.dimensions:
@@ -127,7 +140,7 @@ class KMLServer(Server):
         if name + '_EPSG900913' in self.layers:
             return self.layers[name + '_EPSG900913']
         return None
-    
+
     def _internal_dimension_layer(self, tile_request):
         key = (tile_request.layer, ) + tile_request.dimensions
         return self.layers.get(key)
@@ -146,20 +159,20 @@ class KMLServer(Server):
         :return: the rendered KML response
         """
         layer = self.layer(map_request)
-        self.authorize_tile_layer(layer.name, map_request.http.environ)
-        
+        self.authorize_tile_layer(layer, map_request)
+
         tile_coord = map_request.tile
-        
+
         initial_level = False
         if tile_coord[2] == 0:
             initial_level = True
-        
+
         bbox = self._tile_wgs_bbox(tile_coord, layer.grid, limit=True)
         if bbox is None:
             raise RequestError('The requested tile is outside the bounding box '
                                'of the tile map.', request=map_request)
         tile = SubTile(tile_coord, bbox)
-        
+
         subtiles = self._get_subtiles(tile_coord, layer)
         tile_size = layer.grid.tile_size[0]
         url = map_request.http.script_url.rstrip('/')
@@ -197,13 +210,13 @@ class KMLServer(Server):
         if tile_coord is None:
             return None
         return grid.tile_bbox(tile_coord, limit=limit)
-    
+
     def _tile_wgs_bbox(self, tile_coord, grid, limit=False):
         src_bbox = self._tile_bbox(tile_coord, grid, limit=limit)
         if src_bbox is None:
             return None
         return self._tile_bbox_to_wgs(src_bbox, grid)
-        
+
     def _tile_bbox_to_wgs(self, src_bbox, grid):
         bbox = grid.srs.transform_bbox_to(SRS(4326), src_bbox, with_points=4)
         if grid.srs == SRS(900913):
@@ -213,7 +226,7 @@ class KMLServer(Server):
             if abs(src_bbox[3] -  20037508.342789244) < 0.1:
                 bbox[3] = 90.0
         return bbox
-    
+
     def check_map_request(self, map_request):
         if map_request.layer not in self.layers:
             raise RequestError('unknown layer: ' + map_request.layer, request=map_request)
@@ -239,7 +252,7 @@ class KMLRenderer(object):
       </LatLonAltBox>
     </Region>
     """
-  
+
     network_link = """<NetworkLink>
       <name>%(layer_name)s - %(coord)s</name>
       <Region>
@@ -290,7 +303,7 @@ class KMLRenderer(object):
         response = []
         response.append(self.header % dict(east=tile.bbox[2], south=tile.bbox[1],
             west=tile.bbox[0], north=tile.bbox[3], layer_name=name))
-        
+
         name_path = '/'.join(name_path)
         for subtile in subtiles:
             kml_href = '%s/kml/%s/%d/%d/%d.kml' % (url, name_path,
@@ -298,12 +311,12 @@ class KMLRenderer(object):
             response.append(self.network_link % dict(east=subtile.bbox[2], south=subtile.bbox[1],
                 west=subtile.bbox[0], north=subtile.bbox[3], min_lod=tile_size/2, href=kml_href,
                 layer_name=name, coord=subtile.coord))
-        
+
         for subtile in subtiles:
             tile_href = '%s/kml/%s/%d/%d/%d.%s' % ( url, name_path,
                 subtile.coord[2], subtile.coord[0], subtile.coord[1], layer.format)
             response.append(self.ground_overlay % dict(east=subtile.bbox[2], south=subtile.bbox[1],
-                west=subtile.bbox[0], north=subtile.bbox[3], coord=subtile.coord, 
+                west=subtile.bbox[0], north=subtile.bbox[3], coord=subtile.coord,
                 min_lod=tile_size/2, max_lod=tile_size*3, href=tile_href, level=subtile.coord[2]))
         response.append(self.footer)
         return ''.join(response)
