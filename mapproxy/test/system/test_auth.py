@@ -429,10 +429,10 @@ class TestTMSAuth(SystemTest):
 
         img = img_from_buf(resp.body)
         img = img.convert('RGBA')
-        # left part authorized, transparent
+        # left part authorized, red
         eq_(img.crop((0, 0, 127, 255)).getcolors()[0], (127*255, (255, 0, 0, 255)))
-        # right part not authorized, red
-        eq_(img.crop((129, 0, 255, 255)).getcolors()[0], (126*255, (255, 255, 255, 0)))
+        # right part not authorized, transparent
+        eq_(img.crop((129, 0, 255, 255)).getcolors()[0][1][3], 0)
 
     def test_get_tile_authorize_none(self):
         def auth(service, layers, **kw):
@@ -531,10 +531,11 @@ class TestKMLAuth(SystemTest):
 
         img = img_from_buf(resp.body)
         img = img.convert('RGBA')
-        # left part authorized, transparent
+        # left part authorized, red
         eq_(img.crop((0, 0, 127, 255)).getcolors()[0], (127*255, (255, 0, 0, 255)))
-        # right part not authorized, red
-        eq_(img.crop((129, 0, 255, 255)).getcolors()[0], (126*255, (255, 255, 255, 0)))
+        # right part not authorized, transparent
+        eq_(img.crop((129, 0, 255, 255)).getcolors()[0][1][3], 0)
+
 
 WMTS_CAPABILITIES_REQ = '/wmts/1.0.0/WMTSCapabilities.xml'
 
@@ -633,10 +634,10 @@ class TestWMTSAuth(SystemTest):
 
         img = img_from_buf(resp.body)
         img = img.convert('RGBA')
-        # left part authorized, transparent
+        # left part authorized, red
         eq_(img.crop((0, 0, 127, 255)).getcolors()[0], (127*255, (255, 0, 0, 255)))
-        # right part not authorized, red
-        eq_(img.crop((129, 0, 255, 255)).getcolors()[0], (126*255, (255, 255, 255, 0)))
+        # right part not authorized, transparent
+        eq_(img.crop((129, 0, 255, 255)).getcolors()[0][1][3], 0)
 
     def test_get_tile_limited_to_outside(self):
         def auth(service, layers, environ, **kw):
