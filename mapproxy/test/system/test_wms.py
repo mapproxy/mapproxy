@@ -29,7 +29,7 @@ from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRe
                                  WMS110MapRequest, WMS110FeatureInfoRequest, \
                                  WMS110CapabilitiesRequest, \
                                  wms_request
-from mapproxy.test.image import is_jpeg, is_png, tmp_image
+from mapproxy.test.image import is_jpeg, is_png, tmp_image, create_tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
 from nose.tools import eq_, assert_almost_equal
@@ -307,15 +307,17 @@ class TestWMS111(WMSTest):
                 eq_(resp.content_type, 'image/png')
 
     def test_get_map_direct_fwd_params_layer(self):
+        img = create_tmp_image((200, 200), format='png')
         expected_req = ({'path': r'/service?LAYERs=bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                     '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
                                     '&VERSION=1.1.1&BBOX=-180.0,0.0,0.0,80.0'
                                     '&WIDTH=200&TIME=20041012'},
-                        {'body': 'whatever'})
+                        {'body': img})
         with mock_httpd(('localhost', 42423), [expected_req]):
             self.common_map_req.params['layers'] = 'direct_fwd_params'
             self.common_map_req.params['time'] = '20041012'
             resp = self.app.get(self.common_map_req)
+            eq_(resp.content_type, 'image/png')
 
     def test_get_map_use_direct_from_level(self):
         with tmp_image((200, 200), format='png') as img:
