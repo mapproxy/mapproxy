@@ -16,7 +16,7 @@
 from __future__ import with_statement
 
 import datetime
-import threading
+import socket
 import time
 import hashlib
 
@@ -28,7 +28,6 @@ from mapproxy.cache.base import (
     tile_buffer, CacheBackendError,)
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
-from mapproxy.util.times import parse_httpdate
 
 try:
     import requests
@@ -67,7 +66,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         self.tile_grid = tile_grid
         self.md_template = md_template
         self.couch_url = '%s/%s' % (url.rstrip('/'), db_name.lower())
-        self.req_session = requests.Session()
+        self.req_session = requests.Session(timeout=5)
         self.init_db()
         self.tile_id_template = tile_id_template
 
@@ -103,11 +102,17 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         if tile.coord is None or tile.source:
             return True
         url = self.document_url(tile.coord)
-        resp = self.req_session.get(url)
-        if resp.status_code == 200:
-            doc = json.loads(resp.content)
-            tile.timestamp = doc.get(self.md_template.timestamp_key)
-            return True
+        try:
+            resp = self.req_session.get(url)
+            if resp.status_code == 200:
+                doc = json.loads(resp.content)
+                tile.timestamp = doc.get(self.md_template.timestamp_key)
+                return True
+        except (requests.exceptions.RequestException, socket.error), ex:
+            # is_cached should not fail (would abort seeding for example),
+            # so we catch these errors here and just return False
+            log.warn('error while requesting %s: %s', url, ex)
+            return False
         if resp.status_code == 404:
             return False
         raise SourceError('%r: %r' % (resp.status_code, resp.content))
