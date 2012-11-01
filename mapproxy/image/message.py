@@ -131,7 +131,9 @@ class MessageImage(object):
 
         draw = ImageDraw.Draw(base_img)
         self.draw_msg(draw, size)
+        image_opts = self.image_opts
         if not in_place and img:
+            image_opts = image_opts or img.image_opts
             img = img.as_image()
             converted = False
             if len(self.font_color) == 4 and img.mode != 'RGBA':
@@ -144,7 +146,7 @@ class MessageImage(object):
                 img = img.convert(converted)
             base_img = img
 
-        return ImageSource(base_img, size=size, image_opts=self.image_opts)
+        return ImageSource(base_img, size=size, image_opts=image_opts)
 
     def draw_msg(self, draw, size):
         td = TextDraw(self.message, font=self.font, bg_color=self.box_color,
