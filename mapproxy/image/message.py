@@ -133,7 +133,15 @@ class MessageImage(object):
         self.draw_msg(draw, size)
         if not in_place and img:
             img = img.as_image()
+            converted = False
+            if len(self.font_color) == 4 and img.mode != 'RGBA':
+                # we need RGBA to keep transparency from text
+                converted = img.mode
+                img = img.convert('RGBA')
             img.paste(base_img, (0, 0), base_img)
+            if converted:
+                # convert image back
+                img = img.convert(converted)
             base_img = img
 
         return ImageSource(base_img, size=size, image_opts=self.image_opts)
