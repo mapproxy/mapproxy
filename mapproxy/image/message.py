@@ -141,9 +141,9 @@ class MessageImage(object):
                 converted = img.mode
                 img = img.convert('RGBA')
             img.paste(base_img, (0, 0), base_img)
-            if converted:
+            if converted == 'RGB':
                 # convert image back
-                img = img.convert(converted)
+                img = img.convert('RGB')
             base_img = img
 
         return ImageSource(base_img, size=size, image_opts=image_opts)
