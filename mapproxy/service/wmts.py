@@ -35,11 +35,11 @@ log = logging.getLogger(__name__)
 class WMTSServer(Server):
     service = 'wmts'
 
-    def __init__(self, layers, md, request_parser=None):
+    def __init__(self, layers, md, request_parser=None, max_tile_age=None):
         Server.__init__(self)
         self.request_parser = request_parser or wmts_request
         self.md = md
-        self.max_tile_age = None # TODO
+        self.max_tile_age = max_tile_age
         self.layers, self.matrix_sets = self._matrix_sets(layers)
         self.capabilities_class = Capabilities
 

@@ -1269,15 +1269,19 @@ class ServiceConfiguration(ConfigurationBase):
         kvp = conf.get('kvp')
         restful = conf.get('restful')
 
+        max_tile_age = self.context.globals.get_value('tiles.expires_hours')
+        max_tile_age *= 60 * 60 # seconds
+
         if kvp is None and restful is None:
             kvp = restful = True
 
         services = []
         if kvp:
-            services.append(WMTSServer(layers, md))
+            services.append(WMTSServer(layers, md, max_tile_age=max_tile_age))
         if restful:
             template = conf.get('restful_template')
-            services.append(WMTSRestServer(layers, md, template=template))
+            services.append(WMTSRestServer(layers, md, template=template,
+                max_tile_age=max_tile_age))
 
         return services
 
