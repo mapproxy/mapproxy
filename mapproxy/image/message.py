@@ -100,6 +100,9 @@ class MessageImage(object):
                     _pil_ttf_support = False
                     log_system.warn("Couldn't load TrueType fonts, "
                         "PIL needs to be build with freetype support.")
+                except IOError:
+                    _pil_ttf_support = False
+                    log_system.warn("Couldn't load find TrueType font ", self.font_name)
             if self._font is None:
                 self._font = ImageFont.load_default()
         return self._font
