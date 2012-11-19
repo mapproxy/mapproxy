@@ -1,5 +1,5 @@
-1.5.0 2012-xx-xx
-~~~~~~~~~~~~~~~~
+1.5.0rc1 2012-11-19
+~~~~~~~~~~~~~~~~~~~
 
 Features:
 
@@ -38,6 +38,7 @@ Fixes:
 - fixed TMS for caches with watermarks
 - fixed limited_to clipping for single layer requests with service-wide
   clipping geometries
+- fixed WMTS RESTful template
 
 Other:
 
