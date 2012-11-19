@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,7 +49,7 @@ class ImageSource(object):
         self.image_opts = image_opts
         self._size = size
         self.cacheable = cacheable
-    
+
     def _set_source(self, source):
         self._img = None
         self._buf = None
@@ -59,33 +59,33 @@ class ImageSource(object):
             self._img = source
         else:
             self._buf = source
-    
+
     def _get_source(self):
         return self._img or self._buf or self._fname
-    
+
     source = property(_get_source, _set_source)
-    
+
     def close_buffers(self):
         if self._buf:
             try:
                 self._buf.close()
             except IOError:
                 pass
-    
+
     @property
     def filename(self):
         return self._fname
-    
+
     def as_image(self):
         """
         Returns the image or the loaded image.
-        
+
         :rtype: PIL `Image`
         """
-        if not self._img: 
+        if not self._img:
             self._make_seekable_buf()
             log.debug('file(%s) -> image', self._fname or self._buf)
-        
+
             try:
                 img = Image.open(self._buf)
             except StandardError:
@@ -95,7 +95,7 @@ class ImageSource(object):
         if self.image_opts and self.image_opts.transparent and self._img.mode == 'P':
             self._img = self._img.convert('RGBA')
         return self._img
-    
+
     def _make_seekable_buf(self):
         if not self._buf and self._fname:
             self._buf = open(self._fname, 'rb')
@@ -103,7 +103,7 @@ class ImageSource(object):
             # PIL needs file objects with seek
             self._buf = StringIO(self._buf.read())
         self._buf.seek(0)
-    
+
     def _make_readable_buf(self):
         if not self._buf and self._fname:
             self._buf = open(self._fname, 'rb')
@@ -112,11 +112,11 @@ class ImageSource(object):
                 self._buf = ReadBufWrapper(self._buf)
         else:
             self._buf.seek(0)
-    
+
     def as_buffer(self, image_opts=None, format=None, seekable=False):
         """
         Returns the image as a file object.
-        
+
         :param format: The format to encode an image.
                        Existing files will not be re-encoded.
         :rtype: file-like object
@@ -158,7 +158,7 @@ def SubImageSource(source, size, offset, image_opts, cacheable=True):
     new_image_opts = image_opts.copy()
     new_image_opts.transparent = True
     img = create_image(size, new_image_opts)
-    
+
     if not hasattr(source, 'as_image'):
         source = ImageSource(source)
     subimg = source.as_image()
@@ -176,12 +176,12 @@ class BlankImageSource(object):
         self._buf = None
         self._img = None
         self.cacheable = cacheable
-    
+
     def as_image(self):
         if not self._img:
             self._img = create_image(self.size, self.image_opts)
         return self._img
-    
+
     def as_buffer(self, image_opts=None, format=None, seekable=False):
         if not self._buf:
             image_opts = (image_opts or self.image_opts).copy()
@@ -190,7 +190,7 @@ class BlankImageSource(object):
             image_opts.colors = 0
             self._buf = img_to_buf(self.as_image(), image_opts=image_opts)
         return self._buf
-    
+
     def close_buffers(self):
         pass
 
@@ -204,18 +204,18 @@ class ReadBufWrapper(object):
         self.ok_to_seek = False
         self.readbuf = readbuf
         self.stringio = None
-    
+
     def read(self, *args, **kw):
         if self.stringio:
             return self.stringio.read(*args, **kw)
         return self.readbuf.read(*args, **kw)
-    
+
     def __iter__(self):
         if self.stringio:
             return iter(self.stringio)
         else:
             return iter(self.readbuf)
-    
+
     def __getattr__(self, name):
         if self.stringio is None:
             if hasattr(self.readbuf, name):
@@ -230,11 +230,11 @@ def img_has_transparency(img):
     if img.mode == 'P':
         if img.info.get('transparency', False):
             return True
-        # convert to RGBA and check alpha channel 
+        # convert to RGBA and check alpha channel
         img = img.convert('RGBA')
     if img.mode == 'RGBA':
         # any alpha except fully opaque
-        return any(img.histogram()[-256:-1])    
+        return any(img.histogram()[-256:-1])
     return False
 
 def img_to_buf(img, image_opts):
@@ -242,7 +242,7 @@ def img_to_buf(img, image_opts):
     image_opts = image_opts.copy()
     if image_opts.mode and img.mode[0] == 'I' and img.mode != image_opts.mode:
         img = img.convert(image_opts.mode)
-    
+
     if (image_opts.colors is None and base_config().image.paletted
         and image_opts.format.endswith('png')):
         # force 255 colors for png with globals.image.paletted
@@ -268,9 +268,9 @@ def img_to_buf(img, image_opts):
             img = quantize(img, colors=image_opts.colors,
                 quantizer=quantizer)
         if hasattr(Image, 'RLE'):
-            defaults['compress_type'] = Image.RLE    
+            defaults['compress_type'] = Image.RLE
 
-    buf = StringIO()    
+    buf = StringIO()
     if format == 'jpeg':
         img = img.convert('RGB')
         if 'jpeg_quality' in image_opts.encoding_options:
@@ -297,7 +297,7 @@ def quantize(img, colors=256, alpha=False, defaults=None, quantizer=None):
                 defaults['transparency'] = 255
         else:
             img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
-       
+
     return img
 
 
@@ -308,7 +308,7 @@ def filter_format(format):
         format = 'png'
     return format
 
-image_filter = { 
+image_filter = {
     'nearest': Image.NEAREST,
     'bilinear': Image.BILINEAR,
     'bicubic': Image.BICUBIC
@@ -325,24 +325,24 @@ def is_single_color_image(image):
     # returns a list of (count, color), limit to one
     if result is None:
         return False
-    
+
     color = result[0][1]
     if image.mode == 'P':
         palette = image.getpalette()
         return palette[color*3], palette[color*3+1], palette[color*3+2]
-    
+
     return result[0][1]
 
 def make_transparent(img, color, tolerance=10):
     """
     Create alpha channel for the given image and make each pixel
     in `color` full transparent.
-    
+
     Returns an RGBA ImageSoruce.
-    
+
     Modifies the image in-place, unless it needs to be converted
     first (P->RGB).
-    
+
     :param color: RGB color tuple
     :param tolerance: tolerance applied to each color value
     """
@@ -354,17 +354,17 @@ def make_transparent(img, color, tolerance=10):
 
 def _make_transparent(img, color, tolerance=10):
     img.load()
-    
+
     if img.mode == 'P':
         img = img.convert('RGBA')
-    
+
     channels = img.split()
     mask_channels = []
     for ch, c in zip(channels, color):
         # create bit mask for each matched color
         low_c, high_c = c-tolerance, c+tolerance
         mask_channels.append(Image.eval(ch, lambda x: 255 if low_c <= x <= high_c else 0))
-    
+
     # multiply channel bit masks to get a single mask
     alpha = reduce(ImageChops.multiply, mask_channels)
     # invert to get alpha channel
@@ -373,7 +373,7 @@ def _make_transparent(img, color, tolerance=10):
     if len(channels) == 4:
         # multiply with existing alpha
         alpha = ImageChops.multiply(alpha, channels[-1])
-    
+
     img.putalpha(alpha)
     return img
 

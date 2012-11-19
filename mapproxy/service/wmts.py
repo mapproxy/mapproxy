@@ -143,7 +143,7 @@ class WMTSRestServer(WMTSServer):
     service = None
     names = ('wmts',)
     request_methods = ('tile', 'capabilities')
-    default_template = '/{{Layer}}/{{TileMatrixSet}}/{{TileMatrix}}/{{TileCol}}/{{TileRow}}.{{Format}}'
+    default_template = '/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}'
 
     def __init__(self, layers, md, max_tile_age=None, template=None):
         WMTSServer.__init__(self, layers, md)
@@ -193,8 +193,14 @@ class RestfulCapabilities(Capabilities):
                     )
 
 def format_resource_template(layer, template, service):
+    # TODO: remove {{Format}} in 1.6
     if '{{Format}}' in template:
         template = template.replace('{{Format}}', layer.format)
+    if '{Format}' in template:
+        template = template.replace('{Format}', layer.format)
+
+    if '{Layer}' in template:
+        template = template.replace('{Layer}', layer.name)
 
     return service.url + template
 
