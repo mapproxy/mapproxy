@@ -315,9 +315,9 @@ You can enable or disable the RESTful service with the ``restful`` option. It is
 URL Template
 ~~~~~~~~~~~~
 
-WMTS RESTful services can support custom tile URLs. You can configure your own URL template with the ``restful_template`` option.
+WMTS RESTful services supports custom tile URLs. You can configure your own URL template with the ``restful_template`` option.
 
-The default template is ``/{{Layer}}/{{TileMatrixSet}}/{{TileMatrix}}/{{TileCol}}/{{TileRow}}.{{Format}}``
+The default template is ``/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}``
 
 The template variables are identical with the WMTS specification. ``TileMatrixSet`` is the grid name, ``TileMatrix`` is the zoom level, ``TileCol`` and ``TileRow`` are the x and y of the tile.
 
@@ -329,7 +329,7 @@ with the following configuration::
     wmts:
       restful: true
       restful_template:
-          '/1.0.0/{{Layer}}-{{TileMatrixSet}}/{{TileMatrix}}-{{TileCol}}-{{TileRow}}/tile'
+          '/1.0.0/{Layer}-{TileMatrixSet}/{TileMatrix}-{TileCol}-{TileRow}/tile'
 
 
 .. index:: Demo Service, OpenLayers

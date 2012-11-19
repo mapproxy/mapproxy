@@ -1280,6 +1280,10 @@ class ServiceConfiguration(ConfigurationBase):
             services.append(WMTSServer(layers, md, max_tile_age=max_tile_age))
         if restful:
             template = conf.get('restful_template')
+            if template and '{{' in template:
+                # TODO remove warning in 1.6
+                log.warn("double braces in WMTS restful_template are deprecated {{x}} -> {x}")
+
             services.append(WMTSRestServer(layers, md, template=template,
                 max_tile_age=max_tile_age))
 
