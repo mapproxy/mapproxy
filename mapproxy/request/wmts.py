@@ -260,7 +260,9 @@ class InvalidWMTSTemplate(Exception):
     pass
 
 class URLTemplateConverter(object):
-    var_re = re.compile(r'\\{\\{(\w+)\\}\\}')
+    var_re = re.compile(r'(?:\\{)?\\{(\w+)\\}(?:\\})?')
+    # TODO {{}} format is deprecated, change to this in 1.6
+    # var_re = re.compile(r'\\{(\w+)\\}')
 
     variables = {
         'TileMatrixSet': r'[\w_-]+',
