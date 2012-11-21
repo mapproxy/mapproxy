@@ -72,6 +72,9 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
                 tile_data blob);
         """)
         db.execute("""
+            CREATE TABLE metadata (name text, value text);
+        """)
+        db.execute("""
             CREATE UNIQUE INDEX idx_tile on tiles
                 (zoom_level, tile_column, tile_row);
         """)
