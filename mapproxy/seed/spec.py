@@ -38,6 +38,7 @@ time_spec = {
     'days': number(),
     'weeks': number(),
     'time': anything(),
+    'from_file': str(),
 }
 
 from_to_spec = {
