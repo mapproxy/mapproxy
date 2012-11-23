@@ -19,10 +19,16 @@ import sys
 import time
 import operator
 
+from mapproxy.config import abspath
 from mapproxy.config.loader import ConfigurationError
 from mapproxy.config.coverage import load_coverage
 from mapproxy.srs import SRS
-from mapproxy.util import memoize, timestamp_from_isodate, timestamp_before
+from mapproxy.util import (
+    memoize, 
+    timestamp_from_isodate, 
+    timestamp_before, 
+    timestamp_from_file
+)
 from mapproxy.util.coverage import MultiCoverage, BBOXCoverage, GeomCoverage
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
@@ -244,7 +250,7 @@ class SeedConfiguration(ConfigurationBase):
         self.refresh_timestamp = None
         if 'refresh_before' in self.conf:
             self.refresh_timestamp = before_timestamp_from_options(self.conf['refresh_before'])
-    
+
     def seed_tasks(self):
         for grid_name in self.grids:
             for cache_name, cache in self.caches.iteritems():
@@ -340,6 +346,13 @@ def before_timestamp_from_options(conf):
         except ValueError:
             raise SeedConfigurationError(
                 "can't parse time '%s'. should be ISO time string" % (conf["time"], ))
+    if 'from_file' in conf:
+        datasource = abspath(conf['from_file'])
+        try:
+            return timestamp_from_file(datasource)
+        except OSError:
+            raise SeedConfiguration(
+                "can't parse last modified time from file '%s'." % (datasource, ))
     deltas = {}
     for delta_type in ('weeks', 'days', 'hours', 'minutes'):
         deltas[delta_type] = conf.get(delta_type, 0)
