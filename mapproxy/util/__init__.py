@@ -154,6 +154,12 @@ def timestamp_from_isodate(isodate):
         date = datetime.datetime.strptime(isodate, "%Y-%m-%dT%H:%M:%S")
     return time.mktime(date.timetuple())
 
+def timestamp_from_file(path):
+    if not os.path.exists(path):
+        raise OSError
+    # returns time since epoch 1970
+    return os.path.getmtime(path)
+
 def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
                       file_handler=None):
     if file_handler is None:
