@@ -6,7 +6,7 @@ coverages:
     bbox: [-180, -90, 0, 90]
     bbox_srs: 'EPSG:4326'
   empty_geom:
-    ogr_datasource: 'mapproxy/test/system/fixture/empty_ogrdata.geojson'
+    ogr_datasource: 'empty_ogrdata.geojson'
     ogr_srs: "EPSG:4326"
 
 seeds:
@@ -35,6 +35,13 @@ seeds:
     coverages: [empty_geom]
     levels: [0]
 
+  refresh_from_file:
+    caches: [one]
+    grids: [GLOBAL_GEODETIC]
+    levels: [0]
+    refresh_before:
+      from_file: 'seed.yaml'
+
 
 cleanups:
   cleanup:
@@ -59,4 +66,9 @@ cleanups:
     grids: [GLOBAL_GEODETIC]
     levels: [0, 1, 3]
 
-    
+  remove_from_file:
+    caches: [one]
+    grids: [GLOBAL_GEODETIC]
+    levels: [0]
+    remove_before:
+      from_file: 'seed.yaml'

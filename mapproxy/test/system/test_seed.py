@@ -29,6 +29,8 @@ from mapproxy.seed.config import load_seed_tasks_conf
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.image import tmp_image, create_tmp_image_buf, create_tmp_image
 
+from mapproxy.util import local_base_config
+
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 
 class SeedTestEnvironment(object):
@@ -36,6 +38,7 @@ class SeedTestEnvironment(object):
         self.dir = tempfile.mkdtemp()
         shutil.copy(os.path.join(FIXTURE_DIR, self.seed_conf_name), self.dir)
         shutil.copy(os.path.join(FIXTURE_DIR, self.mapproxy_conf_name), self.dir)
+        shutil.copy(os.path.join(FIXTURE_DIR, self.empty_ogrdata), self.dir)
         self.seed_conf_file = os.path.join(self.dir, self.seed_conf_name)
         self.mapproxy_conf_file = os.path.join(self.dir, self.mapproxy_conf_name)
         self.mapproxy_conf = load_configuration(self.mapproxy_conf_file, seed=True)
@@ -65,10 +68,11 @@ class SeedTestEnvironment(object):
 class SeedTestBase(SeedTestEnvironment):
 
     def test_seed_dry_run(self):
-        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
-        seed(tasks, dry_run=True)
-        cleanup(cleanup_tasks, verbose=False, dry_run=True)
+        with local_base_config(self.mapproxy_conf.base_config):
+            seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+            tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
+            seed(tasks, dry_run=True)
+            cleanup(cleanup_tasks, verbose=False, dry_run=True)
     
     def test_seed(self):
         with tmp_image((256, 256), format='png') as img:
@@ -78,22 +82,25 @@ class SeedTestBase(SeedTestEnvironment):
                                   '&width=256&height=128&srs=EPSG:4326'},
                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
-                seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-                tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
-                seed(tasks, dry_run=False)
-                cleanup(cleanup_tasks, verbose=False, dry_run=False)
+                with local_base_config(self.mapproxy_conf.base_config):
+                    seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+                    tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
+                    seed(tasks, dry_run=False)
+                    cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
     def test_reseed_uptodate(self):
         # tile already there.
         self.make_tile((0, 0, 0))
-        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
-        seed(tasks, dry_run=False)
-        cleanup(cleanup_tasks, verbose=False, dry_run=False)
+        with local_base_config(self.mapproxy_conf.base_config):
+            seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+            tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
+            seed(tasks, dry_run=False)
+            cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
 class TestSeedOldConfiguration(SeedTestBase):
     seed_conf_name = 'seed_old.yaml'
     mapproxy_conf_name = 'seed_mapproxy.yaml'
+    empty_ogrdata = 'empty_ogrdata.geojson'
 
     def test_reseed_remove_before(self):
         # tile already there but too old
@@ -125,6 +132,7 @@ tile_image = create_tmp_image((256, 256), color='blue')
 class TestSeed(SeedTestBase):
     seed_conf_name = 'seed.yaml'
     mapproxy_conf_name = 'seed_mapproxy.yaml'
+    empty_ogrdata = 'empty_ogrdata.geojson'
     
     def test_cleanup_levels(self):
         seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
@@ -210,13 +218,48 @@ class TestSeed(SeedTestBase):
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
     def test_active_seed_tasks(self):
-        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        assert len(seed_conf.seed_tasks_names()) == 4
-        assert len(seed_conf.seeds()) == 3
+        with local_base_config(self.mapproxy_conf.base_config):
+            seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+            assert len(seed_conf.seed_tasks_names()) == 5
+            assert len(seed_conf.seeds()) == 4
+
+    def test_seed_refresh_remove_before_from_file(self):
+        # tile already there but too old, will be refreshed and removed
+        t000 = self.make_tile((0, 0, 0), timestamp=time.time() - (60*60*25))
+        with tmp_image((256, 256), format='png') as img:
+            img_data = img.read()
+            expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                                  '&width=256&height=128&srs=EPSG:4326'},
+                            {'body': img_data, 'headers': {'content-type': 'image/png'}})
+            with mock_httpd(('localhost', 42423), [expected_req]):
+                # touch the seed_conf file and refresh everything
+                timestamp = time.time() - 60
+                os.utime(self.seed_conf_file, (timestamp, timestamp))
+                
+                with local_base_config(self.mapproxy_conf.base_config):
+                    seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+                    tasks = seed_conf.seeds(['refresh_from_file'])
+
+                    seed(tasks, dry_run=False)
+
+                assert os.path.exists(t000)
+                assert os.path.getmtime(t000) - 5 < time.time() < os.path.getmtime(t000) + 5
+        
+                # now touch the seed_conf again and remove everything
+                os.utime(self.seed_conf_file, None)
+                with local_base_config(self.mapproxy_conf.base_config):
+                    seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+                    cleanup_tasks = seed_conf.cleanups(['remove_from_file'])
+                    cleanup(cleanup_tasks, verbose=False, dry_run=False)
+
+                # tile is still present
+                #assert not os.path.exists(t000)
 
 class TestConcurrentRequestsSeed(SeedTestEnvironment):
     seed_conf_name = 'seed_timeouts.yaml'
     mapproxy_conf_name = 'seed_timeouts_mapproxy.yaml'
+    empty_ogrdata = 'empty_ogrdata.geojson'
 
     def test_timeout(self):
         # test concurrent seeding where seed concurrency is higher than the permitted
