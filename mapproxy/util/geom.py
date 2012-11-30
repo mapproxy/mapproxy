@@ -50,7 +50,7 @@ def load_datasource(datasource, where=None):
             return load_polygons(datasource)
 
     # otherwise pass to OGR
-    return load_ogr_datasource(datasource)
+    return load_ogr_datasource(datasource, where=where)
 
 def load_ogr_datasource(datasource, where=None):
     """
