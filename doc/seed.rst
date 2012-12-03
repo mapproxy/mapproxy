@@ -189,9 +189,7 @@ A list with coverage names. Limits the seed area to the coverages. By default, t
 
 Regenerate all tiles that are older than the given date. The date can either be absolute or relative. By default, existing tiles will not be refreshed.
 
-In addition the date can be recieved by any file. The last time of modification will be used, e.g. by touching a file.
-File paths should be relative to the proxy configuration or absolute.
-
+MapProxy can also use the last modification time of a file. File paths should be relative to the proxy configuration or absolute.
 
 Examples::
 
@@ -208,7 +206,7 @@ Examples::
 
   # modification time of a given file
   refresh_before:
-    from_file: path/to/file
+    mtime: path/to/file
 
 
 
@@ -288,8 +286,7 @@ A list with coverage names. Limits the cleanup area to the coverages. By default
 
 Remove all tiles that are older than the given date. The date can either be absolute or relative. ``remove_before`` defaults to the start time of the seed process, so that newly created tile will not be removed.
 
-In addition the date can be recieved by any file. The last time of modification will be used, e.g. by touching a file.
-File paths should be relative to the proxy configuration or absolute.
+MapProxy can also use the last modification time of a file. File paths should be relative to the proxy configuration or absolute.
 
 Examples::
 
@@ -306,7 +303,7 @@ Examples::
 
   # modification time of a given file
   remove_before:
-    from_file: path/to/file
+    mtime: path/to/file
 
 
 

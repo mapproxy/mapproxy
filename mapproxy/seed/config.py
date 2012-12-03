@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -346,8 +346,8 @@ def before_timestamp_from_options(conf):
         except ValueError:
             raise SeedConfigurationError(
                 "can't parse time '%s'. should be ISO time string" % (conf["time"], ))
-    if 'from_file' in conf:
-        datasource = abspath(conf['from_file'])
+    if 'mtime' in conf:
+        datasource = abspath(conf['mtime'])
         try:
             return timestamp_from_file(datasource)
         except OSError:
