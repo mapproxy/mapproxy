@@ -852,7 +852,7 @@ class CacheConfiguration(ConfigurationBase):
         cache_dir = self.conf.get('cache', {}).get('directory')
         if cache_dir:
             if self.conf.get('cache_dir'):
-                log.warn('found cache.dir and cache_dir option for %s, ignoring cache_dir',
+                log.warn('found cache.directory and cache_dir option for %s, ignoring cache_dir',
                 self.conf['name'])
             return self.context.globals.abspath(cache_dir)
 

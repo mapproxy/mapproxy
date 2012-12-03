@@ -132,7 +132,7 @@ At first we need to :ref:`configure at least one service <services>`. To enable
 a service, you have to include its name as a key in the `services` dictionary. 
 For example::
 
-  service:
+  services:
     tms:
 
 
@@ -153,11 +153,11 @@ Here is an example with some contact information:
 just indent every line the same way as the first. And remember, YAML does not 
 accept tab characters, you must use space.
 
-For this tutorial we add another source called `demo`. This is a demo service 
+For this tutorial we add another service called `demo`. This is a demo service 
 that lists all configured WMS and TMS layers. You can test each layer with a 
 simple OpenLayers client. So our configuration file should look like::
   
-  service:
+  services:
     demo:
     wms:
       [rest of WMS configuration]

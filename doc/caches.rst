@@ -41,6 +41,13 @@ This is the default cache type and it uses a single file for each tile. Availabl
 
   .. versionadded:: 1.5.0
 
+.. _cache_file_directory:
+
+``directory``:
+  Directory where MapProxy should directly store the tiles. This will not add the cache name or grid name (``use_grid_name``) to the path. You can use this option to point MapProxy to an existing tile collection (created with ``gdal2tiles`` for example).
+
+  .. versionadded:: 1.5.0
+
 
 ``mbtiles``
 ===========
