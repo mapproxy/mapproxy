@@ -116,11 +116,14 @@ class ProgressStore(object):
         return {}
 
     def write(self):
-        with open(self.filename + '.tmp', 'w') as f:
-            f.write(pickle.dumps(self.status))
-            f.flush()
-            os.fsync(f.fileno())
-        os.rename(self.filename + '.tmp', self.filename)
+        try:
+            with open(self.filename + '.tmp', 'w') as f:
+                f.write(pickle.dumps(self.status))
+                f.flush()
+                os.fsync(f.fileno())
+            os.rename(self.filename + '.tmp', self.filename)
+        except (IOError, OSError), ex:
+            log.error('unable to write seed progress: %s', ex)
 
     def remove(self):
         self.status = {}
