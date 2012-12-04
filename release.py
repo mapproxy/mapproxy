@@ -46,11 +46,11 @@ def bump_version_command(version):
         else:
             search_for = replace.replace('##', '[^\'"]+')
             replace_with = replace.replace('##', short_version)
-        
+
         search_for = search_for.replace('"', '\\"')
         replace_with = replace_with.replace('"', '\\"')
         sh('''perl -p -i -e "s/%(search_for)s/%(replace_with)s/" %(filename)s ''' % locals())
-    
+
     prepare_command()
 
 def build_docs_command():
@@ -86,6 +86,30 @@ def link_latest_command(ver=None):
         ver = version()
     host, path = REMOTE_DOC_LOCATION.split(':')
     sh('ssh %(host)s "cd %(path)s && rm latest && ln -s %(ver)s latest"' % locals())
+
+
+def update_deb_command():
+    import email.utils
+    import time
+    changelog_entry_template = """mapproxy (%(version)s) unstable; urgency=low
+
+  * New upstream release.
+
+ -- %(user)s <%(email)s>  %(time)s
+
+"""
+    with open('debian/changelog') as f:
+        old_changelog = f.read()
+
+    changelog = changelog_entry_template % {
+        'version': version(),
+        'user': backtick_('git config --get user.name').strip(),
+        'email': backtick_('git config --get user.email').strip(),
+        'time': email.utils.formatdate(time.time(), True),
+    }
+    changelog += old_changelog
+    with open('debian/changelog', 'w') as f:
+        f.write(changelog)
 
 if __name__ == '__main__':
     scriptine.run()
