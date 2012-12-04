@@ -233,7 +233,9 @@ class TestProgressStore(object):
 
 class TestRemovebreforeTimetamp(object):
     def test_from_time(self):
-        assert_almost_equal(before_timestamp_from_options({'time': '2012-12-01T20:12:00'}), 1354389120.0, -2)
+        ts = before_timestamp_from_options({'time': '2010-12-01T20:12:00'})
+        # we don't know the timezone this test will run
+        assert (1291230720.0 - 14 * 3600) < ts < (1291230720.0 + 14 * 3600)
 
     def test_from_mtime(self):
         with TempFile() as tmp:
