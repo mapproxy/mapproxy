@@ -91,7 +91,7 @@ class SeedScript(object):
                       help="continue an aborted seed progress")
 
     parser.add_option("--progress-file", dest='progress_file',
-                      default=".mapproxy_seed_progress",
+                      default=None,
                       help="filename for storing the seed progress (for --continue option)")
 
     def __call__(self):
