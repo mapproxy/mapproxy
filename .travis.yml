@@ -12,4 +12,4 @@ install:
     - "sudo apt-get install libproj0 libgeos-dev libgdal-dev libxslt1-dev libxml2-dev build-essential python-dev libjpeg-dev zlib1g-dev libfreetype6-dev"
     - "pip install -r requirements-travis.txt --use-mirrors"
 # command to run tests
-script: nosetests
+script: nosetests mapproxy
