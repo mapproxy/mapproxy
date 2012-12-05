@@ -124,6 +124,10 @@ def export_command(args=None):
         action="store_true", default=False,
         help="do not export, just print output")
 
+    parser.add_option("-c", "--concurrency", type="int",
+        dest="concurrency", default=1,
+        help="number of parallel export processes")
+
     parser.add_option("--coverage",
         help="the coverage for the export as a BBOX string, WKT file "
         "or OGR datasource")
@@ -248,7 +252,7 @@ def export_command(args=None):
     logger = ProgressLog(verbose=True, silent=False)
     try:
         seed_task(task, progress_logger=logger, dry_run=options.dry_run,
-             concurrency=1)
+             concurrency=options.concurrency)
     except KeyboardInterrupt:
         print >>sys.stderr, 'stopping...'
         sys.exit(2)
