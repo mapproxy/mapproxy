@@ -1201,3 +1201,10 @@ class TestGridSubset(object):
 
         assert not g1.is_subset_of(g2)
 
+    def test_non_matching_bboxfor_origins(self):
+        g1 = tile_grid(SRS(21781), bbox=[420000, 30000, 900000, 360000],
+            res=[250], origin='nw')
+        g2 = tile_grid(SRS(21781), bbox=[420000, 30000, 900000, 360000],
+            res=[250], origin='sw')
+
+        assert not g1.is_subset_of(g2)
