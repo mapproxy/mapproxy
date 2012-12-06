@@ -1315,12 +1315,7 @@ class ServiceConfiguration(ConfigurationBase):
                                                        global_key='wms.image_formats')
         image_formats = {}
         for format in image_formats_names:
-            if format.startswith('image/'):
-                from mapproxy.image.opts import ImageOptions
-                opts = ImageOptions(format=format)
-            else:
-                # lookup custom format
-                opts = self.context.globals.image_options.image_opts({}, format)
+            opts = self.context.globals.image_options.image_opts({}, format)
             if opts.format in image_formats:
                 log.warn('duplicate mime-type for WMS image_formats: "%s" already configured',
                     opts.format)
