@@ -66,22 +66,34 @@ class LayerMerger(object):
 
         cacheable = self.cacheable
         result = create_image(size, image_opts)
+        if image_opts is None:
+            merge = None
+        else:
+            merge = image_opts.merge
 
         for layer_img, layer in self.layers:
             if not layer_img.cacheable:
                 cacheable = False
             img = layer_img.as_image()
             layer_image_opts = layer_img.image_opts
+            if layer_image_opts is None:
+                opacity = None
+            else:
+                opacity = layer_image_opts.opacity
 
             if layer and layer.coverage and layer.coverage.clip:
                 img = mask_image(img, bbox, bbox_srs, layer.coverage)
 
-            if (layer_image_opts and layer_image_opts.opacity is not None
-                and layer_image_opts.opacity < 1.0):
-                img = img.convert(result.mode)
-                result = Image.blend(result, img, layer_image_opts.opacity)
+            if merge == 'composite':
+                if img.mode == 'RGB':
+                    result.paste(img, (0, 0))
+                else:
+                    result = Image.alpha_composite(result, img)
             else:
-                if img.mode == 'RGBA':
+                if opacity is not None and opacity < 1.0:
+                    img = img.convert(result.mode)
+                    result = Image.blend(result, img, layer_image_opts.opacity)
+                elif img.mode == 'RGBA':
                     # paste w transparency mask from layer
                     result.paste(img, (0, 0), img)
                 else:

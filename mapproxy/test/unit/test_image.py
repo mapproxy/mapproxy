@@ -291,7 +291,35 @@ class TestLayerMerge(object):
         result = merge_images([img1, img2], ImageOptions(transparent=False))
         img = result.as_image()
         eq_(img.getpixel((0, 0)), (0, 255, 255))
-    
+
+
+class TestLayerCompositeMerge(object):
+    def test_composite_merge(self):
+        # http://stackoverflow.com/questions/3374878
+
+        img1 = Image.new('RGBA', size=(100, 100), color=(255, 0, 0, 255))
+        draw = ImageDraw.Draw(img1)
+        draw.rectangle((33, 0, 66, 100), fill=(255, 0, 0, 128))
+        draw.rectangle((67, 0, 100, 100), fill=(255, 0, 0, 0))
+        img1 = ImageSource(img1)
+        img2 = Image.new('RGBA', size =(100, 100), color=(0, 255, 0, 255))
+        draw = ImageDraw.Draw(img2)
+        draw.rectangle((0, 33, 100, 66), fill=(0, 255, 0, 128))
+        draw.rectangle((0, 67, 100, 100), fill=(0, 255, 0, 0))
+        img2 = ImageSource(img2)
+
+        result = merge_images([img2, img1], ImageOptions(merge='composite', transparent=True))
+        img = result.as_image()
+        eq_(img.mode, 'RGBA')
+        eq_(sorted(img.getcolors()), sorted([
+            (1089, (0, 255, 0, 255)),
+            (1089, (255, 255, 255, 0)),
+            (1122, (0, 255, 0, 128)),
+            (1122, (128, 126, 0, 255)),
+            (1122, (255, 0, 0, 128)),
+            (1156, (170, 84, 0, 191)),
+            (3300, (255, 0, 0, 255))]))
+
 
 class TestTransform(object):
     def setup(self):
