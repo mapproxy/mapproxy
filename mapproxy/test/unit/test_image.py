@@ -297,6 +297,9 @@ class TestLayerCompositeMerge(object):
     def test_composite_merge(self):
         # http://stackoverflow.com/questions/3374878
 
+        if not hasattr(Image, 'alpha_composite'):
+            return
+
         img1 = Image.new('RGBA', size=(100, 100), color=(255, 0, 0, 255))
         draw = ImageDraw.Draw(img1)
         draw.rectangle((33, 0, 66, 100), fill=(255, 0, 0, 128))
