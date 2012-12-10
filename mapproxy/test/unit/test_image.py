@@ -27,6 +27,7 @@ from mapproxy.image.transform import ImageTransformer
 from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image_file, check_format, create_debug_img, create_image
 from mapproxy.srs import SRS
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 
 PNG_FORMAT = ImageOptions(format='image/png')
@@ -298,7 +299,7 @@ class TestLayerCompositeMerge(object):
         # http://stackoverflow.com/questions/3374878
 
         if not hasattr(Image, 'alpha_composite'):
-            return
+            raise SkipTest()
 
         img1 = Image.new('RGBA', size=(100, 100), color=(255, 0, 0, 255))
         draw = ImageDraw.Draw(img1)
