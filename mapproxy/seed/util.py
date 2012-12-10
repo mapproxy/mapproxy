@@ -147,6 +147,12 @@ class ProgressLog(object):
         self.current_task_id = None
         self.progress_store = progress_store
 
+    def log_message(self, msg):
+        self.out.write('[%s] %s\n' % (
+            timestamp(), msg,
+        ))
+        self.out.flush()
+
     def log_step(self, progress):
         if not self.verbose:
             return
