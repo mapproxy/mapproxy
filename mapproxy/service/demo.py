@@ -18,11 +18,13 @@ Demo service handler
 """
 from __future__ import division
 
+import os
 import pkg_resources
 import mimetypes
 from urllib2 import urlopen
 from collections import defaultdict
 
+from mapproxy.config.config import base_config
 from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
@@ -34,6 +36,12 @@ from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
 get_template = template_loader(__name__, 'templates', namespace=env)
 
+
+def static_filename(name):
+    if base_config().template_dir:
+        return os.path.join(base_config().template_dir, name)
+    else:
+        return pkg_resources.resource_filename(__name__, os.path.join('templates', name))
 
 class DemoServer(Server):
     names = ('demo',)
@@ -55,10 +63,11 @@ class DemoServer(Server):
     def handle(self, req):
         if req.path.startswith('/demo/static/'):
             filename = req.path.lstrip('/')
-            if not pkg_resources.resource_exists(__name__, 'templates/' + filename):
+            filename = static_filename(filename)
+            if not os.path.isfile(filename):
                 return Response('file not found', content_type='text/plain', status=404)
             type, encoding = mimetypes.guess_type(filename)
-            return Response(pkg_resources.resource_string(__name__, 'templates/' + filename), content_type=type)
+            return Response(open(filename, 'rb'), content_type=type)
 
         # we don't authorize the static files (css, js)
         # since they are not confidential

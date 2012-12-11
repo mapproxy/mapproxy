@@ -51,6 +51,9 @@ image = dict(
 services_conf = 'services.yaml'
 log_conf = 'log.ini'
 
+# directory with mapproxy/service/templates/* files
+template_dir = None
+
 cache = dict(
     base_dir = './cache_data',
     lock_dir = './cache_data/tile_locks',
