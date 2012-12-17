@@ -389,27 +389,30 @@ def bbox_position_in_image(bbox, size, src_bbox):
     ((540, 270), (30, 15), (-180, -90, 180, 90))
     >>> bbox_position_in_image((-200, -50, 200, 100), (600, 300), (-180, -90, 180, 90))
     ((540, 280), (30, 20), (-180, -50, 180, 90))
+    >>> bbox_position_in_image((586400,196400,752800,362800), (256, 256), (586400,196400,752800,350000))
+    ((256, 237), (0, 19), (586400, 196400, 752800, 350000))
     """
     coord_to_px = make_lin_transf(bbox, (0, 0) + size)
-    offsets = [0.0, float(size[1]), float(size[0]), 0.0]
+    offsets = [0, size[1], size[0], 0]
     sub_bbox = list(bbox)
     if src_bbox[0] > bbox[0]:
         sub_bbox[0] = src_bbox[0]
         x, y = coord_to_px((src_bbox[0], 0))
-        offsets[0] = x
+        offsets[0] = int(x)
     if src_bbox[1] > bbox[1]:
         sub_bbox[1] = src_bbox[1]
         x, y = coord_to_px((0, src_bbox[1]))
-        offsets[1] = y
+        offsets[1] = int(y)
 
     if src_bbox[2] < bbox[2]:
         sub_bbox[2] = src_bbox[2]
         x, y = coord_to_px((src_bbox[2], 0))
-        offsets[2] = x
+        offsets[2] = int(x)
+
     if src_bbox[3] < bbox[3]:
         sub_bbox[3] = src_bbox[3]
         x, y = coord_to_px((0, src_bbox[3]))
-        offsets[3] = y
+        offsets[3] = int(y)
 
-    size = int(offsets[2] - offsets[0]), int(offsets[1] - offsets[3])
-    return size, (int(offsets[0]), int(offsets[3])), tuple(sub_bbox)
+    size = abs(offsets[2] - offsets[0]), abs(offsets[1] - offsets[3])
+    return size, (offsets[0], offsets[3]), tuple(sub_bbox)
