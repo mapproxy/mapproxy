@@ -451,12 +451,15 @@ class TileGrid(object):
         # check for each level if the top and bottom coordinates of the tiles
         # match the bbox of the grid. only in this case we can flip y-axis
         # without any issues
+
+        # allow for some rounding errors in the _tiles_bbox calculations
+        delta = max(abs(self.bbox[1]), abs(self.bbox[3])) / 1e12
+
         for level, grid_size in enumerate(self.grid_sizes):
             level_bbox = self._tiles_bbox([(0, 0, level),
                 (grid_size[0] - 1, grid_size[1] - 1, level)])
 
-            # allow for some rounding errors in the _tiles_bbox calculations
-            if abs(self.bbox[1] - level_bbox[1]) > 1e-8 or abs(self.bbox[3] - level_bbox[3]) > 1e-8:
+            if abs(self.bbox[1] - level_bbox[1]) > delta or abs(self.bbox[3] - level_bbox[3]) > delta:
                 return False
         return True
 
