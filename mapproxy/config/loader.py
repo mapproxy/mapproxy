@@ -1150,6 +1150,18 @@ class LayerConfiguration(ConfigurationBase):
         return layer
 
     @memoize
+    def dimensions(self):
+        dimensions = {}
+
+        for dimension, conf in self.conf.get('dimensions', {}).iteritems():
+            values = conf.get('values', ['default'])
+            # TODO handle default values
+            default = conf.get('default', values[0])
+            dimensions[dimension] = values
+        print dimensions
+        return dimensions
+
+    @memoize
     def tile_layers(self):
         from mapproxy.service.tile import TileLayer
 
@@ -1167,6 +1179,8 @@ class LayerConfiguration(ConfigurationBase):
         if len(sources) > 1:
             return []
 
+        dimensions = self.dimensions()
+
         tile_layers = []
         for cache_name in sources:
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
@@ -1179,7 +1193,7 @@ class LayerConfiguration(ConfigurationBase):
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['extent'] = extent
                 tile_layers.append(TileLayer(self.conf['name'], self.conf['title'],
-                                             md, cache_source))
+                                             md, cache_source, dimensions=dimensions))
 
         return tile_layers
 
@@ -1225,6 +1239,7 @@ class ServiceConfiguration(ConfigurationBase):
         layers = odict()
         for layer_name, layer_conf in self.context.layers.iteritems():
             for tile_layer in layer_conf.tile_layers():
+                print tile_layer
                 if not tile_layer: continue
                 if use_grid_names:
                     # new style layer names are tuples
@@ -1275,6 +1290,8 @@ class ServiceConfiguration(ConfigurationBase):
         if kvp is None and restful is None:
             kvp = restful = True
 
+        dimensions = conf.get('dimensions')
+
         services = []
         if kvp:
             services.append(WMTSServer(layers, md, max_tile_age=max_tile_age))
@@ -1283,9 +1300,8 @@ class ServiceConfiguration(ConfigurationBase):
             if template and '{{' in template:
                 # TODO remove warning in 1.6
                 log.warn("double braces in WMTS restful_template are deprecated {{x}} -> {x}")
-
             services.append(WMTSRestServer(layers, md, template=template,
-                max_tile_age=max_tile_age))
+                max_tile_age=max_tile_age, dimensions=dimensions))
 
         return services
 

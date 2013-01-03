@@ -179,7 +179,7 @@ class TileServer(Server):
         return template.substitute(service=bunch(default='', **service), layer=layer)
 
 class TileLayer(object):
-    def __init__(self, name, title, md, tile_manager):
+    def __init__(self, name, title, md, tile_manager, dimensions=None):
         """
         :param md: the layer metadata
         :param tile_manager: the layer tile manager
@@ -188,6 +188,7 @@ class TileLayer(object):
         self.title = title
         self.md = md
         self.tile_manager = tile_manager
+        self.dimensions = dimensions
         self.grid = TileServiceGrid(tile_manager.grid)
         self.extent = map_extent_from_grid(self.grid)
         self._empty_tile = None
@@ -262,7 +263,8 @@ class TileLayer(object):
 
         try:
             with self.tile_manager.session():
-                tile = self.tile_manager.load_tile_coord(tile_coord, with_metadata=True)
+                tile = self.tile_manager.load_tile_coord(tile_coord,
+                    dimensions=tile_request.dimensions, with_metadata=True)
             if tile.source is None:
                 return self.empty_response()
 

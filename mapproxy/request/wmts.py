@@ -276,15 +276,21 @@ class URLTemplateConverter(object):
 
     required = set(['TileCol', 'TileRow', 'TileMatrix', 'TileMatrixSet', 'Layer'])
 
-    def __init__(self, template):
+    def __init__(self, template, dimensions=None):
         self.template = template
         self.found = set()
+        self.dimensions = dimensions or []
+        if self.dimensions:
+            self.required = self.required.union(set(dimensions))
 
     def substitute_var(self, match):
         var = match.group(1)
-        if var not in self.variables:
+        if var in self.dimensions:
+            var_type_re = r'[\w_.,-]+'
+        elif var in self.variables:
+            var_type_re = self.variables[var]
+        else:
             raise InvalidWMTSTemplate('unknown variable %s in %s' % (var, self.template))
-        var_type_re = self.variables[var]
         self.found.add(var)
         return r'(?P<%s>%s)' % (var, var_type_re)
 
@@ -294,7 +300,6 @@ class URLTemplateConverter(object):
         if not self.found.issuperset(self.required):
             raise InvalidWMTSTemplate('missing required variables in WMTS restful template: %s' %
                 self.required.difference(self.found))
-
         return wmts_re
 
 class WMTS100RestTileRequest(TileRequest):
@@ -304,6 +309,7 @@ class WMTS100RestTileRequest(TileRequest):
     xml_exception_handler = WMTS100ExceptionHandler
     request_handler_name = 'tile'
     origin = 'nw'
+    url_converter = None
 
     def __init__(self, request):
         self.http = request
@@ -324,6 +330,10 @@ class WMTS100RestTileRequest(TileRequest):
         self.tile = int(req_vars['TileCol']), int(req_vars['TileRow']), int(req_vars['TileMatrix'])
         self.format = req_vars.get('Format')
         self.tilematrixset = req_vars['TileMatrixSet']
+        if self.url_converter and self.url_converter.dimensions:
+            self.dimensions = {}
+            for dim in self.url_converter.dimensions:
+                self.dimensions[dim] = req_vars[dim]
 
     @property
     def exception_handler(self):
@@ -348,9 +358,10 @@ class WMTS100RestCapabilitiesRequest(object):
         return self.xml_exception_handler()
 
 
-def make_wmts_rest_request_parser(template):
+def make_wmts_rest_request_parser(template, dimensions=None):
     class WMTSRequestWrapper(WMTS100RestTileRequest):
-        tile_req_re = URLTemplateConverter(template).regexp()
+        url_converter = URLTemplateConverter(template, dimensions)
+        tile_req_re = url_converter.regexp()
 
     def wmts_request(req):
         if req.path.endswith(RESTFUL_CAPABILITIES_PATH):

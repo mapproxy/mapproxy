@@ -76,6 +76,14 @@
         <ows:Identifier>default</ows:Identifier>
       </Style>
       <Format>image/{{layer.format}}</Format>
+      {{for dimension in layer.dimensions}}
+      <Dimension>
+        <Identifier>{{ dimension }}</Identifier>
+        {{for value in layer.dimensions[dimension]}}
+        <Value>{{ value }}</Value>
+        {{endfor}}
+      </Dimension>
+      {{endfor}}
       {{for grid in layer.grids}}
       <TileMatrixSetLink>
         <TileMatrixSet>{{grid.name}}</TileMatrixSet>

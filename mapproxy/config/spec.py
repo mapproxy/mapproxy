@@ -255,6 +255,7 @@ mapproxy_yaml_spec = {
             'kvp': bool(),
             'restful': bool(),
             'restful_template': str(),
+            'dimensions': [basestring]
         },
         'wms': {
             'srs': [str()],
