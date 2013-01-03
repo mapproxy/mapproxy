@@ -137,7 +137,7 @@ ORIGIN_LL = 'll'
 
 def origin_from_string(origin):
     if origin == None:
-            origin = ORIGIN_LL
+        origin = ORIGIN_LL
     elif origin.lower() in ('ll', 'sw'):
         origin = ORIGIN_LL
     elif origin.lower() in ('ul', 'nw'):
