@@ -62,10 +62,10 @@ class TestWMTS(SystemTest):
     def setup(self):
         SystemTest.setup(self)
 
-    # def test_capabilities(self):
-    #     resp = self.app.get('/wmts/myrest/1.0.0/WMTSCapabilities.xml')
-    #     xml = resp.lxml
-    #     assert validate_with_xsd(xml, xsd_name='wmts/1.0/wmtsGetCapabilities_response.xsd')
+    def test_capabilities(self):
+        resp = self.app.get('/wmts/myrest/1.0.0/WMTSCapabilities.xml')
+        xml = resp.lxml
+        assert validate_with_xsd(xml, xsd_name='wmts/1.0/wmtsGetCapabilities_response.xsd')
     #     eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 4)
     #     eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 4)
 
@@ -95,6 +95,13 @@ class TestWMTS(SystemTest):
         serv.expects(NO_DIMENSION_LAYER_BASE_REQ).returns(TEST_TILE)
         with serv:
             resp = self.app.get('/wmts/no_dimension_layer/GLOBAL_MERCATOR/default/default/01/0/0.png')
+        eq_(resp.content_type, 'image/png')
+
+    def test_get_tile_kvp_valid_dimension(self):
+        serv = MockServ(42423)
+        serv.expects(DIMENSION_LAYER_BASE_REQ + '&Time=2012-11-15T00:00:00&elevation=1000').returns(TEST_TILE)
+        with serv:
+            resp = self.app.get('/service?service=wmts&request=GetTile&version=1.0.0&tilematrixset=GLOBAL_MERCATOR&tilematrix=01&tilecol=0&tilerow=0&format=png&layer=dimension_layer&style=')
         eq_(resp.content_type, 'image/png')
 
 

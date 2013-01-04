@@ -1,8 +1,8 @@
 services:
   wmts:
     restful: true
+    kvp: true
     restful_template: '/{Layer}/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.{Format}'
-    dimensions: ['Time', 'Elevation']
 
 layers:
   - name: dimension_layer

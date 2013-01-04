@@ -39,7 +39,6 @@ class WMTSServer(Server):
         Server.__init__(self)
         self.request_parser = request_parser or wmts_request
         self.md = md
-        self.dimensions = set()
         self.max_tile_age = max_tile_age
         self.layers, self.matrix_sets = self._matrix_sets(layers)
         self.capabilities_class = Capabilities
@@ -76,6 +75,8 @@ class WMTSServer(Server):
         tile_layer = self.layers[request.layer][request.tilematrixset]
         if not request.format:
             request.format = tile_layer.format
+
+        self.check_request_dimensions(tile_layer, request)
 
         limited_to = self.authorize_tile_layer(tile_layer, request)
         tile = tile_layer.render(request, coverage=limited_to)
@@ -132,12 +133,10 @@ class WMTSServer(Server):
             raise RequestError('unknown tilematrixset: ' + str(request.tilematrixset),
                 code='InvalidParameterValue', request=request)
 
-        if request.dimensions:
-            # TODO more dimension checks
-            for dimension, value in request.dimensions.iteritems():
-                if dimension not in self.dimensions and value != 'default':
-                    raise RequestError('unknown dimension: ' + str(dimension),
-                        code='InvalidParameterValue', request=request)
+    def check_request_dimensions(self, tile_layer, request):
+        # allow arbitrary dimensions in KVP service
+        # actual used values are checked later in TileLayer
+        pass
 
     def _service_md(self, tile_request):
         md = dict(self.md)
@@ -154,13 +153,20 @@ class WMTSRestServer(WMTSServer):
     request_methods = ('tile', 'capabilities')
     default_template = '/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}'
 
-    def __init__(self, layers, md, max_tile_age=None, template=None, dimensions=None):
+    def __init__(self, layers, md, max_tile_age=None, template=None):
         WMTSServer.__init__(self, layers, md)
         self.max_tile_age = max_tile_age
         self.template = template or self.default_template
-        self.dimensions = dimensions or set()
-        self.request_parser = make_wmts_rest_request_parser(self.template, dimensions=self.dimensions)
+        self.request_parser = make_wmts_rest_request_parser(self.template)
         self.capabilities_class = partial(RestfulCapabilities, template=self.template)
+
+    def check_request_dimensions(self, tile_layer, request):
+        # check that unknown dimension for this layer are set to default
+        if request.dimensions:
+            for dimension, value in request.dimensions.iteritems():
+                if dimension not in tile_layer.dimensions and value != 'default':
+                    raise RequestError('unknown dimension: ' + str(dimension),
+                        code='InvalidParameterValue', request=request)
 
 
 class Capabilities(object):

@@ -1289,8 +1289,6 @@ class ServiceConfiguration(ConfigurationBase):
         if kvp is None and restful is None:
             kvp = restful = True
 
-        dimensions = conf.get('dimensions')
-
         services = []
         if kvp:
             services.append(WMTSServer(layers, md, max_tile_age=max_tile_age))
@@ -1300,7 +1298,7 @@ class ServiceConfiguration(ConfigurationBase):
                 # TODO remove warning in 1.6
                 log.warn("double braces in WMTS restful_template are deprecated {{x}} -> {x}")
             services.append(WMTSRestServer(layers, md, template=template,
-                max_tile_age=max_tile_age, dimensions=dimensions))
+                max_tile_age=max_tile_age))
 
         return services
 

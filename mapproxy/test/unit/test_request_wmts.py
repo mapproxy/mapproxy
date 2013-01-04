@@ -70,11 +70,6 @@ def test_template_converter_deprecated_format():
 def test_template_converter_missing_vars():
     URLTemplateConverter('/wmts/{Style}/{TileMatrixSet}/{TileCol}.png').regexp()
 
-def test_template_converter_unknown_var():
-    try:
-        regexp = URLTemplateConverter('/{Unknown}/{TileMatrixSet}-{TileMatrix}-{TileCol}-{TileRow}/tile').regexp()
-    except InvalidWMTSTemplate, ex:
-        assert 'unknown variable Unknown in /{Unknown}/{TileMatrixSet}' in ex.args[0]
-    else:
-        assert False, 'expected InvalidWMTSTemplate'
-
+def test_template_converter_dimensions():
+    converter = URLTemplateConverter('/{Layer}/{Dim1}/{Dim2}/{TileMatrixSet}-{TileMatrix}-{TileCol}-{TileRow}/tile')
+    assert converter.dimensions == ['Dim1', 'Dim2']

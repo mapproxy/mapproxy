@@ -261,10 +261,6 @@ class TileLayer(object):
 
             elif value == 'default':
                 continue # drop from dimensions
-            else:
-                raise RequestError(
-                    'invalid dimension value (%s=%s). this tile set only supports default'
-                    % (dimension, value), request=tile_request, code='InvalidParameterValue')
 
             dimensions[dimension] = value
         return dimensions

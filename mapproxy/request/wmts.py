@@ -91,6 +91,16 @@ class WMTSTileRequestParams(RequestParams):
     def format_mime_type(self):
         return self.get('format')
 
+    @property
+    def dimensions(self):
+        expected_param = set(['version', 'request', 'layer', 'style', 'tilematrixset',
+            'tilematrix', 'tilerow', 'tilecol', 'format', 'service'])
+        dimensions = {}
+        for key, value in self.iteritems():
+            if key not in expected_param:
+                dimensions[key] = value
+        return dimensions
+
     def __repr__(self):
         return '%s(param=%r)' % (self.__class__.__name__, self.params)
 
@@ -143,9 +153,7 @@ class WMTS100TileRequest(WMTSRequest):
         self.format = self.params.format # TODO
         self.tile = (int(self.params.coord[0]), int(self.params.coord[1]), self.params.coord[2]) # TODO
         self.origin = 'nw'
-        # TODO check dimensions
-        self.dimensions = {}
-
+        self.dimensions = self.params.dimensions
 
     def validate(self):
         missing_param = []
@@ -279,30 +287,33 @@ class URLTemplateConverter(object):
 
     required = set(['TileCol', 'TileRow', 'TileMatrix', 'TileMatrixSet', 'Layer'])
 
-    def __init__(self, template, dimensions=None):
+    def __init__(self, template):
         self.template = template
         self.found = set()
-        self.dimensions = dimensions or []
-        if self.dimensions:
-            self.required = self.required.union(set(dimensions))
+        self.dimensions = []
+        self._regexp = None
+        self.regexp()
 
     def substitute_var(self, match):
         var = match.group(1)
-        if var in self.dimensions:
-            var_type_re = r'[\w_.,:-]+'
-        elif var in self.variables:
+        if var in self.variables:
             var_type_re = self.variables[var]
         else:
-            raise InvalidWMTSTemplate('unknown variable %s in %s' % (var, self.template))
+            self.dimensions.append(var)
+            var_type_re = r'[\w_.,:-]+'
         self.found.add(var)
         return r'(?P<%s>%s)' % (var, var_type_re)
 
+
     def regexp(self):
+        if self._regexp:
+            return self._regexp
         converted_re = self.var_re.sub(self.substitute_var, re.escape(self.template))
         wmts_re = re.compile(converted_re)
         if not self.found.issuperset(self.required):
             raise InvalidWMTSTemplate('missing required variables in WMTS restful template: %s' %
                 self.required.difference(self.found))
+        self._regexp = wmts_re
         return wmts_re
 
 class WMTS100RestTileRequest(TileRequest):
@@ -317,6 +328,7 @@ class WMTS100RestTileRequest(TileRequest):
     def __init__(self, request):
         self.http = request
         self.url = request.base_url
+        self.dimensions = {}
 
     def make_tile_request(self):
         """
@@ -334,7 +346,6 @@ class WMTS100RestTileRequest(TileRequest):
         self.format = req_vars.get('Format')
         self.tilematrixset = req_vars['TileMatrixSet']
         if self.url_converter and self.url_converter.dimensions:
-            self.dimensions = {}
             for dim in self.url_converter.dimensions:
                 self.dimensions[dim] = req_vars[dim]
 
@@ -361,9 +372,9 @@ class WMTS100RestCapabilitiesRequest(object):
         return self.xml_exception_handler()
 
 
-def make_wmts_rest_request_parser(template, dimensions=None):
+def make_wmts_rest_request_parser(template):
     class WMTSRequestWrapper(WMTS100RestTileRequest):
-        url_converter = URLTemplateConverter(template, dimensions)
+        url_converter = URLTemplateConverter(template)
         tile_req_re = url_converter.regexp()
 
     def wmts_request(req):

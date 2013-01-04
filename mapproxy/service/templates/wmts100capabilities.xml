@@ -76,11 +76,11 @@
         <ows:Identifier>default</ows:Identifier>
       </Style>
       <Format>image/{{layer.format}}</Format>
-      {{for dimension in layer.dimensions}}
+      {{for dimension, values in layer.dimensions.iteritems()}}
       <Dimension>
-        <Identifier>{{ dimension }}</Identifier>
-        <Default>{{ dimension.default }}</Default>
-        {{for value in layer.dimensions[dimension]}}
+        <ows:Identifier>{{ dimension }}</ows:Identifier>
+        <Default>{{ values.default }}</Default>
+        {{for value in values}}
         <Value>{{ value }}</Value>
         {{endfor}}
       </Dimension>
