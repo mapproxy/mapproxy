@@ -129,8 +129,8 @@ class KMLServer(Server):
 
 
     def _internal_layer(self, tile_request):
-        if tile_request.dimensions:
-            name = tile_request.layer + '_' + '_'.join(tile_request.dimensions)
+        if '_layer_spec' in tile_request.dimensions:
+            name = tile_request.layer + '_' + tile_request.dimensions['_layer_spec']
         else:
             name = tile_request.layer
         if name in self.layers:
@@ -142,7 +142,7 @@ class KMLServer(Server):
         return None
 
     def _internal_dimension_layer(self, tile_request):
-        key = (tile_request.layer, ) + tile_request.dimensions
+        key = (tile_request.layer, tile_request.dimensions.get('_layer_spec'))
         return self.layers.get(key)
 
     def layer(self, tile_request):

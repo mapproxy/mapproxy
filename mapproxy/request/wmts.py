@@ -143,6 +143,9 @@ class WMTS100TileRequest(WMTSRequest):
         self.format = self.params.format # TODO
         self.tile = (int(self.params.coord[0]), int(self.params.coord[1]), self.params.coord[2]) # TODO
         self.origin = 'nw'
+        # TODO check dimensions
+        self.dimensions = {}
+
 
     def validate(self):
         missing_param = []
@@ -286,7 +289,7 @@ class URLTemplateConverter(object):
     def substitute_var(self, match):
         var = match.group(1)
         if var in self.dimensions:
-            var_type_re = r'[\w_.,-]+'
+            var_type_re = r'[\w_.,:-]+'
         elif var in self.variables:
             var_type_re = self.variables[var]
         else:

@@ -154,6 +154,15 @@ class LegendQuery(object):
         self.format = format
         self.scale = scale
 
+class Dimension(list):
+    def __init__(self, identifier, values, default=None):
+        self.identifier = identifier
+        if not default and values:
+            default = values[0]
+        self.default = default
+        list.__init__(self, values)
+
+
 def map_extent_from_grid(grid):
     """
     >>> from mapproxy.grid import tile_grid_for_epsg

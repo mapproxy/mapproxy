@@ -1151,14 +1151,13 @@ class LayerConfiguration(ConfigurationBase):
 
     @memoize
     def dimensions(self):
+        from mapproxy.layer import Dimension
         dimensions = {}
 
         for dimension, conf in self.conf.get('dimensions', {}).iteritems():
-            values = conf.get('values', ['default'])
-            # TODO handle default values
+            values = map(str, conf.get('values', ['default']))
             default = conf.get('default', values[0])
-            dimensions[dimension] = values
-        print dimensions
+            dimensions[dimension] = Dimension(dimension, values, default=default)
         return dimensions
 
     @memoize

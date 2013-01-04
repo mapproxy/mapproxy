@@ -83,8 +83,8 @@ class TileServer(Server):
         return resp
 
     def _internal_layer(self, tile_request):
-        if tile_request.dimensions:
-            name = tile_request.layer + '_' + '_'.join(tile_request.dimensions)
+        if '_layer_spec' in tile_request.dimensions:
+            name = tile_request.layer + '_' + tile_request.dimensions['_layer_spec']
         else:
             name = tile_request.layer
         if name in self.layers:
@@ -96,7 +96,7 @@ class TileServer(Server):
         return None
 
     def _internal_dimension_layer(self, tile_request):
-        key = (tile_request.layer, ) + tile_request.dimensions
+        key = (tile_request.layer, tile_request.dimensions.get('_layer_spec'))
         return self.layers.get(key)
 
     def layer(self, tile_request):
@@ -243,6 +243,32 @@ class TileLayer(object):
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
         return self.grid.tile_bbox(tile_coord)
 
+    def checked_dimensions(self, tile_request):
+        dimensions = {}
+
+        for dimension, value in tile_request.dimensions.iteritems():
+            # underscore dimensions are internal
+            if dimension.startswith('_'):
+                continue
+
+            if dimension in self.dimensions:
+                if value == 'default':
+                    value = self.dimensions[dimension].default
+                elif value not in self.dimensions[dimension]:
+                    raise RequestError('invalid dimension value (%s=%s).'
+                                       % (dimension, value), request=tile_request,
+                                       code='InvalidParameterValue')
+
+            elif value == 'default':
+                continue # drop from dimensions
+            else:
+                raise RequestError(
+                    'invalid dimension value (%s=%s). this tile set only supports default'
+                    % (dimension, value), request=tile_request, code='InvalidParameterValue')
+
+            dimensions[dimension] = value
+        return dimensions
+
     def render(self, tile_request, use_profiles=False, coverage=None):
         if tile_request.format != self.format:
             raise RequestError('invalid format (%s). this tile set only supports (%s)'
@@ -261,10 +287,12 @@ class TileLayer(object):
             else:
                 return self.empty_response()
 
+        dimensions = self.checked_dimensions(tile_request)
+
         try:
             with self.tile_manager.session():
                 tile = self.tile_manager.load_tile_coord(tile_coord,
-                    dimensions=tile_request.dimensions, with_metadata=True)
+                    dimensions=dimensions, with_metadata=True)
             if tile.source is None:
                 return self.empty_response()
 

@@ -134,7 +134,7 @@ class TileManager(object):
         tiles = TileCollection(tile_coords)
         self.cache.remove_tiles(tiles)
 
-    def creator(self, dimensions):
+    def creator(self, dimensions=None):
         return TileCreator(self.cache, self.sources, self.grid, self.meta_grid,
             self, dimensions=dimensions)
 

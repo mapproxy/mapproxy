@@ -79,6 +79,7 @@
       {{for dimension in layer.dimensions}}
       <Dimension>
         <Identifier>{{ dimension }}</Identifier>
+        <Default>{{ dimension.default }}</Default>
         {{for value in layer.dimensions[dimension]}}
         <Value>{{ value }}</Value>
         {{endfor}}
