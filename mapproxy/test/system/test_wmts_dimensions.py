@@ -55,6 +55,11 @@ DIMENSION_LAYER_BASE_REQ = (
 )
 NO_DIMENSION_LAYER_BASE_REQ = DIMENSION_LAYER_BASE_REQ.replace('/service1?', '/service2?')
 
+WMTS_KVP_URL = (
+    '/service?service=wmts&request=GetTile&version=1.0.0'
+    '&tilematrixset=GLOBAL_MERCATOR&tilematrix=01&tilecol=0&tilerow=0&format=png&style='
+)
+
 TEST_TILE = create_tmp_image((256, 256))
 
 class TestWMTS(SystemTest):
@@ -88,22 +93,43 @@ class TestWMTS(SystemTest):
         eq_(resp.content_type, 'image/png')
 
     def test_get_tile_invalid_no_dimension_source(self):
+        # unsupported dimension need to be 'default' in RESTful request
         self.check_invalid_parameter('/wmts/no_dimension_layer/GLOBAL_MERCATOR/2042-11-15T00:00:00/default/01/0/0.png')
 
     def test_get_tile_default_no_dimension_source(self):
+        # check if dimensions are ignored
         serv = MockServ(42423)
         serv.expects(NO_DIMENSION_LAYER_BASE_REQ).returns(TEST_TILE)
         with serv:
             resp = self.app.get('/wmts/no_dimension_layer/GLOBAL_MERCATOR/default/default/01/0/0.png')
         eq_(resp.content_type, 'image/png')
 
+
     def test_get_tile_kvp_valid_dimension(self):
         serv = MockServ(42423)
-        serv.expects(DIMENSION_LAYER_BASE_REQ + '&Time=2012-11-15T00:00:00&elevation=1000').returns(TEST_TILE)
+        serv.expects(DIMENSION_LAYER_BASE_REQ + '&Time=2012-11-14T00:00:00&elevation=3000').returns(TEST_TILE)
         with serv:
-            resp = self.app.get('/service?service=wmts&request=GetTile&version=1.0.0&tilematrixset=GLOBAL_MERCATOR&tilematrix=01&tilecol=0&tilerow=0&format=png&layer=dimension_layer&style=')
+            resp = self.app.get(WMTS_KVP_URL + '&layer=dimension_layer&Time=2012-11-14T00:00:00&Elevation=3000')
         eq_(resp.content_type, 'image/png')
 
+    def test_get_tile_kvp_valid_dimension_defaults(self):
+        serv = MockServ(42423)
+        serv.expects(DIMENSION_LAYER_BASE_REQ + '&Time=2012-11-15T00:00:00&elevation=0').returns(TEST_TILE)
+        with serv:
+            resp = self.app.get(WMTS_KVP_URL + '&layer=dimension_layer')
+        eq_(resp.content_type, 'image/png')
+
+    def test_get_tile_kvp_invalid_dimension(self):
+        self.check_invalid_parameter(WMTS_KVP_URL + '&layer=dimension_layer&Elevation=500')
+
+
+    def test_get_tile_kvp_default_no_dimension_source(self):
+        # check if dimensions are ignored
+        serv = MockServ(42423)
+        serv.expects(NO_DIMENSION_LAYER_BASE_REQ).returns(TEST_TILE)
+        with serv:
+            resp = self.app.get(WMTS_KVP_URL + '&layer=no_dimension_layer&Time=2012-11-14T00:00:00&Elevation=3000')
+        eq_(resp.content_type, 'image/png')
 
     def check_invalid_parameter(self, url):
         resp = self.app.get(url, status=400)

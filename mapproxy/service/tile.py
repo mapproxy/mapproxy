@@ -246,23 +246,16 @@ class TileLayer(object):
     def checked_dimensions(self, tile_request):
         dimensions = {}
 
-        for dimension, value in tile_request.dimensions.iteritems():
-            # underscore dimensions are internal
-            if dimension.startswith('_'):
-                continue
-
-            if dimension in self.dimensions:
-                if value == 'default':
-                    value = self.dimensions[dimension].default
-                elif value not in self.dimensions[dimension]:
-                    raise RequestError('invalid dimension value (%s=%s).'
-                                       % (dimension, value), request=tile_request,
-                                       code='InvalidParameterValue')
-
-            elif value == 'default':
-                continue # drop from dimensions
-
-            dimensions[dimension] = value
+        for dimension, values in self.dimensions.iteritems():
+            value = tile_request.dimensions.get(dimension)
+            if value in values:
+                dimensions[dimension] = value
+            elif not value or value == 'default':
+                dimensions[dimension] = values.default
+            else:
+                raise RequestError('invalid dimension value (%s=%s).'
+                    % (dimension, value), request=tile_request,
+                       code='InvalidParameterValue')
         return dimensions
 
     def render(self, tile_request, use_profiles=False, coverage=None):
