@@ -276,12 +276,12 @@ class URLTemplateConverter(object):
     # var_re = re.compile(r'\\{(\w+)\\}')
 
     variables = {
-        'TileMatrixSet': r'[\w_-]+',
+        'TileMatrixSet': r'[\w_.:-]+',
         'TileMatrix': r'\d+',
         'TileRow': r'-?\d+',
         'TileCol': r'-?\d+',
-        'Style': r'[\w_-]+',
-        'Layer': r'[\w_-]+',
+        'Style': r'[\w_.:-]+',
+        'Layer': r'[\w_.:-]+',
         'Format': r'\w+'
     }
 
