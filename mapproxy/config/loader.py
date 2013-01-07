@@ -1163,6 +1163,7 @@ class LayerConfiguration(ConfigurationBase):
     @memoize
     def tile_layers(self):
         from mapproxy.service.tile import TileLayer
+        from mapproxy.cache.dummy import DummyCache
 
         sources = []
         for source_name in self.conf.get('sources', []):
@@ -1183,6 +1184,14 @@ class LayerConfiguration(ConfigurationBase):
         tile_layers = []
         for cache_name in sources:
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
+
+                if dimensions and not isinstance(cache_source.cache, DummyCache):
+                    # caching of dimension layers is not supported yet
+                    raise ConfigurationError(
+                        "caching of dimension layer (%s) is not supported yet."
+                        " need to `disable_storage: true` on %s cache" % (self.conf['name'], cache_name)
+                    )
+
                 md = {}
                 md['title'] = self.conf['title']
                 md['name'] = self.conf['name']
