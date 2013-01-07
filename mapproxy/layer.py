@@ -127,11 +127,12 @@ class MapQuery(object):
         """
         Return subset of the dimensions.
 
-        >>> mq = MapQuery(None, None, None, dimensions={'foo': 1, 'bar': 2})
-        >>> mq.dimensions_for_params(set(['foo', 'baz']))
-        {'foo': 1}
+        >>> mq = MapQuery(None, None, None, dimensions={'Foo': 1, 'bar': 2})
+        >>> mq.dimensions_for_params(set(['FOO', 'baz']))
+        {'Foo': 1}
         """
-        return dict((k, v) for k, v in self.dimensions.iteritems() if k in params)
+        params = [p.lower() for p in params]
+        return dict((k, v) for k, v in self.dimensions.iteritems() if k.lower() in params)
 
     def __repr__(self):
         return "MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s)" % self.__dict__
