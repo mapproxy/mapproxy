@@ -98,7 +98,7 @@ class WMTSTileRequestParams(RequestParams):
         dimensions = {}
         for key, value in self.iteritems():
             if key not in expected_param:
-                dimensions[key] = value
+                dimensions[key.lower()] = value
         return dimensions
 
     def __repr__(self):

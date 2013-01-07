@@ -105,7 +105,7 @@ class TestWMTS(SystemTest):
         serv = MockServ(42423)
         serv.expects(DIMENSION_LAYER_BASE_REQ + '&Time=2012-11-14T00:00:00&elevation=3000').returns(TEST_TILE)
         with serv:
-            resp = self.app.get(WMTS_KVP_URL + '&layer=dimension_layer&time=2012-11-14T00:00:00&elevation=3000')
+            resp = self.app.get(WMTS_KVP_URL + '&layer=dimension_layer&timE=2012-11-14T00:00:00&ELEvatioN=3000')
         eq_(resp.content_type, 'image/png')
 
     def test_get_tile_kvp_valid_dimension_defaults(self):
