@@ -67,8 +67,31 @@ class TestWMTS(SystemTest):
         resp = self.app.get('/wmts/myrest/1.0.0/WMTSCapabilities.xml')
         xml = resp.lxml
         assert validate_with_xsd(xml, xsd_name='wmts/1.0/wmtsGetCapabilities_response.xsd')
-    #     eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 4)
-    #     eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 4)
+
+        eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 2)
+        eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 1)
+
+        # check dimension values for dimension_layer
+        dimension_elems = xml.xpath(
+            '//wmts:Layer/ows:Identifier[text()="dimension_layer"]/following-sibling::wmts:Dimension',
+            namespaces=ns_wmts,
+        )
+        dimensions = {}
+        for elem in dimension_elems:
+            dim = elem.find('{http://www.opengis.net/ows/1.1}Identifier').text
+            default = elem.find('{http://www.opengis.net/wmts/1.0}Default').text
+            values = [e.text for e in elem.findall('{http://www.opengis.net/wmts/1.0}Value')]
+            dimensions[dim] = (values, default)
+
+        eq_(dimensions['time'][0],
+            ["2012-11-12T00:00:00", "2012-11-13T00:00:00",
+             "2012-11-14T00:00:00", "2012-11-15T00:00:00"]
+        )
+        eq_(dimensions['time'][1], '2012-11-15T00:00:00')
+        eq_(dimensions['elevation'][1], '0')
+        eq_(dimensions['elevation'][0],
+            ["0", "1000", "3000"]
+        )
 
 
     def test_get_tile_valid_dimension(self):
