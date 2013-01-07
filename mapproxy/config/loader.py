@@ -1155,9 +1155,9 @@ class LayerConfiguration(ConfigurationBase):
         dimensions = {}
 
         for dimension, conf in self.conf.get('dimensions', {}).iteritems():
-            values = map(str, conf.get('values', ['default']))
+            values = [str(val) for val in  conf.get('values', ['default'])]
             default = conf.get('default', values[0])
-            dimensions[dimension] = Dimension(dimension, values, default=default)
+            dimensions[dimension.lower()] = Dimension(dimension, values, default=default)
         return dimensions
 
     @memoize
@@ -1238,7 +1238,6 @@ class ServiceConfiguration(ConfigurationBase):
         layers = odict()
         for layer_name, layer_conf in self.context.layers.iteritems():
             for tile_layer in layer_conf.tile_layers():
-                print tile_layer
                 if not tile_layer: continue
                 if use_grid_names:
                     # new style layer names are tuples

@@ -299,6 +299,7 @@ class URLTemplateConverter(object):
         if var in self.variables:
             var_type_re = self.variables[var]
         else:
+            var = var.lower()
             self.dimensions.append(var)
             var_type_re = r'[\w_.,:-]+'
         self.found.add(var)

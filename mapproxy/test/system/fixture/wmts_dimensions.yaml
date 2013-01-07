@@ -9,14 +9,14 @@ layers:
     title: layer with dimensions
     sources: [cache1]
     dimensions:
-        Time:
+        time:
             values:
                 - "2012-11-12T00:00:00"
                 - "2012-11-13T00:00:00"
                 - "2012-11-14T00:00:00"
                 - "2012-11-15T00:00:00"
             default: "2012-11-15T00:00:00"
-        Elevation:
+        elevation:
             values:
                 - 0
                 - 1000
@@ -47,11 +47,11 @@ sources:
     req:
       url: http://localhost:42423/service1
       layers: foo,bar
-    forward_req_params: ['Time', 'Elevation']
+    forward_req_params: ['time', 'elevation']
 
   wms_source2:
     type: wms
     req:
       url: http://localhost:42423/service2
       layers: foo,bar
-    forward_req_params: ['Time', 'Elevation']
+    forward_req_params: ['time', 'elevation']

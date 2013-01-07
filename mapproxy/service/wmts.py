@@ -164,6 +164,7 @@ class WMTSRestServer(WMTSServer):
         # check that unknown dimension for this layer are set to default
         if request.dimensions:
             for dimension, value in request.dimensions.iteritems():
+                dimension = dimension.lower()
                 if dimension not in tile_layer.dimensions and value != 'default':
                     raise RequestError('unknown dimension: ' + str(dimension),
                         code='InvalidParameterValue', request=request)

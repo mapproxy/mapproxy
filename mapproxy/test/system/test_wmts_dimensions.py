@@ -17,11 +17,7 @@ from __future__ import with_statement, division
 
 import functools
 
-from cStringIO import StringIO
-from mapproxy.request.wmts import (
-    WMTS100TileRequest, WMTS100CapabilitiesRequest
-)
-from mapproxy.test.image import is_jpeg, create_tmp_image
+from mapproxy.test.image import create_tmp_image
 from mapproxy.test.http import MockServ
 from mapproxy.test.helper import validate_with_xsd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
@@ -109,7 +105,7 @@ class TestWMTS(SystemTest):
         serv = MockServ(42423)
         serv.expects(DIMENSION_LAYER_BASE_REQ + '&Time=2012-11-14T00:00:00&elevation=3000').returns(TEST_TILE)
         with serv:
-            resp = self.app.get(WMTS_KVP_URL + '&layer=dimension_layer&Time=2012-11-14T00:00:00&Elevation=3000')
+            resp = self.app.get(WMTS_KVP_URL + '&layer=dimension_layer&time=2012-11-14T00:00:00&elevation=3000')
         eq_(resp.content_type, 'image/png')
 
     def test_get_tile_kvp_valid_dimension_defaults(self):
@@ -120,7 +116,7 @@ class TestWMTS(SystemTest):
         eq_(resp.content_type, 'image/png')
 
     def test_get_tile_kvp_invalid_dimension(self):
-        self.check_invalid_parameter(WMTS_KVP_URL + '&layer=dimension_layer&Elevation=500')
+        self.check_invalid_parameter(WMTS_KVP_URL + '&layer=dimension_layer&elevation=500')
 
 
     def test_get_tile_kvp_default_no_dimension_source(self):
