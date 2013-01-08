@@ -165,6 +165,7 @@ def export_command(args=None):
         print >>sys.stderr, 'ERROR: ', "%s: '%s'" % (e.strerror, e.filename)
         sys.exit(2)
     except ConfigurationError, e:
+        print >>sys.stderr, e
         print >>sys.stderr, 'ERROR: invalid configuration (see above)'
         sys.exit(2)
 

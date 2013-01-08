@@ -962,7 +962,10 @@ class CacheConfiguration(ConfigurationBase):
             return source
 
         cache_grid, extent, tile_manager = caches[0]
-        if tile_grid.is_subset_of(cache_grid):
+        image_opts = self.image_opts()
+
+        if (tile_grid.is_subset_of(cache_grid)
+            and params.get('format') == image_opts.format):
             tiled_only = True
         else:
             tiled_only = False
@@ -971,7 +974,7 @@ class CacheConfiguration(ConfigurationBase):
         cache_extent = extent.intersection(cache_extent)
 
         source = CacheSource(tile_manager, extent=cache_extent,
-            image_opts=self.image_opts(), tiled_only=tiled_only)
+            image_opts=image_opts, tiled_only=tiled_only)
         return source
 
     @memoize
