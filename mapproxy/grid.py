@@ -1012,14 +1012,32 @@ def bbox_intersects(one, two):
     return False
 
 def bbox_contains(one, two):
+    """
+    Returns ``True`` if `one` contains `two`.
+
+    >>> bbox_contains([0, 0, 10, 10], [2, 2, 4, 4])
+    True
+    >>> bbox_contains([0, 0, 10, 10], [0, 0, 11, 10])
+    False
+
+    Allow tiny rounding errors:
+
+    >>> bbox_contains([0, 0, 10, 10], [0.000001, 0.0000001, 10.000001, 10.000001])
+    False
+    >>> bbox_contains([0, 0, 10, 10], [0.0000000000001, 0.0000000000001, 10.0000000000001, 10.0000000000001])
+    True
+    """
     a_x0, a_y0, a_x1, a_y1 = one
     b_x0, b_y0, b_x1, b_y1 = two
 
+    x_delta = abs(a_x1 - a_x0) / 10e12
+    y_delta = abs(a_y1 - a_y0) / 10e12
+
     if (
-        a_x0 <= b_x0 and
-        a_x1 >= b_x1 and
-        a_y0 <= b_y0 and
-        a_y1 >= b_y1
+        a_x0 <= b_x0 + x_delta and
+        a_x1 >= b_x1 - x_delta and
+        a_y0 <= b_y0 + y_delta and
+        a_y1 >= b_y1 - y_delta
         ): return True
 
     return False
