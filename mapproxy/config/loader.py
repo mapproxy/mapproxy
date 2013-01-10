@@ -23,7 +23,7 @@ import sys
 import hashlib
 import urlparse
 import warnings
-from copy import deepcopy
+from copy import deepcopy, copy
 
 import logging
 log = logging.getLogger('mapproxy.config')
@@ -451,7 +451,9 @@ class SourcesCollection(dict):
                 " tagged sources only supported for WMS/Mapserver/Mapnik" % key)
 
         uses_req = source.conf.get('type') != 'mapnik'
-        source = deepcopy(source)
+
+        source = copy(source)
+        source.conf = deepcopy(source.conf)
 
         if uses_req:
             supported_layers = source.conf['req'].get('layers', [])
@@ -468,6 +470,7 @@ class SourcesCollection(dict):
             source.conf['req']['layers'] = layers
         else:
             source.conf['layers'] = layers
+
         return source
 
     def __contains__(self, key):
