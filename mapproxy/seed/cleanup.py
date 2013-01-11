@@ -59,6 +59,10 @@ def cache_cleanup(task, dry_run):
             task.tile_manager.cleanup()
 
 def normpath(path):
+    # relpath doesn't support UNC
+    if path.startswith('\\'):
+        return path
+
     # only supported with >= Python 2.6
     if hasattr(os.path, 'relpath'):
         path = os.path.relpath(path)
