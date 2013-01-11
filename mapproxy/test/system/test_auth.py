@@ -400,15 +400,9 @@ class TestTMSAuth(SystemTest):
         eq_(resp.content_type, 'image/png')
         assert resp.content_length > 1000
 
-    def test_get_tile_limited_to(self):
-        def auth(service, layers, environ, query_extent, **kw):
-            eq_(environ['PATH_INFO'], '/tms/1.0.0/layer3/0/0/0.jpeg')
-            eq_(service, 'tms')
-            eq_(len(layers), 1)
-            eq_(query_extent[0], 'EPSG:900913')
-            assert bbox_equals(query_extent[1], (-20037508.342789244, -20037508.342789244, 0, 0))
-
-            return {
+    def test_get_tile_global_limited_to(self):
+        # check with limited_to for all layers
+        auth_dict = {
                 'authorized': 'partial',
                 'limited_to': {
                     'geometry': [-180, -89, -90, 89],
@@ -418,6 +412,34 @@ class TestTMSAuth(SystemTest):
                     'layer3': {'tile': True},
                 }
             }
+        self.check_get_tile_limited_to(auth_dict)
+
+    def test_get_tile_layer_limited_to(self):
+        # check with limited_to for one layer
+        auth_dict = {
+            'authorized': 'partial',
+            'layers': {
+                'layer3': {
+                    'tile': True,
+                    'limited_to': {
+                        'geometry': [-180, -89, -90, 89],
+                        'srs': 'EPSG:4326',
+                    }
+                },
+            }
+        }
+
+        self.check_get_tile_limited_to(auth_dict)
+
+    def check_get_tile_limited_to(self, auth_dict):
+        def auth(service, layers, environ, query_extent, **kw):
+            eq_(environ['PATH_INFO'], '/tms/1.0.0/layer3/0/0/0.jpeg')
+            eq_(service, 'tms')
+            eq_(len(layers), 1)
+            eq_(query_extent[0], 'EPSG:900913')
+            assert bbox_equals(query_extent[1], (-20037508.342789244, -20037508.342789244, 0, 0))
+
+            return auth_dict
 
         serv = MockServ(port=42423)
         serv.expects('/1/0/0.png')
@@ -503,14 +525,9 @@ class TestKMLAuth(SystemTest):
             }
         self.app.get('/kml/layer1/0/0/0.kml', extra_environ={'mapproxy.authorize': auth}, status=403)
 
-    def test_get_tile_limited_to(self):
-        def auth(service, layers, environ, query_extent, **kw):
-            eq_(environ['PATH_INFO'], '/kml/layer3/1/0/0.jpeg')
-            eq_(service, 'kml')
-            eq_(len(layers), 1)
-            eq_(query_extent[0], 'EPSG:900913')
-            assert bbox_equals(query_extent[1], (-20037508.342789244, -20037508.342789244, 0, 0))
-            return {
+    def test_get_tile_global_limited_to(self):
+        # check with limited_to for all layers
+        auth_dict = {
                 'authorized': 'partial',
                 'limited_to': {
                     'geometry': [-180, -89, -90, 89],
@@ -520,6 +537,33 @@ class TestKMLAuth(SystemTest):
                     'layer3': {'tile': True},
                 }
             }
+        self.check_get_tile_limited_to(auth_dict)
+
+    def test_get_tile_layer_limited_to(self):
+        # check with limited_to for one layer
+        auth_dict = {
+            'authorized': 'partial',
+            'layers': {
+                'layer3': {
+                    'tile': True,
+                    'limited_to': {
+                        'geometry': [-180, -89, -90, 89],
+                        'srs': 'EPSG:4326',
+                    }
+                },
+            }
+        }
+
+        self.check_get_tile_limited_to(auth_dict)
+
+    def check_get_tile_limited_to(self, auth_dict):
+        def auth(service, layers, environ, query_extent, **kw):
+            eq_(environ['PATH_INFO'], '/kml/layer3/1/0/0.jpeg')
+            eq_(service, 'kml')
+            eq_(len(layers), 1)
+            eq_(query_extent[0], 'EPSG:900913')
+            assert bbox_equals(query_extent[1], (-20037508.342789244, -20037508.342789244, 0, 0))
+            return auth_dict
 
         serv = MockServ(port=42423)
         serv.expects('/1/0/0.png')
@@ -606,14 +650,9 @@ class TestWMTSAuth(SystemTest):
         eq_(resp.content_type, 'image/png')
         assert resp.content_length > 1000
 
-    def test_get_tile_limited_to(self):
-        def auth(service, layers, environ, query_extent, **kw):
-            eq_(environ['PATH_INFO'], '/wmts/layer3/GLOBAL_MERCATOR/1/0/0.jpeg')
-            eq_(service, 'wmts')
-            eq_(len(layers), 1)
-            eq_(query_extent[0], 'EPSG:900913')
-            assert bbox_equals(query_extent[1], (-20037508.342789244, 0, 0, 20037508.342789244))
-            return {
+    def test_get_tile_global_limited_to(self):
+        # check with limited_to for all layers
+        auth_dict = {
                 'authorized': 'partial',
                 'limited_to': {
                     'geometry': [-180, -89, -90, 89],
@@ -623,6 +662,33 @@ class TestWMTSAuth(SystemTest):
                     'layer3': {'tile': True},
                 }
             }
+        self.check_get_tile_limited_to(auth_dict)
+
+    def test_get_tile_layer_limited_to(self):
+        # check with limited_to for one layer
+        auth_dict = {
+            'authorized': 'partial',
+            'layers': {
+                'layer3': {
+                    'tile': True,
+                    'limited_to': {
+                        'geometry': [-180, -89, -90, 89],
+                        'srs': 'EPSG:4326',
+                    }
+                },
+            }
+        }
+
+        self.check_get_tile_limited_to(auth_dict)
+
+    def check_get_tile_limited_to(self, auth_dict):
+        def auth(service, layers, environ, query_extent, **kw):
+            eq_(environ['PATH_INFO'], '/wmts/layer3/GLOBAL_MERCATOR/1/0/0.jpeg')
+            eq_(service, 'wmts')
+            eq_(len(layers), 1)
+            eq_(query_extent[0], 'EPSG:900913')
+            assert bbox_equals(query_extent[1], (-20037508.342789244, 0, 0, 20037508.342789244))
+            return auth_dict
 
         serv = MockServ(port=42423)
         serv.expects('/1/0/1.png')

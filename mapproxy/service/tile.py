@@ -125,7 +125,9 @@ class TileServer(Server):
                 return
             if result['authorized'] == 'partial':
                 if result['layers'].get(tile_layer.name, {}).get('tile', False) == True:
-                    limited_to = result.get('limited_to')
+                    limited_to = result['layers'][request.layer].get('limited_to')
+                    if not limited_to:
+                        limited_to = result.get('limited_to')
                     if limited_to:
                         return load_limited_to(limited_to)
                     else:
@@ -236,7 +238,7 @@ class TileLayer(object):
         if not self._empty_tile:
             img = BlankImageSource(size=self.grid.tile_size,
                 image_opts=ImageOptions(format=format, transparent=True))
-            self._empty_tile = img.as_buffer()
+            self._empty_tile = img.as_buffer().read()
         return ImageResponse(self._empty_tile, format=format, timestamp=time.time())
 
     def tile_bbox(self, tile_request, use_profiles=False):
