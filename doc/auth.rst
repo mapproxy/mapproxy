@@ -448,6 +448,35 @@ Here is an example callback result where the tile request is limited::
   }
 
 
+.. versionadded:: 1.5.1
+
+You can also add the limit to the layer and mix it with properties used for the other services::
+
+  {
+    'authorized': 'partial',
+    'layers': {
+      'layer1': {
+        'tile': True,
+        'map': True,
+        'limited_to': {
+          'geometry': shapely.geometry.Polygon(
+            [(-10, 0), (30, -5), (30, 50), (20, 50)]),
+          'srs': 'EPSG:4326',
+        },
+      'layer2': {
+        'tile': True,
+        'map': False,
+        'featureinfo': True,
+        'limited_to': {
+          'geometry': shapely.geometry.Polygon(
+            [(0, 0), (20, -5), (30, 50), (20, 50)]),
+          'srs': 'EPSG:4326',
+        },
+      },
+    }
+  }
+
+
 See :ref:`limited_to` for more details.
 
 

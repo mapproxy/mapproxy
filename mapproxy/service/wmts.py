@@ -96,7 +96,9 @@ class WMTSServer(Server):
                 return
             if result['authorized'] == 'partial':
                 if result['layers'].get(request.layer, {}).get('tile', False) == True:
-                    limited_to = result.get('limited_to')
+                    limited_to = result['layers'][request.layer].get('limited_to')
+                    if not limited_to:
+                        limited_to = result.get('limited_to')
                     if limited_to:
                         return load_limited_to(limited_to)
                     else:
