@@ -83,8 +83,8 @@ class TileServer(Server):
         return resp
 
     def _internal_layer(self, tile_request):
-        if tile_request.dimensions:
-            name = tile_request.layer + '_' + '_'.join(tile_request.dimensions)
+        if '_layer_spec' in tile_request.dimensions:
+            name = tile_request.layer + '_' + tile_request.dimensions['_layer_spec']
         else:
             name = tile_request.layer
         if name in self.layers:
@@ -96,7 +96,7 @@ class TileServer(Server):
         return None
 
     def _internal_dimension_layer(self, tile_request):
-        key = (tile_request.layer, ) + tile_request.dimensions
+        key = (tile_request.layer, tile_request.dimensions.get('_layer_spec'))
         return self.layers.get(key)
 
     def layer(self, tile_request):
@@ -181,7 +181,7 @@ class TileServer(Server):
         return template.substitute(service=bunch(default='', **service), layer=layer)
 
 class TileLayer(object):
-    def __init__(self, name, title, md, tile_manager):
+    def __init__(self, name, title, md, tile_manager, dimensions=None):
         """
         :param md: the layer metadata
         :param tile_manager: the layer tile manager
@@ -190,6 +190,7 @@ class TileLayer(object):
         self.title = title
         self.md = md
         self.tile_manager = tile_manager
+        self.dimensions = dimensions
         self.grid = TileServiceGrid(tile_manager.grid)
         self.extent = map_extent_from_grid(self.grid)
         self._empty_tile = None
@@ -244,6 +245,21 @@ class TileLayer(object):
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
         return self.grid.tile_bbox(tile_coord)
 
+    def checked_dimensions(self, tile_request):
+        dimensions = {}
+
+        for dimension, values in self.dimensions.iteritems():
+            value = tile_request.dimensions.get(dimension)
+            if value in values:
+                dimensions[dimension] = value
+            elif not value or value == 'default':
+                dimensions[dimension] = values.default
+            else:
+                raise RequestError('invalid dimension value (%s=%s).'
+                    % (dimension, value), request=tile_request,
+                       code='InvalidParameterValue')
+        return dimensions
+
     def render(self, tile_request, use_profiles=False, coverage=None):
         if tile_request.format != self.format:
             raise RequestError('invalid format (%s). this tile set only supports (%s)'
@@ -262,9 +278,12 @@ class TileLayer(object):
             else:
                 return self.empty_response()
 
+        dimensions = self.checked_dimensions(tile_request)
+
         try:
             with self.tile_manager.session():
-                tile = self.tile_manager.load_tile_coord(tile_coord, with_metadata=True)
+                tile = self.tile_manager.load_tile_coord(tile_coord,
+                    dimensions=dimensions, with_metadata=True)
             if tile.source is None:
                 return self.empty_response()
 
