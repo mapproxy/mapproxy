@@ -369,6 +369,12 @@ mapproxy_yaml_spec = {
             'legendurl': str(),
             'layers': recursive(),
             'md': wms_130_layer_md,
+            'dimensions': {
+                anything(): {
+                    required('values'): [one_of(basestring, float, int)],
+                    'default': basestring,
+                }
+            }
         })])
     ),
 }

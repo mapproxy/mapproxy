@@ -39,6 +39,7 @@ class TileRequest(object):
     use_profiles = False
     req_prefix = '/tiles'
     origin = None
+    dimensions = {}
 
     def __init__(self, request):
         self.tile = None
@@ -59,9 +60,9 @@ class TileRequest(object):
             raise RequestError('invalid request (%s)' % (self.http.path), request=self)
 
         self.layer = match.group('layer')
-        self.dimensions = tuple()
+        self.dimensions = {}
         if match.group('layer_spec') is not None:
-            self.dimensions = (match.group('layer_spec'), )
+            self.dimensions['_layer_spec'] = match.group('layer_spec')
         if not self.tile:
             self.tile = tuple([int(match.group(v)) for v in ['x', 'y', 'z']])
         if not self.format:
@@ -94,9 +95,9 @@ class TMSRequest(TileRequest):
         if cap_match:
             if cap_match.group('layer') is not None:
                 self.layer = cap_match.group('layer')
-                self.dimensions = tuple()
+                self.dimensions = {}
                 if cap_match.group('layer_spec') is not None:
-                    self.dimensions = (cap_match.group('layer_spec'), )
+                    self.dimensions['_layer_spec'] = cap_match.group('layer_spec')
             self.request_handler_name = 'tms_capabilities'
         else:
             self._init_request()

@@ -23,7 +23,7 @@ import sys
 import hashlib
 import urlparse
 import warnings
-from copy import deepcopy
+from copy import deepcopy, copy
 
 import logging
 log = logging.getLogger('mapproxy.config')
@@ -451,7 +451,9 @@ class SourcesCollection(dict):
                 " tagged sources only supported for WMS/Mapserver/Mapnik" % key)
 
         uses_req = source.conf.get('type') != 'mapnik'
-        source = deepcopy(source)
+
+        source = copy(source)
+        source.conf = deepcopy(source.conf)
 
         if uses_req:
             supported_layers = source.conf['req'].get('layers', [])
@@ -468,6 +470,7 @@ class SourcesCollection(dict):
             source.conf['req']['layers'] = layers
         else:
             source.conf['layers'] = layers
+
         return source
 
     def __contains__(self, key):
@@ -1153,8 +1156,20 @@ class LayerConfiguration(ConfigurationBase):
         return layer
 
     @memoize
+    def dimensions(self):
+        from mapproxy.layer import Dimension
+        dimensions = {}
+
+        for dimension, conf in self.conf.get('dimensions', {}).iteritems():
+            values = [str(val) for val in  conf.get('values', ['default'])]
+            default = conf.get('default', values[0])
+            dimensions[dimension.lower()] = Dimension(dimension, values, default=default)
+        return dimensions
+
+    @memoize
     def tile_layers(self):
         from mapproxy.service.tile import TileLayer
+        from mapproxy.cache.dummy import DummyCache
 
         sources = []
         for source_name in self.conf.get('sources', []):
@@ -1170,9 +1185,19 @@ class LayerConfiguration(ConfigurationBase):
         if len(sources) > 1:
             return []
 
+        dimensions = self.dimensions()
+
         tile_layers = []
         for cache_name in sources:
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
+
+                if dimensions and not isinstance(cache_source.cache, DummyCache):
+                    # caching of dimension layers is not supported yet
+                    raise ConfigurationError(
+                        "caching of dimension layer (%s) is not supported yet."
+                        " need to `disable_storage: true` on %s cache" % (self.conf['name'], cache_name)
+                    )
+
                 md = {}
                 md['title'] = self.conf['title']
                 md['name'] = self.conf['name']
@@ -1182,7 +1207,7 @@ class LayerConfiguration(ConfigurationBase):
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['extent'] = extent
                 tile_layers.append(TileLayer(self.conf['name'], self.conf['title'],
-                                             md, cache_source))
+                                             md, cache_source, dimensions=dimensions))
 
         return tile_layers
 
@@ -1286,7 +1311,6 @@ class ServiceConfiguration(ConfigurationBase):
             if template and '{{' in template:
                 # TODO remove warning in 1.6
                 log.warn("double braces in WMTS restful_template are deprecated {{x}} -> {x}")
-
             services.append(WMTSRestServer(layers, md, template=template,
                 max_tile_age=max_tile_age))
 
