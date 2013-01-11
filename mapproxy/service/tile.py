@@ -235,7 +235,7 @@ class TileLayer(object):
         if not self._empty_tile:
             img = BlankImageSource(size=self.grid.tile_size,
                 image_opts=ImageOptions(format=format, transparent=True))
-            self._empty_tile = img.as_buffer()
+            self._empty_tile = img.as_buffer().read()
         return ImageResponse(self._empty_tile, format=format, timestamp=time.time())
 
     def tile_bbox(self, tile_request, use_profiles=False):
