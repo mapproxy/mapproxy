@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,27 +32,27 @@ class TestNoCaseMultiDict(object):
         data = (('layers', 'foo,bar'), ('laYERs', 'baz'), ('crs', 'EPSG:4326'))
         nc_dict = NoCaseMultiDict(data)
         print nc_dict
-        
+
         for name in ('layers', 'LAYERS', 'lAYeRS'):
             assert name in nc_dict, name + ' not found'
         assert nc_dict.get_all('layers') == ['foo,bar', 'baz']
         assert nc_dict.get_all('crs') == ['EPSG:4326']
-    
+
     def test_from_dict(self):
         data = [('layers', 'foo,bar'), ('laYERs', 'baz'), ('crs', 'EPSG:4326')]
         nc_dict = NoCaseMultiDict(data)
         print nc_dict
-        
+
         for name in ('layers', 'LAYERS', 'lAYeRS'):
             assert name in nc_dict, name + ' not found'
         assert nc_dict.get_all('layers') == ['foo,bar', 'baz']
         assert nc_dict.get_all('crs') == ['EPSG:4326']
-    
+
     def test_iteritems(self):
         data = dict([('LAYERS', 'foo,bar'), ('laYERs', 'baz'), ('crs', 'EPSG:4326')])
         nc_dict = NoCaseMultiDict(data)
         print nc_dict
-    
+
         itr = nc_dict.iteritems()
         key, values = itr.next()
         assert key == 'LAYERS' and values == ['foo,bar', 'baz']
@@ -81,13 +81,13 @@ class TestNoCaseMultiDict(object):
         assert nc_dict.get('num') == '42'
         assert nc_dict.get('num', type_func=int) == 42
         assert nc_dict.get('foo') == 'bar'
-    
+
     def test_get_all(self):
         nc_dict = NoCaseMultiDict([('foo', 'bar'), ('num', '42'), ('foo', 'biz')])
         assert nc_dict.get_all('bar') == []
         assert nc_dict.get_all('foo') == ['bar', 'biz']
         assert nc_dict.get_all('num') == ['42']
-    
+
     def test_set(self):
         nc_dict = NoCaseMultiDict()
         nc_dict.set('foo', 'bar')
@@ -100,7 +100,7 @@ class TestNoCaseMultiDict(object):
         assert nc_dict.get_all('FOO') == ['ham', 'spam']
         nc_dict.set('FoO', ['egg', 'bacon'], append=True, unpack=True)
         assert nc_dict.get_all('FOo') == ['ham', 'spam', 'egg', 'bacon']
-    
+
     def test_setitem(self):
         nc_dict = NoCaseMultiDict()
         nc_dict['foo'] = 'bar'
@@ -115,7 +115,7 @@ class TestNoCaseMultiDict(object):
         nc_dict['bing'] = nc_dict['bong']
         assert nc_dict['bing'] == '2'
         assert nc_dict['bong'] == '2'
-    
+
     def test_del(self):
         nc_dict = NoCaseMultiDict([('foo', 'bar'), ('num', '42')])
         assert nc_dict['fOO'] == 'bar'
@@ -133,7 +133,7 @@ class TestWMSMapRequest(object):
         self.base_req = url_decode('''SERVICE=WMS&format=image%2Fpng&layers=foo&styles=&
 REQUEST=GetMap&height=300&srs=EPSG%3A4326&VERSION=1.1.1&
 bbox=7,50,8,51&width=400'''.replace('\n',''))
-    
+
 class TestWMS100MapRequest(TestWMSMapRequest):
     def setup(self):
         TestWMSMapRequest.setup(self)
@@ -141,7 +141,7 @@ class TestWMS100MapRequest(TestWMSMapRequest):
         del self.base_req['version']
         self.base_req['wmtver'] = '1.0.0'
         self.base_req['request'] = 'Map'
-    
+
     def test_basic_request(self):
         req = wms_request(DummyRequest(self.base_req), validate=False)
         assert isinstance(req, WMS100MapRequest)
@@ -159,36 +159,36 @@ class TestWMS130MapRequest(TestWMSMapRequest):
         self.base_req['version'] = '1.3.0'
         self.base_req['crs'] = self.base_req['srs']
         del self.base_req['srs']
-        
+
     def test_basic_request(self):
         req = wms_request(DummyRequest(self.base_req), validate=False)
         assert isinstance(req, WMS130MapRequest)
         eq_(req.params.request, 'GetMap')
         eq_(req.params.bbox, (50.0, 7.0, 51.0, 8.0))
-    
+
     def test_copy_with_request_params(self):
         # check that we allways have our internal axis order
         req1 = WMS130MapRequest(param=dict(bbox="10,0,20,40", crs='EPSG:4326'))
         eq_(req1.params.bbox, (0.0, 10.0, 40.0, 20.0))
         req2 = WMS111MapRequest(param=dict(bbox="0,10,40,20", srs='EPSG:4326'))
         eq_(req2.params.bbox, (0.0, 10.0, 40.0, 20.0))
-        
+
         # 130 <- 111
         req3 = req1.copy_with_request_params(req2)
         eq_(req3.params.bbox, (0.0, 10.0, 40.0, 20.0))
         assert isinstance(req3, WMS130MapRequest)
-        
+
         # 130 <- 130
         req4 = req1.copy_with_request_params(req3)
         eq_(req4.params.bbox, (0.0, 10.0, 40.0, 20.0))
         assert isinstance(req4, WMS130MapRequest)
-        
+
         # 111 <- 130
         req5 = req2.copy_with_request_params(req3)
         eq_(req5.params.bbox, (0.0, 10.0, 40.0, 20.0))
         assert isinstance(req5, WMS111MapRequest)
-        
-    
+
+
 class TestWMS111FeatureInfoRequest(TestWMSMapRequest):
     def setup(self):
         TestWMSMapRequest.setup(self)
@@ -196,19 +196,19 @@ class TestWMS111FeatureInfoRequest(TestWMSMapRequest):
         self.base_req['x'] = '100'
         self.base_req['y'] = '150'
         self.base_req['query_layers'] = 'foo'
-        
+
     def test_basic_request(self):
         req = wms_request(DummyRequest(self.base_req))#, validate=False)
         assert isinstance(req, WMS111FeatureInfoRequest)
-    
+
     def test_pos(self):
         req = wms_request(DummyRequest(self.base_req))
         eq_(req.params.pos, (100, 150))
-    
+
     def test_pos_coords(self):
         req = wms_request(DummyRequest(self.base_req))
         eq_(req.params.pos_coords, (7.25, 50.5))
-        
+
 
 class TestRequest(object):
     def setup(self):
@@ -223,27 +223,27 @@ class TestRequest(object):
          'SERVER_PORT': '5050',
          'SERVER_PROTOCOL': 'HTTP/1.1',
          'wsgi.url_scheme': 'http',
-         }        
+         }
     def test_path(self):
         req = Request(self.env)
         assert req.path == '/service'
-    
+
     def test_host_url(self):
         req = Request(self.env)
         assert req.host_url == 'http://localhost:5050/'
-    
+
     def test_base_url(self):
         req = Request(self.env)
         assert req.base_url == 'http://localhost:5050/service'
-        
+
         del self.env['HTTP_HOST']
         req = Request(self.env)
         assert req.base_url == 'http://127.0.0.1:5050/service'
-        
+
         self.env['SERVER_PORT'] = '80'
         req = Request(self.env)
         assert req.base_url == 'http://127.0.0.1/service'
-        
+
     def test_query_string(self):
         self.env['QUERY_STRING'] = 'Foo=boo&baz=baa&fOO=bizz'
         req = Request(self.env)
@@ -256,7 +256,7 @@ class TestRequest(object):
         req = Request(env)
         print req.args['foo']
         assert req.args['foo'] == u'some special chars & ='
-    
+
     def test_script_url(self):
         req = Request(self.env)
         eq_(req.script_url, 'http://localhost:5050')
@@ -271,7 +271,7 @@ class TestRequest(object):
         self.env['SCRIPT_NAME'] = '/proxy/'
         req = Request(self.env)
         eq_(req.script_url, 'http://localhost:5050/proxy')
-    
+
     def test_pop_path(self):
         self.env['PATH_INFO'] = '/foo/service'
         req = Request(self.env)
@@ -279,17 +279,17 @@ class TestRequest(object):
         eq_(part, 'foo')
         eq_(self.env['PATH_INFO'], '/service')
         eq_(self.env['SCRIPT_NAME'], '/foo')
-        
+
         part = req.pop_path()
         eq_(part, 'service')
         eq_(self.env['PATH_INFO'], '')
         eq_(self.env['SCRIPT_NAME'], '/foo/service')
-    
+
         part = req.pop_path()
         eq_(part, '')
         eq_(self.env['PATH_INFO'], '')
         eq_(self.env['SCRIPT_NAME'], '/foo/service')
-    
+
 
 def test_maprequest_from_request():
     env = {
@@ -353,7 +353,7 @@ class TestWMSMapRequestParams(object):
         assert list(self.m.layers) == ['bar', 'foo']
     def test_query_string(self):
         print self.m.query_string
-        assert_query_eq(self.m.query_string, 
+        assert_query_eq(self.m.query_string,
             'layers=bar,foo&WIdth=100&bBOx=-90,-80,70.0,+80'
             '&format=image%2Fpng&srs=EPSG%3A0815&heIGHT=200')
     def test_get(self):
@@ -465,7 +465,7 @@ SRS=EPSG%3A4326&BBOX=8,4,9,5&WIDTH=984&HEIGHT=708""".replace('\n', ''))
         self.params130['crs'] = 'EPSG:31463'
         req130 = WMS130MapRequest(self.params130)
         eq_(req130.params.bbox, (8, 4, 9, 5))
-        
+
 class TestTileRequest(object):
     def test_tms_request(self):
         env = {
@@ -478,7 +478,7 @@ class TestTileRequest(object):
         eq_(tms.tile, (2, 3, 5))
         eq_(tms.format, 'png')
         eq_(tms.layer, 'osm')
-        eq_(tms.dimensions, tuple())
+        eq_(tms.dimensions, {})
 
     def test_tile_request(self):
         env = {
@@ -492,7 +492,7 @@ class TestTileRequest(object):
         eq_(tile_req.origin, None)
         eq_(tile_req.format, 'png')
         eq_(tile_req.layer, 'osm')
-        eq_(tile_req.dimensions, tuple())
+        eq_(tile_req.dimensions, {})
 
     def test_tile_request_flipped_y(self):
         env = {
@@ -506,8 +506,8 @@ class TestTileRequest(object):
         eq_(tile_req.origin, 'nw')
         eq_(tile_req.format, 'png')
         eq_(tile_req.layer, 'osm')
-        eq_(tile_req.dimensions, tuple())
-        
+        eq_(tile_req.dimensions, {})
+
     def test_tile_request_w_epsg(self):
         env = {
             'PATH_INFO': '/tiles/1.0.0/osm/EPSG4326/5/2/3.png',
@@ -519,10 +519,10 @@ class TestTileRequest(object):
         eq_(tile_req.tile, (2, 3, 5))
         eq_(tile_req.format, 'png')
         eq_(tile_req.layer, 'osm')
-        eq_(tile_req.dimensions, ('EPSG4326', ))
+        eq_(tile_req.dimensions, {'_layer_spec': 'EPSG4326'})
 
 def test_request_params_pickle():
     params = RequestParams(dict(foo='bar', zing='zong'))
     params2 = pickle.loads(pickle.dumps(params, 2))
     assert params.params == params2.params
-    
+

@@ -238,6 +238,37 @@ Here is an example layer with extended layer capabilities::
           - url:    http://example.org/datasets/test.pdf
             format: application/pdf
 
+``dimensions``
+""""""""""""""
+
+.. versionadded:: 1.6.0
+
+.. note:: Dimensions are only supported for uncached WMTS services for now. See :ref:`wmts_dimensions` for a working use-case.
+
+Configure the dimensions that this layer supports. Dimensions should be a dictionary with one entry for each dimension.
+Each dimension is another dictionary with a list of ``values`` and an optional ``default`` value. When the ``default`` value is omitted, the first value will be used.
+
+::
+
+  layers:
+    - name: dimension_layer
+      title: layer with dimensions
+      sources: [cache]
+      dimensions:
+        time:
+          values:
+            - "2012-11-12T00:00:00"
+            - "2012-11-13T00:00:00"
+            - "2012-11-14T00:00:00"
+            - "2012-11-15T00:00:00"
+          default: "2012-11-15T00:00:00"
+        elevation:
+          values:
+            - 0
+            - 1000
+            - 3000
+
+
 .. ``attribution``
 .. """"""""""""""""
 ..

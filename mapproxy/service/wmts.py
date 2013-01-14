@@ -71,9 +71,12 @@ class WMTSServer(Server):
 
     def tile(self, request):
         self.check_request(request)
+
         tile_layer = self.layers[request.layer][request.tilematrixset]
         if not request.format:
             request.format = tile_layer.format
+
+        self.check_request_dimensions(tile_layer, request)
 
         limited_to = self.authorize_tile_layer(tile_layer, request)
         tile = tile_layer.render(request, coverage=limited_to)
@@ -132,6 +135,11 @@ class WMTSServer(Server):
             raise RequestError('unknown tilematrixset: ' + str(request.tilematrixset),
                 code='InvalidParameterValue', request=request)
 
+    def check_request_dimensions(self, tile_layer, request):
+        # allow arbitrary dimensions in KVP service
+        # actual used values are checked later in TileLayer
+        pass
+
     def _service_md(self, tile_request):
         md = dict(self.md)
         md['url'] = tile_request.url
@@ -153,6 +161,15 @@ class WMTSRestServer(WMTSServer):
         self.template = template or self.default_template
         self.request_parser = make_wmts_rest_request_parser(self.template)
         self.capabilities_class = partial(RestfulCapabilities, template=self.template)
+
+    def check_request_dimensions(self, tile_layer, request):
+        # check that unknown dimension for this layer are set to default
+        if request.dimensions:
+            for dimension, value in request.dimensions.iteritems():
+                dimension = dimension.lower()
+                if dimension not in tile_layer.dimensions and value != 'default':
+                    raise RequestError('unknown dimension: ' + str(dimension),
+                        code='InvalidParameterValue', request=request)
 
 
 class Capabilities(object):
