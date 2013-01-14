@@ -138,13 +138,15 @@ class MapQuery(object):
         return "MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s)" % self.__dict__
 
 class InfoQuery(object):
-    def __init__(self, bbox, size, srs, pos, info_format, format=None):
+    def __init__(self, bbox, size, srs, pos, info_format, format=None,
+        feature_count=None):
         self.bbox = bbox
         self.size = size
         self.srs = srs
         self.pos = pos
         self.info_format = info_format
         self.format = format
+        self.feature_count = feature_count
 
     @property
     def coord(self):

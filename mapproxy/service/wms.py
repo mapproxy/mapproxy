@@ -164,7 +164,8 @@ class WMSServer(Server):
 
         p = request.params
         query = InfoQuery(p.bbox, p.size, SRS(p.srs), p.pos,
-                          p['info_format'], format=request.params.format or None)
+              p['info_format'], format=request.params.format or None,
+              feature_count=p.get('feature_count'))
 
         actual_layers = odict()
 

@@ -415,9 +415,10 @@ class TestWMS111(WMSTest):
         expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
-                                  '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},
+                                  '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20&feature_count=100'},
                         {'body': 'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
+            self.common_fi_req.params['feature_count'] = 100
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, 'info')
