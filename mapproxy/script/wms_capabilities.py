@@ -21,7 +21,7 @@ from cStringIO import StringIO
 from xml.etree import ElementTree as etree
 
 from mapproxy.client.http import open_url, HTTPClientError
-from mapproxy.request.base import BaseRequest
+from mapproxy.request.base import BaseRequest, url_decode
 
 class PrettyPrinter(object):
     def __init__(self, indent=4):
@@ -175,7 +175,7 @@ def wms_111_cap_url(url):
     parsed_url = urlparse.urlparse(url)
     base_req = BaseRequest(
         url=url.split('?', 1)[0],
-        param=urlparse.parse_qsl(parsed_url.params),
+        param=url_decode(parsed_url.params),
     )
 
     base_req.params['service'] = 'WMS'
