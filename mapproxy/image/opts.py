@@ -18,7 +18,7 @@ import copy
 
 class ImageOptions(object):
     def __init__(self, mode=None, transparent=None, opacity=None, resampling=None,
-        format=None, bgcolor=None, colors=None, encoding_options=None):
+        format=None, bgcolor=None, colors=None, encoding_options=None, merge=None):
         self.transparent = transparent
         self.opacity = opacity
         self.resampling = resampling
@@ -29,6 +29,7 @@ class ImageOptions(object):
         self.bgcolor = bgcolor
         self.colors = colors
         self.encoding_options = encoding_options or {}
+        self.merge = merge
     
     def __repr__(self):
         options = []
@@ -79,7 +80,7 @@ class ImageFormat(str):
 def create_image(size, image_opts=None):
     """
     Create a new image that is compatible with the given `image_opts`.
-    Takes into account mode, transparent, bgcolor.
+    Takes into account merge, mode, transparent, bgcolor.
     """
     from mapproxy.platform.image import Image, ImageColor
     
@@ -87,12 +88,15 @@ def create_image(size, image_opts=None):
         mode = 'RGB'
         bgcolor = (255, 255, 255)
     else:
-        mode = image_opts.mode
-        if mode in (None, 'P'):
-            if image_opts.transparent:
-                mode = 'RGBA'
-            else:
-                mode = 'RGB'
+        if image_opts.merge == 'composite':
+            mode = 'RGBA'
+        else:
+            mode = image_opts.mode
+            if mode in (None, 'P'):
+                if image_opts.transparent:
+                    mode = 'RGBA'
+                else:
+                    mode = 'RGB'
         
         bgcolor = image_opts.bgcolor or (255, 255, 255)
         
@@ -142,6 +146,11 @@ def compatible_image_options(img_opts, base_opts=None):
     
     # I < P < RGB < RGBA :)
     mode = max(o.mode for o in img_opts)
+
+    if any(o.merge == 'composite' for o in img_opts):
+        merge = 'composite'
+    else:
+        merge = None
     
     if base_opts:
         options = base_opts.copy()
@@ -151,10 +160,13 @@ def compatible_image_options(img_opts, base_opts=None):
             options.mode = mode
         if options.transparent is None:
             options.transparent = transparent
+        if options.merge is None:
+            options.merge = merge
     else:
         options = img_opts[0].copy()
         options.colors = colors
         options.transparent = transparent
         options.mode = mode
+        options.merge = merge
     
     return options

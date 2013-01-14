@@ -50,7 +50,8 @@ image_opts = {
     'format': str(),
     'encoding_options': {
         anything(): anything()
-    }
+    },
+    'merge_method': str(),
 }
 
 http_opts = {
@@ -188,6 +189,7 @@ mapproxy_yaml_spec = {
                 anything(): image_opts,
             },
             'font_dir': str(),
+            'merge_method': str(),
         },
         'http': http_opts,
         'cache': {

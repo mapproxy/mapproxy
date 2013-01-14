@@ -30,6 +30,7 @@ log = logging.getLogger('mapproxy.config')
 
 from mapproxy.config import load_default_config, finish_base_config
 from mapproxy.config.spec import validate_mapproxy_conf
+from mapproxy.platform.image import require_alpha_composite_support
 from mapproxy.util import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
@@ -350,6 +351,10 @@ class ImageOptionsConfiguration(ConfigurationBase):
                 conf['resampling'] = conf.pop('resampling_method')
             if 'encoding_options' in conf:
                 self._check_encoding_options(conf['encoding_options'])
+            if 'merge_method' in conf:
+                conf['merge'] = conf.pop('merge_method')
+                if conf['merge'] == 'composite':
+                    require_alpha_composite_support()
             formats_config[format] = conf
         for format, conf in formats_config.iteritems():
             if 'format' not in conf and format.startswith('image/'):
@@ -386,12 +391,18 @@ class ImageOptionsConfiguration(ConfigurationBase):
         colors = image_conf.get('colors')
         mode = image_conf.get('mode')
         encoding_options = image_conf.get('encoding_options')
+        merge = image_conf.get('merge_method')
+        if merge is None:
+            merge = self.context.globals.get_value('image.merge_method', None)
+        if merge == 'composite':
+            require_alpha_composite_support()
 
         self._check_encoding_options(encoding_options)
 
         # only overwrite default if it is not None
         for k, v in dict(transparent=transparent, opacity=opacity, resampling=resampling,
-            format=img_format, colors=colors, mode=mode, encoding_options=encoding_options).iteritems():
+            format=img_format, colors=colors, mode=mode, encoding_options=encoding_options,
+            merge=merge).iteritems():
             if v is not None:
                 conf[k] = v
 
@@ -1336,12 +1347,7 @@ class ServiceConfiguration(ConfigurationBase):
                                                        global_key='wms.image_formats')
         image_formats = {}
         for format in image_formats_names:
-            if format.startswith('image/'):
-                from mapproxy.image.opts import ImageOptions
-                opts = ImageOptions(format=format)
-            else:
-                # lookup custom format
-                opts = self.context.globals.image_options.image_opts({}, format)
+            opts = self.context.globals.image_options.image_opts({}, format)
             if opts.format in image_formats:
                 log.warn('duplicate mime-type for WMS image_formats: "%s" already configured',
                     opts.format)
