@@ -59,6 +59,10 @@ class TestCreateImage(object):
         eq_(img.size, (100, 100))
         eq_(img.mode, 'RGBA')
         eq_(img.getcolors(), [(100*100, (200, 100, 0, 30))])
+
+    def test_merge_composite(self):
+        img = create_image((100, 100), ImageOptions(merge='composite'))
+        eq_(img.mode, 'RGBA')
     
 
 class TestCompatibleImageOptions(object):
