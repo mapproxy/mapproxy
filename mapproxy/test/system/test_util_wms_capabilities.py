@@ -46,7 +46,7 @@ def capture_out():
 class TestUtilWMSCapabilities(object):
     def setup(self):
         self.client = HTTPClient()
-        self.args = ['command_dummy', '--host', TESTSERVER_URL]
+        self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service']
 
     def test_http_error(self):
         self.args = ['command_dummy', '--host', 'http://foo.bar']
@@ -60,7 +60,7 @@ class TestUtilWMSCapabilities(object):
         assert err.getvalue().startswith("ERROR:")
 
     def test_request_not_parsable(self):
-        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},
+        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},
                                               {'status': '200', 'body': ''})]):
             with capture_out() as (out,err):
                 assert_raises(SystemExit, wms_capabilities_command, self.args)
