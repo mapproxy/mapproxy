@@ -30,6 +30,7 @@ env = {'bunch': bunch}
 get_template = template_loader(__name__, 'templates', namespace=env)
 
 import logging
+logging.basicConfig()
 log = logging.getLogger(__name__)
 
 class WMTSServer(Server):
