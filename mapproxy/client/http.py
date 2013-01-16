@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -65,13 +65,13 @@ def _set_global_socket_timeout(timeout):
 class _URLOpenerCache(object):
     """
     Creates custom URLOpener with BasicAuth and HTTPS handler.
-    
+
     Caches and reuses opener if possible (i.e. if they share the same
     ssl_ca_certs).
     """
     def __init__(self):
         self._opener = {}
-    
+
     def __call__(self, ssl_ca_certs, url, username, password):
         if ssl_ca_certs not in self._opener:
             handlers = []
@@ -85,16 +85,16 @@ class _URLOpenerCache(object):
 
             opener = urllib2.build_opener(*handlers)
             opener.addheaders = [('User-agent', 'MapProxy-%s' % (version,))]
-            
+
             self._opener[ssl_ca_certs] = (opener, passman)
         else:
             opener, passman = self._opener[ssl_ca_certs]
-        
+
         if url is not None and username is not None and password is not None:
             passman.add_password(None, url, username, password)
-        
+
         return opener
-    
+
 create_url_opener = _URLOpenerCache()
 
 class HTTPClient(object):
@@ -116,10 +116,10 @@ class HTTPClient(object):
                 if ssl_ca_certs is None:
                     raise HTTPClientError('No ca_certs file set (http.ssl_ca_certs). '
                         'Set file or disable verification with http.ssl_no_cert_checks option.')
-        
+
         self.opener = create_url_opener(ssl_ca_certs, url, username, password)
         self.header_list = headers.items() if headers else []
-        
+
     def open(self, url, data=None):
         code = None
         result = None
@@ -134,7 +134,7 @@ class HTTPClient(object):
                 result = self.opener.open(req)
         except HTTPError, e:
             code = e.code
-            reraise_exception(HTTPClientError('HTTP Error "%s": %d' 
+            reraise_exception(HTTPClientError('HTTP Error "%s": %d'
                 % (url, e.code), response_code=code), sys.exc_info())
         except URLError, e:
             if ssl and isinstance(e.reason, ssl.SSLError):
@@ -148,7 +148,7 @@ class HTTPClient(object):
             reraise_exception(HTTPClientError('No response from URL "%s": %s'
                                               % (url, reason)), sys.exc_info())
         except ValueError, e:
-            reraise_exception(HTTPClientError('URL not correct "%s": %s' 
+            reraise_exception(HTTPClientError('URL not correct "%s": %s'
                                               % (url, e.args[0])), sys.exc_info())
         except Exception, e:
             reraise_exception(HTTPClientError('Internal HTTP error "%s": %r'
@@ -160,7 +160,7 @@ class HTTPClient(object):
             return result
         finally:
             log_request(url, code, result, duration=time.time()-start_time, method=req.get_method())
-    
+
     def open_image(self, url, data=None):
         resp = self.open(url, data=data)
         if 'content-type' in resp.headers:
@@ -176,15 +176,17 @@ def auth_data_from_url(url):
     ('http://localhost/bar', ('bar', None))
     >>> auth_data_from_url('http://bar:baz@localhost/bar')
     ('http://localhost/bar', ('bar', 'baz'))
+    >>> auth_data_from_url('http://bar:b:az@@localhost/bar')
+    ('http://localhost/bar', ('bar', 'b:az@'))
     """
     username = password = None
     if '@' in url:
         scheme, host, path, query, frag = urlsplit(url)
         if '@' in host:
-            auth_data, host = host.split('@', 2)
+            auth_data, host = host.rsplit('@', 1)
             url = url.replace(auth_data+'@', '', 1)
             if ':' in auth_data:
-                username, password = auth_data.split(':', 2)
+                username, password = auth_data.split(':', 1)
             else:
                 username = auth_data
     return url, (username, password)
@@ -199,7 +201,7 @@ retrieve_url = open_url
 def retrieve_image(url, client=None):
     """
     Retrive an image from `url`.
-    
+
     :return: the image as a file object (with url .header and .info)
     :raise HTTPClientError: if response content-type doesn't start with image
     """
@@ -213,13 +215,13 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
     def __init__(self, *args, **kw):
         self._ca_certs = kw.pop('ca_certs', None)
         httplib.HTTPSConnection.__init__(self, *args, **kw)
-        
+
     def connect(self):
         # overrides the version in httplib so that we do
         #    certificate verification
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((self.host, self.port))
-        
+
         # wrap the socket using verification with the root
         #    certs in self.ca_certs_path
         self.sock = ssl.wrap_socket(sock,

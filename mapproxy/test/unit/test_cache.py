@@ -669,13 +669,13 @@ class TestWMSSourceWithClient(object):
                 else:
                     assert False, 'no SourceError raised'
     def test_basic_auth(self):
-        http_client = HTTPClient(self.req_template.url, username='foo', password='bar')
+        http_client = HTTPClient(self.req_template.url, username='foo', password='bar@')
         self.client.http_client = http_client
         def assert_auth(req_handler):
             assert 'Authorization' in req_handler.headers
             auth_data = req_handler.headers['Authorization'].split()[1]
             auth_data = auth_data.decode('base64')
-            eq_(auth_data, 'foo:bar')
+            eq_(auth_data, 'foo:bar@')
             return True
         expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
