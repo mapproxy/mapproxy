@@ -43,8 +43,11 @@ from mapproxy.grid import MetaGrid
 from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
-from mapproxy.util import async
-
+from mapproxy.util import async, timestamp_from_isodate
+import logging
+import time
+import datetime
+log = logging.getLogger('mapproxy.config')
 
 class TileManager(object):
     """
@@ -58,7 +61,7 @@ class TileManager(object):
     """
     def __init__(self, grid, cache, sources, format, image_opts=None, request_format=None,
         meta_buffer=None, meta_size=None, minimize_meta_requests=False,
-        pre_store_filter=None, concurrent_tile_creators=1):
+        pre_store_filter=None, concurrent_tile_creators=1,max_age=None):
         self.grid = grid
         self.cache = cache
         self.meta_grid = None
@@ -67,6 +70,7 @@ class TileManager(object):
         self.request_format = request_format or format
         self.sources = sources
         self.minimize_meta_requests = minimize_meta_requests
+        self._max_age = max_age
         self._expire_timestamp = None
         self.transparent = self.sources[0].transparent
         self.pre_store_filter = pre_store_filter or []
@@ -154,9 +158,16 @@ class TileManager(object):
         max_mtime = self.expire_timestamp(tile)
         if cached and max_mtime is not None:
             self.cache.load_tile_metadata(tile)
-            stale = tile.timestamp < max_mtime
+            stale = max_mtime < time.time()
+            """ #### Debug #### 
+            log.info('Expires:')
+            log.info(max_mtime)
+            log.info('Current Time:')
+            log.info(time.time())
+            """
             if stale:
                 cached = False
+                """ log.info('Tile is passed its used by date and starting to smell - will request a new version.') """   
         return cached
 
     def is_stale(self, tile):
@@ -180,6 +191,23 @@ class TileManager(object):
 
         :note: Returns _expire_timestamp by default.
         """
+        
+        """
+        If we have got a max_age variable from the YAML, work out the timestamp that this tile should expire
+        """
+        if self._max_age is not None and tile is not None:
+            if 'time' in self._max_age:
+                try:
+                    return timestamp_from_isodate(self._max_age['time'])
+                except ValueError:
+                    log.warn("Could not parse time '%s'. should be ISO time string" % (self._max_age["time"]))
+            deltas = {}
+            for delta_type in ('weeks', 'days', 'hours', 'minutes'):
+                deltas[delta_type] = self._max_age.get(delta_type, 0)
+                
+            self.cache.load_tile_metadata(tile)
+            return tile.timestamp + datetime.timedelta(**deltas).total_seconds()
+    
         return self._expire_timestamp
 
     def apply_tile_filter(self, tile):
