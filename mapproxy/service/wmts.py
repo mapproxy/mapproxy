@@ -88,15 +88,15 @@ class WMTSServer(Server):
     def authorize_tile_layer(self, tile_layer, request):
         if 'mapproxy.authorize' in request.http.environ:
             query_extent = tile_layer.grid.srs.srs_code, tile_layer.tile_bbox(request)
-            result = request.http.environ['mapproxy.authorize']('wmts', [request.layer],
+            result = request.http.environ['mapproxy.authorize']('wmts', [tile_layer.name],
                 query_extent=query_extent, environ=request.http.environ)
             if result['authorized'] == 'unauthenticated':
                 raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
                 return
             if result['authorized'] == 'partial':
-                if result['layers'].get(request.layer, {}).get('tile', False) == True:
-                    limited_to = result['layers'][request.layer].get('limited_to')
+                if result['layers'].get(tile_layer.name, {}).get('tile', False) == True:
+                    limited_to = result['layers'][tile_layer.name].get('limited_to')
                     if not limited_to:
                         limited_to = result.get('limited_to')
                     if limited_to:
