@@ -385,7 +385,7 @@ class TestTMSAuth(SystemTest):
 
     def test_get_tile(self):
         def auth(service, layers, environ, query_extent, **kw):
-            eq_(environ['PATH_INFO'], '/tms/1.0.0/layer1/0/0/0.png')
+            eq_(environ['PATH_INFO'], '/tms/1.0.0/layer1_EPSG900913/0/0/0.png')
             eq_(service, 'tms')
             eq_(query_extent[0], 'EPSG:900913')
             assert bbox_equals(query_extent[1], (-20037508.342789244, -20037508.342789244, 0, 0))
@@ -396,7 +396,7 @@ class TestTMSAuth(SystemTest):
                     'layer1': {'tile': True},
                 }
             }
-        resp = self.app.get(TMS_CAPABILITIES_REQ + '/layer1/0/0/0.png', extra_environ={'mapproxy.authorize': auth})
+        resp = self.app.get(TMS_CAPABILITIES_REQ + '/layer1_EPSG900913/0/0/0.png', extra_environ={'mapproxy.authorize': auth})
         eq_(resp.content_type, 'image/png')
         assert resp.content_length > 1000
 
@@ -558,7 +558,7 @@ class TestKMLAuth(SystemTest):
 
     def check_get_tile_limited_to(self, auth_dict):
         def auth(service, layers, environ, query_extent, **kw):
-            eq_(environ['PATH_INFO'], '/kml/layer3/1/0/0.jpeg')
+            eq_(environ['PATH_INFO'], '/kml/layer3_EPSG900913/1/0/0.jpeg')
             eq_(service, 'kml')
             eq_(len(layers), 1)
             eq_(query_extent[0], 'EPSG:900913')
@@ -569,7 +569,7 @@ class TestKMLAuth(SystemTest):
         serv.expects('/1/0/0.png')
         serv.returns(create_tmp_image((256, 256), color=(255, 0, 0)), headers={'content-type': 'image/png'})
         with serv:
-            resp = self.app.get('/kml/layer3/1/0/0.jpeg', extra_environ={'mapproxy.authorize': auth})
+            resp = self.app.get('/kml/layer3_EPSG900913/1/0/0.jpeg', extra_environ={'mapproxy.authorize': auth})
 
         eq_(resp.content_type, 'image/png')
 

@@ -117,7 +117,7 @@ class TileServer(Server):
                     tile_layer.tile_bbox(request, use_profiles=request.use_profiles))
             else:
                 query_extent = None # for layer capabilities
-            result = request.http.environ['mapproxy.authorize']('tms', [request.layer],
+            result = request.http.environ['mapproxy.authorize']('tms', [tile_layer.name],
                 query_extent=query_extent, environ=request.http.environ)
             if result['authorized'] == 'unauthenticated':
                 raise RequestError('unauthorized', status=401)
@@ -125,7 +125,7 @@ class TileServer(Server):
                 return
             if result['authorized'] == 'partial':
                 if result['layers'].get(tile_layer.name, {}).get('tile', False) == True:
-                    limited_to = result['layers'][request.layer].get('limited_to')
+                    limited_to = result['layers'][tile_layer.name].get('limited_to')
                     if not limited_to:
                         limited_to = result.get('limited_to')
                     if limited_to:
