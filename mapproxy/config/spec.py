@@ -24,6 +24,7 @@ time_spec = {
     'days': number(),
     'weeks': number(),
     'time': anything(),
+    'mtime': anything(),
 }
 
 def validate_mapproxy_conf(conf_dict):

@@ -278,6 +278,27 @@ See :ref:`using_existing_caches` for more information.
 
 .. _mixed_image_format:
 
+``max_age``
+""""""""""
+Sets the maximum age of a cached tile.
+
+Examples::
+
+  # absolute as ISO time
+  max_age:
+    time: 2010-10-21T12:35:00
+
+  # relative from the modified date of the tile
+  max_age:
+    weeks: 1
+    days: 7
+    hours: 4
+    minutes: 15
+
+  # modification time of a given file - useful to hook up to the source file so the cache is always up to date
+  refresh_before:
+    mtime: path/to/file
+
 ``format``
 """"""""""
 
