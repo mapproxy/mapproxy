@@ -23,7 +23,6 @@ import sys
 import hashlib
 import urlparse
 import warnings
-import datetime
 from copy import deepcopy
 
 import logging
@@ -983,8 +982,6 @@ class CacheConfiguration(ConfigurationBase):
         from mapproxy.cache.tile import TileManager
         from mapproxy.image.opts import compatible_image_options
         from mapproxy.layer import map_extent_from_grid, merge_layer_extents
-        
-        
 
         base_image_opts = self.image_opts()
         if self.conf.get('format') == 'mixed' and not self.conf.get('request_format') == 'image/png':

@@ -38,6 +38,7 @@ Tile caching (creation, caching and retrieval of tiles).
 from __future__ import with_statement
 
 from contextlib import contextmanager
+
 from mapproxy.config import abspath
 from mapproxy.grid import MetaGrid
 from mapproxy.image.merge import merge_images
@@ -45,10 +46,8 @@ from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
 from mapproxy.util import async, timestamp_from_isodate
 import os
-import logging
 import time
 import datetime
-log = logging.getLogger('mapproxy.config')
 
 class TileManager(object):
     """
@@ -160,12 +159,6 @@ class TileManager(object):
         if cached and max_mtime is not None:
             self.cache.load_tile_metadata(tile)
             stale = max_mtime < time.time()
-            """ #### Debug ####  
-            log.info('Expires:')
-            log.info(max_mtime)
-            log.info('Current Time:')
-            log.info(time.time())
-            """
             if stale:
                 cached = False
         return cached
@@ -199,8 +192,8 @@ class TileManager(object):
             if 'time' in self._max_age:
                 try:
                     return timestamp_from_isodate(self._max_age['time'])
-                except ValueError:
-                    log.warn("Could not parse time '%s'. should be ISO time string" % (self._max_age["time"]))
+                except:
+                    raise ConfigurationError("Could not parse time '%s'. should be ISO time string" % (self._max_age["time"]))
             
             """ Was mtime passed with a path to the source file? Grab the modified date to see if we need to update the tile """
             self.cache.load_tile_metadata(tile)
@@ -209,13 +202,11 @@ class TileManager(object):
                 try:
                     source_modified_time = os.path.getmtime(datasource)
                     if tile.timestamp < source_modified_time:
-                        """ log.info('Tile is older than the source file (Modified:  %s) - Overriding cached tile' % str(datetime.datetime.fromtimestamp(source_modified_time))) """
                         return source_modified_time;
                     else:
-                        """ log.info('Tile is still fresh') """
-                        return time.time() + 1000;
+                        return time.time() + 1000; # Return a date in the future so the tile is accepted as up-to-date
                 except OSError, ex:
-                    log.warn("Can't parse last modified time from file '%s'." % datasource)
+                    raise ConfigurationError("Can't parse last modified time from file '%s'." % datasource)
             deltas = {}
             for delta_type in ('weeks', 'days', 'hours', 'minutes'):
                 deltas[delta_type] = self._max_age.get(delta_type, 0)
