@@ -89,7 +89,7 @@ You can also nest dictionaries. Each nested dictionary needs to be indented by o
 
     baz:
       ham: 2
-      spam: 4
+      spam:
         bam: True
       inside_baz: 'yepp'
 
