@@ -1,3 +1,4 @@
+
 .. _configuration_examples:
 
 ######################
@@ -647,12 +648,12 @@ Then we can add a layer with all available dimensions::
               - "2012-11-13T00:00:00"
               - "2012-11-14T00:00:00"
               - "2012-11-15T00:00:00"
-            default: "2012-11-15T00:00:00"
           elevation:
             values:
               - 0
               - 1000
               - 3000
+            default: 0
 
 You can know access this layer with the elevation and time dimensions via the WMTS KVP service.
 The RESTful service requires a custom URL template that contains the dimensions. For example::

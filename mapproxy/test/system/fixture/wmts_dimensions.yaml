@@ -15,12 +15,12 @@ layers:
                 - "2012-11-13T00:00:00"
                 - "2012-11-14T00:00:00"
                 - "2012-11-15T00:00:00"
-            default: "2012-11-15T00:00:00"
         Elevation:
             values:
                 - 0
                 - 1000
                 - 3000
+            default: "0"
 
   - name: no_dimension_layer
     title: layer without dimensions

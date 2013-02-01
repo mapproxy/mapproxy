@@ -246,7 +246,7 @@ Here is an example layer with extended layer capabilities::
 .. note:: Dimensions are only supported for uncached WMTS services for now. See :ref:`wmts_dimensions` for a working use-case.
 
 Configure the dimensions that this layer supports. Dimensions should be a dictionary with one entry for each dimension.
-Each dimension is another dictionary with a list of ``values`` and an optional ``default`` value. When the ``default`` value is omitted, the first value will be used.
+Each dimension is another dictionary with a list of ``values`` and an optional ``default`` value. When the ``default`` value is omitted, the last value will be used.
 
 ::
 

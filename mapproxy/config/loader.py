@@ -1173,7 +1173,7 @@ class LayerConfiguration(ConfigurationBase):
 
         for dimension, conf in self.conf.get('dimensions', {}).iteritems():
             values = [str(val) for val in  conf.get('values', ['default'])]
-            default = conf.get('default', values[0])
+            default = conf.get('default', values[-1])
             dimensions[dimension.lower()] = Dimension(dimension, values, default=default)
         return dimensions
 
