@@ -374,7 +374,7 @@ mapproxy_yaml_spec = {
             'dimensions': {
                 anything(): {
                     required('values'): [one_of(basestring, float, int)],
-                    'default': basestring,
+                    'default': one_of(basestring, float, int),
                 }
             }
         })])
