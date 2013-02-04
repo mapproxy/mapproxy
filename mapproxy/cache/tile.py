@@ -40,6 +40,7 @@ from __future__ import with_statement
 from contextlib import contextmanager
 
 from mapproxy.config import abspath
+from mapproxy.config.loader import ConfigurationError
 from mapproxy.grid import MetaGrid
 from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter
