@@ -114,4 +114,7 @@
     </TileMatrixSet>
 {{endfor}}
   </Contents>
+{{if restful}}
+  <ServiceMetadataURL xlink:href="{{service.url}}/1.0.0/WMTSCapabilities.xml"/>
+{{endif}}
 </Capabilities>
