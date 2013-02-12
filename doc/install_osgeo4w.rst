@@ -49,11 +49,11 @@ To check if the MapProxy was successfully installed, you can launch a regular OS
 Now continue with :ref:`Create a configuration <create_configuration>` from the installation documentation.
 
 
-Unnattended OSGeo4W environment
+Unattended OSGeo4W environment
 -------------------------------
 
 
-If you need to run unnattended commands (like scheduled runs of *mapproxy-seed*), make a copy of ``C:\OSGeo4W\OSGeo4W.bat`` and modify the last line, to call ``cmd`` so it runs the MapProxy script you need, e.g.::
+If you need to run unattended commands (like scheduled runs of *mapproxy-seed*), make a copy of ``C:\OSGeo4W\OSGeo4W.bat`` and modify the last line, to call ``cmd`` so it runs the MapProxy script you need, e.g.::
 
  cmd /c mapproxy-seed -s C:\path\to\seed.yaml -f C:\path\to\mapproxy.yaml
 
