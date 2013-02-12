@@ -100,7 +100,6 @@
     <TileMatrixSet>
       <ows:Identifier>{{tile_matrix_set.name}}</ows:Identifier>
       <ows:SupportedCRS>{{tile_matrix_set.srs_name}}</ows:SupportedCRS>
-      <!-- <WellKnownScaleSet>urn:ogc:def:wkss:OGC:1.0:GlobalCRS84Pixel</WellKnownScaleSet> -->
   {{for matrix in tile_matrix_set}}
       <TileMatrix>
         <ows:Identifier>{{matrix.identifier}}</ows:Identifier>
