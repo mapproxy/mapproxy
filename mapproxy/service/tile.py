@@ -241,9 +241,9 @@ class TileLayer(object):
             self._empty_tile = img.as_buffer().read()
         return ImageResponse(self._empty_tile, format=format, timestamp=time.time())
 
-    def tile_bbox(self, tile_request, use_profiles=False):
+    def tile_bbox(self, tile_request, use_profiles=False, limit=False):
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
-        return self.grid.tile_bbox(tile_coord)
+        return self.grid.tile_bbox(tile_coord, limit=limit)
 
     def checked_dimensions(self, tile_request):
         dimensions = {}

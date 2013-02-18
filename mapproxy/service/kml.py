@@ -160,6 +160,8 @@ class KMLServer(Server):
         """
         :return: the rendered KML response
         """
+        # force 'sw' origin for kml
+        map_request.origin = 'sw'
         layer = self.layer(map_request)
         self.authorize_tile_layer(layer, map_request)
 
@@ -169,13 +171,13 @@ class KMLServer(Server):
         if tile_coord[2] == 0:
             initial_level = True
 
-        bbox = self._tile_wgs_bbox(tile_coord, layer.grid, limit=True)
+        bbox = self._tile_wgs_bbox(map_request, layer, limit=True)
         if bbox is None:
             raise RequestError('The requested tile is outside the bounding box '
                                'of the tile map.', request=map_request)
         tile = SubTile(tile_coord, bbox)
 
-        subtiles = self._get_subtiles(tile_coord, layer)
+        subtiles = self._get_subtiles(map_request, layer)
         tile_size = layer.grid.tile_size[0]
         url = map_request.http.script_url.rstrip('/')
         result = KMLRenderer().render(tile=tile, subtiles=subtiles, layer=layer,
@@ -186,11 +188,13 @@ class KMLServer(Server):
         resp.make_conditional(map_request.http)
         return resp
 
-    def _get_subtiles(self, tile, layer):
+    def _get_subtiles(self, tile_request, layer):
         """
         Create four `SubTile` for the next level of `tile`.
         """
-        bbox = self._tile_bbox(tile, layer.grid, limit=True)
+        tile = tile_request.tile
+        bbox = layer.tile_bbox(tile_request, use_profiles=tile_request.use_profiles, limit=True)
+
         level = layer.grid.internal_tile_coord((tile[0], tile[1], tile[2]+1), use_profiles=False)[2]
         bbox_, tile_grid_, tiles = layer.grid.get_affected_level_tiles(bbox, level)
         subtiles = []
@@ -199,25 +203,23 @@ class KMLServer(Server):
             sub_bbox = layer.grid.tile_bbox(coord)
             if sub_bbox is not None:
                 # only add subtiles where the lower left corner is in the bbox
-                # to prevent subtiles to apear in multiple KML docs
-                if sub_bbox[0] >= bbox[0] and sub_bbox[1] >= bbox[1]:
+                # to prevent subtiles to appear in multiple KML docs
+                DELTA = -1.0/10e6
+                if (sub_bbox[0] - bbox[0]) > DELTA and (sub_bbox[1] - bbox[1]) > DELTA:
                     sub_bbox_wgs = self._tile_bbox_to_wgs(sub_bbox, layer.grid)
                     coord = layer.grid.external_tile_coord(coord, use_profiles=False)
+                    if layer.grid.origin not in ('ll', 'sw', None):
+                        coord = layer.grid.flip_tile_coord(coord)
                     subtiles.append(SubTile(coord, sub_bbox_wgs))
 
         return subtiles
 
-    def _tile_bbox(self, tile_coord, grid, limit=False):
-        tile_coord = grid.internal_tile_coord(tile_coord, use_profiles=False)
-        if tile_coord is None:
+    def _tile_wgs_bbox(self, tile_request, layer, limit=False):
+        bbox = layer.tile_bbox(tile_request, use_profiles=tile_request.use_profiles,
+            limit=limit)
+        if bbox is None:
             return None
-        return grid.tile_bbox(tile_coord, limit=limit)
-
-    def _tile_wgs_bbox(self, tile_coord, grid, limit=False):
-        src_bbox = self._tile_bbox(tile_coord, grid, limit=limit)
-        if src_bbox is None:
-            return None
-        return self._tile_bbox_to_wgs(src_bbox, grid)
+        return self._tile_bbox_to_wgs(bbox, layer.grid)
 
     def _tile_bbox_to_wgs(self, src_bbox, grid):
         bbox = grid.srs.transform_bbox_to(SRS(4326), src_bbox, with_points=4)
