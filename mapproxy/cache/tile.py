@@ -205,7 +205,7 @@ class TileManager(object):
                     if tile.timestamp < source_modified_time:
                         return source_modified_time;
                     else:
-                        return time.time() + 1000; # Return a date in the future so the tile is accepted as up-to-date
+                        return time.time() + 86400; # Return a date in the future so the tile is accepted as up-to-date
                 except OSError, ex:
                     raise ConfigurationError("Can't parse last modified time from file '%s'." % datasource)
             deltas = {}
