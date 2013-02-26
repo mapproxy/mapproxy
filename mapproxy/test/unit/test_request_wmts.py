@@ -72,4 +72,4 @@ def test_template_converter_missing_vars():
 
 def test_template_converter_dimensions():
     converter = URLTemplateConverter('/{Layer}/{Dim1}/{Dim2}/{TileMatrixSet}-{TileMatrix}-{TileCol}-{TileRow}/tile')
-    assert converter.dimensions == ['dim1', 'dim2']
+    assert converter.dimensions == ['Dim1', 'Dim2']

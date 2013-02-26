@@ -71,6 +71,10 @@ class TestWMTS(SystemTest):
         eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 2)
         eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 1)
 
+        eq_(xml.xpath('//wmts:Contents/wmts:Layer/wmts:ResourceURL/@template', namespaces=ns_wmts),
+            ['http://localhost/wmts/myrest/dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png',
+             'http://localhost/wmts/myrest/no_dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png'])
+
         # check dimension values for dimension_layer
         dimension_elems = xml.xpath(
             '//wmts:Layer/ows:Identifier[text()="dimension_layer"]/following-sibling::wmts:Dimension',
@@ -83,13 +87,13 @@ class TestWMTS(SystemTest):
             values = [e.text for e in elem.findall('{http://www.opengis.net/wmts/1.0}Value')]
             dimensions[dim] = (values, default)
 
-        eq_(dimensions['time'][0],
+        eq_(dimensions['Time'][0],
             ["2012-11-12T00:00:00", "2012-11-13T00:00:00",
              "2012-11-14T00:00:00", "2012-11-15T00:00:00"]
         )
-        eq_(dimensions['time'][1], '2012-11-15T00:00:00')
-        eq_(dimensions['elevation'][1], '0')
-        eq_(dimensions['elevation'][0],
+        eq_(dimensions['Time'][1], '2012-11-15T00:00:00')
+        eq_(dimensions['Elevation'][1], '0')
+        eq_(dimensions['Elevation'][0],
             ["0", "1000", "3000"]
         )
 

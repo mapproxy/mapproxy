@@ -78,7 +78,7 @@
       <Format>image/{{layer.format}}</Format>
       {{for dimension, values in layer.dimensions.iteritems()}}
       <Dimension>
-        <ows:Identifier>{{ dimension }}</ows:Identifier>
+        <ows:Identifier>{{ dimension_keys[dimension] }}</ows:Identifier>
         <Default>{{ values.default }}</Default>
         {{for value in values}}
         <Value>{{ value }}</Value>

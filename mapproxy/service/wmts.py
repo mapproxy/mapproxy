@@ -19,7 +19,10 @@ WMS service handler
 
 from functools import partial
 
-from mapproxy.request.wmts import wmts_request, make_wmts_rest_request_parser
+from mapproxy.request.wmts import (
+    wmts_request, make_wmts_rest_request_parser,
+    URLTemplateConverter,
+)
 from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
@@ -159,8 +162,9 @@ class WMTSRestServer(WMTSServer):
         WMTSServer.__init__(self, layers, md)
         self.max_tile_age = max_tile_age
         self.template = template or self.default_template
-        self.request_parser = make_wmts_rest_request_parser(self.template)
-        self.capabilities_class = partial(RestfulCapabilities, template=self.template)
+        self.url_converter = URLTemplateConverter(self.template)
+        self.request_parser = make_wmts_rest_request_parser(self.url_converter)
+        self.capabilities_class = partial(RestfulCapabilities, url_converter=self.url_converter)
 
     def check_request_dimensions(self, tile_layer, request):
         # check that unknown dimension for this layer are set to default
@@ -198,16 +202,19 @@ class Capabilities(object):
         return doc
 
 class RestfulCapabilities(Capabilities):
-    def __init__(self, server_md, layers, matrix_sets, template):
+    def __init__(self, server_md, layers, matrix_sets, url_converter):
         Capabilities.__init__(self, server_md, layers, matrix_sets)
-        self.template = template
+        self.url_converter = url_converter
 
     def template_context(self):
         return dict(service=bunch(default='', **self.service),
                     restful=True,
                     layers=self.layers,
                     tile_matrix_sets=self.matrix_sets,
-                    resource_template=self.template,
+                    resource_template=self.url_converter.template,
+                    # dimension_key maps lowercase dimensions to the actual
+                    # casing from the restful template
+                    dimension_keys=dict((k.lower(), k) for k in self.url_converter.dimensions),
                     format_resource_template=format_resource_template,
                     )
 

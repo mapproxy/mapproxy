@@ -299,8 +299,8 @@ class URLTemplateConverter(object):
         if var in self.variables:
             var_type_re = self.variables[var]
         else:
-            var = var.lower()
             self.dimensions.append(var)
+            var = var.lower()
             var_type_re = r'[\w_.,:-]+'
         self.found.add(var)
         return r'(?P<%s>%s)' % (var, var_type_re)
@@ -348,7 +348,7 @@ class WMTS100RestTileRequest(TileRequest):
         self.tilematrixset = req_vars['TileMatrixSet']
         if self.url_converter and self.url_converter.dimensions:
             for dim in self.url_converter.dimensions:
-                self.dimensions[dim] = req_vars[dim]
+                self.dimensions[dim.lower()] = req_vars[dim.lower()]
 
     @property
     def exception_handler(self):
@@ -373,9 +373,9 @@ class WMTS100RestCapabilitiesRequest(object):
         return self.xml_exception_handler()
 
 
-def make_wmts_rest_request_parser(template):
+def make_wmts_rest_request_parser(url_converter_):
     class WMTSRequestWrapper(WMTS100RestTileRequest):
-        url_converter = URLTemplateConverter(template)
+        url_converter = url_converter_
         tile_req_re = url_converter.regexp()
 
     def wmts_request(req):
