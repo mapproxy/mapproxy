@@ -188,9 +188,15 @@ class MapExtent(object):
     """
     is_default = False
     def __init__(self, bbox, srs):
-        self.llbbox = srs.transform_bbox_to(SRS(4326), bbox)
+        self._llbbox = None
         self.bbox = bbox
         self.srs = srs
+
+    @property
+    def llbbox(self):
+        if not self._llbbox:
+            self._llbbox = self.srs.transform_bbox_to(SRS(4326), self.bbox)
+        return self._llbbox
 
     def bbox_for(self, srs):
         if srs == self.srs:
@@ -230,6 +236,9 @@ class MapExtent(object):
     def contains(self, other):
         if not isinstance(other, MapExtent):
             raise NotImplemented
+        if self.is_default:
+            # DefaultMapExtent contains everything
+            return True
         return bbox_contains(self.bbox, other.bbox_for(self.srs))
 
     def intersects(self, other):
