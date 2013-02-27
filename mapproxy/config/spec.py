@@ -379,6 +379,9 @@ mapproxy_yaml_spec = {
             }
         })])
     ),
+     # `parts` can be used for partial configurations that are referenced
+     # from other sections (e.g. coverages, dimensions, etc.)
+    'parts': anything(),
 }
 
 if __name__ == '__main__':

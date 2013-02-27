@@ -20,7 +20,7 @@ mapproxy.yaml
 
 The configuration uses the YAML format. The Wikipedia contains a `good introduction to YAML <http://en.wikipedia.org/wiki/YAML>`_.
 
-The MapProxy configuration is grouped into six sections, each configures a different aspect of MapProxy. These are the following sections:
+The MapProxy configuration is grouped into sections, each configures a different aspect of MapProxy. These are the following sections:
 
 - ``globals``:  Internals of MapProxy and default values that are used in the other configuration sections.
 
@@ -38,6 +38,28 @@ The MapProxy configuration is grouped into six sections, each configures a diffe
 The order of the sections is not important, so you can organize it your way.
 
 .. note:: The indentation is significant and shall only contain space characters. Tabulators are **not** permitted for indentation.
+
+There is another optional section:
+
+.. versionadded:: 1.6.0
+
+- ``parts``: YAML supports references and with that you can define configuration parts and use them in other configuration sections. For example, you can define all you coverages in one place and reference them from the sources. However, MapProxy will log a warning if you put the referent in a place where it is not a valid option. To prevent these warnings you are advised to put these configuration snippets inside the ``parts`` section.
+
+For example::
+
+  parts:
+    coverages:
+        mycoverage: &mycoverage
+          bbox: [0, 0, 10, 10]
+          srs: 'EPSG:4326'
+
+  sources:
+    mysource1:
+      coverage: *mycoverage
+      ...
+    mysource2:
+      coverage: *mycoverage
+      ...
 
 
 ``base``
