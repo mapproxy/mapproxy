@@ -723,7 +723,7 @@ Here you can define some options that affect the way MapProxy generates image re
   Enable paletted (8bit) PNG images. It defaults to ``true`` for backwards compatibility. You should set this to ``false`` if you need 24bit PNG files. You can enable 8bit PNGs for single caches with a custom format (``colors: 256``).
 
 ``formats``
-  Modify existing or define new image formats. :ref:`See blow <image_options>` for all image format options.
+  Modify existing or define new image formats. :ref:`See below <image_options>` for all image format options.
 
 ``cache``
 """""""""
