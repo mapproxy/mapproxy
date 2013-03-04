@@ -401,6 +401,8 @@ Use the type ``mapserver`` to directly call the Mapserver CGI executable. This s
 
 The only differences are that it does not support the ``http`` option and the ``req.url`` parameter is ignored. The ``req.map`` should point to your Mapserver mapfile.
 
+The mapfile used must have a WMS server enabled, e.g. with ``wms_enable_request`` or ``ows_enable_request`` in the mapfile.
+
 ``mapserver``
 ^^^^^^^^^^^^^
 
