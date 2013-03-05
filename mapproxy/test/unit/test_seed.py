@@ -14,7 +14,11 @@
 # limitations under the License.
 
 from __future__ import with_statement, division
+
+import os
+import time
 import cPickle as pickle
+
 from mapproxy.seed.seeder import TileWalker, SeedTask, SeedProgress
 from mapproxy.cache.tile import TileManager
 from mapproxy.source.tile import TiledSource
@@ -22,12 +26,13 @@ from mapproxy.grid import tile_grid_for_epsg
 from mapproxy.grid import TileGrid
 from mapproxy.srs import SRS
 from mapproxy.util.coverage import BBOXCoverage, GeomCoverage
+from mapproxy.seed.config import before_timestamp_from_options, SeedConfigurationError
 from mapproxy.seed.config import LevelsList, LevelsRange, LevelsResolutionList, LevelsResolutionRange
 from mapproxy.seed.util import ProgressStore
 from mapproxy.test.helper import TempFile
 
 from collections import defaultdict
-from nose.tools import eq_
+from nose.tools import eq_, assert_almost_equal, raises
 from nose.plugins.skip import SkipTest
 
 try:
@@ -224,3 +229,31 @@ class TestProgressStore(object):
 
             store = ProgressStore(tmp)
             assert store.status == {}
+
+
+class TestRemovebreforeTimetamp(object):
+    def test_from_time(self):
+        ts = before_timestamp_from_options({'time': '2010-12-01T20:12:00'})
+        # we don't know the timezone this test will run
+        assert (1291230720.0 - 14 * 3600) < ts < (1291230720.0 + 14 * 3600)
+
+    def test_from_mtime(self):
+        with TempFile() as tmp:
+            os.utime(tmp, (12376512, 12376512))
+            eq_(before_timestamp_from_options({'mtime': tmp}), 12376512)
+
+    @raises(SeedConfigurationError)
+    def test_from_mtime_missing_file(self):
+        before_timestamp_from_options({'mtime': '/tmp/does-not-exist-at-all,really'})
+
+    def test_from_empty(self):
+        assert_almost_equal(
+            before_timestamp_from_options({}),
+            time.time(), -1
+        )
+
+    def test_from_delta(self):
+        assert_almost_equal(
+            before_timestamp_from_options({'minutes': 15}) + 60 * 15,
+            time.time(), -1
+        )

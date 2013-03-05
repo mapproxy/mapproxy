@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -75,49 +75,51 @@ def scales_command(args=None):
         help="convert resolutions to scale")
     parser.add_option("--as-res-config", default=False, action='store_true',
         help="output as resulution list for MapProxy grid configuration")
-    
+
     if args:
         args = args[1:] # remove script name
     (options, args) = parser.parse_args(args)
     options.levels = max(options.levels, len(args))
-    
+
     dpi = float(DEFAULT_DPIS.get(options.dpi, options.dpi))
-    
+
     if not args:
         parser.print_help()
         sys.exit(1)
-    
+
     if args[0] == '-':
         values = values_from_stdin()
     elif options.eval:
         values = map(eval, args)
     else:
         values = map(float, args)
-    
+
+    values.sort(reverse=True)
+
     if options.repeat:
         values = repeated_values(values, options.levels)
-    
+
     if len(values) < options.levels:
         values = fill_values(values, options.levels)
-    
+
     unit_factor = 1
     if options.unit == 'd':
         # calculated from well-known scale set GoogleCRS84Quad
         unit_factor = 111319.4907932736
-    
+
     calc = scale_to_res
     if options.res_to_scale:
         calc = res_to_scale
-    
+
     if options.as_res_config:
         print '    res: ['
         print '         #  res            level     scale @%.1f DPI' % dpi
         format = format_list
     else:
         format = format_simple
-    
+
     for i, value in enumerate(values):
         print format(i, value, calc(value, dpi, unit_factor))
-    
+
     if options.as_res_config:
         print '    ]'

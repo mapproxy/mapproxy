@@ -76,6 +76,15 @@
         <ows:Identifier>default</ows:Identifier>
       </Style>
       <Format>image/{{layer.format}}</Format>
+      {{for dimension, values in layer.dimensions.iteritems()}}
+      <Dimension>
+        <ows:Identifier>{{ dimension_keys[dimension] }}</ows:Identifier>
+        <Default>{{ values.default }}</Default>
+        {{for value in values}}
+        <Value>{{ value }}</Value>
+        {{endfor}}
+      </Dimension>
+      {{endfor}}
       {{for grid in layer.grids}}
       <TileMatrixSetLink>
         <TileMatrixSet>{{grid.name}}</TileMatrixSet>
@@ -91,7 +100,6 @@
     <TileMatrixSet>
       <ows:Identifier>{{tile_matrix_set.name}}</ows:Identifier>
       <ows:SupportedCRS>{{tile_matrix_set.srs_name}}</ows:SupportedCRS>
-      <!-- <WellKnownScaleSet>urn:ogc:def:wkss:OGC:1.0:GlobalCRS84Pixel</WellKnownScaleSet> -->
   {{for matrix in tile_matrix_set}}
       <TileMatrix>
         <ows:Identifier>{{matrix.identifier}}</ows:Identifier>
@@ -106,4 +114,7 @@
     </TileMatrixSet>
 {{endfor}}
   </Contents>
+{{if restful}}
+  <ServiceMetadataURL xlink:href="{{service.url}}/1.0.0/WMTSCapabilities.xml"/>
+{{endif}}
 </Capabilities>

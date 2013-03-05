@@ -50,7 +50,8 @@ image_opts = {
     'format': str(),
     'encoding_options': {
         anything(): anything()
-    }
+    },
+    'merge_method': str(),
 }
 
 http_opts = {
@@ -188,6 +189,7 @@ mapproxy_yaml_spec = {
                 anything(): image_opts,
             },
             'font_dir': str(),
+            'merge_method': str(),
         },
         'http': http_opts,
         'cache': {
@@ -372,8 +374,17 @@ mapproxy_yaml_spec = {
             'legendurl': str(),
             'layers': recursive(),
             'md': wms_130_layer_md,
+            'dimensions': {
+                anything(): {
+                    required('values'): [one_of(basestring, float, int)],
+                    'default': one_of(basestring, float, int),
+                }
+            }
         })])
     ),
+     # `parts` can be used for partial configurations that are referenced
+     # from other sections (e.g. coverages, dimensions, etc.)
+    'parts': anything(),
 }
 
 if __name__ == '__main__':

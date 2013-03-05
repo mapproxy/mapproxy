@@ -482,6 +482,9 @@ Other options:
 
   Limit the export to this coverage. You can use a BBOX, WKT files or OGR datasources. See :doc:`coverages`.
 
+.. option:: -c N, --concurrency N
+
+  The number of concurrent export processes.
 
 
 Export types

@@ -61,7 +61,7 @@ grids:
     bbox_srs: 'EPSG:4326'
   #end germany grid
 #start combined sources
-service:
+services:
   wms:
   demo:
     

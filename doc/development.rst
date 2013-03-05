@@ -10,7 +10,7 @@ Source
 
 Releases are available from the `PyPI project page of MapProxy <http://pypi.python.org/pypi/MapProxy>`_. There is also `an archive of all releases <http://pypi.python.org/packages/source/M/MapProxy/>`_.
 
-MapProxy uses `Git`_ as a source control management tool. If you are new to distributed SCMs or Git we recommend to read `Pro Git <http://git-scm.com/book>`_. 
+MapProxy uses `Git`_ as a source control management tool. If you are new to distributed SCMs or Git we recommend to read `Pro Git <http://git-scm.com/book>`_.
 
 The main (authoritative) repository is hosted at http://github.com/mapproxy/mapproxy
 
@@ -27,19 +27,6 @@ __ fork_
 
 Documentation
 -------------
-
-There are two types of documentation.
-
-API
-"""
-
-This documentation is for developers of MapProxy. It is build automatically from the source documentation.
-
-The API documentation is available at http://mapproxy.org/api/latest. The documentation is created with `Epydoc`_. To rebuild the documentation install Epyoc with ``pip install epydoc`` and call ``python setup.py build_api`` in the MapProxy source directory. The output appears in ``api/``.
-
-
-User
-""""
 
 This is the documentation you are reading right now. The raw files can be found in ``doc/``. The HTML version user documentation is build with `Sphinx`_. To rebuild this documentation install Sphinx with ``pip install sphinx`` and call ``python setup.py build_sphinx``. The output appears in ``build/sphinx/html``. The latest documentation can be found at ``http://mapproxy.org/docs/lates/``.
 
@@ -60,7 +47,7 @@ MapProxy contains lots of automatic tests. If you don't count in the ``mapproxy-
 MapProxy uses `Nose`_ as a test loader and runner. To install Nose and all further test dependencies call::
 
   pip install -r requirements-tests.txt
-  
+
 
 To run the actual tests call::
 
@@ -104,8 +91,8 @@ You are using `virtualenv` as described in :doc:`install`, right?
 
 Before you start hacking on MapProxy you should install it in development-mode. In the root directory of MapProxy call ``pip install -e ./``. Instead of installing and thus copying MapProxy into your `virtualenv`, this will just link to your source directory. If you now start MapProxy, the source from your MapProxy directory will be used. Any change you do in the code will be available if you restart MapProxy. If you use the  ``mapproxy-util serve-develop`` command, any change in the source will issue a reload of the MapProxy server.
 
-.. todo:: 
-  
+.. todo::
+
   Describe egg:Paste#evalerror
 
 

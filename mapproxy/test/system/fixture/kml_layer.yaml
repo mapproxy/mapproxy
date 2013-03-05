@@ -1,0 +1,66 @@
+globals:
+  cache:
+    base_dir: cache_data/
+    meta_size: [1, 1]
+    meta_buffer: 0
+  image:
+    # resampling: 'bicubic'
+    paletted: False
+    formats:
+      custom:
+        format: image/jpeg
+      png8:
+        format: 'image/png; mode=8bit'
+        colors: 256
+
+services:
+  kml:
+
+grids:
+  webmercator:
+    base: GLOBAL_MERCATOR
+    origin: nw
+
+layers:
+  - name: wms_cache
+    title: WMS Cache Layer with direct access from level 8
+    sources: [wms_cache]
+  - name: wms_cache_nw
+    title: WMS Cache Layer with direct access from level 8
+    sources: [wms_cache_nw]
+  - name: wms_cache_multi
+    title: WMS Cache Multi Layer
+    sources: [wms_cache_multi]
+
+caches:
+  wms_cache:
+    format: image/jpeg
+    sources: [wms_cache]
+  wms_cache_nw:
+    format: image/jpeg
+    grids: [webmercator]
+    sources: [wms_cache]
+  wms_cache_multi:
+    format: custom
+    grids: [GLOBAL_GEODETIC, GLOBAL_MERCATOR]
+    sources: [wms_cache_130]
+
+sources:
+  wms_cache:
+    type: wms
+    supported_srs: ['EPSG:900913', 'EPSG:4326']
+    wms_opts:
+      featureinfo: True
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar
+  wms_cache_130:
+    type: wms
+    min_res: 250000000
+    max_res: 1
+    wms_opts:
+      version: '1.3.0'
+      featureinfo: True
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar

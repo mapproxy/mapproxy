@@ -50,7 +50,7 @@ def load_datasource(datasource, where=None):
             return load_polygons(datasource)
 
     # otherwise pass to OGR
-    return load_ogr_datasource(datasource)
+    return load_ogr_datasource(datasource, where=where)
 
 def load_ogr_datasource(datasource, where=None):
     """
@@ -159,7 +159,26 @@ def transform_multipolygon(transf, multipolygon):
 def transform_xy(from_srs, to_srs, xy):
     return list(from_srs.transform_to(to_srs, zip(*xy)))
 
+def flatten_to_polygons(geometry):
+    """
+    Return a list of all polygons of this (multi)`geometry`.
+    """
+    if geometry.type == 'Polygon':
+        return [geometry]
 
+    if geometry.type == 'MultiPolygon':
+        return list(geometry)
 
+    if hasattr(geometry, 'geoms'):
+        # GeometryCollection or MultiLineString? return list of all polygons
+        geoms = []
+        for part in geometry.geoms:
+            if part.type == 'Polygon':
+                geoms.append(part)
+
+        if geoms:
+            return geoms
+
+    return []
 
 

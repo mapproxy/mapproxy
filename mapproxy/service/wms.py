@@ -164,7 +164,8 @@ class WMSServer(Server):
 
         p = request.params
         query = InfoQuery(p.bbox, p.size, SRS(p.srs), p.pos,
-                          p['info_format'], format=request.params.format or None)
+              p['info_format'], format=request.params.format or None,
+              feature_count=p.get('feature_count'))
 
         actual_layers = odict()
 
@@ -439,7 +440,7 @@ class Capabilities(object):
         template = get_template(template)
         doc = template.substitute(service=bunch(default='', **self.service),
                                    layers=self.layers,
-                                   formats=[f for f in self.image_formats if f != 'mixed'],
+                                   formats=self.image_formats,
                                    info_formats=self.info_formats,
                                    srs=self.srs,
                                    tile_layers=self.tile_layers,

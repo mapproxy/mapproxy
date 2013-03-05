@@ -1,9 +1,11 @@
 Installation on Windows
 =======================
 
+.. note:: You can also :doc:`install MapProxy inside an existing OSGeo4W installation<install_osgeo4w>`.
+
 At frist you need a working Python installation. You can download Python from: http://www.python.org/download/. MapProxy requires Python 2.5, 2.6 or 2.7, it is *not* compatible with Python 3.
 
-We advise you to install MapProxy into a `virtual Python environment`_. 
+We advise you to install MapProxy into a `virtual Python environment`_.
 `Read about virtualenv <http://virtualenv.openplans.org/#what-it-does>`_ if you want to now more about the benefits.
 
 A self-contained version of virtualenv is available at:
@@ -12,7 +14,7 @@ https://github.com/pypa/virtualenv/raw/1.6.1/virtualenv.py
 .. _`virtual Python environment`: http://guide.python-distribute.org/virtualenv.html
 
 To create a new virtual environment for our proxy installation and to activate it go to the command line and call::
- 
+
  C:\Python27\python path\to\virtualenv.py c:\mapproxy_venv
  C:\mapproxy_venv\Scripts\activate.bat
 
@@ -31,7 +33,7 @@ This might take a while.
 Since libproj4 is generally not available on a Windows system, you will also need to install the Python package ``pyproj``.
 
 ::
-  
+
   easy_install pyproj
 
 
@@ -43,7 +45,7 @@ All Python packages are downloaded from http://pypi.python.org/, but not all pla
 If you run into troubles during installation, because it is trying to compile something (e.g. complaining about ``vcvarsall.bat``), you should look at Christoph Gohlke's `Unofficial Windows Binaries for Python Extension Packages <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_.
 
 You can install the ``.exe`` packages with ``easy_install``::
-  
+
   easy_install path\to\package-xxx.exe
 
 

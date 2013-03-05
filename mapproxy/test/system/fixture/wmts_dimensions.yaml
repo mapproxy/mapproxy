@@ -1,0 +1,57 @@
+services:
+  wmts:
+    restful: true
+    kvp: true
+    restful_template: '/{Layer}/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.{Format}'
+
+layers:
+  - name: dimension_layer
+    title: layer with dimensions
+    sources: [cache1]
+    dimensions:
+        tiME:
+            values:
+                - "2012-11-12T00:00:00"
+                - "2012-11-13T00:00:00"
+                - "2012-11-14T00:00:00"
+                - "2012-11-15T00:00:00"
+        Elevation:
+            values:
+                - 0
+                - 1000
+                - 3000
+            default: "0"
+
+  - name: no_dimension_layer
+    title: layer without dimensions
+    sources: [cache2]
+
+caches:
+  cache1:
+    grids: [GLOBAL_MERCATOR]
+    disable_storage: true
+    meta_size: [1, 1]
+    meta_buffer: 0
+    sources: [wms_source1]
+
+  cache2:
+    grids: [GLOBAL_MERCATOR]
+    disable_storage: true
+    meta_size: [1, 1]
+    meta_buffer: 0
+    sources: [wms_source2]
+
+sources:
+  wms_source1:
+    type: wms
+    req:
+      url: http://localhost:42423/service1
+      layers: foo,bar
+    forward_req_params: ['TIME', 'ElEvaTION']
+
+  wms_source2:
+    type: wms
+    req:
+      url: http://localhost:42423/service2
+      layers: foo,bar
+    forward_req_params: ['time', 'elevation']

@@ -23,7 +23,7 @@ import sys
 import hashlib
 import urlparse
 import warnings
-from copy import deepcopy
+from copy import deepcopy, copy
 from functools import partial
 
 import logging
@@ -31,6 +31,7 @@ log = logging.getLogger('mapproxy.config')
 
 from mapproxy.config import load_default_config, finish_base_config
 from mapproxy.config.spec import validate_mapproxy_conf
+from mapproxy.platform.image import require_alpha_composite_support
 from mapproxy.util import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
@@ -362,6 +363,10 @@ class ImageOptionsConfiguration(ConfigurationBase):
                 conf['resampling'] = conf.pop('resampling_method')
             if 'encoding_options' in conf:
                 self._check_encoding_options(conf['encoding_options'])
+            if 'merge_method' in conf:
+                conf['merge'] = conf.pop('merge_method')
+                if conf['merge'] == 'composite':
+                    require_alpha_composite_support()
             formats_config[format] = conf
         for format, conf in formats_config.iteritems():
             if 'format' not in conf and format.startswith('image/'):
@@ -398,12 +403,18 @@ class ImageOptionsConfiguration(ConfigurationBase):
         colors = image_conf.get('colors')
         mode = image_conf.get('mode')
         encoding_options = image_conf.get('encoding_options')
+        merge = image_conf.get('merge_method')
+        if merge is None:
+            merge = self.context.globals.get_value('image.merge_method', None)
+        if merge == 'composite':
+            require_alpha_composite_support()
 
         self._check_encoding_options(encoding_options)
 
         # only overwrite default if it is not None
         for k, v in dict(transparent=transparent, opacity=opacity, resampling=resampling,
-            format=img_format, colors=colors, mode=mode, encoding_options=encoding_options).iteritems():
+            format=img_format, colors=colors, mode=mode, encoding_options=encoding_options,
+            merge=merge).iteritems():
             if v is not None:
                 conf[k] = v
 
@@ -463,7 +474,9 @@ class SourcesCollection(dict):
                 " tagged sources only supported for WMS/Mapserver/Mapnik" % key)
 
         uses_req = source.conf.get('type') != 'mapnik'
-        source = deepcopy(source)
+
+        source = copy(source)
+        source.conf = deepcopy(source.conf)
 
         if uses_req:
             supported_layers = source.conf['req'].get('layers', [])
@@ -480,6 +493,7 @@ class SourcesCollection(dict):
             source.conf['req']['layers'] = layers
         else:
             source.conf['layers'] = layers
+
         return source
 
     def __contains__(self, key):
@@ -864,7 +878,7 @@ class CacheConfiguration(ConfigurationBase):
         cache_dir = self.conf.get('cache', {}).get('directory')
         if cache_dir:
             if self.conf.get('cache_dir'):
-                log.warn('found cache.dir and cache_dir option for %s, ignoring cache_dir',
+                log.warn('found cache.directory and cache_dir option for %s, ignoring cache_dir',
                 self.conf['name'])
             return self.context.globals.abspath(cache_dir)
 
@@ -974,7 +988,10 @@ class CacheConfiguration(ConfigurationBase):
             return source
 
         cache_grid, extent, tile_manager = caches[0]
-        if tile_grid.is_subset_of(cache_grid):
+        image_opts = self.image_opts()
+
+        if (tile_grid.is_subset_of(cache_grid)
+            and params.get('format') == image_opts.format):
             tiled_only = True
         else:
             tiled_only = False
@@ -983,7 +1000,7 @@ class CacheConfiguration(ConfigurationBase):
         cache_extent = extent.intersection(cache_extent)
 
         source = CacheSource(tile_manager, extent=cache_extent,
-            image_opts=self.image_opts(), tiled_only=tiled_only)
+            image_opts=image_opts, tiled_only=tiled_only)
         return source
 
     @memoize
@@ -1175,8 +1192,20 @@ class LayerConfiguration(ConfigurationBase):
         return layer
 
     @memoize
+    def dimensions(self):
+        from mapproxy.layer import Dimension
+        dimensions = {}
+
+        for dimension, conf in self.conf.get('dimensions', {}).iteritems():
+            values = [str(val) for val in  conf.get('values', ['default'])]
+            default = conf.get('default', values[-1])
+            dimensions[dimension.lower()] = Dimension(dimension, values, default=default)
+        return dimensions
+
+    @memoize
     def tile_layers(self):
         from mapproxy.service.tile import TileLayer
+        from mapproxy.cache.dummy import DummyCache
 
         sources = []
         for source_name in self.conf.get('sources', []):
@@ -1192,9 +1221,19 @@ class LayerConfiguration(ConfigurationBase):
         if len(sources) > 1:
             return []
 
+        dimensions = self.dimensions()
+
         tile_layers = []
         for cache_name in sources:
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
+
+                if dimensions and not isinstance(cache_source.cache, DummyCache):
+                    # caching of dimension layers is not supported yet
+                    raise ConfigurationError(
+                        "caching of dimension layer (%s) is not supported yet."
+                        " need to `disable_storage: true` on %s cache" % (self.conf['name'], cache_name)
+                    )
+
                 md = {}
                 md['title'] = self.conf['title']
                 md['name'] = self.conf['name']
@@ -1204,7 +1243,7 @@ class LayerConfiguration(ConfigurationBase):
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['extent'] = extent
                 tile_layers.append(TileLayer(self.conf['name'], self.conf['title'],
-                                             md, cache_source))
+                                             md, cache_source, dimensions=dimensions))
 
         return tile_layers
 
@@ -1294,15 +1333,22 @@ class ServiceConfiguration(ConfigurationBase):
         kvp = conf.get('kvp')
         restful = conf.get('restful')
 
+        max_tile_age = self.context.globals.get_value('tiles.expires_hours')
+        max_tile_age *= 60 * 60 # seconds
+
         if kvp is None and restful is None:
             kvp = restful = True
 
         services = []
         if kvp:
-            services.append(WMTSServer(layers, md))
+            services.append(WMTSServer(layers, md, max_tile_age=max_tile_age))
         if restful:
             template = conf.get('restful_template')
-            services.append(WMTSRestServer(layers, md, template=template))
+            if template and '{{' in template:
+                # TODO remove warning in 1.6
+                log.warn("double braces in WMTS restful_template are deprecated {{x}} -> {x}")
+            services.append(WMTSRestServer(layers, md, template=template,
+                max_tile_age=max_tile_age))
 
         return services
 
@@ -1326,12 +1372,7 @@ class ServiceConfiguration(ConfigurationBase):
                                                        global_key='wms.image_formats')
         image_formats = {}
         for format in image_formats_names:
-            if format.startswith('image/'):
-                from mapproxy.image.opts import ImageOptions
-                opts = ImageOptions(format=format)
-            else:
-                # lookup custom format
-                opts = self.context.globals.image_options.image_opts({}, format)
+            opts = self.context.globals.image_options.image_opts({}, format)
             if opts.format in image_formats:
                 log.warn('duplicate mime-type for WMS image_formats: "%s" already configured',
                     opts.format)

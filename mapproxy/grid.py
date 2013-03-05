@@ -119,15 +119,32 @@ def tile_grid(srs=None, bbox=None, bbox_srs=None, tile_size=(256, 256),
         else:
             raise ValueError("res is not a list, use res_factor for float values")
 
+
     elif align_with is not None:
         res = aligned_resolutions(min_res, max_res, res_factor, num_levels, bbox, tile_size,
                                   align_with)
     else:
         res = resolutions(min_res, max_res, res_factor, num_levels, bbox, tile_size)
 
+    origin = origin_from_string(origin)
+
     return TileGrid(srs, bbox=bbox, tile_size=tile_size, res=res, threshold_res=threshold_res,
                     stretch_factor=stretch_factor, max_shrink_factor=max_shrink_factor,
                     origin=origin, name=name)
+
+ORIGIN_UL = 'ul'
+ORIGIN_LL = 'll'
+
+def origin_from_string(origin):
+    if origin == None:
+        origin = ORIGIN_LL
+    elif origin.lower() in ('ll', 'sw'):
+        origin = ORIGIN_LL
+    elif origin.lower() in ('ul', 'nw'):
+        origin =  ORIGIN_UL
+    else:
+        raise ValueError("unknown origin value '%s'" % origin)
+    return origin
 
 def aligned_resolutions(min_res=None, max_res=None, res_factor=2.0, num_levels=None,
                 bbox=None, tile_size=(256, 256), align_with=None):
@@ -270,10 +287,10 @@ class TileGrid(object):
             srs = SRS(srs)
         self.srs = srs
         self.tile_size = tile_size
-        self.origin = origin
+        self.origin = origin_from_string(origin)
         self.name = name
 
-        if origin in ('ul', 'nw'):
+        if self.origin == 'ul':
             self.flipped_y_axis = True
 
         self.is_geodetic = is_geodetic
@@ -428,27 +445,32 @@ class TileGrid(object):
         return (x, self.grid_sizes[z][1]-1-y, z)
 
     def supports_access_with_origin(self, origin):
-        if origin in (None, 'sw', 'll') and self.origin in (None, 'sw', 'll'):
-            return True
-        if origin in ('nw', 'ul') and self.origin in ('nw', 'ul'):
+        if origin_from_string(origin) == self.origin:
             return True
 
-        grid_size = self.grid_sizes[0]
-        level_0_bbox = self._tiles_bbox([(0, 0, 0),
-            (grid_size[0] - 1, grid_size[1] - 1, 0)])
+        # check for each level if the top and bottom coordinates of the tiles
+        # match the bbox of the grid. only in this case we can flip y-axis
+        # without any issues
 
-        if self.bbox[1] == level_0_bbox[1] and self.bbox[3] == level_0_bbox[3]:
-            return True
-        else:
-            return False
+        # allow for some rounding errors in the _tiles_bbox calculations
+        delta = max(abs(self.bbox[1]), abs(self.bbox[3])) / 1e12
+
+        for level, grid_size in enumerate(self.grid_sizes):
+            level_bbox = self._tiles_bbox([(0, 0, level),
+                (grid_size[0] - 1, grid_size[1] - 1, level)])
+
+            if abs(self.bbox[1] - level_bbox[1]) > delta or abs(self.bbox[3] - level_bbox[3]) > delta:
+                return False
+        return True
 
     def origin_tile(self, level, origin):
         assert self.supports_access_with_origin(origin), 'tile origins are incompatible'
         tile = (0, 0, level)
-        if self.origin != origin:
-            tile = self.flip_tile_coord(tile)
 
-        return tile
+        if origin_from_string(origin) == self.origin:
+            return tile
+
+        return self.flip_tile_coord(tile)
 
     def get_affected_tiles(self, bbox, size, req_srs=None):
         """
@@ -611,35 +633,25 @@ class TileGrid(object):
         if self.tile_size != other.tile_size:
             return False
 
-        other_res = list(other.resolutions)
+        # check if all level tiles from self align with (affected)
+        # tiles from other
+        for self_level, self_level_res in self.resolutions.iteritems():
+            level_size = (
+                self.grid_sizes[self_level][0] * self.tile_size[0],
+                self.grid_sizes[self_level][1] * self.tile_size[1]
+            )
+            level_bbox = self._tiles_bbox([
+                (0, 0, self_level),
+                (self.grid_sizes[self_level][0] - 1, self.grid_sizes[self_level][1] - 1, self_level)
+            ])
 
-        for res in self.resolutions:
-            while other_res and other_res[0] != res:
-                other_res.pop(0)
-            if not other_res:
+            bbox, level = other.get_affected_bbox_and_level(level_bbox, level_size)
+            bbox, grid_size, tiles = other.get_affected_level_tiles(level_bbox, level)
+
+            if other.resolution(level) != self_level_res:
                 return False
-
-
-        if self.bbox != other.bbox:
-            # check if all level tiles from self align with (affected)
-            # tiles from other
-            for self_level, self_level_res in self.resolutions.iteritems():
-                level_size = (
-                    self.grid_sizes[self_level][0] * self.tile_size[0],
-                    self.grid_sizes[self_level][1] * self.tile_size[1]
-                )
-                level_bbox = self._tiles_bbox([
-                    (0, 0, self_level),
-                    (self.grid_sizes[self_level][0] - 1, self.grid_sizes[self_level][1] - 1, self_level)
-                ])
-
-                bbox, level = other.get_affected_bbox_and_level(level_bbox, level_size)
-                bbox, grid_size, tiles = other.get_affected_level_tiles(level_bbox, level)
-
-                if other.resolution(level) != self_level_res:
-                    return False
-                if not bbox_equals(bbox, level_bbox):
-                    return False
+            if not bbox_equals(bbox, level_bbox):
+                return False
 
         return True
 
@@ -1000,14 +1012,32 @@ def bbox_intersects(one, two):
     return False
 
 def bbox_contains(one, two):
+    """
+    Returns ``True`` if `one` contains `two`.
+
+    >>> bbox_contains([0, 0, 10, 10], [2, 2, 4, 4])
+    True
+    >>> bbox_contains([0, 0, 10, 10], [0, 0, 11, 10])
+    False
+
+    Allow tiny rounding errors:
+
+    >>> bbox_contains([0, 0, 10, 10], [0.000001, 0.0000001, 10.000001, 10.000001])
+    False
+    >>> bbox_contains([0, 0, 10, 10], [0.0000000000001, 0.0000000000001, 10.0000000000001, 10.0000000000001])
+    True
+    """
     a_x0, a_y0, a_x1, a_y1 = one
     b_x0, b_y0, b_x1, b_y1 = two
 
+    x_delta = abs(a_x1 - a_x0) / 10e12
+    y_delta = abs(a_y1 - a_y0) / 10e12
+
     if (
-        a_x0 <= b_x0 and
-        a_x1 >= b_x1 and
-        a_y0 <= b_y0 and
-        a_y1 >= b_y1
+        a_x0 <= b_x0 + x_delta and
+        a_x1 >= b_x1 - x_delta and
+        a_y0 <= b_y0 + y_delta and
+        a_y1 >= b_y1 - y_delta
         ): return True
 
     return False

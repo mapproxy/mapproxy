@@ -1,18 +1,39 @@
-1.5.0 2012-xx-xx
+1.5.0 2012-12-05
 ~~~~~~~~~~~~~~~~
 
 Features:
 
+- read remove_before/refresh_before timestamp from file
+- add --concurrency option to mapproxy-utils export
+
+Fixes:
+
+- fixed where option for coverages (renamed from ogr_where)
+- only write seed progess with --continue or --progress-file option
+
+Other:
+
+- add EPSG:3857 to WMS default SRSs and remove UTM/GK
+- remove import error warning for shapely
+- create metadata table in MBTiles caches
+
+1.5.0rc1 2012-11-19
+~~~~~~~~~~~~~~~~~~~
+
+Features:
+
+- clipping of tile request to polygon geometries in security API
+- WMTS support in security API
+- mixed_image mode that automatically chooses between PNG/JPEG
+- use caches as source for other caches
 - `mapproxy-util grids` tool to analyze grid configurations
 - `mapproxy-util wms-capabilities` tool
 - `mapproxy-util export` tool
 - use_grid_names option to access Tiles/TMS/KML layers by grid
   name instead of EPSGXXXX
 - origin option for TMS to change default origin of the /tiles service
-- mixed_image mode that automatically chooses between PNG/JPEG
 - continue stopped/interrupted seed processes
 - support min_res/max_res for tile sources
-- use caches as source for other caches
 
 Improvements:
 
@@ -25,15 +46,24 @@ Improvements:
 - add MetadataURL to WMS 1.1.1 capabilities
 - improved WMTS services with custom grids (origin)
 - use in_image exceptions in WMS demo client
+- larger map in demo client
+- always request with transparent=true in WMS demo client
+- use in_image exceptions in WMS demo client
 
 Fixes:
 
 - fixed reloading of multiapps in threaded servers
 - fixed BBOX check for single tile requests
+- fixed TMS for caches with watermarks
+- fixed limited_to clipping for single layer requests with service-wide
+  clipping geometries
+- fixed WMTS RESTful template
 
 Other:
 
 - deprecated `origin` option for tile sources was removed
+- empty tiles are now returned as PNG even if requested as .jpeg
+
 
 1.4.0 2012-05-15
 ~~~~~~~~~~~~~~~~~

@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,14 +15,20 @@
 
 from __future__ import with_statement
 
+import os
 import sys
 import time
 import operator
 
+from mapproxy.config import abspath
 from mapproxy.config.loader import ConfigurationError
 from mapproxy.config.coverage import load_coverage
 from mapproxy.srs import SRS
-from mapproxy.util import memoize, timestamp_from_isodate, timestamp_before
+from mapproxy.util import (
+    memoize,
+    timestamp_from_isodate,
+    timestamp_before,
+)
 from mapproxy.util.coverage import MultiCoverage, BBOXCoverage, GeomCoverage
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
@@ -42,7 +48,7 @@ def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf):
         conf = load_yaml_file(seed_conf_filename)
     except YAMLError, ex:
         raise SeedConfigurationError(ex)
-    
+
     if 'views' in conf:
         # TODO: deprecate old config
         seed_conf = LegacySeedingConfiguration(conf, mapproxy_conf=mapproxy_conf)
@@ -66,7 +72,7 @@ class LegacySeedingConfiguration(object):
         self.seed_tasks = []
         self.cleanup_tasks = []
         self._init_tasks()
-        
+
     def _init_tasks(self):
         for cache_name, options in self.conf['seeds'].iteritems():
             remove_before = None
@@ -86,10 +92,10 @@ class LegacySeedingConfiguration(object):
                 cache_srs = view_conf.get('srs', None)
                 if cache_srs is not None:
                     cache_srs = [SRS(s) for s in cache_srs]
-            
+
                 level = view_conf.get('level', None)
                 assert len(level) == 2
-                
+
                 for grid, tile_mgr in caches.iteritems():
                     if cache_srs and grid.srs not in cache_srs: continue
                     md = dict(name=view, cache_name=cache_name, grid_name=self.grids[grid])
@@ -100,18 +106,18 @@ class LegacySeedingConfiguration(object):
                         seed_coverage = coverage.transform_to(grid.srs)
                     else:
                         seed_coverage = BBOXCoverage(grid.bbox, grid.srs)
-                    
+
                     self.seed_tasks.append(SeedTask(md, tile_mgr, levels, remove_before, seed_coverage))
-            
+
                     if remove_before:
                         levels = range(grid.levels)
                         complete_extent = bool(coverage)
                         self.cleanup_tasks.append(CleanupTask(md, tile_mgr, levels, remove_before,
                             seed_coverage, complete_extent=complete_extent))
-                        
+
     def seed_tasks_names(self):
         return self.conf['seeds'].keys()
-    
+
     def cleanup_tasks_names(self):
         return self.conf['seeds'].keys()
 
@@ -120,7 +126,7 @@ class LegacySeedingConfiguration(object):
             return self.seed_tasks
         else:
             return [t for t in self.seed_tasks if t.md['name'] in names]
-    
+
     def cleanups(self, names=None):
         if names is None:
             return self.cleanup_tasks
@@ -138,9 +144,9 @@ class SeedingConfiguration(object):
         coverage_conf = self.conf['coverages'].get(name)
         if coverage_conf is None:
             raise ValueError('no coverage %s configured' % name)
-        
+
         return load_coverage(coverage_conf)
-    
+
     def cache(self, cache_name):
         cache = {}
         if cache_name not in self.mapproxy_conf.caches:
@@ -150,13 +156,13 @@ class SeedingConfiguration(object):
             grid_name = self.grids[tile_grid]
             cache[grid_name] = tile_mgr
         return cache
-    
+
     def seed_tasks_names(self):
         return self.conf.get('seeds', {}).keys()
-    
+
     def cleanup_tasks_names(self):
         return self.conf.get('cleanups', {}).keys()
-    
+
     def seeds(self, names=None):
         """
         Return seed tasks.
@@ -168,7 +174,7 @@ class SeedingConfiguration(object):
             for task in seed_conf.seed_tasks():
                 tasks.append(task)
         return tasks
-        
+
     def cleanups(self, names=None):
         """
         Return cleanup tasks.
@@ -202,10 +208,10 @@ class ConfigurationBase(object):
             else:
                 coverage = MultiCoverage(coverages)
         return coverage
-    
+
     def _grids(self, caches):
         grids = []
-        
+
         if 'grids' in self.conf:
             # grids available for all caches
             available_grids = reduce(operator.and_, (set(cache) for cache in caches.values()))
@@ -224,11 +230,11 @@ class ConfigurationBase(object):
                         raise SeedConfigurationError('caches in same seed task require identical grids')
             grids = list(last or [])
         return grids
-    
+
     def _caches(self):
         """
         Returns a dictionary with all caches for this seed.
-        
+
         e.g.: {'seed1': {'grid1': tilemanager1, 'grid2': tilemanager2}}
         """
         caches = {}
@@ -240,11 +246,11 @@ class ConfigurationBase(object):
 class SeedConfiguration(ConfigurationBase):
     def __init__(self, name, conf, seeding_conf):
         ConfigurationBase.__init__(self, name, conf, seeding_conf)
-        
+
         self.refresh_timestamp = None
         if 'refresh_before' in self.conf:
             self.refresh_timestamp = before_timestamp_from_options(self.conf['refresh_before'])
-    
+
     def seed_tasks(self):
         for grid_name in self.grids:
             for cache_name, cache in self.caches.iteritems():
@@ -260,12 +266,12 @@ class SeedConfiguration(ConfigurationBase):
                     levels = self.levels.for_grid(grid)
                 else:
                     levels = list(xrange(0, grid.levels))
-                
+
                 if not tile_manager.cache.supports_timestamp:
                     if self.refresh_timestamp:
                         # remove everything
                         self.refresh_timestamp = 0
-                
+
                 md = dict(name=self.name, cache_name=cache_name, grid_name=grid_name)
                 yield SeedTask(md, tile_manager, levels, self.refresh_timestamp, coverage)
 
@@ -273,14 +279,14 @@ class CleanupConfiguration(ConfigurationBase):
     def __init__(self, name, conf, seeding_conf):
         ConfigurationBase.__init__(self, name, conf, seeding_conf)
         self.init_time = time.time()
-        
+
         if 'remove_before' in self.conf:
             self.remove_timestamp = before_timestamp_from_options(self.conf['remove_before'])
         else:
             # use now as remove_before date. this should not remove
             # fresh seeded tiles, since this should be configured before seeding
             self.remove_timestamp = self.init_time
-    
+
     def cleanup_tasks(self):
         for grid_name in self.grids:
             for cache_name, cache in self.caches.iteritems():
@@ -296,7 +302,7 @@ class CleanupConfiguration(ConfigurationBase):
                     levels = self.levels.for_grid(grid)
                 else:
                     levels = list(xrange(0, grid.levels))
-                
+
                 if not tile_manager.cache.supports_timestamp:
                     # for caches without timestamp support (like MBTiles)
                     if self.remove_timestamp is self.init_time:
@@ -306,9 +312,9 @@ class CleanupConfiguration(ConfigurationBase):
                         raise SeedConfigurationError("cleanup does not support remove_before for '%s'"
                             " because cache '%s' does not support timestamps" % (self.name, cache_name))
                 md = dict(name=self.name, cache_name=cache_name, grid_name=grid_name)
-                yield CleanupTask(md, tile_manager, levels, self.remove_timestamp, 
+                yield CleanupTask(md, tile_manager, levels, self.remove_timestamp,
                     coverage=coverage, complete_extent=complete_extent)
-    
+
 
 def levels_from_options(conf):
     levels = conf.get('levels')
@@ -340,6 +346,13 @@ def before_timestamp_from_options(conf):
         except ValueError:
             raise SeedConfigurationError(
                 "can't parse time '%s'. should be ISO time string" % (conf["time"], ))
+    if 'mtime' in conf:
+        datasource = abspath(conf['mtime'])
+        try:
+            return os.path.getmtime(datasource)
+        except OSError, ex:
+            raise SeedConfigurationError(
+                "can't parse last modified time from file '%s'." % (datasource, ), ex)
     deltas = {}
     for delta_type in ('weeks', 'days', 'hours', 'minutes'):
         deltas[delta_type] = conf.get(delta_type, 0)
@@ -349,7 +362,7 @@ def before_timestamp_from_options(conf):
 class LevelsList(object):
     def __init__(self, levels=None):
         self.levels = levels
-    
+
     def for_grid(self, grid):
         uniqe_valid_levels = set(l for l in self.levels if 0 <= l <= (grid.levels-1))
         return sorted(uniqe_valid_levels)
@@ -364,32 +377,32 @@ class LevelsRange(object):
             start = 0
         if stop is None:
             stop = 999
-        
+
         stop = min(stop, grid.levels-1)
-        
+
         return list(xrange(start, stop+1))
 
 class LevelsResolutionRange(object):
     def __init__(self, res_range=None):
-        self.res_range = res_range  
+        self.res_range = res_range
     def for_grid(self, grid):
         start, stop = self.res_range
         if start is None:
             start = 0
         else:
             start = grid.closest_level(start)
-        
+
         if stop is None:
             stop = grid.levels-1
         else:
             stop = grid.closest_level(stop)
-        
+
         return list(xrange(start, stop+1))
-        
+
 class LevelsResolutionList(object):
     def __init__(self, resolutions=None):
         self.resolutions = resolutions
-    
+
     def for_grid(self, grid):
         levels = set(grid.closest_level(res) for res in self.resolutions)
         return sorted(levels)

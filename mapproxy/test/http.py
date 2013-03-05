@@ -147,14 +147,22 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
 
 class MockServ(object):
     def __init__(self, port=0, host='localhost', unordered=False):
+        self._requested_port = port
         self.port = port
         self.host = host
         self.requests_responses = []
-        self._thread = ThreadedStopableHTTPServer((self.host, self.port),
-            self.requests_responses, unordered=unordered)
-        if self.port == 0:
+        self.unordered = unordered
+        self._init_thread()
+
+    def _init_thread(self):
+        self._thread = ThreadedStopableHTTPServer((self.host, self._requested_port),
+            [], unordered=self.unordered)
+        if self._requested_port == 0:
             self.port = self._thread.http_port
-        self.address = (host, self.port)
+        self.address = (self.host, self.port)
+
+    def reset(self):
+        self._init_thread()
 
     @property
     def base_url(self):
@@ -174,6 +182,8 @@ class MockServ(object):
         return self
 
     def __enter__(self):
+        # copy request_responses to be able to reuse it after .reset()
+        self._thread.requests_responses[:] = self.requests_responses
         self._thread.start()
 
     def __exit__(self, type, value, traceback):

@@ -91,6 +91,16 @@ class WMTSTileRequestParams(RequestParams):
     def format_mime_type(self):
         return self.get('format')
 
+    @property
+    def dimensions(self):
+        expected_param = set(['version', 'request', 'layer', 'style', 'tilematrixset',
+            'tilematrix', 'tilerow', 'tilecol', 'format', 'service'])
+        dimensions = {}
+        for key, value in self.iteritems():
+            if key not in expected_param:
+                dimensions[key.lower()] = value
+        return dimensions
+
     def __repr__(self):
         return '%s(param=%r)' % (self.__class__.__name__, self.params)
 
@@ -143,6 +153,7 @@ class WMTS100TileRequest(WMTSRequest):
         self.format = self.params.format # TODO
         self.tile = (int(self.params.coord[0]), int(self.params.coord[1]), self.params.coord[2]) # TODO
         self.origin = 'nw'
+        self.dimensions = self.params.dimensions
 
     def validate(self):
         missing_param = []
@@ -260,15 +271,17 @@ class InvalidWMTSTemplate(Exception):
     pass
 
 class URLTemplateConverter(object):
-    var_re = re.compile(r'\\{\\{(\w+)\\}\\}')
+    var_re = re.compile(r'(?:\\{)?\\{(\w+)\\}(?:\\})?')
+    # TODO {{}} format is deprecated, change to this in 1.6
+    # var_re = re.compile(r'\\{(\w+)\\}')
 
     variables = {
-        'TileMatrixSet': r'[\w_-]+',
+        'TileMatrixSet': r'[\w_.:-]+',
         'TileMatrix': r'\d+',
         'TileRow': r'-?\d+',
         'TileCol': r'-?\d+',
-        'Style': r'[\w_-]+',
-        'Layer': r'[\w_-]+',
+        'Style': r'[\w_.:-]+',
+        'Layer': r'[\w_.:-]+',
         'Format': r'\w+'
     }
 
@@ -277,22 +290,31 @@ class URLTemplateConverter(object):
     def __init__(self, template):
         self.template = template
         self.found = set()
+        self.dimensions = []
+        self._regexp = None
+        self.regexp()
 
     def substitute_var(self, match):
         var = match.group(1)
-        if var not in self.variables:
-            raise InvalidWMTSTemplate('unknown variable %s in %s' % (var, self.template))
-        var_type_re = self.variables[var]
+        if var in self.variables:
+            var_type_re = self.variables[var]
+        else:
+            self.dimensions.append(var)
+            var = var.lower()
+            var_type_re = r'[\w_.,:-]+'
         self.found.add(var)
         return r'(?P<%s>%s)' % (var, var_type_re)
 
+
     def regexp(self):
+        if self._regexp:
+            return self._regexp
         converted_re = self.var_re.sub(self.substitute_var, re.escape(self.template))
         wmts_re = re.compile(converted_re)
         if not self.found.issuperset(self.required):
             raise InvalidWMTSTemplate('missing required variables in WMTS restful template: %s' %
                 self.required.difference(self.found))
-
+        self._regexp = wmts_re
         return wmts_re
 
 class WMTS100RestTileRequest(TileRequest):
@@ -302,10 +324,12 @@ class WMTS100RestTileRequest(TileRequest):
     xml_exception_handler = WMTS100ExceptionHandler
     request_handler_name = 'tile'
     origin = 'nw'
+    url_converter = None
 
     def __init__(self, request):
         self.http = request
         self.url = request.base_url
+        self.dimensions = {}
 
     def make_tile_request(self):
         """
@@ -322,6 +346,9 @@ class WMTS100RestTileRequest(TileRequest):
         self.tile = int(req_vars['TileCol']), int(req_vars['TileRow']), int(req_vars['TileMatrix'])
         self.format = req_vars.get('Format')
         self.tilematrixset = req_vars['TileMatrixSet']
+        if self.url_converter and self.url_converter.dimensions:
+            for dim in self.url_converter.dimensions:
+                self.dimensions[dim.lower()] = req_vars[dim.lower()]
 
     @property
     def exception_handler(self):
@@ -346,9 +373,10 @@ class WMTS100RestCapabilitiesRequest(object):
         return self.xml_exception_handler()
 
 
-def make_wmts_rest_request_parser(template):
+def make_wmts_rest_request_parser(url_converter_):
     class WMTSRequestWrapper(WMTS100RestTileRequest):
-        tile_req_re = URLTemplateConverter(template).regexp()
+        url_converter = url_converter_
+        tile_req_re = url_converter.regexp()
 
     def wmts_request(req):
         if req.path.endswith(RESTFUL_CAPABILITIES_PATH):

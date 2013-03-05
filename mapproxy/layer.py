@@ -127,23 +127,26 @@ class MapQuery(object):
         """
         Return subset of the dimensions.
 
-        >>> mq = MapQuery(None, None, None, dimensions={'foo': 1, 'bar': 2})
-        >>> mq.dimensions_for_params(set(['foo', 'baz']))
-        {'foo': 1}
+        >>> mq = MapQuery(None, None, None, dimensions={'Foo': 1, 'bar': 2})
+        >>> mq.dimensions_for_params(set(['FOO', 'baz']))
+        {'Foo': 1}
         """
-        return dict((k, v) for k, v in self.dimensions.iteritems() if k in params)
+        params = [p.lower() for p in params]
+        return dict((k, v) for k, v in self.dimensions.iteritems() if k.lower() in params)
 
     def __repr__(self):
         return "MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s)" % self.__dict__
 
 class InfoQuery(object):
-    def __init__(self, bbox, size, srs, pos, info_format, format=None):
+    def __init__(self, bbox, size, srs, pos, info_format, format=None,
+        feature_count=None):
         self.bbox = bbox
         self.size = size
         self.srs = srs
         self.pos = pos
         self.info_format = info_format
         self.format = format
+        self.feature_count = feature_count
 
     @property
     def coord(self):
@@ -153,6 +156,15 @@ class LegendQuery(object):
     def __init__(self, format, scale):
         self.format = format
         self.scale = scale
+
+class Dimension(list):
+    def __init__(self, identifier, values, default=None):
+        self.identifier = identifier
+        if not default and values:
+            default = values[0]
+        self.default = default
+        list.__init__(self, values)
+
 
 def map_extent_from_grid(grid):
     """
@@ -176,9 +188,15 @@ class MapExtent(object):
     """
     is_default = False
     def __init__(self, bbox, srs):
-        self.llbbox = srs.transform_bbox_to(SRS(4326), bbox)
+        self._llbbox = None
         self.bbox = bbox
         self.srs = srs
+
+    @property
+    def llbbox(self):
+        if not self._llbbox:
+            self._llbbox = self.srs.transform_bbox_to(SRS(4326), self.bbox)
+        return self._llbbox
 
     def bbox_for(self, srs):
         if srs == self.srs:
@@ -218,6 +236,9 @@ class MapExtent(object):
     def contains(self, other):
         if not isinstance(other, MapExtent):
             raise NotImplemented
+        if self.is_default:
+            # DefaultMapExtent contains everything
+            return True
         return bbox_contains(self.bbox, other.bbox_for(self.srs))
 
     def intersects(self, other):

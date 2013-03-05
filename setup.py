@@ -1,10 +1,27 @@
 import platform
 from setuptools import setup, find_packages
+import pkg_resources
+
 
 install_requires = [
-    'PIL>=1.1.6,<1.2.99',
     'PyYAML>=3.0,<3.99',
 ]
+
+def pillow_installed():
+    """Check if Pillow is installed"""
+    pillow_req = pkg_resources.Requirement.parse('Pillow')
+    try:
+        pkg_resources.get_provider(pillow_req)
+    except pkg_resources.DistributionNotFound:
+        return False
+    else:
+        return True
+
+# depend in Pillow if it is installed, otherwise depend on PIL
+if pillow_installed():
+    install_requires.append('Pillow')
+else:
+    install_requires.append('PIL>=1.1.6,<1.2.99')
 
 if platform.python_version_tuple() < ('2', '6'):
     # for mapproxy-seed
@@ -23,7 +40,7 @@ def long_description(changelog_releases=10):
                 break
             changelog_releases -= 1
         changes.append(line)
-    
+
     changes.append(textwrap.dedent('''
         Older changes
         -------------
@@ -33,7 +50,7 @@ def long_description(changelog_releases=10):
 
 setup(
     name='MapProxy',
-    version="1.5.0a",
+    version="1.6.0a",
     description='An accelerating proxy for web map services',
     long_description=long_description(7),
     author='Oliver Tonnhofer',

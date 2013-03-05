@@ -1,3 +1,4 @@
+
 .. _configuration_examples:
 
 ######################
@@ -601,6 +602,70 @@ We then define two outgoing XSLT scripts that transform our intermediate format 
       html: ./html_out.xslt
       xml: ./xml_out.xslt
     [...]
+
+
+.. _wmts_dimensions:
+
+WMTS service with dimensions
+============================
+
+.. versionadded:: 1.6.0
+
+The dimension support in MapProxy is still limited, but you can use it to create a WMTS front-end for a multi-dimensional WMS service.
+
+First you need to add the WMS source and configure all dimensions that MapProxy should forward to the service::
+
+  temperature_source:
+    type: wms
+    req:
+      url: http://example.org/service?
+      layers: temperature
+    forward_req_params: ['time', 'elevation']
+
+
+We need to create a cache since we want to access the source from a tiled service (WMTS). Actual caching is not possible at the moment, so it is necessary to disable it with ``disable_storage: true``.
+
+::
+
+    caches:
+      temperature:
+        grids: [GLOBAL_MERCATOR]
+        sources: [temperature_source]
+        disable_storage: true
+        meta_size: [1, 1]
+        meta_buffer: 0
+
+Then we can add a layer with all available dimensions::
+
+    layers:
+      - name: temperature
+        title: Temperature
+        sources: [temperature]
+        dimensions:
+          time:
+            values:
+              - "2012-11-12T00:00:00"
+              - "2012-11-13T00:00:00"
+              - "2012-11-14T00:00:00"
+              - "2012-11-15T00:00:00"
+          elevation:
+            values:
+              - 0
+              - 1000
+              - 3000
+            default: 0
+
+You can know access this layer with the elevation and time dimensions via the WMTS KVP service.
+The RESTful service requires a custom URL template that contains the dimensions. For example::
+
+    services:
+      wmts:
+        restful_template: '/{Layer}/{Time}/{Elevation}/{TileMatrixSet}
+            /{TileMatrix}/{TileCol}/{TileRow}.{Format}'
+
+
+Tiles are then available at ``/wmts/temperature/GLOBAL_MERCATOR/1000/2012-11-12T00:00Z/6/33/22.png``.
+You can use ``default`` for missing dimensions, e.g. ``/wmts/map/GLOBAL_MERCATOR/default/default/6/33/22.png``.
 
 
 WMS layers with HTTP Basic Authentication

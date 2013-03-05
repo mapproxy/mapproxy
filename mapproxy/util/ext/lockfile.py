@@ -1,11 +1,11 @@
 ##############################################################################
 #
-# This is a modified version of zc.lockfile 1.0.0 
+# This is a modified version of zc.lockfile 1.0.0
 # (http://pypi.python.org/pypi/zc.lockfile/1.0.0)
 #
 # Copyright (c) 2001, 2002 Zope Corporation and Contributors.
 # All Rights Reserved.
-# 
+#
 # ==== Changelog ====
 # 2010-04-01 - Commented out logging. <olt@omniscale.de>
 #
@@ -15,36 +15,36 @@
 # Version 2.1 (ZPL).
 #
 # Zope Public License (ZPL) Version 2.1
-# 
+#
 # A copyright notice accompanies this license document that identifies the
 # copyright holders.
-# 
+#
 # This license has been certified as open source. It has also been designated as
 # GPL compatible by the Free Software Foundation (FSF).
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # - Redistributions in source code must retain the accompanying copyright
 #   notice, this list of conditions, and the following disclaimer.
-# 
+#
 # - Redistributions in binary form must reproduce the accompanying copyright
 #   notice, this list of conditions, and the following disclaimer in the
 #   documentation and/or other materials provided with the distribution.
-# 
+#
 # - Names of the copyright holders must not be used to endorse or promote
 #   products derived from this software without prior written permission from
 #   the copyright holders.
-# 
+#
 # - The right to distribute this software or to use it for any purpose does not
 #   give you the right to use Servicemarks (sm) or Trademarks (tm) of the
 #   copyright holders. Use of them is covered by separate agreement with the
 #   copyright holders.
-# 
+#
 # - If any files are modified, you must cause the modified files to carry
 #   prominent notices stating that you changed the files and the date of any
 #   change.
-# 
+#
 # Disclaimer
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY EXPRESSED
 # OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -92,7 +92,7 @@ except ImportError:
                 msvcrt.locking(file.fileno(), msvcrt.LK_UNLCK, 1)
             except IOError:
                 raise LockError("Couldn't unlock %r" % file.name)
-                
+
 else:
     # Unix
     _flags = fcntl.LOCK_EX | fcntl.LOCK_NB
@@ -102,7 +102,7 @@ else:
             fcntl.flock(file.fileno(), _flags)
         except IOError:
             raise LockError("Couldn't lock %r" % file.name)
-            
+
 
     def _unlock_file(file):
         # File is automatically unlocked on close
@@ -119,14 +119,12 @@ class LockFile:
 
         try:
             _lock_file(fp)
-        except:
-            fp.seek(1)
-            pid = fp.read().strip()[:20]
-            fp.close()
-            if not pid:
-                pid = 'UNKNOWN'
-            # logger.exception("Error locking file %s; pid=%s", path, pid)
-            raise
+        except Exception, ex:
+            try:
+                fp.close()
+            except Exception:
+                pass
+            raise ex
 
         self._fp = fp
         fp.write(" %s\n" % os.getpid())

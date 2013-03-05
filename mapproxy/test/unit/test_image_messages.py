@@ -1,13 +1,13 @@
 # -:- encoding: utf8 -:-
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,7 +42,7 @@ class TestTextDraw(object):
         total_box, boxes = td.text_boxes(draw, (100, 100))
         eq_(total_box, boxes[0])
         eq_(len(boxes), 1)
-    
+
     def test_multiline_ul(self):
         font = ImageFont.load_default()
         td = TextDraw('Hello\nWorld', font)
@@ -78,7 +78,7 @@ class TestTextDraw(object):
         total_box, boxes = td.text_boxes(draw, (100, 100))
         eq_(total_box, (35, 38, 65, 63))
         eq_(boxes, [(35, 38, 65, 49), (35, 52, 65, 63)])
-    
+
     def _test_all(self):
         for x in 'c':
             for y in 'LR':
@@ -92,7 +92,7 @@ class TestTextDraw(object):
         draw = ImageDraw.Draw(img)
         td.draw(draw, img.size)
         img.show()
-    
+
     def test_transparent(self):
         font = ImageFont.load_default()
         td = TextDraw('Hello\nWorld', font, placement='cc')
@@ -102,8 +102,8 @@ class TestTextDraw(object):
         eq_(len(img.getcolors()), 2)
         # top color (bg) is transparent
         eq_(sorted(img.getcolors())[1][1], (0, 0, 0, 0))
-        
-        
+
+
 class TestMessageImage(object):
     def test_blank(self):
         image_opts = PNG_FORMAT.copy()
@@ -146,10 +146,10 @@ class TestWatermarkTileFilter(object):
         orig_source = ImageSource(img)
         self.tile.source = orig_source
         filtered_tile = self.filter(self.tile)
-        
+
         assert self.tile is filtered_tile
         assert orig_source != filtered_tile.source
-        
+
         pil_img = filtered_tile.source.as_image()
         eq_(pil_img.getpixel((0, 0)), (0, 0, 0))
 
@@ -164,10 +164,10 @@ class TestWatermarkTileFilter(object):
         orig_source = ImageSource(img)
         self.tile.source = orig_source
         filtered_tile = self.filter(self.tile)
-        
+
         assert self.tile is filtered_tile
         assert orig_source != filtered_tile.source
-        
+
         pil_img = filtered_tile.source.as_image()
         eq_(pil_img.getpixel((0, 0)), (10, 15, 20, 0))
 

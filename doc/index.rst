@@ -6,6 +6,7 @@ MapProxy Documentation
    
    install
    install_windows
+   install_osgeo4w
    tutorial
    configuration
    services

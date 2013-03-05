@@ -20,7 +20,7 @@ mapproxy.yaml
 
 The configuration uses the YAML format. The Wikipedia contains a `good introduction to YAML <http://en.wikipedia.org/wiki/YAML>`_.
 
-The MapProxy configuration is grouped into six sections, each configures a different aspect of MapProxy. These are the following sections:
+The MapProxy configuration is grouped into sections, each configures a different aspect of MapProxy. These are the following sections:
 
 - ``globals``:  Internals of MapProxy and default values that are used in the other configuration sections.
 
@@ -38,6 +38,28 @@ The MapProxy configuration is grouped into six sections, each configures a diffe
 The order of the sections is not important, so you can organize it your way.
 
 .. note:: The indentation is significant and shall only contain space characters. Tabulators are **not** permitted for indentation.
+
+There is another optional section:
+
+.. versionadded:: 1.6.0
+
+- ``parts``: YAML supports references and with that you can define configuration parts and use them in other configuration sections. For example, you can define all you coverages in one place and reference them from the sources. However, MapProxy will log a warning if you put the referent in a place where it is not a valid option. To prevent these warnings you are advised to put these configuration snippets inside the ``parts`` section.
+
+For example::
+
+  parts:
+    coverages:
+        mycoverage: &mycoverage
+          bbox: [0, 0, 10, 10]
+          srs: 'EPSG:4326'
+
+  sources:
+    mysource1:
+      coverage: *mycoverage
+      ...
+    mysource2:
+      coverage: *mycoverage
+      ...
 
 
 ``base``
@@ -238,6 +260,37 @@ Here is an example layer with extended layer capabilities::
           - url:    http://example.org/datasets/test.pdf
             format: application/pdf
 
+``dimensions``
+""""""""""""""
+
+.. versionadded:: 1.6.0
+
+.. note:: Dimensions are only supported for uncached WMTS services for now. See :ref:`wmts_dimensions` for a working use-case.
+
+Configure the dimensions that this layer supports. Dimensions should be a dictionary with one entry for each dimension.
+Each dimension is another dictionary with a list of ``values`` and an optional ``default`` value. When the ``default`` value is omitted, the last value will be used.
+
+::
+
+  layers:
+    - name: dimension_layer
+      title: layer with dimensions
+      sources: [cache]
+      dimensions:
+        time:
+          values:
+            - "2012-11-12T00:00:00"
+            - "2012-11-13T00:00:00"
+            - "2012-11-14T00:00:00"
+            - "2012-11-15T00:00:00"
+          default: "2012-11-15T00:00:00"
+        elevation:
+          values:
+            - 0
+            - 1000
+            - 3000
+
+
 .. ``attribution``
 .. """"""""""""""""
 ..
@@ -395,7 +448,8 @@ even if the there are matching tiles in the cache. See :ref:`seed_only <wms_seed
 ``cache_dir``
 """""""""""""
 
-Directory where MapProxy should store tiles for this cache. Uses the value of ``globals.cache.base_dir`` by default.
+Directory where MapProxy should store tiles for this cache. Uses the value of ``globals.cache.base_dir`` by default. MapProxy will store each cache in a subdirectory named after the cache and the grid SRS (e.g. ``cachename_EPSG1234``).
+See :ref:`directory option<cache_file_directory>` on how configure a complete path.
 
 ``cache``
 """""""""

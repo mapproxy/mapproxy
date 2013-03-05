@@ -100,6 +100,9 @@ class MessageImage(object):
                     _pil_ttf_support = False
                     log_system.warn("Couldn't load TrueType fonts, "
                         "PIL needs to be build with freetype support.")
+                except IOError:
+                    _pil_ttf_support = False
+                    log_system.warn("Couldn't load find TrueType font ", self.font_name)
             if self._font is None:
                 self._font = ImageFont.load_default()
         return self._font
@@ -131,12 +134,22 @@ class MessageImage(object):
 
         draw = ImageDraw.Draw(base_img)
         self.draw_msg(draw, size)
+        image_opts = self.image_opts
         if not in_place and img:
+            image_opts = image_opts or img.image_opts
             img = img.as_image()
+            converted = False
+            if len(self.font_color) == 4 and img.mode != 'RGBA':
+                # we need RGBA to keep transparency from text
+                converted = img.mode
+                img = img.convert('RGBA')
             img.paste(base_img, (0, 0), base_img)
+            if converted == 'RGB':
+                # convert image back
+                img = img.convert('RGB')
             base_img = img
 
-        return ImageSource(base_img, size=size, image_opts=self.image_opts)
+        return ImageSource(base_img, size=size, image_opts=image_opts)
 
     def draw_msg(self, draw, size):
         td = TextDraw(self.message, font=self.font, bg_color=self.box_color,

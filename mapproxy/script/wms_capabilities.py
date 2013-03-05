@@ -14,12 +14,14 @@
 # limitations under the License.
 from __future__ import with_statement
 
+import urlparse
 import sys
 import optparse
 from cStringIO import StringIO
 from xml.etree import ElementTree as etree
 
 from mapproxy.client.http import open_url, HTTPClientError
+from mapproxy.request.base import BaseRequest, url_decode
 
 class PrettyPrinter(object):
     def __init__(self, indent=4):
@@ -169,8 +171,21 @@ class WMS111Capabilities(object):
 def log_error(msg, *args):
     print >>sys.stderr, msg % args
 
+def wms_111_cap_url(url):
+    parsed_url = urlparse.urlparse(url)
+    base_req = BaseRequest(
+        url=url.split('?', 1)[0],
+        param=url_decode(parsed_url.params),
+    )
+
+    base_req.params['service'] = 'WMS'
+    base_req.params['version'] = '1.1.1'
+    base_req.params['request'] = 'GetCapabilities'
+    return base_req.complete_url
+
 def parse_capabilities(capabilities_url):
     try:
+        capabilities_url = wms_111_cap_url(capabilities_url)
         capabilities_response = open_url(capabilities_url)
     except HTTPClientError, ex:
         log_error('ERROR: %s', ex.args[0])
