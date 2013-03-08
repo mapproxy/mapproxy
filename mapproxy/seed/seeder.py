@@ -383,7 +383,7 @@ class CleanupTask(object):
         return NONE
 
 def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
-    renderd=None, progress_logger=None, cache_locker=None):
+    progress_logger=None, cache_locker=None):
     if cache_locker is None:
         cache_locker = DummyCacheLocker()
 

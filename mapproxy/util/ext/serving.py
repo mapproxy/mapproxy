@@ -281,7 +281,7 @@ class BaseWSGIServer(HTTPServer, object):
     multithread = False
     multiprocess = False
     request_queue_size = 128
-    
+
     def __init__(self, host, port, app, handler=None,
                  passthrough_errors=False, ssl_context=None):
         if handler is None:
