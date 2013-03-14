@@ -17,7 +17,6 @@ from mapproxy.util.ext.dictspec.validator import validate, ValidationError
 from mapproxy.util.ext.dictspec.spec import one_of, anything, number
 from mapproxy.util.ext.dictspec.spec import recursive, required, type_spec, combined
 
-
 def validate_mapproxy_conf(conf_dict):
     """
     Validate `conf_dict` agains mapproxy.yaml spec.
@@ -228,6 +227,15 @@ mapproxy_yaml_spec = {
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
             'disable_storage': bool(),
+            'max_age': {
+                'seconds': number(),
+                'minutes': number(),
+                'hours': number(),
+                'days': number(),
+                'weeks': number(),
+                'time': anything(),
+                'mtime': anything(),
+            },
             'format': str(),
             'image': image_opts,
             'request_format': str(),

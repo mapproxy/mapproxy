@@ -1002,7 +1002,7 @@ class CacheConfiguration(ConfigurationBase):
             raise ConfigurationError('request_format must be set to image/png if mixed mode is enabled')
         request_format = self.conf.get('request_format') or self.conf.get('format')
         caches = []
-
+        
         meta_buffer = self.context.globals.get_value('meta_buffer', self.conf,
             global_key='cache.meta_buffer')
         meta_size = self.context.globals.get_value('meta_size', self.conf,
@@ -1036,12 +1036,13 @@ class CacheConfiguration(ConfigurationBase):
             tile_filter = self._tile_filter()
             image_opts = compatible_image_options(source_image_opts, base_opts=base_image_opts)
             cache = self._tile_cache(grid_conf, image_opts.format.ext)
+            maximum_age = self.conf.get('max_age')
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
                               image_opts=image_opts,
                               meta_size=meta_size, meta_buffer=meta_buffer,
                               minimize_meta_requests=minimize_meta_requests,
                               concurrent_tile_creators=concurrent_tile_creators,
-                              pre_store_filter=tile_filter)
+                              pre_store_filter=tile_filter,max_age=maximum_age)
             extent = merge_layer_extents(sources)
             if extent.is_default:
                 extent = map_extent_from_grid(tile_grid)

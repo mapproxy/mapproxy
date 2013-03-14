@@ -39,12 +39,16 @@ from __future__ import with_statement
 
 from contextlib import contextmanager
 
+from mapproxy.config import abspath
+from mapproxy.config.loader import ConfigurationError
 from mapproxy.grid import MetaGrid
 from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
-from mapproxy.util import async
-
+from mapproxy.util import async, timestamp_from_isodate
+import os
+import time
+import datetime
 
 class TileManager(object):
     """
@@ -58,7 +62,7 @@ class TileManager(object):
     """
     def __init__(self, grid, cache, sources, format, image_opts=None, request_format=None,
         meta_buffer=None, meta_size=None, minimize_meta_requests=False,
-        pre_store_filter=None, concurrent_tile_creators=1):
+        pre_store_filter=None, concurrent_tile_creators=1,max_age=None):
         self.grid = grid
         self.cache = cache
         self.meta_grid = None
@@ -67,6 +71,7 @@ class TileManager(object):
         self.request_format = request_format or format
         self.sources = sources
         self.minimize_meta_requests = minimize_meta_requests
+        self._max_age = max_age
         self._expire_timestamp = None
         self.transparent = self.sources[0].transparent
         self.pre_store_filter = pre_store_filter or []
@@ -155,7 +160,7 @@ class TileManager(object):
         max_mtime = self.expire_timestamp(tile)
         if cached and max_mtime is not None:
             self.cache.load_tile_metadata(tile)
-            stale = tile.timestamp < max_mtime
+            stale = max_mtime < time.time()
             if stale:
                 cached = False
         return cached
@@ -181,6 +186,34 @@ class TileManager(object):
 
         :note: Returns _expire_timestamp by default.
         """
+        
+        """
+        If we have got a max_age variable from the YAML, work out the timestamp that this tile should expire
+        """
+        if self._max_age is not None and tile is not None:
+            if 'time' in self._max_age:
+                try:
+                    return timestamp_from_isodate(self._max_age['time'])
+                except:
+                    raise ConfigurationError("Could not parse time '%s'. should be ISO time string" % (self._max_age["time"]))
+            
+            """ Was mtime passed with a path to the source file? Grab the modified date to see if we need to update the tile """
+            self.cache.load_tile_metadata(tile)
+            if 'mtime' in self._max_age:
+                datasource = abspath(self._max_age['mtime'])
+                try:
+                    source_modified_time = os.path.getmtime(datasource)
+                    if tile.timestamp < source_modified_time:
+                        return source_modified_time;
+                    else:
+                        return time.time() + 86400; # Return a date in the future so the tile is accepted as up-to-date
+                except OSError, ex:
+                    raise ConfigurationError("Can't parse last modified time from file '%s'." % datasource)
+            deltas = {}
+            for delta_type in ('weeks', 'days', 'hours', 'minutes'):
+                deltas[delta_type] = self._max_age.get(delta_type, 0)
+            return tile.timestamp + datetime.timedelta(**deltas).total_seconds()
+    
         return self._expire_timestamp
 
     def apply_tile_filter(self, tile):
