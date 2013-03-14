@@ -248,6 +248,8 @@ class GridConfiguration(ConfigurationBase):
 
         if 'base' in self.conf:
             base_grid_name = self.conf['base']
+            if not base_grid_name in self.context.grids:
+                raise ConfigurationError('unknown base %s for grid %s' % (base_grid_name, self.conf['name']))
             conf = self.context.grids[base_grid_name].conf.copy()
             conf.update(self.conf)
             conf.pop('base')
