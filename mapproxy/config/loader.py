@@ -1006,6 +1006,7 @@ class CacheConfiguration(ConfigurationBase):
     @memoize
     def caches(self):
         from mapproxy.cache.tile import TileManager
+        from mapproxy.cache.base import TileLocker
         from mapproxy.image.opts import compatible_image_options
         from mapproxy.layer import map_extent_from_grid, merge_layer_extents
 
@@ -1059,7 +1060,13 @@ class CacheConfiguration(ConfigurationBase):
                     priority = 10
                 else:
                     priority = 100
-                tile_creator_class = partial(RenderdTileCreator, renderd_address, priority=priority)
+
+                cache_dir = self.cache_dir()
+                lock_dir = os.path.join(cache_dir, 'tile_locks')
+                lock_timeout = self.context.globals.get_value('http.client_timeout', {})
+                locker = TileLocker(lock_dir, lock_timeout, identifier + '_renderd')
+                tile_creator_class = partial(RenderdTileCreator, renderd_address,
+                    priority=priority, tile_locker=locker)
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
                               image_opts=image_opts, identifier=identifier,
                               meta_size=meta_size, meta_buffer=meta_buffer,

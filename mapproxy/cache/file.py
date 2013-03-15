@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,20 +42,19 @@ class FileCache(TileCacheBase, FileBasedLocking):
         self.lock_dir = lock_dir
         self.lock_timeout = lock_timeout
         self.file_ext = file_ext
-        self._lock_cache_id = None
         self.link_single_color_images = link_single_color_images
-        
+
         if directory_layout == 'tc':
             self.tile_location = self._tile_location_tc
         elif directory_layout == 'tms':
             self.tile_location = self._tile_location_tms
         else:
             raise ValueError('unknown directory_layout "%s"' % directory_layout)
-        
+
     def level_location(self, level):
         """
         Return the path where all tiles for `level` will be stored.
-        
+
         >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png')
         >>> c.level_location(2)
         '/tmp/cache/02'
@@ -64,16 +63,16 @@ class FileCache(TileCacheBase, FileBasedLocking):
             return os.path.join(self.cache_dir, level)
         else:
             return os.path.join(self.cache_dir, "%02d" % level)
-    
+
     def _tile_location_tc(self, tile, create_dir=False):
         """
         Return the location of the `tile`. Caches the result as ``location``
         property of the `tile`.
-        
+
         :param tile: the tile object
         :param create_dir: if True, create all necessary directories
         :return: the full filename of the tile
-        
+
         >>> from mapproxy.cache.tile import Tile
         >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png')
         >>> c.tile_location(Tile((3, 4, 2))).replace('\\\\', '/')
@@ -92,16 +91,16 @@ class FileCache(TileCacheBase, FileBasedLocking):
         if create_dir:
             ensure_directory(tile.location)
         return tile.location
-    
+
     def _tile_location_tms(self, tile, create_dir=False):
         """
         Return the location of the `tile`. Caches the result as ``location``
         property of the `tile`.
-        
+
         :param tile: the tile object
         :param create_dir: if True, create all necessary directories
         :return: the full filename of the tile
-        
+
         >>> from mapproxy.cache.tile import Tile
         >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png', directory_layout='tms')
         >>> c.tile_location(Tile((3, 4, 2))).replace('\\\\', '/')
@@ -116,7 +115,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
         if create_dir:
             ensure_directory(tile.location)
         return tile.location
-    
+
     def _single_color_tile_location(self, color, create_dir=False):
         """
         >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png')
@@ -132,7 +131,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
         if create_dir:
             ensure_directory(location)
         return location
-    
+
     def load_tile_metadata(self, tile):
         location = self.tile_location(tile)
         try:
@@ -143,7 +142,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
             if ex.errno != errno.ENOENT: raise
             tile.timestamp = 0
             tile.size = 0
-    
+
     def is_cached(self, tile):
         """
         Returns ``True`` if the tile data is present.
@@ -156,7 +155,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
                 return False
         else:
             return True
-    
+
     def load_tile(self, tile, with_metadata=False):
         """
         Fills the `Tile.source` of the `tile` if it is cached.
@@ -164,23 +163,23 @@ class FileCache(TileCacheBase, FileBasedLocking):
         """
         if not tile.is_missing():
             return True
-        
+
         location = self.tile_location(tile)
-        
+
         if os.path.exists(location):
             if with_metadata:
                 self.load_tile_metadata(tile)
             tile.source = ImageSource(location)
             return True
         return False
-    
+
     def remove_tile(self, tile):
         location = self.tile_location(tile)
         try:
             os.remove(location)
         except OSError, ex:
             if ex.errno != errno.ENOENT: raise
-    
+
     def store_tile(self, tile):
         """
         Add the given `tile` to the file cache. Stores the `Tile.source` to
@@ -188,9 +187,9 @@ class FileCache(TileCacheBase, FileBasedLocking):
         """
         if tile.stored:
             return
-        
+
         tile_loc = self.tile_location(tile, create_dir=True)
-        
+
         if self.link_single_color_images:
             color = is_single_color_image(tile.source.as_image())
             if color:
@@ -199,33 +198,33 @@ class FileCache(TileCacheBase, FileBasedLocking):
                 self._store(tile, tile_loc)
         else:
             self._store(tile, tile_loc)
-    
+
     def _store(self, tile, location):
         if os.path.islink(location):
             os.unlink(location)
-            
+
         with tile_buffer(tile) as buf:
             with open(location, 'wb') as f:
                 log.debug('writing %r to %s' % (tile.coord, location))
                 f.write(buf.read())
-    
+
     def _store_single_color_tile(self, tile, tile_loc, color):
         real_tile_loc = self._single_color_tile_location(color, create_dir=True)
         if not os.path.exists(real_tile_loc):
             self._store(tile, real_tile_loc)
-        
+
         log.debug('linking %r from %s to %s',
                   tile.coord, real_tile_loc, tile_loc)
-        
+
         # remove any file before symlinking.
         # exists() returns False if it links to non-
         # existing file, islink() test to check that
         if os.path.exists(tile_loc) or os.path.islink(tile_loc):
             os.unlink(tile_loc)
-        
+
         os.symlink(real_tile_loc, tile_loc)
         return
-    
+
     def __repr__(self):
         return '%s(%r, %r)' % (self.__class__.__name__, self.cache_dir, self.file_ext)
 

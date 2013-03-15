@@ -14,13 +14,13 @@
 # limitations under the License.
 
 from __future__ import with_statement
-import errno
 import json
 import time
 import requests
 import hashlib
 
 from mapproxy.client.log import log_request
+from mapproxy.cache.tile import TileCreator, Tile
 from mapproxy.source import SourceError
 
 class RenderdClient(object):
@@ -28,20 +28,8 @@ class RenderdClient(object):
         self.renderd_address = renderd_address
         self.priority = priority
 
-    def send_and_receive(self, tile_mgr, tiles):
-        if tile_mgr.meta_grid and len(tiles) == 1:
-            # use main_tile_coord as tile_id so that mapproxy-renderd can combine requests
-            meta_tile = tile_mgr.meta_grid.meta_tile(tiles[0].coord)
-            tile_id = meta_tile.main_tile_coord
-        else:
-            tile_id = None
-
-        tile_coords = [t.coord for t in tiles if t.coord]
-        cache_identifier = tile_mgr.identifier
-        return self.send_tile_request(cache_identifier, tile_coords, tile_id=tile_id)
-
-    def send_tile_request(self, cache_identifier, tile_coords, tile_id=None):
-        identifier = hashlib.sha1(str((cache_identifier, tile_id or tile_coords))).hexdigest()
+    def send_tile_request(self, cache_identifier, tile_coords):
+        identifier = hashlib.sha1(str((cache_identifier, tile_coords))).hexdigest()
         message = {
             'command': 'tile',
             'id': identifier,
@@ -52,27 +40,42 @@ class RenderdClient(object):
         resp = requests.post(self.renderd_address, data=json.dumps(message))
         return resp.json()
 
-class RenderdTileCreator(object):
-    def __init__(self, renderd_address, tile_mgr, dimensions=None, priority=100):
-        self.tile_mgr = tile_mgr
-        self.dimensions = dimensions
+class RenderdTileCreator(TileCreator):
+    def __init__(self, renderd_address, tile_mgr, dimensions=None, priority=100, tile_locker=None):
+        TileCreator.__init__(self, tile_mgr, dimensions)
+        self.tile_locker = tile_locker.lock or self.tile_mgr.lock
         self.renderd_address = renderd_address
         self.renderd_client = RenderdClient(renderd_address, priority)
 
-    def create_tiles(self, tiles):
+    def _create_single_tile(self, tile):
+        with self.tile_locker(tile):
+            if not self.is_cached(tile):
+                self.renderd_client.send_tile_request(
+                    self.tile_mgr.identifier, tile_coords=[tile.coord])
+            self.cache.load_tile(tile)
+        return [tile]
+
+    def _create_meta_tile(self, meta_tile):
+        main_tile = Tile(meta_tile.main_tile_coord)
+        with self.tile_locker(main_tile):
+            if not all(self.is_cached(t) for t in meta_tile.tiles if t is not None):
+                self.renderd_client.send_tile_request(
+                    self.tile_mgr.identifier, tile_coords=[main_tile.coord])
+
+        tiles = [Tile(coord) for coord in meta_tile.tiles]
+        self.cache.load_tiles(tiles)
+        return tiles
+
+    def _create_renderd_tile(self, tile_coord):
         start_time = time.time()
-        result = self.renderd_client.send_and_receive(self.tile_mgr, tiles)
+        result = self.renderd_client.send_and_receive(self.tile_mgr, [tile_coord])
         duration = time.time()-start_time
 
         address = '%s:%s:%r' % (self.renderd_address,
-            self.tile_mgr.identifier, [t.coord for t in tiles])
+            self.tile_mgr.identifier, tile_coord)
 
         if result['status'] == 'error':
             log_request(address, 500, None, duration=duration, method='RENDERD')
             raise SourceError(result.get('error_message', 'unknown error from renderd'))
 
         log_request(address, 200, None, duration=duration, method='RENDERD')
-
-        self.tile_mgr.cache.load_tiles(tiles)
-        return tiles
-

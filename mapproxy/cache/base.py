@@ -115,3 +115,9 @@ class FileBasedLocking(object):
         cleanup_lockdir(self.lock_dir, force=False)
         return FileLock(lock_filename, timeout=self.lock_timeout,
             remove_on_unlock=True)
+
+class TileLocker(FileBasedLocking):
+    def __init__(self, lock_dir, lock_timeout, lock_cache_id):
+        self.lock_dir = lock_dir
+        self.lock_timeout = lock_timeout
+        self.lock_cache_id = lock_cache_id
