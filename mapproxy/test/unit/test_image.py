@@ -1,13 +1,13 @@
 # -:- encoding: utf8 -:-
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,10 +37,10 @@ TIFF_FORMAT = ImageOptions(format='image/tiff')
 class TestImageSource(object):
     def setup(self):
         self.tmp_filename = create_tmp_image_file((100, 100))
-    
+
     def teardown(self):
         os.remove(self.tmp_filename)
-        
+
     def test_from_filename(self):
         ir = ImageSource(self.tmp_filename, PNG_FORMAT)
         assert is_png(ir.as_buffer())
@@ -57,28 +57,28 @@ class TestImageSource(object):
         ir = ImageSource(img, (100, 100), PNG_FORMAT)
         assert ir.as_image() == img
         assert is_png(ir.as_buffer())
-    
+
     def test_from_non_seekable_file(self):
         with open(self.tmp_filename, 'rb') as tmp_file:
             data = tmp_file.read()
-            
+
         class FileLikeDummy(object):
             # "file" without seek, like urlopen response
             def read(self):
                 return data
-        
+
         ir = ImageSource(FileLikeDummy(), 'png')
         assert ir.as_buffer(seekable=True).read() == data
         assert ir.as_image().size == (100, 100)
         assert ir.as_buffer().read() == data
-        
-    
+
+
     def test_output_formats(self):
         img = Image.new('RGB', (100, 100))
         for format in ['png', 'gif', 'tiff', 'jpeg', 'GeoTIFF', 'bmp']:
             ir = ImageSource(img, (100, 100), image_opts=ImageOptions(format=format))
             yield check_format, ir.as_buffer(), format
-    
+
     def test_converted_output(self):
         ir = ImageSource(self.tmp_filename, (100, 100), PNG_FORMAT)
         assert is_png(ir.as_buffer())
@@ -86,14 +86,14 @@ class TestImageSource(object):
         assert is_jpeg(ir.as_buffer())
         assert is_tiff(ir.as_buffer(TIFF_FORMAT))
         assert is_tiff(ir.as_buffer())
-        
+
     def test_output_formats_png8(self):
         img = Image.new('RGBA', (100, 100))
         ir = ImageSource(img, image_opts=PNG_FORMAT)
         img = Image.open(ir.as_buffer(ImageOptions(colors=256, transparent=True, format='image/png')))
         assert img.mode == 'P'
         assert img.getpixel((0, 0)) == 255
-        
+
     def test_output_formats_png24(self):
         img = Image.new('RGBA', (100, 100))
         image_opts = PNG_FORMAT.copy()
@@ -123,7 +123,7 @@ class TestSubImageSource(object):
         sub_img = create_image((50, 50), color=[100, 120, 130, 140])
         img = SubImageSource(sub_img, size=(100, 100), offset=(75, 25), image_opts=ImageOptions(transparent=True)).as_image()
         eq_(sorted(img.getcolors()), [(25*50, (100, 120, 130, 140)), (100*100-25*50, (255, 255, 255, 0))])
-        
+
     def test_outside(self):
         sub_img = create_image((50, 50), color=[100, 120, 130, 140])
         img = SubImageSource(sub_img, size=(100, 100), offset=(200, 0), image_opts=ImageOptions(transparent=True)).as_image()
@@ -236,42 +236,48 @@ class TestMergeAll(object):
 
 class TestGetCrop(object):
     def setup(self):
-        self.img = ImageSource(create_tmp_image_file((100, 100), two_colored=True),
+        self.tmp_file = create_tmp_image_file((100, 100), two_colored=True)
+        self.img = ImageSource(self.tmp_file,
                                image_opts=ImageOptions(format='image/png'), size=(100, 100))
+
+    def teardown(self):
+        if os.path.exists(self.tmp_file):
+            os.remove(self.tmp_file)
+
     def test_perfect_match(self):
         bbox = (-10, -5, 30, 35)
         transformer = ImageTransformer(SRS(4326), SRS(4326))
         result = transformer.transform(self.img, bbox, (100, 100), bbox, image_opts=None)
         assert self.img == result
-    
+
     def test_simple_resize_nearest(self):
         bbox = (-10, -5, 30, 35)
         transformer = ImageTransformer(SRS(4326), SRS(4326))
         result = transformer.transform(self.img, bbox, (200, 200), bbox,
             image_opts=ImageOptions(resampling='nearest'))
         img = result.as_image()
-        
+
         eq_(img.size, (200, 200))
         eq_(len(img.getcolors()), 2)
-    
+
     def test_simple_resize_bilinear(self):
         bbox = (-10, -5, 30, 35)
         transformer = ImageTransformer(SRS(4326), SRS(4326))
         result = transformer.transform(self.img, bbox, (200, 200), bbox,
             image_opts=ImageOptions(resampling='bilinear'))
         img = result.as_image()
-        
+
         eq_(img.size, (200, 200))
         # some shades of grey with bilinear
         assert len(img.getcolors()) >= 4
-        
+
 
 class TestLayerMerge(object):
     def test_opacity_merge(self):
         img1 = ImageSource(Image.new('RGB', (10, 10), (255, 0, 255)))
         img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)),
             image_opts=ImageOptions(opacity=0.5))
-        
+
         result = merge_images([img1, img2], ImageOptions(transparent=False))
         img = result.as_image()
         eq_(img.getpixel((0, 0)), (127, 127, 255))
@@ -280,7 +286,7 @@ class TestLayerMerge(object):
         img1 = ImageSource(Image.new('RGBA', (10, 10), (255, 0, 255, 255)))
         img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)).convert('P'),
             image_opts=ImageOptions(opacity=0.5))
-        
+
         result = merge_images([img1, img2], ImageOptions(transparent=True))
         img = result.as_image()
         eq_(img.getpixel((0, 0)), (127, 127, 255, 255))
@@ -288,7 +294,7 @@ class TestLayerMerge(object):
     def test_solid_merge(self):
         img1 = ImageSource(Image.new('RGB', (10, 10), (255, 0, 255)))
         img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)))
-        
+
         result = merge_images([img1, img2], ImageOptions(transparent=False))
         img = result.as_image()
         eq_(img.getpixel((0, 0)), (0, 255, 255))
@@ -340,7 +346,7 @@ class TestTransform(object):
         assert isinstance(result, ImageSource)
         assert result.as_image() != self.src_img
         assert result.size == (100, 150)
-    
+
     def _test_compare_mesh_div(self):
         """
         Create transformations with different div values.
@@ -350,7 +356,7 @@ class TestTransform(object):
             result = transformer.transform(self.src_img, self.src_bbox,
                                            self.dst_size, self.dst_bbox)
             result.as_image().save('/tmp/transform-%d.png' % (div,))
-        
+
 
 class TestSingleColorImage(object):
     def test_one_point(self):
@@ -358,17 +364,17 @@ class TestSingleColorImage(object):
         draw = ImageDraw.Draw(img)
         draw.point((99, 99))
         del draw
-        
+
         assert not is_single_color_image(img)
-    
+
     def test_solid(self):
         img = Image.new('RGB', (100, 100), color='#ff0102')
         eq_(is_single_color_image(img), (255, 1, 2))
-    
+
     def test_solid_w_alpha(self):
         img = Image.new('RGBA', (100, 100), color='#ff0102')
         eq_(is_single_color_image(img), (255, 1, 2, 255))
-    
+
     def test_solid_paletted_image(self):
         img = Image.new('P', (100, 100), color=20)
         palette = []
@@ -383,13 +389,13 @@ class TestMakeTransparent(object):
         draw = ImageDraw.Draw(img)
         draw.rectangle((10, 10, 39, 39), fill=(130, 150, 120))
         return img
-    
+
     def _make_transp_test_image(self):
         img = Image.new('RGBA', (50, 50), (130, 140, 120, 100))
         draw = ImageDraw.Draw(img)
         draw.rectangle((10, 10, 39, 39), fill=(130, 150, 120, 120))
         return img
-    
+
     def test_result(self):
         img = self._make_test_image()
         img = make_transparent(img, (130, 150, 120), tolerance=5)
@@ -397,7 +403,7 @@ class TestMakeTransparent(object):
         assert img.size == (50, 50)
         colors = img.getcolors()
         assert colors == [(1600, (130, 140, 120, 255)), (900, (130, 150, 120, 0))]
-    
+
     def test_with_color_fuzz(self):
         img = self._make_test_image()
         img = make_transparent(img, (128, 154, 121), tolerance=5)
@@ -421,7 +427,7 @@ class TestMakeTransparent(object):
         assert img.size == (50, 50)
         colors = img.getcolors()
         eq_(colors, [(1600, (130, 140, 120, 255)), (900, (130, 150, 120, 0))])
-    
+
     def test_from_transparent(self):
         img = self._make_transp_test_image()
         draw = ImageDraw.Draw(img)
@@ -440,40 +446,40 @@ class TestTileSplitter(object):
         img = ImageSource(Image.new('RGB', (356, 266), (130, 140, 120)))
         img_opts = ImageOptions('RGB')
         splitter = TileSplitter(img, img_opts)
-        
+
         tile = splitter.get_tile((0, 0), (256, 256))
-        
+
         eq_(tile.size, (256, 256))
         colors = tile.as_image().getcolors()
         eq_(colors, [(256*256, (130, 140, 120))])
-        
+
         tile = splitter.get_tile((256, 256), (256, 256))
-        
+
         eq_(tile.size, (256, 256))
         colors = tile.as_image().getcolors()
         eq_(sorted(colors), [(10*100, (130, 140, 120)), (256*256-10*100, (255, 255, 255))])
-        
+
     def test_background_larger_crop_with_transparent(self):
         img = ImageSource(Image.new('RGBA', (356, 266), (130, 140, 120, 255)))
         img_opts = ImageOptions('RGBA', transparent=True)
         splitter = TileSplitter(img, img_opts)
-        
+
         tile = splitter.get_tile((0, 0), (256, 256))
-        
+
         eq_(tile.size, (256, 256))
         colors = tile.as_image().getcolors()
         eq_(colors, [(256*256, (130, 140, 120, 255))])
-        
+
         tile = splitter.get_tile((256, 256), (256, 256))
-        
+
         eq_(tile.size, (256, 256))
         colors = tile.as_image().getcolors()
         eq_(sorted(colors), [(10*100, (130, 140, 120, 255)), (256*256-10*100, (255, 255, 255, 0))])
-   
+
 class TestHasTransparency(object):
     def test_rgb(self):
         if hasattr(Image, 'FASTOCTREE'):
-            img = Image.new('RGB', (10, 10))             
+            img = Image.new('RGB', (10, 10))
             assert not img_has_transparency(img)
 
             img = quantize(img, alpha=False)
@@ -482,7 +488,7 @@ class TestHasTransparency(object):
     def test_rbga(self):
         if hasattr(Image, 'FASTOCTREE'):
             img = Image.new('RGBA', (10, 10), (100, 200, 50, 255))
-            img.paste((255, 50, 50, 0), (3, 3, 7, 7))  
+            img.paste((255, 50, 50, 0), (3, 3, 7, 7))
             assert img_has_transparency(img)
 
             img = quantize(img, alpha=True)
