@@ -46,7 +46,7 @@ def static_filename(name):
 class DemoServer(Server):
     names = ('demo',)
     def __init__(self, layers, md, request_parser=None, tile_layers=None,
-                 srs=None, image_formats=None, services=None):
+                 srs=None, image_formats=None, services=None, restful_template=None):
         Server.__init__(self)
         self.layers = layers
         self.tile_layers = tile_layers or {}
@@ -59,6 +59,7 @@ class DemoServer(Server):
         self.image_formats = filter_image_format
         self.srs = srs
         self.services = services or []
+        self.restful_template = restful_template
 
     def handle(self, req):
         if req.path.startswith('/demo/static/'):
@@ -203,6 +204,10 @@ class DemoServer(Server):
         template = get_template(template, default_inherit="demo/static.html")
         wmts_layer = self.tile_layers['_'.join([req.args['wmts_layer'], req.args['srs'].replace(':','')])]
 
+        restful_url = self.restful_template.replace('{Layer}', wmts_layer.name, 1)
+        if '{Format}' in restful_url:
+            restful_url = restful_url.replace('{Format}', wmts_layer.format)
+
         if wmts_layer.grid.srs.is_latlong:
             units = 'degree'
         else:
@@ -213,7 +218,8 @@ class DemoServer(Server):
                                    srs=req.args['srs'],
                                    resolutions=wmts_layer.grid.resolutions,
                                    units=units,
-                                   all_tile_layers=self.tile_layers)
+                                   all_tile_layers=self.tile_layers,
+                                   restful_url=restful_url)
 
     def _render_capabilities_template(self, template, xmlfile, service, url):
         template = get_template(template, default_inherit="demo/static.html")

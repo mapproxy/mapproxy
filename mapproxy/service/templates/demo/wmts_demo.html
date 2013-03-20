@@ -29,8 +29,7 @@ function init(){
 
     var layer = new OpenLayers.Layer.WMTS({
      name: "WMTS {{layer.name}}",
-     url: '../wmts/{{layer.name}}',
-     getURL: tileUrl,
+     url: '../wmts{{restful_url}}',
      layer: '{{layer.name}}',
      matrixSet: '{{matrix_set}}',
      format: '{{format}}',
@@ -42,10 +41,6 @@ function init(){
     map.addLayer(layer)
     map.zoomToExtent(new OpenLayers.Bounds({{approx_bbox(layer, srs)}}));
 }
-function tileUrl(bounds) {
-     var tileInfo = this.getTileInfo(bounds.getCenterLonLat());
-     return this.url + '/' + this.matrixSet + '/' + this.matrix.identifier + '/' + tileInfo.col + '/' + tileInfo.row + '.{{layer.format}}';
- }
 </script>
 {{enddef}}
             <h2>Openlayers Client - Layer {{layer.name}}</h2>
