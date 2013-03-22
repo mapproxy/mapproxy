@@ -805,13 +805,23 @@ class MapnikSourceConfiguration(SourceConfiguration):
         mapfile = self.context.globals.abspath(self.conf['mapfile'])
 
         if self.conf.get('use_mapnik2', False):
-            from mapproxy.source.mapnik import Mapnik2Source as MapnikSource, mapnik2 as mapnik_api
-        else:
-            from mapproxy.source.mapnik import MapnikSource, mapnik as mapnik_api
+            warnings.warn('use_mapnik2 option is no longer needed for Mapnik 2 support',
+                DeprecationWarning)
+
+        from mapproxy.source.mapnik import MapnikSource, mapnik as mapnik_api
         if mapnik_api is None:
             raise ConfigurationError('Could not import Mapnik, please verify it is installed!')
+
+        if self.context.renderd:
+            # only renderd guarantees that we have a single proc/thread
+            # that accesses the same mapnik map object
+            reuse_map_objects = True
+        else:
+            reuse_map_objects = False
+
         return MapnikSource(mapfile, layers=layers, image_opts=image_opts,
-            coverage=coverage, res_range=res_range, lock=lock)
+            coverage=coverage, res_range=res_range, lock=lock,
+            reuse_map_objects=reuse_map_objects)
 
 class TileSourceConfiguration(SourceConfiguration):
     supports_meta_tiles = False
