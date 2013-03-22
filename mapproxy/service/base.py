@@ -34,3 +34,12 @@ class Server(object):
     def parse_request(self, req):
         return self.request_parser(req)
 
+    @staticmethod
+    def postprocess_image(img_source, env):
+        """ Callback that allows the ImageSource associated with a response to
+            be modified before it is returned. The callback is passed the
+            ImageSource instance and must return a valid ImageSource """
+        if 'mapproxy.postprocess' in env:
+            img_source = env['mapproxy.postprocess'](img_source)
+        return img_source
+

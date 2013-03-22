@@ -297,7 +297,12 @@ class TileLayer(object):
 
                 tile.source = mask_image_source_from_coverage(
                     tile.source, tile_bbox, self.grid.srs, coverage, image_opts)
+
                 return TileResponse(tile, format=format, image_opts=image_opts)
+
+            # Provide the wrapping WSGI app or filter the opportunity to post process the
+            # image before it's wrapped up in a response
+            tile.source = Server.postprocess_image(tile.source, tile_request.http.environ)
 
             format = None if self._mixed_format else tile_request.format
             return TileResponse(tile, format=format, image_opts=self.tile_manager.image_opts)
