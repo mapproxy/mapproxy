@@ -50,8 +50,7 @@ class RenderdTileCreator(TileCreator):
     def _create_single_tile(self, tile):
         with self.tile_locker(tile):
             if not self.is_cached(tile):
-                self.renderd_client.send_tile_request(
-                    self.tile_mgr.identifier, tile_coords=[tile.coord])
+                self._create_renderd_tile(tile.coord)
             self.cache.load_tile(tile)
         return [tile]
 
@@ -59,8 +58,7 @@ class RenderdTileCreator(TileCreator):
         main_tile = Tile(meta_tile.main_tile_coord)
         with self.tile_locker(main_tile):
             if not all(self.is_cached(t) for t in meta_tile.tiles if t is not None):
-                self.renderd_client.send_tile_request(
-                    self.tile_mgr.identifier, tile_coords=[main_tile.coord])
+                self._create_renderd_tile(main_tile.coord)
 
         tiles = [Tile(coord) for coord in meta_tile.tiles]
         self.cache.load_tiles(tiles)
@@ -68,7 +66,7 @@ class RenderdTileCreator(TileCreator):
 
     def _create_renderd_tile(self, tile_coord):
         start_time = time.time()
-        result = self.renderd_client.send_and_receive(self.tile_mgr, [tile_coord])
+        result = self.renderd_client.send_tile_request(self.tile_mgr.identifier, [tile_coord])
         duration = time.time()-start_time
 
         address = '%s:%s:%r' % (self.renderd_address,
