@@ -287,6 +287,10 @@ class TileLayer(object):
             if tile.source is None:
                 return self.empty_response()
 
+            # Provide the wrapping WSGI app or filter the opportunity to post process the
+            # image before it's wrapped up in a response
+            tile.source = Server.postprocess_image(tile.source, tile_request.http.environ)
+
             if coverage_intersects:
                 if self.empty_response_as_png:
                     format = 'png'
@@ -299,10 +303,6 @@ class TileLayer(object):
                     tile.source, tile_bbox, self.grid.srs, coverage, image_opts)
 
                 return TileResponse(tile, format=format, image_opts=image_opts)
-
-            # Provide the wrapping WSGI app or filter the opportunity to post process the
-            # image before it's wrapped up in a response
-            tile.source = Server.postprocess_image(tile.source, tile_request.http.environ)
 
             format = None if self._mixed_format else tile_request.format
             return TileResponse(tile, format=format, image_opts=self.tile_manager.image_opts)
