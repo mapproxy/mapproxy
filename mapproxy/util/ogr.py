@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,15 +18,24 @@ import ctypes
 from ctypes import c_void_p, c_char_p, c_int
 
 def init_libgdal():
-    libgdal = load_library(['libgdal', 'libgdal1'])
-    
+    libgdal = load_library(['libgdal', 'libgdal1', 'gdal19', 'gdal18', 'gdal17'])
+
     if not libgdal: return
-    
+
     libgdal.OGROpen.argtypes = [c_char_p, c_int, c_void_p]
     libgdal.OGROpen.restype = c_void_p
 
-    libgdal.CPLGetLastErrorMsg.argtypes	= []
-    libgdal.CPLGetLastErrorMsg.restype = c_char_p
+    # CPLGetLastErrorMsg is not part of the official and gets
+    # name mangled on Windows builds. try to support _Foo@0
+    # mangling, otherwise print no detailed errors
+    if not hasattr(libgdal, 'CPLGetLastErrorMsg') and hasattr(libgdal, '_CPLGetLastErrorMsg@0'):
+        libgdal.CPLGetLastErrorMsg = getattr(libgdal, '_CPLGetLastErrorMsg@0')
+
+    if hasattr(libgdal, 'CPLGetLastErrorMsg'):
+        libgdal.CPLGetLastErrorMsg.argtypes	= []
+        libgdal.CPLGetLastErrorMsg.restype = c_char_p
+    else:
+        libgdal.CPLGetLastErrorMsg = None
 
     libgdal.OGR_DS_GetLayer.argtypes = [c_void_p, c_int]
     libgdal.OGR_DS_GetLayer.restype = c_void_p
@@ -58,7 +67,7 @@ def init_libgdal():
     libgdal.VSIFree.argtypes = [c_void_p]
 
     libgdal.OGRRegisterAll()
-    
+
     return libgdal
 
 libgdal = init_libgdal()
@@ -71,19 +80,21 @@ class OGRShapeReader(object):
         self.datasource = datasource
         self.opened = False
         self._ds = None
-        
+
     def open(self):
         if self.opened: return
         self._ds = libgdal.OGROpen(self.datasource, False, None)
         if self._ds is None:
-            msg = libgdal.CPLGetLastErrorMsg()
+            msg = None
+            if libgdal.CPLGetLastErrorMsg:
+                msg = libgdal.CPLGetLastErrorMsg()
             if not msg:
                 msg = 'failed to open %s' % self.datasource
             raise OGRShapeReaderError(msg)
 
     def wkts(self, where=None):
         if not self.opened: self.open()
-        
+
         if where:
             if not where.lower().startswith('select'):
                 layer = libgdal.OGR_DS_GetLayer(self._ds, 0)
@@ -94,9 +105,11 @@ class OGRShapeReader(object):
         else:
             layer = libgdal.OGR_DS_GetLayer(self._ds, 0)
         if layer is None:
-            msg = libgdal.CPLGetLastErrorMsg()
+            msg = None
+            if libgdal.CPLGetLastErrorMsg:
+                msg = libgdal.CPLGetLastErrorMsg()
             raise OGRShapeReaderError(msg)
-        
+
         libgdal.OGR_L_ResetReading(layer)
         while True:
             feature = libgdal.OGR_L_GetNextFeature(layer)
@@ -108,18 +121,18 @@ class OGRShapeReader(object):
             yield res.value
             libgdal.VSIFree(res)
             libgdal.OGR_F_Destroy(feature)
-        
+
         if where:
             libgdal.OGR_DS_ReleaseResultSet(self._ds, layer)
-    
+
     def close(self):
         if self.opened:
             libgdal.OGR_DS_Destroy(self._ds)
             self.opened = False
-    
+
     def __del__(self):
         self.close()
-        
+
 if __name__ == '__main__':
     import sys
     reader = OGRShapeReader(sys.argv[1])
