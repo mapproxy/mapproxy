@@ -5,7 +5,7 @@ This tutorial guides you to the MapProxy installation process on Unix systems. F
 
 This tutorial was created and tested with Debian 5.0/6.0 and Ubuntu 10.04 LTS, if you're installing MapProxy on a different system you might need to change some package names.
 
-MapProxy is `registered at the Python Package Index <http://pypi.python.org/pypi/MapProxy>`_ (PyPI). If you have installed Python setuptools (``python-setuptools`` on Debian) you can install MapProxy with ``sudo easy_install MapProxy``. 
+MapProxy is `registered at the Python Package Index <http://pypi.python.org/pypi/MapProxy>`_ (PyPI). If you have installed Python setuptools (``python-setuptools`` on Debian) you can install MapProxy with ``sudo easy_install MapProxy``.
 
 This is really easy `but` we recommend to install MapProxy into a `virtual Python environment`_. A ``virtualenv`` is a self-contained Python installation where you can install arbitrary Python packages without affecting the system installation. You also don't need root permissions for the installation.
 
@@ -19,15 +19,18 @@ Create a new virtual environment
 
 ``virtualenv`` is available as ``python-virtualenv`` on most Linux systems. You can also download a self-contained version::
 
-    wget https://github.com/pypa/virtualenv/raw/1.6.1/virtualenv.py
-    
+    wget https://github.com/pypa/virtualenv/raw/master/virtualenv.py
+
 To create a new environment with the name ``mapproxy`` call::
 
-    virtualenv mapproxy
+    virtualenv --system-site-packages mapproxy
     # or
-    python virtualenv.py mapproxy
+    python virtualenv.py --system-site-packages mapproxy
 
 You should now have a Python installation under ``mapproxy/bin/python``.
+
+.. note:: Newer versions of virtualenv will use your Python system packages (like ``python-imaging`` or ``python-yaml``) only when the virtualenv was created with the ``--system-site-packages`` option. If your (older) version of virtualenv does not have this option, then it will behave that way by default.
+
 You need to either prefix all commands with ``mapproxy/bin``, set your ``PATH`` variable to include the bin directory or `activate` the virtualenv with::
 
     source mapproxy/bin/activate
@@ -111,9 +114,9 @@ To install you need to call::
 You specify the release version of MapProxy. E.g.::
 
   pip install MapProxy==1.1.0
-  
+
 or to get the latest 1.1.0 version::
- 
+
   pip install "MapProxy>=1.1.0,<=1.1.99"
 
 To check if the MapProxy was successfully installed, you can call the `mapproxy-util` command.

@@ -259,6 +259,8 @@ class GridConfiguration(ConfigurationBase):
 
         if 'base' in self.conf:
             base_grid_name = self.conf['base']
+            if not base_grid_name in self.context.grids:
+                raise ConfigurationError('unknown base %s for grid %s' % (base_grid_name, self.conf['name']))
             conf = self.context.grids[base_grid_name].conf.copy()
             conf.update(self.conf)
             conf.pop('base')
@@ -1258,6 +1260,7 @@ class LayerConfiguration(ConfigurationBase):
                 md['grid_name'] = grid.name
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
                 md['format'] = self.context.caches[cache_name].image_opts().format
+                md['cache_name'] = cache_name
                 md['extent'] = extent
                 tile_layers.append(TileLayer(self.conf['name'], self.conf['title'],
                                              md, cache_source, dimensions=dimensions))
@@ -1429,8 +1432,17 @@ class ServiceConfiguration(ConfigurationBase):
         tile_layers = self.tile_layers(conf)
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
+        
+        # WMTS restful template
+        wmts_conf = self.context.services.conf.get('wmts', {})
+        from mapproxy.service.wmts import WMTSRestServer
+        if wmts_conf:
+            restful_template = wmts_conf.get('restful_template', WMTSRestServer.default_template)
+        else:
+            restful_template = WMTSRestServer.default_template
+
         return DemoServer(layers, md, tile_layers=tile_layers,
-            image_formats=image_formats, srs=srs, services=services)
+            image_formats=image_formats, srs=srs, services=services, restful_template=restful_template)
 
 
 def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=False):

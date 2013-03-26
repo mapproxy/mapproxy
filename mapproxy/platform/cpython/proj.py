@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,10 +23,11 @@ MapProxy, i.e. there is no numpy support, etc.
 It uses the C libproj library. If the library could not be found/loaded it will fallback
 to pyroj. You can force the usage of either backend by setting the environment variables
 MAPPROXY_USE_LIBPROJ or MAPPROXY_USE_PYPROJ to any value.
- 
+
 """
 
 import os
+import sys
 from mapproxy.util.lib import load_library
 
 import ctypes
@@ -52,7 +53,7 @@ __all__ = ['Proj', 'transform', 'set_datapath']
 
 def init_libproj():
     libproj = load_library('libproj')
-    
+
     if libproj is None: return
 
     libproj.pj_init_plus.argtypes = [c_char_p]
@@ -79,37 +80,43 @@ def init_libproj():
     libproj.pj_transform.argtypes = [c_void_p, c_void_p, c_long, c_int,
                                      c_double_p, c_double_p, c_double_p]
     libproj.pj_transform.restype = c_int
-    
+
     if hasattr(libproj, 'pj_set_searchpath'):
         libproj.pj_set_searchpath.argtypes = [c_int, POINTER(c_char_p)]
         libproj.pj_set_finder.argtypes = [FINDERCMD]
-    
+
     return libproj
 
 class SearchPath(object):
     def __init__(self):
         self.path = None
         self.finder_results = {}
-    
+
     def clear(self):
         self.path = None
         self.finder_results = {}
-    
+
     def set_searchpath(self, path):
         self.clear()
         self.path = path
-    
+
     def finder(self, name):
         if self.path is None:
             return None
-        
+
         if name in self.finder_results:
             result = self.finder_results[name]
         else:
             sysname = os.path.join(self.path, name)
             result = self.finder_results[name] = create_string_buffer(sysname)
-        
+
         return addressof(result)
+
+# search_path and finder_func must be defined in module
+# context to avoid garbage collection
+search_path = SearchPath()
+finder_func = FINDERCMD(search_path.finder)
+_finder_callback_set = False
 
 class ProjError(RuntimeError):
     pass
@@ -117,45 +124,19 @@ class ProjError(RuntimeError):
 class ProjInitError(ProjError):
     pass
 
+def try_pyproj_import():
+    try:
+        from pyproj import Proj, transform, set_datapath
+    except ImportError:
+        return False
+    log_system.info('using pyproj for coordinate transformation')
+    return Proj, transform, set_datapath
 
-_use_libproj = _use_pyproj = False
-if 'MAPPROXY_USE_LIBPROJ' in os.environ:
-    _use_libproj = True
+def try_libproj_import():
+    if libproj is None:
+        return False
 
-if 'MAPPROXY_USE_PYPROJ' in os.environ:
-    _use_pyproj = True
-
-if not _use_libproj and not _use_pyproj:
-    _use_libproj = True # Default
-    _use_pyproj = True # Fallback
-
-libproj = None
-
-if _use_libproj:
-    libproj = init_libproj()
-
-if libproj is None:
-    if _use_pyproj:
-        try:
-            from pyproj import Proj, transform, set_datapath
-            Proj, transform, set_datapath #prevent pyflakes arnings
-            log_system.info('using pyproj for coordinate transformation')
-        except ImportError:
-            if _use_libproj:
-                raise ImportError('could not found either libproj or pyproj')
-            else:
-                raise ImportError('could not found pyproj')
-            
-    else:
-        raise ImportError('could not found libproj')
-else:
     log_system.info('using libproj for coordinate transformation')
-
-    # search_path and finder_func must be defined in module
-    # context to avoid garbage collection
-    search_path = SearchPath()
-    finder_func = FINDERCMD(search_path.finder)
-    _finder_callback_set = False
 
     RAD_TO_DEG = 57.29577951308232
     DEG_TO_RAD = .0174532925199432958
@@ -170,10 +151,10 @@ else:
                 errno = libproj.pj_get_errno_ref().contents
                 raise ProjInitError('error initializing Proj(proj_def=%r, init=%r): %s' %
                     (proj_def, init, libproj.pj_strerrno(errno)))
-            
+
             self.srs = self._srs()
             self._latlong = bool(libproj.pj_is_latlong(self._proj))
-    
+
         def is_latlong(self):
             """
             >>> Proj(init='epsg:4326').is_latlong()
@@ -188,32 +169,31 @@ else:
             False
             """
             return self._latlong
-        
+
         def _srs(self):
             res = libproj.pj_get_def(self._proj, 0)
             srs_def = ctypes.c_char_p(res).value
             libproj.pj_dalloc(res)
             return srs_def
-    
+
         def __del__(self):
             if self._proj and libproj:
                 libproj.pj_free(self._proj)
                 self._proj = None
 
-
-    def transform(from_srs, to_srs, x, y, z=None):        
+    def transform(from_srs, to_srs, x, y, z=None):
         if from_srs == to_srs:
             return (x, y) if z is None else (x, y, z)
-    
+
         if isinstance(x, (float, int)):
             x = [x]
             y = [y]
         assert len(x) == len(y)
-    
+
         if from_srs.is_latlong():
             x = map(lambda x: x*DEG_TO_RAD, x)
             y = map(lambda y: y*DEG_TO_RAD, y)
-    
+
         x = (c_double * len(x))(*x)
         y = (c_double * len(y))(*y)
         if z is not None:
@@ -222,39 +202,67 @@ else:
             # use explicit null pointer instead of None
             # http://bugs.python.org/issue4606
             z = c_double_p()
-        
+
         res = libproj.pj_transform(from_srs._proj, to_srs._proj,
                                    len(x), 0, x, y, z)
-    
+
         if res:
             raise ProjError(libproj.pj_strerrno(res))
-    
+
         if to_srs.is_latlong():
             x = map(lambda x: x*RAD_TO_DEG, x)
             y = map(lambda y: y*RAD_TO_DEG, y)
         else:
             x = x[:]
             y = y[:]
-    
+
         if len(x) == 1:
             x = x[0]
             y = y[0]
             z = z[0] if z else None
-    
+
         return (x, y) if z is None else (x, y, z)
 
-    def set_datapath(path):        
+    def set_datapath(path):
         global _finder_callback_set
         if not _finder_callback_set:
             libproj.pj_set_finder(finder_func)
             _finder_callback_set = True
         search_path.set_searchpath(path)
 
+    return Proj, transform, set_datapath
+
+
+proj_imports = []
+
+if 'MAPPROXY_USE_LIBPROJ' in os.environ:
+    proj_imports = [try_libproj_import]
+
+if 'MAPPROXY_USE_PYPROJ' in os.environ:
+    proj_imports = [try_pyproj_import]
+
+if not proj_imports:
+    if sys.platform == 'win32':
+        # prefer pyproj on windows
+        proj_imports = [try_pyproj_import, try_libproj_import]
+    else:
+        proj_imports = [try_libproj_import, try_pyproj_import]
+
+libproj = init_libproj()
+
+for try_import in proj_imports:
+    res = try_import()
+    if res:
+        Proj, transform, set_datapath = res
+        break
+else:
+    raise ImportError('could not found libproj or pyproj')
+
 if __name__ == '__main__':
-    
+
     prj1 = Proj(init='epsg:4326')
     prj2 = Proj(init='epsg:31467')
-    
+
     coords = [(8.2, 8.22, 8.3), (53.1, 53.15, 53.2)]
     # coords = [(8, 9, 10), (50, 50, 50)]
     print coords

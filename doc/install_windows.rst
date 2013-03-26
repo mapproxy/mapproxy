@@ -21,20 +21,53 @@ To create a new virtual environment for our proxy installation and to activate i
 .. note::
   The last step is required every time you start working with your MapProxy installation. Alternatively you can always explicitly call ``\mapproxy_venv\Scripts\<command>``.
 
-.. note:: Apache mod_wsgi does not work with virtualenv on Windows. If you want to use mod_wsgi for deployment, then you should skip the creation the virtualenv. You need to `install the distribute package <http://pypi.python.org/pypi/distribute#distribute-setup-py>`_ to get the ``easy_install`` command.
+.. note:: Apache mod_wsgi does not work well with virtualenv on Windows. If you want to use mod_wsgi for deployment, then you should skip the creation the virtualenv. You need to `install the distribute package <http://pypi.python.org/pypi/distribute#distribute-setup-py>`_ to get the ``easy_install`` command.
 
 After you activated the new environment, you have access to ``python`` and ``easy_install``.
 To install MapProxy with most dependencies call::
 
   easy_install MapProxy
 
-This might take a while.
+This might take a minute.
+
+
+Dependencies
+------------
+
+Read :ref:`dependency_details` for more information about all dependencies.
+
+
+PIL and YAML
+~~~~~~~~~~~~
+
+PIL and PyYAML are installed automatically by ``easy_install``.
+
+PyProj
+~~~~~~
 
 Since libproj4 is generally not available on a Windows system, you will also need to install the Python package ``pyproj``.
 
 ::
 
   easy_install pyproj
+
+
+Shapely and GEOS *(optional)*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Shapely can be installed with ``easy_install Shapely``. This will already include the required ``geos.dll``.
+
+
+GDAL *(optional)*
+~~~~~~~~~~~~~~~~~
+
+MapProxy requires GDAL/OGR for coverage support. You can `download and install inofficial
+Windows binaries of GDAL <http://www.gisinternals.com/sdk/>`_ (e.g. `gdal-19-xxxx-code.msi`). You need to add the installation path to the Windows ``PATH`` environment variable.
+
+You can set the variable temporary on the command line (spaces in the filename need no quotes or escaping)::
+
+  set PATH=%PATH%;C:\Program Files\GDAL
+
+Or you can add it to your `systems environment variables <http://www.computerhope.com/issues/ch000549.htm>`_.
 
 
 Platform dependent packages
