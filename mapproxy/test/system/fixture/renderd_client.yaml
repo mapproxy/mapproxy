@@ -1,0 +1,55 @@
+globals:
+  cache:
+    base_dir: cache_data/
+    meta_size: [1, 1]
+    meta_buffer: 0
+  renderd:
+    address: http://localhost:42423
+
+services:
+  tms:
+  kml:
+  wmts:
+  wms:
+    md:
+      title: MapProxy test fixture ☃
+
+layers:
+  - name: direct
+    title: Direct Layer
+    sources: [direct]
+  - name: wms_cache
+    title: WMS Cache Layer with direct access from level 8
+    sources: [wms_cache]
+  - name: tms_cache
+    title: TMS Cache Layer
+    sources: [tms_cache]
+
+caches:
+  wms_cache:
+    format: image/jpeg
+    use_direct_from_level: 8
+    sources: [wms_cache]
+    meta_size: [3, 3]
+  tms_cache:
+    sources: [tms_cache]
+
+sources:
+  direct:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: bar
+  wms_cache:
+    type: wms
+    supported_srs: ['EPSG:900913', 'EPSG:4326']
+    wms_opts:
+      featureinfo: True
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar
+  tms_cache:
+    type: tile
+    url: http://localhost:42423/tiles/%(tc_path)s.png
+
+

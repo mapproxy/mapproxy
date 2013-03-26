@@ -68,6 +68,26 @@ class ThreadedStopableHTTPServer(threading.Thread):
         # force socket close so next test can bind to same address
         self.httpd.socket.close()
 
+class ThreadedSingleRequestHTTPServer(threading.Thread):
+    def __init__(self, address, request_handler):
+        threading.Thread.__init__(self, **{'group': None})
+        self.daemon = True
+        self.sucess = False
+        self.shutdown = False
+        self.httpd = HTTPServer(address, request_handler)
+        self.httpd.timeout = 1.0
+        self.out = self.httpd.out = StringIO()
+
+    def run(self):
+        self.httpd.handle_request()
+        if self.out.tell() > 0: # errors written
+            self.out.seek(0)
+        else:
+            self.sucess = True
+        # force socket close so next test can bind to same address
+        self.httpd.socket.close()
+
+
 def mock_http_handler(requests_responses, unordered=False, query_comparator=None):
     if query_comparator is None:
         query_comparator = query_eq
@@ -194,7 +214,6 @@ class MockServ(object):
         assert self._thread.sucess, ('requests to mock httpd did not '
             'match expectations:\n' + self._thread.out.read())
 
-
 def wms_query_eq(expected, actual):
     """
     >>> wms_query_eq('bAR=baz&foo=bizz&bbOX=0,0,100000,100000', 'foO=bizz&BBOx=-.0001,0.01,99999.99,100000.09&bar=baz')
@@ -311,6 +330,18 @@ def mock_httpd(address, requests_responses, unordered=False, bbox_aware_query_co
         t.shutdown = True
         t.join(1)
     assert t.sucess, 'requests to mock httpd did not match expectations:\n' + t.out.read()
+
+@contextmanager
+def mock_single_req_httpd(address, request_handler):
+    t = ThreadedSingleRequestHTTPServer(address, request_handler)
+    t.start()
+    try:
+        yield
+    finally:
+        t.shutdown = True
+        t.join(1)
+    assert t.sucess, 'requests to mock httpd did not match expectations:\n' + t.out.read()
+
 
 def make_wsgi_env(query_string, extra_environ={}):
         env = {'QUERY_STRING': query_string,

@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010, 2011 Omniscale <http://omniscale.de>
+# Copyright (C) 2012, 2013 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,6 +74,6 @@ class RenderdTileCreator(TileCreator):
 
         if result['status'] == 'error':
             log_request(address, 500, None, duration=duration, method='RENDERD')
-            raise SourceError(result.get('error_message', 'unknown error from renderd'))
+            raise SourceError("Error from renderd: %s" % result.get('error_message', 'unknown error from renderd'))
 
         log_request(address, 200, None, duration=duration, method='RENDERD')
