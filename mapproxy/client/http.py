@@ -22,7 +22,6 @@ import httplib
 import urllib2
 from urllib2 import URLError, HTTPError
 from urlparse import urlsplit
-from datetime import datetime
 import warnings
 
 from mapproxy.version import version
@@ -81,6 +80,8 @@ class _URLOpenerCache(object):
                 handlers.append(https_handler)
             passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
             authhandler = urllib2.HTTPBasicAuthHandler(passman)
+            handlers.append(authhandler)
+            authhandler = urllib2.HTTPDigestAuthHandler(passman)
             handlers.append(authhandler)
 
             opener = urllib2.build_opener(*handlers)
@@ -178,6 +179,8 @@ def auth_data_from_url(url):
     ('http://localhost/bar', ('bar', 'baz'))
     >>> auth_data_from_url('http://bar:b:az@@localhost/bar')
     ('http://localhost/bar', ('bar', 'b:az@'))
+    >>> auth_data_from_url('http://bar foo; foo@bar:b:az@@localhost/bar')
+    ('http://localhost/bar', ('bar foo; foo@bar', 'b:az@'))
     """
     username = password = None
     if '@' in url:

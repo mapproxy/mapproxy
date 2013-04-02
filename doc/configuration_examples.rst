@@ -668,12 +668,12 @@ Tiles are then available at ``/wmts/temperature/GLOBAL_MERCATOR/1000/2012-11-12T
 You can use ``default`` for missing dimensions, e.g. ``/wmts/map/GLOBAL_MERCATOR/default/default/6/33/22.png``.
 
 
-WMS layers with HTTP Basic Authentication
-=========================================
+WMS layers with HTTP Authentication
+===================================
 
 You have a WMS source that requires authentication. MapProxy has support for HTTP Basic
-Authentication. You just need to add the username and password to the URL. Since the
-password is sent in plaintext, you should use this feature in combination with HTTPS.
+Authentication and HTTP Digest Authentication. You just need to add the username and password to the URL. Since the Basic and Digest authentication
+are not really secure, you should use this feature in combination with HTTPS.
 You need to configure the SSL certificates to allow MapProxy to verify the HTTPS connection. See :ref:`HTTPS configuration for more information <http_ssl>`.
 ::
 
@@ -683,6 +683,7 @@ You need to configure the SSL certificates to allow MapProxy to verify the HTTPS
       url: https://username:mypassword@example.org/service?
       layers: securelayer
 
+MapProxy removes the username and password before the URL gets logged or inserted into service exceptions.
 
 You can disable the certificate verification if you you don't need it.
 ::
