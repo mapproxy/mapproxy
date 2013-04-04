@@ -27,8 +27,8 @@ def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
             if hasattr(task.tile_manager.cache, 'level_location'):
                 simple_cleanup(task, dry_run=dry_run, progress_logger=progress_logger)
                 continue
-            elif hasattr(task.tile_manager.cache, 'remove_tiles_before'):
-                cache_cleanup(task, dry_run=dry_run)
+            elif hasattr(task.tile_manager.cache, 'remove_level_tiles_before'):
+                cache_cleanup(task, dry_run=dry_run, progress_logger=progress_logger)
                 continue
 
         tilewalker_cleanup(task, dry_run=dry_run, concurrency=concurrency,
@@ -51,11 +51,12 @@ def simple_cleanup(task, dry_run, progress_logger=None):
         cleanup_directory(level_dir, task.remove_timestamp,
             file_handler=file_handler, remove_empty_dirs=True)
 
-def cache_cleanup(task, dry_run):
+def cache_cleanup(task, dry_run, progress_logger=None):
     for level in task.levels:
-        print 'removing old tiles for level %s' % level
+        if progress_logger:
+            progress_logger.log_message('removing old tiles for level %s' % level)
         if not dry_run:
-            task.tile_manager.cache.remove_tiles_before(task.remove_timestamp)
+            task.tile_manager.cache.remove_level_tiles_before(level, task.remove_timestamp)
             task.tile_manager.cleanup()
 
 def normpath(path):

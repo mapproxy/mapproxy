@@ -15,6 +15,7 @@
 
 from __future__ import with_statement
 import os
+import time
 import sqlite3
 import threading
 from cStringIO import StringIO
@@ -26,11 +27,16 @@ from mapproxy.util.lock import FileLock
 import logging
 log = logging.getLogger(__name__)
 
+def sqlite_datetime_to_timestamp(datetime):
+    if datetime is None:
+        return None
+    d = time.strptime(datetime, "%Y-%m-%d %H:%M:%S")
+    return time.mktime(d)
+
 class MBTilesCache(TileCacheBase, FileBasedLocking):
     supports_timestamp = False
 
     def __init__(self, mbtile_file, lock_dir=None, with_timestamps=False):
-        self.lock_cache_id = mbtile_file
         if lock_dir:
             self.lock_dir = lock_dir
         else:
@@ -135,8 +141,12 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             content = buffer(buf.read())
             x, y, level = tile.coord
             cursor = self.db.cursor()
-            stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
-            cursor.execute(stmt, (level, x, y, buffer(content)))
+            if self.supports_timestamp:
+                stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data, last_modified) VALUES (?,?,?,?, datetime(?, 'unixepoch', 'localtime'))"
+                cursor.execute(stmt, (level, x, y, content, time.time()))
+            else:
+                stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
+                cursor.execute(stmt, (level, x, y, content))
             self.db.commit()
             return True
 
@@ -161,9 +171,7 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
         if content:
             tile.source = ImageSource(StringIO(content[0]))
             if self.supports_timestamp:
-                import time
-                d = time.strptime(content[1], "%Y-%m-%d %H:%M:%S")
-                tile.timestamp = time.mktime(d)
+                tile.timestamp = sqlite_datetime_to_timestamp(content[1])
             return True
         else:
             return False
@@ -182,7 +190,7 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             tile_dict[(x, y)] = tile
 
         if self.supports_timestamp:
-            stmt = "SELECT tile_column, tile_row, tile_data, datetime(last_modified, 'unixepoche') FROM tiles WHERE "
+            stmt = "SELECT tile_column, tile_row, tile_data, last_modified FROM tiles WHERE "
         else:
             stmt = "SELECT tile_column, tile_row, tile_data FROM tiles WHERE "
         stmt += ' OR '.join(['(tile_column = ? AND tile_row = ? AND zoom_level = ?)'] * (len(coords)//3))
@@ -198,7 +206,7 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             tile.size = len(data)
             tile.source = ImageSource(StringIO(data))
             if self.supports_timestamp:
-                tile.timestamp = row[3]
+                tile.timestamp = sqlite_datetime_to_timestamp(row[3])
         cursor.close()
         return loaded_tiles == len(tile_dict)
 
@@ -212,6 +220,27 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             return True
         return False
 
+    def remove_level_tiles_before(self, level, timestamp):
+        if timestamp == 0:
+            cursor = self.db.cursor()
+            cursor.execute(
+                "DELETE FROM tiles WHERE (zoom_level = ?)",
+                (level, ))
+            self.db.commit()
+            if cursor.rowcount:
+                return True
+            return False
+
+        if self.supports_timestamp:
+            cursor = self.db.cursor()
+            cursor.execute(
+                "DELETE FROM tiles WHERE (zoom_level = ? AND last_modified < datetime(?, 'unixepoch', 'localtime'))",
+                (level, timestamp))
+            self.db.commit()
+            if cursor.rowcount:
+                return True
+            return False
+
     def load_tile_metadata(self, tile):
         if not self.supports_timestamp:
             # MBTiles specification does not include timestamps.
@@ -224,10 +253,9 @@ class MBTilesLevelCache(TileCacheBase, FileBasedLocking):
     supports_timestamp = True
 
     def __init__(self, mbtiles_dir):
-        self.lock_cache_id = mbtiles_dir
         self.lock_dir = mbtiles_dir + '.locks'
         self.lock_timeout = 60
-        self.mbtiles_dir = mbtiles_dir
+        self.cache_dir = mbtiles_dir
         self._mbtiles = {}
         self._mbtiles_lock = threading.Lock()
 
@@ -237,7 +265,7 @@ class MBTilesLevelCache(TileCacheBase, FileBasedLocking):
 
         with self._mbtiles_lock:
             if level not in self._mbtiles:
-                mbtile_filename = os.path.join(self.mbtiles_dir, '%s.mbtile' % level)
+                mbtile_filename = os.path.join(self.cache_dir, '%s.mbtile' % level)
                 self._mbtiles[level] = MBTilesCache(
                     mbtile_filename,
                     lock_dir=self.lock_dir,
@@ -287,3 +315,13 @@ class MBTilesLevelCache(TileCacheBase, FileBasedLocking):
 
     def load_tile_metadata(self, tile):
         self.load_tile(tile)
+
+    def remove_level_tiles_before(self, level, timestamp):
+        level_cache = self._get_level(level)
+        if timestamp == 0:
+            level_cache.cleanup()
+            os.unlink(level_cache.mbtile_file)
+            return True
+        else:
+            return level_cache.remove_level_tiles_before(level, timestamp)
+
