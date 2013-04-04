@@ -124,7 +124,7 @@ def _force_rename_dir(src_dir, dst_dir):
         else:
             break # on success
 
-def timestamp_before(weeks=0, days=0, hours=0, minutes=0):
+def timestamp_before(weeks=0, days=0, hours=0, minutes=0, seconds=0):
     """
     >>> time.time() - timestamp_before(minutes=1) - 60 <= 1
     True
@@ -133,7 +133,7 @@ def timestamp_before(weeks=0, days=0, hours=0, minutes=0):
     >>> time.time() - timestamp_before(hours=2) - 7200 <= 1
     True
     """
-    delta = datetime.timedelta(weeks=weeks, days=days, hours=hours, minutes=minutes)
+    delta = datetime.timedelta(weeks=weeks, days=days, hours=hours, minutes=minutes, seconds=seconds)
     before = datetime.datetime.now() - delta
     return time.mktime(before.timetuple())
 

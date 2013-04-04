@@ -401,7 +401,7 @@ Contains a dictionary with layer/view mapping.::
 
     You can either define a fixed time or a time delta. The `time` is a ISO-like date
     string (no time-zones, no abbreviations). To define time delta use one or more
-    `minutes`, `hours`, `days`, `weeks` entries.
+    `seconds`, `minutes`, `hours`, `days` or `weeks` entries.
 
 Views
 ~~~~~

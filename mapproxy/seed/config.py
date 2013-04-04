@@ -280,7 +280,9 @@ class CleanupConfiguration(ConfigurationBase):
         ConfigurationBase.__init__(self, name, conf, seeding_conf)
         self.init_time = time.time()
 
-        if 'remove_before' in self.conf:
+        if self.conf.get('remove_all') == True:
+            self.remove_timestamp = 0
+        elif 'remove_before' in self.conf:
             self.remove_timestamp = before_timestamp_from_options(self.conf['remove_before'])
         else:
             # use now as remove_before date. this should not remove
@@ -354,7 +356,7 @@ def before_timestamp_from_options(conf):
             raise SeedConfigurationError(
                 "can't parse last modified time from file '%s'." % (datasource, ), ex)
     deltas = {}
-    for delta_type in ('weeks', 'days', 'hours', 'minutes'):
+    for delta_type in ('weeks', 'days', 'hours', 'minutes', 'seconds'):
         deltas[delta_type] = conf.get(delta_type, 0)
     return timestamp_before(**deltas)
 

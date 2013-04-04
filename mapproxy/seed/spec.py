@@ -66,6 +66,7 @@ seed_yaml_spec = {
             'grids': [str()],
             'coverages': [str()],
             'remove_before': time_spec,
+            'remove_all': bool(),
             'levels': one_off([int()], from_to_spec),
             'resolutions': one_off([int()], from_to_spec),
         }
