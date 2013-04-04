@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2011 Omniscale <http://omniscale.de>
+# Copyright (C) 2011-2013 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,11 +29,15 @@ log = logging.getLogger(__name__)
 class MBTilesCache(TileCacheBase, FileBasedLocking):
     supports_timestamp = False
 
-    def __init__(self, mbtile_file):
+    def __init__(self, mbtile_file, lock_dir=None, with_timestamps=False):
         self.lock_cache_id = mbtile_file
-        self.lock_dir = mbtile_file + '.locks'
+        if lock_dir:
+            self.lock_dir = lock_dir
+        else:
+            self.lock_dir = mbtile_file + '.locks'
         self.lock_timeout = 60
         self.mbtile_file = mbtile_file
+        self.supports_timestamp = with_timestamps
         self.ensure_mbtile()
         self._db_conn_cache = threading.local()
 
@@ -63,13 +67,23 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
     def _initialize_mbtile(self):
         log.info('initializing MBTile file %s', self.mbtile_file)
         db  = sqlite3.connect(self.mbtile_file)
-        db.execute("""
+        stmt = """
             CREATE TABLE tiles (
                 zoom_level integer,
                 tile_column integer,
                 tile_row integer,
-                tile_data blob);
-        """)
+                tile_data blob
+        """
+
+        if self.supports_timestamp:
+            stmt += """
+                , last_modified datetime DEFAULT (datetime('now','localtime'))
+            """
+        stmt += """
+            );
+        """
+        db.execute(stmt)
+
         db.execute("""
             CREATE TABLE metadata (name text, value text);
         """)
@@ -112,17 +126,7 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
         if tile.source:
             return True
 
-        cur = self.db.cursor()
-        cur.execute('''SELECT tile_data FROM tiles
-            WHERE tile_column = ? AND
-                  tile_row = ? AND
-                  zoom_level = ?''', tile.coord)
-        content = cur.fetchone()
-        if content:
-            tile.source = ImageSource(StringIO(content[0]))
-            return True
-        else:
-            return False
+        return self.load_tile(tile)
 
     def store_tile(self, tile):
         if tile.stored:
@@ -141,13 +145,25 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             return True
 
         cur = self.db.cursor()
-        cur.execute('''SELECT tile_data FROM tiles
-            WHERE tile_column = ? AND
-                  tile_row = ? AND
-                  zoom_level = ?''', tile.coord)
+        if self.supports_timestamp:
+            cur.execute('''SELECT tile_data, last_modified
+                FROM tiles
+                WHERE tile_column = ? AND
+                      tile_row = ? AND
+                      zoom_level = ?''', tile.coord)
+        else:
+            cur.execute('''SELECT tile_data FROM tiles
+                WHERE tile_column = ? AND
+                      tile_row = ? AND
+                      zoom_level = ?''', tile.coord)
+
         content = cur.fetchone()
         if content:
             tile.source = ImageSource(StringIO(content[0]))
+            if self.supports_timestamp:
+                import time
+                d = time.strptime(content[1], "%Y-%m-%d %H:%M:%S")
+                tile.timestamp = time.mktime(d)
             return True
         else:
             return False
@@ -165,7 +181,10 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             coords.append(level)
             tile_dict[(x, y)] = tile
 
-        stmt = "SELECT tile_column, tile_row, tile_data FROM tiles WHERE "
+        if self.supports_timestamp:
+            stmt = "SELECT tile_column, tile_row, tile_data, datetime(last_modified, 'unixepoche') FROM tiles WHERE "
+        else:
+            stmt = "SELECT tile_column, tile_row, tile_data FROM tiles WHERE "
         stmt += ' OR '.join(['(tile_column = ? AND tile_row = ? AND zoom_level = ?)'] * (len(coords)//3))
 
         cursor = self.db.cursor()
@@ -178,6 +197,8 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             data = row[2]
             tile.size = len(data)
             tile.source = ImageSource(StringIO(data))
+            if self.supports_timestamp:
+                tile.timestamp = row[3]
         cursor.close()
         return loaded_tiles == len(tile_dict)
 
@@ -192,8 +213,77 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
         return False
 
     def load_tile_metadata(self, tile):
-        """
-        MBTiles specification does not include timestamps.
-        This sets the timestamp of the tile to epoch (1970s)
-        """
-        tile.timestamp = -1
+        if not self.supports_timestamp:
+            # MBTiles specification does not include timestamps.
+            # This sets the timestamp of the tile to epoch (1970s)
+            tile.timestamp = -1
+        else:
+            self.load_tile(tile)
+
+class MBTilesLevelCache(TileCacheBase, FileBasedLocking):
+    supports_timestamp = True
+
+    def __init__(self, mbtiles_dir):
+        self.lock_cache_id = mbtiles_dir
+        self.lock_dir = mbtiles_dir + '.locks'
+        self.lock_timeout = 60
+        self.mbtiles_dir = mbtiles_dir
+        self._mbtiles = {}
+        self._mbtiles_lock = threading.Lock()
+
+    def _get_level(self, level):
+        if level in self._mbtiles:
+            return self._mbtiles[level]
+
+        with self._mbtiles_lock:
+            if level not in self._mbtiles:
+                mbtile_filename = os.path.join(self.mbtiles_dir, '%s.mbtile' % level)
+                self._mbtiles[level] = MBTilesCache(
+                    mbtile_filename,
+                    lock_dir=self.lock_dir,
+                    with_timestamps=True,
+                )
+
+        return self._mbtiles[level]
+
+    def is_cached(self, tile):
+        if tile.coord is None:
+            return True
+        if tile.source:
+            return True
+
+        return self._get_level(tile.coord[2]).is_cached(tile)
+
+    def store_tile(self, tile):
+        if tile.stored:
+            return True
+
+        return self._get_level(tile.coord[2]).store_tile(tile)
+
+    def load_tile(self, tile, with_metadata=False):
+        if tile.source or tile.coord is None:
+            return True
+
+        return self._get_level(tile.coord[2]).load_tile(tile, with_metadata=with_metadata)
+
+    def load_tiles(self, tiles, with_metadata=False):
+        level = None
+        for tile in tiles:
+            if tile.source or tile.coord is None:
+                continue
+            level = tile.coord[2]
+            break
+
+        if not level:
+            return True
+
+        return self._get_level(level).load_tiles(tiles, with_metadata=with_metadata)
+
+    def remove_tile(self, tile):
+        if tile.coord is None:
+            return True
+
+        return self._get_level(tile.coord[2]).remove_tile(tile)
+
+    def load_tile_metadata(self, tile):
+        self.load_tile(tile)
