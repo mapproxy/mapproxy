@@ -74,11 +74,13 @@ PIL
 ~~~
 The Python Image Library (PIL) is used for the image processing and it is included in most distributions as ``python-imaging``.
 
-The development version of PIL `contains some enhancements for PNGs <http://mapproxy.org/blog/improving-the-performance-for-png-requests/>`_. You can install this version from source with::
+Pillow, the successor of PIL `contains some enhancements for PNGs <http://mapproxy.org/blog/improving-the-performance-for-png-requests/>`_. You can install this version from source with::
 
   sudo aptitude install build-essential python-dev libjpeg-dev \
     zlib1g-dev libfreetype6-dev
-  pip install https://bitbucket.org/olt/pil-2009-raclette/get/default.tar.gz
+  pip install Pillow
+
+.. note:: All changes mentioned in the blog post above are included in Pillow since version 2.0.
 
 YAML
 ~~~~
