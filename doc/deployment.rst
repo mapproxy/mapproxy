@@ -23,12 +23,12 @@ The ``serve-develop`` subcommand of ``mapproxy-util`` starts an HTTP server for 
 The server automatically reloads if the configuration or any code of MapProxy changes.
 
 .. cmdoption:: --bind, -b
-  
+
   Set the socket MapProxy should listen. Defaults to ``localhost:8080``.
   Accepts either a port number or ``hostname:portnumber``.
 
 .. cmdoption:: --debug
-  
+
   Start MapProxy in debug mode. If you have installed Werkzeug_ (recommended) or Paste_, you will get an interactive traceback in the web browser on any unhandled exception (internal error).
 
 .. note:: This server is sufficient for local testing of the configuration, but it is `not` stable for production or load testing.
@@ -47,7 +47,7 @@ FastCGI behind HTTP server
   You can run MapProxy as a FastCGI server behind a web server that supports the FastCGI protocol.
 
 Embedded in HTTP server
-  You can directly integrate MapProxy into your web server. Apache can integrate Python web services with the ``mod_wsgi`` extension for example. 
+  You can directly integrate MapProxy into your web server. Apache can integrate Python web services with the ``mod_wsgi`` extension for example.
 
 All approaches require a configuration that maps your MapProxy configuration with the MapProxy application. For the first two approaches you also need to configure the HTTP/FastCGI server. You can write a small script file for that or use Paste Deploy.
 
@@ -129,7 +129,7 @@ Gunicorn_ is a Python WSGI HTTP server for UNIX. Gunicorn use multiple processes
 You need a server script that creates the MapProxy application (see :ref:`above <server_script>`). The script needs to be in the directory from where you start ``gunicorn`` and it needs to end with ``.py``.
 
 To start MapProxy with the Gunicorn web server with four processes, the eventlet worker and our server script (without ``.py``)::
-  
+
   cd /path/of/config.py/
   gunicorn -k eventlet -w 4 -b :8080 config:application
 
@@ -251,7 +251,7 @@ For mod_fastcgi you can use the following snippet to add MapProxy to an Apache i
 
 .. note:: ``/tmp/madeup`` is just a dummy value and you can choose any path you want, the only limitation is that the directory must exist but not the file. In this example there must be a ``/tmp`` directory but the file ``madeup`` should not exist.
 
-The ``fcgi-socket`` file needs to be writeable by the Apache process and you need to permit access to the parent directory of the ``madeup`` file. 
+The ``fcgi-socket`` file needs to be writeable by the Apache process and you need to permit access to the parent directory of the ``madeup`` file.
 
 ::
 
@@ -277,7 +277,7 @@ The following snippet adds MapProxy to an Nginx_ installation. Note that you nee
   server {
     # server options
     # ...
-    
+
     location /mapproxy {
       if ($uri ~ "^(/mapproxy)(/.*)$") {
         set $script_name  $1;
@@ -320,7 +320,7 @@ Some web servers can directly integrate Python code. The benefit is that you don
 Apache mod_wsgi
 ~~~~~~~~~~~~~~~
 
-If you use Apache then you can integrate MapProxy with `mod_wsgi`_. Read `mod_wsgi installation`_ for detailed instructions. 
+If you use Apache then you can integrate MapProxy with `mod_wsgi`_. Read `mod_wsgi installation`_ for detailed instructions.
 
 ``mod_wsgi`` requires a server script that defines the configured WSGI function as ``application``. See :ref:`above <server_script>`.
 
@@ -337,7 +337,23 @@ You need to modify your Apache ``httpd.conf`` as follows::
   </Directory>
 
 
-``mod_wsgi`` has a lot of options for more fine tuning. ``WSGIPythonHome`` lets you configure your ``virtualenv`` and  ``WSGIDaemonProcess``/``WSGIProcessGroup`` allows you to start multiple processes. See the `mod_wsgi configuration directives documentation <http://code.google.com/p/modwsgi/wiki/ConfigurationDirectives>`_.
+``mod_wsgi`` has a lot of options for more fine tuning. ``WSGIPythonHome`` lets you configure your ``virtualenv`` and  ``WSGIDaemonProcess``/``WSGIProcessGroup`` allows you to start multiple processes. See the `mod_wsgi configuration directives documentation <http://code.google.com/p/modwsgi/wiki/ConfigurationDirectives>`_. Using Mapnik also requires the ``WSGIApplicationGroup`` option.
+
+A more complete configuration might look like::
+
+  # if not loaded elsewhere
+  LoadModule wsgi_module modules/mod_wsgi.so
+
+  WSGIScriptAlias /mapproxy /path/to/mapproxy/config.py
+  WSGIDaemonProcess mapproxy-wsgi-daemon user=mapproxy group=mapproxy processes=8 threads=25
+  WSGIProcessGroup mapproxy-wsgi-daemon
+  WSGIApplicationGroup %{GLOBAL}
+
+  <Directory /path/to/mapproxy/>
+    Order deny,allow
+    Allow from all
+  </Directory>
+
 
 .. _`mod_wsgi`: http://code.google.com/p/modwsgi/
 .. _`mod_wsgi installation`: http://code.google.com/p/modwsgi/wiki/InstallationInstructions
@@ -346,7 +362,7 @@ You need to modify your Apache ``httpd.conf`` as follows::
 Other deployment options
 ------------------------
 
-Refer to http://wsgi.org/wsgi/Servers for a list of some available WSGI servers. 
+Refer to http://wsgi.org/wsgi/Servers for a list of some available WSGI servers.
 
 Performance
 -----------
@@ -447,7 +463,7 @@ Server Script
 There is a ``make_wsgi_app`` function in the ``mapproxy.multiapp`` package that creates configured MultiMapProxy WSGI application.
 
 ::
-  
+
   from mapproxy.multiapp import make_wsgi_app
   application = make_wsgi_app('/path/to.projects', allow_listing=True)
 
