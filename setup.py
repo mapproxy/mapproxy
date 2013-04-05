@@ -44,7 +44,7 @@ def long_description(changelog_releases=10):
     changes.append(textwrap.dedent('''
         Older changes
         -------------
-        See https://bitbucket.org/olt/mapproxy/src/default/CHANGES.txt
+        See https://raw.github.com/mapproxy/mapproxy/master/CHANGES.txt
         '''))
     return readme + ''.join(changes)
 

@@ -322,7 +322,7 @@ The default template is ``/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileR
 The template variables are identical with the WMTS specification. ``TileMatrixSet`` is the grid name, ``TileMatrix`` is the zoom level, ``TileCol`` and ``TileRow`` are the x and y of the tile.
 
 
-You can access the a the tile x=3, y=9, z=4 at ``http://example.org//1.0.0/mylayer-mygrid/4-3-9/tile``
+You can access the tile x=3, y=9, z=4 at ``http://example.org//1.0.0/mylayer-mygrid/4-3-9/tile``
 with the following configuration::
 
   services:

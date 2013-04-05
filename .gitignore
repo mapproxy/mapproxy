@@ -1,6 +1,8 @@
 *.egg-info
 *.pyc
 build/
-.DS_Store
+dist/
 doc/_build
 examples
+.DS_Store
+.coverage
