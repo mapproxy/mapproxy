@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2011 Omniscale <http://omniscale.de>
+# Copyright (C) 2011-2013 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.cache.mbtiles import MBTilesLevelCache
 from mapproxy.test.image import create_tmp_image_buf, is_png
+
+from nose.tools import eq_
 
 tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
@@ -252,7 +254,40 @@ class TestMBTileCache(TileCacheTestBase):
 
 class TestMBTileLevelCache(TileCacheTestBase):
     always_loads_metadata = True
+
     def setup(self):
         TileCacheTestBase.setup(self)
         self.cache = MBTilesLevelCache(self.cache_dir)
 
+    def test_level_files(self):
+        eq_(os.listdir(self.cache_dir), [])
+
+        self.cache.store_tile(self.create_tile((0, 0, 1)))
+        eq_(os.listdir(self.cache_dir), ['1.mbtile'])
+
+        self.cache.store_tile(self.create_tile((0, 0, 5)))
+        eq_(sorted(os.listdir(self.cache_dir)), ['1.mbtile', '5.mbtile'])
+
+    def test_remove_level_files(self):
+        self.cache.store_tile(self.create_tile((0, 0, 1)))
+        self.cache.store_tile(self.create_tile((0, 0, 2)))
+        eq_(sorted(os.listdir(self.cache_dir)), ['1.mbtile', '2.mbtile'])
+
+        self.cache.remove_level_tiles_before(1, timestamp=0)
+        eq_(os.listdir(self.cache_dir), ['2.mbtile'])
+
+    def test_remove_level_tiles_before(self):
+        self.cache.store_tile(self.create_tile((0, 0, 1)))
+        self.cache.store_tile(self.create_tile((0, 0, 2)))
+
+        eq_(sorted(os.listdir(self.cache_dir)), ['1.mbtile', '2.mbtile'])
+        assert self.cache.is_cached(Tile((0, 0, 1)))
+
+        self.cache.remove_level_tiles_before(1, timestamp=time.time() - 60)
+        assert self.cache.is_cached(Tile((0, 0, 1)))
+
+        self.cache.remove_level_tiles_before(1, timestamp=time.time() + 60)
+        assert not self.cache.is_cached(Tile((0, 0, 1)))
+
+        eq_(sorted(os.listdir(self.cache_dir)), ['1.mbtile', '2.mbtile'])
+        assert self.cache.is_cached(Tile((0, 0, 2)))
