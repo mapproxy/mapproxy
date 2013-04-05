@@ -42,6 +42,7 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
         else:
             self.lock_dir = mbtile_file + '.locks'
         self.lock_timeout = 60
+        self.cache_dir = mbtile_file # for lock_id generation by FileBasedLocking
         self.mbtile_file = mbtile_file
         self.supports_timestamp = with_timestamps
         self.ensure_mbtile()
