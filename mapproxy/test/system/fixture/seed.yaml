@@ -40,7 +40,7 @@ seeds:
     grids: [GLOBAL_GEODETIC]
     levels: [0]
     refresh_before:
-      from_file: 'seed.yaml'
+      mtime: 'seed.yaml'
 
 
 cleanups:
@@ -71,4 +71,4 @@ cleanups:
     grids: [GLOBAL_GEODETIC]
     levels: [0]
     remove_before:
-      from_file: 'seed.yaml'
+      mtime: 'seed.yaml'
