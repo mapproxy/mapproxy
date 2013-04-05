@@ -25,11 +25,12 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.seed.seeder import seed
 from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.config import load_seed_tasks_conf
+from mapproxy.util import local_base_config, ensure_directory
 
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.image import tmp_image, create_tmp_image_buf, create_tmp_image
 
-from mapproxy.util import local_base_config
+from nose.tools import eq_
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 
@@ -52,7 +53,8 @@ class SeedTestEnvironment(object):
         """
         tile_dir = os.path.join(self.dir, 'cache/one_EPSG4326/%02d/000/000/%03d/000/000/' %
                                 (coord[2], coord[0]))
-        os.makedirs(tile_dir)
+
+        ensure_directory(tile_dir)
         tile = os.path.join(tile_dir + '%03d.png' % coord[1])
         open(tile, 'w').write('')
         if timestamp:
@@ -149,6 +151,38 @@ class TestSeed(SeedTestBase):
         assert self.tile_exists((0, 0, 2))
         assert not self.tile_exists((0, 0, 3))
 
+        eq_(sorted(os.listdir(os.path.join(self.dir, 'cache', 'one_EPSG4326'))),
+            ['02'])
+
+    def test_cleanup_remove_all(self):
+        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        cleanup_tasks = seed_conf.cleanups(['remove_all'])
+
+        self.make_tile((0, 0, 0))
+        self.make_tile((0, 0, 1))
+        self.make_tile((1, 0, 1))
+        self.make_tile((0, 1, 1))
+        self.make_tile((1, 1, 1))
+        self.make_tile((0, 0, 2))
+        self.make_tile((0, 0, 3))
+
+        eq_(sorted(os.listdir(os.path.join(self.dir, 'cache', 'one_EPSG4326'))),
+            ['00', '01', '02', '03'])
+
+        cleanup(cleanup_tasks, verbose=False, dry_run=False)
+        assert self.tile_exists((0, 0, 0))
+        assert not self.tile_exists((0, 0, 1))
+        assert not self.tile_exists((1, 0, 1))
+        assert not self.tile_exists((0, 1, 1))
+        assert not self.tile_exists((1, 1, 1))
+        assert not self.tile_exists((0, 0, 1))
+        assert self.tile_exists((0, 0, 2))
+        assert self.tile_exists((0, 0, 3))
+
+        # remove_all should remove the whole directory
+        eq_(sorted(os.listdir(os.path.join(self.dir, 'cache', 'one_EPSG4326'))),
+            ['00', '02', '03'])
+
     def test_cleanup_coverage(self):
         seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
         cleanup_tasks = seed_conf.cleanups(['with_coverage'])
@@ -216,6 +250,48 @@ class TestSeed(SeedTestBase):
         cache.store_tile(self.create_tile())
 
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
+
+    def test_cleanup_sqlite(self):
+        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        cleanup_tasks = seed_conf.cleanups(['sqlite_cache'])
+
+        cache = cleanup_tasks[0].tile_manager.cache
+        cache.store_tile(self.create_tile((0, 0, 2)))
+        cache.store_tile(self.create_tile((0, 0, 3)))
+        assert cache.is_cached(Tile((0, 0, 2)))
+        assert cache.is_cached(Tile((0, 0, 3)))
+
+        eq_(sorted(os.listdir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'))),
+            ['2.mbtile', '3.mbtile'])
+
+        cleanup(cleanup_tasks, verbose=False, dry_run=False)
+
+        # 3.mbtile file is still there
+        eq_(sorted(os.listdir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'))),
+            ['2.mbtile', '3.mbtile'])
+        assert cache.is_cached(Tile((0, 0, 2)))
+        assert not cache.is_cached(Tile((0, 0, 3)))
+
+    def test_cleanup_sqlite_remove_all(self):
+        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        cleanup_tasks = seed_conf.cleanups(['sqlite_cache_remove_all'])
+
+        cache = cleanup_tasks[0].tile_manager.cache
+        cache.store_tile(self.create_tile((0, 0, 2)))
+        cache.store_tile(self.create_tile((0, 0, 3)))
+        assert cache.is_cached(Tile((0, 0, 2)))
+        assert cache.is_cached(Tile((0, 0, 3)))
+
+        eq_(sorted(os.listdir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'))),
+            ['2.mbtile', '3.mbtile'])
+
+        cleanup(cleanup_tasks, verbose=False, dry_run=False)
+
+        # 3.mbtile file should be removed completely
+        eq_(sorted(os.listdir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'))),
+            ['3.mbtile'])
+        assert not cache.is_cached(Tile((0, 0, 2)))
+        assert cache.is_cached(Tile((0, 0, 3)))
 
     def test_active_seed_tasks(self):
         with local_base_config(self.mapproxy_conf.base_config):

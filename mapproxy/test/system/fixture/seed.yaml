@@ -52,6 +52,26 @@ cleanups:
     remove_before:
       minutes: -1
 
+  remove_all:
+    caches: [one]
+    grids: [GLOBAL_GEODETIC]
+    levels: [1]
+    remove_all: true
+
+  sqlite_cache:
+    caches: [sqlite_cache]
+    grids: [GLOBAL_GEODETIC]
+    levels: [3]
+    # to prevent timing issues
+    remove_before:
+        minutes: -1
+
+  sqlite_cache_remove_all:
+    caches: [sqlite_cache]
+    grids: [GLOBAL_GEODETIC]
+    levels: [2]
+    remove_all: true
+
   with_coverage:
     caches: [one]
     coverages: [west]
