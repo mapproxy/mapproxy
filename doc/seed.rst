@@ -280,9 +280,13 @@ A list with coverage names. Limits the cleanup area to the coverages. By default
 .. note:: Be careful when cleaning up caches with large coverages and levels with lots of tiles (>14).
   Without ``coverages``, the seed tool works on the file system level and it only needs to check for existing tiles if they should be removed. With ``coverages``, the seed tool traverses the whole tile pyramid and needs to check every posible tile if it exists and if it should be removed. This is much slower.
 
+``remove_all``
+~~~~~~~~~~~~~~
+
+When set to true, remove all tiles regardless of the time they were created. You still limit the tiles with the ``levels`` and ``coverage`` options. MapProxy will try to remove tiles in a more efficient way with this option. For example: It will remove complete level directories for ``file`` caches instead of comparing each tile with a timestamp.
 
 ``remove_before``
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 Remove all tiles that are older than the given date. The date can either be absolute or relative. ``remove_before`` defaults to the start time of the seed process, so that newly created tile will not be removed.
 
