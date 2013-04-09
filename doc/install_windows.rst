@@ -60,14 +60,18 @@ Shapely can be installed with ``easy_install Shapely``. This will already includ
 GDAL *(optional)*
 ~~~~~~~~~~~~~~~~~
 
-MapProxy requires GDAL/OGR for coverage support. You can `download and install inofficial
-Windows binaries of GDAL <http://www.gisinternals.com/sdk/>`_ (e.g. `gdal-19-xxxx-code.msi`). You need to add the installation path to the Windows ``PATH`` environment variable.
+MapProxy requires GDAL/OGR for coverage support. MapProxy can either load the ``gdal.dll`` directly or use the ``osgeo.ogr`` Python package. You can `download and install inofficial Windows binaries of GDAL and the Python package <http://www.gisinternals.com/sdk/>`_ (e.g. `gdal-19-xxxx-code.msi`).
 
+You need to add the installation path to the Windows ``PATH`` environment variable in both cases.
 You can set the variable temporary on the command line (spaces in the filename need no quotes or escaping)::
 
-  set PATH=%PATH%;C:\Program Files\GDAL
+  set PATH=%PATH%;C:\Program Files (x86)\GDAL
 
 Or you can add it to your `systems environment variables <http://www.computerhope.com/issues/ch000549.htm>`_.
+
+You also need to set ``GDAL_DRIVER_PATH`` or ``OGR_DRIVER_PATH`` to the ``gdalplugins`` directory when you want to use the Oracle plugin (extra download from URL above)::
+
+    set GDAL_DRIVER_PATH=C:\Program Files (x86)\GDAL\gdalplugins
 
 
 Platform dependent packages
