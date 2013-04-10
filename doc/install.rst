@@ -70,6 +70,8 @@ libproj
 ~~~~~~~
 MapProxy uses the Proj4 C Library for all coordinate transformation tasks. It is included in most distributions as ``libproj0``.
 
+.. _dependencies_pil:
+
 PIL
 ~~~
 The Python Image Library (PIL) is used for the image processing and it is included in most distributions as ``python-imaging``.
