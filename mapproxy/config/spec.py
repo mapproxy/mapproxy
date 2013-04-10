@@ -91,6 +91,9 @@ cache_types = {
         'use_grid_names': bool(),
         'directory': str(),
     },
+    'sqlite': {
+        'directory': str()
+    },
     'mbtiles': {
         'filename': str()
     },

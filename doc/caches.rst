@@ -77,6 +77,29 @@ You can set the ``sources`` to an empty list, if you use an existing MBTiles fil
   The MBTiles format specification does not include any timestamps for each tile and the seeding function is limited therefore. If you include any ``refresh_before`` time in a seed task, all tiles will be recreated regardless of the value. The cleanup process does not support any ``remove_before`` times for MBTiles and it always removes all tiles.
   Use the ``--summary`` option of the ``mapproxy-seed`` tool.
 
+``sqlite``
+===========
+
+.. versionadded:: 1.6.0
+
+Use SQLite databases to store the tiles, similar to ``mbtiles`` cache. The difference to ``mbtiles`` cache is that the ``sqlite`` cache stores each level into a separate databse. This makes it easy to remove complete levels during mapproxy-seed cleanup processes. The ``sqlite`` cache also stores the timestamp of each tile.
+
+Available options:
+
+``dirname``:
+  The direcotry where the level databases will be stored.
+
+::
+
+  caches:
+    sqlite_cache:
+      sources: [mywms]
+      grids: [GLOBAL_MERCATOR]
+      cache:
+        type: sqlite
+        directory: /path/to/cache
+
+
 ``couchdb``
 ===========
 
