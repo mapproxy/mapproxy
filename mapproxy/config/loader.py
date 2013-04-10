@@ -357,6 +357,8 @@ class ImageOptionsConfiguration(ConfigurationBase):
                 conf['merge'] = conf.pop('merge_method')
                 if conf['merge'] == 'composite':
                     require_alpha_composite_support()
+                else:
+                    raise ConfigurationError('unknown merge_method: %r' % conf['merge'])
             formats_config[format] = conf
         for format, conf in formats_config.iteritems():
             if 'format' not in conf and format.startswith('image/'):
@@ -1390,7 +1392,7 @@ class ServiceConfiguration(ConfigurationBase):
         tile_layers = self.tile_layers(conf)
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
-        
+
         # WMTS restful template
         wmts_conf = self.context.services.conf.get('wmts', {})
         from mapproxy.service.wmts import WMTSRestServer
