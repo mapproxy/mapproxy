@@ -1,3 +1,39 @@
+1.6.x 2013-xx-xx
+~~~~~~~~~~~~~~~~
+
+Features:
+
+- new `sqlite` cache with timestamps and one DB for each zoom level
+- first dimension support for WMTS (cascaded only)
+- support HTTP Digest authentication for source requests
+- remove_all option for seed cleanups
+- new image merge_method composite with real alpha composite for merging
+  layers with transparent backgrounds
+
+Improvements:
+
+- speed up configuration loading with tagged sources
+- add required params to WMS URL in mapproxy-util wms-capabilities
+- support for `@` and `:` in HTTP username and password
+- try to load pyproj before using libproj.dll on Windows
+- support for GDAL python module (osgeo.ogr) besides using gdal.so/dll
+  directly
+
+Fixes:
+
+- support requests>=1.0 for CouchDB cache
+- HTTP_X_FORWARDED_HOST can be a list of hosts
+- fixed KML for caches with origin: nw
+
+Other:
+
+- update deployment documentation
+- update OpenLayers version in demo service
+- use restful_template URL in WMTS demo
+- update MANIFEST.in to prevent unnecessary warnings during installation
+- accept Pillow as depencendy instead of PIL when already installed
+
+
 1.5.0 2012-12-05
 ~~~~~~~~~~~~~~~~
 

@@ -256,7 +256,7 @@ for try_import in proj_imports:
         Proj, transform, set_datapath = res
         break
 else:
-    raise ImportError('could not found libproj or pyproj')
+    raise ImportError('could not find libproj or pyproj')
 
 if __name__ == '__main__':
 
