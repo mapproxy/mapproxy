@@ -110,7 +110,7 @@ An example upstart script (``/etc/init/mapproxy.conf``) might look like::
     chdir /etc/opt/mapproxy
 
     exec /opt/mapproxy/bin/gunicorn -k eventlet -w 8 -b :8080 application \
-        2>&1 > /var/log/mapproxy/gunicorn.log
+        >>/var/log/mapproxy/gunicorn.log 2>&1
 
 
 Spawning
