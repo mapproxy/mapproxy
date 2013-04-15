@@ -177,6 +177,15 @@ grid_opts = {
     'threshold_res': [number()],
 }
 
+ogc_service_md = {
+    'title': basestring,
+    'abstract': basestring,
+    'online_resource': basestring,
+    'contact': anything(),
+    'fees': basestring,
+    'access_constraints': basestring,
+}
+
 mapproxy_yaml_spec = {
     'globals': {
         'image': {
@@ -257,6 +266,7 @@ mapproxy_yaml_spec = {
             'kvp': bool(),
             'restful': bool(),
             'restful_template': str(),
+            'md': ogc_service_md,
         },
         'wms': {
             'srs': [str()],
@@ -272,14 +282,7 @@ mapproxy_yaml_spec = {
             'on_source_errors': str(),
             'max_output_pixels': one_of(number(), [number()]),
             'strict': bool(),
-            'md': {
-                'title': basestring,
-                'abstract': basestring,
-                'online_resource': basestring,
-                'contact': anything(),
-                'fees': basestring,
-                'access_constraints': basestring,
-            },
+            'md': ogc_service_md,
         },
     },
 
