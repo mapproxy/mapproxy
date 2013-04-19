@@ -405,17 +405,17 @@ Add a watermark right into the cached tiles. The watermark is thus also present 
 You can configure one or more grids for each cache. MapProxy will create one cache for each grid.
 ::
 
-    srs: ['EPSG:4326', 'EPSG:900913']
+    grids: ['my_utm_grid', 'GLOBAL_MERCATOR']
 
 
 MapProxy supports on-the-fly transformation of requests with different SRSs. So
 it is not required to add an extra cache for each supported SRS. For best performance
 only the SRS most requests are in should be used.
 
-There is some special handling layers that need geographical and projected coordinate
-systems. If you set both ``EPSG:4326`` and ``EPSG:900913`` all requests with projected
-SRS will access the ``EPSG:900913`` cache, requests with geographical SRS will use
-``EPSG:4326``.
+There is some special handling for layers that need geographical and projected coordinate
+systems. For example, if you set one grid with ``EPSG:4326`` and one with ``EPSG:3857``
+then all requests for projected SRS will access the ``EPSG:3857`` cache and
+ requests for geographical SRS will use ``EPSG:4326``.
 
 
 ``meta_size`` and ``meta_buffer``
