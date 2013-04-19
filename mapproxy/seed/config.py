@@ -141,7 +141,7 @@ class SeedingConfiguration(object):
 
     @memoize
     def coverage(self, name):
-        coverage_conf = self.conf['coverages'].get(name)
+        coverage_conf = self.conf.get('coverages', {}).get(name)
         if coverage_conf is None:
             raise ValueError('no coverage %s configured' % name)
 
@@ -158,10 +158,16 @@ class SeedingConfiguration(object):
         return cache
 
     def seed_tasks_names(self):
-        return self.conf.get('seeds', {}).keys()
+        seeds = self.conf.get('seeds', {})
+        if seeds:
+            return seeds.keys()
+        return []
 
     def cleanup_tasks_names(self):
-        return self.conf.get('cleanups', {}).keys()
+        cleanups = self.conf.get('cleanups', {})
+        if cleanups:
+            return cleanups.keys()
+        return []
 
     def seeds(self, names=None):
         """
@@ -202,7 +208,7 @@ class ConfigurationBase(object):
     def _coverages(self):
         coverage = None
         if 'coverages' in self.conf:
-            coverages = [self.seeding_conf.coverage(c) for c in self.conf['coverages']]
+            coverages = [self.seeding_conf.coverage(c) for c in self.conf.get('coverages', {})]
             if len(coverages) == 1:
                 coverage = coverages[0]
             else:
