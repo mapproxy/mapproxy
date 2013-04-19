@@ -740,22 +740,13 @@ Here you can define some options that affect the way MapProxy generates image re
 ``base_dir``
   The base directory where all cached tiles will be stored. The path can
   either be absolute (e.g. ``/var/mapproxy/cache``) or relative to the
-  mapproxy.yaml file.
-
-  .. note::
-    Defaults to ``../var/cache_data`` but this will be changed with 1.2.0.
-    You should configure this value for production use.
-
+  mapproxy.yaml file. Defaults to ``./cache_data``.
 
 ``lock_dir``
   MapProxy uses locking to limit multiple request to the same service. See ``concurrent_requests``.
   This option defines where the temporary lock files will be stored. The path
   can either be absolute (e.g. ``/tmp/lock/mapproxy``) or relative to the
-  mapproxy.yaml file.
-
-  .. note::
-    Defaults to ``../tmp/tile_locks`` but this will be changed with 1.2.0.
-    You should configure this value for production use.
+  mapproxy.yaml file. Defaults to ``./cache_data/tile_locks``.
 
 ``concurrent_tile_creators``
   This limits the number of parallel requests MapProxy will make to a source WMS. This limit is per request and not for all MapProxy requests. To limit the requests MapProxy makes to a single server use the ``concurrent_requests`` option.
