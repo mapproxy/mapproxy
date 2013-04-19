@@ -724,7 +724,7 @@ class WMSSourceConfiguration(SourceConfiguration):
             version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
             lg_req = self.conf['req'].copy()
             lg_clients = []
-            lg_layers = lg_req['layers'].split(',')
+            lg_layers = str(lg_req['layers']).split(',')
             del lg_req['layers']
             for lg_layer in lg_layers:
                 lg_req['layer'] = lg_layer
