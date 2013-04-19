@@ -476,7 +476,6 @@ Example ``caches`` configuration
       text: MapProxy
     request_format: image/tiff
     format: image/jpeg
-    origin: ul
     cache:
       type: file
       directory_layout: tms
