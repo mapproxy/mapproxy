@@ -330,6 +330,23 @@ class TestLayerCompositeMerge(object):
             (1156, (170, 84, 0, 191)),
             (3300, (255, 0, 0, 255))]))
 
+    def test_composite_merge_opacity(self):
+        if not hasattr(Image, 'alpha_composite'):
+            raise SkipTest()
+
+        bg = Image.new('RGBA', size=(100, 100), color=(255, 0, 0, 255))
+        bg = ImageSource(bg)
+        fg = Image.new('RGBA', size =(100, 100), color=(0, 0, 0, 0))
+        draw = ImageDraw.Draw(fg)
+        draw.rectangle((10, 10, 89, 89), fill=(0, 0, 255, 255))
+        fg = ImageSource(fg, image_opts=ImageOptions(opacity=0.5))
+
+        result = merge_images([bg, fg], ImageOptions(merge='composite', transparent=True))
+        img = result.as_image()
+        eq_(img.mode, 'RGBA')
+        eq_(sorted(img.getcolors()), sorted([
+            (3600, (255, 0, 0, 255)),
+            (6400, (128, 0, 63, 255))]))
 
 class TestTransform(object):
     def setup(self):

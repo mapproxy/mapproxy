@@ -85,6 +85,14 @@ class LayerMerger(object):
                 img = mask_image(img, bbox, bbox_srs, layer.coverage)
 
             if merge == 'composite':
+                if opacity is not None and opacity < 1.0:
+                    # fade-out img to add opacity value
+                    img = img.convert("RGBA")
+                    img = Image.blend(
+                        Image.new("RGBA", img.size, (0, 0, 0, 0)),
+                        img,
+                        layer_image_opts.opacity
+                    )
                 if img.mode == 'RGB':
                     result.paste(img, (0, 0))
                 else:
