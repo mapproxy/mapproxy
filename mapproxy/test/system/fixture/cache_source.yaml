@@ -12,6 +12,9 @@ layers:
   - name: new_cache
     title: access to existing cache
     sources: [new_cache]
+  - name: combined
+    title: access to one compatible cache and one other
+    sources: [cache_combined]
 
 caches:
   tms_cache_out:
@@ -33,10 +36,30 @@ caches:
     grids: [osm_grid]
     sources: [tms_source]
 
+
+  cache_combined:
+    grids: [utm32n]
+    sources: [cache_osm, cache_utm]
+
+  cache_osm:
+    grids: [osm_grid]
+    sources: [tms_source]
+
+  cache_utm:
+    grids: [utm32n]
+    sources: [tms_utm32n_source]
+
+
 sources:
   tms_source:
     type: tile
     url: http://localhost:42423/tiles/%(tc_path)s.png
+
+  tms_utm32n_source:
+    type: tile
+    grid: utm32n
+    url: http://localhost:42423/tiles/utm/%(tc_path)s.png
+
 
 
 grids:

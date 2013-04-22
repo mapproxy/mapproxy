@@ -968,7 +968,21 @@ class CacheConfiguration(ConfigurationBase):
                 image_opts.format = ImageFormat('image/png')
         return image_opts
 
-    def source(self, params=None, tile_grid=None):
+    def supports_tiled_only_access(self, params=None, tile_grid=None):
+        caches = self.caches()
+        if len(caches) > 1:
+            return False
+
+        cache_grid, extent, tile_manager = caches[0]
+        image_opts = self.image_opts()
+
+        if (tile_grid.is_subset_of(cache_grid)
+            and params.get('format') == image_opts.format):
+            return True
+
+        return False
+
+    def source(self, params=None, tile_grid=None, tiled_only=False):
         from mapproxy.source.tile import CacheSource
         from mapproxy.layer import map_extent_from_grid
 
@@ -981,12 +995,6 @@ class CacheConfiguration(ConfigurationBase):
 
         cache_grid, extent, tile_manager = caches[0]
         image_opts = self.image_opts()
-
-        if (tile_grid.is_subset_of(cache_grid)
-            and params.get('format') == image_opts.format):
-            tiled_only = True
-        else:
-            tiled_only = False
 
         cache_extent = map_extent_from_grid(tile_grid)
         cache_extent = extent.intersection(cache_extent)
@@ -1019,14 +1027,35 @@ class CacheConfiguration(ConfigurationBase):
         for grid_name, grid_conf in self.grid_confs():
             sources = []
             source_image_opts = []
+
+            # a cache can directly access source tiles when _all_ sources are caches too
+            # and when they have compatible grids by using tiled_only on the CacheSource
+            # check if all sources support tiled_only
+            tiled_only = True
+            for source_name in self.conf['sources']:
+                if source_name in self.context.sources:
+                    tiled_only = False
+                    break
+                elif source_name in self.context.caches:
+                    cache_conf = self.context.caches[source_name]
+                    tiled_only = cache_conf.supports_tiled_only_access(
+                        params={'format': request_format},
+                        tile_grid=grid_conf.tile_grid(),
+                    )
+                    if not tiled_only:
+                        break
+
             for source_name in self.conf['sources']:
                 if source_name in self.context.sources:
                     source_conf = self.context.sources[source_name]
                     source = source_conf.source({'format': request_format})
                 elif source_name in self.context.caches:
                     cache_conf = self.context.caches[source_name]
-                    source = cache_conf.source({'format': request_format},
-                        tile_grid=grid_conf.tile_grid())
+                    source = cache_conf.source(
+                        params={'format': request_format},
+                        tile_grid=grid_conf.tile_grid(),
+                        tiled_only=tiled_only,
+                    )
                 else:
                     raise ConfigurationError('unknown source %s' % source_name)
                 if source:
