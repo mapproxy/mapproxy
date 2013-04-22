@@ -27,6 +27,7 @@ from mapproxy.image.transform import ImageTransformer
 from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image_file, check_format, create_debug_img, create_image
 from mapproxy.srs import SRS
 from nose.tools import eq_
+from mapproxy.test.image import assert_colors_equal
 from nose.plugins.skip import SkipTest
 
 
@@ -321,14 +322,14 @@ class TestLayerCompositeMerge(object):
         result = merge_images([img2, img1], ImageOptions(merge='composite', transparent=True))
         img = result.as_image()
         eq_(img.mode, 'RGBA')
-        eq_(sorted(img.getcolors()), sorted([
+        assert_colors_equal(img, [
             (1089, (0, 255, 0, 255)),
             (1089, (255, 255, 255, 0)),
             (1122, (0, 255, 0, 128)),
             (1122, (128, 126, 0, 255)),
             (1122, (255, 0, 0, 128)),
             (1156, (170, 84, 0, 191)),
-            (3300, (255, 0, 0, 255))]))
+            (3300, (255, 0, 0, 255))])
 
     def test_composite_merge_opacity(self):
         if not hasattr(Image, 'alpha_composite'):
@@ -344,9 +345,9 @@ class TestLayerCompositeMerge(object):
         result = merge_images([bg, fg], ImageOptions(merge='composite', transparent=True))
         img = result.as_image()
         eq_(img.mode, 'RGBA')
-        eq_(sorted(img.getcolors()), sorted([
+        assert_colors_equal(img, [
             (3600, (255, 0, 0, 255)),
-            (6400, (128, 0, 63, 255))]))
+            (6400, (128, 0, 63, 255))])
 
 class TestTransform(object):
     def setup(self):
