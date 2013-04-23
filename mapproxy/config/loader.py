@@ -589,7 +589,7 @@ class WMSSourceConfiguration(SourceConfiguration):
             url = prefix + context.globals.abspath(url[7:])
         lg_client = WMSLegendURLClient(url)
         legend_cache = LegendCache(cache_dir=cache_dir)
-        return WMSLegendSource([lg_client], legend_cache)
+        return WMSLegendSource([lg_client], legend_cache, static=True)
 
     def fi_xslt_transformer(self, conf, context):
         from mapproxy.featureinfo import XSLTransformer, has_xslt_support
