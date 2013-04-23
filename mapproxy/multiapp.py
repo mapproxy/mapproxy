@@ -73,7 +73,7 @@ class MultiMapProxy(object):
     def handle(self, req):
         app_name = req.pop_path()
         if not app_name:
-            return self.index_list()
+            return self.index_list(req)
 
         if not app_name or (
                 app_name not in self.apps and not self.loader.app_available(app_name)
@@ -84,16 +84,17 @@ class MultiMapProxy(object):
         req.environ['mapproxy.instance_name'] = app_name
         return self.proj_app(app_name)
 
-    def index_list(self):
+    def index_list(self, req):
         """
         Return greeting response with a list of available apps (if enabled with list_apps).
         """
         import mapproxy.version
         html = "<html><body><h1>Welcome to MapProxy %s</h1>" % mapproxy.version.version
 
+        url = req.script_url
         if self.list_apps:
             html += "<h2>available instances:</h2><ul>"
-            html += '\n'.join('<li><a href="%(name)s/">%(name)s</a></li>' % {'name': app}
+            html += '\n'.join('<li><a href="%(url)s/%(name)s/">%(name)s</a></li>' % {'url': url, 'name': app}
                               for app in self.loader.available_apps())
             html += '</ul>'
         html += '</body></html>'
