@@ -249,3 +249,14 @@ class TestMBTileCache(TileCacheTestBase):
         TileCacheTestBase.setup(self)
         self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'))
 
+
+class TestQuadkeyFileTileCache(TileCacheTestBase):
+    def setup(self):
+        TileCacheTestBase.setup(self)
+        self.cache = FileCache(self.cache_dir, 'png', directory_layout='quadkey')
+
+    def test_store_tile(self):
+        tile = self.create_tile((3, 4, 2))
+        self.cache.store_tile(tile)
+        tile_location = os.path.join(self.cache_dir, '11.png' )
+        assert os.path.exists(tile_location), tile_location
