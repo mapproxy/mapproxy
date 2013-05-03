@@ -30,7 +30,6 @@ log = logging.getLogger('mapproxy.config')
 
 from mapproxy.config import load_default_config, finish_base_config
 from mapproxy.config.spec import validate_mapproxy_conf
-from mapproxy.platform.image import require_alpha_composite_support
 from mapproxy.util import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
@@ -354,11 +353,8 @@ class ImageOptionsConfiguration(ConfigurationBase):
             if 'encoding_options' in conf:
                 self._check_encoding_options(conf['encoding_options'])
             if 'merge_method' in conf:
-                conf['merge'] = conf.pop('merge_method')
-                if conf['merge'] == 'composite':
-                    require_alpha_composite_support()
-                else:
-                    raise ConfigurationError('unknown merge_method: %r' % conf['merge'])
+                warnings.warn('merge_method now defaults to composite. option no longer required',
+                    DeprecationWarning)
             formats_config[format] = conf
         for format, conf in formats_config.iteritems():
             if 'format' not in conf and format.startswith('image/'):
@@ -395,18 +391,16 @@ class ImageOptionsConfiguration(ConfigurationBase):
         colors = image_conf.get('colors')
         mode = image_conf.get('mode')
         encoding_options = image_conf.get('encoding_options')
-        merge = image_conf.get('merge_method')
-        if merge is None:
-            merge = self.context.globals.get_value('image.merge_method', None)
-        if merge == 'composite':
-            require_alpha_composite_support()
+        if 'merge_method' in image_conf:
+            warnings.warn('merge_method now defaults to composite. option no longer required',
+                DeprecationWarning)
 
         self._check_encoding_options(encoding_options)
 
         # only overwrite default if it is not None
         for k, v in dict(transparent=transparent, opacity=opacity, resampling=resampling,
             format=img_format, colors=colors, mode=mode, encoding_options=encoding_options,
-            merge=merge).iteritems():
+        ).iteritems():
             if v is not None:
                 conf[k] = v
 
