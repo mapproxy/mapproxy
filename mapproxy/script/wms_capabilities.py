@@ -19,6 +19,7 @@ import sys
 import optparse
 from cStringIO import StringIO
 from xml.etree import ElementTree as etree
+from xml.etree.ElementTree import XMLParser
 
 from mapproxy.client.http import open_url, HTTPClientError
 from mapproxy.request.base import BaseRequest, url_decode
@@ -28,10 +29,11 @@ if ENCODING in (None, 'ascii'):
     ENCODING = 'UTF-8'
 
 class PrettyPrinter(object):
-    def __init__(self, indent=4):
+    def __init__(self, indent=4, version='1.1.1'):
         self.indent = indent
         self.print_order = ['name', 'title', 'url', 'srs', 'llbbox', 'bbox']
         self.marker = '- '
+        self.version = version
 
     def print_line(self, indent, key, value=None, mark_first=False):
         marker = ''
@@ -54,6 +56,7 @@ class PrettyPrinter(object):
 
     def print_layers(self, layer_list, indent=None, root=False):
         if root:
+            print 'Capabilities Document Version %s' % (self.version,)
             print 'Root-Layer:'
 
         indent = indent or self.indent
@@ -80,31 +83,54 @@ class PrettyPrinter(object):
 class CapabilitiesParserError(Exception):
     pass
 
-class WMS111Capabilities(object):
+class CapabilitiesVersionError(Exception):
+    pass
+
+class UTF8XMLParser(XMLParser):
+    def __init__(self, *args, **kw):
+        super(XMLParser, self).__init__(*args, **kw)
+
+class WMSCapabilitiesParserBase(object):
     def __init__(self, capabilities):
         self.capabilities = capabilities
         self.tree = self._parse_capabilities()
+        self.prefix = self._prefix()
 
     def _parse_capabilities(self):
         try:
             tree = etree.parse(self.capabilities)
         except Exception, ex:
-             # catch all, etree.ParseError only avail since Python 2.7
-             # 2.5 and 2.6 raises exc from underlying implementation like expat
+            # catch all, etree.ParseError only avail since Python 2.7
+            # 2.5 and 2.6 raises exc from underlying implementation like expat
             raise CapabilitiesParserError('Could not parse the document (%s)' %
-             (ex.args[0],))
+                (ex.args[0],))
         return tree
+
+    def _prefix(self):
+        return ''
+
+    def _namespace_path(self, path):
+        # add prefix to all further elements
+        path = path.replace('/', '/%s' % (self.prefix,))
+        # and before the first element
+        path = '%s%s' % (self.prefix, path)
+        return path
 
     def metadata(self):
         # TODO remove method? currently not used
-        name = self.tree.findtext('Service/Name')
-        title = self.tree.findtext('Service/Title')
-        abstract = self.tree.findtext('Service/Abstract')
+        name = self.tree.findtext(self._namespace_path('Service/Name'))
+        title = self.tree.findtext(self._namespace_path('Service/Title'))
+        abstract = self.tree.findtext(self._namespace_path('Service/Abstract'))
         return dict(name=name, title=title, abstract=abstract)
+
+    def request_url(self):
+        requests_elem = self.tree.find(self._namespace_path('Capability/Request'))
+        resource = requests_elem.find(self._namespace_path('GetMap/DCPType/HTTP/Get/OnlineResource'))
+        return resource.attrib['{http://www.w3.org/1999/xlink}href']
 
     def layers(self):
         #catch errors
-        root_layer = self.tree.find('Capability/Layer')
+        root_layer = self.tree.find(self._namespace_path('Capability/Layer'))
         if root_layer is None:
             raise CapabilitiesParserError('Could not parse a valid Capabilities document (Capability element not found).')
         try:
@@ -115,22 +141,21 @@ class WMS111Capabilities(object):
              (ex.args[0],))
         return layers
 
-    def requests(self):
-        requests_elem = self.tree.find('Capability/Request')
-        resource = requests_elem.find('GetMap/DCPType/HTTP/Get/OnlineResource')
-        return resource.attrib['{http://www.w3.org/1999/xlink}href']
-
     def parse_layers(self, root_layer, parent_layer):
         layers = []
         layer_dict = self.parse_layer(root_layer, parent_layer)
         layers.append(layer_dict)
-        sub_layers = root_layer.findall('Layer')
+        sub_layers = root_layer.findall(self._namespace_path('Layer'))
         layer_dict['layers'] = []
         for layer in sub_layers:
             layer_dict['layers'].extend(self.parse_layers(layer, layer_dict))
 
         return layers
 
+    def parse_layer(self, layer_elem, parent_layer):
+        raise NotImplementedError()
+
+class WMS111CapabilitiesParser(WMSCapabilitiesParserBase):
     def parse_layer(self, layer_elem, parent_layer):
         this_layer = dict(
             queryable=bool(layer_elem.attrib.get('queryable', 0)),
@@ -149,7 +174,7 @@ class WMS111Capabilities(object):
             )
             llbbox = map(float, llbbox)
         this_layer['llbbox'] = llbbox
-        this_layer['url'] = self.requests()
+        this_layer['url'] = self.request_url()
 
         srs_elements = layer_elem.findall('SRS')
         srs_codes = set([srs.text for srs in srs_elements])
@@ -172,10 +197,55 @@ class WMS111Capabilities(object):
 
         return this_layer
 
+class WMS130CapabilitiesParser(WMSCapabilitiesParserBase):
+    def _prefix(self):
+        return '{http://www.opengis.net/wms}'
+
+    def parse_layer(self, layer_elem, parent_layer):
+        this_layer = dict(
+            queryable=bool(layer_elem.attrib.get('queryable', 0)),
+            opaque=bool(layer_elem.attrib.get('opaque', 0)),
+            title=layer_elem.findtext(self._namespace_path('Title')),
+            name=layer_elem.findtext(self._namespace_path('Name')),
+        )
+        llbbox_elem = layer_elem.find(self._namespace_path('EX_GeographicBoundingBox'))
+        llbbox = None
+        if llbbox_elem is not None:
+            llbbox = (
+                llbbox_elem.find(self._namespace_path('westBoundLongitude')).text,
+                llbbox_elem.find(self._namespace_path('southBoundLatitude')).text,
+                llbbox_elem.find(self._namespace_path('eastBoundLongitude')).text,
+                llbbox_elem.find(self._namespace_path('northBoundLatitude')).text
+            )
+            llbbox = map(float, llbbox)
+        this_layer['llbbox'] = llbbox
+        this_layer['url'] = self.request_url()
+
+        srs_elements = layer_elem.findall(self._namespace_path('CRS'))
+        srs_codes = set([srs.text for srs in srs_elements])
+        # unique srs-codes in either srs or parent_layer['srs']
+        this_layer['srs'] = srs_codes | parent_layer.get('srs', set())
+
+        bbox_elements = layer_elem.findall(self._namespace_path('BoundingBox'))
+        bbox = {}
+        for bbox_elem in bbox_elements:
+            key = bbox_elem.attrib['CRS']
+            values = [
+                bbox_elem.attrib['minx'],
+                bbox_elem.attrib['miny'],
+                bbox_elem.attrib['maxx'],
+                bbox_elem.attrib['maxy']
+            ]
+            values = map(float, values)
+            bbox[key] = values
+        this_layer['bbox'] = bbox
+
+        return this_layer
+
 def log_error(msg, *args):
     print >>sys.stderr, (msg % args).encode(ENCODING)
 
-def wms_111_cap_url(url):
+def wms_capapilities_url(url, version):
     parsed_url = urlparse.urlparse(url)
     base_req = BaseRequest(
         url=url.split('?', 1)[0],
@@ -183,13 +253,13 @@ def wms_111_cap_url(url):
     )
 
     base_req.params['service'] = 'WMS'
-    base_req.params['version'] = '1.1.1'
+    base_req.params['version'] = version
     base_req.params['request'] = 'GetCapabilities'
     return base_req.complete_url
 
-def parse_capabilities(capabilities_url):
+def parse_capabilities(url, version='1.1.1'):
     try:
-        capabilities_url = wms_111_cap_url(capabilities_url)
+        capabilities_url = wms_capapilities_url(url, version)
         capabilities_response = open_url(capabilities_url)
     except HTTPClientError, ex:
         log_error('ERROR: %s', ex.args[0])
@@ -197,36 +267,46 @@ def parse_capabilities(capabilities_url):
 
     # after parsing capabilities_response will be empty, therefore cache it
     capabilities = StringIO(capabilities_response.read())
-
     try:
-        wms_capabilities = WMS111Capabilities(capabilities)
-        wms_capabilities.layers()
+        if version == '1.1.1':
+            wms_capabilities = WMS111CapabilitiesParser(capabilities)
+        elif version == '1.3.0':
+            wms_capabilities = WMS130CapabilitiesParser(capabilities)
+        else:
+            raise CapabilitiesVersionError('Version not supported: %s' % (version,))
+        layers = wms_capabilities.layers()
+
     except CapabilitiesParserError, ex:
         log_error('%s\n%s\n%s\n%s\n%s', 'Recieved document:', '-'*80, capabilities.getvalue(), '-'*80, ex.message)
+        sys.exit(1)
+    except CapabilitiesVersionError, ex:
+        log_error(ex.message)
         sys.exit(1)
 
     print "# Note: This is not a valid MapProxy configuration!"
 
-    printer = PrettyPrinter(indent=4)
-    printer.print_layers(wms_capabilities.layers(), root=True)
+    printer = PrettyPrinter(indent=4, version=version)
+    printer.print_layers(layers, root=True)
 
 def wms_capabilities_command(args=None):
     parser = optparse.OptionParser("%prog wms-capabilities [options] URL",
         description="Read and parse WMS 1.1.1 capabilities and print out"
         " information about each layer. It does _not_ return a valid"
         " MapProxy configuration.")
-    parser.add_option("--host", dest="capabilites_url",
+    parser.add_option("--host", dest="capabilities_url",
         help="WMS Capabilites URL")
+    parser.add_option("--capabilities-version", dest="capabilities_version",
+        choices=['1.1.1', '1.3.0'], default='1.1.1', help="Request GetCapabilities-document in version 1.1.1 or 1.3.0", metavar="<1.1.1 or 1.3.0>")
 
     if args:
         args = args[1:] # remove script name
 
     (options, args) = parser.parse_args(args)
-    if not options.capabilites_url:
+    if not options.capabilities_url:
         if len(args) != 1:
             parser.print_help()
             sys.exit(2)
         else:
-            options.capabilites_url = args[0]
+            options.capabilities_url = args[0]
 
-    parse_capabilities(options.capabilites_url)
+    parse_capabilities(options.capabilities_url, version=options.capabilities_version)

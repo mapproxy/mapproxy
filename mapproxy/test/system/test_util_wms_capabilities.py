@@ -27,7 +27,8 @@ from mapproxy.test.http import mock_httpd
 
 TESTSERVER_ADDRESS = ('127.0.0.1', 56413)
 TESTSERVER_URL = 'http://%s:%s' % TESTSERVER_ADDRESS
-CAPABILITIES_FILE = os.path.join(os.path.dirname(__file__), 'fixture', 'util_wms_capabilities.xml')
+CAPABILITIES111_FILE = os.path.join(os.path.dirname(__file__), 'fixture', 'util_wms_capabilities111.xml')
+CAPABILITIES130_FILE = os.path.join(os.path.dirname(__file__), 'fixture', 'util_wms_capabilities130.xml')
 SERVICE_EXCEPTION_FILE = os.path.join(os.path.dirname(__file__), 'fixture', 'util_wms_capabilities_service_exception.xml')
 
 
@@ -79,19 +80,30 @@ class TestUtilWMSCapabilities(object):
                 assert 'Capability element not found' in error_msg
 
     def test_parse_capabilities(self):
-        self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities']
-        with open(CAPABILITIES_FILE, 'r') as fp:
+        self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities', '--capabilities-version', '1.1.1']
+        with open(CAPABILITIES111_FILE, 'r') as fp:
             capabilities_doc = fp.read()
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},
                                                   {'status': '200', 'body': capabilities_doc})]):
                 with capture_out() as (out,err):
                     wms_capabilities_command(self.args)
                 lines = out.getvalue().split('\n')
-                assert lines[1].startswith('Root-Layer:')
+                assert lines[1].startswith('Capabilities Document Version 1.1.1')
+
+    def test_parse_130capabilities(self):
+        self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities', '--capabilities-version', '1.3.0']
+        with open(CAPABILITIES130_FILE, 'r') as fp:
+            capabilities_doc = fp.read()
+            with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.3.0&service=WMS', 'method': 'GET'},
+                                                  {'status': '200', 'body': capabilities_doc})]):
+                with capture_out() as (out,err):
+                    wms_capabilities_command(self.args)
+                lines = out.getvalue().split('\n')
+                assert lines[1].startswith('Capabilities Document Version 1.3.0')
 
     def test_key_error(self):
         self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities']
-        with open(CAPABILITIES_FILE, 'r') as fp:
+        with open(CAPABILITIES111_FILE, 'r') as fp:
             capabilities_doc = fp.read()
             capabilities_doc = capabilities_doc.replace('minx', 'foo')
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},
