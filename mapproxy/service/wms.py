@@ -118,9 +118,9 @@ class WMSServer(Server):
         result = merger.merge(size=params.size, image_opts=img_opts,
             bbox=params.bbox, bbox_srs=params.srs, coverage=coverage)
 
-        # Provide the wrapping WSGI app or filter the opportunity to post process the
+        # Provide the wrapping WSGI app or filter the opportunity to process the
         # image before it's wrapped up in a response
-        result = Server.postprocess_image(result, map_request.http.environ)
+        result = self.decorate_img(result, map_request.http.environ)
 
         resp =  Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
 

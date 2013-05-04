@@ -71,7 +71,12 @@ class TileServer(Server):
         if self.origin and not tile_request.origin:
             tile_request.origin = self.origin
         layer, limit_to = self.layer(tile_request)
-        tile = layer.render(tile_request, use_profiles=tile_request.use_profiles, coverage=limit_to)
+
+        def decorate_img(img_src):
+            return self.decorate_img(img_src, tile_request.http.environ)
+
+        tile = layer.render(tile_request, use_profiles=tile_request.use_profiles, coverage=limit_to, decorate_img=decorate_img)
+
         tile_format = getattr(tile, 'format', tile_request.format)
         resp = Response(tile.as_buffer(), content_type='image/' + tile_format)
         if tile.cacheable:
@@ -260,7 +265,7 @@ class TileLayer(object):
                        code='InvalidParameterValue')
         return dimensions
 
-    def render(self, tile_request, use_profiles=False, coverage=None):
+    def render(self, tile_request, use_profiles=False, coverage=None, decorate_img=None):
         if tile_request.format != self.format:
             raise RequestError('invalid format (%s). this tile set only supports (%s)'
                                % (tile_request.format, self.format), request=tile_request,
@@ -287,9 +292,10 @@ class TileLayer(object):
             if tile.source is None:
                 return self.empty_response()
 
-            # Provide the wrapping WSGI app or filter the opportunity to post process the
+            # Provide the wrapping WSGI app or filter the opportunity to process the
             # image before it's wrapped up in a response
-            tile.source = Server.postprocess_image(tile.source, tile_request.http.environ)
+            if decorate_img:
+                tile.source = decorate_img(tile.source)
 
             if coverage_intersects:
                 if self.empty_response_as_png:
