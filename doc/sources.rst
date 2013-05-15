@@ -460,6 +460,12 @@ A list of layer names you want to render. MapProxy disables each layer that is n
 
 Use Mapnik 2 if set to ``true``.
 
+``transparent``
+^^^^^^^^^^^
+
+Set to ``true`` to render from mapnik sources with background-color="transparent", ``false`` (default) will force a black background color.
+
+
 
 Other options
 ^^^^^^^^^^^^^
