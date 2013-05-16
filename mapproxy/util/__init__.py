@@ -78,13 +78,13 @@ class cached_property(object):
 
 def memoize(func):
     @wraps(func)
-    def wrapper(*args):
-        if not hasattr(func, '__memoize_cache'):
-            func.__memoize_cache = {}
-        key = args
-        if key not in func.__memoize_cache:
-            func.__memoize_cache[key] = func(*args)
-        return func.__memoize_cache[key]
+    def wrapper(self, *args):
+        if not hasattr(self, '__memoize_cache'):
+            self.__memoize_cache = {}
+        cache = self.__memoize_cache.setdefault(func, {})
+        if args not in cache:
+            cache[args] = func(self, *args)
+        return cache[args]
     return wrapper
 
 def swap_dir(src_dir, dst_dir, keep_old=False, backup_ext='.tmp'):
