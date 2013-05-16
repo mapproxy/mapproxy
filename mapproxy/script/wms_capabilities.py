@@ -59,9 +59,11 @@ class PrettyPrinter(object):
             print "# Note: This is not a valid MapProxy configuration!"
             print 'Capabilities Document Version %s' % (self.version,)
             print 'Root-Layer:'
+            layer_list = capabilities['layer']['layers']
+        else:
+            layer_list = capabilities['layers']
 
         indent = indent or self.indent
-        layer_list = capabilities['layer']['layers']
         for layer in layer_list:
             marked_first = False
             # print ordered items first
@@ -80,7 +82,7 @@ class PrettyPrinter(object):
             # print the sublayers now
             if layer.get('layers', False):
                 self.print_line(indent, 'layers')
-                self.print_layers(layer['layers'] , indent=indent+self.indent)
+                self.print_layers(layer, indent=indent+self.indent)
 
 class CapabilitiesParserError(Exception):
     pass
@@ -97,6 +99,7 @@ class WMSCapabilitiesParserBase(object):
         self.capabilities = capabilities
         self.tree = self._parse_capabilities()
         self.prefix = self._prefix()
+        self._check_valid_document()
 
     def _parse_capabilities(self):
         try:
@@ -107,6 +110,11 @@ class WMSCapabilitiesParserBase(object):
             raise CapabilitiesParserError('Could not parse the document (%s)' %
                 (ex.args[0],))
         return tree
+
+    def _check_valid_document(self):
+        layer_elem = self.tree.find(self._namespace_path('Capability'))
+        if layer_elem is None:
+            raise CapabilitiesParserError('Could not parse a valid Capabilities document (Capability element not found).')
 
     def _prefix(self):
         return ''
@@ -127,8 +135,8 @@ class WMSCapabilitiesParserBase(object):
     def root_layer(self):
         layer_elem = self.tree.find(self._namespace_path('Capability/Layer'))
         if layer_elem is None:
-            raise CapabilitiesParserError('Could not parse a valid Capabilities document (Capability element not found).')
-        return self._layers(layer_elem, parent_layer={})
+            raise CapabilitiesParserError('Could not parse a valid Capabilities document (Capability element not found).') 
+        return self.layers(layer_elem)
 
     def service(self):
         metadata = self.metadata()
@@ -142,6 +150,15 @@ class WMSCapabilitiesParserBase(object):
             'layer': root_layer,
         }
         return service
+
+    def layers(self, layer_elem):
+        try:
+            layers = self._layers(layer_elem, parent_layer={})
+        except KeyError, ex:
+            #raise own error
+            raise CapabilitiesParserError('XML-Element has no such attribute (%s).' %
+             (ex.args[0],))
+        return layers
 
     def requests(self):
         requests_elem = self.tree.find(self._namespace_path('Capability/Request'))
@@ -273,6 +290,7 @@ def parse_capabilities(fileobj, version='1.1.1'):
             wms_capabilities = WMS130CapabilitiesParser(fileobj)
         else:
             raise CapabilitiesVersionError('Version not supported: %s' % (version,))
+        service = wms_capabilities.service()
     except CapabilitiesParserError, ex:
         log_error('%s\n%s\n%s\n%s\n%s', 'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.message)
         sys.exit(1)
@@ -280,7 +298,7 @@ def parse_capabilities(fileobj, version='1.1.1'):
         log_error(ex.message)
         sys.exit(1)
 
-    return wms_capabilities.service()
+    return service
 
 def parse_capabilities_url(url, version='1.1.1'):
     try:
@@ -301,7 +319,7 @@ def wms_capabilities_command(args=None):
         " MapProxy configuration.")
     parser.add_option("--host", dest="capabilities_url",
         help="WMS Capabilites URL")
-    parser.add_option("--capabilities-version", dest="capabilities_version",
+    parser.add_option("--version", dest="version",
         choices=['1.1.1', '1.3.0'], default='1.1.1', help="Request GetCapabilities-document in version 1.1.1 or 1.3.0", metavar="<1.1.1 or 1.3.0>")
 
     if args:
@@ -315,7 +333,7 @@ def wms_capabilities_command(args=None):
         else:
             options.capabilities_url = args[0]
 
-    capabilities = parse_capabilities_url(options.capabilities_url, version=options.capabilities_version)
-    
-    printer = PrettyPrinter(indent=4, version=options.capabilities_version)
-    printer.print_layers(capabilities, root=True)
+    service = parse_capabilities_url(options.capabilities_url, version=options.version)
+
+    printer = PrettyPrinter(indent=4, version=options.version)
+    printer.print_layers(service, root=True)
