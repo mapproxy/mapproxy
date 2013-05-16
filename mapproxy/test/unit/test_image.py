@@ -526,18 +526,22 @@ class TestTileSplitter(object):
 
 class TestHasTransparency(object):
     def test_rgb(self):
-        if hasattr(Image, 'FASTOCTREE'):
-            img = Image.new('RGB', (10, 10))
-            assert not img_has_transparency(img)
+        if not hasattr(Image, 'FASTOCTREE'):
+            raise SkipTest()
 
-            img = quantize(img, alpha=False)
-            assert not img_has_transparency(img)
+        img = Image.new('RGB', (10, 10))
+        assert not img_has_transparency(img)
+
+        img = quantize(img, alpha=False)
+        assert not img_has_transparency(img)
 
     def test_rbga(self):
-        if hasattr(Image, 'FASTOCTREE'):
-            img = Image.new('RGBA', (10, 10), (100, 200, 50, 255))
-            img.paste((255, 50, 50, 0), (3, 3, 7, 7))
-            assert img_has_transparency(img)
+        if not hasattr(Image, 'FASTOCTREE'):
+            raise SkipTest()
 
-            img = quantize(img, alpha=True)
-            assert img_has_transparency(img)
+        img = Image.new('RGBA', (10, 10), (100, 200, 50, 255))
+        img.paste((255, 50, 50, 0), (3, 3, 7, 7))
+        assert img_has_transparency(img)
+
+        img = quantize(img, alpha=True)
+        assert img_has_transparency(img)
