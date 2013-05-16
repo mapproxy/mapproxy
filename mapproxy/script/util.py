@@ -316,13 +316,17 @@ def print_items(data, title='Commands'):
 
 def main():
     parser = NonStrictOptionParser("usage: %prog COMMAND [options]",
-        version='MapProxy ' + version, add_help_option=False)
+        add_help_option=False)
     options, args = parser.parse_args()
 
     if len(args) < 1 or args[0] in ('--help', '-h'):
         parser.print_help()
         print
         print_items(commands)
+        sys.exit(1)
+
+    if len(args) == 1 and args[0] == '--version':
+        print 'Mapproxy ' + version
         sys.exit(1)
 
     command = args[0]
