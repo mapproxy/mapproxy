@@ -295,6 +295,9 @@ class TestLayerMerge(object):
         ])
 
     def test_paletted_merge(self):
+        if not hasattr(Image, 'FASTOCTREE'):
+            raise SkipTest()
+            
         # generate RGBA images with a transparent rectangle in the lower right
         img1 = ImageSource(Image.new('RGBA', (50, 50), (0, 255, 0, 255))).as_image()
         draw = ImageDraw.Draw(img1)
