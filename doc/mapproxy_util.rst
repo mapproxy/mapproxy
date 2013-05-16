@@ -235,9 +235,9 @@ The command takes a valid URL GetCapabilities URL.
 
   Display all available Layers for this service. Each new layer will be marked with a hyphen and all sublayers are indented.
 
-.. cmdoption:: --capabilities-version <Versionnumber>
+.. cmdoption:: --version <versionnumber>
 
-  Parse the Capabilities-document for the given version. Only Version 1.1.1 and 1.3.0 are supported. The default value is 1.1.1
+  Parse the Capabilities-document for the given version. Only version 1.1.1 and 1.3.0 are supported. The default value is 1.1.1
 
 
 
@@ -267,7 +267,7 @@ Parsed capabilities document:
   mapproxy-util wms-capabilities http://127.0.0.1:8080/service?REQUEST=GetCapabilities
 
 ::
-
+  Capabilities Document Version 1.1.1
   Root-Layer:
     - title: MapProxy WMS Proxy
       url: http://127.0.0.1:8080/service?
