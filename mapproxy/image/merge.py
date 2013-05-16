@@ -20,7 +20,7 @@ from __future__ import with_statement
 
 from mapproxy.platform.image import Image, ImageColor, ImageChops
 from mapproxy.platform.image import has_alpha_composite_support
-from mapproxy.image import BlankImageSource, ImageSource, img_has_transparency
+from mapproxy.image import BlankImageSource, ImageSource
 from mapproxy.image.opts import create_image, ImageOptions
 from mapproxy.image.mask import mask_image
 
