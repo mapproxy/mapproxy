@@ -80,7 +80,7 @@ class TestUtilWMSCapabilities(object):
                 assert 'Capability element not found' in error_msg
 
     def test_parse_capabilities(self):
-        self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities', '--capabilities-version', '1.1.1']
+        self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities', '--version', '1.1.1']
         with open(CAPABILITIES111_FILE, 'r') as fp:
             capabilities_doc = fp.read()
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},
@@ -91,7 +91,7 @@ class TestUtilWMSCapabilities(object):
                 assert lines[1].startswith('Capabilities Document Version 1.1.1')
 
     def test_parse_130capabilities(self):
-        self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities', '--capabilities-version', '1.3.0']
+        self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities', '--version', '1.3.0']
         with open(CAPABILITIES130_FILE, 'r') as fp:
             capabilities_doc = fp.read()
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.3.0&service=WMS', 'method': 'GET'},
