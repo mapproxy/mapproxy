@@ -294,6 +294,31 @@ class TestLayerMerge(object):
             (10*10, (127, 127, 255, 255)),
         ])
 
+    def test_paletted_merge(self):
+        # generate RGBA images with a transparent rectangle in the lower right
+        img1 = ImageSource(Image.new('RGBA', (50, 50), (0, 255, 0, 255))).as_image()
+        draw = ImageDraw.Draw(img1)
+        draw.rectangle((25, 25, 49, 49), fill=(0, 0, 0, 0))
+        paletted_img = quantize(img1, alpha=True)
+        assert img_has_transparency(paletted_img)
+        assert paletted_img.mode == 'P'
+
+        rgba_img = Image.new('RGBA', (50, 50), (255, 0, 0, 255))
+        draw = ImageDraw.Draw(rgba_img)
+        draw.rectangle((25, 25, 49, 49), fill=(0, 0, 0, 0))
+
+        img1 = ImageSource(paletted_img)
+        img2 = ImageSource(rgba_img)
+
+        # generate base image and merge the others above
+        img3 = ImageSource(Image.new('RGBA', (50, 50), (0, 0, 255, 255)))
+        result = merge_images([img3, img1, img2], ImageOptions(transparent=True))
+        img = result.as_image()
+        
+        assert img.mode == 'RGBA'
+        eq_(img.getpixel((49, 49)), (0, 0, 255, 255))
+        eq_(img.getpixel((0, 0)), (255, 0, 0, 255))
+
     def test_solid_merge(self):
         img1 = ImageSource(Image.new('RGB', (10, 10), (255, 0, 255)))
         img2 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 255)))
