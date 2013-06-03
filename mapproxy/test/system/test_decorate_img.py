@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
+from mapproxy.test.system import module_setup, module_teardown, SystemTest
+from mapproxy.test.system import make_base_config
 from mapproxy.test.image import is_png
 from mapproxy.request.wms import WMS111MapRequest
 from cStringIO import StringIO
@@ -36,7 +37,8 @@ def teardown_module():
 
 def to_greyscale(img_src):
     img = img_src.as_image()
-    if img_src.image_opts.transparent:
+    if (hasattr(img_src.image_opts, 'transparent') and
+            img_src.image_opts.transparent):
         img = img.convert('LA').convert('RGBA')
     else:
         img = img.convert('L').convert('RGB')
@@ -47,33 +49,55 @@ class TestDecorateImg(SystemTest):
     config = test_config
 
     def test_wms(self):
-        req = WMS111MapRequest(url='/service?', param=dict(service='WMS',
-             version='1.1.1', bbox='-180,0,0,80', width='200', height='200',
-             layers='wms_cache', srs='EPSG:4326', format='image/png',
-             styles='', request='GetMap'))
-        resp = self.app.get(req, extra_environ={'mapproxy.decorate_img': to_greyscale})
+        req = WMS111MapRequest(
+            url='/service?',
+            param=dict(
+                service='WMS',
+                version='1.1.1', bbox='-180,0,0,80', width='200', height='200',
+                layers='wms_cache', srs='EPSG:4326', format='image/png',
+                styles='', request='GetMap'
+            )
+        )
+        resp = self.app.get(
+            req,
+            extra_environ={'mapproxy.decorate_img': to_greyscale}
+        )
         data = StringIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'RGB')
 
     def test_wms_transparent(self):
-        req = WMS111MapRequest(url='/service?', param=dict(service='WMS',
-             version='1.1.1', bbox='-180,0,0,80', width='200', height='200',
-             layers='wms_cache_transparent', srs='EPSG:4326', format='image/png',
-             styles='', request='GetMap', transparent='True'))
-        resp = self.app.get(req, extra_environ={'mapproxy.decorate_img': to_greyscale})
+        req = WMS111MapRequest(
+            url='/service?',
+            param=dict(
+                service='WMS', version='1.1.1', bbox='-180,0,0,80',
+                width='200', height='200', layers='wms_cache_transparent',
+                srs='EPSG:4326', format='image/png',
+                styles='', request='GetMap', transparent='True'
+            )
+        )
+        resp = self.app.get(
+            req, extra_environ={'mapproxy.decorate_img': to_greyscale}
+        )
         data = StringIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'RGBA')
 
     def test_wms_bgcolor(self):
-        req = WMS111MapRequest(url='/service?', param=dict(service='WMS',
-             version='1.1.1', bbox='-180,0,0,80', width='200', height='200',
-             layers='wms_cache_transparent', srs='EPSG:4326', format='image/png',
-             styles='', request='GetMap', bgcolor='0xff00a0'))
-        resp = self.app.get(req, extra_environ={'mapproxy.decorate_img': to_greyscale})
+        req = WMS111MapRequest(
+            url='/service?',
+            param=dict(
+                service='WMS', version='1.1.1', bbox='-180,0,0,80',
+                width='200', height='200', layers='wms_cache_transparent',
+                srs='EPSG:4326', format='image/png',
+                styles='', request='GetMap', bgcolor='0xff00a0'
+            )
+        )
+        resp = self.app.get(
+            req, extra_environ={'mapproxy.decorate_img': to_greyscale}
+        )
         data = StringIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
