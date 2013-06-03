@@ -32,7 +32,7 @@ function init(){
     map = new OpenLayers.Map('map', mapOptions);
 
     var layer = new OpenLayers.Layer.TMS('TMS {{layer.name}}', '../tms/',
-        {layername: '{{layer.md["name_internal"]}}', type: '{{format}}',
+        {layername: '{{"/".join(layer.md["name_path"])}}', type: '{{format}}',
          tileSize: new OpenLayers.Size{{layer.grid.tile_size}}
     });
 

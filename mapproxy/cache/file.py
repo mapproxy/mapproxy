@@ -48,6 +48,8 @@ class FileCache(TileCacheBase, FileBasedLocking):
             self.tile_location = self._tile_location_tc
         elif directory_layout == 'tms':
             self.tile_location = self._tile_location_tms
+        elif directory_layout == 'quadkey':
+            self.tile_location = self._tile_location_quadkey
         else:
             raise ValueError('unknown directory_layout "%s"' % directory_layout)
 
@@ -111,6 +113,39 @@ class FileCache(TileCacheBase, FileBasedLocking):
             tile.location = os.path.join(
                 self.level_location(str(z)),
                 str(x), str(y) + '.' + self.file_ext
+            )
+        if create_dir:
+            ensure_directory(tile.location)
+        return tile.location
+
+    def _tile_location_quadkey(self, tile, create_dir=False):
+        """
+        Return the location of the `tile`. Caches the result as ``location``
+        property of the `tile`.
+
+        :param tile: the tile object
+        :param create_dir: if True, create all necessary directories
+        :return: the full filename of the tile
+
+        >>> from mapproxy.cache.tile import Tile
+        >>> from mapproxy.cache.file import FileCache
+        >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png', directory_layout='quadkey')
+        >>> c.tile_location(Tile((3, 4, 2))).replace('\\\\', '/')
+        '/tmp/cache/11.png'
+        """
+        if tile.location is None:
+            x, y, z = tile.coord
+            quadKey = ""
+            for i in range(z,0,-1):
+                digit = 0
+                mask = 1 << (i-1)
+                if (x & mask) != 0:
+                    digit += 1
+                if (y & mask) != 0:
+                    digit += 2
+                quadKey += str(digit)
+            tile.location = os.path.join(
+                self.cache_dir, quadKey + '.' + self.file_ext
             )
         if create_dir:
             ensure_directory(tile.location)

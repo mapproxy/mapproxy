@@ -196,11 +196,12 @@ class WMSInfoSource(InfoSource):
 
 
 class WMSLegendSource(LegendSource):
-    def __init__(self, clients, legend_cache):
+    def __init__(self, clients, legend_cache, static=False):
         self.clients = clients
         self.identifier = legend_identifier([c.identifier for c in self.clients])
         self._cache = legend_cache
         self._size = None
+        self.static = static
 
     @property
     def size(self):
@@ -211,7 +212,11 @@ class WMSLegendSource(LegendSource):
         return self._size
 
     def get_legend(self, query):
-        legend = Legend(id=self.identifier, scale=query.scale)
+        if self.static:
+            # prevent caching of static legends for different scales
+            legend = Legend(id=self.identifier, scale=None)
+        else:
+            legend = Legend(id=self.identifier, scale=query.scale)
         if not self._cache.load(legend):
             legends = []
             error_occured = False

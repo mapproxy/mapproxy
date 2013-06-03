@@ -31,7 +31,6 @@ log = logging.getLogger('mapproxy.config')
 
 from mapproxy.config import load_default_config, finish_base_config
 from mapproxy.config.spec import validate_mapproxy_conf
-from mapproxy.platform.image import require_alpha_composite_support
 from mapproxy.util import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
@@ -366,9 +365,8 @@ class ImageOptionsConfiguration(ConfigurationBase):
             if 'encoding_options' in conf:
                 self._check_encoding_options(conf['encoding_options'])
             if 'merge_method' in conf:
-                conf['merge'] = conf.pop('merge_method')
-                if conf['merge'] == 'composite':
-                    require_alpha_composite_support()
+                warnings.warn('merge_method now defaults to composite. option no longer required',
+                    DeprecationWarning)
             formats_config[format] = conf
         for format, conf in formats_config.iteritems():
             if 'format' not in conf and format.startswith('image/'):
@@ -405,18 +403,16 @@ class ImageOptionsConfiguration(ConfigurationBase):
         colors = image_conf.get('colors')
         mode = image_conf.get('mode')
         encoding_options = image_conf.get('encoding_options')
-        merge = image_conf.get('merge_method')
-        if merge is None:
-            merge = self.context.globals.get_value('image.merge_method', None)
-        if merge == 'composite':
-            require_alpha_composite_support()
+        if 'merge_method' in image_conf:
+            warnings.warn('merge_method now defaults to composite. option no longer required',
+                DeprecationWarning)
 
         self._check_encoding_options(encoding_options)
 
         # only overwrite default if it is not None
         for k, v in dict(transparent=transparent, opacity=opacity, resampling=resampling,
             format=img_format, colors=colors, mode=mode, encoding_options=encoding_options,
-            merge=merge).iteritems():
+        ).iteritems():
             if v is not None:
                 conf[k] = v
 
@@ -599,7 +595,7 @@ class WMSSourceConfiguration(SourceConfiguration):
             url = prefix + context.globals.abspath(url[7:])
         lg_client = WMSLegendURLClient(url)
         legend_cache = LegendCache(cache_dir=cache_dir)
-        return WMSLegendSource([lg_client], legend_cache)
+        return WMSLegendSource([lg_client], legend_cache, static=True)
 
     def fi_xslt_transformer(self, conf, context):
         from mapproxy.featureinfo import XSLTransformer, has_xslt_support
@@ -734,7 +730,7 @@ class WMSSourceConfiguration(SourceConfiguration):
             version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
             lg_req = self.conf['req'].copy()
             lg_clients = []
-            lg_layers = lg_req['layers'].split(',')
+            lg_layers = str(lg_req['layers']).split(',')
             del lg_req['layers']
             for lg_layer in lg_layers:
                 lg_req['layer'] = lg_layer
@@ -932,6 +928,25 @@ class CacheConfiguration(ConfigurationBase):
             mbfile_path = os.path.join(self.cache_dir(), filename)
         return MBTilesCache(mbfile_path)
 
+    def _sqlite_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.mbtiles import MBTilesLevelCache
+
+        cache_dir = self.conf.get('cache', {}).get('directory')
+        if cache_dir:
+            cache_dir = os.path.join(
+                self.context.globals.abspath(cache_dir),
+                grid_conf.tile_grid().name
+            )
+        else:
+            cache_dir = self.cache_dir()
+            cache_dir = os.path.join(
+                cache_dir,
+                self.conf['name'],
+                grid_conf.tile_grid().name
+            )
+
+        return MBTilesLevelCache(cache_dir)
+
     def _couchdb_cache(self, grid_conf, file_ext):
         from mapproxy.cache.couchdb import CouchDBCache, CouchDBMDTemplate
 
@@ -988,7 +1003,21 @@ class CacheConfiguration(ConfigurationBase):
                 image_opts.format = ImageFormat('image/png')
         return image_opts
 
-    def source(self, params=None, tile_grid=None):
+    def supports_tiled_only_access(self, params=None, tile_grid=None):
+        caches = self.caches()
+        if len(caches) > 1:
+            return False
+
+        cache_grid, extent, tile_manager = caches[0]
+        image_opts = self.image_opts()
+
+        if (tile_grid.is_subset_of(cache_grid)
+            and params.get('format') == image_opts.format):
+            return True
+
+        return False
+
+    def source(self, params=None, tile_grid=None, tiled_only=False):
         from mapproxy.source.tile import CacheSource
         from mapproxy.layer import map_extent_from_grid
 
@@ -1001,12 +1030,6 @@ class CacheConfiguration(ConfigurationBase):
 
         cache_grid, extent, tile_manager = caches[0]
         image_opts = self.image_opts()
-
-        if (tile_grid.is_subset_of(cache_grid)
-            and params.get('format') == image_opts.format):
-            tiled_only = True
-        else:
-            tiled_only = False
 
         cache_extent = map_extent_from_grid(tile_grid)
         cache_extent = extent.intersection(cache_extent)
@@ -1042,14 +1065,35 @@ class CacheConfiguration(ConfigurationBase):
         for grid_name, grid_conf in self.grid_confs():
             sources = []
             source_image_opts = []
+
+            # a cache can directly access source tiles when _all_ sources are caches too
+            # and when they have compatible grids by using tiled_only on the CacheSource
+            # check if all sources support tiled_only
+            tiled_only = True
+            for source_name in self.conf['sources']:
+                if source_name in self.context.sources:
+                    tiled_only = False
+                    break
+                elif source_name in self.context.caches:
+                    cache_conf = self.context.caches[source_name]
+                    tiled_only = cache_conf.supports_tiled_only_access(
+                        params={'format': request_format},
+                        tile_grid=grid_conf.tile_grid(),
+                    )
+                    if not tiled_only:
+                        break
+
             for source_name in self.conf['sources']:
                 if source_name in self.context.sources:
                     source_conf = self.context.sources[source_name]
                     source = source_conf.source({'format': request_format})
                 elif source_name in self.context.caches:
                     cache_conf = self.context.caches[source_name]
-                    source = cache_conf.source({'format': request_format},
-                        tile_grid=grid_conf.tile_grid())
+                    source = cache_conf.source(
+                        params={'format': request_format},
+                        tile_grid=grid_conf.tile_grid(),
+                        tiled_only=tiled_only,
+                    )
                 else:
                     raise ConfigurationError('unknown source %s' % source_name)
                 if source:
@@ -1432,7 +1476,7 @@ class ServiceConfiguration(ConfigurationBase):
         tile_layers = self.tile_layers(conf)
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
-        
+
         # WMTS restful template
         wmts_conf = self.context.services.conf.get('wmts', {})
         from mapproxy.service.wmts import WMTSRestServer

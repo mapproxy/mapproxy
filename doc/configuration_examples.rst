@@ -759,3 +759,26 @@ You can reuse parts of the MapProxy configuration with the `base` option. You ca
 
 
 .. [#f1] This does not apply to `srs.proj_data_dir`, because it affects the proj4 library directly.
+
+.. _quadkey_cache:
+
+Generate static quadkey / virtual earth cache for use on Multitouch table
+=========================================================================
+
+Some software running on Microsoft multitouch tables need a static quadkey generated cache. Mapproxy understands quadkey both as a client and as a cache option.
+
+Example part of ``mapproxy.yaml`` to generate a quadkey cache::
+
+  caches:
+    osm_cache:
+      grids: [osm_grid]
+      sources: [osm_wms]
+      cache:
+        type: file
+        directory_layout: quadkey
+
+  grids:
+    osm_grid:
+      base: GLOBAL_MERCATOR
+      origin: nw
+

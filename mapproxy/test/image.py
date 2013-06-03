@@ -173,3 +173,22 @@ def tmp_image(size, format='png', color=None, mode='RGB'):
     img.save(data, format)
     data.seek(0)
     yield data
+
+
+def assert_colors_equal(img1, img2, delta=1):
+    """
+    assert that the colors of two images are equal.
+    Use `delta` to accept small color variations
+    (e.g. (255, 0, 127) == (254, 1, 128) with delta=1)
+
+    `img1` and `img2` needs to be an image or list of
+    colors like ``[(n, (r, g, b)), (n, (r, g, b)), ...]``
+    """
+    colors1 = sorted(img1.getcolors() if hasattr(img1, 'getcolors') else img1)
+    colors2 = sorted(img2.getcolors() if hasattr(img2, 'getcolors') else img2)
+
+    for (n1, c1), (n2, c2) in zip(colors1, colors2):
+        assert n1 == n2, 'colors not equal: %r != %r' % (colors1, colors2)
+        assert abs(c1[0] - c2[0]) <= delta, 'colors not equal: %r != %r in %r != %r' % (c1, c2, colors1, colors2)
+        assert abs(c1[1] - c2[1]) <= delta, 'colors not equal: %r != %r in %r != %r' % (c1, c2, colors1, colors2)
+        assert abs(c1[2] - c2[2]) <= delta, 'colors not equal: %r != %r in %r != %r' % (c1, c2, colors1, colors2)

@@ -70,11 +70,15 @@ libproj
 ~~~~~~~
 MapProxy uses the Proj4 C Library for all coordinate transformation tasks. It is included in most distributions as ``libproj0``.
 
+.. _dependencies_pil:
+
 PIL
 ~~~
 The Python Image Library (PIL) is used for the image processing and it is included in most distributions as ``python-imaging``.
 
-Pillow, the successor of PIL `contains some enhancements for PNGs <http://mapproxy.org/blog/improving-the-performance-for-png-requests/>`_. You can install this version from source with::
+Pillow, the successor of PIL `contains some enhancements for PNGs <http://mapproxy.org/blog/improving-the-performance-for-png-requests/>`_.
+You will also need Pillow to overlay multiple transparent layers.
+You can install this version from source with::
 
   sudo aptitude install build-essential python-dev libjpeg-dev \
     zlib1g-dev libfreetype6-dev

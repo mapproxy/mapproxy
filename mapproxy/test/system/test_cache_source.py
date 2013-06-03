@@ -38,7 +38,7 @@ class TestCacheSource(SystemTest):
         assert 'transformed tile source' in resp
         xml = resp.lxml
 
-        assert xml.xpath('count(//TileMap)') == 2
+        assert xml.xpath('count(//TileMap)') == 3
 
     def test_get_map_through_cache(self):
         map_req = WMS111MapRequest(url='/service?', param=dict(service='WMS',
@@ -89,3 +89,24 @@ class TestCacheSource(SystemTest):
 
         self.created_tiles.append('old_cache_EPSG3857/01/000/000/001/000/000/000.png')
         self.created_tiles.append('new_cache_EPSG3857/00/000/000/000/000/000/000.png')
+
+
+    def test_get_tile_combined_cache(self):
+        # request from cache with two cache sources where only one
+        # is compatible (supports tiled_only)
+        expected_reqs = []
+        with tmp_image((256, 256), format='jpeg') as img:
+            img = img.read()
+            for tile in [
+                r'/tiles/04/000/000/008/000/000/011.png',
+                r'/tiles/04/000/000/008/000/000/010.png',
+                r'/tiles/utm/00/000/000/000/000/000/000.png',
+            ]:
+                expected_reqs.append(
+                    ({'path': tile},
+                     {'body': img, 'headers': {'content-type': 'image/png'}}))
+
+            with mock_httpd(('localhost', 42423), expected_reqs, unordered=True):
+                resp = self.app.get('/tms/1.0.0/combined/EPSG25832/0/0/0.png')
+                eq_(resp.content_type, 'image/png')
+

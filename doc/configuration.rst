@@ -405,17 +405,17 @@ Add a watermark right into the cached tiles. The watermark is thus also present 
 You can configure one or more grids for each cache. MapProxy will create one cache for each grid.
 ::
 
-    srs: ['EPSG:4326', 'EPSG:900913']
+    grids: ['my_utm_grid', 'GLOBAL_MERCATOR']
 
 
 MapProxy supports on-the-fly transformation of requests with different SRSs. So
 it is not required to add an extra cache for each supported SRS. For best performance
 only the SRS most requests are in should be used.
 
-There is some special handling layers that need geographical and projected coordinate
-systems. If you set both ``EPSG:4326`` and ``EPSG:900913`` all requests with projected
-SRS will access the ``EPSG:900913`` cache, requests with geographical SRS will use
-``EPSG:4326``.
+There is some special handling for layers that need geographical and projected coordinate
+systems. For example, if you set one grid with ``EPSG:4326`` and one with ``EPSG:3857``
+then all requests for projected SRS will access the ``EPSG:3857`` cache and
+requests for geographical SRS will use ``EPSG:4326``.
 
 
 ``meta_size`` and ``meta_buffer``
@@ -476,7 +476,6 @@ Example ``caches`` configuration
       text: MapProxy
     request_format: image/tiff
     format: image/jpeg
-    origin: ul
     cache:
       type: file
       directory_layout: tms
@@ -741,22 +740,13 @@ Here you can define some options that affect the way MapProxy generates image re
 ``base_dir``
   The base directory where all cached tiles will be stored. The path can
   either be absolute (e.g. ``/var/mapproxy/cache``) or relative to the
-  mapproxy.yaml file.
-
-  .. note::
-    Defaults to ``../var/cache_data`` but this will be changed with 1.2.0.
-    You should configure this value for production use.
-
+  mapproxy.yaml file. Defaults to ``./cache_data``.
 
 ``lock_dir``
   MapProxy uses locking to limit multiple request to the same service. See ``concurrent_requests``.
   This option defines where the temporary lock files will be stored. The path
   can either be absolute (e.g. ``/tmp/lock/mapproxy``) or relative to the
-  mapproxy.yaml file.
-
-  .. note::
-    Defaults to ``../tmp/tile_locks`` but this will be changed with 1.2.0.
-    You should configure this value for production use.
+  mapproxy.yaml file. Defaults to ``./cache_data/tile_locks``.
 
 ``concurrent_tile_creators``
   This limits the number of parallel requests MapProxy will make to a source WMS. This limit is per request and not for all MapProxy requests. To limit the requests MapProxy makes to a single server use the ``concurrent_requests`` option.
@@ -936,9 +926,7 @@ The following encoding options are available:
 
 ``quantizer``
   The algorithm used to quantize (reduce) the image colors. Quantizing is used for GIF and paletted PNG images. Available quantizers are ``mediancut`` and ``fastoctree``. ``fastoctree`` is much faster and also supports 8bit PNG with full alpha support, but the image quality can be better with ``mediancut`` in some cases.
-  The quantizing is done by the Python Image Library (PIL). ``fastoctree`` is a `new quantizer <fastoctree_mp_blog>`_ that is not yet available in any official PIL release. You need install a development package of PIL::
-
-    pip install https://bitbucket.org/olt/pil-2009-raclette/get/tip.tar.gz
+  The quantizing is done by the Python Image Library (PIL). ``fastoctree`` is a `new quantizer <fastoctree_mp_blog>`_ that is only available in Pillow >=2.0. See :ref:`installation of PIL<dependencies_pil>`.
 
 .. _fastoctree_mp_blog: http://mapproxy.org/blog/improving-the-performance-for-png-requests/
 

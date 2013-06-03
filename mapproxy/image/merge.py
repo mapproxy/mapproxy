@@ -18,7 +18,8 @@ Image and tile manipulation (transforming, merging, etc).
 """
 from __future__ import with_statement
 
-from mapproxy.platform.image import Image, ImageColor
+from mapproxy.platform.image import Image, ImageColor, ImageChops
+from mapproxy.platform.image import has_alpha_composite_support
 from mapproxy.image import BlankImageSource, ImageSource
 from mapproxy.image.opts import create_image, ImageOptions
 from mapproxy.image.mask import mask_image
@@ -66,10 +67,6 @@ class LayerMerger(object):
 
         cacheable = self.cacheable
         result = create_image(size, image_opts)
-        if image_opts is None:
-            merge = None
-        else:
-            merge = image_opts.merge
 
         for layer_img, layer in self.layers:
             if not layer_img.cacheable:
@@ -84,7 +81,22 @@ class LayerMerger(object):
             if layer and layer.coverage and layer.coverage.clip:
                 img = mask_image(img, bbox, bbox_srs, layer.coverage)
 
-            if merge == 'composite':
+            if result.mode != 'RGBA':
+                merge_composite = False
+            else:
+                merge_composite = has_alpha_composite_support()
+
+            if merge_composite:
+                if opacity is not None and opacity < 1.0:
+                    # fade-out img to add opacity value
+                    img = img.convert("RGBA")
+                    alpha = img.split()[3]
+                    alpha = ImageChops.multiply(
+                        alpha,
+                        ImageChops.constant(alpha, 255 * opacity)
+                    )
+                    img.putalpha(alpha)
+
                 if img.mode == 'RGB':
                     result.paste(img, (0, 0))
                 else:

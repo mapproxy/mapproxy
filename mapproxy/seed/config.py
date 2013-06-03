@@ -141,7 +141,7 @@ class SeedingConfiguration(object):
 
     @memoize
     def coverage(self, name):
-        coverage_conf = self.conf['coverages'].get(name)
+        coverage_conf = self.conf.get('coverages', {}).get(name)
         if coverage_conf is None:
             raise ValueError('no coverage %s configured' % name)
 
@@ -158,10 +158,16 @@ class SeedingConfiguration(object):
         return cache
 
     def seed_tasks_names(self):
-        return self.conf.get('seeds', {}).keys()
+        seeds = self.conf.get('seeds', {})
+        if seeds:
+            return seeds.keys()
+        return []
 
     def cleanup_tasks_names(self):
-        return self.conf.get('cleanups', {}).keys()
+        cleanups = self.conf.get('cleanups', {})
+        if cleanups:
+            return cleanups.keys()
+        return []
 
     def seeds(self, names=None):
         """
@@ -202,7 +208,7 @@ class ConfigurationBase(object):
     def _coverages(self):
         coverage = None
         if 'coverages' in self.conf:
-            coverages = [self.seeding_conf.coverage(c) for c in self.conf['coverages']]
+            coverages = [self.seeding_conf.coverage(c) for c in self.conf.get('coverages', {})]
             if len(coverages) == 1:
                 coverage = coverages[0]
             else:
@@ -280,7 +286,9 @@ class CleanupConfiguration(ConfigurationBase):
         ConfigurationBase.__init__(self, name, conf, seeding_conf)
         self.init_time = time.time()
 
-        if 'remove_before' in self.conf:
+        if self.conf.get('remove_all') == True:
+            self.remove_timestamp = 0
+        elif 'remove_before' in self.conf:
             self.remove_timestamp = before_timestamp_from_options(self.conf['remove_before'])
         else:
             # use now as remove_before date. this should not remove
@@ -354,7 +362,7 @@ def before_timestamp_from_options(conf):
             raise SeedConfigurationError(
                 "can't parse last modified time from file '%s'." % (datasource, ), ex)
     deltas = {}
-    for delta_type in ('weeks', 'days', 'hours', 'minutes'):
+    for delta_type in ('weeks', 'days', 'hours', 'minutes', 'seconds'):
         deltas[delta_type] = conf.get(delta_type, 0)
     return timestamp_before(**deltas)
 

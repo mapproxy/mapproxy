@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import sys
 from mapproxy.util.lib import load_library
 import ctypes
 from ctypes import c_void_p, c_char_p, c_int
@@ -70,12 +72,10 @@ def init_libgdal():
 
     return libgdal
 
-libgdal = init_libgdal()
-
 class OGRShapeReaderError(Exception):
     pass
 
-class OGRShapeReader(object):
+class CtypesOGRShapeReader(object):
     def __init__(self, datasource):
         self.datasource = datasource
         self.opened = False
@@ -132,6 +132,91 @@ class OGRShapeReader(object):
 
     def __del__(self):
         self.close()
+
+
+class OSGeoOGRShapeReader(object):
+    def __init__(self, datasource):
+        self.datasource = datasource
+        self.opened = False
+        self._ds = None
+
+    def open(self):
+        if self.opened: return
+        self._ds = ogr.Open(self.datasource, False)
+        if self._ds is None:
+            msg = gdal.GetLastErrorMsg()
+            if not msg:
+                msg = 'failed to open %s' % self.datasource
+            raise OGRShapeReaderError(msg)
+
+    def wkts(self, where=None):
+        if not self.opened: self.open()
+
+        if where:
+            if not where.lower().startswith('select'):
+                layer = self._ds.GetLayerByIndex(0)
+                name = layer.GetName()
+                where = 'select * from %s where %s' % (name, where)
+            layer = self._ds.ExecuteSQL(where)
+        else:
+            layer = self._ds.GetLayerByIndex(0)
+        if layer is None:
+            msg = gdal.GetLastErrorMsg()
+            raise OGRShapeReaderError(msg)
+
+        layer.ResetReading()
+        while True:
+            feature = layer.GetNextFeature()
+            if feature is None:
+                break
+            geom = feature.geometry()
+            yield geom.ExportToWkt()
+
+    def close(self):
+        if self.opened:
+            self._ds = None
+            self.opened = False
+
+
+ogr = gdal = None
+def try_osgeoogr_import():
+    global ogr, gdal
+    try:
+        from osgeo import ogr; ogr
+        from osgeo import gdal; gdal
+    except ImportError:
+        return
+    return OSGeoOGRShapeReader
+
+libgdal = None
+def try_libogr_import():
+    global libgdal
+    libgdal = init_libgdal()
+    if libgdal is not None:
+        return CtypesOGRShapeReader
+
+ogr_imports = []
+if 'MAPPROXY_USE_OSGEOOGR' in os.environ:
+    ogr_imports = [try_osgeoogr_import]
+
+if 'MAPPROXY_USE_LIBOGR' in os.environ:
+    ogr_imports = [try_libogr_import]
+
+if not ogr_imports:
+    if sys.platform == 'win32':
+        # prefer osgeo.ogr on windows
+        ogr_imports = [try_osgeoogr_import, try_libogr_import]
+    else:
+        ogr_imports = [try_libogr_import, try_osgeoogr_import]
+
+for try_import in ogr_imports:
+    res = try_import()
+    if res:
+        OGRShapeReader = res
+        break
+else:
+    raise ImportError('could not find osgeo.ogr package or libgdal')
+
 
 if __name__ == '__main__':
     import sys

@@ -27,6 +27,7 @@ from mapproxy.image.transform import ImageTransformer
 from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image_file, check_format, create_debug_img, create_image
 from mapproxy.srs import SRS
 from nose.tools import eq_
+from mapproxy.test.image import assert_colors_equal
 from nose.plugins.skip import SkipTest
 
 
@@ -289,7 +290,9 @@ class TestLayerMerge(object):
 
         result = merge_images([img1, img2], ImageOptions(transparent=True))
         img = result.as_image()
-        eq_(img.getpixel((0, 0)), (127, 127, 255, 255))
+        assert_colors_equal(img, [
+            (10*10, (127, 127, 255, 255)),
+        ])
 
     def test_solid_merge(self):
         img1 = ImageSource(Image.new('RGB', (10, 10), (255, 0, 255)))
@@ -318,18 +321,35 @@ class TestLayerCompositeMerge(object):
         draw.rectangle((0, 67, 100, 100), fill=(0, 255, 0, 0))
         img2 = ImageSource(img2)
 
-        result = merge_images([img2, img1], ImageOptions(merge='composite', transparent=True))
+        result = merge_images([img2, img1], ImageOptions(transparent=True))
         img = result.as_image()
         eq_(img.mode, 'RGBA')
-        eq_(sorted(img.getcolors()), sorted([
+        assert_colors_equal(img, [
             (1089, (0, 255, 0, 255)),
             (1089, (255, 255, 255, 0)),
             (1122, (0, 255, 0, 128)),
             (1122, (128, 126, 0, 255)),
             (1122, (255, 0, 0, 128)),
             (1156, (170, 84, 0, 191)),
-            (3300, (255, 0, 0, 255))]))
+            (3300, (255, 0, 0, 255))])
 
+    def test_composite_merge_opacity(self):
+        if not hasattr(Image, 'alpha_composite'):
+            raise SkipTest()
+
+        bg = Image.new('RGBA', size=(100, 100), color=(255, 0, 255, 255))
+        bg = ImageSource(bg)
+        fg = Image.new('RGBA', size =(100, 100), color=(0, 0, 0, 0))
+        draw = ImageDraw.Draw(fg)
+        draw.rectangle((10, 10, 89, 89), fill=(0, 255, 255, 255))
+        fg = ImageSource(fg, image_opts=ImageOptions(opacity=0.5))
+
+        result = merge_images([bg, fg], ImageOptions(transparent=True))
+        img = result.as_image()
+        eq_(img.mode, 'RGBA')
+        assert_colors_equal(img, [
+            (3600, (255, 0, 255, 255)),
+            (6400, (128, 127, 255, 255))])
 
 class TestTransform(object):
     def setup(self):

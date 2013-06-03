@@ -20,3 +20,4 @@ Patches and Suggestions
 - Kai Culemann
 - Miloslav Kmeť
 - Bruno Binet
+- Tom Payne
