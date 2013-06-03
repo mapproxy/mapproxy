@@ -906,6 +906,25 @@ class CacheConfiguration(ConfigurationBase):
             mbfile_path = os.path.join(self.cache_dir(), filename)
         return MBTilesCache(mbfile_path)
 
+    def _sqlite_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.mbtiles import MBTilesLevelCache
+
+        cache_dir = self.conf.get('cache', {}).get('directory')
+        if cache_dir:
+            cache_dir = os.path.join(
+                self.context.globals.abspath(cache_dir),
+                grid_conf.tile_grid().name
+            )
+        else:
+            cache_dir = self.cache_dir()
+            cache_dir = os.path.join(
+                cache_dir,
+                self.conf['name'],
+                grid_conf.tile_grid().name
+            )
+
+        return MBTilesLevelCache(cache_dir)
+
     def _couchdb_cache(self, grid_conf, file_ext):
         from mapproxy.cache.couchdb import CouchDBCache, CouchDBMDTemplate
 
