@@ -913,11 +913,6 @@ Available options are:
 ``opacity``
   Configures the opacity of a layer or cache. This value is used when the source or cache is placed on other layers and it can be used to overlay non-transparent images. It does not alter the image itself, and only effects when multiple layers are merged to one image. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).
 
-.. versionadded:: 1.6.0
-
-``merge_method``
-  Define how multiple layers are merged into one image. The default method only works when you merge transparent layers on layers with an opaque background. You can change that to use `real alpha compositing <http://en.wikipedia.org/wiki/Alpha_compositing>`_ by setting ``merge_method`` to ``composite``. ``composite`` :ref:`requires Pillow >= 2.0 instead of PIL <dependencies_pil>`.
-
 
 ``encoding_options``
 ^^^^^^^^^^^^^^^^^^^^
