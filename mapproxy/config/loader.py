@@ -932,6 +932,16 @@ class CacheConfiguration(ConfigurationBase):
         return CouchDBCache(url=url, db_name=db_name,
             lock_dir=cache_dir, file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
             md_template=md_template, tile_id_template=tile_id)
+        
+    def _riak_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.riakcache import RiakCache
+        host = self.conf['cache'].get('host')
+        if not host:
+            host = '127.0.0.1'
+        bucket = self.conf['cache'].get('bucket')
+        if not bucket:
+            bucket = 'tiles'
+        return RiakCache(host=host, bucket=bucket, port=self.conf['cache'].get('port'), prefix=self.conf['cache'].get('prefix'))
 
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):

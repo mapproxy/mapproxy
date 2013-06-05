@@ -102,6 +102,12 @@ cache_types = {
         },
         'tile_id': str(),
     },
+    'riak': {
+        'host': str(),
+        'bucket': str(),
+        'port': str(),
+        'prefix': str(),
+    }
 }
 
 on_error = {
