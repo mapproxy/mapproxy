@@ -49,7 +49,7 @@ class RiakCache(TileCacheBase):
             log.warn('Unable to initialize RiakClient: %s', e)
 
     def _get_object(self, coord):
-        (z, x, y) = coord
+        (x, y, z) = coord
         key = "%(z)d_%(x)d_%(y)d" % locals()
         try:
             return self.bucket.new_binary(key, None);
