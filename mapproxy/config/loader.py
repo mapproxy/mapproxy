@@ -57,7 +57,7 @@ class ProxyConfiguration(object):
 
     def load_globals(self, conf_base_dir):
         self.globals = GlobalConfiguration(conf_base_dir=conf_base_dir,
-                                           conf=self.configuration.get('globals', {}),
+                                           conf=self.configuration.get('globals') or {},
                                            context=self)
 
     def load_grids(self):
@@ -66,14 +66,14 @@ class ProxyConfiguration(object):
         self.grids['GLOBAL_GEODETIC'] = GridConfiguration(dict(srs='EPSG:4326', name='GLOBAL_GEODETIC'), context=self)
         self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913', name='GLOBAL_MERCATOR'), context=self)
 
-        for grid_name, grid_conf in self.configuration.get('grids', {}).iteritems():
+        for grid_name, grid_conf in (self.configuration.get('grids') or {}).iteritems():
             grid_conf.setdefault('name', grid_name)
             self.grids[grid_name] = GridConfiguration(grid_conf, context=self)
 
     def load_caches(self):
         self.caches = odict()
         caches_conf = self.configuration.get('caches')
-        if not caches_conf: return None # TODO config error
+        if not caches_conf: return
         if isinstance(caches_conf, list):
             caches_conf = list_of_dicts_to_ordered_dict(caches_conf)
         for cache_name, cache_conf in caches_conf.iteritems():
@@ -82,7 +82,7 @@ class ProxyConfiguration(object):
 
     def load_sources(self):
         self.sources = SourcesCollection()
-        for source_name, source_conf in self.configuration.get('sources', {}).iteritems():
+        for source_name, source_conf in (self.configuration.get('sources') or {}).iteritems():
             self.sources[source_name] = SourceConfiguration.load(conf=source_conf, context=self)
 
     def load_tile_layers(self):
