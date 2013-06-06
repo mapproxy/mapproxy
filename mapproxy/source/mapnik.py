@@ -34,9 +34,14 @@ try:
     mapnik
 except ImportError:
     try:
+        # for 2.0 alpha/rcs and first 2.0 release
         import mapnik2 as mapnik
     except ImportError:
         mapnik = None
+
+# fake 2.0 API for older versions
+if mapnik and not hasattr(mapnik, 'Box2d'):
+    mapnik.Box2d = mapnik.Envelope
 
 import logging
 log = logging.getLogger(__name__)
