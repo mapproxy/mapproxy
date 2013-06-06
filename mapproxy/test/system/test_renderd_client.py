@@ -29,6 +29,7 @@ from mapproxy.util import ensure_directory
 from mapproxy.cache.renderd import has_renderd_support
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 test_config = {}
 base_config = make_base_config(test_config)
