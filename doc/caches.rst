@@ -214,3 +214,30 @@ MapProxy will place the JSON document for tile z=3, x=1, y=2 at ``http://localho
 
 
 The ``_attachments``-part is the internal structure of CouchDB where the tile itself is stored. You can access the tile directly at: ``http://localhost:9999/mywms_tiles/mygrid-3-1-2/tile``.
+
+
+``Riak``
+===========
+
+.. versionadded:: 1.6.0
+
+Store tiles in `Riak` <http://basho.com/riak/> cluster. MapProxy creates keys with binary data as value and timestamps as user defined metadata.
+This backend is good for very large caches wich can be distributed over many nodes. Data can be fully replicated or distributed by equals parts over all nodes providing fault-tolerant and highly available storage. Cluster is masterless and each node can handle read and write requests. N, R and W properties must be set manually before using bucket.
+
+Requirements
+------------
+
+You will need the python Riak client. You can install it in usual way, for example ``pip install riak``.
+
+Configuration
+-------------
+
+You can set host and bucket name. Riak client by default will use HTTP method to communicate with cluster.
+
+Available options:
+
+``host``:
+	The URL of the Riak node. Defaults to ``127.0.0.1``.
+
+``bucket``:
+	The name of the bucket MapProxy uses for this cache. Bucket is like namespace for key/value pool. Defaults to ``tiles``.
