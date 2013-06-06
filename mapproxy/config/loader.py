@@ -1111,7 +1111,9 @@ class CacheConfiguration(ConfigurationBase):
 
             tile_creator_class = None
             if not self.context.renderd and renderd_address:
-                from mapproxy.cache.renderd import RenderdTileCreator
+                from mapproxy.cache.renderd import RenderdTileCreator, has_renderd_support
+                if not has_renderd_support():
+                    raise ConfigurationError("renderd requires Python >=2.6 and requests")
                 if self.context.seed:
                     priority = 10
                 else:

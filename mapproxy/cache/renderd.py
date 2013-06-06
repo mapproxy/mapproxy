@@ -14,15 +14,27 @@
 # limitations under the License.
 
 from __future__ import with_statement
-import json
 import time
-import requests
 import hashlib
+
+try:
+    import json; json
+except ImportError:
+    json = None
+
+try:
+    import requests; requests
+except ImportError:
+    requests = None
 
 from mapproxy.client.log import log_request
 from mapproxy.cache.tile import TileCreator, Tile
 from mapproxy.source import SourceError
 
+def has_renderd_support():
+    if not json or not requests:
+        return False
+    return True
 
 class RenderdTileCreator(TileCreator):
     def __init__(self, renderd_address, tile_mgr, dimensions=None, priority=100, tile_locker=None):

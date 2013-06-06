@@ -26,6 +26,7 @@ from mapproxy.test.http import mock_httpd
 from mapproxy.test.image import create_tmp_image
 from mapproxy.test.system.test_wms import is_111_exception
 from mapproxy.util import ensure_directory
+from mapproxy.cache.renderd import has_renderd_support
 
 from nose.tools import eq_
 
@@ -33,6 +34,9 @@ test_config = {}
 base_config = make_base_config(test_config)
 
 def setup_module():
+    if not has_renderd_support():
+        raise SkipTest("requests required")
+
     module_setup(test_config, 'renderd_client.yaml', with_cache_data=True)
 
 def teardown_module():
