@@ -15,7 +15,12 @@
 
 from __future__ import with_statement
 import os
-import json
+
+try:
+    import json; json
+except ImportError:
+    # test skipped later
+    json = None
 
 from mapproxy.test.image import img_from_buf
 from mapproxy.test.http import mock_single_req_httpd
