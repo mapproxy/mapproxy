@@ -65,6 +65,7 @@ class ProxyConfiguration(object):
 
         self.grids['GLOBAL_GEODETIC'] = GridConfiguration(dict(srs='EPSG:4326', name='GLOBAL_GEODETIC'), context=self)
         self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913', name='GLOBAL_MERCATOR'), context=self)
+        self.grids['GLOBAL_WEBMERCATOR'] = GridConfiguration(dict(srs='EPSG:3857', origin='nw', name='GLOBAL_WEBMERCATOR'), context=self)
 
         for grid_name, grid_conf in (self.configuration.get('grids') or {}).iteritems():
             grid_conf.setdefault('name', grid_name)

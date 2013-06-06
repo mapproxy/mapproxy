@@ -492,6 +492,19 @@ grids
 Here you can define the tile grids that MapProxy uses for the internal caching.
 There are multiple options to define the grid, but beware, not all are required at the same time and some combinations will result in ambiguous results.
 
+There are three pre-defined grids all with global coverage:
+
+- ``GLOBAL_GEODETIC``: EPSG:4326, origin south-west, compatible with OpenLayers map in EPSG:4326
+- ``GLOBAL_MERCATOR``: EPSG:900913, origin south-west, compatible with OpenLayers map in EPSG:900913
+- ``GLOBAL_WEBMERCATOR``: similar to ``GLOBAL_MERCATOR`` but uses EPSG:3857 and origin north-west, compatible with OpenStreetMap/etc.
+
+.. versionadded:: 1.6.0
+    ``GLOBAL_WEBMERCATOR``
+
+``name``
+""""""""
+
+Overwrite the name of the grid used in WMTS URLs. The name is also used in TMS and KML URLs when the ``use_grid_names`` option of the services is set to ``true``.
 
 ``srs``
 """""""

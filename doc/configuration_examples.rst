@@ -90,7 +90,7 @@ Here is a minimal example::
 
  caches:
    mycache:
-     grids: [GLOBAL_MERCATOR]
+     grids: [GLOBAL_WEBMERCATOR]
      sources: [my_tile_source]
 
  sources:
@@ -113,7 +113,10 @@ Here is an example of a WMTS source::
 
 .. _osm_tile_conf:
 
-It is also very likely that you need to change the grid of the source. Most TMS services should be compatible with the ``GLOBAL_MERCATOR`` definition, but OpenStreetMap or Google Maps start to count tiles from a different origin (north west, instead of south west). Other tile services will use different SRS, bounding boxes or resolutions. You need to check the capabilities of your service and :ref:`configure a compatible grid <grids>`.
+You can use the ``GLOBAL_WEBMERCATOR`` grid for OpenStreetMap or Google Maps compatible sources. Most TMS services should be compatible with the ``GLOBAL_MERCATOR`` definition that is similar to ``GLOBAL_WEBMERCATOR`` but uses a different origin (south west (TMS) instead of north west (OSM/WMTS/Google Maps/etc.)).
+Other tile services might use different SRS, bounding boxes or resolutions. You need to check the capabilities of your service and :ref:`configure a compatible grid <grids>`.
+
+You also need to create your own grid when you want to change the name of it, which will appear in the WMTS or TMS URL.
 
 Example configuration for an OpenStreetMap tile service::
 
@@ -124,7 +127,7 @@ Example configuration for an OpenStreetMap tile service::
 
   caches:
     mycache:
-      grids: [tile_grid_of_source]
+      grids: [webmercator]
       sources: [my_tile_source]
 
   sources:
@@ -134,9 +137,8 @@ Example configuration for an OpenStreetMap tile service::
       url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
  grids:
-  tile_grid_of_source:
-    base: GLOBAL_MERCATOR
-    origin: nw
+  webmercator:
+    base: GLOBAL_WEBMERCATOR
 
 .. note:: Please make sure you are allowed to access the tile service. Commercial tile provider often prohibit the direct access to tiles. The tile service from OpenStreetMap has a strict `Tile Usage Prolicy <http://wiki.openstreetmap.org/wiki/Tile_usage_policy>`_.
 
