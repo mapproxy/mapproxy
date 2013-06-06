@@ -78,13 +78,13 @@ class cached_property(object):
 
 def memoize(func):
     @wraps(func)
-    def wrapper(*args):
-        if not hasattr(func, '__memoize_cache'):
-            func.__memoize_cache = {}
-        key = args
-        if key not in func.__memoize_cache:
-            func.__memoize_cache[key] = func(*args)
-        return func.__memoize_cache[key]
+    def wrapper(self, *args):
+        if not hasattr(self, '__memoize_cache'):
+            self.__memoize_cache = {}
+        cache = self.__memoize_cache.setdefault(func, {})
+        if args not in cache:
+            cache[args] = func(self, *args)
+        return cache[args]
     return wrapper
 
 def swap_dir(src_dir, dst_dir, keep_old=False, backup_ext='.tmp'):
@@ -124,7 +124,7 @@ def _force_rename_dir(src_dir, dst_dir):
         else:
             break # on success
 
-def timestamp_before(weeks=0, days=0, hours=0, minutes=0):
+def timestamp_before(weeks=0, days=0, hours=0, minutes=0, seconds=0):
     """
     >>> time.time() - timestamp_before(minutes=1) - 60 <= 1
     True
@@ -133,7 +133,7 @@ def timestamp_before(weeks=0, days=0, hours=0, minutes=0):
     >>> time.time() - timestamp_before(hours=2) - 7200 <= 1
     True
     """
-    delta = datetime.timedelta(weeks=weeks, days=days, hours=hours, minutes=minutes)
+    delta = datetime.timedelta(weeks=weeks, days=days, hours=hours, minutes=minutes, seconds=seconds)
     before = datetime.datetime.now() - delta
     return time.mktime(before.timetuple())
 
@@ -157,7 +157,12 @@ def timestamp_from_isodate(isodate):
 def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
                       file_handler=None):
     if file_handler is None:
+        if before_timestamp == 0 and remove_empty_dirs == True and os.path.exists(directory):
+            shutil.rmtree(directory, ignore_errors=True)
+            return
+
         file_handler = os.remove
+
     if os.path.exists(directory):
         for dirpath, dirnames, filenames in os.walk(directory, topdown=False):
             if not filenames:
@@ -168,6 +173,8 @@ def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
             for filename in filenames:
                 filename = os.path.join(dirpath, filename)
                 try:
+                    if before_timestamp == 0:
+                        file_handler(filename)
                     if os.lstat(filename).st_mtime < before_timestamp:
                         file_handler(filename)
                 except OSError, ex:

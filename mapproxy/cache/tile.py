@@ -45,7 +45,6 @@ from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
 from mapproxy.util import async
 
-
 class TileManager(object):
     """
     Manages tiles for a single grid.
@@ -57,10 +56,11 @@ class TileManager(object):
         return this or a new tile object.
     """
     def __init__(self, grid, cache, sources, format, image_opts=None, request_format=None,
-        meta_buffer=None, meta_size=None, minimize_meta_requests=False,
-        pre_store_filter=None, concurrent_tile_creators=1):
+        meta_buffer=None, meta_size=None, minimize_meta_requests=False, identifier=None,
+        pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None):
         self.grid = grid
         self.cache = cache
+        self.identifier = identifier
         self.meta_grid = None
         self.format = format
         self.image_opts = image_opts
@@ -71,6 +71,7 @@ class TileManager(object):
         self.transparent = self.sources[0].transparent
         self.pre_store_filter = pre_store_filter or []
         self.concurrent_tile_creators = concurrent_tile_creators
+        self.tile_creator_class = tile_creator_class or TileCreator
 
         if meta_buffer or (meta_size and not meta_size == [1, 1]):
             if all(source.supports_meta_tiles for source in sources):
@@ -135,8 +136,7 @@ class TileManager(object):
         self.cache.remove_tiles(tiles)
 
     def creator(self, dimensions=None):
-        return TileCreator(self.cache, self.sources, self.grid, self.meta_grid,
-            self, dimensions=dimensions)
+        return self.tile_creator_class(self, dimensions=dimensions)
 
     def lock(self, tile):
         if self.meta_grid:
@@ -196,11 +196,11 @@ class TileManager(object):
         return tile
 
 class TileCreator(object):
-    def __init__(self, cache, sources, grid, meta_grid, tile_mgr, dimensions=None):
-        self.cache = cache
-        self.sources = sources
-        self.grid = grid
-        self.meta_grid = meta_grid
+    def __init__(self, tile_mgr, dimensions=None):
+        self.cache = tile_mgr.cache
+        self.sources = tile_mgr.sources
+        self.grid = tile_mgr.grid
+        self.meta_grid = tile_mgr.meta_grid
         self.tile_mgr = tile_mgr
         self.dimensions = dimensions
 

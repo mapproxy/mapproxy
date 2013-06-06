@@ -492,6 +492,19 @@ grids
 Here you can define the tile grids that MapProxy uses for the internal caching.
 There are multiple options to define the grid, but beware, not all are required at the same time and some combinations will result in ambiguous results.
 
+There are three pre-defined grids all with global coverage:
+
+- ``GLOBAL_GEODETIC``: EPSG:4326, origin south-west, compatible with OpenLayers map in EPSG:4326
+- ``GLOBAL_MERCATOR``: EPSG:900913, origin south-west, compatible with OpenLayers map in EPSG:900913
+- ``GLOBAL_WEBMERCATOR``: similar to ``GLOBAL_MERCATOR`` but uses EPSG:3857 and origin north-west, compatible with OpenStreetMap/etc.
+
+.. versionadded:: 1.6.0
+    ``GLOBAL_WEBMERCATOR``
+
+``name``
+""""""""
+
+Overwrite the name of the grid used in WMTS URLs. The name is also used in TMS and KML URLs when the ``use_grid_names`` option of the services is set to ``true``.
 
 ``srs``
 """""""
@@ -912,11 +925,6 @@ Available options are:
 
 ``opacity``
   Configures the opacity of a layer or cache. This value is used when the source or cache is placed on other layers and it can be used to overlay non-transparent images. It does not alter the image itself, and only effects when multiple layers are merged to one image. The value should be between 0.0 (full transparent) and 1.0 (opaque, i.e. the layers below will not be rendered).
-
-.. versionadded:: 1.6.0
-
-``merge_method``
-  Define how multiple layers are merged into one image. The default method only works when you merge transparent layers on layers with an opaque background. You can change that to use `real alpha compositing <http://en.wikipedia.org/wiki/Alpha_compositing>`_ by setting ``merge_method`` to ``composite``. ``composite`` :ref:`requires Pillow >= 2.0 instead of PIL <dependencies_pil>`.
 
 
 ``encoding_options``

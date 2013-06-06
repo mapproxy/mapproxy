@@ -645,8 +645,14 @@ class TileGrid(object):
                 (self.grid_sizes[self_level][0] - 1, self.grid_sizes[self_level][1] - 1, self_level)
             ])
 
-            bbox, level = other.get_affected_bbox_and_level(level_bbox, level_size)
-            bbox, grid_size, tiles = other.get_affected_level_tiles(level_bbox, level)
+            try:
+                bbox, level = other.get_affected_bbox_and_level(level_bbox, level_size)
+            except NoTiles:
+                return False
+            try:
+                bbox, grid_size, tiles = other.get_affected_level_tiles(level_bbox, level)
+            except GridError:
+                return False
 
             if other.resolution(level) != self_level_res:
                 return False

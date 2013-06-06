@@ -19,7 +19,6 @@ import sys
 import logging
 
 from optparse import OptionParser
-from mapproxy.util import local_base_config
 from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import load_seed_tasks_conf
 from mapproxy.seed.seeder import seed
@@ -123,7 +122,7 @@ class SeedScript(object):
         else:
             cache_locker = None
 
-        with local_base_config(mapproxy_conf.base_config):
+        with mapproxy_conf:
             try:
                 seed_conf = load_seed_tasks_conf(options.seed_file, mapproxy_conf)
                 seed_names, cleanup_names = self.task_names(seed_conf, options)
@@ -229,6 +228,7 @@ class SeedScript(object):
                 selected_cleanup_tasks.append(task)
         cleanup_tasks = selected_cleanup_tasks
         return seed_tasks, cleanup_tasks
+
 
 def main():
     return SeedScript()()

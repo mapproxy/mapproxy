@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,10 +27,10 @@ try:
     import eventlet.tpool
     import eventlet.patcher
     _has_eventlet = True
-    
+
     import eventlet.debug
     eventlet.debug.hub_exceptions(False)
-    
+
 except ImportError:
     _has_eventlet = False
 
@@ -44,17 +44,17 @@ class AsyncResult(object):
     def __init__(self, result=None, exception=None):
         self.result = result
         self.exception = exception
-    
+
     def __repr__(self):
         return "<AsyncResult result='%s' exception='%s'>" % (
             self.result, self.exception)
-    
+
 
 def _result_iter(results, use_result_objects=False):
     for result in results:
         if use_result_objects:
             exception = None
-            if (isinstance(result, tuple) and len(result) == 3 and 
+            if (isinstance(result, tuple) and len(result) == 3 and
                 isinstance(result[1], Exception)):
                 exception = result
                 result = None
@@ -66,14 +66,14 @@ class EventletPool(object):
     def __init__(self, size=100):
         self.size = size
         self.base_config = base_config()
-    
+
     def shutdown(self, force=False):
         # there is not way to stop a GreenPool
         pass
-    
+
     def map(self, func, *args, **kw):
         return list(self.imap(func, *args, **kw))
-        
+
     def imap(self, func, *args, **kw):
         use_result_objects = kw.get('use_result_objects', False)
         def call(*args):
@@ -90,7 +90,7 @@ class EventletPool(object):
             return _result_iter([call(*zip(*args)[0])], use_result_objects)
         pool = eventlet.greenpool.GreenPool(self.size)
         return _result_iter(pool.imap(call, *args), use_result_objects)
-    
+
     def starmap(self, func, args, **kw):
         use_result_objects = kw.get('use_result_objects', False)
         def call(*args):
@@ -107,7 +107,7 @@ class EventletPool(object):
             return _result_iter([call(*args[0])], use_result_objects)
         pool = eventlet.greenpool.GreenPool(self.size)
         return _result_iter(pool.starmap(call, args), use_result_objects)
-    
+
     def starcall(self, args, **kw):
         use_result_objects = kw.get('use_result_objects', False)
         def call(func, *args):
@@ -124,7 +124,7 @@ class EventletPool(object):
             return _result_iter([call(args[0][0], *args[0][1:])], use_result_objects)
         pool = eventlet.greenpool.GreenPool(self.size)
         return _result_iter(pool.starmap(call, args), use_result_objects)
-    
+
 
 class ThreadWorker(threading.Thread):
     def __init__(self, task_queue, result_queue):
@@ -146,7 +146,7 @@ class ThreadWorker(threading.Thread):
                     result = sys.exc_info()
                 self.result_queue.put((exec_id, result))
                 self.task_queue.task_done()
-        
+
 
 def _consume_queue(queue):
     """
@@ -158,7 +158,7 @@ def _consume_queue(queue):
             queue.task_done()
         except Queue.Empty:
             pass
-    
+
 
 class ThreadPool(object):
     def __init__(self, size=4):
@@ -178,15 +178,15 @@ class ThreadPool(object):
                 except Exception:
                     yield sys.exc_info()
             raise StopIteration()
-        
+
         self.pool = self._init_pool()
-        
+
         i = 0
         for i, (func, arg) in enumerate(func_args):
             self.task_queue.put((i, func, arg))
-        
+
         results = {}
-        
+
         next_result = 0
         for value in self._get_results(next_result, results, raise_exceptions):
             yield value
@@ -196,9 +196,9 @@ class ThreadPool(object):
         for value in self._get_results(next_result, results, raise_exceptions):
             yield value
             next_result += 1
-        
+
         self.shutdown()
-    
+
     def _single_call(self, func, args, use_result_objects):
         try:
             result = func(*args)
@@ -207,30 +207,30 @@ class ThreadPool(object):
                 raise
             result = sys.exc_info()
         return _result_iter([result], use_result_objects)
-        
+
     def map(self, func, *args, **kw):
         return list(self.imap(func, *args, **kw))
-        
+
     def imap(self, func, *args, **kw):
         use_result_objects = kw.get('use_result_objects', False)
         if len(args[0]) == 1:
             return self._single_call(func, zip(*args)[0], use_result_objects)
         return _result_iter(self.map_each([(func, arg) for arg in zip(*args)], raise_exceptions=not use_result_objects),
                             use_result_objects)
-    
+
     def starmap(self, func, args, **kw):
         use_result_objects = kw.get('use_result_objects', False)
         if len(args[0]) == 1:
             return self._single_call(func, args[0], use_result_objects)
-        
+
         return _result_iter(self.map_each([(func, arg) for arg in args], raise_exceptions=not use_result_objects),
                             use_result_objects)
-    
+
     def starcall(self, args, **kw):
         def call(func, *args):
             return func(*args)
         return self.starmap(call, args, **kw)
-    
+
     def _get_results(self, next_result, results, raise_exceptions):
         for i, value in self._fetch_results(raise_exceptions):
             if i == next_result:
@@ -241,18 +241,18 @@ class ThreadPool(object):
                     next_result += 1
             else:
                 results[i] = value
-    
+
     def _fetch_results(self, raise_exceptions):
         while not self.task_queue.empty() or not self.result_queue.empty():
             task_result = self.result_queue.get()
             if (raise_exceptions and isinstance(task_result[1], tuple) and
-                len(task_result[1]) == 3 and 
+                len(task_result[1]) == 3 and
                 isinstance(task_result[1][1], Exception)):
                 self.shutdown(force=True)
                 exc_class, exc, tb = task_result[1]
                 raise exc_class, exc, tb
             yield task_result
-    
+
     def shutdown(self, force=False):
         """
         Send shutdown sentinel to all executor threads. If `force` is True,
@@ -263,7 +263,7 @@ class ThreadPool(object):
             _consume_queue(self.result_queue)
         for _ in range(self.pool_size):
             self.task_queue.put(None)
-    
+
     def _init_pool(self):
         if self.pool_size < 2:
             return []
@@ -274,7 +274,7 @@ class ThreadPool(object):
             t.start()
             pool.append(t)
         return pool
-    
+
 
 def imap_async_eventlet(func, *args):
     pool = EventletPool()
@@ -303,7 +303,7 @@ def starcall_async_threaded(args):
 
 def run_non_blocking_eventlet(func, args, kw={}):
     return eventlet.tpool.execute(func, *args, **kw)
-    
+
 def run_non_blocking_threaded(func, args, kw={}):
     return func(*args, **kw)
 

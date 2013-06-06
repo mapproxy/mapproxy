@@ -91,6 +91,9 @@ cache_types = {
         'use_grid_names': bool(),
         'directory': str(),
     },
+    'sqlite': {
+        'directory': str()
+    },
     'mbtiles': {
         'filename': str()
     },
@@ -228,6 +231,9 @@ mapproxy_yaml_spec = {
             'expires_hours': number(),
         },
         'mapserver': mapserver_opts,
+        'renderd': {
+            'address': str(),
+        }
     },
     'grids': {
         anything(): grid_opts,

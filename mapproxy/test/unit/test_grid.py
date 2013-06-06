@@ -1208,3 +1208,10 @@ class TestGridSubset(object):
             res=[250], origin='sw')
 
         assert not g1.is_subset_of(g2)
+
+    def test_no_tile_errors(self):
+        # g1 is not a subset, check that we don't get any NoTile errors
+        g1 = tile_grid(SRS(3857), res=[100000, 50000, 10000, 1000, 100, 10, 1, 0.5])
+        g2 = tile_grid(SRS(3857), res=[100, 1])
+
+        assert not g1.is_subset_of(g2)

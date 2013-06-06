@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,9 +45,8 @@ except ImportError:
         ImageColor = NoPIL()
         ImageColor.getrgb = lambda x: x
 
-def require_alpha_composite_support():
-    if not hasattr(Image, 'alpha_composite'):
-        raise ImportError('Pillow required for alpha_composite support')
+def has_alpha_composite_support():
+    return hasattr(Image, 'alpha_composite')
 
 def quantize_pil(img, colors=256, alpha=False, defaults=None):
     if hasattr(Image, 'FASTOCTREE'):
@@ -65,6 +64,6 @@ def quantize_pil(img, colors=256, alpha=False, defaults=None):
                 defaults['transparency'] = 255
         else:
             img = img.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=colors)
-       
+
     return img
 quantize = quantize_pil

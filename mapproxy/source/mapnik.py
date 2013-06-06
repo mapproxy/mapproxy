@@ -17,6 +17,7 @@ from __future__ import with_statement, absolute_import
 
 import sys
 import time
+import threading
 from cStringIO import StringIO
 
 from mapproxy.grid import tile_grid
@@ -32,28 +33,32 @@ try:
     import mapnik
     mapnik
 except ImportError:
-    mapnik = None
+    try:
+        # for 2.0 alpha/rcs and first 2.0 release
+        import mapnik2 as mapnik
+    except ImportError:
+        mapnik = None
 
-try:
-    import mapnik2
-    mapnik2
-except ImportError:
-    mapnik2 = None
-
+# fake 2.0 API for older versions
+if mapnik and not hasattr(mapnik, 'Box2d'):
+    mapnik.Box2d = mapnik.Envelope
 
 import logging
 log = logging.getLogger(__name__)
 
 class MapnikSource(MapLayer):
     supports_meta_tiles = True
-    mapnik = mapnik
-    def __init__(self, mapfile, layers=None, image_opts=None, coverage=None, res_range=None, lock=None):
+    def __init__(self, mapfile, layers=None, image_opts=None, coverage=None,
+        res_range=None, lock=None, reuse_map_objects=False):
         MapLayer.__init__(self, image_opts=image_opts)
         self.mapfile = mapfile
         self.coverage = coverage
         self.res_range = res_range
         self.layers = set(layers) if layers else None
         self.lock = lock
+        self._map_objs = {}
+        self._map_objs_lock = threading.Lock()
+        self._cache_map_obj = reuse_map_objects
         if self.coverage:
             self.extent = MapExtent(self.coverage.bbox, self.coverage.srs)
         else:
@@ -87,19 +92,38 @@ class MapnikSource(MapLayer):
         else:
             return self.render_mapfile(mapfile, query)
 
+    def map_obj(self, mapfile):
+        if not self._cache_map_obj:
+            m = mapnik.Map(0, 0)
+            mapnik.load_map(m, str(mapfile))
+            return m
+
+        # cache loaded map objects
+        # only works when a single proc/thread accesses this object
+        # (forking the render process doesn't work because of open database
+        #  file handles that gets passed to the child)
+        if mapfile not in self._map_objs:
+            with self._map_objs_lock:
+                if mapfile not in self._map_objs:
+                    m = mapnik.Map(0, 0)
+                    mapnik.load_map(m, str(mapfile))
+                    self._map_objs[mapfile] = m
+
+        return self._map_objs[mapfile]
+
     def render_mapfile(self, mapfile, query):
         return run_non_blocking(self._render_mapfile, (mapfile, query))
 
     def _render_mapfile(self, mapfile, query):
         start_time = time.time()
-        data = None
-        try:
-            m = self.mapnik.Map(query.size[0], query.size[1])
-            self.mapnik.load_map(m, str(mapfile))
-            m.srs = '+init=%s' % str(query.srs.srs_code.lower())
-            envelope = self.mapnik.Envelope(*query.bbox)
-            m.zoom_to_box(envelope)
 
+        m = self.map_obj(mapfile)
+        m.resize(query.size[0], query.size[1])
+        m.srs = '+init=%s' % str(query.srs.srs_code.lower())
+        envelope = mapnik.Box2d(*query.bbox)
+        m.zoom_to_box(envelope)
+
+        try:
             if self.layers:
                 i = 0
                 for layer in m.layers[:]:
@@ -108,8 +132,8 @@ class MapnikSource(MapLayer):
                     else:
                         i += 1
 
-            img = self.mapnik.Image(query.size[0], query.size[1])
-            self.mapnik.render(m, img)
+            img = mapnik.Image(query.size[0], query.size[1])
+            mapnik.render(m, img)
             data = img.tostring(str(query.format))
         finally:
             size = None
@@ -120,8 +144,3 @@ class MapnikSource(MapLayer):
 
         return ImageSource(StringIO(data), size=query.size,
             image_opts=ImageOptions(transparent=self.transparent, format=query.format))
-
-
-class Mapnik2Source(MapnikSource):
-    mapnik = mapnik2
-

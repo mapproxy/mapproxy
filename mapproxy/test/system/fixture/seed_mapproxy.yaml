@@ -12,6 +12,12 @@ caches:
     cache:
       type: mbtiles
 
+  sqlite_cache:
+    sources: [source_c]
+    grids: [GLOBAL_GEODETIC]
+    cache:
+      type: sqlite
+
 sources:
   source_a:
     type: wms
@@ -23,3 +29,8 @@ sources:
     req:
       url: http://localhost:42423/service?
       layers: bar
+  source_c:
+    type: wms
+    req:
+      url: http://localhost:42423/service?
+      layers: baz

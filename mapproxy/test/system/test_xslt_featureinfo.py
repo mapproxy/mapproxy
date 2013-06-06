@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -52,7 +52,7 @@ xslt_output = """
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  <xsl:template match="/">
     <bars>
-      <xsl:apply-templates/> 
+      <xsl:apply-templates/>
     </bars>
  </xsl:template>
 
@@ -68,7 +68,7 @@ xslt_output_html = """
     <html>
       <body>
         <h1>Bars</h1>
-        <xsl:apply-templates/> 
+        <xsl:apply-templates/>
       </body>
     </html>
  </xsl:template>
@@ -109,7 +109,7 @@ class TestWMSXSLTFeatureInfo(SystemTest):
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
                                   '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=a_one&i=10&J=20&info_format=text/xml'},
-                        {'body': fi_body, 'headers': {'content-type': 'text/xml'}})
+                        {'body': fi_body, 'headers': {'content-type': 'text/xml; charset=UTF-8'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'application/vnd.ogc.gml')
@@ -182,7 +182,7 @@ class TestWMSXSLTFeatureInfo(SystemTest):
             eq_(resp.content_type, 'text/html')
             eq_(strip_whitespace(resp.body),
                 '<html><body><h1>Bars</h1><p>Bar1</p><p>Bar2</p><p>Bar3</p></body></html>')
-    
+
     def test_mixed_featureinfo(self):
         fi_body1 = "Hello"
         fi_body2 = "<a><b>Bar2</b></a>"

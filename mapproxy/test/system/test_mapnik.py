@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,21 +29,14 @@ test_config = {}
 mapnik_xml = """
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE Map>
-<Map bgcolor="#ff0000" srs="+proj=latlong +datum=WGS84">
-</Map>
-""".strip()
-
-mapnik_l2_xml = """
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE Map>
-<Map bgcolor="#0000ff" srs="+proj=latlong +datum=WGS84">
+<Map background-color="#ff0000" bgcolor="#ff0000" srs="+proj=latlong +datum=WGS84">
 </Map>
 """.strip()
 
 mapnik_transp_xml = """
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE Map>
-<Map bgcolor="transparent" srs="+proj=latlong +datum=WGS84">
+<Map background-color="transparent" srs="+proj=latlong +datum=WGS84">
 </Map>
 """.strip()
 
@@ -55,12 +48,10 @@ def setup_module():
     except ImportError:
         from nose.plugins.skip import SkipTest
         raise SkipTest('requires mapnik')
-    
+
     module_setup(test_config, 'mapnik_source.yaml')
     with open(os.path.join(test_config['base_dir'], 'mapnik.xml'), 'w') as f:
         f.write(mapnik_xml)
-    with open(os.path.join(test_config['base_dir'], 'mapnik-02.xml'), 'w') as f:
-        f.write(mapnik_l2_xml)
     with open(os.path.join(test_config['base_dir'], 'mapnik-transparent.xml'), 'w') as f:
         f.write(mapnik_transp_xml)
 
@@ -76,20 +67,20 @@ class TestMapnikSource(SystemTest):
                 '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
                 '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
                 '&WIDTH=200&')
-        
+
         resp = self.app.get(req)
         data = StringIO(resp.body)
         img = Image.open(data)
         colors = img.getcolors(1)
         # map bg color
         eq_(colors[0], (40000, (255, 0, 0, 255)))
-    
+
     def test_get_map_outside_coverage(self):
         req = (r'/service?LAYERs=mapnik&SERVICE=WMS&FORMAT=image%2Fpng'
                 '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
                 '&VERSION=1.1.1&BBOX=-175,-85,-172,-82&styles='
                 '&WIDTH=200&&BGCOLOR=0x00ff00')
-        
+
         resp = self.app.get(req)
         data = StringIO(resp.body)
         img = Image.open(data)
@@ -102,7 +93,7 @@ class TestMapnikSource(SystemTest):
                 '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
                 '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
                 '&WIDTH=200&&BGCOLOR=0x00ff00')
-        
+
         resp = self.app.get(req)
         assert 'unknown.xml' in resp.body, resp.body
 
@@ -111,7 +102,7 @@ class TestMapnikSource(SystemTest):
                 '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
                 '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
                 '&WIDTH=200&transparent=True')
-        
+
         resp = self.app.get(req)
         data = StringIO(resp.body)
         img = Image.open(data)
