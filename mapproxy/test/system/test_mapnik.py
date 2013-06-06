@@ -29,14 +29,7 @@ test_config = {}
 mapnik_xml = """
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE Map>
-<Map background-color="#ff0000" srs="+proj=latlong +datum=WGS84">
-</Map>
-""".strip()
-
-mapnik_l2_xml = """
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE Map>
-<Map background-color="#0000ff" srs="+proj=latlong +datum=WGS84">
+<Map background-color="#ff0000" bgcolor="#ff0000" srs="+proj=latlong +datum=WGS84">
 </Map>
 """.strip()
 
@@ -59,8 +52,6 @@ def setup_module():
     module_setup(test_config, 'mapnik_source.yaml')
     with open(os.path.join(test_config['base_dir'], 'mapnik.xml'), 'w') as f:
         f.write(mapnik_xml)
-    with open(os.path.join(test_config['base_dir'], 'mapnik-02.xml'), 'w') as f:
-        f.write(mapnik_l2_xml)
     with open(os.path.join(test_config['base_dir'], 'mapnik-transparent.xml'), 'w') as f:
         f.write(mapnik_transp_xml)
 
