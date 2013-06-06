@@ -55,21 +55,29 @@ class RiakCache(TileCacheBase):
             return self.bucket.new_binary(key, None);
         except Exception, e:
             log.warn('error while requesting %s: %s', key, e)
+            
+    def _get_timestamp(self, obj):
+        metadata = obj.get_usermeta()
+        try:
+            timestamp = int(metadata["timestamp"])
+        except Exception:
+            timestamp = int(time.time())
+            obj.set_usermeta({"timestamp":timestamp})
+            
+        return timestamp
 
     def is_cached(self, tile):
-        if tile.coord is None or tile.source:
-            return True
-        res = self._get_object(tile.coord)
-        res.reload()
-        if res.exists():
-            metadata = res.get_usermeta()
-            try:
-                tile.timestamp = int(metadata["timestamp"])
-            except ValueError:
-                tile.timestamp = int(time.time())
-            return True
+        if tile.is_missing():
+            res = self._get_object(tile.coord)
+            res.reload()
+            if res.exists():
+                tile.timestamp = self._get_timestamp(res)
+                tile.size = len(res.get_data())
+                return True
+            else:
+                return False
         
-        return False
+        return True
 
     def _store_bulk(self, tiles):
         for tile in tiles:
@@ -100,7 +108,7 @@ class RiakCache(TileCacheBase):
         self.is_cached(tile)
 
     def load_tile(self, tile, with_metadata=False):
-        if tile.source or tile.coord is None:
+        if not tile.is_missing():
             return True
         
         res = self._get_object(tile.coord)
@@ -108,11 +116,9 @@ class RiakCache(TileCacheBase):
         if res.exists():
             tile_data = StringIO(res.get_data())
             tile.source = ImageSource(tile_data)
-            metadata = res.get_usermeta()
-            try:
-                tile.timestamp = int(metadata["timestamp"])
-            except ValueError:
-                tile.timestamp = int(time.time())
+            if with_metadata:
+                tile.timestamp = self._get_timestamp(res)
+                tile.size = len(res.get_data())
             return True
         
         return False
@@ -120,7 +126,7 @@ class RiakCache(TileCacheBase):
     def remove_tile(self, tile):
         if tile.coord is None:
             return True
-        res = self.get_binary(tile.coord)
+        res = self._get_object(tile.coord)
         if not res.exists():
             # already removed
             return True
