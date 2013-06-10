@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2011 Omniscale <http://omniscale.de>
+# Copyright (C) 2013 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,13 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
+from __future__ import with_statement, absolute_import
 
 import time
+import urlparse
+import threading
 
 from cStringIO import StringIO
 
 from mapproxy.image import ImageSource
+from mapproxy.cache.tile import Tile
 from mapproxy.cache.base import (
     TileCacheBase, DummyLock,
     tile_buffer, CacheBackendError,)
@@ -36,46 +39,62 @@ class UnexpectedResponse(CacheBackendError):
     pass
 
 class RiakCache(TileCacheBase):
-    def __init__(self, host, bucket, port, prefix):
+    def __init__(self, url, bucket, prefix, tile_grid):
         if riak is None:
             raise ImportError("Riak backend requires 'riak' package.")
+        
+        urlparts = urlparse.urlparse(url)
+        if urlparts.scheme.lower() == 'http':
+            self.transport_class = riak.RiakHttpTransport
+        elif urlparts.scheme.lower() == 'pbc':
+            self.transport_class = riak.RiakPbcTransport
+        else:
+            raise ValueError('unknown Riak URL: %s' % urlparts.scheme)
+        
+        self.host = urlparts.hostname
+        self.port = urlparts.port
+        self.prefix = prefix
+        self.bucket_name = bucket
+        self.tile_grid = tile_grid
+        self._db_conn_cache = threading.local()
 
-        self.client = None
-        self.bucket = None
-        try:
-            self.client = riak.RiakClient(host=host)
-            self.bucket = self.client.bucket(bucket)
-        except Exception, e:
-            log.warn('Unable to initialize RiakClient: %s', e)
+    @property
+    def connection(self):
+        if not getattr(self._db_conn_cache, 'connection', None):
+            self._db_conn_cache.connection = riak.RiakClient(host=self.host, port=self.port,
+                transport_class=self.transport_class, prefix=self.prefix)
+        return self._db_conn_cache.connection
+
+    @property
+    def bucket(self):
+        return self.connection.bucket(self.bucket_name)
 
     def _get_object(self, coord):
         (x, y, z) = coord
-        key = "%(z)d_%(x)d_%(y)d" % locals()
+        key = '%(z)d_%(x)d_%(y)d' % locals()
         try:
-            return self.bucket.new_binary(key, None);
+            return self.bucket.get_binary(key)
         except Exception, e:
             log.warn('error while requesting %s: %s', key, e)
             
     def _get_timestamp(self, obj):
         metadata = obj.get_usermeta()
-        try:
-            timestamp = int(metadata["timestamp"])
-        except Exception:
-            timestamp = int(time.time())
-            obj.set_usermeta({"timestamp":timestamp})
+        timestamp = metadata.get('timestamp')
+        if timestamp == None:
+            timestamp = float(time.time())
+            obj.set_usermeta({'timestamp':str(timestamp)})
             
-        return timestamp
+        return float(timestamp)
 
     def is_cached(self, tile):
-        if tile.is_missing():
-            res = self._get_object(tile.coord)
-            res.reload()
-            if res.exists():
-                tile.timestamp = self._get_timestamp(res)
-                tile.size = len(res.get_data())
-                return True
-            else:
-                return False
+        if tile.coord is None or tile.source:
+            return True
+        res = self._get_object(tile.coord)
+        if not res.exists():
+            return False
+            
+        tile.timestamp = self._get_timestamp(res)
+        tile.size = len(res.get_data())
         
         return True
 
@@ -85,7 +104,10 @@ class RiakCache(TileCacheBase):
             with tile_buffer(tile) as buf:
                 data = buf.read()
             res.set_data(data)
-            res.set_usermeta({"timestamp":int(time.time())})
+            res.set_usermeta({
+                'timestamp': str(tile.timestamp),
+                'size': str(tile.size),
+            })
             res.store()
 
         return True
@@ -126,6 +148,7 @@ class RiakCache(TileCacheBase):
     def remove_tile(self, tile):
         if tile.coord is None:
             return True
+        
         res = self._get_object(tile.coord)
         if not res.exists():
             # already removed

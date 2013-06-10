@@ -971,13 +971,17 @@ class CacheConfiguration(ConfigurationBase):
         
     def _riak_cache(self, grid_conf, file_ext):
         from mapproxy.cache.riakcache import RiakCache
-        host = self.conf['cache'].get('host')
-        if not host:
-            host = '127.0.0.1'
+        url = self.conf['cache'].get('url')
+        if not url:
+            url = 'pbc://127.0.0.1:8087'
         bucket = self.conf['cache'].get('bucket')
         if not bucket:
-            bucket = 'tiles'
-        return RiakCache(host=host, bucket=bucket, port=self.conf['cache'].get('port'), prefix=self.conf['cache'].get('prefix'))
+            suffix = grid_conf.tile_grid().name
+            bucket = self.conf['name'] + '_' + suffix
+        prefix = self.conf['cache'].get('prefix')
+        if not prefix:
+            prefix = 'riak'
+        return RiakCache(url=url, bucket=bucket, prefix=prefix, tile_grid=grid_conf.tile_grid())
 
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):

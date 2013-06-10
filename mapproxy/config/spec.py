@@ -106,9 +106,8 @@ cache_types = {
         'tile_id': str(),
     },
     'riak': {
-        'host': str(),
+        'url': str(),
         'bucket': str(),
-        'port': str(),
         'prefix': str(),
     }
 }
