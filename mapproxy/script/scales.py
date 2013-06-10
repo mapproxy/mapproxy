@@ -74,7 +74,7 @@ def scales_command(args=None):
     parser.add_option("--res-to-scale", default=False, action='store_true',
         help="convert resolutions to scale")
     parser.add_option("--as-res-config", default=False, action='store_true',
-        help="output as resulution list for MapProxy grid configuration")
+        help="output as resolution list for MapProxy grid configuration")
 
     if args:
         args = args[1:] # remove script name
