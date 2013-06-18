@@ -1050,6 +1050,11 @@ class CacheConfiguration(ConfigurationBase):
         if self.conf.get('format') == 'mixed' and not self.conf.get('request_format') == 'image/png':
             raise ConfigurationError('request_format must be set to image/png if mixed mode is enabled')
         request_format = self.conf.get('request_format') or self.conf.get('format')
+        if '/' in request_format:
+            request_format_ext = request_format.split('/', 1)[1]
+        else:
+            request_format_ext = request_format
+
         caches = []
 
         meta_buffer = self.context.globals.get_value('meta_buffer', self.conf,
@@ -1128,6 +1133,7 @@ class CacheConfiguration(ConfigurationBase):
                     priority=priority, tile_locker=locker)
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
                               image_opts=image_opts, identifier=identifier,
+                              request_format=request_format_ext,
                               meta_size=meta_size, meta_buffer=meta_buffer,
                               minimize_meta_requests=minimize_meta_requests,
                               concurrent_tile_creators=concurrent_tile_creators,
