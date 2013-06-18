@@ -21,10 +21,8 @@ import random
 from nose.plugins.skip import SkipTest
 
 from mapproxy.cache.riakcache import RiakCache
-from mapproxy.cache.tile import Tile
 from mapproxy.grid import tile_grid
 from mapproxy.test.image import create_tmp_image_buf
-from mapproxy.image import ImageSource
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
 tile_image = create_tmp_image_buf((256, 256), color='blue')

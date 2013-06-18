@@ -236,8 +236,11 @@ You can set host and bucket name. Riak client by default will use HTTP method to
 
 Available options:
 
-``host``:
-	The URL of the Riak node. Defaults to ``127.0.0.1``.
+``url``:
+	The URL of the Riak node. Defaults to ``pbc://127.0.0.1:8087``.
 
 ``bucket``:
-	The name of the bucket MapProxy uses for this cache. Bucket is like namespace for key/value pool. Defaults to ``tiles``.
+	The name of the bucket MapProxy uses for this cache. Bucket is like namespace for key/value pool. Defaults to cache name suffixed with grid name.
+	
+``prefix``:
+	Riak interface prefix. Defaults to ``riak``.

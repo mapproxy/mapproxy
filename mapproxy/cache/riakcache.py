@@ -22,7 +22,6 @@ import threading
 from cStringIO import StringIO
 
 from mapproxy.image import ImageSource
-from mapproxy.cache.tile import Tile
 from mapproxy.cache.base import (
     TileCacheBase, DummyLock,
     tile_buffer, CacheBackendError,)
