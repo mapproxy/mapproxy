@@ -1,4 +1,3 @@
-
 .. _configuration_examples:
 
 ######################
@@ -256,7 +255,7 @@ Reprojecting Tiles
 
 .. versionadded:: 1.5
 
-When you need to access tiles in a different projection that you source tile server offers, then you can use the feature from above.
+When you need to access tiles in a projection that is different from your source tile server, then you can use the *cache as cache source* feature from above.
 Here is an example that uses OSM tiles as a source and offers them in UTM projection. The `disable_storage` option prevents MapProxy from building up two caches. The `meta_size` makes MapProxy to reproject multiple tiles at once.
 
 
