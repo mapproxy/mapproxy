@@ -67,7 +67,6 @@ class LayerMerger(object):
 
         cacheable = self.cacheable
         result = create_image(size, image_opts)
-
         for layer_img, layer in self.layers:
             if not layer_img.cacheable:
                 cacheable = False
@@ -96,16 +95,21 @@ class LayerMerger(object):
                         ImageChops.constant(alpha, 255 * opacity)
                     )
                     img.putalpha(alpha)
-
                 if img.mode == 'RGB':
                     result.paste(img, (0, 0))
                 else:
+                    # assume paletted images have transparency
+                    if img.mode == 'P':
+                        img = img.convert('RGBA')
                     result = Image.alpha_composite(result, img)
             else:
                 if opacity is not None and opacity < 1.0:
                     img = img.convert(result.mode)
                     result = Image.blend(result, img, layer_image_opts.opacity)
-                elif img.mode == 'RGBA':
+                elif img.mode == 'RGBA' or img.mode == 'P':
+                    # assume paletted images have transparency
+                    if img.mode == 'P':
+                        img = img.convert('RGBA')
                     # paste w transparency mask from layer
                     result.paste(img, (0, 0), img)
                 else:
