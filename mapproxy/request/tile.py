@@ -84,6 +84,7 @@ class TMSRequest(TileRequest):
         (/(?P<layer>[^/]+))?
         (/(?P<layer_spec>[^/]+))?
         $''', re.VERBOSE)
+    root_request_re = re.compile(r'/tms/?$')
     use_profiles = True
     origin = 'sw'
 
@@ -92,6 +93,7 @@ class TMSRequest(TileRequest):
         self.format = None
         self.http = request
         cap_match = self.capabilities_re.match(request.path)
+        root_match = self.root_request_re.match(request.path)
         if cap_match:
             if cap_match.group('layer') is not None:
                 self.layer = cap_match.group('layer')
@@ -99,6 +101,8 @@ class TMSRequest(TileRequest):
                 if cap_match.group('layer_spec') is not None:
                     self.dimensions['_layer_spec'] = cap_match.group('layer_spec')
             self.request_handler_name = 'tms_capabilities'
+        elif root_match:
+            self.request_handler_name = 'tms_root_resource'
         else:
             self._init_request()
 

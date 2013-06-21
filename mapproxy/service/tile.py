@@ -51,9 +51,10 @@ class TileServer(Server):
     """
     names = ('tiles', 'tms')
     request_parser = staticmethod(tile_request)
-    request_methods = ('map', 'tms_capabilities')
+    request_methods = ('map', 'tms_capabilities, tms_root_resource')
     template_file = 'tms_capabilities.xml'
     layer_template_file = 'tms_tilemap_capabilities.xml'
+    root_resource_template_file = 'tms_root_resource.xml'
 
     def __init__(self, layers, md, max_tile_age=None, use_dimension_layers=False, origin=None):
         Server.__init__(self)
@@ -167,6 +168,15 @@ class TileServer(Server):
 
         return Response(result, mimetype='text/xml')
 
+    def tms_root_resource(self, tms_request):
+        """
+        :return: root resource with all available versions of the service
+        :rtype: Response
+        """        
+        service = self._service_md(tms_request)
+        result = self._render_root_resource_template(service)
+        return Response(result, mimetype='text/xml')
+
     def _service_md(self, map_request):
         md = dict(self.md)
         md['url'] = map_request.http.base_url
@@ -179,6 +189,10 @@ class TileServer(Server):
     def _render_layer_template(self, layer, service):
         template = get_template(self.layer_template_file)
         return template.substitute(service=bunch(default='', **service), layer=layer)
+
+    def _render_root_resource_template(self, service):
+        template = get_template(self.root_resource_template_file)
+        return template.substitute(service=bunch(default='', **service))
 
 class TileLayer(object):
     def __init__(self, name, title, md, tile_manager, dimensions=None):

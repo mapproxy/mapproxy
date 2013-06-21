@@ -53,6 +53,13 @@ class TestTMS(SystemTest):
         xml = resp.lxml
         eq_(xml.xpath('count(//TileSet)'), 19)
     
+    def test_tms_root_resource(self):
+        resp = self.app.get('/tms')
+        resp2 = self.app.get('/tms/')
+        assert 'TileMapService' in resp and 'TileMapService' in resp2
+        xml = resp.lxml
+        eq_(xml.xpath('//TileMapService/@version'),['1.0.0'])
+
     def test_tms_get_out_of_bounds_tile(self):
         for coord in [(0, 0, -1), (-1, 0, 0), (0, -1, 0), (4, 2, 1), (1, 3, 0)]:
             yield self.check_out_of_bounds, coord
