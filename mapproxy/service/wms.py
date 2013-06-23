@@ -120,9 +120,10 @@ class WMSServer(Server):
 
         # Provide the wrapping WSGI app or filter the opportunity to process the
         # image before it's wrapped up in a response
-        result = self.decorate_img(result, map_request.http.environ)
+        result = self.decorate_img(result, 'wms.map', actual_layers.keys(),
+            map_request.http.environ, (query.srs.srs_code, query.bbox))
 
-        resp =  Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
+        resp = Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
 
         if query.tiled_only and isinstance(result.cacheable, CacheInfo):
             cache_info = result.cacheable

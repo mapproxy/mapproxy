@@ -1,5 +1,6 @@
 from mapproxy.grid import tile_grid
 from mapproxy.image import ImageSource
+from mapproxy.image import BlankImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import MapLayer, DefaultMapExtent
 from mapproxy.platform.image import Image
@@ -7,7 +8,7 @@ from mapproxy.service.base import Server
 from mapproxy.service.tile import TileServer
 from mapproxy.service.wms import WMSGroupLayer, WMSServer
 from mapproxy.test.http import make_wsgi_env
-from nose.tools import raises, eq_
+from nose.tools import eq_
 
 
 class DummyLayer(MapLayer):
@@ -59,24 +60,34 @@ class TestDecorateImg(object):
         self.server = Server()
         # WMS Server
         root_layer = WMSGroupLayer(None, 'root layer', None, [DummyLayer('layer1')])
-        self.wms_server = WMSServer(md={}, root_layer=root_layer, srs=['EPSG:4326'],
-            image_formats={'image/png': ImageOptions(format='image/png')})
+        self.wms_server = WMSServer(
+            md={}, root_layer=root_layer, srs=['EPSG:4326'],
+            image_formats={'image/png': ImageOptions(format='image/png')}
+        )
         # Tile Server
         self.tile_server = TileServer([DummyTileLayer('layer1')], {})
+        # Common arguments
+        self.query_extent = ('EPSG:27700', (0, 0, 700000, 1300000))
 
     def test_original_imagesource_returned_when_no_callback(self):
         img_src1 = ImageSource(Image.new('RGBA', (100, 100)))
         env = make_wsgi_env('', extra_environ={})
-        img_src2 = self.server.decorate_img(img_src1, env)
+        img_src2 = self.server.decorate_img(
+            img_src1, 'wms.map', ['layer1'],
+            env, self.query_extent
+        )
         eq_(img_src1, img_src2)
 
     def test_returns_imagesource(self):
         img_src1 = ImageSource(Image.new('RGBA', (100, 100)))
         env = make_wsgi_env('', extra_environ={})
-        img_src2 = self.server.decorate_img(img_src1, env)
+        img_src2 = self.server.decorate_img(
+            img_src1, 'wms.map', ['layer1'],
+            env, self.query_extent
+        )
         assert isinstance(img_src2, ImageSource)
 
-    def set_called_callback(self, img_src):
+    def set_called_callback(self, img_src, service, layers, environ, query_extent, **kw):
         self.called = True
         return img_src
 
@@ -84,10 +95,13 @@ class TestDecorateImg(object):
         img_src1 = ImageSource(Image.new('RGBA', (100, 100)))
         self.called = False
         env = make_wsgi_env('', extra_environ={'mapproxy.decorate_img': self.set_called_callback})
-        img_src2 = self.server.decorate_img(img_src1, env)
+        img_src2 = self.server.decorate_img(
+            img_src1, 'wms.map', ['layer1'],
+            env, self.query_extent
+        )
         eq_(self.called, True)
 
-    def return_new_imagesource_callback(self, img_src):
+    def return_new_imagesource_callback(self, img_src, service, layers, environ, query_extent, **kw):
         new_img_src = ImageSource(Image.new('RGBA', (100, 100)))
         self.new_img_src = new_img_src
         return new_img_src
@@ -96,7 +110,10 @@ class TestDecorateImg(object):
         img_src1 = ImageSource(Image.new('RGBA', (100, 100)))
         env = make_wsgi_env('', extra_environ={'mapproxy.decorate_img': self.return_new_imagesource_callback})
         self.new_img_src = None
-        img_src2 = self.server.decorate_img(img_src1, env)
+        img_src2 = self.server.decorate_img(
+            img_src1, 'wms.map', ['layer1'],
+            env, self.query_extent
+        )
         eq_(img_src2, self.new_img_src)
 
     def test_wms_server(self):
@@ -104,7 +121,10 @@ class TestDecorateImg(object):
         img_src1 = ImageSource(Image.new('RGBA', (100, 100)))
         self.called = False
         env = make_wsgi_env('', extra_environ={'mapproxy.decorate_img': self.set_called_callback})
-        img_src2 = self.wms_server.decorate_img(img_src1, env)
+        img_src2 = self.wms_server.decorate_img(
+            img_src1, 'wms.map', ['layer1'],
+            env, self.query_extent
+        )
         eq_(self.called, True)
 
     def test_tile_server(self):
@@ -112,5 +132,24 @@ class TestDecorateImg(object):
         img_src1 = ImageSource(Image.new('RGBA', (100, 100)))
         self.called = False
         env = make_wsgi_env('', extra_environ={'mapproxy.decorate_img': self.set_called_callback})
-        img_src2 = self.tile_server.decorate_img(img_src1, env)
+        img_src2 = self.tile_server.decorate_img(
+            img_src1, 'wms.map', ['layer1'],
+            env, self.query_extent
+        )
         eq_(self.called, True)
+
+    def test_args(self):
+        def callback(img_src, service, layers, environ, query_extent, **kw):
+            assert isinstance(img_src, ImageSource)
+            eq_('wms.map', service)
+            assert isinstance(layers, list)
+            assert isinstance(environ, dict)
+            assert len(query_extent) == 2
+            assert len(query_extent[1]) == 4
+            return img_src
+        img_src1 = ImageSource(Image.new('RGBA', (100, 100)))
+        env = make_wsgi_env('', extra_environ={'mapproxy.decorate_img': callback})
+        img_src2 = self.tile_server.decorate_img(
+            img_src1, 'wms.map', ['layer1'],
+            env, self.query_extent
+        )

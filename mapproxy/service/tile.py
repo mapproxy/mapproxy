@@ -72,8 +72,10 @@ class TileServer(Server):
             tile_request.origin = self.origin
         layer, limit_to = self.layer(tile_request)
 
-        def decorate_img(img_src):
-            return self.decorate_img(img_src, tile_request.http.environ)
+        def decorate_img(image):
+            query_extent = (layer.grid.srs.srs_code,
+                layer.tile_bbox(tile_request, use_profiles=tile_request.use_profiles))
+            return self.decorate_img(image, 'tms', [layer.name], tile_request.http.environ, query_extent)
 
         tile = layer.render(tile_request, use_profiles=tile_request.use_profiles, coverage=limit_to, decorate_img=decorate_img)
 

@@ -35,14 +35,14 @@ def teardown_module():
     module_teardown(test_config)
 
 
-def to_greyscale(img_src):
-    img = img_src.as_image()
-    if (hasattr(img_src.image_opts, 'transparent') and
-            img_src.image_opts.transparent):
+def to_greyscale(image, service, layers, environ, query_extent, **kw):
+    img = image.as_image()
+    if (hasattr(image.image_opts, 'transparent') and
+            image.image_opts.transparent):
         img = img.convert('LA').convert('RGBA')
     else:
         img = img.convert('L').convert('RGB')
-    return ImageSource(img, img_src.image_opts)
+    return ImageSource(img, image.image_opts)
 
 
 class TestDecorateImg(SystemTest):
@@ -104,6 +104,31 @@ class TestDecorateImg(SystemTest):
         eq_(img.mode, 'RGB')
         eq_(sorted(img.getcolors())[-1][1], (94, 94, 94))
 
+    def test_wms_args(self):
+        req = WMS111MapRequest(
+            url='/service?',
+            param=dict(
+                service='WMS', version='1.1.1', bbox='-180,0,0,80',
+                width='200', height='200', layers='wms_cache,wms_cache_transparent',
+                srs='EPSG:4326', format='image/png',
+                styles='', request='GetMap', transparent='True'
+            )
+        )
+        def callback(img_src, service, layers, environ, query_extent):
+            assert isinstance(img_src, ImageSource)
+            eq_('wms.map', service)
+            eq_(len(layers), 2)
+            assert 'wms_cache_transparent' in layers
+            assert 'wms_cache' in layers
+            assert isinstance(environ, dict)
+            assert len(query_extent) == 2
+            assert len(query_extent[1]) == 4
+            eq_(query_extent[0], 'EPSG:4326')
+            return img_src
+        resp = self.app.get(
+            req, extra_environ={'mapproxy.decorate_img': callback}
+        )
+
     def test_tms(self):
         resp = self.app.get(
             '/tms/1.0.0/wms_cache/0/0/1.jpeg',
@@ -113,3 +138,18 @@ class TestDecorateImg(SystemTest):
         eq_(resp.content_length, len(resp.body))
         data = StringIO(resp.body)
         assert is_jpeg(data)
+
+    def test_tms_args(self):
+        def callback(img_src, service, layers, environ, query_extent):
+            assert isinstance(img_src, ImageSource)
+            eq_('tms', service)
+            eq_('wms_cache', layers[0])
+            assert isinstance(environ, dict)
+            assert len(query_extent) == 2
+            assert len(query_extent[1]) == 4
+            eq_(query_extent[0], 'EPSG:900913')
+            return img_src
+        resp = self.app.get(
+            '/tms/1.0.0/wms_cache/0/0/1.jpeg',
+            extra_environ={'mapproxy.decorate_img': callback}
+        )

@@ -34,12 +34,13 @@ class Server(object):
     def parse_request(self, req):
         return self.request_parser(req)
 
-    def decorate_img(self, img_src, env):
+    def decorate_img(self, image, service, layers, environ, query_extent, **kw):
         """ Callback that allows the ImageSource associated with a response to
             be modified before it is returned. The callback is passed the
             ImageSource instance and must return a valid ImageSource """
-        if 'mapproxy.decorate_img' in env:
-            img_src = env['mapproxy.decorate_img'](img_src)
-        return img_src
+        if 'mapproxy.decorate_img' in environ:
+            image = environ['mapproxy.decorate_img'](
+                image, service, layers, environ, query_extent, **kw)
+        return image
 
 
