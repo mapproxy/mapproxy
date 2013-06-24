@@ -133,7 +133,6 @@ class RiakCache(TileCacheBase):
             return True
         
         res = self._get_object(tile.coord)
-        res.reload()
         if res.exists():
             tile_data = StringIO(res.get_data())
             tile.source = ImageSource(tile_data)
