@@ -66,7 +66,9 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         self.tile_grid = tile_grid
         self.md_template = md_template
         self.couch_url = '%s/%s' % (url.rstrip('/'), db_name.lower())
-        self.req_session = requests.Session(timeout=5)
+        # Causing "TypeError: __init__() got an unexpected keyword argument 'timeout'" errors
+        # self.req_session = requests.Session(timeout=5)
+        self.req_session = requests.Session()
         self.init_db()
         self.tile_id_template = tile_id_template
 
