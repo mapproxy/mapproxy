@@ -913,9 +913,11 @@ class CacheConfiguration(ConfigurationBase):
         md_template = CouchDBMDTemplate(self.conf['cache'].get('tile_metadata', {}))
         tile_id = self.conf['cache'].get('tile_id')
 
+        maximum_age = self.conf.get('max_age')
+
         return CouchDBCache(url=url, db_name=db_name,
             lock_dir=cache_dir, file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
-            md_template=md_template, tile_id_template=tile_id)
+            md_template=md_template, tile_id_template=tile_id, max_age=maximum_age)
 
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):

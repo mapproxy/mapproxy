@@ -203,10 +203,10 @@ class TileManager(object):
                 try:
                     source_modified_time = os.path.getmtime(datasource)
                     if tile.timestamp < source_modified_time:
-                        return source_modified_time;
+                        return source_modified_time
                     else:
-                        return time.time() + 86400; # Return a date in the future so the tile is accepted as up-to-date
-                except OSError, ex:
+                        return time.time() + 86400  # Return a date in the future so the tile is accepted as up-to-date
+                except OSError:
                     raise ConfigurationError("Can't parse last modified time from file '%s'." % datasource)
             deltas = {}
             for delta_type in ('weeks', 'days', 'hours', 'minutes'):
