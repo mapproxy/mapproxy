@@ -73,7 +73,6 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         # Causing "TypeError: __init__() got an unexpected keyword argument 'timeout'" errors
         # self.req_session = requests.Session(timeout=5)
         self.req_session = requests.Session()
-        self.init_db()
         self.tile_id_template = tile_id_template
 
     def init_db(self):
@@ -110,6 +109,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         try:
             if tile.timestamp is None:
                 url = self.document_url(tile.coord)
+                self.init_db()
                 resp = self.req_session.get(url)
                 if resp.status_code == 200:
                     doc = json.loads(resp.content)
@@ -204,6 +204,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         """
         doc = {'docs': tile_docs.values()}
         data = json.dumps(doc)
+        self.init_db()
         resp = self.req_session.post(self.couch_url + '/_bulk_docs', data=data, headers={'Content-type': 'application/json'})
         if resp.status_code != 201:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
@@ -225,6 +226,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         """
         keys_doc = {'keys': tile_docs.keys()}
         data = json.dumps(keys_doc)
+        self.init_db()
         resp = self.req_session.post(self.couch_url + '/_all_docs', data=data, headers={'Content-type': 'application/json'})
         if resp.status_code != 200:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
@@ -257,6 +259,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         if tile.source or tile.coord is None:
             return True
         url = self.document_url(tile.coord) + '?attachments=true'
+        self.init_db()
         resp = self.req_session.get(url, headers={'Accept': 'application/json'})
         if resp.status_code == 200:
             doc = json.loads(resp.content)
@@ -276,6 +279,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             return True
         rev_id = resp.headers['etag']
         url += '?rev=' + rev_id.strip('"')
+        self.init_db()
         resp = self.req_session.delete(url)
         if resp.status_code == 200:
             return True
