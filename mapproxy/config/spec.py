@@ -207,6 +207,7 @@ mapproxy_yaml_spec = {
         'cache': {
             'base_dir': str(),
             'lock_dir': str(),
+            'tile_lock_dir': str(),
             'meta_size': [number()],
             'meta_buffer': number(),
             'max_tile_limit': number(),
