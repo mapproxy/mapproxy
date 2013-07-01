@@ -233,6 +233,18 @@ Because of the way Python handles threads in computing heavy applications (like 
 The examples above are all minimal and you should read the documentation of your components to get the best performance with your setup.
 
 
+Load Balancing and High Availablity
+-----------------------------------
+
+You can easily run multiple MapProxy instances in parallel and use a load balancer to distribute requests across all instances, but there are a few things to consider when the instances share the same tile cache with NFS or other network filesystems.
+
+MapProxy uses file locks to prevent that multiple processes will request the same image twice from a source. This would typically happen when two or more requests for missing tiles are processed in parallel by MapProxy and these tiles belong to the same meta tile. Without locking MapProxy would request the meta tile for each request. With locking, only the first process will get the lock and request the meta tile. The other processes will wait till the the first process releases the lock and will then use the new created tile.
+
+Since file locking doesn't work well on most network filesystems you are likely to get errors when MapProxy writes these files on network filesystems. You should configure MapProxy to write all lock files on a local filesystem to prevent this. See :ref:`globals.cache.lock_dir<lock_dir>` and :ref:`globals.cache.tile_lock_dir<tile_lock_dir>`.
+
+With this setup the locking will only be effective when parallel requests for tiles of the same meta tile go to the same MapProxy instance. Since these requests are typically made from the same client you should enable *sticky sessions* in you load balancer.
+
+
 .. _nginx: http://nginx.org
 .. _mod_proxy: http://httpd.apache.org/docs/current/mod/mod_proxy.html
 .. _Varnish: http://www.varnish-cache.org/

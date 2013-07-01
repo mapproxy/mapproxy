@@ -737,8 +737,14 @@ Here you can define some options that affect the way MapProxy generates image re
 ``formats``
   Modify existing or define new image formats. :ref:`See below <image_options>` for all image format options.
 
+
+.. _globals_cache:
+
 ``cache``
 """""""""
+
+.. versionadded:: 1.6.0 ``tile_lock_dir``
+
 
 .. _meta_size:
 
@@ -755,11 +761,21 @@ Here you can define some options that affect the way MapProxy generates image re
   either be absolute (e.g. ``/var/mapproxy/cache``) or relative to the
   mapproxy.yaml file. Defaults to ``./cache_data``.
 
+.. _lock_dir:
+
 ``lock_dir``
   MapProxy uses locking to limit multiple request to the same service. See ``concurrent_requests``.
   This option defines where the temporary lock files will be stored. The path
   can either be absolute (e.g. ``/tmp/lock/mapproxy``) or relative to the
   mapproxy.yaml file. Defaults to ``./cache_data/tile_locks``.
+
+.. _tile_lock_dir:
+
+``tile_lock_dir``
+  MapProxy uses locking to prevent that the same tile gets created multiple times.
+  This option defines where the temporary lock files will be stored. The path
+  can either be absolute (e.g. ``/tmp/lock/mapproxy``) or relative to the
+  mapproxy.yaml file. Defaults to ``./cache_data/dir_of_the_cache/tile_locks``.
 
 ``concurrent_tile_creators``
   This limits the number of parallel requests MapProxy will make to a source WMS. This limit is per request and not for all MapProxy requests. To limit the requests MapProxy makes to a single server use the ``concurrent_requests`` option.
