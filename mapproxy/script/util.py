@@ -218,7 +218,7 @@ class CreateCommand(object):
 
         template_dir = self.template_dir()
 
-        for filename in ('mapproxy.yaml', 'seed.yaml'):
+        for filename in ('mapproxy.yaml', 'seed.yaml', 'full_example.yaml'):
             to = os.path.join(outdir, filename)
             from_ = os.path.join(template_dir, filename)
             if os.path.exists(to) and not self.options.force:
