@@ -19,6 +19,8 @@ Utility methods and classes (file locking, asynchronous execution pools, etc.).
 from __future__ import with_statement
 import time
 import os
+import sys
+import random
 import errno
 import shutil
 import datetime
@@ -203,6 +205,32 @@ def ensure_directory(file_name):
         except OSError, e:
             if e.errno != errno.EEXIST:
                 raise e
+
+def write_atomic(filename, data):
+    """
+    write_atomic writes `data` to a random file in filename's directory
+    first and renames that file to filename. Rename is atomic on all
+    Posix platforms.
+
+    Falls back to normal write on Windows.
+    """
+    if not sys.platform.startswith('win'):
+        # write to random filename
+        path_tmp = filename + '.tmp-' + str(random.randint(0, 999999))
+        try:
+            fd = os.open(path_tmp, os.O_EXCL | os.O_CREAT | os.O_WRONLY)
+            with os.fdopen(fd, 'wb') as f:
+                f.write(data)
+            os.rename(path_tmp, filename)
+        except OSError:
+            try:
+                os.unlink(path_tmp)
+            except OSError:
+                pass
+            raise
+    else:
+        with open(filename, 'wb') as f:
+            f.write(data)
 
 
 def replace_instancemethod(old_method, new_method):
