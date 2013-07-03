@@ -70,6 +70,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         self.tile_grid = tile_grid
         self.md_template = md_template
         self._max_age = max_age
+        self._expire_timestamp = None
         self.couch_url = '%s/%s' % (url.rstrip('/'), db_name.lower())
         # Causing "TypeError: __init__() got an unexpected keyword argument 'timeout'" errors
         # self.req_session = requests.Session(timeout=5)
@@ -116,6 +117,8 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
     def is_cached(self, tile):
         if tile.coord is None:
             return True
+        if tile.source is None:
+            return False
         try:
             if tile.timestamp is None:
                 url = self.document_url(tile.coord)
@@ -124,7 +127,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
                 if resp.status_code == 200:
                     doc = json.loads(resp.content)
                     tile.timestamp = doc.get(self.md_template.timestamp_key)
-
+            
             max_mtime = self.expire_timestamp(tile)
             if max_mtime is not None:
                 stale = max_mtime < time.time()
