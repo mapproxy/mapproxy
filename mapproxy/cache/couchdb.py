@@ -156,7 +156,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
                 try:
                     return timestamp_from_isodate(self._max_age['time'])
                 except:
-                    raise ConfigurationError("Could not parse time '%s'. should be ISO time string" % (self._max_age["time"]))
+                    log.error("Could not parse time '%s'. should be ISO time string" % (self._max_age["time"]))
             
             """ Was mtime passed with a path to the source file? Grab the modified date to see if we need to update the tile """
             if 'mtime' in self._max_age:
@@ -168,7 +168,8 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
                     else:
                         return time.time() + 86400  # Return a date in the future so the tile is accepted as up-to-date
                 except OSError, ex:
-                    raise ConfigurationError("Can't parse last modified time from file '%s'." % datasource)
+                    log.error("Can't parse last modified time from file '%s'." % datasource)
+                    return 0 # Force refresh
             deltas = {}
             for delta_type in ('weeks', 'days', 'hours', 'minutes'):
                 deltas[delta_type] = self._max_age.get(delta_type, 0)
