@@ -31,6 +31,7 @@ from mapproxy.cache.base import (
     tile_buffer, CacheBackendError,)
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
+from threading import Lock
 
 try:
     import requests
@@ -73,13 +74,22 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         # Causing "TypeError: __init__() got an unexpected keyword argument 'timeout'" errors
         # self.req_session = requests.Session(timeout=5)
         self.req_session = requests.Session()
+        self._db_initialised = False
+        self._app_init_db_lock = None
         self.tile_id_template = tile_id_template
 
     def init_db(self):
-        try:
-            self.req_session.put(self.couch_url)
-        except requests.exceptions.RequestException, ex:
-            log.warn('unable to initialize CouchDB: %s', ex)
+        if not self._app_init_db_lock:
+            self._app_init_db_lock = Lock()
+
+        with self._app_init_db_lock:
+            if self._db_initialised:
+                return
+            try:
+                self.req_session.put(self.couch_url)
+                self._db_initialised = True
+            except requests.exceptions.RequestException, ex:
+                log.warn('unable to initialize CouchDB: %s', ex)
 
     def tile_url(self, coord):
         return self.document_url(coord) + '/tile'
