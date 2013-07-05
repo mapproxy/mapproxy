@@ -35,7 +35,7 @@ def teardown_module():
     module_teardown(test_config)
 
 
-def to_greyscale(image, service, layers, environ, query_extent, **kw):
+def to_greyscale(image, service, layers, **kw):
     img = image.as_image()
     if (hasattr(image.image_opts, 'transparent') and
             image.image_opts.transparent):

@@ -87,7 +87,7 @@ class TestDecorateImg(object):
         )
         assert isinstance(img_src2, ImageSource)
 
-    def set_called_callback(self, img_src, service, layers, environ, query_extent, **kw):
+    def set_called_callback(self, img_src, service, layers, **kw):
         self.called = True
         return img_src
 
@@ -101,7 +101,7 @@ class TestDecorateImg(object):
         )
         eq_(self.called, True)
 
-    def return_new_imagesource_callback(self, img_src, service, layers, environ, query_extent, **kw):
+    def return_new_imagesource_callback(self, img_src, service, layers, **kw):
         new_img_src = ImageSource(Image.new('RGBA', (100, 100)))
         self.new_img_src = new_img_src
         return new_img_src
