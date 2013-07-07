@@ -1,13 +1,15 @@
 from mapproxy.grid import tile_grid
-from mapproxy.image import ImageSource
 from mapproxy.image import BlankImageSource
+from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import MapLayer, DefaultMapExtent
 from mapproxy.platform.image import Image
 from mapproxy.service.base import Server
 from mapproxy.service.tile import TileServer
 from mapproxy.service.wms import WMSGroupLayer, WMSServer
+from mapproxy.service.wmts import WMTSServer
 from mapproxy.test.http import make_wsgi_env
+from mapproxy.util.ext.odict import odict
 from nose.tools import eq_
 
 
@@ -59,13 +61,16 @@ class TestDecorateImg(object):
         # Base server
         self.server = Server()
         # WMS Server
-        root_layer = WMSGroupLayer(None, 'root layer', None, [DummyLayer('layer1')])
+        root_layer = WMSGroupLayer(None, 'root layer', None, [DummyLayer('wms_cache')])
         self.wms_server = WMSServer(
             md={}, root_layer=root_layer, srs=['EPSG:4326'],
             image_formats={'image/png': ImageOptions(format='image/png')}
         )
-        # Tile Server
-        self.tile_server = TileServer([DummyTileLayer('layer1')], {})
+        # Tile Servers
+        layers = odict()
+        layers["wms_cache_EPSG900913"] = DummyTileLayer('wms_cache')
+        self.tile_server = TileServer(layers, {})
+        self.wmts_server = WMTSServer(layers, {})
         # Common arguments
         self.query_extent = ('EPSG:27700', (0, 0, 700000, 1300000))
 
@@ -133,7 +138,18 @@ class TestDecorateImg(object):
         self.called = False
         env = make_wsgi_env('', extra_environ={'mapproxy.decorate_img': self.set_called_callback})
         img_src2 = self.tile_server.decorate_img(
-            img_src1, 'wms.map', ['layer1'],
+            img_src1, 'tms', ['layer1'],
+            env, self.query_extent
+        )
+        eq_(self.called, True)
+
+    def test_wmts_server(self):
+        ''' Test that the decorate_img method is available on a WMTSServer instance '''
+        img_src1 = ImageSource(Image.new('RGBA', (100, 100)))
+        self.called = False
+        env = make_wsgi_env('', extra_environ={'mapproxy.decorate_img': self.set_called_callback})
+        img_src2 = self.wmts_server.decorate_img(
+            img_src1, 'wmts', ['layer1'],
             env, self.query_extent
         )
         eq_(self.called, True)

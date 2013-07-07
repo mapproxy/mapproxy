@@ -82,7 +82,12 @@ class WMTSServer(Server):
         self.check_request_dimensions(tile_layer, request)
 
         limited_to = self.authorize_tile_layer(tile_layer, request)
-        tile = tile_layer.render(request, coverage=limited_to)
+
+        def decorate_img(image):
+            query_extent = tile_layer.grid.srs.srs_code, tile_layer.tile_bbox(request)
+            return self.decorate_img(image, 'wmts', [tile_layer.name], request.http.environ, query_extent)
+
+        tile = tile_layer.render(request, coverage=limited_to, decorate_img=decorate_img)
 
         # set the content_type to tile.format and not to request.format ( to support mixed_mode)
         resp = Response(tile.as_buffer(), content_type='image/' + tile.format)

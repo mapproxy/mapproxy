@@ -17,6 +17,7 @@ from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from mapproxy.test.system import make_base_config
 from mapproxy.test.image import is_png, is_jpeg
 from mapproxy.request.wms import WMS111MapRequest
+from mapproxy.request.wmts import WMTS100TileRequest
 from cStringIO import StringIO
 
 from mapproxy.platform.image import Image
@@ -46,7 +47,14 @@ def to_greyscale(image, service, layers, **kw):
 
 
 class TestDecorateImg(SystemTest):
+
     config = test_config
+
+    def setup(self):
+        SystemTest.setup(self)
+        self.common_tile_req = WMTS100TileRequest(url='/service?', param=dict(service='WMTS', 
+             version='1.0.0', tilerow='0', tilecol='0', tilematrix='01', tilematrixset='GLOBAL_MERCATOR',
+             layer='wms_cache', format='image/jpeg', style='', request='GetTile'))
 
     def test_wms(self):
         req = WMS111MapRequest(
@@ -151,5 +159,30 @@ class TestDecorateImg(SystemTest):
             return img_src
         resp = self.app.get(
             '/tms/1.0.0/wms_cache/0/0/1.jpeg',
+            extra_environ={'mapproxy.decorate_img': callback}
+        )
+
+    def test_wmts(self):
+        resp = self.app.get(
+            str(self.common_tile_req),
+            extra_environ={'mapproxy.decorate_img': to_greyscale}
+        )
+        eq_(resp.content_type, 'image/jpeg')
+        eq_(resp.content_length, len(resp.body))
+        data = StringIO(resp.body)
+        assert is_jpeg(data)
+
+    def test_wmts_args(self):
+        def callback(img_src, service, layers, environ, query_extent):
+            assert isinstance(img_src, ImageSource)
+            eq_('wmts', service)
+            eq_('wms_cache', layers[0])
+            assert isinstance(environ, dict)
+            assert len(query_extent) == 2
+            assert len(query_extent[1]) == 4
+            eq_(query_extent[0], 'EPSG:900913')
+            return img_src
+        resp = self.app.get(
+            str(self.common_tile_req),
             extra_environ={'mapproxy.decorate_img': callback}
         )
