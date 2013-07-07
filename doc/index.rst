@@ -19,6 +19,7 @@ MapProxy Documentation
    configuration_examples
    labeling
    auth 
+   decorate_img
    migrate
    development
 
