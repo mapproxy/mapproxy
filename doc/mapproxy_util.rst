@@ -267,6 +267,7 @@ Parsed capabilities document:
   mapproxy-util wms-capabilities http://127.0.0.1:8080/service?REQUEST=GetCapabilities
 
 ::
+
   Capabilities Document Version 1.1.1
   Root-Layer:
     - title: MapProxy WMS Proxy
