@@ -396,7 +396,7 @@ class TestWriteAtomic(object):
         filename = os.path.join(self.dirname, 'tmpfile')
 
         num_writes = 100
-        concurrent_writes = 10
+        concurrent_writes = 4
 
         p = multiprocessing.Pool(concurrent_writes)
         p.map(write_atomic_data, ((i, filename) for i in xrange(num_writes)))
