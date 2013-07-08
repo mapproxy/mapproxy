@@ -18,10 +18,35 @@ WSGI Filter Middleware
 A simple middleware that annotates each image with information about the request might look like::
 
   from mapproxy.image import ImageSource
-  from mapproxy.platform.image import ImageColor
-  from mapproxy.platform.image import ImageDraw
-  from mapproxy.platform.image import ImageFont
+  from PIL import ImageColor, ImageDraw, ImageFont
 
+
+  def annotate_img(image, service, layers, environ, query_extent, **kw):
+      # Get the PIL image and convert to RGBA to ensure we can use black
+      # for the text
+      img = image.as_image().convert('RGBA')
+
+      text = ['service: %s' % service]
+      text.append('layers: %s' % ', '.join(layers))
+      text.append('srs: %s' % query_extent[0])
+
+      text.append('bounds:')
+      for coord in query_extent[1]:
+          text.append('  %s' % coord)
+
+      draw = ImageDraw.Draw(img)
+      font = ImageFont.load_default()
+      fill = ImageColor.getrgb('black')
+
+      line_y = 10
+      for line in text:
+          line_w, line_h = font.getsize(line)
+          draw.text((10, line_y), line, font=font, fill=fill)
+          line_y = line_y + line_h
+
+      # Return a new ImageSource specifying the updated PIL image and
+      # the image options from the original ImageSource
+      return ImageSource(img, image.image_opts)
 
   class RequestInfoFilter(object):
       """
@@ -29,40 +54,10 @@ A simple middleware that annotates each image with information about the request
 
       Annotates map images with information about the request.
       """
-
       def __init__(self, app, global_conf):
           self.app = app
 
       def __call__(self, environ, start_response):
-
-          def annotate_img(image, service, layers, environ, query_extent):
-
-              # Get the PIL image and convert to RGBA to ensure we can use black
-              # for the text
-              img = image.as_image().convert('RGBA')
-
-              text = ['service: %s' % service]
-              text.append('layers: %s' % ', '.join(layers))
-              text.append('srs: %s' % query_extent[0])
-
-              text.append('bounds:')
-              for coord in query_extent[1]:
-                  text.append('  %s' % coord)
-
-              draw = ImageDraw.Draw(img)
-              font = ImageFont.load_default()
-              fill = ImageColor.getrgb('black')
-
-              line_y = 10
-              for line in text:
-                  line_w, line_h = font.getsize(line)
-                  draw.text((10, line_y), line, font=font, fill=fill)
-                  line_y = line_y + line_h
-
-              # Return a new ImageSource specifying the updated PIL image and
-              # the image options from the original ImageSource
-              return ImageSource(img, image.image_opts)
-
           # Add the callback to the WSGI environment
           environ['mapproxy.decorate_img'] = annotate_img
 
