@@ -31,7 +31,7 @@ log = logging.getLogger('mapproxy.config')
 
 from mapproxy.config import load_default_config, finish_base_config
 from mapproxy.config.spec import validate_mapproxy_conf
-from mapproxy.util import memoize
+from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 

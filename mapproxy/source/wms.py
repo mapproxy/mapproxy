@@ -25,7 +25,7 @@ from mapproxy.image.transform import ImageTransformer
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, LegendQuery, MapQuery, MapLayer
 from mapproxy.source import InfoSource, SourceError, LegendSource
 from mapproxy.client.http import HTTPClientError
-from mapproxy.util import reraise_exception
+from mapproxy.util.py import reraise_exception
 
 import logging
 log = logging.getLogger('mapproxy.source.wms')

@@ -16,7 +16,7 @@
 import operator
 
 from mapproxy.grid import bbox_intersects, bbox_contains
-from mapproxy.util import cached_property
+from mapproxy.util.py import cached_property
 from mapproxy.util.geom import (
     require_geom_support,
     load_polygon_lines,

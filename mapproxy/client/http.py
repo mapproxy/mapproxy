@@ -26,7 +26,7 @@ import warnings
 
 from mapproxy.version import version
 from mapproxy.image import ImageSource
-from mapproxy.util import reraise_exception
+from mapproxy.util.py import reraise_exception
 from mapproxy.client.log import log_request
 
 import socket

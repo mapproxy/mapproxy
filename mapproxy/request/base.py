@@ -19,7 +19,7 @@ Service requests (parsing, handling, etc).
 import urllib
 import cgi
 
-from mapproxy.util import cached_property
+from mapproxy.util.py import cached_property
 
 
 class NoCaseMultiDict(dict):

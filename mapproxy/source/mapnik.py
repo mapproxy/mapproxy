@@ -26,7 +26,7 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, MapLayer
 from mapproxy.source import  SourceError
 from mapproxy.client.log import log_request
-from mapproxy.util import reraise_exception
+from mapproxy.util.py import reraise_exception
 from mapproxy.util.async import run_non_blocking
 
 try:
