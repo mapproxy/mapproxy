@@ -35,7 +35,7 @@ from mapproxy.util.fs import (
     cleanup_directory,
     write_atomic,
 )
-from mapproxy.util.time import timestamp_before
+from mapproxy.util.times import timestamp_before
 from mapproxy.test.helper import Mocker
 
 from nose.tools import eq_

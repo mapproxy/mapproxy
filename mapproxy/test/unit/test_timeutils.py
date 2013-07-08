@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from datetime import datetime
-from mapproxy.util.time import parse_httpdate, format_httpdate, timestamp
+from mapproxy.util.times import parse_httpdate, format_httpdate, timestamp
 from nose.tools import eq_, raises
 
 class TestHTTPDate(object):

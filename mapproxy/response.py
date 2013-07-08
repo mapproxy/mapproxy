@@ -18,7 +18,7 @@ Service responses.
 """
 
 import hashlib
-from mapproxy.util.time import format_httpdate, parse_httpdate, timestamp
+from mapproxy.util.times import format_httpdate, parse_httpdate, timestamp
 
 class Response(object):
     charset = 'utf-8'

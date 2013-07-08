@@ -25,7 +25,7 @@ from mapproxy.config.loader import ConfigurationError
 from mapproxy.config.coverage import load_coverage
 from mapproxy.srs import SRS
 from mapproxy.util.py import memoize
-from mapproxy.util.time import timestamp_from_isodate, timestamp_before
+from mapproxy.util.times import timestamp_from_isodate, timestamp_before
 from mapproxy.util.coverage import MultiCoverage, BBOXCoverage, GeomCoverage
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
