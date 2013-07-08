@@ -163,3 +163,32 @@ There is already a test layer configured that obtains data from the `Omniscale O
 MapProxy comes with a demo service that lists all configured WMS and TMS layers. You can access that service at http://localhost:8080/demo/
 
 .. _`Omniscale OpenStreetMap WMS`: http://osm.omniscale.de/
+
+
+Upgrade
+-------
+
+You can upgrade MapProxy with pip in combination with a version number or with the ``--upgrade`` option.
+Use the ``--no-deps`` option to avoid upgrading the dependencies.
+
+To upgrade to version 1.x.0::
+
+  pip install 'MapProxy==1.x.0'
+
+
+To upgrade to the latest release::
+
+  pip install --upgrade --no-deps MapProxy
+
+
+To upgrade to the current development version::
+
+  pip install --upgrade --no-deps https://github.com/mapproxy/mapproxy/tarball/master
+
+
+Changes
+^^^^^^^
+
+New releases of MapProxy are backwards compatible with older configuration files. MapProxy will issue warnings on startup if a behavior will change in the next releases. You are advised to upgrade in single release steps (e.g. 1.2.0 to 1.3.0 to 1.4.0) and to check the output of ``mapproxy-util serve-develop`` for any warnings. You should also refer to the Changes Log of each release to see if there is anything to pay attention for.
+
+If you upgrade from 0.8, please read the old mirgation documentation <http://mapproxy.org/docs/1.5.0/migrate.html>`_.
