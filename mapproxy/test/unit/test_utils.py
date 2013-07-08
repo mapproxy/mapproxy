@@ -33,9 +33,9 @@ from mapproxy.util import (
     _force_rename_dir,
     swap_dir,
     cleanup_directory,
-    timestamp_before,
     write_atomic,
 )
+from mapproxy.util.time import timestamp_before
 from mapproxy.test.helper import Mocker
 
 from nose.tools import eq_
@@ -399,7 +399,7 @@ class TestWriteAtomic(object):
 
         assert os.path.exists(filename)
         last_i =  int(open(filename).readline())
-        assert last_i > (num_writes / 2), ("file should contain contents from "
+        assert last_i > (num_writes / 2), ("file should contain content from "
             "later writes, got content from write %d" % (last_i + 1)
         )
         os.unlink(filename)

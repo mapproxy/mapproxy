@@ -23,7 +23,6 @@ import sys
 import random
 import errno
 import shutil
-import datetime
 import contextlib
 from functools import wraps
 
@@ -125,36 +124,6 @@ def _force_rename_dir(src_dir, dst_dir):
                 raise
         else:
             break # on success
-
-def timestamp_before(weeks=0, days=0, hours=0, minutes=0, seconds=0):
-    """
-    >>> time.time() - timestamp_before(minutes=1) - 60 <= 1
-    True
-    >>> time.time() - timestamp_before(days=1, minutes=2) - 86520 <= 1
-    True
-    >>> time.time() - timestamp_before(hours=2) - 7200 <= 1
-    True
-    """
-    delta = datetime.timedelta(weeks=weeks, days=days, hours=hours, minutes=minutes, seconds=seconds)
-    before = datetime.datetime.now() - delta
-    return time.mktime(before.timetuple())
-
-def timestamp_from_isodate(isodate):
-    """
-    >>> ts = timestamp_from_isodate('2009-06-09T10:57:00')
-    >>> # we don't know which timezone the test will run
-    >>> (1244537820.0 - 14 * 3600) < ts < (1244537820.0 + 14 * 3600)
-    True
-    >>> timestamp_from_isodate('2009-06-09T10:57') #doctest: +ELLIPSIS
-    Traceback (most recent call last):
-    ...
-    ValueError: ...
-    """
-    if isinstance(isodate, datetime.datetime):
-        date = isodate
-    else:
-        date = datetime.datetime.strptime(isodate, "%Y-%m-%dT%H:%M:%S")
-    return time.mktime(date.timetuple())
 
 def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
                       file_handler=None):
