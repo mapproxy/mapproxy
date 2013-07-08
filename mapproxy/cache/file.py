@@ -17,7 +17,7 @@ from __future__ import with_statement
 import os
 import errno
 
-from mapproxy.util import ensure_directory, write_atomic
+from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.image import ImageSource, is_single_color_image
 from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer
 

@@ -20,7 +20,7 @@ import hashlib
 
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.util import ensure_directory, write_atomic
+from mapproxy.util.fs import ensure_directory, write_atomic
 
 import logging
 log = logging.getLogger(__name__)

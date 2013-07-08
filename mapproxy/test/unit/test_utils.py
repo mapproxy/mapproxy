@@ -29,7 +29,7 @@ from mapproxy.util.lock import (
     cleanup_lockdir,
     LockTimeout,
 )
-from mapproxy.util import (
+from mapproxy.util.fs import (
     _force_rename_dir,
     swap_dir,
     cleanup_directory,

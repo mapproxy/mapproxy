@@ -22,7 +22,7 @@ from cStringIO import StringIO
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer
-from mapproxy.util import ensure_directory
+from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
 
 import logging

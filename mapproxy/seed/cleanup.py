@@ -15,7 +15,7 @@
 
 import os
 from mapproxy.seed.util import format_cleanup_task
-from mapproxy.util import cleanup_directory
+from mapproxy.util.fs import cleanup_directory
 from mapproxy.seed.seeder import TileWorkerPool, TileWalker, TileCleanupWorker
 
 def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,

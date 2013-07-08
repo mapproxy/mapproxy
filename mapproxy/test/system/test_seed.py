@@ -25,7 +25,8 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.seed.seeder import seed
 from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.config import load_seed_tasks_conf
-from mapproxy.util import local_base_config, ensure_directory
+from mapproxy.util import local_base_config
+from mapproxy.util.fs import ensure_directory
 
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.image import tmp_image, create_tmp_image_buf, create_tmp_image
