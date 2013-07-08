@@ -48,8 +48,6 @@ Example::
 Merge tile sources
 ------------------
 
-.. versionadded:: 1.0.0
-
 You can also merge multiple tile sources. You need to tell MapProxy that all overlay sources are transparent::
 
   sources:
@@ -214,7 +212,7 @@ You can change the default origin of all MapProxy tile layers by using the ``ori
 Using existing caches
 =====================
 
-.. versionadded:: 1.5
+.. versionadded:: 1.5.0
 
 In some special use-cases you might want to use a cache as the source of another cache. For example, you might need to change the grid of an existing cache
 to cover a larger bounding box, or to support tile clients that expect a different grid, but you don't want to seed the data again.
@@ -253,7 +251,7 @@ Here is an example of a cache in UTM that uses data from an existing cache in we
 Reprojecting Tiles
 ==================
 
-.. versionadded:: 1.5
+.. versionadded:: 1.5.0
 
 When you need to access tiles in a projection that is different from your source tile server, then you can use the *cache as cache source* feature from above.
 Here is an example that uses OSM tiles as a source and offers them in UTM projection. The `disable_storage` option prevents MapProxy from building up two caches. The `meta_size` makes MapProxy to reproject multiple tiles at once.
@@ -503,8 +501,6 @@ Feature information from different sources are concatenated as plain text, that 
 HTML
 ~~~~
 
-.. versionadded:: 1.0.0
-
 Multiple HTML documents are put into the HTML ``body`` of the first document.
 MapProxy creates the HTML skeleton if it is missing.
 ::
@@ -528,8 +524,6 @@ will result in::
 
 XML
 ~~~
-
-.. versionadded:: 1.0.0
 
 Multiple XML documents are put in the root of the first document.
 
@@ -556,8 +550,6 @@ will result in::
 
 XSL Transformations
 -------------------
-
-.. versionadded:: 1.0.0
 
 MapProxy supports XSL transformations for more control over feature information. This also requires :ref:`lxml <lxml_install>`. You can add an XSLT script for each WMS source (incoming) and for the WMS service (outgoing).
 

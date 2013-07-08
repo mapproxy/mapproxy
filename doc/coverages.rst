@@ -3,8 +3,6 @@
 Coverages
 =========
 
-.. versionadded:: 0.9.1
-
 With coverages you can define areas where data is available or where data you are interested in is.
 MapProxy supports coverages for :doc:`sources <sources>` and in the :doc:`mapproxy-seed tool <seed>`. Refer to the corresponding section in the documentation.
 
@@ -35,7 +33,7 @@ Configuration
 All coverages are configured by defining the source of the coverage and the SRS.
 The configuration of the coverage depends on the type. The SRS can allways be configured with the ``srs`` option.
 
-.. versionadded:: 1.5
+.. versionadded:: 1.5.0
     MapProxy can autodetect the type of the coverage. You can now use ``coverage`` instead of the ``bbox``, ``polygons`` or ``ogr_datasource`` option.
     The old options are still supported.
 

@@ -77,14 +77,10 @@ A list of image mime types the server should offer.
 ``featureinfo_types``
 """""""""""""""""""""
 
-.. versionadded:: 1.0.0
-
 A list of feature info types the server should offer. Available types are ``text``, ``html`` and ``xml``. The types then are advertised in the capabilities with the correct mime type.
 
 ``featureinfo_xslt``
 """"""""""""""""""""
-
-.. versionadded:: 1.0.0
 
 You can define XSLT scripts to transform outgoing feature information. You can define scripts for different feature info types:
 

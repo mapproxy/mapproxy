@@ -160,8 +160,6 @@ Readable name of the layer, e.g WMS layer title.
 ``layers``
 """"""""""
 
-.. versionadded:: 0.9.1
-
 Each layer can contain another ``layers`` configuration. You can use this to build group layers and to build a nested layer tree.
 
 For example::
@@ -320,7 +318,7 @@ WMS and Mapserver sources also support tagged names (``wms:lyr1,lyr2``). See :re
 
 Cache souces
 ^^^^^^^^^^^^
-.. versionadded:: 1.5
+.. versionadded:: 1.5.0
 
 You can also use other caches as a source. MapProxy loads tiles directly from that cache if the grid of the target cache is identical or *compatible* with the grid of the source cache. You have a compatible grid when all tiles in the cache grid are also available in source grid, even if the tile coordinates (X/Y/Z) are different.
 
@@ -395,9 +393,6 @@ Add a watermark right into the cached tiles. The watermark is thus also present 
   Configure the spacing between repeated watermarks. By default the watermark will be placed on
   every tile, with ``wide`` the watermark will be placed on every second tile.
 
-.. versionadded:: 1.0.0
-  ``spacing``
-
 
 ``grids``
 """""""""
@@ -437,8 +432,6 @@ Requests below the configured resolution or level will be passed to the underlyi
 
 ``disable_storage``
 """"""""""""""""""""
-
-.. versionadded:: 1.0.0
 
 If set to ``true``, MapProxy will not store any tiles for this cache. MapProxy will re-request all required tiles for each incoming request,
 even if the there are matching tiles in the cache. See :ref:`seed_only <wms_seed_only>` if you need an *offline* mode.
@@ -865,8 +858,6 @@ Configure which HTTP method should be used for HTTP requests. By default (`AUTO`
 
 ``headers``
 ^^^^^^^^^^^
-
-.. versionadded:: 1.0.0
 
 Add additional HTTP headers to all requests to your sources.
 ::
