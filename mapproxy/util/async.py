@@ -35,7 +35,7 @@ except ImportError:
     _has_eventlet = False
 
 from mapproxy.config import base_config
-from mapproxy.util import local_base_config
+from mapproxy.config import local_base_config
 
 import logging
 log_system = logging.getLogger('mapproxy.system')

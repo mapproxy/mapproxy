@@ -17,26 +17,7 @@
 Utility methods and classes (file locking, asynchronous execution pools, etc.).
 """
 from __future__ import with_statement
-import contextlib
 from functools import wraps
-
-
-@contextlib.contextmanager
-def local_base_config(conf):
-    """
-    Temporarily set the global configuration (mapproxy.config.base_config).
-
-    The global mapproxy.config.base_config object is thread-local and
-    is set per-request in the MapProxyApp. Use `local_base_config` to
-    set base_config outside of a request context (e.g. system loading
-    or seeding).
-    """
-    import mapproxy.config.config
-    mapproxy.config.config._config.push(conf)
-    try:
-        yield
-    finally:
-        mapproxy.config.config._config.pop()
 
 def reraise_exception(new_exc, exc_info):
     """
