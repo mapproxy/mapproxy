@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """
-Utility methods and classes (file locking, asynchronous execution pools, etc.).
+File system related utility functions.
 """
 from __future__ import with_statement, absolute_import
 import time

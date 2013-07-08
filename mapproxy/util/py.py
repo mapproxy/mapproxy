@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """
-Utility methods and classes (file locking, asynchronous execution pools, etc.).
+Python related helper functions.
 """
 from __future__ import with_statement
 from functools import wraps
