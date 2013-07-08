@@ -18,7 +18,7 @@ import os
 import hashlib
 from cStringIO import StringIO
 from mapproxy.srs import bbox_equals
-from mapproxy.util.times import format_httpdate
+from mapproxy.util.time import format_httpdate
 from mapproxy.test.image import is_jpeg, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import validate_with_xsd
