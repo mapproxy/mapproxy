@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2013 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -114,14 +114,15 @@ def ensure_directory(file_name):
 def write_atomic(filename, data):
     """
     write_atomic writes `data` to a random file in filename's directory
-    first and renames that file to filename. Rename is atomic on all
-    Posix platforms.
+    first and renames that file to the target filename afterwards.
+    Rename is atomic on all POSIX platforms.
 
     Falls back to normal write on Windows.
     """
     if not sys.platform.startswith('win'):
-        # write to random filename
-        path_tmp = filename + '.tmp-' + str(random.randint(0, 999999))
+        # write to random filename to prevent concurrent writes in cases
+        # where file locking does not work (network fs)
+        path_tmp = filename + '.tmp-' + str(random.randint(0, 99999999))
         try:
             fd = os.open(path_tmp, os.O_EXCL | os.O_CREAT | os.O_WRONLY)
             with os.fdopen(fd, 'wb') as f:

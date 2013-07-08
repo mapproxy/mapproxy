@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2013 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -385,9 +385,15 @@ def write_atomic_data((i, filename)):
     write_atomic(filename, data)
 
 class TestWriteAtomic(object):
+    def setup(self):
+        self.dirname = tempfile.mkdtemp()
+
+    def teardown(self):
+        if self.dirname:
+            shutil.rmtree(self.dirname)
+
     def test_concurrent_write(self):
-        dirname = tempfile.mkdtemp()
-        filename = os.path.join(dirname, 'tmpfile')
+        filename = os.path.join(self.dirname, 'tmpfile')
 
         num_writes = 100
         concurrent_writes = 10
@@ -403,13 +409,11 @@ class TestWriteAtomic(object):
             "later writes, got content from write %d" % (last_i + 1)
         )
         os.unlink(filename)
-        assert os.listdir(dirname) == []
-        os.rmdir(dirname)
+        assert os.listdir(self.dirname) == []
 
     def test_not_a_file(self):
         # check that expected errors are not hidden
-        dirname = tempfile.mkdtemp()
-        filename = os.path.join(dirname, 'tmpfile')
+        filename = os.path.join(self.dirname, 'tmpfile')
         os.mkdir(filename)
 
         try:
