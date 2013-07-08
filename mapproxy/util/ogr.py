@@ -18,15 +18,24 @@ import ctypes
 from ctypes import c_void_p, c_char_p, c_int
 
 def init_libgdal():
-    libgdal = load_library(['libgdal', 'libgdal1'])
-    
+    libgdal = load_library(['libgdal', 'libgdal1', 'gdal110', 'gdal19', 'gdal18', 'gdal17'])
+
     if not libgdal: return
-    
+
     libgdal.OGROpen.argtypes = [c_char_p, c_int, c_void_p]
     libgdal.OGROpen.restype = c_void_p
 
-    libgdal.CPLGetLastErrorMsg.argtypes	= []
-    libgdal.CPLGetLastErrorMsg.restype = c_char_p
+    # CPLGetLastErrorMsg is not part of the official and gets
+    # name mangled on Windows builds. try to support _Foo@0
+    # mangling, otherwise print no detailed errors
+    if not hasattr(libgdal, 'CPLGetLastErrorMsg') and hasattr(libgdal, '_CPLGetLastErrorMsg@0'):
+        libgdal.CPLGetLastErrorMsg = getattr(libgdal, '_CPLGetLastErrorMsg@0')
+
+    if hasattr(libgdal, 'CPLGetLastErrorMsg'):
+        libgdal.CPLGetLastErrorMsg.argtypes = []
+        libgdal.CPLGetLastErrorMsg.restype = c_char_p
+    else:
+        libgdal.CPLGetLastErrorMsg = None
 
     libgdal.OGR_DS_GetLayer.argtypes = [c_void_p, c_int]
     libgdal.OGR_DS_GetLayer.restype = c_void_p
