@@ -11,8 +11,6 @@ There are two configuration files used by MapProxy.
 ``seed.yaml``
     This file is the configuration for the ``mapproxy-seed`` tool. See :doc:`seeding documentation <seed>` for more information.
 
-.. note:: The configuration changed with the 0.9.0 release and you have to update any older configuration. This is a one-time change and further versions will offer backwards-compatibility. Read the :doc:`migration guide <migrate>` for some help.
-
 .. index:: mapproxy.yaml
 
 mapproxy.yaml
