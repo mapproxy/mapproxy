@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,7 @@ class Response(object):
     charset = 'utf-8'
     default_content_type = 'text/plain'
     block_size = 1024 * 32
-    
+
     def __init__(self, response, status=None, content_type=None, mimetype=None):
         self.response = response
         if status is None:
@@ -40,17 +40,17 @@ class Response(object):
         if content_type is None:
             content_type = self.default_content_type
         self.headers['Content-type'] = content_type
-    
+
     def _status_set(self, status):
         if isinstance(status, (int, long)):
             status = status_code(status)
         self._status = status
-    
+
     def _status_get(self):
         return self._status
-    
+
     status = property(_status_get, _status_set)
-    
+
     def _last_modified_set(self, date):
         if not date: return
         self._timestamp = timestamp(date)
@@ -59,24 +59,24 @@ class Response(object):
         return self.headers.get('Last-modified', None)
 
     last_modified = property(_last_modified_get, _last_modified_set)
-    
+
     def _etag_set(self, value):
         self.headers['ETag'] = value
-    
+
     def _etag_get(self):
         return self.headers.get('ETag', None)
-    
+
     etag = property(_etag_get, _etag_set)
-    
+
     def cache_headers(self, timestamp=None, etag_data=None, max_age=None, no_cache=False):
         """
         Set cache-related headers.
-        
+
         :param timestamp: local timestamp of the last modification of the
             response content
         :param etag_data: list that will be used to build an ETag hash.
             calls the str function on each item.
-        :param max_age: the maximum cache age in seconds 
+        :param max_age: the maximum cache age in seconds
         """
         if etag_data:
             hash_src = ''.join((str(x) for x in etag_data))
@@ -91,7 +91,7 @@ class Response(object):
         self.last_modified = timestamp
         if (timestamp or etag_data) and max_age is not None:
             self.headers['Cache-control'] = 'max-age=%d public' % max_age
-    
+
     def make_conditional(self, req):
         """
         Make the response conditional to the HTTP headers in the CGI/WSGI `environ`.
@@ -102,49 +102,49 @@ class Response(object):
         if req is None:
             return
         environ = req.environ
-        
+
         not_modified = False
-        
-        
+
+
         if self.etag == environ.get('HTTP_IF_NONE_MATCH', -1):
-            not_modified = True        
+            not_modified = True
         elif self._timestamp is not None:
             date = environ.get('HTTP_IF_MODIFIED_SINCE', None)
             timestamp = parse_httpdate(date)
             if timestamp is not None and self._timestamp <= timestamp:
                 not_modified = True
-        
+
         if not_modified:
             self.status = 304
             self.response = []
             if 'Content-type' in self.headers:
                 del self.headers['Content-type']
-    
+
     @property
     def content_length(self):
         return int(self.headers.get('Content-length', 0))
-    
+
     @property
     def content_type(self):
         return self.headers['Content-type']
-    
+
     @property
     def data(self):
         if hasattr(self.response, 'read'):
             return self.response.read()
         else:
             return ''.join(chunk.encode() for chunk in self.response)
-    
+
     @property
     def fixed_headers(self):
         headers = []
         for key, value in self.headers.iteritems():
             headers.append((key, value.encode()))
         return headers
-    
+
     def __call__(self, environ, start_response):
         if hasattr(self.response, 'read'):
-            if ((not hasattr(self.response, 'ok_to_seek') or 
+            if ((not hasattr(self.response, 'ok_to_seek') or
                 self.response.ok_to_seek) and
                (hasattr(self.response, 'seek') and
                 hasattr(self.response, 'tell'))):
@@ -160,7 +160,7 @@ class Response(object):
                 self.headers['Content-length'] = str(len(self.response))
                 self.response = [self.response]
             resp_iter = self.iter_encode(self.response)
-        
+
         start_response(self.status, self.fixed_headers)
         return resp_iter
 
@@ -217,4 +217,3 @@ _status_codes = {
 
 def status_code(code):
     return str(code) + ' ' + _status_codes[code]
-    

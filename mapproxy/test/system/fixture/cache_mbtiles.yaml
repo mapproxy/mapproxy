@@ -18,6 +18,7 @@ caches:
     cache:
       type: mbtiles
       filename: ./cache.mbtiles
+      tile_lock_dir: ./testlockdir
     sources: [tms]
 
 sources:

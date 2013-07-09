@@ -90,12 +90,15 @@ cache_types = {
         'directory_layout': str(),
         'use_grid_names': bool(),
         'directory': str(),
+        'tile_lock_dir': str(),
     },
     'sqlite': {
-        'directory': str()
+        'directory': str(),
+        'tile_lock_dir': str(),
     },
     'mbtiles': {
-        'filename': str()
+        'filename': str(),
+        'tile_lock_dir': str(),
     },
     'couchdb': {
         'url': str(),
@@ -104,6 +107,7 @@ cache_types = {
             anything(): anything()
         },
         'tile_id': str(),
+        'tile_lock_dir': str(),
     },
     'riak': {
         'url': str(),
@@ -212,6 +216,7 @@ mapproxy_yaml_spec = {
         'cache': {
             'base_dir': str(),
             'lock_dir': str(),
+            'tile_lock_dir': str(),
             'meta_size': [number()],
             'meta_buffer': number(),
             'max_tile_limit': number(),

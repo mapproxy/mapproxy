@@ -17,6 +17,7 @@ from __future__ import with_statement, division
 import os
 import re
 import sys
+import shutil
 from mapproxy.platform.image import Image
 import functools
 
@@ -293,6 +294,12 @@ class TestWMS111(WMSTest):
         assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
 
     def test_get_map(self):
+        # check custom tile lock directory
+        tiles_lock_dir = os.path.join(test_config['base_dir'], 'wmscachetilelockdir')
+        # make sure custom tile_lock_dir was not created by other tests
+        shutil.rmtree(tiles_lock_dir, ignore_errors=True)
+        assert not os.path.exists(tiles_lock_dir)
+
         self.created_tiles.append('wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
@@ -305,6 +312,9 @@ class TestWMS111(WMSTest):
                 resp = self.app.get(self.common_map_req)
                 assert 35000 < int(resp.headers['Content-length']) < 75000
                 eq_(resp.content_type, 'image/png')
+
+        # check custom tile_lock_dir
+        assert os.path.exists(tiles_lock_dir)
 
     def test_get_map_direct_fwd_params_layer(self):
         img = create_tmp_image((200, 200), format='png')
@@ -368,6 +378,12 @@ class TestWMS111(WMSTest):
         is_111_exception(resp.lxml, 'Could not transform BBOX: Invalid result.')
 
     def test_get_map100(self):
+        # check global tile lock directory
+        tiles_lock_dir = os.path.join(test_config['base_dir'], 'defaulttilelockdir')
+        # make sure global tile_lock_dir was ot created by other tests
+        shutil.rmtree(tiles_lock_dir, ignore_errors=True)
+        assert not os.path.exists(tiles_lock_dir)
+
         self.created_tiles.append('wms_cache_100_EPSG900913/01/000/000/001/000/000/001.jpeg')
         # request_format tiff, cache format jpeg, wms request in png
         with tmp_image((256, 256), format='tiff') as img:
@@ -381,6 +397,9 @@ class TestWMS111(WMSTest):
                 self.common_map_req.params['layers'] = 'wms_cache_100'
                 resp = self.app.get(self.common_map_req)
                 eq_(resp.content_type, 'image/png')
+
+        # check global tile lock directory was created
+        assert os.path.exists(tiles_lock_dir)
 
     def test_get_map130(self):
         self.created_tiles.append('wms_cache_130_EPSG900913/01/000/000/001/000/000/001.jpeg')

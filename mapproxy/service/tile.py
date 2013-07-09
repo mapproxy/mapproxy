@@ -51,9 +51,10 @@ class TileServer(Server):
     """
     names = ('tiles', 'tms')
     request_parser = staticmethod(tile_request)
-    request_methods = ('map', 'tms_capabilities')
+    request_methods = ('map', 'tms_capabilities, tms_root_resource')
     template_file = 'tms_capabilities.xml'
     layer_template_file = 'tms_tilemap_capabilities.xml'
+    root_resource_template_file = 'tms_root_resource.xml'
 
     def __init__(self, layers, md, max_tile_age=None, use_dimension_layers=False, origin=None):
         Server.__init__(self)
@@ -71,7 +72,14 @@ class TileServer(Server):
         if self.origin and not tile_request.origin:
             tile_request.origin = self.origin
         layer, limit_to = self.layer(tile_request)
-        tile = layer.render(tile_request, use_profiles=tile_request.use_profiles, coverage=limit_to)
+
+        def decorate_img(image):
+            query_extent = (layer.grid.srs.srs_code,
+                layer.tile_bbox(tile_request, use_profiles=tile_request.use_profiles))
+            return self.decorate_img(image, 'tms', [layer.name], tile_request.http.environ, query_extent)
+
+        tile = layer.render(tile_request, use_profiles=tile_request.use_profiles, coverage=limit_to, decorate_img=decorate_img)
+
         tile_format = getattr(tile, 'format', tile_request.format)
         resp = Response(tile.as_buffer(), content_type='image/' + tile_format)
         if tile.cacheable:
@@ -167,6 +175,15 @@ class TileServer(Server):
 
         return Response(result, mimetype='text/xml')
 
+    def tms_root_resource(self, tms_request):
+        """
+        :return: root resource with all available versions of the service
+        :rtype: Response
+        """        
+        service = self._service_md(tms_request)
+        result = self._render_root_resource_template(service)
+        return Response(result, mimetype='text/xml')
+
     def _service_md(self, map_request):
         md = dict(self.md)
         md['url'] = map_request.http.base_url
@@ -179,6 +196,10 @@ class TileServer(Server):
     def _render_layer_template(self, layer, service):
         template = get_template(self.layer_template_file)
         return template.substitute(service=bunch(default='', **service), layer=layer)
+
+    def _render_root_resource_template(self, service):
+        template = get_template(self.root_resource_template_file)
+        return template.substitute(service=bunch(default='', **service))
 
 class TileLayer(object):
     def __init__(self, name, title, md, tile_manager, dimensions=None):
@@ -260,7 +281,7 @@ class TileLayer(object):
                        code='InvalidParameterValue')
         return dimensions
 
-    def render(self, tile_request, use_profiles=False, coverage=None):
+    def render(self, tile_request, use_profiles=False, coverage=None, decorate_img=None):
         if tile_request.format != self.format:
             raise RequestError('invalid format (%s). this tile set only supports (%s)'
                                % (tile_request.format, self.format), request=tile_request,
@@ -287,6 +308,11 @@ class TileLayer(object):
             if tile.source is None:
                 return self.empty_response()
 
+            # Provide the wrapping WSGI app or filter the opportunity to process the
+            # image before it's wrapped up in a response
+            if decorate_img:
+                tile.source = decorate_img(tile.source)
+
             if coverage_intersects:
                 if self.empty_response_as_png:
                     format = 'png'
@@ -297,6 +323,7 @@ class TileLayer(object):
 
                 tile.source = mask_image_source_from_coverage(
                     tile.source, tile_bbox, self.grid.srs, coverage, image_opts)
+
                 return TileResponse(tile, format=format, image_opts=image_opts)
 
             format = None if self._mixed_format else tile_request.format

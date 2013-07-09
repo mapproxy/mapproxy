@@ -21,3 +21,4 @@ Patches and Suggestions
 - Miloslav Kmeť
 - Bruno Binet
 - Tom Payne
+- Matt Walker

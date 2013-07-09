@@ -28,6 +28,7 @@ The current sub-commands are:
 - :ref:`mapproxy_util_serve_develop`
 - :ref:`mapproxy_util_serve_multiapp_develop`
 - :ref:`mapproxy_util_scales`
+- :ref:`mapproxy_util_wms_capabilities`
 - :ref:`mapproxy_util_grids`
 - :ref:`mapproxy_util_export`
 
@@ -234,6 +235,10 @@ The command takes a valid URL GetCapabilities URL.
 
   Display all available Layers for this service. Each new layer will be marked with a hyphen and all sublayers are indented.
 
+.. cmdoption:: --version <versionnumber>
+
+  Parse the Capabilities-document for the given version. Only version 1.1.1 and 1.3.0 are supported. The default value is 1.1.1
+
 
 
 Example
@@ -263,6 +268,7 @@ Parsed capabilities document:
 
 ::
 
+  Capabilities Document Version 1.1.1
   Root-Layer:
     - title: MapProxy WMS Proxy
       url: http://127.0.0.1:8080/service?

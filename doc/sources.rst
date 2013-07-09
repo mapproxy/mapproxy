@@ -85,7 +85,6 @@ This option affects what request MapProxy sends to the source WMS server.
 ``featureinfo_format``
   The ``INFO_FORMAT`` for FeatureInfo requests. By default MapProxy will use the same format as requested by the client.
 
-.. versionadded:: 1.0.0
   ``featureinfo_xslt`` and ``featureinfo_format``
 
 
@@ -149,13 +148,9 @@ See :ref:`image_options` for other options.
 
 ``transparent_color``
 
-  .. versionadded:: 1.0.0
-
   Specify a color that should be converted to full transparency. Can be either a list of color values (``[255, 255, 255]``) or a hex string (``#ffffff``).
 
 ``transparent_color_tolerance``
-
-  .. versionadded:: 1.0.0
 
   Tolerance for the ``transparent_color`` substitution. The value defines the tolerance in each direction. E.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.
 
@@ -310,8 +305,6 @@ Define the covered area of the source. The source will only be requested if ther
 ``transparent``
 ^^^^^^^^^^^^^^^
 
-.. versionadded:: 1.0.0
-
 You need to set this to ``true`` if you want to use this source as an overlay.
 
 
@@ -458,7 +451,8 @@ A list of layer names you want to render. MapProxy disables each layer that is n
 
 .. versionadded:: 1.3.0
 
-Use Mapnik 2 if set to ``true``.
+Use Mapnik 2 if set to ``true``. This option is now deprecated and only required for Mapnik 2.0.0. Mapnik 2.0.1 and newer are available as ``mapnik`` package.
+
 
 ``transparent``
 ^^^^^^^^^^^^^^^

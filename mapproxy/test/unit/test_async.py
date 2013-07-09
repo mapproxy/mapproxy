@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,12 +30,12 @@ class TestThreaded(object):
         start = time.time()
         result = list(imap_async_threaded(func, range(40)))
         stop = time.time()
-        
+
         duration = stop - start
         assert duration < 0.2
-        
+
         eq_(len(result), 40)
-    
+
     def test_map_with_exception(self):
         def func(x):
             raise Exception()
@@ -58,7 +58,7 @@ class TestEventlet(object):
     def setup(self):
         if not _has_eventlet:
             raise SkipTest('eventlet required')
-    
+
     def test_map(self):
         def func(x):
             eventlet.sleep(0.05)
@@ -66,12 +66,12 @@ class TestEventlet(object):
         start = time.time()
         result = list(imap_async_eventlet(func, range(40)))
         stop = time.time()
-        
+
         duration = stop - start
         assert duration < 0.1
-        
+
         eq_(len(result), 40)
-    
+
     def test_map_with_exception(self):
         def func(x):
             raise Exception()
@@ -89,7 +89,7 @@ class CommonPoolTests(object):
     def _check_single_arg(self, func):
         result = list(func())
         eq_(result, [3])
-    
+
     def test_single_argument(self):
         f1 = lambda x, y: x+y
         pool = self.mk_pool()
@@ -98,8 +98,8 @@ class CommonPoolTests(object):
         yield check, lambda: pool.imap(f1, [1], [2])
         yield check, lambda: pool.starmap(f1, [(1, 2)])
         yield check, lambda: pool.starcall([(f1, 1, 2)])
-    
-    
+
+
     def _check_single_arg_raise(self, func):
         try:
             list(func())
@@ -107,7 +107,7 @@ class CommonPoolTests(object):
             pass
         else:
             assert False, 'expected ValueError'
-    
+
     def test_single_argument_raise(self):
         def f1(x, y):
             raise ValueError
@@ -122,7 +122,7 @@ class CommonPoolTests(object):
         result = list(func())
         assert result[0].result == None
         assert isinstance(result[0].exception[1], ValueError)
-        
+
     def test_single_argument_result_object(self):
         def f1(x, y):
             raise ValueError
@@ -137,7 +137,7 @@ class CommonPoolTests(object):
     def _check_multiple_args(self, func):
         result = list(func())
         eq_(result, [3, 5])
-    
+
     def test_multiple_arguments(self):
         f1 = lambda x, y: x+y
         pool = self.mk_pool()
@@ -146,13 +146,13 @@ class CommonPoolTests(object):
         yield check, lambda: pool.imap(f1, [1, 2], [2, 3])
         yield check, lambda: pool.starmap(f1, [(1, 2), (2, 3)])
         yield check, lambda: pool.starcall([(f1, 1, 2), (f1, 2, 3)])
-    
+
     def _check_multiple_args_with_exceptions_result_object(self, func):
         result = list(func())
         eq_(result[0].result, 3)
         eq_(type(result[1].exception[1]), ValueError)
         eq_(result[2].result, 7)
-    
+
     def test_multiple_arguments_exceptions_result_object(self):
         def f1(x, y):
             if x+y == 5:
@@ -164,7 +164,7 @@ class CommonPoolTests(object):
         yield check, lambda: pool.imap(f1, [1, 2, 3], [2, 3, 4], use_result_objects=True)
         yield check, lambda: pool.starmap(f1, [(1, 2), (2, 3), (3, 4)], use_result_objects=True)
         yield check, lambda: pool.starcall([(f1, 1, 2), (f1, 2, 3), (f1, 3, 4)], use_result_objects=True)
-    
+
     def _check_multiple_args_with_exceptions(self, func):
         result = func()
         try:
@@ -176,7 +176,7 @@ class CommonPoolTests(object):
             pass
         else:
             assert False, 'expected ValueError'
-    
+
     def test_multiple_arguments_exceptions(self):
         def f1(x, y):
             if x+y == 5:
@@ -184,7 +184,7 @@ class CommonPoolTests(object):
             return x+y
         pool = self.mk_pool()
         check = self._check_multiple_args_with_exceptions
-        
+
         def check_pool_map():
             try:
                 pool.map(f1, [1, 2, 3], [2, 3, 4])
@@ -196,18 +196,18 @@ class CommonPoolTests(object):
         yield check, lambda: pool.imap(f1, [1, 2, 3], [2, 3, 4])
         yield check, lambda: pool.starmap(f1, [(1, 2), (2, 3), (3, 4)])
         yield check, lambda: pool.starcall([(f1, 1, 2), (f1, 2, 3), (f1, 3, 4)])
-    
+
 
 
 class TestThreadPool(CommonPoolTests):
     def mk_pool(self):
         return ThreadPool()
-    
+
     def test_base_config(self):
         # test that all concurrent have access to their
         # local base_config
         from mapproxy.config import base_config
-        from mapproxy.util import local_base_config
+        from mapproxy.config import local_base_config
         from copy import deepcopy
 
         # make two separate base_configs
@@ -219,9 +219,9 @@ class TestThreadPool(CommonPoolTests):
 
         # run test in parallel, check1 and check2 should interleave
         # each with their local conf
-        
+
         error_occured = False
-        
+
         def check1(x):
             global error_occured
             if base_config().conf != 1 or 'bar' in base_config():
@@ -258,17 +258,17 @@ class TestEventletPool(CommonPoolTests):
     def setup(self):
         if not _has_eventlet:
             raise SkipTest('eventlet required')
-    
+
     def mk_pool(self):
         if not _has_eventlet:
             raise SkipTest('eventlet required')
         return EventletPool()
-    
+
     def test_base_config(self):
         # test that all concurrent have access to their
         # local base_config
         from mapproxy.config import base_config
-        from mapproxy.util import local_base_config
+        from mapproxy.config import local_base_config
         from copy import deepcopy
 
         # make two separate base_configs
@@ -282,7 +282,7 @@ class TestEventletPool(CommonPoolTests):
         # each with their local conf
 
         error_occured = False
-        
+
         def check1(x):
             global error_occured
             if base_config().conf != 1 or 'bar' in base_config():
@@ -292,7 +292,7 @@ class TestEventletPool(CommonPoolTests):
             global error_occured
             if base_config().conf != 2 or 'bar' in base_config():
                 error_occured = True
-                
+
         assert 'bar' in base_config()
 
         def test1():

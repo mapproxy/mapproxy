@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,8 @@
 
 from __future__ import with_statement, division
 
+import os
+import shutil
 import functools
 
 from cStringIO import StringIO
@@ -52,12 +54,12 @@ class TestWMTS(SystemTest):
     config = test_config
     def setup(self):
         SystemTest.setup(self)
-        self.common_cap_req = WMTS100CapabilitiesRequest(url='/service?', param=dict(service='WMTS', 
+        self.common_cap_req = WMTS100CapabilitiesRequest(url='/service?', param=dict(service='WMTS',
              version='1.0.0', request='GetCapabilities'))
-        self.common_tile_req = WMTS100TileRequest(url='/service?', param=dict(service='WMTS', 
+        self.common_tile_req = WMTS100TileRequest(url='/service?', param=dict(service='WMTS',
              version='1.0.0', tilerow='0', tilecol='0', tilematrix='01', tilematrixset='GLOBAL_MERCATOR',
              layer='wms_cache', format='image/jpeg', style='', request='GetTile'))
-    
+
     def test_capabilities(self):
         req = str(self.common_cap_req)
         resp = self.app.get(req)
@@ -65,14 +67,20 @@ class TestWMTS(SystemTest):
         assert validate_with_xsd(xml, xsd_name='wmts/1.0/wmtsGetCapabilities_response.xsd')
         eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 4)
         eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 4)
-    
+
     def test_get_tile(self):
         resp = self.app.get(str(self.common_tile_req))
         eq_(resp.content_type, 'image/jpeg')
         data = StringIO(resp.body)
         assert is_jpeg(data)
-    
+
     def test_get_tile_flipped_axis(self):
+        # test default tile lock directory
+        tiles_lock_dir = os.path.join(test_config['base_dir'], 'cache_data', 'tile_locks')
+        # make sure default tile_lock_dir was not created by other tests
+        shutil.rmtree(tiles_lock_dir, ignore_errors=True)
+        assert not os.path.exists(tiles_lock_dir)
+
         self.common_tile_req.params['layer'] = 'tms_cache_ul'
         self.common_tile_req.params['tilematrixset'] = 'ulgrid'
         self.common_tile_req.params['format'] = 'image/png'
@@ -84,7 +92,11 @@ class TestWMTS(SystemTest):
         with serv:
             resp = self.app.get(str(self.common_tile_req), status=200)
             eq_(resp.content_type, 'image/png')
-            
+
+        # test default tile lock directory was created
+        assert os.path.exists(tiles_lock_dir)
+
+
     def test_get_tile_source_error(self):
         self.common_tile_req.params['layer'] = 'tms_cache'
         self.common_tile_req.params['format'] = 'image/png'
@@ -93,7 +105,7 @@ class TestWMTS(SystemTest):
         assert validate_with_xsd(xml, xsd_name='ows/1.1.0/owsExceptionReport.xsd')
         eq_xpath_wmts(xml, '/ows:ExceptionReport/ows:Exception/@exceptionCode',
             'NoApplicableCode')
-    
+
     def test_get_tile_out_of_range(self):
         self.common_tile_req.params.coord = -1, 1, 1
         resp = self.app.get(str(self.common_tile_req), status=400)
@@ -106,20 +118,20 @@ class TestWMTS(SystemTest):
     def test_get_tile_invalid_format(self):
         self.common_tile_req.params['format'] = 'image/png'
         self.check_invalid_parameter()
-        
+
     def test_get_tile_invalid_layer(self):
         self.common_tile_req.params['layer'] = 'unknown'
         self.check_invalid_parameter()
-    
+
     def test_get_tile_invalid_matrixset(self):
         self.common_tile_req.params['tilematrixset'] = 'unknown'
         self.check_invalid_parameter()
-    
+
     def check_invalid_parameter(self):
         resp = self.app.get(str(self.common_tile_req), status=400)
         xml = resp.lxml
         eq_(resp.content_type, 'text/xml')
         assert validate_with_xsd(xml, xsd_name='ows/1.1.0/owsExceptionReport.xsd')
         eq_xpath_wmts(xml, '/ows:ExceptionReport/ows:Exception/@exceptionCode',
-            'InvalidParameterValue')        
+            'InvalidParameterValue')
 

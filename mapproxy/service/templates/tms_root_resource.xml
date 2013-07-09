@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+    <Services>
+{{if service}}
+    <TileMapService title="{{service.title}}" version="1.0.0"
+        href="{{service.url if service.url.endswith('/') else service.url + '/'}}1.0.0/" />
+{{endif}}
+</Services>

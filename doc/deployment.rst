@@ -41,17 +41,13 @@ Production
 
 There are two common ways to deploy MapProxy in production.
 
-
-HTTP behind HTTP proxy
-  You can run MapProxy as a separate local HTTP server behind an existing web server (nginx_, Apache, etc.) or an HTTP proxy (Varnish_, squid, etc).
-
 Embedded in HTTP server
   You can directly integrate MapProxy into your web server. Apache can integrate Python web services with the ``mod_wsgi`` extension for example.
 
-Both approaches require a configuration that maps your MapProxy configuration with the MapProxy application. You can write a small script file for that.
+Behind an HTTP server or proxy
+  You can run MapProxy as a separate local HTTP server behind an existing web server (nginx_, Apache, etc.) or an HTTP proxy (Varnish_, squid, etc).
 
-.. versionchanged:: 1.1.0
-  Using `Paste Deploy <http://pythonpaste.org/deploy/>`_ (``paste serve``) is no longer required. See :ref:`paste_deploy` for documentation if you still use it.
+Both approaches require a configuration that maps your MapProxy configuration with the MapProxy application. You can write a small script file for that.
 
 Running MapProxy as a FastCGI server behind HTTP server, a third option, is no longer advised for new setups since the FastCGI package (flup) is no longer maintained and the Python HTTP server improved significantly.
 
@@ -74,8 +70,53 @@ The script contains the following lines and makes the configured MapProxy availa
 This is sufficient for embedding MapProxy with ``mod_wsgi`` or for starting it with Python HTTP servers like ``gunicorn`` (see further below). You can extend this script to setup logging or environment variables.
 
 
-HTTP behind HTTP proxy
-----------------------
+
+.. index:: mod_wsgi, Apache
+
+Apache mod_wsgi
+---------------
+
+The Apache HTTP server can directly integrate Python application with the `mod_wsgi`_ extension. The benefit is that you don't have to start another server. Read `mod_wsgi installation`_ for detailed instructions.
+
+``mod_wsgi`` requires a server script that defines the configured WSGI function as ``application``. See :ref:`above <server_script>`.
+
+You need to modify your Apache ``httpd.conf`` as follows::
+
+  # if not loaded elsewhere
+  LoadModule wsgi_module modules/mod_wsgi.so
+
+  WSGIScriptAlias /mapproxy /path/to/mapproxy/config.py
+
+  <Directory /path/to/mapproxy/>
+    Order deny,allow
+    Allow from all
+  </Directory>
+
+
+``mod_wsgi`` has a lot of options for more fine tuning. ``WSGIPythonHome`` lets you configure your ``virtualenv`` and  ``WSGIDaemonProcess``/``WSGIProcessGroup`` allows you to start multiple processes. See the `mod_wsgi configuration directives documentation <http://code.google.com/p/modwsgi/wiki/ConfigurationDirectives>`_. Using Mapnik also requires the ``WSGIApplicationGroup`` option.
+
+A more complete configuration might look like::
+
+  # if not loaded elsewhere
+  LoadModule wsgi_module modules/mod_wsgi.so
+
+  WSGIScriptAlias /mapproxy /path/to/mapproxy/config.py
+  WSGIDaemonProcess mapproxy user=mapproxy group=mapproxy processes=8 threads=25
+  WSGIProcessGroup mapproxy
+  WSGIApplicationGroup %{GLOBAL}
+
+  <Directory /path/to/mapproxy/>
+    Order deny,allow
+    Allow from all
+  </Directory>
+
+
+.. _`mod_wsgi`: http://code.google.com/p/modwsgi/
+.. _`mod_wsgi installation`: http://code.google.com/p/modwsgi/wiki/InstallationInstructions
+
+
+Behind HTTP server or proxy
+---------------------------
 
 There are Python HTTP servers available that can directly run MapProxy. Most of them are robust and efficient, but there are some odd HTTP clients out there that (mis)interpret the HTTP standard in various ways. It is therefor recommended to put a HTTP server or proxy in front that is mature and widely deployed (like Apache_, Nginx_, etc.).
 
@@ -171,59 +212,16 @@ Here is an example for the Apache_ webserver with the included ``mod_proxy`` and
 You need to make sure that both modules are loaded. The ``Host`` is already set to the right value by default.
 
 
-.. index:: mod_wsgi, Apache
-
-Embedding
----------
-
-Some web servers can directly integrate Python code. The benefit is that you don't have to start another server.
-
-Apache mod_wsgi
-~~~~~~~~~~~~~~~
-
-If you use Apache then you can integrate MapProxy with `mod_wsgi`_. Read `mod_wsgi installation`_ for detailed instructions.
-
-``mod_wsgi`` requires a server script that defines the configured WSGI function as ``application``. See :ref:`above <server_script>`.
-
-You need to modify your Apache ``httpd.conf`` as follows::
-
-  # if not loaded elsewhere
-  LoadModule wsgi_module modules/mod_wsgi.so
-
-  WSGIScriptAlias /mapproxy /path/to/mapproxy/config.py
-
-  <Directory /path/to/mapproxy/>
-    Order deny,allow
-    Allow from all
-  </Directory>
-
-
-``mod_wsgi`` has a lot of options for more fine tuning. ``WSGIPythonHome`` lets you configure your ``virtualenv`` and  ``WSGIDaemonProcess``/``WSGIProcessGroup`` allows you to start multiple processes. See the `mod_wsgi configuration directives documentation <http://code.google.com/p/modwsgi/wiki/ConfigurationDirectives>`_. Using Mapnik also requires the ``WSGIApplicationGroup`` option.
-
-A more complete configuration might look like::
-
-  # if not loaded elsewhere
-  LoadModule wsgi_module modules/mod_wsgi.so
-
-  WSGIScriptAlias /mapproxy /path/to/mapproxy/config.py
-  WSGIDaemonProcess mapproxy user=mapproxy group=mapproxy processes=8 threads=25
-  WSGIProcessGroup mapproxy
-  WSGIApplicationGroup %{GLOBAL}
-
-  <Directory /path/to/mapproxy/>
-    Order deny,allow
-    Allow from all
-  </Directory>
-
-
-.. _`mod_wsgi`: http://code.google.com/p/modwsgi/
-.. _`mod_wsgi installation`: http://code.google.com/p/modwsgi/wiki/InstallationInstructions
-
-
 Other deployment options
 ------------------------
 
 Refer to http://wsgi.readthedocs.org/en/latest/servers.html for a list of some available WSGI servers.
+
+FastCGI
+~~~~~~~
+
+.. note:: Running MapProxy as a FastCGI server behind HTTP server is no longer advised for new setups since the used Python package (flup) is no longer maintained. Please refer to the `MapProxy 1.5.0 deployment documentation for more information on FastCGI <http://mapproxy.org/docs/1.5.0/deployment.html>`_.
+
 
 Performance
 -----------
@@ -231,6 +229,18 @@ Performance
 Because of the way Python handles threads in computing heavy applications (like MapProxy WMS is), you should choose a server that uses multiple processes (pre-forking based) for best performance.
 
 The examples above are all minimal and you should read the documentation of your components to get the best performance with your setup.
+
+
+Load Balancing and High Availablity
+-----------------------------------
+
+You can easily run multiple MapProxy instances in parallel and use a load balancer to distribute requests across all instances, but there are a few things to consider when the instances share the same tile cache with NFS or other network filesystems.
+
+MapProxy uses file locks to prevent that multiple processes will request the same image twice from a source. This would typically happen when two or more requests for missing tiles are processed in parallel by MapProxy and these tiles belong to the same meta tile. Without locking MapProxy would request the meta tile for each request. With locking, only the first process will get the lock and request the meta tile. The other processes will wait till the the first process releases the lock and will then use the new created tile.
+
+Since file locking doesn't work well on most network filesystems you are likely to get errors when MapProxy writes these files on network filesystems. You should configure MapProxy to write all lock files on a local filesystem to prevent this. See :ref:`globals.cache.lock_dir<lock_dir>` and :ref:`globals.cache.tile_lock_dir<tile_lock_dir>`.
+
+With this setup the locking will only be effective when parallel requests for tiles of the same meta tile go to the same MapProxy instance. Since these requests are typically made from the same client you should enable *sticky sessions* in you load balancer when you offer tiled services (WMTS/TMS/KML).
 
 
 .. _nginx: http://nginx.org
@@ -248,158 +258,6 @@ The examples above are all minimal and you should read the documentation of your
 .. _Apache: http://httpd.apache.org/
 .. _upstart: http://upstart.ubuntu.com/
 .. _supervisord: http://supervisord.org/
-
-
-FastCGI
--------
-
-.. note:: Running MapProxy as a FastCGI server behind HTTP server is no longer advised for new setups since the used Python package (flup) is no longer maintained.
-
-
-FastCGI_ is a protocol to integrate web applications into web servers.
-FastCGI is language-independent and implemented by most popular web servers. The applications run isolated from the web server. In this case you do not start MapProxy as an HTTP server but as a FastCGI server.
-
-
-FastCGI Server
-~~~~~~~~~~~~~~
-
-flup_ is the best choice for an FastCGI server. It runs either multi threaded or multi processed (fork based).
-
-To start a FastCGI server from your server script, add the following lines::
-
-  if __name__ == '__main__':
-      from flup.server.fcgi_fork import WSGIServer
-      WSGIServer(application).run()
-
-
-The FastCGI server can listen to a TCP port or to a UNIX socket. You can configure this with the ``bindAddress`` argument.
-
-::
-
-  WSGIServer(application, bindAddress='./fcgi.socket').run()
-  # or
-  WSGIServer(application,
-             bindAddress=('localhost', 8181)).run()
-
-
-For Paste Deploy you can configure the server as follows::
-
-  [server:main]
-  use = egg:Flup#fcgi_fork
-  socket = %(here)s/../var/fcgi-socket
-
-
-
-FastCGI Client
-~~~~~~~~~~~~~~
-
-Next you must configure you web server to forward incoming requests to your FastCGI server. Your web server acts as a FastCGI client in this case.
-
-
-.. index:: mod_fastcgi, Apache
-
-Apache mod_fastcgi and mod_fcgid
-""""""""""""""""""""""""""""""""
-
-There are two modules that support FastCGI for Apache. mod_fastcgi_ is an external module, while mod_fcgid_ is included in recent Apache versions.
-
-For mod_fastcgi you can use the following snippet to add MapProxy to an Apache installation::
-
-  # if not loaded else where
-  LoadModule fastcgi_module modules/mod_fastcgi.so
-
-  <IfModule mod_fastcgi.c>
-   FastCGIExternalServer /tmp/madeup -socket \
-      /path/to/mymapproxy/var/fcgi-socket
-   Alias /mapproxy /tmp/madeup
-  </IfModule>
-
-.. note:: ``/tmp/madeup`` is just a dummy value and you can choose any path you want, the only limitation is that the directory must exist but not the file. In this example there must be a ``/tmp`` directory but the file ``madeup`` should not exist.
-
-The ``fcgi-socket`` file needs to be writeable by the Apache process and you need to permit access to the parent directory of the ``madeup`` file.
-
-::
-
-  <Directory "/tmp">
-    Order allow,deny
-    Allow from all
-  </Directory>
-
-
-.. seealso::
-  Read `Deploying MapProxy on CentOS5 x86_64 using apache2 with mod_fastcgi or mod_fcgid <http://tmintt.eu/content/deploying-mapproxy-centos5-x8664-using-apache2-modfastcgi-or-modfcgid>`_ for more information on how to configure both.
-
-
-.. index:: nginx
-
-nginx
-~~~~~
-
-The following snippet adds MapProxy to an Nginx_ installation. Note that you need to split the URI manually if you use an nginx version before 0.7.31. If you have a more recent version, you can use `fastcgi_split_path_info <http://wiki.nginx.org/NginxHttpFcgiModule#fastcgi_split_path_info>`_.
-
-::
-
-  server {
-    # server options
-    # ...
-
-    location /mapproxy {
-      if ($uri ~ "^(/mapproxy)(/.*)$") {
-        set $script_name  $1;
-        set $path_info  $2;
-      }
-      fastcgi_pass   unix:/path/to/fcgi-socket;
-      include fastcgi_params;
-      fastcgi_param  SCRIPT_NAME $script_name;
-      fastcgi_param  PATH_INFO   $path_info;
-    }
-  }
-
-
-.. index:: lighttpd
-
-Lighttpd
-~~~~~~~~
-
-Here is an example Lighttpd configuration::
-
-  $HTTP["host"] == "example.org" {
-    fastcgi.server += (
-      "/mapproxy" => ((
-        "check-local" => "disable",
-        "socket"      => "/path/to/mymapproxy/var/fcgi-socket"
-      ))
-    )
-  }
-
-The first line restricts this configuration to the ``example.org`` hostname. In the third line you set the URL path where MapProxy should listen. The ``socket`` option should point to the ``fcgi-socket`` file that is used to communicate with the MapProxy FastCGI server.
-
-
-.. _paste_deploy:
-
-Paste Deploy
-------------
-
-`Paste Deploy <http://pythonpaste.org/deploy/>`_ is a system for configuring WSGI applications and servers without creating a server script. You can use Paste's tool ``paster serve`` to start servers instead of creating your own server scripts. Paste Deploy requires a configuration that defines the application and the server.
-
-Here is a minimal ``config.ini`` example that shows how you configure MapProxy as the WSGI application and Flup as a FastCGI server.
-::
-
-  [app:main]
-  use = egg:MapProxy#app
-  mapproxy_conf = %(here)s/mapproxy.yaml
-
-  [server:main]
-  use = egg:Flup#fcgi_fork
-  socket = %(here)s/../var/fcgi-socket
-
-
-To start the server with that configuration::
-
-  paster serve config.ini
-
-Paste Deploy allows you to easily combine multiple WSGI applications and to connect them with different WSGI filters.
-
 
 Logging
 -------
@@ -442,20 +300,15 @@ The example script created with ``mapproxy-util create -t wsgi-app`` already con
   mapproxy-util create -t log-ini log.ini
 
 
-Paste Deploy
-""""""""""""
-You can add the logging configuration to your deployment ``.ini`` file if you use :ref:`paste_deploy`.
-
-
 .. index:: MultiMapProxy
 .. _multimapproxy:
 
 MultiMapProxy
 -------------
 
-.. versionadded:: 0.9.1
+.. versionadded:: 1.2.0
 
-You can run multiple MapProxy instances (configurations) within one process. You can either manually map URLs to a MapProxy configuration as :ref:`described in the configuration examples <paster_urlmap>` or you can use the MultiMapProxy application.
+You can run multiple MapProxy instances (configurations) within one process with the MultiMapProxy application.
 
 MultiMapProxy can dynamically load configurations. You can put all configurations into one directory and MapProxy maps each file to a URL: ``conf/proj1.yaml`` is available at ``http://hostname/proj1/``.
 
@@ -473,25 +326,8 @@ MultiMapProxy as the following options:
 Server Script
 ~~~~~~~~~~~~~
 
-.. versionadded:: 1.2.0
-
-There is a ``make_wsgi_app`` function in the ``mapproxy.multiapp`` package that creates configured MultiMapProxy WSGI application.
-
-::
+There is a ``make_wsgi_app`` function in the ``mapproxy.multiapp`` package that creates configured MultiMapProxy WSGI application. Replace the ``application`` definition in your script as follows::
 
   from mapproxy.multiapp import make_wsgi_app
   application = make_wsgi_app('/path/to.projects', allow_listing=True)
-
-
-Paste Deploy
-~~~~~~~~~~~~
-
-You can use Paste deploy, as described above, to configure and start MultiMapProxy. You need to use ``egg:MapProxy#multiapp`` instead of ``egg:MapProxy#app`` and you need to change the options.
-
-Example ``config.ini``::
-
-  [app:main]
-  use = egg:MapProxy#multiapp
-  config_dir = %(here)s/projects
-  allow_listing = true
 

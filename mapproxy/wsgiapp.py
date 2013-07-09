@@ -25,7 +25,7 @@ import threading
 
 from mapproxy.request import Request
 from mapproxy.response import Response
-from mapproxy.util import local_base_config
+from mapproxy.config import local_base_config
 from mapproxy.config.loader import load_configuration, ConfigurationError
 
 import logging

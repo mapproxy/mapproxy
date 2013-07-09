@@ -31,7 +31,7 @@ log = logging.getLogger('mapproxy.config')
 
 from mapproxy.config import load_default_config, finish_base_config
 from mapproxy.config.spec import validate_mapproxy_conf
-from mapproxy.util import memoize
+from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 
@@ -883,6 +883,7 @@ source_configuration_types = {
 class CacheConfiguration(ConfigurationBase):
     defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
 
+    @memoize
     def cache_dir(self):
         cache_dir = self.conf.get('cache', {}).get('directory')
         if cache_dir:
@@ -893,6 +894,12 @@ class CacheConfiguration(ConfigurationBase):
 
         return self.context.globals.get_path('cache_dir', self.conf,
             global_key='cache.base_dir')
+
+    def lock_dir(self):
+        lock_dir = self.context.globals.get_path('cache.tile_lock_dir', self.conf)
+        if not lock_dir:
+            lock_dir = os.path.join(self.cache_dir(), 'tile_locks')
+        return lock_dir
 
     def _file_cache(self, grid_conf, file_ext):
         from mapproxy.cache.file import FileCache
@@ -913,8 +920,14 @@ class CacheConfiguration(ConfigurationBase):
 
         lock_timeout = self.context.globals.get_value('http.client_timeout', {})
 
-        return FileCache(cache_dir, file_ext=file_ext, directory_layout=directory_layout,
-            lock_timeout=lock_timeout, link_single_color_images=link_single_color_images)
+        return FileCache(
+            cache_dir,
+            lock_dir=self.lock_dir(),
+            file_ext=file_ext,
+            directory_layout=directory_layout,
+            lock_timeout=lock_timeout,
+            link_single_color_images=link_single_color_images,
+        )
 
     def _mbtiles_cache(self, grid_conf, file_ext):
         from mapproxy.cache.mbtiles import MBTilesCache
@@ -927,7 +940,11 @@ class CacheConfiguration(ConfigurationBase):
             mbfile_path = self.context.globals.abspath(filename)
         else:
             mbfile_path = os.path.join(self.cache_dir(), filename)
-        return MBTilesCache(mbfile_path)
+
+        return MBTilesCache(
+            mbfile_path,
+            lock_dir=self.lock_dir(),
+        )
 
     def _sqlite_cache(self, grid_conf, file_ext):
         from mapproxy.cache.mbtiles import MBTilesLevelCache
@@ -946,12 +963,13 @@ class CacheConfiguration(ConfigurationBase):
                 grid_conf.tile_grid().name
             )
 
-        return MBTilesLevelCache(cache_dir)
+        return MBTilesLevelCache(
+            cache_dir,
+            lock_dir=self.lock_dir(),
+        )
 
     def _couchdb_cache(self, grid_conf, file_ext):
         from mapproxy.cache.couchdb import CouchDBCache, CouchDBMDTemplate
-
-        cache_dir = self.cache_dir()
 
         db_name = self.conf['cache'].get('db_name')
         if not db_name:
@@ -966,7 +984,7 @@ class CacheConfiguration(ConfigurationBase):
         tile_id = self.conf['cache'].get('tile_id')
 
         return CouchDBCache(url=url, db_name=db_name,
-            lock_dir=cache_dir, file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
+            lock_dir=self.lock_dir(), file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
             md_template=md_template, tile_id_template=tile_id)
         
     def _riak_cache(self, grid_conf, file_ext):
@@ -1064,6 +1082,11 @@ class CacheConfiguration(ConfigurationBase):
         if self.conf.get('format') == 'mixed' and not self.conf.get('request_format') == 'image/png':
             raise ConfigurationError('request_format must be set to image/png if mixed mode is enabled')
         request_format = self.conf.get('request_format') or self.conf.get('format')
+        if '/' in request_format:
+            request_format_ext = request_format.split('/', 1)[1]
+        else:
+            request_format_ext = request_format
+
         caches = []
 
         meta_buffer = self.context.globals.get_value('meta_buffer', self.conf,
@@ -1125,6 +1148,7 @@ class CacheConfiguration(ConfigurationBase):
             identifier = self.conf['name'] + '_' + tile_grid.name
 
             tile_creator_class = None
+
             if not self.context.renderd and renderd_address:
                 from mapproxy.cache.renderd import RenderdTileCreator, has_renderd_support
                 if not has_renderd_support():
@@ -1135,13 +1159,18 @@ class CacheConfiguration(ConfigurationBase):
                     priority = 100
 
                 cache_dir = self.cache_dir()
-                lock_dir = os.path.join(cache_dir, 'tile_locks')
+
+                lock_dir = self.context.globals.get_value('cache.tile_lock_dir')
+                if not lock_dir:
+                    lock_dir = os.path.join(cache_dir, 'tile_locks')
+
                 lock_timeout = self.context.globals.get_value('http.client_timeout', {})
                 locker = TileLocker(lock_dir, lock_timeout, identifier + '_renderd')
                 tile_creator_class = partial(RenderdTileCreator, renderd_address,
                     priority=priority, tile_locker=locker)
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
                               image_opts=image_opts, identifier=identifier,
+                              request_format=request_format_ext,
                               meta_size=meta_size, meta_buffer=meta_buffer,
                               minimize_meta_requests=minimize_meta_requests,
                               concurrent_tile_creators=concurrent_tile_creators,

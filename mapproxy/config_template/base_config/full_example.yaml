@@ -1,0 +1,538 @@
+# #####################################################################
+#                 MapProxy example configuration
+# #####################################################################
+#
+# This is _not_ a runnable configuration, but it contains most
+# available options in meaningful combinations.
+#
+# Use this file in addition to the documentation to see where and how
+# things can be configured.
+
+
+services:
+  demo:
+  kml:
+    # use the actual name of the grid as the grid identifier
+    # instead of the SRS code, e.g. /kml/mylayer/mygrid/
+    use_grid_names: true
+  tms:
+    # use the actual name of the grid as the grid identifier
+    # instead of the SRS code, e.g. /tms/1.0.0/mylayer/mygrid/
+    use_grid_names: true
+    # sets the tile origin to the north west corner, only works for
+    # tileservice at /tiles. TMS at /tms/1.0.0/ will still use
+    # south west as defined by the standard
+    origin: 'nw'
+
+  wmts:
+    # use restful access to WMTS
+    restful: true
+    # this is the default template for MapProxy
+    restful_template: '/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}'
+    # and also allow KVP requests
+    kvp: true
+    md:
+      # metadata used in capabilities documents for WMTS
+      # if the md option is not set, the metadata of the WMS will be used
+      title: MapProxy WMS Proxy
+      abstract: This is the fantastic MapProxy.
+      online_resource: http://mapproxy.org/
+      contact:
+        person: Your Name Here
+        position: Technical Director
+        organization:
+        address: Fakestreet 123
+        city: Somewhere
+        postcode: 12345
+        country: Germany
+        phone: +49(0)000-000000-0
+        fax: +49(0)000-000000-0
+        email: info@omniscale.de
+      # multiline strings are possible with the right indention
+      access_constraints:
+        This service is intended for private and evaluation use only.
+        The data is licensed as Creative Commons Attribution-Share Alike 2.0
+        (http://creativecommons.org/licenses/by-sa/2.0/)
+      fees: 'None'
+
+  wms:
+    # supported SRS for this WMS
+    srs: ['EPSG:4326', 'EPSG:900913', 'EPSG:25832']
+
+    # force the layer extents (BBOX) to be displayed in this SRS
+    bbox_srs: ['EPSG:4326']
+
+    # limit the supported image formats.
+    image_formats: ['image/jpeg', 'image/png', 'image/gif', 'image/GeoTIFF', 'image/tiff']
+
+    # add attribution text in the lower-right corner.
+    attribution:
+      text: '(c) Omniscale'
+
+    # return an OGC service exception when one or more sources return errors
+    # or no response at all (e.g. timeout)
+    on_source_errors: raise
+
+    # maximum output size for a WMS requests in pixel, default is 4000 x 4000
+    # compares the product, eg. 3000x1000 pixel < 2000x2000 pixel and is still
+    # permitted
+    max_output_pixels: [2000, 2000]
+
+    # some WMS clients do not send all required parameters in feature info
+    # requests, MapProxy ignores these errors unless you set strict to true.
+    strict: true
+
+    # list of feature info types the server should offer
+    featureinfo_types: ['text', 'html', 'xml']
+
+    md:
+      # metadata used in capabilities documents
+      title: MapProxy WMS Proxy
+      abstract: This is the fantastic MapProxy.
+      online_resource: http://mapproxy.org/
+      contact:
+        person: Your Name Here
+        position: Technical Director
+        organization:
+        address: Fakestreet 123
+        city: Somewhere
+        postcode: 12345
+        country: Germany
+        phone: +49(0)000-000000-0
+        fax: +49(0)000-000000-0
+        email: info@omniscale.de
+      # multiline strings are possible with the right indention
+      access_constraints:
+        This service is intended for private and evaluation use only.
+        The data is licensed as Creative Commons Attribution-Share Alike 2.0
+        (http://creativecommons.org/licenses/by-sa/2.0/)
+      fees: 'None'
+
+layers:
+  # layer with minimal options
+  - name: osm
+    title: Omniscale OSM WMS - osm.omniscale.net
+    sources: [osm_cache]
+
+  # layer with multiple sources
+  - name: merged_layer
+    title: Omniscale OSM WMS - osm.omniscale.net
+    sources: [osm_cache, osm_cache_full_example]
+
+  # these layers supports the GetLegendGraphicRequest
+  - name: wms_legend
+    title: Layer with legendgraphic support
+    # legend graphics will work for cache sources and direct sources
+    sources: [legend_wms]
+  - name: wms_legend_static
+    title: Layer with a static LegendURL
+    # MapProxy ignores the legends from the sources of this layer
+    # if you configure a legendurl here
+    legendurl: http://localhost:42423/staticlegend_layer.png
+    # local legend images are supported as well
+    # legendurl: file://relative/staticlegend_layer.png
+    # legendurl: file:///absulute/staticlegend_layer.png
+    sources: [legend_wms]
+
+    # this layer uses extended metadata
+  - name: md_layer
+    title: WMS layer with extended metadata
+    sources: [osm_cache]
+    md:
+      abstract: Some abstract
+      keyword_list:
+        - vocabulary: Name of the vocabulary
+          keywords:   [keyword1, keyword2]
+        - vocabulary: Name of another vocabulary
+          keywords:   [keyword1, keyword2]
+        - keywords:   ["keywords without vocabulary"]
+      attribution:
+        title: My attribution title
+        url:   http://example.org/
+        logo:
+           url:    http://example.org/logo.jpg
+           width:  100
+           height: 100
+           format: image/jpeg
+      identifier:
+        - url:    http://example.org/
+          name:   HKU1234
+          value:  Some value
+      metadata:
+        - url:    http://example.org/metadata2.xml
+          type:   INSPIRE
+          format: application/xml
+        - url:    http://example.org/metadata2.xml
+          type:   ISO19115:2003
+          format: application/xml
+      data:
+        - url:    http://example.org/datasets/test.shp
+          format: application/octet-stream
+        - url:    http://example.org/datasets/test.gml
+          format: text/xml; subtype=gml/3.2.1
+      feature_list:
+        - url:    http://example.org/datasets/test.pdf
+          format: application/pdf
+
+  # defines a layer with a min and max resolution. requests outside of the
+  # resolution result in a blank image
+  - name: resolution
+    title: Cache Layer with min/max resolution
+    # xx_res in meter/pixel
+    min_res: 10000
+    max_res: 10
+    sources: [osm_cache]
+
+  # nested/grouped layers
+  # 'Group Layer' has no name and GIS clients should display all sub-layers
+  # in this group.
+  # layer2 combines both layer2a and layer2b
+  - title: Group Layer
+    layers:
+      - name: layer1
+        title: layer 1
+        sources: [osm_cache]
+      - name: layer2
+        title: layer 2
+        layers:
+          - name: layer2a
+            title: layer 2a
+            sources: [osm_cache]
+          - name: layer2b
+            title: layer 2b
+            sources: [osm_cache]
+
+  # this layer will be reprojected from the source
+  - name: osm_utm
+    title: OSM in UTM
+    sources: [osm_utm_cache]
+
+  # layer with a mixed_mode cache image-format
+  - name: mixed_mode
+    title: cache with PNG and JPEG
+    sources: [mixed_cache]
+
+  # feature information layer
+  - name: feature_layer
+    title: feature information from source layers
+    # map images from osm_cache, feature info from feature_info_source
+    sources: [osm_cache, feature_info_source]
+
+caches:
+  osm_cache:
+    # cache the results in two grids/projections
+    grids: [GLOBAL_MERCATOR, global_geodetic_sqrt2]
+    sources: [osm_wms]
+
+  osm_cache_full_example:
+    # request a meta tile, that consists of m x n tiles
+    meta_size: [5, 5]
+    # increase the size of each meta-tile request by n pixel in each direction
+    # this can solve cases where labels are cut-off at the edge of tiles
+    meta_buffer: 20
+    # image format for the cache, default format is image/png
+    format: image/jpeg
+    # the source will be requested in this format
+    request_format: image/tiff
+    # if set to true, MapProxy will store tiles that only
+    # contain a single color once
+    # not available on Windows
+    link_single_color_images: true
+    # allow to make 2 parallel requests to the sources for missing tiles
+    concurrent_tile_creators: 2
+    # level 0 - 13 will be cached, others are served directly from the source
+    use_direct_from_level: 14
+    grids: [grid_full_example]
+    # a list with all sources for this cache, MapProxy will merge multiple
+    # sources from left (bottom) to right (top)
+    sources: [osm_wms, overlay_full_example]
+    # add a watermark to each tile
+    watermark:
+      text: 'my watermark'
+      opacity: 100
+      font_size: 30
+
+  # mixed image mode cache
+  mixed_mode_cache:
+    # images with transparency will be stored as PNG, fully opaque images as JPEG.
+    # you need to set the request_format to image/png when using mixed-mode
+    format: mixed
+    request_format: image/png
+    # the source images should have transparency to make use of this
+    # feature, but any source will do
+    sources: [legend_wms]
+
+  # cache for reprojecting tiles
+  osm_utm_cache:
+    grids: [utm32n]
+    meta_size: [4, 4]
+    sources: [osm_cache_in]
+  osm_cache_in:
+    grids: [osm_grid]
+    # cache will not be stored locally
+    disable_storage: true
+    # a tile source you want to reproject
+    sources: [osm_source]
+
+  # mbtile cache:
+  mbtile_cache:
+    # leave the source-list empty if you use an existing MBTiles file
+    # and don't have a source
+    sources: []
+    grids: [GLOBAL_MERCATOR]
+    cache:
+      type: mbtiles
+      filename: /path/to/bluemarble.mbtiles
+
+  # filecache with a directory option.
+  file_cache:
+    cache:
+      type: file
+      # Directory where MapProxy should directly store the tiles
+      # You can use this option to point MapProxy to an existing tile collection
+      # This option does not add the cache or grid name to the path
+      directory: /path/to/preferred_dir/
+    # use a custom image format defined below
+    format: custom_format
+    grids: [GLOBAL_MERCATOR]
+    # multiple sources, use the secure_source as overlay
+    sources: [osm_wms, secure_source]
+
+  # couchdb cache
+  couchdb_cache:
+    cache:
+      type: couchdb
+      url: http://localhost:5984
+      db_name: couchdb_cache
+      tile_id: "%(grid_name)s-%(z)d-%(x)d-%(y)d"
+      # additional metadata that will be stored with each tile
+      tile_metadata:
+        mydata: myvalue
+        tile_col: '{{x}}'
+        tile_row: '{{y}}'
+        tile_level: '{{z}}'
+        created_ts: '{{timestamp}}'
+        created: '{{utc_iso}}'
+        center: '{{wgs_tile_centroid}}'
+    grids: [GLOBAL_MERCATOR]
+    sources: [osm_wms]
+
+sources:
+  # minimal WMS source
+  osm_wms:
+    type: wms
+    req:
+      url: http://osm.omniscale.net/proxy/service?
+      layers: osm
+
+  # source with GetLegendGraphic support
+  legend_wms:
+    type: wms
+    # requests for other SRS will be reprojected from these SRS
+    supported_srs: ['EPSG:3857', 'EPSG:4326']
+    wms_opts:
+      # request the source with the specific version
+      version: '1.3.0'
+      # enable legend graphic
+      legendgraphic: True
+    req:
+      url: http://localhost:42423/service?
+      layers: foo,bar
+
+  # tile-based source, use the type tile to request data from from existing
+  # tile servers like TileCache and GeoWebCache.
+  osm_source:
+    type: tile
+    grid: osm_grid
+    url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
+
+  # limit the source to the given min and max resolution or scale.
+  # MapProxy will return a blank image for requests outside of these boundaries
+  wms_resolution:
+    type: wms
+    min_res: 10000
+    max_res: 10
+    req:
+      url: http://localhost:42423/service?
+      layers: scalelayer
+
+  # with coverages you can define areas where data is available
+  # or where data you are interested in is
+  coverage_source:
+    type: wms
+    req:
+      url: http://localhost:42423/service?
+      layers: base
+    coverage:
+      bbox: [5, 50, 10, 55]
+      srs: 'EPSG:4326'
+    # you can also use Shapefile/GeoJSON/PostGIS/etc.
+    # coverage:
+    #   datasource: path/to/shapefile.shp
+    #   where: "COUNTRY = 'Germany'"
+    #   srs: 'EPSG:4326'
+
+
+  # WMS source that requires authentication, MapProxy has support for
+  # HTTP Basic Authentication and HTTP Digest Authentication
+  secure_source:
+    type: wms
+    http:
+      # You can either disable the certificate verification fro HTTPS
+      ssl_no_cert_checks: true
+      # or point MapProxy to the SSL certificate chain on your system
+      # ssl_ca_certs: /etc/ssl/certs/ca-certificates.crt
+    req:
+      # username and password are extracted from the URL and do not show
+      # up in log files
+      url: https://username:mypassword@example.org/service?
+      transparent: true
+      layers: securelayer
+
+  feature_info_source:
+    type: wms
+    wms_opts:
+      # just query feature informations and no map
+      map: false
+      featureinfo: true
+    req:
+      url: http://localhost:42423/service?
+      layers: foo,bar,baz
+
+  mapserver_source:
+    type: mapserver
+    req:
+      # path to Mapserver mapfile instead of URL
+      map: /path/to/my.map
+      layers: base
+    mapserver:
+      binary: /usr/cgi-bin/mapserv
+      working_dir: /path/to
+
+  mapnik_source:
+    type: mapnik
+    mapfile: /path/to/mapnik.xml
+    layers: foo, bar
+    transparent: true
+
+  # source used as overlay for different layers
+  overlay_full_example:
+    type: wms
+    # allow up to 4 concurrent requests to this source
+    concurrent_requests: 4
+    wms_opts:
+      version: 1.3.0
+      featureinfo: true
+    supported_srs: ['EPSG:4326', 'EPSG:31467']
+    supported_formats: ['image/tiff', 'image/jpeg']
+    http:
+      # defines how long MapProxy should wait for data from source servers
+      client_timeout: 600 # seconds
+      # add additional HTTP headers to all requests to your sources.
+      headers:
+        my-header: value
+    req:
+      url: https://user:password@example.org:81/service?
+      layers: roads,rails
+      transparent: true
+      # additional options passed to the WMS source
+      styles: base,base
+      map: /home/map/mapserver.map
+
+grids:
+  global_geodetic_sqrt2:
+    # base the grid on the options of another grid you already defined
+    base: GLOBAL_GEODETIC
+    res_factor: 'sqrt2'
+
+  utm32n:
+    srs: 'EPSG:25832'
+    bbox: [4, 46, 16, 56]
+    # let MapProxy transform the bbox to the grid SRS
+    bbox_srs: 'EPSG:4326'
+    origin: 'nw'
+    # resolution of level 0
+    min_res: 5700
+    num_levels: 14
+
+  osm_grid:
+    base: GLOBAL_MERCATOR
+    srs: 'EPSG:3857'
+    origin: nw
+
+  grid_full_example:
+    # default tile size is 256 x 256 pixel
+    tile_size: [512, 512]
+    srs: 'EPSG:3857'
+    bbox: [5, 45, 15, 55]
+    bbox_srs: 'EPSG:4326'
+    # the resolution of the first and last level
+    min_res: 2000 #m/px
+    max_res: 50 #m/px
+    align_resolutions_with: GLOBAL_MERCATOR
+
+  res_grid:
+    srs: 'EPSG:4326'
+    bbox: [4, 46, 16, 56]
+    origin: nw
+    # resolutions created from scales with
+    # % mapproxy-util scales --unit d --as-res-config --dpi 72 100000 50000 25000 12500 8000 5000
+    res: [
+         #  res            level     scale @72.0 DPI
+            0.0003169057, #  0      100000.00000000
+            0.0001584528, #  1       50000.00000000
+            0.0000792264, #  2       25000.00000000
+            0.0000396132, #  3       12500.00000000
+            0.0000253525, #  4        8000.00000000
+            0.0000158453, #  5        5000.00000000
+    ]
+
+globals:
+  srs:
+    # override system projection file
+    proj_data_dir: '/path to dir that contains epsg file'
+
+  # cache options
+  cache:
+    # where to store the cached images
+    base_dir: './cache_data'
+    # where to store lockfiles for concurrent_requests
+    lock_dir: './cache_data/locks'
+    # where to store lockfiles for tile creation
+    tile_lock_dir: './cache_data/tile_locks'
+
+    # request x*y tiles in one step
+    meta_size: [4, 4]
+    # add a buffer on all sides (in pixel) when requesting
+    # new images
+    meta_buffer: 80
+
+
+  # image/transformation options
+  image:
+    # use best resampling for vector data
+    resampling_method: bicubic # nearest/bilinear
+    # stretch cached images by this factor before
+    # using the next level
+    stretch_factor: 1.15
+    # shrink cached images up to this factor before
+    # returning an empty image (for the first level)
+    max_shrink_factor: 4.0
+
+    # Enable 24bit PNG images. Defaults to true (8bit PNG)
+    paletted: false
+    formats:
+      custom_format:
+        format: image/png
+        # the custom format will be stored as 8bit PNG
+        mode: P
+        colors: 32
+        transparent: true
+        encoding_options:
+        # The algorithm used to quantize (reduce) the image colors
+          quantizer: fastoctree
+      # edit an existing format
+      image/jpeg:
+        encoding_options:
+          # jpeg quality [0-100]
+          jpeg_quality: 60

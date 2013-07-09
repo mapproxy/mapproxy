@@ -30,7 +30,7 @@ from mapproxy.test.helper import validate_with_dtd
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.image import create_tmp_image
 from mapproxy.test.system.test_wms import is_111_exception
-from mapproxy.util import ensure_directory
+from mapproxy.util.fs import ensure_directory
 from mapproxy.cache.renderd import has_renderd_support
 
 from nose.tools import eq_

@@ -22,7 +22,7 @@ from cStringIO import StringIO
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer
-from mapproxy.util import ensure_directory
+from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
 
 import logging
@@ -255,8 +255,11 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
 class MBTilesLevelCache(TileCacheBase, FileBasedLocking):
     supports_timestamp = True
 
-    def __init__(self, mbtiles_dir):
-        self.lock_dir = mbtiles_dir + '.locks'
+    def __init__(self, mbtiles_dir, lock_dir=None):
+        if lock_dir:
+            self.lock_dir = lock_dir
+        else:
+            self.lock_dir = mbtiles_dir + '.locks'
         self.lock_timeout = 60
         self.cache_dir = mbtiles_dir
         self._mbtiles = {}

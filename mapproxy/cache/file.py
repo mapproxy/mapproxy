@@ -17,7 +17,7 @@ from __future__ import with_statement
 import os
 import errno
 
-from mapproxy.util import ensure_directory
+from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.image import ImageSource, is_single_color_image
 from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer
 
@@ -239,9 +239,8 @@ class FileCache(TileCacheBase, FileBasedLocking):
             os.unlink(location)
 
         with tile_buffer(tile) as buf:
-            with open(location, 'wb') as f:
-                log.debug('writing %r to %s' % (tile.coord, location))
-                f.write(buf.read())
+            log.debug('writing %r to %s' % (tile.coord, location))
+            write_atomic(location, buf.read())
 
     def _store_single_color_tile(self, tile, tile_loc, color):
         real_tile_loc = self._single_color_tile_location(color, create_dir=True)

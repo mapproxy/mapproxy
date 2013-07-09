@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,13 +34,13 @@ class TestHTTPDate(object):
             'Fri, 13 Foo 2009 23:31:30 GMT'
             ):
             eq_(parse_httpdate(date), None)
-    
+
     def test_format_httpdate(self):
         eq_(format_httpdate(datetime.fromtimestamp(1234567890)),
             'Fri, 13 Feb 2009 23:31:30 GMT')
         eq_(format_httpdate(1234567890),
             'Fri, 13 Feb 2009 23:31:30 GMT')
-    
+
     @raises(AssertionError)
     def test_format_invalid(self):
         format_httpdate('foobar')

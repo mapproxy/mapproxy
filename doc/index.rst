@@ -3,7 +3,7 @@ MapProxy Documentation
 
 .. toctree::
    :maxdepth: 2
-   
+
    install
    install_windows
    install_osgeo4w
@@ -18,8 +18,8 @@ MapProxy Documentation
    deployment
    configuration_examples
    labeling
-   auth 
-   migrate
+   auth
+   decorate_img
    development
 
 .. todolist::

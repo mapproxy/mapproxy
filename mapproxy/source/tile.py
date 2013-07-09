@@ -23,7 +23,7 @@ from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClientError
 from mapproxy.source import InvalidSourceQuery
 from mapproxy.layer import BlankImage, map_extent_from_grid, CacheMapLayer, MapLayer
-from mapproxy.util import reraise_exception
+from mapproxy.util.py import reraise_exception
 
 import logging
 log = logging.getLogger('mapproxy.source.tile')

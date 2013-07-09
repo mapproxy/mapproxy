@@ -70,5 +70,6 @@ def load_coverage(conf, base_path=None):
             where = conf.get('where', None)
             geom = load_datasource(datasource, where)
             bbox, geom = build_multipolygon(geom, simplify=True)
-
+    else:
+        return None
     return coverage(geom or bbox, SRS(srs))

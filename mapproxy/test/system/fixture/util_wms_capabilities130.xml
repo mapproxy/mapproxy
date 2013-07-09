@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WMS_Capabilities xmlns="http://www.opengis.net/wms" xmlns:sld="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.3.0" xsi:schemaLocation="http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd">
+<Service>
+  <Name>WMS</Name>
+  <Title>MapProxy WMS Proxy</Title>
+  <Abstract>This is the fantastic MapProxy.</Abstract>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://mapproxy.org/"/>
+  <ContactInformation>
+      <ContactPersonPrimary>
+        <ContactPerson>Your Name Here</ContactPerson>
+        <ContactOrganization></ContactOrganization>
+      </ContactPersonPrimary>
+      <ContactPosition>Technical Director</ContactPosition>
+      <ContactAddress>
+        <AddressType>postal</AddressType>
+        <Address>Fakestreet 123</Address>
+        <City>Somewhere</City>
+        <StateOrProvince></StateOrProvince>
+        <PostCode>12345</PostCode>
+        <Country>Germany</Country>
+      </ContactAddress>
+      <ContactVoiceTelephone>+49(0)000-000000-0</ContactVoiceTelephone>
+      <ContactFacsimileTelephone>+49(0)000-000000-0</ContactFacsimileTelephone>
+      <ContactElectronicMailAddress>info@omniscale.de</ContactElectronicMailAddress>
+  </ContactInformation>
+    <Fees>None</Fees>
+    <AccessConstraints>This service is intended for private and evaluation use only. The data is licensed as Creative Commons Attribution-Share Alike 2.0 (http://creativecommons.org/licenses/by-sa/2.0/)</AccessConstraints>
+</Service>
+<Capability>
+  <Request>
+    <GetCapabilities>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="http://127.0.0.1:8080/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetCapabilities>
+    <GetMap>
+      <Format>image/gif</Format>
+      <Format>image/png</Format>
+      <Format>image/tiff</Format>
+      <Format>image/jpeg</Format>
+      <Format>image/GeoTIFF</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="http://127.0.0.1:8080/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetMap>
+    <GetFeatureInfo>
+      <Format>text/plain</Format>
+      <Format>text/html</Format>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="http://127.0.0.1:8080/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetFeatureInfo>
+  </Request>
+  <Exception>
+    <Format>XML</Format>
+    <Format>INIMAGE</Format>
+    <Format>BLANK</Format>
+  </Exception>
+  <Layer>
+    <Title>MapProxy WMS Proxy</Title>
+    <CRS>EPSG:900913</CRS>
+    <CRS>EPSG:4326</CRS>
+    <CRS>EPSG:4258</CRS>
+    <CRS>CRS:84</CRS>
+    <CRS>EPSG:3857</CRS>
+    <EX_GeographicBoundingBox>
+      <westBoundLongitude>-180</westBoundLongitude>
+      <eastBoundLongitude>180</eastBoundLongitude>
+      <southBoundLatitude>-85.0511287798</southBoundLatitude>
+      <northBoundLatitude>85.0511287798</northBoundLatitude>
+    </EX_GeographicBoundingBox>
+    <BoundingBox CRS="CRS:84" minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />
+    <BoundingBox CRS="EPSG:900913" minx="-20037508.3428" miny="-20037508.3428" maxx="20037508.3428" maxy="20037508.3428" />
+    <BoundingBox CRS="EPSG:4326" minx="-85.0511287798" miny="-180.0" maxx="85.0511287798" maxy="180.0" />
+    <BoundingBox CRS="EPSG:3857" minx="-20037508.3428" miny="-20037508.3428" maxx="20037508.3428" maxy="20037508.3428" />
+    <Layer>
+      <Name>osm</Name>
+      <Title>Omniscale OSM WMS - osm.omniscale.net</Title>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>-180</westBoundLongitude>
+        <eastBoundLongitude>180</eastBoundLongitude>
+        <southBoundLatitude>-85.0511287798</southBoundLatitude>
+        <northBoundLatitude>85.0511287798</northBoundLatitude>
+      </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />
+      <BoundingBox CRS="EPSG:900913" minx="-20037508.3428" miny="-20037508.3428" maxx="20037508.3428" maxy="20037508.3428" />
+      <BoundingBox CRS="EPSG:4326" minx="-85.0511287798" miny="-180.0" maxx="85.0511287798" maxy="180.0" />
+      <BoundingBox CRS="EPSG:3857" minx="-20037508.3428" miny="-20037508.3428" maxx="20037508.3428" maxy="20037508.3428" />
+    </Layer>
+  </Layer>
+</Capability>
+</WMS_Capabilities>

@@ -19,6 +19,7 @@ System-wide configuration.
 from __future__ import with_statement
 import os
 import copy
+import contextlib
 from mapproxy.util.yaml import load_yaml_file
 from mapproxy.util.ext.local import LocalStack
 
@@ -81,6 +82,23 @@ def base_config():
         finish_base_config(config)
         _config.push(config)
     return config
+
+@contextlib.contextmanager
+def local_base_config(conf):
+    """
+    Temporarily set the global configuration (mapproxy.config.base_config).
+
+    The global mapproxy.config.base_config object is thread-local and
+    is set per-request in the MapProxyApp. Use `local_base_config` to
+    set base_config outside of a request context (e.g. system loading
+    or seeding).
+    """
+    import mapproxy.config.config
+    mapproxy.config.config._config.push(conf)
+    try:
+        yield
+    finally:
+        mapproxy.config.config._config.pop()
 
 def _to_options_map(mapping):
     if isinstance(mapping, dict):

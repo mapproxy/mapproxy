@@ -11,8 +11,6 @@ There are two configuration files used by MapProxy.
 ``seed.yaml``
     This file is the configuration for the ``mapproxy-seed`` tool. See :doc:`seeding documentation <seed>` for more information.
 
-.. note:: The configuration changed with the 0.9.0 release and you have to update any older configuration. This is a one-time change and further versions will offer backwards-compatibility. Read the :doc:`migration guide <migrate>` for some help.
-
 .. index:: mapproxy.yaml
 
 mapproxy.yaml
@@ -159,8 +157,6 @@ Readable name of the layer, e.g WMS layer title.
 
 ``layers``
 """"""""""
-
-.. versionadded:: 0.9.1
 
 Each layer can contain another ``layers`` configuration. You can use this to build group layers and to build a nested layer tree.
 
@@ -320,7 +316,7 @@ WMS and Mapserver sources also support tagged names (``wms:lyr1,lyr2``). See :re
 
 Cache souces
 ^^^^^^^^^^^^
-.. versionadded:: 1.5
+.. versionadded:: 1.5.0
 
 You can also use other caches as a source. MapProxy loads tiles directly from that cache if the grid of the target cache is identical or *compatible* with the grid of the source cache. You have a compatible grid when all tiles in the cache grid are also available in source grid, even if the tile coordinates (X/Y/Z) are different.
 
@@ -395,9 +391,6 @@ Add a watermark right into the cached tiles. The watermark is thus also present 
   Configure the spacing between repeated watermarks. By default the watermark will be placed on
   every tile, with ``wide`` the watermark will be placed on every second tile.
 
-.. versionadded:: 1.0.0
-  ``spacing``
-
 
 ``grids``
 """""""""
@@ -437,8 +430,6 @@ Requests below the configured resolution or level will be passed to the underlyi
 
 ``disable_storage``
 """"""""""""""""""""
-
-.. versionadded:: 1.0.0
 
 If set to ``true``, MapProxy will not store any tiles for this cache. MapProxy will re-request all required tiles for each incoming request,
 even if the there are matching tiles in the cache. See :ref:`seed_only <wms_seed_only>` if you need an *offline* mode.
@@ -737,8 +728,14 @@ Here you can define some options that affect the way MapProxy generates image re
 ``formats``
   Modify existing or define new image formats. :ref:`See below <image_options>` for all image format options.
 
+
+.. _globals_cache:
+
 ``cache``
 """""""""
+
+.. versionadded:: 1.6.0 ``tile_lock_dir``
+
 
 .. _meta_size:
 
@@ -755,11 +752,21 @@ Here you can define some options that affect the way MapProxy generates image re
   either be absolute (e.g. ``/var/mapproxy/cache``) or relative to the
   mapproxy.yaml file. Defaults to ``./cache_data``.
 
+.. _lock_dir:
+
 ``lock_dir``
   MapProxy uses locking to limit multiple request to the same service. See ``concurrent_requests``.
   This option defines where the temporary lock files will be stored. The path
   can either be absolute (e.g. ``/tmp/lock/mapproxy``) or relative to the
   mapproxy.yaml file. Defaults to ``./cache_data/tile_locks``.
+
+.. _tile_lock_dir:
+
+``tile_lock_dir``
+  MapProxy uses locking to prevent that the same tile gets created multiple times.
+  This option defines where the temporary lock files will be stored. The path
+  can either be absolute (e.g. ``/tmp/lock/mapproxy``) or relative to the
+  mapproxy.yaml file. Defaults to ``./cache_data/dir_of_the_cache/tile_locks``.
 
 ``concurrent_tile_creators``
   This limits the number of parallel requests MapProxy will make to a source WMS. This limit is per request and not for all MapProxy requests. To limit the requests MapProxy makes to a single server use the ``concurrent_requests`` option.
@@ -849,8 +856,6 @@ Configure which HTTP method should be used for HTTP requests. By default (`AUTO`
 
 ``headers``
 ^^^^^^^^^^^
-
-.. versionadded:: 1.0.0
 
 Add additional HTTP headers to all requests to your sources.
 ::

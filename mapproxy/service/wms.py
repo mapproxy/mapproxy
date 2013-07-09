@@ -31,7 +31,8 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, LimitedLayer
 from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
-from mapproxy.util import async, cached_property
+from mapproxy.util import async
+from mapproxy.util.py import cached_property
 from mapproxy.util.coverage import load_limited_to
 from mapproxy.util.ext.odict import odict
 from mapproxy.template import template_loader, bunch
@@ -118,7 +119,12 @@ class WMSServer(Server):
         result = merger.merge(size=params.size, image_opts=img_opts,
             bbox=params.bbox, bbox_srs=params.srs, coverage=coverage)
 
-        resp =  Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
+        # Provide the wrapping WSGI app or filter the opportunity to process the
+        # image before it's wrapped up in a response
+        result = self.decorate_img(result, 'wms.map', actual_layers.keys(),
+            map_request.http.environ, (query.srs.srs_code, query.bbox))
+
+        resp = Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
 
         if query.tiled_only and isinstance(result.cacheable, CacheInfo):
             cache_info = result.cacheable
