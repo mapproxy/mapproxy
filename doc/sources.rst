@@ -451,7 +451,8 @@ A list of layer names you want to render. MapProxy disables each layer that is n
 
 .. versionadded:: 1.3.0
 
-Use Mapnik 2 if set to ``true``.
+Use Mapnik 2 if set to ``true``. This option is now deprecated and only required for Mapnik 2.0.0. Mapnik 2.0.1 and newer are available as ``mapnik`` package.
+
 
 ``transparent``
 ^^^^^^^^^^^^^^^
