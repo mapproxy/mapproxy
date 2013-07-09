@@ -5,10 +5,13 @@ Features:
 
 - new `sqlite` cache with timestamps and one DB for each zoom level
 - first dimension support for WMTS (cascaded only)
-- support HTTP Digest authentication for source requests
+- support HTTP Digest Authentication for source requests
 - remove_all option for seed cleanups
-- new image merge_method composite with real alpha composite for merging
-  layers with transparent backgrounds
+- use real alpha composite for merging layers with transparent
+  backgrounds
+- new tile_lock_dir option to write tile locks outside of the cache dir
+- new decorate image API
+- new GLOBAL_WEBMERCATOR grid with origin:nw and EPSG:3857
 
 Improvements:
 
@@ -18,21 +21,30 @@ Improvements:
 - try to load pyproj before using libproj.dll on Windows
 - support for GDAL python module (osgeo.ogr) besides using gdal.so/dll
   directly
+- files are now written atomical to support concurrent access
+  to the same tile cache from different servers (e.g. via NFS)
+- support for WMS 1.3.0 in mapproxy-util wms-capabilities
+- support layer merge for 8bit PNGs
 
 Fixes:
 
 - support requests>=1.0 for CouchDB cache
 - HTTP_X_FORWARDED_HOST can be a list of hosts
 - fixed KML for caches with origin: nw
+- fixed 'I/O operation on closed file' errors
+- fixed memory leak when reloading large configurations
+- improve handling of mixed grids/formats when using caches as
+  cache sources
 
 Other:
 
+- update example configuration (base-config)
 - update deployment documentation
 - update OpenLayers version in demo service
 - use restful_template URL in WMTS demo
 - update MANIFEST.in to prevent unnecessary warnings during installation
 - accept Pillow as depencendy instead of PIL when already installed
-
+- deprecate use_mapnik2 option
 
 1.5.0 2012-12-05
 ~~~~~~~~~~~~~~~~
