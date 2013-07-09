@@ -48,6 +48,11 @@ This is the default cache type and it uses a single file for each tile. Availabl
 
   .. versionadded:: 1.5.0
 
+``tile_lock_dir``:
+  Directory where MapProxy should write lock files when it creates new tiles for this cache. Defaults to ``cache_data/tile_locks``.
+
+  .. versionadded:: 1.6.0
+
 
 ``mbtiles``
 ===========
@@ -58,6 +63,11 @@ Available options:
 
 ``filename``:
   The path to the MBTiles file. Defaults to ``cachename.mbtiles``.
+
+``tile_lock_dir``:
+  Directory where MapProxy should write lock files when it creates new tiles for this cache. Defaults to ``cache_data/tile_locks``.
+
+  .. versionadded:: 1.6.0
 
 
 You can set the ``sources`` to an empty list, if you use an existing MBTiles file and do not have a source.
@@ -88,6 +98,11 @@ Available options:
 
 ``dirname``:
   The direcotry where the level databases will be stored.
+
+``tile_lock_dir``:
+  Directory where MapProxy should write lock files when it creates new tiles for this cache. Defaults to ``cache_data/tile_locks``.
+
+  .. versionadded:: 1.6.0
 
 ::
 
@@ -125,6 +140,11 @@ Available options:
 
 ``db_name``:
   The name of the database MapProxy uses for this cache. Defaults to the name of the cache.
+
+``tile_lock_dir``:
+  Directory where MapProxy should write lock files when it creates new tiles for this cache. Defaults to ``cache_data/tile_locks``.
+
+  .. versionadded:: 1.6.0
 
 ``tile_id``:
   Each tile document needs a unique ID. You can change the format with a Python format string that expects the following keys:
