@@ -896,7 +896,7 @@ class CacheConfiguration(ConfigurationBase):
             global_key='cache.base_dir')
 
     def lock_dir(self):
-        lock_dir = self.context.globals.get_path('cache.tile_lock_dir', {})
+        lock_dir = self.context.globals.get_path('cache.tile_lock_dir', self.conf)
         if not lock_dir:
             lock_dir = os.path.join(self.cache_dir(), 'tile_locks')
         return lock_dir

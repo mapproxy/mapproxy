@@ -3,6 +3,8 @@ globals:
     base_dir: cache_data/
     meta_size: [1, 1]
     meta_buffer: 0
+    tile_lock_dir: defaulttilelockdir
+
   image:
     # resampling: 'bicubic'
     paletted: False
@@ -119,6 +121,9 @@ caches:
     format: image/jpeg
     use_direct_from_level: 8
     sources: [wms_cache]
+    cache:
+        type: file
+        tile_lock_dir: wmscachetilelockdir
   wms_cache_transparent:
     format: png8a
     sources: [wms_cache_transparent]
