@@ -29,6 +29,8 @@ from mapproxy.cache.base import (
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
 
+from threading import Lock
+
 try:
     import requests
 except ImportError:
@@ -68,14 +70,22 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         self.couch_url = '%s/%s' % (url.rstrip('/'), db_name.lower())
         self.req_session = requests.Session()
         self.req_session.timeout = 5
-        self.init_db()
+        self.db_initialised = False
+        self.app_init_db_lock = None
         self.tile_id_template = tile_id_template
 
     def init_db(self):
-        try:
-            self.req_session.put(self.couch_url)
-        except requests.exceptions.RequestException, ex:
-            log.warn('unable to initialize CouchDB: %s', ex)
+        if not self.app_init_db_lock:
+            self.app_init_db_lock = Lock()
+
+        with self.app_init_db_lock:
+            if self.db_initialised:
+                return
+            try:
+                self.req_session.put(self.couch_url)
+                self.db_initialised = True
+            except requests.exceptions.RequestException, ex:
+                log.warn('unable to initialize CouchDB: %s', ex)
 
     def tile_url(self, coord):
         return self.document_url(coord) + '/tile'
@@ -104,6 +114,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             return True
         url = self.document_url(tile.coord)
         try:
+            self.init_db()
             resp = self.req_session.get(url)
             if resp.status_code == 200:
                 doc = json.loads(resp.content)
@@ -157,6 +168,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         """
         doc = {'docs': tile_docs.values()}
         data = json.dumps(doc)
+        self.init_db()
         resp = self.req_session.post(self.couch_url + '/_bulk_docs', data=data, headers={'Content-type': 'application/json'})
         if resp.status_code != 201:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
@@ -178,6 +190,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         """
         keys_doc = {'keys': tile_docs.keys()}
         data = json.dumps(keys_doc)
+        self.init_db()
         resp = self.req_session.post(self.couch_url + '/_all_docs', data=data, headers={'Content-type': 'application/json'})
         if resp.status_code != 200:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
@@ -210,6 +223,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         if tile.source or tile.coord is None:
             return True
         url = self.document_url(tile.coord) + '?attachments=true'
+        self.init_db()
         resp = self.req_session.get(url, headers={'Accept': 'application/json'})
         if resp.status_code == 200:
             doc = json.loads(resp.content)
@@ -229,6 +243,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             return True
         rev_id = resp.headers['etag']
         url += '?rev=' + rev_id.strip('"')
+        self.init_db()
         resp = self.req_session.delete(url)
         if resp.status_code == 200:
             return True
