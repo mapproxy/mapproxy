@@ -107,12 +107,12 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
                     tile_id_template = self.tile_id_template
                 return tile_id_template % locals()
             else:
-                return '%(grid_name)s-%(z)d-%(x)d-%(y)d' % locals()
+                return '%(grid_name)s-%(z)s-%(x)s-%(y)s' % locals()
         else:
             if self.tile_id_template:
                 return self.tile_id_template % locals()
             else:
-                return '%(couch_url)s/%(grid_name)s-%(z)d-%(x)d-%(y)d' % locals()
+                return '%(couch_url)s/%(grid_name)s-%(z)s-%(x)s-%(y)s' % locals()
 
     def is_cached(self, tile):
         if tile.coord is None:
