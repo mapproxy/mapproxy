@@ -21,6 +21,9 @@ from contextlib import contextmanager
 
 from mapproxy.util.lock import FileLock, cleanup_lockdir, DummyLock
 
+import logging
+log = logging.getLogger(__name__)
+
 class CacheBackendError(Exception):
     pass
 
@@ -112,7 +115,10 @@ class FileBasedLocking(object):
         if getattr(self, 'locking_disabled', False):
             return DummyLock()
         lock_filename = self.lock_filename(tile)
-        cleanup_lockdir(self.lock_dir, force=False)
+        try:
+            cleanup_lockdir(self.lock_dir, force=False)
+        except WindowsError, ex:
+            log.warn("WindowsError: %s", ex)
         return FileLock(lock_filename, timeout=self.lock_timeout,
             remove_on_unlock=True)
 
