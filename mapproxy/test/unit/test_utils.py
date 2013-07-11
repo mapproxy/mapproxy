@@ -383,6 +383,7 @@ class TestCleanupDirectory(DirTest):
 def write_atomic_data((i, filename)):
     data = str(i) + '\n' + 'x' * 10000
     write_atomic(filename, data)
+    time.sleep(0.001)
 
 class TestWriteAtomic(object):
     def setup(self):
@@ -395,8 +396,8 @@ class TestWriteAtomic(object):
     def test_concurrent_write(self):
         filename = os.path.join(self.dirname, 'tmpfile')
 
-        num_writes = 100
-        concurrent_writes = 4
+        num_writes = 800
+        concurrent_writes = 8
 
         p = multiprocessing.Pool(concurrent_writes)
         p.map(write_atomic_data, ((i, filename) for i in xrange(num_writes)))
