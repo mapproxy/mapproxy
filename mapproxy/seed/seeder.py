@@ -280,7 +280,6 @@ class TileWalker(object):
             process = True            
         current_level += 1
 
-
         for i, (subtile, sub_bbox, intersection) in enumerate(subtiles):
             if subtile is None: # no intersection
                 self.seed_progress.step_forward(total_subtiles)
