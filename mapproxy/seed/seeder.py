@@ -251,31 +251,34 @@ class TileWalker(object):
                 pass
         self.report_progress(self.task.levels[0], self.task.coverage.bbox)
 
-    def _walk(self, cur_bbox, levels, all_subtiles=False):
+    def _walk(self, cur_bbox, levels, current_level=0, all_subtiles=False):
         """
         :param cur_bbox: the bbox to seed in this call
         :param levels: list of levels to seed
         :param all_subtiles: seed all subtiles and do not check for
                              intersections with bbox/geom
         """
-        current_level, levels = levels[0], levels[1:]
         bbox_, tiles, subtiles = self.grid.get_affected_level_tiles(cur_bbox, current_level)
         total_subtiles = tiles[0] * tiles[1]
-
         if len(levels) < self.skip_geoms_for_last_levels:
             # do not filter in last levels
             all_subtiles = True
         subtiles = self._filter_subtiles(subtiles, all_subtiles)
 
-        if current_level <= self.report_till_level:
+        if current_level in levels and current_level <= self.report_till_level:
             self.report_progress(current_level, cur_bbox)
 
         if not self.seed_progress.running():
-            self.report_progress(current_level, cur_bbox)
+            if current_level in levels:
+                self.report_progress(current_level, cur_bbox)
             self.tile_mgr.cleanup()
             raise StopProcess()
 
         for i, (subtile, sub_bbox, intersection) in enumerate(subtiles):
+            if i == 0:
+                if current_level == levels[0]:
+                    levels = levels[1:]
+                current_level += 1
             if subtile is None: # no intersection
                 self.seed_progress.step_forward(total_subtiles)
                 continue
@@ -290,8 +293,11 @@ class TileWalker(object):
                     if self.seed_progress.already_processed():
                         self.seed_progress.step_forward()
                     else:
-                        self._walk(sub_bbox, levels,
+                        self._walk(sub_bbox, levels, current_level=current_level,
                             all_subtiles=all_subtiles)
+
+            if not current_level in levels:
+                continue
 
             if not self.work_on_metatiles:
                 # collect actual tiles
@@ -361,7 +367,6 @@ class SeedTask(object):
         if self.coverage.contains(bbox, self.grid.srs): return CONTAINS
         if self.coverage.intersects(bbox, self.grid.srs): return INTERSECTS
         return NONE
-
 
 class CleanupTask(object):
     """
