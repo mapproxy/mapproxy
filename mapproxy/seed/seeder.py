@@ -274,11 +274,14 @@ class TileWalker(object):
             self.tile_mgr.cleanup()
             raise StopProcess()
 
+        process = False;
+        if current_level in levels:
+            levels = levels[1:]
+            process = True            
+        current_level += 1
+
+
         for i, (subtile, sub_bbox, intersection) in enumerate(subtiles):
-            if i == 0:
-                if current_level == levels[0]:
-                    levels = levels[1:]
-                current_level += 1
             if subtile is None: # no intersection
                 self.seed_progress.step_forward(total_subtiles)
                 continue
@@ -296,7 +299,7 @@ class TileWalker(object):
                         self._walk(sub_bbox, levels, current_level=current_level,
                             all_subtiles=all_subtiles)
 
-            if not current_level in levels:
+            if not process:
                 continue
 
             if not self.work_on_metatiles:
