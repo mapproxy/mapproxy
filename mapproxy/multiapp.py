@@ -67,11 +67,8 @@ class MultiMapProxy(object):
         self.apps = LRU(app_cache_size)
 
     def __call__(self, environ, start_response):
-        try:
-            req = Request(environ)
-            return self.handle(req)(environ, start_response)
-        except TypeError, ex:
-            return self.handle(req)(environ, start_response)
+        req = Request(environ)
+        return self.handle(req)(environ, start_response)
 
     def handle(self, req):
         app_name = req.pop_path()
@@ -121,7 +118,7 @@ class MultiMapProxy(object):
                     proj_app, m_time = self.create_app(proj_name)
                     self.apps[proj_name] = proj_app, m_time
                 else:
-                    proj_app = self.apps[proj_name]
+                    proj_app, timestamp = self.apps[proj_name]
 
         return proj_app
 
