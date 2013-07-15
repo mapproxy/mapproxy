@@ -71,13 +71,10 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         self.req_session = requests.Session()
         self.req_session.timeout = 5
         self.db_initialised = False
-        self.app_init_db_lock = None
+        self.app_init_db_lock = Lock()
         self.tile_id_template = tile_id_template
 
     def init_db(self):
-        if not self.app_init_db_lock:
-            self.app_init_db_lock = Lock()
-
         with self.app_init_db_lock:
             if self.db_initialised:
                 return
