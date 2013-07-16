@@ -152,7 +152,7 @@ The MapProxy WMS service also supports the `WMS Tiling Client Recommendation <ht
 
 If you add ``tiled=true`` to the GetCapabilities request, MapProxy will add metadata about the internal tile structure to the WMS capabilities document. Clients that support WMS-C can use this information to request tiles at the exact tile boundaries. MapProxy can return the tile as-it-is for these requests, the performace is on par with the TMS service.
 
-MapProxy will limit the WMS support when ``tiled=true`` is added to the `GetMap` requests and it will return WMS service exceptions for requests that do not match the exact tile boundaries.
+MapProxy will limit the WMS support when ``tiled=true`` is added to the `GetMap` requests and it will return WMS service exceptions for requests that do not match the exact tile boundaries or if the requested image size or format differs.
 
 
 .. index:: TMS Service, Tile Service
