@@ -113,11 +113,12 @@ class MultiMapProxy(object):
 
         if not proj_app:
             with self._app_init_lock:
+                proj_app, timestamp = self.apps.get(proj_name, (None, None))
                 if self.loader.needs_reload(proj_name, timestamp):
                     proj_app, m_time = self.create_app(proj_name)
                     self.apps[proj_name] = proj_app, m_time
                 else:
-                    proj_app = self.apps[proj_name]
+                    proj_app, timestamp = self.apps[proj_name]
 
         return proj_app
 

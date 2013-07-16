@@ -22,3 +22,4 @@ Patches and Suggestions
 - Bruno Binet
 - Tom Payne
 - Matt Walker
+- Keith Moss

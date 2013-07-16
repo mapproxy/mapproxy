@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,13 +37,13 @@ class FileLock(object):
         self.step = step
         self.remove_on_unlock = remove_on_unlock
         self._locked = False
-    
+
     def __enter__(self):
         self.lock()
-    
+
     def __exit__(self, _exc_type, _exc_value, _traceback):
         self.unlock()
-    
+
     def _make_lockdir(self):
         if not os.path.exists(os.path.dirname(self.lock_file)):
             try:
@@ -51,10 +51,10 @@ class FileLock(object):
             except OSError, e:
                 if e.errno is not errno.EEXIST:
                     raise e
-    
+
     def _try_lock(self):
         return LockFile(self.lock_file)
-    
+
     def lock(self):
         self._make_lockdir()
         current_time = time.time()
@@ -72,7 +72,7 @@ class FileLock(object):
                     raise LockTimeout('another process is still running with our lock')
             else:
                 self._locked = True
-    
+
     def unlock(self):
         if self._locked:
             self._locked = False
@@ -88,7 +88,7 @@ class FileLock(object):
                     self._lock.close()
             else:
                 self._lock.close()
-    
+
     def __del__(self):
         self.unlock()
 
@@ -119,8 +119,12 @@ def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300, force=True):
                     except IOError, ex:
                         log.warn('could not remove old lock file %s: %s', name, ex)
         except OSError, e:
-            # some one might remove the file, ignore this
-            if e.errno != errno.ENOENT:
+            # some one might have removed the file (ENOENT)
+            # or we don't have permissions to remove it (EACCES)
+            if e.errno in (errno.ENOENT, errno.EACCES):
+                # ignore
+                pass
+            else:
                 raise e
 
 
