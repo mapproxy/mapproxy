@@ -999,7 +999,10 @@ class CacheConfiguration(ConfigurationBase):
         prefix = self.conf['cache'].get('prefix')
         if not prefix:
             prefix = 'riak'
-        return RiakCache(url=url, bucket=bucket, prefix=prefix, tile_grid=grid_conf.tile_grid())
+        index = self.conf['cache'].get('secondary_index')
+        if not index:
+            index = False
+        return RiakCache(url=url, bucket=bucket, prefix=prefix, tile_grid=grid_conf.tile_grid(), lock_dir=self.lock_dir(), index=index)
 
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):

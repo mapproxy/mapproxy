@@ -18,12 +18,14 @@ from __future__ import with_statement, absolute_import
 import time
 import urlparse
 import threading
+import hashlib
 
 from cStringIO import StringIO
 
 from mapproxy.image import ImageSource
+from mapproxy.cache.tile import Tile
 from mapproxy.cache.base import (
-    TileCacheBase, DummyLock,
+    TileCacheBase, FileBasedLocking,
     tile_buffer, CacheBackendError,)
 
 try:
@@ -37,8 +39,8 @@ log = logging.getLogger(__name__)
 class UnexpectedResponse(CacheBackendError):
     pass
 
-class RiakCache(TileCacheBase):
-    def __init__(self, url, bucket, prefix, tile_grid):
+class RiakCache(TileCacheBase, FileBasedLocking):
+    def __init__(self, url, bucket, prefix, tile_grid, lock_dir, index):
         if riak is None:
             raise ImportError("Riak backend requires 'riak' package.")
         
@@ -50,11 +52,15 @@ class RiakCache(TileCacheBase):
         else:
             raise ValueError('unknown Riak URL: %s' % urlparts.scheme)
         
+        self.lock_cache_id = 'riak-' + hashlib.md5(url + bucket).hexdigest()
+        self.lock_dir = lock_dir
+        self.lock_timeout = 60
         self.host = urlparts.hostname
         self.port = urlparts.port
         self.prefix = prefix
         self.bucket_name = bucket
         self.tile_grid = tile_grid
+        self.index = index
         self._db_conn_cache = threading.local()
 
     @property
@@ -72,7 +78,7 @@ class RiakCache(TileCacheBase):
         (x, y, z) = coord
         key = '%(z)d_%(x)d_%(y)d' % locals()
         try:
-            return self.bucket.get_binary(key)
+            return self.bucket.get_binary(key, r=1)
         except Exception, e:
             log.warn('error while requesting %s: %s', key, e)
             
@@ -107,6 +113,9 @@ class RiakCache(TileCacheBase):
                 'timestamp': str(tile.timestamp),
                 'size': str(tile.size),
             })
+            if self.index:
+                x, y, z = tile.coord
+                res.add_index('tile_coord_bin', '%02d-%07d-%07d' % (z, x, y))
             res.store()
 
         return True
@@ -155,5 +164,42 @@ class RiakCache(TileCacheBase):
         res.delete()
         return True
     
-    def lock(self, tile):
-        return DummyLock()
+    def _fill_metadata_from_obj(self, obj, tile):
+        tile_md = obj.get_usermeta()
+        timestamp = tile_md.get('timestamp')
+        if timestamp:
+            tile.timestamp = float(timestamp)
+    
+    def _key_iterator(self, level):
+        """
+        Generator for all tile keys in `level`.
+        """
+        # index() returns a list of all keys so we check for tiles in
+        # batches of `chunk_size`*`chunk_size`.
+        grid_size = self.tile_grid.grid_sizes[level]
+        chunk_size = 256
+        for x in xrange(grid_size[0]/chunk_size):
+            start_x = x * chunk_size
+            end_x = start_x + chunk_size - 1
+            for y in xrange(grid_size[1]/chunk_size):
+                start_y = y * chunk_size
+                end_y = start_y + chunk_size - 1
+                query = self.connection.index(self.bucket_name, 'tile_coord_bin',
+                    '%02d-%07d-%07d' % (level, start_x, start_y),
+                    '%02d-%07d-%07d' % (level, end_x, end_y))
+                for link in query.run():
+                    yield link.get_key()
+
+    def remove_tiles_for_level(self, level, before_timestamp=None):
+        bucket = self.bucket
+        client = self.connection
+        for key in self._key_iterator(level):
+            if before_timestamp:
+                obj = self.bucket.get_binary(key, r=1)
+                dummy_tile = Tile((0, 0, 0))
+                self._fill_metadata_from_obj(obj, dummy_tile)
+                print key, dummy_tile.timestamp, before_timestamp
+                if dummy_tile.timestamp < before_timestamp:
+                    obj.delete()
+            else:
+                riak.RiakObject(client, bucket, key).delete()

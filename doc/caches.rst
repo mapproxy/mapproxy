@@ -264,3 +264,6 @@ Available options:
 	
 ``prefix``:
 	Riak interface prefix. Defaults to ``riak``.
+	
+``secondary_index``:
+	If true enables secondary index for tiles. Uses format %(z)d-%(x)d-%(y)d. Defaults to ``False``.

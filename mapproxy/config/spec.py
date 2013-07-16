@@ -113,6 +113,7 @@ cache_types = {
         'url': str(),
         'bucket': str(),
         'prefix': str(),
+        'secondary_index': bool(),
     }
 }
 
