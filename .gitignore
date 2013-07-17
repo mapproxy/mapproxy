@@ -6,3 +6,6 @@ doc/_build
 examples
 .DS_Store
 .coverage
+.project
+.settings
+.pydevproject

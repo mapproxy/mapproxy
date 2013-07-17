@@ -109,6 +109,12 @@ cache_types = {
         'tile_id': str(),
         'tile_lock_dir': str(),
     },
+    'riak': {
+        'url': str(),
+        'bucket': str(),
+        'prefix': str(),
+        'secondary_index': bool(),
+    }
 }
 
 on_error = {
