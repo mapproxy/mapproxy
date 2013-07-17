@@ -989,6 +989,7 @@ class CacheConfiguration(ConfigurationBase):
 
     def _riak_cache(self, grid_conf, file_ext):
         from mapproxy.cache.riak import RiakCache
+
         url = self.conf['cache'].get('url')
         if not url:
             url = 'pbc://127.0.0.1:8087'
@@ -996,13 +997,14 @@ class CacheConfiguration(ConfigurationBase):
         if not bucket:
             suffix = grid_conf.tile_grid().name
             bucket = self.conf['name'] + '_' + suffix
-        prefix = self.conf['cache'].get('prefix')
-        if not prefix:
-            prefix = 'riak'
-        index = self.conf['cache'].get('secondary_index')
-        if not index:
-            index = False
-        return RiakCache(url=url, bucket=bucket, prefix=prefix, tile_grid=grid_conf.tile_grid(), lock_dir=self.lock_dir(), index=index)
+        prefix = self.conf['cache'].get('prefix', 'riak')
+        use_secondary_index = self.conf['cache'].get('secondary_index', False)
+
+        return RiakCache(url=url, bucket=bucket, prefix=prefix,
+            tile_grid=grid_conf.tile_grid(),
+            lock_dir=self.lock_dir(),
+            use_secondary_index=use_secondary_index,
+        )
 
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):
