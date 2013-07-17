@@ -986,9 +986,9 @@ class CacheConfiguration(ConfigurationBase):
         return CouchDBCache(url=url, db_name=db_name,
             lock_dir=self.lock_dir(), file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
             md_template=md_template, tile_id_template=tile_id)
-        
+
     def _riak_cache(self, grid_conf, file_ext):
-        from mapproxy.cache.riakcache import RiakCache
+        from mapproxy.cache.riak import RiakCache
         url = self.conf['cache'].get('url')
         if not url:
             url = 'pbc://127.0.0.1:8087'

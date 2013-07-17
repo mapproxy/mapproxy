@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2013 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +20,7 @@ import random
 
 from nose.plugins.skip import SkipTest
 
-from mapproxy.cache.riakcache import RiakCache
+from mapproxy.cache.riak import RiakCache
 from mapproxy.grid import tile_grid
 from mapproxy.test.image import create_tmp_image_buf
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
@@ -33,12 +33,12 @@ class RiakCacheTestBase(TileCacheTestBase):
     def setup(self):
         if not os.environ.get(self.riak_url_env):
             raise SkipTest()
-        
+
         riak_url = os.environ[self.riak_url_env]
         db_name = 'mapproxy_test_%d' % random.randint(0, 100000)
-        
+
         TileCacheTestBase.setup(self)
-        
+
         self.cache = RiakCache(riak_url, db_name, 'riak', tile_grid=tile_grid(3857, name='global-webmarcator'),
                 lock_dir=self.cache_dir, index=False)
 
@@ -48,7 +48,7 @@ class RiakCacheTestBase(TileCacheTestBase):
         for k in bucket.get_keys():
             riak.RiakObject(self.cache.connection, bucket, k).delete()
         TileCacheTestBase.teardown(self)
-    
+
     def test_double_remove(self):
         tile = self.create_tile()
         self.create_cached_tile(tile)
