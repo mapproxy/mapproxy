@@ -18,6 +18,7 @@ from __future__ import division, with_statement
 import os
 import codecs
 from functools import partial
+from contextlib import closing
 
 import logging
 log_config = logging.getLogger('mapproxy.config.coverage')
@@ -61,16 +62,17 @@ def load_ogr_datasource(datasource, where=None):
     from mapproxy.util.ogr import OGRShapeReader
 
     polygons = []
-    for wkt in OGRShapeReader(datasource).wkts(where):
-        geom = shapely.wkt.loads(wkt)
-        if geom.type == 'Polygon':
-            polygons.append(geom)
-        elif geom.type == 'MultiPolygon':
-            for p in geom:
-                polygons.append(p)
-        else:
-            log_config.warn('skipping %s geometry from %s: not a Polygon/MultiPolygon',
-                geom.type, datasource)
+    with closing(OGRShapeReader(datasource)) as reader:
+        for wkt in reader.wkts(where):
+            geom = shapely.wkt.loads(wkt)
+            if geom.type == 'Polygon':
+                polygons.append(geom)
+            elif geom.type == 'MultiPolygon':
+                for p in geom:
+                    polygons.append(p)
+            else:
+                log_config.warn('skipping %s geometry from %s: not a Polygon/MultiPolygon',
+                    geom.type, datasource)
 
     return polygons
 

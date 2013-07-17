@@ -78,11 +78,10 @@ class OGRShapeReaderError(Exception):
 class CtypesOGRShapeReader(object):
     def __init__(self, datasource):
         self.datasource = datasource
-        self.opened = False
         self._ds = None
 
     def open(self):
-        if self.opened: return
+        if self._ds: return
         self._ds = libgdal.OGROpen(self.datasource, False, None)
         if self._ds is None:
             msg = None
@@ -93,7 +92,7 @@ class CtypesOGRShapeReader(object):
             raise OGRShapeReaderError(msg)
 
     def wkts(self, where=None):
-        if not self.opened: self.open()
+        if not self._ds: self.open()
 
         if where:
             if not where.lower().startswith('select'):
@@ -126,9 +125,9 @@ class CtypesOGRShapeReader(object):
             libgdal.OGR_DS_ReleaseResultSet(self._ds, layer)
 
     def close(self):
-        if self.opened:
+        if self._ds:
             libgdal.OGR_DS_Destroy(self._ds)
-            self.opened = False
+            self._ds = None
 
     def __del__(self):
         self.close()
@@ -137,11 +136,10 @@ class CtypesOGRShapeReader(object):
 class OSGeoOGRShapeReader(object):
     def __init__(self, datasource):
         self.datasource = datasource
-        self.opened = False
         self._ds = None
 
     def open(self):
-        if self.opened: return
+        if self._ds: return
         self._ds = ogr.Open(self.datasource, False)
         if self._ds is None:
             msg = gdal.GetLastErrorMsg()
@@ -150,7 +148,7 @@ class OSGeoOGRShapeReader(object):
             raise OGRShapeReaderError(msg)
 
     def wkts(self, where=None):
-        if not self.opened: self.open()
+        if not self._ds: self.open()
 
         if where:
             if not where.lower().startswith('select'):
@@ -173,9 +171,8 @@ class OSGeoOGRShapeReader(object):
             yield geom.ExportToWkt()
 
     def close(self):
-        if self.opened:
+        if self._ds:
             self._ds = None
-            self.opened = False
 
 
 ogr = gdal = None
