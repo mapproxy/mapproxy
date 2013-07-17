@@ -198,7 +198,6 @@ class RiakCache(TileCacheBase, FileBasedLocking):
                 obj = self.bucket.get_binary(key, r=1)
                 dummy_tile = Tile((0, 0, 0))
                 self._fill_metadata_from_obj(obj, dummy_tile)
-                print key, dummy_tile.timestamp, before_timestamp
                 if dummy_tile.timestamp < before_timestamp:
                     obj.delete()
             else:
