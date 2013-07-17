@@ -236,34 +236,33 @@ MapProxy will place the JSON document for tile z=3, x=1, y=2 at ``http://localho
 The ``_attachments``-part is the internal structure of CouchDB where the tile itself is stored. You can access the tile directly at: ``http://localhost:9999/mywms_tiles/mygrid-3-1-2/tile``.
 
 
-``Riak``
-===========
+``riak``
+========
 
 .. versionadded:: 1.6.0
+    The Riak cache is currently in beta phase.
 
-Store tiles in `Riak` <http://basho.com/riak/> cluster. MapProxy creates keys with binary data as value and timestamps as user defined metadata.
-This backend is good for very large caches wich can be distributed over many nodes. Data can be fully replicated or distributed by equals parts over all nodes providing fault-tolerant and highly available storage. Cluster is masterless and each node can handle read and write requests. N, R and W properties must be set manually before using bucket.
+Store tiles in a `Riak <http://basho.com/riak/>`_ cluster. MapProxy creates keys with binary data as value and timestamps as user defined metadata.
+This backend is good for very large caches which can be distributed over many nodes. Data can be distributed over multiple nodes providing a fault-tolernt and high-available storage. A Riak cluster is masterless and each node can handle read and write requests.
 
 Requirements
 ------------
 
-You will need the python Riak client. You can install it in usual way, for example ``pip install riak``.
+You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_. You can install it in the usual way, for example with ``pip install riak``.
 
 Configuration
 -------------
 
-You can set host and bucket name. Riak client by default will use HTTP method to communicate with cluster.
-
 Available options:
 
 ``url``:
-	The URL of the Riak node. Defaults to ``pbc://127.0.0.1:8087``.
+	The URL of the Riak node. Defaults to ``pbc://127.0.0.1:8087``. Use ``http://host:port`` for HTTP communication.
 
 ``bucket``:
-	The name of the bucket MapProxy uses for this cache. Bucket is like namespace for key/value pool. Defaults to cache name suffixed with grid name.
-	
+	The name of the bucket MapProxy uses for this cache. Bucket is like namespace for key/value pool. Defaults to cache name suffixed with grid name (e.g. ``mycache_webmercator``).
+
 ``prefix``:
 	Riak interface prefix. Defaults to ``riak``.
-	
+
 ``secondary_index``:
-	If true enables secondary index for tiles. Uses format %(z)d-%(x)d-%(y)d. Defaults to ``False``.
+	If ``true`` enables secondary index for tiles. This improves seed cleanup performance but requires that Riak uses LevelDB as the backend. Refer to the Riak documentation. Defaults to ``false``.
