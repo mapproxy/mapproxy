@@ -11,8 +11,8 @@ from scriptine import path
 from scriptine.shell import backtick_, sh
 
 PACKAGE_NAME = 'MapProxy'
-REMOTE_DOC_LOCATION = 'os@mapproxy.org:mapproxy_homepage/docs'
-REMOTE_REL_LOCATION = 'os@mapproxy.org:mapproxy_homepage/static/rel'
+REMOTE_DOC_LOCATION = 'omniscale.de:domains/mapproxy.org/docs'
+REMOTE_REL_LOCATION = 'omniscale.de:domains/mapproxy.org/static/rel'
 
 VERSION_FILES = [
     ('setup.py', 'version="###"'),
