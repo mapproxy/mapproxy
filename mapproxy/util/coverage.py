@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import with_statement
+
 import operator
+import threading
 
 from mapproxy.grid import bbox_intersects, bbox_contains
 from mapproxy.util.py import cached_property
@@ -162,6 +165,7 @@ class GeomCoverage(object):
         self.bbox = geom.bounds
         self.srs = srs
         self.clip = clip
+        self._prep_lock = threading.Lock()
         self._prepared_geom = None
         self._prepared_counter = 0
         self._prepared_max = 10000
@@ -204,7 +208,8 @@ class GeomCoverage(object):
 
     def intersects(self, bbox, srs):
         bbox = self._geom_in_coverage_srs(bbox, srs)
-        return self.prepared_geom.intersects(bbox)
+        with self._prep_lock:
+            return self.prepared_geom.intersects(bbox)
 
     def intersection(self, bbox, srs):
         bbox = self._geom_in_coverage_srs(bbox, srs)
@@ -212,7 +217,8 @@ class GeomCoverage(object):
 
     def contains(self, bbox, srs):
         bbox = self._geom_in_coverage_srs(bbox, srs)
-        return self.prepared_geom.contains(bbox)
+        with self._prep_lock:
+            return self.prepared_geom.contains(bbox)
 
     def __eq__(self, other):
         if not isinstance(other, GeomCoverage):
