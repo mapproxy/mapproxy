@@ -256,7 +256,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
         if os.path.exists(tile_loc) or os.path.islink(tile_loc):
             os.unlink(tile_loc)
 
-        os.symlink(real_tile_loc, tile_loc)
+        os.symlink(os.path.relpath(real_tile_loc, os.path.dirname(tile_loc)), tile_loc)
         return
 
     def __repr__(self):
