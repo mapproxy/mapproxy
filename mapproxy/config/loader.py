@@ -390,6 +390,8 @@ class ImageOptionsConfiguration(ConfigurationBase):
 
     def image_opts(self, image_conf, format):
         from mapproxy.image.opts import ImageOptions
+        if not image_conf:
+            image_conf = {}
 
         conf = {}
         if format in self.formats:
@@ -610,7 +612,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         return fi_transformer
 
     def image_opts(self, format=None):
-        if 'transparent' not in self.conf.get('image', {}):
+        if 'transparent' not in (self.conf.get('image') or {}):
             transparent = self.conf['req'].get('transparent')
             if transparent is not None:
                 transparent = bool(str(transparent).lower() == 'true')
@@ -657,7 +659,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         coverage = self.coverage()
         res_range = resolution_range(self.conf)
 
-        transparent_color = self.conf.get('image', {}).get('transparent_color')
+        transparent_color = (self.conf.get('image') or {}).get('transparent_color')
         transparent_color_tolerance = self.context.globals.get_value(
             'image.transparent_color_tolerance', self.conf)
         if transparent_color:
