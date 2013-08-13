@@ -45,7 +45,7 @@ def app_factory(global_options, config_dir, allow_listing=False, **local_options
     """
     return make_wsgi_app(config_dir, asbool(allow_listing))
 
-def make_wsgi_app(config_dir, allow_listing=True):
+def make_wsgi_app(config_dir, allow_listing=True, debug=False):
     """
     Create a MultiMapProxy with the given config directory.
 
@@ -55,16 +55,17 @@ def make_wsgi_app(config_dir, allow_listing=True):
     """
     config_dir = os.path.abspath(config_dir)
     loader = DirectoryConfLoader(config_dir)
-    return MultiMapProxy(loader, list_apps=allow_listing)
+    return MultiMapProxy(loader, list_apps=allow_listing, debug=debug)
 
 
 class MultiMapProxy(object):
 
-    def __init__(self, loader, list_apps=False, app_cache_size=100):
+    def __init__(self, loader, list_apps=False, app_cache_size=100, debug=False):
         self.loader = loader
         self.list_apps = list_apps
         self._app_init_lock = Lock()
         self.apps = LRU(app_cache_size)
+        self.debug = debug
 
     def __call__(self, environ, start_response):
         req = Request(environ)
@@ -129,7 +130,7 @@ class MultiMapProxy(object):
         mapproxy_conf = self.loader.app_conf(proj_name)['mapproxy_conf']
         m_time = os.path.getmtime(mapproxy_conf)
         log.info('initializing project app %s with %s', proj_name, mapproxy_conf)
-        app = make_mapproxy_wsgi_app(mapproxy_conf)
+        app = make_mapproxy_wsgi_app(mapproxy_conf, debug = self.debug)
         return app, m_time
 
 
