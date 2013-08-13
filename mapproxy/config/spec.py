@@ -271,6 +271,7 @@ mapproxy_yaml_spec = {
         }
     },
     'services': {
+        'api': {},
         'demo': {},
         'kml': {
             'use_grid_names': bool(),

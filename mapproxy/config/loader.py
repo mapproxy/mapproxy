@@ -34,15 +34,17 @@ from mapproxy.config.spec import validate_mapproxy_conf
 from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
+from mapproxy.service.api import ApiServer
 
 class ConfigurationError(Exception):
     pass
 
 class ProxyConfiguration(object):
-    def __init__(self, conf, conf_base_dir=None, seed=False, renderd=False):
+    def __init__(self, conf, conf_base_dir=None, seed=False, renderd=False, abs_path=None):
         self.configuration = conf
         self.seed = seed
         self.renderd = renderd
+        self.abs_path = abs_path
 
         if conf_base_dir is None:
             conf_base_dir = os.getcwd()
@@ -1541,9 +1543,13 @@ class ServiceConfiguration(ConfigurationBase):
         return DemoServer(layers, md, tile_layers=tile_layers,
             image_formats=image_formats, srs=srs, services=services, restful_template=restful_template)
 
+    def api_service(self, conf):
+        return ApiServer(config = self.context)
+
 
 def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=False):
     conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
+    abs_path      = os.path.abspath(mapproxy_conf)
 
     try:
         conf_dict = load_configuration_file([os.path.basename(mapproxy_conf)], conf_base_dir)
@@ -1555,7 +1561,7 @@ def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=
     if not informal_only or (errors and not ignore_warnings):
         raise ConfigurationError('invalid configuration')
     return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed,
-        renderd=renderd)
+                              renderd=renderd, abs_path=abs_path)
 
 def load_configuration_file(files, working_dir):
     """
