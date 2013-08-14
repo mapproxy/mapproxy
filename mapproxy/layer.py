@@ -474,5 +474,8 @@ class CacheMapLayer(MapLayer):
                 self.tile_manager.image_opts)
         except ProjError:
             raise MapBBOXError("could not transform query BBOX")
+        except IOError, ex:
+            from mapproxy.source import SourceError
+            raise SourceError("unable to transform image: %s" % ex)
 
 

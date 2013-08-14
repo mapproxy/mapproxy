@@ -293,6 +293,23 @@ class TestWMS111(WMSTest):
 
         assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
 
+    def test_direct_layer_non_image_response(self):
+        self.common_map_req.params['layers'] = 'direct'
+        expected_req = ({'path': r'/service?LAYERs=bar&SERVICE=WMS&FORMAT=image%2Fpng'
+                          '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
+                          '&VERSION=1.1.1&BBOX=-180.0,0.0,0.0,80.0'
+                          '&WIDTH=200'},
+                            {'body': 'notanimage', 'headers': {'content-type': 'image/jpeg'}})
+        with mock_httpd(('localhost', 42423), [expected_req]):
+            resp = self.app.get(self.common_map_req)
+            eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+            xml = resp.lxml
+            eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code'), [])
+            assert 'error while processing image file' in \
+                 xml.xpath('//ServiceException/text()')[0]
+
+            assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
+
     def test_get_map(self):
         # check custom tile lock directory
         tiles_lock_dir = os.path.join(test_config['base_dir'], 'wmscachetilelockdir')
@@ -315,6 +332,25 @@ class TestWMS111(WMSTest):
 
         # check custom tile_lock_dir
         assert os.path.exists(tiles_lock_dir)
+
+    def test_get_map_non_image_response(self):
+        self.created_tiles.append('wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+                                  '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
+                                  '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
+                                  '&WIDTH=256'},
+                        {'body': 'notanimage', 'headers': {'content-type': 'image/jpeg'}})
+        with mock_httpd(('localhost', 42423), [expected_req]):
+            self.common_map_req.params['bbox'] = '0,0,180,90'
+            resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        xml = resp.lxml
+        print resp.body
+        eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code'), [])
+        assert 'error while processing image file' in \
+             xml.xpath('//ServiceException/text()')[0]
+
+        assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
 
     def test_get_map_direct_fwd_params_layer(self):
         img = create_tmp_image((200, 200), format='png')

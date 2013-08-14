@@ -124,7 +124,13 @@ class WMSServer(Server):
         result = self.decorate_img(result, 'wms.map', actual_layers.keys(),
             map_request.http.environ, (query.srs.srs_code, query.bbox))
 
-        resp = Response(result.as_buffer(img_opts), content_type=img_opts.format.mime_type)
+        try:
+            result_buf = result.as_buffer(img_opts)
+        except IOError, ex:
+            raise RequestError('error while processing image file: %s' % ex,
+                request=map_request)
+
+        resp = Response(result_buf, content_type=img_opts.format.mime_type)
 
         if query.tiled_only and isinstance(result.cacheable, CacheInfo):
             cache_info = result.cacheable
