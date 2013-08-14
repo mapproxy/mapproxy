@@ -4,6 +4,7 @@
 Features:
 
 - new `sqlite` cache with timestamps and one DB for each zoom level
+- new `riak` cache
 - first dimension support for WMTS (cascaded only)
 - support HTTP Digest Authentication for source requests
 - remove_all option for seed cleanups
@@ -16,6 +17,8 @@ Features:
 Improvements:
 
 - speed up configuration loading with tagged sources
+- speed up seeding with sparse coverages and limited levels
+  (e.g. only level 17-20)
 - add required params to WMS URL in mapproxy-util wms-capabilities
 - support for `@` and `:` in HTTP username and password
 - try to load pyproj before using libproj.dll on Windows
@@ -25,6 +28,8 @@ Improvements:
   to the same tile cache from different servers (e.g. via NFS)
 - support for WMS 1.3.0 in mapproxy-util wms-capabilities
 - support layer merge for 8bit PNGs
+- support for OGR/GDAL 1.10
+- show TMS root resource at /tms
 
 Fixes:
 
@@ -35,6 +40,9 @@ Fixes:
 - fixed memory leak when reloading large configurations
 - improve handling of mixed grids/formats when using caches as
   cache sources
+- threading related crashes in coverage handling
+- close OGR sources
+- catch IOErrors when PIL/Pillow can't identify image file
 
 Other:
 
