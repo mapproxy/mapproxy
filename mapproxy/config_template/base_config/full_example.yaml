@@ -202,6 +202,20 @@ layers:
             title: layer 2b
             sources: [osm_cache]
 
+  # the childs of this group layer all use the same WMS.
+  # reference the layer as tagged source
+  - title: Example with tagged sources
+    layers:
+      - name: landusage
+        title: Landusage
+        sources: ['wms_source:landusage']
+      - name: roads
+        title: Roads and railways
+        sources: ['wms_source:roads,railways']
+      - name: buildings
+        title: Buildings
+        sources: ['wms_source:buildings']
+
   # this layer will be reprojected from the source
   - name: osm_utm
     title: OSM in UTM
@@ -324,6 +338,17 @@ sources:
     req:
       url: http://osm.omniscale.net/proxy/service?
       layers: osm
+
+  # WMS source for use with tagged sources
+  wms_source:
+    type: wms
+    req:
+      url: http://example.org/service?
+      # you can remove `layer` when using this source as
+      # tagged source, or you can list all available layers.
+      # in this case MapProxy will check the layernames when
+      # you reference this source.
+      layers: roads,railways,landusage,buildings
 
   # source with GetLegendGraphic support
   legend_wms:

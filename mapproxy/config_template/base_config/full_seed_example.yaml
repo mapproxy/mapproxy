@@ -1,0 +1,79 @@
+# #####################################################################
+#               MapProxy example seed configuration
+# #####################################################################
+#
+# This is _not_ a runnable configuration, but it contains most
+# available options in meaningful combinations.
+#
+# Use this file in addition to the documentation to see where and how
+# things can be configured.
+
+seeds:
+  myseed1:
+    # seed all grids of this cache
+    caches: [osm_cache]
+    levels:
+      to: 10
+    refresh_before:
+      # re-generate tiles older than this date
+      time: 2013-10-10T12:35:00
+
+  myseed2:
+    # seed two caches, but only GLOBAL_GEODETIC grid
+    caches: [cache1, cache2]
+    grids: [GLOBAL_GEODETIC]
+    levels:
+      to: 14
+    refresh_before:
+      # re-generate tiles older than the modification time
+      # of this file. on linux/unix use `touch` to change the time.
+      mtime: ./reseed.time
+
+cleanups:
+  cleanup_older_tiles:
+    caches: [osm_cache]
+    remove_before:
+      days: 30
+    levels:
+        from: 16
+
+  remove_complete_levels:
+    caches: [cache1]
+    # remove all tiles regardless of the timestamp.
+    # will remove the complete level directory for `file` caches
+    remove_all: true
+    levels: [14, 18, 19, 20]
+
+  remove_changes:
+    caches: [cache1]
+    # be careful when using cleanup with coverages, since it needs to check
+    # every possible tile in this coverage (as reported by
+    # `mapproxy-util grids --coverage`). only use small coverages and/or limit
+    # levels
+    coverages: [changed_area]
+    # without remove_before: remove all tiles created before you called
+    # mapproxy-seed. i.e. tiles created before with in this seed run
+    # are not removed
+    levels:
+        from: 14
+        to: 17
+
+coverages:
+  germany:
+    # any source supported by OGR
+    datasource: 'shps/world_boundaries_m.shp'
+    where: 'CNTRY_NAME = "Germany"'
+    srs: 'EPSG:3857'
+  austria:
+    # simple bbox
+    bbox: [9.36, 46.33, 17.28, 49.09]
+    srs: "EPSG:4326"
+  switzerland:
+    # text file with WKT (Multi)Polygons
+    datasource: 'polygons/SZ.txt'
+    srs: "EPSG:3857"
+  changed_area:
+    # example with PostGIS query
+    datasource: "PG: dbname='db' host='host' user='user' password='password'"
+    where: "select * from last_changes"
+    srs: 'EPSG:3857'

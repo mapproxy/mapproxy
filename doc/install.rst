@@ -145,7 +145,7 @@ To create a new set of configuration files for MapProxy call::
 
     mapproxy-util create -t base-config mymapproxy
 
-This will create a ``mymapproxy`` directory with an example ``mapproxy.yaml`` and ``seed.yaml`` configuration.
+This will create a ``mymapproxy`` directory with a minimal example configuration (``mapproxy.yaml`` and ``seed.yaml``) and two full example configuration files (``full_example.yaml`` and ``full_seed_example.yaml``).
 
 Refer to the :doc:`configuration documentation<configuration>` for more information. With the default configuration the cached data will be placed in the ``cache_data`` subdirectory.
 
