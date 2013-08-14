@@ -138,9 +138,10 @@ class SeedingConfiguration(object):
 
     @memoize
     def coverage(self, name):
-        coverage_conf = self.conf.get('coverages', {}).get(name)
+        coverage_conf = (self.conf.get('coverages') or {}).get(name)
         if coverage_conf is None:
-            raise ValueError('no coverage %s configured' % name)
+            raise SeedConfigurationError('coverage %s not found. available coverages: %s' % (
+                name, ','.join((self.conf.get('coverages') or {}).keys())))
 
         return load_coverage(coverage_conf)
 
