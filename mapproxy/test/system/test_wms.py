@@ -347,7 +347,7 @@ class TestWMS111(WMSTest):
         xml = resp.lxml
         print resp.body
         eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code'), [])
-        assert 'error while processing image file' in \
+        assert 'unable to transform image: cannot identify image file' in \
              xml.xpath('//ServiceException/text()')[0]
 
         assert validate_with_dtd(xml, 'wms/1.1.1/exception_1_1_1.dtd')
