@@ -15,11 +15,18 @@ Contributors
 Patches and Suggestions
 -----------------------
 
-- Josh Doe
-- Stephan Holl
-- Kai Culemann
-- Miloslav Kmeť
 - Bruno Binet
-- Tom Payne
-- Matt Walker
+- Denis Rykov
+- Frederic Junod
+- Iván Sánchez Ortega
+- Josh Doe
+- Kai Culemann
 - Keith Moss
+- Matt Walker
+- Miloslav Kmeť
+- Paul Norman
+- Ramūnas
+- Richard Duivenvoorde
+- Stephan Holl
+- Steven D. Lander
+- Tom Payne
