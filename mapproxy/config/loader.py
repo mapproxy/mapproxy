@@ -36,6 +36,11 @@ from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.service.api import ApiServer
 
+# Import at the module level to allow reloading.
+from mapproxy.client.arcgis import ArcGISClient
+from mapproxy.source.arcgis import ArcGISSource
+
+
 class ConfigurationError(Exception):
     pass
 
@@ -584,6 +589,38 @@ def resolution_range(conf):
                                 max_scale=conf.get('max_scale'))
 
 
+class ArcGISSourceConfiguration(SourceConfiguration):
+    source_type = ('arcgis',)
+    def __init__(self, conf, context):
+        SourceConfiguration.__init__(self, conf, context)
+
+    def source(self, params = None):
+        from mapproxy.srs import SRS
+        from mapproxy.request.arcgis import create_request
+
+        # Get the supported SRS codes and formats from the configuration.
+        supported_srs = [SRS(code) for code in self.conf.get("supported_srs", [])]
+        supported_formats = [file_ext(f) for f in self.conf.get("supported_formats", [])]
+
+        # Construct the parameters
+        if params is None:
+            params = {}
+
+        request_format = self.conf['req'].get('format')
+        if request_format:
+            params['format'] = request_format
+
+        request = create_request(self.conf["req"], params)
+        http_client, request.url = self.http_client(request.url)
+        coverage = self.coverage()
+
+        client = ArcGISClient(request, http_client)
+        image_opts = self.image_opts(format = params.get('format'))
+        return ArcGISSource(client, image_opts = image_opts, coverage = coverage,
+                            supported_srs=supported_srs,
+                            supported_formats=supported_formats or None)
+
+
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
 
@@ -877,6 +914,7 @@ class DebugSourceConfiguration(SourceConfiguration):
 
 source_configuration_types = {
     'wms': WMSSourceConfiguration,
+    'arcgis': ArcGISSourceConfiguration,
     'tile': TileSourceConfiguration,
     'debug': DebugSourceConfiguration,
     'mapserver': MapServerSourceConfiguration,
