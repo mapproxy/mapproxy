@@ -86,6 +86,9 @@ def serve_multiapp_develop_command(args):
     parser.add_option("-b", "--bind",
                       dest="address", default='127.0.0.1:8080',
                       help="Server socket [127.0.0.1:8080]")
+    parser.add_option("--debug", default=False, action='store_true',
+                      dest="debug",
+                      help="Enable debug mode")
     options, args = parser.parse_args(args)
 
     if len(args) != 2:
@@ -97,10 +100,18 @@ def serve_multiapp_develop_command(args):
 
     host, port = parse_bind_address(options.address)
 
+    if options.debug and host not in ('localhost', '127.0.0.1'):
+        print textwrap.dedent("""\
+        ################# WARNING! ##################
+        Running debug mode with non-localhost address
+        is a serious security vulnerability.
+        #############################################\
+        """)
+
     setup_logging()
     from mapproxy.multiapp import make_wsgi_app
     from mapproxy.util.ext.serving import run_simple
-    app = make_wsgi_app(mapproxy_conf_dir)
+    app = make_wsgi_app(mapproxy_conf_dir, debug=options.debug)
 
     run_simple(host, port, app, use_reloader=True, processes=1,
         threaded=True, passthrough_errors=True)
