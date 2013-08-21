@@ -223,18 +223,17 @@ class VerifiedHTTPSConnection(httplib.HTTPSConnection):
         # overrides the version in httplib so that we do
         #    certificate verification
 
-        if hasattr(socket, 'create_connection') and hasattr(self, '_tunnel_host'):
-            # for Python >= 2.6 with proxy support
+        if hasattr(socket, 'create_connection') and hasattr(self, 'source_address'):
             sock = socket.create_connection((self.host, self.port),
                 self.timeout, self.source_address)
-
-            if self._tunnel_host:
-                self.sock = sock
-                self._tunnel()
         else:
-            # for Python 2.5
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((self.host, self.port))
+
+        if hasattr(self, '_tunnel_host') and self._tunnel_host:
+            # for Python >= 2.6 with proxy support
+            self.sock = sock
+            self._tunnel()
 
         # wrap the socket using verification with the root
         #    certs in self.ca_certs_path
