@@ -371,6 +371,17 @@ mapproxy_yaml_spec = {
                 'layers': one_of(str(), [str()]),
                 'use_mapnik2': bool(),
             }),
+            'arcgis': combined(source_commons, {
+               required('req'): {
+                    required('url'): str(),
+                    'dpi': int(),
+                    'layers': str(),
+                    'transparent': bool(),
+                    'time': str()
+                },
+                'supported_srs': [str()],
+                'http': http_opts
+            }),
             'debug': {
             },
         })
