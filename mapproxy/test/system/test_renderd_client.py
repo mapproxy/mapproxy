@@ -158,6 +158,36 @@ class TestWMS111(SystemTest):
             eq_(resp.content_type, 'application/vnd.ogc.se_xml')
             is_111_exception(resp.lxml, re_msg='Error from renderd: barf')
 
+    def test_get_map_connection_error(self):
+        self.common_map_req.params['bbox'] = '0,0,9,9'
+        resp = self.app.get(self.common_map_req)
+
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        is_111_exception(resp.lxml, re_msg='Error while communicating with renderd:')
+
+    def test_get_map_non_json_response(self):
+        class req_handler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                length = int(self.headers['content-length'])
+                json_data = self.rfile.read(length)
+                json.loads(json_data)
+
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write('{"invalid')
+
+            def log_request(self, code, size=None):
+                pass
+
+        with mock_single_req_httpd(('localhost', 42423), req_handler):
+            self.common_map_req.params['bbox'] = '0,0,9,9'
+            resp = self.app.get(self.common_map_req)
+
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        is_111_exception(resp.lxml, re_msg='Error while communicating with renderd: invalid JSON')
+
+
     def test_get_featureinfo(self):
         expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'

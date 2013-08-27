@@ -83,5 +83,10 @@ class RenderdTileCreator(TileCreator):
             'cache_identifier': cache_identifier,
             'priority': self.priority
         }
-        resp = requests.post(self.renderd_address, data=json.dumps(message))
-        return resp.json()
+        try:
+            resp = requests.post(self.renderd_address, data=json.dumps(message))
+            return resp.json()
+        except ValueError:
+            raise SourceError("Error while communicating with renderd: invalid JSON")
+        except requests.RequestException, ex:
+            raise SourceError("Error while communicating with renderd: %s" % ex)
