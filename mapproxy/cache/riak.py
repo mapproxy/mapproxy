@@ -45,18 +45,12 @@ class RiakCache(TileCacheBase, FileBasedLocking):
             raise ImportError("Riak backend requires 'riak' package.")
 
         urlparts = urlparse.urlparse(url)
-        if urlparts.scheme.lower() == 'http':
-            self.transport_class = riak.RiakHttpTransport
-        elif urlparts.scheme.lower() == 'pbc':
-            self.transport_class = riak.RiakPbcTransport
-        else:
-            raise ValueError('unknown Riak URL: %s' % urlparts.scheme)
+        self.protocol = urlparts.scheme.lower()
 
         self.lock_cache_id = 'riak-' + hashlib.md5(url + bucket).hexdigest()
         self.lock_dir = lock_dir
         self.lock_timeout = 60
         self.host = urlparts.hostname
-        self.port = urlparts.port
         self.prefix = prefix
         self.bucket_name = bucket
         self.tile_grid = tile_grid
@@ -66,8 +60,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
     @property
     def connection(self):
         if not getattr(self._db_conn_cache, 'connection', None):
-            self._db_conn_cache.connection = riak.RiakClient(host=self.host, port=self.port,
-                transport_class=self.transport_class, prefix=self.prefix)
+            self._db_conn_cache.connection = riak.RiakClient(protocol=self.protocol, nodes=[{'host': self.host}])
         return self._db_conn_cache.connection
 
     @property
@@ -78,16 +71,16 @@ class RiakCache(TileCacheBase, FileBasedLocking):
         (x, y, z) = coord
         key = '%(z)d_%(x)d_%(y)d' % locals()
         try:
-            return self.bucket.get_binary(key, r=1)
+            return self.bucket.get(key, r=1, timeout=self.lock_timeout)
         except Exception, e:
             log.warn('error while requesting %s: %s', key, e)
 
     def _get_timestamp(self, obj):
-        metadata = obj.get_usermeta()
+        metadata = obj.usermeta
         timestamp = metadata.get('timestamp')
         if timestamp == None:
             timestamp = float(time.time())
-            obj.set_usermeta({'timestamp':str(timestamp)})
+            obj.usermeta = {'timestamp':str(timestamp)}
 
         return float(timestamp)
 
@@ -95,11 +88,11 @@ class RiakCache(TileCacheBase, FileBasedLocking):
         if tile.coord is None or tile.source:
             return True
         res = self._get_object(tile.coord)
-        if not res.exists():
+        if not res.exists:
             return False
 
         tile.timestamp = self._get_timestamp(res)
-        tile.size = len(res.get_data())
+        tile.size = len(res.encoded_data)
 
         return True
 
@@ -108,15 +101,15 @@ class RiakCache(TileCacheBase, FileBasedLocking):
             res = self._get_object(tile.coord)
             with tile_buffer(tile) as buf:
                 data = buf.read()
-            res.set_data(data)
-            res.set_usermeta({
+            res.encoded_data = data
+            res.usermeta = {
                 'timestamp': str(tile.timestamp),
                 'size': str(tile.size),
-            })
+            }
             if self.use_secondary_index:
                 x, y, z = tile.coord
                 res.add_index('tile_coord_bin', '%02d-%07d-%07d' % (z, x, y))
-            res.store()
+            res.store(return_body=False)
 
         return True
 
@@ -142,12 +135,12 @@ class RiakCache(TileCacheBase, FileBasedLocking):
             return True
 
         res = self._get_object(tile.coord)
-        if res.exists():
-            tile_data = StringIO(res.get_data())
+        if res.exists:
+            tile_data = StringIO(res.encoded_data)
             tile.source = ImageSource(tile_data)
             if with_metadata:
                 tile.timestamp = self._get_timestamp(res)
-                tile.size = len(res.get_data())
+                tile.size = len(res.encoded_data)
             return True
 
         return False
@@ -157,7 +150,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
             return True
 
         res = self._get_object(tile.coord)
-        if not res.exists():
+        if not res.exists:
             # already removed
             return True
 
@@ -165,7 +158,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
         return True
 
     def _fill_metadata_from_obj(self, obj, tile):
-        tile_md = obj.get_usermeta()
+        tile_md = obj.usermeta
         timestamp = tile_md.get('timestamp')
         if timestamp:
             tile.timestamp = float(timestamp)
@@ -184,7 +177,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
             for y in xrange(grid_size[1]/chunk_size):
                 start_y = y * chunk_size
                 end_y = start_y + chunk_size - 1
-                query = self.connection.index(self.bucket_name, 'tile_coord_bin',
+                query = self.bucket.get_index('tile_coord_bin',
                     '%02d-%07d-%07d' % (level, start_x, start_y),
                     '%02d-%07d-%07d' % (level, end_x, end_y))
                 for link in query.run():
@@ -195,7 +188,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
         client = self.connection
         for key in self._key_iterator(level):
             if before_timestamp:
-                obj = self.bucket.get_binary(key, r=1)
+                obj = self.bucket.get(key, r=1)
                 dummy_tile = Tile((0, 0, 0))
                 self._fill_metadata_from_obj(obj, dummy_tile)
                 if dummy_tile.timestamp < before_timestamp:

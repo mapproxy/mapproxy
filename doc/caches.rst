@@ -248,7 +248,7 @@ This backend is good for very large caches which can be distributed over many no
 Requirements
 ------------
 
-You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_. You can install it in the usual way, for example with ``pip install riak``.
+You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_ version 2.0 or newer. You can install it in the usual way, for example with ``pip install riak``.
 
 Configuration
 -------------
@@ -256,7 +256,7 @@ Configuration
 Available options:
 
 ``url``:
-	The URL of the Riak node. Defaults to ``pbc://127.0.0.1:8087``. Use ``http://host:port`` for HTTP communication.
+	The URL of the Riak node. Defaults to ``pbc://127.0.0.1``. Use ``http://host`` for HTTP communication.
 
 ``bucket``:
 	The name of the bucket MapProxy uses for this cache. Bucket is like namespace for key/value pool. Defaults to cache name suffixed with grid name (e.g. ``mycache_webmercator``).
