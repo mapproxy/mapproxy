@@ -262,7 +262,13 @@ class FileCache(TileCacheBase, FileBasedLocking):
             real_tile_loc = os.path.relpath(real_tile_loc,
                                             os.path.dirname(tile_loc))
 
-        os.symlink(real_tile_loc, tile_loc)
+        try:
+            os.symlink(real_tile_loc, tile_loc)
+        except OSError, e:
+            # ignore error if link was created by other process
+            if e.errno != errno.EEXIST:
+                raise e
+
         return
 
     def __repr__(self):
