@@ -248,7 +248,7 @@ This backend is good for very large caches which can be distributed over many no
 Requirements
 ------------
 
-You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_ version 2.0 or newer. You can install it in the usual way, for example with ``pip install riak``.
+You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_ version 2.0 or newer. You can install it in the usual way, for example with ``pip install riak``. Environments with older version must be upgraded with ``pip install -U riak``.
 
 Configuration
 -------------
@@ -256,13 +256,16 @@ Configuration
 Available options:
 
 ``url``:
-	The URL of the Riak node. Defaults to ``pbc://127.0.0.1``. Use ``http://host`` for HTTP communication.
+	The URL of the Riak node. Must include protocol type in beginning, allowed options is 'http', 'https' and 'pbc'. Defaults to ``pbc://127.0.0.1``. Use ``http://host`` for HTTP communication.
 
 ``bucket``:
 	The name of the bucket MapProxy uses for this cache. Bucket is like namespace for key/value pool. Defaults to cache name suffixed with grid name (e.g. ``mycache_webmercator``).
 
-``prefix``:
-	Riak interface prefix. Defaults to ``riak``.
+``http_port``:
+	HTTP port number. This port is used even proto buffer protocol is defined in ``url``. Defaults to 8098.
+
+``pb_port``:
+	Proto buffer port number. Defaults to 8087.
 
 ``secondary_index``:
 	If ``true`` enables secondary index for tiles. This improves seed cleanup performance but requires that Riak uses LevelDB as the backend. Refer to the Riak documentation. Defaults to ``false``.

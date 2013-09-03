@@ -994,15 +994,16 @@ class CacheConfiguration(ConfigurationBase):
 
         url = self.conf['cache'].get('url')
         if not url:
-            url = 'pbc://127.0.0.1:8087'
+            url = 'pbc://127.0.0.1'
         bucket = self.conf['cache'].get('bucket')
         if not bucket:
             suffix = grid_conf.tile_grid().name
             bucket = self.conf['name'] + '_' + suffix
-        prefix = self.conf['cache'].get('prefix', 'riak')
+        http_port = self.conf['cache'].get('http_port', 8098)
+        pb_port = self.conf['cache'].get('pb_port', 8087)
         use_secondary_index = self.conf['cache'].get('secondary_index', False)
 
-        return RiakCache(url=url, bucket=bucket, prefix=prefix,
+        return RiakCache(url=url, bucket=bucket, http_port=http_port, pb_port=pb_port,
             tile_grid=grid_conf.tile_grid(),
             lock_dir=self.lock_dir(),
             use_secondary_index=use_secondary_index,

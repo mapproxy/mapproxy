@@ -40,7 +40,7 @@ class UnexpectedResponse(CacheBackendError):
     pass
 
 class RiakCache(TileCacheBase, FileBasedLocking):
-    def __init__(self, url, bucket, prefix, tile_grid, lock_dir, use_secondary_index=False):
+    def __init__(self, url, bucket, tile_grid, lock_dir, http_port=8098, pb_port=8087, use_secondary_index=False):
         if riak is None:
             raise ImportError("Riak backend requires 'riak' package.")
 
@@ -51,8 +51,9 @@ class RiakCache(TileCacheBase, FileBasedLocking):
         self.lock_dir = lock_dir
         self.lock_timeout = 60
         self.host = urlparts.hostname
-        self.prefix = prefix
         self.bucket_name = bucket
+        self.http_port = http_port
+        self.pb_port = pb_port
         self.tile_grid = tile_grid
         self.use_secondary_index = use_secondary_index
         self._db_conn_cache = threading.local()
@@ -60,7 +61,8 @@ class RiakCache(TileCacheBase, FileBasedLocking):
     @property
     def connection(self):
         if not getattr(self._db_conn_cache, 'connection', None):
-            self._db_conn_cache.connection = riak.RiakClient(protocol=self.protocol, nodes=[{'host': self.host}])
+            self._db_conn_cache.connection = riak.RiakClient(protocol=self.protocol,
+                                                             nodes=[{'host': self.host, 'http_port': self.http_port, 'pb_port': self.pb_port}])
         return self._db_conn_cache.connection
 
     @property

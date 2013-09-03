@@ -112,7 +112,8 @@ cache_types = {
     'riak': {
         'url': str(),
         'bucket': str(),
-        'prefix': str(),
+        'http_port': number(),
+        'pb_port': number(),
         'secondary_index': bool(),
     }
 }
