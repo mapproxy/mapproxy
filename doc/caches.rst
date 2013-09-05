@@ -248,21 +248,42 @@ This backend is good for very large caches which can be distributed over many no
 Requirements
 ------------
 
-You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_. You can install it in the usual way, for example with ``pip install riak``.
+You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_ version 2.0 or newer. You can install it in the usual way, for example with ``pip install riak``. Environments with older version must be upgraded with ``pip install -U riak``.
 
 Configuration
 -------------
 
 Available options:
 
-``url``:
-	The URL of the Riak node. Defaults to ``pbc://127.0.0.1:8087``. Use ``http://host:port`` for HTTP communication.
+``nodes``:
+	The list of nodes that mapproxy will connect to. Should be defined at least one.
+
+``protocol``:
+	Communication protocol. Allowed options is ``http``, ``https`` and ``pbc``. Defaults to ``pbc``.
 
 ``bucket``:
 	The name of the bucket MapProxy uses for this cache. Bucket is like namespace for key/value pool. Defaults to cache name suffixed with grid name (e.g. ``mycache_webmercator``).
-
-``prefix``:
-	Riak interface prefix. Defaults to ``riak``.
+	
+``default_ports``:
+	Default ``pb`` and ``http`` ports for ``PBC`` and ``HTTP`` protocols respectively. Will be used for each defined node as default ports.
 
 ``secondary_index``:
 	If ``true`` enables secondary index for tiles. This improves seed cleanup performance but requires that Riak uses LevelDB as the backend. Refer to the Riak documentation. Defaults to ``false``.
+
+Example
+-------
+
+::
+
+	cache:
+        type: riak
+		nodes:
+			- host: 1.example.org
+			  pb_port: 9999
+			- host: 1.example.org
+			- host: 1.example.org
+		protocol: pbc
+		bucket: tiles
+		default_ports:
+   			pb: 8087
+			http: 8098
