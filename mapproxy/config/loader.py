@@ -992,18 +992,31 @@ class CacheConfiguration(ConfigurationBase):
     def _riak_cache(self, grid_conf, file_ext):
         from mapproxy.cache.riak import RiakCache
 
-        url = self.conf['cache'].get('url')
-        if not url:
-            url = 'pbc://127.0.0.1'
+        ports = self.conf['cache'].get('default_ports', {})
+        if not ports.has_key('pb'):
+            ports['pb'] = 8087
+        if not ports.has_key('http'):
+            ports['http'] = 8098
+        
+        nodes = self.conf['cache'].get('nodes')
+        if not nodes:
+            nodes = [{'host': '127.0.0.1'}]
+        
+        for n in nodes:
+            if not n.has_key('pb_port'):
+                n['pb_port'] = ports.pb
+            if not n.has_key('http_port'):
+                n['http_port'] = ports.http
+        
+        protocol = self.conf['cache'].get('protocol', 'pbc')
         bucket = self.conf['cache'].get('bucket')
         if not bucket:
             suffix = grid_conf.tile_grid().name
             bucket = self.conf['name'] + '_' + suffix
-        http_port = self.conf['cache'].get('http_port', 8098)
-        pb_port = self.conf['cache'].get('pb_port', 8087)
+        
         use_secondary_index = self.conf['cache'].get('secondary_index', False)
 
-        return RiakCache(url=url, bucket=bucket, http_port=http_port, pb_port=pb_port,
+        return RiakCache(nodes=nodes, protocol=protocol, bucket=bucket,
             tile_grid=grid_conf.tile_grid(),
             lock_dir=self.lock_dir(),
             use_secondary_index=use_secondary_index,

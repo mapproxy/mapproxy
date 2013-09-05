@@ -255,17 +255,35 @@ Configuration
 
 Available options:
 
-``url``:
-	The URL of the Riak node. Must include protocol type in beginning, allowed options is 'http', 'https' and 'pbc'. Defaults to ``pbc://127.0.0.1``. Use ``http://host`` for HTTP communication.
+``nodes``:
+	The list of nodes that mapproxy will connect to. Should be defined at least one.
+
+``protocol``:
+	Communication protocol. Allowed options is ``http``, ``https`` and ``pbc``. Defaults to ``pbc``.
 
 ``bucket``:
 	The name of the bucket MapProxy uses for this cache. Bucket is like namespace for key/value pool. Defaults to cache name suffixed with grid name (e.g. ``mycache_webmercator``).
-
-``http_port``:
-	HTTP port number. This port is used even proto buffer protocol is defined in ``url``. Defaults to 8098.
-
-``pb_port``:
-	Proto buffer port number. Defaults to 8087.
+	
+``default_ports``:
+	Default ``pb`` and ``http`` ports for ``PBC`` and ``HTTP`` protocols respectively. Will be used for each defined node as default ports.
 
 ``secondary_index``:
 	If ``true`` enables secondary index for tiles. This improves seed cleanup performance but requires that Riak uses LevelDB as the backend. Refer to the Riak documentation. Defaults to ``false``.
+
+Example
+-------
+
+::
+
+	cache:
+        type: riak
+		nodes:
+			- host: 1.example.org
+			  pb_port: 9999
+			- host: 1.example.org
+			- host: 1.example.org
+		protocol: pbc
+		bucket: tiles
+		default_ports:
+   			pb: 8087
+			http: 8098

@@ -85,6 +85,12 @@ source_commons = combined(
     }
 )
 
+riak_node = {
+    'host': str(),
+    'pb_port': number(),
+    'http_port': number(),
+}
+
 cache_types = {
     'file': {
         'directory_layout': str(),
@@ -110,10 +116,13 @@ cache_types = {
         'tile_lock_dir': str(),
     },
     'riak': {
-        'url': str(),
+        'nodes': [riak_node],
+        'protocol': one_of('pbc', 'http', 'https'),
         'bucket': str(),
-        'http_port': number(),
-        'pb_port': number(),
+        'default_ports': {
+            'pb_port': number(),
+            'http_port': number(),
+        },
         'secondary_index': bool(),
     }
 }
