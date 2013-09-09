@@ -28,7 +28,7 @@ from mapproxy.cache.base import (
     tile_buffer, CacheBackendError,)
 
 try:
-    from riak import RiakClient
+    import riak
 except ImportError:
     riak = None
 
@@ -40,7 +40,7 @@ class UnexpectedResponse(CacheBackendError):
 
 class RiakCache(TileCacheBase, FileBasedLocking):
     def __init__(self, nodes, protocol, bucket, tile_grid, lock_dir, use_secondary_index=False):
-        if RiakClient is None:
+        if riak is None:
             raise ImportError("Riak backend requires 'riak' package.")
 
         self.nodes = nodes
@@ -57,7 +57,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
     @property
     def connection(self):
         if not getattr(self._db_conn_cache, 'connection', None):
-            self._db_conn_cache.connection = RiakClient(protocol=self.protocol, nodes=self.nodes)
+            self._db_conn_cache.connection = riak.RiakClient(protocol=self.protocol, nodes=self.nodes)
         return self._db_conn_cache.connection
 
     @property
