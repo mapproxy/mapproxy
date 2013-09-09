@@ -256,34 +256,36 @@ Configuration
 Available options:
 
 ``nodes``:
-	The list of nodes that mapproxy will connect to. Should be defined at least one.
+    A list of riak nodes. Each node needs a ``host`` and optionally a ``pb_port`` and an ``http_port`` if the ports differ from the default. A single localhost node is used if you don't configure any nodes.
 
 ``protocol``:
-	Communication protocol. Allowed options is ``http``, ``https`` and ``pbc``. Defaults to ``pbc``.
+    Communication protocol. Allowed options is ``http``, ``https`` and ``pbc``. Defaults to ``pbc``.
 
 ``bucket``:
-	The name of the bucket MapProxy uses for this cache. Bucket is like namespace for key/value pool. Defaults to cache name suffixed with grid name (e.g. ``mycache_webmercator``).
-	
+    The name of the bucket MapProxy uses for this cache. The bucket is the namespace for the tiles and needs to be unique for each cache. Defaults to cache name suffixed with grid name (e.g. ``mycache_webmercator``).
+
 ``default_ports``:
-	Default ``pb`` and ``http`` ports for ``PBC`` and ``HTTP`` protocols respectively. Will be used for each defined node as default ports.
+    Default ``pb`` and ``http`` ports for ``pbc`` and ``http`` protocols. Will be used as the default for each defined node.
 
 ``secondary_index``:
-	If ``true`` enables secondary index for tiles. This improves seed cleanup performance but requires that Riak uses LevelDB as the backend. Refer to the Riak documentation. Defaults to ``false``.
+    If ``true`` enables secondary index for tiles. This improves seed cleanup performance but requires that Riak uses LevelDB as the backend. Refer to the Riak documentation. Defaults to ``false``.
 
 Example
 -------
 
 ::
 
-	cache:
+    myriakcache:
+        sources: [mywms]
+        grids: [mygrid]
         type: riak
-		nodes:
-			- host: 1.example.org
-			  pb_port: 9999
-			- host: 1.example.org
-			- host: 1.example.org
-		protocol: pbc
-		bucket: tiles
-		default_ports:
-   			pb: 8087
-			http: 8098
+        nodes:
+            - host: 1.example.org
+              pb_port: 9999
+            - host: 1.example.org
+            - host: 1.example.org
+        protocol: pbc
+        bucket: myriakcachetiles
+        default_ports:
+            pb: 8087
+            http: 8098
