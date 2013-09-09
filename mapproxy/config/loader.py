@@ -992,28 +992,26 @@ class CacheConfiguration(ConfigurationBase):
     def _riak_cache(self, grid_conf, file_ext):
         from mapproxy.cache.riak import RiakCache
 
-        ports = self.conf['cache'].get('default_ports', {})
-        if not ports.has_key('pb'):
-            ports['pb'] = 8087
-        if not ports.has_key('http'):
-            ports['http'] = 8098
-        
+        default_ports = self.conf['cache'].get('default_ports', {})
+        default_pb_port = default_ports.get('pb', 8087)
+        default_http_port = default_ports.get('http', 8098)
+
         nodes = self.conf['cache'].get('nodes')
         if not nodes:
             nodes = [{'host': '127.0.0.1'}]
-        
+
         for n in nodes:
-            if not n.has_key('pb_port'):
-                n['pb_port'] = ports.pb
-            if not n.has_key('http_port'):
-                n['http_port'] = ports.http
-        
+            if 'pb_port' not in n:
+                n['pb_port'] = default_pb_port
+            if 'http_port' not in n:
+                n['http_port'] = default_http_port
+
         protocol = self.conf['cache'].get('protocol', 'pbc')
         bucket = self.conf['cache'].get('bucket')
         if not bucket:
             suffix = grid_conf.tile_grid().name
             bucket = self.conf['name'] + '_' + suffix
-        
+
         use_secondary_index = self.conf['cache'].get('secondary_index', False)
 
         return RiakCache(nodes=nodes, protocol=protocol, bucket=bucket,
