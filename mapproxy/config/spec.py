@@ -120,8 +120,8 @@ cache_types = {
         'protocol': one_of('pbc', 'http', 'https'),
         'bucket': str(),
         'default_ports': {
-            'pb_port': number(),
-            'http_port': number(),
+            'pb': number(),
+            'http': number(),
         },
         'secondary_index': bool(),
     }
