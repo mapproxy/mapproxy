@@ -1,4 +1,21 @@
-1.6.0rc1 2013-09-15
+1.6.0 2013-09-12
+~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Riak cache supports multiple nodes
+
+Fixes:
+
+- handle SSL verification when using HTTP proxy
+- ignore errors during single color symlinking
+
+Other:
+
+- --debug option for serve-multiapp-develop
+- Riak cache requires Riak-Client >=2.0
+
+1.6.0rc1 2013-08-15
 ~~~~~~~~~~~~~~~~~~~
 
 Features:
