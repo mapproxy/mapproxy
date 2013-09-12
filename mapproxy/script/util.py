@@ -338,7 +338,7 @@ def main():
         sys.exit(1)
 
     if len(args) == 1 and args[0] == '--version':
-        print 'Mapproxy ' + version
+        print 'MapProxy ' + version
         sys.exit(1)
 
     command = args[0]
