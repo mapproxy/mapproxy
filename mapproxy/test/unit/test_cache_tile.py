@@ -252,6 +252,10 @@ class TestMBTileCache(TileCacheTestBase):
         TileCacheTestBase.setup(self)
         self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'))
 
+    def test_load_empty_tileset(self):
+        assert self.cache.load_tiles([Tile(None)]) == True
+        assert self.cache.load_tiles([Tile(None), Tile(None), Tile(None)]) == True
+
 
 class TestQuadkeyFileTileCache(TileCacheTestBase):
     def setup(self):

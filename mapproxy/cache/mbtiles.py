@@ -192,6 +192,10 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             coords.append(level)
             tile_dict[(x, y)] = tile
 
+        if not tile_dict:
+            # all tiles loaded or coords are None
+            return True
+
         if self.supports_timestamp:
             stmt = "SELECT tile_column, tile_row, tile_data, last_modified FROM tiles WHERE "
         else:
