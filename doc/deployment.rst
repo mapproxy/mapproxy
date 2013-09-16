@@ -93,7 +93,9 @@ You need to modify your Apache ``httpd.conf`` as follows::
   </Directory>
 
 
-``mod_wsgi`` has a lot of options for more fine tuning. ``WSGIPythonHome`` lets you configure your ``virtualenv`` and  ``WSGIDaemonProcess``/``WSGIProcessGroup`` allows you to start multiple processes. See the `mod_wsgi configuration directives documentation <http://code.google.com/p/modwsgi/wiki/ConfigurationDirectives>`_. Using Mapnik also requires the ``WSGIApplicationGroup`` option.
+``mod_wsgi`` has a lot of options for more fine tuning. ``WSGIPythonHome`` or ``WSGIPythonPath`` lets you configure your ``virtualenv`` and  ``WSGIDaemonProcess``/``WSGIProcessGroup`` allows you to start multiple processes. See the `mod_wsgi configuration directives documentation <http://code.google.com/p/modwsgi/wiki/ConfigurationDirectives>`_. Using Mapnik also requires the ``WSGIApplicationGroup`` option.
+
+.. note:: On Windows only the ``WSGIPythonPath`` option is supported. Linux/Unix supports ``WSGIPythonPath`` and ``WSGIPythonHome``. See also the `mod_wsgi documentation for virtualenv <mod_wsgi venv>`_ for detailed information when using multiple virtualenvs.
 
 A more complete configuration might look like::
 
@@ -103,6 +105,8 @@ A more complete configuration might look like::
   WSGIScriptAlias /mapproxy /path/to/mapproxy/config.py
   WSGIDaemonProcess mapproxy user=mapproxy group=mapproxy processes=8 threads=25
   WSGIProcessGroup mapproxy
+  # WSGIPythonHome should contain the bin and lib dir of your virtualenv
+  WSGIPythonHome /path/to/mapproxy/venv
   WSGIApplicationGroup %{GLOBAL}
 
   <Directory /path/to/mapproxy/>
@@ -113,7 +117,7 @@ A more complete configuration might look like::
 
 .. _`mod_wsgi`: http://code.google.com/p/modwsgi/
 .. _`mod_wsgi installation`: http://code.google.com/p/modwsgi/wiki/InstallationInstructions
-
+.. _`mod_wsgi venv`: https://code.google.com/p/modwsgi/wiki/VirtualEnvironments
 
 Behind HTTP server or proxy
 ---------------------------
