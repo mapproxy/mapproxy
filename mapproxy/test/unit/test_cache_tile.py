@@ -26,13 +26,13 @@ from PIL import Image
 
 from mapproxy.cache.tile import Tile
 from mapproxy.cache.file import FileCache
-from mapproxy.cache.mbtiles import MBTilesCache
+from mapproxy.cache.mbtiles import MBTilesCache, MBTilesLevelCache
+from mapproxy.cache.base import CacheBackendError
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
-from mapproxy.cache.mbtiles import MBTilesLevelCache
 from mapproxy.test.image import create_tmp_image_buf, is_png
 
-from nose.tools import eq_
+from nose.tools import eq_, assert_raises
 
 tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
@@ -256,6 +256,8 @@ class TestMBTileCache(TileCacheTestBase):
         assert self.cache.load_tiles([Tile(None)]) == True
         assert self.cache.load_tiles([Tile(None), Tile(None), Tile(None)]) == True
 
+    def test_load_1001_tiles(self):
+        assert_raises(CacheBackendError, self.cache.load_tiles, [Tile((19, 1, 1))] * 1001)
 
 class TestQuadkeyFileTileCache(TileCacheTestBase):
     def setup(self):

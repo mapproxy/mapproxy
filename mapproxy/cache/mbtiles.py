@@ -21,7 +21,7 @@ import threading
 from cStringIO import StringIO
 
 from mapproxy.image import ImageSource
-from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer
+from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer, CacheBackendError
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
 
@@ -195,6 +195,10 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
         if not tile_dict:
             # all tiles loaded or coords are None
             return True
+
+        if len(coords) > 1000:
+            # SQLite is limited to 1000 args
+            raise CacheBackendError('cannot query SQLite for more than 333 tiles')
 
         if self.supports_timestamp:
             stmt = "SELECT tile_column, tile_row, tile_data, last_modified FROM tiles WHERE "
