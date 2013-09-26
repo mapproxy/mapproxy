@@ -96,8 +96,8 @@
   <VendorSpecificCapabilities>
 {{for layer in tile_layers}}
     <TileSet>
-      <SRS>{{layer.grid.srs_name}}</SRS>
-      <BoundingBox SRS="{{layer.grid.srs_name}}" minx="{{ layer.extent.bbox[0] }}" miny="{{ layer.extent.bbox[1] }}" maxx="{{ layer.extent.bbox[2] }}" maxy="{{ layer.extent.bbox[3] }}" />
+      <SRS>{{layer.grid.srs.srs_code}}</SRS>
+      <BoundingBox SRS="{{layer.grid.srs.srs_code}}" minx="{{ layer.extent.bbox[0] }}" miny="{{ layer.extent.bbox[1] }}" maxx="{{ layer.extent.bbox[2] }}" maxy="{{ layer.extent.bbox[3] }}" />
       <Resolutions>{{for level, res in layer.grid.tile_sets}}{{res}} {{endfor}}</Resolutions>
       <Width>{{layer.grid.tile_size[0]}}</Width>
       <Height>{{layer.grid.tile_size[1]}}</Height>
