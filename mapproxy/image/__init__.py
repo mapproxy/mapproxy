@@ -72,6 +72,9 @@ class ImageSource(object):
             except IOError:
                 pass
 
+        if self._img:
+            self._img = None
+
     @property
     def filename(self):
         return self._fname
