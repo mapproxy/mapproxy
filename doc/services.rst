@@ -110,6 +110,7 @@ Configure what MapProxy should do when one or more sources return errors or no r
 
 The maximum output size for a WMS requests in pixel. MapProxy returns an WMS exception in XML format for requests that are larger. Defaults to ``[4000, 4000]`` which will limit the maximum output size to 16 million pixels (i.e. 5000x3000 is still allowed).
 
+See also :ref:`globals.cache.max_tile_limit <max_tile_limit>` for the maximum number of tiles MapProxy will merge together for each layer.
 
 Full example
 """"""""""""

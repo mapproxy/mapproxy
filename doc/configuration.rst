@@ -773,6 +773,13 @@ Here you can define some options that affect the way MapProxy generates image re
 
   Example: A request in an uncached region requires MapProxy to fetch four meta-tiles. A ``concurrent_tile_creators`` value of two allows MapProxy to make two requests to the source WMS request in parallel. The splitting of the meta tile and the encoding of the new tiles will happen in parallel to.
 
+
+.. _max_tile_limit:
+
+``max_tile_limit``
+  Maximum number of tiles MapProxy will merge together for a WMS request. This limit is for each layer and defaults to 500 tiles.
+
+
 ``srs``
 """""""
 
