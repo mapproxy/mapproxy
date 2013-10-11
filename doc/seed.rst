@@ -174,7 +174,7 @@ Examples::
   levels:
     to: 10
 
-  # seed from level 3 to 6 (including level 10)
+  # seed from level 3 to 6 (including level 3 and 6)
   levels:
     from: 3
     to: 6
@@ -267,7 +267,7 @@ Examples::
   levels:
     to: 10
 
-  # cleanup from level 3 to 6 (including level 10)
+  # cleanup from level 3 to 6 (including level 3 and 6)
   levels:
     from: 3
     to: 6
