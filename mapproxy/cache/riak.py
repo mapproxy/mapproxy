@@ -49,6 +49,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
         self.lock_cache_id = 'riak-' + hashlib.md5(nodes[0]['host'] + bucket).hexdigest()
         self.lock_dir = lock_dir
         self.lock_timeout = 60
+        self.request_timeout = self.lock_timeout * 1000  # riak timeout is in miliseconds
         self.bucket_name = bucket
         self.tile_grid = tile_grid
         self.use_secondary_index = use_secondary_index
@@ -67,10 +68,15 @@ class RiakCache(TileCacheBase, FileBasedLocking):
     def _get_object(self, coord):
         (x, y, z) = coord
         key = '%(z)d_%(x)d_%(y)d' % locals()
+        obj = False
         try:
-            return self.bucket.get(key, r=1, timeout=self.lock_timeout)
+            obj = self.bucket.get(key, r=1, timeout=self.request_timeout)
         except Exception, e:
             log.warn('error while requesting %s: %s', key, e)
+
+        if not obj:
+            obj = self.bucket.new(key=key, data=None, content_type='application/octet-stream')
+        return obj
 
     def _get_timestamp(self, obj):
         metadata = obj.usermeta
