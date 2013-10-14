@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,7 @@
 
 from __future__ import division, with_statement
 import yaml
+import time
 from mapproxy.srs import SRS
 from mapproxy.config.loader import (
     ProxyConfiguration,
@@ -33,7 +34,7 @@ class TestLayerConfiguration(object):
         base = {'sources': {'s': {'type': 'wms', 'req': {'url': ''}}}}
         base.update(yaml.load(yaml_part))
         return base
-    
+
     def test_legacy_ordered(self):
         conf = self._test_conf('''
             layers:
@@ -49,20 +50,20 @@ class TestLayerConfiguration(object):
         ''')
         conf = ProxyConfiguration(conf)
         root = conf.wms_root_layer.wms_layer()
-        
+
         # no root layer defined
         eq_(root.title, None)
         eq_(root.name, None)
         layers = root.child_layers()
-        
+
         # names are in order
         eq_(layers.keys(), ['one', 'two', 'three'])
-        
+
         eq_(len(layers), 3)
         eq_(layers['one'].title, 'Layer One')
         eq_(layers['two'].title, 'Layer Two')
         eq_(layers['three'].title, 'Layer Three')
-        
+
         layers_conf = conf.layers
         eq_(len(layers_conf), 3)
 
@@ -81,15 +82,15 @@ class TestLayerConfiguration(object):
         ''')
         conf = ProxyConfiguration(conf)
         root = conf.wms_root_layer.wms_layer()
-        
+
         # no root layer defined
         eq_(root.title, None)
         eq_(root.name, None)
         layers = root.child_layers()
-        
+
         # names might not be in order
         # layers.keys() != ['one', 'two', 'three']
-        
+
         eq_(len(layers), 3)
         eq_(layers['one'].title, 'Layer One')
         eq_(layers['two'].title, 'Layer Two')
@@ -110,22 +111,22 @@ class TestLayerConfiguration(object):
         ''')
         conf = ProxyConfiguration(conf)
         root = conf.wms_root_layer.wms_layer()
-        
+
         eq_(root.title, 'Root Layer')
         eq_(root.name, 'root')
         layers = root.child_layers()
-        
+
         # names are in order
         eq_(layers.keys(), ['root', 'one', 'two'])
-        
+
         eq_(len(layers), 3)
         eq_(layers['root'].title, 'Root Layer')
         eq_(layers['one'].title, 'Layer One')
         eq_(layers['two'].title, 'Layer Two')
-        
+
         layers_conf = conf.layers
         eq_(len(layers_conf), 2)
-    
+
     def test_with_unnamed_root(self):
         conf = self._test_conf('''
             layers:
@@ -140,14 +141,14 @@ class TestLayerConfiguration(object):
         ''')
         conf = ProxyConfiguration(conf)
         root = conf.wms_root_layer.wms_layer()
-        
+
         eq_(root.title, 'Root Layer')
         eq_(root.name, None)
 
         layers = root.child_layers()
         # names are in order
         eq_(layers.keys(), ['one', 'two'])
-    
+
     def test_without_root(self):
         conf = self._test_conf('''
             layers:
@@ -160,14 +161,14 @@ class TestLayerConfiguration(object):
         ''')
         conf = ProxyConfiguration(conf)
         root = conf.wms_root_layer.wms_layer()
-        
+
         eq_(root.title, None)
         eq_(root.name, None)
 
         layers = root.child_layers()
         # names are in order
         eq_(layers.keys(), ['one', 'two'])
-    
+
     def test_hierarchy(self):
         conf = self._test_conf('''
             layers:
@@ -194,21 +195,21 @@ class TestLayerConfiguration(object):
         ''')
         conf = ProxyConfiguration(conf)
         root = conf.wms_root_layer.wms_layer()
-        
+
         eq_(root.title, 'Root Layer')
         eq_(root.name, None)
 
         layers = root.child_layers()
         # names are in order
         eq_(layers.keys(), ['one', 'onea', 'oneb', 'oneba', 'onebb', 'two'])
-        
+
         layers_conf = conf.layers
         eq_(len(layers_conf), 4)
         eq_(layers_conf.keys(), ['onea', 'oneba', 'onebb', 'two'])
         eq_(layers_conf['onea'].conf['title'], 'Layer One A')
         eq_(layers_conf['onea'].conf['name'], 'onea')
         eq_(layers_conf['onea'].conf['sources'], ['s'])
-    
+
     def test_hierarchy_root_is_list(self):
         conf = self._test_conf('''
             layers:
@@ -223,14 +224,14 @@ class TestLayerConfiguration(object):
         ''')
         conf = ProxyConfiguration(conf)
         root = conf.wms_root_layer.wms_layer()
-        
+
         eq_(root.title, 'Root Layer')
         eq_(root.name, None)
 
         layers = root.child_layers()
         # names are in order
         eq_(layers.keys(), ['one', 'two'])
-    
+
     def test_without_sources_or_layers(self):
         conf = self._test_conf('''
             layers:
@@ -246,7 +247,7 @@ class TestLayerConfiguration(object):
             pass
         else:
             assert False, 'expected ValueError'
-        
+
 
 class TestGridConfiguration(object):
     def test_default_grids(self):
@@ -254,11 +255,11 @@ class TestGridConfiguration(object):
         conf = ProxyConfiguration(conf)
         grid = conf.grids['GLOBAL_MERCATOR'].tile_grid()
         eq_(grid.srs, SRS(900913))
-    
+
         grid = conf.grids['GLOBAL_GEODETIC'].tile_grid()
         eq_(grid.srs, SRS(4326))
-    
-    
+
+
     def test_simple(self):
         conf = {'grids': {'grid': {'srs': 'EPSG:4326', 'bbox': [5, 50, 10, 55]}}}
         conf = ProxyConfiguration(conf)
@@ -279,13 +280,13 @@ class TestGridConfiguration(object):
         conf = ProxyConfiguration(conf)
         grid = conf.grids['grid'].tile_grid()
         eq_(len(grid.resolutions), 8)
-    
+
     def test_with_bbox_srs(self):
         conf = {'grids': {'grid': {'srs': 'EPSG:25832', 'bbox': [5, 50, 10, 55], 'bbox_srs': 'EPSG:4326'}}}
         conf = ProxyConfiguration(conf)
         grid = conf.grids['grid'].tile_grid()
         assert_almost_equal_bbox([213372, 5538660, 571666, 6102110], grid.bbox, -3)
-    
+
     def test_with_min_res(self):
         conf = {'grids': {'grid': {'srs': 'EPSG:4326', 'bbox': [5, 50, 10, 55], 'min_res': 0.0390625}}}
         conf = ProxyConfiguration(conf)
@@ -293,7 +294,7 @@ class TestGridConfiguration(object):
         assert_almost_equal_bbox([5, 50, 10, 55], grid.bbox, 2)
         eq_(grid.resolution(0), 0.0390625)
         eq_(grid.resolution(1), 0.01953125)
-    
+
     def test_with_max_res(self):
         conf = {'grids': {'grid': {'srs': 'EPSG:4326', 'bbox': [5, 50, 10, 55], 'max_res': 0.0048828125}}}
         conf = ProxyConfiguration(conf)
@@ -301,7 +302,7 @@ class TestGridConfiguration(object):
         assert_almost_equal_bbox([5, 50, 10, 55], grid.bbox, 2)
         eq_(grid.resolution(0), 0.01953125)
         eq_(grid.resolution(1), 0.01953125/2)
-    
+
 class TestWMSSourceConfiguration(object):
     def test_simple_grid(self):
         conf_dict = {
@@ -324,18 +325,18 @@ class TestWMSSourceConfiguration(object):
                 }
             }
         }
-        
+
         conf = ProxyConfiguration(conf_dict)
-        
+
         caches = conf.caches['osm'].caches()
         eq_(len(caches), 1)
         grid, extent, manager = caches[0]
-        
+
         eq_(grid.srs, SRS(4326))
         eq_(grid.bbox, (5.0, 50.0, 10.0, 55.0))
-        
+
         assert isinstance(manager, TileManager)
-    
+
     def check_source_layers(self, conf_dict, layers):
         conf = ProxyConfiguration(conf_dict)
         caches = conf.caches['osm'].caches()
@@ -343,7 +344,7 @@ class TestWMSSourceConfiguration(object):
         grid, extent, manager = caches[0]
         source_layers = manager.sources[0].client.request_template.params.layers
         eq_(source_layers, layers)
-        
+
     def test_tagged_source(self):
         conf_dict = {
             'sources': {
@@ -409,7 +410,7 @@ class TestWMSSourceConfiguration(object):
             assert 'base,poi' in ex.args[0]
         else:
             assert False, 'expected ConfigurationError'
-    
+
     def test_tagged_source_on_non_wms_source(self):
         conf_dict = {
             'sources': {
@@ -432,8 +433,8 @@ class TestWMSSourceConfiguration(object):
             assert 'osm:base,roads' in ex.args[0]
         else:
             assert False, 'expected ConfigurationError'
-    
-    
+
+
     def test_layer_tagged_source(self):
         conf_dict = {
             'layers': [
@@ -456,7 +457,7 @@ class TestWMSSourceConfiguration(object):
         wms_layer = conf.layers['osm'].wms_layer()
         layers = wms_layer.map_layers[0].client.request_template.params.layers
         eq_(layers, ['base', 'roads'])
-    
+
     def test_https_source_insecure(self):
         conf_dict = {
             'sources': {
@@ -470,13 +471,13 @@ class TestWMSSourceConfiguration(object):
                 },
             },
         }
-        
+
         conf = ProxyConfiguration(conf_dict)
         try:
             conf.sources['osm'].source({'format': 'image/png'})
         except ImportError:
             raise SkipTest('no ssl support')
-        
+
 
 def load_services(conf_file):
     conf = load_configuration(conf_file)
@@ -496,11 +497,11 @@ sources:
   osm:
     type: wms
     supported_srs: ['EPSG:31467']
-    req: 
+    req:
         url: http://foo
         layers: base
 """
-    
+
     def test_loading(self):
         with TempFile() as f:
             open(f, 'w').write(self.yaml_string)
@@ -546,7 +547,7 @@ globals:
     headers:
       bar: baz
 """
-    
+
     def test_loading(self):
         with TempFile() as gp:
             open(gp, 'w').write(self.yaml_grand_parent)
@@ -567,15 +568,21 @@ base: [%s]
                 with TempFile() as cfg:
                     open(cfg, 'w').write(self.yaml_string)
 
-        
+
                     config = load_configuration(cfg)
-        
+
                     http = config.globals.get_value('http')
                     eq_(http['client_timeout'], 1)
                     eq_(http['headers']['bar'], 'qux')
                     eq_(http['headers']['foo'], 'bar')
                     eq_(http['headers']['baz'], 'quux')
                     eq_(http['method'], 'GET')
+
+                    config_files = config.config_files()
+                    eq_(set(config_files.keys()), set([gp, p, cfg]))
+                    assert abs(config_files[gp] - time.time()) < 10
+                    assert abs(config_files[p] - time.time()) < 10
+                    assert abs(config_files[cfg] - time.time()) < 10
 
 
 class TestConfMerger(object):
@@ -584,19 +591,19 @@ class TestConfMerger(object):
         b = {}
         m = merge_dict(a, b)
         eq_(a, m)
-    
+
     def test_empty_conf(self):
         a = {}
         b = {'a': 1, 'b': [12, 13]}
         m = merge_dict(a, b)
         eq_(b, m)
-    
+
     def test_differ(self):
         a = {'a': 12}
         b = {'b': 42}
         m = merge_dict(a, b)
         eq_({'a': 12, 'b': 42}, m)
-    
+
     def test_recursive(self):
         a = {'a': {'aa': 12, 'a':{'aaa': 100}}}
         b = {'a': {'aa': 11, 'ab': 13, 'a':{'aaa': 101, 'aab': 101}}}
@@ -612,7 +619,7 @@ services:
   unknown:
                 """)
             load_configuration(f) # defaults to ignore_warnings=True
-            
+
             assert_raises(ConfigurationError, load_configuration, f, ignore_warnings=False)
 
 
@@ -637,7 +644,7 @@ class TestImageOptions(object):
         eq_(image_opts.colors, None)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bicubic')
-    
+
     def test_update_default_format(self):
         conf_dict = {'globals': {'image': {'formats': {
             'image/png': {'colors': 16, 'resampling_method': 'nearest',
@@ -651,7 +658,7 @@ class TestImageOptions(object):
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'nearest')
         eq_(image_opts.encoding_options['quantizer'], 'mediancut')
-        
+
     def test_custom_format(self):
         conf_dict = {'globals': {'image': {'resampling_method': 'bilinear',
             'formats': {
@@ -773,7 +780,7 @@ class TestImageOptions(object):
         eq_(image_opts.colors, 16)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bilinear')
-        
+
         image_opts = tile_mgr.sources[0].image_opts
         eq_(image_opts.format, 'image/png')
         eq_(image_opts.mode, 'P')
@@ -781,7 +788,7 @@ class TestImageOptions(object):
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bilinear')
 
-        
+
         conf_dict['caches']['test']['request_format'] = 'image/tiff'
         conf = ProxyConfiguration(conf_dict)
         _grid, _extent, tile_mgr = conf.caches['test'].caches()[0]
@@ -791,14 +798,14 @@ class TestImageOptions(object):
         eq_(image_opts.colors, 16)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bilinear')
-        
+
         image_opts = tile_mgr.sources[0].image_opts
         eq_(image_opts.format, 'image/tiff')
         eq_(image_opts.mode, None)
         eq_(image_opts.colors, None)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bilinear')
-    
+
     def test_encoding_options_errors(self):
         conf_dict = {
             'globals': {
@@ -813,15 +820,15 @@ class TestImageOptions(object):
                 }
             },
         }
-        
+
         try:
             conf = ProxyConfiguration(conf_dict)
         except ConfigurationError:
             pass
         else:
             raise False, 'expected ConfigurationError'
-        
-        
+
+
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {
             'quantizer': 'foo'
         }
@@ -831,7 +838,7 @@ class TestImageOptions(object):
             pass
         else:
             raise False, 'expected ConfigurationError'
-        
+
 
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {}
         conf = ProxyConfiguration(conf_dict)
@@ -842,11 +849,11 @@ class TestImageOptions(object):
         else:
             raise False, 'expected ConfigurationError'
 
-        
+
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {
             'quantizer': 'fastoctree'
         }
         conf = ProxyConfiguration(conf_dict)
-        
+
         conf.globals.image_options.image_opts({}, 'image/jpeg')
-        
+

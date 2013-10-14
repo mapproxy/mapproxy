@@ -102,9 +102,13 @@ def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True, 
         log.fatal(e)
         raise
 
+    config_files = conf.config_files()
+
     app = MapProxyApp(services, conf.base_config)
     if debug:
         app = wrap_wsgi_debug(app, conf)
+
+    app.config_files = config_files
     return app
 
 class ReloaderApp(object):
@@ -112,13 +116,19 @@ class ReloaderApp(object):
         self.timestamp_file = timestamp_file
         self.make_app_func = make_app_func
         self.app = make_app_func()
-        self.last_reload = os.path.getmtime(self.timestamp_file)
         self._app_init_lock = threading.Lock()
 
+    def _needs_reload(self):
+        for conf_file, timestamp in self.app.config_files.iteritems():
+            m_time = os.path.getmtime(conf_file)
+            if m_time > timestamp:
+                return True
+        return False
+
     def __call__(self, environ, start_response):
-        if self.last_reload < os.path.getmtime(self.timestamp_file):
+        if self._needs_reload():
             with self._app_init_lock:
-                if self.last_reload < os.path.getmtime(self.timestamp_file):
+                if self._needs_reload():
                     try:
                         self.app = self.make_app_func()
                     except ConfigurationError:

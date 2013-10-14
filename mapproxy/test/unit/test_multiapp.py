@@ -68,10 +68,12 @@ class TestDirectoryConfLoader(object):
     def test_needs_reload(self):
         foo_conf_file = self.make_conf_file('foo.yaml')
         mtime = os.path.getmtime(foo_conf_file)
+        timestamps = {foo_conf_file: mtime}
         loader = DirectoryConfLoader(self.dir)
-        assert loader.needs_reload('foo', mtime) == False
+        assert loader.needs_reload('foo', timestamps) == False
 
-        assert loader.needs_reload('foo', mtime-10) == True
+        timestamps[foo_conf_file] -= 10
+        assert loader.needs_reload('foo', timestamps) == True
 
     def test_custom_suffix(self):
         self.make_conf_file('foo.conf')

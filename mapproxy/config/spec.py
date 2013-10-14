@@ -210,6 +210,7 @@ ogc_service_md = {
 }
 
 mapproxy_yaml_spec = {
+    '__config_files__': anything(), # only used internaly
     'globals': {
         'image': {
             'resampling_method': 'method',

@@ -221,6 +221,13 @@ class ProxyConfiguration(object):
     def base_config(self):
         return self.globals.base_config
 
+    def config_files(self):
+        """
+        Returns a dictionary with all configuration filenames and there timestamps.
+        Contains any included files as well (see `base` option).
+        """
+        return self.configuration.get('__config_files__', {})
+
 def list_of_dicts_to_ordered_dict(dictlist):
     """
     >>> d = list_of_dicts_to_ordered_dict([{'a': 1}, {'b': 2}, {'c': 3}])
@@ -1573,11 +1580,15 @@ def load_configuration_file(files, working_dir):
     """
     Return configuration dict from imported files
     """
-    conf_dict = {}
+    # record all config files with timestamp for reloading
+    conf_dict = {'__config_files__': {}}
     for conf_file in files:
         conf_file = os.path.normpath(os.path.join(working_dir, conf_file))
         log.info('reading: %s' % conf_file)
         current_dict = load_yaml_file(conf_file)
+
+        conf_dict['__config_files__'][os.path.abspath(conf_file)] = os.path.getmtime(conf_file)
+
         if 'base' in current_dict:
             current_working_dir = os.path.dirname(conf_file)
             base_files = current_dict.pop('base')
