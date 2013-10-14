@@ -79,7 +79,7 @@ def serve_develop_command(args):
 
     run_simple(host, port, app, use_reloader=True, processes=1,
         threaded=True, passthrough_errors=True,
-        extra_files=[mapproxy_conf])
+        extra_files=app.config_files.keys())
 
 def serve_multiapp_develop_command(args):
     parser = optparse.OptionParser("usage: %prog serve-multiapp-develop [options] projects/")
