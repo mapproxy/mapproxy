@@ -139,7 +139,7 @@
           {{endif}}
       {{endfor}}
     {{endif}}
-    {{if layer.is_active and layer.has_legend}}
+    {{if layer.is_active and layer.has_legend and layer.legend_url}}
     <Style>
         <Name>default</Name>
         <Title>default</Title>

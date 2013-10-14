@@ -92,7 +92,7 @@
       <Format>{{layer.md['format']}}</Format>
       <Layers>{{layer.name}}</Layers>
       <Styles></Styles>
-    </TileSet>  
+    </TileSet>
 {{endfor}}
   </VendorSpecificCapabilities>
 {{endif}}
@@ -111,7 +111,7 @@
     {{for srs_code, bbox in layer_srs_bbox(layer)}}
     <BoundingBox SRS="{{srs_code}}" minx="{{ bbox[0] }}" miny="{{ bbox[1] }}" maxx="{{ bbox[2] }}" maxy="{{ bbox[3] }}" />
     {{endfor}}
-    {{if layer.is_active and layer.has_legend}}
+    {{if layer.is_active and layer.has_legend and layer.legend_url}}
     <Style>
         <Name>default</Name>
         <Title>default</Title>
