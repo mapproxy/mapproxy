@@ -210,6 +210,7 @@ class DirectoryConfLoader(ConfLoader):
             if self._is_conf_file(os.path.join(self.base_dir, f)):
                 app_name = self.app_name_from_filename(f)
                 apps.append(app_name)
+        apps.sort()
         return apps
 
     def app_available(self, app_name):
