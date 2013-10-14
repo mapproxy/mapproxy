@@ -136,6 +136,8 @@ class TestWMS111(WMSTest):
             'wms_merge', 'tms_cache', 'wms_cache_multi',
             'wms_cache_link_single', 'wms_cache_110', 'watermark_cache'])
         eq_(layer_names, expected_names)
+        eq_(set(xml.xpath('//Layer/Layer[3]/Abstract/text()')),
+            set(['Some abstract']))
         assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
 
     def test_invalid_layer(self):

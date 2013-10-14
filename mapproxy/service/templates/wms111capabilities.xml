@@ -115,6 +115,9 @@
     <Name>{{ layer.name }}</Name>
     {{endif}}
     <Title>{{ layer.title }}</Title>
+    {{if layer.md and 'abstract' in layer.md}}
+    <Abstract>{{ layer.md['abstract'] }}</Abstract>
+    {{endif}}
     {{if with_srs}}
     {{for s in srs}}
     <SRS>{{s}}</SRS>
