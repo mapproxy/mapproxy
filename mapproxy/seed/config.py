@@ -311,7 +311,7 @@ class CleanupConfiguration(ConfigurationBase):
 
                 if not tile_manager.cache.supports_timestamp:
                     # for caches without timestamp support (like MBTiles)
-                    if self.remove_timestamp is self.init_time:
+                    if self.remove_timestamp is self.init_time or self.remove_timestamp == 0:
                         # remove everything
                         self.remove_timestamp = 0
                     else:
