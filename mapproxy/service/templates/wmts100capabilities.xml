@@ -68,8 +68,8 @@
       <ows:Title>{{layer.title}}</ows:Title>
       <ows:Abstract></ows:Abstract>
       <ows:WGS84BoundingBox>
-        <ows:LowerCorner>{{layer.extent.llbbox[0]}} {{layer.extent.llbbox[1]}}</ows:LowerCorner>
-        <ows:UpperCorner>{{layer.extent.llbbox[2]}} {{layer.extent.llbbox[3]}}</ows:UpperCorner>
+        <ows:LowerCorner>{{layer.md['extent'].llbbox[0]}} {{layer.md['extent'].llbbox[1]}}</ows:LowerCorner>
+        <ows:UpperCorner>{{layer.md['extent'].llbbox[2]}} {{layer.md['extent'].llbbox[3]}}</ows:UpperCorner>
       </ows:WGS84BoundingBox>
       <ows:Identifier>{{layer.name}}</ows:Identifier>
       <Style>
