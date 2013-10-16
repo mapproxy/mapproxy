@@ -135,7 +135,7 @@ class WMSCapabilitiesParserBase(object):
     def root_layer(self):
         layer_elem = self.tree.find(self._namespace_path('Capability/Layer'))
         if layer_elem is None:
-            raise CapabilitiesParserError('Could not parse a valid Capabilities document (Capability element not found).') 
+            raise CapabilitiesParserError('Could not parse a valid Capabilities document (Capability element not found).')
         return self.layers(layer_elem)
 
     def service(self):
@@ -174,7 +174,7 @@ class WMSCapabilitiesParserBase(object):
                 this_layer['layers'].append(self._layers(layer, this_layer))
 
         return this_layer
-        
+
     def _layer(self, layer_elem, parent_layer):
         raise NotImplementedError()
 
@@ -185,7 +185,7 @@ class WMS111CapabilitiesParser(WMSCapabilitiesParserBase):
             opaque=bool(layer_elem.attrib.get('opaque', 0)),
             title=layer_elem.findtext('Title').strip(),
             name=layer_elem.findtext('Name', '').strip() or None,
-            abstract=layer_elem.findtext('Abstract', '').strip() or None, 
+            abstract=layer_elem.findtext('Abstract', '').strip() or None,
         )
         llbbox_elem = layer_elem.find('LatLonBoundingBox')
         llbbox = None
@@ -274,7 +274,7 @@ def wms_capapilities_url(url, version):
     parsed_url = urlparse.urlparse(url)
     base_req = BaseRequest(
         url=url.split('?', 1)[0],
-        param=url_decode(parsed_url.params),
+        param=url_decode(parsed_url.query),
     )
 
     base_req.params['service'] = 'WMS'
@@ -310,7 +310,7 @@ def parse_capabilities_url(url, version='1.1.1'):
 
     # after parsing capabilities_response will be empty, therefore cache it
     capabilities = StringIO(capabilities_response.read())
-    return parse_capabilities(capabilities, version=version)    
+    return parse_capabilities(capabilities, version=version)
 
 def wms_capabilities_command(args=None):
     parser = optparse.OptionParser("%prog wms-capabilities [options] URL",
