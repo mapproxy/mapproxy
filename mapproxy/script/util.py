@@ -68,13 +68,16 @@ def serve_develop_command(args):
         """)
 
 
-    setup_logging()
+    if options.debug:
+        setup_logging(level=logging.DEBUG)
+    else:
+        setup_logging()
     from mapproxy.wsgiapp import make_wsgi_app
     from mapproxy.config.loader import ConfigurationError
     from mapproxy.util.ext.serving import run_simple
     try:
         app = make_wsgi_app(mapproxy_conf, debug=options.debug)
-    except ConfigurationError, ex:
+    except ConfigurationError:
         sys.exit(2)
 
     run_simple(host, port, app, use_reloader=True, processes=1,
