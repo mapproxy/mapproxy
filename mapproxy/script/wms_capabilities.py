@@ -23,6 +23,7 @@ from xml.etree.ElementTree import XMLParser
 
 from mapproxy.client.http import open_url, HTTPClientError
 from mapproxy.request.base import BaseRequest, url_decode
+from mapproxy.util.ext import wmsparse
 
 ENCODING = sys.getdefaultencoding()
 if ENCODING in (None, 'ascii'):
@@ -59,7 +60,7 @@ class PrettyPrinter(object):
             print "# Note: This is not a valid MapProxy configuration!"
             print 'Capabilities Document Version %s' % (self.version,)
             print 'Root-Layer:'
-            layer_list = capabilities['layer']['layers']
+            layer_list = capabilities.layers()['layers']
         else:
             layer_list = capabilities['layers']
 
@@ -84,189 +85,6 @@ class PrettyPrinter(object):
                 self.print_line(indent, 'layers')
                 self.print_layers(layer, indent=indent+self.indent)
 
-class CapabilitiesParserError(Exception):
-    pass
-
-class CapabilitiesVersionError(Exception):
-    pass
-
-class UTF8XMLParser(XMLParser):
-    def __init__(self, *args, **kw):
-        super(XMLParser, self).__init__(*args, **kw)
-
-class WMSCapabilitiesParserBase(object):
-    def __init__(self, capabilities):
-        self.capabilities = capabilities
-        self.tree = self._parse_capabilities()
-        self.prefix = self._prefix()
-        self._check_valid_document()
-
-    def _parse_capabilities(self):
-        try:
-            tree = etree.parse(self.capabilities)
-        except Exception, ex:
-            # catch all, etree.ParseError only avail since Python 2.7
-            # 2.5 and 2.6 raises exc from underlying implementation like expat
-            raise CapabilitiesParserError('Could not parse the document (%s)' %
-                (ex.args[0],))
-        return tree
-
-    def _check_valid_document(self):
-        layer_elem = self.tree.find(self._namespace_path('Capability'))
-        if layer_elem is None:
-            raise CapabilitiesParserError('Could not parse a valid Capabilities document (Capability element not found).')
-
-    def _prefix(self):
-        return ''
-
-    def _namespace_path(self, path):
-        # add prefix to all further elements
-        path = path.replace('/', '/%s' % (self.prefix,))
-        # and before the first element
-        path = '%s%s' % (self.prefix, path)
-        return path
-
-    def metadata(self):
-        name = self.tree.findtext(self._namespace_path('Service/Name'))
-        title = self.tree.findtext(self._namespace_path('Service/Title'))
-        abstract = self.tree.findtext(self._namespace_path('Service/Abstract'))
-        return dict(name=name, title=title, abstract=abstract)
-
-    def root_layer(self):
-        layer_elem = self.tree.find(self._namespace_path('Capability/Layer'))
-        if layer_elem is None:
-            raise CapabilitiesParserError('Could not parse a valid Capabilities document (Capability element not found).')
-        return self.layers(layer_elem)
-
-    def service(self):
-        metadata = self.metadata()
-        url = self.requests()
-        root_layer = self.root_layer()
-        service = {
-            'title': metadata['title'],
-            'abstract': metadata['abstract'],
-            # todo add more metadata,
-            'url': url,
-            'layer': root_layer,
-        }
-        return service
-
-    def layers(self, layer_elem):
-        try:
-            layers = self._layers(layer_elem, parent_layer={})
-        except KeyError, ex:
-            #raise own error
-            raise CapabilitiesParserError('XML-Element has no such attribute (%s).' %
-             (ex.args[0],))
-        return layers
-
-    def requests(self):
-        requests_elem = self.tree.find(self._namespace_path('Capability/Request'))
-        resource = requests_elem.find(self._namespace_path('GetMap/DCPType/HTTP/Get/OnlineResource'))
-        return resource.attrib['{http://www.w3.org/1999/xlink}href']
-
-    def _layers(self, layer_elem, parent_layer):
-        this_layer = self._layer(layer_elem, parent_layer)
-        sub_layers = layer_elem.findall(self._namespace_path('Layer'))
-        if sub_layers:
-            this_layer['layers'] = []
-            for layer in sub_layers:
-                this_layer['layers'].append(self._layers(layer, this_layer))
-
-        return this_layer
-
-    def _layer(self, layer_elem, parent_layer):
-        raise NotImplementedError()
-
-class WMS111CapabilitiesParser(WMSCapabilitiesParserBase):
-    def _layer(self, layer_elem, parent_layer):
-        this_layer = dict(
-            queryable=bool(layer_elem.attrib.get('queryable', 0)),
-            opaque=bool(layer_elem.attrib.get('opaque', 0)),
-            title=layer_elem.findtext('Title').strip(),
-            name=layer_elem.findtext('Name', '').strip() or None,
-            abstract=layer_elem.findtext('Abstract', '').strip() or None,
-        )
-        llbbox_elem = layer_elem.find('LatLonBoundingBox')
-        llbbox = None
-        if llbbox_elem is not None:
-            llbbox = (
-                llbbox_elem.attrib['minx'],
-                llbbox_elem.attrib['miny'],
-                llbbox_elem.attrib['maxx'],
-                llbbox_elem.attrib['maxy']
-            )
-            llbbox = map(float, llbbox)
-        this_layer['llbbox'] = llbbox
-        this_layer['url'] = self.requests()
-
-        srs_elements = layer_elem.findall('SRS')
-        srs_codes = set([srs.text for srs in srs_elements])
-        # unique srs-codes in either srs or parent_layer['srs']
-        this_layer['srs'] = srs_codes | parent_layer.get('srs', set())
-
-        bbox_elements = layer_elem.findall('BoundingBox')
-        bbox = {}
-        for bbox_elem in bbox_elements:
-            key = bbox_elem.attrib['SRS']
-            values = [
-                bbox_elem.attrib['minx'],
-                bbox_elem.attrib['miny'],
-                bbox_elem.attrib['maxx'],
-                bbox_elem.attrib['maxy']
-            ]
-            values = map(float, values)
-            bbox[key] = values
-        this_layer['bbox'] = bbox
-
-        return this_layer
-
-class WMS130CapabilitiesParser(WMSCapabilitiesParserBase):
-    def _prefix(self):
-        return '{http://www.opengis.net/wms}'
-
-    def _layer(self, layer_elem, parent_layer):
-        this_layer = dict(
-            queryable=bool(layer_elem.attrib.get('queryable', 0)),
-            opaque=bool(layer_elem.attrib.get('opaque', 0)),
-            title=layer_elem.findtext(self._namespace_path('Title')).strip(),
-            name=layer_elem.findtext(self._namespace_path('Name'), '').strip() or None,
-            abstract=layer_elem.findtext(self._namespace_path('Abstract'), '').strip() or None,
-        )
-        llbbox_elem = layer_elem.find(self._namespace_path('EX_GeographicBoundingBox'))
-        llbbox = None
-        if llbbox_elem is not None:
-            llbbox = (
-                llbbox_elem.find(self._namespace_path('westBoundLongitude')).text,
-                llbbox_elem.find(self._namespace_path('southBoundLatitude')).text,
-                llbbox_elem.find(self._namespace_path('eastBoundLongitude')).text,
-                llbbox_elem.find(self._namespace_path('northBoundLatitude')).text
-            )
-            llbbox = map(float, llbbox)
-        this_layer['llbbox'] = llbbox
-        this_layer['url'] = self.requests()
-
-        srs_elements = layer_elem.findall(self._namespace_path('CRS'))
-        srs_codes = set([srs.text for srs in srs_elements])
-        # unique srs-codes in either srs or parent_layer['srs']
-        this_layer['srs'] = srs_codes | parent_layer.get('srs', set())
-
-        bbox_elements = layer_elem.findall(self._namespace_path('BoundingBox'))
-        bbox = {}
-        for bbox_elem in bbox_elements:
-            key = bbox_elem.attrib['CRS']
-            values = [
-                bbox_elem.attrib['minx'],
-                bbox_elem.attrib['miny'],
-                bbox_elem.attrib['maxx'],
-                bbox_elem.attrib['maxy']
-            ]
-            values = map(float, values)
-            bbox[key] = values
-        this_layer['bbox'] = bbox
-
-        return this_layer
-
 def log_error(msg, *args):
     print >>sys.stderr, (msg % args).encode(ENCODING)
 
@@ -284,21 +102,15 @@ def wms_capapilities_url(url, version):
 
 def parse_capabilities(fileobj, version='1.1.1'):
     try:
-        if version == '1.1.1':
-            wms_capabilities = WMS111CapabilitiesParser(fileobj)
-        elif version == '1.3.0':
-            wms_capabilities = WMS130CapabilitiesParser(fileobj)
-        else:
-            raise CapabilitiesVersionError('Version not supported: %s' % (version,))
-        service = wms_capabilities.service()
-    except CapabilitiesParserError, ex:
-        log_error('%s\n%s\n%s\n%s\n%s', 'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.message)
+        return wmsparse.parse_capabilities(fileobj)
+    except ValueError, ex:
+        log_error('%s\n%s\n%s\n%s\nNot a capabilities document: %s', 'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
         sys.exit(1)
-    except CapabilitiesVersionError, ex:
-        log_error(ex.message)
+    except Exception, ex:
+        # catch all, etree.ParseError only avail since Python 2.7
+        # 2.5 and 2.6 raises exc from underlying implementation like expat
+        log_error('%s\n%s\n%s\n%s\nCould not parse the document: %s', 'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
         sys.exit(1)
-
-    return service
 
 def parse_capabilities_url(url, version='1.1.1'):
     try:
@@ -333,7 +145,12 @@ def wms_capabilities_command(args=None):
         else:
             options.capabilities_url = args[0]
 
-    service = parse_capabilities_url(options.capabilities_url, version=options.version)
+    try:
+        service = parse_capabilities_url(options.capabilities_url, version=options.version)
 
-    printer = PrettyPrinter(indent=4, version=options.version)
-    printer.print_layers(service, root=True)
+        printer = PrettyPrinter(indent=4, version=options.version)
+        printer.print_layers(service, root=True)
+
+    except KeyError, ex:
+        log_error('XML-Element has no such attribute (%s).' % (ex.args[0],))
+        sys.exit(1)

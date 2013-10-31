@@ -40,6 +40,10 @@ def capture_out():
         sys.stdout = StringIO()
         sys.stderr = StringIO()
         yield sys.stdout, sys.stderr
+    except:
+        old_stderr.write(sys.stderr.getvalue())
+        old_stdout.write(sys.stdout.getvalue())
+        raise
     finally:
         sys.stdout = old_stdout
         sys.stderr = old_stderr
@@ -77,7 +81,7 @@ class TestUtilWMSCapabilities(object):
                 with capture_out() as (out,err):
                     assert_raises(SystemExit, wms_capabilities_command, self.args)
                 error_msg = err.getvalue().rsplit('-'*80, 1)[1].strip()
-                assert 'Capability element not found' in error_msg
+                assert 'Not a capabilities document' in error_msg
 
     def test_parse_capabilities(self):
         self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities', '--version', '1.1.1']
@@ -110,6 +114,6 @@ class TestUtilWMSCapabilities(object):
                                                   {'status': '200', 'body': capabilities_doc})]):
                 with capture_out() as (out,err):
                     assert_raises(SystemExit, wms_capabilities_command, self.args)
-                error_msg = err.getvalue().rsplit('-'*80, 1)[1].strip()
-                assert error_msg.startswith('XML-Element has no such attribute')
+
+                assert err.getvalue().startswith('XML-Element has no such attribute')
 
