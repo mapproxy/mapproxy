@@ -1,0 +1,13 @@
+caches:
+    __all__:
+        cache:
+            type: sqlite
+
+sources:
+    osm____:
+        req:
+          param: 42
+    ____roads_wms:
+        supported_srs: ['EPSG:3857']
+        coverage:
+            bbox: [0, 0, 90, 90]

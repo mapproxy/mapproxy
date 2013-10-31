@@ -27,6 +27,8 @@ from mapproxy.script.scales import scales_command
 from mapproxy.script.wms_capabilities import wms_capabilities_command
 from mapproxy.script.grids import grids_command
 from mapproxy.script.export import export_command
+from mapproxy.script.conf.app import config_command
+
 
 
 def setup_logging(level=logging.INFO):
@@ -277,16 +279,20 @@ commands = {
     },
     'wms-capabilities': {
         'func': wms_capabilities_command,
-        'help': 'Display WMS capabilites',
+        'help': 'Display WMS capabilites.',
     },
     'grids': {
         'func': grids_command,
-        'help': 'Display detailed informations for configured grids'
+        'help': 'Display detailed informations for configured grids.'
     },
     'export': {
         'func': export_command,
-        'help': 'Export existing caches'
+        'help': 'Export existing caches.'
     },
+    'config': {
+        'func': config_command,
+        'help': 'Create config from WMS capabilities.'
+    }
 }
 
 
