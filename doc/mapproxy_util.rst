@@ -31,6 +31,7 @@ The current sub-commands are:
 - :ref:`mapproxy_util_wms_capabilities`
 - :ref:`mapproxy_util_grids`
 - :ref:`mapproxy_util_export`
+- ``config`` (see :ref:`mapproxy_util_config`)
 
 
 .. _mapproxy_util_create:

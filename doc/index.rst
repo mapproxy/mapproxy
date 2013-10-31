@@ -15,6 +15,7 @@ MapProxy Documentation
    seed
    coverages
    mapproxy_util
+   mapproxy_util_conf
    deployment
    configuration_examples
    labeling
