@@ -1,0 +1,2114 @@
+<?xml version='1.0' encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE WMT_MS_Capabilities SYSTEM "http://schemas.opengis.net/wms/1.1.1/WMS_MS_Capabilities.dtd"
+ [
+ <!ELEMENT VendorSpecificCapabilities EMPTY>
+ ]>  <!-- end of DOCTYPE declaration -->
+
+<WMT_MS_Capabilities version="1.1.1">
+
+<!-- MapServer version 5.2.0 OUTPUT=GIF OUTPUT=PNG OUTPUT=JPEG OUTPUT=WBMP OUTPUT=SVG SUPPORTS=PROJ SUPPORTS=AGG SUPPORTS=FREETYPE SUPPORTS=ICONV SUPPORTS=WMS_SERVER SUPPORTS=WMS_CLIENT SUPPORTS=WFS_SERVER SUPPORTS=WFS_CLIENT SUPPORTS=WCS_SERVER SUPPORTS=GEOS INPUT=TIFF INPUT=EPPL7 INPUT=POSTGIS INPUT=OGR INPUT=GDAL INPUT=SHAPEFILE -->
+
+<Service>
+  <Name>OGC:WMS</Name>
+  <Title>OSM</Title>
+  <Abstract>Open Street Map</Abstract>
+        <KeywordList>
+          <Keyword>osm</Keyword>
+          <Keyword> OpenStreetMap</Keyword>
+        </KeywordList>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service?SERVICE=WMS&amp;"/>
+  <ContactInformation>
+    <ContactPersonPrimary>
+      <ContactPerson>Name</ContactPerson>
+      <ContactOrganization>Organization</ContactOrganization>
+    </ContactPersonPrimary>
+      <ContactPosition>Development</ContactPosition>
+    <ContactAddress>
+        <AddressType>postal</AddressType>
+        <Address>Fakestreet 23</Address>
+        <City>Somewhere</City>
+        <StateOrProvince></StateOrProvince>
+        <PostCode>12345</PostCode>
+        <Country>Germany</Country>
+    </ContactAddress>
+      <ContactVoiceTelephone></ContactVoiceTelephone>
+      <ContactFacsimileTelephone>0</ContactFacsimileTelephone>
+  <ContactElectronicMailAddress>info@example.org</ContactElectronicMailAddress>
+  </ContactInformation>
+  <Fees>none</Fees>
+  <AccessConstraints>none</AccessConstraints>
+</Service>
+
+<Capability>
+  <Request>
+    <GetCapabilities>
+      <Format>application/vnd.ogc.wms_xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service?SERVICE=WMS&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service?SERVICE=WMS&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </GetCapabilities>
+    <GetMap>
+      <Format>image/gif</Format>
+      <Format>image/png</Format>
+      <Format>image/png; mode=24bit</Format>
+      <Format>image/jpeg</Format>
+      <Format>image/vnd.wap.wbmp</Format>
+      <Format>image/tiff</Format>
+      <Format>image/svg+xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service?SERVICE=WMS&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service?SERVICE=WMS&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </GetMap>
+    <GetFeatureInfo>
+      <Format>text/plain</Format>
+      <Format>text/html</Format>
+      <Format>application/vnd.ogc.gml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service?SERVICE=WMS&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service?SERVICE=WMS&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </GetFeatureInfo>
+    <DescribeLayer>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service?SERVICE=WMS&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service?SERVICE=WMS&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </DescribeLayer>
+    <GetLegendGraphic>
+      <Format>image/gif</Format>
+      <Format>image/png</Format>
+      <Format>image/png; mode=24bit</Format>
+      <Format>image/jpeg</Format>
+      <Format>image/vnd.wap.wbmp</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service?SERVICE=WMS&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service?SERVICE=WMS&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </GetLegendGraphic>
+    <GetStyles>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service?SERVICE=WMS&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service?SERVICE=WMS&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </GetStyles>
+  </Request>
+  <Exception>
+    <Format>application/vnd.ogc.se_xml</Format>
+    <Format>application/vnd.ogc.se_inimage</Format>
+    <Format>application/vnd.ogc.se_blank</Format>
+  </Exception>
+  <VendorSpecificCapabilities />
+  <UserDefinedSymbolization SupportSLD="1" UserLayer="0" UserStyle="1" RemoteWFS="0"/>
+  <Layer>
+    <Name>OSM</Name>
+    <Title>OSM</Title>
+    <SRS>EPSG:31467</SRS>
+    <SRS>EPSG:31466</SRS>
+    <SRS>EPSG:31468</SRS>
+    <SRS>EPSG:31469</SRS>
+    <SRS>EPSG:31492</SRS>
+    <SRS>EPSG:31493</SRS>
+    <SRS>EPSG:31494</SRS>
+    <SRS>EPSG:31495</SRS>
+    <SRS>EPSG:31462</SRS>
+    <SRS>EPSG:31463</SRS>
+    <SRS>EPSG:31464</SRS>
+    <SRS>EPSG:31465</SRS>
+    <SRS>EPSG:4326</SRS>
+    <SRS>EPSG:25832</SRS>
+    <SRS>EPSG:25833</SRS>
+    <SRS>EPSG:31257</SRS>
+    <SRS>EPSG:31258</SRS>
+    <SRS>EPSG:31259</SRS>
+    <SRS>EPSG:31284</SRS>
+    <SRS>EPSG:31285</SRS>
+    <SRS>EPSG:31286</SRS>
+    <SRS>EPSG:31287</SRS>
+    <SRS>EPSG:28992</SRS>
+    <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+    <BoundingBox SRS="EPSG:4326"
+                minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Grenzen</Name>
+        <Title>Europa</Title>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="66" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Grenzen&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Landwirtschaft</Name>
+        <Title>Landwirtschaft</Title>
+        <KeywordList>
+          <Keyword>Landwirtschaft</Keyword>
+          <Keyword> Bauernhof</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="110" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Landwirtschaft&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="99.7805696859274" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Industriegebiet</Name>
+        <Title>Industriegebiet</Title>
+        <KeywordList>
+          <Keyword>Industrie</Keyword>
+          <Keyword> Industriegebiet</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="110" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Industriegebiet&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="49.8902848429637" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Bauland</Name>
+        <Title>Bauland</Title>
+        <KeywordList>
+          <Keyword>Bauland</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="80" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Bauland&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="49.8902848429637" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Gruenflaeche</Name>
+        <Title>Gruenflaeche</Title>
+        <KeywordList>
+          <Keyword>Grünfläche</Keyword>
+          <Keyword> Land</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="105" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Gruenflaeche&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="49.8902848429637" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>unkultiviertes_Land</Name>
+        <Title>unkultiviertes_Land</Title>
+        <KeywordList>
+          <Keyword>unkultiviertes Land</Keyword>
+          <Keyword> Unterholz</Keyword>
+          <Keyword> Busch</Keyword>
+          <Keyword> Land</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="128" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=unkultiviertes_Land&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="99.7805696859274" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Park</Name>
+        <Title>Park</Title>
+        <KeywordList>
+          <Keyword>Park</Keyword>
+          <Keyword> Land</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="64" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Park&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="24.9451424214819" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Naherholungsgebiet</Name>
+        <Title>Naherholungsgebiet</Title>
+        <KeywordList>
+          <Keyword>Naherholungsgebiet</Keyword>
+          <Keyword> Land</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="135" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Naherholungsgebiet&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="24.9451424214819" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Wald</Name>
+        <Title>Wald/Forst</Title>
+        <KeywordList>
+          <Keyword>Wald/Forst</Keyword>
+          <Keyword> Land</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="95" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Wald&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="149.670854528891" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Wiese</Name>
+        <Title>Wiese</Title>
+        <KeywordList>
+          <Keyword>Wiese</Keyword>
+          <Keyword> Land</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="73" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Wiese&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="149.670854528891" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Fussgaengerzone</Name>
+        <Title>Fußgängerzone</Title>
+        <KeywordList>
+          <Keyword>Fußgängerzone</Keyword>
+          <Keyword> Strassen</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="115" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Fussgaengerzone&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="2.49451424214819" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Gebaeude</Name>
+        <Title>Gebäude</Title>
+        <KeywordList>
+          <Keyword>Gebäude</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="85" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Gebaeude&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="2.49451424214819" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Wasser</Name>
+        <Title>Gewaesser</Title>
+        <KeywordList>
+          <Keyword>Gewaesser</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="95" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Wasser&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="498.902848429637" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Fluesse</Name>
+        <Title>Fluesse</Title>
+        <KeywordList>
+          <Keyword>Flüße</Keyword>
+          <Keyword> Wasser</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="79" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Fluesse&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="997.805696859274" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Baeche</Name>
+        <Title>Baeche</Title>
+        <KeywordList>
+          <Keyword>Bach</Keyword>
+          <Keyword> Baeche</Keyword>
+          <Keyword> Wasser</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="67" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Baeche&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="24.9451424214819" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Kanal</Name>
+        <Title>Kanal</Title>
+        <KeywordList>
+          <Keyword>Kanal</Keyword>
+          <Keyword> Wasser</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="69" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Kanal&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="24.9451424214819" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Wasserbecken</Name>
+        <Title>Wasser- und Speicherbecken</Title>
+        <KeywordList>
+          <Keyword>Wasserbecken</Keyword>
+          <Keyword> Wasser</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="113" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Wasserbecken&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="24.9451424214819" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Insel</Name>
+        <Title>Insel</Title>
+        <KeywordList>
+          <Keyword>Insel</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="65" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Insel&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="997.805696859274" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Kueste</Name>
+        <Title>Kueste</Title>
+        <KeywordList>
+          <Keyword>Insel</Keyword>
+          <Keyword>Küste</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="70" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Kueste&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="997.805696859274" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Inselpunkte</Name>
+        <Title>Inselpunkte</Title>
+        <KeywordList>
+          <Keyword>Insel</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="95" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Inselpunkte&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="99.7805696859274" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Strand</Name>
+        <Title>Strand</Title>
+        <KeywordList>
+          <Keyword>Strand</Keyword>
+          <Keyword> Land</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="73" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Strand&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="49.8902848429637" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Fussgaengerweg</Name>
+        <Title>Fußgängerwege</Title>
+        <KeywordList>
+          <Keyword>Fußgängerwege</Keyword>
+          <Keyword> Strassen</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="112" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Fussgaengerweg&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="2.49451424214819" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Radweg</Name>
+        <Title>Radweg</Title>
+        <KeywordList>
+          <Keyword>Radweg</Keyword>
+          <Keyword> Strassen</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="80" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Radweg&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="0.997805696859274" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Wege</Name>
+        <Title>Wege</Title>
+        <KeywordList>
+          <Keyword>Wege</Keyword>
+          <Keyword> Strassen</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="127" height="221">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Wege&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="4.98902848429637" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Wohnstrasse</Name>
+        <Title>Wohnstrasse</Title>
+        <KeywordList>
+          <Keyword>Wohnstrasse</Keyword>
+          <Keyword> Strassen</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="105" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Wohnstrasse&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="19.9561139371855" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Zufahrtswege</Name>
+        <Title>Zufahrtswege</Title>
+        <KeywordList>
+          <Keyword>Zufahrtswege</Keyword>
+          <Keyword> Strassen</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="106" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Zufahrtswege&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="49.8902848429637" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>einfache_Strasse</Name>
+        <Title>einfache Strasse</Title>
+        <KeywordList>
+          <Keyword>einfache Strasse</Keyword>
+          <Keyword> Strassen</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="149" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=einfache_Strasse&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="49.8902848429637" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Landstrasse</Name>
+        <Title>Landstrasse</Title>
+        <KeywordList>
+          <Keyword>Landstrasse</Keyword>
+          <Keyword> Strassen</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="99" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Landstrasse&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="49.8902848429637" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Bundesstrasse</Name>
+        <Title>Bundesstrasse</Title>
+        <KeywordList>
+          <Keyword>Bundesstrasse</Keyword>
+          <Keyword> Strassen</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="112" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Bundesstrasse&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="199.561139371855" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Kraftfahrstrasse</Name>
+        <Title>Kraftfahrstrasse</Title>
+        <KeywordList>
+          <Keyword>Kraftfahrstrasse</Keyword>
+          <Keyword> Strassen</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="117" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Kraftfahrstrasse&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="498.902848429637" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Autobahn</Name>
+        <Title>Autobahn</Title>
+        <KeywordList>
+          <Keyword>Autobahn</Keyword>
+          <Keyword> Strassen</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="88" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Autobahn&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="9978.05696859274" />
+    </Layer>
+    <Layer queryable="1" opaque="0" cascaded="0">
+        <Name>Ortschaft</Name>
+        <Title>Ortschaft</Title>
+        <KeywordList>
+          <Keyword>Ortschaft</Keyword>
+          <Keyword> Orte</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="86" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Ortschaft&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="39.912227874371" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Weiler</Name>
+        <Title>Weiler</Title>
+        <KeywordList>
+          <Keyword>Weiler</Keyword>
+          <Keyword> Orte</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="73" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Weiler&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="9.97805696859274" />
+    </Layer>
+    <Layer queryable="1" opaque="0" cascaded="0">
+        <Name>Stadtteil</Name>
+        <Title>Stadtteil</Title>
+        <KeywordList>
+          <Keyword>Stadtteil</Keyword>
+          <Keyword> Orte</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="80" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Stadtteil&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="34.9231993900746" />
+    </Layer>
+    <Layer queryable="1" opaque="0" cascaded="0">
+        <Name>Dorf</Name>
+        <Title>Dorf</Title>
+        <KeywordList>
+          <Keyword>Dorf</Keyword>
+          <Keyword> Orte</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="63" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Dorf&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="34.9231993900746" />
+    </Layer>
+    <Layer queryable="1" opaque="0" cascaded="0">
+        <Name>Stadt</Name>
+        <Title>Stadt</Title>
+        <KeywordList>
+          <Keyword>Stadt</Keyword>
+          <Keyword> Orte</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="67" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Stadt&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="399.12227874371" />
+    </Layer>
+    <Layer queryable="1" opaque="0" cascaded="0">
+        <Name>Grossstadt</Name>
+        <Title>Grossstadt</Title>
+        <KeywordList>
+          <Keyword>Stadt</Keyword>
+          <Keyword> Orte</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="94" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Grossstadt&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="7483.54272644456" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Bahn</Name>
+        <Title>Bahn</Title>
+        <KeywordList>
+          <Keyword>Bahn</Keyword>
+          <Keyword> Zug</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="67" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Bahn&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="446.518049344525" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Bahnhof</Name>
+        <Title>Bahnhof</Title>
+        <KeywordList>
+          <Keyword>POI</Keyword>
+          <Keyword> Bahnhof</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="81" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Bahnhof&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="49.8902848429637" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Airport</Name>
+        <Title>Flughafen</Title>
+        <KeywordList>
+          <Keyword>POI</Keyword>
+          <Keyword> Flughafen</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="89" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Airport&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="49.8902848429637" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Kirchengelaende</Name>
+        <Title>Kirchengelände</Title>
+        <KeywordList>
+          <Keyword>Kirche</Keyword>
+          <Keyword> POI</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="119" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Kirchengelaende&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="9.97805696859274" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Friedhof</Name>
+        <Title>Friedhof</Title>
+        <KeywordList>
+          <Keyword>Friedhof</Keyword>
+          <Keyword> Land</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="81" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Friedhof&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="19.9561139371855" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Kirche</Name>
+        <Title>Kirche</Title>
+        <KeywordList>
+          <Keyword>Kirche</Keyword>
+          <Keyword> POI</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="72" height="32">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Kirche&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="9.97805696859274" />
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Graeber</Name>
+        <Title>Gräber</Title>
+        <KeywordList>
+          <Keyword>Friedhof</Keyword>
+          <Keyword>Gräber</Keyword>
+          <Keyword> Land</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="75" height="59">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://example.org/service?SERVICE=WMS&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Graeber&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+        <ScaleHint min="0" max="9.97805696859274" />
+    </Layer>
+<!-- WARNING: This layer has its status set to DEFAULT and will always be displayed when doing a GetMap request even if it is not requested by the client. This is not in line with the expected behavior of a WMS server. Using status ON or OFF is recommended. -->
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>copyright</Name>
+        <Title>Copyright</Title>
+        <KeywordList>
+          <Keyword>Copyright</Keyword>
+          <Keyword> Lizenz</Keyword>
+          <Keyword> OSM</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <SRS>EPSG:31467</SRS>
+        <SRS>EPSG:31466</SRS>
+        <SRS>EPSG:31468</SRS>
+        <SRS>EPSG:31469</SRS>
+        <SRS>EPSG:31492</SRS>
+        <SRS>EPSG:31493</SRS>
+        <SRS>EPSG:31494</SRS>
+        <SRS>EPSG:31495</SRS>
+        <SRS>EPSG:31462</SRS>
+        <SRS>EPSG:31463</SRS>
+        <SRS>EPSG:31464</SRS>
+        <SRS>EPSG:31465</SRS>
+        <SRS>EPSG:25832</SRS>
+        <SRS>EPSG:25833</SRS>
+        <SRS>EPSG:31257</SRS>
+        <SRS>EPSG:31258</SRS>
+        <SRS>EPSG:31259</SRS>
+        <SRS>EPSG:31284</SRS>
+        <SRS>EPSG:31285</SRS>
+        <SRS>EPSG:31286</SRS>
+        <SRS>EPSG:31287</SRS>
+        <SRS>EPSG:28992</SRS>
+        <LatLonBoundingBox minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-10.4" miny="35.7" maxx="43" maxy="74.1" />
+    </Layer>
+  </Layer>
+</Capability>
+</WMT_MS_Capabilities>

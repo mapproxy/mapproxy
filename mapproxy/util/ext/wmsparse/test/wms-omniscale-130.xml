@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WMS_Capabilities xmlns="http://www.opengis.net/wms" xmlns:sld="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.3.0" xsi:schemaLocation="http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd">
+<Service>
+  <Name>WMS</Name>
+  <Title>Omniscale OpenStreetMap WMS</Title>
+  <Abstract>Omniscale OpenStreetMap WMS (powered by MapProxy)</Abstract>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://omniscale.de/"/>
+  <ContactInformation>
+      <ContactPersonPrimary>
+        <ContactPerson>Oliver Tonnhofer</ContactPerson>
+        <ContactOrganization>Omniscale</ContactOrganization>
+      </ContactPersonPrimary>
+      <ContactPosition>Technical Director</ContactPosition>
+      <ContactAddress>
+        <AddressType>postal</AddressType>
+        <Address>Nadorster Str. 60</Address>
+        <City>Oldenburg</City>
+        <StateOrProvince></StateOrProvince>
+        <PostCode>26123</PostCode>
+        <Country>Germany</Country>
+      </ContactAddress>
+      <ContactVoiceTelephone>+49(0)441-9392774-0</ContactVoiceTelephone>
+      <ContactFacsimileTelephone>+49(0)441-9392774-9</ContactFacsimileTelephone>
+      <ContactElectronicMailAddress>osm@omniscale.de</ContactElectronicMailAddress>
+  </ContactInformation>
+    <Fees>none</Fees>
+    <AccessConstraints>This service is intended for private and evaluation use only. The data is licensed as Open Data Commons Open Database License (ODbL 1.0) (http://opendatacommons.org/licenses/odbl/1.0/)</AccessConstraints>
+</Service>
+<Capability>
+  <Request>
+    <GetCapabilities>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="http://osm.omniscale.net/proxy/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetCapabilities>
+    <GetMap>
+      <Format>image/gif</Format>
+      <Format>image/png</Format>
+      <Format>image/tiff</Format>
+      <Format>image/jpeg</Format>
+      <Format>image/GeoTIFF</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="http://osm.omniscale.net/proxy/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetMap>
+    <GetFeatureInfo>
+      <Format>text/plain</Format>
+      <Format>text/html</Format>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="http://osm.omniscale.net/proxy/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetFeatureInfo>
+  </Request>
+  <Exception>
+    <Format>XML</Format>
+    <Format>INIMAGE</Format>
+    <Format>BLANK</Format>
+  </Exception>
+  <Layer>
+    <Title>Omniscale OpenStreetMap WMS</Title>
+    <CRS>EPSG:4326</CRS>
+    <CRS>EPSG:4258</CRS>
+    <CRS>CRS:84</CRS>
+    <CRS>EPSG:900913</CRS>
+    <CRS>EPSG:31466</CRS>
+    <CRS>EPSG:31467</CRS>
+    <CRS>EPSG:31468</CRS>
+    <CRS>EPSG:25831</CRS>
+    <CRS>EPSG:25832</CRS>
+    <CRS>EPSG:25833</CRS>
+    <CRS>EPSG:3857</CRS>
+    <EX_GeographicBoundingBox>
+      <westBoundLongitude>-180</westBoundLongitude>
+      <eastBoundLongitude>180</eastBoundLongitude>
+      <southBoundLatitude>-85.0511287798</southBoundLatitude>
+      <northBoundLatitude>85.0511287798</northBoundLatitude>
+    </EX_GeographicBoundingBox>
+    <BoundingBox CRS="CRS:84" minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />
+    <BoundingBox CRS="EPSG:900913" minx="-20037508.3428" miny="-20037508.3428" maxx="20037508.3428" maxy="20037508.3428" />
+    <BoundingBox CRS="EPSG:4326" minx="-85.0511287798" miny="-180.0" maxx="85.0511287798" maxy="180.0" />
+    <BoundingBox CRS="EPSG:3857" minx="-20037508.3428" miny="-20037508.3428" maxx="20037508.3428" maxy="20037508.3428" />
+    <Layer>
+      <Name>osm</Name>
+      <Title>OpenStreetMap (complete map)</Title>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>-180</westBoundLongitude>
+        <eastBoundLongitude>180</eastBoundLongitude>
+        <southBoundLatitude>-85.0511287798</southBoundLatitude>
+        <northBoundLatitude>85.0511287798</northBoundLatitude>
+      </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />
+      <BoundingBox CRS="EPSG:900913" minx="-20037508.3428" miny="-20037508.3428" maxx="20037508.3428" maxy="20037508.3428" />
+      <BoundingBox CRS="EPSG:4326" minx="-85.0511287798" miny="-180.0" maxx="85.0511287798" maxy="180.0" />
+      <BoundingBox CRS="EPSG:3857" minx="-20037508.3428" miny="-20037508.3428" maxx="20037508.3428" maxy="20037508.3428" />
+    </Layer>
+    <Layer>
+      <Name>osm_roads</Name>
+      <Title>OpenStreetMap (streets only)</Title>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>-180</westBoundLongitude>
+        <eastBoundLongitude>180</eastBoundLongitude>
+        <southBoundLatitude>-85.0511287798</southBoundLatitude>
+        <northBoundLatitude>85.0511287798</northBoundLatitude>
+      </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />
+      <BoundingBox CRS="EPSG:900913" minx="-20037508.3428" miny="-20037508.3428" maxx="20037508.3428" maxy="20037508.3428" />
+      <BoundingBox CRS="EPSG:4326" minx="-85.0511287798" miny="-180.0" maxx="85.0511287798" maxy="180.0" />
+      <BoundingBox CRS="EPSG:3857" minx="-20037508.3428" miny="-20037508.3428" maxx="20037508.3428" maxy="20037508.3428" />
+    </Layer>
+  </Layer>
+</Capability>
+</WMS_Capabilities>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE WMT_MS_Capabilities SYSTEM "http://schemas.opengis.net/wms/1.1.1/WMS_MS_Capabilities.dtd"
+ [
+ <!ELEMENT VendorSpecificCapabilities EMPTY>
+ ]>  <!-- end of DOCTYPE declaration -->
+<WMT_MS_Capabilities version="1.1.1">
+<Service>
+  <Name>OGC:WMS</Name>
+  <Title>Omniscale OpenStreetMap WMS</Title>
+  <Abstract>Omniscale OpenStreetMap WMS (powered by MapProxy)</Abstract>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://omniscale.de/"/>
+  <ContactInformation>
+      <ContactPersonPrimary>
+        <ContactPerson>Oliver Tonnhofer</ContactPerson>
+        <ContactOrganization>Omniscale</ContactOrganization>
+      </ContactPersonPrimary>
+      <ContactPosition>Technical Director</ContactPosition>
+      <ContactAddress>
+        <AddressType>postal</AddressType>
+        <Address>Nadorster Str. 60</Address>
+        <City>Oldenburg</City>
+        <StateOrProvince></StateOrProvince>
+        <PostCode>26123</PostCode>
+        <Country>Germany</Country>
+      </ContactAddress>
+      <ContactVoiceTelephone>+49(0)441-9392774-0</ContactVoiceTelephone>
+      <ContactFacsimileTelephone>+49(0)441-9392774-9</ContactFacsimileTelephone>
+      <ContactElectronicMailAddress>osm@omniscale.de</ContactElectronicMailAddress>
+  </ContactInformation>
+  <Fees>none</Fees>
+  <AccessConstraints>This service is intended for private and evaluation use only. The data is licensed as Creative Commons Attribution-Share Alike 2.0 (http://creativecommons.org/licenses/by-sa/2.0/)</AccessConstraints>
+</Service>
+<Capability>
+  <Request>
+    <GetCapabilities>
+      <Format>application/vnd.ogc.wms_xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://osm.omniscale.net/proxy/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetCapabilities>
+    <GetMap>
+        <Format>image/jpeg</Format>
+        <Format>image/png</Format>
+        <Format>image/gif</Format>
+        <Format>image/GeoTIFF</Format>
+        <Format>image/tiff</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://osm.omniscale.net/proxy/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetMap>
+    <GetFeatureInfo>
+      <Format>text/plain</Format>
+      <Format>text/html</Format>
+      <Format>application/vnd.ogc.gml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://osm.omniscale.net/proxy/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetFeatureInfo>
+  </Request>
+  <Exception>
+    <Format>application/vnd.ogc.se_xml</Format>
+    <Format>application/vnd.ogc.se_inimage</Format>
+    <Format>application/vnd.ogc.se_blank</Format>
+  </Exception>
+  <Layer>
+    <Title>Omniscale OpenStreetMap WMS</Title>
+    <SRS>EPSG:4326 EPSG:4258 CRS:84 EPSG:900913 EPSG:31466 EPSG:31467 EPSG:31468 EPSG:25831 EPSG:25832 EPSG:25833 EPSG:3857</SRS>
+    <LatLonBoundingBox minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />
+    <BoundingBox SRS="EPSG:4326" minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />
+    <Layer>
+      <Name>osm</Name>
+      <Title>OpenStreetMap (complete map)</Title>
+      <LatLonBoundingBox minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />
+      <BoundingBox SRS="EPSG:4326" minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />
+    </Layer>
+    <Layer>
+      <Name>osm_roads</Name>
+      <Title>OpenStreetMap (streets only)</Title>
+      <LatLonBoundingBox minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />
+      <BoundingBox SRS="EPSG:4326" minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />
+    </Layer>
+  </Layer>
+</Capability>
+</WMT_MS_Capabilities>
