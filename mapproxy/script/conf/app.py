@@ -35,7 +35,7 @@ from .seeds import seeds
 from .utils import update_config, MapProxyYAMLDumper, download_capabilities
 
 from mapproxy.config.loader import load_configuration
-from wmsparse import parse_capabilities
+from mapproxy.util.ext.wmsparse import parse_capabilities
 
 def write_header(f, capabilities):
     print >>f, '# MapProxy configuration automatically generated from:'

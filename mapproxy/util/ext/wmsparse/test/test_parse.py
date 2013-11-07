@@ -1,6 +1,6 @@
 import os
 
-from wmsparse.parse import parse_capabilities
+from ..parse import parse_capabilities
 
 from nose.tools import eq_
 
