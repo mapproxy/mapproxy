@@ -57,7 +57,7 @@ def file_or_stdout(name):
             yield f
 
 def config_command(args):
-    parser = optparse.OptionParser("usage: %prog config [options]")
+    parser = optparse.OptionParser("usage: %prog autoconfig [options]")
 
     parser.add_option('--capabilities',
         help="URL or filename of WMS 1.1.1/1.3.0 capabilities document")

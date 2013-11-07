@@ -289,7 +289,7 @@ commands = {
         'func': export_command,
         'help': 'Export existing caches.'
     },
-    'config': {
+    'autoconfig': {
         'func': config_command,
         'help': 'Create config from WMS capabilities.'
     }

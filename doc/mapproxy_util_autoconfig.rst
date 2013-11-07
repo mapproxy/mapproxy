@@ -1,11 +1,11 @@
-.. _mapproxy_util_config:
+.. _mapproxy_util_autoconfig:
 
-####################
-mapproxy-util config
-####################
+########################
+mapproxy-util autoconfig
+########################
 
 
-The ``config`` sub-command of ``mapproxy-util`` creates MapProxy and MapProxy-seeding configurations based on existing WMS capabilities documents.
+The ``autoconfig`` sub-command of ``mapproxy-util`` creates MapProxy and MapProxy-seeding configurations based on existing WMS capabilities documents.
 
 It creates a ``source`` for each available layer. The source will include a BBOX coverage from the layer extent, ``legendurl`` for legend graphics, ``featureinfo`` for querlyable layers, scale hints and all detected ``supported_srs``. It will duplicate the layer tree to the ``layers`` section of the MapProxy configuration, including the name, title and abstract.
 
@@ -22,7 +22,7 @@ Options
 =======
 
 
-.. program:: mapproxy-util config
+.. program:: mapproxy-util autoconfig
 
 .. cmdoption:: --capabilities <url|filename>
 
@@ -56,19 +56,19 @@ Example
 
 Print configuration on console::
 
-    mapproxy-util create \
+    mapproxy-util autoconfig \
         --capabilities http://osm.omniscale.net/proxy/service
 
 Write MapProxy and MapProxy-seeding configuration to files::
 
-    mapproxy-util create \
+    mapproxy-util autoconfig \
         --capabilities http://osm.omniscale.net/proxy/service \
         --output mapproxy.yaml \
         --output-seed seed.yaml
 
 Write MapProxy configuration with caches for grids from ``base.yaml``::
 
-    mapproxy-util create \
+    mapproxy-util autoconfig \
         --capabilities http://osm.omniscale.net/proxy/service \
         --output mapproxy.yaml \
         --base base.yaml
@@ -78,7 +78,7 @@ Write MapProxy configuration with caches for grids from ``base.yaml``::
 Overwrites
 ==========
 
-It's likely that you need to tweak the created configuration – e.g. to define another coverage, disable featureinfo, etc. You can do this by editing the output file of course, or you can modify the output by defining all changes to an overwrite file. Overwrite files are applied everytime you call ``mapproxy-util config``.
+It's likely that you need to tweak the created configuration – e.g. to define another coverage, disable featureinfo, etc. You can do this by editing the output file of course, or you can modify the output by defining all changes to an overwrite file. Overwrite files are applied everytime you call ``mapproxy-util autoconfig``.
 
 Overwrites are YAML files that will be merged with the created configuration file.
 
