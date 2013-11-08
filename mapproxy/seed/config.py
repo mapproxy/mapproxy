@@ -172,8 +172,11 @@ class SeedingConfiguration(object):
         Return seed tasks.
         """
         tasks = []
-        for seed_name, seed_conf in self.conf.get('seeds', {}).iteritems():
-            if names is not None and seed_name not in names: continue
+        if names is None:
+            names = self.conf.get('seeds', {}).keys()
+
+        for seed_name in names:
+            seed_conf = self.conf['seeds'][seed_name]
             seed_conf = SeedConfiguration(seed_name, seed_conf, self)
             for task in seed_conf.seed_tasks():
                 tasks.append(task)
@@ -184,8 +187,11 @@ class SeedingConfiguration(object):
         Return cleanup tasks.
         """
         tasks = []
-        for cleanup_name, cleanup_conf in self.conf.get('cleanups', {}).iteritems():
-            if names is not None and cleanup_name not in names: continue
+        if names is None:
+            names = self.conf.get('cleanups', {}).keys()
+
+        for cleanup_name in names:
+            cleanup_conf = self.conf['cleanups'][cleanup_name]
             cleanup_conf = CleanupConfiguration(cleanup_name, cleanup_conf, self)
             for task in cleanup_conf.cleanup_tasks():
                 tasks.append(task)
