@@ -21,6 +21,7 @@ from SocketServer import ThreadingMixIn, ForkingMixIn
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 import mapproxy
+from functools import reduce
 # import werkzeug
 # from werkzeug._internal import _log
 # from werkzeug.exceptions import InternalServerError
@@ -131,7 +132,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler, object):
 
         try:
             execute(app)
-        except (socket.error, socket.timeout), e:
+        except (socket.error, socket.timeout) as e:
             self.connection_dropped(e, environ)
         except Exception:
             if self.server.passthrough_errors:
@@ -153,7 +154,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler, object):
         """Handles a request ignoring dropped connections."""
         try:
             return BaseHTTPRequestHandler.handle(self)
-        except (socket.error, socket.timeout), e:
+        except (socket.error, socket.timeout) as e:
             self.connection_dropped(e)
         except Exception:
             if self.server.ssl_context is None or not is_ssl_error():

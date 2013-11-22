@@ -1,3 +1,4 @@
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 #
@@ -103,7 +104,7 @@ def bgcolor_ratio(img_data):
 def create_tmp_image_file(size, two_colored=False):
     fd, out_file = tempfile.mkstemp(suffix='.png')
     os.close(fd)
-    print 'creating temp image %s (%r)' % (out_file, size)
+    print('creating temp image %s (%r)' % (out_file, size))
     img = Image.new('RGBA', size)
     if two_colored:
         draw = ImageDraw.Draw(img)

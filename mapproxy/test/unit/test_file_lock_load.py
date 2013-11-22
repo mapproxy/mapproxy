@@ -30,7 +30,7 @@ def test_file_lock_load():
     threads = [threading.Thread(target=lock_x) for _ in range(20)]
     p = multiprocessing.Pool(5)
     [t.start() for t in threads]
-    p.map(lock, xrange(50))
+    p.map(lock, range(50))
     [t.join() for t in threads]
     
     eq_(int(open(count_file).read()), 150)

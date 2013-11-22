@@ -16,6 +16,8 @@
 """
 WMS service handler
 """
+from __future__ import print_function
+from __future__ import print_function
 
 from functools import partial
 
@@ -289,5 +291,5 @@ class TileMatrixSet(object):
             )
 
 if __name__ == '__main__':
-    print TileMatrixSet(tile_grid(900913)).tile_matrixes()
-    print TileMatrixSet(tile_grid(4326, origin='ul')).tile_matrixes()
+    print(TileMatrixSet(tile_grid(900913)).tile_matrixes())
+    print(TileMatrixSet(tile_grid(4326, origin='ul')).tile_matrixes())

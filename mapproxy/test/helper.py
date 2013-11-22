@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 # 
@@ -148,7 +150,7 @@ def validate_with_dtd(doc, dtd_name, dtd_basedir=None):
         else:
             xml = doc
         is_valid = dtd.validate(xml)
-        print dtd.error_log.filter_from_errors()
+        print(dtd.error_log.filter_from_errors())
         return is_valid
 
 def validate_with_xsd(doc, xsd_name, xsd_basedir=None):
@@ -165,7 +167,7 @@ def validate_with_xsd(doc, xsd_name, xsd_basedir=None):
         else:
             xml = doc
         is_valid = xml_schema.validate(xml)
-        print xml_schema.error_log.filter_from_errors()
+        print(xml_schema.error_log.filter_from_errors())
         return is_valid
 
 class XPathValidator(object):

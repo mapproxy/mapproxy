@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 #
@@ -347,7 +349,7 @@ class TestWMS111(WMSTest):
             resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'application/vnd.ogc.se_xml')
         xml = resp.lxml
-        print resp.body
+        print(resp.body)
         eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code'), [])
         assert 'unable to transform image: cannot identify image file' in \
              xml.xpath('//ServiceException/text()')[0]
@@ -792,7 +794,7 @@ class TestWMS100(WMSTest):
 
     def test_invalid_srs(self):
         self.common_map_req.params['srs'] = 'EPSG:1234'
-        print self.common_map_req.complete_url
+        print(self.common_map_req.complete_url)
         resp = self.app.get(self.common_map_req.complete_url)
         xml = resp.lxml
         eq_(xml.xpath('//WMTException/text()')[0].strip(), 'unsupported srs: EPSG:1234')

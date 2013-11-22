@@ -157,7 +157,7 @@ class TestErrors(unittest.TestCase):
         spec = {'str': str, 'str()': str(), 'basestring': basestring, '1': 1, 'int': int}
         try:
             validate(spec, {'str': 1, 'str()': 1, 'basestring': 1, '1': 'a', 'int': 'int'})
-        except ValidationError, ex:
+        except ValidationError as ex:
             ex.errors.sort()
             assert ex.errors[0] == "'a' in 1 not of type int"
             assert ex.errors[1] == "'int' in int not of type int"
@@ -171,7 +171,7 @@ class TestErrors(unittest.TestCase):
         spec = {'world': {'europe': {}}}
         try:
             validate(spec, {'world': {'europe': {'germany': 1}}})
-        except ValidationError, ex:
+        except ValidationError as ex:
             assert 'world.europe' in str(ex)
         else:
             assert False
@@ -180,7 +180,7 @@ class TestErrors(unittest.TestCase):
         spec = {'numbers': [number()]}
         try:
             validate(spec, {'numbers': [1, 2, 3, 'foo']})
-        except ValidationError, ex:
+        except ValidationError as ex:
             assert 'numbers[3] not of type number' in str(ex), str(ex)
         else:
             assert False
@@ -189,7 +189,7 @@ class TestErrors(unittest.TestCase):
         spec = {'numbers': [number()]}
         try:
             validate(spec, {'numbers': [1, True, 3, 'foo']})
-        except ValidationError, ex:
+        except ValidationError as ex:
             assert '2 validation errors' in str(ex), str(ex)
             assert 'numbers[1] not of type number' in ex.errors[0]
             assert 'numbers[3] not of type number' in ex.errors[1]
@@ -200,7 +200,7 @@ class TestErrors(unittest.TestCase):
         spec = {1: bool()}
         try:
             validate(spec, {1: 'not a bool'})
-        except ValidationError, ex:
+        except ValidationError as ex:
             assert "'not a bool' in 1 not of type bool" in ex.errors[0]
         else:
             assert False
@@ -209,7 +209,7 @@ class TestErrors(unittest.TestCase):
         spec = {anything(): bool()}
         try:
             validate(spec, {1: 'not a bool'})
-        except ValidationError, ex:
+        except ValidationError as ex:
             assert "'not a bool' in 1 not of type bool" in ex.errors[0]
         else:
             assert False
@@ -222,7 +222,7 @@ def test_one_of_with_custom_types():
     validate(spec, {'foo': 'bar'})
     try:
         validate(spec, {'nofoo': 'bar'})
-    except ValidationError, ex:
+    except ValidationError as ex:
         assert "missing 'foo'" in ex.errors[0]
     else:
         assert False

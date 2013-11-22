@@ -81,7 +81,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             try:
                 self.req_session.put(self.couch_url)
                 self.db_initialised = True
-            except requests.exceptions.RequestException, ex:
+            except requests.exceptions.RequestException as ex:
                 log.warn('unable to initialize CouchDB: %s', ex)
 
     def tile_url(self, coord):
@@ -117,7 +117,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
                 doc = json.loads(resp.content)
                 tile.timestamp = doc.get(self.md_template.timestamp_key)
                 return True
-        except (requests.exceptions.RequestException, socket.error), ex:
+        except (requests.exceptions.RequestException, socket.error) as ex:
             # is_cached should not fail (would abort seeding for example),
             # so we catch these errors here and just return False
             log.warn('error while requesting %s: %s', url, ex)

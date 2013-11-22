@@ -173,7 +173,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
             stats = os.lstat(location)
             tile.timestamp = stats.st_mtime
             tile.size = stats.st_size
-        except OSError, ex:
+        except OSError as ex:
             if ex.errno != errno.ENOENT: raise
             tile.timestamp = 0
             tile.size = 0
@@ -212,7 +212,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
         location = self.tile_location(tile)
         try:
             os.remove(location)
-        except OSError, ex:
+        except OSError as ex:
             if ex.errno != errno.ENOENT: raise
 
     def store_tile(self, tile):
@@ -264,7 +264,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
 
         try:
             os.symlink(real_tile_loc, tile_loc)
-        except OSError, e:
+        except OSError as e:
             # ignore error if link was created by other process
             if e.errno != errno.EEXIST:
                 raise e

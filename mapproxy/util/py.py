@@ -78,9 +78,9 @@ def replace_instancemethod(old_method, new_method):
     >>> f.bar()
     'foobar'
     """
-    cls = old_method.im_class
-    obj = old_method.im_self
-    name = old_method.im_func.func_name
+    cls = old_method.__self__.__class__
+    obj = old_method.__self__
+    name = old_method.__func__.__name__
     instancemethod = type(old_method)
     setattr(obj, name, instancemethod(new_method, obj, cls))
 

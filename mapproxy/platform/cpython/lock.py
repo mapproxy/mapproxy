@@ -48,7 +48,7 @@ class FileLock(object):
         if not os.path.exists(os.path.dirname(self.lock_file)):
             try:
                 os.makedirs(os.path.dirname(self.lock_file))
-            except OSError, e:
+            except OSError as e:
                 if e.errno is not errno.EEXIST:
                     raise e
 
@@ -116,9 +116,9 @@ def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300, force=True):
                 if os.path.getmtime(name) < expire_time:
                     try:
                         os.unlink(name)
-                    except IOError, ex:
+                    except IOError as ex:
                         log.warn('could not remove old lock file %s: %s', name, ex)
-        except OSError, e:
+        except OSError as e:
             # some one might have removed the file (ENOENT)
             # or we don't have permissions to remove it (EACCES)
             if e.errno in (errno.ENOENT, errno.EACCES):

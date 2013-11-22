@@ -1,3 +1,4 @@
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010, 2011 Omniscale <http://omniscale.de>
 #
@@ -122,7 +123,7 @@ class ProgressStore(object):
                 f.flush()
                 os.fsync(f.fileno())
             os.rename(self.filename + '.tmp', self.filename)
-        except (IOError, OSError), ex:
+        except (IOError, OSError) as ex:
             log.error('unable to write seed progress: %s', ex)
 
     def remove(self):
@@ -222,12 +223,12 @@ def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
             result = func(*args, **kw)
         except ignore_exceptions:
             time.sleep(0.01)
-        except exceptions, ex:
+        except exceptions as ex:
             if (n+1) >= max_repeat:
                 raise
             wait_for = start_backoff_sec * 2**n
-            print >>sys.stderr, ("An error occured. Retry in %d seconds: %r" %
-                (wait_for, ex))
+            print(("An error occured. Retry in %d seconds: %r" %
+                (wait_for, ex)), file=sys.stderr)
             time.sleep(wait_for)
             n += 1
         else:

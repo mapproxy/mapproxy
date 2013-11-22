@@ -25,6 +25,7 @@ from mapproxy.config import base_config
 from mapproxy.srs import make_lin_transf
 
 import logging
+from functools import reduce
 log = logging.getLogger('mapproxy.image')
 
 
@@ -91,7 +92,7 @@ class ImageSource(object):
 
             try:
                 img = Image.open(self._buf)
-            except StandardError:
+            except Exception:
                 self.close_buffers()
                 raise
             self._img = img

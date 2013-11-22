@@ -181,7 +181,7 @@ class TestGeomCoverage(object):
     def test_prepared(self):
         assert hasattr(self.coverage, '_prepared_max')
         self.coverage._prepared_max = 100
-        for i in xrange(110):
+        for i in range(110):
             assert self.coverage.intersects((-30, 10, -8, 70), SRS(4326))
 
     def test_eq(self):

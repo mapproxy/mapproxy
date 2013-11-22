@@ -33,7 +33,7 @@ def check_srs(srs):
         try:
             SRS(srs)
             _checked_srs[srs] = True
-        except Exception, ex:
+        except Exception as ex:
             logging.getLogger(__name__).warn('unable to initialize srs for %s: %s', srs, ex)
             _checked_srs[srs] = False
 

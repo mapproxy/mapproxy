@@ -1,3 +1,4 @@
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
 #
@@ -31,6 +32,7 @@ from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
 from mapproxy.seed.seeder import SeedTask, CleanupTask
 from mapproxy.seed.spec import validate_seed_conf
+from functools import reduce
 
 
 class SeedConfigurationError(ConfigurationError):
@@ -43,7 +45,7 @@ log = logging.getLogger('mapproxy.seed.config')
 def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf):
     try:
         conf = load_yaml_file(seed_conf_filename)
-    except YAMLError, ex:
+    except YAMLError as ex:
         raise SeedConfigurationError(ex)
 
     if 'views' in conf:
@@ -78,8 +80,8 @@ class LegacySeedingConfiguration(object):
             try:
                 caches = self.mapproxy_conf.caches[cache_name].caches()
             except KeyError:
-                print >>sys.stderr, 'error: cache %s not found. available caches: %s' % (
-                    cache_name, ','.join(self.mapproxy_conf.caches.keys()))
+                print('error: cache %s not found. available caches: %s' % (
+                    cache_name, ','.join(self.mapproxy_conf.caches.keys())), file=sys.stderr)
                 return
             caches = dict((grid, tile_mgr) for grid, extent, tile_mgr in caches)
             for view in options['views']:
@@ -96,7 +98,7 @@ class LegacySeedingConfiguration(object):
                 for grid, tile_mgr in caches.iteritems():
                     if cache_srs and grid.srs not in cache_srs: continue
                     md = dict(name=view, cache_name=cache_name, grid_name=self.grids[grid])
-                    levels = range(level[0], level[1]+1)
+                    levels = list(range(level[0], level[1]+1))
                     if coverage:
                         if isinstance(coverage, GeomCoverage) and coverage.geom.is_empty:
                             continue
@@ -107,7 +109,7 @@ class LegacySeedingConfiguration(object):
                     self.seed_tasks.append(SeedTask(md, tile_mgr, levels, remove_before, seed_coverage))
 
                     if remove_before:
-                        levels = range(grid.levels)
+                        levels = list(range(grid.levels))
                         complete_extent = bool(coverage)
                         self.cleanup_tasks.append(CleanupTask(md, tile_mgr, levels, remove_before,
                             seed_coverage, complete_extent=complete_extent))
@@ -275,7 +277,7 @@ class SeedConfiguration(ConfigurationBase):
                 if self.levels:
                     levels = self.levels.for_grid(grid)
                 else:
-                    levels = list(xrange(0, grid.levels))
+                    levels = list(range(0, grid.levels))
 
                 if not tile_manager.cache.supports_timestamp:
                     if self.refresh_timestamp:
@@ -313,7 +315,7 @@ class CleanupConfiguration(ConfigurationBase):
                 if self.levels:
                     levels = self.levels.for_grid(grid)
                 else:
-                    levels = list(xrange(0, grid.levels))
+                    levels = list(range(0, grid.levels))
 
                 if not tile_manager.cache.supports_timestamp:
                     # for caches without timestamp support (like MBTiles)
@@ -362,7 +364,7 @@ def before_timestamp_from_options(conf):
         datasource = abspath(conf['mtime'])
         try:
             return os.path.getmtime(datasource)
-        except OSError, ex:
+        except OSError as ex:
             raise SeedConfigurationError(
                 "can't parse last modified time from file '%s'." % (datasource, ), ex)
     deltas = {}
@@ -392,7 +394,7 @@ class LevelsRange(object):
 
         stop = min(stop, grid.levels-1)
 
-        return list(xrange(start, stop+1))
+        return list(range(start, stop+1))
 
 class LevelsResolutionRange(object):
     def __init__(self, res_range=None):
@@ -409,7 +411,7 @@ class LevelsResolutionRange(object):
         else:
             stop = grid.closest_level(stop)
 
-        return list(xrange(start, stop+1))
+        return list(range(start, stop+1))
 
 class LevelsResolutionList(object):
     def __init__(self, resolutions=None):

@@ -88,5 +88,5 @@ class RenderdTileCreator(TileCreator):
             return resp.json()
         except ValueError:
             raise SourceError("Error while communicating with renderd: invalid JSON")
-        except requests.RequestException, ex:
+        except requests.RequestException as ex:
             raise SourceError("Error while communicating with renderd: %s" % ex)

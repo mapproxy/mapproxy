@@ -1,3 +1,10 @@
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 #
@@ -31,7 +38,7 @@ class TestNoCaseMultiDict(object):
     def test_from_iterable(self):
         data = (('layers', 'foo,bar'), ('laYERs', 'baz'), ('crs', 'EPSG:4326'))
         nc_dict = NoCaseMultiDict(data)
-        print nc_dict
+        print(nc_dict)
 
         for name in ('layers', 'LAYERS', 'lAYeRS'):
             assert name in nc_dict, name + ' not found'
@@ -41,7 +48,7 @@ class TestNoCaseMultiDict(object):
     def test_from_dict(self):
         data = [('layers', 'foo,bar'), ('laYERs', 'baz'), ('crs', 'EPSG:4326')]
         nc_dict = NoCaseMultiDict(data)
-        print nc_dict
+        print(nc_dict)
 
         for name in ('layers', 'LAYERS', 'lAYeRS'):
             assert name in nc_dict, name + ' not found'
@@ -51,7 +58,7 @@ class TestNoCaseMultiDict(object):
     def test_iteritems(self):
         data = dict([('LAYERS', 'foo,bar'), ('laYERs', 'baz'), ('crs', 'EPSG:4326')])
         nc_dict = NoCaseMultiDict(data)
-        print nc_dict
+        print(nc_dict)
 
         itr = nc_dict.iteritems()
         key, values = itr.next()
@@ -247,14 +254,14 @@ class TestRequest(object):
     def test_query_string(self):
         self.env['QUERY_STRING'] = 'Foo=boo&baz=baa&fOO=bizz'
         req = Request(self.env)
-        print req.args['foo']
+        print(req.args['foo'])
         assert req.args.get_all('foo') == ['boo', 'bizz']
     def test_query_string_encoding(self):
         env = {
             'QUERY_STRING': 'foo=some%20special%20chars%20%26%20%3D'
         }
         req = Request(env)
-        print req.args['foo']
+        print(req.args['foo'])
         assert req.args['foo'] == u'some special chars & ='
 
     def test_script_url(self):
@@ -343,7 +350,7 @@ class TestWMSMapRequestParams(object):
         self.m['bgcolor'] = '0x42cafe'
         assert self.m.bgcolor == '#42cafe'
     def test_srs(self):
-        print self.m.srs
+        print(self.m.srs)
         assert self.m.srs == 'EPSG:0815'
         del self.m['srs']
         assert self.m.srs is None
@@ -352,7 +359,7 @@ class TestWMSMapRequestParams(object):
     def test_layers(self):
         assert list(self.m.layers) == ['bar', 'foo']
     def test_query_string(self):
-        print self.m.query_string
+        print(self.m.query_string)
         assert_query_eq(self.m.query_string,
             'layers=bar,foo&WIdth=100&bBOx=-90,-80,70.0,+80'
             '&format=image%2Fpng&srs=EPSG%3A0815&heIGHT=200')
@@ -419,7 +426,7 @@ BBOX=8,4,9,5&WIDTH=984&HEIGHT=708""".replace('\n', ''))
         del self.req.args['request']
         try:
             wms_request(self.req)
-        except RequestError, e:
+        except RequestError as e:
             assert 'request' in e.msg
         else:
             assert False, 'RequestError expected'

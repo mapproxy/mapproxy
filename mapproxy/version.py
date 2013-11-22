@@ -1,3 +1,4 @@
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 # 
@@ -27,4 +28,4 @@ def version_string():
 __version__ = version = version_string()
 
 if __name__ == '__main__':
-    print __version__
+    print(__version__)

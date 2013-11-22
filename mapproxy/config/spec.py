@@ -1,3 +1,4 @@
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
 #
@@ -25,7 +26,7 @@ def validate_mapproxy_conf(conf_dict):
     """
     try:
         validate(mapproxy_yaml_spec, conf_dict)
-    except ValidationError, ex:
+    except ValidationError as ex:
         return ex.errors, ex.informal_only
     else:
         return [], True
@@ -422,6 +423,6 @@ if __name__ == '__main__':
         data = yaml.load(open(f))
         try:
             validate(mapproxy_yaml_spec, data)
-        except ValidationError, ex:
+        except ValidationError as ex:
             for err in ex.errors:
-                print '%s: %s' % (f, err)
+                print('%s: %s' % (f, err))

@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010, 2011 Omniscale <http://omniscale.de>
 #
@@ -55,10 +58,10 @@ class TileProcessor(object):
     def log_progress(self, progress):
         if (self._lastlog + .1) < time.time():
             # log progress at most every 100ms
-            print '[%s] %6.2f%% %s \tETA: %s\r' % (
+            print('[%s] %6.2f%% %s \tETA: %s\r' % (
                 timestamp(), progress[1]*100, progress[0],
                 progress[2]
-            ),
+            ), end=' ')
             sys.stdout.flush()
             self._lastlog = time.time()
 
@@ -87,7 +90,7 @@ class TileWorkerPool(TileProcessor):
         self.procs = []
         self.progress_logger = progress_logger
         conf = base_config()
-        for _ in xrange(size):
+        for _ in range(size):
             worker = worker_class(self.task, self.tiles_queue, conf)
             worker.start()
             self.procs.append(worker)
@@ -100,7 +103,7 @@ class TileWorkerPool(TileProcessor):
                 self.progress_logger.log_step(progress)
 
     def stop(self):
-        for _ in xrange(len(self.procs)):
+        for _ in range(len(self.procs)):
             self.tiles_queue.put(None)
 
         for proc in self.procs:
@@ -397,7 +400,7 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
     active_tasks = tasks[::-1]
     while active_tasks:
         task = active_tasks[-1]
-        print format_seed_task(task)
+        print(format_seed_task(task))
 
         wait = len(active_tasks) == 1
         try:
@@ -411,7 +414,7 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
                 seed_task(task, concurrency, dry_run, skip_geoms_for_last_levels, progress_logger,
                     seed_progress=seed_progress)
         except CacheLockedError:
-            print '    ...cache is locked, skipping'
+            print('    ...cache is locked, skipping')
             active_tasks = [task] + active_tasks[:-1]
         else:
             active_tasks.pop()

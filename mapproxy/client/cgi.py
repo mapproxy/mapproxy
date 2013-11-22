@@ -88,7 +88,7 @@ class CGIClient(object):
                 stdout=subprocess.PIPE,
                 cwd=self.working_directory or os.path.dirname(self.script)
             )
-        except OSError, ex:
+        except OSError as ex:
             if ex.errno == errno.ENOENT:
                 raise SourceError('CGI script not found (%s)' % (self.script,))
             elif ex.errno == errno.EACCES:

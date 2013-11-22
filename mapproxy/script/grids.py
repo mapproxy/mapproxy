@@ -1,3 +1,19 @@
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
 #
@@ -46,8 +62,8 @@ def grid_coverage_ratio(bbox, srs, coverage):
     return coverage_area / grid_area
 
 def display_grid(grid_conf, coverage=None):
-    print '%s:' % (grid_conf.conf['name'],)
-    print '    Configuration:'
+    print('%s:' % (grid_conf.conf['name'],))
+    print('    Configuration:')
     conf_dict = grid_conf.conf.copy()
 
     tile_grid = grid_conf.tile_grid()
@@ -65,12 +81,12 @@ def display_grid(grid_conf, coverage=None):
     for key in sorted(conf_dict):
         if key == 'name':
             continue
-        print '        %s: %s' % (key, format_conf_value(conf_dict[key]))
+        print('        %s: %s' % (key, format_conf_value(conf_dict[key])))
     if coverage:
-        print '    Coverage: %s covers approx. %.4f%% of the grid BBOX' % (coverage.name, area_ratio * 100)
-        print '    Levels: Resolutions, # x * y = total tiles (approx. tiles within coverage)'
+        print('    Coverage: %s covers approx. %.4f%% of the grid BBOX' % (coverage.name, area_ratio * 100))
+        print('    Levels: Resolutions, # x * y = total tiles (approx. tiles within coverage)')
     else:
-        print '    Levels: Resolutions, # x * y = total tiles'
+        print('    Levels: Resolutions, # x * y = total tiles')
     max_digits = max([len("%r" % (res,)) for level, res in enumerate(tile_grid.resolutions)])
     for level, res in enumerate(tile_grid.resolutions):
         tiles_in_x, tiles_in_y = tile_grid.grid_sizes[level]
@@ -79,9 +95,9 @@ def display_grid(grid_conf, coverage=None):
 
         if coverage:
             coverage_tiles = total_tiles * area_ratio
-            print "        %.2d:  %r,%s# %6d * %-6d = %8s (%s)" % (level, res, ' '*spaces, tiles_in_x, tiles_in_y, human_readable_number(total_tiles), human_readable_number(coverage_tiles))
+            print("        %.2d:  %r,%s# %6d * %-6d = %8s (%s)" % (level, res, ' '*spaces, tiles_in_x, tiles_in_y, human_readable_number(total_tiles), human_readable_number(coverage_tiles)))
         else:
-            print "        %.2d:  %r,%s# %6d * %-6d = %8s" % (level, res, ' '*spaces, tiles_in_x, tiles_in_y, human_readable_number(total_tiles))
+            print("        %.2d:  %r,%s# %6d * %-6d = %8s" % (level, res, ' '*spaces, tiles_in_x, tiles_in_y, human_readable_number(total_tiles)))
 
 def human_readable_number(num):
     if num > 10**12:
@@ -96,12 +112,12 @@ def human_readable_number(num):
 
 def display_grids_list(grids):
     for grid_name in sorted(grids.keys()):
-        print grid_name
+        print(grid_name)
 
 def display_grids(grids, coverage=None):
     for i, grid_name in enumerate(sorted(grids.keys())):
         if i != 0:
-            print
+            print()
         display_grid(grids[grid_name], coverage=coverage)
 
 def grids_command(args=None):
@@ -133,12 +149,12 @@ def grids_command(args=None):
             options.mapproxy_conf = args[0]
     try:
         proxy_configuration = load_configuration(options.mapproxy_conf)
-    except IOError, e:
-        print >>sys.stderr, 'ERROR: ', "%s: '%s'" % (e.strerror, e.filename)
+    except IOError as e:
+        print('ERROR: ', "%s: '%s'" % (e.strerror, e.filename), file=sys.stderr)
         sys.exit(2)
-    except ConfigurationError, e:
-        print >>sys.stderr, e
-        print >>sys.stderr, 'ERROR: invalid configuration (see above)'
+    except ConfigurationError as e:
+        print(e, file=sys.stderr)
+        print('ERROR: invalid configuration (see above)', file=sys.stderr)
         sys.exit(2)
 
     if options.show_all or options.grid_name:
@@ -155,7 +171,7 @@ def grids_command(args=None):
         # ignore case for keys
         grids = dict((key.lower(), value) for (key, value) in grids.iteritems())
         if not grids.get(options.grid_name, False):
-            print 'grid not found: %s' % (options.grid_name,)
+            print('grid not found: %s' % (options.grid_name,))
             sys.exit(1)
 
     coverage = None
@@ -163,19 +179,19 @@ def grids_command(args=None):
         with local_base_config(proxy_configuration.base_config):
             try:
                 seed_conf = load_seed_tasks_conf(options.seed_config, proxy_configuration)
-            except SeedConfigurationError, e:
-                print >>sys.stderr, 'ERROR: invalid configuration (see above)'
+            except SeedConfigurationError as e:
+                print('ERROR: invalid configuration (see above)', file=sys.stderr)
                 sys.exit(2)
 
             if not isinstance(seed_conf, SeedingConfiguration):
-                print 'Old seed configuration format not supported'
+                print('Old seed configuration format not supported')
                 sys.exit(1)
 
             coverage = seed_conf.coverage(options.coverage)
             coverage.name = options.coverage
 
     elif (options.coverage and not options.seed_config) or (not options.coverage and options.seed_config):
-        print '--coverage and --seed-conf can only be used together'
+        print('--coverage and --seed-conf can only be used together')
         sys.exit(1)
 
     if options.list_grids:

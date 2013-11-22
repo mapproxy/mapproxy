@@ -29,6 +29,7 @@ from mapproxy.util.geom import (
 from mapproxy.srs import SRS
 
 import logging
+from functools import reduce
 log_config = logging.getLogger('mapproxy.config.coverage')
 
 try:

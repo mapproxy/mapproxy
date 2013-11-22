@@ -41,7 +41,7 @@ def capture():
         sys.stdout = StringIO()
         sys.stderr = StringIO()
         yield sys.stdout, sys.stderr
-    except Exception, ex:
+    except Exception as ex:
         backup_stdout.write(str(ex))
         backup_stdout.write(sys.stdout.getvalue())
         backup_stderr.write(sys.stderr.getvalue())

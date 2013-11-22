@@ -412,8 +412,8 @@ def make_lin_transf(src_bbox, dst_bbox):
     >>> transf((7.5, 50.5))
     (450.0, 500.0)
     """
-    func = lambda (x, y): (dst_bbox[0] + (x - src_bbox[0]) *
+    func = lambda x_y: (dst_bbox[0] + (x_y[0] - src_bbox[0]) *
                            (dst_bbox[2]-dst_bbox[0]) / (src_bbox[2] - src_bbox[0]),
-                           dst_bbox[1] + (src_bbox[3] - y) * 
+                           dst_bbox[1] + (src_bbox[3] - x_y[1]) * 
                            (dst_bbox[3]-dst_bbox[1]) / (src_bbox[3] - src_bbox[1]))
     return func

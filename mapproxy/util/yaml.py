@@ -42,6 +42,6 @@ def load_yaml(doc):
                 # CLoader doesn't work (missing .dispose())
                 return yaml.load(doc)
         return yaml.load(doc)
-    except (yaml.scanner.ScannerError, yaml.parser.ParserError), ex:
+    except (yaml.scanner.ScannerError, yaml.parser.ParserError) as ex:
         raise YAMLError(str(ex))
 

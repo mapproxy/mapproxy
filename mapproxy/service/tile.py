@@ -328,7 +328,7 @@ class TileLayer(object):
 
             format = None if self._mixed_format else tile_request.format
             return TileResponse(tile, format=format, image_opts=self.tile_manager.image_opts)
-        except SourceError, e:
+        except SourceError as e:
             raise RequestError(e.args[0], request=tile_request, internal=True)
 
 class ImageResponse(object):

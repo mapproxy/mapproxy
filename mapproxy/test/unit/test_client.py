@@ -52,35 +52,35 @@ class TestHTTPClient(object):
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/'},
                                                   {'status': '500', 'body': ''})]):
                 self.client.open(TESTSERVER_URL + '/')
-        except HTTPClientError, e:
+        except HTTPClientError as e:
             assert_re(e.args[0], r'HTTP Error ".*": 500')
         else:
             assert False, 'expected HTTPClientError'
     def test_invalid_url_type(self):
         try:
             self.client.open('htp://example.org')
-        except HTTPClientError, e:
+        except HTTPClientError as e:
             assert_re(e.args[0], r'No response .* "htp://example.*": unknown url type')
         else:
             assert False, 'expected HTTPClientError'
     def test_invalid_url(self):
         try:
             self.client.open('this is not a url')
-        except HTTPClientError, e:
+        except HTTPClientError as e:
             assert_re(e.args[0], r'URL not correct "this is not.*": unknown url type')
         else:
             assert False, 'expected HTTPClientError'
     def test_unknown_host(self):
         try:
             self.client.open('http://thishostshouldnotexist000136really42.org')
-        except HTTPClientError, e:
+        except HTTPClientError as e:
             assert_re(e.args[0], r'No response .* "http://thishost.*": .*')
         else:
             assert False, 'expected HTTPClientError'
     def test_no_connect(self):
         try:
             self.client.open('http://localhost:53871')
-        except HTTPClientError, e:
+        except HTTPClientError as e:
             assert_re(e.args[0], r'No response .* "http://localhost.*": Connection refused')
         else:
             assert False, 'expected HTTPClientError'
@@ -140,7 +140,7 @@ class TestHTTPClient(object):
             self.client = HTTPClient('https://www.google.com/', ssl_ca_certs=tmp)
             try:
                 self.client.open('https://www.google.com/')
-            except HTTPClientError, e:
+            except HTTPClientError as e:
                 assert_re(e.args[0], r'Could not verify connection to URL')
         
     def test_timeouts(self):
@@ -158,7 +158,7 @@ class TestHTTPClient(object):
             try:
                 start = time.time()
                 client1.open(TESTSERVER_URL+'/')
-            except HTTPClientError, ex:
+            except HTTPClientError as ex:
                 assert 'timed out' in ex.args[0]
             else:
                 assert False, 'HTTPClientError expected'
@@ -168,7 +168,7 @@ class TestHTTPClient(object):
             try:
                 start = time.time()
                 client2.open(TESTSERVER_URL+'/')
-            except HTTPClientError, ex:
+            except HTTPClientError as ex:
                 assert 'timed out' in ex.args[0]
             else:
                 assert False, 'HTTPClientError expected'

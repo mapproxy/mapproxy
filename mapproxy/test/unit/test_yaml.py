@@ -54,7 +54,7 @@ class TestLoadYAMLFile(object):
         try:
             f = self.yaml_file("hello:\n\t- world")
             load_yaml_file(f)
-        except YAMLError, ex:
+        except YAMLError as ex:
             assert 'line 2' in str(ex)
         else:
             assert False, 'expected YAMLError'

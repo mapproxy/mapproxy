@@ -1,3 +1,19 @@
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
 # -:- encoding: utf-8 -:-
 # This file is part of the MapProxy project.
 # Copyright (C) 2013 Omniscale <http://omniscale.de>
@@ -38,16 +54,16 @@ from mapproxy.config.loader import load_configuration
 from mapproxy.util.ext.wmsparse import parse_capabilities
 
 def write_header(f, capabilities):
-    print >>f, '# MapProxy configuration automatically generated from:'
-    print >>f, '#   %s' % capabilities
-    print >>f, '#'
-    print >>f, '# NOTE: The generated configuration can be highly inefficient,'
-    print >>f, '#       especially when multiple layers and caches are requested at once.'
-    print >>f, '#       Make sure you understand the generated configuration!'
-    print >>f, '#'
-    print >>f, '# Created on %s with:' % datetime.datetime.now()
-    print >>f, ' \\\n'.join(textwrap.wrap(' '.join(sys.argv), initial_indent='# ', subsequent_indent='#    '))
-    print >>f, ''
+    print('# MapProxy configuration automatically generated from:', file=f)
+    print('#   %s' % capabilities, file=f)
+    print('#', file=f)
+    print('# NOTE: The generated configuration can be highly inefficient,', file=f)
+    print('#       especially when multiple layers and caches are requested at once.', file=f)
+    print('#       Make sure you understand the generated configuration!', file=f)
+    print('#', file=f)
+    print('# Created on %s with:' % datetime.datetime.now(), file=f)
+    print(' \\\n'.join(textwrap.wrap(' '.join(sys.argv), initial_indent='# ', subsequent_indent='#    ')), file=f)
+    print('', file=f)
 
 
 @contextmanager
@@ -80,20 +96,20 @@ def config_command(args):
 
     if not options.capabilities:
         parser.print_help()
-        print >>sys.stderr, "\nERROR: --capabilities required"
+        print("\nERROR: --capabilities required", file=sys.stderr)
         return 2
 
     if not options.output and not options.output_seed:
         parser.print_help()
-        print >>sys.stderr, "\nERROR: --output and/or --output-seed required"
+        print("\nERROR: --output and/or --output-seed required", file=sys.stderr)
         return 2
 
     if not options.force:
         if options.output and options.output != '-' and os.path.exists(options.output):
-            print >>sys.stderr, "\nERROR: %s already exists, use --force to overwrite" % options.output
+            print("\nERROR: %s already exists, use --force to overwrite" % options.output, file=sys.stderr)
             return 2
         if options.output_seed and options.output_seed != '-' and os.path.exists(options.output_seed):
-            print >>sys.stderr, "\nERROR: %s already exists, use --force to overwrite" % options.output_seed
+            print("\nERROR: %s already exists, use --force to overwrite" % options.output_seed, file=sys.stderr)
             return 2
 
     log = logging.getLogger('mapproxy_conf_cmd')
@@ -115,9 +131,9 @@ def config_command(args):
 
     try:
         cap = parse_capabilities(StringIO(cap_doc))
-    except (xml.etree.ElementTree.ParseError, ValueError), ex:
-        print >>sys.stderr, ex
-        print >>sys.stderr, cap_doc[:1000] + ('...' if len(cap_doc) > 1000 else '')
+    except (xml.etree.ElementTree.ParseError, ValueError) as ex:
+        print(ex, file=sys.stderr)
+        print(cap_doc[:1000] + ('...' if len(cap_doc) > 1000 else ''), file=sys.stderr)
         return 3
 
     overwrite = None

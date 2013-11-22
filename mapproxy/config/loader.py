@@ -1566,7 +1566,7 @@ def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=
 
     try:
         conf_dict = load_configuration_file([os.path.basename(mapproxy_conf)], conf_base_dir)
-    except YAMLError, ex:
+    except YAMLError as ex:
         raise ConfigurationError(ex)
     errors, informal_only = validate_mapproxy_conf(conf_dict)
     for error in errors:

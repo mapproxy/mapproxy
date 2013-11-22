@@ -431,7 +431,7 @@ class TileGrid(object):
         tile_y = y/float(res*self.tile_size[1])
         return (int(math.floor(tile_x)), int(math.floor(tile_y)), level)
 
-    def flip_tile_coord(self, (x, y, z)):
+    def flip_tile_coord(self, xxx_todo_changeme):
         """
         Flip the tile coord on the y-axis. (Switch between bottom-left and top-left
         origin.)
@@ -442,6 +442,7 @@ class TileGrid(object):
         >>> grid.flip_tile_coord((1, 3, 2))
         (1, 0, 2)
         """
+        (x, y, z) = xxx_todo_changeme
         return (x, self.grid_sizes[z][1]-1-y, z)
 
     def supports_access_with_origin(self, origin):
@@ -532,12 +533,12 @@ class TileGrid(object):
             raise GridError('Invalid BBOX')
 
     def _tile_iter(self, x0, y0, x1, y1, level):
-        xs = range(x0, x1+1)
+        xs = list(range(x0, x1+1))
         if self.flipped_y_axis:
             y0, y1 = y1, y0
-            ys = range(y0, y1+1)
+            ys = list(range(y0, y1+1))
         else:
-            ys = range(y1, y0-1, -1)
+            ys = list(range(y1, y0-1, -1))
 
         ll = (xs[0], ys[-1], level)
         ur = (xs[-1], ys[0], level)
@@ -847,10 +848,10 @@ class MetaGrid(object):
         grid_size = 1+maxx-minx, 1+maxy-miny
 
         if self.grid.flipped_y_axis:
-            ys = xrange(miny, maxy+1)
+            ys = range(miny, maxy+1)
         else:
-            ys = xrange(maxy, miny-1, -1)
-        xs = xrange(minx, maxx+1)
+            ys = range(maxy, miny-1, -1)
+        xs = range(minx, maxx+1)
 
         bounds = (minx, miny, z), (maxx, maxy, z)
 
@@ -880,10 +881,10 @@ class MetaGrid(object):
         maxx = minx + tile_grid[0] - 1
         maxy = miny + tile_grid[1] - 1
         if self.grid.flipped_y_axis:
-            ys = xrange(miny, maxy+1)
+            ys = range(miny, maxy+1)
         else:
-            ys = xrange(maxy, miny-1, -1)
-        xs = xrange(minx, maxx+1)
+            ys = range(maxy, miny-1, -1)
+        xs = range(minx, maxx+1)
 
         return list(_create_tile_list(xs, ys, z, self.grid.grid_sizes[z]))
 
@@ -956,12 +957,12 @@ class MetaGrid(object):
     def _tile_iter(self, x0, y0, x1, y1, level):
         meta_size = self._meta_size(level)
 
-        xs = range(x0, x1+1, meta_size[0])
+        xs = list(range(x0, x1+1, meta_size[0]))
         if self.grid.flipped_y_axis:
             y0, y1 = y1, y0
-            ys = range(y0, y1+1, meta_size[1])
+            ys = list(range(y0, y1+1, meta_size[1]))
         else:
-            ys = range(y1, y0-1, -meta_size[1])
+            ys = list(range(y1, y0-1, -meta_size[1]))
 
         ll = (xs[0], ys[-1], level)
         ur = (xs[-1], ys[0], level)

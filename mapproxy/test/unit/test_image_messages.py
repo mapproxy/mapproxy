@@ -1,3 +1,4 @@
+from __future__ import print_function
 # -:- encoding: utf8 -:-
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
@@ -126,7 +127,7 @@ class TestMessageImage(object):
              [14923, 77, 14923, 77, 14923, 77])
     def test_transparent(self):
         image_opts = ImageOptions(transparent=True)
-        print image_opts
+        print(image_opts)
         img = message_image('', size=(100, 150), image_opts=image_opts)
         assert isinstance(img, ImageSource)
         assert img.size == (100, 150)

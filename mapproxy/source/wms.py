@@ -66,7 +66,7 @@ class WMSSource(MapLayer):
             resp.opacity = self.opacity
             return resp
 
-        except HTTPClientError, e:
+        except HTTPClientError as e:
             log.warn('could not retrieve WMS map: %s', e)
             reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
@@ -223,10 +223,10 @@ class WMSLegendSource(LegendSource):
             for client in self.clients:
                 try:
                     legends.append(client.get_legend(query))
-                except HTTPClientError, e:
+                except HTTPClientError as e:
                     error_occured = True
                     log.error(e.args[0])
-                except SourceError, e:
+                except SourceError as e:
                     error_occured = True
                     # TODO errors?
                     log.error(e.args[0])

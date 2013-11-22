@@ -116,7 +116,7 @@ class MessageImage(object):
         new image with the given `size`.
         """
         if not ((img and not size) or (size and not img)):
-            raise TypeError, 'need either img or size argument'
+            raise TypeError('need either img or size argument')
 
         if img is None:
             base_img = self.new_image(size)

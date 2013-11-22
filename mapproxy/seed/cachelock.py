@@ -107,7 +107,7 @@ class DummyCacheLocker(object):
 def is_running(pid):
     try:
         os.kill(pid, 0)
-    except OSError, err:
+    except OSError as err:
         if err.errno == errno.ESRCH:
             return False
         elif err.errno == errno.EPERM:

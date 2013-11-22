@@ -664,7 +664,7 @@ class TestWMSSourceWithClient(object):
                 q = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
                 try:
                     self.source.get_map(q)
-                except SourceError, e:
+                except SourceError as e:
                     assert 'no image returned' in e.args[0]
                 else:
                     assert False, 'no SourceError raised'

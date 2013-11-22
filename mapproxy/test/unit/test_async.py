@@ -1,3 +1,4 @@
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
 #
@@ -28,7 +29,7 @@ class TestThreaded(object):
             time.sleep(0.05)
             return x
         start = time.time()
-        result = list(imap_async_threaded(func, range(40)))
+        result = list(imap_async_threaded(func, list(range(40))))
         stop = time.time()
 
         duration = stop - start
@@ -41,7 +42,7 @@ class TestThreaded(object):
             raise Exception()
 
         try:
-            list(imap_async_threaded(func, range(40)))
+            list(imap_async_threaded(func, list(range(40))))
         except Exception:
             pass
         else:
@@ -64,7 +65,7 @@ class TestEventlet(object):
             eventlet.sleep(0.05)
             return x
         start = time.time()
-        result = list(imap_async_eventlet(func, range(40)))
+        result = list(imap_async_eventlet(func, list(range(40))))
         stop = time.time()
 
         duration = stop - start
@@ -77,7 +78,7 @@ class TestEventlet(object):
             raise Exception()
 
         try:
-            list(imap_async_eventlet(func, range(40)))
+            list(imap_async_eventlet(func, list(range(40))))
         except Exception:
             pass
         else:
@@ -237,12 +238,12 @@ class TestThreadPool(CommonPoolTests):
         def test1():
             with local_base_config(conf1):
                 pool1 = ThreadPool(5)
-                list(pool1.imap(check1, range(200)))
+                list(pool1.imap(check1, list(range(200))))
 
         def test2():
             with local_base_config(conf2):
                 pool2 = ThreadPool(5)
-                list(pool2.imap(check2, range(200)))
+                list(pool2.imap(check2, list(range(200))))
 
         t1 = threading.Thread(target=test1)
         t2 = threading.Thread(target=test2)
@@ -298,12 +299,12 @@ class TestEventletPool(CommonPoolTests):
         def test1():
             with local_base_config(conf1):
                 pool1 = EventletPool(5)
-                list(pool1.imap(check1, range(200)))
+                list(pool1.imap(check1, list(range(200))))
 
         def test2():
             with local_base_config(conf2):
                 pool2 = EventletPool(5)
-                list(pool2.imap(check2, range(200)))
+                list(pool2.imap(check2, list(range(200))))
 
         t1 = eventlet.spawn(test1)
         t2 = eventlet.spawn(test2)
@@ -330,9 +331,9 @@ class TestThreadedExecutorException(object):
         return x
     def test_execute_w_exception(self):
         try:
-            self.te.map(self.execute, range(100))
+            self.te.map(self.execute, list(range(100)))
         except DummyException:
-            print self.exec_count
+            print(self.exec_count)
             assert 7 <= self.exec_count <= 10, 'execution should be interrupted really '\
                                                'soon (exec_count should be 7+(max(3)))'
         else:

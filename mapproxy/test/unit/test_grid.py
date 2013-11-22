@@ -1,3 +1,4 @@
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 #
@@ -463,7 +464,7 @@ class TestMetaGridLevelMetaTilesGeodetic(object):
 
 
 def assert_grid_size(grid, level, grid_size):
-    print grid.grid_sizes[level], "==", grid_size
+    print(grid.grid_sizes[level], "==", grid_size)
     assert grid.grid_sizes[level] == grid_size
     res = grid.resolutions[level]
     x, y = grid_size
@@ -925,8 +926,8 @@ class TestTileGridThreshold(object):
 
 class TestCreateTileList(object):
     def test(self):
-        xs = range(-1, 2)
-        ys = range(-2, 3)
+        xs = list(range(-1, 2))
+        ys = list(range(-2, 3))
         grid_size = (1, 2)
         tiles = list(_create_tile_list(xs, ys, 3, grid_size))
 

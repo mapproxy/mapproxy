@@ -1,3 +1,4 @@
+from __future__ import print_function
 import math
 
 from .util import resolve_ns
@@ -237,7 +238,7 @@ def yaml_sources(cap):
         )
 
     import yaml
-    print yaml.dump(dict(sources=sources), default_flow_style=False)
+    print(yaml.dump(dict(sources=sources), default_flow_style=False))
 
 
 def parse_capabilities(fileobj):

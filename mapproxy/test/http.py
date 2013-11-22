@@ -1,3 +1,10 @@
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 #
@@ -60,7 +67,7 @@ class ThreadedStopableHTTPServer(threading.Thread):
             self.httpd.handle_request()
         if self.requests_responses:
             missing_req = [req for req, resp in self.requests_responses]
-            print >>self.out, 'missing requests: ' + ','.join(map(str, missing_req))
+            print('missing requests: ' + ','.join(map(str, missing_req)), file=self.out)
         if self.out.tell() > 0: # errors written
             self.out.seek(0)
         else:
@@ -117,11 +124,11 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
         def do_mock_request(self, method):
             req, resp = self._matching_req_resp()
             if not req:
-                print >>self.server.out, 'got unexpected request      ', self.query_data
+                print('got unexpected request      ', self.query_data, file=self.server.out)
                 raise AssertionError
             if 'method' in req:
                 if req['method'] != method:
-                    print >>self.server.out, 'expected %s request, got %s' % (req['method'], method)
+                    print('expected %s request, got %s' % (req['method'], method), file=self.server.out)
                     self.server.shutdown = True
             if req.get('require_basic_auth', False):
                 if 'Authorization' not in self.headers:
@@ -132,16 +139,16 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
                     self.wfile.write('no access')
                     return
             if not query_comparator(req['path'], self.query_data):
-                print >>self.server.out, 'got request      ', self.query_data
-                print >>self.server.out, 'expected request ', req['path']
+                print('got request      ', self.query_data, file=self.server.out)
+                print('expected request ', req['path'], file=self.server.out)
                 query_actual = set(query_to_dict(self.query_data).items())
                 query_expected = set(query_to_dict(req['path']).items())
-                print >>self.server.out, 'param diff  %s|%s' % (
-                    query_actual - query_expected, query_expected - query_actual)
+                print('param diff  %s|%s' % (
+                    query_actual - query_expected, query_expected - query_actual), file=self.server.out)
                 self.server.shutdown = True
             if 'req_assert_function' in req:
                 if not req['req_assert_function'](self):
-                    print >>self.server.out, 'req_assert_function failed'
+                    print('req_assert_function failed', file=self.server.out)
                     self.server.shutdown = True
             if 'duration' in resp:
                 time.sleep(float(resp['duration']))

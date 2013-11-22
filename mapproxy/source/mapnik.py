@@ -73,7 +73,7 @@ class MapnikSource(MapLayer):
 
         try:
             resp = self.render(query)
-        except RuntimeError, ex:
+        except RuntimeError as ex:
             log.error('could not render Mapnik map: %s', ex)
             reraise_exception(SourceError(ex.args[0]), sys.exc_info())
         resp.opacity = self.opacity

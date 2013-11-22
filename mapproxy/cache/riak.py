@@ -71,7 +71,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
         obj = False
         try:
             obj = self.bucket.get(key, r=1, timeout=self.request_timeout)
-        except Exception, e:
+        except Exception as e:
             log.warn('error while requesting %s: %s', key, e)
 
         if not obj:
@@ -174,10 +174,10 @@ class RiakCache(TileCacheBase, FileBasedLocking):
         # batches of `chunk_size`*`chunk_size`.
         grid_size = self.tile_grid.grid_sizes[level]
         chunk_size = 256
-        for x in xrange(grid_size[0]/chunk_size):
+        for x in range(grid_size[0]/chunk_size):
             start_x = x * chunk_size
             end_x = start_x + chunk_size - 1
-            for y in xrange(grid_size[1]/chunk_size):
+            for y in range(grid_size[1]/chunk_size):
                 start_y = y * chunk_size
                 end_y = start_y + chunk_size - 1
                 query = self.bucket.get_index('tile_coord_bin',

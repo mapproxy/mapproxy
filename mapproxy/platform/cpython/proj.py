@@ -25,6 +25,9 @@ to pyroj. You can force the usage of either backend by setting the environment v
 MAPPROXY_USE_LIBPROJ or MAPPROXY_USE_PYPROJ to any value.
 
 """
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
 
 import os
 import sys
@@ -265,8 +268,8 @@ if __name__ == '__main__':
 
     coords = [(8.2, 8.22, 8.3), (53.1, 53.15, 53.2)]
     # coords = [(8, 9, 10), (50, 50, 50)]
-    print coords
+    print(coords)
     coords = transform(prj1, prj2, *coords)
-    print coords
+    print(coords)
     coords = transform(prj2, prj1, *coords)
-    print coords
+    print(coords)

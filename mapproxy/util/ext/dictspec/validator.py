@@ -86,7 +86,7 @@ class Validator(object):
         if hasattr(spec, 'subspec'):
             try:
                 spec = spec.subspec(data, self.context)
-            except ValueError, ex:
+            except ValueError as ex:
                 return self._handle_error(str(ex))
 
         if isinstance(spec, recursive):

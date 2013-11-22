@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
 #
@@ -112,14 +116,14 @@ def scales_command(args=None):
         calc = res_to_scale
 
     if options.as_res_config:
-        print '    res: ['
-        print '         #  res            level     scale @%.1f DPI' % dpi
+        print('    res: [')
+        print('         #  res            level     scale @%.1f DPI' % dpi)
         format = format_list
     else:
         format = format_simple
 
     for i, value in enumerate(values):
-        print format(i, value, calc(value, dpi, unit_factor))
+        print(format(i, value, calc(value, dpi, unit_factor)))
 
     if options.as_res_config:
-        print '    ]'
+        print('    ]')

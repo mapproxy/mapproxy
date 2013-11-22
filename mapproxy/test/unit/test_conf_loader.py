@@ -405,7 +405,7 @@ class TestWMSSourceConfiguration(object):
         conf = ProxyConfiguration(conf_dict)
         try:
             conf.caches['osm'].caches()
-        except ConfigurationError, ex:
+        except ConfigurationError as ex:
             assert 'base,roads' in ex.args[0]
             assert 'base,poi' in ex.args[0]
         else:
@@ -429,7 +429,7 @@ class TestWMSSourceConfiguration(object):
         conf = ProxyConfiguration(conf_dict)
         try:
             conf.caches['osm'].caches()
-        except ConfigurationError, ex:
+        except ConfigurationError as ex:
             assert 'osm:base,roads' in ex.args[0]
         else:
             assert False, 'expected ConfigurationError'
@@ -826,7 +826,7 @@ class TestImageOptions(object):
         except ConfigurationError:
             pass
         else:
-            raise False, 'expected ConfigurationError'
+            raise False('expected ConfigurationError')
 
 
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {
@@ -837,7 +837,7 @@ class TestImageOptions(object):
         except ConfigurationError:
             pass
         else:
-            raise False, 'expected ConfigurationError'
+            raise False('expected ConfigurationError')
 
 
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {}
@@ -847,7 +847,7 @@ class TestImageOptions(object):
         except ConfigurationError:
             pass
         else:
-            raise False, 'expected ConfigurationError'
+            raise False('expected ConfigurationError')
 
 
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {

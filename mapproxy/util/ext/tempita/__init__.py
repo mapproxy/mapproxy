@@ -28,6 +28,7 @@ can use ``__name='tmpl.html'`` to set the name of the template.
 
 If there are syntax errors ``TemplateError`` will be raised.
 """
+from __future__ import print_function
 
 import re
 import sys
@@ -279,7 +280,7 @@ class Template(object):
         try:
             try:
                 value = eval(code, self.default_namespace, ns)
-            except SyntaxError, e:
+            except SyntaxError as e:
                 raise SyntaxError(
                     'invalid syntax in expression: %s' % code)
             return value
@@ -296,7 +297,7 @@ class Template(object):
     def _exec(self, code, ns, pos):
         __traceback_hide__ = True
         try:
-            exec code in self.default_namespace, ns
+            exec(code, self.default_namespace, ns)
         except:
             exc_info = sys.exc_info()
             e = exc_info[1]
@@ -335,7 +336,7 @@ class Template(object):
                         '(no default_encoding provided)' % value)
                 try:
                     value = value.decode(self.default_encoding)
-                except UnicodeDecodeError, e:
+                except UnicodeDecodeError as e:
                     raise UnicodeDecodeError(
                         e.encoding,
                         e.object,
@@ -1129,7 +1130,7 @@ def fill_command(args=None):
         vars.update(os.environ)
     for value in args:
         if '=' not in value:
-            print('Bad argument: %r' % value)
+            print(('Bad argument: %r' % value))
             sys.exit(2)
         name, value = value.split('=', 1)
         if name.startswith('py:'):

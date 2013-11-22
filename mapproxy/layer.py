@@ -27,6 +27,7 @@ from mapproxy.srs import SRS, bbox_equals, merge_bbox, make_lin_transf
 from mapproxy.platform.proj import ProjError
 
 import logging
+from functools import reduce
 log = logging.getLogger(__name__)
 
 class BlankImage(Exception):
@@ -438,7 +439,7 @@ class CacheMapLayer(MapLayer):
                                              req_srs=query.srs)
         except NoTiles:
             raise BlankImage()
-        except GridError, ex:
+        except GridError as ex:
             raise MapBBOXError(ex.args[0])
 
         num_tiles = tile_grid[0] * tile_grid[1]
@@ -474,7 +475,7 @@ class CacheMapLayer(MapLayer):
                 self.tile_manager.image_opts)
         except ProjError:
             raise MapBBOXError("could not transform query BBOX")
-        except IOError, ex:
+        except IOError as ex:
             from mapproxy.source import SourceError
             raise SourceError("unable to transform image: %s" % ex)
 

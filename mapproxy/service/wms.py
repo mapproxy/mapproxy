@@ -126,7 +126,7 @@ class WMSServer(Server):
 
         try:
             result_buf = result.as_buffer(img_opts)
-        except IOError, ex:
+        except IOError as ex:
             raise RequestError('error while processing image file: %s' % ex,
                 request=map_request)
 
@@ -489,7 +489,7 @@ class LayerRenderer(object):
             for layer, layer_img in async_pool.imap(self._render_layer, render_layers):
                 if layer_img is not None:
                     layer_merger.add(layer_img, layer=layer)
-        except SourceError, ex:
+        except SourceError as ex:
             raise RequestError(ex.args[0], request=self.request)
 
     def _render_capture_source_errors(self, async_pool, render_layers, layer_merger):
@@ -532,7 +532,7 @@ class LayerRenderer(object):
             raise
         except MapBBOXError:
             raise RequestError('Request too large or invalid BBOX.', request=self.request)
-        except MapError, e:
+        except MapError as e:
             raise RequestError('Invalid request: %s' % e.args[0], request=self.request)
         except TransformationError:
             raise RequestError('Could not transform BBOX: Invalid result.',

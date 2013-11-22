@@ -74,7 +74,7 @@ class DemoServer(Server):
         # since they are not confidential
         try:
             authorized = self.authorized_demo(req.environ)
-        except RequestError, ex:
+        except RequestError as ex:
             return ex.render()
         if not authorized:
             return Response('forbidden', content_type='text/plain', status=403)

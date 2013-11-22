@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 #
@@ -21,7 +23,7 @@ from mapproxy.seed.seeder import TileWorkerPool, TileWalker, TileCleanupWorker
 def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
                verbose=True, progress_logger=None):
     for task in tasks:
-        print format_cleanup_task(task)
+        print(format_cleanup_task(task))
 
         if task.complete_extent:
             if hasattr(task.tile_manager.cache, 'level_location'):
@@ -43,7 +45,7 @@ def simple_cleanup(task, dry_run, progress_logger=None):
         level_dir = task.tile_manager.cache.level_location(level)
         if dry_run:
             def file_handler(filename):
-                print 'removing ' + filename
+                print('removing ' + filename)
         else:
             file_handler = None
         if progress_logger:

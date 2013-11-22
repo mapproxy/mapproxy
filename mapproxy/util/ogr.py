@@ -1,3 +1,4 @@
+from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 #
@@ -222,4 +223,4 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         where = sys.argv[2]
     for wkt in reader.wkts(where):
-        print wkt
+        print(wkt)

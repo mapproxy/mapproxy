@@ -133,11 +133,11 @@ class HTTPClient(object):
                 result = self.opener.open(req, timeout=self._timeout)
             else:
                 result = self.opener.open(req)
-        except HTTPError, e:
+        except HTTPError as e:
             code = e.code
             reraise_exception(HTTPClientError('HTTP Error "%s": %d'
                 % (url, e.code), response_code=code), sys.exc_info())
-        except URLError, e:
+        except URLError as e:
             if ssl and isinstance(e.reason, ssl.SSLError):
                 e = HTTPClientError('Could not verify connection to URL "%s": %s'
                                      % (url, e.reason.args[1]))
@@ -148,10 +148,10 @@ class HTTPClient(object):
                 reason = e.reason
             reraise_exception(HTTPClientError('No response from URL "%s": %s'
                                               % (url, reason)), sys.exc_info())
-        except ValueError, e:
+        except ValueError as e:
             reraise_exception(HTTPClientError('URL not correct "%s": %s'
                                               % (url, e.args[0])), sys.exc_info())
-        except Exception, e:
+        except Exception as e:
             reraise_exception(HTTPClientError('Internal HTTP error "%s": %r'
                                               % (url, e)), sys.exc_info())
         else:

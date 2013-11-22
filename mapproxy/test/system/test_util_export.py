@@ -69,7 +69,7 @@ class TestUtilExport(object):
         with capture_stderr() as err:
             try:
                 export_command(self.args)
-            except SystemExit, ex:
+            except SystemExit as ex:
                 assert ex.code != 0
             else:
                 assert False, 'export command did not exit'
