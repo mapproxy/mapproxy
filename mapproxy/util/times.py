@@ -22,6 +22,7 @@ import datetime
 import calendar
 from email.utils import parsedate
 from wsgiref.handlers import format_date_time
+from mapproxy import compat
 
 def parse_httpdate(date):
     date = parsedate(date)
@@ -34,7 +35,7 @@ def parse_httpdate(date):
 def timestamp(date):
     if isinstance(date, datetime.datetime):
         date = mktime(date.timetuple())
-    assert isinstance(date, (float, int, long))
+    assert isinstance(date, compat.numeric_types)
     return date
 
 def format_httpdate(date):
