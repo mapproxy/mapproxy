@@ -29,9 +29,9 @@ import socket
 import errno
 import time
 from cStringIO import StringIO
-from urlparse import urlsplit
 from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
 from contextlib import contextmanager
+from mapproxy.compat.modules import urlparse
 
 class HTTPServer(HTTPServer_):
     allow_reuse_address = True
@@ -313,8 +313,8 @@ def query_to_dict(query):
     return d
 
 def assert_url_eq(url1, url2):
-    parts1 = urlsplit(url1)
-    parts2 = urlsplit(url2)
+    parts1 = urlparse.urlsplit(url1)
+    parts2 = urlparse.urlsplit(url2)
 
     assert parts1[0] == parts2[0], '%s != %s (%s)' % (url1, url2, 'schema')
     assert parts1[1] == parts2[1], '%s != %s (%s)' % (url1, url2, 'location')

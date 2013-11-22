@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,8 +27,8 @@ from mapproxy.image import ImageSource
 from mapproxy.client.http import HTTPClientError
 from mapproxy.client.log import log_request
 from mapproxy.util.async import import_module
+from mapproxy.compat.modules import urlparse
 from StringIO import StringIO
-from urlparse import urlparse
 
 subprocess = import_module('subprocess')
 
@@ -38,7 +38,7 @@ def split_cgi_response(data):
     while True:
         next_n = data.find('\n', prev_n)
         if next_n < 0:
-            break 
+            break
         next_line_begin = data[next_n+1:next_n+3]
         headers.append(data[prev_n:next_n].rstrip('\r'))
         if next_line_begin[0] == '\n':
@@ -66,11 +66,11 @@ class CGIClient(object):
         self.script = script
         self.working_directory = working_directory
         self.no_headers = no_headers
-    
+
     def open(self, url, data=None):
         assert data is None, 'POST requests not supported by CGIClient'
-        
-        parsed_url = urlparse(url)
+
+        parsed_url = urlparse.urlparse(url)
         environ = os.environ.copy()
         environ.update({
             'QUERY_STRING': parsed_url.query,
@@ -81,7 +81,7 @@ class CGIClient(object):
             'SERVER_PROTOCOL': 'HTTP/1.0',
             'SERVER_SOFTWARE': 'MapProxy',
         })
-        
+
         start_time = time.time()
         try:
             p = subprocess.Popen([self.script], env=environ,
@@ -95,19 +95,19 @@ class CGIClient(object):
                 raise SourceError('No permission for CGI script (%s)' % (self.script,))
             else:
                 raise
-            
+
         stdout = p.communicate()[0]
         ret = p.wait()
         if ret != 0:
-            raise HTTPClientError('Error during CGI call (exit code: %d)' 
+            raise HTTPClientError('Error during CGI call (exit code: %d)'
                                               % (ret, ))
-        
+
         if self.no_headers:
             content = stdout
             headers = dict()
         else:
             headers, content = split_cgi_response(stdout)
-        
+
         status_match = re.match('(\d\d\d) ', headers.get('Status', ''))
         if status_match:
             status_code = status_match.group(1)
@@ -116,11 +116,11 @@ class CGIClient(object):
         size = len(content)
         content = StringIO(content)
         content.headers = headers
-        
+
         log_request('%s:%s' % (self.script, parsed_url.query),
             status_code, size=size, method='CGI', duration=time.time()-start_time)
         return content
-    
+
     def open_image(self, url, data=None):
         resp = self.open(url, data=data)
         if 'Content-type' in resp.headers:

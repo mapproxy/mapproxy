@@ -19,13 +19,13 @@ from __future__ import print_function
 # limitations under the License.
 from __future__ import with_statement
 
-import urlparse
 import sys
 import optparse
 from cStringIO import StringIO
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import XMLParser
 
+from mapproxy.compat.modules import urlparse
 from mapproxy.client.http import open_url, HTTPClientError
 from mapproxy.request.base import BaseRequest, url_decode
 from mapproxy.util.ext import wmsparse

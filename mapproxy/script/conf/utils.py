@@ -119,9 +119,9 @@ class MapProxyYAMLDumper(Emitter, _MixedFlowSortedSerializer, _EmptyNoneRepresen
                 default_flow_style=default_flow_style)
         Resolver.__init__(self)
 
-import urlparse
 from mapproxy.request.base import BaseRequest, url_decode
 from mapproxy.client.http import open_url
+from mapproxy.compat.modules import urlparse
 
 def wms_capapilities_url(url):
     parsed_url = urlparse.urlparse(url)

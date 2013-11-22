@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,8 +14,8 @@
 # limitations under the License.
 
 import re
-from urlparse import urlparse
 from mapproxy.response import Response
+from mapproxy.compat.modules import urlparse
 
 
 class _None(object):
@@ -47,7 +47,7 @@ class _Self(object):
     def __call__(self, referrer, environ):
         if referrer is None:
             return False
-        scheme, netloc, path, _params, _query, _fragment = urlparse(referrer)
+        scheme, netloc, path, _params, _query, _fragment = urlparse.urlparse(referrer)
         if scheme != environ['wsgi.url_scheme']: return False
         if netloc != environ['HTTP_HOST']:
             if _split_netloc(netloc, scheme) != _split_netloc(environ['HTTP_HOST'], scheme):
@@ -82,7 +82,7 @@ class ReferrerFilter(object):
         if referrers is None:
             referrers = []
         self.referrers = referrers
-    
+
     def check_referrer(self, environ):
         referrer = environ.get('HTTP_REFERER', None)
         for test in self.referrers:
@@ -93,14 +93,13 @@ class ReferrerFilter(object):
                 if test(referrer, environ):
                     return True
         return False
-    
+
     def restricted_response(self, environ, start_response):
         resp = Response('get out of here', status=404)
         return resp(environ, start_response)
-    
+
     def __call__(self, environ, start_response):
         if not self.referrers or self.check_referrer(environ):
             return self.app(environ, start_response)
         else:
             return self.restricted_response(environ, start_response)
-            

@@ -21,7 +21,6 @@ from __future__ import with_statement, division
 import os
 import sys
 import hashlib
-import urlparse
 import warnings
 from copy import deepcopy, copy
 from functools import partial
@@ -34,6 +33,7 @@ from mapproxy.config.spec import validate_mapproxy_conf
 from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
+from mapproxy.compat.modules import urlparse
 
 class ConfigurationError(Exception):
     pass

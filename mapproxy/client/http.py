@@ -21,13 +21,13 @@ import time
 import httplib
 import urllib2
 from urllib2 import URLError, HTTPError
-from urlparse import urlsplit
 import warnings
 
 from mapproxy.version import version
 from mapproxy.image import ImageSource
 from mapproxy.util.py import reraise_exception
 from mapproxy.client.log import log_request
+from mapproxy.compat.modules import urlparse
 
 import socket
 
@@ -184,7 +184,7 @@ def auth_data_from_url(url):
     """
     username = password = None
     if '@' in url:
-        scheme, host, path, query, frag = urlsplit(url)
+        scheme, host, path, query, frag = urlparse.urlsplit(url)
         if '@' in host:
             auth_data, host = host.rsplit('@', 1)
             url = url.replace(auth_data+'@', '', 1)

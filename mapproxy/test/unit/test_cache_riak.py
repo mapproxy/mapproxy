@@ -17,12 +17,12 @@ from __future__ import with_statement
 
 import os
 import random
-import urlparse
 
 from nose.plugins.skip import SkipTest
 
 from mapproxy.cache.riak import RiakCache
 from mapproxy.grid import tile_grid
+from mapproxy.compat.modules import urlparse
 from mapproxy.test.image import create_tmp_image_buf
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
@@ -44,7 +44,7 @@ class RiakCacheTestBase(TileCacheTestBase):
                 node['pb_port'] = urlparts.port
             if protocol in ('http', 'https'):
                 node['http_port'] = urlparts.port
-   
+
         db_name = 'mapproxy_test_%d' % random.randint(0, 100000)
 
         TileCacheTestBase.setup(self)
