@@ -28,30 +28,30 @@ class TestResponse(Mocker):
         self.expect(start_response('200 OK', ANY))
         self.replay()
         result = resp({'REQUEST_METHOD': 'GET'}, start_response)
-        assert result.next() == 'string content'
+        assert next(result) == b'string content'
 
     def test_itr_response(self):
         resp = Response(iter(['string content', 'as iterable']))
-        assert hasattr(resp.response, 'next')
+        assert hasattr(resp.response, 'next') or hasattr(resp.response, '__next__')
         start_response = self.mock()
         self.expect(start_response('200 OK', ANY))
         self.replay()
         result = resp({'REQUEST_METHOD': 'GET'}, start_response)
-        assert result.next() == 'string content'
-        assert result.next() == 'as iterable'
+        assert next(result) == b'string content'
+        assert next(result) == b'as iterable'
 
     def test_file_response(self):
-        data = BytesIO('foobar')
+        data = BytesIO(b'foobar')
         resp = Response(data)
         assert resp.response == data
         start_response = self.mock()
         self.expect(start_response('200 OK', ANY))
         self.replay()
         result = resp({'REQUEST_METHOD': 'GET'}, start_response)
-        assert result.next() == 'foobar'
+        assert next(result) == b'foobar'
 
     def test_file_response_w_file_wrapper(self):
-        data = BytesIO('foobar')
+        data = BytesIO(b'foobar')
         resp = Response(data)
         assert resp.response == data
         start_response = self.mock()
@@ -65,7 +65,7 @@ class TestResponse(Mocker):
                        'wsgi.file_wrapper': file_wrapper}, start_response)
         assert result == 'DUMMY'
     def test_file_response_content_length(self):
-        data = BytesIO('*' * 342)
+        data = BytesIO(b'*' * 342)
         resp = Response(data)
         assert resp.response == data
         start_response = self.mock()
