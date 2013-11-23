@@ -30,6 +30,18 @@ def reraise_exception(new_exc, exc_info):
     else:
         raise new_exc.with_traceback(tb)
 
+def reraise(exc_info):
+    """
+    Reraise exception from exc_info`.
+    """
+    exc_class, exc, tb = exc_info
+    if PY2:
+        exec('raise exc_class, exc, tb')
+    else:
+        raise exc.with_traceback(tb)
+
+
+
 class cached_property(object):
     """A decorator that converts a function into a lazy property. The
     function wrapped is called the first time to retrieve the result
