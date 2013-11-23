@@ -22,6 +22,7 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 import mapproxy
 from mapproxy.compat import iteritems
+from mapproxy.util.py import reraise
 from functools import reduce
 # import werkzeug
 # from werkzeug._internal import _log
@@ -110,7 +111,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler, object):
             if exc_info:
                 try:
                     if headers_sent:
-                        raise exc_info[0], exc_info[1], exc_info[2]
+                        reraise(exc_info)
                 finally:
                     exc_info = None
             elif headers_set:

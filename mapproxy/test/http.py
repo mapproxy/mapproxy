@@ -30,6 +30,7 @@ import errno
 import time
 from io import BytesIO, StringIO
 from contextlib import contextmanager
+from mapproxy.util.py import reraise
 from mapproxy.compat import iteritems, PY2
 from mapproxy.compat.modules import urlparse
 
@@ -222,7 +223,7 @@ class MockServ(object):
         self._thread.shutdown = True
         self._thread.join()
         if value:
-            raise (type, value, traceback)
+            raise reraise((type, value, traceback))
         assert self._thread.sucess, ('requests to mock httpd did not '
             'match expectations:\n' + self._thread.out.read())
 
