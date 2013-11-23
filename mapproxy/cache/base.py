@@ -101,7 +101,7 @@ class FileBasedLocking(object):
     """
     def lock_filename(self, tile):
         if getattr(self, 'lock_cache_id', None) is None:
-            self.lock_cache_id = hashlib.md5(self.cache_dir).hexdigest()
+            self.lock_cache_id = hashlib.md5(self.cache_dir.encode('utf-8')).hexdigest()
         return os.path.join(self.lock_dir, self.lock_cache_id + '-' +
                             '-'.join(map(str, tile.coord)) + '.lck')
 
