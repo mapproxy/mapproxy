@@ -17,6 +17,7 @@
 Image and tile manipulation (transforming, merging, etc).
 """
 from __future__ import with_statement
+import io
 from io import BytesIO
 
 from mapproxy.platform.image import Image, ImageChops
@@ -104,10 +105,12 @@ class ImageSource(object):
     def _make_seekable_buf(self):
         if not self._buf and self._fname:
             self._buf = open(self._fname, 'rb')
-        elif not hasattr(self._buf, 'seek'):
-            # PIL needs file objects with seek
-            self._buf = BytesIO(self._buf.read())
-        self._buf.seek(0)
+        else:
+            try:
+                self._buf.seek(0)
+            except (io.UnsupportedOperation, AttributeError):
+                # PIL needs file objects with seek
+                self._buf = BytesIO(self._buf.read())
 
     def _make_readable_buf(self):
         if not self._buf and self._fname:
