@@ -16,7 +16,7 @@
 from io import BytesIO
 
 from mapproxy.test.helper import Mocker
-from mocker import ANY
+from mapproxy.test.mocker import ANY
 from mapproxy.response import Response
 from mapproxy.compat import string_type
 

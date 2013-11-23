@@ -20,7 +20,7 @@ import tempfile
 import os
 import re
 from lxml import etree
-import mocker
+from mapproxy.test import mocker
 
 from mapproxy.compat import string_type
 from nose.tools import eq_
