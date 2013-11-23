@@ -29,7 +29,7 @@ else:
         return d.items()
 
     def iterkeys(d):
-        return d.keys()
+        return iter(d.keys())
 
     def itervalues(d):
         return d.values()

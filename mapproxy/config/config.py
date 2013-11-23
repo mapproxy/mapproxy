@@ -66,7 +66,7 @@ class Options(dict):
                 self[key] = value
 
     def __deepcopy__(self, memo):
-        return Options(copy.deepcopy(self.items(), memo))
+        return Options(copy.deepcopy(list(self.items()), memo))
 
 _config = LocalStack()
 def base_config():

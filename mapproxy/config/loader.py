@@ -421,9 +421,9 @@ class ImageOptionsConfiguration(ConfigurationBase):
         self._check_encoding_options(encoding_options)
 
         # only overwrite default if it is not None
-        for k, v in dict(transparent=transparent, opacity=opacity, resampling=resampling,
+        for k, v in iteritems(dict(transparent=transparent, opacity=opacity, resampling=resampling,
             format=img_format, colors=colors, mode=mode, encoding_options=encoding_options,
-        ).iteritems():
+        )):
             if v is not None:
                 conf[k] = v
 

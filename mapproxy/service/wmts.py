@@ -21,7 +21,7 @@ from __future__ import print_function
 
 from functools import partial
 
-from mapproxy.compat import iteritems, itervalues
+from mapproxy.compat import iteritems, itervalues, iterkeys
 from mapproxy.request.wmts import (
     wmts_request, make_wmts_rest_request_parser,
     URLTemplateConverter,
@@ -245,7 +245,7 @@ class WMTSTileLayer(object):
     def __init__(self, layers):
         self.grids = [lyr.grid for lyr in layers.values()]
         self.layers = layers
-        self._layer = layers[layers.keys()[0]]
+        self._layer = layers[next(iterkeys(layers))]
 
     def __getattr__(self, name):
         return getattr(self._layer, name)
@@ -278,7 +278,7 @@ class TileMatrixSet(object):
         return iter(self.tile_matrices)
 
     def _tile_matrices(self):
-        for level, res in iteritems(self.grid.resolutions):
+        for level, res in self.grid.resolutions.iteritems():
             origin = self.grid.origin_tile(level, 'ul')
             bbox = self.grid.tile_bbox(origin)
             grid_size = self.grid.grid_sizes[level]
