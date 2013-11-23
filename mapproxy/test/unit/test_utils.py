@@ -35,6 +35,7 @@ from mapproxy.util.fs import (
     cleanup_directory,
     write_atomic,
 )
+from mapproxy.util.py import reraise_exception
 from mapproxy.util.times import timestamp_before
 from mapproxy.test.helper import Mocker
 
@@ -424,3 +425,21 @@ class TestWriteAtomic(object):
             pass
         else:
             assert False, 'expected exception'
+
+
+def test_reraise_exception():
+    def valueerror_raiser():
+        raise ValueError()
+
+    def reraiser():
+        try:
+            valueerror_raiser()
+        except ValueError:
+            reraise_exception(TypeError(), sys.exc_info())
+
+    try:
+        reraiser()
+    except TypeError as ex:
+        assert ex
+    else:
+        assert False, 'expected exception'

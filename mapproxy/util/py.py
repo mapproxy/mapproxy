@@ -18,13 +18,17 @@ Python related helper functions.
 """
 from __future__ import with_statement
 from functools import wraps
+from mapproxy.compat import PY2
 
 def reraise_exception(new_exc, exc_info):
     """
     Reraise exception (`new_exc`) with the given `exc_info`.
     """
     _exc_class, _exc, tb = exc_info
-    raise new_exc.__class__, new_exc, tb
+    if PY2:
+        exec('raise new_exc.__class__, new_exc, tb')
+    else:
+        raise new_exc.with_traceback(tb)
 
 class cached_property(object):
     """A decorator that converts a function into a lazy property. The
