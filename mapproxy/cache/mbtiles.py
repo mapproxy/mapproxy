@@ -24,6 +24,7 @@ from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer, CacheBackendError
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
+from mapproxy.compat import PY2
 
 import logging
 log = logging.getLogger(__name__)
@@ -141,7 +142,10 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
         if tile.stored:
             return True
         with tile_buffer(tile) as buf:
-            content = buffer(buf.read())
+            if PY2:
+                content = buffer(buf.read())
+            else:
+                content = buf.read()
             x, y, level = tile.coord
             cursor = self.db.cursor()
             if self.supports_timestamp:
