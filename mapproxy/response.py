@@ -80,7 +80,7 @@ class Response(object):
         :param max_age: the maximum cache age in seconds
         """
         if etag_data:
-            hash_src = ''.join((str(x) for x in etag_data))
+            hash_src = ''.join((str(x) for x in etag_data)).encode('ascii')
             self.etag = hashlib.md5(hash_src).hexdigest()
 
         if no_cache:
