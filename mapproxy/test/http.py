@@ -248,9 +248,9 @@ def wms_query_eq(expected, actual):
 
     if 'bbox' in expected and 'bbox' in actual:
         expected = expected.copy()
-        expected_bbox = map(float, expected.pop('bbox').split(','))
+        expected_bbox = [float(x) for x in expected.pop('bbox').split(',')]
         actual = actual.copy()
-        actual_bbox = map(float, actual.pop('bbox').split(','))
+        actual_bbox = [float(x) for x in actual.pop('bbox').split(',')]
         if expected != actual:
             return False
         if not bbox_equals(expected_bbox, actual_bbox):
