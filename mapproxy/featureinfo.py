@@ -16,7 +16,7 @@
 import copy
 from io import BytesIO, StringIO
 from mapproxy.request.base import split_mime_type
-from mapproxy.compat import string_type
+from mapproxy.compat import string_type, PY2
 
 try:
     from lxml import etree, html
@@ -78,10 +78,7 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
         return etree.tostring(self._etree)
 
     def _parse_content(self):
-        if isinstance(self._str_content, string_type):
-            doc = StringIO(self._str_content)
-        else:
-            doc = BytesIO(self._str_content)
+        doc = as_io(self._str_content)
         return etree.parse(doc)
 
     @classmethod
@@ -147,10 +144,20 @@ class XSLTransformer(object):
 
     __call__ = transform
 
+def as_io(doc):
+    if PY2:
+        return BytesIO(doc)
+    else:
+        if isinstance(doc, str):
+            return StringIO(doc)
+        else:
+            return BytesIO(doc)
+
+
 def combined_inputs(input_docs):
     doc = input_docs.pop(0)
-    input_tree = etree.parse(StringIO(doc))
+    input_tree = etree.parse(as_io(doc))
     for doc in input_docs:
-        doc_tree = etree.parse(StringIO(doc))
+        doc_tree = etree.parse(as_io(doc))
         input_tree.getroot().extend(doc_tree.getroot().iterchildren())
     return input_tree

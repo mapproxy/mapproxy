@@ -188,8 +188,6 @@ class XPathValidator(object):
 
 def strip_whitespace(data):
     """
-    >>> strip_whitespace(b' <foo> bar\\n zing\\t1')
-    b'<foo>barzing1'
     >>> strip_whitespace(' <foo> bar\\n zing\\t1')
     '<foo>barzing1'
     """
