@@ -29,10 +29,14 @@ import socket
 import errno
 import time
 from io import BytesIO
-from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
 from contextlib import contextmanager
-from mapproxy.compat import iteritems
+from mapproxy.compat import iteritems, PY2
 from mapproxy.compat.modules import urlparse
+
+if PY2:
+    from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
+else:
+    from http.server import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
 
 class HTTPServer(HTTPServer_):
     allow_reuse_address = True
@@ -218,7 +222,7 @@ class MockServ(object):
         self._thread.shutdown = True
         self._thread.join()
         if value:
-            raise type, value, traceback
+            raise (type, value, traceback)
         assert self._thread.sucess, ('requests to mock httpd did not '
             'match expectations:\n' + self._thread.out.read())
 

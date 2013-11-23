@@ -18,16 +18,23 @@ Tile retrieval (WMS, TMS, etc.).
 """
 import sys
 import time
-import httplib
-import urllib2
-from urllib2 import URLError, HTTPError
 import warnings
 
 from mapproxy.version import version
 from mapproxy.image import ImageSource
 from mapproxy.util.py import reraise_exception
 from mapproxy.client.log import log_request
+from mapproxy.compat import PY2
 from mapproxy.compat.modules import urlparse
+
+if PY2:
+    import urllib2
+    from urllib2 import URLError, HTTPError
+    import httplib
+else:
+    from urllib import request as urllib2
+    from urllib.error import URLError, HTTPError
+    from http import client as httplib
 
 import socket
 
