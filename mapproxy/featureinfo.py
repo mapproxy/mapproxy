@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import copy
-from io import BytesIO
+from io import BytesIO, StringIO
 from mapproxy.request.base import split_mime_type
 from mapproxy.compat import string_type
 
@@ -54,7 +54,7 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
     info_type = 'xml'
 
     def __init__(self, content):
-        if isinstance(content, string_type):
+        if isinstance(content, (string_type, bytes)):
             self._str_content = content
             self._etree = None
         else:
@@ -71,14 +71,17 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
 
     def as_etree(self):
         if self._etree is None:
-            self._etree = self._parse_str_content()
+            self._etree = self._parse_content()
         return self._etree
 
     def _serialize_etree(self):
         return etree.tostring(self._etree)
 
-    def _parse_str_content(self):
-        doc = BytesIO(self._str_content)
+    def _parse_content(self):
+        if isinstance(self._str_content, string_type):
+            doc = StringIO(self._str_content)
+        else:
+            doc = BytesIO(self._str_content)
         return etree.parse(doc)
 
     @classmethod
@@ -95,7 +98,7 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
 class HTMLFeatureInfoDoc(XMLFeatureInfoDoc):
     info_type = 'html'
 
-    def _parse_str_content(self):
+    def _parse_content(self):
         root = html.document_fromstring(self._str_content)
         return root
 
@@ -146,8 +149,8 @@ class XSLTransformer(object):
 
 def combined_inputs(input_docs):
     doc = input_docs.pop(0)
-    input_tree = etree.parse(BytesIO(doc))
+    input_tree = etree.parse(StringIO(doc))
     for doc in input_docs:
-        doc_tree = etree.parse(BytesIO(doc))
+        doc_tree = etree.parse(StringIO(doc))
         input_tree.getroot().extend(doc_tree.getroot().iterchildren())
     return input_tree
