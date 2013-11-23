@@ -313,7 +313,7 @@ class TileCreator(object):
                 if not meta_tile_image: return []
                 splitted_tiles = split_meta_tiles(meta_tile_image, meta_tile.tile_patterns,
                                                   tile_size, self.tile_mgr.image_opts)
-                splitted_tiles = map(self.tile_mgr.apply_tile_filter, splitted_tiles)
+                splitted_tiles = [self.tile_mgr.apply_tile_filter(t) for t in splitted_tiles]
                 if meta_tile_image.cacheable:
                     self.cache.store_tiles(splitted_tiles)
                 return splitted_tiles
