@@ -32,6 +32,7 @@ from __future__ import print_function
 import os
 import sys
 from mapproxy.util.lib import load_library
+from mapproxy.compat import PY2
 
 import ctypes
 from ctypes import (
@@ -101,6 +102,8 @@ class SearchPath(object):
 
     def set_searchpath(self, path):
         self.clear()
+        if path is not None:
+            path = path.encode(sys.getfilesystemencoding() or 'utf-8')
         self.path = path
 
     def finder(self, name):
@@ -147,9 +150,9 @@ def try_libproj_import():
     class Proj(object):
         def __init__(self, proj_def=None, init=None):
             if init:
-                self._proj = libproj.pj_init_plus('+init=%s' % init)
+                self._proj = libproj.pj_init_plus(b'+init=' + init.encode('ascii'))
             else:
-                self._proj = libproj.pj_init_plus(proj_def)
+                self._proj = libproj.pj_init_plus(proj_def.encode('ascii'))
             if not self._proj:
                 errno = libproj.pj_get_errno_ref().contents
                 raise ProjInitError('error initializing Proj(proj_def=%r, init=%r): %s' %
