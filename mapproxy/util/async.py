@@ -219,7 +219,7 @@ class ThreadPool(object):
     def imap(self, func, *args, **kw):
         use_result_objects = kw.get('use_result_objects', False)
         if len(args[0]) == 1:
-            return self._single_call(func, zip(*args)[0], use_result_objects)
+            return self._single_call(func, next(zip(*args)), use_result_objects)
         return _result_iter(self.map_each([(func, arg) for arg in zip(*args)], raise_exceptions=not use_result_objects),
                             use_result_objects)
 

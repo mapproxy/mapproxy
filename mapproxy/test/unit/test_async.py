@@ -171,8 +171,8 @@ class CommonPoolTests(object):
         try:
             # first result might aleady raise the exception when
             # when second result is returned faster by the ThreadPoolWorker
-            eq_(result.next(), 3)
-            result.next()
+            eq_(next(result), 3)
+            next(result)
         except ValueError:
             pass
         else:
