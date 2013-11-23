@@ -20,6 +20,7 @@ import time
 import threading
 import shutil
 import tempfile
+import base64
 
 from io import BytesIO
 from mapproxy.platform.image import Image
@@ -49,7 +50,7 @@ from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.util.coverage import BBOXCoverage
 
 from mapproxy.test.image import create_debug_img, is_png, tmp_image
-from mapproxy.test.http import assert_query_eq, query_eq, mock_httpd
+from mapproxy.test.http import assert_query_eq, wms_query_eq, query_eq, mock_httpd
 
 from collections import defaultdict
 
@@ -628,7 +629,7 @@ class TestWMSSourceTransform(object):
     def test_get_map_transformed(self):
         self.source.get_map(MapQuery(
            (556597, 4865942, 1669792, 7361866), (300, 150), SRS(900913)))
-        assert_query_eq(self.http_client.requested[0], "http://localhost/service?"
+        assert wms_query_eq(self.http_client.requested[0], "http://localhost/service?"
             "layers=foo&width=300&version=1.1.1"
             "&bbox=4.99999592195,39.9999980766,14.999996749,54.9999994175&service=WMS"
             "&format=image%2Fpng&styles=&srs=EPSG%3A4326&request=GetMap&height=450")
@@ -674,7 +675,7 @@ class TestWMSSourceWithClient(object):
         def assert_auth(req_handler):
             assert 'Authorization' in req_handler.headers
             auth_data = req_handler.headers['Authorization'].split()[1]
-            auth_data = auth_data.decode('base64')
+            auth_data = base64.b64decode(auth_data.encode('utf-8')).decode('utf-8')
             eq_(auth_data, 'foo:bar@')
             return True
         expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
@@ -682,7 +683,7 @@ class TestWMSSourceWithClient(object):
                                   '&VERSION=1.1.1&BBOX=0.0,10.0,10.0,20.0&WIDTH=512&STYLES=',
                          'require_basic_auth': True,
                          'req_assert_function': assert_auth},
-                        {'body': 'no image', 'headers': {'content-type': 'image/png'}})
+                        {'body': b'no image', 'headers': {'content-type': 'image/png'}})
         with mock_httpd(TEST_SERVER_ADDRESS, [expected_req]):
             q = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
             self.source.get_map(q)
@@ -710,7 +711,7 @@ class TestWMSSource(object):
         resp = self.source.get_map(req)
         eq_(len(self.http.requested), 1)
 
-        assert_query_eq(self.http.requested[0],
+        assert wms_query_eq(self.http.requested[0],
             TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                            '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
                            '&VERSION=1.1.1&WIDTH=512&STYLES='
@@ -747,7 +748,7 @@ class TestWMSSource(object):
         resp = self.source.get_map(req)
         eq_(len(self.http.requested), 1)
 
-        assert_query_eq(self.http.requested[0],
+        assert wms_query_eq(self.http.requested[0],
             TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                            '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
                            '&VERSION=1.1.1&WIDTH=512&STYLES=&transparent=true'

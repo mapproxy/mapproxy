@@ -141,7 +141,7 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
                     self.send_response(401)
                     self.send_header('WWW-Authenticate', 'Basic realm="Secure Area"')
                     self.end_headers()
-                    self.wfile.write('no access')
+                    self.wfile.write(b'no access')
                     return
             if not query_comparator(req['path'], self.query_data):
                 print('got request      ', self.query_data, file=self.server.out)
