@@ -83,7 +83,7 @@ class CtypesOGRShapeReader(object):
 
     def open(self):
         if self._ds: return
-        self._ds = libgdal.OGROpen(self.datasource, False, None)
+        self._ds = libgdal.OGROpen(self.datasource.encode(sys.getdefaultencoding()), False, None)
         if self._ds is None:
             msg = None
             if libgdal.CPLGetLastErrorMsg:
@@ -100,8 +100,8 @@ class CtypesOGRShapeReader(object):
                 layer = libgdal.OGR_DS_GetLayer(self._ds, 0)
                 layer_def = libgdal.OGR_L_GetLayerDefn(layer)
                 name = libgdal.OGR_FD_GetName(layer_def)
-                where = 'select * from %s where %s' % (name, where)
-            layer = libgdal.OGR_DS_ExecuteSQL(self._ds, where, None, None)
+                where = 'select * from %s where %s' % (name.decode('utf-8'), where)
+            layer = libgdal.OGR_DS_ExecuteSQL(self._ds, where.encode('utf-8'), None, None)
         else:
             layer = libgdal.OGR_DS_GetLayer(self._ds, 0)
         if layer is None:
