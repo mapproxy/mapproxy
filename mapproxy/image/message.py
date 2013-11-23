@@ -258,6 +258,7 @@ class TextDraw(object):
         try:
             total_bbox, boxes = self._relative_text_boxes(draw)
         except UnicodeEncodeError:
+            # raised if font does not support unicode
             self.text = [l.encode('ascii', 'replace') for l in self.text]
             total_bbox, boxes = self._relative_text_boxes(draw)
         return self._place_boxes(total_bbox, boxes, size)

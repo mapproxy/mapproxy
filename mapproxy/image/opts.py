@@ -37,7 +37,7 @@ class ImageOptions(object):
             if k.startswith('_'):
                 continue
             v = getattr(self, k)
-            if v is not None and not hasattr(v, 'im_func'):
+            if v is not None and not hasattr(v, 'im_func') and not hasattr(v, '__func__'):
                 options.append('%s=%r' % (k, v))
         return 'ImageOptions(%s)' % (', '.join(options), )
 

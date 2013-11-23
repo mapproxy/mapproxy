@@ -24,6 +24,7 @@ from mapproxy.platform.image import (
     ImageFont,
 )
 
+from mapproxy.compat import PY3
 from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
 from mapproxy.image.message import TextDraw, message_image
@@ -31,6 +32,7 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.tilefilter import watermark_filter
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 PNG_FORMAT = ImageOptions(format='image/png')
 
@@ -77,6 +79,8 @@ class TestTextDraw(object):
         img = Image.new('RGB', (100, 100))
         draw = ImageDraw.Draw(img)
         total_box, boxes = td.text_boxes(draw, (100, 100))
+        if PY3:
+            raise SkipTest('unicode handling for default font differs on PY3')
         eq_(total_box, (35, 38, 65, 63))
         eq_(boxes, [(35, 38, 65, 49), (35, 52, 65, 63)])
 
