@@ -16,7 +16,7 @@
 """
 WMS service handler
 """
-from itertools import chain
+from mapproxy.compat.itertools import chain
 from functools import partial
 from mapproxy.cache.tile import CacheInfo
 from mapproxy.request.wms import (wms_request, WMS111LegendGraphicRequest,

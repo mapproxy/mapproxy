@@ -107,7 +107,7 @@
     :license: modified BSD license.
 """
 from __future__ import absolute_import
-from itertools import izip, imap
+from mapproxy.compat.itertools import izip, imap
 from copy import deepcopy
 
 missing = object()

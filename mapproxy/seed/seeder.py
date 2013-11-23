@@ -25,7 +25,7 @@ from mapproxy.config import base_config
 from mapproxy.grid import MetaGrid
 from mapproxy.source import SourceError
 from mapproxy.config import local_base_config
-from mapproxy.util.ext.itertools import izip_longest
+from mapproxy.compat.itertools import izip_longest
 from mapproxy.util.lock import LockTimeout
 from mapproxy.seed.util import format_seed_task, timestamp
 from mapproxy.seed.cachelock import DummyCacheLocker, CacheLockedError
@@ -280,7 +280,7 @@ class TileWalker(object):
         process = False;
         if current_level in levels:
             levels = levels[1:]
-            process = True            
+            process = True
         current_level += 1
 
         for i, (subtile, sub_bbox, intersection) in enumerate(subtiles):

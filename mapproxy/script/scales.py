@@ -20,7 +20,7 @@ from __future__ import print_function
 from __future__ import division, with_statement
 import sys
 import optparse
-import itertools
+from mapproxy.compat import itertools
 
 DEFAULT_DPIS = {
     'OGC': 2.54/(0.00028 * 100),

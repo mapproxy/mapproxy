@@ -8,7 +8,7 @@ import sqlite3
 import time
 from contextlib import contextmanager
 from functools import partial
-from itertools import groupby
+from mapproxy.compat.itertools import groupby
 from six.moves import map
 from six.moves import zip
 

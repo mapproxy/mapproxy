@@ -15,7 +15,7 @@
 
 from __future__ import absolute_import
 from collections import deque
-from itertools import islice
+from mapproxy.compat.itertools import islice
 from mapproxy.compat import string_type
 
 class LRU(object):
