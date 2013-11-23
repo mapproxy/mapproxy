@@ -132,11 +132,11 @@ class TestSubImageSource(object):
 
 class ROnly(object):
     def __init__(self):
-        self.data = ['Hello World!']
+        self.data = [b'Hello World!']
     def read(self):
         if self.data:
             return self.data.pop()
-        return ''
+        return b''
     def __iter__(self):
         it = iter(self.data)
         self.data = []
@@ -147,27 +147,27 @@ class TestReadBufWrapper(object):
         rbuf = ROnly()
         self.rbuf_wrapper = ReadBufWrapper(rbuf)
     def test_read(self):
-        assert self.rbuf_wrapper.read() == 'Hello World!'
+        assert self.rbuf_wrapper.read() == b'Hello World!'
         self.rbuf_wrapper.seek(0)
-        eq_(self.rbuf_wrapper.read(), '')
+        eq_(self.rbuf_wrapper.read(), b'')
     def test_seek_read(self):
         self.rbuf_wrapper.seek(0)
-        assert self.rbuf_wrapper.read() == 'Hello World!'
+        assert self.rbuf_wrapper.read() == b'Hello World!'
         self.rbuf_wrapper.seek(0)
-        assert self.rbuf_wrapper.read() == 'Hello World!'
+        assert self.rbuf_wrapper.read() == b'Hello World!'
     def test_iter(self):
         data = list(self.rbuf_wrapper)
-        eq_(data, ['Hello World!'])
+        eq_(data, [b'Hello World!'])
         self.rbuf_wrapper.seek(0)
         data = list(self.rbuf_wrapper)
         eq_(data, [])
     def test_seek_iter(self):
         self.rbuf_wrapper.seek(0)
         data = list(self.rbuf_wrapper)
-        eq_(data, ['Hello World!'])
+        eq_(data, [b'Hello World!'])
         self.rbuf_wrapper.seek(0)
         data = list(self.rbuf_wrapper)
-        eq_(data, ['Hello World!'])
+        eq_(data, [b'Hello World!'])
     def test_hasattr(self):
         assert hasattr(self.rbuf_wrapper, 'seek')
         assert hasattr(self.rbuf_wrapper, 'readline')
@@ -297,7 +297,7 @@ class TestLayerMerge(object):
     def test_paletted_merge(self):
         if not hasattr(Image, 'FASTOCTREE'):
             raise SkipTest()
-            
+
         # generate RGBA images with a transparent rectangle in the lower right
         img1 = ImageSource(Image.new('RGBA', (50, 50), (0, 255, 0, 255))).as_image()
         draw = ImageDraw.Draw(img1)
@@ -317,7 +317,7 @@ class TestLayerMerge(object):
         img3 = ImageSource(Image.new('RGBA', (50, 50), (0, 0, 255, 255)))
         result = merge_images([img3, img1, img2], ImageOptions(transparent=True))
         img = result.as_image()
-        
+
         assert img.mode == 'RGBA'
         eq_(img.getpixel((49, 49)), (0, 0, 255, 255))
         eq_(img.getpixel((0, 0)), (255, 0, 0, 255))

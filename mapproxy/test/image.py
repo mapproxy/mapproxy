@@ -52,12 +52,12 @@ def has_magic_bytes(fileobj, bytes):
             return True
     return False
 
-magic_bytes = { 'png': ["\211PNG\r\n\032\n"],
-                'tiff': ["MM\x00\x2a", "II\x2a\x00"],
-                'geotiff': ["MM\x00\x2a", "II\x2a\x00"],
-                'gif': ["GIF87a", "GIF89a"],
-                'jpeg': ["\xFF\xD8", "GIF89a"],
-                'bmp': ['BM']
+magic_bytes = { 'png': [b"\211PNG\r\n\032\n"],
+                'tiff': [b"MM\x00\x2a", b"II\x2a\x00"],
+                'geotiff': [b"MM\x00\x2a", b"II\x2a\x00"],
+                'gif': [b"GIF87a", b"GIF89a"],
+                'jpeg': [b"\xFF\xD8", b"GIF89a"],
+                'bmp': [b'BM']
                 }
 
 def create_is_x_functions():
