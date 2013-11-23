@@ -20,6 +20,7 @@ import errno
 from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.image import ImageSource, is_single_color_image
 from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer
+from mapproxy.compat import string_type
 
 import logging
 log = logging.getLogger('mapproxy.cache.file')
@@ -61,7 +62,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
         >>> c.level_location(2)
         '/tmp/cache/02'
         """
-        if isinstance(level, basestring):
+        if isinstance(level, string_type):
             return os.path.join(self.cache_dir, level)
         else:
             return os.path.join(self.cache_dir, "%02d" % level)

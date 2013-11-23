@@ -14,8 +14,9 @@
 # limitations under the License.
 
 from __future__ import with_statement, absolute_import
-import yaml
 
+from mapproxy.compat import string_type
+import yaml
 
 class YAMLError(Exception):
     pass
@@ -24,7 +25,7 @@ def load_yaml_file(file_or_filename):
     """
     Load yaml from file object or filename.
     """
-    if isinstance(file_or_filename, basestring):
+    if isinstance(file_or_filename, string_type):
         with open(file_or_filename) as f:
             return load_yaml(f)
     return load_yaml(file_or_filename)

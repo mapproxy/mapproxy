@@ -4,11 +4,11 @@ PY3 = not PY2
 
 if PY2:
     numeric_types = (float, int, long)
+    string_type = basestring
     # text_type = str
-    # string_types = (str,)
     # unichr = chr
 else:
     numeric_types = (float, int)
+    string_type = str
     # text_type = unicode
-    # string_types = (str, unicode)
     # unichr = unichr

@@ -20,6 +20,8 @@ import codecs
 from functools import partial
 from contextlib import closing
 
+from mapproxy.compat import string_type
+
 import logging
 log_config = logging.getLogger('mapproxy.config.coverage')
 
@@ -83,7 +85,7 @@ def load_polygons(geom_files):
     Returns a list of Shapely Polygons.
     """
     polygons = []
-    if isinstance(geom_files, basestring):
+    if isinstance(geom_files, string_type):
         geom_files = [geom_files]
 
     for geom_file in geom_files:

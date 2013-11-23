@@ -1,16 +1,16 @@
 # -:- encoding: utf8 -:-
 # Copyright (c) 2011, Oliver Tonnhofer <olt@omniscale.de>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,7 +25,7 @@ import unittest
 
 from ..validator import validate, ValidationError, SpecError
 from ..spec import required, one_of, number, recursive, type_spec, anything
-
+from mapproxy.compat import string_type
 
 def raises(exception):
     def wrapper(f):
@@ -61,20 +61,20 @@ class TestSimpleDict(unittest.TestCase):
     def test_missing_required_key(self):
         spec = {required('world'): 1}
         validate(spec, {})
-    
+
     def test_valid_one_of(self):
         spec = {'hello': one_of(1, bool())}
         validate(spec, {'hello': 129})
         validate(spec, {'hello': True})
-    
+
     @raises(ValidationError)
     def test_invalid_one_of(self):
         spec = {'hello': one_of(1, False)}
         validate(spec, {'hello': []})
 
     def test_instances_and_types(self):
-        spec = {'str()': str(), 'basestring': basestring, 'int': int, 'int()': int()}
-        validate(spec, {'str()': 'str', 'basestring': u'☃', 'int': 1, 'int()': 1})
+        spec = {'str()': str(), 'string_type': string_type, 'int': int, 'int()': int()}
+        validate(spec, {'str()': 'str', 'string_type': u'☃', 'int': 1, 'int()': 1})
 
 
 class TestLists(unittest.TestCase):
@@ -85,7 +85,7 @@ class TestLists(unittest.TestCase):
     def test_empty_list(self):
         spec = [1]
         validate(spec, [])
-    
+
     @raises(ValidationError)
     def test_invalid_item(self):
         spec = [1]
@@ -94,7 +94,7 @@ class TestLists(unittest.TestCase):
 class TestNumber(unittest.TestCase):
     def check_valid(self, spec, data):
         validate(spec, data)
-    
+
     def test_numbers(self):
         spec = number()
         for i in (0, 1, 23e999, int(10e20), 23.1, -0.0000000001):
@@ -103,11 +103,11 @@ class TestNumber(unittest.TestCase):
 class TestNested(unittest.TestCase):
     def check_valid(self, spec, data):
         validate(spec, data)
-    
+
     @raises(ValidationError)
     def check_invalid(self, spec, data):
         validate(spec, data)
-        
+
     def test_dict(self):
         spec = {
             'globals': {
@@ -123,7 +123,7 @@ class TestNested(unittest.TestCase):
                 }
             }
         }
-        
+
         yield self.check_valid, spec, {'globals': {'image': {'format': {'png': {'mode': 'P'}}}}}
         yield self.check_valid, spec, {'globals': {'image': {'format': {'png': {'mode': 'P'}}},
                                                    'cache': {'base_dir': '/somewhere'}}}
@@ -154,16 +154,19 @@ class TestTypeSpec(unittest.TestCase):
 
 class TestErrors(unittest.TestCase):
     def test_invalid_types(self):
-        spec = {'str': str, 'str()': str(), 'basestring': basestring, '1': 1, 'int': int}
+        spec = {'str': str, 'str()': str(), 'string_type': string_type, '1': 1, 'int': int}
         try:
-            validate(spec, {'str': 1, 'str()': 1, 'basestring': 1, '1': 'a', 'int': 'int'})
+            validate(spec, {'str': 1, 'str()': 1, 'string_type': 1, '1': 'a', 'int': 'int'})
         except ValidationError as ex:
             ex.errors.sort()
+            print ex.errors
             assert ex.errors[0] == "'a' in 1 not of type int"
             assert ex.errors[1] == "'int' in int not of type int"
-            assert ex.errors[2] == '1 in basestring not of type basestring'
-            assert ex.errors[3] == '1 in str not of type str'
-            assert ex.errors[4] == '1 in str() not of type str'
+            assert ex.errors[2] == '1 in str not of type str'
+            assert ex.errors[3] == '1 in str() not of type str'
+            assert ex.errors[4] in (
+                '1 in string_type not of type basestring', #PY2
+                '1 in string_type not of type str') #PY3
         else:
             assert False
 
@@ -204,7 +207,7 @@ class TestErrors(unittest.TestCase):
             assert "'not a bool' in 1 not of type bool" in ex.errors[0]
         else:
             assert False
-    
+
     def test_error_in_non_string_key_with_anything_key_spec(self):
         spec = {anything(): bool()}
         try:
@@ -217,7 +220,7 @@ class TestErrors(unittest.TestCase):
 def test_one_of_with_custom_types():
     # test for fixed validation of one_of specs with values that are
     # not lists or dicts (e.g. recursive)
-    spec = one_of([str], recursive({required('foo'): basestring}))
+    spec = one_of([str], recursive({required('foo'): string_type}))
     validate(spec, ['foo', 'bar'])
     validate(spec, {'foo': 'bar'})
     try:

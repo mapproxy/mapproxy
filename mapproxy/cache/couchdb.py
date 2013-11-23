@@ -28,6 +28,7 @@ from mapproxy.cache.base import (
     tile_buffer, CacheBackendError,)
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
+from mapproxy.compat import string_type
 
 from threading import Lock
 
@@ -269,7 +270,7 @@ class CouchDBMDTemplate(object):
         doc = {}
         x, y, z = tile.coord
         for key, value in self.attributes.iteritems():
-            if not isinstance(value, basestring) or not value.startswith('{{'):
+            if not isinstance(value, string_type) or not value.startswith('{{'):
                 doc[key] = value
                 continue
 

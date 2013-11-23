@@ -19,6 +19,7 @@ Service responses.
 
 import hashlib
 from mapproxy.util.times import format_httpdate, parse_httpdate, timestamp
+from mapproxy.compat import string_type
 
 class Response(object):
     charset = 'utf-8'
@@ -156,7 +157,7 @@ class Response(object):
             else:
                 resp_iter = iter(lambda: self.response.read(self.block_size), '')
         else:
-            if isinstance(self.response, basestring):
+            if isinstance(self.response, string_type):
                 self.headers['Content-length'] = str(len(self.response))
                 self.response = [self.response]
             resp_iter = self.iter_encode(self.response)

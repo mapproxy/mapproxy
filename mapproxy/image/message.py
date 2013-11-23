@@ -21,6 +21,7 @@ from mapproxy.config import base_config, abspath
 from mapproxy.platform.image import Image, ImageColor, ImageDraw, ImageFont
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import create_image, ImageOptions
+from mapproxy.compat import string_type
 
 _pil_ttf_support = True
 
@@ -243,7 +244,7 @@ class AttributionImage(MessageImage):
 class TextDraw(object):
     def __init__(self, text, font, font_color=None, bg_color=None,
                  placement='ul', padding=5, linespacing=3):
-        if isinstance(text, basestring):
+        if isinstance(text, string_type):
             text = text.split('\n')
         self.text = text
         self.font = font

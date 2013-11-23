@@ -21,6 +21,7 @@ import math
 
 from mapproxy.srs import SRS, get_epsg_num, merge_bbox, bbox_equals
 from mapproxy.util.collections import ImmutableDictList
+from mapproxy.compat import string_type
 
 geodetic_epsg_codes = [4326]
 
@@ -225,7 +226,7 @@ def bbox_tuple(bbox):
     (20.0, -30.0, 40.0, -10.0)
 
     """
-    if isinstance(bbox, basestring):
+    if isinstance(bbox, string_type):
         bbox = bbox.split(',')
     bbox = tuple(map(float, bbox))
     return bbox
@@ -283,7 +284,7 @@ class TileGrid(object):
         >>> [round(x, 2) for x in grid.bbox]
         [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
         """
-        if isinstance(srs, (int, basestring)):
+        if isinstance(srs, (int, string_type)):
             srs = SRS(srs)
         self.srs = srs
         self.tile_size = tile_size
@@ -608,7 +609,7 @@ class TileGrid(object):
         (1, 2, 2)
         """
         x, y, z = tile_coord
-        if isinstance(z, basestring):
+        if isinstance(z, string_type):
             if z not in self.grid_sizes:
                 return None
         elif z < 0 or z >= self.levels:

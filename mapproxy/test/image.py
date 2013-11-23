@@ -22,6 +22,8 @@ from mapproxy.platform.image import (
     ImageDraw,
     ImageColor,
 )
+from mapproxy.compat import string_type
+
 import tempfile
 from nose.tools import eq_
 from cStringIO import StringIO
@@ -115,7 +117,7 @@ def create_tmp_image_file(size, two_colored=False):
 
 def create_image(size, color=None, mode=None):
     if color is not None:
-        if isinstance(color, basestring):
+        if isinstance(color, string_type):
             if mode is None:
                 mode = 'RGB'
             img = Image.new(mode, size, color=color)

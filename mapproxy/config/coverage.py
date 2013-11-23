@@ -25,7 +25,7 @@ from mapproxy.util.geom import (
     build_multipolygon,
 )
 from mapproxy.util.coverage import coverage
-
+from mapproxy.compat import string_type
 
 bbox_string_re = re.compile(r'[-+]?\d*.?\d+,[-+]?\d*.?\d+,[-+]?\d*.?\d+,[-+]?\d*.?\d+')
 
@@ -49,7 +49,7 @@ def load_coverage(conf, base_path=None):
     elif 'bbox' in conf:
         srs = conf.get('bbox_srs') or conf['srs']
         bbox = conf['bbox']
-        if isinstance(bbox, basestring):
+        if isinstance(bbox, string_type):
             bbox = map(float, bbox.split(','))
         geom = None
     elif 'datasource' in conf:

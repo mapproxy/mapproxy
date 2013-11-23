@@ -4,6 +4,7 @@ import math
 from .util import resolve_ns
 
 from xml.etree import ElementTree as etree
+from mapproxy.compat import string_type
 
 
 class WMSCapabilities(object):
@@ -242,7 +243,7 @@ def yaml_sources(cap):
 
 
 def parse_capabilities(fileobj):
-    if isinstance(fileobj, basestring):
+    if isinstance(fileobj, string_type):
         fileobj = open(fileobj)
     tree = etree.parse(fileobj)
     # TODO: remove break pointer

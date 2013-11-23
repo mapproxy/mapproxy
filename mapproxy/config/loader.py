@@ -34,6 +34,7 @@ from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.compat.modules import urlparse
+from mapproxy.compat import string_type
 
 class ConfigurationError(Exception):
     pass
@@ -807,7 +808,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
         res_range = resolution_range(self.conf)
 
         layers = self.conf.get('layers', None)
-        if isinstance(layers, basestring):
+        if isinstance(layers, string_type):
             layers = layers.split(',')
 
         mapfile = self.context.globals.abspath(self.conf['mapfile'])
@@ -1592,7 +1593,7 @@ def load_configuration_file(files, working_dir):
         if 'base' in current_dict:
             current_working_dir = os.path.dirname(conf_file)
             base_files = current_dict.pop('base')
-            if isinstance(base_files, basestring):
+            if isinstance(base_files, string_type):
                 base_files = [base_files]
             imported_dict = load_configuration_file(base_files, current_working_dir)
             current_dict = merge_dict(current_dict, imported_dict)
@@ -1628,7 +1629,7 @@ def parse_color(color):
     """
     if isinstance(color, (list, tuple)) and 3 <= len(color) <= 4:
         return tuple(color)
-    if not isinstance(color, basestring):
+    if not isinstance(color, string_type):
         raise ValueError('color needs to be a tuple/list or 0xrrggbb/#rrggbb(aa) string, got %r' % color)
 
     if color.startswith('0x'):

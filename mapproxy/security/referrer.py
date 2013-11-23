@@ -15,6 +15,7 @@
 
 import re
 from mapproxy.response import Response
+from mapproxy.compat import string_type
 from mapproxy.compat.modules import urlparse
 
 
@@ -86,7 +87,7 @@ class ReferrerFilter(object):
     def check_referrer(self, environ):
         referrer = environ.get('HTTP_REFERER', None)
         for test in self.referrers:
-            if isinstance(test, basestring):
+            if isinstance(test, string_type):
                 if referrer.startswith(test):
                     return True
             elif callable(test):

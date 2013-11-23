@@ -16,6 +16,7 @@
 import copy
 from cStringIO import StringIO
 from mapproxy.request.base import split_mime_type
+from mapproxy.compat import string_type
 
 try:
     from lxml import etree, html
@@ -53,7 +54,7 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
     info_type = 'xml'
 
     def __init__(self, content):
-        if isinstance(content, basestring):
+        if isinstance(content, string_type):
             self._str_content = content
             self._etree = None
         else:
