@@ -159,7 +159,6 @@ class TestErrors(unittest.TestCase):
             validate(spec, {'str': 1, 'str()': 1, 'string_type': 1, '1': 'a', 'int': 'int'})
         except ValidationError as ex:
             ex.errors.sort()
-            print ex.errors
             assert ex.errors[0] == "'a' in 1 not of type int"
             assert ex.errors[1] == "'int' in int not of type int"
             assert ex.errors[2] == '1 in str not of type str'
