@@ -19,7 +19,7 @@ Service responses.
 
 import hashlib
 from mapproxy.util.times import format_httpdate, parse_httpdate, timestamp
-from mapproxy.compat import string_type, iteritems
+from mapproxy.compat import string_type, text_type, iteritems
 
 class Response(object):
     charset = 'utf-8'
@@ -167,7 +167,7 @@ class Response(object):
 
     def iter_encode(self, chunks):
         for chunk in chunks:
-            if isinstance(chunk, unicode):
+            if isinstance(chunk, text_type):
                 chunk = chunk.encode(self.charset)
             yield chunk
 
