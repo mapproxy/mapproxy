@@ -74,6 +74,9 @@ class ImageFormat(str):
 
         return self.ext == other.ext
 
+    def __hash__(self):
+        return hash(str(self))
+
     def __ne__(self, other):
         return not (self == other)
 
