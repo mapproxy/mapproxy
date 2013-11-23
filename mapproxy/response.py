@@ -43,7 +43,7 @@ class Response(object):
         self.headers['Content-type'] = content_type
 
     def _status_set(self, status):
-        if isinstance(status, (int, long)):
+        if isinstance(status, int):
             status = status_code(status)
         self._status = status
 
