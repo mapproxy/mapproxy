@@ -53,6 +53,8 @@ class Options(dict):
         if other is not None:
             if hasattr(other, 'iteritems'):
                 it = other.iteritems()
+            elif hasattr(other, 'items'):
+                it = other.items()
             else:
                 it = iter(other)
         else:
@@ -186,7 +188,7 @@ def load_default_config():
 
 def load_config(config, config_file=None, config_dict=None, clear_existing=False):
     if clear_existing:
-        for key in config.keys():
+        for key in list(config.keys()):
             del config[key]
 
     if config_dict is None:
