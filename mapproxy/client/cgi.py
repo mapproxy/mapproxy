@@ -28,7 +28,7 @@ from mapproxy.client.http import HTTPClientError
 from mapproxy.client.log import log_request
 from mapproxy.util.async import import_module
 from mapproxy.compat.modules import urlparse
-from StringIO import StringIO
+from io import BytesIO
 
 subprocess = import_module('subprocess')
 
@@ -114,7 +114,7 @@ class CGIClient(object):
         else:
             status_code = '-'
         size = len(content)
-        content = StringIO(content)
+        content = BytesIO(content)
         content.headers = headers
 
         log_request('%s:%s' % (self.script, parsed_url.query),

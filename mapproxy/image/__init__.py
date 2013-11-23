@@ -17,7 +17,7 @@
 Image and tile manipulation (transforming, merging, etc).
 """
 from __future__ import with_statement
-from cStringIO import StringIO
+from io import BytesIO
 
 from mapproxy.platform.image import Image, ImageChops
 from mapproxy.image.opts import create_image, ImageFormat
@@ -106,7 +106,7 @@ class ImageSource(object):
             self._buf = open(self._fname, 'rb')
         elif not hasattr(self._buf, 'seek'):
             # PIL needs file objects with seek
-            self._buf = StringIO(self._buf.read())
+            self._buf = BytesIO(self._buf.read())
         self._buf.seek(0)
 
     def _make_readable_buf(self):
@@ -228,7 +228,7 @@ class ReadBufWrapper(object):
             elif name == '__length_hint__':
                 raise AttributeError
             self.ok_to_seek = True
-            self.stringio = StringIO(self.readbuf.read())
+            self.stringio = BytesIO(self.readbuf.read())
         return getattr(self.stringio, name)
 
 def img_has_transparency(img):
@@ -275,7 +275,7 @@ def img_to_buf(img, image_opts):
         if hasattr(Image, 'RLE'):
             defaults['compress_type'] = Image.RLE
 
-    buf = StringIO()
+    buf = BytesIO()
     if format == 'jpeg':
         img = img.convert('RGB')
         if 'jpeg_quality' in image_opts.encoding_options:

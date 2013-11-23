@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import copy
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.request.base import split_mime_type
 from mapproxy.compat import string_type
 
@@ -78,7 +78,7 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
         return etree.tostring(self._etree)
 
     def _parse_str_content(self):
-        doc = StringIO(self._str_content)
+        doc = BytesIO(self._str_content)
         return etree.parse(doc)
 
     @classmethod
@@ -146,8 +146,8 @@ class XSLTransformer(object):
 
 def combined_inputs(input_docs):
     doc = input_docs.pop(0)
-    input_tree = etree.parse(StringIO(doc))
+    input_tree = etree.parse(BytesIO(doc))
     for doc in input_docs:
-        doc_tree = etree.parse(StringIO(doc))
+        doc_tree = etree.parse(BytesIO(doc))
         input_tree.getroot().extend(doc_tree.getroot().iterchildren())
     return input_tree

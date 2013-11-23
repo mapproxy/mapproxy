@@ -21,7 +21,7 @@ import threading
 import shutil
 import tempfile
 
-from StringIO import StringIO
+from io import BytesIO
 from mapproxy.platform.image import Image
 
 from mapproxy.layer import (
@@ -603,7 +603,7 @@ class MockHTTPClient(object):
         format = re.search(r'format=image(/|%2F)(\w+)', url, re.IGNORECASE).group(2)
         transparent = re.search(r'transparent=(\w+)', url, re.IGNORECASE)
         transparent = True if transparent and transparent.group(1).lower() == 'true' else False
-        result = StringIO()
+        result = BytesIO()
         create_debug_img((int(w), int(h)), transparent).save(result, format=format)
         result.seek(0)
         result.headers = {'Content-type': 'image/'+format}

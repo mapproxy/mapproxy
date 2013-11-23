@@ -54,11 +54,11 @@ class MetaTileFile(object):
 
             for i, (offset, size) in enumerate(tile_positions):
                 f.seek(offset, 0)
-                # img = ImageSource(StringIO(f.read(size)))
+                # img = ImageSource(BytesIO(f.read(size)))
                 open('/tmp/img-%02d.png' % i, 'wb').write(f.read(size))
 
 if __name__ == '__main__':
-    from cStringIO import StringIO
+    from io import BytesIO
     from mapproxy.cache.tile import Tile
     from mapproxy.test.image import create_tmp_image
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     img = create_tmp_image((256, 256))
     for x in range(8):
         for y in range(8):
-            tiles.append(Tile((x, y, 4), ImageSource(StringIO(img))))
+            tiles.append(Tile((x, y, 4), ImageSource(BytesIO(img))))
 
     m = MetaTileFile(None)
     print('!')

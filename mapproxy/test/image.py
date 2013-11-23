@@ -26,7 +26,7 @@ from mapproxy.compat import string_type
 
 import tempfile
 from nose.tools import eq_
-from cStringIO import StringIO
+from io import BytesIO
 from contextlib import contextmanager
 
 
@@ -65,7 +65,7 @@ def create_is_x_functions():
         def create_is_type(type_, magic):
             def is_type(fileobj):
                 if not hasattr(fileobj, 'read'):
-                    fileobj = StringIO(fileobj)
+                    fileobj = BytesIO(fileobj)
                 return has_magic_bytes(fileobj, magic)
             return is_type
         globals()['is_' + type_] = create_is_type(type_, magic)
@@ -75,7 +75,7 @@ del create_is_x_functions
 
 
 def is_transparent(img_data):
-    data = StringIO(img_data)
+    data = BytesIO(img_data)
     img = Image.open(data)
     if img.mode == 'P':
         img = img.convert('RGBA')
@@ -87,7 +87,7 @@ def is_transparent(img_data):
 
 
 def img_from_buf(buf):
-    data = StringIO(buf)
+    data = BytesIO(buf)
     return Image.open(data)
 
 
@@ -95,7 +95,7 @@ def bgcolor_ratio(img_data):
     """
     Return the ratio of the primary/bg color. 1 == only bg color.
     """
-    data = StringIO(img_data)
+    data = BytesIO(img_data)
     img = Image.open(data)
     total_colors = img.size[0] * img.size[1]
     colors = img.getcolors()
@@ -131,7 +131,7 @@ def create_image(size, color=None, mode=None):
 
 def create_tmp_image_buf(size, format='png', color=None, mode='RGB'):
     img = create_image(size, color, mode)
-    data = StringIO()
+    data = BytesIO()
     img.save(data, format)
     data.seek(0)
     return data
@@ -172,7 +172,7 @@ def tmp_image(size, format='png', color=None, mode='RGB'):
         img = Image.new(mode, size, color=color)
     else:
         img = create_debug_img(size)
-    data = StringIO()
+    data = BytesIO()
     img.save(data, format)
     data.seek(0)
     yield data

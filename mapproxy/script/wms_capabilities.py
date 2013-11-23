@@ -21,7 +21,7 @@ from __future__ import with_statement
 
 import sys
 import optparse
-from cStringIO import StringIO
+from io import BytesIO
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import XMLParser
 
@@ -126,7 +126,7 @@ def parse_capabilities_url(url, version='1.1.1'):
         sys.exit(1)
 
     # after parsing capabilities_response will be empty, therefore cache it
-    capabilities = StringIO(capabilities_response.read())
+    capabilities = BytesIO(capabilities_response.read())
     return parse_capabilities(capabilities, version=version)
 
 def wms_capabilities_command(args=None):

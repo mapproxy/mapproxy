@@ -20,7 +20,7 @@ import stat
 import platform
 import shutil
 
-from cStringIO import StringIO
+from io import BytesIO
 
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.platform.image import Image
@@ -62,7 +62,7 @@ class TestMapServerCGI(SystemTest):
     def test_get_map(self):
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         img = img.convert('RGB')

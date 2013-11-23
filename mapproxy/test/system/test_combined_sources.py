@@ -15,7 +15,7 @@
 
 from __future__ import with_statement, division
 
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.platform.image import Image
 from mapproxy.test.image import is_png, tmp_image, create_tmp_image
@@ -58,7 +58,7 @@ class TestCoverageWMS(SystemTest):
                 self.common_map_req.params.layers = 'combinable'
                 resp = self.app.get(self.common_map_req)
                 eq_(resp.content_type, 'image/png')
-                data = StringIO(resp.body)
+                data = BytesIO(resp.body)
                 assert is_png(data)
 
     def test_uncombined(self):
@@ -81,7 +81,7 @@ class TestCoverageWMS(SystemTest):
                 self.common_map_req.params.layers = 'uncombinable'
                 resp = self.app.get(self.common_map_req)
                 eq_(resp.content_type, 'image/png')
-                data = StringIO(resp.body)
+                data = BytesIO(resp.body)
                 assert is_png(data)
     
     def test_combined_layers(self):
@@ -105,7 +105,7 @@ class TestCoverageWMS(SystemTest):
                 self.common_map_req.params.layers = 'uncombinable,single'
                 resp = self.app.get(self.common_map_req)
                 eq_(resp.content_type, 'image/png')
-                data = StringIO(resp.body)
+                data = BytesIO(resp.body)
                 assert is_png(data)
     
     def test_layers_with_opacity(self):
@@ -129,7 +129,7 @@ class TestCoverageWMS(SystemTest):
             self.common_map_req.params.layers = 'opacity_base,opacity_overlay'
             resp = self.app.get(self.common_map_req)
             eq_(resp.content_type, 'image/png')
-            data = StringIO(resp.body)
+            data = BytesIO(resp.body)
             assert is_png(data)
             img = Image.open(data)
             eq_(img.getcolors()[0], ((200*200),(127, 0, 64)))
@@ -152,7 +152,7 @@ class TestCoverageWMS(SystemTest):
                 self.common_map_req.params.transparent = True
                 resp = self.app.get(self.common_map_req)
                 resp.content_type = 'image/png'
-                data = StringIO(resp.body)
+                data = BytesIO(resp.body)
                 assert is_png(data)
                 img = Image.open(data)
                 eq_(img.getcolors()[0], ((200*200),(255, 0, 0, 0)))
@@ -177,7 +177,7 @@ class TestCoverageWMS(SystemTest):
                 self.common_map_req.params.transparent = True
                 resp = self.app.get(self.common_map_req)
                 resp.content_type = 'image/png'
-                data = StringIO(resp.body)
+                data = BytesIO(resp.body)
                 assert is_png(data)
 
     def test_combined_same_fwd_req_params(self):
@@ -199,7 +199,7 @@ class TestCoverageWMS(SystemTest):
                 self.common_map_req.params.transparent = True
                 resp = self.app.get(self.common_map_req)
                 resp.content_type = 'image/png'
-                data = StringIO(resp.body)
+                data = BytesIO(resp.body)
                 assert is_png(data)
 
     def test_combined_no_fwd_req_params(self):
@@ -219,7 +219,7 @@ class TestCoverageWMS(SystemTest):
                 self.common_map_req.params.transparent = True
                 resp = self.app.get(self.common_map_req)
                 resp.content_type = 'image/png'
-                data = StringIO(resp.body)
+                data = BytesIO(resp.body)
                 assert is_png(data)
 
     def test_combined_mixed_fwd_req_params(self):
@@ -246,6 +246,6 @@ class TestCoverageWMS(SystemTest):
                 self.common_map_req.params.transparent = True
                 resp = self.app.get(self.common_map_req)
                 resp.content_type = 'image/png'
-                data = StringIO(resp.body)
+                data = BytesIO(resp.body)
                 assert is_png(data)
 

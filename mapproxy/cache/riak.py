@@ -19,7 +19,7 @@ import time
 import threading
 import hashlib
 
-from cStringIO import StringIO
+from io import BytesIO
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.tile import Tile
@@ -139,7 +139,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
 
         res = self._get_object(tile.coord)
         if res.exists:
-            tile_data = StringIO(res.encoded_data)
+            tile_data = BytesIO(res.encoded_data)
             tile.source = ImageSource(tile_data)
             if with_metadata:
                 tile.timestamp = self._get_timestamp(res)

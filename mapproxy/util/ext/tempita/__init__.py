@@ -36,7 +36,7 @@ import cgi
 from urllib import quote as url_quote
 import os
 import tokenize
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.util.ext.tempita._looper import looper
 from mapproxy.util.ext.tempita.compat3 import bytes, basestring_, next, is_unicode, coerce_text
 
@@ -995,7 +995,7 @@ def parse_def(tokens, name, context):
 
 
 def parse_signature(sig_text, name, pos):
-    tokens = tokenize.generate_tokens(StringIO(sig_text).readline)
+    tokens = tokenize.generate_tokens(BytesIO(sig_text).readline)
     sig_args = []
     var_arg = None
     var_kw = None

@@ -18,7 +18,7 @@ import os
 import time
 import sqlite3
 import threading
-from cStringIO import StringIO
+from io import BytesIO
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer, CacheBackendError
@@ -172,7 +172,7 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
 
         content = cur.fetchone()
         if content:
-            tile.source = ImageSource(StringIO(content[0]))
+            tile.source = ImageSource(BytesIO(content[0]))
             if self.supports_timestamp:
                 tile.timestamp = sqlite_datetime_to_timestamp(content[1])
             return True
@@ -215,7 +215,7 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             tile = tile_dict[(row[0], row[1])]
             data = row[2]
             tile.size = len(data)
-            tile.source = ImageSource(StringIO(data))
+            tile.source = ImageSource(BytesIO(data))
             if self.supports_timestamp:
                 tile.timestamp = sqlite_datetime_to_timestamp(row[3])
         cursor.close()

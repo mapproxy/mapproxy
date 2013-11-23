@@ -31,15 +31,15 @@ from nose.tools import eq_
 @contextmanager
 def capture():
     import sys
-    from cStringIO import StringIO
+    from io import BytesIO
 
     # setup the environment
     backup_stdout = sys.stdout
     backup_stderr = sys.stderr
 
     try:
-        sys.stdout = StringIO()
-        sys.stderr = StringIO()
+        sys.stdout = BytesIO()
+        sys.stderr = BytesIO()
         yield sys.stdout, sys.stderr
     except Exception as ex:
         backup_stdout.write(str(ex))

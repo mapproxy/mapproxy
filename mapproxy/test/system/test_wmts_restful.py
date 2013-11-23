@@ -17,7 +17,7 @@ from __future__ import with_statement, division
 
 import functools
 
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.request.wmts import (
     WMTS100TileRequest, WMTS100CapabilitiesRequest
 )
@@ -63,12 +63,12 @@ class TestWMTS(SystemTest):
     def test_get_tile(self):
         resp = self.app.get('/wmts/myrest/wms_cache/GLOBAL_MERCATOR/01/0/0.jpeg')
         eq_(resp.content_type, 'image/jpeg')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_jpeg(data)
         # test without leading 0 in level
         resp = self.app.get('/wmts/myrest/wms_cache/GLOBAL_MERCATOR/1/0/0.jpeg')
         eq_(resp.content_type, 'image/jpeg')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_jpeg(data)
     
     def test_get_tile_flipped_axis(self):

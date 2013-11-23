@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from mapproxy.platform.image import Image
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.test.helper import Mocker, validate_with_dtd, validate_with_xsd
 from mapproxy.test.image import is_png
 from mapproxy.request.wms import WMSMapRequest
@@ -196,7 +196,7 @@ class TestWMSImageExceptionHandler(ExceptionHandlerTest):
         
         response = req_ex.render()
         assert response.content_type == 'image/png'
-        data = StringIO(response.data)
+        data = BytesIO(response.data)
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
@@ -209,7 +209,7 @@ class TestWMSImageExceptionHandler(ExceptionHandlerTest):
         
         response = req_ex.render()
         assert response.content_type == 'image/png'
-        data = StringIO(response.data)
+        data = BytesIO(response.data)
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
@@ -227,7 +227,7 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
         
         response = req_ex.render()
         assert response.content_type == 'image/png'
-        data = StringIO(response.data)
+        data = BytesIO(response.data)
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
@@ -242,7 +242,7 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
         
         response = req_ex.render()
         assert response.content_type == 'image/png'
-        data = StringIO(response.data)
+        data = BytesIO(response.data)
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
@@ -257,7 +257,7 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
         
         response = req_ex.render()
         assert response.content_type == 'image/png'
-        data = StringIO(response.data)
+        data = BytesIO(response.data)
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)

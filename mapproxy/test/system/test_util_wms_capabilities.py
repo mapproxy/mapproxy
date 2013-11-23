@@ -18,7 +18,7 @@ import os
 import sys
 import contextlib
 
-from cStringIO import StringIO
+from io import BytesIO
 from nose.tools import assert_raises
 
 from mapproxy.client.http import HTTPClient
@@ -37,8 +37,8 @@ def capture_out():
     old_stdout = sys.stdout
     old_stderr = sys.stderr
     try:
-        sys.stdout = StringIO()
-        sys.stderr = StringIO()
+        sys.stdout = BytesIO()
+        sys.stderr = BytesIO()
         yield sys.stdout, sys.stderr
     except:
         old_stderr.write(sys.stderr.getvalue())

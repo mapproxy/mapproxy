@@ -16,7 +16,7 @@
 from __future__ import with_statement
 import os
 import hashlib
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.srs import bbox_equals
 from mapproxy.util.times import format_httpdate
 from mapproxy.test.image import is_jpeg, tmp_image
@@ -68,7 +68,7 @@ class TestKML(SystemTest):
     def _check_tile_resp(self, resp):
         eq_(resp.content_type, 'image/jpeg')
         eq_(resp.content_length, len(resp.body))
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_jpeg(data)
 
     def _update_timestamp(self):

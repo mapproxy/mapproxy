@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from __future__ import with_statement, division
-from StringIO import StringIO
+from io import BytesIO
 
 from mapproxy.platform.image import Image
 
@@ -76,7 +76,7 @@ class TestWMS(SystemTest):
             with mock_httpd(('localhost', 42423), [expected_req1, expected_req2, expected_req3]):
                 resp = self.app.get(self.common_lg_req_111)
                 eq_(resp.content_type, 'image/png')
-                data = StringIO(resp.body)
+                data = BytesIO(resp.body)
                 assert is_png(data)
                 assert Image.open(data).size == (256,768)
     
@@ -89,7 +89,7 @@ class TestWMS(SystemTest):
             with mock_httpd(('localhost', 42423), [expected_req1]):
                 resp = self.app.get(self.common_lg_req_111)
                 eq_(resp.content_type, 'image/png')
-                data = StringIO(resp.body)
+                data = BytesIO(resp.body)
                 assert is_png(data)
                 assert Image.open(data).size == (256,256)
     
@@ -102,7 +102,7 @@ class TestWMS(SystemTest):
             with mock_httpd(('localhost', 42423), [expected_req1]):
                 resp = self.app.get(self.common_lg_req_111)
                 eq_(resp.content_type, 'image/png')
-                data = StringIO(resp.body)
+                data = BytesIO(resp.body)
                 assert is_png(data)
                 assert Image.open(data).size == (256,256)
     
@@ -149,7 +149,7 @@ class TestWMS(SystemTest):
             with mock_httpd(('localhost', 42423), [expected_req1, expected_req2]):
                 resp = self.app.get(self.common_lg_req_111)
                 eq_(resp.content_type, 'image/png')
-                data = StringIO(resp.body)
+                data = BytesIO(resp.body)
                 assert is_png(data)
                 assert Image.open(data).size == (256,512)
     

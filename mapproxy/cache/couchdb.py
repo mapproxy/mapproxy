@@ -20,7 +20,7 @@ import socket
 import time
 import hashlib
 
-from cStringIO import StringIO
+from io import BytesIO
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import (
@@ -225,7 +225,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         resp = self.req_session.get(url, headers={'Accept': 'application/json'})
         if resp.status_code == 200:
             doc = json.loads(resp.content)
-            tile_data = StringIO(doc['_attachments']['tile']['data'].decode('base64'))
+            tile_data = BytesIO(doc['_attachments']['tile']['data'].decode('base64'))
             tile.source = ImageSource(tile_data)
             tile.timestamp = doc.get(self.md_template.timestamp_key)
             return True

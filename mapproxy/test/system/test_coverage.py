@@ -15,7 +15,7 @@
 
 from __future__ import with_statement, division
 
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.platform.image import Image
 from mapproxy.test.image import is_png, tmp_image
@@ -54,7 +54,7 @@ class TestCoverageWMS(SystemTest):
         self.common_map_req.params['bgcolor'] = '0xff0005'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'RGB')
@@ -65,7 +65,7 @@ class TestCoverageWMS(SystemTest):
         self.common_map_req.params.transparent = True
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'RGBA')
@@ -85,7 +85,7 @@ class TestCoverageWMS(SystemTest):
                 self.common_map_req.params.transparent = True
                 resp = self.app.get(self.common_map_req)
                 eq_(resp.content_type, 'image/png')
-                data = StringIO(resp.body)
+                data = BytesIO(resp.body)
                 assert is_png(data)
                 eq_(Image.open(data).mode, 'RGBA')
 

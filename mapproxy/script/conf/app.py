@@ -42,7 +42,7 @@ import xml.etree.ElementTree
 import yaml
 
 from contextlib import contextmanager
-from cStringIO import StringIO
+from io import BytesIO
 
 from .sources import sources
 from .layers import layers
@@ -130,7 +130,7 @@ def config_command(args):
         cap_doc = open(cap_doc, 'rb').read()
 
     try:
-        cap = parse_capabilities(StringIO(cap_doc))
+        cap = parse_capabilities(BytesIO(cap_doc))
     except (xml.etree.ElementTree.ParseError, ValueError) as ex:
         print(ex, file=sys.stderr)
         print(cap_doc[:1000] + ('...' if len(cap_doc) > 1000 else ''), file=sys.stderr)

@@ -15,7 +15,7 @@
 
 from __future__ import with_statement, division
 import os
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.platform.image import (
     Image,
     ImageDraw,
@@ -67,7 +67,7 @@ class TestWMS(SystemTest):
                 self.created_tiles.append('mixed_cache_EPSG900913/01/000/000/001/000/000/001.mixed')
 
                 eq_(resp.content_type, 'image/'+req_format)
-                check_format(StringIO(resp.body), req_format)
+                check_format(BytesIO(resp.body), req_format)
                 # GetMap Request is fully within the opaque tile
                 assert not is_transparent(resp.body)
 
@@ -144,7 +144,7 @@ def create_mixed_mode_img(size, format='png'):
     red_color = ImageColor.getrgb("red")
     draw.rectangle((w/4, 0, w, h), fill=red_color)
 
-    data = StringIO()
+    data = BytesIO()
     img.save(data, format)
     data.seek(0)
     yield data

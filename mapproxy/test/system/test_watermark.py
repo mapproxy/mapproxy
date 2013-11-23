@@ -15,7 +15,7 @@
 
 from __future__ import with_statement, division
 
-from cStringIO import StringIO
+from io import BytesIO
 
 from mapproxy.platform.image import Image
 from mapproxy.request.wms import WMS111MapRequest
@@ -53,7 +53,7 @@ class WatermarkTest(SystemTest):
             with mock_httpd(('localhost', 42423), [expected_req]):
                 resp = self.app.get('/tms/1.0.0/watermark/EPSG4326/0/0/0.png')
                 eq_(resp.content_type, 'image/png')
-                img = Image.open(StringIO(resp.body))
+                img = Image.open(BytesIO(resp.body))
                 colors = img.getcolors()
                 assert len(colors) >= 2
                 eq_(sorted(colors)[-1][1], (0, 0, 0))
@@ -68,7 +68,7 @@ class WatermarkTest(SystemTest):
             with mock_httpd(('localhost', 42423), [expected_req]):
                 resp = self.app.get('/tms/1.0.0/watermark_transp/EPSG4326/0/0/0.png')
                 eq_(resp.content_type, 'image/png')
-                img = Image.open(StringIO(resp.body))
+                img = Image.open(BytesIO(resp.body))
                 colors = img.getcolors()
                 assert len(colors) >= 2
                 eq_(sorted(colors)[-1][1], (0, 0, 0, 0))

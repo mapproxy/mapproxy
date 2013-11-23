@@ -18,7 +18,7 @@ from __future__ import with_statement, absolute_import
 import sys
 import time
 import threading
-from cStringIO import StringIO
+from io import BytesIO
 
 from mapproxy.grid import tile_grid
 from mapproxy.image import ImageSource
@@ -142,5 +142,5 @@ class MapnikSource(MapLayer):
             log_request('%s:%s:%s:%s' % (mapfile, query.bbox, query.srs.srs_code, query.size),
                 status='200' if data else '500', size=size, method='API', duration=time.time()-start_time)
 
-        return ImageSource(StringIO(data), size=query.size,
+        return ImageSource(BytesIO(data), size=query.size,
             image_opts=ImageOptions(transparent=self.transparent, format=query.format))

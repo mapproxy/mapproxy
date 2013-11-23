@@ -18,7 +18,7 @@ from mapproxy.test.system import make_base_config
 from mapproxy.test.image import is_png, is_jpeg
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.request.wmts import WMTS100TileRequest
-from cStringIO import StringIO
+from io import BytesIO
 
 from mapproxy.platform.image import Image
 from mapproxy.image import ImageSource
@@ -70,7 +70,7 @@ class TestDecorateImg(SystemTest):
             req,
             extra_environ={'mapproxy.decorate_img': to_greyscale}
         )
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'RGB')
@@ -88,7 +88,7 @@ class TestDecorateImg(SystemTest):
         resp = self.app.get(
             req, extra_environ={'mapproxy.decorate_img': to_greyscale}
         )
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'RGBA')
@@ -106,7 +106,7 @@ class TestDecorateImg(SystemTest):
         resp = self.app.get(
             req, extra_environ={'mapproxy.decorate_img': to_greyscale}
         )
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'RGB')
@@ -144,7 +144,7 @@ class TestDecorateImg(SystemTest):
         )
         eq_(resp.content_type, 'image/jpeg')
         eq_(resp.content_length, len(resp.body))
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_jpeg(data)
 
     def test_tms_args(self):
@@ -169,7 +169,7 @@ class TestDecorateImg(SystemTest):
         )
         eq_(resp.content_type, 'image/jpeg')
         eq_(resp.content_length, len(resp.body))
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_jpeg(data)
 
     def test_wmts_args(self):

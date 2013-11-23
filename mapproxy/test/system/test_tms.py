@@ -16,7 +16,7 @@
 from __future__ import with_statement
 import os
 import hashlib
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.platform.image import Image
 from mapproxy.test.image import is_jpeg, tmp_image
 from mapproxy.test.http import mock_httpd
@@ -94,7 +94,7 @@ class TestTMS(SystemTest):
         resp = self.app.get('/tms/1.0.0/wms_cache/0/0/1.jpeg')
         eq_(resp.content_type, 'image/jpeg')
         eq_(resp.content_length, len(resp.body))
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_jpeg(data)
     
     def test_get_tile(self):
@@ -125,7 +125,7 @@ class TestTMS(SystemTest):
             with mock_httpd(('localhost', 42423), [expected_req]):
                 resp = self.app.get('/tms/1.0.0/watermark_cache/0/0/0.png')
                 eq_(resp.content_type, 'image/png')
-                img = Image.open(StringIO(resp.body))
+                img = Image.open(BytesIO(resp.body))
                 colors = img.getcolors()
                 assert len(colors) >= 2
                 eq_(sorted(colors)[-1][1], (0, 0, 0))
@@ -161,7 +161,7 @@ class TestTileService(SystemTest):
     def _check_tile_resp(self, resp):
         eq_(resp.content_type, 'image/jpeg')
         eq_(resp.content_length, len(resp.body))
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_jpeg(data)
     
     def _update_timestamp(self):

@@ -28,7 +28,7 @@ import cgi
 import socket
 import errno
 import time
-from cStringIO import StringIO
+from io import BytesIO
 from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
 from contextlib import contextmanager
 from mapproxy.compat.modules import urlparse
@@ -55,7 +55,7 @@ class ThreadedStopableHTTPServer(threading.Thread):
         self.httpd = HTTPServer(address,mock_http_handler(requests_responses,
             unordered=unordered, query_comparator=query_comparator))
         self.httpd.timeout = 1.0
-        self.out = self.httpd.out = StringIO()
+        self.out = self.httpd.out = BytesIO()
 
     @property
     def http_port(self):
@@ -83,7 +83,7 @@ class ThreadedSingleRequestHTTPServer(threading.Thread):
         self.shutdown = False
         self.httpd = HTTPServer(address, request_handler)
         self.httpd.timeout = 1.0
-        self.out = self.httpd.out = StringIO()
+        self.out = self.httpd.out = BytesIO()
 
     def run(self):
         self.httpd.handle_request()

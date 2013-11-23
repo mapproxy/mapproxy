@@ -20,7 +20,7 @@ import shutil
 import tempfile
 import time
 
-from cStringIO import StringIO
+from io import BytesIO
 
 from PIL import Image
 
@@ -170,7 +170,7 @@ class TileCacheTestBase(object):
         # tile object is marked as stored,
         # check that is is not stored 'again'
         # (used for disable_storage)
-        tile = Tile((0, 0, 4), ImageSource(StringIO('foo')))
+        tile = Tile((0, 0, 4), ImageSource(BytesIO('foo')))
         tile.stored = True
         self.cache.store_tile(tile)
 

@@ -18,7 +18,7 @@ from __future__ import with_statement, division
 import os
 import shutil
 
-from cStringIO import StringIO
+from io import BytesIO
 
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.test.http import MockServ
@@ -50,7 +50,7 @@ class TestMBTilesCache(SystemTest):
     def test_get_map_cached(self):
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
 
     def test_get_map_uncached(self):
@@ -67,13 +67,13 @@ class TestMBTilesCache(SystemTest):
         with serv:
             resp = self.app.get(self.common_map_req)
             eq_(resp.content_type, 'image/png')
-            data = StringIO(resp.body)
+            data = BytesIO(resp.body)
             assert is_png(data)
 
         # now cached
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
 
         # custom tile_lock_dir created

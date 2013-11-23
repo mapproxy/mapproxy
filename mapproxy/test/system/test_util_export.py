@@ -20,7 +20,7 @@ import tempfile
 import shutil
 import contextlib
 
-from cStringIO import StringIO
+from io import BytesIO
 from nose.tools import eq_, assert_raises
 from mapproxy.script.export import export_command
 from mapproxy.test.image import tmp_image
@@ -31,7 +31,7 @@ FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 @contextlib.contextmanager
 def capture_stderr(io=None):
     if io is None:
-        io = StringIO()
+        io = BytesIO()
     old_stderr = sys.stderr
     sys.stderr = io
     try:

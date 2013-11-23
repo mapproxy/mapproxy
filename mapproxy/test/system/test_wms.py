@@ -23,7 +23,7 @@ import shutil
 from mapproxy.platform.image import Image
 import functools
 
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.srs import SRS
 from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest, \
                                  WMS111FeatureInfoRequest, WMS111CapabilitiesRequest, \
@@ -153,7 +153,7 @@ class TestWMS111(WMSTest):
         self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        assert is_png(StringIO(resp.body))
+        assert is_png(BytesIO(resp.body))
 
     def test_invalid_format(self):
         self.common_map_req.params['format'] = 'image/ascii'
@@ -167,21 +167,21 @@ class TestWMS111(WMSTest):
         self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        assert is_png(StringIO(resp.body))
+        assert is_png(BytesIO(resp.body))
 
     def test_invalid_format_options_img_exception(self):
         self.common_map_req.params['format'] = 'image/png; mode=12bit'
         self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        assert is_png(StringIO(resp.body))
+        assert is_png(BytesIO(resp.body))
 
     def test_missing_format_img_exception(self):
         del self.common_map_req.params['format']
         self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        assert is_png(StringIO(resp.body))
+        assert is_png(BytesIO(resp.body))
 
     def test_invalid_srs(self):
         self.common_map_req.params['srs'] = 'EPSG:1234'
@@ -207,7 +207,7 @@ class TestWMS111(WMSTest):
         self.common_map_req.params['styles'] = 'default'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGB'
 
@@ -215,7 +215,7 @@ class TestWMS111(WMSTest):
         resp = self.app.get(self.common_map_req)
         assert 'Cache-Control' not in resp.headers
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGB'
 
@@ -224,7 +224,7 @@ class TestWMS111(WMSTest):
         self.common_map_req.params['format'] = 'image/png; mode=8bit'
         resp = self.app.get(self.common_map_req)
         eq_(resp.headers['Content-type'], 'image/png; mode=8bit')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'P')
@@ -233,7 +233,7 @@ class TestWMS111(WMSTest):
         self.common_map_req.params['transparent'] = 'True'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'RGB')
@@ -243,7 +243,7 @@ class TestWMS111(WMSTest):
         self.common_map_req.params['transparent'] = 'True'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGBA'
 
@@ -251,7 +251,7 @@ class TestWMS111(WMSTest):
         self.common_map_req.params['layers'] = 'wms_cache_transparent'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'RGB')
@@ -262,7 +262,7 @@ class TestWMS111(WMSTest):
         self.common_map_req.params['bgcolor'] = '0xff00a0'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'RGB')
@@ -272,7 +272,7 @@ class TestWMS111(WMSTest):
         self.common_map_req.params['format'] = 'image/jpeg'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/jpeg')
-        assert is_jpeg(StringIO(resp.body))
+        assert is_jpeg(BytesIO(resp.body))
 
     def test_get_map_xml_exception(self):
         self.common_map_req.params['bbox'] = '0,0,90,90'
@@ -639,14 +639,14 @@ class TestWMS110(WMSTest):
         self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        assert is_png(StringIO(resp.body))
+        assert is_png(BytesIO(resp.body))
 
     def test_missing_format_img_exception(self):
         del self.common_map_req.params['format']
         self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        assert is_png(StringIO(resp.body))
+        assert is_png(BytesIO(resp.body))
 
     def test_invalid_srs(self):
         self.common_map_req.params['srs'] = 'EPSG:1234'
@@ -661,7 +661,7 @@ class TestWMS110(WMSTest):
     def test_get_map_png(self):
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGB'
 
@@ -669,7 +669,7 @@ class TestWMS110(WMSTest):
         self.common_map_req.params['format'] = 'image/jpeg'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/jpeg')
-        assert is_jpeg(StringIO(resp.body))
+        assert is_jpeg(BytesIO(resp.body))
 
     def test_get_map_xml_exception(self):
         self.common_map_req.params['bbox'] = '0,0,90,90'
@@ -783,14 +783,14 @@ class TestWMS100(WMSTest):
         self.common_map_req.params['exceptions'] = 'INIMAGE'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        assert is_png(StringIO(resp.body))
+        assert is_png(BytesIO(resp.body))
 
     def test_missing_format_img_exception(self):
         del self.common_map_req.params['format']
         self.common_map_req.params['exceptions'] = 'INIMAGE'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        assert is_png(StringIO(resp.body))
+        assert is_png(BytesIO(resp.body))
 
     def test_invalid_srs(self):
         self.common_map_req.params['srs'] = 'EPSG:1234'
@@ -802,7 +802,7 @@ class TestWMS100(WMSTest):
     def test_get_map_png(self):
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         eq_(Image.open(data).mode, 'RGB')
 
@@ -812,7 +812,7 @@ class TestWMS100(WMSTest):
             self.common_map_req.params['transparent'] = 'True'
             resp = self.app.get(self.common_map_req)
             eq_(resp.content_type, 'image/png')
-            data = StringIO(resp.body)
+            data = BytesIO(resp.body)
             assert is_png(data)
             assert Image.open(data).mode == 'P'
         finally:
@@ -822,7 +822,7 @@ class TestWMS100(WMSTest):
         self.common_map_req.params['format'] = 'image/jpeg'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/jpeg')
-        assert is_jpeg(StringIO(resp.body))
+        assert is_jpeg(BytesIO(resp.body))
 
     def test_get_map_xml_exception(self):
          self.common_map_req.params['bbox'] = '0,0,90,90'
@@ -934,14 +934,14 @@ class TestWMS130(WMSTest):
         self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        assert is_png(StringIO(resp.body))
+        assert is_png(BytesIO(resp.body))
 
     def test_missing_format_img_exception(self):
         del self.common_map_req.params['format']
         self.common_map_req.params['exceptions'] = 'application/vnd.ogc.se_inimage'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        assert is_png(StringIO(resp.body))
+        assert is_png(BytesIO(resp.body))
 
     def test_invalid_srs(self):
         self.common_map_req.params['srs'] = 'EPSG:1234'
@@ -958,7 +958,7 @@ class TestWMS130(WMSTest):
     def test_get_map_png(self):
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         assert Image.open(data).mode == 'RGB'
 
@@ -966,7 +966,7 @@ class TestWMS130(WMSTest):
         self.common_map_req.params['format'] = 'image/jpeg'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/jpeg')
-        assert is_jpeg(StringIO(resp.body))
+        assert is_jpeg(BytesIO(resp.body))
 
     def test_get_map_xml_exception(self):
         self.common_map_req.params['bbox'] = '0,0,90,90'

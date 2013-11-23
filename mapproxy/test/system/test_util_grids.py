@@ -18,7 +18,7 @@ import os
 import sys
 import contextlib
 
-from cStringIO import StringIO
+from io import BytesIO
 from nose.tools import assert_raises
 from mapproxy.script.grids import grids_command
 
@@ -38,7 +38,7 @@ UNUSED_GRID_NAMES = [
 @contextlib.contextmanager
 def capture_stderr(io=None):
     if io is None:
-        io = StringIO()
+        io = BytesIO()
     old_stderr = sys.stderr
     sys.stderr = io
     try:

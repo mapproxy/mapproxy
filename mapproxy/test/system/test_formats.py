@@ -15,7 +15,7 @@
 
 from __future__ import with_statement, division
 import os
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.request.wms import WMS111MapRequest, WMS111FeatureInfoRequest
 from mapproxy.test.image import tmp_image, check_format
 from mapproxy.test.http import mock_httpd
@@ -116,7 +116,7 @@ class TestWMS111(TilesTest):
                 self.common_map_req.params['format'] = 'image/'+wms_format
                 resp = self.app.get(self.common_map_req)
                 eq_(resp.content_type, 'image/'+wms_format)
-                check_format(StringIO(resp.body), wms_format)
+                check_format(BytesIO(resp.body), wms_format)
                 
 
     def check_get_direct(self, layer, source, wms_format, req_format):
@@ -130,7 +130,7 @@ class TestWMS111(TilesTest):
                 self.common_direct_map_req.params['format'] = 'image/'+wms_format
                 resp = self.app.get(self.common_direct_map_req)
                 eq_(resp.content_type, 'image/'+wms_format)    
-                check_format(StringIO(resp.body), wms_format)
+                check_format(BytesIO(resp.body), wms_format)
 
 class TestTMS(TilesTest):
     def setup(self):
@@ -161,4 +161,4 @@ class TestTMS(TilesTest):
             with mock_httpd(('localhost', 42423), [expected_req]):
                 resp = self.app.get('/tms/1.0.0/%s/0/1/1.%s' % (layer, tms_format))
                 eq_(resp.content_type, 'image/'+tms_format)
-                # check_format(StringIO(resp.body), tms_format)
+                # check_format(BytesIO(resp.body), tms_format)

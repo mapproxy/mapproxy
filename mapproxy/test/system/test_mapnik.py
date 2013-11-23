@@ -19,7 +19,7 @@ import os
 from mapproxy.test.system import module_setup, module_teardown, SystemTest
 
 from mapproxy.platform.image import Image
-from cStringIO import StringIO
+from io import BytesIO
 
 from nose.tools import eq_
 
@@ -69,7 +69,7 @@ class TestMapnikSource(SystemTest):
                 '&WIDTH=200&')
 
         resp = self.app.get(req)
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         img = Image.open(data)
         colors = img.getcolors(1)
         # map bg color
@@ -82,7 +82,7 @@ class TestMapnikSource(SystemTest):
                 '&WIDTH=200&&BGCOLOR=0x00ff00')
 
         resp = self.app.get(req)
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         img = Image.open(data)
         colors = img.getcolors(1)
         # wms request bg color
@@ -104,7 +104,7 @@ class TestMapnikSource(SystemTest):
                 '&WIDTH=200&transparent=True')
 
         resp = self.app.get(req)
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         img = Image.open(data)
         colors = img.getcolors(1)
         eq_(colors[0], (40000, (0, 0, 0, 0)))

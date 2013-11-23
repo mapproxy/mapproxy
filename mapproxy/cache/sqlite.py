@@ -13,9 +13,9 @@ from six.moves import map
 from six.moves import zip
 
 try:
-    from cStringIO import StringIO
+    from io import BytesIO
 except ImportError:
-    from StringIO import StringIO
+    from io import BytesIO
 from mapproxy.image import ImageSource, is_single_color_image
 from mapproxy.cache.base import tile_buffer
 from mapproxy.cache.base import TileCacheBase
@@ -166,7 +166,7 @@ class TileSet(object):
             data = row['data'] if row['data'] is not None else self.unique_tiles.get_data(row['unique_tile'])
             tile.timestamp = row['date_added']
             tile.size = len(data)
-            tile.source = ImageSource(StringIO(data), size=tile.size)
+            tile.source = ImageSource(BytesIO(data), size=tile.size)
         cursor.close()
         return tiles
 

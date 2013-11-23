@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cStringIO import StringIO
+from io import BytesIO
 
 from mapproxy.test.helper import Mocker
 from mocker import ANY
@@ -41,7 +41,7 @@ class TestResponse(Mocker):
         assert result.next() == 'as iterable'
 
     def test_file_response(self):
-        data = StringIO('foobar')
+        data = BytesIO('foobar')
         resp = Response(data)
         assert resp.response == data
         start_response = self.mock()
@@ -51,7 +51,7 @@ class TestResponse(Mocker):
         assert result.next() == 'foobar'
 
     def test_file_response_w_file_wrapper(self):
-        data = StringIO('foobar')
+        data = BytesIO('foobar')
         resp = Response(data)
         assert resp.response == data
         start_response = self.mock()
@@ -65,7 +65,7 @@ class TestResponse(Mocker):
                        'wsgi.file_wrapper': file_wrapper}, start_response)
         assert result == 'DUMMY'
     def test_file_response_content_length(self):
-        data = StringIO('*' * 342)
+        data = BytesIO('*' * 342)
         resp = Response(data)
         assert resp.response == data
         start_response = self.mock()
