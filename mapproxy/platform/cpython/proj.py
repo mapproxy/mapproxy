@@ -197,8 +197,8 @@ def try_libproj_import():
         assert len(x) == len(y)
 
         if from_srs.is_latlong():
-            x = map(lambda x: x*DEG_TO_RAD, x)
-            y = map(lambda y: y*DEG_TO_RAD, y)
+            x = [x*DEG_TO_RAD for x in x]
+            y = [y*DEG_TO_RAD for y in y]
 
         x = (c_double * len(x))(*x)
         y = (c_double * len(y))(*y)
@@ -216,8 +216,8 @@ def try_libproj_import():
             raise ProjError(libproj.pj_strerrno(res))
 
         if to_srs.is_latlong():
-            x = map(lambda x: x*RAD_TO_DEG, x)
-            y = map(lambda y: y*RAD_TO_DEG, y)
+            x = [x*RAD_TO_DEG for x in x]
+            y = [y*RAD_TO_DEG for y in y]
         else:
             x = x[:]
             y = y[:]
