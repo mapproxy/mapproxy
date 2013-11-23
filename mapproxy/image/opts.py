@@ -131,7 +131,7 @@ def compatible_image_options(img_opts, base_opts=None):
     if any(True for o in img_opts if o.colors == 0):
         colors = 0
     else:
-        colors = max(o.colors for o in img_opts)
+        colors = max(o.colors or 0 for o in img_opts)
 
     transparent = None
     for o in img_opts:
@@ -141,8 +141,11 @@ def compatible_image_options(img_opts, base_opts=None):
         if o.transparent == True:
             transparent = True
 
-    # I < P < RGB < RGBA :)
-    mode = max(o.mode for o in img_opts)
+    if any(True for o in img_opts if o.mode):
+        # I < P < RGB < RGBA :)
+        mode = max(o.mode for o in img_opts if o.mode)
+    else:
+        mode = None
 
     if base_opts:
         options = base_opts.copy()
