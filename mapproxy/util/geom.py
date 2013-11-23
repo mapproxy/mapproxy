@@ -161,7 +161,7 @@ def transform_multipolygon(transf, multipolygon):
     return shapely.geometry.MultiPolygon(transformed_polygons)
 
 def transform_xy(from_srs, to_srs, xy):
-    return list(from_srs.transform_to(to_srs, zip(*xy)))
+    return list(from_srs.transform_to(to_srs, list(zip(*xy))))
 
 def flatten_to_polygons(geometry):
     """
