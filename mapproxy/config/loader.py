@@ -326,7 +326,7 @@ class GlobalConfiguration(ConfigurationBase):
     def _copy_conf_values(self, d, target):
         for k, v in iteritems(d):
             if v is None: continue
-            if hasattr(v, 'iteritems') and k in target:
+            if (hasattr(v, 'iteritems') or hasattr(v, 'items')) and k in target:
                 self._copy_conf_values(v, target[k])
             else:
                 target[k] = v
