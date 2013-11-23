@@ -115,11 +115,13 @@ class ImageSource(object):
     def _make_readable_buf(self):
         if not self._buf and self._fname:
             self._buf = open(self._fname, 'rb')
-        elif not hasattr(self._buf, 'seek'):
-            if isinstance(self._buf, ReadBufWrapper):
-                self._buf = ReadBufWrapper(self._buf)
         else:
-            self._buf.seek(0)
+            try:
+                self._buf.seek(0)
+            except (io.UnsupportedOperation, AttributeError):
+                # PIL needs file objects with seek
+                self._buf = BytesIO(self._buf.read())
+
 
     def as_buffer(self, image_opts=None, format=None, seekable=False):
         """
