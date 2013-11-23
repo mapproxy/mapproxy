@@ -31,7 +31,6 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-import __builtin__
 import tempfile
 import unittest
 import inspect
@@ -46,6 +45,10 @@ import gc
 if sys.version_info < (2, 4):
     from sets import Set as set # pragma: nocover
 
+if sys.version_info[0] == 2:
+    import __builtin__
+else:
+    import builtins as __builtin__
 
 __all__ = ["Mocker", "Expect", "expect", "IS", "CONTAINS", "IN", "MATCH",
            "ANY", "ARGS", "KWARGS", "MockerTestCase"]
@@ -391,7 +394,7 @@ class MockerTestCase(unittest.TestCase):
             callableObj = args[0]
             try:
                 result = callableObj(*args[1:], **kwargs)
-            except excClass, e:
+            except excClass as e:
                 match_regexp(e)
                 return e
             else:
@@ -629,7 +632,7 @@ class MockerBase(object):
         for event in self._events:
             try:
                 event.verify()
-            except AssertionError, e:
+            except AssertionError as e:
                 error = str(e)
                 if not error:
                     raise RuntimeError("Empty error message from %r"
@@ -724,7 +727,7 @@ class MockerBase(object):
                         object = getattr(object, attr)
                     break
         if isinstance(object, types.UnboundMethodType):
-            object = object.im_func
+            object = object.__func__
         if spec is True:
             spec = object
         if type is True:
@@ -1180,7 +1183,7 @@ class Mock(object):
             path.root_object = object
         try:
             return self.__mocker__.act(path)
-        except MatchError, exception:
+        except MatchError as exception:
             root_mock = path.root_mock
             if (path.root_object is not None and
                 root_mock.__mocker_passthrough__):
@@ -1188,7 +1191,7 @@ class Mock(object):
             # Reinstantiate to show raise statement on traceback, and
             # also to make the traceback shown shorter.
             raise MatchError(str(exception))
-        except AssertionError, e:
+        except AssertionError as e:
             lines = str(e).splitlines()
             message = [ERROR_PREFIX + "Unmet expectation:", ""]
             message.append("=> " + lines.pop(0))
@@ -1238,7 +1241,7 @@ class Mock(object):
         # something that doesn't offer them.
         try:
             result = self.__mocker_act__("len")
-        except MatchError, e:
+        except MatchError as e:
             raise AttributeError(str(e))
         if type(result) is Mock:
             return 0
@@ -1247,7 +1250,7 @@ class Mock(object):
     def __nonzero__(self):
         try:
             result = self.__mocker_act__("nonzero")
-        except MatchError, e:
+        except MatchError as e:
             return True
         if type(result) is Mock:
             return True
@@ -1690,7 +1693,7 @@ class Event(object):
             if not errors or not task.may_run_user_code():
                 try:
                     task_result = task.run(path)
-                except AssertionError, e:
+                except AssertionError as e:
                     error = str(e)
                     if not error:
                         raise RuntimeError("Empty error message from %r" % task)
@@ -1737,7 +1740,7 @@ class Event(object):
         for task in self._tasks:
             try:
                 task.verify()
-            except AssertionError, e:
+            except AssertionError as e:
                 error = str(e)
                 if not error:
                     raise RuntimeError("Empty error message from %r" % task)
@@ -2224,7 +2227,7 @@ class Patcher(Task):
                     pass
                 else:
                     return __getattr__(*action.args, **action.kwargs)
-            raise type, value, traceback
+            raise (type, value, traceback)
 
 
 class PatchedMethod(object):
