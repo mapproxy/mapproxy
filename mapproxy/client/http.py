@@ -131,7 +131,11 @@ class HTTPClient(object):
     def open(self, url, data=None):
         code = None
         result = None
-        req = urllib2.Request(url, data=data)
+        try:
+            req = urllib2.Request(url, data=data)
+        except ValueError as e:
+            reraise_exception(HTTPClientError('URL not correct "%s": %s'
+                                              % (url, e.args[0])), sys.exc_info())
         for key, value in self.header_list:
             req.add_header(key, value)
         try:

@@ -28,7 +28,7 @@ import cgi
 import socket
 import errno
 import time
-from io import BytesIO
+from io import BytesIO, StringIO
 from contextlib import contextmanager
 from mapproxy.compat import iteritems, PY2
 from mapproxy.compat.modules import urlparse
@@ -60,7 +60,7 @@ class ThreadedStopableHTTPServer(threading.Thread):
         self.httpd = HTTPServer(address,mock_http_handler(requests_responses,
             unordered=unordered, query_comparator=query_comparator))
         self.httpd.timeout = 1.0
-        self.out = self.httpd.out = BytesIO()
+        self.out = self.httpd.out = StringIO()
 
     @property
     def http_port(self):
@@ -110,7 +110,7 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
 
         def do_POST(self):
             length = int(self.headers['content-length'])
-            self.query_data = self.path + '?' + self.rfile.read(length)
+            self.query_data = self.path + '?' + self.rfile.read(length).decode('utf-8')
             return self.do_mock_request('POST')
 
         def _matching_req_resp(self):

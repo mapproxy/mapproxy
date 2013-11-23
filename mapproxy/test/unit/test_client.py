@@ -28,7 +28,7 @@ from mapproxy.request.wms import WMS111MapRequest, WMS100MapRequest,\
                                  WMS130MapRequest, WMS111FeatureInfoRequest
 from mapproxy.srs import SRS
 from mapproxy.test.unit.test_cache import MockHTTPClient
-from mapproxy.test.http import mock_httpd, query_eq, assert_query_eq
+from mapproxy.test.http import mock_httpd, query_eq, assert_query_eq, wms_query_eq
 from mapproxy.test.helper import assert_re, TempFile
 
 from nose.tools import eq_
@@ -45,7 +45,7 @@ class TestHTTPClient(object):
     def test_post(self):
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?foo=bar', 'method': 'POST'},
                                               {'status': '200', 'body': b''})]):
-            self.client.open(TESTSERVER_URL + '/service', data="foo=bar")
+            self.client.open(TESTSERVER_URL + '/service', data=b"foo=bar")
 
     def test_internal_error_response(self):
         try:
@@ -385,7 +385,7 @@ class TestWMSInfoClient(object):
 
         wms.get_info(fi_req)
 
-        assert_query_eq(http.requested[0],
+        assert wms_query_eq(http.requested[0],
             TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                            '&REQUEST=GetFeatureInfo&HEIGHT=512&SRS=EPSG%3A25832&info_format=text/plain'
                            '&query_layers=foo'
@@ -401,7 +401,7 @@ class TestWMSInfoClient(object):
 
         wms.get_info(fi_req)
 
-        assert_query_eq(http.requested[0],
+        assert wms_query_eq(http.requested[0],
             TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                            '&REQUEST=GetFeatureInfo&HEIGHT=512&SRS=EPSG%3A25832&info_format=text/plain'
                            '&query_layers=foo'
