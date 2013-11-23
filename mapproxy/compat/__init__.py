@@ -17,6 +17,19 @@ if PY2:
     def iteritems(d):
         return d.iteritems()
 
+    def iterkeys(d):
+        return d.iterkeys()
+
+    def itervalues(d):
+        return d.itervalues()
+
+
 else:
     def iteritems(d):
         return d.items()
+
+    def iterkeys(d):
+        return d.keys()
+
+    def itervalues(d):
+        return d.values()

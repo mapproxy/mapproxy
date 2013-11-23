@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from mapproxy.compat import itervalues
+
 class required(str):
     """
     Mark a dictionary key as required.
@@ -92,7 +94,7 @@ class type_spec(object):
         self.type_key = type_key
         self.specs = specs
 
-        for v in specs.itervalues():
+        for v in itervalues(specs):
             if not isinstance(v, dict):
                 raise ValueError('%s requires dict subspecs', self.__class__)
             if self.type_key not in v:

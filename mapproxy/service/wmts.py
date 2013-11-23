@@ -21,7 +21,7 @@ from __future__ import print_function
 
 from functools import partial
 
-from mapproxy.compat import iteritems
+from mapproxy.compat import iteritems, itervalues
 from mapproxy.request.wmts import (
     wmts_request, make_wmts_rest_request_parser,
     URLTemplateConverter,
@@ -130,7 +130,7 @@ class WMTSServer(Server):
             if result['authorized'] == 'none':
                 raise RequestError('forbidden', status=403)
             allowed_layers = []
-            for layer in self.layers.itervalues():
+            for layer in itervalues(self.layers):
                 if result['layers'].get(layer.name, {}).get('tile', False) == True:
                     allowed_layers.append(layer)
             return allowed_layers

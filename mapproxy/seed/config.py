@@ -21,7 +21,7 @@ import sys
 import time
 import operator
 
-from mapproxy.compat import iteritems
+from mapproxy.compat import iteritems, itervalues, iterkeys
 from mapproxy.config import abspath
 from mapproxy.config.loader import ConfigurationError
 from mapproxy.config.coverage import load_coverage
@@ -235,7 +235,7 @@ class ConfigurationBase(object):
         else:
             # check that all caches have the same grids configured
             last = []
-            for cache_grids in (set(cache.iterkeys()) for cache in caches.itervalues()):
+            for cache_grids in (set(iterkeys(cache)) for cache in itervalues(caches)):
                 if not last:
                     last = cache_grids
                 else:
