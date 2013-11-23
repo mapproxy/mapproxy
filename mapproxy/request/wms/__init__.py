@@ -56,7 +56,8 @@ class WMSMapRequestParams(RequestParams):
         if 'bbox' not in self.params or self.params['bbox'] is None:
             return None
         points = map(float, self.params['bbox'].split(','))
-        return tuple(points[:4])
+        return tuple(points)
+
     def _set_bbox(self, value):
         if value is not None and not isinstance(value, string_type):
             value = ','.join(str(x) for x in value)

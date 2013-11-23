@@ -16,12 +16,15 @@
 """
 Service requests (parsing, handling, etc).
 """
-import urllib
 import cgi
 
 from mapproxy.util.py import cached_property
-from mapproxy.compat import iteritems
+from mapproxy.compat import iteritems, PY2
 
+if PY2:
+    from urllib import quote, quote_plus
+else:
+    from urllib.parse import quote, quote_plus
 
 class NoCaseMultiDict(dict):
     """
@@ -43,7 +46,7 @@ class NoCaseMultiDict(dict):
         """
         tmp = {}
         if isinstance(mapping, NoCaseMultiDict):
-            for key, value in iteritems(mapping): #pylint: disable-msg=E1103
+            for key, value in mapping.iteritems(): #pylint: disable-msg=E1103
                 tmp.setdefault(key.lower(), (key, []))[1].extend(value)
         else:
             if isinstance(mapping, dict):
@@ -88,7 +91,7 @@ class NoCaseMultiDict(dict):
 
     def __getstate__(self):
         data = []
-        for key, values in iteritems(self):
+        for key, values in self.iteritems():
             for v in values:
                 data.append((key, v))
         return data
@@ -151,8 +154,12 @@ class NoCaseMultiDict(dict):
         """
         Iterates over all keys and values.
         """
-        for _, (key, values) in dict.iteritems(self):
-            yield key, values
+        if PY2:
+            for _, (key, values) in dict.iteritems(self):
+                yield key, values
+        else:
+            for _, (key, values) in dict.items(self):
+                yield key, values
 
     def copy(self):
         """
@@ -174,9 +181,12 @@ def url_decode(qs, charset='utf-8', decode_keys=False, include_empty=True,
     """
     tmp = []
     for key, value in cgi.parse_qsl(str(qs), include_empty):
-        if decode_keys:
-            key = key.decode(charset, errors)
-        tmp.append((key, value.decode(charset, errors)))
+        if PY2:
+            if decode_keys:
+                key = key.decode(charset, errors)
+            tmp.append((key, value.decode(charset, errors)))
+        else:
+            tmp.append((key, value))
     return NoCaseMultiDict(tmp)
 
 class Request(object):
@@ -252,14 +262,14 @@ class Request(object):
     def script_url(self):
         "Full script URL without trailing /"
         return (self.host_url.rstrip('/') +
-                urllib.quote(self.environ.get('SCRIPT_NAME', '/').rstrip('/'))
+                quote(self.environ.get('SCRIPT_NAME', '/').rstrip('/'))
                )
 
     @property
     def base_url(self):
         return (self.host_url.rstrip('/')
-                + urllib.quote(self.environ.get('SCRIPT_NAME', '').rstrip('/'))
-                + urllib.quote(self.environ.get('PATH_INFO', ''))
+                + quote(self.environ.get('SCRIPT_NAME', '').rstrip('/'))
+                + quote(self.environ.get('PATH_INFO', ''))
                )
 
 class RequestParams(object):
@@ -350,9 +360,9 @@ class RequestParams(object):
         'baz=100&foo=egg&bar=ham%25eggs'
         """
         kv_pairs = []
-        for key, values in iteritems(self.params):
+        for key, values in self.params.iteritems():
             value = ','.join(str(v) for v in values)
-            kv_pairs.append(key + '=' + urllib.quote_plus(value, safe=','))
+            kv_pairs.append(key + '=' + quote_plus(value, safe=','))
         return '&'.join(kv_pairs)
 
     def with_defaults(self, defaults):
@@ -360,7 +370,7 @@ class RequestParams(object):
         Return this MapRequest with all values from `defaults` overwritten.
         """
         new = self.copy()
-        for key, value in iteritems(defaults.params):
+        for key, value in defaults.params.iteritems():
             if value != [None]:
                 new.set(key, value, unpack=True)
         return new

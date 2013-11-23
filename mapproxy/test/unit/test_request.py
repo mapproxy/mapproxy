@@ -56,14 +56,14 @@ class TestNoCaseMultiDict(object):
         assert nc_dict.get_all('crs') == ['EPSG:4326']
 
     def test_iteritems(self):
-        data = dict([('LAYERS', 'foo,bar'), ('laYERs', 'baz'), ('crs', 'EPSG:4326')])
+        data = [('LAYERS', 'foo,bar'), ('laYERs', 'baz'), ('crs', 'EPSG:4326')]
         nc_dict = NoCaseMultiDict(data)
-        print(nc_dict)
 
         itr = nc_dict.iteritems()
-        key, values = itr.next()
+        key, values = next(itr)
+
         assert key == 'LAYERS' and values == ['foo,bar', 'baz']
-        key, values = itr.next()
+        key, values = next(itr)
         assert key == 'crs' and values == ['EPSG:4326']
 
     def test_multiple_sets(self):
