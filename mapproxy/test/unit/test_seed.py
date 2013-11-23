@@ -211,7 +211,7 @@ class TestProgressStore(object):
 
     def test_load_store(self):
         with TempFile(no_create=True) as tmp:
-            with open(tmp, 'w') as f:
+            with open(tmp, 'wb') as f:
                 f.write(pickle.dumps({("view", "cache", "grid"): [(0, 1), (2, 4)]}))
             store = ProgressStore(tmp)
             assert store.get(('view', 'cache', 'grid')) == [(0, 1), (2, 4)]
@@ -226,8 +226,8 @@ class TestProgressStore(object):
 
     def test_load_broken(self):
         with TempFile(no_create=True) as tmp:
-            with open(tmp, 'w') as f:
-                f.write('##invaliddata')
+            with open(tmp, 'wb') as f:
+                f.write(b'##invaliddata')
                 f.write(pickle.dumps({("view", "cache", "grid"): [(0, 1), (2, 4)]}))
 
             store = ProgressStore(tmp)

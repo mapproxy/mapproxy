@@ -21,8 +21,12 @@ import sys
 import stat
 import math
 import time
-import cPickle as pickle
 from datetime import datetime
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 from mapproxy.layer import map_extent_from_grid
 
@@ -106,7 +110,7 @@ class ProgressStore(object):
             log.error('progress file (%s) is world writable, ignoring file',
                 self.filename)
         else:
-            with open(self.filename) as f:
+            with open(self.filename, 'rb') as f:
                 try:
                     return pickle.load(f)
                 except (pickle.UnpicklingError, AttributeError,
@@ -118,7 +122,7 @@ class ProgressStore(object):
 
     def write(self):
         try:
-            with open(self.filename + '.tmp', 'w') as f:
+            with open(self.filename + '.tmp', 'wb') as f:
                 f.write(pickle.dumps(self.status))
                 f.flush()
                 os.fsync(f.fileno())
