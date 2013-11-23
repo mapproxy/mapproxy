@@ -36,7 +36,8 @@ import cgi
 import os
 import tokenize
 from io import BytesIO
-from mapproxy.compat import iteritems, PY2
+from mapproxy.compat import iteritems, PY2, string_type
+from mapproxy.util.py import reraise
 from mapproxy.util.ext.tempita._looper import looper
 from mapproxy.util.ext.tempita.compat3 import bytes, basestring_, next, is_unicode, coerce_text
 
@@ -131,7 +132,7 @@ class Template(object):
 
     def from_filename(cls, filename, namespace=None, encoding=None,
                       default_inherit=None, get_template=get_file_template):
-        f = open(filename, 'rb')
+        f = open(filename, 'r')
         c = f.read()
         f.close()
         if encoding:
@@ -319,7 +320,7 @@ class Template(object):
                 return ''
             if self._unicode:
                 try:
-                    value = unicode(value)
+                    value = string_type(value)
                 except UnicodeDecodeError:
                     value = bytes(value)
             else:
@@ -332,7 +333,7 @@ class Template(object):
             exc_info = sys.exc_info()
             e = exc_info[1]
             e.args = (self._add_line_info(e.args[0], pos),)
-            raise (exc_info[0], e, exc_info[2])
+            raise reraise((exc_info[0], e, exc_info[2]))
         else:
             if self._unicode and isinstance(value, bytes):
                 if not self.default_encoding:
