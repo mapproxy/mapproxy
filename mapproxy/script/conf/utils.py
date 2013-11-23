@@ -15,12 +15,13 @@
 # limitations under the License.
 
 from copy import copy
+from mapproxy.compat import iteritems
 
 __all__ = ['update_config', 'MapProxyYAMLDumper']
 
 def update_config(conf, overwrites):
     wildcard_keys = []
-    for k, v in overwrites.iteritems():
+    for k, v in iteritems(overwrites):
         if k == '__all__':
             continue
         if  k.startswith('___') or k.endswith('___'):
@@ -45,7 +46,7 @@ def update_config(conf, overwrites):
 
     if '__all__' in overwrites:
         v = overwrites['__all__']
-        for conf_k, conf_v in conf.iteritems():
+        for conf_k, conf_v in iteritems(conf):
             if isinstance(conf_v, dict):
                 conf[conf_k] = update_config(conf_v, v)
             else:
@@ -60,7 +61,7 @@ def update_config(conf, overwrites):
             else:
                 key = key[:-3]
                 key_check = lambda x: x.startswith(key)
-            for conf_k, conf_v in conf.iteritems():
+            for conf_k, conf_v in iteritems(conf):
                 if not key_check(conf_k):
                     continue
                 if isinstance(conf_v, dict):

@@ -25,6 +25,7 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
 from mapproxy.srs import SRS, bbox_equals, merge_bbox, make_lin_transf
 from mapproxy.platform.proj import ProjError
+from mapproxy.compat import iteritems
 
 import logging
 from functools import reduce
@@ -133,7 +134,7 @@ class MapQuery(object):
         {'Foo': 1}
         """
         params = [p.lower() for p in params]
-        return dict((k, v) for k, v in self.dimensions.iteritems() if k.lower() in params)
+        return dict((k, v) for k, v in iteritems(self.dimensions) if k.lower() in params)
 
     def __repr__(self):
         return "MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s)" % self.__dict__

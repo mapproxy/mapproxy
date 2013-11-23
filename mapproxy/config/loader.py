@@ -34,7 +34,7 @@ from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.compat.modules import urlparse
-from mapproxy.compat import string_type
+from mapproxy.compat import string_type, iteritems
 
 class ConfigurationError(Exception):
     pass
@@ -68,7 +68,7 @@ class ProxyConfiguration(object):
         self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913', name='GLOBAL_MERCATOR'), context=self)
         self.grids['GLOBAL_WEBMERCATOR'] = GridConfiguration(dict(srs='EPSG:3857', origin='nw', name='GLOBAL_WEBMERCATOR'), context=self)
 
-        for grid_name, grid_conf in (self.configuration.get('grids') or {}).iteritems():
+        for grid_name, grid_conf in iteritems((self.configuration.get('grids') or {})):
             grid_conf.setdefault('name', grid_name)
             self.grids[grid_name] = GridConfiguration(grid_conf, context=self)
 
@@ -78,13 +78,13 @@ class ProxyConfiguration(object):
         if not caches_conf: return
         if isinstance(caches_conf, list):
             caches_conf = list_of_dicts_to_ordered_dict(caches_conf)
-        for cache_name, cache_conf in caches_conf.iteritems():
+        for cache_name, cache_conf in iteritems(caches_conf):
             cache_conf['name'] = cache_name
             self.caches[cache_name] = CacheConfiguration(conf=cache_conf, context=self)
 
     def load_sources(self):
         self.sources = SourcesCollection()
-        for source_name, source_conf in (self.configuration.get('sources') or {}).iteritems():
+        for source_name, source_conf in iteritems((self.configuration.get('sources') or {})):
             self.sources[source_name] = SourceConfiguration.load(conf=source_conf, context=self)
 
     def load_tile_layers(self):
@@ -92,7 +92,7 @@ class ProxyConfiguration(object):
         layers_conf = deepcopy(self._layers_conf_dict())
         if layers_conf is None: return
         layers = self._flatten_layers_conf_dict(layers_conf)
-        for layer_name, layer_conf in layers.iteritems():
+        for layer_name, layer_conf in iteritems(layers):
             layer_conf['name'] = layer_name
             self.layers[layer_name] = LayerConfiguration(conf=layer_conf, context=self)
 
@@ -131,7 +131,7 @@ class ProxyConfiguration(object):
         if not layers_conf: return None # TODO config error
         if isinstance(layers_conf, list):
             layers_conf = list_of_dicts_to_ordered_dict(layers_conf)
-        for layer_name, layer_conf in layers_conf.iteritems():
+        for layer_name, layer_conf in iteritems(layers_conf):
             layer_conf['name'] = layer_name
             layers.append(layer_conf)
         return dict(title=None, layers=layers)
@@ -238,7 +238,7 @@ def list_of_dicts_to_ordered_dict(dictlist):
 
     result = odict()
     for d in dictlist:
-        for k, v in d.iteritems():
+        for k, v in iteritems(d):
             result[k] = v
     return result
 
@@ -256,7 +256,7 @@ class ConfigurationBase(object):
         """
         self.conf = conf
         self.context = context
-        for k, v in self.defaults.iteritems():
+        for k, v in iteritems(self.defaults):
             if k not in self.conf:
                 self.conf[k] = v
 
@@ -324,7 +324,7 @@ class GlobalConfiguration(ConfigurationBase):
         self.renderd_address = self.get_value('renderd.address')
 
     def _copy_conf_values(self, d, target):
-        for k, v in d.iteritems():
+        for k, v in iteritems(d):
             if v is None: continue
             if hasattr(v, 'iteritems') and k in target:
                 self._copy_conf_values(v, target[k])
@@ -364,7 +364,7 @@ class ImageOptionsConfiguration(ConfigurationBase):
         self.formats = {}
 
         formats_config = default_image_options.copy()
-        for format, conf in self.conf.get('formats', {}).iteritems():
+        for format, conf in iteritems(self.conf.get('formats', {})):
             if format in formats_config:
                 tmp = formats_config[format].copy()
                 tmp.update(conf)
@@ -377,7 +377,7 @@ class ImageOptionsConfiguration(ConfigurationBase):
                 warnings.warn('merge_method now defaults to composite. option no longer required',
                     DeprecationWarning)
             formats_config[format] = conf
-        for format, conf in formats_config.iteritems():
+        for format, conf in iteritems(formats_config):
             if 'format' not in conf and format.startswith('image/'):
                 conf['format'] = format
             self.formats[format] = conf
@@ -567,7 +567,7 @@ class SourceConfiguration(ConfigurationBase):
         from mapproxy.source.error import HTTPSourceErrorHandler
 
         error_handler = HTTPSourceErrorHandler()
-        for status_code, response_conf in self.conf['on_error'].iteritems():
+        for status_code, response_conf in iteritems(self.conf['on_error']):
             if not isinstance(status_code, int) and status_code != 'other':
                 raise ConfigurationError("invalid error code %r in on_error", status_code)
             cacheable = response_conf.get('cache', False)
@@ -1332,7 +1332,7 @@ class LayerConfiguration(ConfigurationBase):
         from mapproxy.layer import Dimension
         dimensions = {}
 
-        for dimension, conf in self.conf.get('dimensions', {}).iteritems():
+        for dimension, conf in iteritems(self.conf.get('dimensions', {})):
             values = [str(val) for val in  conf.get('values', ['default'])]
             default = conf.get('default', values[-1])
             dimensions[dimension.lower()] = Dimension(dimension, values, default=default)
@@ -1401,7 +1401,7 @@ class ServiceConfiguration(ConfigurationBase):
     def services(self):
         services = []
         ows_services = []
-        for service_name, service_conf in self.conf.iteritems():
+        for service_name, service_conf in iteritems(self.conf):
             creator = getattr(self, service_name + '_service', None)
             if not creator:
                 raise ValueError('unknown service: %s' % service_name)
@@ -1424,7 +1424,7 @@ class ServiceConfiguration(ConfigurationBase):
 
     def tile_layers(self, conf, use_grid_names=False):
         layers = odict()
-        for layer_name, layer_conf in self.context.layers.iteritems():
+        for layer_name, layer_conf in iteritems(self.context.layers):
             for tile_layer in layer_conf.tile_layers():
                 if not tile_layer: continue
                 if use_grid_names:
@@ -1544,7 +1544,7 @@ class ServiceConfiguration(ConfigurationBase):
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
         layers = odict()
-        for layer_name, layer_conf in self.context.layers.iteritems():
+        for layer_name, layer_conf in iteritems(self.context.layers):
             layers[layer_name] = layer_conf.wms_layer()
         tile_layers = self.tile_layers(conf)
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
@@ -1606,7 +1606,7 @@ def merge_dict(conf, base):
     """
     Return `base` dict with values from `conf` merged in.
     """
-    for k, v in conf.iteritems():
+    for k, v in iteritems(conf):
         if k not in base:
             base[k] = v
         else:

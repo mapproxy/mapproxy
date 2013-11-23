@@ -20,6 +20,7 @@ import urllib
 import cgi
 
 from mapproxy.util.py import cached_property
+from mapproxy.compat import iteritems
 
 
 class NoCaseMultiDict(dict):
@@ -42,7 +43,7 @@ class NoCaseMultiDict(dict):
         """
         tmp = {}
         if isinstance(mapping, NoCaseMultiDict):
-            for key, value in mapping.iteritems(): #pylint: disable-msg=E1103
+            for key, value in iteritems(mapping): #pylint: disable-msg=E1103
                 tmp.setdefault(key.lower(), (key, []))[1].extend(value)
         else:
             if isinstance(mapping, dict):
@@ -63,7 +64,7 @@ class NoCaseMultiDict(dict):
         """A `NoCaseMultiDict` can be updated from an iterable of
         ``(key, value)`` tuples or a dict.
         """
-        for _, (key, values) in self._gen_dict(mapping).iteritems():
+        for _, (key, values) in iteritems(self._gen_dict(mapping)):
             self.set(key, values, append=append, unpack=True)
 
     def __getitem__(self, key):
@@ -87,7 +88,7 @@ class NoCaseMultiDict(dict):
 
     def __getstate__(self):
         data = []
-        for key, values in self.iteritems():
+        for key, values in iteritems(self):
             for v in values:
                 data.append((key, v))
         return data
@@ -161,7 +162,7 @@ class NoCaseMultiDict(dict):
 
     def __repr__(self):
         tmp = []
-        for key, values in self.iteritems():
+        for key, values in iteritems(self):
             tmp.append((key, values))
         return '%s(%r)' % (self.__class__.__name__, tmp)
 
@@ -331,7 +332,7 @@ class RequestParams(object):
 
 
     def iteritems(self):
-        for key, values in self.params.iteritems():
+        for key, values in iteritems(self.params):
             yield key, self.delimiter.join((str(x) for x in values))
 
     def __contains__(self, key):
@@ -349,7 +350,7 @@ class RequestParams(object):
         'baz=100&foo=egg&bar=ham%25eggs'
         """
         kv_pairs = []
-        for key, values in self.params.iteritems():
+        for key, values in iteritems(self.params):
             value = ','.join(str(v) for v in values)
             kv_pairs.append(key + '=' + urllib.quote_plus(value, safe=','))
         return '&'.join(kv_pairs)
@@ -359,7 +360,7 @@ class RequestParams(object):
         Return this MapRequest with all values from `defaults` overwritten.
         """
         new = self.copy()
-        for key, value in defaults.params.iteritems():
+        for key, value in iteritems(defaults.params):
             if value != [None]:
                 new.set(key, value, unpack=True)
         return new
@@ -398,7 +399,7 @@ class BaseRequest(object):
     @property
     def raw_params(self):
         params = {}
-        for key, value in self.params.iteritems():
+        for key, value in iteritems(self.params):
             params[key] = value
         return params
 

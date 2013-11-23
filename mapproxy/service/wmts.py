@@ -21,6 +21,7 @@ from __future__ import print_function
 
 from functools import partial
 
+from mapproxy.compat import iteritems
 from mapproxy.request.wmts import (
     wmts_request, make_wmts_rest_request_parser,
     URLTemplateConverter,
@@ -176,7 +177,7 @@ class WMTSRestServer(WMTSServer):
     def check_request_dimensions(self, tile_layer, request):
         # check that unknown dimension for this layer are set to default
         if request.dimensions:
-            for dimension, value in request.dimensions.iteritems():
+            for dimension, value in iteritems(request.dimensions):
                 dimension = dimension.lower()
                 if dimension not in tile_layer.dimensions and value != 'default':
                     raise RequestError('unknown dimension: ' + str(dimension),
@@ -277,7 +278,7 @@ class TileMatrixSet(object):
         return iter(self.tile_matrices)
 
     def _tile_matrices(self):
-        for level, res in self.grid.resolutions.iteritems():
+        for level, res in iteritems(self.grid.resolutions):
             origin = self.grid.origin_tile(level, 'ul')
             bbox = self.grid.tile_bbox(origin)
             grid_size = self.grid.grid_sizes[level]

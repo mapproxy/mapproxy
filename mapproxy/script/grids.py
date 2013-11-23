@@ -33,6 +33,7 @@ from __future__ import with_statement, division
 import sys
 import optparse
 
+from mapproxy.compat import iteritems
 from mapproxy.config import local_base_config
 from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import (
@@ -169,7 +170,7 @@ def grids_command(args=None):
     if options.grid_name:
         options.grid_name = options.grid_name.lower()
         # ignore case for keys
-        grids = dict((key.lower(), value) for (key, value) in grids.iteritems())
+        grids = dict((key.lower(), value) for (key, value) in iteritems(grids))
         if not grids.get(options.grid_name, False):
             print('grid not found: %s' % (options.grid_name,))
             sys.exit(1)

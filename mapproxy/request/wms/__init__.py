@@ -22,7 +22,7 @@ from mapproxy.request.wms import exception
 from mapproxy.exception import RequestError
 from mapproxy.srs import SRS, make_lin_transf
 from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
-from mapproxy.compat import string_type
+from mapproxy.compat import string_type, iteritems
 
 import logging
 log = logging.getLogger(__name__)
@@ -158,7 +158,7 @@ class WMSRequest(BaseRequest):
 
     def adapt_params_to_version(self):
         params = self.params.copy()
-        for key, value in self.fixed_params.iteritems():
+        for key, value in iteritems(self.fixed_params):
             params[key] = value
         if 'styles' not in params:
             params['styles'] = ''

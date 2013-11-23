@@ -33,6 +33,7 @@ import sys
 import textwrap
 import logging
 
+from mapproxy.compat import iteritems
 from mapproxy.version import version
 from mapproxy.script.scales import scales_command
 from mapproxy.script.wms_capabilities import wms_capabilities_command
@@ -339,7 +340,7 @@ def print_items(data, title='Commands'):
 
     if title:
         print('%s:' % (title, ), file=sys.stdout)
-    for name, item in data.iteritems():
+    for name, item in iteritems(data):
         help = item.get('help', '')
         name = ('%%-%ds' % name_len) % name
         if help:

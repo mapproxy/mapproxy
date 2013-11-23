@@ -19,6 +19,7 @@ from __future__ import division, with_statement
 import math
 import time
 
+from mapproxy.compat import iteritems
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
@@ -179,7 +180,7 @@ class TileServer(Server):
         """
         :return: root resource with all available versions of the service
         :rtype: Response
-        """        
+        """
         service = self._service_md(tms_request)
         result = self._render_root_resource_template(service)
         return Response(result, mimetype='text/xml')
@@ -269,7 +270,7 @@ class TileLayer(object):
     def checked_dimensions(self, tile_request):
         dimensions = {}
 
-        for dimension, values in self.dimensions.iteritems():
+        for dimension, values in iteritems(self.dimensions):
             value = tile_request.dimensions.get(dimension)
             if value in values:
                 dimensions[dimension] = value

@@ -19,7 +19,7 @@ Service responses.
 
 import hashlib
 from mapproxy.util.times import format_httpdate, parse_httpdate, timestamp
-from mapproxy.compat import string_type
+from mapproxy.compat import string_type, iteritems
 
 class Response(object):
     charset = 'utf-8'
@@ -139,7 +139,7 @@ class Response(object):
     @property
     def fixed_headers(self):
         headers = []
-        for key, value in self.headers.iteritems():
+        for key, value in iteritems(self.headers):
             headers.append((key, value.encode()))
         return headers
 

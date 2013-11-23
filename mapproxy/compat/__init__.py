@@ -12,3 +12,11 @@ else:
     string_type = str
     # text_type = unicode
     # unichr = unichr
+
+if PY2:
+    def iteritems(d):
+        return d.iteritems()
+
+else:
+    def iteritems(d):
+        return d.items()

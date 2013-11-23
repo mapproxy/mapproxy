@@ -23,6 +23,8 @@ from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
 from mapproxy.request.tile import TileRequest
 from mapproxy.exception import XMLExceptionHandler
 from mapproxy.template import template_loader
+from mapproxy.compat import iteritems
+
 import mapproxy.service
 get_template = template_loader(mapproxy.service.__name__, 'templates')
 
@@ -96,7 +98,7 @@ class WMTSTileRequestParams(RequestParams):
         expected_param = set(['version', 'request', 'layer', 'style', 'tilematrixset',
             'tilematrix', 'tilerow', 'tilecol', 'format', 'service'])
         dimensions = {}
-        for key, value in self.iteritems():
+        for key, value in iteritems(self):
             if key not in expected_param:
                 dimensions[key.lower()] = value
         return dimensions

@@ -16,6 +16,7 @@
 """
 WMS service handler
 """
+from mapproxy.compat import iteritems
 from mapproxy.compat.itertools import chain
 from functools import partial
 from mapproxy.cache.tile import CacheInfo
@@ -148,7 +149,7 @@ class WMSServer(Server):
         # if '__debug__' in map_request.params:
         #     layers = self.layers.values()
         # else:
-        #     layers = [layer for name, layer in self.layers.iteritems()
+        #     layers = [layer for name, layer in iteritems(self.layers)
         #               if name != '__debug__']
 
         if map_request.params.get('tiled', 'false').lower() == 'true':
@@ -308,7 +309,7 @@ class WMSServer(Server):
                 return PERMIT_ALL_LAYERS, None
             layers = {}
             if result['authorized'] == 'partial':
-                for layer_name, permissions in result['layers'].iteritems():
+                for layer_name, permissions in iteritems(result['layers']):
                     if permissions.get(feature, False) == True:
                         layers[layer_name] = permissions.get('limited_to')
             limited_to = result.get('limited_to')

@@ -21,7 +21,7 @@ import math
 
 from mapproxy.srs import SRS, get_epsg_num, merge_bbox, bbox_equals
 from mapproxy.util.collections import ImmutableDictList
-from mapproxy.compat import string_type
+from mapproxy.compat import string_type, iteritems
 
 geodetic_epsg_codes = [4326]
 
@@ -82,7 +82,7 @@ class _default_bboxs(object):
     def __getitem__(self, key):
         if self.defaults is None:
             defaults = {}
-            for epsg, bbox in self._defaults.iteritems():
+            for epsg, bbox in iteritems(self._defaults):
                 defaults[SRS(epsg)] = bbox
             self.defaults = defaults
         return self.defaults[key]
@@ -332,7 +332,7 @@ class TileGrid(object):
         width = self.bbox[2] - self.bbox[0]
         height = self.bbox[3] - self.bbox[1]
         grids = []
-        for idx, res in self.resolutions.iteritems():
+        for idx, res in iteritems(self.resolutions):
             x = max(math.ceil(width // res / self.tile_size[0]), 1)
             y = max(math.ceil(height // res / self.tile_size[1]), 1)
             grids.append((idx, (int(x), int(y))))
@@ -637,7 +637,7 @@ class TileGrid(object):
 
         # check if all level tiles from self align with (affected)
         # tiles from other
-        for self_level, self_level_res in self.resolutions.iteritems():
+        for self_level, self_level_res in iteritems(self.resolutions):
             level_size = (
                 self.grid_sizes[self_level][0] * self.tile_size[0],
                 self.grid_sizes[self_level][1] * self.tile_size[1]

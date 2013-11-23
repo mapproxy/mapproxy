@@ -37,6 +37,7 @@ from urllib import quote as url_quote
 import os
 import tokenize
 from io import BytesIO
+from mapproxy.compat import iteritems
 from mapproxy.util.ext.tempita._looper import looper
 from mapproxy.util.ext.tempita.compat3 import bytes, basestring_, next, is_unicode, coerce_text
 
@@ -184,7 +185,7 @@ class Template(object):
                 position=None, name=self.name)
         templ = self.get_template(inherit_template, self)
         self_ = TemplateObject(self.name)
-        for name, value in defs.iteritems():
+        for name, value in iteritems(defs):
             setattr(self_, name, value)
         self_.body = body
         ns = ns.copy()
@@ -373,7 +374,7 @@ def paste_script_template_renderer(content, vars, filename=None):
 class bunch(dict):
 
     def __init__(self, **kw):
-        for name, value in kw.iteritems():
+        for name, value in iteritems(kw):
             setattr(self, name, value)
 
     def __setattr__(self, name, value):
@@ -396,7 +397,7 @@ class bunch(dict):
 
     def __repr__(self):
         items = [
-            (k, v) for k, v in self.iteritems()]
+            (k, v) for k, v in iteritems(self)]
         items.sort()
         return '<%s %s>' % (
             self.__class__.__name__,
@@ -531,7 +532,7 @@ class TemplateDef(object):
         values = {}
         sig_args, var_args, var_kw, defaults = self._func_signature
         extra_kw = {}
-        for name, value in kw.iteritems():
+        for name, value in iteritems(kw):
             if not var_kw and name not in sig_args:
                 raise TypeError(
                     'Unexpected argument %s' % name)
@@ -554,7 +555,7 @@ class TemplateDef(object):
                 raise TypeError(
                     'Extra position arguments: %s'
                     % ', '.join(repr(v) for v in args))
-        for name, value_expr in defaults.iteritems():
+        for name, value_expr in iteritems(defaults):
             if name not in values:
                 values[name] = self._template._eval(
                     value_expr, self._ns, self._pos)

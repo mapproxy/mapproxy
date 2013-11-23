@@ -22,7 +22,7 @@ from mapproxy.platform.image import (
     ImageDraw,
     ImageColor,
 )
-from mapproxy.compat import string_type
+from mapproxy.compat import string_type, iteritems
 
 import tempfile
 from nose.tools import eq_
@@ -61,7 +61,7 @@ magic_bytes = { 'png': ["\211PNG\r\n\032\n"],
                 }
 
 def create_is_x_functions():
-    for type_, magic in magic_bytes.iteritems():
+    for type_, magic in iteritems(magic_bytes):
         def create_is_type(type_, magic):
             def is_type(fileobj):
                 if not hasattr(fileobj, 'read'):

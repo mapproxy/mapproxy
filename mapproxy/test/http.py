@@ -31,6 +31,7 @@ import time
 from io import BytesIO
 from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
 from contextlib import contextmanager
+from mapproxy.compat import iteritems
 from mapproxy.compat.modules import urlparse
 
 class HTTPServer(HTTPServer_):
@@ -164,7 +165,7 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
         def start_response(self, resp):
             self.send_response(int(resp.get('status', '200')))
             if 'headers' in resp:
-                for key, value in resp['headers'].iteritems():
+                for key, value in iteritems(resp['headers']):
                     self.send_header(key, value)
             self.end_headers()
         def log_request(self, code, size=None):

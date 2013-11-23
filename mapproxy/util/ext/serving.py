@@ -21,6 +21,7 @@ from SocketServer import ThreadingMixIn, ForkingMixIn
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 import mapproxy
+from mapproxy.compat import iteritems
 from functools import reduce
 # import werkzeug
 # from werkzeug._internal import _log
@@ -473,7 +474,7 @@ def restart_with_reloader():
         # environment and subprocess.call does not like this, encode them
         # to latin1 and continue.
         if os.name == 'nt':
-            for key, value in new_environ.iteritems():
+            for key, value in iteritems(new_environ):
                 if isinstance(value, unicode):
                     new_environ[key] = value.encode('iso-8859-1')
 

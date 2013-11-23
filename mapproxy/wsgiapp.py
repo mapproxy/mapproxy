@@ -121,7 +121,7 @@ class ReloaderApp(object):
         self._app_init_lock = threading.Lock()
 
     def _needs_reload(self):
-        for conf_file, timestamp in self.app.config_files.iteritems():
+        for conf_file, timestamp in iteritems(self.app.config_files):
             m_time = os.path.getmtime(conf_file)
             if m_time > timestamp:
                 return True

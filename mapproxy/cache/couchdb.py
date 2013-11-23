@@ -28,7 +28,7 @@ from mapproxy.cache.base import (
     tile_buffer, CacheBackendError,)
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
-from mapproxy.compat import string_type
+from mapproxy.compat import string_type, iteritems
 
 from threading import Lock
 
@@ -258,7 +258,7 @@ def utc_now_isoformat():
 class CouchDBMDTemplate(object):
     def __init__(self, attributes):
         self.attributes = attributes
-        for key, value in attributes.iteritems():
+        for key, value in iteritems(attributes):
             if value == '{{timestamp}}':
                 self.timestamp_key = key
                 break
@@ -269,7 +269,7 @@ class CouchDBMDTemplate(object):
     def doc(self, tile, grid):
         doc = {}
         x, y, z = tile.coord
-        for key, value in self.attributes.iteritems():
+        for key, value in iteritems(self.attributes):
             if not isinstance(value, string_type) or not value.startswith('{{'):
                 doc[key] = value
                 continue
