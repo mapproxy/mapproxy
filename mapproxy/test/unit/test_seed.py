@@ -17,7 +17,10 @@ from __future__ import with_statement, division
 
 import os
 import time
-import cPickle as pickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 from mapproxy.seed.seeder import TileWalker, SeedTask, SeedProgress
 from mapproxy.cache.tile import TileManager
