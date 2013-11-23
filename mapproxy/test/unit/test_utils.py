@@ -111,14 +111,14 @@ class TestFileLock(Mocker):
     def test_concurrent_access(self):
         count_file = os.path.join(self.lock_dir, 'count.txt')
         with open(count_file, 'wb') as f:
-            f.write('0')
+            f.write(b'0')
 
         def count_up():
             with FileLock(self.lock_file, timeout=60):
                 with open(count_file, 'r+b') as f:
                     counter = int(f.read().strip())
                     f.seek(0)
-                    f.write(str(counter+1))
+                    f.write(str(counter+1).encode('utf-8'))
 
         def do_it():
             for x in range(20):
@@ -384,7 +384,7 @@ class TestCleanupDirectory(DirTest):
 def write_atomic_data(xxx_todo_changeme):
     (i, filename) = xxx_todo_changeme
     data = str(i) + '\n' + 'x' * 10000
-    write_atomic(filename, data)
+    write_atomic(filename, data.encode('utf-8'))
     time.sleep(0.001)
 
 class TestWriteAtomic(object):
@@ -420,7 +420,7 @@ class TestWriteAtomic(object):
         os.mkdir(filename)
 
         try:
-            write_atomic(filename, '12345')
+            write_atomic(filename, b'12345')
         except OSError:
             pass
         else:
