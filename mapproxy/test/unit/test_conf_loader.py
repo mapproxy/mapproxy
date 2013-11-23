@@ -407,7 +407,7 @@ class TestWMSSourceConfiguration(object):
             conf.caches['osm'].caches()
         except ConfigurationError as ex:
             assert 'base,roads' in ex.args[0]
-            assert 'base,poi' in ex.args[0]
+            assert ('base,poi' in ex.args[0] or 'poi,base' in ex.args[0])
         else:
             assert False, 'expected ConfigurationError'
 
