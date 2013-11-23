@@ -24,7 +24,7 @@ import re
 from contextlib import contextmanager
 
 from .spec import required, one_of, anything, recursive
-from mapproxy.compat import iteritems
+from mapproxy.compat import iteritems, iterkeys
 
 class Context(object):
     def __init__(self):
@@ -129,7 +129,7 @@ class Validator(object):
     def _validate_dict(self, spec, data):
         accept_any_key = False
         any_key_spec = None
-        for k in spec.iterkeys():
+        for k in iterkeys(spec):
             if isinstance(k, required):
                 if k not in data:
                     self._handle_error("missing '%s' not in %s" %
