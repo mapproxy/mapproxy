@@ -56,7 +56,7 @@ class TestResolution(object):
     def test_min_res_levels_sqrt2(self):
         conf = dict(min_res=1600, num_levels=5, res_factor='sqrt2')
         res = resolutions(**conf)
-        eq_(map(round, res), [1600.0, 1131.0, 800.0, 566.0, 400.0])
+        eq_(list(map(round, res)), [1600.0, 1131.0, 800.0, 566.0, 400.0])
 
     def test_min_res_max_res_levels(self):
         conf = dict(min_res=1600, max_res=10, num_levels=10)

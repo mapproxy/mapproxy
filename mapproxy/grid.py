@@ -332,7 +332,7 @@ class TileGrid(object):
         width = self.bbox[2] - self.bbox[0]
         height = self.bbox[3] - self.bbox[1]
         grids = []
-        for idx, res in iteritems(self.resolutions):
+        for idx, res in self.resolutions.iteritems():
             x = max(math.ceil(width // res / self.tile_size[0]), 1)
             y = max(math.ceil(height // res / self.tile_size[1]), 1)
             grids.append((idx, (int(x), int(y))))
@@ -637,7 +637,7 @@ class TileGrid(object):
 
         # check if all level tiles from self align with (affected)
         # tiles from other
-        for self_level, self_level_res in iteritems(self.resolutions):
+        for self_level, self_level_res in self.resolutions.iteritems():
             level_size = (
                 self.grid_sizes[self_level][0] * self.tile_size[0],
                 self.grid_sizes[self_level][1] * self.tile_size[1]
@@ -1142,8 +1142,15 @@ def max_with_none(a, b):
     else:
         return max(a, b)
 
+def min_with_none(a, b):
+    if a is None or b is None:
+        return None
+    else:
+        return min(a, b)
+
+
 def merge_resolution_range(a, b):
     if a and b:
         return resolution_range(min_res=max_with_none(a.min_res, b.min_res),
-            max_res=min(a.max_res, b.max_res))
+            max_res=min_with_none(a.max_res, b.max_res))
     return None
