@@ -134,7 +134,7 @@ class Response(object):
         if hasattr(self.response, 'read'):
             return self.response.read()
         else:
-            return ''.join(chunk.encode() for chunk in self.response)
+            return b''.join(chunk.encode() for chunk in self.response)
 
     @property
     def fixed_headers(self):

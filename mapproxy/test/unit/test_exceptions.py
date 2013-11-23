@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,22 +19,11 @@ from mapproxy.test.helper import Mocker, validate_with_dtd, validate_with_xsd
 from mapproxy.test.image import is_png
 from mapproxy.request.wms import WMSMapRequest
 from mapproxy.request import url_decode
-from mapproxy.exception import (RequestError, ExceptionHandler)
+from mapproxy.exception import RequestError
 from mapproxy.request.wms.exception import (WMS100ExceptionHandler, WMS111ExceptionHandler,
                                      WMS130ExceptionHandler, WMS110ExceptionHandler)
 from nose.tools import eq_
 
-class TestRequestError(Mocker):
-    def test_render(self):
-        req = self.mock(WMSMapRequest)
-        ex_handler = self.mock(ExceptionHandler)
-        
-        req_ex = RequestError('the exception message', request=req)
-        self.expect(req.exception_handler).result(ex_handler)
-        self.expect(ex_handler.render(req_ex))
-        
-        self.replay()
-        req_ex.render()
 
 class ExceptionHandlerTest(Mocker):
     def setup(self):
@@ -50,11 +39,11 @@ class TestWMS111ExceptionHandler(Mocker):
         req_ex = RequestError('the exception message', request=req)
         ex_handler = WMS111ExceptionHandler()
         self.expect(req.exception_handler).result(ex_handler)
-        
+
         self.replay()
         response = req_ex.render()
         assert response.content_type == 'application/vnd.ogc.se_xml'
-        expected_resp = """
+        expected_resp = b"""
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE ServiceExceptionReport SYSTEM "http://schemas.opengis.net/wms/1.1.1/exception_1_1_1.dtd">
 <ServiceExceptionReport version="1.1.1">
@@ -69,11 +58,11 @@ class TestWMS111ExceptionHandler(Mocker):
                                   request=req)
         ex_handler = WMS111ExceptionHandler()
         self.expect(req.exception_handler).result(ex_handler)
-        
+
         self.replay()
         response = req_ex.render()
         assert response.content_type == 'application/vnd.ogc.se_xml'
-        expected_resp = """
+        expected_resp = b"""
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE ServiceExceptionReport SYSTEM "http://schemas.opengis.net/wms/1.1.1/exception_1_1_1.dtd">
 <ServiceExceptionReport version="1.1.1">
@@ -82,18 +71,18 @@ class TestWMS111ExceptionHandler(Mocker):
 """
         assert expected_resp.strip() == response.data
         assert validate_with_dtd(response.data, 'wms/1.1.1/exception_1_1_1.dtd')
-        
+
 class TestWMS110ExceptionHandler(Mocker):
     def test_render(self):
         req = self.mock(WMSMapRequest)
         req_ex = RequestError('the exception message', request=req)
         ex_handler = WMS110ExceptionHandler()
         self.expect(req.exception_handler).result(ex_handler)
-        
+
         self.replay()
         response = req_ex.render()
         assert response.content_type == 'application/vnd.ogc.se_xml'
-        expected_resp = """
+        expected_resp = b"""
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE ServiceExceptionReport SYSTEM "http://schemas.opengis.net/wms/1.1.0/exception_1_1_0.dtd">
 <ServiceExceptionReport version="1.1.0">
@@ -108,11 +97,11 @@ class TestWMS110ExceptionHandler(Mocker):
                                   request=req)
         ex_handler = WMS110ExceptionHandler()
         self.expect(req.exception_handler).result(ex_handler)
-        
+
         self.replay()
         response = req_ex.render()
         assert response.content_type == 'application/vnd.ogc.se_xml'
-        expected_resp = """
+        expected_resp = b"""
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE ServiceExceptionReport SYSTEM "http://schemas.opengis.net/wms/1.1.0/exception_1_1_0.dtd">
 <ServiceExceptionReport version="1.1.0">
@@ -128,11 +117,11 @@ class TestWMS130ExceptionHandler(Mocker):
         req_ex = RequestError('the exception message', request=req)
         ex_handler = WMS130ExceptionHandler()
         self.expect(req.exception_handler).result(ex_handler)
-        
+
         self.replay()
         response = req_ex.render()
         assert response.content_type == 'text/xml; charset=utf-8'
-        expected_resp = """
+        expected_resp = b"""
 <?xml version='1.0' encoding="UTF-8"?>
 <ServiceExceptionReport version="1.3.0"
   xmlns="http://www.opengis.net/ogc"
@@ -150,11 +139,11 @@ http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd">
                                   request=req)
         ex_handler = WMS130ExceptionHandler()
         self.expect(req.exception_handler).result(ex_handler)
-        
+
         self.replay()
         response = req_ex.render()
         assert response.content_type == 'text/xml; charset=utf-8'
-        expected_resp = """
+        expected_resp = b"""
 <?xml version='1.0' encoding="UTF-8"?>
 <ServiceExceptionReport version="1.3.0"
   xmlns="http://www.opengis.net/ogc"
@@ -173,12 +162,12 @@ class TestWMS100ExceptionHandler(Mocker):
         req_ex = RequestError('the exception message', request=req)
         ex_handler = WMS100ExceptionHandler()
         self.expect(req.exception_handler).result(ex_handler)
-        
+
         self.replay()
         response = req_ex.render()
-        
+
         assert response.content_type == 'text/xml'
-        expected_resp = """
+        expected_resp = b"""
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <WMTException version="1.0.0">
 the exception message
@@ -190,10 +179,10 @@ class TestWMSImageExceptionHandler(ExceptionHandlerTest):
     def test_exception(self):
         self.req.set('exceptions', 'inimage')
         self.req.set('transparent', 'true' )
-        
+
         req = WMSMapRequest(self.req)
         req_ex = RequestError('the exception message', request=req)
-        
+
         response = req_ex.render()
         assert response.content_type == 'image/png'
         data = BytesIO(response.data)
@@ -203,10 +192,10 @@ class TestWMSImageExceptionHandler(ExceptionHandlerTest):
     def test_exception_w_transparent(self):
         self.req.set('exceptions', 'inimage')
         self.req.set('transparent', 'true' )
-        
+
         req = WMSMapRequest(self.req)
         req_ex = RequestError('the exception message', request=req)
-        
+
         response = req_ex.render()
         assert response.content_type == 'image/png'
         data = BytesIO(response.data)
@@ -217,14 +206,14 @@ class TestWMSImageExceptionHandler(ExceptionHandlerTest):
             [377, 14623])
         img = img.convert('RGBA')
         eq_(img.getpixel((0, 0))[3], 0)
-    
+
 
 class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
     def test_exception(self):
         self.req['exceptions'] = 'blank'
         req = WMSMapRequest(self.req)
         req_ex = RequestError('the exception message', request=req)
-        
+
         response = req_ex.render()
         assert response.content_type == 'image/png'
         data = BytesIO(response.data)
@@ -236,10 +225,10 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
     def test_exception_w_bgcolor(self):
         self.req.set('exceptions', 'blank')
         self.req.set('bgcolor', '0xff00ff')
-        
+
         req = WMSMapRequest(self.req)
         req_ex = RequestError('the exception message', request=req)
-        
+
         response = req_ex.render()
         assert response.content_type == 'image/png'
         data = BytesIO(response.data)
@@ -251,10 +240,10 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
     def test_exception_w_transparent(self):
         self.req.set('exceptions', 'blank')
         self.req.set('transparent', 'true' )
-        
+
         req = WMSMapRequest(self.req)
         req_ex = RequestError('the exception message', request=req)
-        
+
         response = req_ex.render()
         assert response.content_type == 'image/png'
         data = BytesIO(response.data)
@@ -264,4 +253,3 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
         assert img.mode == 'P'
         img = img.convert('RGBA')
         eq_(img.getpixel((0, 0))[3], 0)
-    
