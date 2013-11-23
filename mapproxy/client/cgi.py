@@ -36,14 +36,14 @@ def split_cgi_response(data):
     headers = []
     prev_n = 0
     while True:
-        next_n = data.find('\n', prev_n)
+        next_n = data.find(b'\n', prev_n)
         if next_n < 0:
             break
         next_line_begin = data[next_n+1:next_n+3]
-        headers.append(data[prev_n:next_n].rstrip('\r'))
-        if next_line_begin[0] == '\n':
+        headers.append(data[prev_n:next_n].rstrip(b'\r'))
+        if next_line_begin[0:1] == b'\n':
             return headers_dict(headers), data[next_n+2:]
-        elif next_line_begin == '\r\n':
+        elif next_line_begin == b'\r\n':
             return headers_dict(headers), data[next_n+3:]
         prev_n = next_n+1
     return {}, data
@@ -51,12 +51,15 @@ def split_cgi_response(data):
 def headers_dict(header_lines):
     headers = {}
     for line in header_lines:
-        if ':' in line:
-            key, value = line.split(':', 1)
+        if b':' in line:
+            key, value = line.split(b':', 1)
             value = value.strip()
         else:
             key = line
             value = None
+        # TODO: remove break pointer
+        # from nose.tools import set_trace; set_trace()
+        key = key.decode('ascii')
         key = key[0].upper() + key[1:].lower()
         headers[key] = value
     return headers
