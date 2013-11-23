@@ -17,7 +17,11 @@ from __future__ import with_statement
 
 MAX_MAP_ASYNC_THREADS = 20
 
-import Queue
+try:
+    import Queue
+except ImportError:
+    import queue as Queue
+
 import sys
 import threading
 
@@ -250,7 +254,7 @@ class ThreadPool(object):
                 isinstance(task_result[1][1], Exception)):
                 self.shutdown(force=True)
                 exc_class, exc, tb = task_result[1]
-                raise exc_class, exc, tb
+                raise (exc_class, exc, tb)
             yield task_result
 
     def shutdown(self, force=False):
