@@ -56,20 +56,37 @@ except ImportError:
     from socketserver import ThreadingMixIn, ForkingMixIn
     from http.server import HTTPServer, BaseHTTPRequestHandler
 
-import werkzeug
-from werkzeug._internal import _log
-from werkzeug._compat import iteritems, PY2, reraise, text_type, \
-     wsgi_encoding_dance
-from werkzeug.urls import url_parse, url_unquote
-from werkzeug.exceptions import InternalServerError, BadRequest
+from mapproxy.compat import iteritems, PY2, text_type
+from mapproxy.compat.itertools import chain
+from mapproxy.util.py import reraise
 
+def wsgi_encoding_dance(s, charset='utf-8', errors='replace'):
+    if isinstance(s, bytes):
+        return s
+    return s.encode(charset, errors)
+
+try:
+    from urllib.parse import urlparse as url_parse, unquote as url_unquote
+except ImportError:
+    from urlparse import urlparse as url_parse, unquote as url_unquote
+
+# from werkzeug.urls import url_parse, url_unquote
+# from werkzeug.exceptions import InternalServerError, BadRequest
+
+import mapproxy.version
+
+def _log(type, message, *args):
+    if args:
+        message = message % args
+    sys.stderr.write('[%s] %s\n' % (type, message.rstrip()))
+    sys.stderr.flush()
 
 class WSGIRequestHandler(BaseHTTPRequestHandler, object):
     """A request handler that implements WSGI dispatching."""
 
     @property
     def server_version(self):
-        return 'Werkzeug/' + werkzeug.__version__
+        return 'MapProxy/' + mapproxy.version.__version__ + ' (Werkzeug based)'
 
     def make_environ(self):
         request_url = url_parse(self.path)
@@ -513,7 +530,6 @@ def _reloader_stat_loop(extra_files=None, interval=1):
 
     :param extra_files: a list of additional files it should watch.
     """
-    from itertools import chain
     mtimes = {}
     while 1:
         for filename in chain(_iter_module_files(), extra_files or ()):
