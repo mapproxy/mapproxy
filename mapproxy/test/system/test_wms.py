@@ -303,7 +303,7 @@ class TestWMS111(WMSTest):
                           '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
                           '&VERSION=1.1.1&BBOX=-180.0,0.0,0.0,80.0'
                           '&WIDTH=200'},
-                            {'body': 'notanimage', 'headers': {'content-type': 'image/jpeg'}})
+                            {'body': b'notanimage', 'headers': {'content-type': 'image/jpeg'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_map_req)
             eq_(resp.content_type, 'application/vnd.ogc.se_xml')
@@ -328,7 +328,7 @@ class TestWMS111(WMSTest):
                                       '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 self.common_map_req.params['bbox'] = '0,0,180,90'
                 resp = self.app.get(self.common_map_req)
                 assert 35000 < int(resp.headers['Content-length']) < 75000
@@ -343,13 +343,13 @@ class TestWMS111(WMSTest):
                                   '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                   '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                   '&WIDTH=256'},
-                        {'body': 'notanimage', 'headers': {'content-type': 'image/jpeg'}})
-        with mock_httpd(('localhost', 42423), [expected_req]):
+                        {'body': b'notanimage', 'headers': {'content-type': 'image/jpeg'}})
+        with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
             self.common_map_req.params['bbox'] = '0,0,180,90'
             resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+
         xml = resp.lxml
-        print(resp.body)
         eq_(xml.xpath('/ServiceExceptionReport/ServiceException/@code'), [])
         assert 'unable to transform image: cannot identify image file' in \
              xml.xpath('//ServiceException/text()')[0]
@@ -363,7 +363,7 @@ class TestWMS111(WMSTest):
                                     '&VERSION=1.1.1&BBOX=-180.0,0.0,0.0,80.0'
                                     '&WIDTH=200&TIME=20041012'},
                         {'body': img})
-        with mock_httpd(('localhost', 42423), [expected_req]):
+        with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
             self.common_map_req.params['layers'] = 'direct_fwd_params'
             self.common_map_req.params['time'] = '20041012'
             resp = self.app.get(self.common_map_req)
@@ -376,7 +376,7 @@ class TestWMS111(WMSTest):
                                       '&VERSION=1.1.1&BBOX=5.0,-10.0,6.0,-9.0'
                                       '&WIDTH=200'},
                             {'body': img.read(), 'headers': {'content-type': 'image/png'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 self.common_map_req.params['bbox'] = '5,-10,6,-9'
                 resp = self.app.get(self.common_map_req)
                 img.seek(0)
@@ -432,7 +432,7 @@ class TestWMS111(WMSTest):
                                       '&WMTVER=1.0.0&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/tiff'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 self.common_map_req.params['bbox'] = '0,0,180,90'
                 self.common_map_req.params['layers'] = 'wms_cache_100'
                 resp = self.app.get(self.common_map_req)
@@ -449,7 +449,7 @@ class TestWMS111(WMSTest):
                                       '&VERSION=1.3.0&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 self.common_map_req.params['bbox'] = '0,0,180,90'
                 self.common_map_req.params['layers'] = 'wms_cache_130'
                 resp = self.app.get(self.common_map_req)
@@ -475,12 +475,12 @@ class TestWMS111(WMSTest):
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20&feature_count=100'},
-                        {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+                        {'body': b'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             self.common_fi_req.params['feature_count'] = 100
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
-            eq_(resp.body, 'info')
+            eq_(resp.body, b'info')
 
     def test_get_featureinfo_transformed(self):
         expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
@@ -488,7 +488,7 @@ class TestWMS111(WMSTest):
                                   '&BBOX=5197367.93088,5312902.73895,5311885.44223,5434731.78213'
                                   '&styles=&VERSION=1.1.1'
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=14&Y=78'},
-                        {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+                        {'body': b'info', 'headers': {'content-type': 'text/plain'}})
 
         # out fi point at x=10,y=20
         p_25832  = (3570269+10*(3643458 - 3570269)/200, 5540889+20*(5614078 - 5540889)/200)
@@ -507,7 +507,7 @@ class TestWMS111(WMSTest):
             self.common_fi_req.params.pos = 10, 20
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
-            eq_(resp.body, 'info')
+            eq_(resp.body, b'info')
 
     def test_get_featureinfo_info_format(self):
         expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
@@ -515,25 +515,25 @@ class TestWMS111(WMSTest):
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'
                                   '&info_format=text%2Fhtml'},
-                        {'body': 'info', 'headers': {'content-type': 'text/html'}})
+                        {'body': b'info', 'headers': {'content-type': 'text/html'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             self.common_fi_req.params['info_format'] = 'text/html'
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/html')
-            eq_(resp.body, 'info')
+            eq_(resp.body, b'info')
 
     def test_get_featureinfo_130(self):
         expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
                                   '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&I=10&J=20'},
-                        {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+                        {'body': b'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             self.common_fi_req.params['layers'] = 'wms_cache_130'
             self.common_fi_req.params['query_layers'] = 'wms_cache_130'
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
-            eq_(resp.body, 'info')
+            eq_(resp.body, b'info')
 
     def test_get_featureinfo_missing_params(self):
         expected_req = (
@@ -541,13 +541,13 @@ class TestWMS111(WMSTest):
                       '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                       '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                       '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},
-            {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+            {'body': b'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             del self.common_fi_req.params['format']
             del self.common_fi_req.params['styles']
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
-            eq_(resp.body, 'info')
+            eq_(resp.body, b'info')
 
     def test_get_featureinfo_missing_params_strict(self):
         request_parser = self.app.app.handlers['service'].services['wms'].request_parser
@@ -688,7 +688,7 @@ class TestWMS110(WMSTest):
                                       '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 self.common_map_req.params['bbox'] = '0,0,180,90'
                 resp = self.app.get(self.common_map_req)
                 assert 35000 < int(resp.headers['Content-length']) < 75000
@@ -702,7 +702,7 @@ class TestWMS110(WMSTest):
                                       '&VERSION=1.1.0&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 self.common_map_req.params['bbox'] = '0,0,180,90'
                 self.common_map_req.params['layers'] = 'wms_cache_110'
                 resp = self.app.get(self.common_map_req)
@@ -714,11 +714,11 @@ class TestWMS110(WMSTest):
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&VERSION=1.1.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},
-                        {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+                        {'body': b'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
-            eq_(resp.body, 'info')
+            eq_(resp.body, b'info')
 
     def test_get_featureinfo_not_queryable(self):
         self.common_fi_req.params['query_layers'] = 'tms_cache'
@@ -838,7 +838,7 @@ class TestWMS100(WMSTest):
                                       '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 self.common_map_req.params['bbox'] = '0,0,180,90'
                 resp = self.app.get(self.common_map_req)
                 eq_(resp.content_type, 'image/png')
@@ -848,11 +848,11 @@ class TestWMS100(WMSTest):
                                   '&REQUEST=feature_info&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&WMTVER=1.0.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},
-                        {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+                        {'body': b'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
-            eq_(resp.body, 'info')
+            eq_(resp.body, b'info')
 
     def test_get_featureinfo_not_queryable(self):
         self.common_fi_req.params['query_layers'] = 'tms_cache'
@@ -986,7 +986,7 @@ class TestWMS130(WMSTest):
                                       '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 self.common_map_req.params['bbox'] = '0,0,180,90' #internal axis-order
                 resp = self.app.get(self.common_map_req)
                 eq_(resp.content_type, 'image/png')
@@ -996,24 +996,24 @@ class TestWMS130(WMSTest):
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
                                   '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&I=10&J=20'},
-                        {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+                        {'body': b'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
-            eq_(resp.body, 'info')
+            eq_(resp.body, b'info')
 
     def test_get_featureinfo_111(self):
         expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},
-                        {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+                        {'body': b'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             self.common_fi_req.params['layers'] = 'wms_cache'
             self.common_fi_req.params['query_layers'] = 'wms_cache'
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
-            eq_(resp.body, 'info')
+            eq_(resp.body, b'info')
 
 
 if sys.platform != 'win32':
@@ -1036,7 +1036,7 @@ if sys.platform != 'win32':
                                           '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                           '&WIDTH=256'},
                                 {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-                with mock_httpd(('localhost', 42423), [expected_req]):
+                with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                     self.common_map_req.params['bbox'] = '0,0,180,90'
                     resp = self.app.get(self.common_map_req)
                     eq_(resp.content_type, 'image/jpeg')
