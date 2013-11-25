@@ -98,7 +98,7 @@ class WMTSTileRequestParams(RequestParams):
         expected_param = set(['version', 'request', 'layer', 'style', 'tilematrixset',
             'tilematrix', 'tilerow', 'tilecol', 'format', 'service'])
         dimensions = {}
-        for key, value in iteritems(self):
+        for key, value in self.iteritems():
             if key not in expected_param:
                 dimensions[key.lower()] = value
         return dimensions
