@@ -159,7 +159,8 @@ class Response(object):
             else:
                 resp_iter = iter(lambda: self.response.read(self.block_size), b'')
         else:
-            if not isinstance(self.response, text_type):
+            # TODO check if encoding is done right for str on PY2/3
+            if self.response and not isinstance(self.response, text_type):
                 self.headers['Content-length'] = str(len(self.response))
                 self.response = [self.response]
             resp_iter = self.iter_encode(self.response)
