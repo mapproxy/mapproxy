@@ -262,10 +262,16 @@ class Version(object):
     def __init__(self, version):
         self.parts = tuple(int(x) for x in version.split('.'))
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
         if not isinstance(other, Version):
             return NotImplemented
-        return cmp(self.parts, other.parts)
+        return self.parts < other.parts
+
+    def __ge__(self, other):
+        if not isinstance(other, Version):
+            return NotImplemented
+        return self.parts >= other.parts
+
     def __repr__(self):
         return "Version('%s')" % ('.'.join(str(part) for part in self.parts),)
 
@@ -636,7 +642,7 @@ def negotiate_version(version):
     >>> negotiate_version(Version('1.1.0'))
     Version('1.1.0')
     """
-    supported_versions = request_mapping.keys()
+    supported_versions = list(request_mapping.keys())
     supported_versions.sort()
 
     if version < supported_versions[0]:
