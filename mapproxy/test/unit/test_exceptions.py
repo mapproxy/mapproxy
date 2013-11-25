@@ -44,7 +44,7 @@ class TestWMS111ExceptionHandler(Mocker):
         response = req_ex.render()
         assert response.content_type == 'application/vnd.ogc.se_xml'
         expected_resp = b"""
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0"?>
 <!DOCTYPE ServiceExceptionReport SYSTEM "http://schemas.opengis.net/wms/1.1.1/exception_1_1_1.dtd">
 <ServiceExceptionReport version="1.1.1">
     <ServiceException>the exception message</ServiceException>
@@ -63,7 +63,7 @@ class TestWMS111ExceptionHandler(Mocker):
         response = req_ex.render()
         assert response.content_type == 'application/vnd.ogc.se_xml'
         expected_resp = b"""
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0"?>
 <!DOCTYPE ServiceExceptionReport SYSTEM "http://schemas.opengis.net/wms/1.1.1/exception_1_1_1.dtd">
 <ServiceExceptionReport version="1.1.1">
     <ServiceException code="InvalidFormat">the exception message</ServiceException>
@@ -83,7 +83,7 @@ class TestWMS110ExceptionHandler(Mocker):
         response = req_ex.render()
         assert response.content_type == 'application/vnd.ogc.se_xml'
         expected_resp = b"""
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0"?>
 <!DOCTYPE ServiceExceptionReport SYSTEM "http://schemas.opengis.net/wms/1.1.0/exception_1_1_0.dtd">
 <ServiceExceptionReport version="1.1.0">
     <ServiceException>the exception message</ServiceException>
@@ -102,7 +102,7 @@ class TestWMS110ExceptionHandler(Mocker):
         response = req_ex.render()
         assert response.content_type == 'application/vnd.ogc.se_xml'
         expected_resp = b"""
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0"?>
 <!DOCTYPE ServiceExceptionReport SYSTEM "http://schemas.opengis.net/wms/1.1.0/exception_1_1_0.dtd">
 <ServiceExceptionReport version="1.1.0">
     <ServiceException code="InvalidFormat">the exception message</ServiceException>
@@ -122,7 +122,7 @@ class TestWMS130ExceptionHandler(Mocker):
         response = req_ex.render()
         assert response.content_type == 'text/xml; charset=utf-8'
         expected_resp = b"""
-<?xml version='1.0' encoding="UTF-8"?>
+<?xml version="1.0"?>
 <ServiceExceptionReport version="1.3.0"
   xmlns="http://www.opengis.net/ogc"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -144,7 +144,7 @@ http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd">
         response = req_ex.render()
         assert response.content_type == 'text/xml; charset=utf-8'
         expected_resp = b"""
-<?xml version='1.0' encoding="UTF-8"?>
+<?xml version="1.0"?>
 <ServiceExceptionReport version="1.3.0"
   xmlns="http://www.opengis.net/ogc"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -168,7 +168,7 @@ class TestWMS100ExceptionHandler(Mocker):
 
         assert response.content_type == 'text/xml'
         expected_resp = b"""
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0"?>
 <WMTException version="1.0.0">
 the exception message
 </WMTException>
