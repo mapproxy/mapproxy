@@ -224,7 +224,7 @@ class TestKML(SystemTest):
                                       '&VERSION=1.1.1&BBOX=-20037508.3428,-20037508.3428,0.0,0.0'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 resp = self.app.get('/kml/wms_cache/1/0/0.jpeg')
                 eq_(resp.content_type, 'image/jpeg')
                 self.created_tiles.append('wms_cache_EPSG900913/01/000/000/000/000/000/000.jpeg')
