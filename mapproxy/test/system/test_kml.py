@@ -79,7 +79,7 @@ class TestKML(SystemTest):
                               'wms_cache_EPSG900913/01/000/000/000/000/000/001.jpeg'),
                  (timestamp, timestamp))
         max_age = base_config().tiles.expires_hours * 60 * 60
-        etag = hashlib.md5(str(timestamp) + str(size)).hexdigest()
+        etag = hashlib.md5((str(timestamp) + str(size)).encode('ascii')).hexdigest()
         return etag, max_age
 
     def _check_cache_control_headers(self, resp, etag, max_age, timestamp=1234567890.0):
