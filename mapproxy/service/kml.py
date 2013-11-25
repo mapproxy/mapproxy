@@ -245,7 +245,7 @@ class SubTile(object):
         self.bbox = bbox
 
 class KMLRenderer(object):
-    header = """<?xml version="1.0" encoding="UTF-8"?>
+    header = """<?xml version="1.0"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>%(layer_name)s</name>
