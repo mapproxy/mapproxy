@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/wmts/1.0   ../wmtsGetCapabilities_response.xsd" version="1.0.0">
   <ows:ServiceIdentification>
     <ows:Title>{{service.title}}</ows:Title>
@@ -76,11 +76,11 @@
         <ows:Identifier>default</ows:Identifier>
       </Style>
       <Format>image/{{layer.format}}</Format>
-      {{for dimension, values in layer.dimensions.iteritems()}}
+      {{for dimension in layer.dimensions}}
       <Dimension>
         <ows:Identifier>{{ dimension_keys[dimension] }}</ows:Identifier>
-        <Default>{{ values.default }}</Default>
-        {{for value in values}}
+        <Default>{{ layer.dimensions[dimension].default }}</Default>
+        {{for value in layer.dimensions[dimension]}}
         <Value>{{ value }}</Value>
         {{endfor}}
       </Dimension>
