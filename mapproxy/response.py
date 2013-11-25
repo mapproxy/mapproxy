@@ -19,7 +19,7 @@ Service responses.
 
 import hashlib
 from mapproxy.util.times import format_httpdate, parse_httpdate, timestamp
-from mapproxy.compat import string_type, text_type, iteritems
+from mapproxy.compat import PY2, text_type, iteritems
 
 class Response(object):
     charset = 'utf-8'
@@ -140,7 +140,9 @@ class Response(object):
     def fixed_headers(self):
         headers = []
         for key, value in iteritems(self.headers):
-            headers.append((key, value.encode()))
+            if PY2 and isinstance(value, unicode):
+                value = value.encode('utf-8')
+            headers.append((key, value))
         return headers
 
     def __call__(self, environ, start_response):
@@ -155,9 +157,9 @@ class Response(object):
             if 'wsgi.file_wrapper' in environ:
                 resp_iter = environ['wsgi.file_wrapper'](self.response, self.block_size)
             else:
-                resp_iter = iter(lambda: self.response.read(self.block_size), '')
+                resp_iter = iter(lambda: self.response.read(self.block_size), b'')
         else:
-            if isinstance(self.response, string_type):
+            if not isinstance(self.response, text_type):
                 self.headers['Content-length'] = str(len(self.response))
                 self.response = [self.response]
             resp_iter = self.iter_encode(self.response)
