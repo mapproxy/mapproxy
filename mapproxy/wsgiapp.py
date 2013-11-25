@@ -25,6 +25,7 @@ import sys
 import time
 import threading
 
+from mapproxy.compat import iteritems
 from mapproxy.request import Request
 from mapproxy.response import Response
 from mapproxy.config import local_base_config
