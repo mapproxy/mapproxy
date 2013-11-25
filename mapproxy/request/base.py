@@ -19,7 +19,7 @@ Service requests (parsing, handling, etc).
 import cgi
 
 from mapproxy.util.py import cached_property
-from mapproxy.compat import iteritems, PY2
+from mapproxy.compat import iteritems, PY2, text_type
 
 if PY2:
     from urllib import quote, quote_plus
@@ -180,12 +180,16 @@ def url_decode(qs, charset='utf-8', decode_keys=False, include_empty=True,
     Parse query string `qs` and return a `NoCaseMultiDict`.
     """
     tmp = []
-    for key, value in cgi.parse_qsl(str(qs), include_empty):
+    for key, value in cgi.parse_qsl(qs, include_empty):
         if PY2:
             if decode_keys:
                 key = key.decode(charset, errors)
             tmp.append((key, value.decode(charset, errors)))
         else:
+            if not isinstance(key, text_type):
+                key = key.decode(charset, errors)
+            if not isinstance(value, text_type):
+                value = value.decode(charset, errors)
             tmp.append((key, value))
     return NoCaseMultiDict(tmp)
 
