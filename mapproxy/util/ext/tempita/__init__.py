@@ -35,7 +35,7 @@ import sys
 import cgi
 import os
 import tokenize
-from io import BytesIO
+from io import StringIO, BytesIO
 from mapproxy.compat import iteritems, PY2, string_type
 from mapproxy.util.py import reraise
 from mapproxy.util.ext.tempita._looper import looper
@@ -1001,7 +1001,12 @@ def parse_def(tokens, name, context):
 
 
 def parse_signature(sig_text, name, pos):
-    tokens = tokenize.generate_tokens(BytesIO(sig_text).readline)
+    if PY2 and isinstance(sig_text, str):
+        lines = BytesIO(sig_text).readline
+    else:
+        lines = StringIO(sig_text).readline
+
+    tokens = tokenize.generate_tokens(lines)
     sig_args = []
     var_arg = None
     var_kw = None
