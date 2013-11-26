@@ -19,7 +19,7 @@ Service responses.
 
 import hashlib
 from mapproxy.util.times import format_httpdate, parse_httpdate, timestamp
-from mapproxy.compat import PY2, text_type, iteritems
+from mapproxy.compat import PY2, PY3, text_type, iteritems
 
 class Response(object):
     charset = 'utf-8'
@@ -158,12 +158,17 @@ class Response(object):
                 resp_iter = environ['wsgi.file_wrapper'](self.response, self.block_size)
             else:
                 resp_iter = iter(lambda: self.response.read(self.block_size), b'')
+        elif not self.response:
+            resp_iter = iter([])
+        elif isinstance(self.response, text_type):
+            self.response = self.response.encode(self.charset)
+            self.headers['Content-length'] = str(len(self.response))
+            resp_iter = iter([self.response])
+        elif isinstance(self.response, bytes):
+            self.headers['Content-length'] = str(len(self.response))
+            resp_iter = iter([self.response])
         else:
-            # TODO check if encoding is done right for str on PY2/3
-            if self.response and not isinstance(self.response, text_type):
-                self.headers['Content-length'] = str(len(self.response))
-                self.response = [self.response]
-            resp_iter = self.iter_encode(self.response)
+            resp_iter = self.response
 
         start_response(self.status, self.fixed_headers)
         return resp_iter
