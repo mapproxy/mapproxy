@@ -79,24 +79,3 @@ def memoize(func):
         return cache[args]
     return wrapper
 
-def replace_instancemethod(old_method, new_method):
-    """
-    Replace an instance method.
-
-    >>> class Foo(object):
-    ...    val = 'bar'
-    ...    def bar(self):
-    ...        return self.val
-    >>> f = Foo()
-    >>> f.bar()
-    'bar'
-    >>> replace_instancemethod(f.bar, lambda self: 'foo' + self.val)
-    >>> f.bar()
-    'foobar'
-    """
-    cls = old_method.__self__.__class__
-    obj = old_method.__self__
-    name = old_method.__func__.__name__
-    instancemethod = type(old_method)
-    setattr(obj, name, instancemethod(new_method, obj, cls))
-
