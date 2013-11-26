@@ -31,8 +31,6 @@ class NoCaseMultiDict(dict):
     This is a dictionary that allows case insensitive access to values.
 
     >>> d = NoCaseMultiDict([('A', 'b'), ('a', 'c'), ('B', 'f'), ('c', 'x'), ('c', 'y'), ('c', 'z')])
-    >>> d
-    NoCaseMultiDict([('A', ['b', 'c']), ('c', ['x', 'y', 'z']), ('B', ['f'])])
     >>> d['a']
     'b'
     >>> d.get_all('a')
@@ -169,7 +167,7 @@ class NoCaseMultiDict(dict):
 
     def __repr__(self):
         tmp = []
-        for key, values in iteritems(self):
+        for key, values in self.iteritems():
             tmp.append((key, values))
         return '%s(%r)' % (self.__class__.__name__, tmp)
 
@@ -346,7 +344,7 @@ class RequestParams(object):
 
 
     def iteritems(self):
-        for key, values in iteritems(self.params):
+        for key, values in self.params.iteritems():
             yield key, self.delimiter.join((str(x) for x in values))
 
     def __contains__(self, key):
@@ -360,8 +358,9 @@ class RequestParams(object):
         """
         The map request as a query string (the order is not guaranteed).
 
-        >>> RequestParams(dict(foo='egg', bar='ham%eggs', baz=100)).query_string
-        'baz=100&foo=egg&bar=ham%25eggs'
+        >>> qs = RequestParams(dict(foo='egg', bar='ham%eggs', baz=100)).query_string
+        >>> sorted(qs.split('&'))
+        ['bar=ham%25eggs', 'baz=100', 'foo=egg']
         """
         kv_pairs = []
         for key, values in self.params.iteritems():

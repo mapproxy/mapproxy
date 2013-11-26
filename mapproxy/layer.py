@@ -183,9 +183,9 @@ class MapExtent(object):
     >>> me = MapExtent((5, 45, 15, 55), SRS(4326))
     >>> me.llbbox
     (5, 45, 15, 55)
-    >>> map(int, me.bbox_for(SRS(900913)))
+    >>> [int(x) for x in me.bbox_for(SRS(900913))]
     [556597, 5621521, 1669792, 7361866]
-    >>> map(int, me.bbox_for(SRS(4326)))
+    >>> [int(x) for x in me.bbox_for(SRS(4326))]
     [5, 45, 15, 55]
     """
     is_default = False

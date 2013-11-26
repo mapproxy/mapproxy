@@ -693,10 +693,10 @@ def pyramid_res_level(initial_res, factor=2.0, levels=20):
     :param factor: the factor between each level, for tms access 2
     :param levels: number of resolutions to generate
 
-    >>> pyramid_res_level(10000, levels=5)
+    >>> list(pyramid_res_level(10000, levels=5))
     [10000.0, 5000.0, 2500.0, 1250.0, 625.0]
-    >>> map(lambda x: round(x, 4),
-    ...     pyramid_res_level(10000, factor=1/0.75, levels=5))
+    >>> [round(x, 4) for x in
+    ...     pyramid_res_level(10000, factor=1/0.75, levels=5)]
     [10000.0, 7500.0, 5625.0, 4218.75, 3164.0625]
     """
     return [initial_res/factor**n for n in range(levels)]

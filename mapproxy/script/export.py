@@ -70,8 +70,8 @@ def parse_levels(level_str):
 
 def parse_grid_definition(definition):
     """
-    >>> parse_grid_definition("res=[10000,1000,100,10] srs=EPSG:4326 bbox=5,50,10,60")
-    {'res': [10000, 1000, 100, 10], 'bbox': '5,50,10,60', 'srs': 'EPSG:4326'}
+    >>> sorted(parse_grid_definition("res=[10000,1000,100,10] srs=EPSG:4326 bbox=5,50,10,60").items())
+    [('bbox', '5,50,10,60'), ('res', [10000, 1000, 100, 10]), ('srs', 'EPSG:4326')]
     """
     args = shlex.split(definition)
     grid_conf = {}

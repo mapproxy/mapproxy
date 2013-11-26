@@ -232,7 +232,7 @@ class ProxyConfiguration(object):
 def list_of_dicts_to_ordered_dict(dictlist):
     """
     >>> d = list_of_dicts_to_ordered_dict([{'a': 1}, {'b': 2}, {'c': 3}])
-    >>> d.items()
+    >>> list(d.items())
     [('a', 1), ('b', 2), ('c', 3)]
     """
 

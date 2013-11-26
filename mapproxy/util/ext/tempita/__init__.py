@@ -633,15 +633,15 @@ def lex(s, name=None, trim_whitespace=True, line_offset=0):
         ['hey']
         >>> lex('hey {{you}}')
         ['hey ', ('you', (1, 7))]
-        >>> lex('hey {{')
+        >>> lex('hey {{') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: No }} to finish last expression at line 1 column 7
-        >>> lex('hey }}')
+        >>> lex('hey }}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: }} outside expression at line 1 column 7
-        >>> lex('hey {{ {{')
+        >>> lex('hey {{ {{') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: {{ inside expression at line 1 column 10
@@ -772,31 +772,31 @@ def parse(s, name=None, line_offset=0):
 
     Some exceptions::
 
-        >>> parse('{{continue}}')
+        >>> parse('{{continue}}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: continue outside of for loop at line 1 column 3
-        >>> parse('{{if x}}foo')
+        >>> parse('{{if x}}foo') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: No {{endif}} at line 1 column 3
-        >>> parse('{{else}}')
+        >>> parse('{{else}}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: else outside of an if block at line 1 column 3
-        >>> parse('{{if x}}{{for x in y}}{{endif}}{{endfor}}')
+        >>> parse('{{if x}}{{for x in y}}{{endif}}{{endfor}}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: Unexpected endif at line 1 column 25
-        >>> parse('{{if}}{{endif}}')
+        >>> parse('{{if}}{{endif}}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: if with no expression at line 1 column 3
-        >>> parse('{{for x y}}{{endfor}}')
+        >>> parse('{{for x y}}{{endfor}}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: Bad for (no "in") in 'x y' at line 1 column 3
-        >>> parse('{{py:x=1\ny=2}}')
+        >>> parse('{{py:x=1\ny=2}}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: Multi-line py blocks must start with a newline at line 1 column 3

@@ -171,7 +171,7 @@ class WMS111Capabilities(WMSCapabilities):
                 llbbox_elem.attrib['maxx'],
                 llbbox_elem.attrib['maxy']
             )
-            llbbox = map(float, llbbox)
+            llbbox = [float(x) for x in llbbox]
         elif parent_layer and 'llbbox' in parent_layer:
             llbbox = parent_layer['llbbox']
         return llbbox
@@ -211,7 +211,7 @@ class WMS130Capabilities(WMSCapabilities):
                 self.find(llbbox_elem, 'eastBoundLongitude').text,
                 self.find(llbbox_elem, 'northBoundLatitude').text
             )
-            llbbox = map(float, llbbox)
+            llbbox = [float(x) for x in llbbox]
         elif parent_layer and 'llbbox' in parent_layer:
             llbbox = parent_layer['llbbox']
 
