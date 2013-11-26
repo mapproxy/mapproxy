@@ -418,8 +418,11 @@ class CacheInfo(object):
         self.timestamp = timestamp
         self.size = size
 
-    def __nonzero__(self):
+    def __bool__(self):
         return self.cacheable
+
+    # PY2 compat
+    __nonzero__ = __bool__
 
 class TileCollection(object):
     def __init__(self, tile_coords):
