@@ -694,7 +694,7 @@ def create_request(req_data, param, req_type='map', version='1.1.1', abspath=Non
         sld_path = req_data['sld'][len('file://'):]
         if abspath:
             sld_path = abspath(sld_path)
-        with codecs.open(sld_path, 'UTF-8') as f:
+        with codecs.open(sld_path, 'r', 'utf-8') as f:
             req_data['sld_body'] = f.read()
         del req_data['sld']
 
