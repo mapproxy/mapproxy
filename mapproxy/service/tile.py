@@ -453,7 +453,7 @@ class TileServiceGrid(object):
                              profiles (see `mapproxy.core.server.TileServer`)
         """
         x, y, z = tile_coord
-        if z < 0:
+        if int(z) < 0:
             return None
         if use_profiles and self._skip_first_level:
             z += 1
