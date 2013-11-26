@@ -57,10 +57,10 @@ def headers_dict(header_lines):
         else:
             key = line
             value = None
-        # TODO: remove break pointer
-        # from nose.tools import set_trace; set_trace()
-        key = key.decode('ascii')
+        key = key.decode('latin-1')
         key = key[0].upper() + key[1:].lower()
+        if value:
+            value = value.decode('latin-1')
         headers[key] = value
     return headers
 
