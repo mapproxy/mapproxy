@@ -41,8 +41,8 @@ def legend_identifier(legends):
 
 def legend_hash(identifier, scale):
     md5 = hashlib.md5()
-    md5.update(identifier)
-    md5.update(str(scale))
+    md5.update(identifier.encode('utf-8'))
+    md5.update(str(scale).encode('ascii'))
     return md5.hexdigest()
 
 class LegendCache(object):
