@@ -366,7 +366,7 @@ class TileResponse(object):
         #read the 2 magic bytes from the buffer
         magic_bytes = self._buf.read(2)
         self._buf.seek(0)
-        if magic_bytes == '\xFF\xD8':
+        if magic_bytes == b'\xFF\xD8':
             return 'jpeg'
         return 'png'
 
