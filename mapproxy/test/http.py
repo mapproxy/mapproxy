@@ -179,17 +179,20 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
     return MockHTTPHandler
 
 class MockServ(object):
-    def __init__(self, port=0, host='localhost', unordered=False):
+    def __init__(self, port=0, host='localhost', unordered=False, bbox_aware_query_comparator=False):
         self._requested_port = port
         self.port = port
         self.host = host
         self.requests_responses = []
         self.unordered = unordered
+        self.query_comparator = None
+        if bbox_aware_query_comparator:
+            self.query_comparator = wms_query_eq
         self._init_thread()
 
     def _init_thread(self):
         self._thread = ThreadedStopableHTTPServer((self.host, self._requested_port),
-            [], unordered=self.unordered)
+            [], unordered=self.unordered, query_comparator=self.query_comparator)
         if self._requested_port == 0:
             self.port = self._thread.http_port
         self.address = (self.host, self.port)
