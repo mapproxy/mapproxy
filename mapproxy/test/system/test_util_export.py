@@ -28,6 +28,11 @@ from mapproxy.test.http import mock_httpd
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 
+from mapproxy.compat import PY3
+if PY3:
+    from nose.plugins.skip import SkipTest
+    raise SkipTest()
+
 @contextlib.contextmanager
 def capture_stderr(io=None):
     if io is None:

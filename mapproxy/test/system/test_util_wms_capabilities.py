@@ -31,6 +31,10 @@ CAPABILITIES111_FILE = os.path.join(os.path.dirname(__file__), 'fixture', 'util_
 CAPABILITIES130_FILE = os.path.join(os.path.dirname(__file__), 'fixture', 'util_wms_capabilities130.xml')
 SERVICE_EXCEPTION_FILE = os.path.join(os.path.dirname(__file__), 'fixture', 'util_wms_capabilities_service_exception.xml')
 
+from mapproxy.compat import PY3
+if PY3:
+    from nose.plugins.skip import SkipTest
+    raise SkipTest()
 
 @contextlib.contextmanager
 def capture_out():

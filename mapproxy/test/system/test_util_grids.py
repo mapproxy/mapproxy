@@ -34,6 +34,11 @@ UNUSED_GRID_NAMES = [
     'GLOBAL_WEBMERCATOR',
 ]
 
+from mapproxy.compat import PY3
+if PY3:
+    from nose.plugins.skip import SkipTest
+    raise SkipTest()
+
 
 @contextlib.contextmanager
 def capture_stderr(io=None):

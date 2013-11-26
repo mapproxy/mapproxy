@@ -27,13 +27,16 @@ from mapproxy.script.conf.app import config_command
 
 from nose.tools import eq_
 
+from mapproxy.compat import PY3
+if PY3:
+    from nose.plugins.skip import SkipTest
+    raise SkipTest()
 
 @contextmanager
 def capture():
     import sys
     from io import BytesIO
 
-    # setup the environment
     backup_stdout = sys.stdout
     backup_stderr = sys.stderr
 
