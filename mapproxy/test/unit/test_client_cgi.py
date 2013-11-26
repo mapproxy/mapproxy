@@ -28,13 +28,13 @@ from nose.tools import eq_
 class TestSplitHTTPResponse(object):
     def test_n(self):
         eq_(split_cgi_response(b'header1: foo\nheader2: bar\n\ncontent\n\ncontent'),
-            ({'Header1':b'foo', 'Header2': b'bar'}, b'content\n\ncontent'))
+            ({'Header1': 'foo', 'Header2': 'bar'}, b'content\n\ncontent'))
     def test_rn(self):
         eq_(split_cgi_response(b'header1\r\nheader2\r\n\r\ncontent\r\n\r\ncontent'),
             ({'Header1': None, 'Header2': None}, b'content\r\n\r\ncontent'))
     def test_mixed(self):
         eq_(split_cgi_response(b'header1: bar:foo\r\nheader2\n\r\ncontent\r\n\r\ncontent'),
-            ({'Header1': b'bar:foo', 'Header2': None}, b'content\r\n\r\ncontent'))
+            ({'Header1': 'bar:foo', 'Header2': None}, b'content\r\n\r\ncontent'))
         eq_(split_cgi_response(b'header1\r\nheader2\n\ncontent\r\n\r\ncontent'),
             ({'Header1': None, 'Header2': None}, b'content\r\n\r\ncontent'))
         eq_(split_cgi_response(b'header1\nheader2\r\n\r\ncontent\r\n\r\ncontent'),
@@ -98,7 +98,7 @@ class TestCGIClient(object):
         script = self.create_script()
         client = CGIClient(script)
         resp = client.open('http://example.org/service?hello=bar')
-        eq_(resp.headers['Content-type'], b'text/plain')
+        eq_(resp.headers['Content-type'], 'text/plain')
         eq_(resp.read(), b'hello=bar')
 
     def test_failed_call(self):

@@ -85,7 +85,7 @@ class TestCacheSource(SystemTest):
         # access new cache, should get existing tile from old cache
         resp = self.app.get('/tiles/new_cache_EPSG3857/0/0/0.png')
         eq_(resp.content_type, 'image/png')
-        eq_(resp.body, 'foo')
+        eq_(resp.body, b'foo')
 
         self.created_tiles.append('old_cache_EPSG3857/01/000/000/001/000/000/000.png')
         self.created_tiles.append('new_cache_EPSG3857/00/000/000/000/000/000/000.png')

@@ -106,7 +106,7 @@ class TestWMS(SystemTest):
                                       '&VERSION=1.1.1&BBOX=0.0,0.0,156543.033928,156543.033928'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/png'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 resp = self.app.get(self.common_map_req)
                 assert is_png(resp.body)
                 assert not is_transparent(resp.body)

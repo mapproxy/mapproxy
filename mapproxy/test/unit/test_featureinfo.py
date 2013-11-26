@@ -112,13 +112,13 @@ class TestXMLFeatureInfoDocsNoLXML(object):
 
     def test_combine(self):
         docs = [
-            XMLFeatureInfoDoc('<root><a>foo</a></root>'),
-            XMLFeatureInfoDoc('<root><b>bar</b></root>'),
-            XMLFeatureInfoDoc('<other_root><a>baz</a></other_root>'),
+            XMLFeatureInfoDoc(b'<root><a>foo</a></root>'),
+            XMLFeatureInfoDoc(b'<root><b>bar</b></root>'),
+            XMLFeatureInfoDoc(b'<other_root><a>baz</a></other_root>'),
         ]
         result = XMLFeatureInfoDoc.combine(docs)
 
-        eq_('<root><a>foo</a></root>\n<root><b>bar</b></root>\n<other_root><a>baz</a></other_root>',
+        eq_(b'<root><a>foo</a></root>\n<root><b>bar</b></root>\n<other_root><a>baz</a></other_root>',
             result.as_string())
         eq_(result.info_type, 'text')
 
@@ -134,9 +134,9 @@ class TestHTMLFeatureInfoDocs(object):
 
     def test_combine(self):
         docs = [
-            HTMLFeatureInfoDoc('<html><head><title>Hello<body><p>baz</p><p>baz2'),
-            HTMLFeatureInfoDoc('<p>foo</p>'),
-            HTMLFeatureInfoDoc('<body><p>bar</p></body>'),
+            HTMLFeatureInfoDoc(b'<html><head><title>Hello<body><p>baz</p><p>baz2'),
+            HTMLFeatureInfoDoc(b'<p>foo</p>'),
+            HTMLFeatureInfoDoc(b'<body><p>bar</p></body>'),
         ]
         result = HTMLFeatureInfoDoc.combine(docs)
         assert b'<title>Hello</title>' in result.as_string()
@@ -167,13 +167,13 @@ class TestHTMLFeatureInfoDocsNoLXML(object):
 
     def test_combine(self):
         docs = [
-            HTMLFeatureInfoDoc('<html><head><title>Hello<body><p>baz</p><p>baz2'),
-            HTMLFeatureInfoDoc('<p>foo</p>'),
-            HTMLFeatureInfoDoc('<body><p>bar</p></body>'),
+            HTMLFeatureInfoDoc(b'<html><head><title>Hello<body><p>baz</p><p>baz2'),
+            HTMLFeatureInfoDoc(b'<p>foo</p>'),
+            HTMLFeatureInfoDoc(b'<body><p>bar</p></body>'),
         ]
         result = HTMLFeatureInfoDoc.combine(docs)
 
-        eq_("<html><head><title>Hello<body><p>baz</p>"
-            "<p>baz2\n<p>foo</p>\n<body><p>bar</p></body>",
+        eq_(b"<html><head><title>Hello<body><p>baz</p>"
+            b"<p>baz2\n<p>foo</p>\n<body><p>bar</p></body>",
             result.as_string())
         eq_(result.info_type, 'text')

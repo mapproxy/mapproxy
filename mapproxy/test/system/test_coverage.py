@@ -99,7 +99,7 @@ class TestCoverageTMS(SystemTest):
                                       '&VERSION=1.1.1&BBOX=1113194.90793,1689200.13961,3339584.7238,3632749.14338'
                                       '&WIDTH=28'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 resp = self.app.get('/tms/1.0.0/wms_cache/0/1/1.jpeg')
                 eq_(resp.content_type, 'image/jpeg')
                 self.created_tiles.append('wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
@@ -108,7 +108,7 @@ class TestCoverageTMS(SystemTest):
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/tms/1.0.0/foo/1/1/1.jpeg'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 resp = self.app.get('/tms/1.0.0/tms_cache/0/1/1.jpeg')
                 eq_(resp.content_type, 'image/jpeg')
                 self.created_tiles.append('tms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')

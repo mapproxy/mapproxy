@@ -37,8 +37,8 @@ class TestResponse(Mocker):
         self.expect(start_response('200 OK', ANY))
         self.replay()
         result = resp({'REQUEST_METHOD': 'GET'}, start_response)
-        assert next(result) == b'string content'
-        assert next(result) == b'as iterable'
+        assert next(result) == 'string content'
+        assert next(result) == 'as iterable'
 
     def test_file_response(self):
         data = BytesIO(b'foobar')

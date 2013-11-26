@@ -16,7 +16,11 @@
 from __future__ import with_statement, division
 import os
 import tempfile
-from urllib import quote
+
+try:
+    from urllib.parse import quote
+except ImportError:
+    from urllib import quote
 
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.test.system import module_setup, module_teardown, make_base_config, SystemTest
