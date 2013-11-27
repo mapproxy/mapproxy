@@ -323,7 +323,11 @@ class TileGrid(object):
 
         self.levels = len(res)
         self.resolutions = NamedGridList(res)
-        self.threshold_res = threshold_res
+
+        self.threshold_res = None
+        if threshold_res:
+            self.threshold_res = sorted(threshold_res)
+
 
         self.grid_sizes = self._calc_grids()
 
@@ -388,8 +392,11 @@ class TileGrid(object):
         threshold = None
         thresholds = []
         if self.threshold_res:
-            thresholds = self.threshold_res[::-1]
+            thresholds = self.threshold_res[:]
             threshold = thresholds.pop()
+            # skip thresholds above first res
+            while threshold > prev_l_res and thresholds:
+                threshold = thresholds.pop()
 
         threshold_result = None
         for level, l_res in enumerate(self.resolutions):

@@ -921,6 +921,15 @@ class TestTileGridThreshold(object):
         # regular transition (w/stretchfactor)
         eq_(grid.closest_level(92), 3)
         eq_(grid.closest_level(90), 4)
+    def test_above_first_res(self):
+        grid = TileGrid(res=[1000, 500, 250, 100, 50], threshold_res=[1100, 750])
+        grid.stretch_factor = 1.1
+        eq_(grid.closest_level(1200), 0)
+        eq_(grid.closest_level(1100), 0)
+        eq_(grid.closest_level(1000), 0)
+        eq_(grid.closest_level(800), 0)
+        eq_(grid.closest_level(750.1), 0)
+        eq_(grid.closest_level(750), 1)
 
 
 class TestCreateTileList(object):
