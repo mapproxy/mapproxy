@@ -28,11 +28,14 @@ import cgi
 import socket
 import errno
 import time
-from io import StringIO
 from contextlib import contextmanager
 from mapproxy.util.py import reraise
 from mapproxy.compat import iteritems, PY2
 from mapproxy.compat.modules import urlparse
+if PY2:
+    from cStringIO import StringIO
+else:
+    from io import StringIO
 
 if PY2:
     from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
