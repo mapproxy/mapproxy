@@ -28,7 +28,7 @@ import cgi
 import socket
 import errno
 import time
-from io import BytesIO, StringIO
+from io import StringIO
 from contextlib import contextmanager
 from mapproxy.util.py import reraise
 from mapproxy.compat import iteritems, PY2
@@ -89,7 +89,7 @@ class ThreadedSingleRequestHTTPServer(threading.Thread):
         self.shutdown = False
         self.httpd = HTTPServer(address, request_handler)
         self.httpd.timeout = 1.0
-        self.out = self.httpd.out = BytesIO()
+        self.out = self.httpd.out = StringIO()
 
     def run(self):
         self.httpd.handle_request()
