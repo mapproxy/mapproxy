@@ -22,8 +22,6 @@ if PY2:
 
     def itervalues(d):
         return d.itervalues()
-
-
 else:
     def iteritems(d):
         return d.items()
@@ -33,3 +31,11 @@ else:
 
     def itervalues(d):
         return d.values()
+
+if PY2:
+    try:
+        from cStringIO import StringIO as BytesIO
+    except ImportError:
+        from StringIO import StringIO as BytesIO
+else:
+    from io import BytesIO

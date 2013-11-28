@@ -14,9 +14,9 @@
 # limitations under the License.
 
 import copy
-from io import BytesIO, StringIO
+from io import StringIO
 from mapproxy.request.base import split_mime_type
-from mapproxy.compat import string_type, PY2
+from mapproxy.compat import string_type, PY2, BytesIO
 
 try:
     from lxml import etree, html

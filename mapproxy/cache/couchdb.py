@@ -20,15 +20,13 @@ import socket
 import time
 import hashlib
 
-from io import BytesIO
-
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import (
     TileCacheBase, FileBasedLocking,
     tile_buffer, CacheBackendError,)
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
-from mapproxy.compat import string_type, iteritems
+from mapproxy.compat import string_type, iteritems, BytesIO
 
 from threading import Lock
 

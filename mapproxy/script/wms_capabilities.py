@@ -21,11 +21,10 @@ from __future__ import with_statement
 
 import sys
 import optparse
-from io import BytesIO
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import XMLParser
 
-from mapproxy.compat import iteritems
+from mapproxy.compat import iteritems, BytesIO
 from mapproxy.compat.modules import urlparse
 from mapproxy.client.http import open_url, HTTPClientError
 from mapproxy.request.base import BaseRequest, url_decode

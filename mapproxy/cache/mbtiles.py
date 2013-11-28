@@ -18,13 +18,12 @@ import os
 import time
 import sqlite3
 import threading
-from io import BytesIO
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer, CacheBackendError
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
-from mapproxy.compat import PY2
+from mapproxy.compat import BytesIO, PY2
 
 import logging
 log = logging.getLogger(__name__)

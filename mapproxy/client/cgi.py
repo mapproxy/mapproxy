@@ -28,7 +28,7 @@ from mapproxy.client.http import HTTPClientError
 from mapproxy.client.log import log_request
 from mapproxy.util.async import import_module
 from mapproxy.compat.modules import urlparse
-from io import BytesIO
+from mapproxy.compat import BytesIO
 
 subprocess = import_module('subprocess')
 
@@ -63,6 +63,14 @@ def headers_dict(header_lines):
             value = value.decode('latin-1')
         headers[key] = value
     return headers
+
+class IOwithHeaders(object):
+    def __init__(self, io, headers):
+        self.io = io
+        self.headers = headers
+
+    def __getattr__(self, name):
+        return getattr(self.io, name)
 
 class CGIClient(object):
     def __init__(self, script, no_headers=False, working_directory=None):
@@ -117,8 +125,7 @@ class CGIClient(object):
         else:
             status_code = '-'
         size = len(content)
-        content = BytesIO(content)
-        content.headers = headers
+        content = IOwithHeaders(BytesIO(content), headers)
 
         log_request('%s:%s' % (self.script, parsed_url.query),
             status_code, size=size, method='CGI', duration=time.time()-start_time)
