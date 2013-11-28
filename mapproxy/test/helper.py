@@ -19,9 +19,10 @@ from __future__ import with_statement
 import tempfile
 import os
 import re
+from contextlib import contextmanager
 from lxml import etree
-from mapproxy.test import mocker
 
+from mapproxy.test import mocker
 from mapproxy.compat import string_type
 from nose.tools import eq_
 
@@ -195,3 +196,25 @@ def strip_whitespace(data):
         return re.sub(b'\s+', b'', data)
     else:
         return re.sub('\s+', '', data)
+
+
+@contextmanager
+def capture():
+    import sys
+    from io import BytesIO
+
+    backup_stdout = sys.stdout
+    backup_stderr = sys.stderr
+
+    try:
+        sys.stdout = BytesIO()
+        sys.stderr = BytesIO()
+        yield sys.stdout, sys.stderr
+    except Exception as ex:
+        backup_stdout.write(str(ex))
+        backup_stdout.write(sys.stdout.getvalue())
+        backup_stderr.write(sys.stderr.getvalue())
+        raise
+    finally:
+        sys.stdout = backup_stdout
+        sys.stderr = backup_stderr

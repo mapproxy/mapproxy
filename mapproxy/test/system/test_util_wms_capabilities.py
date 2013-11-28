@@ -15,15 +15,13 @@
 
 from __future__ import with_statement
 import os
-import sys
-import contextlib
 
-from io import BytesIO
 from nose.tools import assert_raises
 
 from mapproxy.client.http import HTTPClient
 from mapproxy.script.wms_capabilities import wms_capabilities_command
 from mapproxy.test.http import mock_httpd
+from mapproxy.test.helper import capture
 
 TESTSERVER_ADDRESS = ('127.0.0.1', 56413)
 TESTSERVER_URL = 'http://%s:%s' % TESTSERVER_ADDRESS
@@ -36,21 +34,6 @@ if PY3:
     from nose.plugins.skip import SkipTest
     raise SkipTest()
 
-@contextlib.contextmanager
-def capture_out():
-    old_stdout = sys.stdout
-    old_stderr = sys.stderr
-    try:
-        sys.stdout = BytesIO()
-        sys.stderr = BytesIO()
-        yield sys.stdout, sys.stderr
-    except:
-        old_stderr.write(sys.stderr.getvalue())
-        old_stdout.write(sys.stdout.getvalue())
-        raise
-    finally:
-        sys.stdout = old_stdout
-        sys.stderr = old_stderr
 
 class TestUtilWMSCapabilities(object):
     def setup(self):
@@ -59,19 +42,19 @@ class TestUtilWMSCapabilities(object):
 
     def test_http_error(self):
         self.args = ['command_dummy', '--host', 'http://foo.bar']
-        with capture_out() as (out,err):
+        with capture() as (out,err):
             assert_raises(SystemExit, wms_capabilities_command, self.args)
         assert err.getvalue().startswith("ERROR:")
 
         self.args[2] = '/no/valid/url'
-        with capture_out() as (out,err):
+        with capture() as (out,err):
             assert_raises(SystemExit, wms_capabilities_command, self.args)
         assert err.getvalue().startswith("ERROR:")
 
     def test_request_not_parsable(self):
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},
                                               {'status': '200', 'body': ''})]):
-            with capture_out() as (out,err):
+            with capture() as (out,err):
                 assert_raises(SystemExit, wms_capabilities_command, self.args)
             error_msg = err.getvalue().rsplit('-'*80, 1)[1].strip()
             assert error_msg.startswith('Could not parse the document')
@@ -82,7 +65,7 @@ class TestUtilWMSCapabilities(object):
             capabilities_doc = fp.read()
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},
                                                   {'status': '200', 'body': capabilities_doc})]):
-                with capture_out() as (out,err):
+                with capture() as (out,err):
                     assert_raises(SystemExit, wms_capabilities_command, self.args)
                 error_msg = err.getvalue().rsplit('-'*80, 1)[1].strip()
                 assert 'Not a capabilities document' in error_msg
@@ -93,7 +76,7 @@ class TestUtilWMSCapabilities(object):
             capabilities_doc = fp.read()
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},
                                                   {'status': '200', 'body': capabilities_doc})]):
-                with capture_out() as (out,err):
+                with capture() as (out,err):
                     wms_capabilities_command(self.args)
                 lines = out.getvalue().split('\n')
                 assert lines[1].startswith('Capabilities Document Version 1.1.1')
@@ -104,7 +87,7 @@ class TestUtilWMSCapabilities(object):
             capabilities_doc = fp.read()
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.3.0&service=WMS', 'method': 'GET'},
                                                   {'status': '200', 'body': capabilities_doc})]):
-                with capture_out() as (out,err):
+                with capture() as (out,err):
                     wms_capabilities_command(self.args)
                 lines = out.getvalue().split('\n')
                 assert lines[1].startswith('Capabilities Document Version 1.3.0')
@@ -116,7 +99,7 @@ class TestUtilWMSCapabilities(object):
             capabilities_doc = capabilities_doc.replace('minx', 'foo')
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},
                                                   {'status': '200', 'body': capabilities_doc})]):
-                with capture_out() as (out,err):
+                with capture() as (out,err):
                     assert_raises(SystemExit, wms_capabilities_command, self.args)
 
                 assert err.getvalue().startswith('XML-Element has no such attribute')

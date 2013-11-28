@@ -19,11 +19,11 @@ from __future__ import with_statement
 import os
 import shutil
 import tempfile
-from contextlib import contextmanager
 
 import yaml
 
 from mapproxy.script.conf.app import config_command
+from mapproxy.test.helper import capture
 
 from nose.tools import eq_
 
@@ -32,26 +32,6 @@ if PY3:
     from nose.plugins.skip import SkipTest
     raise SkipTest()
 
-@contextmanager
-def capture():
-    import sys
-    from io import BytesIO
-
-    backup_stdout = sys.stdout
-    backup_stderr = sys.stderr
-
-    try:
-        sys.stdout = BytesIO()
-        sys.stderr = BytesIO()
-        yield sys.stdout, sys.stderr
-    except Exception as ex:
-        backup_stdout.write(str(ex))
-        backup_stdout.write(sys.stdout.getvalue())
-        backup_stderr.write(sys.stderr.getvalue())
-        raise
-    finally:
-        sys.stdout = backup_stdout
-        sys.stderr = backup_stderr
 
 def filename(name):
     return os.path.join(
