@@ -19,11 +19,12 @@ from __future__ import with_statement
 import tempfile
 import os
 import re
+import sys
 from contextlib import contextmanager
 from lxml import etree
 
 from mapproxy.test import mocker
-from mapproxy.compat import string_type
+from mapproxy.compat import string_type, PY2
 from nose.tools import eq_
 
 class Mocker(object):
@@ -200,15 +201,17 @@ def strip_whitespace(data):
 
 @contextmanager
 def capture():
-    import sys
-    from io import BytesIO
+    if PY2:
+        from StringIO import StringIO
+    else:
+        from io import StringIO
 
     backup_stdout = sys.stdout
     backup_stderr = sys.stderr
 
     try:
-        sys.stdout = BytesIO()
-        sys.stderr = BytesIO()
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
         yield sys.stdout, sys.stderr
     except Exception as ex:
         backup_stdout.write(str(ex))
