@@ -20,6 +20,13 @@
 
 from mapproxy.compat import itervalues
 
+import sys
+
+if sys.version_info[0] == 2:
+    number_types = (float, int, long)
+else:
+    number_types = (float, int)
+
 class required(str):
     """
     Mark a dictionary key as required.
@@ -87,7 +94,7 @@ class number(object):
     """
     def compare_type(self, data):
         # True/False are also instances of int, exclude them
-        return isinstance(data, (float, int)) and not isinstance(data, bool)
+        return isinstance(data, number_types) and not isinstance(data, bool)
 
 class type_spec(object):
     def __init__(self, type_key, specs):
