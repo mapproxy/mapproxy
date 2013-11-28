@@ -44,7 +44,7 @@ class TestSplitHTTPResponse(object):
             ({}, b'content\r\ncontent'))
 
 
-TEST_CGI_SCRIPT = r"""#! /usr/bin/env python
+TEST_CGI_SCRIPT = br"""#! /usr/bin/env python
 import sys
 import os
 w = sys.stdout.write
@@ -53,9 +53,9 @@ w("\r\n")
 w(os.environ['QUERY_STRING'])
 """
 
-TEST_CGI_SCRIPT_FAIL = TEST_CGI_SCRIPT + '\nexit(1)'
+TEST_CGI_SCRIPT_FAIL = TEST_CGI_SCRIPT + b'\nexit(1)'
 
-TEST_CGI_SCRIPT_CWD = TEST_CGI_SCRIPT + r"""
+TEST_CGI_SCRIPT_CWD = TEST_CGI_SCRIPT + br"""
 if not os.path.exists('testfile'):
     exit(2)
 """
@@ -69,7 +69,7 @@ class TestCGIClient(object):
 
     def create_script(self, script=TEST_CGI_SCRIPT, executable=True):
         script_file = os.path.join(self.script_dir, 'cgi.py')
-        with open(script_file, 'w') as f:
+        with open(script_file, 'wb') as f:
             f.write(script)
         if executable:
             os.chmod(script_file, stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR)
@@ -115,7 +115,7 @@ class TestCGIClient(object):
         tmp_work_dir = os.path.join(self.script_dir, 'tmp')
         os.mkdir(tmp_work_dir)
         tmp_file = os.path.join(tmp_work_dir, 'testfile')
-        open(tmp_file, 'w')
+        open(tmp_file, 'wb')
 
         # start script in default directory
         script = self.create_script(TEST_CGI_SCRIPT_CWD)

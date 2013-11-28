@@ -144,7 +144,7 @@ def validate_with_dtd(doc, dtd_name, dtd_basedir=None):
         dtd_basedir = os.path.join(os.path.dirname(__file__), 'schemas')
 
     dtd_filename = os.path.join(dtd_basedir, dtd_name)
-    with open(dtd_filename) as schema:
+    with open(dtd_filename, 'rb') as schema:
         dtd = etree.DTD(schema)
         if isinstance(doc, (string_type, bytes)):
             xml = etree.XML(doc)
@@ -160,7 +160,7 @@ def validate_with_xsd(doc, xsd_name, xsd_basedir=None):
 
     xsd_filename = os.path.join(xsd_basedir, xsd_name)
 
-    with open(xsd_filename) as schema:
+    with open(xsd_filename, 'rb') as schema:
         xsd = etree.parse(schema)
         xml_schema = etree.XMLSchema(xsd)
         if isinstance(doc, (string_type, bytes)):

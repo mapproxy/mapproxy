@@ -94,7 +94,7 @@ class TestMapProxyConfCmd(object):
                 ]) == 0
 
 
-        with open(self.tmp_filename('mapproxy.yaml')) as f:
+        with open(self.tmp_filename('mapproxy.yaml'), 'rb') as f:
             conf = yaml.load(f)
 
             assert 'grids' not in conf
@@ -142,7 +142,7 @@ class TestMapProxyConfCmd(object):
                 ]) == 0
 
 
-        with open(self.tmp_filename('mapproxy.yaml')) as f:
+        with open(self.tmp_filename('mapproxy.yaml'), 'rb') as f:
             conf = yaml.load(f)
 
             assert 'grids' not in conf
@@ -187,7 +187,7 @@ class TestMapProxyConfCmd(object):
                 ]) == 0
 
 
-        with open(self.tmp_filename('mapproxy.yaml')) as f:
+        with open(self.tmp_filename('mapproxy.yaml'), 'rb') as f:
             conf = yaml.load(f)
 
             assert 'grids' not in conf

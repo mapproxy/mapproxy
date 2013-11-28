@@ -26,7 +26,7 @@ from nose.tools import eq_
 test_config = {}
 
 
-xslt_input = """
+xslt_input = b"""
 <xsl:stylesheet version="1.0"
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  <xsl:template match="/">
@@ -36,7 +36,7 @@ xslt_input = """
  </xsl:template>
 </xsl:stylesheet>""".strip()
 
-xslt_input_html = """
+xslt_input_html = b"""
 <xsl:stylesheet version="1.0"
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  <xsl:template match="/">
@@ -47,7 +47,7 @@ xslt_input_html = """
 </xsl:stylesheet>""".strip()
 
 
-xslt_output = """
+xslt_output = b"""
 <xsl:stylesheet version="1.0"
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  <xsl:template match="/">
@@ -61,7 +61,7 @@ xslt_output = """
  </xsl:template>
 </xsl:stylesheet>""".strip()
 
-xslt_output_html = """
+xslt_output_html = b"""
 <xsl:stylesheet version="1.0"
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  <xsl:template match="/">
@@ -81,13 +81,13 @@ xslt_output_html = """
 
 def setup_module():
     module_setup(test_config, 'xslt_featureinfo.yaml')
-    with open(os.path.join(test_config['base_dir'], 'fi_in.xsl'), 'w') as f:
+    with open(os.path.join(test_config['base_dir'], 'fi_in.xsl'), 'wb') as f:
         f.write(xslt_input)
-    with open(os.path.join(test_config['base_dir'], 'fi_in_html.xsl'), 'w') as f:
+    with open(os.path.join(test_config['base_dir'], 'fi_in_html.xsl'), 'wb') as f:
         f.write(xslt_input_html)
-    with open(os.path.join(test_config['base_dir'], 'fi_out.xsl'), 'w') as f:
+    with open(os.path.join(test_config['base_dir'], 'fi_out.xsl'), 'wb') as f:
         f.write(xslt_output)
-    with open(os.path.join(test_config['base_dir'], 'fi_out_html.xsl'), 'w') as f:
+    with open(os.path.join(test_config['base_dir'], 'fi_out_html.xsl'), 'wb') as f:
         f.write(xslt_output_html)
 def teardown_module():
     module_teardown(test_config)

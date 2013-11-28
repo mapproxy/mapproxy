@@ -33,8 +33,8 @@ test_config = {}
 
 def setup_module():
     test_config['base_dir'] = tempfile.mkdtemp()
-    with open(os.path.join(test_config['base_dir'], 'mysld.xml'), 'w') as f:
-        f.write('<sld>')
+    with open(os.path.join(test_config['base_dir'], 'mysld.xml'), 'wb') as f:
+        f.write(b'<sld>')
     module_setup(test_config, 'sld.yaml')
 
 def teardown_module():

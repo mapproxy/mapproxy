@@ -80,7 +80,7 @@ class TestCacheSource(SystemTest):
         tile_filename = os.path.join(self.config['cache_dir'], 'old_cache_EPSG3857/01/000/000/001/000/000/000.png')
         os.makedirs(os.path.dirname(tile_filename))
         # use text to check that mapproxy does not access the tile as image
-        open(tile_filename, 'w').write('foo')
+        open(tile_filename, 'wb').write(b'foo')
 
         # access new cache, should get existing tile from old cache
         resp = self.app.get('/tiles/new_cache_EPSG3857/0/0/0.png')

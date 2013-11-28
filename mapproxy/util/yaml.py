@@ -26,7 +26,7 @@ def load_yaml_file(file_or_filename):
     Load yaml from file object or filename.
     """
     if isinstance(file_or_filename, string_type):
-        with open(file_or_filename) as f:
+        with open(file_or_filename, 'rb') as f:
             return load_yaml(f)
     return load_yaml(file_or_filename)
 

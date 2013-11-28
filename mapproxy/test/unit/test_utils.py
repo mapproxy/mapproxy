@@ -256,7 +256,7 @@ class DirTest(object):
         if dirname is None:
             dirname = self.mkdir(name)
         filename = os.path.join(dirname, name + '.txt')
-        open(filename, 'w').close()
+        open(filename, 'wb').close()
         return filename
 
 

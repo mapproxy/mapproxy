@@ -243,8 +243,8 @@ class TestFileTileCache(TileCacheTestBase):
 
     def create_cached_tile(self, tile):
         loc = self.cache.tile_location(tile, create_dir=True)
-        with open(loc, 'w') as f:
-            f.write('foo')
+        with open(loc, 'wb') as f:
+            f.write(b'foo')
 
 
 class TestMBTileCache(TileCacheTestBase):

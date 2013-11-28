@@ -124,7 +124,7 @@ class TestHTTPClient(object):
             self.client.open('https://www.google.com/')
         else:
             with TempFile() as tmp:
-                with open(tmp, 'w') as f:
+                with open(tmp, 'wb') as f:
                     f.write(GOOGLE_ROOT_CERT)
                 self.client = HTTPClient('https://www.google.com/', ssl_ca_certs=tmp)
                 self.client.open('https://www.google.com/')
@@ -187,7 +187,7 @@ class TestHTTPClient(object):
 
 # Equifax Secure Certificate Authority
 # Expires: 2018-08-22
-GOOGLE_ROOT_CERT = """
+GOOGLE_ROOT_CERT = b"""
 -----BEGIN CERTIFICATE-----
 MIIDIDCCAomgAwIBAgIENd70zzANBgkqhkiG9w0BAQUFADBOMQswCQYDVQQGEwJV
 UzEQMA4GA1UEChMHRXF1aWZheDEtMCsGA1UECxMkRXF1aWZheCBTZWN1cmUgQ2Vy

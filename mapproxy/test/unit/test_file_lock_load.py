@@ -32,7 +32,7 @@ def test_file_lock_load():
     [t.start() for t in threads]
     p.map(lock, range(50))
     [t.join() for t in threads]
-    
+
     eq_(int(open(count_file).read()), 150)
 
 
@@ -40,4 +40,3 @@ def teardown():
     shutil.rmtree(lock_dir)
 
 
-    

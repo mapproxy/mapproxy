@@ -78,7 +78,7 @@ class TestUtilWMSCapabilities(object):
 
     def test_service_exception(self):
         self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities']
-        with open(SERVICE_EXCEPTION_FILE, 'r') as fp:
+        with open(SERVICE_EXCEPTION_FILE, 'rb') as fp:
             capabilities_doc = fp.read()
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},
                                                   {'status': '200', 'body': capabilities_doc})]):
@@ -89,7 +89,7 @@ class TestUtilWMSCapabilities(object):
 
     def test_parse_capabilities(self):
         self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities', '--version', '1.1.1']
-        with open(CAPABILITIES111_FILE, 'r') as fp:
+        with open(CAPABILITIES111_FILE, 'rb') as fp:
             capabilities_doc = fp.read()
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},
                                                   {'status': '200', 'body': capabilities_doc})]):
@@ -100,7 +100,7 @@ class TestUtilWMSCapabilities(object):
 
     def test_parse_130capabilities(self):
         self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities', '--version', '1.3.0']
-        with open(CAPABILITIES130_FILE, 'r') as fp:
+        with open(CAPABILITIES130_FILE, 'rb') as fp:
             capabilities_doc = fp.read()
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.3.0&service=WMS', 'method': 'GET'},
                                                   {'status': '200', 'body': capabilities_doc})]):
@@ -111,7 +111,7 @@ class TestUtilWMSCapabilities(object):
 
     def test_key_error(self):
         self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities']
-        with open(CAPABILITIES111_FILE, 'r') as fp:
+        with open(CAPABILITIES111_FILE, 'rb') as fp:
             capabilities_doc = fp.read()
             capabilities_doc = capabilities_doc.replace('minx', 'foo')
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},

@@ -25,6 +25,7 @@ from __future__ import print_function
 # limitations under the License.
 
 from __future__ import with_statement
+import io
 import os
 import optparse
 import re
@@ -232,8 +233,8 @@ class CreateCommand(object):
         print("writing MapProxy app to %s" % (app_filename, ))
 
         template_dir = self.template_dir()
-        app_template = open(os.path.join(template_dir, 'config.wsgi')).read()
-        with open(app_filename, 'w') as f:
+        app_template = io.open(os.path.join(template_dir, 'config.wsgi'), encoding='utf-8').read()
+        with io.open(app_filename, 'w', encoding='utf-8') as f:
             f.write(app_template % {'mapproxy_conf': mapproxy_conf,
                 'here': os.path.dirname(mapproxy_conf)})
 
@@ -266,8 +267,8 @@ class CreateCommand(object):
             return 1
 
         template_dir = self.template_dir()
-        log_template = open(os.path.join(template_dir, 'log.ini')).read()
-        with open(log_filename, 'w') as f:
+        log_template = io.open(os.path.join(template_dir, 'log.ini'), encoding='utf-8').read()
+        with io.open(log_filename, 'w', encoding='utf-8') as f:
             f.write(log_template)
 
         return 0

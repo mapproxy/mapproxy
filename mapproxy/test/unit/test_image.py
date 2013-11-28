@@ -211,8 +211,8 @@ class TestMergeAll(object):
         self.cleanup_tiles = [create_tmp_image_file((100, 100)) for _ in range(9)]
         self.tiles = [ImageSource(tile) for tile in self.cleanup_tiles]
         invalid_tile = self.tiles[0].source
-        with open(invalid_tile, 'w') as tmp:
-            tmp.write('invalid')
+        with open(invalid_tile, 'wb') as tmp:
+            tmp.write(b'invalid')
         m = TileMerger(tile_grid=(3, 3), tile_size=(100, 100))
         img_opts = ImageOptions(bgcolor=(200, 0, 50))
         result = m.merge(self.tiles, img_opts)

@@ -244,7 +244,7 @@ def yaml_sources(cap):
 
 def parse_capabilities(fileobj):
     if isinstance(fileobj, string_type):
-        fileobj = open(fileobj)
+        fileobj = open(fileobj, 'rb')
     tree = etree.parse(fileobj)
     # TODO: remove break pointer
     root_tag = tree.getroot().tag

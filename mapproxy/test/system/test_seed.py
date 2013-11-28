@@ -57,7 +57,7 @@ class SeedTestEnvironment(object):
 
         ensure_directory(tile_dir)
         tile = os.path.join(tile_dir + '%03d.png' % coord[1])
-        open(tile, 'w').write('')
+        open(tile, 'wb').write(b'')
         if timestamp:
             os.utime(tile, (timestamp, timestamp))
         return tile
