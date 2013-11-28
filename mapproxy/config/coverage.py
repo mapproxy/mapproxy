@@ -50,7 +50,7 @@ def load_coverage(conf, base_path=None):
         srs = conf.get('bbox_srs') or conf['srs']
         bbox = conf['bbox']
         if isinstance(bbox, string_type):
-            bbox = map(float, bbox.split(','))
+            bbox = [float(x) for x in bbox.split(',')]
         geom = None
     elif 'datasource' in conf:
         require_geom_support()
@@ -60,7 +60,7 @@ def load_coverage(conf, base_path=None):
             bbox = datasource
             geom = None
         elif bbox_string_re.match(datasource):
-            bbox = map(float, datasource.split(','))
+            bbox = [float(x) for x in datasource.split(',')]
             geom = None
         else:
             if not re.match(r'^\w{2,}:', datasource):
