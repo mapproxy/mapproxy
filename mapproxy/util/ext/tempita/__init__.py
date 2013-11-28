@@ -36,7 +36,7 @@ import cgi
 import os
 import tokenize
 from io import StringIO, BytesIO
-from mapproxy.compat import iteritems, PY2, string_type
+from mapproxy.compat import iteritems, PY2, text_type
 from mapproxy.util.py import reraise
 from mapproxy.util.ext.tempita._looper import looper
 from mapproxy.util.ext.tempita.compat3 import bytes, basestring_, next, is_unicode, coerce_text
@@ -320,7 +320,7 @@ class Template(object):
                 return ''
             if self._unicode:
                 try:
-                    value = string_type(value)
+                    value = text_type(value)
                 except UnicodeDecodeError:
                     value = bytes(value)
             else:
