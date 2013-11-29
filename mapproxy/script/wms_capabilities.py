@@ -30,9 +30,6 @@ from mapproxy.client.http import open_url, HTTPClientError
 from mapproxy.request.base import BaseRequest, url_decode
 from mapproxy.util.ext import wmsparse
 
-ENCODING = sys.getdefaultencoding()
-if ENCODING in (None, 'ascii'):
-    ENCODING = 'UTF-8'
 
 class PrettyPrinter(object):
     def __init__(self, indent=4, version='1.1.1'):
@@ -48,7 +45,7 @@ class PrettyPrinter(object):
         if mark_first:
             indent = indent - len(self.marker)
             marker = self.marker
-        print(("%s%s%s: %s" % (' '*indent, marker, key, value)).encode(ENCODING))
+        print(("%s%s%s: %s" % (' '*indent, marker, key, value)))
 
     def _format_output(self, key, value, indent, mark_first=False):
         if key == 'bbox':
@@ -91,7 +88,7 @@ class PrettyPrinter(object):
                 self.print_layers(layer, indent=indent+self.indent)
 
 def log_error(msg, *args):
-    print((msg % args).encode(ENCODING), file=sys.stderr)
+    print(msg % args, file=sys.stderr)
 
 def wms_capapilities_url(url, version):
     parsed_url = urlparse.urlparse(url)

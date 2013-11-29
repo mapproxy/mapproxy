@@ -27,11 +27,6 @@ from mapproxy.test.helper import capture
 
 from nose.tools import eq_
 
-from mapproxy.compat import PY3
-if PY3:
-    from nose.plugins.skip import SkipTest
-    raise SkipTest()
-
 
 def filename(name):
     return os.path.join(
@@ -61,13 +56,13 @@ class TestMapProxyConfCmd(object):
         assert '--capabilities required' in stderr.getvalue()
 
     def test_stdout_output(self):
-        with capture() as (stdout, stderr):
+        with capture(bytes=True) as (stdout, stderr):
             assert config_command(['mapproxy-conf', '--capabilities', filename('util-conf-wms-111-cap.xml')]) == 0
 
-        assert stdout.getvalue().startswith('# MapProxy configuration')
+        assert stdout.getvalue().startswith(b'# MapProxy configuration')
 
     def test_test_cap_output_no_base(self):
-        with capture() as (stdout, stderr):
+        with capture(bytes=True) as (stdout, stderr):
             assert config_command(['mapproxy-conf',
                 '--capabilities', filename('util-conf-wms-111-cap.xml'),
                 '--output', self.tmp_filename('mapproxy.yaml'),
@@ -80,13 +75,13 @@ class TestMapProxyConfCmd(object):
             assert 'grids' not in conf
             eq_(conf['sources'], {
                 'osm_roads_wms': {
-                    'supported_srs': ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:3857', 'EPSG:25831', 'EPSG:25833', 'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258'],
+                    'supported_srs': ['CRS:84', 'EPSG:25831', 'EPSG:25832', 'EPSG:25833', 'EPSG:31466', 'EPSG:31467', 'EPSG:31468', 'EPSG:3857', 'EPSG:4258', 'EPSG:4326', 'EPSG:900913'],
                     'req': {'layers': 'osm_roads', 'url': 'http://osm.omniscale.net/proxy/service?', 'transparent': True},
                     'type': 'wms',
                     'coverage': {'srs': 'EPSG:4326', 'bbox': [-180.0, -85.0511287798, 180.0, 85.0511287798]}
                 },
                 'osm_wms': {
-                    'supported_srs': ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:3857', 'EPSG:25831', 'EPSG:25833', 'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258'],
+                    'supported_srs': ['CRS:84', 'EPSG:25831', 'EPSG:25832', 'EPSG:25833', 'EPSG:31466', 'EPSG:31467', 'EPSG:31468', 'EPSG:3857', 'EPSG:4258', 'EPSG:4326', 'EPSG:900913'],
                     'req': {'layers': 'osm', 'url': 'http://osm.omniscale.net/proxy/service?', 'transparent': True},
                     'type': 'wms',
                     'coverage': {
@@ -114,7 +109,7 @@ class TestMapProxyConfCmd(object):
             eq_(len(conf['layers'][0]['layers']), 2)
 
     def test_test_cap_output(self):
-        with capture() as (stdout, stderr):
+        with capture(bytes=True) as (stdout, stderr):
             assert config_command(['mapproxy-conf',
                 '--capabilities', filename('util-conf-wms-111-cap.xml'),
                 '--output', self.tmp_filename('mapproxy.yaml'),
@@ -158,7 +153,7 @@ class TestMapProxyConfCmd(object):
             eq_(len(conf['layers'][0]['layers']), 2)
 
     def test_overwrites(self):
-        with capture() as (stdout, stderr):
+        with capture(bytes=True) as (stdout, stderr):
             assert config_command(['mapproxy-conf',
                 '--capabilities', filename('util-conf-wms-111-cap.xml'),
                 '--output', self.tmp_filename('mapproxy.yaml'),
@@ -181,7 +176,7 @@ class TestMapProxyConfCmd(object):
                     'coverage': {'srs': 'EPSG:4326', 'bbox': [0, 0, 90, 90]}
                 },
                 'osm_wms': {
-                    'supported_srs': ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:3857', 'EPSG:25831', 'EPSG:25833', 'EPSG:4326', 'EPSG:31468', 'EPSG:900913', 'CRS:84', 'EPSG:4258'],
+                    'supported_srs': ['CRS:84', 'EPSG:25831', 'EPSG:25832', 'EPSG:25833', 'EPSG:31466', 'EPSG:31467', 'EPSG:31468', 'EPSG:3857', 'EPSG:4258', 'EPSG:4326', 'EPSG:900913'],
                     'req': {'layers': 'osm', 'url': 'http://osm.omniscale.net/proxy/service?', 'transparent': True, 'param': 42},
                     'type': 'wms',
                     'coverage': {

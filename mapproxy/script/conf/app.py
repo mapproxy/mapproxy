@@ -32,12 +32,14 @@ from __future__ import print_function
 
 from __future__ import with_statement
 
+import codecs
 import sys
 import os
 import optparse
 import logging
 import textwrap
 import datetime
+from mapproxy.compat import PY2
 import xml.etree.ElementTree
 import yaml
 
@@ -70,10 +72,10 @@ def write_header(f, capabilities):
 @contextmanager
 def file_or_stdout(name):
     if name == '-':
-        yield sys.stdout
+        yield codecs.getwriter('utf-8')(sys.stdout)
     else:
         with open(name, 'wb') as f:
-            yield f
+            yield codecs.getwriter('utf-8')(f)
 
 def config_command(args):
     parser = optparse.OptionParser("usage: %prog autoconfig [options]")

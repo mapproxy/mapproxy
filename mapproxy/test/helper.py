@@ -200,11 +200,15 @@ def strip_whitespace(data):
 
 
 @contextmanager
-def capture():
+def capture(bytes=False):
     if PY2:
         from StringIO import StringIO
     else:
-        from io import StringIO
+        if bytes:
+            from io import BytesIO as StringIO
+        else:
+            from io import StringIO
+
 
     backup_stdout = sys.stdout
     backup_stderr = sys.stderr
@@ -215,8 +219,12 @@ def capture():
         yield sys.stdout, sys.stderr
     except Exception as ex:
         backup_stdout.write(str(ex))
-        backup_stdout.write(sys.stdout.getvalue())
-        backup_stderr.write(sys.stderr.getvalue())
+        if bytes:
+            backup_stdout.write(sys.stdout.getvalue().decode('utf-8'))
+            backup_stderr.write(sys.stderr.getvalue().decode('utf-8'))
+        else:
+            backup_stdout.write(sys.stdout.getvalue())
+            backup_stderr.write(sys.stderr.getvalue())
         raise
     finally:
         sys.stdout = backup_stdout

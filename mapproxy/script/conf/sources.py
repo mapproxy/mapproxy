@@ -66,6 +66,7 @@ def for_layer(cap, layer):
     for srs in layer['srs']:
         if check_srs(srs):
             source['supported_srs'].append(srs)
+    source['supported_srs'].sort()
 
     if layer['llbbox']:
         source['coverage'] = {

@@ -27,12 +27,6 @@ from mapproxy.test.helper import capture
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 
-from mapproxy.compat import PY3
-if PY3:
-    from nose.plugins.skip import SkipTest
-    raise SkipTest()
-
-
 @contextlib.contextmanager
 def tile_server(tile_coords):
     with tmp_image((256, 256), format='jpeg') as img:

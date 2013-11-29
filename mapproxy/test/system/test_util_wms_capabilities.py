@@ -29,11 +29,6 @@ CAPABILITIES111_FILE = os.path.join(os.path.dirname(__file__), 'fixture', 'util_
 CAPABILITIES130_FILE = os.path.join(os.path.dirname(__file__), 'fixture', 'util_wms_capabilities130.xml')
 SERVICE_EXCEPTION_FILE = os.path.join(os.path.dirname(__file__), 'fixture', 'util_wms_capabilities_service_exception.xml')
 
-from mapproxy.compat import PY3
-if PY3:
-    from nose.plugins.skip import SkipTest
-    raise SkipTest()
-
 
 class TestUtilWMSCapabilities(object):
     def setup(self):
@@ -96,7 +91,7 @@ class TestUtilWMSCapabilities(object):
         self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities']
         with open(CAPABILITIES111_FILE, 'rb') as fp:
             capabilities_doc = fp.read()
-            capabilities_doc = capabilities_doc.replace('minx', 'foo')
+            capabilities_doc = capabilities_doc.replace(b'minx', b'foo')
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},
                                                   {'status': '200', 'body': capabilities_doc})]):
                 with capture() as (out,err):
