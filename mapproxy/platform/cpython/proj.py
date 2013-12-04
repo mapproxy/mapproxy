@@ -26,13 +26,10 @@ MAPPROXY_USE_LIBPROJ or MAPPROXY_USE_PYPROJ to any value.
 
 """
 from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
 
 import os
 import sys
 from mapproxy.util.lib import load_library
-from mapproxy.compat import PY2
 
 import ctypes
 from ctypes import (

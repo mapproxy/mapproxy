@@ -1,5 +1,3 @@
-from __future__ import print_function
-from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 #
@@ -15,7 +13,8 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
+from __future__ import print_function
+
 import tempfile
 import os
 import re

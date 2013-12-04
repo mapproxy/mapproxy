@@ -1,4 +1,3 @@
-from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 #
@@ -14,11 +13,14 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
+
 import os
 import sys
-from mapproxy.util.lib import load_library
 import ctypes
 from ctypes import c_void_p, c_char_p, c_int
+
+from mapproxy.util.lib import load_library
 
 def init_libgdal():
     libgdal = load_library(['libgdal', 'libgdal1', 'gdal110', 'gdal19', 'gdal18', 'gdal17'])

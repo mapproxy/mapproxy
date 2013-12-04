@@ -1,4 +1,3 @@
-from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 #
@@ -14,8 +13,10 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
+from __future__ import print_function, division
+
 from nose.tools import eq_, assert_almost_equal, raises
+
 from mapproxy.grid import (
     MetaGrid,
     TileGrid,

@@ -1,5 +1,3 @@
-from __future__ import print_function
-from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 #
@@ -15,16 +13,17 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement, division
+from __future__ import print_function, division
+
 import os
 import re
 import sys
 import shutil
-from mapproxy.platform.image import Image
 import functools
-
 from io import BytesIO
+
 from mapproxy.srs import SRS
+from mapproxy.platform.image import Image
 from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest, \
                                  WMS111FeatureInfoRequest, WMS111CapabilitiesRequest, \
                                  WMS130CapabilitiesRequest, WMS100CapabilitiesRequest, \

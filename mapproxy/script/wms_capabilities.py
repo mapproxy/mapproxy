@@ -1,8 +1,3 @@
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
 #
@@ -17,12 +12,11 @@ from __future__ import print_function
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import with_statement
+
+from __future__ import print_function
 
 import sys
 import optparse
-from xml.etree import ElementTree as etree
-from xml.etree.ElementTree import XMLParser
 
 from mapproxy.compat import iteritems, BytesIO
 from mapproxy.compat.modules import urlparse
