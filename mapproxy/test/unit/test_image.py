@@ -27,7 +27,7 @@ from mapproxy.image.transform import ImageTransformer
 from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image_file, check_format, create_debug_img, create_image
 from mapproxy.srs import SRS
 from nose.tools import eq_
-from mapproxy.test.image import assert_colors_equal
+from mapproxy.test.image import assert_img_colors_eq
 from nose.plugins.skip import SkipTest
 
 
@@ -290,7 +290,7 @@ class TestLayerMerge(object):
 
         result = merge_images([img1, img2], ImageOptions(transparent=True))
         img = result.as_image()
-        assert_colors_equal(img, [
+        assert_img_colors_eq(img, [
             (10*10, (127, 127, 255, 255)),
         ])
 
@@ -352,7 +352,7 @@ class TestLayerCompositeMerge(object):
         result = merge_images([img2, img1], ImageOptions(transparent=True))
         img = result.as_image()
         eq_(img.mode, 'RGBA')
-        assert_colors_equal(img, [
+        assert_img_colors_eq(img, [
             (1089, (0, 255, 0, 255)),
             (1089, (255, 255, 255, 0)),
             (1122, (0, 255, 0, 128)),
@@ -375,7 +375,7 @@ class TestLayerCompositeMerge(object):
         result = merge_images([bg, fg], ImageOptions(transparent=True))
         img = result.as_image()
         eq_(img.mode, 'RGBA')
-        assert_colors_equal(img, [
+        assert_img_colors_eq(img, [
             (3600, (255, 0, 255, 255)),
             (6400, (128, 127, 255, 255))])
 
