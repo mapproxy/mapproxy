@@ -139,6 +139,12 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
                     self.end_headers()
                     self.wfile.write(b'no access')
                     return
+            if req.get('headers'):
+                for k, v in req['headers'].items():
+                    if k not in self.headers:
+                        print('expected %s in headers:\n%s' % (k, self.headers), file=self.server.out)
+                    elif self.headers[k] != v:
+                        print("expected header '%s: %s' in headers:\n%s" % (k, v, self.headers), file=self.server.out)
             if not query_comparator(req['path'], self.query_data):
                 print('got request      ', self.query_data, file=self.server.out)
                 print('expected request ', req['path'], file=self.server.out)
@@ -202,14 +208,14 @@ class MockServ(object):
     def expects(self, path, method='GET', headers=None):
         headers = headers or ()
         self.requests_responses.append(
-            (dict(path=path, method=method, headers=headers), {}))
+            (dict(path=path, method=method, headers=headers), {'body': b''}))
         return self
 
     def returns(self, body=None, body_file=None, status_code=200, headers=None):
         assert body or body_file
         headers = headers or {}
         self.requests_responses[-1][1].update(
-            body=body, body_file=body_file, status_code=status_code, headers=headers)
+            body=body, body_file=body_file, status=status_code, headers=headers)
         return self
 
     def __enter__(self):
@@ -220,6 +226,10 @@ class MockServ(object):
     def __exit__(self, type, value, traceback):
         self._thread.shutdown = True
         self._thread.join()
+
+        if not self._thread.sucess and value:
+            print('requests to mock httpd did not '
+            'match expectations:\n' + self._thread.out.read())
         if value:
             raise reraise((type, value, traceback))
         assert self._thread.sucess, ('requests to mock httpd did not '
