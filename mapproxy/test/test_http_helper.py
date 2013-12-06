@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import requests
-from mapproxy.test.http import MockServ
+from mapproxy.test.http import MockServ, RequestsMissmatchError
 
 from nose.tools import eq_
 
@@ -45,8 +45,8 @@ class TestMockServ(object):
         try:
             with serv:
                 requests.get('http://localhost:%d/test' % serv.port)
-        except AssertionError as ex:
-            assert "expected header 'Accept: Coffee' in headers" in ex.args[0]
+        except RequestsMissmatchError as ex:
+            assert ex.assertions[0].expected == 'Accept: Coffee'
 
     def test_expects_post(self):
         # TODO POST handling in MockServ is hacky.
@@ -62,8 +62,9 @@ class TestMockServ(object):
         try:
             with serv:
                 requests.get('http://localhost:%d/test' % serv.port)
-        except AssertionError as ex:
-            assert 'expected POST request, got GET' in ex.args[0]
+        except RequestsMissmatchError as ex:
+            assert ex.assertions[0].expected == 'POST'
+            assert ex.assertions[0].actual == 'GET'
         else:
             raise AssertionError('AssertionError expected')
 
@@ -132,8 +133,8 @@ class TestMockServ(object):
             with serv:
                 resp = requests.get('http://localhost:%d/test1' % serv.port)
                 eq_(resp.content, b'hello1')
-        except AssertionError as ex:
-            assert 'missing request' in ex.args[0]
+        except RequestsMissmatchError as ex:
+            assert 'missing request' in ex.assertions[0]
         else:
             raise AssertionError('AssertionError expected')
 
