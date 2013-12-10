@@ -37,6 +37,17 @@ from .utils import update_config, MapProxyYAMLDumper, download_capabilities
 from mapproxy.config.loader import load_configuration
 from mapproxy.util.ext.wmsparse import parse_capabilities
 
+def setup_logging(level=logging.INFO):
+    mapproxy_log = logging.getLogger('mapproxy')
+    mapproxy_log.setLevel(level)
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        "[%(asctime)s] %(name)s - %(levelname)s - %(message)s")
+    ch.setFormatter(formatter)
+    mapproxy_log.addHandler(ch)
+
 def write_header(f, capabilities):
     print >>f, '# MapProxy configuration automatically generated from:'
     print >>f, '#   %s' % capabilities
@@ -98,6 +109,8 @@ def config_command(args):
 
     log = logging.getLogger('mapproxy_conf_cmd')
     log.addHandler(logging.StreamHandler())
+
+    setup_logging(logging.WARNING)
 
     srs_grids = {}
     if options.base:
