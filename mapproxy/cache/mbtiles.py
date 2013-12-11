@@ -155,7 +155,7 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
                     stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
                     cursor.execute(stmt, (level, x, y, content))
                 self.db.commit()
-            except sqlite3.OperationalError, ex:
+            except sqlite3.OperationalError as ex:
                 log.warn('unable to store tile: %s', ex)
                 return False
             return True
