@@ -144,13 +144,17 @@ class MBTilesCache(TileCacheBase, FileBasedLocking):
             content = buffer(buf.read())
             x, y, level = tile.coord
             cursor = self.db.cursor()
-            if self.supports_timestamp:
-                stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data, last_modified) VALUES (?,?,?,?, datetime(?, 'unixepoch', 'localtime'))"
-                cursor.execute(stmt, (level, x, y, content, time.time()))
-            else:
-                stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
-                cursor.execute(stmt, (level, x, y, content))
-            self.db.commit()
+            try:
+                if self.supports_timestamp:
+                    stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data, last_modified) VALUES (?,?,?,?, datetime(?, 'unixepoch', 'localtime'))"
+                    cursor.execute(stmt, (level, x, y, content, time.time()))
+                else:
+                    stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
+                    cursor.execute(stmt, (level, x, y, content))
+                self.db.commit()
+            except sqlite3.OperationalError, ex:
+                log.warn('unable to store tile: %s', ex)
+                return False
             return True
 
     def load_tile(self, tile, with_metadata=False):
