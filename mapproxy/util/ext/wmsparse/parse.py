@@ -179,7 +179,7 @@ class WMS111Capabilities(WMSCapabilities):
         srs_codes = set()
 
         for srs in srs_elements:
-            srs = srs.text.strip()
+            srs = srs.text.strip().upper()
             if ' ' in srs:
                 # handle multiple codes in one SRS tag (WMS 1.1.1 7.1.4.5.5)
                 srs_codes.update(srs.split())
@@ -217,7 +217,7 @@ class WMS130Capabilities(WMSCapabilities):
 
     def layer_srs(self, elem, parent_layer=None):
         srs_elements = self.findall(elem, 'CRS')
-        srs_codes = set([srs.text for srs in srs_elements])
+        srs_codes = set([srs.text.strip().upper() for srs in srs_elements])
         # unique srs-codes in either srs or parent_layer['srs']
         inherited_srs = parent_layer.get('srs', set()) if parent_layer else set()
         return srs_codes | inherited_srs
