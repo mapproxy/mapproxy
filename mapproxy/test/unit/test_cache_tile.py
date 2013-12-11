@@ -17,8 +17,10 @@ from __future__ import with_statement
 
 import os
 import shutil
+import threading
 import tempfile
 import time
+import sqlite3
 
 from io import BytesIO
 
@@ -258,6 +260,31 @@ class TestMBTileCache(TileCacheTestBase):
 
     def test_load_1001_tiles(self):
         assert_raises(CacheBackendError, self.cache.load_tiles, [Tile((19, 1, 1))] * 1001)
+
+    def test_timeouts(self):
+        self.cache._db_conn_cache.db = sqlite3.connect(self.cache.mbtile_file, timeout=0.05)
+
+        def block():
+            # block database by delaying the commit
+            db = sqlite3.connect(self.cache.mbtile_file)
+            cur = db.cursor()
+            stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
+            cur.execute(stmt, (3, 1, 1, '1234'))
+            time.sleep(0.2)
+            db.commit()
+
+        try:
+            assert self.cache.store_tile(self.create_tile((0, 0, 1))) == True
+
+            t = threading.Thread(target=block)
+            t.start()
+            time.sleep(0.05)
+            assert self.cache.store_tile(self.create_tile((0, 0, 1))) == False
+        finally:
+            t.join()
+
+        assert self.cache.store_tile(self.create_tile((0, 0, 1))) == True
+
 
 class TestQuadkeyFileTileCache(TileCacheTestBase):
     def setup(self):
