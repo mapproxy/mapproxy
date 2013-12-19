@@ -21,7 +21,7 @@ import cgi
 import socket
 import errno
 import time
-from textwrap import TextWrapper
+import base64
 from contextlib import contextmanager
 from mapproxy.util.py import reraise
 from mapproxy.compat import iteritems, PY2
@@ -44,7 +44,7 @@ class RequestsMissmatchError(AssertionError):
         assertions = []
         for assertion in self.assertions:
             assertions.append(text_indent(str(assertion), '    ', ' -  '))
-        return 'requests missmatch: \n' + '\n'.join(assertions)
+        return 'requests missmatch:\n' + '\n'.join(assertions)
 
 class RequestError(str):
     pass
@@ -158,7 +158,7 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
                 self.server.assertions.append(
                     RequestError('got unexpected request: %s' % self.query_data)
                 )
-                raise AssertionError
+                return
             if 'method' in req:
                 if req['method'] != method:
                     self.server.assertions.append(
@@ -423,3 +423,6 @@ def make_wsgi_env(query_string, extra_environ={}):
               }
         env.update(extra_environ)
         return env
+
+def basic_auth_value(username, password):
+    return base64.b64encode('%s:%s' % (username, password))

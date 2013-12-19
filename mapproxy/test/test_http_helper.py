@@ -14,7 +14,10 @@
 # limitations under the License.
 
 import requests
-from mapproxy.test.http import MockServ, RequestsMissmatchError
+from mapproxy.test.http import (
+    MockServ, RequestsMissmatchError, mock_httpd,
+    basic_auth_value,
+)
 
 from nose.tools import eq_
 
@@ -110,6 +113,7 @@ class TestMockServ(object):
             resp = requests.get('http://localhost:%d/test2' % serv.port)
             eq_(resp.content, b'hello2')
 
+
     def test_too_many_requests(self):
         serv = MockServ()
         serv.expects('/test1').returns(body=b'hello1')
@@ -134,7 +138,72 @@ class TestMockServ(object):
                 resp = requests.get('http://localhost:%d/test1' % serv.port)
                 eq_(resp.content, b'hello1')
         except RequestsMissmatchError as ex:
-            assert 'missing request' in ex.assertions[0]
+            assert 'requests missmatch:\n -  missing requests' in str(ex)
         else:
             raise AssertionError('AssertionError expected')
 
+    def test_reset_unordered(self):
+        serv = MockServ(unordered=True)
+        serv.expects('/test1').returns(body=b'hello1')
+        serv.expects('/test2').returns(body=b'hello2')
+
+        with serv:
+            resp = requests.get('http://localhost:%d/test1' % serv.port)
+            eq_(resp.content, b'hello1')
+            resp = requests.get('http://localhost:%d/test2' % serv.port)
+            eq_(resp.content, b'hello2')
+
+        serv.reset()
+        with serv:
+            resp = requests.get('http://localhost:%d/test2' % serv.port)
+            eq_(resp.content, b'hello2')
+            resp = requests.get('http://localhost:%d/test1' % serv.port)
+            eq_(resp.content, b'hello1')
+
+    def test_unexpected(self):
+        serv = MockServ(unordered=True)
+        serv.expects('/test1').returns(body=b'hello1')
+        serv.expects('/test2').returns(body=b'hello2')
+
+        try:
+            with serv:
+                resp = requests.get('http://localhost:%d/test1' % serv.port)
+                eq_(resp.content, b'hello1')
+                try:
+                    requests.get('http://localhost:%d/test3' % serv.port)
+                except requests.exceptions.RequestException:
+                    pass
+                else:
+                    raise AssertionError('RequestException expected')
+                resp = requests.get('http://localhost:%d/test2' % serv.port)
+                eq_(resp.content, b'hello2')
+        except RequestsMissmatchError as ex:
+            assert 'unexpected request' in ex.assertions[0]
+        else:
+            raise AssertionError('AssertionError expected')
+
+
+class TestMockHttpd(object):
+    def test_no_requests(self):
+        with mock_httpd(('localhost', 42423), []):
+            pass
+
+    def test_headers_status_body(self):
+        with mock_httpd(('localhost', 42423), [
+            ({'path':'/test', 'headers': {'Accept': 'Coffee'}},
+             {'body': b'ok', 'status': 418})]):
+            resp = requests.get('http://localhost:42423/test', headers={'Accept': 'Coffee'})
+            assert resp.status_code == 418
+
+    def test_auth(self):
+        with mock_httpd(('localhost', 42423), [
+            ({'path':'/test', 'headers': {'Accept': 'Coffee'}, 'require_basic_auth': True},
+             {'body': b'ok', 'status': 418})]):
+                resp = requests.get('http://localhost:42423/test')
+                eq_(resp.status_code, 401)
+                eq_(resp.content, b'no access')
+
+                resp = requests.get('http://localhost:42423/test', headers={
+                    'Authorization': basic_auth_value('foo', 'bar'), 'Accept': 'Coffee'}
+                )
+                eq_(resp.content, b'ok')
