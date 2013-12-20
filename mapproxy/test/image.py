@@ -53,7 +53,7 @@ magic_bytes = { 'png': ["\211PNG\r\n\032\n"],
                 'tiff': ["MM\x00\x2a", "II\x2a\x00"],
                 'geotiff': ["MM\x00\x2a", "II\x2a\x00"],
                 'gif': ["GIF87a", "GIF89a"],
-                'jpeg': ["\xFF\xD8", "GIF89a"],
+                'jpeg': ["\xFF\xD8"],
                 'bmp': ['BM']
                 }
 
