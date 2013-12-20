@@ -425,4 +425,4 @@ def make_wsgi_env(query_string, extra_environ={}):
         return env
 
 def basic_auth_value(username, password):
-    return base64.b64encode('%s:%s' % (username, password))
+    return base64.b64encode(('%s:%s' % (username, password)).encode('utf-8'))
