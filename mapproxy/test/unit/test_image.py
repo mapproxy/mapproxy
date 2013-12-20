@@ -17,8 +17,10 @@
 from __future__ import with_statement
 
 import os
+from StringIO import StringIO
 from mapproxy.platform.image import Image, ImageDraw
 from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image
+from mapproxy.image import peek_image_format
 from mapproxy.image.merge import merge_images
 from mapproxy.image import _make_transparent as make_transparent, SubImageSource, img_has_transparency, quantize
 from mapproxy.image.opts import ImageOptions
@@ -297,7 +299,7 @@ class TestLayerMerge(object):
     def test_paletted_merge(self):
         if not hasattr(Image, 'FASTOCTREE'):
             raise SkipTest()
-            
+
         # generate RGBA images with a transparent rectangle in the lower right
         img1 = ImageSource(Image.new('RGBA', (50, 50), (0, 255, 0, 255))).as_image()
         draw = ImageDraw.Draw(img1)
@@ -317,7 +319,7 @@ class TestLayerMerge(object):
         img3 = ImageSource(Image.new('RGBA', (50, 50), (0, 0, 255, 255)))
         result = merge_images([img3, img1, img2], ImageOptions(transparent=True))
         img = result.as_image()
-        
+
         assert img.mode == 'RGBA'
         eq_(img.getpixel((49, 49)), (0, 0, 255, 255))
         eq_(img.getpixel((0, 0)), (255, 0, 0, 255))
@@ -545,3 +547,16 @@ class TestHasTransparency(object):
 
         img = quantize(img, alpha=True)
         assert img_has_transparency(img)
+
+class TestPeekImageFormat(object):
+    def test_peek(self):
+        yield self.check, 'png', 'png'
+        yield self.check, 'tiff', 'tiff'
+        yield self.check, 'gif', 'gif'
+        yield self.check, 'jpeg', 'jpeg'
+        yield self.check, 'bmp', None
+
+    def check(self, format, expected_format):
+        buf = StringIO()
+        Image.new('RGB', (100, 100)).save(buf, format)
+        eq_(peek_image_format(buf), expected_format)
