@@ -31,6 +31,22 @@ from functools import reduce
 log = logging.getLogger('mapproxy.image')
 
 
+magic_bytes = [
+    ('png', (b"\211PNG\r\n\032\n",)),
+    ('jpeg', (b"\xFF\xD8",)),
+    ('tiff', (b"MM\x00\x2a", b"II\x2a\x00",)),
+    ('gif', (b"GIF87a", b"GIF89a",)),
+]
+
+def peek_image_format(buf):
+    buf.seek(0)
+    header = buf.read(10)
+    buf.seek(0)
+    for format, bytes in magic_bytes:
+        if header.startswith(bytes):
+            return format
+    return None
+
 class ImageSource(object):
     """
     This class wraps either a PIL image, a file-like object, or a file name.
@@ -141,6 +157,10 @@ class ImageSource(object):
             self._buf = img_to_buf(self._img, image_opts=image_opts)
         else:
             self._make_seekable_buf() if seekable else self._make_readable_buf()
+            if self.image_opts and image_opts and not self.image_opts.format and image_opts.format:
+                # need actual image_opts.format for next check
+                self.image_opts = self.image_opts.copy()
+                self.image_opts.format = peek_image_format(self._buf)
             if self.image_opts and image_opts and self.image_opts.format != image_opts.format:
                 log.debug('converting image from %s -> %s' % (self.image_opts, image_opts))
                 self.source = self.as_image()

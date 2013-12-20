@@ -17,8 +17,10 @@
 from __future__ import with_statement
 
 import os
+from io import BytesIO
 from mapproxy.platform.image import Image, ImageDraw
 from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image
+from mapproxy.image import peek_image_format
 from mapproxy.image.merge import merge_images
 from mapproxy.image import _make_transparent as make_transparent, SubImageSource, img_has_transparency, quantize
 from mapproxy.image.opts import ImageOptions
@@ -545,3 +547,16 @@ class TestHasTransparency(object):
 
         img = quantize(img, alpha=True)
         assert img_has_transparency(img)
+
+class TestPeekImageFormat(object):
+    def test_peek(self):
+        yield self.check, 'png', 'png'
+        yield self.check, 'tiff', 'tiff'
+        yield self.check, 'gif', 'gif'
+        yield self.check, 'jpeg', 'jpeg'
+        yield self.check, 'bmp', None
+
+    def check(self, format, expected_format):
+        buf = BytesIO()
+        Image.new('RGB', (100, 100)).save(buf, format)
+        eq_(peek_image_format(buf), expected_format)
