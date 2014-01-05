@@ -112,7 +112,12 @@ class RiakCache(TileCacheBase, FileBasedLocking):
             if self.use_secondary_index:
                 x, y, z = tile.coord
                 res.add_index('tile_coord_bin', '%02d-%07d-%07d' % (z, x, y))
-            res.store(return_body=False)
+            
+            try:
+                res.store(return_body=False, self.request_timeout)
+            except riak.RiakError, ex:
+                log.warn('unable to store tile: %s', ex)
+                return False
 
         return True
 
@@ -157,7 +162,11 @@ class RiakCache(TileCacheBase, FileBasedLocking):
             # already removed
             return True
 
-        res.delete(w=1, rw=1, dw=1, pw=1)
+        try:
+            res.delete(w=1, rw=1, dw=1, pw=1)
+        except riak.RiakError, ex:
+            log.warn('unable to remove tile: %s', ex)
+            return False
         return True
 
     def _fill_metadata_from_obj(self, obj, tile):
