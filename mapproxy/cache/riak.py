@@ -81,11 +81,11 @@ class RiakCache(TileCacheBase, FileBasedLocking):
     def _get_timestamp(self, obj):
         metadata = obj.usermeta
         timestamp = metadata.get('timestamp')
-        if timestamp == None:
-            timestamp = float(time.time())
-            obj.usermeta = {'timestamp':str(timestamp)}
-
-        return float(timestamp)
+        if timestamp != None:
+            return float(timestamp)
+        
+        obj.usermeta = {'timestamp': '0'}
+        return 0.0
 
     def is_cached(self, tile):
         if tile.coord is None or tile.source:
