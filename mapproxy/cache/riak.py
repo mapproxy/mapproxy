@@ -157,7 +157,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
             # already removed
             return True
 
-        res.delete()
+        res.delete(w=1, rw=1, dw=1, pw=1)
         return True
 
     def _fill_metadata_from_obj(self, obj, tile):
