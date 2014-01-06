@@ -282,6 +282,7 @@ mapproxy_yaml_spec = {
         }
     },
     'services': {
+        'api': {},
         'demo': {},
         'kml': {
             'use_grid_names': bool(),
@@ -380,6 +381,17 @@ mapproxy_yaml_spec = {
                 'image': image_opts,
                 'layers': one_of(str(), [str()]),
                 'use_mapnik2': bool(),
+            }),
+            'arcgis': combined(source_commons, {
+               required('req'): {
+                    required('url'): str(),
+                    'dpi': int(),
+                    'layers': str(),
+                    'transparent': bool(),
+                    'time': str()
+                },
+                'supported_srs': [str()],
+                'http': http_opts
             }),
             'debug': {
             },
