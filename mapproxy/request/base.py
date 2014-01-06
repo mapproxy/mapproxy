@@ -215,7 +215,12 @@ class Request(object):
 
     @property
     def path(self):
-        return self.environ.get('PATH_INFO', '')
+        path = self.environ.get('PATH_INFO', '')
+        if PY2:
+            return path
+        if path and isinstance(path, bytes):
+            path = path.decode('utf-8')
+        return path
 
     def pop_path(self):
         path = self.path.lstrip('/')
