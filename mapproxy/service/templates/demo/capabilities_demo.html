@@ -12,7 +12,7 @@ jscript_functions = None
             <a href="{{url}}">{{url}}</a>
             <pre>
 {{for line in capabilities}}
-{{cgi.escape(wrapper.fill(line))}}
+{{cgi.escape(wrapper.fill(line.decode('utf8')))}}
 {{endfor}}
             </pre>
 
