@@ -3,7 +3,7 @@ Installation on Windows
 
 .. note:: You can also :doc:`install MapProxy inside an existing OSGeo4W installation<install_osgeo4w>`.
 
-At frist you need a working Python installation. You can download Python from: http://www.python.org/download/. MapProxy requires Python 2.5, 2.6 or 2.7, it is *not* compatible with Python 3.
+At frist you need a working Python installation. You can download Python from: http://www.python.org/download/. MapProxy requires Python 2.5, 2.6 or 2.7.  Python 2.5 is not recommended anymore and the support for it will end with MapProxy 1.8. Python 3 support is planned for MapProxy 1.8.
 
 We advise you to install MapProxy into a `virtual Python environment`_.
 `Read about virtualenv <http://virtualenv.openplans.org/#what-it-does>`_ if you want to now more about the benefits.
