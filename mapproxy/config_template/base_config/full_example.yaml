@@ -56,6 +56,9 @@ services:
       fees: 'None'
 
   wms:
+    # only offer WMS 1.1.1
+    versions: ['1.1.1']
+
     # supported SRS for this WMS
     srs: ['EPSG:4326', 'EPSG:900913', 'EPSG:25832']
 

@@ -311,6 +311,7 @@ mapproxy_yaml_spec = {
             'max_output_pixels': one_of(number(), [number()]),
             'strict': bool(),
             'md': ogc_service_md,
+            'versions': [str()],
         },
     },
 
