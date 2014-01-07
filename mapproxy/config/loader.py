@@ -1491,6 +1491,7 @@ class ServiceConfiguration(ConfigurationBase):
 
     def wms_service(self, conf):
         from mapproxy.service.wms import WMSServer
+        from mapproxy.request.wms import Version
 
         md = conf.get('md', {})
         tile_layers = self.tile_layers(conf)
@@ -1519,6 +1520,10 @@ class ServiceConfiguration(ConfigurationBase):
         self.context.globals.base_config.wms.srs = srs
         bbox_srs = conf.get('bbox_srs')
 
+        versions = conf.get('versions')
+        if versions:
+            versions = sorted([Version(v) for v in versions])
+
         max_output_pixels = self.context.globals.get_value('max_output_pixels', conf,
             global_key='wms.max_output_pixels')
         if isinstance(max_output_pixels, list):
@@ -1532,7 +1537,7 @@ class ServiceConfiguration(ConfigurationBase):
             srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors,
             concurrent_layer_renderer=concurrent_layer_renderer,
             max_output_pixels=max_output_pixels, bbox_srs=bbox_srs,
-            max_tile_age=max_tile_age)
+            max_tile_age=max_tile_age, versions=versions)
 
         server.fi_transformers = fi_xslt_transformers(conf, self.context)
 

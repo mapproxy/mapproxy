@@ -112,6 +112,13 @@ The maximum output size for a WMS requests in pixel. MapProxy returns an WMS exc
 
 See also :ref:`globals.cache.max_tile_limit <max_tile_limit>` for the maximum number of tiles MapProxy will merge together for each layer.
 
+``versions``
+""""""""""""
+
+.. versionadded:: 1.7.0
+
+A list of WMS version numbers that MapProxy should support. Defaults to ``['1.0.0', '1.1.0', '1.1.1', '1.3.0']``.
+
 Full example
 """"""""""""
 ::
@@ -119,6 +126,7 @@ Full example
   services:
     wms:
       srs: ['EPSG:4326', 'CRS:83', 'EPSG:900913']
+      versions: ['1.1.1']
       image_formats: ['image/png', 'image/jpeg']
       attribution:
         text: "© MyCompany"

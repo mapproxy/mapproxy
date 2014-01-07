@@ -53,9 +53,10 @@ class WMSServer(Server):
         request_parser=None, tile_layers=None, attribution=None,
         info_types=None, strict=False, on_error='raise',
         concurrent_layer_renderer=1, max_output_pixels=None,
-        bbox_srs=None, max_tile_age=None):
+        bbox_srs=None, max_tile_age=None,
+        versions=None):
         Server.__init__(self)
-        self.request_parser = request_parser or partial(wms_request, strict=strict)
+        self.request_parser = request_parser or partial(wms_request, strict=strict, versions=versions)
         self.root_layer = root_layer
         self.layers = root_layer.child_layers()
         self.tile_layers = tile_layers or {}

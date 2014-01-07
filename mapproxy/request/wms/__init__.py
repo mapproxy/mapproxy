@@ -630,8 +630,7 @@ def _parse_request_type(req):
     else:
         return None
 
-
-def negotiate_version(version):
+def negotiate_version(version, supported_versions=None):
     """
     >>> negotiate_version(Version('0.9.0'))
     Version('1.0.0')
@@ -641,9 +640,14 @@ def negotiate_version(version):
     Version('1.1.1')
     >>> negotiate_version(Version('1.1.0'))
     Version('1.1.0')
+    >>> negotiate_version(Version('1.1.0'), [Version('1.0.0')])
+    Version('1.0.0')
+    >>> negotiate_version(Version('1.3.0'), sorted([Version('1.1.0'), Version('1.1.1')]))
+    Version('1.1.1')
     """
-    supported_versions = list(request_mapping.keys())
-    supported_versions.sort()
+    if not supported_versions:
+        supported_versions = list(request_mapping.keys())
+        supported_versions.sort()
 
     if version < supported_versions[0]:
         return supported_versions[0] # smallest version we support
@@ -656,13 +660,17 @@ def negotiate_version(version):
         if version >= next_highest_version:
             return next_highest_version
 
-def wms_request(req, validate=True, strict=True):
+def wms_request(req, validate=True, strict=True, versions=None):
     version = _parse_version(req)
     req_type = _parse_request_type(req)
 
-    version_requests = request_mapping.get(version, None)
+    if versions and version not in versions:
+        version_requests = None
+    else:
+        version_requests = request_mapping.get(version, None)
+
     if version_requests is None:
-        negotiated_version = negotiate_version(version)
+        negotiated_version = negotiate_version(version, supported_versions=versions)
         version_requests = request_mapping[negotiated_version]
     req_class = version_requests.get(req_type, None)
     if req_class is None:
