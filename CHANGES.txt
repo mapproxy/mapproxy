@@ -1,3 +1,34 @@
+1.7.0 2014-01-xx
+~~~~~~~~~~~~~~~~
+
+Features:
+
+- new `mapproxy-util autoconf` tool
+- new versions option to limit WMS support
+
+Improvements:
+
+- display list of MultiMapProxy projects sorted by name
+- check included files (base) for changes in reloader and serve-develop
+- improve combining of multiple cascaded sources
+- respect order of --seed/--cleanup tasks
+- catch and log sqlite3.OperationalError when storing tiles
+- do not open cascaded responses when image format matches
+
+Fixes:
+
+- handle errors when loading to many tiles from mbtile/sqlite in
+  one batch
+- reduce memory when handling large images
+- allow remove_all for mbtiles cleanups
+- use extent from layer metadata in WMTS capabilities
+- handle threshold_res higher than first resolution
+
+Other:
+
+- 1.7.x is the last release with support for Python 2.5
+
+
 1.6.0 2013-09-12
 ~~~~~~~~~~~~~~~~
 
