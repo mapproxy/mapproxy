@@ -15,7 +15,6 @@
 
 from __future__ import with_statement, absolute_import
 
-import time
 import threading
 import hashlib
 
@@ -114,7 +113,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
                 res.add_index('tile_coord_bin', '%02d-%07d-%07d' % (z, x, y))
             
             try:
-                res.store(return_body=False, self.request_timeout)
+                res.store(return_body=False, timeout=self.request_timeout)
             except riak.RiakError, ex:
                 log.warn('unable to store tile: %s', ex)
                 return False
