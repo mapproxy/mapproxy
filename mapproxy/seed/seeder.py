@@ -277,7 +277,7 @@ class TileWalker(object):
         process = False;
         if current_level in levels:
             levels = levels[1:]
-            process = True            
+            process = True
         current_level += 1
 
         for i, (subtile, sub_bbox, intersection) in enumerate(subtiles):
