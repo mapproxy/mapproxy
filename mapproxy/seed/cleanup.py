@@ -84,7 +84,7 @@ def tilewalker_cleanup(task, dry_run, concurrency, skip_geoms_for_last_levels,
     tile_worker_pool = TileWorkerPool(task, TileCleanupWorker, progress_logger=progress_logger,
                                       dry_run=dry_run, size=concurrency)
     tile_walker = TileWalker(task, tile_worker_pool, handle_stale=True,
-                             work_on_metatiles=False,
+                             work_on_metatiles=False, progress_logger=progress_logger,
                              skip_geoms_for_last_levels=skip_geoms_for_last_levels)
     tile_walker.walk()
     tile_worker_pool.stop()
