@@ -15,7 +15,6 @@
 
 from __future__ import with_statement, absolute_import
 
-import time
 import threading
 import hashlib
 
@@ -81,11 +80,11 @@ class RiakCache(TileCacheBase, FileBasedLocking):
     def _get_timestamp(self, obj):
         metadata = obj.usermeta
         timestamp = metadata.get('timestamp')
-        if timestamp == None:
-            timestamp = float(time.time())
-            obj.usermeta = {'timestamp':str(timestamp)}
-
-        return float(timestamp)
+        if timestamp != None:
+            return float(timestamp)
+        
+        obj.usermeta = {'timestamp': '0'}
+        return 0.0
 
     def is_cached(self, tile):
         if tile.coord is None or tile.source:
@@ -112,7 +111,12 @@ class RiakCache(TileCacheBase, FileBasedLocking):
             if self.use_secondary_index:
                 x, y, z = tile.coord
                 res.add_index('tile_coord_bin', '%02d-%07d-%07d' % (z, x, y))
-            res.store(return_body=False)
+            
+            try:
+                res.store(return_body=False, timeout=self.request_timeout)
+            except riak.RiakError, ex:
+                log.warn('unable to store tile: %s', ex)
+                return False
 
         return True
 
@@ -157,7 +161,11 @@ class RiakCache(TileCacheBase, FileBasedLocking):
             # already removed
             return True
 
-        res.delete()
+        try:
+            res.delete(w=1, rw=1, dw=1, pw=1)
+        except riak.RiakError, ex:
+            log.warn('unable to remove tile: %s', ex)
+            return False
         return True
 
     def _fill_metadata_from_obj(self, obj, tile):
