@@ -78,6 +78,9 @@ VALID_POLYGON2 = """POLYGON ((929919.722805089084432 7252212.673410807736218,
 931125.535529361688532 7252317.969672014936805,
 929919.722805089084432 7252212.673410807736218))""".replace('\n',' ')
 
+INTERSECTING_POLYGONS = """POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))
+POLYGON ((5 0, 15 0, 15 10, 5 10, 5 0))
+"""
 
 class TestPolygonLoading(object):
     def test_loading_polygon(self):
@@ -86,6 +89,7 @@ class TestPolygonLoading(object):
                 f.write(VALID_POLYGON1)
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
+            assert polygon.is_valid
             eq_(polygon.type, 'Polygon')
 
     def test_loading_multipolygon(self):
@@ -96,6 +100,7 @@ class TestPolygonLoading(object):
                 f.write(VALID_POLYGON2)
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
+            assert polygon.is_valid
             eq_(polygon.type, 'MultiPolygon')
 
     @raises(shapely.geos.ReadingError)
@@ -104,6 +109,7 @@ class TestPolygonLoading(object):
             with open(fname, 'w') as f:
                 f.write("POLYGON((")
             polygon = load_polygons(fname)
+            assert polygon.is_valid
             bbox, polygon = build_multipolygon(polygon, simplify=True)
 
     def test_loading_skip_non_polygon(self):
@@ -113,7 +119,20 @@ class TestPolygonLoading(object):
                 f.write(VALID_POLYGON1)
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
+            assert polygon.is_valid
             eq_(polygon.type, 'Polygon')
+
+    def test_loading_intersecting_polygons(self):
+        # check that the self intersection is eliminated
+        # otherwise the geometry will be invalid
+        with TempFile() as fname:
+            with open(fname, 'w') as f:
+                f.write(INTERSECTING_POLYGONS)
+            polygon = load_polygons(fname)
+            bbox, polygon = build_multipolygon(polygon, simplify=True)
+            assert polygon.is_valid
+            eq_(polygon.type, 'Polygon')
+            assert polygon.equals(shapely.geometry.Polygon([(0, 0), (15, 0), (15, 10), (0, 10)]))
 
 class TestTransform(object):
     def test_polygon_transf(self):
@@ -193,7 +212,6 @@ class TestGeomCoverage(object):
         assert coverage(g1, SRS(4326)) == coverage(g3, SRS(4326))
         g4 = shapely.wkt.loads("POLYGON((10 10, 10.1 50, -10 60, 10 80, 80 80, 80 10, 10 10))")
         assert coverage(g1, SRS(4326)) != coverage(g4, SRS(4326))
-
 
 class TestBBOXCoverage(object):
     def setup(self):

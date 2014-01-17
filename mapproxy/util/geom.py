@@ -111,12 +111,24 @@ def load_polygon_lines(line_iter, source='<string>'):
     return polygons
 
 def build_multipolygon(polygons, simplify=False):
-    if polygons:
-        mp = shapely.geometry.MultiPolygon(polygons)
+    if not polygons:
+        p = shapely.geometry.Polygon()
+        return p.bounds, p
+
+    if len(polygons) == 1:
+        geom = polygons[0]
         if simplify:
-            mp = simplify_geom(mp)
-    else:
-        mp = shapely.geometry.Polygon()
+            geom = simplify_geom(geom)
+        return geom.bounds, geom
+
+    mp = shapely.geometry.MultiPolygon(polygons)
+
+    if simplify:
+        mp = simplify_geom(mp)
+
+    # eliminate any self-intersections
+    mp = shapely.ops.cascaded_union(mp)
+
     return mp.bounds, mp
 
 def simplify_geom(geom):
