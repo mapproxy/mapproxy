@@ -43,6 +43,11 @@ def setup_logging(level=logging.INFO):
     mapproxy_log = logging.getLogger('mapproxy')
     mapproxy_log.setLevel(level)
 
+    # do not init logging when stdout is captured
+    # eg. when running in tests
+    if isinstance(sys.stdout, BytesIO):
+        return
+
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
