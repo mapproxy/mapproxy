@@ -82,7 +82,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
         timestamp = metadata.get('timestamp')
         if timestamp != None:
             return float(timestamp)
-        
+
         obj.usermeta = {'timestamp': '0'}
         return 0.0
 
@@ -111,10 +111,10 @@ class RiakCache(TileCacheBase, FileBasedLocking):
             if self.use_secondary_index:
                 x, y, z = tile.coord
                 res.add_index('tile_coord_bin', '%02d-%07d-%07d' % (z, x, y))
-            
+
             try:
                 res.store(return_body=False, timeout=self.request_timeout)
-            except riak.RiakError, ex:
+            except riak.RiakError as ex:
                 log.warn('unable to store tile: %s', ex)
                 return False
 
@@ -163,7 +163,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
 
         try:
             res.delete(w=1, rw=1, dw=1, pw=1)
-        except riak.RiakError, ex:
+        except riak.RiakError as ex:
             log.warn('unable to remove tile: %s', ex)
             return False
         return True
