@@ -61,19 +61,22 @@ class TestWMSSRSExtentTest(SystemTest):
             expected_req = ({'path':
                 r'/service?LAYERs=bar&SERVICE=WMS&FORMAT=image%2Fpng'
                  '&REQUEST=GetMap&HEIGHT=100&SRS=EPSG%3A25832&styles='
-                 '&VERSION=1.1.1&BBOX=0.0,3500000.0,100.0,3500100.0'
-                 '&WIDTH=50'},
+                 '&VERSION=1.1.1&BBOX=0.0,3500000.0,150.0,3500100.0'
+                 '&WIDTH=75'},
                 {'body': img.read(), 'headers': {'content-type': 'image/png'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetMap'
                 '&LAYERS=direct&STYLES='
                 '&WIDTH=100&HEIGHT=100&FORMAT=image/png'
-                '&BBOX=-100,3500000,100,3500100&SRS=EPSG:25832'
+                '&BBOX=-50,3500000,150,3500100&SRS=EPSG:25832'
                 '&VERSION=1.1.0&TRANSPARENT=TRUE')
             eq_(resp.content_type, 'image/png')
             assert is_png(resp.body)
-            assert_colors_equal(img_from_buf(resp.body).convert('RGBA'),
-                [(50 * 100, [255, 0, 0, 255]), (50 * 100, [255, 255, 255, 0])])
+            colors = sorted(img_from_buf(resp.body).convert('RGBA').getcolors())
+            # quarter is clipped, check if it's transparent
+            eq_(colors[0][0], (25 * 100))
+            eq_(colors[0][1][3], 0)
+            eq_(colors[1], (75 * 100, (255, 0, 0, 255)))
 
     def test_clipped_bgcolor(self):
         with tmp_image((256, 256), format='png', color=(255, 0, 0)) as img:
