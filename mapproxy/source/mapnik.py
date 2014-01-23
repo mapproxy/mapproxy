@@ -122,6 +122,7 @@ class MapnikSource(MapLayer):
         m.srs = '+init=%s' % str(query.srs.srs_code.lower())
         envelope = mapnik.Box2d(*query.bbox)
         m.zoom_to_box(envelope)
+        data = None
 
         try:
             if self.layers:
