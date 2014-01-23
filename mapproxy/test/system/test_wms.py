@@ -95,6 +95,14 @@ class TestCoverageWMS(WMSTest):
                             '&VERSION=2.0.0')
         assert is_130_capa(resp.lxml)
 
+def bbox_srs_from_boundingbox(bbox_elem):
+    return bbox_elem.attrib['SRS'], [
+        float(bbox_elem.attrib['minx']),
+        float(bbox_elem.attrib['miny']),
+        float(bbox_elem.attrib['maxx']),
+        float(bbox_elem.attrib['maxy']),
+    ]
+
 class TestWMS111(WMSTest):
     def setup(self):
         WMSTest.setup(self)
@@ -138,6 +146,15 @@ class TestWMS111(WMSTest):
         eq_(layer_names, expected_names)
         eq_(set(xml.xpath('//Layer/Layer[3]/Abstract/text()')),
             set(['Some abstract']))
+
+        bboxs = xml.xpath('//Layer/Layer[1]/BoundingBox')
+        eq_(bbox_srs_from_boundingbox(bboxs[0]),
+            ('EPSG:31467', [2750000, 5000000, 4250000, 6500000]))
+        eq_(bbox_srs_from_boundingbox(bboxs[1]),
+            ('EPSG:3857', [-20037508.3428, -15538711.0963, 18924313.4349, 15538711.0963]))
+        eq_(bbox_srs_from_boundingbox(bboxs[2]),
+            ('EPSG:4326', [-180.0, -80.0, 170.0, 80.0]))
+
         assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
 
     def test_invalid_layer(self):

@@ -37,6 +37,7 @@ from mapproxy.util.coverage import load_limited_to
 from mapproxy.util.ext.odict import odict
 from mapproxy.template import template_loader, bunch
 from mapproxy.service import template_helper
+from mapproxy.layer import DefaultMapExtent
 
 get_template = template_loader(__name__, 'templates', namespace=template_helper.__dict__)
 
@@ -52,7 +53,7 @@ class WMSServer(Server):
         request_parser=None, tile_layers=None, attribution=None,
         info_types=None, strict=False, on_error='raise',
         concurrent_layer_renderer=1, max_output_pixels=None,
-        bbox_srs=None, max_tile_age=None,
+        srs_extents=None, max_tile_age=None,
         versions=None):
         Server.__init__(self)
         self.request_parser = request_parser or partial(wms_request, strict=strict, versions=versions)
@@ -67,7 +68,7 @@ class WMSServer(Server):
         self.image_formats = image_formats
         self.info_types = info_types
         self.srs = srs
-        self.bbox_srs = bbox_srs
+        self.srs_extents = srs_extents
         self.max_output_pixels = max_output_pixels
         self.max_tile_age = max_tile_age
 
@@ -167,7 +168,7 @@ class WMSServer(Server):
             info_types = self.fi_transformers.keys()
         info_formats = [mimetype_from_infotype(map_request.version, info_type) for info_type in info_types]
         result = Capabilities(service, root_layer, tile_layers,
-            self.image_formats, info_formats, srs=self.srs, bbox_srs=self.bbox_srs
+            self.image_formats, info_formats, srs=self.srs, srs_extents=self.srs_extents
             ).render(map_request)
         return Response(result, mimetype=map_request.mime_type)
 
@@ -416,31 +417,55 @@ class FilteredRootLayer(object):
                     layers.append(filtered_layer)
         return layers
 
+DEFAULT_EXTENTS = {
+    'EPSG:3857': DefaultMapExtent(),
+    'EPSG:4326': DefaultMapExtent(),
+    'EPSG:900913': DefaultMapExtent(),
+}
+
+def limit_srs_extents(srs_extents, supported_srs):
+    """
+    Limit srs_extents to supported_srs.
+    """
+    if srs_extents:
+        srs_extents = srs_extents.copy()
+    else:
+        srs_extents = DEFAULT_EXTENTS.copy()
+
+    for srs in srs_extents.keys():
+        if srs not in supported_srs:
+            srs_extents.pop(srs)
+
+    return srs_extents
+
 class Capabilities(object):
     """
     Renders WMS capabilities documents.
     """
     def __init__(self, server_md, layers, tile_layers, image_formats, info_formats,
-        srs, bbox_srs=None, epsg_axis_order=False):
+        srs, srs_extents=None, epsg_axis_order=False):
         self.service = server_md
         self.layers = layers
         self.tile_layers = tile_layers
         self.image_formats = image_formats
         self.info_formats = info_formats
         self.srs = srs
-        self.bbox_srs = bbox_srs or ['EPSG:3857', 'EPSG:4326', 'EPSG:900913']
-        self.bbox_srs = list(set(self.bbox_srs).intersection(self.srs))
+        self.srs_extents = limit_srs_extents(srs_extents, srs)
 
     def layer_srs_bbox(self, layer, epsg_axis_order=False):
         layer_srs_code = layer.extent.srs.srs_code
-        for srs in self.bbox_srs:
-            bbox = layer.extent.bbox_for(SRS(srs))
+        for srs, extent in self.srs_extents.iteritems():
+            if extent.is_default:
+                bbox = layer.extent.bbox_for(SRS(srs))
+            else:
+                bbox = extent.bbox_for(SRS(srs))
+
             if epsg_axis_order:
                 bbox = switch_bbox_epsg_axis_order(bbox, srs)
             yield srs, bbox
 
         # add native srs
-        if layer_srs_code not in self.bbox_srs:
+        if layer_srs_code not in self.srs_extents:
             bbox = layer.extent.bbox
             if epsg_axis_order:
                 bbox = switch_bbox_epsg_axis_order(bbox, layer_srs_code)

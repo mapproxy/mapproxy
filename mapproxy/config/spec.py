@@ -298,7 +298,7 @@ mapproxy_yaml_spec = {
         },
         'wms': {
             'srs': [str()],
-            'bbox_srs': [str()],
+            'bbox_srs': [one_of(str(), {'bbox': [number()], 'srs': str()})],
             'image_formats': [str()],
             'attribution': {
                 'text': basestring,

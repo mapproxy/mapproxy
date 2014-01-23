@@ -1396,6 +1396,22 @@ def fi_xslt_transformers(conf, context):
             fi_transformers[info_type] = XSLTransformer(fi_xslt)
     return fi_transformers
 
+def extents_for_srs(bbox_srs):
+    from mapproxy.layer import DefaultMapExtent, MapExtent
+    from mapproxy.srs import SRS
+    extents = {}
+    for srs in bbox_srs:
+        if isinstance(srs, str):
+            bbox = DefaultMapExtent()
+        else:
+            srs, bbox = srs['srs'], srs['bbox']
+            bbox = MapExtent(bbox, SRS(srs))
+
+        extents[srs] = bbox
+
+    return extents
+
+
 class ServiceConfiguration(ConfigurationBase):
     def services(self):
         services = []
@@ -1517,7 +1533,7 @@ class ServiceConfiguration(ConfigurationBase):
         info_types = conf.get('featureinfo_types')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
         self.context.globals.base_config.wms.srs = srs
-        bbox_srs = conf.get('bbox_srs')
+        srs_extents = extents_for_srs(conf.get('bbox_srs', []))
 
         versions = conf.get('versions')
         if versions:
@@ -1535,7 +1551,7 @@ class ServiceConfiguration(ConfigurationBase):
             image_formats=image_formats, info_types=info_types,
             srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors,
             concurrent_layer_renderer=concurrent_layer_renderer,
-            max_output_pixels=max_output_pixels, bbox_srs=bbox_srs,
+            max_output_pixels=max_output_pixels, srs_extents=srs_extents,
             max_tile_age=max_tile_age, versions=versions)
 
         server.fi_transformers = fi_xslt_transformers(conf, self.context)
