@@ -253,8 +253,10 @@ class TestBBOXCoverage(object):
             None)
         eq_(self.coverage.intersection((0, 0, 1000, 1000), SRS(900913)),
             None)
-        eq_(self.coverage.intersection((0, 0, 1500000, 1500000), SRS(900913)),
-            BBOXCoverage((0.0, 10, 13.47472926179282, 13.3522076267078), SRS(4326)))
+        assert bbox_equals(
+            self.coverage.intersection((0, 0, 1500000, 1500000), SRS(900913)).bbox,
+            (0.0, 10, 13.47472926179282, 13.352207626707813)
+        )
 
     def test_eq(self):
         assert coverage([-10, 10, 80, 80], SRS(4326)) == coverage([-10, 10, 80, 80], SRS(4326))
