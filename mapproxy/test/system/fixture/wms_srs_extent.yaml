@@ -1,0 +1,21 @@
+services:
+  wms:
+    image_formats: ['image/png', 'image/jpeg']
+    srs: ['EPSG:4326', 'EPSG:4258', 'CRS:84', 'EPSG:900913', 'EPSG:3857', 'EPSG:31466', 'EPSG:31467', 'EPSG:31468', 'EPSG:25831', 'EPSG:25832', 'EPSG:25833']
+    bbox_srs:
+      - bbox: [0.0, 3500000.0, 1000000.0, 8500000.0]
+        srs: 'EPSG:25832'
+    md:
+      title: MapProxy test fixture ☃
+
+layers:
+  - name: direct
+    title: Direct Layer
+    sources: [direct]
+
+sources:
+  direct:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: bar
