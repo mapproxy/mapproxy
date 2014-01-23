@@ -30,6 +30,7 @@ from mapproxy.test.helper import TempFile
 if not geom_support:
     from nose.plugins.skip import SkipTest
     raise SkipTest('requires Shapely')
+from mapproxy.util.coverage import BBOXCoverage
 
 import shapely
 import shapely.prepared
@@ -238,6 +239,22 @@ class TestBBOXCoverage(object):
 
         assert not self.coverage.intersects((0, 0, 1000, 1000), SRS(900913))
         assert self.coverage.intersects((0, 0, 1500000, 1500000), SRS(900913))
+
+    def test_intersection(self):
+        eq_(self.coverage.intersection((15, 15, 20, 20), SRS(4326)),
+            BBOXCoverage((15, 15, 20, 20), SRS(4326)))
+        eq_(self.coverage.intersection((15, 15, 80, 20), SRS(4326)),
+            BBOXCoverage((15, 15, 80, 20), SRS(4326)))
+        eq_(self.coverage.intersection((9, 10, 20, 20), SRS(4326)),
+            BBOXCoverage((9, 10, 20, 20), SRS(4326)))
+        eq_(self.coverage.intersection((-30, 10, -8, 70), SRS(4326)),
+            BBOXCoverage((-10, 10, -8, 70), SRS(4326)))
+        eq_(self.coverage.intersection((-30, 10, -11, 70), SRS(4326)),
+            None)
+        eq_(self.coverage.intersection((0, 0, 1000, 1000), SRS(900913)),
+            None)
+        eq_(self.coverage.intersection((0, 0, 1500000, 1500000), SRS(900913)),
+            BBOXCoverage((0.0, 10, 13.47472926179282, 13.3522076267078), SRS(4326)))
 
     def test_eq(self):
         assert coverage([-10, 10, 80, 80], SRS(4326)) == coverage([-10, 10, 80, 80], SRS(4326))

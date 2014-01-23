@@ -26,6 +26,7 @@ from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.source import SourceError
 from mapproxy.exception import RequestError
+from mapproxy.image import bbox_position_in_image, SubImageSource, BlankImageSource
 from mapproxy.image.merge import concat_legends, LayerMerger
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
@@ -37,7 +38,7 @@ from mapproxy.util.coverage import load_limited_to
 from mapproxy.util.ext.odict import odict
 from mapproxy.template import template_loader, bunch
 from mapproxy.service import template_helper
-from mapproxy.layer import DefaultMapExtent
+from mapproxy.layer import DefaultMapExtent, MapExtent
 
 get_template = template_loader(__name__, 'templates', namespace=template_helper.__dict__)
 
@@ -80,6 +81,21 @@ class WMSServer(Server):
 
         if map_request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
+        orig_query = query
+
+        if self.srs_extents and params.srs in self.srs_extents:
+            # limit query to srs_extent if query is larger
+            query_extent = MapExtent(params.bbox, SRS(params.srs))
+            if not self.srs_extents[params.srs].contains(query_extent):
+                limited_extent = self.srs_extents[params.srs].intersection(query_extent)
+                if not limited_extent:
+                    img_opts = self.image_formats[params.format_mime_type].copy()
+                    img_opts.bgcolor = params.bgcolor
+                    img_opts.transparent = params.transparent
+                    img = BlankImageSource(size=params.size, image_opts=img_opts, cacheable=True)
+                    return Response(img.as_buffer(), content_type=img_opts.format.mime_type)
+                sub_size, offset, sub_bbox = bbox_position_in_image(params.bbox, params.size, limited_extent.bbox)
+                query = MapQuery(sub_bbox, sub_size, SRS(params.srs), params.format)
 
         actual_layers = odict()
         for layer_name in map_request.params.layers:
@@ -118,8 +134,11 @@ class WMSServer(Server):
         img_opts = self.image_formats[params.format_mime_type].copy()
         img_opts.bgcolor = params.bgcolor
         img_opts.transparent = params.transparent
-        result = merger.merge(size=params.size, image_opts=img_opts,
-            bbox=params.bbox, bbox_srs=params.srs, coverage=coverage)
+        result = merger.merge(size=query.size, image_opts=img_opts,
+            bbox=query.bbox, bbox_srs=params.srs, coverage=coverage)
+
+        if query != orig_query:
+            result = SubImageSource(result, size=orig_query.size, offset=offset, image_opts=img_opts)
 
         # Provide the wrapping WSGI app or filter the opportunity to process the
         # image before it's wrapped up in a response
