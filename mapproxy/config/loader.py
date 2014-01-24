@@ -1523,7 +1523,7 @@ class ServiceConfiguration(ConfigurationBase):
             global_key='wms.concurrent_layer_renderer')
         image_formats_names = self.context.globals.get_value('image_formats', conf,
                                                        global_key='wms.image_formats')
-        image_formats = {}
+        image_formats = odict()
         for format in image_formats_names:
             opts = self.context.globals.image_options.image_opts({}, format)
             if opts.format in image_formats:
