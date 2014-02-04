@@ -185,5 +185,9 @@ def type_matches(spec, data):
         spec_type = spec
     else:
         spec_type = type(spec)
+
+    if spec_type is str:
+        spec_type = basestring
+
     return isinstance(data, spec_type)
 
