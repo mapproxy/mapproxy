@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import sys
 import hashlib
 import time
 
@@ -82,6 +83,11 @@ class TileCacheBase(object):
         """
         raise NotImplementedError()
 
+# whether we immediately remove lock files or not
+REMOVE_ON_UNLOCK = True
+if sys.platform == 'win32':
+    # windows does not handle this well
+    REMOVE_ON_UNLOCK = False
 
 class FileBasedLocking(object):
     """
@@ -112,9 +118,10 @@ class FileBasedLocking(object):
         if getattr(self, 'locking_disabled', False):
             return DummyLock()
         lock_filename = self.lock_filename(tile)
-        cleanup_lockdir(self.lock_dir, force=False)
+        cleanup_lockdir(self.lock_dir, max_lock_time=self.lock_timeout + 10,
+            force=False)
         return FileLock(lock_filename, timeout=self.lock_timeout,
-            remove_on_unlock=True)
+            remove_on_unlock=REMOVE_ON_UNLOCK)
 
 class TileLocker(FileBasedLocking):
     def __init__(self, lock_dir, lock_timeout, lock_cache_id):
