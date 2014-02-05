@@ -20,7 +20,8 @@ jscript_functions=None
         map = new OpenLayers.Map('map', {
           maxResolution: {{res}},
           maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in bbox)}}),
-          projection: new OpenLayers.Projection("{{srs}}")
+          projection: new OpenLayers.Projection("{{srs}}"),
+          zoomMethod: null
         });
         var layer = new OpenLayers.Layer.WMS( "WMS {{layer.name}}",
             "../service?",

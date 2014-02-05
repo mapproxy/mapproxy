@@ -26,7 +26,8 @@ function init(){
     {{endif}}
     units: '{{units}}',
     numZoomLevels: {{len(resolutions)}},
-    maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}})
+    maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}}),
+    zoomMethod: null
     };
 
     map = new OpenLayers.Map('map', mapOptions);
