@@ -1175,7 +1175,15 @@ class CacheConfiguration(ConfigurationBase):
 
             tile_creator_class = None
 
-            if not self.context.renderd and renderd_address:
+            use_renderd = bool(renderd_address)
+            if self.context.renderd:
+                # we _are_ renderd
+                use_renderd = False
+            if self.conf.get('disable_storage', False):
+                # can't ask renderd to create tiles that shouldn't be cached
+                use_renderd = False
+
+            if use_renderd:
                 from mapproxy.cache.renderd import RenderdTileCreator, has_renderd_support
                 if not has_renderd_support():
                     raise ConfigurationError("renderd requires Python >=2.6 and requests")
