@@ -1027,6 +1027,14 @@ class CacheConfiguration(ConfigurationBase):
             use_secondary_index=use_secondary_index,
         )
 
+    def _cassandra_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.cassandra import CassandraCache
+        keyspace = self.conf['cache'].get('keyspace')
+        column_family = self.conf['cache'].get('column_family')
+        servers = self.conf['cache'].get('servers')
+
+        return CassandraCache(servers, keyspace, column_family, self.lock_dir())
+
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):
             from mapproxy.cache.dummy import DummyCache

@@ -289,3 +289,43 @@ Example
         default_ports:
             pb: 8087
             http: 8098
+
+``cassandra``
+=============
+
+Store tiles in a `Apache Cassandra <http://cassandra.apache.org>`_ cluster.
+
+Requirements
+------------
+
+You will need the `pycassa Cassandra Client <https://github.com/pycassa/pycassa>`_ version 1.11.0 or newer. You can install it in the usual way, for example with ``pip install pycassa``.
+
+Configuration
+-------------
+
+Available options:
+
+``keyspace``:
+    Keyspace
+
+``column_family``:
+    Column family
+
+``servers``:
+    The servers to use.
+
+Example
+-------
+
+::
+
+    mycassandracache:
+        sources: [mywms]
+        grids: [mygrid]
+        type: cassandra
+        keyspace: mykeyspacename
+        column_family: mycolumnfamilyname
+        servers:
+            - server1:port
+            - server2:port
+

@@ -124,6 +124,11 @@ cache_types = {
             'http': number(),
         },
         'secondary_index': bool(),
+    },
+    'cassandra': {
+        'keyspace': str(),
+        'column_family': str(),
+        'servers': [str()]
     }
 }
 
