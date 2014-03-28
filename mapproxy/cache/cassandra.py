@@ -102,9 +102,9 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
 
 def _tile_key(coord):
     """
-    >>> _tile_key(2, 2, 2)
+    >>> _tile_key([2, 2, 2])
     '2_2_2'
-    >>> _tile_key(1285, 3976, 12)
+    >>> _tile_key([1285, 3976, 12])
     '1285_3976_12'
     """
     x, y, z = coord
