@@ -9,8 +9,6 @@ try:
 except ImportError:
     pycassa = None
 
-__author__ = 'meier_ul'
-
 
 class CassandraCache(TileCacheBase, FileBasedLocking):
     def __init__(self, nodes, keyspace, column_family, lock_dir):
@@ -27,8 +25,11 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
         if tile.coord is None or tile.source:
             return True
         try:
-            key = self._tile_key(tile.coord)
+            key = _tile_key(tile.coord)
+            if not self.cf:
+                self._open_cf()
             self.cf.get(key)
+            return True
         except NotFoundException:
             return False
 
@@ -38,15 +39,20 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
             return True
-        key = self._tile_key(tile.coord)
+        key = _tile_key(tile.coord)
         if not self.cf:
             self._open_cf()
-        content = self.cf.get(key)
+        try:
+            content = self.cf.get(key)
+        except NotFoundException:
+            return False
         if content:
             tile.source = ImageSource(StringIO(content['img']))
             if with_metadata:
-                tile.timestamp = content['created']
-                tile.size = content['length']
+                if 'created' in content:
+                    tile.timestamp = content['created']
+                if 'length' in content:
+                    tile.size = content['length']
             return True
         else:
             return False
@@ -62,13 +68,17 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
             return True
         size = tile.size
         timestamp = tile.timestamp
-        key = self._tile_key(tile.coord)
+        key = _tile_key(tile.coord)
         with tile_buffer(tile) as buf:
             data = buf.read()
-        content = {key: {'created': timestamp, 'img': data, 'eins': 1, 'length': size}}
+        content = {'img': data, 'eins': 1}
+        if size:
+            content['length'] = size
+        if timestamp:
+            content['created'] = timestamp
         if not self.cf:
             self._open_cf()
-        self.cf.insert(content)
+        self.cf.insert(key, content)
         return True
 
     def remove_tile(self, tile):
@@ -76,7 +86,7 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
             return True
         if not self.cf:
             self._open_cf()
-        key = self._tile_key(tile.coord)
+        key = _tile_key(tile.coord)
         self.cf.remove(key)
         return True
 
@@ -84,11 +94,18 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
         pool = pycassa.ConnectionPool(keyspace=self.keyspace, server_list=self.nodes)
         cf = pycassa.ColumnFamily(pool, self.column_family)
         cf.column_validators = {'created': pycassa.types.DateType(),
+                                'img': pycassa.types.BytesType(),
                                 'eins': pycassa.types.IntegerType(),  # legacy ... ;-)
                                 'length': pycassa.types.IntegerType()}
         self.cf = cf
 
-    @staticmethod
-    def _tile_key(coord):
-        x, y, z = coord
-        return "%(x)s_%(y)s_%(z)s" % locals()
+
+def _tile_key(coord):
+    """
+    >>> _tile_key(2, 2, 2)
+    '2_2_2'
+    >>> _tile_key(1285, 3976, 12)
+    '1285_3976_12'
+    """
+    x, y, z = coord
+    return "%(x)s_%(y)s_%(z)s" % locals()
