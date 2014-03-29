@@ -46,9 +46,3 @@ class CassandraCacheTestBase(TileCacheTestBase):
 
 class TestCassandraCache(CassandraCacheTestBase):
     readonly = False
-
-
-class TestCassandraCacheReadonly(CassandraCacheTestBase):
-    readonly = True
-
-
