@@ -11,7 +11,7 @@ except ImportError:
 
 
 class CassandraCache(TileCacheBase, FileBasedLocking):
-    def __init__(self, nodes, keyspace, column_family, lock_dir):
+    def __init__(self, nodes, keyspace, column_family, lock_dir, readonly=False):
         if pycassa is None:
             raise ImportError("Cassandra backend requires 'pycassa' package.")
         self.nodes = nodes
@@ -20,6 +20,7 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
         self.lock_dir = lock_dir
         self.lock_cache_id = 'cassandra-' + hashlib.md5(keyspace + column_family).hexdigest()
         self.cf = None
+        self.readonly = readonly
 
     def is_cached(self, tile):
         if tile.coord is None or tile.source:
@@ -65,6 +66,8 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
 
     def store_tile(self, tile):
         if tile.stored:
+            return True
+        if self.readonly:
             return True
         size = tile.size
         timestamp = tile.timestamp

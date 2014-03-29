@@ -1032,8 +1032,11 @@ class CacheConfiguration(ConfigurationBase):
         keyspace = self.conf['cache'].get('keyspace')
         column_family = self.conf['cache'].get('column_family')
         servers = self.conf['cache'].get('servers')
+        readonly = self.conf['cache'].get('readonly')
+        if readonly is None:
+            readonly = False
 
-        return CassandraCache(servers, keyspace, column_family, self.lock_dir())
+        return CassandraCache(servers, keyspace, column_family, self.lock_dir(), readonly)
 
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):

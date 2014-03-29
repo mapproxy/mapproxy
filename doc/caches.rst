@@ -314,6 +314,9 @@ Available options:
 ``servers``:
     The servers to use.
 
+``readonly``:
+    Cache is readonly, no tiles are stored.
+
 Example
 -------
 
@@ -322,10 +325,12 @@ Example
     mycassandracache:
         sources: [mywms]
         grids: [mygrid]
-        type: cassandra
-        keyspace: mykeyspacename
-        column_family: mycolumnfamilyname
-        servers:
-            - server1:port
-            - server2:port
+        cache:
+            type: cassandra
+            keyspace: mykeyspacename
+            column_family: mycolumnfamilyname
+            readonly: false
+            servers:
+            - 'server1:port'
+            - 'server2:port'
 

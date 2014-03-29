@@ -128,7 +128,8 @@ cache_types = {
     'cassandra': {
         'keyspace': str(),
         'column_family': str(),
-        'servers': [str()]
+        'servers': [str()],
+        'readonly': bool()
     }
 }
 
