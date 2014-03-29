@@ -67,7 +67,7 @@ class TestCassandraCacheReadonly(CassandraCacheTestBase):
 
     def test_remove(self):
         tile = self.create_tile((1, 0, 4))
-        self.create_cached_tile(tile)
+        self.cache.store_tile(tile)
         assert not self.cache.is_cached(Tile((1, 0, 4)))
         assert self.cache.remove_tile(Tile((1, 0, 4)))
 
