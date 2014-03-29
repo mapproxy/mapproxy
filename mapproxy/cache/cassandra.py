@@ -87,6 +87,11 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
     def remove_tile(self, tile):
         if tile.source or tile.coord is None:
             return True
+        if self.readonly:
+            if self.is_cached(tile):
+                return False
+            else:
+                return True
         if not self.cf:
             self._open_cf()
         key = _tile_key(tile.coord)
