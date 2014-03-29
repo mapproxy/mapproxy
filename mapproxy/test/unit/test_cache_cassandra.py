@@ -23,7 +23,7 @@ tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
 
 
-class TestCassandraCache(TileCacheTestBase):
+class CassandraCacheTestBase(TileCacheTestBase):
     always_loads_metadata = True
 
     def setup(self):
@@ -37,10 +37,18 @@ class TestCassandraCache(TileCacheTestBase):
 
         TileCacheTestBase.setup(self)
 
-        self.cache = CassandraCache(self.server, self.keyspace, self.columnfamily, self.cache_dir)
+        self.cache = CassandraCache(self.server, self.keyspace, self.columnfamily, self.cache_dir, self.readonly)
 
     def teardown(self):
         self.sys.drop_keyspace(self.keyspace)
         self.sys.close()
+
+
+class TestCassandraCache(CassandraCacheTestBase):
+    readonly = False
+
+
+class TestCassandraCacheReadonly(CassandraCacheTestBase):
+    readonly = True
 
 
