@@ -68,7 +68,7 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
         if tile.stored:
             return True
         if self.readonly:
-            return True
+            return False
         size = tile.size
         timestamp = tile.timestamp
         key = _tile_key(tile.coord)

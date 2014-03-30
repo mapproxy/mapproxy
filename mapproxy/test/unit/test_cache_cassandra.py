@@ -73,7 +73,8 @@ class TestCassandraCacheReadonly(CassandraCacheTestBase):
 
     def test_store_tiles(self):
         tiles = [self.create_tile((x, 0, 4)) for x in range(4)]
-        assert self.cache.store_tiles(tiles)
+        assert not self.cache.store_tiles(tiles)
+        tiles = [Tile((x, 0, 4)) for x in range(4)]
         for tile in tiles:
             assert not self.cache.is_cached(tile)
 
