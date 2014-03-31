@@ -314,9 +314,6 @@ Available options:
 ``servers``:
     The servers to use.
 
-``readonly``:
-    Cache is readonly, no tiles are stored.
-
 Example
 -------
 
