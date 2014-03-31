@@ -18,6 +18,7 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
         self.keyspace = keyspace
         self.column_family = column_family
         self.lock_dir = lock_dir
+        self.lock_timeout = 60
         self.lock_cache_id = 'cassandra-' + hashlib.md5(keyspace + column_family).hexdigest()
         self.cf = None
         self.readonly = readonly
@@ -33,9 +34,6 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
             return True
         except NotFoundException:
             return False
-
-    def lock(self, tile):
-        pass
 
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
