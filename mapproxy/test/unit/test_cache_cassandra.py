@@ -1,7 +1,9 @@
 from __future__ import with_statement
+import os
 
 from pycassa.system_manager import SystemManager, SIMPLE_STRATEGY
 from nose.tools import nottest
+from nose.plugins.skip import SkipTest
 
 from mapproxy.cache.cassandra import CassandraCache
 from mapproxy.cache.tile import Tile
@@ -17,7 +19,10 @@ class CassandraCacheTestBase(TileCacheTestBase):
     always_loads_metadata = True
 
     def setup(self):
-        self.server = ['localhost:9160']
+        cassandra_server_env = 'CASSANDRA_SERVER'
+        if not os.environ.get(cassandra_server_env):
+            raise SkipTest()
+        self.server = [os.environ[cassandra_server_env]]
         self.keyspace = 'TESTSPACE'
         self.columnfamily = 'Testfamily'
 
