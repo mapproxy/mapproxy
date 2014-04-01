@@ -1032,6 +1032,7 @@ class CacheConfiguration(ConfigurationBase):
         keyspace = self.conf['cache'].get('keyspace')
         if not keyspace:
             keyspace = grid_conf.tile_grid().name
+            # TODO: make sure only one grid is set for this keyspace.
         column_family = self.conf['cache'].get('column_family')
         if not column_family:
             column_family = self.conf['name']

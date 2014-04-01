@@ -1,6 +1,6 @@
 import hashlib
 from cStringIO import StringIO
-from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer
+from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer, CacheBackendError
 from mapproxy.image import ImageSource
 
 try:
@@ -8,6 +8,13 @@ try:
     from pycassa.cassandra.ttypes import NotFoundException
 except ImportError:
     pycassa = None
+
+import logging
+log = logging.getLogger(__name__)
+
+
+class UnexpectedResponse(CacheBackendError):
+    pass
 
 
 class CassandraCache(TileCacheBase, FileBasedLocking):
