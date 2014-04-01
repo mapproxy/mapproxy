@@ -300,19 +300,21 @@ Requirements
 
 You will need the `pycassa Cassandra Client <https://github.com/pycassa/pycassa>`_ version 1.11.0 or newer. You can install it in the usual way, for example with ``pip install pycassa``.
 
+Data within cassandra is organized in keyspaces and column_families.
+
 Configuration
 -------------
 
 Available options:
 
 ``keyspace``:
-    Keyspace
+    Optional. Defaults to the name of the grid.
 
 ``column_family``:
-    Column family
+    Optional. Defaults to the name of the cache.
 
 ``servers``:
-    The servers to use.
+    A list of cassandra-servers. Syntax is 'host:port'.
 
 Example
 -------
@@ -326,7 +328,6 @@ Example
             type: cassandra
             keyspace: mykeyspacename
             column_family: mycolumnfamilyname
-            readonly: false
             servers:
             - 'server1:port'
             - 'server2:port'

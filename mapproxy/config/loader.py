@@ -1030,7 +1030,11 @@ class CacheConfiguration(ConfigurationBase):
     def _cassandra_cache(self, grid_conf, file_ext):
         from mapproxy.cache.cassandra import CassandraCache
         keyspace = self.conf['cache'].get('keyspace')
+        if not keyspace:
+            keyspace = grid_conf.tile_grid().name
         column_family = self.conf['cache'].get('column_family')
+        if not column_family:
+            column_family = self.conf['name']
         servers = self.conf['cache'].get('servers')
 
         return CassandraCache(servers, keyspace, column_family, self.lock_dir())
