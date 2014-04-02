@@ -300,23 +300,16 @@ Requirements
 
 You will need the `pycassa Cassandra Client <https://github.com/pycassa/pycassa>`_ version 1.11.0 or newer. You can install it in the usual way, for example with ``pip install pycassa``.
 
-Data within cassandra is organized in keyspaces and column_families. The column_family has to be unique within a keyspace (=grid), so if a keyspace-name is given, only one grid is allowed for this cache.
-
-Keyspace and column_family have to be defined before they can be used by MapProxy. See the Cassandra-Documentation for details.
+Cassandra uses keyspaces and column-families to store data. These keyspaces and column-families have to be created before they can used by mapproxy.
+The gridname is used as name for the keyspace, the cachename as name for the column-family.
 
 Configuration
 -------------
 
 Available options:
 
-``keyspace``:
-    Optional. Defaults to the name of the grid. If set only one grid is allowed for this cache.
-
-``column_family``:
-    Optional. Defaults to the name of the cache.
-
-``servers``:
-    A list of cassandra-servers. Syntax is 'host:port'.
+``nodes``:
+    A list of cassandra-nodes. Each node need a ``host`` and optionally a ``port`` if the port differs from the default. A single localhost-node is used as default.
 
 Example
 -------
@@ -328,9 +321,9 @@ Example
         grids: [mygrid]
         cache:
             type: cassandra
-            keyspace: mykeyspacename
-            column_family: mycolumnfamilyname
-            servers:
-            - 'server1:port'
-            - 'server2:port'
+            nodes:
+              - host: host1
+                port: 9160
+              - host: host2
+              - host: host3
 

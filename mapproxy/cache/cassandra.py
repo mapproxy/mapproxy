@@ -40,6 +40,9 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
             return True
         except NotFoundException:
             return False
+        except AttributeError, ex:
+            log.warn("error while looking after tile: %s", ex)
+            return False
 
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
@@ -50,6 +53,9 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
         try:
             content = self.cf.get(key)
         except NotFoundException:
+            return False
+        except AttributeError, ex:
+            log.warn("error while trying to load tile: %s", ex)
             return False
         if content:
             tile.source = ImageSource(StringIO(content['img']))
@@ -96,12 +102,20 @@ class CassandraCache(TileCacheBase, FileBasedLocking):
         return True
 
     def _open_cf(self):
-        pool = pycassa.ConnectionPool(keyspace=self.keyspace, server_list=self.nodes)
-        cf = pycassa.ColumnFamily(pool, self.column_family)
-        cf.column_validators = {'created': pycassa.types.DateType(),
-                                'img': pycassa.types.BytesType(),
-                                'length': pycassa.types.IntegerType()}
-        self.cf = cf
+        serverlist = []
+        for n in self.nodes:
+            serverlist.append(n['host'] + ':' + str(n['port']))
+        try:
+            pool = pycassa.ConnectionPool(keyspace=self.keyspace, server_list=serverlist)
+            cf = pycassa.ColumnFamily(pool, self.column_family)
+            cf.column_validators = {'created': pycassa.types.DateType(),
+                                    'img': pycassa.types.BytesType(),
+                                    'length': pycassa.types.IntegerType()}
+            self.cf = cf
+        except pycassa.InvalidRequestException, ex:
+            log.warn('unable to initialize Cassandra: %s', ex)
+        except NotFoundException, ex:
+            log.warn('unable to initialize Cassandra: %s', ex)
 
 
 def _tile_key(coord):
