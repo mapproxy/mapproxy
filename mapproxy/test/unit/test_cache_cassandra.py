@@ -1,5 +1,6 @@
 from __future__ import with_statement
 import os
+from string import split
 
 from pycassa.system_manager import SystemManager, SIMPLE_STRATEGY
 from nose.plugins.skip import SkipTest
@@ -20,17 +21,19 @@ class TestCassandraCache(TileCacheTestBase):
         cassandra_server_env = 'CASSANDRA_SERVER'
         if not os.environ.get(cassandra_server_env):
             raise SkipTest()
-        self.server = [os.environ[cassandra_server_env]]
+        self.server = os.environ[cassandra_server_env]
+        host, port = split(self.server, ':')
+        self.nodes = [{'host': host, 'port': port}]
         self.keyspace = 'TESTSPACE'
         self.columnfamily = 'Testfamily'
 
-        self.sys = SystemManager(self.server[0])
+        self.sys = SystemManager(self.server)
         self.sys.create_keyspace(self.keyspace, SIMPLE_STRATEGY, {'replication_factor': '1'})
         self.sys.create_column_family(self.keyspace, self.columnfamily)
 
         TileCacheTestBase.setup(self)
 
-        self.cache = CassandraCache(self.server, self.keyspace, self.columnfamily, self.cache_dir)
+        self.cache = CassandraCache(self.nodes, self.keyspace, self.columnfamily, self.cache_dir)
 
     def teardown(self):
         self.sys.drop_keyspace(self.keyspace)
