@@ -116,6 +116,7 @@ class WMSCapabilities(object):
         layer['srs'] = self.layer_srs(elem, parent_layer)
         layer['res_hint'] = self.layer_res_hint(elem, parent_layer)
         layer['llbbox'] = self.layer_llbbox(elem, parent_layer)
+        layer['bbox_srs'] = self.layer_bbox_srs(elem, parent_layer)
         layer['url'] = self.requests()['GetMap']
         layer['legend'] = self.layer_legend(elem)
 
@@ -190,6 +191,26 @@ class WMS111Capabilities(WMSCapabilities):
         inherited_srs = parent_layer.get('srs', set()) if parent_layer else set()
         return srs_codes | inherited_srs
 
+    def layer_bbox_srs(self, elem, parent_layer=None):
+        bbox_srs = {}
+
+        bbox_srs_elems = self.findall(elem, 'BoundingBox')
+        if len(bbox_srs_elems) > 0:
+            for bbox_srs_elem in bbox_srs_elems:
+                srs = bbox_srs_elem.attrib['SRS']
+                bbox = (
+                    bbox_srs_elem.attrib['minx'],
+                    bbox_srs_elem.attrib['miny'],
+                    bbox_srs_elem.attrib['maxx'],
+                    bbox_srs_elem.attrib['maxy']
+                )
+                bbox = map(float, bbox)
+                bbox_srs[srs] = bbox
+        elif parent_layer:
+            bbox_srs = parent_layer['bbox_srs']
+
+        return bbox_srs
+
 
 class WMS130Capabilities(WMSCapabilities):
     version = '1.3.0'
@@ -221,6 +242,26 @@ class WMS130Capabilities(WMSCapabilities):
         # unique srs-codes in either srs or parent_layer['srs']
         inherited_srs = parent_layer.get('srs', set()) if parent_layer else set()
         return srs_codes | inherited_srs
+
+    def layer_bbox_srs(self, elem, parent_layer=None):
+        bbox_srs = {}
+
+        bbox_srs_elems = self.findall(elem, 'BoundingBox')
+        if len(bbox_srs_elems) > 0:
+            for bbox_srs_elem in bbox_srs_elems:
+                srs = bbox_srs_elem.attrib['CRS']
+                bbox = (
+                    bbox_srs_elem.attrib['minx'],
+                    bbox_srs_elem.attrib['miny'],
+                    bbox_srs_elem.attrib['maxx'],
+                    bbox_srs_elem.attrib['maxy']
+                )
+                bbox = map(float, bbox)
+                bbox_srs[srs] = bbox
+        elif parent_layer:
+            bbox_srs = parent_layer['bbox_srs']
+
+        return bbox_srs
 
 def yaml_sources(cap):
     sources = {}
