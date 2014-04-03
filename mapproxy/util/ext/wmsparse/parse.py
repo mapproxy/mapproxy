@@ -249,7 +249,6 @@ class WMS130Capabilities(WMSCapabilities):
         bbox_srs_elems = self.findall(elem, 'BoundingBox')
         if len(bbox_srs_elems) > 0:
             for bbox_srs_elem in bbox_srs_elems:
-                print bbox_srs_elem
                 srs = bbox_srs_elem.attrib['CRS']
                 bbox = (
                     bbox_srs_elem.attrib['minx'],
