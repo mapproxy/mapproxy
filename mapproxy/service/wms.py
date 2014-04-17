@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2014 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -531,9 +531,16 @@ class LayerRenderer(object):
     def _render_raise_exceptions(self, async_pool, render_layers, layer_merger):
         # call _render_layer, raise all exceptions
         try:
-            for layer, layer_img in async_pool.imap(self._render_layer, render_layers):
-                if layer_img is not None:
-                    layer_merger.add(layer_img, layer=layer)
+            for layer_task in async_pool.imap(self._render_layer, render_layers,
+                                              use_result_objects=True):
+                if layer_task.exception is None:
+                    layer, layer_img = layer_task.result
+                    if layer_img is not None:
+                        layer_merger.add(layer_img, layer=layer)
+                else:
+                    ex = layer_task.exception
+                    async_pool.shutdown(True)
+                    raise ex[0], ex[1], ex[2]
         except SourceError, ex:
             raise RequestError(ex.args[0], request=self.request)
 
