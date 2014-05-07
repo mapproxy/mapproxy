@@ -130,7 +130,7 @@ Example configuration for an OpenStreetMap tile service::
   sources:
     my_tile_source:
       type: tile
-      grid: tile_grid_of_source
+      grids: tile_grid_of_source
       url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
  grids:
@@ -280,7 +280,7 @@ Here is an example that makes OSM tiles available as tiles in UTM. Note that rep
     sources:
       osm_source:
         type: tile
-        grid: osm_grid
+        grids: osm_grid
         url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
     grids:
