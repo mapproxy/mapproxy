@@ -130,7 +130,7 @@ class WMSServer(Server):
         renderer.render(merger)
 
         if self.attribution and not query.tiled_only:
-            merger.add(attribution_image(self.attribution['text'], params.size))
+            merger.add(attribution_image(self.attribution['text'], query.size))
         img_opts = self.image_formats[params.format_mime_type].copy()
         img_opts.bgcolor = params.bgcolor
         img_opts.transparent = params.transparent
