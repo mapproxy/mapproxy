@@ -128,12 +128,12 @@ def write_atomic(filename, data):
             with os.fdopen(fd, 'wb') as f:
                 f.write(data)
             os.rename(path_tmp, filename)
-        except OSError:
+        except OSError, ex:
             try:
                 os.unlink(path_tmp)
             except OSError:
                 pass
-            raise
+            raise ex
     else:
         with open(filename, 'wb') as f:
             f.write(data)
