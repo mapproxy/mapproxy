@@ -130,12 +130,15 @@ Example configuration for an OpenStreetMap tile service::
   sources:
     my_tile_source:
       type: tile
-      grid: tile_grid_of_source
+      grid: osm_grid
       url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
  grids:
   webmercator:
     base: GLOBAL_WEBMERCATOR
+  osm_grid:
+    base: GLOBAL_MERCATOR
+    origin: nw
 
 .. note:: Please make sure you are allowed to access the tile service. Commercial tile provider often prohibit the direct access to tiles. The tile service from OpenStreetMap has a strict `Tile Usage Prolicy <http://wiki.openstreetmap.org/wiki/Tile_usage_policy>`_.
 
