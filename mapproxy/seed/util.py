@@ -214,14 +214,8 @@ def status_symbol(i, total):
     else:
         return symbols[int(math.ceil(i/(total/4)))]
 
-def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
-        exceptions=(Exception,), ignore_exceptions=tuple(), max_backoff=512,
-        max_retry_time=28800):
-    if max_backoff >= 600:
-        max_backoff = 600
-
-    retry_time = 0
-
+def exp_backoff(func, args=(), kw={}, max_repeat=47, start_backoff_sec=2,
+        exceptions=(Exception,), ignore_exceptions=tuple(), max_backoff=600):
     n = 0
     while True:
         try:
@@ -231,15 +225,12 @@ def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
         except exceptions, ex:
             if (n+1) >= max_repeat:
                 raise
-            if retry_time >= max_retry_time:
-                raise
             wait_for = start_backoff_sec * 2**n
             if wait_for > max_backoff:
                 wait_for = max_backoff
-            print >>sys.stderr, ("An error occured. Retry in %d seconds: %r. Retry time left: %d" %
-                (wait_for, ex, (max_retry_time - retry_time)))
+            print >>sys.stderr, ("An error occured. Retry in %d seconds: %r. Retries left: %d" %
+                (wait_for, ex, (max_repeat - n - 1)))
             time.sleep(wait_for)
-            retry_time += wait_for
             n += 1
         else:
             return result
