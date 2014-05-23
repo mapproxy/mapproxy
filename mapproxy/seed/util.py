@@ -216,6 +216,8 @@ def status_symbol(i, total):
 
 def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
         exceptions=(Exception,), ignore_exceptions=tuple(), max_backoff=512):
+    if max_backoff >= 600:
+        max_backoff = 600
     n = 0
     while True:
         try:
