@@ -17,8 +17,10 @@ from __future__ import with_statement
 
 import sys
 import logging
+from logging.config import fileConfig
 
 from optparse import OptionParser
+
 from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import load_seed_tasks_conf
 from mapproxy.seed.seeder import seed
@@ -27,8 +29,10 @@ from mapproxy.seed.util import (format_seed_task, format_cleanup_task,
     ProgressLog, ProgressStore)
 from mapproxy.seed.cachelock import CacheLocker
 
+def setup_logging(logging_conf=None):
+    if logging_conf is not None:
+        fileConfig(logging_conf, {'here': './'})
 
-def setup_logging():
     mapproxy_log = logging.getLogger('mapproxy')
     mapproxy_log.setLevel(logging.WARN)
 
@@ -93,6 +97,9 @@ class SeedScript(object):
                       default=None,
                       help="filename for storing the seed progress (for --continue option)")
 
+    parser.add_option("--log-config", dest='logging_conf', default=None,
+                      help="logging configuration")
+
     def __call__(self):
         (options, args) = self.parser.parse_args()
 
@@ -109,7 +116,7 @@ class SeedScript(object):
         if not options.conf_file:
             self.parser.error('missing mapproxy configuration -f/--proxy-conf')
 
-        setup_logging()
+        setup_logging(options.logging_conf)
 
         try:
             mapproxy_conf = load_configuration(options.conf_file, seed=True)
