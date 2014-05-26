@@ -72,8 +72,15 @@ Options
   Lock each cache to prevent multiple parallel `mapproxy-seed` calls to work on the same cache.
   It does not lock normal operation of MapProxy.
 
+.. option:: --log-config
+
+  The logging configuration file to use.
+
 .. versionadded:: 1.5.0
   ``--continue`` and ``--progress-file`` option
+
+.. versionadded:: 1.7.0
+  ``--log-config`` option
 
 
 Examples
