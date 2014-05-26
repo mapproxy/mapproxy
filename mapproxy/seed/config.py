@@ -216,7 +216,10 @@ class ConfigurationBase(object):
     def _coverages(self):
         coverage = None
         if 'coverages' in self.conf:
-            coverages = [self.seeding_conf.coverage(c) for c in self.conf.get('coverages', {})]
+            try:
+                coverages = [self.seeding_conf.coverage(c) for c in self.conf.get('coverages', {})]
+            except SeedConfigurationError:
+                return False
             if len(coverages) == 1:
                 coverage = coverages[0]
             else:
@@ -270,7 +273,9 @@ class SeedConfiguration(ConfigurationBase):
             for cache_name, cache in self.caches.iteritems():
                 tile_manager = cache[grid_name]
                 grid = self.seeding_conf.grids[grid_name]
-                if self.coverage:
+                if self.coverage is False:
+                    coverage = False
+                elif self.coverage:
                     if isinstance(self.coverage, GeomCoverage) and self.coverage.geom.is_empty:
                         continue
                     coverage = self.coverage.transform_to(grid.srs)
@@ -308,7 +313,10 @@ class CleanupConfiguration(ConfigurationBase):
             for cache_name, cache in self.caches.iteritems():
                 tile_manager = cache[grid_name]
                 grid = self.seeding_conf.grids[grid_name]
-                if self.coverage:
+                if self.coverage is False:
+                    coverage = False
+                    complete_extent = False
+                elif self.coverage:
                     coverage = self.coverage.transform_to(grid.srs)
                     complete_extent = False
                 else:
