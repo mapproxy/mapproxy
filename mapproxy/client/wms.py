@@ -73,8 +73,8 @@ class WMSClient(object):
             data = resp.read(log_size)
             if len(data) == log_size:
                 data += '... truncated'
-            log.warn("no image returned from source WMS: %s: %d\nresponse was: %s" % (url, resp.getcode(), data))
-            raise SourceError('no image returned from source WMS: %s: %d' % (url, resp.getcode()))
+            log.warn("no image returned from source WMS: %s, response was: %s" % (url, data))
+            raise SourceError('no image returned from source WMS: %s' % (url, ))
 
     def _query_url(self, query, format):
         return self._query_req(query, format).complete_url
