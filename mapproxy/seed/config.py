@@ -142,8 +142,12 @@ class SeedingConfiguration(object):
         if coverage_conf is None:
             raise SeedConfigurationError('coverage %s not found. available coverages: %s' % (
                 name, ','.join((self.conf.get('coverages') or {}).keys())))
+        coverage = load_coverage(coverage_conf)
 
-        return load_coverage(coverage_conf)
+        # without extend we have an empty coverage
+        if not coverage.extent.llbbox:
+            raise SeedConfigurationError('coverage %s contains no geometries.' % name)
+        return coverage
 
     def cache(self, cache_name):
         cache = {}
