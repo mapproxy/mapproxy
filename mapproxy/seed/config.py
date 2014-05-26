@@ -276,8 +276,6 @@ class SeedConfiguration(ConfigurationBase):
                 if self.coverage is False:
                     coverage = False
                 elif self.coverage:
-                    if isinstance(self.coverage, GeomCoverage) and self.coverage.geom.is_empty:
-                        continue
                     coverage = self.coverage.transform_to(grid.srs)
                 else:
                     coverage = BBOXCoverage(grid.bbox, grid.srs)
