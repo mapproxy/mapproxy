@@ -27,6 +27,7 @@ from mapproxy.srs import SRS
 from mapproxy.util.py import memoize
 from mapproxy.util.times import timestamp_from_isodate, timestamp_before
 from mapproxy.util.coverage import MultiCoverage, BBOXCoverage, GeomCoverage
+from mapproxy.util.geom import GeometryError
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
 from mapproxy.seed.seeder import SeedTask, CleanupTask
@@ -146,7 +147,9 @@ class SeedingConfiguration(object):
         try:
             coverage = load_coverage(coverage_conf)
         except OGRShapeReaderError, ex:
-            raise SeedConfigurationError("can't load coverage '%s'. %s" % (name, ex))
+            raise OGRShapeReaderError("can't load coverage '%s'. %s" % (name, ex))
+        except GeometryError, ex:
+            raise GeometryError("invalid geometry in coverage '%s'. %s" % (name, ex))
         # without extend we have an empty coverage
         if not coverage.extent.llbbox:
             raise SeedConfigurationError('coverage %s contains no geometries.' % name)
