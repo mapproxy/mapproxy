@@ -31,6 +31,7 @@ from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
 from mapproxy.seed.seeder import SeedTask, CleanupTask
 from mapproxy.seed.spec import validate_seed_conf
+from mapproxy.util.ogr import OGRShapeReaderError
 
 
 class SeedConfigurationError(ConfigurationError):
@@ -142,8 +143,10 @@ class SeedingConfiguration(object):
         if coverage_conf is None:
             raise SeedConfigurationError('coverage %s not found. available coverages: %s' % (
                 name, ','.join((self.conf.get('coverages') or {}).keys())))
-
-        return load_coverage(coverage_conf)
+        try:
+            return load_coverage(coverage_conf)
+        except OGRShapeReaderError, ex:
+            raise SeedConfigurationError("can't load coverage '%s'. %s" % (name, ex))
 
     def cache(self, cache_name):
         cache = {}
