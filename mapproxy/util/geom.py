@@ -36,6 +36,9 @@ except ImportError:
 class GeometryError(Exception):
     pass
 
+class EmptyGeometryError(Exception):
+    pass
+
 def require_geom_support():
     if not geom_support:
         raise ImportError('Shapely required for geometry support')
@@ -141,7 +144,7 @@ def build_multipolygon(polygons, simplify=False):
 def simplify_geom(geom):
     bounds = geom.bounds
     if not bounds:
-        raise GeometryError('Empty geometry given')
+        raise EmptyGeometryError('Empty geometry given')
     w, h = bounds[2] - bounds[0], bounds[3] - bounds[1]
     tolerance = min((w/1e6, h/1e6))
     return geom.simplify(tolerance, preserve_topology=True)
