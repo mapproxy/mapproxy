@@ -338,6 +338,13 @@ class CleanupConfiguration(ConfigurationBase):
                 else:
                     coverage = BBOXCoverage(grid.bbox, grid.srs)
                     complete_extent = True
+
+                try:
+                    if coverage is not False:
+                        coverage.extent.llbbox
+                except TransformationError:
+                    raise SeedConfigurationError('%s: coverage transformation error' % self.name)
+
                 if self.levels:
                     levels = self.levels.for_grid(grid)
                 else:
