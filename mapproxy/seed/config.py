@@ -156,13 +156,13 @@ class SeedingConfiguration(object):
         return cache
 
     def seed_tasks_names(self):
-        seeds = self.conf.get('seeds', {})
+        seeds = self.conf.get('seeds') or {}
         if seeds:
             return seeds.keys()
         return []
 
     def cleanup_tasks_names(self):
-        cleanups = self.conf.get('cleanups', {})
+        cleanups = self.conf.get('cleanups') or {}
         if cleanups:
             return cleanups.keys()
         return []
@@ -173,7 +173,7 @@ class SeedingConfiguration(object):
         """
         tasks = []
         if names is None:
-            names = self.conf.get('seeds', {}).keys()
+            names = (self.conf.get('seeds') or {}).keys()
 
         for seed_name in names:
             seed_conf = self.conf['seeds'][seed_name]
@@ -188,7 +188,7 @@ class SeedingConfiguration(object):
         """
         tasks = []
         if names is None:
-            names = self.conf.get('cleanups', {}).keys()
+            names = (self.conf.get('cleanups') or {}).keys()
 
         for cleanup_name in names:
             cleanup_conf = self.conf['cleanups'][cleanup_name]
