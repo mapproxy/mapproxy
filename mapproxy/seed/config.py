@@ -23,7 +23,7 @@ import operator
 from mapproxy.config import abspath
 from mapproxy.config.loader import ConfigurationError
 from mapproxy.config.coverage import load_coverage
-from mapproxy.srs import SRS
+from mapproxy.srs import SRS, TransformationError
 from mapproxy.util.py import memoize
 from mapproxy.util.times import timestamp_from_isodate, timestamp_before
 from mapproxy.util.coverage import MultiCoverage, BBOXCoverage, GeomCoverage
@@ -287,6 +287,13 @@ class SeedConfiguration(ConfigurationBase):
                     coverage = self.coverage.transform_to(grid.srs)
                 else:
                     coverage = BBOXCoverage(grid.bbox, grid.srs)
+
+                try:
+                    if coverage is not False:
+                        coverage.extent.llbbox
+                except TransformationError:
+                    raise SeedConfigurationError('%s: coverage transformation error' % self.name)
+
                 if self.levels:
                     levels = self.levels.for_grid(grid)
                 else:
