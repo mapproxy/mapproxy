@@ -224,7 +224,7 @@ class ConfigurationBase(object):
         if 'coverages' in self.conf:
             try:
                 coverages = [self.seeding_conf.coverage(c) for c in self.conf.get('coverages', {})]
-            except SeedConfigurationError:
+            except GeometryError:
                 return False
             if len(coverages) == 1:
                 coverage = coverages[0]
