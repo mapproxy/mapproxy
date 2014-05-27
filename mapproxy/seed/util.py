@@ -238,6 +238,11 @@ def exp_backoff(func, args=(), kw={}, max_repeat=47, start_backoff_sec=2,
 def format_seed_task(task):
     info = []
     info.append('  %s:' % (task.md['name'], ))
+    if task.coverage is False:
+        info.append("    Empty coverage given for this task")
+        info.append("    Skipped")
+        return '\n'.join(info)
+
     info.append("    Seeding cache '%s' with grid '%s' in %s" % (
                  task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:
@@ -259,6 +264,11 @@ def format_seed_task(task):
 def format_cleanup_task(task):
     info = []
     info.append('  %s:' % (task.md['name'], ))
+    if task.coverage is False:
+        info.append("    Empty coverage given for this task")
+        info.append("    Skipped")
+        return '\n'.join(info)
+
     info.append("    Cleaning up cache '%s' with grid '%s' in %s" % (
                  task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:
