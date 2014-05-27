@@ -28,9 +28,13 @@ try:
     import shapely.geometry
     import shapely.ops
     import shapely.prepared
+    from shapely.geos import ReadingError
     geom_support = True
 except ImportError:
     geom_support = False
+
+class GeometryError(Exception):
+    pass
 
 def require_geom_support():
     if not geom_support:
@@ -64,7 +68,10 @@ def load_ogr_datasource(datasource, where=None):
     polygons = []
     with closing(OGRShapeReader(datasource)) as reader:
         for wkt in reader.wkts(where):
-            geom = shapely.wkt.loads(wkt)
+            try:
+                geom = shapely.wkt.loads(wkt)
+            except ReadingError, ex:
+                raise GeometryError(ex)
             if geom.type == 'Polygon':
                 polygons.append(geom)
             elif geom.type == 'MultiPolygon':
