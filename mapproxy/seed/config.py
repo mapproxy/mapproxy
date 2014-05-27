@@ -147,9 +147,9 @@ class SeedingConfiguration(object):
         try:
             coverage = load_coverage(coverage_conf)
         except OGRShapeReaderError, ex:
-            raise OGRShapeReaderError("can't load coverage '%s'. %s" % (name, ex))
+            raise SeedConfigurationError("can't load coverage '%s'. %s" % (name, ex))
         except GeometryError, ex:
-            raise GeometryError("invalid geometry in coverage '%s'. %s" % (name, ex))
+            raise SeedConfigurationError("invalid geometry in coverage '%s'. %s" % (name, ex))
         # without extend we have an empty coverage
         if not coverage.extent.llbbox:
             raise GeometryError('coverage %s contains no geometries.' % name)
