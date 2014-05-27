@@ -27,7 +27,7 @@ from mapproxy.srs import SRS, TransformationError
 from mapproxy.util.py import memoize
 from mapproxy.util.times import timestamp_from_isodate, timestamp_before
 from mapproxy.util.coverage import MultiCoverage, BBOXCoverage, GeomCoverage
-from mapproxy.util.geom import GeometryError
+from mapproxy.util.geom import GeometryError, EmptyGeometryError
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
 from mapproxy.seed.seeder import SeedTask, CleanupTask
@@ -36,6 +36,9 @@ from mapproxy.util.ogr import OGRShapeReaderError
 
 
 class SeedConfigurationError(ConfigurationError):
+    pass
+
+class EmptyCoverageError(Exception):
     pass
 
 
@@ -150,9 +153,11 @@ class SeedingConfiguration(object):
             raise SeedConfigurationError("can't load coverage '%s'. %s" % (name, ex))
         except GeometryError, ex:
             raise SeedConfigurationError("invalid geometry in coverage '%s'. %s" % (name, ex))
+        except EmptyGeometryError, ex:
+            raise EmptyCoverageError("coverage '%s' contains no geometries. %s" % (name, ex))
         # without extend we have an empty coverage
         if not coverage.extent.llbbox:
-            raise GeometryError('coverage %s contains no geometries.' % name)
+            raise EmptyCoverageError("coverage '%s' contains no geometries." % name)
         return coverage
 
     def cache(self, cache_name):
@@ -224,9 +229,7 @@ class ConfigurationBase(object):
         if 'coverages' in self.conf:
             try:
                 coverages = [self.seeding_conf.coverage(c) for c in self.conf.get('coverages', {})]
-            except OGRShapeReaderError, ex:
-                raise SeedConfigurationError(ex)
-            except GeometryError:
+            except EmptyCoverageError:
                 return False
             if len(coverages) == 1:
                 coverage = coverages[0]
