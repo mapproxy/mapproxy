@@ -224,6 +224,8 @@ class ConfigurationBase(object):
         if 'coverages' in self.conf:
             try:
                 coverages = [self.seeding_conf.coverage(c) for c in self.conf.get('coverages', {})]
+            except OGRShapeReaderError, ex:
+                raise SeedConfigurationError(ex)
             except GeometryError:
                 return False
             if len(coverages) == 1:
