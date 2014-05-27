@@ -152,7 +152,7 @@ class SeedingConfiguration(object):
             raise GeometryError("invalid geometry in coverage '%s'. %s" % (name, ex))
         # without extend we have an empty coverage
         if not coverage.extent.llbbox:
-            raise SeedConfigurationError('coverage %s contains no geometries.' % name)
+            raise GeometryError('coverage %s contains no geometries.' % name)
         return coverage
 
     def cache(self, cache_name):
