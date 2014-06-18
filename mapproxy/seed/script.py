@@ -23,7 +23,7 @@ from optparse import OptionParser
 
 from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import load_seed_tasks_conf
-from mapproxy.seed.seeder import seed
+from mapproxy.seed.seeder import seed, SeedInterrupted
 from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.util import (format_seed_task, format_cleanup_task,
     ProgressLog, ProgressStore)
@@ -178,6 +178,9 @@ class SeedScript(object):
                     cleanup(cleanup_tasks, verbose=options.quiet==0, dry_run=options.dry_run,
                             concurrency=options.concurrency, progress_logger=logger,
                             skip_geoms_for_last_levels=options.geom_levels)
+            except SeedInterrupted:
+                print '\ninterrupted...'
+                return 3
             except KeyboardInterrupt:
                 print '\nexiting...'
                 return 2
