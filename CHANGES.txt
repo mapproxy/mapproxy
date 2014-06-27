@@ -4,7 +4,7 @@
 Features:
 
 - new `mapproxy-util autoconf` tool
-- new versions option to limit WMS support
+- new versions option to limit supported WMS versions
 
 Improvements:
 
@@ -14,6 +14,11 @@ Improvements:
 - respect order of --seed/--cleanup tasks
 - catch and log sqlite3.OperationalError when storing tiles
 - do not open cascaded responses when image format matches
+- mapproxy-seed: retry longer if source fails (100 instead of 10)
+- mapproxy-seed: give more details if source request fails
+- mapproxy-seed: do not hang nor print traceback if seed ends
+  after permanent source errors
+- mapproxy-seed: skip seeds/cleanups with empty coverages
 
 Fixes:
 
