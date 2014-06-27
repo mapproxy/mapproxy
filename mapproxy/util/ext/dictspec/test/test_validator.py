@@ -1,16 +1,16 @@
 # -:- encoding: utf8 -:-
 # Copyright (c) 2011, Oliver Tonnhofer <olt@omniscale.de>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -61,12 +61,12 @@ class TestSimpleDict(unittest.TestCase):
     def test_missing_required_key(self):
         spec = {required('world'): 1}
         validate(spec, {})
-    
+
     def test_valid_one_of(self):
         spec = {'hello': one_of(1, bool())}
         validate(spec, {'hello': 129})
         validate(spec, {'hello': True})
-    
+
     @raises(ValidationError)
     def test_invalid_one_of(self):
         spec = {'hello': one_of(1, False)}
@@ -85,7 +85,7 @@ class TestLists(unittest.TestCase):
     def test_empty_list(self):
         spec = [1]
         validate(spec, [])
-    
+
     @raises(ValidationError)
     def test_invalid_item(self):
         spec = [1]
@@ -94,20 +94,24 @@ class TestLists(unittest.TestCase):
 class TestNumber(unittest.TestCase):
     def check_valid(self, spec, data):
         validate(spec, data)
-    
+
     def test_numbers(self):
         spec = number()
         for i in (0, 1, 23e999, int(10e20), 23.1, -0.0000000001):
-            yield self.check_valid, spec, i
+            self.check_valid(spec, i)
 
 class TestNested(unittest.TestCase):
     def check_valid(self, spec, data):
         validate(spec, data)
-    
-    @raises(ValidationError)
+
     def check_invalid(self, spec, data):
-        validate(spec, data)
-        
+        try:
+            validate(spec, data)
+        except ValidationError:
+            pass
+        else:
+            assert False, "expected ValidationError"
+
     def test_dict(self):
         spec = {
             'globals': {
@@ -123,12 +127,21 @@ class TestNested(unittest.TestCase):
                 }
             }
         }
-        
-        yield self.check_valid, spec, {'globals': {'image': {'format': {'png': {'mode': 'P'}}}}}
-        yield self.check_valid, spec, {'globals': {'image': {'format': {'png': {'mode': 'P'}}},
-                                                   'cache': {'base_dir': '/somewhere'}}}
-        yield self.check_invalid, spec, {'globals': {'image': {'foo': {'png': {'mode': 'P'}}}}}
-        yield self.check_invalid, spec, {'globals': {'image': {'png': {'png': {'mode': 1}}}}}
+
+        self.check_valid(spec, {'globals': {'image': {'format': {'png': {'mode': 'P'}}}}})
+        self.check_valid(spec, {'globals': {'image': {'format': {'png': {'mode': 'P'}}},
+                                                   'cache': {'base_dir': '/somewhere'}}})
+        self.check_invalid(spec, {'globals': {'image': {'foo': {'png': {'mode': 'P'}}}}})
+        self.check_invalid(spec, {'globals': {'image': {'png': {'png': {'mode': 1}}}}})
+
+
+    def test_errors_in_unicode_keys(self):
+        # should not raise UnicodeEncodeError
+        spec = {
+            anything(): str(),
+        }
+        self.check_invalid(spec, {u'globalü': 12})
+
 
 class TestRecursive(unittest.TestCase):
     def test(self):
@@ -204,7 +217,7 @@ class TestErrors(unittest.TestCase):
             assert "'not a bool' in 1 not of type bool" in ex.errors[0]
         else:
             assert False
-    
+
     def test_error_in_non_string_key_with_anything_key_spec(self):
         spec = {anything(): bool()}
         try:

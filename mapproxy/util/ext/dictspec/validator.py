@@ -1,15 +1,15 @@
 # Copyright (c) 2011, Oliver Tonnhofer <olt@omniscale.de>
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,19 +29,19 @@ class Context(object):
     def __init__(self):
         self.recurse_spec = None
         self.obj_pos = []
-    
+
     def push(self, spec):
         self.obj_pos.append(spec)
-    
+
     def pop(self):
         return self.obj_pos.pop()
-    
+
     @contextmanager
     def pos(self, spec):
         self.push(spec)
         yield
         self.pop()
-    
+
     @property
     def current_pos(self):
         return ''.join(self.obj_pos).lstrip('.') or '.'
@@ -71,10 +71,10 @@ class Validator(object):
         self.raise_first_error = fail_fast
         self.errors = False
         self.messages = []
-        
+
     def validate(self, data):
         self._validate_part(self.complete_spec, data)
-        
+
         if self.messages:
             if len(self.messages) == 1:
                 raise ValidationError(self.messages[0], self.messages, informal_only=not self.errors)
@@ -118,7 +118,7 @@ class Validator(object):
         elif not type_matches(spec, data):
             return self._handle_error("%r in %s not of type %s" %
                 (data, self.context.current_pos, type_str(spec)))
-    
+
         # recurse in dicts and lists
         if isinstance(spec, dict):
             self._validate_dict(spec, data)
@@ -139,7 +139,7 @@ class Validator(object):
 
         for k, v in data.iteritems():
             if accept_any_key:
-                with self.context.pos('.' + str(k)):
+                with self.context.pos('.' + unicode(k)):
                     self._validate_part(any_key_spec, v)
 
             else:
@@ -147,7 +147,7 @@ class Validator(object):
                     self._handle_error("unknown '%s' in %s" %
                         (k, self.context.current_pos), info_only=True)
                     continue
-                with self.context.pos('.' + str(k)):
+                with self.context.pos('.' + unicode(k)):
                     self._validate_part(spec[k], v)
 
     def _validate_list(self, spec, data):
@@ -156,7 +156,7 @@ class Validator(object):
         for i, v in enumerate(data):
             with self.context.pos('[%d]' % i):
                 self._validate_part(spec[0], v)
-    
+
     def _handle_error(self, msg, info_only=False):
         if not info_only:
             self.errors = True
