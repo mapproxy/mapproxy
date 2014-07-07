@@ -34,6 +34,7 @@ from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRe
 from mapproxy.test.image import is_jpeg, is_png, tmp_image, create_tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
+from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from nose.tools import eq_, assert_almost_equal
 
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
@@ -96,6 +97,14 @@ class TestCoverageWMS(WMSTest):
                             '&VERSION=2.0.0')
         assert is_130_capa(resp.lxml)
 
+def bbox_srs_from_boundingbox(bbox_elem):
+    return [
+        float(bbox_elem.attrib['minx']),
+        float(bbox_elem.attrib['miny']),
+        float(bbox_elem.attrib['maxx']),
+        float(bbox_elem.attrib['maxy']),
+    ]
+
 class TestWMS111(WMSTest):
     def setup(self):
         WMSTest.setup(self)
@@ -139,6 +148,19 @@ class TestWMS111(WMSTest):
         eq_(layer_names, expected_names)
         eq_(set(xml.xpath('//Layer/Layer[3]/Abstract/text()')),
             set(['Some abstract']))
+
+        bboxs = xml.xpath('//Layer/Layer[1]/BoundingBox')
+        bboxs = dict((e.attrib['SRS'], e) for e in bboxs)
+        assert_almost_equal_bbox(
+            bbox_srs_from_boundingbox(bboxs['EPSG:31467']),
+            [2750000.0, 5000000.0, 4250000.0, 6500000.0])
+        assert_almost_equal_bbox(
+            bbox_srs_from_boundingbox(bboxs['EPSG:3857']),
+            [-20037508.3428, -15538711.0963, 18924313.4349, 15538711.0963])
+        assert_almost_equal_bbox(
+            bbox_srs_from_boundingbox(bboxs['EPSG:4326']),
+            [-180.0, -80.0, 170.0, 80.0])
+
         assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
 
     def test_invalid_layer(self):
@@ -412,7 +434,7 @@ class TestWMS111(WMSTest):
         is_111_exception(resp.lxml, 'Request too large or invalid BBOX.')
 
     def test_get_map_broken_bbox(self):
-        url = """/service?VERSION=1.1.11&REQUEST=GetMap&SRS=EPSG:31467&BBOX=-10000855.0573254,2847125.18913603,-9329367.42767611,4239924.78564583&WIDTH=130&HEIGHT=62&LAYERS=wms_cache&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""
+        url = """/service?VERSION=1.1.11&REQUEST=GetMap&SRS=EPSG:31468&BBOX=-10000855.0573254,2847125.18913603,-9329367.42767611,4239924.78564583&WIDTH=130&HEIGHT=62&LAYERS=wms_cache&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""
         resp = self.app.get(url)
         is_111_exception(resp.lxml, 'Could not transform BBOX: Invalid result.')
 

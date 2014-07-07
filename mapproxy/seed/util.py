@@ -218,8 +218,11 @@ def status_symbol(i, total):
     else:
         return symbols[int(math.ceil(i/(total/4)))]
 
+class BackoffError(Exception):
+    pass
+
 def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
-        exceptions=(Exception,), ignore_exceptions=tuple()):
+        exceptions=(Exception,), ignore_exceptions=tuple(), max_backoff=60):
     n = 0
     while True:
         try:
@@ -227,11 +230,14 @@ def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
         except ignore_exceptions:
             time.sleep(0.01)
         except exceptions as ex:
-            if (n+1) >= max_repeat:
-                raise
+            if n >= max_repeat:
+                print >>sys.stderr, "An error occured. Giving up"
+                raise BackoffError
             wait_for = start_backoff_sec * 2**n
-            print(("An error occured. Retry in %d seconds: %r" %
-                (wait_for, ex)), file=sys.stderr)
+            if wait_for > max_backoff:
+                wait_for = max_backoff
+            print("An error occured. Retry in %d seconds: %r. Retries left: %d" %
+                (wait_for, ex, (max_repeat - n)), file=sys.stderr)
             time.sleep(wait_for)
             n += 1
         else:
@@ -240,6 +246,11 @@ def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
 def format_seed_task(task):
     info = []
     info.append('  %s:' % (task.md['name'], ))
+    if task.coverage is False:
+        info.append("    Empty coverage given for this task")
+        info.append("    Skipped")
+        return '\n'.join(info)
+
     info.append("    Seeding cache '%s' with grid '%s' in %s" % (
                  task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:
@@ -261,6 +272,11 @@ def format_seed_task(task):
 def format_cleanup_task(task):
     info = []
     info.append('  %s:' % (task.md['name'], ))
+    if task.coverage is False:
+        info.append("    Empty coverage given for this task")
+        info.append("    Skipped")
+        return '\n'.join(info)
+
     info.append("    Cleaning up cache '%s' with grid '%s' in %s" % (
                  task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:

@@ -128,6 +128,19 @@ class BBOXCoverage(object):
         bbox = self._bbox_in_coverage_srs(bbox, srs)
         return bbox_intersects(self.bbox, bbox)
 
+    def intersection(self, bbox, srs):
+        bbox = self._bbox_in_coverage_srs(bbox, srs)
+        intersection = (
+            max(self.bbox[0], bbox[0]),
+            max(self.bbox[1], bbox[1]),
+            min(self.bbox[2], bbox[2]),
+            min(self.bbox[3], bbox[3]),
+        )
+
+        if intersection[0] >= intersection[2] or intersection[1] >= intersection[3]:
+            return None
+        return BBOXCoverage(intersection, self.srs)
+
     def contains(self, bbox, srs):
         bbox = self._bbox_in_coverage_srs(bbox, srs)
         return bbox_contains(self.bbox, bbox)

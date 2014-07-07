@@ -136,6 +136,8 @@ def try_pyproj_import():
     return Proj, transform, set_datapath
 
 def try_libproj_import():
+    libproj = init_libproj()
+
     if libproj is None:
         return False
 
@@ -250,8 +252,6 @@ if not proj_imports:
         proj_imports = [try_pyproj_import, try_libproj_import]
     else:
         proj_imports = [try_libproj_import, try_pyproj_import]
-
-libproj = init_libproj()
 
 for try_import in proj_imports:
     res = try_import()

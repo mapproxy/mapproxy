@@ -190,12 +190,14 @@ class _SRS(object):
         >>> 90 > bbox[3] > 89.99999998
         True
         """
+        # TODO should not be needed anymore since we transform with +over
+        # still a few tests depend on the rounding behavior of this
         if self.srs_code == 'EPSG:4326':
             delta = 0.00000001
             (minx, miny, maxx, maxy) = bbox
-            if miny <= -90.0:
+            if abs(miny - -90.0) < 1e-6:
                 miny = -90.0 + delta
-            if maxy >= 90.0:
+            if abs(maxy - 90.0) < 1e-6:
                 maxy = 90.0 - delta
             bbox = minx, miny, maxx, maxy
         return bbox

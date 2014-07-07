@@ -30,9 +30,16 @@ try:
     import shapely.geometry
     import shapely.ops
     import shapely.prepared
+    from shapely.geos import ReadingError
     geom_support = True
 except ImportError:
     geom_support = False
+
+class GeometryError(Exception):
+    pass
+
+class EmptyGeometryError(Exception):
+    pass
 
 def require_geom_support():
     if not geom_support:
@@ -66,7 +73,10 @@ def load_ogr_datasource(datasource, where=None):
     polygons = []
     with closing(OGRShapeReader(datasource)) as reader:
         for wkt in reader.wkts(where):
-            geom = shapely.wkt.loads(wkt)
+            try:
+                geom = shapely.wkt.loads(wkt)
+            except ReadingError as ex:
+                raise GeometryError(ex)
             if geom.type == 'Polygon':
                 polygons.append(geom)
             elif geom.type == 'MultiPolygon':
@@ -135,6 +145,8 @@ def build_multipolygon(polygons, simplify=False):
 
 def simplify_geom(geom):
     bounds = geom.bounds
+    if not bounds:
+        raise EmptyGeometryError('Empty geometry given')
     w, h = bounds[2] - bounds[0], bounds[3] - bounds[1]
     tolerance = min((w/1e6, h/1e6))
     return geom.simplify(tolerance, preserve_topology=True)

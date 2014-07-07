@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010, 2011 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2014 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,19 +18,22 @@ from __future__ import with_statement, division
 import os
 
 from mapproxy.request.wms import WMS111MapRequest
-from mapproxy.test.image import is_transparent, create_tmp_image, bgcolor_ratio, img_from_buf
+from mapproxy.test.image import is_transparent, create_tmp_image, bgcolor_ratio, img_from_buf, assert_colors_equal
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from mapproxy.test.system.test_wms import is_111_exception
 from nose.tools import eq_
 
 test_config = {}
+test_config_raise = {}
 
 def setup_module():
     module_setup(test_config, 'source_errors.yaml')
+    module_setup(test_config_raise, 'source_errors_raise.yaml')
 
 def teardown_module():
     module_teardown(test_config)
+    module_teardown(test_config_raise)
 
 
 transp = create_tmp_image((200, 200), mode='RGBA', color=(0, 0, 0, 0))
@@ -102,6 +105,37 @@ class TestWMS(SystemTest):
         eq_(resp.content_type, 'application/vnd.ogc.se_xml')
         is_111_exception(resp.lxml, re_msg='no response from url')
 
+
+class TestWMSRaise(SystemTest):
+    config = test_config_raise
+    def setup(self):
+        SystemTest.setup(self)
+        self.common_map_req = WMS111MapRequest(url='/service?', param=dict(service='WMS',
+             version='1.1.1', bbox='9,50,10,51', width='200', height='200',
+             layers='online', srs='EPSG:4326', format='image/png',
+             styles='', request='GetMap', transparent=True))
+
+    def test_mixed_layer_source(self):
+        common_params = (r'?SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326&styles='
+                                  '&VERSION=1.1.1&BBOX=9.0,50.0,10.0,51.0'
+                                  '&WIDTH=200&transparent=True')
+
+        expected_req = [({'path': '/service_a' + common_params + '&layers=a_one'},
+                         {'body': transp, 'headers': {'content-type': 'image/png'}}),
+                        ]
+
+        with mock_httpd(('localhost', 42423), expected_req):
+            self.common_map_req.params.layers = 'mixed'
+            resp = self.app.get(self.common_map_req)
+            is_111_exception(resp.lxml, re_msg='no response from url')
+
+    def test_all_offline(self):
+        self.common_map_req.params.layers = 'all_offline'
+        resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'application/vnd.ogc.se_xml')
+        is_111_exception(resp.lxml, re_msg='no response from url')
+
 class TestTileErrors(SystemTest):
     config = test_config
     def setup(self):
@@ -137,7 +171,7 @@ class TestTileErrors(SystemTest):
             eq_(resp.content_type, 'image/png')
             assert 'Cache-Control' not in resp.headers
             img = img_from_buf(resp.body)
-            eq_(img.getcolors(), [(250 * 250, (100, 200, 50, 250))])
+            assert_colors_equal(img, [(250 * 250, (100, 200, 50, 250))])
             self.created_tiles.append('tilesource_cache_EPSG4326/01/000/000/001/000/000/000.png')
 
     def test_wms_unhandled_error_code(self):

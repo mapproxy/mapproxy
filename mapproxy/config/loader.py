@@ -1176,7 +1176,15 @@ class CacheConfiguration(ConfigurationBase):
 
             tile_creator_class = None
 
-            if not self.context.renderd and renderd_address:
+            use_renderd = bool(renderd_address)
+            if self.context.renderd:
+                # we _are_ renderd
+                use_renderd = False
+            if self.conf.get('disable_storage', False):
+                # can't ask renderd to create tiles that shouldn't be cached
+                use_renderd = False
+
+            if use_renderd:
                 from mapproxy.cache.renderd import RenderdTileCreator, has_renderd_support
                 if not has_renderd_support():
                     raise ConfigurationError("renderd requires Python >=2.6 and requests")
@@ -1397,6 +1405,22 @@ def fi_xslt_transformers(conf, context):
             fi_transformers[info_type] = XSLTransformer(fi_xslt)
     return fi_transformers
 
+def extents_for_srs(bbox_srs):
+    from mapproxy.layer import DefaultMapExtent, MapExtent
+    from mapproxy.srs import SRS
+    extents = {}
+    for srs in bbox_srs:
+        if isinstance(srs, str):
+            bbox = DefaultMapExtent()
+        else:
+            srs, bbox = srs['srs'], srs['bbox']
+            bbox = MapExtent(bbox, SRS(srs))
+
+        extents[srs] = bbox
+
+    return extents
+
+
 class ServiceConfiguration(ConfigurationBase):
     def services(self):
         services = []
@@ -1508,7 +1532,7 @@ class ServiceConfiguration(ConfigurationBase):
             global_key='wms.concurrent_layer_renderer')
         image_formats_names = self.context.globals.get_value('image_formats', conf,
                                                        global_key='wms.image_formats')
-        image_formats = {}
+        image_formats = odict()
         for format in image_formats_names:
             opts = self.context.globals.image_options.image_opts({}, format)
             if opts.format in image_formats:
@@ -1518,7 +1542,11 @@ class ServiceConfiguration(ConfigurationBase):
         info_types = conf.get('featureinfo_types')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
         self.context.globals.base_config.wms.srs = srs
-        bbox_srs = conf.get('bbox_srs')
+        srs_extents = extents_for_srs(conf.get('bbox_srs', []))
+
+        versions = conf.get('versions')
+        if versions:
+            versions = sorted([Version(v) for v in versions])
 
         versions = conf.get('versions')
         if versions:
@@ -1536,7 +1564,7 @@ class ServiceConfiguration(ConfigurationBase):
             image_formats=image_formats, info_types=info_types,
             srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors,
             concurrent_layer_renderer=concurrent_layer_renderer,
-            max_output_pixels=max_output_pixels, bbox_srs=bbox_srs,
+            max_output_pixels=max_output_pixels, srs_extents=srs_extents,
             max_tile_age=max_tile_age, versions=versions)
 
         server.fi_transformers = fi_xslt_transformers(conf, self.context)

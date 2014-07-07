@@ -63,10 +63,10 @@ class WMSClient(object):
                 resp = self.http_client.open(url, data=data)
         else:
             resp = self.http_client.open(url, data=data)
-        self._check_resp(resp)
+        self._check_resp(resp, url)
         return resp
 
-    def _check_resp(self, resp):
+    def _check_resp(self, resp, url):
         if not resp.headers.get('Content-type', 'image/').startswith('image/'):
             # log response depending on content-type
             if resp.headers['Content-type'].startswith(('text/', 'application/vnd.ogc')):
@@ -76,8 +76,8 @@ class WMSClient(object):
             data = resp.read(log_size)
             if len(data) == log_size:
                 data += '... truncated'
-            log.warn("expected image response, got: %s", data)
-            raise SourceError('no image returned from source WMS')
+            log.warn("no image returned from source WMS: %s, response was: %s" % (url, data))
+            raise SourceError('no image returned from source WMS: %s' % (url, ))
 
     def _query_url(self, query, format):
         return self._query_req(query, format).complete_url

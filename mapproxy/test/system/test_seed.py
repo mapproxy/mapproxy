@@ -298,7 +298,7 @@ class TestSeed(SeedTestBase):
         with local_base_config(self.mapproxy_conf.base_config):
             seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
             assert len(seed_conf.seed_tasks_names()) == 5
-            assert len(seed_conf.seeds()) == 4
+            assert len(seed_conf.seeds()) == 5
 
     def test_seed_refresh_remove_before_from_file(self):
         # tile already there but old

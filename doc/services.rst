@@ -68,6 +68,31 @@ The ``bbox_srs`` option controls in which SRS the BBOX is advertised in the capa
 
 You need to make sure that all layer extents are valid for these SRS. E.g. you can't choose a local SRS like UTM if you're using a global grid without limiting all sources with a ``coverage``.
 
+For example, a config with::
+
+  services:
+    wms:
+      srs: ['EPSG:4326', 'EPSG:3857', 'EPSG:31467']
+      bbox_srs: ['EPSG:4326', 'EPSG:3857', 'EPSG:31467']
+
+will show the bbox in the capabilities in EPSG:4326, EPSG:3857 and EPSG:31467.
+
+.. versionadded:: 1.7.0
+
+    You can also define an explicit bbox for specific SRS. This bbox will overwrite all layer extents for that SRS.
+
+The following example will show the actual bbox of each layer in EPSG:4326 and EPSG:3857, but always the specified bbox for EPSG:31467::
+
+  services:
+    wms:
+      srs: ['EPSG:4326', 'EPSG:3857', 'EPSG:31467']
+      bbox_srs:
+        - 'EPSG:4326'
+        - 'EPSG:3857'
+        - srs: 'EPSG:31467'
+          bbox: [2750000, 5000000, 4250000, 6500000]
+
+You can use this to offer global datasets with SRS that are only valid in a local region, like UTM zones.
 
 ``image_formats``
 """""""""""""""""

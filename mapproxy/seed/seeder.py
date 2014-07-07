@@ -18,6 +18,10 @@ from __future__ import print_function, division
 import sys
 from contextlib import contextmanager
 import time
+try:
+    import Queue
+except ImportError:
+    import queue as Queue
 
 from mapproxy.config import base_config
 from mapproxy.grid import MetaGrid
@@ -29,7 +33,10 @@ from mapproxy.seed.util import format_seed_task, timestamp
 from mapproxy.seed.cachelock import DummyCacheLocker, CacheLockedError
 
 from mapproxy.seed.util import (exp_backoff, ETA, limit_sub_bbox,
-    status_symbol)
+    status_symbol, BackoffError)
+
+import logging
+log = logging.getLogger(__name__)
 
 NONE = 0
 CONTAINS = -1
@@ -38,7 +45,6 @@ INTERSECTS = 1
 # do not use multiprocessing on windows, it blows
 # no lambdas, no anonymous functions/classes, no base_config(), etc.
 if sys.platform == 'win32':
-    import Queue
     import threading
     proc_class = threading.Thread
     queue_class = Queue.Queue
@@ -95,14 +101,29 @@ class TileWorkerPool(TileProcessor):
 
     def process(self, tiles, progress):
         if not self.dry_run:
-            self.tiles_queue.put(tiles)
+            while True:
+                try:
+                    self.tiles_queue.put(tiles, timeout=5)
+                except Queue.Full:
+                    alive = False
+                    for proc in self.procs:
+                        if proc.is_alive():
+                            alive = True
+                            break
+                    if not alive:
+                        log.warn('no workers left, stopping')
+                        raise SeedInterrupted
+                    continue
+                else:
+                    break
 
             if self.progress_logger:
                 self.progress_logger.log_step(progress)
 
     def stop(self):
-        for _ in range(len(self.procs)):
-            self.tiles_queue.put(None)
+        for proc in self.procs:
+            if proc.is_alive():
+                self.tiles_queue.put(None)
 
         for proc in self.procs:
             proc.join()
@@ -123,6 +144,8 @@ class TileWorker(proc_class):
                 self.work_loop()
             except KeyboardInterrupt:
                 return
+            except BackoffError:
+                return
 
 class TileSeedWorker(TileWorker):
     def work_loop(self):
@@ -132,7 +155,8 @@ class TileSeedWorker(TileWorker):
                 return
             with self.tile_mgr.session():
                 exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
-                        exceptions=(SourceError, IOError), ignore_exceptions=(LockTimeout, ))
+                    max_repeat=100, max_backoff=600,
+                    exceptions=(SourceError, IOError), ignore_exceptions=(LockTimeout, ))
 
 class TileCleanupWorker(TileWorker):
     def work_loop(self):
@@ -217,6 +241,10 @@ class SeedProgress(object):
 
 class StopProcess(Exception):
     pass
+
+class SeedInterrupted(Exception):
+    pass
+
 
 class TileWalker(object):
     def __init__(self, task, worker_pool, handle_stale=False, handle_uncached=False,
@@ -420,6 +448,8 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
 
 def seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
     progress_logger=None, seed_progress=None):
+    if task.coverage is False:
+        return
     if task.refresh_timestamp is not None:
         task.tile_manager._expire_timestamp = task.refresh_timestamp
     task.tile_manager.minimize_meta_requests = False
@@ -428,6 +458,9 @@ def seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
     tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=True,
         skip_geoms_for_last_levels=skip_geoms_for_last_levels, progress_logger=progress_logger,
         seed_progress=seed_progress)
-    tile_walker.walk()
-    tile_worker_pool.stop()
+    try:
+        tile_walker.walk()
+    finally:
+        tile_worker_pool.stop()
+
 

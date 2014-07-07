@@ -24,7 +24,7 @@ import re
 from contextlib import contextmanager
 
 from .spec import required, one_of, anything, recursive
-from mapproxy.compat import iteritems, iterkeys
+from mapproxy.compat import iteritems, iterkeys, text_type
 
 class Context(object):
     def __init__(self):
@@ -140,7 +140,7 @@ class Validator(object):
 
         for k, v in iteritems(data):
             if accept_any_key:
-                with self.context.pos('.' + str(k)):
+                with self.context.pos('.' + text_type(k)):
                     self._validate_part(any_key_spec, v)
 
             else:
@@ -148,7 +148,7 @@ class Validator(object):
                     self._handle_error("unknown '%s' in %s" %
                         (k, self.context.current_pos), info_only=True)
                     continue
-                with self.context.pos('.' + str(k)):
+                with self.context.pos('.' + text_type(k)):
                     self._validate_part(spec[k], v)
 
     def _validate_list(self, spec, data):

@@ -25,6 +25,9 @@ def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
     for task in tasks:
         print(format_cleanup_task(task))
 
+        if task.coverage is False:
+            continue
+
         if task.complete_extent:
             if hasattr(task.tile_manager.cache, 'level_location'):
                 simple_cleanup(task, dry_run=dry_run, progress_logger=progress_logger)

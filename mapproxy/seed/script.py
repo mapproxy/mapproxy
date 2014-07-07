@@ -17,18 +17,22 @@ from __future__ import print_function
 
 import sys
 import logging
+from logging.config import fileConfig
 
 from optparse import OptionParser
+
 from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import load_seed_tasks_conf
-from mapproxy.seed.seeder import seed
+from mapproxy.seed.seeder import seed, SeedInterrupted
 from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.util import (format_seed_task, format_cleanup_task,
     ProgressLog, ProgressStore)
 from mapproxy.seed.cachelock import CacheLocker
 
+def setup_logging(logging_conf=None):
+    if logging_conf is not None:
+        fileConfig(logging_conf, {'here': './'})
 
-def setup_logging():
     mapproxy_log = logging.getLogger('mapproxy')
     mapproxy_log.setLevel(logging.WARN)
 
@@ -93,6 +97,9 @@ class SeedScript(object):
                       default=None,
                       help="filename for storing the seed progress (for --continue option)")
 
+    parser.add_option("--log-config", dest='logging_conf', default=None,
+                      help="logging configuration")
+
     def __call__(self):
         (options, args) = self.parser.parse_args()
 
@@ -109,7 +116,7 @@ class SeedScript(object):
         if not options.conf_file:
             self.parser.error('missing mapproxy configuration -f/--proxy-conf')
 
-        setup_logging()
+        setup_logging(options.logging_conf)
 
         try:
             mapproxy_conf = load_configuration(options.conf_file, seed=True)
@@ -171,6 +178,9 @@ class SeedScript(object):
                     cleanup(cleanup_tasks, verbose=options.quiet==0, dry_run=options.dry_run,
                             concurrency=options.concurrency, progress_logger=logger,
                             skip_geoms_for_last_levels=options.geom_levels)
+            except SeedInterrupted:
+                print('\ninterrupted...')
+                return 3
             except KeyboardInterrupt:
                 print('\nexiting...')
                 return 2

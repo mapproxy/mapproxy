@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2014 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.source import SourceError
 from mapproxy.exception import RequestError
+from mapproxy.image import bbox_position_in_image, SubImageSource, BlankImageSource
 from mapproxy.image.merge import concat_legends, LayerMerger
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
@@ -38,6 +39,7 @@ from mapproxy.util.coverage import load_limited_to
 from mapproxy.util.ext.odict import odict
 from mapproxy.template import template_loader, bunch
 from mapproxy.service import template_helper
+from mapproxy.layer import DefaultMapExtent, MapExtent
 
 get_template = template_loader(__name__, 'templates', namespace=template_helper.__dict__)
 
@@ -53,7 +55,7 @@ class WMSServer(Server):
         request_parser=None, tile_layers=None, attribution=None,
         info_types=None, strict=False, on_error='raise',
         concurrent_layer_renderer=1, max_output_pixels=None,
-        bbox_srs=None, max_tile_age=None,
+        srs_extents=None, max_tile_age=None,
         versions=None):
         Server.__init__(self)
         self.request_parser = request_parser or partial(wms_request, strict=strict, versions=versions)
@@ -68,7 +70,7 @@ class WMSServer(Server):
         self.image_formats = image_formats
         self.info_types = info_types
         self.srs = srs
-        self.bbox_srs = bbox_srs
+        self.srs_extents = srs_extents
         self.max_output_pixels = max_output_pixels
         self.max_tile_age = max_tile_age
 
@@ -80,6 +82,21 @@ class WMSServer(Server):
 
         if map_request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
+        orig_query = query
+
+        if self.srs_extents and params.srs in self.srs_extents:
+            # limit query to srs_extent if query is larger
+            query_extent = MapExtent(params.bbox, SRS(params.srs))
+            if not self.srs_extents[params.srs].contains(query_extent):
+                limited_extent = self.srs_extents[params.srs].intersection(query_extent)
+                if not limited_extent:
+                    img_opts = self.image_formats[params.format_mime_type].copy()
+                    img_opts.bgcolor = params.bgcolor
+                    img_opts.transparent = params.transparent
+                    img = BlankImageSource(size=params.size, image_opts=img_opts, cacheable=True)
+                    return Response(img.as_buffer(), content_type=img_opts.format.mime_type)
+                sub_size, offset, sub_bbox = bbox_position_in_image(params.bbox, params.size, limited_extent.bbox)
+                query = MapQuery(sub_bbox, sub_size, SRS(params.srs), params.format)
 
         actual_layers = odict()
         for layer_name in map_request.params.layers:
@@ -113,13 +130,16 @@ class WMSServer(Server):
         merger = LayerMerger()
         renderer.render(merger)
 
-        if self.attribution and not query.tiled_only:
-            merger.add(attribution_image(self.attribution['text'], params.size))
+        if self.attribution and self.attribution.get('text') and not query.tiled_only:
+            merger.add(attribution_image(self.attribution['text'], query.size))
         img_opts = self.image_formats[params.format_mime_type].copy()
         img_opts.bgcolor = params.bgcolor
         img_opts.transparent = params.transparent
-        result = merger.merge(size=params.size, image_opts=img_opts,
-            bbox=params.bbox, bbox_srs=params.srs, coverage=coverage)
+        result = merger.merge(size=query.size, image_opts=img_opts,
+            bbox=query.bbox, bbox_srs=params.srs, coverage=coverage)
+
+        if query != orig_query:
+            result = SubImageSource(result, size=orig_query.size, offset=offset, image_opts=img_opts)
 
         # Provide the wrapping WSGI app or filter the opportunity to process the
         # image before it's wrapped up in a response
@@ -168,7 +188,7 @@ class WMSServer(Server):
             info_types = self.fi_transformers.keys()
         info_formats = [mimetype_from_infotype(map_request.version, info_type) for info_type in info_types]
         result = Capabilities(service, root_layer, tile_layers,
-            self.image_formats, info_formats, srs=self.srs, bbox_srs=self.bbox_srs
+            self.image_formats, info_formats, srs=self.srs, srs_extents=self.srs_extents
             ).render(map_request)
         return Response(result, mimetype=map_request.mime_type)
 
@@ -417,31 +437,55 @@ class FilteredRootLayer(object):
                     layers.append(filtered_layer)
         return layers
 
+DEFAULT_EXTENTS = {
+    'EPSG:3857': DefaultMapExtent(),
+    'EPSG:4326': DefaultMapExtent(),
+    'EPSG:900913': DefaultMapExtent(),
+}
+
+def limit_srs_extents(srs_extents, supported_srs):
+    """
+    Limit srs_extents to supported_srs.
+    """
+    if srs_extents:
+        srs_extents = srs_extents.copy()
+    else:
+        srs_extents = DEFAULT_EXTENTS.copy()
+
+    for srs in list(srs_extents.keys()):
+        if srs not in supported_srs:
+            srs_extents.pop(srs)
+
+    return srs_extents
+
 class Capabilities(object):
     """
     Renders WMS capabilities documents.
     """
     def __init__(self, server_md, layers, tile_layers, image_formats, info_formats,
-        srs, bbox_srs=None, epsg_axis_order=False):
+        srs, srs_extents=None, epsg_axis_order=False):
         self.service = server_md
         self.layers = layers
         self.tile_layers = tile_layers
         self.image_formats = image_formats
         self.info_formats = info_formats
         self.srs = srs
-        self.bbox_srs = bbox_srs or ['EPSG:3857', 'EPSG:4326', 'EPSG:900913']
-        self.bbox_srs = list(set(self.bbox_srs).intersection(self.srs))
+        self.srs_extents = limit_srs_extents(srs_extents, srs)
 
     def layer_srs_bbox(self, layer, epsg_axis_order=False):
         layer_srs_code = layer.extent.srs.srs_code
-        for srs in self.bbox_srs:
-            bbox = layer.extent.bbox_for(SRS(srs))
+        for srs, extent in iteritems(self.srs_extents):
+            if extent.is_default:
+                bbox = layer.extent.bbox_for(SRS(srs))
+            else:
+                bbox = extent.bbox_for(SRS(srs))
+
             if epsg_axis_order:
                 bbox = switch_bbox_epsg_axis_order(bbox, srs)
             yield srs, bbox
 
         # add native srs
-        if layer_srs_code not in self.bbox_srs:
+        if layer_srs_code not in self.srs_extents:
             bbox = layer.extent.bbox
             if epsg_axis_order:
                 bbox = switch_bbox_epsg_axis_order(bbox, layer_srs_code)
@@ -488,9 +532,16 @@ class LayerRenderer(object):
     def _render_raise_exceptions(self, async_pool, render_layers, layer_merger):
         # call _render_layer, raise all exceptions
         try:
-            for layer, layer_img in async_pool.imap(self._render_layer, render_layers):
-                if layer_img is not None:
-                    layer_merger.add(layer_img, layer=layer)
+            for layer_task in async_pool.imap(self._render_layer, render_layers,
+                                              use_result_objects=True):
+                if layer_task.exception is None:
+                    layer, layer_img = layer_task.result
+                    if layer_img is not None:
+                        layer_merger.add(layer_img, layer=layer)
+                else:
+                    ex = layer_task.exception
+                    async_pool.shutdown(True)
+                    raise ex[1]
         except SourceError as ex:
             raise RequestError(ex.args[0], request=self.request)
 

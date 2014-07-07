@@ -3,17 +3,18 @@ Installation on Windows
 
 .. note:: You can also :doc:`install MapProxy inside an existing OSGeo4W installation<install_osgeo4w>`.
 
-At frist you need a working Python installation. You can download Python from: http://www.python.org/download/. MapProxy requires Python 2.5, 2.6 or 2.7, it is *not* compatible with Python 3.
+At frist you need a working Python installation. You can download Python from: http://www.python.org/download/. MapProxy requires Python 2.5, 2.6 or 2.7.  Python 2.5 is not recommended anymore and the support for it will end with MapProxy 1.8. Python 3 support is planned for MapProxy 1.8.
 
-We advise you to install MapProxy into a `virtual Python environment`_.
+
+Virtualenv
+----------
+
+*If* you are using your Python installation for other applications as well, then we advise you to install MapProxy into a `virtual Python environment`_ to avoid any conflicts with different dependencies. *You can skip this if you only use the Python installation for MapProxy.*
 `Read about virtualenv <http://virtualenv.openplans.org/#what-it-does>`_ if you want to now more about the benefits.
-
-A self-contained version of virtualenv is available at:
-https://github.com/pypa/virtualenv/raw/1.6.1/virtualenv.py
 
 .. _`virtual Python environment`: http://guide.python-distribute.org/virtualenv.html
 
-To create a new virtual environment for our proxy installation and to activate it go to the command line and call::
+To create a new virtual environment for your MapProxy installation and to activate it go to the command line and call::
 
  C:\Python27\python path\to\virtualenv.py c:\mapproxy_venv
  C:\mapproxy_venv\Scripts\activate.bat
@@ -21,15 +22,27 @@ To create a new virtual environment for our proxy installation and to activate i
 .. note::
   The last step is required every time you start working with your MapProxy installation. Alternatively you can always explicitly call ``\mapproxy_venv\Scripts\<command>``.
 
-.. note:: Apache mod_wsgi does not work well with virtualenv on Windows. If you want to use mod_wsgi for deployment, then you should skip the creation the virtualenv. You need to `install the distribute package <http://pypi.python.org/pypi/distribute#distribute-setup-py>`_ to get the ``easy_install`` command.
+.. note:: Apache mod_wsgi does not work well with virtualenv on Windows. If you want to use mod_wsgi for deployment, then you should skip the creation the virtualenv.
 
 After you activated the new environment, you have access to ``python`` and ``easy_install``.
 To install MapProxy with most dependencies call::
 
   easy_install MapProxy
 
-This might take a minute.
+This might take a minute. You can skip the next step.
 
+
+Setuptools
+----------
+
+MapProxy and most dependencies can be installed with the ``easy_install`` command.
+You need to `install the setuptool package <http://pypi.python.org/pypi/setuptools>`_ to get the ``easy_install`` command.
+
+After that you can install MapProxy with::
+
+    c:\Python27\Scripts\easy_install MapProxy
+
+This might take a minute.
 
 Dependencies
 ------------

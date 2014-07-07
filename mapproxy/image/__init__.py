@@ -131,6 +131,9 @@ class ImageSource(object):
     def _make_readable_buf(self):
         if not self._buf and self._fname:
             self._buf = open(self._fname, 'rb')
+        elif not hasattr(self._buf, 'seek'):
+            if not isinstance(self._buf, ReadBufWrapper):
+                self._buf = ReadBufWrapper(self._buf)
         else:
             try:
                 self._buf.seek(0)

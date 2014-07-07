@@ -58,7 +58,7 @@ magic_bytes = { 'png': [b"\211PNG\r\n\032\n"],
                 'gif': [b"GIF87a", b"GIF89a"],
                 'jpeg': [b"\xFF\xD8"],
                 'bmp': [b'BM']
-                }
+               }
 
 def create_is_x_functions():
     for type_, magic in iteritems(magic_bytes):
@@ -193,6 +193,8 @@ def assert_img_colors_eq(img1, img2, delta=1):
     for (n1, c1), (n2, c2) in zip(colors1, colors2):
         assert n1 == n2, 'colors not equal: %r != %r' % (colors1, colors2)
         assert_colors_eq(c1, c2)
+
+assert_colors_equal = assert_img_colors_eq
 
 def assert_colors_eq(c1, c2, delta=1):
     """

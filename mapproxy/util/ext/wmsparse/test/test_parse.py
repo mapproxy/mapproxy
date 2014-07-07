@@ -43,6 +43,8 @@ class TestWMS111(object):
                 'EPSG:25833', 'EPSG:3857',
             ])
         )
+        eq_(len(lyrs[0]['bbox_srs']), 1)
+        eq_(lyrs[0]['bbox_srs']['EPSG:4326'], [-180.0, -85.0511287798, 180.0, 85.0511287798])
 
 
     def test_parse_layer_2(self):
@@ -84,6 +86,10 @@ class TestWMS130(object):
                 'EPSG:25833', 'EPSG:3857',
             ])
         )
+        eq_(len(lyrs[0]['bbox_srs']), 4)
+        eq_(set(lyrs[0]['bbox_srs'].keys()), set(['CRS:84', 'EPSG:900913', 'EPSG:4326', 'EPSG:3857']))
+        eq_(lyrs[0]['bbox_srs']['EPSG:3857'], [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428])
+
 
 class TestLargeWMSCapabilities(object):
     def test_parse_metadata(self):
@@ -96,3 +102,4 @@ class TestLargeWMSCapabilities(object):
         cap = parse_capabilities(local_filename('wms_nasa_cap.xml'))
         lyrs = cap.layers_list()
         eq_(len(lyrs), 15)
+        eq_(len(lyrs[0]['bbox_srs']), 0)

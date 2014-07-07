@@ -98,15 +98,19 @@ class TestNumber(unittest.TestCase):
     def test_numbers(self):
         spec = number()
         for i in (0, 1, 23e999, int(10e20), 23.1, -0.0000000001):
-            yield self.check_valid, spec, i
+            self.check_valid(spec, i)
 
 class TestNested(unittest.TestCase):
     def check_valid(self, spec, data):
         validate(spec, data)
 
-    @raises(ValidationError)
     def check_invalid(self, spec, data):
-        validate(spec, data)
+        try:
+            validate(spec, data)
+        except ValidationError:
+            pass
+        else:
+            assert False, "expected ValidationError"
 
     def test_dict(self):
         spec = {
@@ -124,11 +128,19 @@ class TestNested(unittest.TestCase):
             }
         }
 
-        yield self.check_valid, spec, {'globals': {'image': {'format': {'png': {'mode': 'P'}}}}}
-        yield self.check_valid, spec, {'globals': {'image': {'format': {'png': {'mode': 'P'}}},
-                                                   'cache': {'base_dir': '/somewhere'}}}
-        yield self.check_invalid, spec, {'globals': {'image': {'foo': {'png': {'mode': 'P'}}}}}
-        yield self.check_invalid, spec, {'globals': {'image': {'png': {'png': {'mode': 1}}}}}
+        self.check_valid(spec, {'globals': {'image': {'format': {'png': {'mode': 'P'}}}}})
+        self.check_valid(spec, {'globals': {'image': {'format': {'png': {'mode': 'P'}}},
+                                                   'cache': {'base_dir': '/somewhere'}}})
+        self.check_invalid(spec, {'globals': {'image': {'foo': {'png': {'mode': 'P'}}}}})
+        self.check_invalid(spec, {'globals': {'image': {'png': {'png': {'mode': 1}}}}})
+
+
+    def test_errors_in_unicode_keys(self):
+        # should not raise UnicodeEncodeError
+        spec = {
+            anything(): str(),
+        }
+        self.check_invalid(spec, {u'globalü': 12})
 
 class TestRecursive(unittest.TestCase):
     def test(self):

@@ -1,3 +1,44 @@
+1.7.0 2014-07-07
+~~~~~~~~~~~~~~~~
+
+Features:
+
+- new `mapproxy-util autoconf` tool
+- new versions option to limit supported WMS versions
+- set different max extents for each SRS with bbox_srs
+
+Improvements:
+
+- display list of MultiMapProxy projects sorted by name
+- check included files (base) for changes in reloader and serve-develop
+- improve combining of multiple cascaded sources
+- respect order of --seed/--cleanup tasks
+- catch and log sqlite3.OperationalError when storing tiles
+- do not open cascaded responses when image format matches
+- mapproxy-seed: retry longer if source fails (100 instead of 10)
+- mapproxy-seed: give more details if source request fails
+- mapproxy-seed: do not hang nor print traceback if seed ends
+  after permanent source errors
+- mapproxy-seed: skip seeds/cleanups with empty coverages
+- keep order of image_formats in WMS capabilities
+
+
+Fixes:
+
+- handle errors when loading to many tiles from mbtile/sqlite in
+  one batch
+- reduce memory when handling large images
+- allow remove_all for mbtiles cleanups
+- use extent from layer metadata in WMTS capabilities
+- handle threshold_res higher than first resolution
+- fix exception handling in Mapnik source
+- only init libproj when requested
+
+Other:
+
+- 1.7.x is the last release with support for Python 2.5
+- depend on Pillow if PIL is not installed
+
 1.6.0 2013-09-12
 ~~~~~~~~~~~~~~~~
 
