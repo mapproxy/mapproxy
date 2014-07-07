@@ -1148,10 +1148,6 @@ class CacheConfiguration(ConfigurationBase):
                         break
 
             for source_name in self.conf['sources']:
-                print '#'*30
-                print repr(source_name), type(self.context.sources)
-                print repr(self.context.sources)
-                print repr(self.context.caches)
                 if source_name in self.context.sources:
                     source_conf = self.context.sources[source_name]
                     source = source_conf.source({'format': request_format})
