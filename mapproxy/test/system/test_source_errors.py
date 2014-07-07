@@ -18,7 +18,7 @@ from __future__ import with_statement, division
 import os
 
 from mapproxy.request.wms import WMS111MapRequest
-from mapproxy.test.image import is_transparent, create_tmp_image, bgcolor_ratio, img_from_buf
+from mapproxy.test.image import is_transparent, create_tmp_image, bgcolor_ratio, img_from_buf, assert_colors_equal
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from mapproxy.test.system.test_wms import is_111_exception
@@ -171,7 +171,7 @@ class TestTileErrors(SystemTest):
             eq_(resp.content_type, 'image/png')
             assert 'Cache-Control' not in resp.headers
             img = img_from_buf(resp.body)
-            eq_(img.getcolors(), [(250 * 250, (100, 200, 50, 250))])
+            assert_colors_equal(img, [(250 * 250, (100, 200, 50, 250))])
             self.created_tiles.append('tilesource_cache_EPSG4326/01/000/000/001/000/000/000.png')
 
     def test_wms_unhandled_error_code(self):
