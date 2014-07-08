@@ -16,7 +16,6 @@
 from __future__ import with_statement
 
 import re
-import glob
 import os
 import time
 import random

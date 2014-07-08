@@ -15,7 +15,6 @@
 
 import os
 import sys
-import hashlib
 import time
 
 from contextlib import contextmanager

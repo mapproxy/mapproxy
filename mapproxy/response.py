@@ -19,7 +19,7 @@ Service responses.
 
 import hashlib
 from mapproxy.util.times import format_httpdate, parse_httpdate, timestamp
-from mapproxy.compat import PY2, PY3, text_type, iteritems
+from mapproxy.compat import PY2, text_type, iteritems
 
 class Response(object):
     charset = 'utf-8'

@@ -180,7 +180,7 @@ class MapProxyApp(object):
                 if handler_name in self.handlers:
                     try:
                         resp = self.handlers[handler_name].handle(req)
-                    except Exception as ex:
+                    except Exception:
                         if self.base_config.debug_mode:
                             raise
                         else:

@@ -23,7 +23,7 @@ import math
 import threading
 from mapproxy.compat.itertools import izip
 from mapproxy.compat import string_type
-from mapproxy.proj import Proj, transform, set_datapath, ProjInitError
+from mapproxy.proj import Proj, transform, set_datapath
 from mapproxy.config import base_config
 
 import logging
