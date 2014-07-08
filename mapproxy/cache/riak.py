@@ -42,9 +42,8 @@ class RiakCache(TileCacheBase):
 
         self.nodes = nodes
         self.protocol = protocol
-
         self.lock_cache_id = 'riak-' + hashlib.md5(nodes[0]['host'] + bucket).hexdigest()
-        self.request_timeout = self.lock_timeout * 1000  # riak timeout is in miliseconds
+        self.request_timeout = 10000 # 10s, TODO make configurable
         self.bucket_name = bucket
         self.tile_grid = tile_grid
         self.use_secondary_index = use_secondary_index

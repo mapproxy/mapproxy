@@ -50,7 +50,7 @@ class UnexpectedResponse(CacheBackendError):
     pass
 
 class CouchDBCache(TileCacheBase):
-    def __init__(self, url, db_name, lock_dir,
+    def __init__(self, url, db_name,
         file_ext, tile_grid, md_template=None,
         tile_id_template=None):
 
