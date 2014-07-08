@@ -953,7 +953,6 @@ class CacheConfiguration(ConfigurationBase):
 
         return MBTilesCache(
             mbfile_path,
-            lock_dir=self.lock_dir(),
         )
 
     def _sqlite_cache(self, grid_conf, file_ext):
@@ -975,7 +974,6 @@ class CacheConfiguration(ConfigurationBase):
 
         return MBTilesLevelCache(
             cache_dir,
-            lock_dir=self.lock_dir(),
         )
 
     def _couchdb_cache(self, grid_conf, file_ext):
@@ -1100,6 +1098,7 @@ class CacheConfiguration(ConfigurationBase):
 
     @memoize
     def caches(self):
+        from mapproxy.cache.dummy import DummyCache, DummyLocker
         from mapproxy.cache.tile import TileManager
         from mapproxy.cache.base import TileLocker
         from mapproxy.image.opts import compatible_image_options
@@ -1203,14 +1202,24 @@ class CacheConfiguration(ConfigurationBase):
                 locker = TileLocker(lock_dir, lock_timeout, identifier + '_renderd')
                 tile_creator_class = partial(RenderdTileCreator, renderd_address,
                     priority=priority, tile_locker=locker)
+
+            if isinstance(cache, DummyCache):
+                locker = DummyLocker()
+            else:
+                locker = TileLocker(
+                        lock_dir=self.lock_dir(),
+                        lock_timeout=self.context.globals.get_value('http.client_timeout', {}),
+                        lock_cache_id=cache.lock_cache_id,
+                )
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
-                              image_opts=image_opts, identifier=identifier,
-                              request_format=request_format_ext,
-                              meta_size=meta_size, meta_buffer=meta_buffer,
-                              minimize_meta_requests=minimize_meta_requests,
-                              concurrent_tile_creators=concurrent_tile_creators,
-                              pre_store_filter=tile_filter,
-                              tile_creator_class=tile_creator_class)
+                locker=locker,
+                image_opts=image_opts, identifier=identifier,
+                request_format=request_format_ext,
+                meta_size=meta_size, meta_buffer=meta_buffer,
+                minimize_meta_requests=minimize_meta_requests,
+                concurrent_tile_creators=concurrent_tile_creators,
+                pre_store_filter=tile_filter,
+                tile_creator_class=tile_creator_class)
             extent = merge_layer_extents(sources)
             if extent.is_default:
                 extent = map_extent_from_grid(tile_grid)

@@ -38,7 +38,7 @@ Tile caching (creation, caching and retrieval of tiles).
 from __future__ import with_statement
 
 from contextlib import contextmanager
-
+from mapproxy.cache.dummy import DummyLocker
 from mapproxy.grid import MetaGrid
 from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter
@@ -55,11 +55,12 @@ class TileManager(object):
         with a tile before it will be stored to disc. the filter should
         return this or a new tile object.
     """
-    def __init__(self, grid, cache, sources, format, image_opts=None, request_format=None,
+    def __init__(self, grid, cache, sources, format, locker, image_opts=None, request_format=None,
         meta_buffer=None, meta_size=None, minimize_meta_requests=False, identifier=None,
         pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None):
         self.grid = grid
         self.cache = cache
+        self.locker = locker
         self.identifier = identifier
         self.meta_grid = None
         self.format = format
@@ -141,7 +142,7 @@ class TileManager(object):
     def lock(self, tile):
         if self.meta_grid:
             tile = Tile(self.meta_grid.main_tile(tile.coord))
-        return self.cache.lock(tile)
+        return self.locker.lock(tile)
 
     def is_cached(self, tile, dimensions=None):
         """

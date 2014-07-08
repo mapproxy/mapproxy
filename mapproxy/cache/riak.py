@@ -22,9 +22,7 @@ from io import BytesIO
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.tile import Tile
-from mapproxy.cache.base import (
-    TileCacheBase, FileBasedLocking,
-    tile_buffer, CacheBackendError,)
+from mapproxy.cache.base import TileCacheBase, tile_buffer, CacheBackendError
 
 try:
     import riak
@@ -37,7 +35,7 @@ log = logging.getLogger(__name__)
 class UnexpectedResponse(CacheBackendError):
     pass
 
-class RiakCache(TileCacheBase, FileBasedLocking):
+class RiakCache(TileCacheBase):
     def __init__(self, nodes, protocol, bucket, tile_grid, lock_dir, use_secondary_index=False):
         if riak is None:
             raise ImportError("Riak backend requires 'riak' package.")
@@ -46,8 +44,6 @@ class RiakCache(TileCacheBase, FileBasedLocking):
         self.protocol = protocol
 
         self.lock_cache_id = 'riak-' + hashlib.md5(nodes[0]['host'] + bucket).hexdigest()
-        self.lock_dir = lock_dir
-        self.lock_timeout = 60
         self.request_timeout = self.lock_timeout * 1000  # riak timeout is in miliseconds
         self.bucket_name = bucket
         self.tile_grid = tile_grid

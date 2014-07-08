@@ -22,7 +22,7 @@ import hashlib
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import (
-    TileCacheBase, FileBasedLocking,
+    TileCacheBase,
     tile_buffer, CacheBackendError,)
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
@@ -49,7 +49,7 @@ log = logging.getLogger(__name__)
 class UnexpectedResponse(CacheBackendError):
     pass
 
-class CouchDBCache(TileCacheBase, FileBasedLocking):
+class CouchDBCache(TileCacheBase):
     def __init__(self, url, db_name, lock_dir,
         file_ext, tile_grid, md_template=None,
         tile_id_template=None):
@@ -61,8 +61,6 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             raise ImportError("CouchDB backend requires 'simplejson' package or Python 2.6+.")
 
         self.lock_cache_id = 'couchdb-' + hashlib.md5(url + db_name).hexdigest()
-        self.lock_dir = lock_dir
-        self.lock_timeout = 60
         self.file_ext = file_ext
         self.tile_grid = tile_grid
         self.md_template = md_template

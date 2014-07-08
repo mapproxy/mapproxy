@@ -16,16 +16,17 @@
 from __future__ import with_statement
 import os
 import errno
+import hashlib
 
 from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.image import ImageSource, is_single_color_image
-from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer
+from mapproxy.cache.base import TileCacheBase, tile_buffer
 from mapproxy.compat import string_type
 
 import logging
 log = logging.getLogger('mapproxy.cache.file')
 
-class FileCache(TileCacheBase, FileBasedLocking):
+class FileCache(TileCacheBase):
     """
     This class is responsible to store and load the actual tile data.
     """
@@ -37,11 +38,8 @@ class FileCache(TileCacheBase, FileBasedLocking):
             each tile (e.g. 'png')
         """
         super(FileCache, self).__init__()
+        self.lock_cache_id = hashlib.md5(cache_dir.encode('utf-8')).hexdigest()
         self.cache_dir = cache_dir
-        if lock_dir is None:
-            lock_dir = os.path.join(cache_dir, 'tile_locks')
-        self.lock_dir = lock_dir
-        self.lock_timeout = lock_timeout
         self.file_ext = file_ext
         self.link_single_color_images = link_single_color_images
 
