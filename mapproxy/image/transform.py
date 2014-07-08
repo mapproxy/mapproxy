@@ -15,7 +15,7 @@
 
 from __future__ import division
 
-from mapproxy.platform.image import Image
+from mapproxy.compat.image import Image
 from mapproxy.image import ImageSource, image_filter
 from mapproxy.srs import make_lin_transf, bbox_equals
 

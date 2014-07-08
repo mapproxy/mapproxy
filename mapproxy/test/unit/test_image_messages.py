@@ -16,7 +16,7 @@
 
 from __future__ import print_function
 
-from mapproxy.platform.image import (
+from mapproxy.compat.image import (
     Image,
     ImageDraw,
     ImageColor,

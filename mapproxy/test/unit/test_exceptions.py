@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from mapproxy.platform.image import Image
+from mapproxy.compat.image import Image
 from io import BytesIO
 from mapproxy.test.helper import Mocker, validate_with_dtd, validate_with_xsd
 from mapproxy.test.image import is_png

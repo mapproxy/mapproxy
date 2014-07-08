@@ -17,7 +17,7 @@ from __future__ import print_function, division
 
 import os
 
-from mapproxy.platform.image import (
+from mapproxy.compat.image import (
     Image,
     ImageDraw,
     ImageColor,

@@ -23,7 +23,7 @@ import tempfile
 import base64
 
 from io import BytesIO
-from mapproxy.platform.image import Image
+from mapproxy.compat.image import Image
 
 from mapproxy.layer import (
     CacheMapLayer,

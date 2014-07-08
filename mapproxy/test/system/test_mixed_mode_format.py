@@ -16,7 +16,7 @@
 from __future__ import with_statement, division
 import os
 from io import BytesIO
-from mapproxy.platform.image import (
+from mapproxy.compat.image import (
     Image,
     ImageDraw,
     ImageColor,

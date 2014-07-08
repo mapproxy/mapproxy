@@ -18,7 +18,7 @@ import os
 
 from mapproxy.test.system import module_setup, module_teardown, SystemTest
 
-from mapproxy.platform.image import Image
+from mapproxy.compat.image import Image
 from io import BytesIO
 
 from nose.tools import eq_

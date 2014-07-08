@@ -23,7 +23,7 @@ import functools
 from io import BytesIO
 
 from mapproxy.srs import SRS
-from mapproxy.platform.image import Image
+from mapproxy.compat.image import Image
 from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRequest, \
                                  WMS111FeatureInfoRequest, WMS111CapabilitiesRequest, \
                                  WMS130CapabilitiesRequest, WMS100CapabilitiesRequest, \

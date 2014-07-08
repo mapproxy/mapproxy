@@ -20,7 +20,7 @@ from __future__ import with_statement
 import io
 from io import BytesIO
 
-from mapproxy.platform.image import Image, ImageChops
+from mapproxy.compat.image import Image, ImageChops
 from mapproxy.image.opts import create_image, ImageFormat
 from mapproxy.config import base_config
 from mapproxy.srs import make_lin_transf

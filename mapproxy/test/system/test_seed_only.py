@@ -17,7 +17,7 @@ from __future__ import with_statement, division
 
 from io import BytesIO
 from mapproxy.request.wms import WMS111MapRequest
-from mapproxy.platform.image import Image
+from mapproxy.compat.image import Image
 from mapproxy.test.image import is_png, is_jpeg
 from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from nose.tools import eq_

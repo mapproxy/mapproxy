@@ -20,7 +20,7 @@ from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.request.wmts import WMTS100TileRequest
 from io import BytesIO
 
-from mapproxy.platform.image import Image
+from mapproxy.compat.image import Image
 from mapproxy.image import ImageSource
 from nose.tools import eq_
 
@@ -52,7 +52,7 @@ class TestDecorateImg(SystemTest):
 
     def setup(self):
         SystemTest.setup(self)
-        self.common_tile_req = WMTS100TileRequest(url='/service?', param=dict(service='WMTS', 
+        self.common_tile_req = WMTS100TileRequest(url='/service?', param=dict(service='WMTS',
              version='1.0.0', tilerow='0', tilecol='0', tilematrix='01', tilematrixset='GLOBAL_MERCATOR',
              layer='wms_cache', format='image/jpeg', style='', request='GetTile'))
 

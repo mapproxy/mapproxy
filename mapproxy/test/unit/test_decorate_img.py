@@ -3,7 +3,7 @@ from mapproxy.image import BlankImageSource
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import MapLayer, DefaultMapExtent
-from mapproxy.platform.image import Image
+from mapproxy.compat.image import Image
 from mapproxy.service.base import Server
 from mapproxy.service.tile import TileServer
 from mapproxy.service.wms import WMSGroupLayer, WMSServer

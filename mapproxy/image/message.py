@@ -18,7 +18,7 @@ import os
 import pkg_resources
 
 from mapproxy.config import base_config, abspath
-from mapproxy.platform.image import Image, ImageColor, ImageDraw, ImageFont
+from mapproxy.compat.image import Image, ImageColor, ImageDraw, ImageFont
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import create_image, ImageOptions
 from mapproxy.compat import string_type

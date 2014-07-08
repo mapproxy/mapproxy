@@ -18,7 +18,7 @@ from __future__ import with_statement
 
 import os
 from io import BytesIO
-from mapproxy.platform.image import Image, ImageDraw
+from mapproxy.compat.image import Image, ImageDraw
 from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image
 from mapproxy.image import peek_image_format
 from mapproxy.image.merge import merge_images

@@ -17,7 +17,7 @@ from __future__ import with_statement, division
 
 from io import BytesIO
 from mapproxy.request.wms import WMS111MapRequest
-from mapproxy.platform.image import Image
+from mapproxy.compat.image import Image
 from mapproxy.test.image import is_png, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest

@@ -17,7 +17,7 @@ from __future__ import with_statement
 import os
 import hashlib
 from io import BytesIO
-from mapproxy.platform.image import Image
+from mapproxy.compat.image import Image
 from mapproxy.test.image import is_jpeg, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
