@@ -24,7 +24,7 @@ from mapproxy.image import SubImageSource, bbox_position_in_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
 from mapproxy.srs import SRS, bbox_equals, merge_bbox, make_lin_transf
-from mapproxy.platform.proj import ProjError
+from mapproxy.proj import ProjError
 from mapproxy.compat import iteritems
 
 import logging
