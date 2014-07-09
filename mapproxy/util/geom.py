@@ -41,6 +41,9 @@ class GeometryError(Exception):
 class EmptyGeometryError(Exception):
     pass
 
+class CoverageReadError(Exception):
+    pass
+
 def require_geom_support():
     if not geom_support:
         raise ImportError('Shapely required for geometry support')
@@ -68,23 +71,26 @@ def load_ogr_datasource(datasource, where=None):
 
     Returns a list of Shapely Polygons.
     """
-    from mapproxy.util.ogr import OGRShapeReader
+    from mapproxy.util.ogr import OGRShapeReader, OGRShapeReaderError
 
     polygons = []
-    with closing(OGRShapeReader(datasource)) as reader:
-        for wkt in reader.wkts(where):
-            try:
-                geom = shapely.wkt.loads(wkt)
-            except ReadingError as ex:
-                raise GeometryError(ex)
-            if geom.type == 'Polygon':
-                polygons.append(geom)
-            elif geom.type == 'MultiPolygon':
-                for p in geom:
-                    polygons.append(p)
-            else:
-                log_config.warn('skipping %s geometry from %s: not a Polygon/MultiPolygon',
-                    geom.type, datasource)
+    try:
+        with closing(OGRShapeReader(datasource)) as reader:
+            for wkt in reader.wkts(where):
+                try:
+                    geom = shapely.wkt.loads(wkt)
+                except ReadingError as ex:
+                    raise GeometryError(ex)
+                if geom.type == 'Polygon':
+                    polygons.append(geom)
+                elif geom.type == 'MultiPolygon':
+                    for p in geom:
+                        polygons.append(p)
+                else:
+                    log_config.warn('skipping %s geometry from %s: not a Polygon/MultiPolygon',
+                        geom.type, datasource)
+    except OGRShapeReaderError as ex:
+        raise CoverageReadError(ex)
 
     return polygons
 

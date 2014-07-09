@@ -29,13 +29,11 @@ from mapproxy.srs import SRS, TransformationError
 from mapproxy.util.py import memoize
 from mapproxy.util.times import timestamp_from_isodate, timestamp_before
 from mapproxy.util.coverage import MultiCoverage, BBOXCoverage, GeomCoverage
-from mapproxy.util.geom import GeometryError, EmptyGeometryError
+from mapproxy.util.geom import GeometryError, EmptyGeometryError, CoverageReadError
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
 from mapproxy.seed.seeder import SeedTask, CleanupTask
 from mapproxy.seed.spec import validate_seed_conf
-from mapproxy.util.ogr import OGRShapeReaderError
-
 
 class SeedConfigurationError(ConfigurationError):
     pass
@@ -152,7 +150,7 @@ class SeedingConfiguration(object):
 
         try:
             coverage = load_coverage(coverage_conf)
-        except OGRShapeReaderError as ex:
+        except CoverageReadError as ex:
             raise SeedConfigurationError("can't load coverage '%s'. %s" % (name, ex))
         except GeometryError as ex:
             raise SeedConfigurationError("invalid geometry in coverage '%s'. %s" % (name, ex))
