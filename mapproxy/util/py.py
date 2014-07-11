@@ -18,13 +18,29 @@ Python related helper functions.
 """
 from __future__ import with_statement
 from functools import wraps
+from mapproxy.compat import PY2
 
 def reraise_exception(new_exc, exc_info):
     """
     Reraise exception (`new_exc`) with the given `exc_info`.
     """
     _exc_class, _exc, tb = exc_info
-    raise new_exc.__class__, new_exc, tb
+    if PY2:
+        exec('raise new_exc.__class__, new_exc, tb')
+    else:
+        raise new_exc.with_traceback(tb)
+
+def reraise(exc_info):
+    """
+    Reraise exception from exc_info`.
+    """
+    exc_class, exc, tb = exc_info
+    if PY2:
+        exec('raise exc_class, exc, tb')
+    else:
+        raise exc.with_traceback(tb)
+
+
 
 class cached_property(object):
     """A decorator that converts a function into a lazy property. The
@@ -62,25 +78,4 @@ def memoize(func):
             cache[args] = func(self, *args)
         return cache[args]
     return wrapper
-
-def replace_instancemethod(old_method, new_method):
-    """
-    Replace an instance method.
-
-    >>> class Foo(object):
-    ...    val = 'bar'
-    ...    def bar(self):
-    ...        return self.val
-    >>> f = Foo()
-    >>> f.bar()
-    'bar'
-    >>> replace_instancemethod(f.bar, lambda self: 'foo' + self.val)
-    >>> f.bar()
-    'foobar'
-    """
-    cls = old_method.im_class
-    obj = old_method.im_self
-    name = old_method.im_func.func_name
-    instancemethod = type(old_method)
-    setattr(obj, name, instancemethod(new_method, obj, cls))
 

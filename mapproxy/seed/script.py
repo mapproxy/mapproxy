@@ -13,22 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
+from __future__ import print_function
 
 import sys
 import logging
+from logging.config import fileConfig
 
 from optparse import OptionParser
+
 from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import load_seed_tasks_conf
-from mapproxy.seed.seeder import seed
+from mapproxy.seed.seeder import seed, SeedInterrupted
 from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.util import (format_seed_task, format_cleanup_task,
     ProgressLog, ProgressStore)
 from mapproxy.seed.cachelock import CacheLocker
 
+def setup_logging(logging_conf=None):
+    if logging_conf is not None:
+        fileConfig(logging_conf, {'here': './'})
 
-def setup_logging():
     mapproxy_log = logging.getLogger('mapproxy')
     mapproxy_log.setLevel(logging.WARN)
 
@@ -93,6 +97,9 @@ class SeedScript(object):
                       default=None,
                       help="filename for storing the seed progress (for --continue option)")
 
+    parser.add_option("--log-config", dest='logging_conf', default=None,
+                      help="logging configuration")
+
     def __call__(self):
         (options, args) = self.parser.parse_args()
 
@@ -109,12 +116,12 @@ class SeedScript(object):
         if not options.conf_file:
             self.parser.error('missing mapproxy configuration -f/--proxy-conf')
 
-        setup_logging()
+        setup_logging(options.logging_conf)
 
         try:
             mapproxy_conf = load_configuration(options.conf_file, seed=True)
-        except ConfigurationError, ex:
-            print "ERROR: " + '\n\t'.join(str(ex).split('\n'))
+        except ConfigurationError as ex:
+            print("ERROR: " + '\n\t'.join(str(ex).split('\n')))
             sys.exit(2)
 
         if options.use_cache_lock:
@@ -128,17 +135,17 @@ class SeedScript(object):
                 seed_names, cleanup_names = self.task_names(seed_conf, options)
                 seed_tasks = seed_conf.seeds(seed_names)
                 cleanup_tasks = seed_conf.cleanups(cleanup_names)
-            except ConfigurationError, ex:
-                print "error in configuration: " + '\n\t'.join(str(ex).split('\n'))
+            except ConfigurationError as ex:
+                print("error in configuration: " + '\n\t'.join(str(ex).split('\n')))
                 sys.exit(2)
 
             if options.summary:
-                print '========== Seeding tasks =========='
+                print('========== Seeding tasks ==========')
                 for task in seed_tasks:
-                    print format_seed_task(task)
-                print '========== Cleanup tasks =========='
+                    print(format_seed_task(task))
+                print('========== Cleanup tasks ==========')
                 for task in cleanup_tasks:
-                    print format_cleanup_task(task)
+                    print(format_cleanup_task(task))
                 return 0
 
             progress = None
@@ -155,24 +162,27 @@ class SeedScript(object):
                     seed_tasks, cleanup_tasks = self.interactive(seed_tasks, cleanup_tasks)
 
                 if seed_tasks:
-                    print '========== Seeding tasks =========='
-                    print 'Start seeding process (%d task%s)' % (
-                        len(seed_tasks), 's' if len(seed_tasks) > 1 else '')
+                    print('========== Seeding tasks ==========')
+                    print('Start seeding process (%d task%s)' % (
+                        len(seed_tasks), 's' if len(seed_tasks) > 1 else ''))
                     logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2,
                         progress_store=progress)
                     seed(seed_tasks, progress_logger=logger, dry_run=options.dry_run,
                          concurrency=options.concurrency, cache_locker=cache_locker,
                          skip_geoms_for_last_levels=options.geom_levels)
                 if cleanup_tasks:
-                    print '========== Cleanup tasks =========='
-                    print 'Start cleanup process (%d task%s)' % (
-                        len(cleanup_tasks), 's' if len(cleanup_tasks) > 1 else '')
+                    print('========== Cleanup tasks ==========')
+                    print('Start cleanup process (%d task%s)' % (
+                        len(cleanup_tasks), 's' if len(cleanup_tasks) > 1 else ''))
                     logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2)
                     cleanup(cleanup_tasks, verbose=options.quiet==0, dry_run=options.dry_run,
                             concurrency=options.concurrency, progress_logger=logger,
                             skip_geoms_for_last_levels=options.geom_levels)
+            except SeedInterrupted:
+                print('\ninterrupted...')
+                return 3
             except KeyboardInterrupt:
-                print '\nexiting...'
+                print('\nexiting...')
                 return 2
 
             if progress:
@@ -189,8 +199,8 @@ class SeedScript(object):
                 avail_seed_names = seed_conf.seed_tasks_names()
                 missing = set(seed_names).difference(avail_seed_names)
                 if missing:
-                    print 'unknown seed tasks: %s' % (', '.join(missing), )
-                    print 'available seed tasks: %s' % (', '.join(avail_seed_names), )
+                    print('unknown seed tasks: %s' % (', '.join(missing), ))
+                    print('available seed tasks: %s' % (', '.join(avail_seed_names), ))
                     sys.exit(1)
         elif not options.cleanup_names:
             seed_names = None # seed all
@@ -203,8 +213,8 @@ class SeedScript(object):
                 avail_cleanup_names = seed_conf.cleanup_tasks_names()
                 missing = set(cleanup_names).difference(avail_cleanup_names)
                 if missing:
-                    print 'unknown cleanup tasks: %s' % (', '.join(missing), )
-                    print 'available cleanup tasks: %s' % (', '.join(avail_cleanup_names), )
+                    print('unknown cleanup tasks: %s' % (', '.join(missing), ))
+                    print('available cleanup tasks: %s' % (', '.join(avail_cleanup_names), ))
                     sys.exit(1)
         elif not options.seed_names:
             cleanup_names = None # cleanup all
@@ -213,17 +223,17 @@ class SeedScript(object):
 
     def interactive(self, seed_tasks, cleanup_tasks):
         selected_seed_tasks = []
-        print '========== Select seeding tasks =========='
+        print('========== Select seeding tasks ==========')
         for task in seed_tasks:
-            print format_seed_task(task)
+            print(format_seed_task(task))
             if ask_yes_no_question('    Seed this task (y/n)? '):
                 selected_seed_tasks.append(task)
         seed_tasks = selected_seed_tasks
 
         selected_cleanup_tasks = []
-        print '========== Select cleanup tasks =========='
+        print('========== Select cleanup tasks ==========')
         for task in cleanup_tasks:
-            print format_cleanup_task(task)
+            print(format_cleanup_task(task))
             if ask_yes_no_question('    Cleanup this task (y/n)? '):
                 selected_cleanup_tasks.append(task)
         cleanup_tasks = selected_cleanup_tasks

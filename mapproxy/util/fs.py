@@ -50,7 +50,7 @@ def _force_rename_dir(src_dir, dst_dir):
     while rename_tries < 10:
         try:
             os.rename(src_dir, dst_dir)
-        except OSError, ex:
+        except OSError as ex:
             if ex.errno == errno.ENOTEMPTY or ex.errno == errno.EEXIST:
                 if rename_tries > 0:
                     time.sleep(2**rename_tries / 100.0) # from 10ms to 5s
@@ -84,7 +84,7 @@ def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
                         file_handler(filename)
                     if os.lstat(filename).st_mtime < before_timestamp:
                         file_handler(filename)
-                except OSError, ex:
+                except OSError as ex:
                     if ex.errno != errno.ENOENT: raise
 
             if remove_empty_dirs:
@@ -96,7 +96,7 @@ def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
 def remove_dir_if_emtpy(directory):
     try:
         os.rmdir(directory)
-    except OSError, ex:
+    except OSError as ex:
         if ex.errno != errno.ENOENT and ex.errno != errno.ENOTEMPTY: raise
 
 def ensure_directory(file_name):
@@ -107,7 +107,7 @@ def ensure_directory(file_name):
     if not os.path.exists(dir_name):
         try:
             os.makedirs(dir_name)
-        except OSError, e:
+        except OSError as e:
             if e.errno != errno.EEXIST:
                 raise e
 
@@ -128,12 +128,12 @@ def write_atomic(filename, data):
             with os.fdopen(fd, 'wb') as f:
                 f.write(data)
             os.rename(path_tmp, filename)
-        except OSError:
+        except OSError as ex:
             try:
                 os.unlink(path_tmp)
             except OSError:
                 pass
-            raise
+            raise ex
     else:
         with open(filename, 'wb') as f:
             f.write(data)

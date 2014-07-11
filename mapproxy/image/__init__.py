@@ -17,22 +17,25 @@
 Image and tile manipulation (transforming, merging, etc).
 """
 from __future__ import with_statement
-from cStringIO import StringIO
+import io
+from io import BytesIO
 
-from mapproxy.platform.image import Image, ImageChops
+from mapproxy.compat.image import Image, ImageChops
 from mapproxy.image.opts import create_image, ImageFormat
 from mapproxy.config import base_config
 from mapproxy.srs import make_lin_transf
+from mapproxy.compat import string_type
 
 import logging
+from functools import reduce
 log = logging.getLogger('mapproxy.image')
 
 
 magic_bytes = [
-    ('png', ("\211PNG\r\n\032\n",)),
-    ('jpeg', ("\xFF\xD8",)),
-    ('tiff', ("MM\x00\x2a", "II\x2a\x00",)),
-    ('gif', ("GIF87a", "GIF89a",)),
+    ('png', (b"\211PNG\r\n\032\n",)),
+    ('jpeg', (b"\xFF\xD8",)),
+    ('tiff', (b"MM\x00\x2a", b"II\x2a\x00",)),
+    ('gif', (b"GIF87a", b"GIF89a",)),
 ]
 
 def peek_image_format(buf):
@@ -69,7 +72,7 @@ class ImageSource(object):
     def _set_source(self, source):
         self._img = None
         self._buf = None
-        if isinstance(source, basestring):
+        if isinstance(source, string_type):
             self._fname = source
         elif isinstance(source, Image.Image):
             self._img = source
@@ -107,7 +110,7 @@ class ImageSource(object):
 
             try:
                 img = Image.open(self._buf)
-            except StandardError:
+            except Exception:
                 self.close_buffers()
                 raise
             self._img = img
@@ -118,10 +121,12 @@ class ImageSource(object):
     def _make_seekable_buf(self):
         if not self._buf and self._fname:
             self._buf = open(self._fname, 'rb')
-        elif not hasattr(self._buf, 'seek'):
-            # PIL needs file objects with seek
-            self._buf = StringIO(self._buf.read())
-        self._buf.seek(0)
+        else:
+            try:
+                self._buf.seek(0)
+            except (io.UnsupportedOperation, AttributeError):
+                # PIL needs file objects with seek
+                self._buf = BytesIO(self._buf.read())
 
     def _make_readable_buf(self):
         if not self._buf and self._fname:
@@ -130,7 +135,12 @@ class ImageSource(object):
             if not isinstance(self._buf, ReadBufWrapper):
                 self._buf = ReadBufWrapper(self._buf)
         else:
-            self._buf.seek(0)
+            try:
+                self._buf.seek(0)
+            except (io.UnsupportedOperation, AttributeError):
+                # PIL needs file objects with seek
+                self._buf = BytesIO(self._buf.read())
+
 
     def as_buffer(self, image_opts=None, format=None, seekable=False):
         """
@@ -246,7 +256,7 @@ class ReadBufWrapper(object):
             elif name == '__length_hint__':
                 raise AttributeError
             self.ok_to_seek = True
-            self.stringio = StringIO(self.readbuf.read())
+            self.stringio = BytesIO(self.readbuf.read())
         return getattr(self.stringio, name)
 
 def img_has_transparency(img):
@@ -293,7 +303,7 @@ def img_to_buf(img, image_opts):
         if hasattr(Image, 'RLE'):
             defaults['compress_type'] = Image.RLE
 
-    buf = StringIO()
+    buf = BytesIO()
     if format == 'jpeg':
         img = img.convert('RGB')
         if 'jpeg_quality' in image_opts.encoding_options:

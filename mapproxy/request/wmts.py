@@ -23,6 +23,7 @@ from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
 from mapproxy.request.tile import TileRequest
 from mapproxy.exception import XMLExceptionHandler
 from mapproxy.template import template_loader
+
 import mapproxy.service
 get_template = template_loader(mapproxy.service.__name__, 'templates')
 

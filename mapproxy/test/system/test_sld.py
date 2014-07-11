@@ -16,7 +16,11 @@
 from __future__ import with_statement, division
 import os
 import tempfile
-from urllib import quote
+
+try:
+    from urllib.parse import quote
+except ImportError:
+    from urllib import quote
 
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.test.system import module_setup, module_teardown, make_base_config, SystemTest
@@ -29,8 +33,8 @@ test_config = {}
 
 def setup_module():
     test_config['base_dir'] = tempfile.mkdtemp()
-    with open(os.path.join(test_config['base_dir'], 'mysld.xml'), 'w') as f:
-        f.write('<sld>')
+    with open(os.path.join(test_config['base_dir'], 'mysld.xml'), 'wb') as f:
+        f.write(b'<sld>')
     module_setup(test_config, 'sld.yaml')
 
 def teardown_module():

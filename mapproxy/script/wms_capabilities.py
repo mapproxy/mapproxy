@@ -12,22 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import with_statement
 
-import urlparse
+from __future__ import print_function
+
 import sys
 import optparse
-from cStringIO import StringIO
-from xml.etree import ElementTree as etree
-from xml.etree.ElementTree import XMLParser
 
+from mapproxy.compat import iteritems, BytesIO
+from mapproxy.compat.modules import urlparse
 from mapproxy.client.http import open_url, HTTPClientError
 from mapproxy.request.base import BaseRequest, url_decode
 from mapproxy.util.ext import wmsparse
 
-ENCODING = sys.getdefaultencoding()
-if ENCODING in (None, 'ascii'):
-    ENCODING = 'UTF-8'
 
 class PrettyPrinter(object):
     def __init__(self, indent=4, version='1.1.1'):
@@ -43,12 +39,12 @@ class PrettyPrinter(object):
         if mark_first:
             indent = indent - len(self.marker)
             marker = self.marker
-        print ("%s%s%s: %s" % (' '*indent, marker, key, value)).encode(ENCODING)
+        print(("%s%s%s: %s" % (' '*indent, marker, key, value)))
 
     def _format_output(self, key, value, indent, mark_first=False):
         if key == 'bbox':
             self.print_line(indent, key)
-            for srs_code, bbox in value.iteritems():
+            for srs_code, bbox in iteritems(value):
                 self.print_line(indent+self.indent, srs_code, value=bbox, mark_first=mark_first)
         else:
             if isinstance(value, set):
@@ -57,9 +53,9 @@ class PrettyPrinter(object):
 
     def print_layers(self, capabilities, indent=None, root=False):
         if root:
-            print "# Note: This is not a valid MapProxy configuration!"
-            print 'Capabilities Document Version %s' % (self.version,)
-            print 'Root-Layer:'
+            print("# Note: This is not a valid MapProxy configuration!")
+            print('Capabilities Document Version %s' % (self.version,))
+            print('Root-Layer:')
             layer_list = capabilities.layers()['layers']
         else:
             layer_list = capabilities['layers']
@@ -76,7 +72,7 @@ class PrettyPrinter(object):
                     else:
                         self._format_output(item, layer[item], indent)
             # print remaining items except sublayers
-            for key, value in layer.iteritems():
+            for key, value in iteritems(layer):
                 if key in self.print_order or key == 'layers':
                     continue
                 self._format_output(key, value, indent)
@@ -86,7 +82,7 @@ class PrettyPrinter(object):
                 self.print_layers(layer, indent=indent+self.indent)
 
 def log_error(msg, *args):
-    print >>sys.stderr, (msg % args).encode(ENCODING)
+    print(msg % args, file=sys.stderr)
 
 def wms_capapilities_url(url, version):
     parsed_url = urlparse.urlparse(url)
@@ -103,10 +99,10 @@ def wms_capapilities_url(url, version):
 def parse_capabilities(fileobj, version='1.1.1'):
     try:
         return wmsparse.parse_capabilities(fileobj)
-    except ValueError, ex:
+    except ValueError as ex:
         log_error('%s\n%s\n%s\n%s\nNot a capabilities document: %s', 'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
         sys.exit(1)
-    except Exception, ex:
+    except Exception as ex:
         # catch all, etree.ParseError only avail since Python 2.7
         # 2.5 and 2.6 raises exc from underlying implementation like expat
         log_error('%s\n%s\n%s\n%s\nCould not parse the document: %s', 'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
@@ -116,12 +112,12 @@ def parse_capabilities_url(url, version='1.1.1'):
     try:
         capabilities_url = wms_capapilities_url(url, version)
         capabilities_response = open_url(capabilities_url)
-    except HTTPClientError, ex:
+    except HTTPClientError as ex:
         log_error('ERROR: %s', ex.args[0])
         sys.exit(1)
 
     # after parsing capabilities_response will be empty, therefore cache it
-    capabilities = StringIO(capabilities_response.read())
+    capabilities = BytesIO(capabilities_response.read())
     return parse_capabilities(capabilities, version=version)
 
 def wms_capabilities_command(args=None):
@@ -151,6 +147,6 @@ def wms_capabilities_command(args=None):
         printer = PrettyPrinter(indent=4, version=options.version)
         printer.print_layers(service, root=True)
 
-    except KeyError, ex:
+    except KeyError as ex:
         log_error('XML-Element has no such attribute (%s).' % (ex.args[0],))
         sys.exit(1)

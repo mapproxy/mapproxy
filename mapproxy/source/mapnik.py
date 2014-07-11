@@ -18,7 +18,6 @@ from __future__ import with_statement, absolute_import
 import sys
 import time
 import threading
-from cStringIO import StringIO
 
 from mapproxy.grid import tile_grid
 from mapproxy.image import ImageSource
@@ -28,6 +27,7 @@ from mapproxy.source import  SourceError
 from mapproxy.client.log import log_request
 from mapproxy.util.py import reraise_exception
 from mapproxy.util.async import run_non_blocking
+from mapproxy.compat import BytesIO
 
 try:
     import mapnik
@@ -73,7 +73,7 @@ class MapnikSource(MapLayer):
 
         try:
             resp = self.render(query)
-        except RuntimeError, ex:
+        except RuntimeError as ex:
             log.error('could not render Mapnik map: %s', ex)
             reraise_exception(SourceError(ex.args[0]), sys.exc_info())
         resp.opacity = self.opacity
@@ -143,5 +143,5 @@ class MapnikSource(MapLayer):
             log_request('%s:%s:%s:%s' % (mapfile, query.bbox, query.srs.srs_code, query.size),
                 status='200' if data else '500', size=size, method='API', duration=time.time()-start_time)
 
-        return ImageSource(StringIO(data), size=query.size,
+        return ImageSource(BytesIO(data), size=query.size,
             image_opts=ImageOptions(transparent=self.transparent, format=query.format))

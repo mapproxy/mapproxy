@@ -16,19 +16,21 @@
 """
 Service requests (parsing, handling, etc).
 """
-import urllib
 import cgi
 
 from mapproxy.util.py import cached_property
+from mapproxy.compat import iteritems, PY2, text_type
 
+if PY2:
+    from urllib import quote, quote_plus
+else:
+    from urllib.parse import quote, quote_plus
 
 class NoCaseMultiDict(dict):
     """
     This is a dictionary that allows case insensitive access to values.
 
     >>> d = NoCaseMultiDict([('A', 'b'), ('a', 'c'), ('B', 'f'), ('c', 'x'), ('c', 'y'), ('c', 'z')])
-    >>> d
-    NoCaseMultiDict([('A', ['b', 'c']), ('c', ['x', 'y', 'z']), ('B', ['f'])])
     >>> d['a']
     'b'
     >>> d.get_all('a')
@@ -46,7 +48,7 @@ class NoCaseMultiDict(dict):
                 tmp.setdefault(key.lower(), (key, []))[1].extend(value)
         else:
             if isinstance(mapping, dict):
-                itr = mapping.iteritems() #pylint: disable-msg=E1103
+                itr = iteritems(mapping)
             else:
                 itr = iter(mapping)
             for key, value in itr:
@@ -63,7 +65,7 @@ class NoCaseMultiDict(dict):
         """A `NoCaseMultiDict` can be updated from an iterable of
         ``(key, value)`` tuples or a dict.
         """
-        for _, (key, values) in self._gen_dict(mapping).iteritems():
+        for _, (key, values) in iteritems(self._gen_dict(mapping)):
             self.set(key, values, append=append, unpack=True)
 
     def __getitem__(self, key):
@@ -150,8 +152,12 @@ class NoCaseMultiDict(dict):
         """
         Iterates over all keys and values.
         """
-        for _, (key, values) in dict.iteritems(self):
-            yield key, values
+        if PY2:
+            for _, (key, values) in dict.iteritems(self):
+                yield key, values
+        else:
+            for _, (key, values) in dict.items(self):
+                yield key, values
 
     def copy(self):
         """
@@ -172,10 +178,17 @@ def url_decode(qs, charset='utf-8', decode_keys=False, include_empty=True,
     Parse query string `qs` and return a `NoCaseMultiDict`.
     """
     tmp = []
-    for key, value in cgi.parse_qsl(str(qs), include_empty):
-        if decode_keys:
-            key = key.decode(charset, errors)
-        tmp.append((key, value.decode(charset, errors)))
+    for key, value in cgi.parse_qsl(qs, include_empty):
+        if PY2:
+            if decode_keys:
+                key = key.decode(charset, errors)
+            tmp.append((key, value.decode(charset, errors)))
+        else:
+            if not isinstance(key, text_type):
+                key = key.decode(charset, errors)
+            if not isinstance(value, text_type):
+                value = value.decode(charset, errors)
+            tmp.append((key, value))
     return NoCaseMultiDict(tmp)
 
 class Request(object):
@@ -202,7 +215,12 @@ class Request(object):
 
     @property
     def path(self):
-        return self.environ.get('PATH_INFO', '')
+        path = self.environ.get('PATH_INFO', '')
+        if PY2:
+            return path
+        if path and isinstance(path, bytes):
+            path = path.decode('utf-8')
+        return path
 
     def pop_path(self):
         path = self.path.lstrip('/')
@@ -251,14 +269,14 @@ class Request(object):
     def script_url(self):
         "Full script URL without trailing /"
         return (self.host_url.rstrip('/') +
-                urllib.quote(self.environ.get('SCRIPT_NAME', '/').rstrip('/'))
+                quote(self.environ.get('SCRIPT_NAME', '/').rstrip('/'))
                )
 
     @property
     def base_url(self):
         return (self.host_url.rstrip('/')
-                + urllib.quote(self.environ.get('SCRIPT_NAME', '').rstrip('/'))
-                + urllib.quote(self.environ.get('PATH_INFO', ''))
+                + quote(self.environ.get('SCRIPT_NAME', '').rstrip('/'))
+                + quote(self.environ.get('PATH_INFO', ''))
                )
 
 class RequestParams(object):
@@ -345,13 +363,14 @@ class RequestParams(object):
         """
         The map request as a query string (the order is not guaranteed).
 
-        >>> RequestParams(dict(foo='egg', bar='ham%eggs', baz=100)).query_string
-        'baz=100&foo=egg&bar=ham%25eggs'
+        >>> qs = RequestParams(dict(foo='egg', bar='ham%eggs', baz=100)).query_string
+        >>> sorted(qs.split('&'))
+        ['bar=ham%25eggs', 'baz=100', 'foo=egg']
         """
         kv_pairs = []
         for key, values in self.params.iteritems():
             value = ','.join(str(v) for v in values)
-            kv_pairs.append(key + '=' + urllib.quote_plus(value, safe=','))
+            kv_pairs.append(key + '=' + quote_plus(value, safe=','))
         return '&'.join(kv_pairs)
 
     def with_defaults(self, defaults):
@@ -398,7 +417,7 @@ class BaseRequest(object):
     @property
     def raw_params(self):
         params = {}
-        for key, value in self.params.iteritems():
+        for key, value in iteritems(self.params):
             params[key] = value
         return params
 

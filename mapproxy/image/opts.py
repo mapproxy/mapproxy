@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import copy
+from mapproxy.compat import string_type
 
 class ImageOptions(object):
     def __init__(self, mode=None, transparent=None, opacity=None, resampling=None,
@@ -36,7 +37,7 @@ class ImageOptions(object):
             if k.startswith('_'):
                 continue
             v = getattr(self, k)
-            if v is not None and not hasattr(v, 'im_func'):
+            if v is not None and not hasattr(v, 'im_func') and not hasattr(v, '__func__'):
                 options.append('%s=%r' % (k, v))
         return 'ImageOptions(%s)' % (', '.join(options), )
 
@@ -66,12 +67,15 @@ class ImageFormat(str):
         return ext.strip()
 
     def __eq__(self, other):
-        if isinstance(other, basestring):
+        if isinstance(other, string_type):
             other = ImageFormat(other)
         elif not isinstance(other, ImageFormat):
             return NotImplemented
 
         return self.ext == other.ext
+
+    def __hash__(self):
+        return hash(str(self))
 
     def __ne__(self, other):
         return not (self == other)
@@ -81,7 +85,7 @@ def create_image(size, image_opts=None):
     Create a new image that is compatible with the given `image_opts`.
     Takes into account mode, transparent, bgcolor.
     """
-    from mapproxy.platform.image import Image, ImageColor
+    from mapproxy.compat.image import Image, ImageColor
 
     if image_opts is None:
         mode = 'RGB'
@@ -96,7 +100,7 @@ def create_image(size, image_opts=None):
 
         bgcolor = image_opts.bgcolor or (255, 255, 255)
 
-        if isinstance(bgcolor, basestring):
+        if isinstance(bgcolor, string_type):
             bgcolor = ImageColor.getrgb(bgcolor)
 
         if image_opts.transparent and len(bgcolor) == 3:
@@ -130,7 +134,7 @@ def compatible_image_options(img_opts, base_opts=None):
     if any(True for o in img_opts if o.colors == 0):
         colors = 0
     else:
-        colors = max(o.colors for o in img_opts)
+        colors = max(o.colors or 0 for o in img_opts)
 
     transparent = None
     for o in img_opts:
@@ -140,8 +144,11 @@ def compatible_image_options(img_opts, base_opts=None):
         if o.transparent == True:
             transparent = True
 
-    # I < P < RGB < RGBA :)
-    mode = max(o.mode for o in img_opts)
+    if any(True for o in img_opts if o.mode):
+        # I < P < RGB < RGBA :)
+        mode = max(o.mode for o in img_opts if o.mode)
+    else:
+        mode = None
 
     if base_opts:
         options = base_opts.copy()

@@ -32,6 +32,6 @@ def template_loader(module_name, location='templates', namespace={}):
                 template_file = os.path.join(base_config().template_dir, name)
             else:
                 template_file = pkg_resources.resource_filename(module_name, location + '/' + name)
-            return Template.from_filename(template_file, namespace=namespace,
+            return Template.from_filename(template_file, namespace=namespace, encoding='utf-8',
                                           default_inherit=default_inherit, get_template=self)
     return loader()

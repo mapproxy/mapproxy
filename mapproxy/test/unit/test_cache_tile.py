@@ -22,7 +22,7 @@ import tempfile
 import time
 import sqlite3
 
-from cStringIO import StringIO
+from io import BytesIO
 
 from PIL import Image
 
@@ -172,7 +172,7 @@ class TileCacheTestBase(object):
         # tile object is marked as stored,
         # check that is is not stored 'again'
         # (used for disable_storage)
-        tile = Tile((0, 0, 4), ImageSource(StringIO('foo')))
+        tile = Tile((0, 0, 4), ImageSource(BytesIO(b'foo')))
         tile.stored = True
         self.cache.store_tile(tile)
 
@@ -245,8 +245,8 @@ class TestFileTileCache(TileCacheTestBase):
 
     def create_cached_tile(self, tile):
         loc = self.cache.tile_location(tile, create_dir=True)
-        with open(loc, 'w') as f:
-            f.write('foo')
+        with open(loc, 'wb') as f:
+            f.write(b'foo')
 
 
 class TestMBTileCache(TileCacheTestBase):

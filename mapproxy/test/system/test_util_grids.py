@@ -15,12 +15,10 @@
 
 from __future__ import with_statement
 import os
-import sys
-import contextlib
 
-from cStringIO import StringIO
 from nose.tools import assert_raises
 from mapproxy.script.grids import grids_command
+from mapproxy.test.helper import capture
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 GRID_NAMES = [
@@ -35,17 +33,6 @@ UNUSED_GRID_NAMES = [
 ]
 
 
-@contextlib.contextmanager
-def capture_stderr(io=None):
-    if io is None:
-        io = StringIO()
-    old_stderr = sys.stderr
-    sys.stderr = io
-    try:
-        yield io
-    finally:
-        sys.stderr = old_stderr
-
 class TestUtilGrids(object):
     def setup(self):
         self.mapproxy_config_file = os.path.join(FIXTURE_DIR, 'util_grids.yaml')
@@ -53,14 +40,15 @@ class TestUtilGrids(object):
 
     def test_config_not_found(self):
         self.args = ['command_dummy', '-f', 'foo.bar']
-        with capture_stderr() as err:
+        with capture() as (_, err):
             assert_raises(SystemExit, grids_command, self.args)
         assert err.getvalue().startswith("ERROR:")
 
     def test_list_configured(self):
         self.args.append('-l')
-        grids_command(self.args)
-        captured_output = sys.stdout.getvalue()
+        with capture() as (out, err):
+            grids_command(self.args)
+        captured_output = out.getvalue()
         for grid in GRID_NAMES:
             assert grid in captured_output
 
@@ -71,8 +59,9 @@ class TestUtilGrids(object):
     def test_list_configured_all(self):
         self.args.append('-l')
         self.args.append('--all')
-        grids_command(self.args)
-        captured_output = sys.stdout.getvalue()
+        with capture() as (out, err):
+            grids_command(self.args)
+        captured_output = out.getvalue()
         for grid in GRID_NAMES + UNUSED_GRID_NAMES:
             assert grid in captured_output
 
@@ -83,20 +72,23 @@ class TestUtilGrids(object):
     def test_display_single_grid(self):
         self.args.append('-g')
         self.args.append('GLOBAL_MERCATOR')
-        grids_command(self.args)
-        captured_output = sys.stdout.getvalue()
+        with capture() as (out, err):
+            grids_command(self.args)
+        captured_output = out.getvalue()
         assert "GLOBAL_MERCATOR" in captured_output
 
     def test_ignore_case(self):
         self.args.append('-g')
         self.args.append('global_geodetic')
-        grids_command(self.args)
-        captured_output = sys.stdout.getvalue()
+        with capture() as (out, err):
+            grids_command(self.args)
+        captured_output = out.getvalue()
         assert "GLOBAL_GEODETIC" in captured_output
 
     def test_all_grids(self):
-        grids_command(self.args)
-        captured_output = sys.stdout.getvalue()
+        with capture() as (out, err):
+            grids_command(self.args)
+        captured_output = out.getvalue()
         assert "GLOBAL_MERCATOR" in captured_output
         assert "origin*: 'll'" in captured_output
 

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
+from __future__ import print_function
 
 import threading
 import sys
@@ -21,10 +21,51 @@ import cgi
 import socket
 import errno
 import time
-from cStringIO import StringIO
-from urlparse import urlsplit
-from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
+import base64
 from contextlib import contextmanager
+from mapproxy.util.py import reraise
+from mapproxy.compat import iteritems, PY2
+from mapproxy.compat.modules import urlparse
+if PY2:
+    from cStringIO import StringIO
+else:
+    from io import StringIO
+
+if PY2:
+    from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
+else:
+    from http.server import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
+
+class RequestsMissmatchError(AssertionError):
+    def __init__(self, assertions):
+        self.assertions = assertions
+
+    def __str__(self):
+        assertions = []
+        for assertion in self.assertions:
+            assertions.append(text_indent(str(assertion), '    ', ' -  '))
+        return 'requests missmatch:\n' + '\n'.join(assertions)
+
+class RequestError(str):
+    pass
+
+def text_indent(text, indent, first_indent=None):
+    if first_indent is None:
+        first_indent = indent
+
+    text = first_indent + text
+    return text.replace('\n', '\n' + indent)
+
+class RequestMissmatch(object):
+    def __init__(self, msg, expected, actual):
+        self.msg = msg
+        self.expected = expected
+        self.actual = actual
+
+    def __str__(self):
+        return ('requests missmatch, expected:\n' +
+            text_indent(str(self.expected), '    ') +
+            '\n  got:\n' + text_indent(str(self.actual), '    '))
 
 class HTTPServer(HTTPServer_):
     allow_reuse_address = True
@@ -32,8 +73,7 @@ class HTTPServer(HTTPServer_):
     def handle_error(self, request, client_address):
         _exc_class, exc, _tb = sys.exc_info()
         if isinstance(exc, socket.error):
-            if (hasattr(exc, 'errno') and exc.errno == errno.EPIPE
-              or exc.args[0] == errno.EPIPE): # exc.errno since py2.6
+            if exc.errno == errno.EPIPE:
                 # suppres 'Broken pipe' errors raised in timeout tests
                 return
         HTTPServer_.handle_error(self, request, client_address)
@@ -48,7 +88,7 @@ class ThreadedStopableHTTPServer(threading.Thread):
         self.httpd = HTTPServer(address,mock_http_handler(requests_responses,
             unordered=unordered, query_comparator=query_comparator))
         self.httpd.timeout = 1.0
-        self.out = self.httpd.out = StringIO()
+        self.assertions = self.httpd.assertions = []
 
     @property
     def http_port(self):
@@ -60,10 +100,10 @@ class ThreadedStopableHTTPServer(threading.Thread):
             self.httpd.handle_request()
         if self.requests_responses:
             missing_req = [req for req, resp in self.requests_responses]
-            print >>self.out, 'missing requests: ' + ','.join(map(str, missing_req))
-        if self.out.tell() > 0: # errors written
-            self.out.seek(0)
-        else:
+            self.assertions.append(
+                RequestError('missing requests: ' + ','.join(map(str, missing_req)))
+            )
+        if not self.assertions:
             self.sucess = True
         # force socket close so next test can bind to same address
         self.httpd.socket.close()
@@ -76,13 +116,11 @@ class ThreadedSingleRequestHTTPServer(threading.Thread):
         self.shutdown = False
         self.httpd = HTTPServer(address, request_handler)
         self.httpd.timeout = 1.0
-        self.out = self.httpd.out = StringIO()
+        self.assertions = self.httpd.assertions = []
 
     def run(self):
         self.httpd.handle_request()
-        if self.out.tell() > 0: # errors written
-            self.out.seek(0)
-        else:
+        if not self.assertions:
             self.sucess = True
         # force socket close so next test can bind to same address
         self.httpd.socket.close()
@@ -98,7 +136,7 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
 
         def do_POST(self):
             length = int(self.headers['content-length'])
-            self.query_data = self.path + '?' + self.rfile.read(length)
+            self.query_data = self.path + '?' + self.rfile.read(length).decode('utf-8')
             return self.do_mock_request('POST')
 
         def _matching_req_resp(self):
@@ -117,11 +155,15 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
         def do_mock_request(self, method):
             req, resp = self._matching_req_resp()
             if not req:
-                print >>self.server.out, 'got unexpected request      ', self.query_data
-                raise AssertionError
+                self.server.assertions.append(
+                    RequestError('got unexpected request: %s' % self.query_data)
+                )
+                return
             if 'method' in req:
                 if req['method'] != method:
-                    print >>self.server.out, 'expected %s request, got %s' % (req['method'], method)
+                    self.server.assertions.append(
+                        RequestMissmatch('unexpected method', req['method'], method)
+                    )
                     self.server.shutdown = True
             if req.get('require_basic_auth', False):
                 if 'Authorization' not in self.headers:
@@ -129,19 +171,33 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
                     self.send_response(401)
                     self.send_header('WWW-Authenticate', 'Basic realm="Secure Area"')
                     self.end_headers()
-                    self.wfile.write('no access')
+                    self.wfile.write(b'no access')
                     return
+            if req.get('headers'):
+                for k, v in req['headers'].items():
+                    if k not in self.headers:
+                        self.server.assertions.append(
+                            RequestMissmatch('missing header', k, self.headers)
+                        )
+                    elif self.headers[k] != v:
+                        self.server.assertions.append(
+                            RequestMissmatch('header missmatch', '%s: %s' % (k, v), self.headers)
+                        )
             if not query_comparator(req['path'], self.query_data):
-                print >>self.server.out, 'got request      ', self.query_data
-                print >>self.server.out, 'expected request ', req['path']
+                self.server.assertions.append(
+                    RequestMissmatch('requests differ', req['path'], self.query_data)
+                )
                 query_actual = set(query_to_dict(self.query_data).items())
                 query_expected = set(query_to_dict(req['path']).items())
-                print >>self.server.out, 'param diff  %s|%s' % (
-                    query_actual - query_expected, query_expected - query_actual)
+                self.server.assertions.append(
+                    RequestMissmatch('requests params differ', query_actual - query_expected, query_expected - query_actual)
+                )
                 self.server.shutdown = True
             if 'req_assert_function' in req:
                 if not req['req_assert_function'](self):
-                    print >>self.server.out, 'req_assert_function failed'
+                    self.server.assertions.append(
+                        RequestError('req_assert_function failed')
+                    )
                     self.server.shutdown = True
             if 'duration' in resp:
                 time.sleep(float(resp['duration']))
@@ -157,7 +213,7 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
         def start_response(self, resp):
             self.send_response(int(resp.get('status', '200')))
             if 'headers' in resp:
-                for key, value in resp['headers'].iteritems():
+                for key, value in iteritems(resp['headers']):
                     self.send_header(key, value)
             self.end_headers()
         def log_request(self, code, size=None):
@@ -166,17 +222,20 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
     return MockHTTPHandler
 
 class MockServ(object):
-    def __init__(self, port=0, host='localhost', unordered=False):
+    def __init__(self, port=0, host='localhost', unordered=False, bbox_aware_query_comparator=False):
         self._requested_port = port
         self.port = port
         self.host = host
         self.requests_responses = []
         self.unordered = unordered
+        self.query_comparator = None
+        if bbox_aware_query_comparator:
+            self.query_comparator = wms_query_eq
         self._init_thread()
 
     def _init_thread(self):
         self._thread = ThreadedStopableHTTPServer((self.host, self._requested_port),
-            [], unordered=self.unordered)
+            [], unordered=self.unordered, query_comparator=self.query_comparator)
         if self._requested_port == 0:
             self.port = self._thread.http_port
         self.address = (self.host, self.port)
@@ -191,14 +250,14 @@ class MockServ(object):
     def expects(self, path, method='GET', headers=None):
         headers = headers or ()
         self.requests_responses.append(
-            (dict(path=path, method=method, headers=headers), {}))
+            (dict(path=path, method=method, headers=headers), {'body': b''}))
         return self
 
     def returns(self, body=None, body_file=None, status_code=200, headers=None):
         assert body or body_file
         headers = headers or {}
         self.requests_responses[-1][1].update(
-            body=body, body_file=body_file, status_code=status_code, headers=headers)
+            body=body, body_file=body_file, status=status_code, headers=headers)
         return self
 
     def __enter__(self):
@@ -209,10 +268,14 @@ class MockServ(object):
     def __exit__(self, type, value, traceback):
         self._thread.shutdown = True
         self._thread.join()
+
+        if not self._thread.sucess and value:
+            print('requests to mock httpd did not '
+            'match expectations:\n %s' % RequestsMissmatchError(self._thread.assertions))
         if value:
-            raise type, value, traceback
-        assert self._thread.sucess, ('requests to mock httpd did not '
-            'match expectations:\n' + self._thread.out.read())
+            raise reraise((type, value, traceback))
+        if not self._thread.sucess:
+            raise RequestsMissmatchError(self._thread.assertions)
 
 def wms_query_eq(expected, actual):
     """
@@ -236,9 +299,9 @@ def wms_query_eq(expected, actual):
 
     if 'bbox' in expected and 'bbox' in actual:
         expected = expected.copy()
-        expected_bbox = map(float, expected.pop('bbox').split(','))
+        expected_bbox = [float(x) for x in expected.pop('bbox').split(',')]
         actual = actual.copy()
-        actual_bbox = map(float, actual.pop('bbox').split(','))
+        actual_bbox = [float(x) for x in actual.pop('bbox').split(',')]
         if expected != actual:
             return False
         if not bbox_equals(expected_bbox, actual_bbox):
@@ -306,8 +369,8 @@ def query_to_dict(query):
     return d
 
 def assert_url_eq(url1, url2):
-    parts1 = urlsplit(url1)
-    parts2 = urlsplit(url2)
+    parts1 = urlparse.urlsplit(url1)
+    parts2 = urlparse.urlsplit(url2)
 
     assert parts1[0] == parts2[0], '%s != %s (%s)' % (url1, url2, 'schema')
     assert parts1[1] == parts2[1], '%s != %s (%s)' % (url1, url2, 'location')
@@ -326,10 +389,15 @@ def mock_httpd(address, requests_responses, unordered=False, bbox_aware_query_co
     t.start()
     try:
         yield
+    except:
+        if not t.sucess:
+            print(str(RequestsMissmatchError(t.assertions)))
+        raise
     finally:
         t.shutdown = True
         t.join(1)
-    assert t.sucess, 'requests to mock httpd did not match expectations:\n' + t.out.read()
+    if not t.sucess:
+        raise RequestsMissmatchError(t.assertions)
 
 @contextmanager
 def mock_single_req_httpd(address, request_handler):
@@ -337,10 +405,15 @@ def mock_single_req_httpd(address, request_handler):
     t.start()
     try:
         yield
+    except:
+        if not t.sucess:
+            print(str(RequestsMissmatchError(t.assertions)))
+        raise
     finally:
         t.shutdown = True
         t.join(1)
-    assert t.sucess, 'requests to mock httpd did not match expectations:\n' + t.out.read()
+    if not t.sucess:
+        raise RequestsMissmatchError(t.assertions)
 
 
 def make_wsgi_env(query_string, extra_environ={}):
@@ -350,3 +423,6 @@ def make_wsgi_env(query_string, extra_environ={}):
               }
         env.update(extra_environ)
         return env
+
+def basic_auth_value(username, password):
+    return base64.b64encode(('%s:%s' % (username, password)).encode('utf-8'))

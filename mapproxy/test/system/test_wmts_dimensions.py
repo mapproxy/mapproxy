@@ -71,9 +71,9 @@ class TestWMTS(SystemTest):
         eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 2)
         eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 1)
 
-        eq_(xml.xpath('//wmts:Contents/wmts:Layer/wmts:ResourceURL/@template', namespaces=ns_wmts),
-            ['http://localhost/wmts/myrest/dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png',
-             'http://localhost/wmts/myrest/no_dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png'])
+        eq_(set(xml.xpath('//wmts:Contents/wmts:Layer/wmts:ResourceURL/@template', namespaces=ns_wmts)),
+            set(['http://localhost/wmts/myrest/dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png',
+             'http://localhost/wmts/myrest/no_dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png']))
 
         # check dimension values for dimension_layer
         dimension_elems = xml.xpath(
@@ -99,7 +99,7 @@ class TestWMTS(SystemTest):
 
 
     def test_get_tile_valid_dimension(self):
-        serv = MockServ(42423)
+        serv = MockServ(42423, bbox_aware_query_comparator=True)
         serv.expects(DIMENSION_LAYER_BASE_REQ + '&Time=2012-11-15T00:00:00&elevation=1000').returns(TEST_TILE)
         with serv:
             resp = self.app.get('/wmts/dimension_layer/GLOBAL_MERCATOR/2012-11-15T00:00:00/1000/01/0/0.png')
@@ -109,7 +109,7 @@ class TestWMTS(SystemTest):
         self.check_invalid_parameter('/wmts/dimension_layer/GLOBAL_MERCATOR/2042-11-15T00:00:00/default/01/0/0.png')
 
     def test_get_tile_default_dimension(self):
-        serv = MockServ(42423)
+        serv = MockServ(42423, bbox_aware_query_comparator=True)
         serv.expects(DIMENSION_LAYER_BASE_REQ + '&Time=2012-11-15T00:00:00&elevation=0').returns(TEST_TILE)
         with serv:
             resp = self.app.get('/wmts/dimension_layer/GLOBAL_MERCATOR/default/default/01/0/0.png')
@@ -121,7 +121,7 @@ class TestWMTS(SystemTest):
 
     def test_get_tile_default_no_dimension_source(self):
         # check if dimensions are ignored
-        serv = MockServ(42423)
+        serv = MockServ(42423, bbox_aware_query_comparator=True)
         serv.expects(NO_DIMENSION_LAYER_BASE_REQ).returns(TEST_TILE)
         with serv:
             resp = self.app.get('/wmts/no_dimension_layer/GLOBAL_MERCATOR/default/default/01/0/0.png')
@@ -129,14 +129,14 @@ class TestWMTS(SystemTest):
 
 
     def test_get_tile_kvp_valid_dimension(self):
-        serv = MockServ(42423)
+        serv = MockServ(42423, bbox_aware_query_comparator=True)
         serv.expects(DIMENSION_LAYER_BASE_REQ + '&Time=2012-11-14T00:00:00&elevation=3000').returns(TEST_TILE)
         with serv:
             resp = self.app.get(WMTS_KVP_URL + '&layer=dimension_layer&timE=2012-11-14T00:00:00&ELEvatioN=3000')
         eq_(resp.content_type, 'image/png')
 
     def test_get_tile_kvp_valid_dimension_defaults(self):
-        serv = MockServ(42423)
+        serv = MockServ(42423, bbox_aware_query_comparator=True)
         serv.expects(DIMENSION_LAYER_BASE_REQ + '&Time=2012-11-15T00:00:00&elevation=0').returns(TEST_TILE)
         with serv:
             resp = self.app.get(WMTS_KVP_URL + '&layer=dimension_layer')
@@ -148,7 +148,7 @@ class TestWMTS(SystemTest):
 
     def test_get_tile_kvp_default_no_dimension_source(self):
         # check if dimensions are ignored
-        serv = MockServ(42423)
+        serv = MockServ(42423, bbox_aware_query_comparator=True)
         serv.expects(NO_DIMENSION_LAYER_BASE_REQ).returns(TEST_TILE)
         with serv:
             resp = self.app.get(WMTS_KVP_URL + '&layer=no_dimension_layer&Time=2012-11-14T00:00:00&Elevation=3000')

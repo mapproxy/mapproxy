@@ -119,7 +119,7 @@ class LockFile:
 
         try:
             _lock_file(fp)
-        except Exception, ex:
+        except Exception as ex:
             try:
                 fp.close()
             except Exception:

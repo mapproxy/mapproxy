@@ -32,7 +32,7 @@ class TestDirectoryConfLoader(object):
 
     def make_conf_file(self, name):
         conf_file_name = os.path.join(self.dir, name)
-        with open(conf_file_name, 'w'):
+        with open(conf_file_name, 'wb'):
             pass
         return conf_file_name
 
@@ -81,7 +81,7 @@ class TestDirectoryConfLoader(object):
         assert loader.app_available('foo')
 
 
-minimal_mapproxy_conf = """
+minimal_mapproxy_conf = b"""
 services:
   wms:
 
@@ -111,7 +111,7 @@ class TestMultiMapProxy(object):
 
     def make_conf_file(self, name):
         app_conf_file_name = os.path.join(self.dir, name)
-        with open(app_conf_file_name, 'w') as f:
+        with open(app_conf_file_name, 'wb') as f:
             f.write(minimal_mapproxy_conf)
         return app_conf_file_name
 

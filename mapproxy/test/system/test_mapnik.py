@@ -18,23 +18,23 @@ import os
 
 from mapproxy.test.system import module_setup, module_teardown, SystemTest
 
-from mapproxy.platform.image import Image
-from cStringIO import StringIO
+from mapproxy.compat.image import Image
+from io import BytesIO
 
 from nose.tools import eq_
 
 test_config = {}
 
 
-mapnik_xml = """
-<?xml version="1.0" encoding="utf-8"?>
+mapnik_xml = b"""
+<?xml version="1.0"?>
 <!DOCTYPE Map>
 <Map background-color="#ff0000" bgcolor="#ff0000" srs="+proj=latlong +datum=WGS84">
 </Map>
 """.strip()
 
-mapnik_transp_xml = """
-<?xml version="1.0" encoding="utf-8"?>
+mapnik_transp_xml = b"""
+<?xml version="1.0"?>
 <!DOCTYPE Map>
 <Map background-color="transparent" srs="+proj=latlong +datum=WGS84">
 </Map>
@@ -50,9 +50,9 @@ def setup_module():
         raise SkipTest('requires mapnik')
 
     module_setup(test_config, 'mapnik_source.yaml')
-    with open(os.path.join(test_config['base_dir'], 'mapnik.xml'), 'w') as f:
+    with open(os.path.join(test_config['base_dir'], 'mapnik.xml'), 'wb') as f:
         f.write(mapnik_xml)
-    with open(os.path.join(test_config['base_dir'], 'mapnik-transparent.xml'), 'w') as f:
+    with open(os.path.join(test_config['base_dir'], 'mapnik-transparent.xml'), 'wb') as f:
         f.write(mapnik_transp_xml)
 
 
@@ -69,7 +69,7 @@ class TestMapnikSource(SystemTest):
                 '&WIDTH=200&')
 
         resp = self.app.get(req)
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         img = Image.open(data)
         colors = img.getcolors(1)
         # map bg color
@@ -82,7 +82,7 @@ class TestMapnikSource(SystemTest):
                 '&WIDTH=200&&BGCOLOR=0x00ff00')
 
         resp = self.app.get(req)
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         img = Image.open(data)
         colors = img.getcolors(1)
         # wms request bg color
@@ -104,7 +104,7 @@ class TestMapnikSource(SystemTest):
                 '&WIDTH=200&transparent=True')
 
         resp = self.app.get(req)
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         img = Image.open(data)
         colors = img.getcolors(1)
         eq_(colors[0], (40000, (0, 0, 0, 0)))

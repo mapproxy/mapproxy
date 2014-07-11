@@ -15,7 +15,7 @@
 
 from __future__ import with_statement, division
 
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.request.wms import (
     WMS111MapRequest, WMS111FeatureInfoRequest, WMS111CapabilitiesRequest
 )
@@ -62,7 +62,7 @@ class TestWMSC(SystemTest):
         resp = self.app.get(str(self.common_map_req) + '&tiled=true')
         assert 'public' in resp.headers['Cache-Control']
         eq_(resp.content_type, 'image/jpeg')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_jpeg(data)
 
     def test_get_tile_w_rounded_bbox(self):
@@ -70,7 +70,7 @@ class TestWMSC(SystemTest):
         resp = self.app.get(str(self.common_map_req) + '&tiled=true')
         assert 'public' in resp.headers['Cache-Control']
         eq_(resp.content_type, 'image/jpeg')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_jpeg(data)
 
     def test_get_tile_wrong_bbox(self):

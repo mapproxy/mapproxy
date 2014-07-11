@@ -18,9 +18,10 @@ import os
 import pkg_resources
 
 from mapproxy.config import base_config, abspath
-from mapproxy.platform.image import Image, ImageColor, ImageDraw, ImageFont
+from mapproxy.compat.image import Image, ImageColor, ImageDraw, ImageFont
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import create_image, ImageOptions
+from mapproxy.compat import string_type
 
 _pil_ttf_support = True
 
@@ -116,7 +117,7 @@ class MessageImage(object):
         new image with the given `size`.
         """
         if not ((img and not size) or (size and not img)):
-            raise TypeError, 'need either img or size argument'
+            raise TypeError('need either img or size argument')
 
         if img is None:
             base_img = self.new_image(size)
@@ -243,7 +244,7 @@ class AttributionImage(MessageImage):
 class TextDraw(object):
     def __init__(self, text, font, font_color=None, bg_color=None,
                  placement='ul', padding=5, linespacing=3):
-        if isinstance(text, basestring):
+        if isinstance(text, string_type):
             text = text.split('\n')
         self.text = text
         self.font = font
@@ -257,6 +258,7 @@ class TextDraw(object):
         try:
             total_bbox, boxes = self._relative_text_boxes(draw)
         except UnicodeEncodeError:
+            # raised if font does not support unicode
             self.text = [l.encode('ascii', 'replace') for l in self.text]
             total_bbox, boxes = self._relative_text_boxes(draw)
         return self._place_boxes(total_bbox, boxes, size)

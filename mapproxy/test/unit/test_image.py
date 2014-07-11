@@ -17,8 +17,8 @@
 from __future__ import with_statement
 
 import os
-from StringIO import StringIO
-from mapproxy.platform.image import Image, ImageDraw
+from io import BytesIO
+from mapproxy.compat.image import Image, ImageDraw
 from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image
 from mapproxy.image import peek_image_format
 from mapproxy.image.merge import merge_images
@@ -29,7 +29,7 @@ from mapproxy.image.transform import ImageTransformer
 from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image_file, check_format, create_debug_img, create_image
 from mapproxy.srs import SRS
 from nose.tools import eq_
-from mapproxy.test.image import assert_colors_equal
+from mapproxy.test.image import assert_img_colors_eq
 from nose.plugins.skip import SkipTest
 
 
@@ -134,11 +134,11 @@ class TestSubImageSource(object):
 
 class ROnly(object):
     def __init__(self):
-        self.data = ['Hello World!']
+        self.data = [b'Hello World!']
     def read(self):
         if self.data:
             return self.data.pop()
-        return ''
+        return b''
     def __iter__(self):
         it = iter(self.data)
         self.data = []
@@ -149,27 +149,27 @@ class TestReadBufWrapper(object):
         rbuf = ROnly()
         self.rbuf_wrapper = ReadBufWrapper(rbuf)
     def test_read(self):
-        assert self.rbuf_wrapper.read() == 'Hello World!'
+        assert self.rbuf_wrapper.read() == b'Hello World!'
         self.rbuf_wrapper.seek(0)
-        eq_(self.rbuf_wrapper.read(), '')
+        eq_(self.rbuf_wrapper.read(), b'')
     def test_seek_read(self):
         self.rbuf_wrapper.seek(0)
-        assert self.rbuf_wrapper.read() == 'Hello World!'
+        assert self.rbuf_wrapper.read() == b'Hello World!'
         self.rbuf_wrapper.seek(0)
-        assert self.rbuf_wrapper.read() == 'Hello World!'
+        assert self.rbuf_wrapper.read() == b'Hello World!'
     def test_iter(self):
         data = list(self.rbuf_wrapper)
-        eq_(data, ['Hello World!'])
+        eq_(data, [b'Hello World!'])
         self.rbuf_wrapper.seek(0)
         data = list(self.rbuf_wrapper)
         eq_(data, [])
     def test_seek_iter(self):
         self.rbuf_wrapper.seek(0)
         data = list(self.rbuf_wrapper)
-        eq_(data, ['Hello World!'])
+        eq_(data, [b'Hello World!'])
         self.rbuf_wrapper.seek(0)
         data = list(self.rbuf_wrapper)
-        eq_(data, ['Hello World!'])
+        eq_(data, [b'Hello World!'])
     def test_hasattr(self):
         assert hasattr(self.rbuf_wrapper, 'seek')
         assert hasattr(self.rbuf_wrapper, 'readline')
@@ -213,8 +213,8 @@ class TestMergeAll(object):
         self.cleanup_tiles = [create_tmp_image_file((100, 100)) for _ in range(9)]
         self.tiles = [ImageSource(tile) for tile in self.cleanup_tiles]
         invalid_tile = self.tiles[0].source
-        with open(invalid_tile, 'w') as tmp:
-            tmp.write('invalid')
+        with open(invalid_tile, 'wb') as tmp:
+            tmp.write(b'invalid')
         m = TileMerger(tile_grid=(3, 3), tile_size=(100, 100))
         img_opts = ImageOptions(bgcolor=(200, 0, 50))
         result = m.merge(self.tiles, img_opts)
@@ -292,7 +292,7 @@ class TestLayerMerge(object):
 
         result = merge_images([img1, img2], ImageOptions(transparent=True))
         img = result.as_image()
-        assert_colors_equal(img, [
+        assert_img_colors_eq(img, [
             (10*10, (127, 127, 255, 255)),
         ])
 
@@ -354,7 +354,7 @@ class TestLayerCompositeMerge(object):
         result = merge_images([img2, img1], ImageOptions(transparent=True))
         img = result.as_image()
         eq_(img.mode, 'RGBA')
-        assert_colors_equal(img, [
+        assert_img_colors_eq(img, [
             (1089, (0, 255, 0, 255)),
             (1089, (255, 255, 255, 0)),
             (1122, (0, 255, 0, 128)),
@@ -377,7 +377,7 @@ class TestLayerCompositeMerge(object):
         result = merge_images([bg, fg], ImageOptions(transparent=True))
         img = result.as_image()
         eq_(img.mode, 'RGBA')
-        assert_colors_equal(img, [
+        assert_img_colors_eq(img, [
             (3600, (255, 0, 255, 255)),
             (6400, (128, 127, 255, 255))])
 
@@ -557,6 +557,6 @@ class TestPeekImageFormat(object):
         yield self.check, 'bmp', None
 
     def check(self, format, expected_format):
-        buf = StringIO()
+        buf = BytesIO()
         Image.new('RGB', (100, 100)).save(buf, format)
         eq_(peek_image_format(buf), expected_format)

@@ -130,7 +130,7 @@ Example configuration for an OpenStreetMap tile service::
   sources:
     my_tile_source:
       type: tile
-      grid: tile_grid_of_source
+      grid: GLOBAL_WEBMERCATOR
       url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
  grids:

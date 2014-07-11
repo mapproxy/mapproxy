@@ -26,7 +26,7 @@ from nose.tools import eq_
 test_config = {}
 
 
-xslt_input = """
+xslt_input = b"""
 <xsl:stylesheet version="1.0"
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  <xsl:template match="/">
@@ -36,7 +36,7 @@ xslt_input = """
  </xsl:template>
 </xsl:stylesheet>""".strip()
 
-xslt_input_html = """
+xslt_input_html = b"""
 <xsl:stylesheet version="1.0"
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  <xsl:template match="/">
@@ -47,7 +47,7 @@ xslt_input_html = """
 </xsl:stylesheet>""".strip()
 
 
-xslt_output = """
+xslt_output = b"""
 <xsl:stylesheet version="1.0"
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  <xsl:template match="/">
@@ -61,7 +61,7 @@ xslt_output = """
  </xsl:template>
 </xsl:stylesheet>""".strip()
 
-xslt_output_html = """
+xslt_output_html = b"""
 <xsl:stylesheet version="1.0"
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
  <xsl:template match="/">
@@ -81,13 +81,13 @@ xslt_output_html = """
 
 def setup_module():
     module_setup(test_config, 'xslt_featureinfo.yaml')
-    with open(os.path.join(test_config['base_dir'], 'fi_in.xsl'), 'w') as f:
+    with open(os.path.join(test_config['base_dir'], 'fi_in.xsl'), 'wb') as f:
         f.write(xslt_input)
-    with open(os.path.join(test_config['base_dir'], 'fi_in_html.xsl'), 'w') as f:
+    with open(os.path.join(test_config['base_dir'], 'fi_in_html.xsl'), 'wb') as f:
         f.write(xslt_input_html)
-    with open(os.path.join(test_config['base_dir'], 'fi_out.xsl'), 'w') as f:
+    with open(os.path.join(test_config['base_dir'], 'fi_out.xsl'), 'wb') as f:
         f.write(xslt_output)
-    with open(os.path.join(test_config['base_dir'], 'fi_out_html.xsl'), 'w') as f:
+    with open(os.path.join(test_config['base_dir'], 'fi_out_html.xsl'), 'wb') as f:
         f.write(xslt_output_html)
 def teardown_module():
     module_teardown(test_config)
@@ -104,7 +104,7 @@ class TestWMSXSLTFeatureInfo(SystemTest):
                        bbox='1000,400,2000,1400', srs='EPSG:900913'))
 
     def test_get_featureinfo(self):
-        fi_body = "<a><b>Bar</b></a>"
+        fi_body = b"<a><b>Bar</b></a>"
         expected_req = ({'path': r'/service_a?LAYERs=a_one&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
                                   '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
@@ -113,10 +113,10 @@ class TestWMSXSLTFeatureInfo(SystemTest):
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'application/vnd.ogc.gml')
-            eq_(strip_whitespace(resp.body), '<bars><bar>Bar</bar></bars>')
+            eq_(strip_whitespace(resp.body), b'<bars><bar>Bar</bar></bars>')
 
     def test_get_featureinfo_130(self):
-        fi_body = "<a><b>Bar</b></a>"
+        fi_body = b"<a><b>Bar</b></a>"
         expected_req = ({'path': r'/service_a?LAYERs=a_one&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
                                   '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
@@ -126,12 +126,12 @@ class TestWMSXSLTFeatureInfo(SystemTest):
             req = WMS130FeatureInfoRequest(url='/service?').copy_with_request_params(self.common_fi_req)
             resp = self.app.get(req)
             eq_(resp.content_type, 'text/xml')
-            eq_(strip_whitespace(resp.body), '<bars><bar>Bar</bar></bars>')
+            eq_(strip_whitespace(resp.body), b'<bars><bar>Bar</bar></bars>')
 
     def test_get_multiple_featureinfo(self):
-        fi_body1 = "<a><b>Bar1</b></a>"
-        fi_body2 = "<a><b>Bar2</b></a>"
-        fi_body3 = "<body><h1>Hello<p>Bar3"
+        fi_body1 = b"<a><b>Bar1</b></a>"
+        fi_body2 = b"<a><b>Bar2</b></a>"
+        fi_body3 = b"<body><h1>Hello<p>Bar3"
         expected_req1 = ({'path': r'/service_a?LAYERs=a_one&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
                                   '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
@@ -153,12 +153,12 @@ class TestWMSXSLTFeatureInfo(SystemTest):
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'application/vnd.ogc.gml')
             eq_(strip_whitespace(resp.body),
-                '<bars><bar>Bar1</bar><bar>Bar2</bar><bar>Bar3</bar></bars>')
+                b'<bars><bar>Bar1</bar><bar>Bar2</bar><bar>Bar3</bar></bars>')
 
     def test_get_multiple_featureinfo_html_out(self):
-        fi_body1 = "<a><b>Bar1</b></a>"
-        fi_body2 = "<a><b>Bar2</b></a>"
-        fi_body3 = "<body><h1>Hello<p>Bar3"
+        fi_body1 = b"<a><b>Bar1</b></a>"
+        fi_body2 = b"<a><b>Bar2</b></a>"
+        fi_body3 = b"<body><h1>Hello<p>Bar3"
         expected_req1 = ({'path': r'/service_a?LAYERs=a_one&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
                                   '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
@@ -181,11 +181,11 @@ class TestWMSXSLTFeatureInfo(SystemTest):
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/html')
             eq_(strip_whitespace(resp.body),
-                '<html><body><h1>Bars</h1><p>Bar1</p><p>Bar2</p><p>Bar3</p></body></html>')
+                b'<html><body><h1>Bars</h1><p>Bar1</p><p>Bar2</p><p>Bar3</p></body></html>')
 
     def test_mixed_featureinfo(self):
-        fi_body1 = "Hello"
-        fi_body2 = "<a><b>Bar2</b></a>"
+        fi_body1 = b"Hello"
+        fi_body2 = b"<a><b>Bar2</b></a>"
         expected_req1 = ({'path': r'/service_c?LAYERs=c_one&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
@@ -202,4 +202,4 @@ class TestWMSXSLTFeatureInfo(SystemTest):
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
             eq_(strip_whitespace(resp.body),
-                'Hello<baz><foo>Bar2</foo></baz>')
+                b'Hello<baz><foo>Bar2</foo></baz>')

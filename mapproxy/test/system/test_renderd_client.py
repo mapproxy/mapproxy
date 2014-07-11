@@ -48,8 +48,11 @@ def setup_module():
 def teardown_module():
     module_teardown(test_config)
 
+try:
+    from http.server import BaseHTTPRequestHandler
+except ImportError:
+    from BaseHTTPServer import BaseHTTPRequestHandler
 
-from BaseHTTPServer import BaseHTTPRequestHandler
 
 class TestWMS111(SystemTest):
     config = test_config
@@ -89,7 +92,7 @@ class TestWMS111(SystemTest):
             def do_POST(self):
                 length = int(self.headers['content-length'])
                 json_data = self.rfile.read(length)
-                task = json.loads(json_data)
+                task = json.loads(json_data.decode('utf-8'))
                 eq_(task['command'], 'tile')
                 # request main tile of metatile
                 eq_(task['tiles'], [[15, 17, 5]])
@@ -102,13 +105,13 @@ class TestWMS111(SystemTest):
                 tile_filename = os.path.join(test_self.config['cache_dir'],
                     'wms_cache_EPSG900913/05/000/000/016/000/000/016.jpeg')
                 ensure_directory(tile_filename)
-                with open(tile_filename, 'w') as f:
+                with open(tile_filename, 'wb') as f:
                     f.write(create_tmp_image((256, 256), format='jpeg', color=(255, 0, 100)))
 
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                self.wfile.write('{"status": "ok"}')
+                self.wfile.write(b'{"status": "ok"}')
 
             def log_request(self, code, size=None):
                 pass
@@ -134,7 +137,7 @@ class TestWMS111(SystemTest):
             def do_POST(self):
                 length = int(self.headers['content-length'])
                 json_data = self.rfile.read(length)
-                task = json.loads(json_data)
+                task = json.loads(json_data.decode('utf-8'))
                 eq_(task['command'], 'tile')
                 # request main tile of metatile
                 eq_(task['tiles'], [[15, 17, 5]])
@@ -146,7 +149,7 @@ class TestWMS111(SystemTest):
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                self.wfile.write('{"status": "error", "error_message": "barf"}')
+                self.wfile.write(b'{"status": "error", "error_message": "barf"}')
 
             def log_request(self, code, size=None):
                 pass
@@ -170,12 +173,12 @@ class TestWMS111(SystemTest):
             def do_POST(self):
                 length = int(self.headers['content-length'])
                 json_data = self.rfile.read(length)
-                json.loads(json_data)
+                json.loads(json_data.decode('utf-8'))
 
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                self.wfile.write('{"invalid')
+                self.wfile.write(b'{"invalid')
 
             def log_request(self, code, size=None):
                 pass
@@ -193,12 +196,12 @@ class TestWMS111(SystemTest):
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20&feature_count=100'},
-                        {'body': 'info', 'headers': {'content-type': 'text/plain'}})
+                        {'body': b'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             self.common_fi_req.params['feature_count'] = 100
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
-            eq_(resp.body, 'info')
+            eq_(resp.body, b'info')
 
 class TestTiles(SystemTest):
     config = test_config
@@ -209,7 +212,7 @@ class TestTiles(SystemTest):
             def do_POST(self):
                 length = int(self.headers['content-length'])
                 json_data = self.rfile.read(length)
-                task = json.loads(json_data)
+                task = json.loads(json_data.decode('utf-8'))
                 eq_(task['command'], 'tile')
                 eq_(task['tiles'], [[10, 20, 6]])
                 eq_(task['cache_identifier'], 'tms_cache_GLOBAL_MERCATOR')
@@ -221,13 +224,13 @@ class TestTiles(SystemTest):
                 tile_filename = os.path.join(test_self.config['cache_dir'],
                     'tms_cache_EPSG900913/06/000/000/010/000/000/020.png')
                 ensure_directory(tile_filename)
-                with open(tile_filename, 'w') as f:
-                    f.write("foobaz")
+                with open(tile_filename, 'wb') as f:
+                    f.write(b"foobaz")
 
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                self.wfile.write('{"status": "ok"}')
+                self.wfile.write(b'{"status": "ok"}')
 
             def log_request(self, code, size=None):
                 pass
@@ -236,7 +239,7 @@ class TestTiles(SystemTest):
             resp = self.app.get('/tiles/tms_cache/EPSG900913/6/10/20.png')
 
             eq_(resp.content_type, 'image/png')
-            eq_(resp.body, 'foobaz')
+            eq_(resp.body, b'foobaz')
             self.created_tiles.append('tms_cache_EPSG900913/06/000/000/010/000/000/020.png')
 
     def test_get_tile_error(self):
@@ -244,7 +247,7 @@ class TestTiles(SystemTest):
             def do_POST(self):
                 length = int(self.headers['content-length'])
                 json_data = self.rfile.read(length)
-                task = json.loads(json_data)
+                task = json.loads(json_data.decode('utf-8'))
                 eq_(task['command'], 'tile')
                 eq_(task['tiles'], [[10, 20, 7]])
                 eq_(task['cache_identifier'], 'tms_cache_GLOBAL_MERCATOR')
@@ -255,7 +258,7 @@ class TestTiles(SystemTest):
                 self.send_response(200)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
-                self.wfile.write('{"status": "error", "error_message": "you told me to fail"}')
+                self.wfile.write(b'{"status": "error", "error_message": "you told me to fail"}')
 
             def log_request(self, code, size=None):
                 pass
@@ -263,4 +266,4 @@ class TestTiles(SystemTest):
         with mock_single_req_httpd(('localhost', 42423), req_handler):
             resp = self.app.get('/tiles/tms_cache/EPSG900913/7/10/20.png', status=500)
             eq_(resp.content_type, 'text/plain')
-            eq_(resp.body, 'Error from renderd: you told me to fail')
+            eq_(resp.body, b'Error from renderd: you told me to fail')

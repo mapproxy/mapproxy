@@ -1,8 +1,10 @@
+from __future__ import print_function
 import math
 
 from .util import resolve_ns
 
 from xml.etree import ElementTree as etree
+from mapproxy.compat import string_type
 
 
 class WMSCapabilities(object):
@@ -170,7 +172,7 @@ class WMS111Capabilities(WMSCapabilities):
                 llbbox_elem.attrib['maxx'],
                 llbbox_elem.attrib['maxy']
             )
-            llbbox = map(float, llbbox)
+            llbbox = [float(x) for x in llbbox]
         elif parent_layer and 'llbbox' in parent_layer:
             llbbox = parent_layer['llbbox']
         return llbbox
@@ -204,7 +206,7 @@ class WMS111Capabilities(WMSCapabilities):
                     bbox_srs_elem.attrib['maxx'],
                     bbox_srs_elem.attrib['maxy']
                 )
-                bbox = map(float, bbox)
+                bbox = [float(x) for x in bbox]
                 bbox_srs[srs] = bbox
         elif parent_layer:
             bbox_srs = parent_layer['bbox_srs']
@@ -230,7 +232,7 @@ class WMS130Capabilities(WMSCapabilities):
                 self.find(llbbox_elem, 'eastBoundLongitude').text,
                 self.find(llbbox_elem, 'northBoundLatitude').text
             )
-            llbbox = map(float, llbbox)
+            llbbox = [float(x) for x in llbbox]
         elif parent_layer and 'llbbox' in parent_layer:
             llbbox = parent_layer['llbbox']
 
@@ -256,7 +258,7 @@ class WMS130Capabilities(WMSCapabilities):
                     bbox_srs_elem.attrib['maxx'],
                     bbox_srs_elem.attrib['maxy']
                 )
-                bbox = map(float, bbox)
+                bbox = [float(x) for x in bbox]
                 bbox_srs[srs] = bbox
         elif parent_layer:
             bbox_srs = parent_layer['bbox_srs']
@@ -278,12 +280,12 @@ def yaml_sources(cap):
         )
 
     import yaml
-    print yaml.dump(dict(sources=sources), default_flow_style=False)
+    print(yaml.dump(dict(sources=sources), default_flow_style=False))
 
 
 def parse_capabilities(fileobj):
-    if isinstance(fileobj, basestring):
-        fileobj = open(fileobj)
+    if isinstance(fileobj, string_type):
+        fileobj = open(fileobj, 'rb')
     tree = etree.parse(fileobj)
     # TODO: remove break pointer
     root_tag = tree.getroot().tag

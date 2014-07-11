@@ -18,16 +18,23 @@ Tile retrieval (WMS, TMS, etc.).
 """
 import sys
 import time
-import httplib
-import urllib2
-from urllib2 import URLError, HTTPError
-from urlparse import urlsplit
 import warnings
 
 from mapproxy.version import version
 from mapproxy.image import ImageSource
 from mapproxy.util.py import reraise_exception
 from mapproxy.client.log import log_request
+from mapproxy.compat import PY2
+from mapproxy.compat.modules import urlparse
+
+if PY2:
+    import urllib2
+    from urllib2 import URLError, HTTPError
+    import httplib
+else:
+    from urllib import request as urllib2
+    from urllib.error import URLError, HTTPError
+    from http import client as httplib
 
 import socket
 
@@ -124,7 +131,11 @@ class HTTPClient(object):
     def open(self, url, data=None):
         code = None
         result = None
-        req = urllib2.Request(url, data=data)
+        try:
+            req = urllib2.Request(url, data=data)
+        except ValueError as e:
+            reraise_exception(HTTPClientError('URL not correct "%s": %s'
+                                              % (url, e.args[0])), sys.exc_info())
         for key, value in self.header_list:
             req.add_header(key, value)
         try:
@@ -133,11 +144,11 @@ class HTTPClient(object):
                 result = self.opener.open(req, timeout=self._timeout)
             else:
                 result = self.opener.open(req)
-        except HTTPError, e:
+        except HTTPError as e:
             code = e.code
             reraise_exception(HTTPClientError('HTTP Error "%s": %d'
                 % (url, e.code), response_code=code), sys.exc_info())
-        except URLError, e:
+        except URLError as e:
             if ssl and isinstance(e.reason, ssl.SSLError):
                 e = HTTPClientError('Could not verify connection to URL "%s": %s'
                                      % (url, e.reason.args[1]))
@@ -148,10 +159,10 @@ class HTTPClient(object):
                 reason = e.reason
             reraise_exception(HTTPClientError('No response from URL "%s": %s'
                                               % (url, reason)), sys.exc_info())
-        except ValueError, e:
+        except ValueError as e:
             reraise_exception(HTTPClientError('URL not correct "%s": %s'
                                               % (url, e.args[0])), sys.exc_info())
-        except Exception, e:
+        except Exception as e:
             reraise_exception(HTTPClientError('Internal HTTP error "%s": %r'
                                               % (url, e)), sys.exc_info())
         else:
@@ -184,7 +195,7 @@ def auth_data_from_url(url):
     """
     username = password = None
     if '@' in url:
-        scheme, host, path, query, frag = urlsplit(url)
+        scheme, host, path, query, frag = urlparse.urlsplit(url)
         if '@' in host:
             auth_data, host = host.rsplit('@', 1)
             url = url.replace(auth_data+'@', '', 1)

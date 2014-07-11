@@ -13,15 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement, division
+from __future__ import print_function, division
 
 import os
 import sys
 import stat
 import math
 import time
-import cPickle as pickle
 from datetime import datetime
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 from mapproxy.layer import map_extent_from_grid
 
@@ -105,7 +109,7 @@ class ProgressStore(object):
             log.error('progress file (%s) is world writable, ignoring file',
                 self.filename)
         else:
-            with open(self.filename) as f:
+            with open(self.filename, 'rb') as f:
                 try:
                     return pickle.load(f)
                 except (pickle.UnpicklingError, AttributeError,
@@ -117,12 +121,12 @@ class ProgressStore(object):
 
     def write(self):
         try:
-            with open(self.filename + '.tmp', 'w') as f:
+            with open(self.filename + '.tmp', 'wb') as f:
                 f.write(pickle.dumps(self.status))
                 f.flush()
                 os.fsync(f.fileno())
             os.rename(self.filename + '.tmp', self.filename)
-        except (IOError, OSError), ex:
+        except (IOError, OSError) as ex:
             log.error('unable to write seed progress: %s', ex)
 
     def remove(self):
@@ -214,20 +218,26 @@ def status_symbol(i, total):
     else:
         return symbols[int(math.ceil(i/(total/4)))]
 
+class BackoffError(Exception):
+    pass
+
 def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
-        exceptions=(Exception,), ignore_exceptions=tuple()):
+        exceptions=(Exception,), ignore_exceptions=tuple(), max_backoff=60):
     n = 0
     while True:
         try:
             result = func(*args, **kw)
         except ignore_exceptions:
             time.sleep(0.01)
-        except exceptions, ex:
-            if (n+1) >= max_repeat:
-                raise
+        except exceptions as ex:
+            if n >= max_repeat:
+                print >>sys.stderr, "An error occured. Giving up"
+                raise BackoffError
             wait_for = start_backoff_sec * 2**n
-            print >>sys.stderr, ("An error occured. Retry in %d seconds: %r" %
-                (wait_for, ex))
+            if wait_for > max_backoff:
+                wait_for = max_backoff
+            print("An error occured. Retry in %d seconds: %r. Retries left: %d" %
+                (wait_for, ex, (max_repeat - n)), file=sys.stderr)
             time.sleep(wait_for)
             n += 1
         else:
@@ -236,6 +246,11 @@ def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
 def format_seed_task(task):
     info = []
     info.append('  %s:' % (task.md['name'], ))
+    if task.coverage is False:
+        info.append("    Empty coverage given for this task")
+        info.append("    Skipped")
+        return '\n'.join(info)
+
     info.append("    Seeding cache '%s' with grid '%s' in %s" % (
                  task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:
@@ -257,6 +272,11 @@ def format_seed_task(task):
 def format_cleanup_task(task):
     info = []
     info.append('  %s:' % (task.md['name'], ))
+    if task.coverage is False:
+        info.append("    Empty coverage given for this task")
+        info.append("    Skipped")
+        return '\n'.join(info)
+
     info.append("    Cleaning up cache '%s' with grid '%s' in %s" % (
                  task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:

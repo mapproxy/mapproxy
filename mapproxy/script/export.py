@@ -12,7 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import with_statement, division
+
+from __future__ import print_function, division
 
 import os
 import re
@@ -49,7 +50,7 @@ def parse_levels(level_str):
         part = part.strip()
         if re.match('\d+..\d+', part):
             from_level, to_level = part.split('..')
-            levels.update(range(int(from_level), int(to_level) + 1))
+            levels.update(list(range(int(from_level), int(to_level) + 1)))
         else:
             levels.add(int(part))
 
@@ -57,8 +58,8 @@ def parse_levels(level_str):
 
 def parse_grid_definition(definition):
     """
-    >>> parse_grid_definition("res=[10000,1000,100,10] srs=EPSG:4326 bbox=5,50,10,60")
-    {'res': [10000, 1000, 100, 10], 'bbox': '5,50,10,60', 'srs': 'EPSG:4326'}
+    >>> sorted(parse_grid_definition("res=[10000,1000,100,10] srs=EPSG:4326 bbox=5,50,10,60").items())
+    [('bbox', '5,50,10,60'), ('res', [10000, 1000, 100, 10]), ('srs', 'EPSG:4326')]
     """
     args = shlex.split(definition)
     grid_conf = {}
@@ -155,31 +156,31 @@ def export_command(args=None):
     required_options = ['mapproxy_conf', 'grid', 'source', 'dest', 'levels']
     for required in required_options:
         if not getattr(options, required):
-            print >>sys.stderr, 'ERROR: missing required option --%s' % required.replace('_', '-')
+            print('ERROR: missing required option --%s' % required.replace('_', '-'), file=sys.stderr)
             parser.print_help()
             sys.exit(1)
 
     try:
         conf = load_configuration(options.mapproxy_conf)
-    except IOError, e:
-        print >>sys.stderr, 'ERROR: ', "%s: '%s'" % (e.strerror, e.filename)
+    except IOError as e:
+        print('ERROR: ', "%s: '%s'" % (e.strerror, e.filename), file=sys.stderr)
         sys.exit(2)
-    except ConfigurationError, e:
-        print >>sys.stderr, e
-        print >>sys.stderr, 'ERROR: invalid configuration (see above)'
+    except ConfigurationError as e:
+        print(e, file=sys.stderr)
+        print('ERROR: invalid configuration (see above)', file=sys.stderr)
         sys.exit(2)
 
 
     if '=' in options.grid:
         try:
             grid_conf = parse_grid_definition(options.grid)
-        except ValidationError, ex:
-            print >>sys.stderr, 'ERROR: invalid grid configuration'
+        except ValidationError as ex:
+            print('ERROR: invalid grid configuration', file=sys.stderr)
             for error in ex.errors:
-                print >>sys.stderr, ' ', error
+                print(' ', error, file=sys.stderr)
             sys.exit(2)
         except ValueError:
-            print >>sys.stderr, 'ERROR: invalid grid configuration'
+            print('ERROR: invalid grid configuration', file=sys.stderr)
             sys.exit(2)
         options.grid = 'tmp_mapproxy_export_grid'
         grid_conf['name'] = options.grid
@@ -189,7 +190,7 @@ def export_command(args=None):
         custom_grid = False
 
     if os.path.exists(options.dest) and not options.force:
-        print >>sys.stderr, 'ERROR: destination exists, remove first or use --force'
+        print('ERROR: destination exists, remove first or use --force', file=sys.stderr)
         sys.exit(2)
 
 
@@ -215,7 +216,7 @@ def export_command(args=None):
             'directory': options.dest,
         }
     else:
-        print >>sys.stderr, 'ERROR: unsupported --type %s' % (options.type, )
+        print('ERROR: unsupported --type %s' % (options.type, ), file=sys.stderr)
         sys.exit(2)
 
     if not options.fetch_missing_tiles:
@@ -227,7 +228,7 @@ def export_command(args=None):
 
     levels = parse_levels(options.levels)
     if levels[-1] >= tile_grid.levels:
-        print >>sys.stderr, 'ERROR: destination grid only has %d levels' % tile_grid.levels
+        print('ERROR: destination grid only has %d levels' % tile_grid.levels, file=sys.stderr)
         sys.exit(2)
 
     if options.srs:
@@ -243,18 +244,18 @@ def export_command(args=None):
         seed_coverage = BBOXCoverage(tile_grid.bbox, tile_grid.srs)
 
     if not supports_tiled_access(mgr):
-        print >>sys.stderr, 'WARN: grids are incompatible. needs to scale/reproject tiles for export.'
+        print('WARN: grids are incompatible. needs to scale/reproject tiles for export.', file=sys.stderr)
 
     md = dict(name='export', cache_name='cache', grid_name=options.grid, dest=options.dest)
     task = SeedTask(md, mgr, levels, None, seed_coverage)
 
-    print format_export_task(task, custom_grid=custom_grid)
+    print(format_export_task(task, custom_grid=custom_grid))
 
     logger = ProgressLog(verbose=True, silent=False)
     try:
         seed_task(task, progress_logger=logger, dry_run=options.dry_run,
              concurrency=options.concurrency)
     except KeyboardInterrupt:
-        print >>sys.stderr, 'stopping...'
+        print('stopping...', file=sys.stderr)
         sys.exit(2)
 

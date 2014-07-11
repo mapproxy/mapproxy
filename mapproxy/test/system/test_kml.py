@@ -16,7 +16,7 @@
 from __future__ import with_statement
 import os
 import hashlib
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.srs import bbox_equals
 from mapproxy.util.times import format_httpdate
 from mapproxy.test.image import is_jpeg, tmp_image
@@ -68,7 +68,7 @@ class TestKML(SystemTest):
     def _check_tile_resp(self, resp):
         eq_(resp.content_type, 'image/jpeg')
         eq_(resp.content_length, len(resp.body))
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_jpeg(data)
 
     def _update_timestamp(self):
@@ -79,7 +79,7 @@ class TestKML(SystemTest):
                               'wms_cache_EPSG900913/01/000/000/000/000/000/001.jpeg'),
                  (timestamp, timestamp))
         max_age = base_config().tiles.expires_hours * 60 * 60
-        etag = hashlib.md5(str(timestamp) + str(size)).hexdigest()
+        etag = hashlib.md5((str(timestamp) + str(size)).encode('ascii')).hexdigest()
         return etag, max_age
 
     def _check_cache_control_headers(self, resp, etag, max_age, timestamp=1234567890.0):
@@ -224,7 +224,7 @@ class TestKML(SystemTest):
                                       '&VERSION=1.1.1&BBOX=-20037508.3428,-20037508.3428,0.0,0.0'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 resp = self.app.get('/kml/wms_cache/1/0/0.jpeg')
                 eq_(resp.content_type, 'image/jpeg')
                 self.created_tiles.append('wms_cache_EPSG900913/01/000/000/000/000/000/000.jpeg')

@@ -18,13 +18,11 @@ from __future__ import with_statement, absolute_import
 import threading
 import hashlib
 
-from cStringIO import StringIO
+from io import BytesIO
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.tile import Tile
-from mapproxy.cache.base import (
-    TileCacheBase, FileBasedLocking,
-    tile_buffer, CacheBackendError,)
+from mapproxy.cache.base import TileCacheBase, tile_buffer, CacheBackendError
 
 try:
     import riak
@@ -37,18 +35,15 @@ log = logging.getLogger(__name__)
 class UnexpectedResponse(CacheBackendError):
     pass
 
-class RiakCache(TileCacheBase, FileBasedLocking):
+class RiakCache(TileCacheBase):
     def __init__(self, nodes, protocol, bucket, tile_grid, lock_dir, use_secondary_index=False):
         if riak is None:
             raise ImportError("Riak backend requires 'riak' package.")
 
         self.nodes = nodes
         self.protocol = protocol
-
         self.lock_cache_id = 'riak-' + hashlib.md5(nodes[0]['host'] + bucket).hexdigest()
-        self.lock_dir = lock_dir
-        self.lock_timeout = 60
-        self.request_timeout = self.lock_timeout * 1000  # riak timeout is in miliseconds
+        self.request_timeout = 10000 # 10s, TODO make configurable
         self.bucket_name = bucket
         self.tile_grid = tile_grid
         self.use_secondary_index = use_secondary_index
@@ -70,7 +65,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
         obj = False
         try:
             obj = self.bucket.get(key, r=1, timeout=self.request_timeout)
-        except Exception, e:
+        except Exception as e:
             log.warn('error while requesting %s: %s', key, e)
 
         if not obj:
@@ -82,7 +77,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
         timestamp = metadata.get('timestamp')
         if timestamp != None:
             return float(timestamp)
-        
+
         obj.usermeta = {'timestamp': '0'}
         return 0.0
 
@@ -111,10 +106,10 @@ class RiakCache(TileCacheBase, FileBasedLocking):
             if self.use_secondary_index:
                 x, y, z = tile.coord
                 res.add_index('tile_coord_bin', '%02d-%07d-%07d' % (z, x, y))
-            
+
             try:
                 res.store(return_body=False, timeout=self.request_timeout)
-            except riak.RiakError, ex:
+            except riak.RiakError as ex:
                 log.warn('unable to store tile: %s', ex)
                 return False
 
@@ -143,7 +138,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
 
         res = self._get_object(tile.coord)
         if res.exists:
-            tile_data = StringIO(res.encoded_data)
+            tile_data = BytesIO(res.encoded_data)
             tile.source = ImageSource(tile_data)
             if with_metadata:
                 tile.timestamp = self._get_timestamp(res)
@@ -163,7 +158,7 @@ class RiakCache(TileCacheBase, FileBasedLocking):
 
         try:
             res.delete(w=1, rw=1, dw=1, pw=1)
-        except riak.RiakError, ex:
+        except riak.RiakError as ex:
             log.warn('unable to remove tile: %s', ex)
             return False
         return True
@@ -182,10 +177,10 @@ class RiakCache(TileCacheBase, FileBasedLocking):
         # batches of `chunk_size`*`chunk_size`.
         grid_size = self.tile_grid.grid_sizes[level]
         chunk_size = 256
-        for x in xrange(grid_size[0]/chunk_size):
+        for x in range(grid_size[0]/chunk_size):
             start_x = x * chunk_size
             end_x = start_x + chunk_size - 1
-            for y in xrange(grid_size[1]/chunk_size):
+            for y in range(grid_size[1]/chunk_size):
                 start_y = y * chunk_size
                 end_y = start_y + chunk_size - 1
                 query = self.bucket.get_index('tile_coord_bin',

@@ -251,10 +251,10 @@ class TestWMSAuth(SystemTest):
         serv.expects('/service?request=GetFeatureInfo&service=WMS&Version=1.1.1&SRS=EPSG:4326'
             '&BBOX=-80.0,-40.0,0.0,0.0&WIDTH=200&HEIGHT=100&styles=&FORMAT=image/png&X=10&Y=10'
             '&query_layers=fi&layers=fi')
-        serv.returns('infoinfo')
+        serv.returns(b'infoinfo')
         with serv:
             resp = self.app.get(FI_REQ + 'query_layers=layer1b&layers=layer1b', extra_environ={'mapproxy.authorize': auth})
-            eq_(resp.body, 'infoinfo')
+            eq_(resp.body, b'infoinfo')
 
     def test_get_featureinfo_limited_to_outside(self):
         def auth(service, layers, query_extent, **kw):
@@ -270,7 +270,7 @@ class TestWMSAuth(SystemTest):
 
         resp = self.app.get(FI_REQ + 'query_layers=layer1b&layers=layer1b', extra_environ={'mapproxy.authorize': auth})
         # empty response, FI request is outside of limited_to geometry
-        eq_(resp.body, '')
+        eq_(resp.body, b'')
 
     def test_get_featureinfo_global_limited(self):
         def auth(service, layers, query_extent, **kw):
@@ -286,7 +286,7 @@ class TestWMSAuth(SystemTest):
             }
         resp = self.app.get(FI_REQ + 'query_layers=layer1b&layers=layer1b', extra_environ={'mapproxy.authorize': auth})
         # empty response, FI request is outside of limited_to geometry
-        eq_(resp.body, '')
+        eq_(resp.body, b'')
 
 
 TMS_CAPABILITIES_REQ = '/tms/1.0.0'

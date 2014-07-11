@@ -24,9 +24,11 @@ from mapproxy.image import SubImageSource, bbox_position_in_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
 from mapproxy.srs import SRS, bbox_equals, merge_bbox, make_lin_transf
-from mapproxy.platform.proj import ProjError
+from mapproxy.proj import ProjError
+from mapproxy.compat import iteritems
 
 import logging
+from functools import reduce
 log = logging.getLogger(__name__)
 
 class BlankImage(Exception):
@@ -132,7 +134,7 @@ class MapQuery(object):
         {'Foo': 1}
         """
         params = [p.lower() for p in params]
-        return dict((k, v) for k, v in self.dimensions.iteritems() if k.lower() in params)
+        return dict((k, v) for k, v in iteritems(self.dimensions) if k.lower() in params)
 
     def __repr__(self):
         return "MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s)" % self.__dict__
@@ -181,9 +183,9 @@ class MapExtent(object):
     >>> me = MapExtent((5, 45, 15, 55), SRS(4326))
     >>> me.llbbox
     (5, 45, 15, 55)
-    >>> map(int, me.bbox_for(SRS(900913)))
+    >>> [int(x) for x in me.bbox_for(SRS(900913))]
     [556597, 5621521, 1669792, 7361866]
-    >>> map(int, me.bbox_for(SRS(4326)))
+    >>> [int(x) for x in me.bbox_for(SRS(4326))]
     [5, 45, 15, 55]
     """
     is_default = False
@@ -438,7 +440,7 @@ class CacheMapLayer(MapLayer):
                                              req_srs=query.srs)
         except NoTiles:
             raise BlankImage()
-        except GridError, ex:
+        except GridError as ex:
             raise MapBBOXError(ex.args[0])
 
         num_tiles = tile_grid[0] * tile_grid[1]
@@ -474,7 +476,7 @@ class CacheMapLayer(MapLayer):
                 self.tile_manager.image_opts)
         except ProjError:
             raise MapBBOXError("could not transform query BBOX")
-        except IOError, ex:
+        except IOError as ex:
             from mapproxy.source import SourceError
             raise SourceError("unable to transform image: %s" % ex)
 

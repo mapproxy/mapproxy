@@ -63,7 +63,7 @@ class TileMerger(object):
                 tile.draft(image_opts.mode, self.tile_size)
                 result.paste(tile, pos)
                 source.close_buffers()
-            except IOError, e:
+            except IOError as e:
                 if e.errno is None: # PIL error
                     log.warn('unable to load tile %s, removing it (reason was: %s)'
                              % (source, str(e)))

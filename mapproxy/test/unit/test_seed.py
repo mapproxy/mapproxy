@@ -17,9 +17,13 @@ from __future__ import with_statement, division
 
 import os
 import time
-import cPickle as pickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 from mapproxy.seed.seeder import TileWalker, SeedTask, SeedProgress
+from mapproxy.cache.dummy import DummyLocker
 from mapproxy.cache.tile import TileManager
 from mapproxy.source.tile import TiledSource
 from mapproxy.grid import tile_grid_for_epsg
@@ -56,7 +60,8 @@ class TestSeeder(object):
     def setup(self):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.source = TiledSource(self.grid, None)
-        self.tile_mgr = TileManager(self.grid, MockCache(), [self.source], 'png')
+        self.tile_mgr = TileManager(self.grid, MockCache(), [self.source], 'png',
+            locker=DummyLocker())
         self.seed_pool = MockSeedPool()
 
     def make_bbox_task(self, bbox, srs, levels):
@@ -132,7 +137,8 @@ class TestSeeder(object):
 
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90],
                              res=[360/256, 360/720, 360/2000, 360/5000, 360/8000])
-        self.tile_mgr = TileManager(self.grid, MockCache(), [self.source], 'png')
+        self.tile_mgr = TileManager(self.grid, MockCache(), [self.source], 'png',
+            locker=DummyLocker())
         task = self.make_geom_task(geom, SRS(4326), [0, 1, 2, 3, 4])
         seeder = TileWalker(task, self.seed_pool, handle_uncached=True)
         seeder.walk()
@@ -208,7 +214,7 @@ class TestProgressStore(object):
 
     def test_load_store(self):
         with TempFile(no_create=True) as tmp:
-            with open(tmp, 'w') as f:
+            with open(tmp, 'wb') as f:
                 f.write(pickle.dumps({("view", "cache", "grid"): [(0, 1), (2, 4)]}))
             store = ProgressStore(tmp)
             assert store.get(('view', 'cache', 'grid')) == [(0, 1), (2, 4)]
@@ -223,8 +229,8 @@ class TestProgressStore(object):
 
     def test_load_broken(self):
         with TempFile(no_create=True) as tmp:
-            with open(tmp, 'w') as f:
-                f.write('##invaliddata')
+            with open(tmp, 'wb') as f:
+                f.write(b'##invaliddata')
                 f.write(pickle.dumps({("view", "cache", "grid"): [(0, 1), (2, 4)]}))
 
             store = ProgressStore(tmp)

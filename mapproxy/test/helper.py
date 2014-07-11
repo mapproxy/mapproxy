@@ -1,32 +1,36 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
+from __future__ import print_function
+
 import tempfile
 import os
 import re
+import sys
+from contextlib import contextmanager
 from lxml import etree
-import mocker
 
+from mapproxy.test import mocker
+from mapproxy.compat import string_type, PY2
 from nose.tools import eq_
 
 class Mocker(object):
     """
     This is a base class for unit-tests that use ``mocker``. This class follows
     the nosetest naming conventions for setup and teardown methods.
-    
+
     `setup` will initialize a `mocker.Mocker`. The `teardown` method
     will run ``mocker.verify()``.
     """
@@ -60,7 +64,7 @@ class Mocker(object):
 class TempFiles(object):
     """
     This class is a context manager for temporary files.
-    
+
     >>> with TempFiles(n=2, suffix='.png') as tmp:
     ...     for f in tmp:
     ...         assert os.path.exists(f)
@@ -72,7 +76,7 @@ class TempFiles(object):
         self.suffix = suffix
         self.no_create = no_create
         self.tmp_files = []
-    
+
     def __enter__(self):
         for _ in range(self.n):
             fd, tmp_file = tempfile.mkstemp(suffix=self.suffix)
@@ -81,7 +85,7 @@ class TempFiles(object):
             if self.no_create:
                 os.remove(tmp_file)
         return self.tmp_files
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         for tmp_file in self.tmp_files:
             if os.path.exists(tmp_file):
@@ -100,12 +104,12 @@ class LogMock(object):
         self.module = module
         self.orig_logger = None
         self.logged_msgs = []
-    
+
     def __enter__(self):
         self.orig_logger = self.module.log
         self.module.log = self
         return self
-    
+
     def __getattr__(self, name):
         if name in self.log_methods:
             def _log(msg):
@@ -113,17 +117,17 @@ class LogMock(object):
             return _log
         raise AttributeError("'%s' object has no attribute '%s'" %
                              (self.__class__.__name__, name))
-    
+
     def assert_log(self, type, msg):
         log_type, log_msg = self.logged_msgs.pop(0)
         assert log_type == type, 'expected %s log message, but was %s' % (type, log_type)
         assert msg in log_msg.lower(), "expected string '%s' in log message '%s'" % \
             (msg, log_msg)
-        
-    
+
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.module.log = self.orig_logger
-    
+
 
 def assert_re(value, regex):
     """
@@ -139,39 +143,39 @@ def assert_re(value, regex):
 def validate_with_dtd(doc, dtd_name, dtd_basedir=None):
     if dtd_basedir is None:
         dtd_basedir = os.path.join(os.path.dirname(__file__), 'schemas')
-    
+
     dtd_filename = os.path.join(dtd_basedir, dtd_name)
-    with open(dtd_filename) as schema:
+    with open(dtd_filename, 'rb') as schema:
         dtd = etree.DTD(schema)
-        if isinstance(doc, basestring):
+        if isinstance(doc, (string_type, bytes)):
             xml = etree.XML(doc)
         else:
             xml = doc
         is_valid = dtd.validate(xml)
-        print dtd.error_log.filter_from_errors()
+        print(dtd.error_log.filter_from_errors())
         return is_valid
 
 def validate_with_xsd(doc, xsd_name, xsd_basedir=None):
     if xsd_basedir is None:
         xsd_basedir = os.path.join(os.path.dirname(__file__), 'schemas')
-    
+
     xsd_filename = os.path.join(xsd_basedir, xsd_name)
-    
-    with open(xsd_filename) as schema:
+
+    with open(xsd_filename, 'rb') as schema:
         xsd = etree.parse(schema)
         xml_schema = etree.XMLSchema(xsd)
-        if isinstance(doc, basestring):
+        if isinstance(doc, (string_type, bytes)):
             xml = etree.XML(doc)
         else:
             xml = doc
         is_valid = xml_schema.validate(xml)
-        print xml_schema.error_log.filter_from_errors()
+        print(xml_schema.error_log.filter_from_errors())
         return is_valid
 
 class XPathValidator(object):
     def __init__(self, doc):
         self.xml = etree.XML(doc)
-    
+
     def assert_xpath(self, xpath, expected=None):
         assert len(self.xml.xpath(xpath)) > 0, xpath + ' does not match anything'
         if expected is not None:
@@ -183,9 +187,44 @@ class XPathValidator(object):
         return self.xml.xpath(xpath)
 
 
-def strip_whitespace(text):
+def strip_whitespace(data):
     """
     >>> strip_whitespace(' <foo> bar\\n zing\\t1')
     '<foo>barzing1'
     """
-    return re.sub('\s+', '', text)
+    if isinstance(data, bytes):
+        return re.sub(b'\s+', b'', data)
+    else:
+        return re.sub('\s+', '', data)
+
+
+@contextmanager
+def capture(bytes=False):
+    if PY2:
+        from StringIO import StringIO
+    else:
+        if bytes:
+            from io import BytesIO as StringIO
+        else:
+            from io import StringIO
+
+
+    backup_stdout = sys.stdout
+    backup_stderr = sys.stderr
+
+    try:
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
+        yield sys.stdout, sys.stderr
+    except Exception as ex:
+        backup_stdout.write(str(ex))
+        if bytes:
+            backup_stdout.write(sys.stdout.getvalue().decode('utf-8'))
+            backup_stderr.write(sys.stderr.getvalue().decode('utf-8'))
+        else:
+            backup_stdout.write(sys.stdout.getvalue())
+            backup_stderr.write(sys.stderr.getvalue())
+        raise
+    finally:
+        sys.stdout = backup_stdout
+        sys.stderr = backup_stderr

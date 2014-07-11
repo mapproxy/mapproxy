@@ -38,7 +38,6 @@ Tile caching (creation, caching and retrieval of tiles).
 from __future__ import with_statement
 
 from contextlib import contextmanager
-
 from mapproxy.grid import MetaGrid
 from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter
@@ -55,11 +54,12 @@ class TileManager(object):
         with a tile before it will be stored to disc. the filter should
         return this or a new tile object.
     """
-    def __init__(self, grid, cache, sources, format, image_opts=None, request_format=None,
+    def __init__(self, grid, cache, sources, format, locker, image_opts=None, request_format=None,
         meta_buffer=None, meta_size=None, minimize_meta_requests=False, identifier=None,
         pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None):
         self.grid = grid
         self.cache = cache
+        self.locker = locker
         self.identifier = identifier
         self.meta_grid = None
         self.format = format
@@ -141,7 +141,7 @@ class TileManager(object):
     def lock(self, tile):
         if self.meta_grid:
             tile = Tile(self.meta_grid.main_tile(tile.coord))
-        return self.cache.lock(tile)
+        return self.locker.lock(tile)
 
     def is_cached(self, tile, dimensions=None):
         """
@@ -313,7 +313,7 @@ class TileCreator(object):
                 if not meta_tile_image: return []
                 splitted_tiles = split_meta_tiles(meta_tile_image, meta_tile.tile_patterns,
                                                   tile_size, self.tile_mgr.image_opts)
-                splitted_tiles = map(self.tile_mgr.apply_tile_filter, splitted_tiles)
+                splitted_tiles = [self.tile_mgr.apply_tile_filter(t) for t in splitted_tiles]
                 if meta_tile_image.cacheable:
                     self.cache.store_tiles(splitted_tiles)
                 return splitted_tiles
@@ -418,8 +418,11 @@ class CacheInfo(object):
         self.timestamp = timestamp
         self.size = size
 
-    def __nonzero__(self):
+    def __bool__(self):
         return self.cacheable
+
+    # PY2 compat
+    __nonzero__ = __bool__
 
 class TileCollection(object):
     def __init__(self, tile_coords):

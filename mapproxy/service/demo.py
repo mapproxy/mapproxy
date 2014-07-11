@@ -21,16 +21,21 @@ from __future__ import division
 import os
 import pkg_resources
 import mimetypes
-from urllib2 import urlopen
 from collections import defaultdict
 
 from mapproxy.config.config import base_config
+from mapproxy.compat import PY2
 from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.srs import SRS, get_epsg_num
 from mapproxy.layer import SRSConditional, CacheMapLayer, ResolutionConditional
 from mapproxy.source.wms import WMSSource
+
+if PY2:
+    import urllib2
+else:
+    from urllib import request as urllib2
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
@@ -74,7 +79,7 @@ class DemoServer(Server):
         # since they are not confidential
         try:
             authorized = self.authorized_demo(req.environ)
-        except RequestError, ex:
+        except RequestError as ex:
             return ex.render()
         if not authorized:
             return Response('forbidden', content_type='text/plain', status=403)
@@ -87,22 +92,22 @@ class DemoServer(Server):
             demo = self._render_wmts_template('demo/wmts_demo.html', req)
         elif 'wms_capabilities' in req.args:
             url = '%s/service?REQUEST=GetCapabilities'%(req.script_url)
-            capabilities = urlopen(url)
+            capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS', url)
         elif 'wmsc_capabilities' in req.args:
             url = '%s/service?REQUEST=GetCapabilities&tiled=true'%(req.script_url)
-            capabilities = urlopen(url)
+            capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS-C', url)
         elif 'wmts_capabilities' in req.args:
             url = '%s/wmts/1.0.0/WMTSCapabilities.xml' % (req.script_url)
-            capabilities = urlopen(url)
+            capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMTS', url)
         elif 'tms_capabilities' in req.args:
             if 'layer' in req.args and 'srs' in req.args:
                 url = '%s/tms/1.0.0/%s_%s'%(req.script_url, req.args['layer'], req.args['srs'])
             else:
                 url = '%s/tms/1.0.0/'%(req.script_url)
-            capabilities = urlopen(url)
+            capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'TMS', url)
         elif req.path == '/demo/':
             demo = self._render_template('demo/demo.html')

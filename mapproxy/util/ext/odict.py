@@ -107,7 +107,8 @@
     :license: modified BSD license.
 """
 from __future__ import absolute_import
-from itertools import izip, imap
+from mapproxy.compat import iteritems
+from mapproxy.compat.itertools import izip, imap
 from copy import deepcopy
 
 missing = object()
@@ -158,9 +159,9 @@ class odict(dict):
 
     >>> d.keys()
     ['a', 'c', 'foo', 'spam']
-    >>> d.values()
+    >>> list(d.values())
     ['b', 'd', 'bar', []]
-    >>> d.items()
+    >>> list(d.items())
     [('a', 'b'), ('c', 'd'), ('foo', 'bar'), ('spam', [])]
     >>> list(d.iterkeys())
     ['a', 'c', 'foo', 'spam']
@@ -255,7 +256,7 @@ class odict(dict):
         return self.__class__(self)
 
     def items(self):
-        return zip(self._keys, self.values())
+        return list(zip(self._keys, self.values()))
 
     def iteritems(self):
         return izip(self._keys, self.itervalues())
@@ -286,8 +287,8 @@ class odict(dict):
     def update(self, *args, **kwargs):
         sources = []
         if len(args) == 1:
-            if hasattr(args[0], 'iteritems'):
-                sources.append(args[0].iteritems())
+            if hasattr(args[0], 'iteritems') or hasattr(args[0], 'items'):
+                sources.append(iteritems(args[0]))
             else:
                 sources.append(iter(args[0]))
         elif args:

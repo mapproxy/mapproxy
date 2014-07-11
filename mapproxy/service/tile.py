@@ -19,6 +19,7 @@ from __future__ import division, with_statement
 import math
 import time
 
+from mapproxy.compat import iteritems, itervalues
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
@@ -153,7 +154,7 @@ class TileServer(Server):
             if result['authorized'] == 'none':
                 raise RequestError('forbidden', status=403)
             allowed_layers = odict()
-            for layer in self.layers.itervalues():
+            for layer in itervalues(self.layers):
                 if result['layers'].get(layer.name, {}).get('tile', False) == True:
                     allowed_layers[layer.name] = layer
             return allowed_layers
@@ -179,7 +180,7 @@ class TileServer(Server):
         """
         :return: root resource with all available versions of the service
         :rtype: Response
-        """        
+        """
         service = self._service_md(tms_request)
         result = self._render_root_resource_template(service)
         return Response(result, mimetype='text/xml')
@@ -269,7 +270,7 @@ class TileLayer(object):
     def checked_dimensions(self, tile_request):
         dimensions = {}
 
-        for dimension, values in self.dimensions.iteritems():
+        for dimension, values in iteritems(self.dimensions):
             value = tile_request.dimensions.get(dimension)
             if value in values:
                 dimensions[dimension] = value
@@ -328,7 +329,7 @@ class TileLayer(object):
 
             format = None if self._mixed_format else tile_request.format
             return TileResponse(tile, format=format, image_opts=self.tile_manager.image_opts)
-        except SourceError, e:
+        except SourceError as e:
             raise RequestError(e.args[0], request=tile_request, internal=True)
 
 class ImageResponse(object):
@@ -365,7 +366,7 @@ class TileResponse(object):
         #read the 2 magic bytes from the buffer
         magic_bytes = self._buf.read(2)
         self._buf.seek(0)
-        if magic_bytes == '\xFF\xD8':
+        if magic_bytes == b'\xFF\xD8':
             return 'jpeg'
         return 'png'
 
@@ -452,7 +453,7 @@ class TileServiceGrid(object):
                              profiles (see `mapproxy.core.server.TileServer`)
         """
         x, y, z = tile_coord
-        if z < 0:
+        if int(z) < 0:
             return None
         if use_profiles and self._skip_first_level:
             z += 1

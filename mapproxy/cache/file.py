@@ -16,15 +16,17 @@
 from __future__ import with_statement
 import os
 import errno
+import hashlib
 
 from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.image import ImageSource, is_single_color_image
-from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer
+from mapproxy.cache.base import TileCacheBase, tile_buffer
+from mapproxy.compat import string_type
 
 import logging
 log = logging.getLogger('mapproxy.cache.file')
 
-class FileCache(TileCacheBase, FileBasedLocking):
+class FileCache(TileCacheBase):
     """
     This class is responsible to store and load the actual tile data.
     """
@@ -36,11 +38,8 @@ class FileCache(TileCacheBase, FileBasedLocking):
             each tile (e.g. 'png')
         """
         super(FileCache, self).__init__()
+        self.lock_cache_id = hashlib.md5(cache_dir.encode('utf-8')).hexdigest()
         self.cache_dir = cache_dir
-        if lock_dir is None:
-            lock_dir = os.path.join(cache_dir, 'tile_locks')
-        self.lock_dir = lock_dir
-        self.lock_timeout = lock_timeout
         self.file_ext = file_ext
         self.link_single_color_images = link_single_color_images
 
@@ -61,7 +60,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
         >>> c.level_location(2)
         '/tmp/cache/02'
         """
-        if isinstance(level, basestring):
+        if isinstance(level, string_type):
             return os.path.join(self.cache_dir, level)
         else:
             return os.path.join(self.cache_dir, "%02d" % level)
@@ -173,7 +172,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
             stats = os.lstat(location)
             tile.timestamp = stats.st_mtime
             tile.size = stats.st_size
-        except OSError, ex:
+        except OSError as ex:
             if ex.errno != errno.ENOENT: raise
             tile.timestamp = 0
             tile.size = 0
@@ -212,7 +211,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
         location = self.tile_location(tile)
         try:
             os.remove(location)
-        except OSError, ex:
+        except OSError as ex:
             if ex.errno != errno.ENOENT: raise
 
     def store_tile(self, tile):
@@ -264,7 +263,7 @@ class FileCache(TileCacheBase, FileBasedLocking):
 
         try:
             os.symlink(real_tile_loc, tile_loc)
-        except OSError, e:
+        except OSError as e:
             # ignore error if link was created by other process
             if e.errno != errno.EEXIST:
                 raise e

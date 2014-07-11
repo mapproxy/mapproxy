@@ -2,13 +2,15 @@ language: python
 python:
   - "2.6"
   - "2.7"
+  - "3.3"
 services:
   - couchdb
   - riak
   - cassandra
 # command to install dependencies
 install:
-    - "pip install --use-mirrors requests==1.2.3 protobuf==2.4.1 riak==2.0.2 riak_pb==1.4.4.0; export MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984; export MAPPROXY_TEST_RIAK_PBC=pbc://localhost:8087"
+    - "if [[ $TRAVIS_PYTHON_VERSION != '3.3' ]]; then pip install --use-mirrors protobuf==2.4.1 riak==2.0.2 riak_pb==1.4.4.0; export MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984; export MAPPROXY_TEST_RIAK_PBC=pbc://localhost:8087; fi"
+    - "pip install --use-mirrors requests==1.2.3"
     - "sudo apt-get update && sudo apt-get install libproj0 libgeos-dev libgdal-dev libxslt1-dev libxml2-dev build-essential python-dev libjpeg-dev zlib1g-dev libfreetype6-dev protobuf-compiler libprotoc-dev"
     - "pip install -r requirements-travis.txt --use-mirrors"
     - "export CASSANDRA_SERVER=localhost:9160"

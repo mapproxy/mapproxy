@@ -17,6 +17,7 @@
 WMS clients for maps and information.
 """
 from __future__ import with_statement
+from mapproxy.compat import text_type
 from mapproxy.request.base import split_mime_type
 from mapproxy.layer import InfoQuery
 from mapproxy.source import SourceError
@@ -51,6 +52,8 @@ class WMSClient(object):
 
         if request_method == 'POST':
             url, data = self._query_data(query, format)
+            if isinstance(data, text_type):
+                data = data.encode('utf-8')
         else:
             url = self._query_url(query, format)
             data = None
@@ -60,10 +63,10 @@ class WMSClient(object):
                 resp = self.http_client.open(url, data=data)
         else:
             resp = self.http_client.open(url, data=data)
-        self._check_resp(resp)
+        self._check_resp(resp, url)
         return resp
 
-    def _check_resp(self, resp):
+    def _check_resp(self, resp, url):
         if not resp.headers.get('Content-type', 'image/').startswith('image/'):
             # log response depending on content-type
             if resp.headers['Content-type'].startswith(('text/', 'application/vnd.ogc')):
@@ -73,8 +76,8 @@ class WMSClient(object):
             data = resp.read(log_size)
             if len(data) == log_size:
                 data += '... truncated'
-            log.warn("expected image response, got: %s", data)
-            raise SourceError('no image returned from source WMS')
+            log.warn("no image returned from source WMS: %s, response was: %s" % (url, data))
+            raise SourceError('no image returned from source WMS: %s' % (url, ))
 
     def _query_url(self, query, format):
         return self._query_req(query, format).complete_url

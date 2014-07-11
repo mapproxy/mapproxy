@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2014 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 """
 WMS service handler
 """
-from itertools import chain
+from mapproxy.compat import iteritems
+from mapproxy.compat.itertools import chain
 from functools import partial
 from mapproxy.cache.tile import CacheInfo
 from mapproxy.request.wms import (wms_request, WMS111LegendGraphicRequest,
@@ -129,8 +130,8 @@ class WMSServer(Server):
         merger = LayerMerger()
         renderer.render(merger)
 
-        if self.attribution and not query.tiled_only:
-            merger.add(attribution_image(self.attribution['text'], params.size))
+        if self.attribution and self.attribution.get('text') and not query.tiled_only:
+            merger.add(attribution_image(self.attribution['text'], query.size))
         img_opts = self.image_formats[params.format_mime_type].copy()
         img_opts.bgcolor = params.bgcolor
         img_opts.transparent = params.transparent
@@ -147,7 +148,7 @@ class WMSServer(Server):
 
         try:
             result_buf = result.as_buffer(img_opts)
-        except IOError, ex:
+        except IOError as ex:
             raise RequestError('error while processing image file: %s' % ex,
                 request=map_request)
 
@@ -169,7 +170,7 @@ class WMSServer(Server):
         # if '__debug__' in map_request.params:
         #     layers = self.layers.values()
         # else:
-        #     layers = [layer for name, layer in self.layers.iteritems()
+        #     layers = [layer for name, layer in iteritems(self.layers)
         #               if name != '__debug__']
 
         if map_request.params.get('tiled', 'false').lower() == 'true':
@@ -329,7 +330,7 @@ class WMSServer(Server):
                 return PERMIT_ALL_LAYERS, None
             layers = {}
             if result['authorized'] == 'partial':
-                for layer_name, permissions in result['layers'].iteritems():
+                for layer_name, permissions in iteritems(result['layers']):
                     if permissions.get(feature, False) == True:
                         layers[layer_name] = permissions.get('limited_to')
             limited_to = result.get('limited_to')
@@ -451,7 +452,7 @@ def limit_srs_extents(srs_extents, supported_srs):
     else:
         srs_extents = DEFAULT_EXTENTS.copy()
 
-    for srs in srs_extents.keys():
+    for srs in list(srs_extents.keys()):
         if srs not in supported_srs:
             srs_extents.pop(srs)
 
@@ -473,7 +474,7 @@ class Capabilities(object):
 
     def layer_srs_bbox(self, layer, epsg_axis_order=False):
         layer_srs_code = layer.extent.srs.srs_code
-        for srs, extent in self.srs_extents.iteritems():
+        for srs, extent in iteritems(self.srs_extents):
             if extent.is_default:
                 bbox = layer.extent.bbox_for(SRS(srs))
             else:
@@ -531,10 +532,17 @@ class LayerRenderer(object):
     def _render_raise_exceptions(self, async_pool, render_layers, layer_merger):
         # call _render_layer, raise all exceptions
         try:
-            for layer, layer_img in async_pool.imap(self._render_layer, render_layers):
-                if layer_img is not None:
-                    layer_merger.add(layer_img, layer=layer)
-        except SourceError, ex:
+            for layer_task in async_pool.imap(self._render_layer, render_layers,
+                                              use_result_objects=True):
+                if layer_task.exception is None:
+                    layer, layer_img = layer_task.result
+                    if layer_img is not None:
+                        layer_merger.add(layer_img, layer=layer)
+                else:
+                    ex = layer_task.exception
+                    async_pool.shutdown(True)
+                    raise ex[1]
+        except SourceError as ex:
             raise RequestError(ex.args[0], request=self.request)
 
     def _render_capture_source_errors(self, async_pool, render_layers, layer_merger):
@@ -556,7 +564,7 @@ class LayerRenderer(object):
                     errors.append(ex[1].args[0])
                 else:
                     async_pool.shutdown(True)
-                    raise ex[0], ex[1], ex[2]
+                    raise ex[1]
 
         if render_layers and not rendered:
             errors = '\n'.join(errors)
@@ -577,7 +585,7 @@ class LayerRenderer(object):
             raise
         except MapBBOXError:
             raise RequestError('Request too large or invalid BBOX.', request=self.request)
-        except MapError, e:
+        except MapError as e:
             raise RequestError('Invalid request: %s' % e.args[0], request=self.request)
         except TransformationError:
             raise RequestError('Could not transform BBOX: Invalid result.',

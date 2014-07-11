@@ -15,9 +15,9 @@
 
 from __future__ import with_statement, division
 
-from cStringIO import StringIO
+from io import BytesIO
 from mapproxy.request.wms import WMS111MapRequest
-from mapproxy.platform.image import Image
+from mapproxy.compat.image import Image
 from mapproxy.test.image import is_png, is_jpeg
 from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from nose.tools import eq_
@@ -42,7 +42,7 @@ class TestSeedOnlyWMS(SystemTest):
     def test_get_map_cached(self):
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'RGB')
@@ -53,7 +53,7 @@ class TestSeedOnlyWMS(SystemTest):
         self.common_map_req.params['bbox'] = '10,10,20,20'
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'RGBA')
@@ -65,7 +65,7 @@ class TestSeedOnlyTMS(SystemTest):
     def test_get_tile_cached(self):
         resp = self.app.get('/tms/1.0.0/wms_cache/0/0/1.jpeg')
         eq_(resp.content_type, 'image/jpeg')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_jpeg(data)
         img = Image.open(data)
         eq_(img.mode, 'RGB')
@@ -75,7 +75,7 @@ class TestSeedOnlyTMS(SystemTest):
     def test_get_tile_uncached(self):
         resp = self.app.get('/tms/1.0.0/wms_cache/0/0/0.jpeg')
         eq_(resp.content_type, 'image/png')
-        data = StringIO(resp.body)
+        data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
         eq_(img.mode, 'RGBA')

@@ -28,16 +28,23 @@ can use ``__name='tmpl.html'`` to set the name of the template.
 
 If there are syntax errors ``TemplateError`` will be raised.
 """
+from __future__ import print_function
 
 import re
 import sys
 import cgi
-from urllib import quote as url_quote
 import os
 import tokenize
-from cStringIO import StringIO
+from io import StringIO, BytesIO
+from mapproxy.compat import iteritems, PY2, text_type
+from mapproxy.util.py import reraise
 from mapproxy.util.ext.tempita._looper import looper
 from mapproxy.util.ext.tempita.compat3 import bytes, basestring_, next, is_unicode, coerce_text
+
+if PY2:
+    from urllib import quote as url_quote
+else:
+    from urllib.parse import quote as url_quote
 
 __all__ = ['TemplateError', 'Template', 'sub', 'HTMLTemplate',
            'sub_html', 'html', 'bunch']
@@ -183,7 +190,7 @@ class Template(object):
                 position=None, name=self.name)
         templ = self.get_template(inherit_template, self)
         self_ = TemplateObject(self.name)
-        for name, value in defs.iteritems():
+        for name, value in iteritems(defs):
             setattr(self_, name, value)
         self_.body = body
         ns = ns.copy()
@@ -279,7 +286,7 @@ class Template(object):
         try:
             try:
                 value = eval(code, self.default_namespace, ns)
-            except SyntaxError, e:
+            except SyntaxError as e:
                 raise SyntaxError(
                     'invalid syntax in expression: %s' % code)
             return value
@@ -291,12 +298,12 @@ class Template(object):
             else:
                 arg0 = coerce_text(e)
             e.args = (self._add_line_info(arg0, pos),)
-            raise exc_info[0], e, exc_info[2]
+            reraise((exc_info[0], e, exc_info[2]))
 
     def _exec(self, code, ns, pos):
         __traceback_hide__ = True
         try:
-            exec code in self.default_namespace, ns
+            exec(code, self.default_namespace, ns)
         except:
             exc_info = sys.exc_info()
             e = exc_info[1]
@@ -304,7 +311,7 @@ class Template(object):
                 e.args = (self._add_line_info(e.args[0], pos),)
             else:
                 e.args = (self._add_line_info(None, pos),)
-            raise exc_info[0], e, exc_info[2]
+            reraise((exc_info[0], e, exc_info[2]))
 
     def _repr(self, value, pos):
         __traceback_hide__ = True
@@ -313,7 +320,7 @@ class Template(object):
                 return ''
             if self._unicode:
                 try:
-                    value = unicode(value)
+                    value = text_type(value)
                 except UnicodeDecodeError:
                     value = bytes(value)
             else:
@@ -326,7 +333,7 @@ class Template(object):
             exc_info = sys.exc_info()
             e = exc_info[1]
             e.args = (self._add_line_info(e.args[0], pos),)
-            raise exc_info[0], e, exc_info[2]
+            reraise((exc_info[0], e, exc_info[2]))
         else:
             if self._unicode and isinstance(value, bytes):
                 if not self.default_encoding:
@@ -335,7 +342,7 @@ class Template(object):
                         '(no default_encoding provided)' % value)
                 try:
                     value = value.decode(self.default_encoding)
-                except UnicodeDecodeError, e:
+                except UnicodeDecodeError as e:
                     raise UnicodeDecodeError(
                         e.encoding,
                         e.object,
@@ -372,7 +379,7 @@ def paste_script_template_renderer(content, vars, filename=None):
 class bunch(dict):
 
     def __init__(self, **kw):
-        for name, value in kw.iteritems():
+        for name, value in iteritems(kw):
             setattr(self, name, value)
 
     def __setattr__(self, name, value):
@@ -395,7 +402,7 @@ class bunch(dict):
 
     def __repr__(self):
         items = [
-            (k, v) for k, v in self.iteritems()]
+            (k, v) for k, v in iteritems(self)]
         items.sort()
         return '<%s %s>' % (
             self.__class__.__name__,
@@ -530,7 +537,7 @@ class TemplateDef(object):
         values = {}
         sig_args, var_args, var_kw, defaults = self._func_signature
         extra_kw = {}
-        for name, value in kw.iteritems():
+        for name, value in iteritems(kw):
             if not var_kw and name not in sig_args:
                 raise TypeError(
                     'Unexpected argument %s' % name)
@@ -553,7 +560,7 @@ class TemplateDef(object):
                 raise TypeError(
                     'Extra position arguments: %s'
                     % ', '.join(repr(v) for v in args))
-        for name, value_expr in defaults.iteritems():
+        for name, value_expr in iteritems(defaults):
             if name not in values:
                 values[name] = self._template._eval(
                     value_expr, self._ns, self._pos)
@@ -626,15 +633,15 @@ def lex(s, name=None, trim_whitespace=True, line_offset=0):
         ['hey']
         >>> lex('hey {{you}}')
         ['hey ', ('you', (1, 7))]
-        >>> lex('hey {{')
+        >>> lex('hey {{') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: No }} to finish last expression at line 1 column 7
-        >>> lex('hey }}')
+        >>> lex('hey }}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: }} outside expression at line 1 column 7
-        >>> lex('hey {{ {{')
+        >>> lex('hey {{ {{') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: {{ inside expression at line 1 column 10
@@ -765,31 +772,31 @@ def parse(s, name=None, line_offset=0):
 
     Some exceptions::
 
-        >>> parse('{{continue}}')
+        >>> parse('{{continue}}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: continue outside of for loop at line 1 column 3
-        >>> parse('{{if x}}foo')
+        >>> parse('{{if x}}foo') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: No {{endif}} at line 1 column 3
-        >>> parse('{{else}}')
+        >>> parse('{{else}}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: else outside of an if block at line 1 column 3
-        >>> parse('{{if x}}{{for x in y}}{{endif}}{{endfor}}')
+        >>> parse('{{if x}}{{for x in y}}{{endif}}{{endfor}}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: Unexpected endif at line 1 column 25
-        >>> parse('{{if}}{{endif}}')
+        >>> parse('{{if}}{{endif}}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: if with no expression at line 1 column 3
-        >>> parse('{{for x y}}{{endfor}}')
+        >>> parse('{{for x y}}{{endfor}}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: Bad for (no "in") in 'x y' at line 1 column 3
-        >>> parse('{{py:x=1\ny=2}}')
+        >>> parse('{{py:x=1\ny=2}}') # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
             ...
         TemplateError: Multi-line py blocks must start with a newline at line 1 column 3
@@ -994,7 +1001,12 @@ def parse_def(tokens, name, context):
 
 
 def parse_signature(sig_text, name, pos):
-    tokens = tokenize.generate_tokens(StringIO(sig_text).readline)
+    if PY2 and isinstance(sig_text, str):
+        lines = BytesIO(sig_text).readline
+    else:
+        lines = StringIO(sig_text).readline
+
+    tokens = tokenize.generate_tokens(lines)
     sig_args = []
     var_arg = None
     var_kw = None
@@ -1129,7 +1141,7 @@ def fill_command(args=None):
         vars.update(os.environ)
     for value in args:
         if '=' not in value:
-            print('Bad argument: %r' % value)
+            print(('Bad argument: %r' % value))
             sys.exit(2)
         name, value = value.split('=', 1)
         if name.startswith('py:'):

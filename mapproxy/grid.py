@@ -21,6 +21,7 @@ import math
 
 from mapproxy.srs import SRS, get_epsg_num, merge_bbox, bbox_equals
 from mapproxy.util.collections import ImmutableDictList
+from mapproxy.compat import string_type, iteritems
 
 geodetic_epsg_codes = [4326]
 
@@ -81,7 +82,7 @@ class _default_bboxs(object):
     def __getitem__(self, key):
         if self.defaults is None:
             defaults = {}
-            for epsg, bbox in self._defaults.iteritems():
+            for epsg, bbox in iteritems(self._defaults):
                 defaults[SRS(epsg)] = bbox
             self.defaults = defaults
         return self.defaults[key]
@@ -225,7 +226,7 @@ def bbox_tuple(bbox):
     (20.0, -30.0, 40.0, -10.0)
 
     """
-    if isinstance(bbox, basestring):
+    if isinstance(bbox, string_type):
         bbox = bbox.split(',')
     bbox = tuple(map(float, bbox))
     return bbox
@@ -283,7 +284,7 @@ class TileGrid(object):
         >>> [round(x, 2) for x in grid.bbox]
         [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
         """
-        if isinstance(srs, (int, basestring)):
+        if isinstance(srs, (int, string_type)):
             srs = SRS(srs)
         self.srs = srs
         self.tile_size = tile_size
@@ -438,7 +439,7 @@ class TileGrid(object):
         tile_y = y/float(res*self.tile_size[1])
         return (int(math.floor(tile_x)), int(math.floor(tile_y)), level)
 
-    def flip_tile_coord(self, (x, y, z)):
+    def flip_tile_coord(self, xxx_todo_changeme):
         """
         Flip the tile coord on the y-axis. (Switch between bottom-left and top-left
         origin.)
@@ -449,6 +450,7 @@ class TileGrid(object):
         >>> grid.flip_tile_coord((1, 3, 2))
         (1, 0, 2)
         """
+        (x, y, z) = xxx_todo_changeme
         return (x, self.grid_sizes[z][1]-1-y, z)
 
     def supports_access_with_origin(self, origin):
@@ -539,12 +541,12 @@ class TileGrid(object):
             raise GridError('Invalid BBOX')
 
     def _tile_iter(self, x0, y0, x1, y1, level):
-        xs = range(x0, x1+1)
+        xs = list(range(x0, x1+1))
         if self.flipped_y_axis:
             y0, y1 = y1, y0
-            ys = range(y0, y1+1)
+            ys = list(range(y0, y1+1))
         else:
-            ys = range(y1, y0-1, -1)
+            ys = list(range(y1, y0-1, -1))
 
         ll = (xs[0], ys[-1], level)
         ur = (xs[-1], ys[0], level)
@@ -614,7 +616,7 @@ class TileGrid(object):
         (1, 2, 2)
         """
         x, y, z = tile_coord
-        if isinstance(z, basestring):
+        if isinstance(z, string_type):
             if z not in self.grid_sizes:
                 return None
         elif z < 0 or z >= self.levels:
@@ -698,10 +700,10 @@ def pyramid_res_level(initial_res, factor=2.0, levels=20):
     :param factor: the factor between each level, for tms access 2
     :param levels: number of resolutions to generate
 
-    >>> pyramid_res_level(10000, levels=5)
+    >>> list(pyramid_res_level(10000, levels=5))
     [10000.0, 5000.0, 2500.0, 1250.0, 625.0]
-    >>> map(lambda x: round(x, 4),
-    ...     pyramid_res_level(10000, factor=1/0.75, levels=5))
+    >>> [round(x, 4) for x in
+    ...     pyramid_res_level(10000, factor=1/0.75, levels=5)]
     [10000.0, 7500.0, 5625.0, 4218.75, 3164.0625]
     """
     return [initial_res/factor**n for n in range(levels)]
@@ -854,10 +856,10 @@ class MetaGrid(object):
         grid_size = 1+maxx-minx, 1+maxy-miny
 
         if self.grid.flipped_y_axis:
-            ys = xrange(miny, maxy+1)
+            ys = range(miny, maxy+1)
         else:
-            ys = xrange(maxy, miny-1, -1)
-        xs = xrange(minx, maxx+1)
+            ys = range(maxy, miny-1, -1)
+        xs = range(minx, maxx+1)
 
         bounds = (minx, miny, z), (maxx, maxy, z)
 
@@ -887,10 +889,10 @@ class MetaGrid(object):
         maxx = minx + tile_grid[0] - 1
         maxy = miny + tile_grid[1] - 1
         if self.grid.flipped_y_axis:
-            ys = xrange(miny, maxy+1)
+            ys = range(miny, maxy+1)
         else:
-            ys = xrange(maxy, miny-1, -1)
-        xs = xrange(minx, maxx+1)
+            ys = range(maxy, miny-1, -1)
+        xs = range(minx, maxx+1)
 
         return list(_create_tile_list(xs, ys, z, self.grid.grid_sizes[z]))
 
@@ -963,12 +965,12 @@ class MetaGrid(object):
     def _tile_iter(self, x0, y0, x1, y1, level):
         meta_size = self._meta_size(level)
 
-        xs = range(x0, x1+1, meta_size[0])
+        xs = list(range(x0, x1+1, meta_size[0]))
         if self.grid.flipped_y_axis:
             y0, y1 = y1, y0
-            ys = range(y0, y1+1, meta_size[1])
+            ys = list(range(y0, y1+1, meta_size[1]))
         else:
-            ys = range(y1, y0-1, -meta_size[1])
+            ys = list(range(y1, y0-1, -meta_size[1]))
 
         ll = (xs[0], ys[-1], level)
         ur = (xs[-1], ys[0], level)
@@ -1147,8 +1149,15 @@ def max_with_none(a, b):
     else:
         return max(a, b)
 
+def min_with_none(a, b):
+    if a is None or b is None:
+        return None
+    else:
+        return min(a, b)
+
+
 def merge_resolution_range(a, b):
     if a and b:
         return resolution_range(min_res=max_with_none(a.min_res, b.min_res),
-            max_res=min(a.max_res, b.max_res))
+            max_res=min_with_none(a.max_res, b.max_res))
     return None

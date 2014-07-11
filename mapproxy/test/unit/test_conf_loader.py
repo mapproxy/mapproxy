@@ -405,9 +405,9 @@ class TestWMSSourceConfiguration(object):
         conf = ProxyConfiguration(conf_dict)
         try:
             conf.caches['osm'].caches()
-        except ConfigurationError, ex:
+        except ConfigurationError as ex:
             assert 'base,roads' in ex.args[0]
-            assert 'base,poi' in ex.args[0]
+            assert ('base,poi' in ex.args[0] or 'poi,base' in ex.args[0])
         else:
             assert False, 'expected ConfigurationError'
 
@@ -429,7 +429,7 @@ class TestWMSSourceConfiguration(object):
         conf = ProxyConfiguration(conf_dict)
         try:
             conf.caches['osm'].caches()
-        except ConfigurationError, ex:
+        except ConfigurationError as ex:
             assert 'osm:base,roads' in ex.args[0]
         else:
             assert False, 'expected ConfigurationError'
@@ -484,7 +484,7 @@ def load_services(conf_file):
     return conf.configured_services()
 
 class TestConfLoading(object):
-    yaml_string = """
+    yaml_string = b"""
 services:
   wms:
 
@@ -504,13 +504,13 @@ sources:
 
     def test_loading(self):
         with TempFile() as f:
-            open(f, 'w').write(self.yaml_string)
+            open(f, 'wb').write(self.yaml_string)
             services = load_services(f)
         assert 'service' in services[0].names
 
     def test_loading_broken_yaml(self):
         with TempFile() as f:
-            open(f, 'w').write('\tbroken:foo')
+            open(f, 'wb').write(b'\tbroken:foo')
             try:
                 load_services(f)
             except ConfigurationError:
@@ -550,7 +550,7 @@ globals:
 
     def test_loading(self):
         with TempFile() as gp:
-            open(gp, 'w').write(self.yaml_grand_parent)
+            open(gp, 'wb').write(self.yaml_grand_parent.encode('utf-8'))
             self.yaml_parent = """
 base:
   - %s
@@ -558,7 +558,7 @@ base:
 """ % (gp, self.yaml_parent)
 
             with TempFile() as p:
-                open(p, 'w').write(self.yaml_parent)
+                open(p, 'wb').write(self.yaml_parent.encode("utf-8"))
 
                 self.yaml_string = """
 base: [%s]
@@ -566,8 +566,7 @@ base: [%s]
 """ % (p, self.yaml_string)
 
                 with TempFile() as cfg:
-                    open(cfg, 'w').write(self.yaml_string)
-
+                    open(cfg, 'wb').write(self.yaml_string.encode("utf-8"))
 
                     config = load_configuration(cfg)
 
@@ -614,7 +613,7 @@ class TestConfMerger(object):
 class TestLoadConfiguration(object):
     def test_with_warnings(object):
         with TempFile() as f:
-            open(f, 'w').write("""
+            open(f, 'wb').write(b"""
 services:
   unknown:
                 """)
@@ -826,7 +825,7 @@ class TestImageOptions(object):
         except ConfigurationError:
             pass
         else:
-            raise False, 'expected ConfigurationError'
+            raise False('expected ConfigurationError')
 
 
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {
@@ -837,7 +836,7 @@ class TestImageOptions(object):
         except ConfigurationError:
             pass
         else:
-            raise False, 'expected ConfigurationError'
+            raise False('expected ConfigurationError')
 
 
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {}
@@ -847,7 +846,7 @@ class TestImageOptions(object):
         except ConfigurationError:
             pass
         else:
-            raise False, 'expected ConfigurationError'
+            raise False('expected ConfigurationError')
 
 
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {

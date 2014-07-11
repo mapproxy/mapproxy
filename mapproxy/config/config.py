@@ -22,6 +22,7 @@ import copy
 import contextlib
 from mapproxy.util.yaml import load_yaml_file
 from mapproxy.util.ext.local import LocalStack
+from mapproxy.compat import iteritems
 
 class Options(dict):
     """
@@ -52,6 +53,8 @@ class Options(dict):
         if other is not None:
             if hasattr(other, 'iteritems'):
                 it = other.iteritems()
+            elif hasattr(other, 'items'):
+                it = other.items()
             else:
                 it = iter(other)
         else:
@@ -63,7 +66,7 @@ class Options(dict):
                 self[key] = value
 
     def __deepcopy__(self, memo):
-        return Options(copy.deepcopy(self.items(), memo))
+        return Options(copy.deepcopy(list(self.items()), memo))
 
 _config = LocalStack()
 def base_config():
@@ -103,7 +106,7 @@ def local_base_config(conf):
 def _to_options_map(mapping):
     if isinstance(mapping, dict):
         opt = Options()
-        for key, value in mapping.iteritems():
+        for key, value in iteritems(mapping):
             opt[key] = _to_options_map(value)
         return opt
     elif isinstance(mapping, list):
@@ -158,7 +161,7 @@ def load_base_config(config_file=None, clear_existing=False):
     if config_file is None:
         from mapproxy.config import defaults
         config_dict = {}
-        for k, v in defaults.__dict__.iteritems():
+        for k, v in iteritems(defaults.__dict__):
             if k.startswith('_'): continue
             config_dict[k] = v
         conf_base_dir = os.getcwd()
@@ -175,7 +178,7 @@ def load_base_config(config_file=None, clear_existing=False):
 def load_default_config():
     from mapproxy.config import defaults
     config_dict = {}
-    for k, v in defaults.__dict__.iteritems():
+    for k, v in iteritems(defaults.__dict__):
         if k.startswith('_'): continue
         config_dict[k] = v
 
@@ -185,7 +188,7 @@ def load_default_config():
 
 def load_config(config, config_file=None, config_dict=None, clear_existing=False):
     if clear_existing:
-        for key in config.keys():
+        for key in list(config.keys()):
             del config[key]
 
     if config_dict is None:
@@ -194,7 +197,7 @@ def load_config(config, config_file=None, config_dict=None, clear_existing=False
     defaults = _to_options_map(config_dict)
 
     if defaults:
-        for key, value in defaults.iteritems():
+        for key, value in iteritems(defaults):
             if key in config and hasattr(config[key], 'update'):
                 config[key].update(value)
             else:

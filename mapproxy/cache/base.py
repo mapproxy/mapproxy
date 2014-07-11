@@ -15,7 +15,6 @@
 
 import os
 import sys
-import hashlib
 import time
 
 from contextlib import contextmanager
@@ -89,25 +88,13 @@ if sys.platform == 'win32':
     # windows does not handle this well
     REMOVE_ON_UNLOCK = False
 
-class FileBasedLocking(object):
-    """
-    Mixin for file based tile locking.
+class TileLocker(object):
+    def __init__(self, lock_dir, lock_timeout, lock_cache_id):
+        self.lock_dir = lock_dir
+        self.lock_timeout = lock_timeout
+        self.lock_cache_id = lock_cache_id
 
-    Requires the following attributes:
-
-    `lock_cache_id`
-        unique id for this cache, if not present it will be
-        generated from `cache_dir`
-
-    `lock_dir`
-        where the lock files are store
-
-    `lock_timeout`
-        how long to wait for a lock
-    """
     def lock_filename(self, tile):
-        if getattr(self, 'lock_cache_id', None) is None:
-            self.lock_cache_id = hashlib.md5(self.cache_dir).hexdigest()
         return os.path.join(self.lock_dir, self.lock_cache_id + '-' +
                             '-'.join(map(str, tile.coord)) + '.lck')
 
@@ -122,9 +109,3 @@ class FileBasedLocking(object):
             force=False)
         return FileLock(lock_filename, timeout=self.lock_timeout,
             remove_on_unlock=REMOVE_ON_UNLOCK)
-
-class TileLocker(FileBasedLocking):
-    def __init__(self, lock_dir, lock_timeout, lock_cache_id):
-        self.lock_dir = lock_dir
-        self.lock_timeout = lock_timeout
-        self.lock_cache_id = lock_cache_id

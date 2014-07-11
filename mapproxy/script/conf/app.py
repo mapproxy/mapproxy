@@ -14,8 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
+from __future__ import print_function
 
+import codecs
 import sys
 import os
 import optparse
@@ -26,7 +27,7 @@ import xml.etree.ElementTree
 import yaml
 
 from contextlib import contextmanager
-from cStringIO import StringIO
+from io import BytesIO
 
 from .sources import sources
 from .layers import layers
@@ -34,12 +35,18 @@ from .caches import caches
 from .seeds import seeds
 from .utils import update_config, MapProxyYAMLDumper, download_capabilities
 
+from mapproxy.compat import iteritems
 from mapproxy.config.loader import load_configuration
 from mapproxy.util.ext.wmsparse import parse_capabilities
 
 def setup_logging(level=logging.INFO):
     mapproxy_log = logging.getLogger('mapproxy')
     mapproxy_log.setLevel(level)
+
+    # do not init logging when stdout is captured
+    # eg. when running in tests
+    if isinstance(sys.stdout, BytesIO):
+        return
 
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
@@ -49,25 +56,25 @@ def setup_logging(level=logging.INFO):
     mapproxy_log.addHandler(ch)
 
 def write_header(f, capabilities):
-    print >>f, '# MapProxy configuration automatically generated from:'
-    print >>f, '#   %s' % capabilities
-    print >>f, '#'
-    print >>f, '# NOTE: The generated configuration can be highly inefficient,'
-    print >>f, '#       especially when multiple layers and caches are requested at once.'
-    print >>f, '#       Make sure you understand the generated configuration!'
-    print >>f, '#'
-    print >>f, '# Created on %s with:' % datetime.datetime.now()
-    print >>f, ' \\\n'.join(textwrap.wrap(' '.join(sys.argv), initial_indent='# ', subsequent_indent='#    '))
-    print >>f, ''
+    print('# MapProxy configuration automatically generated from:', file=f)
+    print('#   %s' % capabilities, file=f)
+    print('#', file=f)
+    print('# NOTE: The generated configuration can be highly inefficient,', file=f)
+    print('#       especially when multiple layers and caches are requested at once.', file=f)
+    print('#       Make sure you understand the generated configuration!', file=f)
+    print('#', file=f)
+    print('# Created on %s with:' % datetime.datetime.now(), file=f)
+    print(' \\\n'.join(textwrap.wrap(' '.join(sys.argv), initial_indent='# ', subsequent_indent='#    ')), file=f)
+    print('', file=f)
 
 
 @contextmanager
 def file_or_stdout(name):
     if name == '-':
-        yield sys.stdout
+        yield codecs.getwriter('utf-8')(sys.stdout)
     else:
         with open(name, 'wb') as f:
-            yield f
+            yield codecs.getwriter('utf-8')(f)
 
 def config_command(args):
     parser = optparse.OptionParser("usage: %prog autoconfig [options]")
@@ -91,20 +98,20 @@ def config_command(args):
 
     if not options.capabilities:
         parser.print_help()
-        print >>sys.stderr, "\nERROR: --capabilities required"
+        print("\nERROR: --capabilities required", file=sys.stderr)
         return 2
 
     if not options.output and not options.output_seed:
         parser.print_help()
-        print >>sys.stderr, "\nERROR: --output and/or --output-seed required"
+        print("\nERROR: --output and/or --output-seed required", file=sys.stderr)
         return 2
 
     if not options.force:
         if options.output and options.output != '-' and os.path.exists(options.output):
-            print >>sys.stderr, "\nERROR: %s already exists, use --force to overwrite" % options.output
+            print("\nERROR: %s already exists, use --force to overwrite" % options.output, file=sys.stderr)
             return 2
         if options.output_seed and options.output_seed != '-' and os.path.exists(options.output_seed):
-            print >>sys.stderr, "\nERROR: %s already exists, use --force to overwrite" % options.output_seed
+            print("\nERROR: %s already exists, use --force to overwrite" % options.output_seed, file=sys.stderr)
             return 2
 
     log = logging.getLogger('mapproxy_conf_cmd')
@@ -115,7 +122,7 @@ def config_command(args):
     srs_grids = {}
     if options.base:
         base = load_configuration(options.base)
-        for name, grid_conf in base.grids.iteritems():
+        for name, grid_conf in iteritems(base.grids):
             if name.startswith('GLOBAL_'):
                 continue
             srs_grids[grid_conf.tile_grid().srs.srs_code] = name
@@ -127,10 +134,10 @@ def config_command(args):
         cap_doc = open(cap_doc, 'rb').read()
 
     try:
-        cap = parse_capabilities(StringIO(cap_doc))
-    except (xml.etree.ElementTree.ParseError, ValueError), ex:
-        print >>sys.stderr, ex
-        print >>sys.stderr, cap_doc[:1000] + ('...' if len(cap_doc) > 1000 else '')
+        cap = parse_capabilities(BytesIO(cap_doc))
+    except (xml.etree.ElementTree.ParseError, ValueError) as ex:
+        print(ex, file=sys.stderr)
+        print(cap_doc[:1000] + ('...' if len(cap_doc) > 1000 else ''), file=sys.stderr)
         return 3
 
     overwrite = None

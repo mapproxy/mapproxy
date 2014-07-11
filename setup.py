@@ -7,21 +7,25 @@ install_requires = [
     'PyYAML>=3.0,<3.99',
 ]
 
-def pillow_installed():
-    """Check if Pillow is installed"""
-    pillow_req = pkg_resources.Requirement.parse('Pillow')
+def package_installed(pkg):
+    """Check if package is installed"""
+    req = pkg_resources.Requirement.parse(pkg)
     try:
-        pkg_resources.get_provider(pillow_req)
+        pkg_resources.get_provider(req)
     except pkg_resources.DistributionNotFound:
         return False
     else:
         return True
 
-# depend in Pillow if it is installed, otherwise depend on PIL
-if pillow_installed():
-    install_requires.append('Pillow')
-else:
+# depend in Pillow if it is installed, otherwise
+# depend on PIL if it is installed, otherwise
+# require Pillow
+if package_installed('Pillow'):
+    install_requires.append('Pillow !=2.4.0')
+elif package_installed('PIL'):
     install_requires.append('PIL>=1.1.6,<1.2.99')
+else:
+    install_requires.append('Pillow !=2.4.0')
 
 if platform.python_version_tuple() < ('2', '6'):
     # for mapproxy-seed
@@ -50,7 +54,7 @@ def long_description(changelog_releases=10):
 
 setup(
     name='MapProxy',
-    version="1.7.0a",
+    version="1.8.0a",
     description='An accelerating proxy for web map services',
     long_description=long_description(7),
     author='Oliver Tonnhofer',

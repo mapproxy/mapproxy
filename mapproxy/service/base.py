@@ -28,7 +28,7 @@ class Server(object):
             parsed_req = self.parse_request(req)
             handler = getattr(self, parsed_req.request_handler_name)
             return handler(parsed_req)
-        except RequestError, e:
+        except RequestError as e:
             return e.render()
     
     def parse_request(self, req):

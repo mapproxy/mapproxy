@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,9 @@ from __future__ import division
 
 import math
 import threading
-from itertools import izip
-from mapproxy.proj import Proj, transform, set_datapath, ProjInitError
+from mapproxy.compat.itertools import izip
+from mapproxy.compat import string_type
+from mapproxy.proj import Proj, transform, set_datapath
 from mapproxy.config import base_config
 
 import logging
@@ -38,7 +39,7 @@ def get_epsg_num(epsg_code):
     >>> get_epsg_num('31466')
     31466
     """
-    if isinstance(epsg_code, basestring):
+    if isinstance(epsg_code, string_type):
         if ':' in epsg_code:
             epsg_code = int(epsg_code.split(':')[1])
         else:
@@ -54,7 +55,7 @@ def _clean_srs_code(code):
     >>> _clean_srs_code('crs:84')
     'CRS:84'
     """
-    if isinstance(code, basestring) and ':' in code:
+    if isinstance(code, string_type) and ':' in code:
         return code.upper()
     else:
         return 'EPSG:' + str(code)
@@ -76,12 +77,12 @@ def SRS(srs_code):
     _init_proj()
     if isinstance(srs_code, _SRS):
         return srs_code
-    
+
     srs_code = _clean_srs_code(srs_code)
-    
+
     if not hasattr(_thread_local, 'srs_cache'):
         _thread_local.srs_cache = {}
-    
+
     if srs_code in _thread_local.srs_cache:
         return _thread_local.srs_cache[srs_code]
     else:
@@ -103,7 +104,7 @@ class _SRS(object):
             '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 '
             '+lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m '
             '+nadgrids=@null +no_defs +over')
-        
+
     """
     This class represents a Spatial Reference System.
     """
@@ -112,18 +113,18 @@ class _SRS(object):
         Create a new SRS with the given `srs_code` code.
         """
         self.srs_code = srs_code
-        
+
         init = _SRS.proj_init.get(srs_code, None)
         if init is not None:
             self.proj = init()
         else:
-            epsg_num = get_epsg_num(srs_code)   
+            epsg_num = get_epsg_num(srs_code)
             self.proj = Proj(init='epsg:%d' % epsg_num)
-    
+
     def transform_to(self, other_srs, points):
         """
         :type points: ``(x, y)`` or ``[(x1, y1), (x2, y2), …]``
-        
+
         >>> srs1 = SRS(4326)
         >>> srs2 = SRS(900913)
         >>> [str(round(x, 5)) for x in srs1.transform_to(srs2, (8.22, 53.15))]
@@ -141,15 +142,15 @@ class _SRS(object):
             return points
         if isinstance(points[0], (int, float)) and 2 >= len(points) <= 3:
             return transform(self.proj, other_srs.proj, *points)
-        
+
         x = [p[0] for p in points]
         y = [p[1] for p in points]
         transf_pts = transform(self.proj, other_srs.proj, x, y)
         return izip(transf_pts[0], transf_pts[1])
-    
+
     def transform_bbox_to(self, other_srs, bbox, with_points=16):
         """
-        
+
         :param with_points: the number of points to use for the transformation.
             A bbox transformation with only two or four points may cut off some
             parts due to distortions.
@@ -169,36 +170,38 @@ class _SRS(object):
         points = generate_envelope_points(bbox, with_points)
         transf_pts = self.transform_to(other_srs, points)
         result = calculate_bbox(transf_pts)
-        
-        log_proj.debug('transformed from %r to %r (%s -> %s)' % 
+
+        log_proj.debug('transformed from %r to %r (%s -> %s)' %
                   (self, other_srs, bbox, result))
-        
+
         return result
-    
+
     def align_bbox(self, bbox):
         """
         Align bbox to reasonable values to prevent errors in transformations.
         E.g. transformations from EPSG:4326 with lat=90 or -90 will fail, so
         we subtract a tiny delta.
-        
+
         At the moment only EPSG:4326 bbox will be modifyed.
-        
+
         >>> bbox = SRS(4326).align_bbox((-180, -90, 180, 90))
         >>> -90 < bbox[1] < -89.99999998
         True
         >>> 90 > bbox[3] > 89.99999998
         True
         """
+        # TODO should not be needed anymore since we transform with +over
+        # still a few tests depend on the rounding behavior of this
         if self.srs_code == 'EPSG:4326':
             delta = 0.00000001
             (minx, miny, maxx, maxy) = bbox
-            if miny <= -90.0:
+            if abs(miny - -90.0) < 1e-6:
                 miny = -90.0 + delta
-            if maxy >= 90.0:
+            if abs(maxy - 90.0) < 1e-6:
                 maxy = 90.0 - delta
             bbox = minx, miny, maxx, maxy
         return bbox
-    
+
     @property
     def is_latlong(self):
         """
@@ -208,13 +211,13 @@ class _SRS(object):
         False
         """
         return self.proj.is_latlong()
-    
+
     @property
     def is_axis_order_ne(self):
         """
         Returns `True` if the axis order is North, then East
         (i.e. y/x or lat/lon).
-        
+
         >>> SRS(4326).is_axis_order_ne
         True
         >>> SRS('CRS:84').is_axis_order_ne
@@ -233,7 +236,7 @@ class _SRS(object):
         if self.is_latlong:
             return True
         return False
-    
+
     @property
     def is_axis_order_en(self):
         """
@@ -241,7 +244,7 @@ class _SRS(object):
         (i.e. x/y or lon/lat).
         """
         return not self.is_axis_order_ne
-    
+
     def __eq__(self, other):
         """
         >>> SRS(4326) == SRS("EpsG:4326")
@@ -278,14 +281,14 @@ class _SRS(object):
     def __str__(self):
         #pylint: disable-msg=E1101
         return "SRS %s ('%s')" % (self.srs_code, self.proj.srs)
-    
+
     def __repr__(self):
         """
         >>> repr(SRS(4326))
         "SRS('EPSG:4326')"
         """
         return "SRS('%s')" % (self.srs_code,)
-    
+
     def __hash__(self):
         return hash(self.srs_code)
 
@@ -293,10 +296,10 @@ class _SRS(object):
 def generate_envelope_points(bbox, n):
     """
     Generates points that form a linestring around a given bbox.
-    
+
     @param bbox: bbox to generate linestring for
     @param n: the number of points to generate around the bbox
-    
+
     >>> generate_envelope_points((10.0, 5.0, 20.0, 15.0), 4)
     [(10.0, 5.0), (20.0, 5.0), (20.0, 15.0), (10.0, 15.0)]
     >>> generate_envelope_points((10.0, 5.0, 20.0, 15.0), 8)
@@ -309,13 +312,13 @@ def generate_envelope_points(bbox, n):
         n = 0
     else:
         n = int(math.ceil((n - 4) / 4.0))
-    
+
     width = maxx - minx
     height = maxy - miny
-    
+
     minx, maxx = min(minx, maxx), max(minx, maxx)
     miny, maxy = min(miny, maxy), max(miny, maxy)
-    
+
     n += 1
     xstep = width / n
     ystep = height / n
@@ -329,14 +332,14 @@ def generate_envelope_points(bbox, n):
     for i in range(n-1, 0, -1):
         result.append((minx, miny + i*ystep))
     return result
-    
+
 def calculate_bbox(points):
     """
     Calculates the bbox of a list of points.
-    
+
     >>> calculate_bbox([(-5, 20), (3, 8), (99, 0)])
     (-5, 0, 99, 20)
-    
+
     @param points: list of points [(x0, y0), (x1, y2), ...]
     @returns: bbox of the input points.
     """
@@ -352,14 +355,14 @@ def calculate_bbox(points):
         return (minx, miny, maxx, maxy)
     except ValueError: # everything is INF
         raise TransformationError()
-        
+
 def merge_bbox(bbox1, bbox2):
     """
     Merge two bboxes.
-    
+
     >>> merge_bbox((-10, 20, 0, 30), (30, -20, 90, 10))
     (-10, -20, 90, 30)
-    
+
     """
     minx = min(bbox1[0], bbox2[0])
     miny = min(bbox1[1], bbox2[1])
@@ -370,13 +373,13 @@ def merge_bbox(bbox1, bbox2):
 def bbox_equals(src_bbox, dst_bbox, x_delta=None, y_delta=None):
     """
     Compares two bbox and checks if they are equal, or nearly equal.
-    
+
     :param x_delta: how precise the comparison should be.
                     should be reasonable small, like a tenth of a pixel.
                     defaults to 1/1.000.000th of the width.
     :type x_delta: bbox units
-    
-    >>> src_bbox = (939258.20356824622, 6887893.4928338043, 
+
+    >>> src_bbox = (939258.20356824622, 6887893.4928338043,
     ...             1095801.2374962866, 7044436.5267618448)
     >>> dst_bbox = (939258.20260000182, 6887893.4908000007,
     ...             1095801.2365000017, 7044436.5247000009)
@@ -400,9 +403,9 @@ def make_lin_transf(src_bbox, dst_bbox):
     plane coordinate systems.
     One needs to be cartesian (0, 0 at the lower left, x goes up) and one
     needs to be an image coordinate system (0, 0 at the top left, x goes down).
-    
+
     :return: function that takes src x/y and returns dest x/y coordinates
-    
+
     >>> transf = make_lin_transf((7, 50, 8, 51), (0, 0, 500, 400))
     >>> transf((7.5, 50.5))
     (250.0, 200.0)
@@ -412,8 +415,8 @@ def make_lin_transf(src_bbox, dst_bbox):
     >>> transf((7.5, 50.5))
     (450.0, 500.0)
     """
-    func = lambda (x, y): (dst_bbox[0] + (x - src_bbox[0]) *
+    func = lambda x_y: (dst_bbox[0] + (x_y[0] - src_bbox[0]) *
                            (dst_bbox[2]-dst_bbox[0]) / (src_bbox[2] - src_bbox[0]),
-                           dst_bbox[1] + (src_bbox[3] - y) * 
+                           dst_bbox[1] + (src_bbox[3] - x_y[1]) *
                            (dst_bbox[3]-dst_bbox[1]) / (src_bbox[3] - src_bbox[1]))
     return func

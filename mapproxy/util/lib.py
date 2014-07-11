@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,15 @@
 """
 ctypes utilities.
 """
+from __future__ import print_function
 
 import sys
 import os
 
 from ctypes import CDLL
 from ctypes.util import find_library as _find_library
+
+from mapproxy.compat import string_type
 
 
 default_locations = dict(
@@ -52,22 +55,22 @@ def load_library(lib_names, locations_conf=default_locations):
     Load the `lib_name` library with ctypes.
     If ctypes.util.find_library does not find the library,
     different path and filename extensions will be tried.
-    
+
     Retruns the loaded library or None.
     """
-    if isinstance(lib_names, basestring):
+    if isinstance(lib_names, string_type):
         lib_names = [lib_names]
-    
+
     for lib_name in lib_names:
         lib = load_library_(lib_name, locations_conf)
         if lib is not None: return lib
 
 def load_library_(lib_name, locations_conf=default_locations):
     lib_path = find_library(lib_name)
-    
+
     if lib_path:
         return CDLL(lib_path)
-    
+
     if sys.platform in locations_conf:
         paths = locations_conf[sys.platform]['paths']
         exts = locations_conf[sys.platform]['exts']
@@ -76,10 +79,10 @@ def load_library_(lib_name, locations_conf=default_locations):
         paths = locations_conf['other']['paths']
         exts = locations_conf['other']['exts']
         lib_path = find_library(lib_name, paths, exts)
-    
+
     if lib_path:
         return CDLL(lib_path)
-        
+
 
 def find_library(lib_name, paths=None, exts=None):
     """
@@ -91,15 +94,15 @@ def find_library(lib_name, paths=None, exts=None):
         if lib is None and lib_name.startswith('lib'):
             lib = _find_library(lib_name[3:])
         return lib
-    
+
     for lib_name in [lib_name] + ([lib_name[3:]] if lib_name.startswith('lib') else []):
         for path in paths:
             for ext in exts:
                 lib_path = os.path.join(path, lib_name + ext)
                 if os.path.exists(lib_path):
                     return lib_path
-    
+
     return None
 
 if __name__ == '__main__':
-    print load_library(sys.argv[1])
+    print(load_library(sys.argv[1]))

@@ -14,15 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
+from __future__ import print_function
 
-from mapproxy.platform.image import (
+from mapproxy.compat.image import (
     Image,
     ImageDraw,
     ImageColor,
     ImageFont,
 )
 
+from mapproxy.compat import PY3
 from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
 from mapproxy.image.message import TextDraw, message_image
@@ -30,6 +31,7 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.tilefilter import watermark_filter
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 PNG_FORMAT = ImageOptions(format='image/png')
 
@@ -76,6 +78,8 @@ class TestTextDraw(object):
         img = Image.new('RGB', (100, 100))
         draw = ImageDraw.Draw(img)
         total_box, boxes = td.text_boxes(draw, (100, 100))
+        if PY3:
+            raise SkipTest('unicode handling for default font differs on PY3')
         eq_(total_box, (35, 38, 65, 63))
         eq_(boxes, [(35, 38, 65, 49), (35, 52, 65, 63)])
 
@@ -126,7 +130,7 @@ class TestMessageImage(object):
              [14923, 77, 14923, 77, 14923, 77])
     def test_transparent(self):
         image_opts = ImageOptions(transparent=True)
-        print image_opts
+        print(image_opts)
         img = message_image('', size=(100, 150), image_opts=image_opts)
         assert isinstance(img, ImageSource)
         assert img.size == (100, 150)

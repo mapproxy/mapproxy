@@ -19,6 +19,7 @@ Service responses.
 
 import hashlib
 from mapproxy.util.times import format_httpdate, parse_httpdate, timestamp
+from mapproxy.compat import PY2, text_type, iteritems
 
 class Response(object):
     charset = 'utf-8'
@@ -42,7 +43,7 @@ class Response(object):
         self.headers['Content-type'] = content_type
 
     def _status_set(self, status):
-        if isinstance(status, (int, long)):
+        if isinstance(status, int):
             status = status_code(status)
         self._status = status
 
@@ -79,7 +80,7 @@ class Response(object):
         :param max_age: the maximum cache age in seconds
         """
         if etag_data:
-            hash_src = ''.join((str(x) for x in etag_data))
+            hash_src = ''.join((str(x) for x in etag_data)).encode('ascii')
             self.etag = hashlib.md5(hash_src).hexdigest()
 
         if no_cache:
@@ -133,13 +134,15 @@ class Response(object):
         if hasattr(self.response, 'read'):
             return self.response.read()
         else:
-            return ''.join(chunk.encode() for chunk in self.response)
+            return b''.join(chunk.encode() for chunk in self.response)
 
     @property
     def fixed_headers(self):
         headers = []
-        for key, value in self.headers.iteritems():
-            headers.append((key, value.encode()))
+        for key, value in iteritems(self.headers):
+            if PY2 and isinstance(value, unicode):
+                value = value.encode('utf-8')
+            headers.append((key, value))
         return headers
 
     def __call__(self, environ, start_response):
@@ -154,19 +157,25 @@ class Response(object):
             if 'wsgi.file_wrapper' in environ:
                 resp_iter = environ['wsgi.file_wrapper'](self.response, self.block_size)
             else:
-                resp_iter = iter(lambda: self.response.read(self.block_size), '')
+                resp_iter = iter(lambda: self.response.read(self.block_size), b'')
+        elif not self.response:
+            resp_iter = iter([])
+        elif isinstance(self.response, text_type):
+            self.response = self.response.encode(self.charset)
+            self.headers['Content-length'] = str(len(self.response))
+            resp_iter = iter([self.response])
+        elif isinstance(self.response, bytes):
+            self.headers['Content-length'] = str(len(self.response))
+            resp_iter = iter([self.response])
         else:
-            if isinstance(self.response, basestring):
-                self.headers['Content-length'] = str(len(self.response))
-                self.response = [self.response]
-            resp_iter = self.iter_encode(self.response)
+            resp_iter = self.response
 
         start_response(self.status, self.fixed_headers)
         return resp_iter
 
     def iter_encode(self, chunks):
         for chunk in chunks:
-            if isinstance(chunk, unicode):
+            if isinstance(chunk, text_type):
                 chunk = chunk.encode(self.charset)
             yield chunk
 

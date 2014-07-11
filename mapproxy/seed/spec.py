@@ -26,7 +26,7 @@ def validate_seed_conf(conf_dict):
     """
     try:
         validate(seed_yaml_spec, conf_dict)
-    except ValidationError, ex:
+    except ValidationError as ex:
         return ex.errors, ex.informal_only
     else:
         return [], True

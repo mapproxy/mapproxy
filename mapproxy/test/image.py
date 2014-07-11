@@ -13,17 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
+from __future__ import print_function, division
+
 import os
 
-from mapproxy.platform.image import (
+from mapproxy.compat.image import (
     Image,
     ImageDraw,
     ImageColor,
 )
+from mapproxy.compat import string_type, iteritems
+
 import tempfile
 from nose.tools import eq_
-from cStringIO import StringIO
+from io import BytesIO
 from contextlib import contextmanager
 
 
@@ -49,20 +52,20 @@ def has_magic_bytes(fileobj, bytes):
             return True
     return False
 
-magic_bytes = { 'png': ["\211PNG\r\n\032\n"],
-                'tiff': ["MM\x00\x2a", "II\x2a\x00"],
-                'geotiff': ["MM\x00\x2a", "II\x2a\x00"],
-                'gif': ["GIF87a", "GIF89a"],
-                'jpeg': ["\xFF\xD8"],
-                'bmp': ['BM']
-                }
+magic_bytes = { 'png': [b"\211PNG\r\n\032\n"],
+                'tiff': [b"MM\x00\x2a", b"II\x2a\x00"],
+                'geotiff': [b"MM\x00\x2a", b"II\x2a\x00"],
+                'gif': [b"GIF87a", b"GIF89a"],
+                'jpeg': [b"\xFF\xD8"],
+                'bmp': [b'BM']
+               }
 
 def create_is_x_functions():
-    for type_, magic in magic_bytes.iteritems():
+    for type_, magic in iteritems(magic_bytes):
         def create_is_type(type_, magic):
             def is_type(fileobj):
                 if not hasattr(fileobj, 'read'):
-                    fileobj = StringIO(fileobj)
+                    fileobj = BytesIO(fileobj)
                 return has_magic_bytes(fileobj, magic)
             return is_type
         globals()['is_' + type_] = create_is_type(type_, magic)
@@ -72,7 +75,7 @@ del create_is_x_functions
 
 
 def is_transparent(img_data):
-    data = StringIO(img_data)
+    data = BytesIO(img_data)
     img = Image.open(data)
     if img.mode == 'P':
         img = img.convert('RGBA')
@@ -84,7 +87,7 @@ def is_transparent(img_data):
 
 
 def img_from_buf(buf):
-    data = StringIO(buf)
+    data = BytesIO(buf)
     return Image.open(data)
 
 
@@ -92,7 +95,7 @@ def bgcolor_ratio(img_data):
     """
     Return the ratio of the primary/bg color. 1 == only bg color.
     """
-    data = StringIO(img_data)
+    data = BytesIO(img_data)
     img = Image.open(data)
     total_colors = img.size[0] * img.size[1]
     colors = img.getcolors()
@@ -103,7 +106,7 @@ def bgcolor_ratio(img_data):
 def create_tmp_image_file(size, two_colored=False):
     fd, out_file = tempfile.mkstemp(suffix='.png')
     os.close(fd)
-    print 'creating temp image %s (%r)' % (out_file, size)
+    print('creating temp image %s (%r)' % (out_file, size))
     img = Image.new('RGBA', size)
     if two_colored:
         draw = ImageDraw.Draw(img)
@@ -114,7 +117,7 @@ def create_tmp_image_file(size, two_colored=False):
 
 def create_image(size, color=None, mode=None):
     if color is not None:
-        if isinstance(color, basestring):
+        if isinstance(color, string_type):
             if mode is None:
                 mode = 'RGB'
             img = Image.new(mode, size, color=color)
@@ -128,7 +131,7 @@ def create_image(size, color=None, mode=None):
 
 def create_tmp_image_buf(size, format='png', color=None, mode='RGB'):
     img = create_image(size, color, mode)
-    data = StringIO()
+    data = BytesIO()
     img.save(data, format)
     data.seek(0)
     return data
@@ -169,13 +172,13 @@ def tmp_image(size, format='png', color=None, mode='RGB'):
         img = Image.new(mode, size, color=color)
     else:
         img = create_debug_img(size)
-    data = StringIO()
+    data = BytesIO()
     img.save(data, format)
     data.seek(0)
     yield data
 
 
-def assert_colors_equal(img1, img2, delta=1):
+def assert_img_colors_eq(img1, img2, delta=1):
     """
     assert that the colors of two images are equal.
     Use `delta` to accept small color variations
@@ -189,6 +192,15 @@ def assert_colors_equal(img1, img2, delta=1):
 
     for (n1, c1), (n2, c2) in zip(colors1, colors2):
         assert n1 == n2, 'colors not equal: %r != %r' % (colors1, colors2)
-        assert abs(c1[0] - c2[0]) <= delta, 'colors not equal: %r != %r in %r != %r' % (c1, c2, colors1, colors2)
-        assert abs(c1[1] - c2[1]) <= delta, 'colors not equal: %r != %r in %r != %r' % (c1, c2, colors1, colors2)
-        assert abs(c1[2] - c2[2]) <= delta, 'colors not equal: %r != %r in %r != %r' % (c1, c2, colors1, colors2)
+        assert_colors_eq(c1, c2)
+
+assert_colors_equal = assert_img_colors_eq
+
+def assert_colors_eq(c1, c2, delta=1):
+    """
+    assert that two colors are equal. Use `delta` to accept
+    small color variations.
+    """
+    assert abs(c1[0] - c2[0]) <= delta, 'colors not equal: %r != %r' % (c1, c2)
+    assert abs(c1[1] - c2[1]) <= delta, 'colors not equal: %r != %r' % (c1, c2)
+    assert abs(c1[2] - c2[2]) <= delta, 'colors not equal: %r != %r' % (c1, c2)

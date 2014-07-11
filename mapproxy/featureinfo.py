@@ -14,8 +14,8 @@
 # limitations under the License.
 
 import copy
-from cStringIO import StringIO
-from mapproxy.request.base import split_mime_type
+from io import StringIO
+from mapproxy.compat import string_type, PY2, BytesIO
 
 try:
     from lxml import etree, html
@@ -47,13 +47,13 @@ class TextFeatureInfoDoc(FeatureInfoDoc):
     @classmethod
     def combine(cls, docs):
         result_content = [doc.as_string() for doc in docs]
-        return cls('\n'.join(result_content))
+        return cls(b'\n'.join(result_content))
 
 class XMLFeatureInfoDoc(FeatureInfoDoc):
     info_type = 'xml'
 
     def __init__(self, content):
-        if isinstance(content, basestring):
+        if isinstance(content, (string_type, bytes)):
             self._str_content = content
             self._etree = None
         else:
@@ -70,14 +70,14 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
 
     def as_etree(self):
         if self._etree is None:
-            self._etree = self._parse_str_content()
+            self._etree = self._parse_content()
         return self._etree
 
     def _serialize_etree(self):
         return etree.tostring(self._etree)
 
-    def _parse_str_content(self):
-        doc = StringIO(self._str_content)
+    def _parse_content(self):
+        doc = as_io(self._str_content)
         return etree.parse(doc)
 
     @classmethod
@@ -94,7 +94,7 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
 class HTMLFeatureInfoDoc(XMLFeatureInfoDoc):
     info_type = 'html'
 
-    def _parse_str_content(self):
+    def _parse_content(self):
         root = html.document_fromstring(self._str_content)
         return root
 
@@ -143,10 +143,20 @@ class XSLTransformer(object):
 
     __call__ = transform
 
+def as_io(doc):
+    if PY2:
+        return BytesIO(doc)
+    else:
+        if isinstance(doc, str):
+            return StringIO(doc)
+        else:
+            return BytesIO(doc)
+
+
 def combined_inputs(input_docs):
     doc = input_docs.pop(0)
-    input_tree = etree.parse(StringIO(doc))
+    input_tree = etree.parse(as_io(doc))
     for doc in input_docs:
-        doc_tree = etree.parse(StringIO(doc))
+        doc_tree = etree.parse(as_io(doc))
         input_tree.getroot().extend(doc_tree.getroot().iterchildren())
     return input_tree

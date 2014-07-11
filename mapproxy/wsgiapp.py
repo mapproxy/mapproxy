@@ -16,7 +16,7 @@
 """
 The WSGI application.
 """
-from __future__ import with_statement
+from __future__ import print_function
 import re
 import os
 import sys
@@ -24,6 +24,7 @@ import time
 import threading
 import warnings
 
+from mapproxy.compat import iteritems
 from mapproxy.request import Request
 from mapproxy.response import Response
 from mapproxy.config import local_base_config
@@ -73,7 +74,7 @@ def init_logging_system(log_conf, base_dir):
         pass
     if log_conf:
         if not os.path.exists(log_conf):
-            print >>sys.stderr, 'ERROR: log configuration %s not found.' % log_conf
+            print('ERROR: log configuration %s not found.' % log_conf, file=sys.stderr)
             return
         logging.config.fileConfig(log_conf, dict(here=base_dir))
 
@@ -103,7 +104,7 @@ def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True, 
     try:
         conf = load_configuration(mapproxy_conf=services_conf, ignore_warnings=ignore_config_warnings)
         services = conf.configured_services()
-    except ConfigurationError, e:
+    except ConfigurationError as e:
         log.fatal(e)
         raise
 
@@ -124,7 +125,7 @@ class ReloaderApp(object):
         self._app_init_lock = threading.Lock()
 
     def _needs_reload(self):
-        for conf_file, timestamp in self.app.config_files.iteritems():
+        for conf_file, timestamp in iteritems(self.app.config_files):
             m_time = os.path.getmtime(conf_file)
             if m_time > timestamp:
                 return True
@@ -152,7 +153,7 @@ def wrap_wsgi_debug(app, conf):
             from paste.evalexception.middleware import EvalException
             app = EvalException(app)
         except ImportError:
-            print 'Error: Install Werkzeug or Paste for browser-based debugging.'
+            print('Error: Install Werkzeug or Paste for browser-based debugging.')
 
     return app
 
@@ -179,7 +180,7 @@ class MapProxyApp(object):
                 if handler_name in self.handlers:
                     try:
                         resp = self.handlers[handler_name].handle(req)
-                    except Exception, ex:
+                    except Exception:
                         if self.base_config.debug_mode:
                             raise
                         else:

@@ -17,7 +17,11 @@ from __future__ import with_statement
 
 MAX_MAP_ASYNC_THREADS = 20
 
-import Queue
+try:
+    import Queue
+except ImportError:
+    import queue as Queue
+
 import sys
 import threading
 
@@ -36,6 +40,7 @@ except ImportError:
 
 from mapproxy.config import base_config
 from mapproxy.config import local_base_config
+from mapproxy.compat import PY2
 
 import logging
 log_system = logging.getLogger('mapproxy.system')
@@ -214,7 +219,7 @@ class ThreadPool(object):
     def imap(self, func, *args, **kw):
         use_result_objects = kw.get('use_result_objects', False)
         if len(args[0]) == 1:
-            return self._single_call(func, zip(*args)[0], use_result_objects)
+            return self._single_call(func, next(iter(zip(*args))), use_result_objects)
         return _result_iter(self.map_each([(func, arg) for arg in zip(*args)], raise_exceptions=not use_result_objects),
                             use_result_objects)
 
@@ -250,7 +255,10 @@ class ThreadPool(object):
                 isinstance(task_result[1][1], Exception)):
                 self.shutdown(force=True)
                 exc_class, exc, tb = task_result[1]
-                raise exc_class, exc, tb
+                if PY2:
+                    exec('raise exc_class, exc, tb')
+                else:
+                    raise exc.with_traceback(tb)
             yield task_result
 
     def shutdown(self, force=False):

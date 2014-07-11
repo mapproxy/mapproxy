@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division, with_statement
+from __future__ import division, print_function
+
 import sys
 import optparse
-import itertools
+from mapproxy.compat import itertools
 
 DEFAULT_DPIS = {
     'OGC': 2.54/(0.00028 * 100),
@@ -112,14 +113,14 @@ def scales_command(args=None):
         calc = res_to_scale
 
     if options.as_res_config:
-        print '    res: ['
-        print '         #  res            level     scale @%.1f DPI' % dpi
+        print('    res: [')
+        print('         #  res            level     scale @%.1f DPI' % dpi)
         format = format_list
     else:
         format = format_simple
 
     for i, value in enumerate(values):
-        print format(i, value, calc(value, dpi, unit_factor))
+        print(format(i, value, calc(value, dpi, unit_factor)))
 
     if options.as_res_config:
-        print '    ]'
+        print('    ]')

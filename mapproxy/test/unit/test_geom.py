@@ -37,7 +37,7 @@ import shapely.prepared
 
 from nose.tools import eq_, raises
 
-VALID_POLYGON1 = """POLYGON ((953296.704552185838111 7265916.626927595585585,
+VALID_POLYGON1 = b"""POLYGON ((953296.704552185838111 7265916.626927595585585,
 944916.907243740395643 7266183.505430161952972,
 943803.712335807620548 7266450.200959664769471,
 935361.798751499853097 7269866.750814219936728,
@@ -58,9 +58,9 @@ VALID_POLYGON1 = """POLYGON ((953296.704552185838111 7265916.626927595585585,
 956790.912048695725389 7272483.464432151056826,
 954255.388006897410378 7266929.622660100460052,
 953760.684189812047407 7266129.1298723295331,
-953296.704552185838111 7265916.626927595585585))""".replace('\n',' ')
+953296.704552185838111 7265916.626927595585585))""".replace(b'\n', b' ')
 
-VALID_POLYGON2 = """POLYGON ((929919.722805089084432 7252212.673410807736218,
+VALID_POLYGON2 = b"""POLYGON ((929919.722805089084432 7252212.673410807736218,
 929393.960850072442554 7252372.056830812245607,
 928651.905124444281682 7252957.449742536991835,
 927507.763398071052507 7254289.325379111804068,
@@ -77,7 +77,7 @@ VALID_POLYGON2 = """POLYGON ((929919.722805089084432 7252212.673410807736218,
 935083.722663498250768 7255089.941797585226595,
 931527.621530107106082 7252531.635323006659746,
 931125.535529361688532 7252317.969672014936805,
-929919.722805089084432 7252212.673410807736218))""".replace('\n',' ')
+929919.722805089084432 7252212.673410807736218))""".replace(b'\n', b' ')
 
 INTERSECTING_POLYGONS = """POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))
 POLYGON ((5 0, 15 0, 15 10, 5 10, 5 0))
@@ -86,7 +86,7 @@ POLYGON ((5 0, 15 0, 15 10, 5 10, 5 0))
 class TestPolygonLoading(object):
     def test_loading_polygon(self):
         with TempFile() as fname:
-            with open(fname, 'w') as f:
+            with open(fname, 'wb') as f:
                 f.write(VALID_POLYGON1)
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
@@ -95,9 +95,9 @@ class TestPolygonLoading(object):
 
     def test_loading_multipolygon(self):
         with TempFile() as fname:
-            with open(fname, 'w') as f:
+            with open(fname, 'wb') as f:
                 f.write(VALID_POLYGON1)
-                f.write('\n')
+                f.write(b'\n')
                 f.write(VALID_POLYGON2)
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
@@ -107,16 +107,16 @@ class TestPolygonLoading(object):
     @raises(shapely.geos.ReadingError)
     def test_loading_broken(self):
         with TempFile() as fname:
-            with open(fname, 'w') as f:
-                f.write("POLYGON((")
+            with open(fname, 'wb') as f:
+                f.write(b"POLYGON((")
             polygon = load_polygons(fname)
             assert polygon.is_valid
             bbox, polygon = build_multipolygon(polygon, simplify=True)
 
     def test_loading_skip_non_polygon(self):
         with TempFile() as fname:
-            with open(fname, 'w') as f:
-                f.write("POINT(0 0)\n")
+            with open(fname, 'wb') as f:
+                f.write(b"POINT(0 0)\n")
                 f.write(VALID_POLYGON1)
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
@@ -201,7 +201,7 @@ class TestGeomCoverage(object):
     def test_prepared(self):
         assert hasattr(self.coverage, '_prepared_max')
         self.coverage._prepared_max = 100
-        for i in xrange(110):
+        for i in range(110):
             assert self.coverage.intersects((-30, 10, -8, 70), SRS(4326))
 
     def test_eq(self):

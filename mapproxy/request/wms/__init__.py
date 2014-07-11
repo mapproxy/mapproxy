@@ -22,6 +22,7 @@ from mapproxy.request.wms import exception
 from mapproxy.exception import RequestError
 from mapproxy.srs import SRS, make_lin_transf
 from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
+from mapproxy.compat import string_type, iteritems
 
 import logging
 log = logging.getLogger(__name__)
@@ -55,9 +56,10 @@ class WMSMapRequestParams(RequestParams):
         if 'bbox' not in self.params or self.params['bbox'] is None:
             return None
         points = map(float, self.params['bbox'].split(','))
-        return tuple(points[:4])
+        return tuple(points)
+
     def _set_bbox(self, value):
-        if value is not None and not isinstance(value, basestring):
+        if value is not None and not isinstance(value, string_type):
             value = ','.join(str(x) for x in value)
         self['bbox'] = value
     bbox = property(_get_bbox, _set_bbox)
@@ -157,7 +159,7 @@ class WMSRequest(BaseRequest):
 
     def adapt_params_to_version(self):
         params = self.params.copy()
-        for key, value in self.fixed_params.iteritems():
+        for key, value in iteritems(self.fixed_params):
             params[key] = value
         if 'styles' not in params:
             params['styles'] = ''
@@ -260,10 +262,16 @@ class Version(object):
     def __init__(self, version):
         self.parts = tuple(int(x) for x in version.split('.'))
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
         if not isinstance(other, Version):
             return NotImplemented
-        return cmp(self.parts, other.parts)
+        return self.parts < other.parts
+
+    def __ge__(self, other):
+        if not isinstance(other, Version):
+            return NotImplemented
+        return self.parts >= other.parts
+
     def __repr__(self):
         return "Version('%s')" % ('.'.join(str(part) for part in self.parts),)
 
@@ -622,7 +630,6 @@ def _parse_request_type(req):
     else:
         return None
 
-
 def negotiate_version(version, supported_versions=None):
     """
     >>> negotiate_version(Version('0.9.0'))
@@ -639,7 +646,7 @@ def negotiate_version(version, supported_versions=None):
     Version('1.1.1')
     """
     if not supported_versions:
-        supported_versions = request_mapping.keys()
+        supported_versions = list(request_mapping.keys())
         supported_versions.sort()
 
     if version < supported_versions[0]:
@@ -695,7 +702,7 @@ def create_request(req_data, param, req_type='map', version='1.1.1', abspath=Non
         sld_path = req_data['sld'][len('file://'):]
         if abspath:
             sld_path = abspath(sld_path)
-        with codecs.open(sld_path, 'UTF-8') as f:
+        with codecs.open(sld_path, 'r', 'utf-8') as f:
             req_data['sld_body'] = f.read()
         del req_data['sld']
 

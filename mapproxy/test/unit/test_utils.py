@@ -35,6 +35,7 @@ from mapproxy.util.fs import (
     cleanup_directory,
     write_atomic,
 )
+from mapproxy.util.py import reraise_exception
 from mapproxy.util.times import timestamp_before
 from mapproxy.test.helper import Mocker
 
@@ -110,14 +111,14 @@ class TestFileLock(Mocker):
     def test_concurrent_access(self):
         count_file = os.path.join(self.lock_dir, 'count.txt')
         with open(count_file, 'wb') as f:
-            f.write('0')
+            f.write(b'0')
 
         def count_up():
             with FileLock(self.lock_file, timeout=60):
                 with open(count_file, 'r+b') as f:
                     counter = int(f.read().strip())
                     f.seek(0)
-                    f.write(str(counter+1))
+                    f.write(str(counter+1).encode('utf-8'))
 
         def do_it():
             for x in range(20):
@@ -255,7 +256,7 @@ class DirTest(object):
         if dirname is None:
             dirname = self.mkdir(name)
         filename = os.path.join(dirname, name + '.txt')
-        open(filename, 'w').close()
+        open(filename, 'wb').close()
         return filename
 
 
@@ -380,9 +381,10 @@ class TestCleanupDirectory(DirTest):
         for filename in files[1::2]:
             assert os.path.exists(filename), filename
 
-def write_atomic_data((i, filename)):
+def write_atomic_data(xxx_todo_changeme):
+    (i, filename) = xxx_todo_changeme
     data = str(i) + '\n' + 'x' * 10000
-    write_atomic(filename, data)
+    write_atomic(filename, data.encode('utf-8'))
     time.sleep(0.001)
 
 class TestWriteAtomic(object):
@@ -400,7 +402,7 @@ class TestWriteAtomic(object):
         concurrent_writes = 8
 
         p = multiprocessing.Pool(concurrent_writes)
-        p.map(write_atomic_data, ((i, filename) for i in xrange(num_writes)))
+        p.map(write_atomic_data, ((i, filename) for i in range(num_writes)))
         p.close()
         p.join()
 
@@ -418,8 +420,26 @@ class TestWriteAtomic(object):
         os.mkdir(filename)
 
         try:
-            write_atomic(filename, '12345')
+            write_atomic(filename, b'12345')
         except OSError:
             pass
         else:
             assert False, 'expected exception'
+
+
+def test_reraise_exception():
+    def valueerror_raiser():
+        raise ValueError()
+
+    def reraiser():
+        try:
+            valueerror_raiser()
+        except ValueError:
+            reraise_exception(TypeError(), sys.exc_info())
+
+    try:
+        reraiser()
+    except TypeError as ex:
+        assert ex
+    else:
+        assert False, 'expected exception'

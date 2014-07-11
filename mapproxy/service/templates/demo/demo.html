@@ -1,13 +1,19 @@
 {{py:
-from urllib import quote, quote_plus
+
+from mapproxy.compat import PY2
+
+if PY2:
+    from urllib import quote, quote_plus
+else:
+    from urllib.parse import quote, quote_plus
 from mapproxy.version import version
 
 def strip(s):
     return s.split('/')[1]
-    
+
 def replace(s):
     return s.replace(':','')
-    
+
 menu_title=None
 jscript_openlayers=None
 }}

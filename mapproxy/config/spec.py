@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
+
 from mapproxy.util.ext.dictspec.validator import validate, ValidationError
 from mapproxy.util.ext.dictspec.spec import one_of, anything, number
 from mapproxy.util.ext.dictspec.spec import recursive, required, type_spec, combined
-
+from mapproxy.compat import string_type
 
 def validate_mapproxy_conf(conf_dict):
     """
@@ -25,7 +27,7 @@ def validate_mapproxy_conf(conf_dict):
     """
     try:
         validate(mapproxy_yaml_spec, conf_dict)
-    except ValidationError, ex:
+    except ValidationError as ex:
         return ex.errors, ex.informal_only
     else:
         return [], True
@@ -143,28 +145,28 @@ on_error = {
 }
 
 wms_130_layer_md = {
-    'abstract': basestring,
+    'abstract': string_type,
     'keyword_list': [
         {
-            'vocabulary': basestring,
-            'keywords': [basestring],
+            'vocabulary': string_type,
+            'keywords': [string_type],
         }
     ],
     'attribution': {
-        'title': basestring,
+        'title': string_type,
         'url':    str,
         'logo': {
             'url':    str,
             'width':  int,
             'height': int,
-            'format': basestring,
+            'format': string_type,
        }
     },
     'identifier': [
         {
             'url': str,
-            'name': basestring,
-            'value': basestring,
+            'name': string_type,
+            'value': string_type,
         }
     ],
     'metadata': [
@@ -209,12 +211,12 @@ grid_opts = {
 }
 
 ogc_service_md = {
-    'title': basestring,
-    'abstract': basestring,
-    'online_resource': basestring,
+    'title': string_type,
+    'abstract': string_type,
+    'online_resource': string_type,
     'contact': anything(),
-    'fees': basestring,
-    'access_constraints': basestring,
+    'fees': string_type,
+    'access_constraints': string_type,
 }
 
 mapproxy_yaml_spec = {
@@ -280,7 +282,7 @@ mapproxy_yaml_spec = {
             'use_direct_from_res': number(),
             'link_single_color_images': bool(),
             'watermark': {
-                'text': basestring,
+                'text': string_type,
                 'font_size': number(),
                 'color': one_of(str(), [number()]),
                 'opacity': number(),
@@ -309,7 +311,7 @@ mapproxy_yaml_spec = {
             'bbox_srs': [one_of(str(), {'bbox': [number()], 'srs': str()})],
             'image_formats': [str()],
             'attribution': {
-                'text': basestring,
+                'text': string_type,
             },
             'featureinfo_types': [str()],
             'featureinfo_xslt': {
@@ -399,7 +401,7 @@ mapproxy_yaml_spec = {
         {
             anything(): combined(scale_hints, {
                 'sources': [str()],
-                required('title'): basestring,
+                required('title'): string_type,
                 'legendurl': str(),
                 'md': wms_130_layer_md,
             })
@@ -407,14 +409,14 @@ mapproxy_yaml_spec = {
         recursive([combined(scale_hints, {
             'sources': [str()],
             'name': str(),
-            required('title'): basestring,
+            required('title'): string_type,
             'legendurl': str(),
             'layers': recursive(),
             'md': wms_130_layer_md,
             'dimensions': {
                 anything(): {
-                    required('values'): [one_of(basestring, float, int)],
-                    'default': one_of(basestring, float, int),
+                    required('values'): [one_of(string_type, float, int)],
+                    'default': one_of(string_type, float, int),
                 }
             }
         })])
@@ -431,6 +433,6 @@ if __name__ == '__main__':
         data = yaml.load(open(f))
         try:
             validate(mapproxy_yaml_spec, data)
-        except ValidationError, ex:
+        except ValidationError as ex:
             for err in ex.errors:
-                print '%s: %s' % (f, err)
+                print('%s: %s' % (f, err))

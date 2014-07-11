@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
+from __future__ import print_function, division
+
 from nose.tools import eq_, assert_almost_equal, raises
+
 from mapproxy.grid import (
     MetaGrid,
     TileGrid,
@@ -55,7 +57,7 @@ class TestResolution(object):
     def test_min_res_levels_sqrt2(self):
         conf = dict(min_res=1600, num_levels=5, res_factor='sqrt2')
         res = resolutions(**conf)
-        eq_(map(round, res), [1600.0, 1131.0, 800.0, 566.0, 400.0])
+        eq_(list(map(round, res)), [1600.0, 1131.0, 800.0, 566.0, 400.0])
 
     def test_min_res_max_res_levels(self):
         conf = dict(min_res=1600, max_res=10, num_levels=10)
@@ -463,7 +465,7 @@ class TestMetaGridLevelMetaTilesGeodetic(object):
 
 
 def assert_grid_size(grid, level, grid_size):
-    print grid.grid_sizes[level], "==", grid_size
+    print(grid.grid_sizes[level], "==", grid_size)
     assert grid.grid_sizes[level] == grid_size
     res = grid.resolutions[level]
     x, y = grid_size
@@ -934,8 +936,8 @@ class TestTileGridThreshold(object):
 
 class TestCreateTileList(object):
     def test(self):
-        xs = range(-1, 2)
-        ys = range(-2, 3)
+        xs = list(range(-1, 2))
+        ys = list(range(-2, 3))
         grid_size = (1, 2)
         tiles = list(_create_tile_list(xs, ys, 3, grid_size))
 

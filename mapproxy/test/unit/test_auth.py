@@ -196,7 +196,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
             }
         try:
             self.server.map(self.map_request('layer1b', auth))
-        except RequestError, ex:
+        except RequestError as ex:
             assert ex.status == 401, '%s != 401' % (ex.status, )
         else:
             assert False, 'expected RequestError'

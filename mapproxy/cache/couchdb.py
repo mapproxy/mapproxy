@@ -20,14 +20,13 @@ import socket
 import time
 import hashlib
 
-from cStringIO import StringIO
-
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import (
-    TileCacheBase, FileBasedLocking,
+    TileCacheBase,
     tile_buffer, CacheBackendError,)
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
+from mapproxy.compat import string_type, iteritems, BytesIO
 
 from threading import Lock
 
@@ -50,8 +49,8 @@ log = logging.getLogger(__name__)
 class UnexpectedResponse(CacheBackendError):
     pass
 
-class CouchDBCache(TileCacheBase, FileBasedLocking):
-    def __init__(self, url, db_name, lock_dir,
+class CouchDBCache(TileCacheBase):
+    def __init__(self, url, db_name,
         file_ext, tile_grid, md_template=None,
         tile_id_template=None):
 
@@ -62,8 +61,6 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             raise ImportError("CouchDB backend requires 'simplejson' package or Python 2.6+.")
 
         self.lock_cache_id = 'couchdb-' + hashlib.md5(url + db_name).hexdigest()
-        self.lock_dir = lock_dir
-        self.lock_timeout = 60
         self.file_ext = file_ext
         self.tile_grid = tile_grid
         self.md_template = md_template
@@ -81,7 +78,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
             try:
                 self.req_session.put(self.couch_url)
                 self.db_initialised = True
-            except requests.exceptions.RequestException, ex:
+            except requests.exceptions.RequestException as ex:
                 log.warn('unable to initialize CouchDB: %s', ex)
 
     def tile_url(self, coord):
@@ -117,7 +114,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
                 doc = json.loads(resp.content)
                 tile.timestamp = doc.get(self.md_template.timestamp_key)
                 return True
-        except (requests.exceptions.RequestException, socket.error), ex:
+        except (requests.exceptions.RequestException, socket.error) as ex:
             # is_cached should not fail (would abort seeding for example),
             # so we catch these errors here and just return False
             log.warn('error while requesting %s: %s', url, ex)
@@ -224,7 +221,7 @@ class CouchDBCache(TileCacheBase, FileBasedLocking):
         resp = self.req_session.get(url, headers={'Accept': 'application/json'})
         if resp.status_code == 200:
             doc = json.loads(resp.content)
-            tile_data = StringIO(doc['_attachments']['tile']['data'].decode('base64'))
+            tile_data = BytesIO(doc['_attachments']['tile']['data'].decode('base64'))
             tile.source = ImageSource(tile_data)
             tile.timestamp = doc.get(self.md_template.timestamp_key)
             return True
@@ -257,7 +254,7 @@ def utc_now_isoformat():
 class CouchDBMDTemplate(object):
     def __init__(self, attributes):
         self.attributes = attributes
-        for key, value in attributes.iteritems():
+        for key, value in iteritems(attributes):
             if value == '{{timestamp}}':
                 self.timestamp_key = key
                 break
@@ -268,8 +265,8 @@ class CouchDBMDTemplate(object):
     def doc(self, tile, grid):
         doc = {}
         x, y, z = tile.coord
-        for key, value in self.attributes.iteritems():
-            if not isinstance(value, basestring) or not value.startswith('{{'):
+        for key, value in iteritems(self.attributes):
+            if not isinstance(value, string_type) or not value.startswith('{{'):
                 doc[key] = value
                 continue
 
