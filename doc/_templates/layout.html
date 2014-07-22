@@ -1,0 +1,16 @@
+{% extends "!layout.html" %}
+
+{% set bootswatch_css_custom = ['_static/mapproxy.css'] %}
+
+{%- block content %}
+{{ navBar() }}
+<div class="container">
+  <div class="row">
+    {%- block sidebar1 %}{{ bsidebar() }}{% endblock %}
+    <div class="col-md-8">
+      {% block body %}{% endblock %}
+    </div>
+  </div>
+</div>
+{%- endblock %}
+
