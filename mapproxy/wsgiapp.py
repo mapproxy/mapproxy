@@ -184,7 +184,7 @@ class MapProxyApp(object):
                         if self.base_config.debug_mode:
                             raise
                         else:
-                            log_wsgiapp.fatal('fatal error in %s for %s %s',
+                            log_wsgiapp.fatal('fatal error in %s for %s?%s',
                                 handler_name, environ.get('PATH_INFO'), environ.get('QUERY_STRING'), exc_info=True)
                             import traceback
                             traceback.print_exc(file=environ['wsgi.errors'])
