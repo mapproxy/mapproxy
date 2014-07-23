@@ -147,7 +147,7 @@ jscript_openlayers=None
                     {{if layer.grid.supports_access_with_origin('sw')}}
                     <td class="value"><a href="../demo/?tms_layer={{layer.name}}&format={{layer.format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.grid.srs.srs_code}}</a></td>
                     <td class="value"><a href="../demo/?tms_layer={{layer.name}}&format={{layer.format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.format}}</a></td>
-                    <td class="value"><a href="../demo/?tms_capabilities&layer={{layer.name}}&srs={{layer.grid.srs.srs_code | replace}}">click here</a></td>
+                    <td class="value"><a href="../demo/?tms_capabilities&layer={{layer.name}}&srs={{layer.md['name_path'][1]}}">click here</a></td>
                     {{else}}
                     <td class="value" colspan="3">
                         {{layer.grid.name}} not compatible with TMS

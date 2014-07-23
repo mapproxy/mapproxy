@@ -104,7 +104,7 @@ class DemoServer(Server):
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMTS', url)
         elif 'tms_capabilities' in req.args:
             if 'layer' in req.args and 'srs' in req.args:
-                url = '%s/tms/1.0.0/%s_%s'%(req.script_url, req.args['layer'], req.args['srs'])
+                url = '%s/tms/1.0.0/%s/%s'%(req.script_url, req.args['layer'], req.args['srs'])
             else:
                 url = '%s/tms/1.0.0/'%(req.script_url)
             capabilities = urllib2.urlopen(url)
