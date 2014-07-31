@@ -75,7 +75,7 @@ def update_config(conf, overwrites):
 from yaml.serializer import Serializer
 from yaml.nodes import ScalarNode, SequenceNode, MappingNode
 from yaml.emitter import Emitter
-from yaml.representer import Representer
+from yaml.representer import SafeRepresenter
 from yaml.resolver import Resolver
 
 class _MixedFlowSortedSerializer(Serializer):
@@ -92,7 +92,7 @@ class _MixedFlowSortedSerializer(Serializer):
             node.value.sort(key=lambda x: x[0].value)
         return Serializer.serialize_node(self, node, parent, index)
 
-class _EmptyNoneRepresenter(Representer):
+class _EmptyNoneRepresenter(SafeRepresenter):
     def represent_none(self, data):
         return self.represent_scalar(u'tag:yaml.org,2002:null',
                 u'')
@@ -116,7 +116,7 @@ class MapProxyYAMLDumper(Emitter, _MixedFlowSortedSerializer, _EmptyNoneRepresen
         Serializer.__init__(self, encoding=encoding,
                 explicit_start=explicit_start, explicit_end=explicit_end,
                 version=version, tags=tags)
-        Representer.__init__(self, default_style=default_style,
+        _EmptyNoneRepresenter.__init__(self, default_style=default_style,
                 default_flow_style=default_flow_style)
         Resolver.__init__(self)
 
