@@ -1,7 +1,8 @@
-diff -r ca4999c5c60e setup.py
---- a/setup.py	Tue May 24 13:00:18 2011 +0200
-+++ b/setup.py	Wed May 25 11:42:31 2011 +0200
-@@ -38,7 +38,7 @@
+Index: mapproxy/setup.py
+===================================================================
+--- mapproxy.orig/setup.py	2014-09-03 12:22:34.929326173 +0200
++++ mapproxy/setup.py	2014-09-03 13:49:14.474139720 +0200
+@@ -80,7 +80,7 @@
              'lighttpd_root_fix = mapproxy.util.wsgi:lighttpd_root_fix_filter_factory',
          ],
      },
