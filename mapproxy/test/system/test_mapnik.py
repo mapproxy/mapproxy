@@ -46,8 +46,12 @@ def setup_module():
         import mapnik
         mapnik
     except ImportError:
-        from nose.plugins.skip import SkipTest
-        raise SkipTest('requires mapnik')
+        try:
+            import mapnik2 as mapnik
+            mapnik
+        except ImportError:
+            from nose.plugins.skip import SkipTest
+            raise SkipTest('requires mapnik')
 
     module_setup(test_config, 'mapnik_source.yaml')
     with open(os.path.join(test_config['base_dir'], 'mapnik.xml'), 'wb') as f:
