@@ -121,12 +121,16 @@ class TileWorkerPool(TileProcessor):
                 self.progress_logger.log_step(progress)
 
     def stop(self):
+        numAlive = 0
         for proc in self.procs:
             if proc.is_alive():
-                self.tiles_queue.put(None)
+                numAlive += 1
+
+        for _ in range(numAlive):
+            self.tiles_queue.put(None)
 
         for proc in self.procs:
-            proc.join()
+           proc.join()
 
 
 class TileWorker(proc_class):
