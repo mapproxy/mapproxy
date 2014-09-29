@@ -459,7 +459,13 @@ Use Mapnik 2 if set to ``true``. This option is now deprecated and only required
 
 Set to ``true`` to render from mapnik sources with background-color="transparent", ``false`` (default) will force a black background color.
 
+``scale_factor``
+^^^^^^^^^^^^^^^^
 
+.. versionadded:: 1.8.0
+
+Set the `Mapnik scale_factor <https://github.com/mapnik/mapnik/wiki/Scale-factor>`_ option. Mapnik scales most style options like the width of lines and font sizes by this factor.
+See also :ref:`hq_tiles`.
 
 Other options
 ^^^^^^^^^^^^^

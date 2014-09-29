@@ -807,6 +807,8 @@ class MapnikSourceConfiguration(SourceConfiguration):
         coverage = self.coverage()
         res_range = resolution_range(self.conf)
 
+        scale_factor = self.conf.get('scale_factor', None)
+
         layers = self.conf.get('layers', None)
         if isinstance(layers, string_type):
             layers = layers.split(',')
@@ -830,7 +832,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
 
         return MapnikSource(mapfile, layers=layers, image_opts=image_opts,
             coverage=coverage, res_range=res_range, lock=lock,
-            reuse_map_objects=reuse_map_objects)
+            reuse_map_objects=reuse_map_objects, scale_factor=scale_factor)
 
 class TileSourceConfiguration(SourceConfiguration):
     supports_meta_tiles = False

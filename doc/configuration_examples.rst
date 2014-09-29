@@ -775,3 +775,66 @@ Example part of ``mapproxy.yaml`` to generate a quadkey cache::
       base: GLOBAL_MERCATOR
       origin: nw
 
+
+.. _hq_tiles:
+
+HQ/Retina tiles
+===============
+
+MapProxy has no native support for delivering high-resolution tiles, but you can create a second tile layer with HQ tiles, if your source supports rendering with different scale-factor or DPI.
+
+At first you need two grids. One regular grid and one with half the resolution but twice the tile size. The following example configures two webmercator compatible grids::
+
+  grids:
+    webmercator:
+      srs: "EPSG:3857"
+      origin: nw
+      min_res: 156543.03392804097
+    webmercator_hq:
+      srs: "EPSG:3857"
+      origin: nw
+      min_res: 78271.51696402048
+      tile_size: [512, 512]
+
+Then you need two layers and two caches::
+
+  layers:
+    - name: map
+      title: Regular map
+      sources: [map_cache]
+    - name: map_hq
+      title: HQ map
+      sources: [map_hq_cache]
+
+  caches:
+    map_cache:
+      grids: [webmercator]
+      sources: [map_source]
+    map_hq_cache:
+      grids: [webmercator_hq]
+      sources: [map_hq_source]
+
+And finally two sources. The source for the HQ tiles needs to render images with a higher scale/DPI setting. The ``mapnik`` source supports this with the ``scale_factor`` option. MapServer for example supports a ``map_resolution`` request parameter.
+
+::
+
+  sources:
+    map_source:
+      type: mapnik
+      mapfile: ./mapnik.xml
+      transparent: true
+
+    map_hq_source:
+      type: mapnik
+      mapfile: ./mapnik.xml
+      transparent: true
+      scale_factor: 2
+
+
+With that configuration ``/wmts/mapnik/webmercator/0/0/0.png`` returns a regular webmercator tile:
+
+.. image:: imgs/mapnik-webmerc.png
+
+``/wmts/mapnik_hq/webmercator_hq/0/0/0.png`` returns the same tile with 512x512 pixel:
+
+.. image:: imgs/mapnik-webmerc-hq.png

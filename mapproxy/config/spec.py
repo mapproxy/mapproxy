@@ -383,6 +383,7 @@ mapproxy_yaml_spec = {
                 'image': image_opts,
                 'layers': one_of(str(), [str()]),
                 'use_mapnik2': bool(),
+                'scale_factor': number(),
             }),
             'debug': {
             },

@@ -49,12 +49,13 @@ log = logging.getLogger(__name__)
 class MapnikSource(MapLayer):
     supports_meta_tiles = True
     def __init__(self, mapfile, layers=None, image_opts=None, coverage=None,
-        res_range=None, lock=None, reuse_map_objects=False):
+        res_range=None, lock=None, reuse_map_objects=False, scale_factor=None):
         MapLayer.__init__(self, image_opts=image_opts)
         self.mapfile = mapfile
         self.coverage = coverage
         self.res_range = res_range
         self.layers = set(layers) if layers else None
+        self.scale_factor = scale_factor
         self.lock = lock
         self._map_objs = {}
         self._map_objs_lock = threading.Lock()
@@ -134,7 +135,10 @@ class MapnikSource(MapLayer):
                         i += 1
 
             img = mapnik.Image(query.size[0], query.size[1])
-            mapnik.render(m, img)
+            if self.scale_factor:
+                mapnik.render(m, img, self.scale_factor)
+            else:
+                mapnik.render(m, img)
             data = img.tostring(str(query.format))
         finally:
             size = None
