@@ -114,7 +114,6 @@ class TestMapnikSource(SystemTest):
         img = Image.open(data)
         colors = sorted(img.getcolors(), reverse=True)
         # map bg color + black marker (like above, but marker is scaled up)
-        print colors
         assert 39500 < colors[0][0] < 39600, colors[0][0]
         eq_(colors[0][1], (255, 0, 0, 255))
         assert 250 < colors[1][0] < 350, colors[1][0]
