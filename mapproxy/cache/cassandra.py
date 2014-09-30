@@ -1,6 +1,6 @@
 import hashlib
 from cStringIO import StringIO
-from mapproxy.cache.base import TileCacheBase, FileBasedLocking, tile_buffer, CacheBackendError
+from mapproxy.cache.base import TileCacheBase, tile_buffer, CacheBackendError
 from mapproxy.image import ImageSource
 
 try:
@@ -17,7 +17,7 @@ class UnexpectedResponse(CacheBackendError):
     pass
 
 
-class CassandraCache(TileCacheBase, FileBasedLocking):
+class CassandraCache(TileCacheBase):
     def __init__(self, nodes, keyspace, column_family, lock_dir):
         if pycassa is None:
             raise ImportError("Cassandra backend requires 'pycassa' package.")
