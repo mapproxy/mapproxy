@@ -1290,6 +1290,19 @@ class WMSLayerConfiguration(ConfigurationBase):
                                   this=this_layer, layers=layers, md=self.conf.get('md'))
         return layer
 
+def cache_source_names(context, cache):
+    """
+    Return all sources for a cache, even if a caches uses another cache.
+    """
+    source_names = []
+    for src in context.caches[cache].conf['sources']:
+        if src in context.caches and src not in context.sources:
+            source_names.extend(cache_source_names(context, src))
+        else:
+            source_names.append(src)
+
+    return source_names
+
 class LayerConfiguration(ConfigurationBase):
     @memoize
     def wms_layer(self):
@@ -1310,8 +1323,8 @@ class LayerConfiguration(ConfigurationBase):
             lg_source_names = []
             if source_name in self.context.caches:
                 map_layer = self.context.caches[source_name].map_layer()
-                fi_source_names = self.context.caches[source_name].conf['sources']
-                lg_source_names = self.context.caches[source_name].conf['sources']
+                fi_source_names = cache_source_names(self.context, source_name)
+                lg_source_names = cache_source_names(self.context, source_name)
             elif source_name in self.context.sources:
                 source_conf = self.context.sources[source_name]
                 if not source_conf.supports_meta_tiles:
