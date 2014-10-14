@@ -925,7 +925,9 @@ class CacheConfiguration(ConfigurationBase):
         else:
             suffix = grid_conf.conf['srs'].replace(':', '')
             cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
-        link_single_color_images = self.conf.get('link_single_color_images', False)
+        link_single_color_images = self.context.globals.get_value('link_single_color_images', self.conf,
+            global_key='cache.link_single_color_images')
+
         if link_single_color_images and sys.platform == 'win32':
             log.warn('link_single_color_images not supported on windows')
             link_single_color_images = False
