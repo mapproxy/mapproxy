@@ -236,6 +236,7 @@ mapproxy_yaml_spec = {
             'max_tile_limit': number(),
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
+            'link_single_color_images': bool(),
         },
         'grid': {
             'tile_size': [int()],
