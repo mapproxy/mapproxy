@@ -173,6 +173,7 @@ class ProgressLog(object):
         if self.progress_store and self.current_task_id:
             self.progress_store.add(self.current_task_id,
                 progress.current_progress_identifier())
+            self.progress_store.remove()
             self.progress_store.write()
 
         if self.silent:
