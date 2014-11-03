@@ -93,7 +93,6 @@ class TestMapnikSource(SystemTest):
 
         resp = self.app.get(req)
         data = BytesIO(resp.body)
-        open('/vagrant/out-mapnik-tile.png', 'wb').write(resp.body)
         img = Image.open(data)
         colors = sorted(img.getcolors(), reverse=True)
         # map bg color + black marker
@@ -110,7 +109,6 @@ class TestMapnikSource(SystemTest):
 
         resp = self.app.get(req)
         data = BytesIO(resp.body)
-        open('/vagrant/out-mapnik-hq.png', 'wb').write(resp.body)
         img = Image.open(data)
         colors = sorted(img.getcolors(), reverse=True)
         # map bg color + black marker (like above, but marker is scaled up)
