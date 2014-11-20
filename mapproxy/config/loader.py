@@ -807,6 +807,8 @@ class MapnikSourceConfiguration(SourceConfiguration):
         coverage = self.coverage()
         res_range = resolution_range(self.conf)
 
+        scale_factor = self.conf.get('scale_factor', None)
+
         layers = self.conf.get('layers', None)
         if isinstance(layers, string_type):
             layers = layers.split(',')
@@ -830,7 +832,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
 
         return MapnikSource(mapfile, layers=layers, image_opts=image_opts,
             coverage=coverage, res_range=res_range, lock=lock,
-            reuse_map_objects=reuse_map_objects)
+            reuse_map_objects=reuse_map_objects, scale_factor=scale_factor)
 
 class TileSourceConfiguration(SourceConfiguration):
     supports_meta_tiles = False
@@ -923,7 +925,9 @@ class CacheConfiguration(ConfigurationBase):
         else:
             suffix = grid_conf.conf['srs'].replace(':', '')
             cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
-        link_single_color_images = self.conf.get('link_single_color_images', False)
+        link_single_color_images = self.context.globals.get_value('link_single_color_images', self.conf,
+            global_key='cache.link_single_color_images')
+
         if link_single_color_images and sys.platform == 'win32':
             log.warn('link_single_color_images not supported on windows')
             link_single_color_images = False
@@ -1301,6 +1305,19 @@ class WMSLayerConfiguration(ConfigurationBase):
                                   this=this_layer, layers=layers, md=self.conf.get('md'))
         return layer
 
+def cache_source_names(context, cache):
+    """
+    Return all sources for a cache, even if a caches uses another cache.
+    """
+    source_names = []
+    for src in context.caches[cache].conf['sources']:
+        if src in context.caches and src not in context.sources:
+            source_names.extend(cache_source_names(context, src))
+        else:
+            source_names.append(src)
+
+    return source_names
+
 class LayerConfiguration(ConfigurationBase):
     @memoize
     def wms_layer(self):
@@ -1321,8 +1338,8 @@ class LayerConfiguration(ConfigurationBase):
             lg_source_names = []
             if source_name in self.context.caches:
                 map_layer = self.context.caches[source_name].map_layer()
-                fi_source_names = self.context.caches[source_name].conf['sources']
-                lg_source_names = self.context.caches[source_name].conf['sources']
+                fi_source_names = cache_source_names(self.context, source_name)
+                lg_source_names = cache_source_names(self.context, source_name)
             elif source_name in self.context.sources:
                 source_conf = self.context.sources[source_name]
                 if not source_conf.supports_meta_tiles:

@@ -36,7 +36,7 @@ class TestUtilWMSCapabilities(object):
         self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service']
 
     def test_http_error(self):
-        self.args = ['command_dummy', '--host', 'http://foo.bar']
+        self.args = ['command_dummy', '--host', 'http://foo.doesnotexist']
         with capture() as (out,err):
             assert_raises(SystemExit, wms_capabilities_command, self.args)
         assert err.getvalue().startswith("ERROR:")

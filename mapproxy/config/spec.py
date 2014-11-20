@@ -244,6 +244,7 @@ mapproxy_yaml_spec = {
             'max_tile_limit': number(),
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
+            'link_single_color_images': bool(),
         },
         'grid': {
             'tile_size': [int()],
@@ -391,6 +392,7 @@ mapproxy_yaml_spec = {
                 'image': image_opts,
                 'layers': one_of(str(), [str()]),
                 'use_mapnik2': bool(),
+                'scale_factor': number(),
             }),
             'debug': {
             },

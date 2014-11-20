@@ -30,7 +30,24 @@ mapnik_xml = b"""
 <?xml version="1.0"?>
 <!DOCTYPE Map>
 <Map background-color="#ff0000" bgcolor="#ff0000" srs="+proj=latlong +datum=WGS84">
+    <Layer name="marker">
+        <StyleName>marker</StyleName>
+        <Datasource>
+            <Parameter name="type">ogr</Parameter>
+            <Parameter name="file">test_point.geojson</Parameter>
+            <Parameter name="layer">OGRGeoJSON</Parameter>
+        </Datasource>
+    </Layer>
+    <Style name="marker">
+        <Rule>
+            <MarkersSymbolizer fill="transparent" width="10" height="10" stroke="black" stroke-width="3" placement="point" marker-type="ellipse"/>
+        </Rule>
+    </Style>
 </Map>
+""".strip()
+
+test_point_geojson = b"""
+{"type": "Feature", "geometry": {"type": "Point", "coordinates": [-45, -45]}, "properties": {}}
 """.strip()
 
 mapnik_transp_xml = b"""
@@ -46,10 +63,16 @@ def setup_module():
         import mapnik
         mapnik
     except ImportError:
-        from nose.plugins.skip import SkipTest
-        raise SkipTest('requires mapnik')
+        try:
+            import mapnik2 as mapnik
+            mapnik
+        except ImportError:
+            from nose.plugins.skip import SkipTest
+            raise SkipTest('requires mapnik')
 
     module_setup(test_config, 'mapnik_source.yaml')
+    with open(os.path.join(test_config['base_dir'], 'test_point.geojson'), 'wb') as f:
+        f.write(test_point_geojson)
     with open(os.path.join(test_config['base_dir'], 'mapnik.xml'), 'wb') as f:
         f.write(mapnik_xml)
     with open(os.path.join(test_config['base_dir'], 'mapnik-transparent.xml'), 'wb') as f:
@@ -71,9 +94,28 @@ class TestMapnikSource(SystemTest):
         resp = self.app.get(req)
         data = BytesIO(resp.body)
         img = Image.open(data)
-        colors = img.getcolors(1)
-        # map bg color
-        eq_(colors[0], (40000, (255, 0, 0, 255)))
+        colors = sorted(img.getcolors(), reverse=True)
+        # map bg color + black marker
+        assert 39700 < colors[0][0] < 39800, colors[0][0]
+        eq_(colors[0][1], (255, 0, 0, 255))
+        assert 100 < colors[1][0] < 150, colors[1][0]
+        eq_(colors[1][1], (0, 0, 0, 255))
+
+    def test_get_map_hq(self):
+        req = (r'/service?LAYERs=mapnik_hq&SERVICE=WMS&FORMAT=image%2Fpng'
+                '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
+                '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
+                '&WIDTH=200&')
+
+        resp = self.app.get(req)
+        data = BytesIO(resp.body)
+        img = Image.open(data)
+        colors = sorted(img.getcolors(), reverse=True)
+        # map bg color + black marker (like above, but marker is scaled up)
+        assert 39500 < colors[0][0] < 39600, colors[0][0]
+        eq_(colors[0][1], (255, 0, 0, 255))
+        assert 250 < colors[1][0] < 350, colors[1][0]
+        eq_(colors[1][1], (0, 0, 0, 255))
 
     def test_get_map_outside_coverage(self):
         req = (r'/service?LAYERs=mapnik&SERVICE=WMS&FORMAT=image%2Fpng'
@@ -84,7 +126,7 @@ class TestMapnikSource(SystemTest):
         resp = self.app.get(req)
         data = BytesIO(resp.body)
         img = Image.open(data)
-        colors = img.getcolors(1)
+        colors = sorted(img.getcolors(), reverse=True)
         # wms request bg color
         eq_(colors[0], (40000, (0, 255, 0)))
 
@@ -106,6 +148,8 @@ class TestMapnikSource(SystemTest):
         resp = self.app.get(req)
         data = BytesIO(resp.body)
         img = Image.open(data)
-        colors = img.getcolors(1)
+        colors = sorted(img.getcolors(), reverse=True)
         eq_(colors[0], (40000, (0, 0, 0, 0)))
+
+
 

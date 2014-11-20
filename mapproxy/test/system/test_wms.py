@@ -758,11 +758,11 @@ class TestWMS100(WMSTest):
         self.common_req = WMS100MapRequest(url='/service?', param=dict(wmtver='1.0.0'))
         self.common_map_req = WMS100MapRequest(url='/service?', param=dict(wmtver='1.0.0',
             bbox='-180,0,0,80', width='200', height='200',
-            layers='wms_cache', srs='EPSG:4326', format='image/png',
+            layers='wms_cache', srs='EPSG:4326', format='PNG',
             styles='', request='GetMap'))
         self.common_fi_req = WMS100FeatureInfoRequest(url='/service?',
             param=dict(x='10', y='20', width='200', height='200', layers='wms_cache_100',
-                       format='image/png', query_layers='wms_cache_100', styles='',
+                       format='PNG', query_layers='wms_cache_100', styles='',
                        bbox='1000,400,2000,1400', srs='EPSG:900913'))
 
     def test_wms_capabilities(self):
@@ -865,7 +865,7 @@ class TestWMS100(WMSTest):
                 eq_(resp.content_type, 'image/png')
 
     def test_get_featureinfo(self):
-        expected_req = ({'path': r'/service?LAYERs=foo,bar&FORMAT=image%2Fpng'
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&FORMAT=image%2FPNG' # TODO should be PNG only
                                   '&REQUEST=feature_info&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&WMTVER=1.0.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20'},

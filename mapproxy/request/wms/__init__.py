@@ -292,6 +292,20 @@ class WMS100MapRequest(WMSMapRequest):
         del params['service']
         return params
 
+    def validate_format(self, image_formats):
+        format = self.params['format']
+        image_formats100 = [f.split('/', 1)[1].upper() for f in image_formats]
+
+        if format in image_formats100:
+            format = 'image/' + format.lower()
+            self.params['format'] = format
+
+        if format not in image_formats:
+            format = self.params['format']
+            self.params['format'] = 'image/png'
+            raise RequestError('unsupported image format: ' + format,
+                               code='InvalidFormat', request=self)
+
 class WMS110MapRequest(WMSMapRequest):
     version = Version('1.1.0')
     fixed_params = {'request': 'GetMap', 'version': '1.1.0', 'service': 'WMS'}
