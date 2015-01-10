@@ -1599,7 +1599,7 @@ class ServiceConfiguration(ConfigurationBase):
 
     def demo_service(self, conf):
         from mapproxy.service.demo import DemoServer
-        services = self.context.services.conf.keys()
+        services = list(self.context.services.conf.keys())
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
         layers = odict()
