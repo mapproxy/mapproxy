@@ -1610,12 +1610,24 @@ class ServiceConfiguration(ConfigurationBase):
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
 
         # WMTS restful template
-        wmts_conf = self.context.services.conf.get('wmts', {})
+        wmts_conf = self.context.services.conf.get('wmts', {}) or {}
         from mapproxy.service.wmts import WMTSRestServer
         if wmts_conf:
             restful_template = wmts_conf.get('restful_template', WMTSRestServer.default_template)
         else:
             restful_template = WMTSRestServer.default_template
+
+        if 'wmts' in self.context.services.conf:
+            kvp = wmts_conf.get('kvp')
+            restful = wmts_conf.get('restful')
+
+            if kvp is None and restful is None:
+                kvp = restful = True
+
+            if kvp:
+                services.append('wmts_kvp')
+            if restful:
+                services.append('wmts_restful')
 
         return DemoServer(layers, md, tile_layers=tile_layers,
             image_formats=image_formats, srs=srs, services=services, restful_template=restful_template)

@@ -98,6 +98,10 @@ class DemoServer(Server):
             url = '%s/service?REQUEST=GetCapabilities&tiled=true'%(req.script_url)
             capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS-C', url)
+        elif 'wmts_capabilities_kvp' in req.args:
+            url = '%s/service?REQUEST=GetCapabilities&SERVICE=WMTS' % (req.script_url)
+            capabilities = urllib2.urlopen(url)
+            demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMTS', url)
         elif 'wmts_capabilities' in req.args:
             url = '%s/wmts/1.0.0/WMTSCapabilities.xml' % (req.script_url)
             capabilities = urllib2.urlopen(url)
