@@ -226,7 +226,12 @@ mapproxy_yaml_spec = {
             'font_dir': str(),
             'merge_method': str(),
         },
-        'http': http_opts,
+        'http': combined(
+            http_opts,
+            {
+                'access_control_allow_origin': one_of(str(), {}),
+            }
+        ),
         'cache': {
             'base_dir': str(),
             'lock_dir': str(),
