@@ -143,7 +143,7 @@ class TestWMS111(WMSTest):
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
             'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
-            'wms_merge', 'tms_cache', 'wms_cache_multi',
+            'wms_merge', 'tms_cache', 'tms_fi_cache', 'wms_cache_multi',
             'wms_cache_link_single', 'wms_cache_110', 'watermark_cache'])
         eq_(layer_names, expected_names)
         eq_(set(xml.xpath('//Layer/Layer[3]/Abstract/text()')),
@@ -630,7 +630,7 @@ class TestWMS110(WMSTest):
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
             'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
-            'wms_merge', 'tms_cache', 'wms_cache_multi',
+            'wms_merge', 'tms_cache', 'tms_fi_cache', 'wms_cache_multi',
             'wms_cache_link_single', 'wms_cache_110', 'watermark_cache'])
         eq_(layer_names, expected_names)
         assert validate_with_dtd(xml, dtd_name='wms/1.1.0/capabilities_1_1_0.dtd')
@@ -775,7 +775,7 @@ class TestWMS100(WMSTest):
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
             'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
-            'wms_merge', 'tms_cache', 'wms_cache_multi',
+            'wms_merge', 'tms_cache', 'tms_fi_cache', 'wms_cache_multi',
             'wms_cache_link_single', 'wms_cache_110', 'watermark_cache'])
         eq_(layer_names, expected_names)
         #TODO srs
@@ -923,7 +923,7 @@ class TestWMS130(WMSTest):
                                     namespaces=ns130))
         expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
             'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
-            'wms_merge', 'tms_cache', 'wms_cache_multi',
+            'wms_merge', 'tms_cache', 'tms_fi_cache', 'wms_cache_multi',
             'wms_cache_link_single', 'wms_cache_110', 'watermark_cache'])
         eq_(layer_names, expected_names)
         assert is_130_capa(xml)

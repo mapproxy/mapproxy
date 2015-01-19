@@ -56,7 +56,7 @@ class TestWMSC(SystemTest):
         assert validate_with_dtd(xml, dtd_name='wmsc/1.1.1/WMS_MS_Capabilities.dtd')
         srs = set([e.text for e in xml.xpath('//TileSet/SRS')])
         eq_(srs, set(['EPSG:4326', 'EPSG:900913']))
-        eq_(len(xml.xpath('//TileSet')), 10)
+        eq_(len(xml.xpath('//TileSet')), 11)
 
     def test_get_tile(self):
         resp = self.app.get(str(self.common_map_req) + '&tiled=true')

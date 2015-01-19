@@ -1381,10 +1381,15 @@ class LayerConfiguration(ConfigurationBase):
         for source_name in self.conf.get('sources', []):
             # we only support caches for tiled access...
             if not source_name in self.context.caches:
-                # but we ignore debug layers for convenience
                 if source_name in self.context.sources:
-                    if self.context.sources[source_name].conf['type'] == 'debug':
+                    src_conf = self.context.sources[source_name].conf
+                    # but we ignore debug layers for convenience
+                    if src_conf['type'] == 'debug':
                         continue
+                    # and WMS layers with map: False (i.e. FeatureInfo only sources)
+                    if src_conf['type'] == 'wms' and src_conf.get('wms_opts', {}).get('map', True) == False:
+                        continue
+
                 return []
             sources.append(source_name)
 
