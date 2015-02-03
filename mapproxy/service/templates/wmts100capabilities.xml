@@ -104,7 +104,7 @@
       <TileMatrix>
         <ows:Identifier>{{matrix.identifier}}</ows:Identifier>
         <ScaleDenominator>{{matrix.scale_denom}}</ScaleDenominator>
-        <TopLeftCorner>{{matrix.bbox[0]}} {{matrix.bbox[3]}}</TopLeftCorner>
+        <TopLeftCorner>{{matrix.topleft[0]}} {{matrix.topleft[1]}}</TopLeftCorner>
         <TileWidth>{{matrix.tile_size[0]}}</TileWidth>
         <TileHeight>{{matrix.tile_size[1]}}</TileHeight>
         <MatrixWidth>{{matrix.grid_size[0]}}</MatrixWidth>
