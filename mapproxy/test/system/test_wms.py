@@ -122,6 +122,14 @@ class TestWMS111(WMSTest):
         resp = self.app.get(req)
         is_111_exception(resp.lxml, "unknown WMS request type 'invalid'")
 
+    def test_endpoints(self):
+        for endpoint in ('service', 'ows', 'wms'):
+            req = WMS111CapabilitiesRequest(url='/%s?' % endpoint).copy_with_request_params(self.common_req)
+            resp = self.app.get(req)
+            eq_(resp.content_type, 'application/vnd.ogc.wms_xml')
+            xml = resp.lxml
+            assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
+
     def test_wms_capabilities(self):
         req = WMS111CapabilitiesRequest(url='/service?').copy_with_request_params(self.common_req)
         resp = self.app.get(req)
