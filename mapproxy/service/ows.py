@@ -27,8 +27,8 @@ class OWSServer(object):
         self.names = ['service', 'ows']
         self.services = {}
         for service in services:
-            if service.service not in self.names:
-                self.names.append(service.service)
+            if service.service == 'wms' and 'wms' not in self.names:
+                self.names.append('wms')
             self.services[service.service] = service
 
     def handle(self, req):

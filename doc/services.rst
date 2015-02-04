@@ -312,7 +312,7 @@ KVP
 """
 
 MapProxy supports ``GetCapabilities`` and ``GetTile`` KVP requests.
-The KVP service is available at ``/service``, ``/ows`` and ``/wmts``.
+The KVP service is available at ``/service`` and ``/ows``.
 
 You can enable or disable the KVP service with the ``kvp`` option. It is enabled by default and you need to enable ``restful`` if you disable this one.
 

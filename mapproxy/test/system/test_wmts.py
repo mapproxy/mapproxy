@@ -61,7 +61,7 @@ class TestWMTS(SystemTest):
              layer='wms_cache', format='image/jpeg', style='', request='GetTile'))
 
     def test_endpoints(self):
-        for endpoint in ('service', 'ows', 'wmts'):
+        for endpoint in ('service', 'ows'):
             req = WMTS100CapabilitiesRequest(url='/%s?' % endpoint).copy_with_request_params(self.common_cap_req)
             resp = self.app.get(req)
             eq_(resp.content_type, 'application/xml')
