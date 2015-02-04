@@ -29,7 +29,7 @@ You need to add the service to the ``services`` section of your MapProxy configu
 Web Map Service (OGC WMS)
 -------------------------
 
-The WMS server is accessible at ``/service`` and it supports the WMS versions 1.0.0, 1.1.1 and 1.3.0.
+The WMS server is accessible at ``/service``, ``/ows`` and ``/wms``  and it supports the WMS versions 1.0.0, 1.1.1 and 1.3.0.
 
 The WMS service will use all configured :ref:`layers <layers>`.
 
@@ -312,7 +312,7 @@ KVP
 """
 
 MapProxy supports ``GetCapabilities`` and ``GetTile`` KVP requests.
-The KVP service is available at ``/service``.
+The KVP service is available at ``/service``, ``/ows`` and ``/wmts``.
 
 You can enable or disable the KVP service with the ``kvp`` option. It is enabled by default and you need to enable ``restful`` if you disable this one.
 
