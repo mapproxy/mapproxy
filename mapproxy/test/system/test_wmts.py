@@ -60,9 +60,18 @@ class TestWMTS(SystemTest):
              version='1.0.0', tilerow='0', tilecol='0', tilematrix='01', tilematrixset='GLOBAL_MERCATOR',
              layer='wms_cache', format='image/jpeg', style='', request='GetTile'))
 
+    def test_endpoints(self):
+        for endpoint in ('service', 'ows', 'wmts'):
+            req = WMTS100CapabilitiesRequest(url='/%s?' % endpoint).copy_with_request_params(self.common_cap_req)
+            resp = self.app.get(req)
+            eq_(resp.content_type, 'application/xml')
+            xml = resp.lxml
+            assert validate_with_xsd(xml, xsd_name='wmts/1.0/wmtsGetCapabilities_response.xsd')
+
     def test_capabilities(self):
         req = str(self.common_cap_req)
         resp = self.app.get(req)
+        eq_(resp.content_type, 'application/xml')
         xml = resp.lxml
         assert validate_with_xsd(xml, xsd_name='wmts/1.0/wmtsGetCapabilities_response.xsd')
         eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 4)
