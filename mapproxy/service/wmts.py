@@ -280,11 +280,14 @@ class TileMatrixSet(object):
         for level, res in self.grid.resolutions.iteritems():
             origin = self.grid.origin_tile(level, 'ul')
             bbox = self.grid.tile_bbox(origin)
+            topleft = bbox[0], bbox[3]
+            if self.grid.srs.is_axis_order_ne:
+                topleft = bbox[3], bbox[0]
             grid_size = self.grid.grid_sizes[level]
             scale_denom = res / (0.28 / 1000) * meter_per_unit(self.grid.srs)
             yield bunch(
                 identifier=level,
-                bbox=bbox,
+                topleft=topleft,
                 grid_size=grid_size,
                 scale_denom=scale_denom,
                 tile_size=self.grid.tile_size,

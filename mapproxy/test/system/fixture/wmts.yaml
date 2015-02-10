@@ -45,7 +45,9 @@ layers:
   - name: tms_cache_ul
     title: TMS Cache Layer
     sources: [tms_cache_ul]
-
+  - name: gk3_cache
+    title: GK3 Cache Layer
+    sources: [gk3_cache]
 caches:
   wms_cache:
     format: image/jpeg
@@ -59,6 +61,9 @@ caches:
   tms_cache_ul:
     grids: [ulgrid]
     sources: [tms_cache]
+  gk3_cache:
+    grids: [gk3]
+    sources: [wms_cache]
 
 sources:
   wms_cache:
@@ -92,6 +97,10 @@ sources:
     url: http://localhost:42423/tiles/%(tc_path)s.png
 
 grids:
+  gk3:
+    srs: 'EPSG:31467'
+    bbox: [3000000, 5000000, 4000000, 6000000]
+    origin: 'ul'
   GoogleMapsCompatible:
     base: GLOBAL_MERCATOR
   CustomGridSet:
