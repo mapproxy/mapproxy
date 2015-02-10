@@ -28,7 +28,7 @@ from mapproxy.test.image import is_jpeg, create_tmp_image
 from mapproxy.test.http import MockServ
 from mapproxy.test.helper import validate_with_xsd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
-from nose.tools import eq_
+from nose.tools import eq_, assert_regexp_matches
 
 test_config = {}
 base_config = make_base_config(test_config)
@@ -81,12 +81,12 @@ class TestWMTS(SystemTest):
         goog_matrixset = xml.xpath('//wmts:Contents/wmts:TileMatrixSet[./ows:Identifier/text()="GoogleMapsCompatible"]', namespaces=ns_wmts)[0]
         eq_(goog_matrixset.findtext('ows:Identifier', namespaces=ns_wmts), 'GoogleMapsCompatible')
         # top left corner: min X first then max Y
-        eq_(goog_matrixset.findtext('./wmts:TileMatrix[1]/wmts:TopLeftCorner', namespaces=ns_wmts), '-20037508.3428 20037508.3428')
+        assert_regexp_matches(goog_matrixset.findtext('./wmts:TileMatrix[1]/wmts:TopLeftCorner', namespaces=ns_wmts), '-20037508\.\d+ 20037508\.\d+')
 
         gk_matrixset = xml.xpath('//wmts:Contents/wmts:TileMatrixSet[./ows:Identifier/text()="gk3"]', namespaces=ns_wmts)[0]
         eq_(gk_matrixset.findtext('ows:Identifier', namespaces=ns_wmts), 'gk3')
         # Gauß-Krüger uses "reverse" axis order -> top left corner: max Y first then min X
-        eq_(gk_matrixset.findtext('./wmts:TileMatrix[1]/wmts:TopLeftCorner', namespaces=ns_wmts), '6000000.0 3000000.0')
+        assert_regexp_matches(gk_matrixset.findtext('./wmts:TileMatrix[1]/wmts:TopLeftCorner', namespaces=ns_wmts), '6000000.0+ 3000000.0+')
 
     def test_get_tile(self):
         resp = self.app.get(str(self.common_tile_req))
