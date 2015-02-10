@@ -1,3 +1,4 @@
+# -:- encoding: utf8 -:-
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
 #
@@ -65,8 +66,18 @@ class TestWMTS(SystemTest):
         resp = self.app.get(req)
         xml = resp.lxml
         assert validate_with_xsd(xml, xsd_name='wmts/1.0/wmtsGetCapabilities_response.xsd')
-        eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 4)
-        eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 4)
+        eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 5)
+        eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 5)
+
+        goog_matrixset = xml.xpath('//wmts:Contents/wmts:TileMatrixSet[./ows:Identifier/text()="GoogleMapsCompatible"]', namespaces=ns_wmts)[0]
+        eq_(goog_matrixset.findtext('ows:Identifier', namespaces=ns_wmts), 'GoogleMapsCompatible')
+        # top left corner: min X first then max Y
+        eq_(goog_matrixset.findtext('./wmts:TileMatrix[1]/wmts:TopLeftCorner', namespaces=ns_wmts), '-20037508.3428 20037508.3428')
+
+        gk_matrixset = xml.xpath('//wmts:Contents/wmts:TileMatrixSet[./ows:Identifier/text()="gk3"]', namespaces=ns_wmts)[0]
+        eq_(gk_matrixset.findtext('ows:Identifier', namespaces=ns_wmts), 'gk3')
+        # Gauß-Krüger uses "reverse" axis order -> top left corner: max Y first then min X
+        eq_(gk_matrixset.findtext('./wmts:TileMatrix[1]/wmts:TopLeftCorner', namespaces=ns_wmts), '6000000.0 3000000.0')
 
     def test_get_tile(self):
         resp = self.app.get(str(self.common_tile_req))
