@@ -82,16 +82,9 @@ class RiakCache(TileCacheBase):
         return 0.0
 
     def is_cached(self, tile):
-        if tile.coord is None or tile.source:
+        if tile.source:
             return True
-        res = self._get_object(tile.coord)
-        if not res.exists:
-            return False
-
-        tile.timestamp = self._get_timestamp(res)
-        tile.size = len(res.encoded_data)
-
-        return True
+        return self.load_tile(tile)
 
     def _store_bulk(self, tiles):
         for tile in tiles:
@@ -130,10 +123,10 @@ class RiakCache(TileCacheBase):
             return
 
         # is_cached loads metadata
-        self.is_cached(tile)
+        self.load_tile(tile, True)
 
     def load_tile(self, tile, with_metadata=False):
-        if not tile.is_missing():
+        if tile.source or tile.coord is None:
             return True
 
         res = self._get_object(tile.coord)
