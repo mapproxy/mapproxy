@@ -150,7 +150,7 @@ class RiakCache(TileCacheBase):
             return True
 
         try:
-            res.delete(w=1, rw=1, dw=1, pw=1)
+            res.delete(w=1, r=1, dw=1, pw=1, timeout=self.request_timeout)
         except riak.RiakError as ex:
             log.warn('unable to remove tile: %s', ex)
             return False
