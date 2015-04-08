@@ -1,3 +1,34 @@
+1.8.0 2015-xx-xx
+~~~~~~~~~~~~~~~~
+
+Features:
+
+- Support for Python 3.3 or newer
+
+Improvements:
+
+- WMS is now available at /service, /ows and /wms
+- WMTS KVP is now available at /service and /ows, RESTful service at /wmts
+- allow tiled access to layers with multiple map:false sources
+- add Access-control-allow-origin header to HTTP responses
+- list KVP and RESTful capabilities on demo page
+- disable verbose seed output if stdout is not a tty
+- add globals.cache.link_single_color_images option
+- support scale_factor for Mapnik sources
+
+Fixes:
+
+- handle EPSG axis order in WMTS capabilities
+- pass through legends/featureinfo for recursive caches
+- accept PNG/JPEG style image_format for WMS 1.0.0
+- fix TMS capabilities in demo for TMS with use_grid_names
+- fix ctrl+c behaviour in mapproxy-seed
+
+Other:
+
+- 1.8.0 is expected to work with Python 2.6, but it is no longer officially supported
+
+
 1.7.1 2014-07-08
 ~~~~~~~~~~~~~~~~
 
