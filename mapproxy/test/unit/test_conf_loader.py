@@ -1,3 +1,4 @@
+# -:- encoding: UTF8 -:-
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 #
@@ -457,6 +458,38 @@ class TestWMSSourceConfiguration(object):
         wms_layer = conf.layers['osm'].wms_layer()
         layers = wms_layer.map_layers[0].client.request_template.params.layers
         eq_(layers, ['base', 'roads'])
+
+    def test_tagged_source_encoding(self):
+        conf_dict = {
+            'layers': [
+                {
+                    'name': 'osm',
+                    'title': 'OSM',
+                    'sources': [u'osm:☃']
+                }
+            ],
+            'sources': {
+                'osm': {
+                    'type': 'wms',
+                    'req': {
+                        'url': 'http://localhost/service?',
+                    },
+                },
+            },
+            'caches': {
+                'osm': {
+                    'sources': [u'osm:☃'],
+                    'grids': ['GLOBAL_MERCATOR'],
+                }
+            }
+        }
+        # from source
+        conf = ProxyConfiguration(conf_dict)
+        wms_layer = conf.layers['osm'].wms_layer()
+        layers = wms_layer.map_layers[0].client.request_template.params.layers
+        eq_(layers, [u'☃'])
+        # from cache
+        self.check_source_layers(conf_dict, [u'☃'])
 
     def test_https_source_insecure(self):
         conf_dict = {
