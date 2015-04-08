@@ -13,7 +13,8 @@ include doc/*.rst
 include doc/conf.py
 include doc/imgs/*.png
 include doc/_static/*.png
-recursive-include doc/_themes *.html *.conf *.css_t
+include doc/_static/*.css
+include doc/_templates/*.html
 
 recursive-include mapproxy/config_template *.ini *.wsgi *.yaml
 recursive-include mapproxy/image/fonts *.ttf LICENSE
