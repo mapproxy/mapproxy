@@ -89,5 +89,10 @@ def tilewalker_cleanup(task, dry_run, concurrency, skip_geoms_for_last_levels,
     tile_walker = TileWalker(task, tile_worker_pool, handle_stale=True,
                              work_on_metatiles=False, progress_logger=progress_logger,
                              skip_geoms_for_last_levels=skip_geoms_for_last_levels)
-    tile_walker.walk()
-    tile_worker_pool.stop()
+    try:
+        tile_walker.walk()
+    except KeyboardInterrupt:
+        tile_worker_pool.stop(force=True)
+        raise
+    finally:
+        tile_worker_pool.stop()
