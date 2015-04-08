@@ -335,7 +335,7 @@ class RequestParams(object):
                                  (self.__class__.__name__, name))
 
     def __getitem__(self, key):
-        return self.delimiter.join(map(str, self.params.get_all(key)))
+        return self.delimiter.join(map(text_type, self.params.get_all(key)))
 
     def __setitem__(self, key, value):
         """
@@ -350,7 +350,7 @@ class RequestParams(object):
 
     def iteritems(self):
         for key, values in self.params.iteritems():
-            yield key, self.delimiter.join((str(x) for x in values))
+            yield key, self.delimiter.join((text_type(x) for x in values))
 
     def __contains__(self, key):
         return self.params and key in self.params
@@ -369,8 +369,8 @@ class RequestParams(object):
         """
         kv_pairs = []
         for key, values in self.params.iteritems():
-            value = ','.join(str(v) for v in values)
-            kv_pairs.append(key + '=' + quote_plus(value, safe=','))
+            value = ','.join(text_type(v) for v in values)
+            kv_pairs.append(key + '=' + quote_plus(value.encode('utf-8'), safe=','))
         return '&'.join(kv_pairs)
 
     def with_defaults(self, defaults):
