@@ -53,6 +53,7 @@ caches:
 sources:
   tms_source:
     type: tile
+    grid: GLOBAL_MERCATOR
     url: http://localhost:42423/tiles/%(tc_path)s.png
 
   tms_utm32n_source:
@@ -68,6 +69,7 @@ grids:
     bbox: [4, 46, 16, 56]
     bbox_srs: 'EPSG:4326'
     min_res: 5700
+    origin: sw
 
   osm_grid:
     base: GLOBAL_MERCATOR

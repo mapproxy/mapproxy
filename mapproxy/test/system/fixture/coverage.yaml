@@ -66,12 +66,14 @@ sources:
       layers: foo,bar
   tms_cache:
     type: tile
+    grid: GLOBAL_MERCATOR
     coverage:
       bbox: [12, 10, 35, 30]
       bbox_srs: 'EPSG:4326'
     url: http://localhost:42423/tms/1.0.0/foo/%(tms_path)s.jpeg
   seed_only_source:
     type: tile
+    grid: GLOBAL_MERCATOR
     seed_only: true
     coverage:
       bbox: [14, 13, 24, 23]

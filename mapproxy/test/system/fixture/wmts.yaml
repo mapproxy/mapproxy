@@ -94,6 +94,7 @@ sources:
       layers: foo,bar
   tms_cache:
     type: tile
+    grid: GLOBAL_MERCATOR
     url: http://localhost:42423/tiles/%(tc_path)s.png
 
 grids:

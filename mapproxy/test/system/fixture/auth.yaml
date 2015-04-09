@@ -64,4 +64,5 @@ sources:
       layers: fi
   source:
     type: tile
+    grid: GLOBAL_MERCATOR
     url: http://localhost:42423/%(tms_path)s.png

@@ -24,5 +24,6 @@ caches:
 sources:
   tms:
     type: tile
+    grid: GLOBAL_MERCATOR
     url: http://localhost:42423/tiles/%(tc_path)s.png
 

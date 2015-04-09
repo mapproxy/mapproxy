@@ -14,9 +14,11 @@ caches:
 sources:
   tms_source_a:
     type: tile
+    grid: GLOBAL_MERCATOR
     url: http://localhost:42423/tiles_a/%(tc_path)s.png
     max_res: 1222.99245256282
   tms_source_b:
     type: tile
+    grid: GLOBAL_MERCATOR
     url: http://localhost:42423/tiles_b/%(tc_path)s.png
     min_res: 1222.99245256282

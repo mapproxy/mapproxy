@@ -841,7 +841,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
 class TileSourceConfiguration(SourceConfiguration):
     supports_meta_tiles = False
     source_type = ('tile',)
-    defaults = {}
+    defaults = {'grid': 'GLOBAL_WEBMERCATOR'}
 
     def source(self, params=None):
         from mapproxy.client.tile import TileClient, TileURLTemplate
@@ -861,12 +861,7 @@ class TileSourceConfiguration(SourceConfiguration):
 
         http_client, url = self.http_client(url)
 
-        grid_name = self.conf.get('grid')
-        if grid_name is None:
-            log.warn("tile source for %s does not have a grid configured and defaults to GLOBAL_MERCATOR. default will change with MapProxy 2.0", url)
-            grid_name = "GLOBAL_MERCATOR"
-
-        grid = self.context.grids[grid_name].tile_grid()
+        grid = self.context.grids[self.conf['grid']].tile_grid()
         coverage = self.coverage()
         res_range = resolution_range(self.conf)
 
