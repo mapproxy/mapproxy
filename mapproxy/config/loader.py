@@ -903,7 +903,7 @@ source_configuration_types = {
 
 
 class CacheConfiguration(ConfigurationBase):
-    defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
+    defaults = {'format': 'image/png'}
 
     @memoize
     def cache_dir(self):
@@ -1242,7 +1242,12 @@ class CacheConfiguration(ConfigurationBase):
 
     @memoize
     def grid_confs(self):
-        return [(g, self.context.grids[g]) for g in self.conf['grids']]
+        grid_names = self.conf.get('grids')
+        if grid_names is None:
+            log.warn('cache %s does not have any grids. default will change from [GLOBAL_MERCATOR] to [GLOBAL_WEBMERCATOR] with MapProxy 2.0',
+                self.conf['name'])
+            grid_names = ['GLOBAL_MERCATOR']
+        return [(g, self.context.grids[g]) for g in grid_names]
 
     @memoize
     def map_layer(self):
