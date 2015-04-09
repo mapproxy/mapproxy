@@ -310,7 +310,7 @@ class GridConfiguration(ConfigurationBase):
             stretch_factor=stretch_factor,
             max_shrink_factor=max_shrink_factor,
             align_with=align_with,
-            origin=conf.get('origin')
+            origin=conf.get('origin', 'nw')
         )
 
         return grid

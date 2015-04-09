@@ -7,7 +7,7 @@ services:
   tms:
     use_grid_names: True
   kml:
-    use_grid_names: True  
+    use_grid_names: True
 
 layers:
   - name: wms_cache
@@ -41,6 +41,7 @@ grids:
     bbox: [5,50,10,55]
     bbox_srs: EPSG:4326
     num_levels: 12
+    origin: 'sw'
 
 sources:
   wms_source:
