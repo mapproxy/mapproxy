@@ -663,7 +663,7 @@ class TestImageOptions(object):
         image_opts = conf.globals.image_options.image_opts({}, 'image/png')
         eq_(image_opts.format, 'image/png')
         eq_(image_opts.mode, None)
-        eq_(image_opts.colors, 256)
+        eq_(image_opts.colors, None)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bicubic')
 
@@ -724,7 +724,7 @@ class TestImageOptions(object):
         image_opts = conf.caches['test'].image_opts()
         eq_(image_opts.format, 'image/png')
         eq_(image_opts.mode, None)
-        eq_(image_opts.colors, 256)
+        eq_(image_opts.colors, None)
         eq_(image_opts.transparent, None)
         eq_(image_opts.resampling, 'bilinear')
 

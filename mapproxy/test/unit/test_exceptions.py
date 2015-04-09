@@ -202,10 +202,8 @@ class TestWMSImageExceptionHandler(ExceptionHandlerTest):
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
-        eq_(sorted([x for x in img.histogram() if x > 25]),
-            [377, 14623])
-        img = img.convert('RGBA')
-        eq_(img.getpixel((0, 0))[3], 0)
+        eq_(img.getcolors(), [(14623, (255, 255, 255, 0)), (377, (0, 0, 0, 255))])
+        eq_(img.getpixel((0, 0)), (255, 255, 255, 0))
 
 
 class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
@@ -220,8 +218,7 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
-        eq_(img.getpixel((0, 0)), 0) #pallete image
-        eq_(img.getpalette()[0:3], [255, 255, 255])
+        eq_(img.getpixel((0, 0)), (255, 255, 255))
     def test_exception_w_bgcolor(self):
         self.req.set('exceptions', 'blank')
         self.req.set('bgcolor', '0xff00ff')
@@ -235,8 +232,7 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
-        eq_(img.getpixel((0, 0)), 0) #pallete image
-        eq_(img.getpalette()[0:3], [255, 0, 255])
+        eq_(img.getpixel((0, 0)), (255, 0, 255))
     def test_exception_w_transparent(self):
         self.req.set('exceptions', 'blank')
         self.req.set('transparent', 'true' )
@@ -250,6 +246,5 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
-        assert img.mode == 'P'
-        img = img.convert('RGBA')
-        eq_(img.getpixel((0, 0))[3], 0)
+        assert img.mode == 'RGBA'
+        eq_(img.getpixel((0, 0)), (255, 255, 255, 0))

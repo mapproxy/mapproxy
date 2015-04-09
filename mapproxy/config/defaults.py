@@ -41,7 +41,7 @@ image = dict(
     jpeg_quality = 90,
     stretch_factor = 1.15,
     max_shrink_factor = 4.0,
-    paletted = True,
+    paletted = False,
     transparent_color_tolerance = 5,
     font_dir = None,
 )
