@@ -64,8 +64,8 @@ class ProxyConfiguration(object):
     def load_grids(self):
         self.grids = {}
 
-        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(dict(srs='EPSG:4326', name='GLOBAL_GEODETIC'), context=self)
-        self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913', name='GLOBAL_MERCATOR'), context=self)
+        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(dict(srs='EPSG:4326', origin='sw', name='GLOBAL_GEODETIC'), context=self)
+        self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913', origin='sw', name='GLOBAL_MERCATOR'), context=self)
         self.grids['GLOBAL_WEBMERCATOR'] = GridConfiguration(dict(srs='EPSG:3857', origin='nw', name='GLOBAL_WEBMERCATOR'), context=self)
 
         for grid_name, grid_conf in iteritems((self.configuration.get('grids') or {})):
@@ -290,6 +290,10 @@ class GridConfiguration(ConfigurationBase):
         max_shrink_factor = self.context.globals.get_value('max_shrink_factor', conf,
             global_key='image.max_shrink_factor')
 
+        if conf.get('origin') is None:
+            log.warn('grid %s does not have an origin. default origin will change from sw (south/west) to nw (north-west) with MapProxy 2.0',
+                conf['name'],
+            )
 
         grid = tile_grid(
             name=conf['name'],
@@ -837,7 +841,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
 class TileSourceConfiguration(SourceConfiguration):
     supports_meta_tiles = False
     source_type = ('tile',)
-    defaults = {'grid': 'GLOBAL_MERCATOR'}
+    defaults = {}
 
     def source(self, params=None):
         from mapproxy.client.tile import TileClient, TileURLTemplate
@@ -856,7 +860,13 @@ class TileSourceConfiguration(SourceConfiguration):
             'and will be ignored. use grid with correct origin.', RuntimeWarning)
 
         http_client, url = self.http_client(url)
-        grid = self.context.grids[self.conf['grid']].tile_grid()
+
+        grid_name = self.conf.get('grid')
+        if grid_name is None:
+            log.warn("tile source for %s does not have a grid configured and defaults to GLOBAL_MERCATOR. default will change with MapProxy 2.0", url)
+            grid_name = "GLOBAL_MERCATOR"
+
+        grid = self.context.grids[grid_name].tile_grid()
         coverage = self.coverage()
         res_range = resolution_range(self.conf)
 
