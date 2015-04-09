@@ -9,6 +9,7 @@ globals:
 services:
   tms:
   wms:
+    image_formats: ['image/png', 'image/jpeg', 'image/gif', 'image/GeoTIFF', 'image/tiff']
     md:
       title: MapProxy test fixture
       abstract: This is MapProxy.
