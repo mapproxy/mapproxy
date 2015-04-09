@@ -32,7 +32,7 @@ services:
 
 layers:
   - name: mixed_mode
-    title: cache with PNG and JPEG 
+    title: cache with PNG and JPEG
     sources: [mixed_cache]
 
 caches:
@@ -40,6 +40,7 @@ caches:
     format: mixed
     sources: [mixed_source]
     request_format: image/png
+    grids: ['GLOBAL_MERCATOR']
 
 sources:
   mixed_source:

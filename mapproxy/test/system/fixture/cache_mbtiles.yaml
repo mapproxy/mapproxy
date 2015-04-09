@@ -19,6 +19,7 @@ caches:
       type: mbtiles
       filename: ./cache.mbtiles
       tile_lock_dir: ./testlockdir
+    grids: ['GLOBAL_MERCATOR']
     sources: [tms]
 
 sources:

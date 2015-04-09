@@ -52,12 +52,14 @@ caches:
   wms_cache:
     format: image/jpeg
     sources: [wms_cache]
+    grids: ['GLOBAL_MERCATOR']
   wms_cache_multi:
     format: image/jpeg
     grids: [CustomGridSet, GoogleMapsCompatible]
     sources: [wms_cache_130]
   tms_cache:
     sources: [tms_cache]
+    grids: ['GLOBAL_MERCATOR']
   tms_cache_ul:
     grids: [ulgrid]
     sources: [tms_cache]

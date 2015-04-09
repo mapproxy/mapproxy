@@ -31,8 +31,10 @@ caches:
     use_direct_from_level: 8
     sources: [wms_cache]
     meta_size: [3, 3]
+    grids: ['GLOBAL_MERCATOR']
   tms_cache:
     sources: [tms_cache]
+    grids: ['GLOBAL_MERCATOR']
 
 sources:
   direct:

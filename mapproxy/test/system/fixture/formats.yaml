@@ -45,14 +45,17 @@ caches:
     format: image/jpeg
     use_direct_from_level: 2
     sources: [tiff_source]
+    grids: ['GLOBAL_MERCATOR']
   jpeg_cache_png_jpeg_source:
     format: image/jpeg
     use_direct_from_level: 2
     sources: [png_jpeg_source]
+    grids: ['GLOBAL_MERCATOR']
   png_cache_all_source:
     format: image/png
     use_direct_from_level: 2
     sources: [all_source]
+    grids: ['GLOBAL_MERCATOR']
 
 sources:
   all_source:

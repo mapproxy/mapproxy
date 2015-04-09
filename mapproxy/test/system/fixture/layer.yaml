@@ -128,35 +128,43 @@ caches:
     format: image/jpeg
     use_direct_from_level: 8
     sources: [wms_cache]
+    grids: ['GLOBAL_MERCATOR']
     cache:
         type: file
         tile_lock_dir: wmscachetilelockdir
   wms_cache_transparent:
     format: png8a
     sources: [wms_cache_transparent]
+    grids: ['GLOBAL_MERCATOR']
   wms_cache_link_single:
     format: png24
     request_format: image/jpeg
     link_single_color_images: True
     sources: [wms_cache]
+    grids: ['GLOBAL_MERCATOR']
   wms_cache_100:
     format: image/jpeg
     request_format: image/tiff
     sources: [wms_cache_100]
+    grids: ['GLOBAL_MERCATOR']
   wms_cache_130:
     format: image/jpeg
     sources: [wms_cache_130]
+    grids: ['GLOBAL_MERCATOR']
   wms_cache_multi:
     format: custom
     grids: [GLOBAL_GEODETIC, GLOBAL_MERCATOR]
     sources: [wms_cache_130]
   tms_cache:
     sources: [tms_cache]
+    grids: ['GLOBAL_MERCATOR']
   wms_cache_110:
     format: image/jpeg
     sources: [wms_cache_110]
+    grids: ['GLOBAL_MERCATOR']
   watermark_cache:
     sources: [tms_cache]
+    grids: ['GLOBAL_MERCATOR']
     disable_storage: true
     watermark:
       text: '@ Omniscale'

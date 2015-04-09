@@ -18,6 +18,7 @@ caches:
   tile_cache:
     disable_storage: true
     sources: [tile_source]
+    grids: ['GLOBAL_MERCATOR']
 
 sources:
   tile_source:

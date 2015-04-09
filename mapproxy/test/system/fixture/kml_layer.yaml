@@ -36,6 +36,7 @@ caches:
   wms_cache:
     format: image/jpeg
     sources: [wms_cache]
+    grids: ['GLOBAL_MERCATOR']
   wms_cache_nw:
     format: image/jpeg
     grids: [webmercator]

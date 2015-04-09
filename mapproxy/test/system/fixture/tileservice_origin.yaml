@@ -17,6 +17,7 @@ caches:
   wms_cache:
     format: image/jpeg
     sources: [wms_source]
+    grids: ['GLOBAL_MERCATOR']
 
 sources:
   wms_source:
