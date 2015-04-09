@@ -44,7 +44,7 @@ sources:
       layers: bar
   wms_cache:
     type: wms
-    supported_srs: ['EPSG:900913', 'EPSG:4326']
+    supported_srs: ['EPSG:3857', 'EPSG:4326']
     wms_opts:
       featureinfo: True
     req:

@@ -97,12 +97,12 @@ class TestWMS(SystemTest):
         # only res layer matches resolution range
         self.common_map_req.params['layers'] = 'res,scale'
         self.common_map_req.params['bbox'] = '0,0,100000,100000'
-        self.common_map_req.params['srs'] = 'EPSG:900913'
+        self.common_map_req.params['srs'] = 'EPSG:3857'
         self.common_map_req.params.size = 100, 100
         self.created_tiles.append('res_cache_EPSG900913/08/000/000/128/000/000/128.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=reslayer&SERVICE=WMS&FORMAT=image%2Fjpeg'
-                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
+                                      '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A3857&styles='
                                       '&VERSION=1.1.1&BBOX=0.0,0.0,156543.033928,156543.033928'
                                       '&WIDTH=256'},
                             {'body': img.read(), 'headers': {'content-type': 'image/png'}})

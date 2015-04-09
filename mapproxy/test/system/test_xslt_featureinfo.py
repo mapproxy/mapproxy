@@ -101,12 +101,12 @@ class TestWMSXSLTFeatureInfo(SystemTest):
         self.common_fi_req = WMS111FeatureInfoRequest(url='/service?',
             param=dict(x='10', y='20', width='200', height='200', layers='fi_layer',
                        format='image/png', query_layers='fi_layer', styles='',
-                       bbox='1000,400,2000,1400', srs='EPSG:900913'))
+                       bbox='1000,400,2000,1400', srs='EPSG:3857'))
 
     def test_get_featureinfo(self):
         fi_body = b"<a><b>Bar</b></a>"
         expected_req = ({'path': r'/service_a?LAYERs=a_one&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A3857'
                                   '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=a_one&i=10&J=20&info_format=text/xml'},
                         {'body': fi_body, 'headers': {'content-type': 'text/xml; charset=UTF-8'}})
@@ -118,7 +118,7 @@ class TestWMSXSLTFeatureInfo(SystemTest):
     def test_get_featureinfo_130(self):
         fi_body = b"<a><b>Bar</b></a>"
         expected_req = ({'path': r'/service_a?LAYERs=a_one&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A3857'
                                   '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=a_one&i=10&J=20&info_format=text/xml'},
                         {'body': fi_body, 'headers': {'content-type': 'text/xml'}})
@@ -133,17 +133,17 @@ class TestWMSXSLTFeatureInfo(SystemTest):
         fi_body2 = b"<a><b>Bar2</b></a>"
         fi_body3 = b"<body><h1>Hello<p>Bar3"
         expected_req1 = ({'path': r'/service_a?LAYERs=a_one&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A3857'
                                   '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=a_one&i=10&J=20&info_format=text/xml'},
                         {'body': fi_body1, 'headers': {'content-type': 'text/xml'}})
         expected_req2 = ({'path': r'/service_b?LAYERs=b_one&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A3857'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=b_one&X=10&Y=20&info_format=text/xml'},
                         {'body': fi_body2, 'headers': {'content-type': 'text/xml'}})
         expected_req3 = ({'path': r'/service_d?LAYERs=d_one&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A3857'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=d_one&X=10&Y=20&info_format=text/html'},
                         {'body': fi_body3, 'headers': {'content-type': 'text/html'}})
@@ -160,17 +160,17 @@ class TestWMSXSLTFeatureInfo(SystemTest):
         fi_body2 = b"<a><b>Bar2</b></a>"
         fi_body3 = b"<body><h1>Hello<p>Bar3"
         expected_req1 = ({'path': r'/service_a?LAYERs=a_one&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A3857'
                                   '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=a_one&i=10&J=20&info_format=text/xml'},
                         {'body': fi_body1, 'headers': {'content-type': 'text/xml'}})
         expected_req2 = ({'path': r'/service_b?LAYERs=b_one&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A3857'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=b_one&X=10&Y=20&info_format=text/xml'},
                         {'body': fi_body2, 'headers': {'content-type': 'text/xml'}})
         expected_req3 = ({'path': r'/service_d?LAYERs=d_one&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A3857'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=d_one&X=10&Y=20&info_format=text/html'},
                         {'body': fi_body3, 'headers': {'content-type': 'text/html'}})
@@ -187,12 +187,12 @@ class TestWMSXSLTFeatureInfo(SystemTest):
         fi_body1 = b"Hello"
         fi_body2 = b"<a><b>Bar2</b></a>"
         expected_req1 = ({'path': r'/service_c?LAYERs=c_one&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A3857'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=c_one&X=10&Y=20'},
                         {'body': fi_body1, 'headers': {'content-type': 'text/plain'}})
         expected_req2 = ({'path': r'/service_a?LAYERs=a_one&SERVICE=WMS&FORMAT=image%2Fpng'
-                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A900913'
+                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&CRS=EPSG%3A3857'
                                    '&VERSION=1.3.0&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                    '&WIDTH=200&QUERY_LAYERS=a_one&i=10&J=20&info_format=text/xml'},
                         {'body': fi_body2, 'headers': {'content-type': 'text/xml'}})

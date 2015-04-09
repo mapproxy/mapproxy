@@ -69,7 +69,7 @@ class TestWMS111(SystemTest):
         self.common_fi_req = WMS111FeatureInfoRequest(url='/service?',
             param=dict(x='10', y='20', width='200', height='200', layers='wms_cache',
                        format='image/png', query_layers='wms_cache', styles='',
-                       bbox='1000,400,2000,1400', srs='EPSG:900913'))
+                       bbox='1000,400,2000,1400', srs='EPSG:3857'))
 
     def test_wms_capabilities(self):
         req = WMS111CapabilitiesRequest(url='/service?').copy_with_request_params(self.common_req)
@@ -193,7 +193,7 @@ class TestWMS111(SystemTest):
 
     def test_get_featureinfo(self):
         expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A3857'
                                   '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10&Y=20&feature_count=100'},
                         {'body': b'info', 'headers': {'content-type': 'text/plain'}})
