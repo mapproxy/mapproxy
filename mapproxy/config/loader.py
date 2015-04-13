@@ -755,10 +755,6 @@ class MapnikSourceConfiguration(SourceConfiguration):
 
         mapfile = self.context.globals.abspath(self.conf['mapfile'])
 
-        if self.conf.get('use_mapnik2', False):
-            warnings.warn('use_mapnik2 option is no longer needed for Mapnik 2 support',
-                DeprecationWarning)
-
         from mapproxy.source.mapnik import MapnikSource, mapnik as mapnik_api
         if mapnik_api is None:
             raise ConfigurationError('Could not import Mapnik, please verify it is installed!')
