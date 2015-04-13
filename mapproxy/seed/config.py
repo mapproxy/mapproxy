@@ -16,7 +16,6 @@
 from __future__ import print_function
 
 import os
-import sys
 import time
 import operator
 from functools import reduce
@@ -25,10 +24,10 @@ from mapproxy.compat import iteritems, itervalues, iterkeys
 from mapproxy.config import abspath
 from mapproxy.config.loader import ConfigurationError
 from mapproxy.config.coverage import load_coverage
-from mapproxy.srs import SRS, TransformationError
+from mapproxy.srs import TransformationError
 from mapproxy.util.py import memoize
 from mapproxy.util.times import timestamp_from_isodate, timestamp_before
-from mapproxy.util.coverage import MultiCoverage, BBOXCoverage, GeomCoverage
+from mapproxy.util.coverage import MultiCoverage, BBOXCoverage
 from mapproxy.util.geom import GeometryError, EmptyGeometryError, CoverageReadError
 from mapproxy.util.yaml import load_yaml_file, YAMLError
 from mapproxy.seed.util import bidict
@@ -51,89 +50,13 @@ def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf):
     except YAMLError as ex:
         raise SeedConfigurationError(ex)
 
-    if 'views' in conf:
-        # TODO: deprecate old config
-        seed_conf = LegacySeedingConfiguration(conf, mapproxy_conf=mapproxy_conf)
-    else:
-        errors, informal_only = validate_seed_conf(conf)
-        for error in errors:
-            log.warn(error)
-        if not informal_only:
-            raise SeedConfigurationError('invalid configuration')
-        seed_conf = SeedingConfiguration(conf, mapproxy_conf=mapproxy_conf)
+    errors, informal_only = validate_seed_conf(conf)
+    for error in errors:
+        log.warn(error)
+    if not informal_only:
+        raise SeedConfigurationError('invalid configuration')
+    seed_conf = SeedingConfiguration(conf, mapproxy_conf=mapproxy_conf)
     return seed_conf
-
-class LegacySeedingConfiguration(object):
-    """
-    Read old seed.yaml configuration (with seed and views).
-    """
-    def __init__(self, seed_conf, mapproxy_conf):
-        self.conf = seed_conf
-        self.mapproxy_conf = mapproxy_conf
-        self.grids = bidict((name, grid_conf.tile_grid()) for name, grid_conf in iteritems(self.mapproxy_conf.grids))
-        self.seed_tasks = []
-        self.cleanup_tasks = []
-        self._init_tasks()
-
-    def _init_tasks(self):
-        for cache_name, options in iteritems(self.conf['seeds']):
-            remove_before = None
-            if 'remove_before' in options:
-                remove_before = before_timestamp_from_options(options['remove_before'])
-            try:
-                caches = self.mapproxy_conf.caches[cache_name].caches()
-            except KeyError:
-                print('error: cache %s not found. available caches: %s' % (
-                    cache_name, ','.join(self.mapproxy_conf.caches.keys())), file=sys.stderr)
-                return
-            caches = dict((grid, tile_mgr) for grid, extent, tile_mgr in caches)
-            for view in options['views']:
-                view_conf = self.conf['views'][view]
-                coverage = load_coverage(view_conf)
-
-                cache_srs = view_conf.get('srs', None)
-                if cache_srs is not None:
-                    cache_srs = [SRS(s) for s in cache_srs]
-
-                level = view_conf.get('level', None)
-                assert len(level) == 2
-
-                for grid, tile_mgr in iteritems(caches):
-                    if cache_srs and grid.srs not in cache_srs: continue
-                    md = dict(name=view, cache_name=cache_name, grid_name=self.grids[grid])
-                    levels = list(range(level[0], level[1]+1))
-                    if coverage:
-                        if isinstance(coverage, GeomCoverage) and coverage.geom.is_empty:
-                            continue
-                        seed_coverage = coverage.transform_to(grid.srs)
-                    else:
-                        seed_coverage = BBOXCoverage(grid.bbox, grid.srs)
-
-                    self.seed_tasks.append(SeedTask(md, tile_mgr, levels, remove_before, seed_coverage))
-
-                    if remove_before:
-                        levels = list(range(grid.levels))
-                        complete_extent = bool(coverage)
-                        self.cleanup_tasks.append(CleanupTask(md, tile_mgr, levels, remove_before,
-                            seed_coverage, complete_extent=complete_extent))
-
-    def seed_tasks_names(self):
-        return self.conf['seeds'].keys()
-
-    def cleanup_tasks_names(self):
-        return self.conf['seeds'].keys()
-
-    def seeds(self, names=None):
-        if names is None:
-            return self.seed_tasks
-        else:
-            return [t for t in self.seed_tasks if t.md['name'] in names]
-
-    def cleanups(self, names=None):
-        if names is None:
-            return self.cleanup_tasks
-        else:
-            return [t for t in self.cleanup_tasks if t.md['name'] in names]
 
 class SeedingConfiguration(object):
     def __init__(self, seed_conf, mapproxy_conf):
