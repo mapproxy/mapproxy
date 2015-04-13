@@ -18,7 +18,6 @@ Tile retrieval (WMS, TMS, etc.).
 """
 import sys
 import time
-import warnings
 
 from mapproxy.version import version
 from mapproxy.image import ImageSource
@@ -43,29 +42,11 @@ class HTTPClientError(Exception):
         Exception.__init__(self, arg)
         self.response_code = response_code
 
-if sys.version_info >= (2, 6):
-    _urllib2_has_timeout = True
-else:
-    _urllib2_has_timeout = False
-
-_max_set_timeout = None
-
 try:
     import ssl
     ssl # prevent pyflakes warnings
 except ImportError:
     ssl = None
-
-
-def _set_global_socket_timeout(timeout):
-    global _max_set_timeout
-    if _max_set_timeout is None:
-        _max_set_timeout = timeout
-    elif _max_set_timeout != timeout:
-        _max_set_timeout = max(_max_set_timeout, timeout)
-        warnings.warn("Python >=2.6 required for individual HTTP timeouts. Setting global timeout to %.1f." %
-                     _max_set_timeout)
-    socket.setdefaulttimeout(_max_set_timeout)
 
 
 class _URLOpenerCache(object):
@@ -108,11 +89,7 @@ create_url_opener = _URLOpenerCache()
 class HTTPClient(object):
     def __init__(self, url=None, username=None, password=None, insecure=False,
                  ssl_ca_certs=None, timeout=None, headers=None):
-        if _urllib2_has_timeout:
-            self._timeout = timeout
-        else:
-            self._timeout = None
-            _set_global_socket_timeout(timeout)
+        self._timeout = timeout
         if url and url.startswith('https'):
             if insecure:
                 ssl_ca_certs = None

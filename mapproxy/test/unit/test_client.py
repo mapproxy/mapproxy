@@ -147,11 +147,6 @@ class TestHTTPClient(object):
         test_req = ({'path': '/', 'req_assert_function': lambda x: time.sleep(0.5) or True},
                     {'body': b'nothing'})
 
-        import mapproxy.client.http
-
-        old_timeout = mapproxy.client.http._max_set_timeout
-        mapproxy.client.http._max_set_timeout = None
-
         client1 = HTTPClient(timeout=0.1)
         client2 = HTTPClient(timeout=0.2)
         with mock_httpd(TESTSERVER_ADDRESS, [test_req]):
@@ -182,8 +177,6 @@ class TestHTTPClient(object):
             # use max timeout in Python 2.5
             assert 0.2 <= duration1 < 0.3
             assert 0.2 <= duration2 < 0.3
-
-        mapproxy.client.http._max_set_timeout = old_timeout
 
 # Equifax Secure Certificate Authority
 # Expires: 2018-08-22
