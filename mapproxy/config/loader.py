@@ -790,11 +790,6 @@ class TileSourceConfiguration(SourceConfiguration):
         if params is None: params = {}
 
         url = self.conf['url']
-
-        if self.conf.get('origin'):
-            warnings.warn('origin for tile sources is deprecated since 1.3.0 '
-            'and will be ignored. use grid with correct origin.', RuntimeWarning)
-
         http_client, url = self.http_client(url)
 
         grid = self.context.grids[self.conf['grid']].tile_grid()
