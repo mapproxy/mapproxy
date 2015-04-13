@@ -142,7 +142,14 @@ class WMSInfoClient(object):
         info_coord = req_srs.transform_to(info_srs, req_coord)
         info_pos = make_lin_transf((info_bbox), (0, query.size[1], query.size[0], 0))(info_coord)
 
-        info_query = InfoQuery(info_bbox, query.size, info_srs, info_pos, query.info_format)
+        info_query = InfoQuery(
+            bbox=info_bbox,
+            size=query.size,
+            srs=info_srs,
+            pos=info_pos,
+            info_format=query.info_format,
+            feature_count=query.feature_count,
+        )
         return info_query
 
     def _best_supported_srs(self, srs):

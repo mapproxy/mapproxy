@@ -515,7 +515,7 @@ class TestWMS111(WMSTest):
         expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&BBOX=5197367.93088,5312902.73895,5311885.44223,5434731.78213'
-                                  '&styles=&VERSION=1.1.1'
+                                  '&styles=&VERSION=1.1.1&feature_count=100'
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=14&Y=78'},
                         {'body': b'info', 'headers': {'content-type': 'text/plain'}})
 
@@ -534,6 +534,7 @@ class TestWMS111(WMSTest):
             self.common_fi_req.params['bbox'] = '3570269,5540889,3643458,5614078'
             self.common_fi_req.params['srs'] = 'EPSG:25832'
             self.common_fi_req.params.pos = 10, 20
+            self.common_fi_req.params['feature_count'] = 100
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, b'info')
