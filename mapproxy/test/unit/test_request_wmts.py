@@ -54,18 +54,6 @@ def test_template_converter():
     assert match.groupdict()['TileRow'] == '99'
     assert match.groupdict()['Style'] == 'bar'
 
-def test_template_converter_deprecated_format():
-    # old format that doesn't match the WMTS spec, now deprecated
-    regexp = URLTemplateConverter('/{{Layer}}/{{Style}}/{{TileMatrixSet}}-{{TileMatrix}}-{{TileCol}}-{{TileRow}}/tile').regexp()
-    match = regexp.match('/test/bar/foo-EPSG4326-4-12-99/tile')
-    assert match
-    assert match.groupdict()['Layer'] == 'test'
-    assert match.groupdict()['TileMatrixSet'] == 'foo-EPSG4326'
-    assert match.groupdict()['TileMatrix'] == '4'
-    assert match.groupdict()['TileCol'] == '12'
-    assert match.groupdict()['TileRow'] == '99'
-    assert match.groupdict()['Style'] == 'bar'
-
 @raises(InvalidWMTSTemplate)
 def test_template_converter_missing_vars():
     URLTemplateConverter('/wmts/{Style}/{TileMatrixSet}/{TileCol}.png').regexp()
