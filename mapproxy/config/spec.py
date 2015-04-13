@@ -396,16 +396,7 @@ mapproxy_yaml_spec = {
         })
     },
 
-    'layers': one_of(
-        {
-            anything(): combined(scale_hints, {
-                'sources': [string_type],
-                required('title'): string_type,
-                'legendurl': str(),
-                'md': wms_130_layer_md,
-            })
-        },
-        recursive([combined(scale_hints, {
+    'layers': recursive([combined(scale_hints, {
             'sources': [string_type],
             'name': str(),
             required('title'): string_type,
@@ -418,8 +409,8 @@ mapproxy_yaml_spec = {
                     'default': one_of(string_type, float, int),
                 }
             }
-        })])
-    ),
+        })]
+     ),
      # `parts` can be used for partial configurations that are referenced
      # from other sections (e.g. coverages, dimensions, etc.)
     'parts': anything(),

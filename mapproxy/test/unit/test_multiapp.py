@@ -86,7 +86,7 @@ services:
   wms:
 
 layers:
-  mylayer:
+  - name: mylayer
     title: My Layer
     sources: [mysource]
 

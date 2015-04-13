@@ -50,6 +50,8 @@ Adds an attribution (copyright) line to all WMS requests.
 ``md`` is for metadata. These fields are used for the WMS ``GetCapabilities`` responses. See the example below for all supported keys.
 
 
+.. _wms_srs:
+
 ``srs``
 """""""
 
@@ -93,6 +95,8 @@ The following example will show the actual bbox of each layer in EPSG:4326 and E
           bbox: [2750000, 5000000, 4250000, 6500000]
 
 You can use this to offer global datasets with SRS that are only valid in a local region, like UTM zones.
+
+.. _wms_image_formats:
 
 ``image_formats``
 """""""""""""""""

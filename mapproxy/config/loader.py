@@ -76,8 +76,6 @@ class ProxyConfiguration(object):
         self.caches = odict()
         caches_conf = self.configuration.get('caches')
         if not caches_conf: return
-        if isinstance(caches_conf, list):
-            caches_conf = list_of_dicts_to_ordered_dict(caches_conf)
         for cache_name, cache_conf in iteritems(caches_conf):
             cache_conf['name'] = cache_name
             self.caches[cache_name] = CacheConfiguration(conf=cache_conf, context=self)
@@ -95,47 +93,6 @@ class ProxyConfiguration(object):
         for layer_name, layer_conf in iteritems(layers):
             layer_conf['name'] = layer_name
             self.layers[layer_name] = LayerConfiguration(conf=layer_conf, context=self)
-
-    def _legacy_layers_conf_dict(self):
-        """
-        Read old style layer configuration with a dictionary where
-        the key is the layer name. Optionally: a list an each layer
-        is wrapped in such dictionary.
-
-        ::
-          layers:
-            foo:
-              title: xxx
-              sources: []
-            bar:
-              title: xxx
-              sources: []
-
-        or
-
-        ::
-
-          layers:
-            - foo:
-               title: xxx
-               sources: []
-            - bar:
-               title: xxx
-               sources: []
-
-        """
-        warnings.warn('old layer configuration syntax is deprecated since 1.4.0. '
-            'use list of dictionaries as documented', RuntimeWarning)
-        layers = []
-        layers_conf = self.configuration.get('layers')
-        if not layers_conf: return None # TODO config error
-        if isinstance(layers_conf, list):
-            layers_conf = list_of_dicts_to_ordered_dict(layers_conf)
-        for layer_name, layer_conf in iteritems(layers_conf):
-            layer_conf['name'] = layer_name
-            layers.append(layer_conf)
-        return dict(title=None, layers=layers)
-
 
     def _layers_conf_dict(self):
         """
@@ -159,21 +116,12 @@ class ProxyConfiguration(object):
         layers_conf = self.configuration.get('layers')
         if layers_conf is None: return
 
-        if isinstance(layers_conf, list):
-            if isinstance(layers_conf[0], dict) and len(layers_conf[0].keys()) == 1:
-                # looks like ordered legacy config
-                layers_conf = self._legacy_layers_conf_dict()
-            elif len(layers_conf) == 1 and 'layers' in layers_conf[0]:
-                # single root layer in list -> remove list
-                layers_conf = layers_conf[0]
-            else:
-                # layer list without root -> wrap in root layer
-                layers_conf = dict(title=None, layers=layers_conf)
-
-        if len(set(layers_conf.keys()) &
-               set('layers name title sources'.split())) < 2:
-            # looks like unordered legacy config
-            layers_conf = self._legacy_layers_conf_dict()
+        if len(layers_conf) == 1 and 'layers' in layers_conf[0]:
+            # single root layer in list -> remove list
+            layers_conf = layers_conf[0]
+        else:
+            # layer list without root -> wrap in root layer
+            layers_conf = dict(title=None, layers=layers_conf)
 
         return layers_conf
 
@@ -229,18 +177,6 @@ class ProxyConfiguration(object):
         """
         return self.configuration.get('__config_files__', {})
 
-def list_of_dicts_to_ordered_dict(dictlist):
-    """
-    >>> d = list_of_dicts_to_ordered_dict([{'a': 1}, {'b': 2}, {'c': 3}])
-    >>> list(d.items())
-    [('a', 1), ('b', 2), ('c', 3)]
-    """
-
-    result = odict()
-    for d in dictlist:
-        for k, v in iteritems(d):
-            result[k] = v
-    return result
 
 class ConfigurationBase(object):
     """
