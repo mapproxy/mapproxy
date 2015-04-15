@@ -108,7 +108,7 @@ class TestTMS(SystemTest):
             with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 resp = self.app.get('/tms/1.0.0/wms_cache/0/0/0.jpeg')
                 eq_(resp.content_type, 'image/jpeg')
-                self.created_tiles.append('wms_cache_EPSG900913/01/000/000/000/000/000/000.jpeg')
+                self.created_tiles.append('wms_cache/GLOBAL_MERCATOR/01/000/000/000/000/000/000.jpeg')
 
     def test_get_tile_from_cache_with_tile_source(self):
         with tmp_image((256, 256), format='jpeg') as img:
@@ -117,7 +117,7 @@ class TestTMS(SystemTest):
             with mock_httpd(('localhost', 42423), [expected_req]):
                 resp = self.app.get('/tms/1.0.0/tms_cache/0/0/1.png')
                 eq_(resp.content_type, 'image/png')
-                self.created_tiles.append('tms_cache_EPSG900913/01/000/000/000/000/000/001.png')
+                self.created_tiles.append('tms_cache/GLOBAL_MERCATOR/01/000/000/000/000/000/001.png')
 
     def test_get_tile_with_watermark_cache(self):
         with tmp_image((256, 256), format='png', color=(0, 0, 0)) as img:
@@ -170,7 +170,7 @@ class TestTileService(SystemTest):
         size = 10214
         base_dir = base_config().cache.base_dir
         os.utime(os.path.join(base_dir,
-                              'wms_cache_EPSG900913/01/000/000/000/000/000/001.jpeg'),
+                              'wms_cache/GLOBAL_MERCATOR/01/000/000/000/000/000/001.jpeg'),
                  (timestamp, timestamp))
         max_age = base_config().tiles.expires_hours * 60 * 60
         etag = hashlib.md5((str(timestamp) + str(size)).encode('ascii')).hexdigest()
@@ -244,4 +244,4 @@ class TestTileService(SystemTest):
             with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
                 resp = self.app.get('/tiles/wms_cache/1/0/0.jpeg')
                 eq_(resp.content_type, 'image/jpeg')
-                self.created_tiles.append('wms_cache_EPSG900913/01/000/000/000/000/000/000.jpeg')
+                self.created_tiles.append('wms_cache/GLOBAL_MERCATOR/01/000/000/000/000/000/000.jpeg')

@@ -350,7 +350,7 @@ class TestWMS111(WMSTest):
         shutil.rmtree(tiles_lock_dir, ignore_errors=True)
         assert not os.path.exists(tiles_lock_dir)
 
-        self.created_tiles.append('wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
+        self.created_tiles.append('wms_cache/GLOBAL_MERCATOR/01/000/000/001/000/000/001.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
                                       '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
@@ -367,7 +367,7 @@ class TestWMS111(WMSTest):
         assert os.path.exists(tiles_lock_dir)
 
     def test_get_map_non_image_response(self):
-        self.created_tiles.append('wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
+        self.created_tiles.append('wms_cache/GLOBAL_MERCATOR/01/000/000/001/000/000/001.jpeg')
         expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
                                   '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                   '&VERSION=1.1.1&BBOX=0.0,0.0,20037508.3428,20037508.3428'
@@ -453,7 +453,7 @@ class TestWMS111(WMSTest):
         shutil.rmtree(tiles_lock_dir, ignore_errors=True)
         assert not os.path.exists(tiles_lock_dir)
 
-        self.created_tiles.append('wms_cache_100_EPSG900913/01/000/000/001/000/000/001.jpeg')
+        self.created_tiles.append('wms_cache_100/GLOBAL_MERCATOR/01/000/000/001/000/000/001.jpeg')
         # request_format tiff, cache format jpeg, wms request in png
         with tmp_image((256, 256), format='tiff') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&FORMAT=image%2Ftiff'
@@ -471,7 +471,7 @@ class TestWMS111(WMSTest):
         assert os.path.exists(tiles_lock_dir)
 
     def test_get_map130(self):
-        self.created_tiles.append('wms_cache_130_EPSG900913/01/000/000/001/000/000/001.jpeg')
+        self.created_tiles.append('wms_cache_130/GLOBAL_MERCATOR/01/000/000/001/000/000/001.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
                                       '&REQUEST=GetMap&HEIGHT=256&CRS=EPSG%3A900913&styles='
@@ -485,7 +485,7 @@ class TestWMS111(WMSTest):
                 eq_(resp.content_type, 'image/png')
 
     def test_get_map130_axis_order(self):
-        self.created_tiles.append('wms_cache_multi_EPSG4326/02/000/000/003/000/000/001.jpeg')
+        self.created_tiles.append('wms_cache_multi/GLOBAL_GEODETIC/02/000/000/003/000/000/001.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             img = img.read()
             expected_reqs = [({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
@@ -711,7 +711,7 @@ class TestWMS110(WMSTest):
         assert validate_with_dtd(xml, 'wms/1.1.0/exception_1_1_0.dtd')
 
     def test_get_map(self):
-        self.created_tiles.append('wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
+        self.created_tiles.append('wms_cache/GLOBAL_MERCATOR/01/000/000/001/000/000/001.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
                                       '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
@@ -725,7 +725,7 @@ class TestWMS110(WMSTest):
                 eq_(resp.content_type, 'image/png')
 
     def test_get_map_110(self):
-        self.created_tiles.append('wms_cache_110_EPSG900913/01/000/000/001/000/000/001.jpeg')
+        self.created_tiles.append('wms_cache_110/GLOBAL_MERCATOR/01/000/000/001/000/000/001.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
                                       '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
@@ -861,7 +861,7 @@ class TestWMS100(WMSTest):
          assert 'No response from URL' in xml.xpath('//WMTException/text()')[0]
 
     def test_get_map(self):
-        self.created_tiles.append('wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
+        self.created_tiles.append('wms_cache/GLOBAL_MERCATOR/01/000/000/001/000/000/001.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
                                       '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
@@ -1009,7 +1009,7 @@ class TestWMS130(WMSTest):
         assert validate_with_xsd(xml, xsd_name='wms/1.3.0/exceptions_1_3_0.xsd')
 
     def test_get_map(self):
-        self.created_tiles.append('wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
+        self.created_tiles.append('wms_cache/GLOBAL_MERCATOR/01/000/000/001/000/000/001.jpeg')
         with tmp_image((256, 256), format='jpeg') as img:
             expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
                                       '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A900913&styles='
@@ -1056,8 +1056,8 @@ if sys.platform != 'win32':
                  styles='', request='GetMap'))
 
         def test_get_map(self):
-            link_name = 'wms_cache_link_single_EPSG900913/01/000/000/001/000/000/001.png'
-            real_name = 'wms_cache_link_single_EPSG900913/single_color_tiles/fe00a0.png'
+            link_name = 'wms_cache_link_single/GLOBAL_MERCATOR/01/000/000/001/000/000/001.png'
+            real_name = 'wms_cache_link_single/GLOBAL_MERCATOR/single_color_tiles/fe00a0.png'
             self.created_tiles.append(link_name)
             self.created_tiles.append(real_name)
             with tmp_image((256, 256), format='jpeg', color='#fe00a0') as img:
