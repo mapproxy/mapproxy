@@ -852,7 +852,8 @@ class CacheConfiguration(ConfigurationBase):
         directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tc')
         if self.conf.get('cache', {}).get('directory'):
             pass
-        elif self.conf.get('cache', {}).get('use_grid_names'):
+        elif self.context.globals.get_value('use_grid_names', self.conf.get('cache', {}), global_key='cache.use_grid_names'):
+            # .get('use_grid_names', True):
             cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
         else:
             suffix = grid_conf.conf['srs'].replace(':', '')
@@ -1409,7 +1410,7 @@ class ServiceConfiguration(ConfigurationBase):
             services.append(OWSServer(ows_services))
         return services
 
-    def tile_layers(self, conf, use_grid_names=False):
+    def tile_layers(self, conf, use_grid_names=True):
         layers = odict()
         for layer_name, layer_conf in iteritems(self.context.layers):
             for tile_layer in layer_conf.tile_layers():
@@ -1429,7 +1430,7 @@ class ServiceConfiguration(ConfigurationBase):
         md.update(conf.get('md', {}))
         max_tile_age = self.context.globals.get_value('tiles.expires_hours')
         max_tile_age *= 60 * 60 # seconds
-        use_grid_names = conf.get('use_grid_names', False)
+        use_grid_names = conf.get('use_grid_names', True)
         layers = self.tile_layers(conf, use_grid_names=use_grid_names)
         return KMLServer(layers, md, max_tile_age=max_tile_age, use_dimension_layers=use_grid_names)
 
@@ -1442,7 +1443,7 @@ class ServiceConfiguration(ConfigurationBase):
         max_tile_age *= 60 * 60 # seconds
 
         origin = conf.get('origin')
-        use_grid_names = conf.get('use_grid_names', False)
+        use_grid_names = conf.get('use_grid_names', True)
         layers = self.tile_layers(conf, use_grid_names=use_grid_names)
         return TileServer(layers, md, max_tile_age=max_tile_age, use_dimension_layers=use_grid_names,
             origin=origin)

@@ -3,6 +3,7 @@ globals:
     base_dir: ./cache_data/
     meta_size: [1, 1]
     meta_buffer: 0
+    use_grid_names: false # TODO change tests to use use_grid_names:true
   image:
     paletted: False
     # resampling: 'bicubic'
@@ -11,6 +12,7 @@ services:
   wms:
     on_source_errors: notify
   tms:
+    use_grid_names: false # TODO change tests to use use_grid_names:true
 
 layers:
   - name: online

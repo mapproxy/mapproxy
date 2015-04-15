@@ -1,6 +1,8 @@
 globals:
   cache:
     base_dir: './cache'
+    use_grid_names: false # TODO change tests to use use_grid_names:true
+
 caches:
   one:
     sources: [source_a]

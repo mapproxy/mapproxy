@@ -4,6 +4,7 @@ globals:
 
 services:
   tms:
+     use_grid_names: false # TODO change tests to use use_grid_names:true
   wms:
     md:
       title: MapProxy test fixture

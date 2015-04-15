@@ -3,10 +3,12 @@ globals:
     base_dir: cache_data/
     meta_size: [1, 1]
     meta_buffer: 0
+    use_grid_names: false # TODO change tests to use use_grid_names:true
 
 services:
   tms:
     origin: 'nw'
+    use_grid_names: false # TODO change tests to use use_grid_names:true
 
 layers:
   - name: wms_cache

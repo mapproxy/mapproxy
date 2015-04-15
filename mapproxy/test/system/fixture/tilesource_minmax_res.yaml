@@ -1,5 +1,10 @@
+globals:
+  cache:
+    use_grid_names: false # TODO change tests to use use_grid_names:true
+
 services:
   tms:
+     use_grid_names: false # TODO change tests to use use_grid_names:true
 
 layers:
     - name: tms_cache

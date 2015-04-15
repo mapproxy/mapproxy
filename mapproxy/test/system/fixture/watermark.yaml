@@ -3,19 +3,21 @@ globals:
     base_dir: cache_data/
     meta_size: [1, 1]
     meta_buffer: 0
+    use_grid_names: false # TODO change tests to use use_grid_names:true
   image:
     paletted: False
     # resampling: 'bicubic'
 
 services:
   tms:
+     use_grid_names: false # TODO change tests to use use_grid_names:true
 
 layers:
-  watermark:
+  - name: watermark
     title: Layer with watermark
     sources: [wms_cache]
 
-  watermark_transp:
+  - name: watermark_transp
     title: Layer with watermark
     sources: [wms_transp_cache]
 

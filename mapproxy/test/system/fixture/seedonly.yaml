@@ -3,12 +3,16 @@ globals:
     base_dir: cache_data/
     meta_size: [1, 1]
     meta_buffer: 0
+    use_grid_names: false # TODO change tests to use use_grid_names:true
   image:
     # resampling: 'bicubic'
     paletted: False
+
 services:
   tms:
+     use_grid_names: false # TODO change tests to use use_grid_names:true
   kml:
+     use_grid_names: false # TODO change tests to use use_grid_names:true
   wms:
     md:
       title: MapProxy test fixture

@@ -242,6 +242,7 @@ mapproxy_yaml_spec = {
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
             'link_single_color_images': bool(),
+            'use_grid_names': bool(),
         },
         'grid': {
             'tile_size': [int()],
