@@ -117,8 +117,8 @@ jscript_openlayers=None
                         <tr>
                     {{endif}}
                     {{if layer.grid.supports_access_with_origin('nw')}}
-                    <td class="value"><a href="../demo/?wmts_layer={{layer.name}}&format={{format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.grid.srs.srs_code}}</a></td>
-                    <td class="value"><a href="../demo/?wmts_layer={{layer.name}}&format={{format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.format}}</a>
+                    <td class="value"><a href="../demo/?wmts_layer={{layer.name}}&format={{layer.format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.grid.srs.srs_code}}</a></td>
+                    <td class="value"><a href="../demo/?wmts_layer={{layer.name}}&format={{layer.format}}&srs={{layer.grid.srs.srs_code | quote}}">{{layer.format}}</a>
                     {{else}}
                     <td class="value" colspan="2">
                         {{layer.grid.name}} not compatible with WMTS
