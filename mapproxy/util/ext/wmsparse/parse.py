@@ -287,7 +287,6 @@ def parse_capabilities(fileobj):
     if isinstance(fileobj, string_type):
         fileobj = open(fileobj, 'rb')
     tree = etree.parse(fileobj)
-    # TODO: remove break pointer
     root_tag = tree.getroot().tag
     if root_tag == 'WMT_MS_Capabilities':
         return WMS111Capabilities(tree)
