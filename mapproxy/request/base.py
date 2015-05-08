@@ -22,9 +22,9 @@ from mapproxy.util.py import cached_property
 from mapproxy.compat import iteritems, PY2, text_type
 
 if PY2:
-    from urllib import quote, quote_plus
+    from urllib import quote
 else:
-    from urllib.parse import quote, quote_plus
+    from urllib.parse import quote
 
 class NoCaseMultiDict(dict):
     """
@@ -370,7 +370,7 @@ class RequestParams(object):
         kv_pairs = []
         for key, values in self.params.iteritems():
             value = ','.join(text_type(v) for v in values)
-            kv_pairs.append(key + '=' + quote_plus(value.encode('utf-8'), safe=','))
+            kv_pairs.append(key + '=' + quote(value.encode('utf-8'), safe=','))
         return '&'.join(kv_pairs)
 
     def with_defaults(self, defaults):

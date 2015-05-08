@@ -97,7 +97,7 @@ You can also nest dictionaries. Each nested dictionary needs to be indented by o
 Configuration Layout
 ====================
 
-The MapProxy configuration is a dictionay, each key configures a different aspect
+The MapProxy configuration is a dictionary, each key configures a different aspect
 of MapProxy. There are the following keys:
 
   
