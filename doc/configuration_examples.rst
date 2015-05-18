@@ -725,24 +725,15 @@ You can use the ``no_proxy`` environment variable if you need to bypass the prox
 Serve multiple MapProxy instances
 =================================
 
-Since 0.9.1 it is possible to load multiple MapProxy instances into a single process. Each MapProxy can have a different global configuration and different services and caches. [#f1]_ You can use `Paste's urlmap <http://pythonpaste.org/deploy/#composite-applications>`_ to load multiple MapProxy configurations. If you have multiple MapProxy configurations and what to load them dynamically, then you can also use :ref:`MultiMapProxy`.
+It is possible to load multiple MapProxy instances into a single process. Each MapProxy can have a different global configuration and different services and caches. [#f1]_  You can use :ref:`MultiMapProxy` to load multiple MapProxy configurations on-demand.
 
-Example ``config.ini``::
+Example ``config.py``::
 
-  [composite:main]
-  use = egg:Paste#urlmap
-  /proxy1 = proxy1
-  /proxy2 = proxy2
+    from mapproxy.multiapp import make_wsgi_app
+    application = make_wsgi_app('/path/to/projects', allow_listing=True)
 
-  [app:proxy1]
-  use = egg:MapProxy#app
-  mapproxy_conf = %(here)s/proxy1.yaml
 
-  [app:proxy2]
-  use = egg:MapProxy#app
-  mapproxy_conf = %(here)s/proxy2.yaml
-
-MapProxy is then available at ``/proxy1`` and ``/proxy2``.
+The MapProxy configuration from ``/path/to/projects/app.yaml`` is then available at ``/app``.
 
 You can reuse parts of the MapProxy configuration with the `base` option. You can put all common options into a single base configuration and reference that file in the actual configuration::
 
