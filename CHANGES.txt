@@ -1,4 +1,4 @@
-1.8.0 2015-xx-xx
+1.8.0 2015-05-18
 ~~~~~~~~~~~~~~~~
 
 Features:
@@ -23,11 +23,13 @@ Fixes:
 - accept PNG/JPEG style image_format for WMS 1.0.0
 - fix TMS capabilities in demo for TMS with use_grid_names
 - fix ctrl+c behaviour in mapproxy-seed
+- fix BBOX parsing in autoconf for WMS 1.3.0 services
 
 Other:
 
 - 1.8.0 is expected to work with Python 2.6, but it is no longer officially supported
-
+- MapProxy will now issue warnings about configurations that will change with 2.0.
+  doc/mapproxy_2.rst lists some of the planed incompatible changes
 
 1.7.1 2014-07-08
 ~~~~~~~~~~~~~~~~
