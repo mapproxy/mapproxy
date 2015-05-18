@@ -4,6 +4,7 @@ include README.rst
 include LICENSE.txt
 include CHANGES.txt
 include COPYING.txt
+include requirements-tests.txt
 
 include doc/GM.txt
 include doc/*.yaml
