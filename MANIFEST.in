@@ -22,3 +22,4 @@ recursive-include mapproxy/service/templates *.css *.cfg *.gif *.png *.xml *.htm
 recursive-include mapproxy/test/schemas *.xml *.xsd *.dtd *.wsdl *.txt
 recursive-include mapproxy/test/system/fixture *.yaml *.mbtiles *.geojson *.xml *.jpeg *.png *.py
 recursive-include mapproxy/test/unit epsg *.dbf *.shp *.shx
+recursive-include mapproxy/util/ext/wmsparse/test *.xml
