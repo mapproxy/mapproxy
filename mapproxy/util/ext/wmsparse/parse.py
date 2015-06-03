@@ -53,6 +53,8 @@ class WMSCapabilities(object):
 
     def parse_contact(self):
         elem = self.find(self.tree, 'Service/ContactInformation')
+        if not elem:
+            elem = etree.Element(None)
         md = dict(
             person = self.findtext(elem, 'ContactPersonPrimary/ContactPerson'),
             organization = self.findtext(elem, 'ContactPersonPrimary/ContactOrganization'),
