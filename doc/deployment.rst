@@ -67,8 +67,12 @@ The script contains the following lines and makes the configured MapProxy availa
   from mapproxy.wsgiapp import make_wsgi_app
   application = make_wsgi_app('examples/minimal/etc/mapproxy.yaml')
 
-This is sufficient for embedding MapProxy with ``mod_wsgi`` or for starting it with Python HTTP servers like ``gunicorn`` (see further below). You can extend this script to setup logging or environment variables.
+This is sufficient for embedding MapProxy with ``mod_wsgi`` or for starting it with Python HTTP servers like ``gunicorn`` (see further below). You can extend this script to setup logging or to set environment variables.
 
+You can enable MapProxy to automatically reload the configuration if it changes::
+
+  from mapproxy.wsgiapp import make_wsgi_app
+  application = make_wsgi_app('examples/minimal/etc/mapproxy.yaml', reloader=True)
 
 
 .. index:: mod_wsgi, Apache
