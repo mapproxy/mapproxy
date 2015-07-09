@@ -10,3 +10,4 @@ examples
 .settings
 .pydevproject
 .tox/
+.idea/
