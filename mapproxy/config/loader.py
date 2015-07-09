@@ -1041,17 +1041,16 @@ class CacheConfiguration(ConfigurationBase):
         )
 
     def _cassandra_cache(self, grid_conf, file_ext):
-        from mapproxy.cache.cassandra import CassandraCache
+        from mapproxy.cache.cassandra_cql import CassandraCache
         keyspace = grid_conf.tile_grid().name
-        column_family = self.conf['name']
+        tablename = self.conf['name']
         nodes = self.conf['cache'].get('nodes')
         if not nodes:
-            nodes = [{'host': 'localhost'}]
-        for n in nodes:
-            if 'port' not in n:
-                n['port'] = 9160
-
-        return CassandraCache(nodes, keyspace, column_family, self.lock_dir())
+            nodes = [{'host': '127.0.0.1'}]
+        port = self.conf['port']
+        if not port:
+            port = 9042
+        return CassandraCache(nodes, port, keyspace, tablename, self.lock_dir())
 
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):

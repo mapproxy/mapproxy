@@ -2,6 +2,7 @@ language: python
 python:
   - "2.6"
   - "2.7"
+  - "3.3"
 services:
   - couchdb
   - riak
@@ -13,7 +14,7 @@ install:
     - "pip install --use-mirrors requests==1.2.3"
     - "sudo apt-get update && sudo apt-get install libproj0 libgeos-dev libgdal-dev libgdal1h libxslt1-dev libxml2-dev build-essential python-dev libjpeg-dev zlib1g-dev libfreetype6-dev protobuf-compiler libprotoc-dev"
     - "pip install -r requirements-tests.txt --use-mirrors"
-    - "export CASSANDRA_SERVER=localhost:9160"
+    - "export CASSANDRA_SERVER=localhost"
     # Deal with issue on Travis builders re: multiprocessing.SemLock
     # see https://github.com/travis-ci/travis-cookbooks/issues/155
     - "sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm"

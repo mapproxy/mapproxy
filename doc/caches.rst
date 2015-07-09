@@ -297,10 +297,11 @@ Store tiles in a `Apache Cassandra <http://cassandra.apache.org>`_ cluster.
 Requirements
 ------------
 
-You will need the `pycassa Cassandra Client <https://github.com/pycassa/pycassa>`_ version 1.11.0 or newer. You can install it in the usual way, for example with ``pip install pycassa``.
+You will need the `python cassandra driver <https://github.com/datastax/python-driver>`_ version 1.11.0 or newer. You can install it in the usual way, for example with
+``pip install cassandra-client``.
 
-Cassandra uses keyspaces and column-families to store data. These keyspaces and column-families have to be created before they can used by mapproxy.
-The gridname is used as name for the keyspace, the cachename as name for the column-family.
+Cassandra uses keyspaces and tables to store data. These keyspaces and tables have to be created before they can be used by mapproxy.
+The gridname is used as name for the keyspace, the cachename as name for the table.
 
 Configuration
 -------------
@@ -308,7 +309,10 @@ Configuration
 Available options:
 
 ``nodes``:
-    A list of cassandra-nodes. Each node need a ``host`` and optionally a ``port`` if the port differs from the default. A single localhost-node is used as default.
+    A list of cassandra-nodes. Each node needs a ``host``. A single localhost-node is used as default.
+
+``port``:
+    If a port other than 9042 is used, it has to be specified.
 
 Example
 -------
@@ -320,9 +324,9 @@ Example
         grids: [mygrid]
         cache:
             type: cassandra
+            port: 9042
             nodes:
               - host: host1
-                port: 9160
               - host: host2
               - host: host3
 

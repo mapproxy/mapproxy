@@ -95,7 +95,6 @@ riak_node = {
 
 cassandra_node = {
     'host': str(),
-    'port': number()
 }
 
 cache_types = {
@@ -133,6 +132,7 @@ cache_types = {
         'secondary_index': bool(),
     },
     'cassandra': {
+        'port': number(),
         'nodes': [cassandra_node]
     }
 }

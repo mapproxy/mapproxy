@@ -10,4 +10,4 @@ coverage==3.7
 requests==2.0.1
 six==1.4.1
 waitress==0.8.7
-pycassa==1.11.0
+cassandra-driver==2.5.1
