@@ -1,7 +1,8 @@
-
-
 import hashlib
-from cStringIO import StringIO
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 from mapproxy.cache.base import TileCacheBase, tile_buffer, CacheBackendError
 from mapproxy.image import ImageSource
 
