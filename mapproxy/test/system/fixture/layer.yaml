@@ -109,6 +109,10 @@ layers:
   - name: tms_cache
     title: TMS Cache Layer
     sources: [tms_cache]
+  - name: tms_fi_cache
+    title: TMS Cache Layer + FI
+    # layer should be avail for cache services
+    sources: [tms_cache, wms_fi_only]
   - name: wms_merge
     title: WMS Cache + Direct Layer
     sources: [direct, wms_cache]
@@ -218,4 +222,11 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: foo,bar
-
+  wms_fi_only:
+    type: wms
+    wms_opts:
+      featureinfo: True
+      map: False
+    req:
+      url: http://localhost:42423/service
+      layers: fi

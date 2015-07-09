@@ -49,7 +49,7 @@ def serve_develop_command(args):
     parser = optparse.OptionParser("usage: %prog serve-develop [options] mapproxy.yaml")
     parser.add_option("-b", "--bind",
                       dest="address", default='127.0.0.1:8080',
-                      help="Server socket [127.0.0.1:8080]")
+                      help="Server socket [127.0.0.1:8080]. Use 0.0.0.0 for external access. :1234 to change port.")
     parser.add_option("--debug", default=False, action='store_true',
                       dest="debug",
                       help="Enable debug mode")

@@ -40,8 +40,9 @@ class TestTMS(SystemTest):
         assert 'WMS Cache Layer' in resp
         assert 'WMS Cache Multi Layer' in resp
         assert 'TMS Cache Layer' in resp
+        assert 'TMS Cache Layer + FI' in resp
         xml = resp.lxml
-        assert xml.xpath('count(//TileMap)') == 10
+        assert xml.xpath('count(//TileMap)') == 11
 
         # without trailing space
         resp2 = self.app.get('/tms/1.0.0')

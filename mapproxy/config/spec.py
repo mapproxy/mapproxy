@@ -226,7 +226,12 @@ mapproxy_yaml_spec = {
             'font_dir': str(),
             'merge_method': str(),
         },
-        'http': http_opts,
+        'http': combined(
+            http_opts,
+            {
+                'access_control_allow_origin': one_of(str(), {}),
+            }
+        ),
         'cache': {
             'base_dir': str(),
             'lock_dir': str(),
@@ -259,7 +264,7 @@ mapproxy_yaml_spec = {
     },
     'caches': {
         anything(): {
-            required('sources'): [str()],
+            required('sources'): [string_type],
             'name': str(),
             'grids': [str()],
             'cache_dir': str(),
@@ -394,14 +399,14 @@ mapproxy_yaml_spec = {
     'layers': one_of(
         {
             anything(): combined(scale_hints, {
-                'sources': [str()],
+                'sources': [string_type],
                 required('title'): string_type,
                 'legendurl': str(),
                 'md': wms_130_layer_md,
             })
         },
         recursive([combined(scale_hints, {
-            'sources': [str()],
+            'sources': [string_type],
             'name': str(),
             required('title'): string_type,
             'legendurl': str(),

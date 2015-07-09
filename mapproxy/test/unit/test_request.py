@@ -1,3 +1,4 @@
+# -:- encoding: UTF8 -:-
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
 #
@@ -252,6 +253,7 @@ class TestRequest(object):
         req = Request(self.env)
         print(req.args['foo'])
         assert req.args.get_all('foo') == ['boo', 'bizz']
+
     def test_query_string_encoding(self):
         env = {
             'QUERY_STRING': 'foo=some%20special%20chars%20%26%20%3D'
@@ -355,10 +357,13 @@ class TestWMSMapRequestParams(object):
     def test_layers(self):
         assert list(self.m.layers) == ['bar', 'foo']
     def test_query_string(self):
-        print(self.m.query_string)
         assert_query_eq(self.m.query_string,
             'layers=bar,foo&WIdth=100&bBOx=-90,-80,70.0,+80'
             '&format=image%2Fpng&srs=EPSG%3A0815&heIGHT=200')
+    def test_query_string_encoding(self):
+        m = WMSMapRequestParams()
+        m.layers = ["layer with whitespace", u"layer with ümlauts"]
+        eq_(m.query_string, 'layers=layer%20with%20whitespace,layer%20with%20%C3%BCmlauts')
     def test_get(self):
         assert self.m.get('LAYERS') == 'bar'
         assert self.m.get('width', type_func=int) == 100

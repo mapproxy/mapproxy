@@ -124,6 +124,14 @@ class TestWMS111(WMSTest):
         resp = self.app.get(req)
         is_111_exception(resp.lxml, "unknown WMS request type 'invalid'")
 
+    def test_endpoints(self):
+        for endpoint in ('service', 'ows', 'wms'):
+            req = WMS111CapabilitiesRequest(url='/%s?' % endpoint).copy_with_request_params(self.common_req)
+            resp = self.app.get(req)
+            eq_(resp.content_type, 'application/vnd.ogc.wms_xml')
+            xml = resp.lxml
+            assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
+
     def test_wms_capabilities(self):
         req = WMS111CapabilitiesRequest(url='/service?').copy_with_request_params(self.common_req)
         resp = self.app.get(req)
@@ -143,7 +151,7 @@ class TestWMS111(WMSTest):
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
             'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
-            'wms_merge', 'tms_cache', 'wms_cache_multi',
+            'wms_merge', 'tms_cache', 'tms_fi_cache', 'wms_cache_multi',
             'wms_cache_link_single', 'wms_cache_110', 'watermark_cache'])
         eq_(layer_names, expected_names)
         eq_(set(xml.xpath('//Layer/Layer[3]/Abstract/text()')),
@@ -507,7 +515,7 @@ class TestWMS111(WMSTest):
         expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
                                   '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
                                   '&BBOX=5197367.93088,5312902.73895,5311885.44223,5434731.78213'
-                                  '&styles=&VERSION=1.1.1'
+                                  '&styles=&VERSION=1.1.1&feature_count=100'
                                   '&WIDTH=200&QUERY_LAYERS=foo,bar&X=14&Y=78'},
                         {'body': b'info', 'headers': {'content-type': 'text/plain'}})
 
@@ -526,6 +534,7 @@ class TestWMS111(WMSTest):
             self.common_fi_req.params['bbox'] = '3570269,5540889,3643458,5614078'
             self.common_fi_req.params['srs'] = 'EPSG:25832'
             self.common_fi_req.params.pos = 10, 20
+            self.common_fi_req.params['feature_count'] = 100
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, b'info')
@@ -630,7 +639,7 @@ class TestWMS110(WMSTest):
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
             'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
-            'wms_merge', 'tms_cache', 'wms_cache_multi',
+            'wms_merge', 'tms_cache', 'tms_fi_cache', 'wms_cache_multi',
             'wms_cache_link_single', 'wms_cache_110', 'watermark_cache'])
         eq_(layer_names, expected_names)
         assert validate_with_dtd(xml, dtd_name='wms/1.1.0/capabilities_1_1_0.dtd')
@@ -775,7 +784,7 @@ class TestWMS100(WMSTest):
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
             'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
-            'wms_merge', 'tms_cache', 'wms_cache_multi',
+            'wms_merge', 'tms_cache', 'tms_fi_cache', 'wms_cache_multi',
             'wms_cache_link_single', 'wms_cache_110', 'watermark_cache'])
         eq_(layer_names, expected_names)
         #TODO srs
@@ -923,7 +932,7 @@ class TestWMS130(WMSTest):
                                     namespaces=ns130))
         expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
             'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
-            'wms_merge', 'tms_cache', 'wms_cache_multi',
+            'wms_merge', 'tms_cache', 'tms_fi_cache', 'wms_cache_multi',
             'wms_cache_link_single', 'wms_cache_110', 'watermark_cache'])
         eq_(layer_names, expected_names)
         assert is_130_capa(xml)

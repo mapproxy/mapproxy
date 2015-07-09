@@ -3,7 +3,7 @@ WMS Labeling
 
 The tiling of rendered vector maps often results in issues with truncated or repeated labels. Some of these issues can be reduced with a proper configuration of MapProxy, but some require changes to the configuration of the source WMS server.
 
-This document describes settings for MapProxy and MapServer, but the problems and solutions are also valid for other for other WMS services. Refer to their documentations on how to configure these settings.
+This document describes settings for MapProxy and MapServer, but the problems and solutions are also valid for other WMS servers. Refer to their documentations on how to configure these settings.
 
 The Problem
 -----------

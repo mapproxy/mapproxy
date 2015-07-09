@@ -54,8 +54,8 @@ class TestWMTS(SystemTest):
         resp = self.app.get('/wmts/myrest/1.0.0/WMTSCapabilities.xml')
         xml = resp.lxml
         assert validate_with_xsd(xml, xsd_name='wmts/1.0/wmtsGetCapabilities_response.xsd')
-        eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 4)
-        eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 4)
+        eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 5)
+        eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 5)
 
     def test_get_tile(self):
         resp = self.app.get('/wmts/myrest/wms_cache/GLOBAL_MERCATOR/01/0/0.jpeg')

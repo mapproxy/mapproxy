@@ -89,6 +89,8 @@ class TestWMS130(object):
         eq_(len(lyrs[0]['bbox_srs']), 4)
         eq_(set(lyrs[0]['bbox_srs'].keys()), set(['CRS:84', 'EPSG:900913', 'EPSG:4326', 'EPSG:3857']))
         eq_(lyrs[0]['bbox_srs']['EPSG:3857'], [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428])
+        # EPSG:4326 bbox should be switched to long/lat
+        eq_(lyrs[0]['bbox_srs']['EPSG:4326'], (-180.0, -85.0511287798, 180.0, 85.0511287798))
 
 
 class TestLargeWMSCapabilities(object):

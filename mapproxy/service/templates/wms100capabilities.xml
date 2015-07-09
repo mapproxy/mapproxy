@@ -8,7 +8,11 @@
   <Name>OGC:WMS</Name>
   <Title>{{service.title}}</Title>
   <Abstract>{{service.abstract}}</Abstract>
+{{if service.online_resource}}
   <OnlineResource>{{service.online_resource}}</OnlineResource>
+{{else}}
+  <OnlineResource>{{service.url}}</OnlineResource>
+{{endif}}
   <Fees>{{service.get('fees', 'none')}}</Fees>
   <AccessConstraints>{{service.get('access_constraints', 'none')}}</AccessConstraints>
 </Service>
