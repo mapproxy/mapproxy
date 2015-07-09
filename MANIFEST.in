@@ -4,6 +4,7 @@ include README.rst
 include LICENSE.txt
 include CHANGES.txt
 include COPYING.txt
+include requirements-tests.txt
 
 include doc/GM.txt
 include doc/*.yaml
@@ -13,7 +14,8 @@ include doc/*.rst
 include doc/conf.py
 include doc/imgs/*.png
 include doc/_static/*.png
-recursive-include doc/_themes *.html *.conf *.css_t
+include doc/_static/*.css
+include doc/_templates/*.html
 
 recursive-include mapproxy/config_template *.ini *.wsgi *.yaml
 recursive-include mapproxy/image/fonts *.ttf LICENSE
@@ -21,3 +23,4 @@ recursive-include mapproxy/service/templates *.css *.cfg *.gif *.png *.xml *.htm
 recursive-include mapproxy/test/schemas *.xml *.xsd *.dtd *.wsdl *.txt
 recursive-include mapproxy/test/system/fixture *.yaml *.mbtiles *.geojson *.xml *.jpeg *.png *.py
 recursive-include mapproxy/test/unit epsg *.dbf *.shp *.shx
+recursive-include mapproxy/util/ext/wmsparse/test *.xml

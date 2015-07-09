@@ -120,17 +120,36 @@ class TileWorkerPool(TileProcessor):
             if self.progress_logger:
                 self.progress_logger.log_step(progress)
 
-    def stop(self):
-        numAlive = 0
-        for proc in self.procs:
-            if proc.is_alive():
-                numAlive += 1
+    def stop(self, force=False):
+        """
+        Stop seed workers by sending None-sentinel and joining the workers.
 
-        for _ in range(numAlive):
-            self.tiles_queue.put(None)
+        :param force: Skip sending None-sentinel and join with a timeout.
+                      For use when workers might be shutdown already by KeyboardInterrupt.
+        """
+        if not force:
+            alives = 0
+            for proc in self.procs:
+                if proc.is_alive():
+                    alives += 1
 
+            while alives:
+                # put None-sentinels to queue as long as we have workers alive
+                try:
+                    self.tiles_queue.put(None, timeout=1)
+                    alives -= 1
+                except Queue.Full:
+                    alives = 0
+                    for proc in self.procs:
+                        if proc.is_alive():
+                            alives += 1
+
+        if force:
+            timeout = 1.0
+        else:
+            timeout = None
         for proc in self.procs:
-           proc.join()
+            proc.join(timeout)
 
 
 class TileWorker(proc_class):
@@ -464,6 +483,9 @@ def seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
         seed_progress=seed_progress)
     try:
         tile_walker.walk()
+    except KeyboardInterrupt:
+        tile_worker_pool.stop(force=True)
+        raise
     finally:
         tile_worker_pool.stop()
 

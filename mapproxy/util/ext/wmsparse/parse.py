@@ -5,6 +5,7 @@ from .util import resolve_ns
 
 from xml.etree import ElementTree as etree
 from mapproxy.compat import string_type
+from mapproxy.request.wms import switch_bbox_epsg_axis_order
 
 
 class WMSCapabilities(object):
@@ -52,6 +53,8 @@ class WMSCapabilities(object):
 
     def parse_contact(self):
         elem = self.find(self.tree, 'Service/ContactInformation')
+        if not elem:
+            elem = etree.Element(None)
         md = dict(
             person = self.findtext(elem, 'ContactPersonPrimary/ContactPerson'),
             organization = self.findtext(elem, 'ContactPersonPrimary/ContactOrganization'),
@@ -259,6 +262,7 @@ class WMS130Capabilities(WMSCapabilities):
                     bbox_srs_elem.attrib['maxy']
                 )
                 bbox = [float(x) for x in bbox]
+                bbox = switch_bbox_epsg_axis_order(bbox, srs)
                 bbox_srs[srs] = bbox
         elif parent_layer:
             bbox_srs = parent_layer['bbox_srs']
@@ -287,7 +291,6 @@ def parse_capabilities(fileobj):
     if isinstance(fileobj, string_type):
         fileobj = open(fileobj, 'rb')
     tree = etree.parse(fileobj)
-    # TODO: remove break pointer
     root_tag = tree.getroot().tag
     if root_tag == 'WMT_MS_Capabilities':
         return WMS111Capabilities(tree)

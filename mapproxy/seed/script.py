@@ -129,6 +129,10 @@ class SeedScript(object):
         else:
             cache_locker = None
 
+        if not sys.stdout.isatty() and options.quiet == 0:
+            # disable verbose output for non-ttys
+            options.quiet = 1
+
         with mapproxy_conf:
             try:
                 seed_conf = load_seed_tasks_conf(options.seed_file, mapproxy_conf)

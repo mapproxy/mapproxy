@@ -64,8 +64,8 @@ class ProxyConfiguration(object):
     def load_grids(self):
         self.grids = {}
 
-        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(dict(srs='EPSG:4326', name='GLOBAL_GEODETIC'), context=self)
-        self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913', name='GLOBAL_MERCATOR'), context=self)
+        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(dict(srs='EPSG:4326', origin='sw', name='GLOBAL_GEODETIC'), context=self)
+        self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913', origin='sw', name='GLOBAL_MERCATOR'), context=self)
         self.grids['GLOBAL_WEBMERCATOR'] = GridConfiguration(dict(srs='EPSG:3857', origin='nw', name='GLOBAL_WEBMERCATOR'), context=self)
 
         for grid_name, grid_conf in iteritems((self.configuration.get('grids') or {})):
@@ -290,6 +290,10 @@ class GridConfiguration(ConfigurationBase):
         max_shrink_factor = self.context.globals.get_value('max_shrink_factor', conf,
             global_key='image.max_shrink_factor')
 
+        if conf.get('origin') is None:
+            log.warn('grid %s does not have an origin. default origin will change from sw (south/west) to nw (north-west) with MapProxy 2.0',
+                conf['name'],
+            )
 
         grid = tile_grid(
             name=conf['name'],
@@ -837,7 +841,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
 class TileSourceConfiguration(SourceConfiguration):
     supports_meta_tiles = False
     source_type = ('tile',)
-    defaults = {'grid': 'GLOBAL_MERCATOR'}
+    defaults = {}
 
     def source(self, params=None):
         from mapproxy.client.tile import TileClient, TileURLTemplate
@@ -856,7 +860,13 @@ class TileSourceConfiguration(SourceConfiguration):
             'and will be ignored. use grid with correct origin.', RuntimeWarning)
 
         http_client, url = self.http_client(url)
-        grid = self.context.grids[self.conf['grid']].tile_grid()
+
+        grid_name = self.conf.get('grid')
+        if grid_name is None:
+            log.warn("tile source for %s does not have a grid configured and defaults to GLOBAL_MERCATOR. default will change with MapProxy 2.0", url)
+            grid_name = "GLOBAL_MERCATOR"
+
+        grid = self.context.grids[grid_name].tile_grid()
         coverage = self.coverage()
         res_range = resolution_range(self.conf)
 
@@ -893,7 +903,7 @@ source_configuration_types = {
 
 
 class CacheConfiguration(ConfigurationBase):
-    defaults = {'format': 'image/png', 'grids': ['GLOBAL_MERCATOR']}
+    defaults = {'format': 'image/png'}
 
     @memoize
     def cache_dir(self):
@@ -1245,7 +1255,12 @@ class CacheConfiguration(ConfigurationBase):
 
     @memoize
     def grid_confs(self):
-        return [(g, self.context.grids[g]) for g in self.conf['grids']]
+        grid_names = self.conf.get('grids')
+        if grid_names is None:
+            log.warn('cache %s does not have any grids. default will change from [GLOBAL_MERCATOR] to [GLOBAL_WEBMERCATOR] with MapProxy 2.0',
+                self.conf['name'])
+            grid_names = ['GLOBAL_MERCATOR']
+        return [(g, self.context.grids[g]) for g in grid_names]
 
     @memoize
     def map_layer(self):
@@ -1394,10 +1409,15 @@ class LayerConfiguration(ConfigurationBase):
         for source_name in self.conf.get('sources', []):
             # we only support caches for tiled access...
             if not source_name in self.context.caches:
-                # but we ignore debug layers for convenience
                 if source_name in self.context.sources:
-                    if self.context.sources[source_name].conf['type'] == 'debug':
+                    src_conf = self.context.sources[source_name].conf
+                    # but we ignore debug layers for convenience
+                    if src_conf['type'] == 'debug':
                         continue
+                    # and WMS layers with map: False (i.e. FeatureInfo only sources)
+                    if src_conf['type'] == 'wms' and src_conf.get('wms_opts', {}).get('map', True) == False:
+                        continue
+
                 return []
             sources.append(source_name)
 
@@ -1612,7 +1632,7 @@ class ServiceConfiguration(ConfigurationBase):
 
     def demo_service(self, conf):
         from mapproxy.service.demo import DemoServer
-        services = self.context.services.conf.keys()
+        services = list(self.context.services.conf.keys())
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
         layers = odict()
@@ -1623,12 +1643,24 @@ class ServiceConfiguration(ConfigurationBase):
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
 
         # WMTS restful template
-        wmts_conf = self.context.services.conf.get('wmts', {})
+        wmts_conf = self.context.services.conf.get('wmts', {}) or {}
         from mapproxy.service.wmts import WMTSRestServer
         if wmts_conf:
             restful_template = wmts_conf.get('restful_template', WMTSRestServer.default_template)
         else:
             restful_template = WMTSRestServer.default_template
+
+        if 'wmts' in self.context.services.conf:
+            kvp = wmts_conf.get('kvp')
+            restful = wmts_conf.get('restful')
+
+            if kvp is None and restful is None:
+                kvp = restful = True
+
+            if kvp:
+                services.append('wmts_kvp')
+            if restful:
+                services.append('wmts_restful')
 
         return DemoServer(layers, md, tile_layers=tile_layers,
             image_formats=image_formats, srs=srs, services=services, restful_template=restful_template)

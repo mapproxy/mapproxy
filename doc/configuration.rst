@@ -878,6 +878,12 @@ Add additional HTTP headers to all requests to your sources.
       My-Header: header value
 
 
+``access_control_allow_origin``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.8.0
+
+Sets the ``Access-control-allow-origin`` header to HTTP responses for `Cross-origin resource sharing <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_. This header is required for WebGL or Canvas web clients. Defaults to `*`. Leave empty to disable the header. This option is only available in `globals`.
 
 
 ``tiles``

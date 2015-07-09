@@ -240,7 +240,6 @@ The ``_attachments``-part is the internal structure of CouchDB where the tile it
 ========
 
 .. versionadded:: 1.6.0
-    The Riak cache is currently in beta phase.
 
 Store tiles in a `Riak <http://basho.com/riak/>`_ cluster. MapProxy creates keys with binary data as value and timestamps as user defined metadata.
 This backend is good for very large caches which can be distributed over many nodes. Data can be distributed over multiple nodes providing a fault-tolernt and high-available storage. A Riak cluster is masterless and each node can handle read and write requests.

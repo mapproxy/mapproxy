@@ -1,3 +1,4 @@
+# -:- encoding: utf8 -:-
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
 #
@@ -15,6 +16,7 @@
 
 from __future__ import with_statement, division
 
+import re
 import os
 import shutil
 import functools
@@ -60,13 +62,32 @@ class TestWMTS(SystemTest):
              version='1.0.0', tilerow='0', tilecol='0', tilematrix='01', tilematrixset='GLOBAL_MERCATOR',
              layer='wms_cache', format='image/jpeg', style='', request='GetTile'))
 
+    def test_endpoints(self):
+        for endpoint in ('service', 'ows'):
+            req = WMTS100CapabilitiesRequest(url='/%s?' % endpoint).copy_with_request_params(self.common_cap_req)
+            resp = self.app.get(req)
+            eq_(resp.content_type, 'application/xml')
+            xml = resp.lxml
+            assert validate_with_xsd(xml, xsd_name='wmts/1.0/wmtsGetCapabilities_response.xsd')
+
     def test_capabilities(self):
         req = str(self.common_cap_req)
         resp = self.app.get(req)
+        eq_(resp.content_type, 'application/xml')
         xml = resp.lxml
         assert validate_with_xsd(xml, xsd_name='wmts/1.0/wmtsGetCapabilities_response.xsd')
-        eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 4)
-        eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 4)
+        eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 5)
+        eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 5)
+
+        goog_matrixset = xml.xpath('//wmts:Contents/wmts:TileMatrixSet[./ows:Identifier/text()="GoogleMapsCompatible"]', namespaces=ns_wmts)[0]
+        eq_(goog_matrixset.findtext('ows:Identifier', namespaces=ns_wmts), 'GoogleMapsCompatible')
+        # top left corner: min X first then max Y
+        assert re.match('-20037508\.\d+ 20037508\.\d+', goog_matrixset.findtext('./wmts:TileMatrix[1]/wmts:TopLeftCorner', namespaces=ns_wmts))
+
+        gk_matrixset = xml.xpath('//wmts:Contents/wmts:TileMatrixSet[./ows:Identifier/text()="gk3"]', namespaces=ns_wmts)[0]
+        eq_(gk_matrixset.findtext('ows:Identifier', namespaces=ns_wmts), 'gk3')
+        # Gauß-Krüger uses "reverse" axis order -> top left corner: max Y first then min X
+        assert re.match('6000000.0+ 3000000.0+', gk_matrixset.findtext('./wmts:TileMatrix[1]/wmts:TopLeftCorner', namespaces=ns_wmts))
 
     def test_get_tile(self):
         resp = self.app.get(str(self.common_tile_req))

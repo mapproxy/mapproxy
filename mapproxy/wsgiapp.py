@@ -165,6 +165,7 @@ class MapProxyApp(object):
     def __init__(self, services, base_config):
         self.handlers = {}
         self.base_config = base_config
+        self.cors_origin = base_config.http.access_control_allow_origin
         for service in services:
             for name in service.names:
                 self.handlers[name] = service
@@ -172,6 +173,12 @@ class MapProxyApp(object):
     def __call__(self, environ, start_response):
         resp = None
         req = Request(environ)
+
+        if self.cors_origin:
+            orig_start_response = start_response
+            def start_response(status, headers, exc_info=None):
+                headers.append(('Access-control-allow-origin', self.cors_origin))
+                return orig_start_response(status, headers, exc_info)
 
         with local_base_config(self.base_config):
             match = self.handler_path_re.match(req.path)

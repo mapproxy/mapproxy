@@ -79,4 +79,5 @@ http = dict(
     client_timeout = 60,
     concurrent_requests = 0,
     method = 'AUTO',
+    access_control_allow_origin = '*',
 )

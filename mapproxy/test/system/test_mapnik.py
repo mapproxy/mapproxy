@@ -96,9 +96,9 @@ class TestMapnikSource(SystemTest):
         img = Image.open(data)
         colors = sorted(img.getcolors(), reverse=True)
         # map bg color + black marker
-        assert 39700 < colors[0][0] < 39800, colors[0][0]
+        assert 39700 < colors[0][0] < 39900, colors[0][0]
         eq_(colors[0][1], (255, 0, 0, 255))
-        assert 100 < colors[1][0] < 150, colors[1][0]
+        assert 50 < colors[1][0] < 150, colors[1][0]
         eq_(colors[1][1], (0, 0, 0, 255))
 
     def test_get_map_hq(self):
