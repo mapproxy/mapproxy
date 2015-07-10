@@ -30,7 +30,7 @@ class CassandraCache(TileCacheBase):
         self.tablename = tablename
         self.lock_dir = lock_dir
         self.lock_timeout = 60
-        self.lock_cache_id = 'cassandra-' + hashlib.md5(keyspace + tablename).hexdigest()
+        self.lock_cache_id = 'cassandra-' + hashlib.md5(keyspace.encode('utf-8') + tablename.encode('utf-8')).hexdigest()
         self.session = None
 
     def is_cached(self, tile):
@@ -65,7 +65,7 @@ class CassandraCache(TileCacheBase):
                 if with_metadata:
                     created = content[1]
                     if created:
-                        tile.timestamp = created
+                        tile.timestamp = created / 1000
                     length = content[2]
                     if length:
                         tile.size = length
@@ -85,7 +85,10 @@ class CassandraCache(TileCacheBase):
         if tile.stored:
             return True
         size = tile.size
-        timestamp = tile.timestamp
+        if tile.timestamp:
+            timestamp = tile.timestamp * 1000
+        else:
+            timestamp = None
         key = _tile_key(tile.coord)
         with tile_buffer(tile) as buf:
             data = buf.read()

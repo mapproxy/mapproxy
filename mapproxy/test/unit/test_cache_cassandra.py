@@ -29,7 +29,7 @@ class TestCassandraCache(TileCacheTestBase):
         self.session.execute("create keyspace if not exists testspace with replication = "
                              "{'class': 'SimpleStrategy', 'replication_factor': 1}")
         self.session.set_keyspace('testspace')
-        self.session.execute("create table if not exists testtable (key text primary key, img blob, created timestamp, length int)")
+        self.session.execute("create table if not exists testtable (key text primary key, img blob, created bigint, length bigint)")
 
         TileCacheTestBase.setup(self)
 
