@@ -1047,7 +1047,7 @@ class CacheConfiguration(ConfigurationBase):
         nodes = self.conf['cache'].get('nodes')
         if not nodes:
             nodes = [{'host': '127.0.0.1'}]
-        port = self.conf['port']
+        port = self.conf['cache'].get('port')
         if not port:
             port = 9042
         return CassandraCache(nodes, port, keyspace, tablename, self.lock_dir())
