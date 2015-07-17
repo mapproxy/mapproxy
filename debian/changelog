@@ -1,3 +1,9 @@
+mapproxy (1.8.0) unstable; urgency=low
+
+  * New upstream, release.
+
+ -- Oliver Tonnhofer <olt@bogosoft.com>  Fri, 17 Jul 2015 09:38:03 +0000
+
 mapproxy (1.5.0) unstable; urgency=low
 
   * New upstream release.
