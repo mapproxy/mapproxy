@@ -2,8 +2,10 @@ import hashlib
 import sys
 try:
     from cStringIO import StringIO
+    bytesIo = False
 except ImportError:
     from io import BytesIO
+    bytesIo = True
 from mapproxy.cache.base import TileCacheBase, tile_buffer, CacheBackendError
 from mapproxy.image import ImageSource
 
@@ -61,10 +63,10 @@ class CassandraCache(TileCacheBase):
             log.debug(content)
             if content:
                 log.debug(content[0])
-                if sys.version_info[0] == 2:
-                    tile.source = ImageSource(StringIO(content[0]))
-                else:
+                if bytesIo:
                     tile.source = ImageSource(BytesIO(content[0]))
+                else:
+                    tile.source = ImageSource(StringIO(content[0]))
                 log.debug(tile.source)
                 if with_metadata:
                     created = content[1]
@@ -88,14 +90,14 @@ class CassandraCache(TileCacheBase):
     def store_tile(self, tile):
         if tile.stored:
             return True
-        size = tile.size
-        if tile.timestamp:
-            timestamp = tile.timestamp * 1000
-        else:
-            timestamp = None
         key = _tile_key(tile.coord)
         with tile_buffer(tile) as buf:
             data = buf.read()
+        size = tile.size
+        if tile.timestamp:
+            timestamp = int(tile.timestamp * 1000)
+        else:
+            timestamp = None
         if not self.session:
             self._open_session()
         if self.is_cached(tile):
