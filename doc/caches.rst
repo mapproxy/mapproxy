@@ -303,6 +303,15 @@ You will need the `python cassandra driver <https://github.com/datastax/python-d
 Cassandra uses keyspaces and tables to store data. These keyspaces and tables have to be created before they can be used by mapproxy.
 The gridname is used as name for the keyspace, the cachename as name for the table.
 
+::
+
+    ~$ cqlsh localhost
+    cqlsh> create keyspace if not exists mygrid with replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+    cqlsh> use gridname;
+    cqlsh:gridname> create table if not exists mycassandracache (key text primary key, img blob, created bigint, length bigint);
+
+For details see the `Cassandra Query Language (CQL) documentation https://cassandra.apache.org/doc/cql/CQL.html`_.
+
 Configuration
 -------------
 
