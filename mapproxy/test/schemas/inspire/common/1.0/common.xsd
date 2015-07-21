@@ -17,7 +17,7 @@
 			<jaxb:globalBindings typesafeEnumMaxMembers="1000"/>
 		</xs:appinfo>
 	</xs:annotation>
-	<xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+	<xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="../../../xml.xsd"/>
 	<xs:include schemaLocation="network.xsd"/>
 	<!--Load language dependent types-->
 	<xs:include schemaLocation="enums/enum_bul.xsd"/>
@@ -46,7 +46,7 @@
 	<xs:element name="SpatialDataService" type="service"/>
 	<xs:element name="SpatialDataSet" type="dataset"/>
 	<xs:element name="SpatialDataSetSeries" type="series"/>
-	<!--TBD	
+	<!--TBD
 	<xs:element name="INSPIREResource" type="resource">
 	</xs:element>
 -->
