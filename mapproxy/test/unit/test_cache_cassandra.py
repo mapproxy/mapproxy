@@ -14,13 +14,14 @@ tile_image2 = create_tmp_image_buf((256, 256), color='red')
 
 class TestCassandraCache(TileCacheTestBase):
     always_loads_metadata = True
+    cassandra_server_env = 'CASSANDRA_SERVER'
 
     def setup(self):
 
-        cassandra_server_env = 'CASSANDRA_SERVER'
-        if not os.environ.get(cassandra_server_env):
+
+        if not os.environ.get(self.cassandra_server_env):
             raise SkipTest()
-        self.host = os.environ[cassandra_server_env]
+        self.host = os.environ[self.cassandra_server_env]
 
         self.cluster = Cluster([self.host])
         self.session = self.cluster.connect()
