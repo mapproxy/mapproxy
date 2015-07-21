@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2011 sp1 (http://www.altova.com) by - - (European Commission DG JRC IES) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://inspire.ec.europa.eu/schemas/common/1.0" targetNamespace="http://inspire.ec.europa.eu/schemas/common/1.0" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0.1">
+	<xs:complexType name="inspireTheme_swe">
+		<xs:complexContent>
+			<xs:restriction base="inspireTheme">
+				<xs:sequence>
+					<xs:element name="OriginatingControlledVocabulary" type="originatingControlledVocabularyGemetInspireThemes"/>
+					<xs:element name="KeywordValue">
+						<xs:simpleType>
+							<xs:restriction base="keywordValue">
+								<xs:enumeration value="Administrativa enheter"/>
+								<xs:enumeration value="Adresser"/>
+								<xs:enumeration value="Allmännyttiga och offentliga tjänster"/>
+								<xs:enumeration value="Anläggningar för miljöövervakning"/>
+								<xs:enumeration value="Arters utbredning"/>
+								<xs:enumeration value="Atmosfäriska förhållanden"/>
+								<xs:enumeration value="Befolkningsfördelning – demografi"/>
+								<xs:enumeration value="Biogeografiska regioner"/>
+								<xs:enumeration value="Byggnader"/>
+								<xs:enumeration value="Energiresurser"/>
+								<xs:enumeration value="Fastighetsområden"/>
+								<xs:enumeration value="Geografiska meteorologiska förhållanden"/>
+								<xs:enumeration value="Geografiska namn"/>
+								<xs:enumeration value="Geografiska oceanografiska förhållanden"/>
+								<xs:enumeration value="Geografiska rutnätssystem"/>
+								<xs:enumeration value="Geologi"/>
+								<xs:enumeration value="Havsområden"/>
+								<xs:enumeration value="Hydrografi"/>
+								<xs:enumeration value="Höjd"/>
+								<xs:enumeration value="Jordbruks- och vattenbruksanläggningar"/>
+								<xs:enumeration value="Landtäcke"/>
+								<xs:enumeration value="Mark"/>
+								<xs:enumeration value="Markanvändning"/>
+								<xs:enumeration value="Mineralfyndigheter"/>
+								<xs:enumeration value="Människors hälsa och säkerhet"/>
+								<xs:enumeration value="Naturliga riskområden"/>
+								<xs:enumeration value="Naturtyper och biotoper"/>
+								<xs:enumeration value="Områden med särskild förvaltning/begränsningar/reglering samt enheter för rapportering"/>
+								<xs:enumeration value="Ortofoto"/>
+								<xs:enumeration value="Produktions- och industrianläggningar"/>
+								<xs:enumeration value="Referenskoordinatsystem"/>
+								<xs:enumeration value="Skyddade områden"/>
+								<xs:enumeration value="Statistiska enheter"/>
+								<xs:enumeration value="Transportnät"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Interoperability-->
+	<xs:complexType name="resLocInspireInteroperabilityRegulation_swe">
+		<xs:complexContent>
+			<xs:restriction base="resourceLocatorType">
+				<xs:sequence>
+					<xs:element name="URL">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:SV:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="MediaType">
+						<xs:simpleType>
+							<xs:restriction base="mediaType">
+								<xs:enumeration value="application/pdf"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="citationInspireInteroperabilityRegulation_swe">
+		<xs:complexContent>
+			<xs:restriction base="citationConformity">
+				<xs:sequence>
+					<xs:element name="Title">
+						<xs:simpleType>
+							<xs:restriction base="notEmptyString">
+								<xs:enumeration value="KOMMISSIONENS FÖRORDNING (EU) nr 1089/2010 av den 23 november 2010 om genomförande av Europaparlamentets och rådets direktiv 2007/2/EG vad gäller interoperabilitet för rumsliga datamängder och datatjänster"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:choice>
+						<xs:element name="DateOfPublication">
+							<xs:simpleType>
+								<xs:restriction base="iso8601Date">
+									<xs:enumeration value="2010-12-08"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:choice>
+					<xs:element name="URI" minOccurs="1" maxOccurs="1">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="OJ:L:2010:323:0011:0102:SV:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="ResourceLocator" type="resLocInspireInteroperabilityRegulation_swe" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>
