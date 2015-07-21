@@ -79,6 +79,7 @@ class CassandraCache(TileCacheBase):
             else:
                 return False
         except:
+            log.warn("Unable to load tile %s" % key)
             return False
 
     def load_tile_metadata(self, tile):
@@ -126,7 +127,6 @@ class CassandraCache(TileCacheBase):
         self.delete_tile_stmt = self.session.prepare("DELETE FROM %s where key=?" % self.tablename)
         self.insert_tile_stmt = self.session.prepare("INSERT INTO %s (key, img, created, length) values (?, ?, ?, ?)" % self.tablename)
         self.update_tile_stmt = self.session.prepare("UPDATE %s SET img=?, created=?, length=? where key=?" % self.tablename)
-        log.debug(serverlist)
 
 
 
