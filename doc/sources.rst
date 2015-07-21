@@ -10,6 +10,7 @@ MapProxy supports the following sources:
 - :ref:`mapserver_label`
 - :ref:`mapnik_label`
 - :ref:`debug_label`
+- :ref:`dummy_label`
 
 You need to choose a unique name for each configured source. This name will be used to reference the source in the ``caches`` and ``layers`` configuration.
 
@@ -494,4 +495,25 @@ Example::
 
   debug_source:
     type: debug
+
+.. _dummy_label:
+
+Dummy
+"""""
+
+This source is intended for caches that are filled from outside mapproxy.
+
+``coverage``
+^^^^^^^^^^^^
+
+Define the covered area of the cache that references this source. See :doc:`coverages <coverages>` for more information about the configuration.
+
+Example::
+
+  dummy_source:
+    type: dummy
+    coverage:
+      bbox: [8.89, 47.08, 13.98, 50.7]
+      srs: EPSG:4326
+
 
