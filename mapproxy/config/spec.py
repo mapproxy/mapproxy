@@ -401,6 +401,7 @@ mapproxy_yaml_spec = {
             }),
             'debug': {
             },
+            'dummy': source_commons,
         })
     },
 
