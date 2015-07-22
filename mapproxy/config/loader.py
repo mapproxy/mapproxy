@@ -1564,6 +1564,7 @@ class ServiceConfiguration(ConfigurationBase):
         from mapproxy.request.wms import Version
 
         md = conf.get('md', {})
+        inspire_md = conf.get('inspire_md', {})
         tile_layers = self.tile_layers(conf)
         attribution = conf.get('attribution')
         strict = self.context.globals.get_value('strict', conf, global_key='wms.strict')
@@ -1611,7 +1612,9 @@ class ServiceConfiguration(ConfigurationBase):
             srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors,
             concurrent_layer_renderer=concurrent_layer_renderer,
             max_output_pixels=max_output_pixels, srs_extents=srs_extents,
-            max_tile_age=max_tile_age, versions=versions)
+            max_tile_age=max_tile_age, versions=versions,
+            inspire_md=inspire_md,
+            )
 
         server.fi_transformers = fi_xslt_transformers(conf, self.context)
 
