@@ -284,6 +284,14 @@ class MBTilesLevelCache(TileCacheBase):
 
         return self._mbtiles[level]
 
+    def cleanup(self):
+        """
+        Close all open connection and remove them from cache.
+        """
+        with self._mbtiles_lock:
+            for mbtile in self._mbtiles.values():
+                mbtile.cleanup()
+
     def is_cached(self, tile):
         if tile.coord is None:
             return True
