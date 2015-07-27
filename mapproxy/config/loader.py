@@ -878,15 +878,6 @@ class TileSourceConfiguration(SourceConfiguration):
         return TiledSource(grid, client, coverage=coverage, image_opts=image_opts,
             error_handler=error_handler, res_range=res_range)
 
-class DummySourceConfiguration(SourceConfiguration):
-    supports_meta_tiles = False
-    source_type = ('dummy',)
-    defaults = {}
-
-    def source(self, params=None):
-        from mapproxy.source import DummySource
-        return DummySource(coverage=self.coverage())
-
 
 def file_ext(mimetype):
     from mapproxy.request.base import split_mime_type
@@ -908,7 +899,6 @@ source_configuration_types = {
     'debug': DebugSourceConfiguration,
     'mapserver': MapServerSourceConfiguration,
     'mapnik': MapnikSourceConfiguration,
-    'dummy': DummySourceConfiguration
 }
 
 
