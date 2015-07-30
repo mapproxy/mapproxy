@@ -456,7 +456,7 @@ class TestWMS111(WMSTest):
         self.created_tiles.append('wms_cache_100_EPSG900913/01/000/000/001/000/000/001.jpeg')
         # request_format tiff, cache format jpeg, wms request in png
         with tmp_image((256, 256), format='tiff') as img:
-            expected_req = ({'path': r'/service?LAYERs=foo,bar&FORMAT=image%2Ftiff'
+            expected_req = ({'path': r'/service?LAYERs=foo,bar&FORMAT=TIFF'
                                       '&REQUEST=map&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                       '&WMTVER=1.0.0&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
@@ -806,7 +806,7 @@ class TestWMS100(WMSTest):
         xml = resp.lxml
         eq_(xml.xpath('/WMTException/@version')[0], '1.0.0')
         eq_(xml.xpath('//WMTException/text()')[0].strip(),
-                      'unsupported image format: image/ascii')
+                      'unsupported image format: ASCII')
 
     def test_invalid_format_img_exception(self):
         self.common_map_req.params['format'] = 'image/ascii'

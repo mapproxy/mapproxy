@@ -290,6 +290,10 @@ class WMS100MapRequest(WMSMapRequest):
         params = WMSMapRequest.adapt_params_to_version(self)
         del params['version']
         del params['service']
+
+        image_format = params['format']
+        if '/' in image_format:
+            params['format'] = image_format.split('/', 1)[1].upper()
         return params
 
     def validate_format(self, image_formats):
