@@ -51,6 +51,10 @@ Adds an attribution (copyright) line to all WMS requests.
 """"""
 ``md`` is for metadata. These fields are used for the WMS ``GetCapabilities`` responses. See the example below for all supported keys.
 
+.. versionadded:: 1.8.1
+
+  ``keyword_list``
+
 .. _wms_srs:
 
 ``srs``
@@ -177,7 +181,10 @@ Full example
           email: you@example.org
         access_constraints: This service is intended for private and evaluation use only.
         fees: 'None'
-
+        keyword_list:
+         - vocabulary: GEMET
+           keywords:   [Orthoimagery]
+         - keywords:   ["View Service", MapProxy]
 
 
 .. index:: WMS-C Service

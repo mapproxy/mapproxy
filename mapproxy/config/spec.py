@@ -273,6 +273,12 @@ ogc_service_md = {
     'contact': anything(),
     'fees': string_type,
     'access_constraints': string_type,
+    'keyword_list': [
+        {
+            'vocabulary': string_type,
+            'keywords': [string_type],
+        }
+    ],
 }
 
 mapproxy_yaml_spec = {
