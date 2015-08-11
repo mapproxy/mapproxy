@@ -698,6 +698,10 @@ class WMSLayer(WMSLayerBase):
         else:
             return None
 
+    def child_layers(self):
+        return {self.name: self}
+
+
 class WMSGroupLayer(WMSLayerBase):
     """
     Class for WMS group layers.

@@ -163,7 +163,7 @@ class ProxyConfiguration(object):
             if isinstance(layers_conf[0], dict) and len(layers_conf[0].keys()) == 1:
                 # looks like ordered legacy config
                 layers_conf = self._legacy_layers_conf_dict()
-            elif len(layers_conf) == 1 and 'layers' in layers_conf[0]:
+            elif len(layers_conf) == 1 and ('layers' in layers_conf[0] or 'sources' in layers_conf[0]):
                 # single root layer in list -> remove list
                 layers_conf = layers_conf[0]
             else:
