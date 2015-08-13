@@ -207,12 +207,16 @@ Pleas read :ref:`scale vs. resolution <scale_resolution>` for some notes on `sca
 
 Configure a URL to an image that should be returned as the legend for this layer. Local URLs (``file://``) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a ``legendurl`` here.
 
+.. _layer_metadata:
+
 ``md``
 """"""
 
 .. versionadded:: 1.4.0
 
 Add additional metadata for this layer. This metadata appears in the WMS 1.3.0 capabilities documents. Refer to the OGC 1.3.0 specification for a description of each option.
+
+See also :doc:`inspire` for configuring additional INSPIRE metadata.
 
 Here is an example layer with extended layer capabilities::
 

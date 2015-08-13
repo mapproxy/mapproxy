@@ -15,6 +15,8 @@
 
 from __future__ import print_function
 
+import datetime
+
 from mapproxy.util.ext.dictspec.validator import validate, ValidationError
 from mapproxy.util.ext.dictspec.spec import one_of, anything, number
 from mapproxy.util.ext.dictspec.spec import recursive, required, type_spec, combined
@@ -136,6 +138,68 @@ on_error = {
     }
 }
 
+
+
+inspire_md = {
+    'linked': {
+        required('metadata_url'): {
+            required('url'): str,
+            required('media_type'): str,
+        },
+        required('languages'): {
+            required('default'): str,
+        },
+    },
+    'embedded': {
+        required('resource_locators'): [{
+            required('url'): str,
+            required('media_type'): str,
+        }],
+        required('temporal_reference'): {
+            'date_of_publication': one_of(str, datetime.date),
+            'date_of_creation': one_of(str, datetime.date),
+            'date_of_last_revision': one_of(str, datetime.date),
+        },
+        required('conformities'): [{
+            'title': string_type,
+            'uris': [str],
+            'date_of_publication': one_of(str, datetime.date),
+            'date_of_creation': one_of(str, datetime.date),
+            'date_of_last_revision': one_of(str, datetime.date),
+            required('resource_locators'): [{
+                required('url'): str,
+                required('media_type'): str,
+            }],
+            required('degree'): str,
+        }],
+        required('metadata_points_of_contact'): [{
+            'organisation_name': string_type,
+            'email': str,
+        }],
+        required('mandatory_keywords'): [str],
+        'keywords': [{
+            required('title'): string_type,
+            'date_of_publication': one_of(str, datetime.date),
+            'date_of_creation': one_of(str, datetime.date),
+            'date_of_last_revision': one_of(str, datetime.date),
+            'uris': [str],
+            'resource_locators': [{
+                required('url'): str,
+                required('media_type'): str,
+            }],
+            required('keyword_value'): string_type,
+        }],
+        required('metadata_date'): one_of(str, datetime.date),
+        'metadata_url': {
+            required('url'): str,
+            required('media_type'): str,
+        },
+        required('languages'): {
+            required('default'): str,
+        },
+    },
+}
+
 wms_130_layer_md = {
     'abstract': string_type,
     'keyword_list': [
@@ -209,6 +273,12 @@ ogc_service_md = {
     'contact': anything(),
     'fees': string_type,
     'access_constraints': string_type,
+    'keyword_list': [
+        {
+            'vocabulary': string_type,
+            'keywords': [string_type],
+        }
+    ],
 }
 
 mapproxy_yaml_spec = {
@@ -319,6 +389,7 @@ mapproxy_yaml_spec = {
             'max_output_pixels': one_of(number(), [number()]),
             'strict': bool(),
             'md': ogc_service_md,
+            'inspire_md': type_spec('type', inspire_md),
             'versions': [str()],
         },
     },

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2011 sp1 (http://www.altova.com) by - - (European Commission DG JRC IES) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://inspire.ec.europa.eu/schemas/common/1.0" targetNamespace="http://inspire.ec.europa.eu/schemas/common/1.0" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0.1">
+	<xs:complexType name="inspireTheme_dut">
+		<xs:complexContent>
+			<xs:restriction base="inspireTheme">
+				<xs:sequence>
+					<xs:element name="OriginatingControlledVocabulary" type="originatingControlledVocabularyGemetInspireThemes" minOccurs="1"/>
+					<xs:element name="KeywordValue">
+						<xs:simpleType>
+							<xs:restriction base="keywordValue">
+								<xs:enumeration value="Administratieve eenheden"/>
+								<xs:enumeration value="Adressen"/>
+								<xs:enumeration value="Atmosferische omstandigheden"/>
+								<xs:enumeration value="Beschermde gebieden"/>
+								<xs:enumeration value="Biogeografische gebieden"/>
+								<xs:enumeration value="Bodem"/>
+								<xs:enumeration value="Bodemgebruik"/>
+								<xs:enumeration value="Energiebronnen"/>
+								<xs:enumeration value="Faciliteiten voor landbouw en aquacultuur"/>
+								<xs:enumeration value="Faciliteiten voor productie en industrie"/>
+								<xs:enumeration value="Gebieden met natuurrisico'es"/>
+								<xs:enumeration value="Gebiedsbeheer, gebieden waar beperkingen gelden, gereguleerde gebieden en rapportage-eenheden"/>
+								<xs:enumeration value="Gebouwen"/>
+								<xs:enumeration value="Geografisch rastersysteem"/>
+								<xs:enumeration value="Geografische namen"/>
+								<xs:enumeration value="Geologie"/>
+								<xs:enumeration value="Habitats en biotopen"/>
+								<xs:enumeration value="Hoogte"/>
+								<xs:enumeration value="Hydrografie"/>
+								<xs:enumeration value="Kadastrale percelen"/>
+								<xs:enumeration value="Landgebruik"/>
+								<xs:enumeration value="Menselijke gezondheid en veiligheid"/>
+								<xs:enumeration value="Meteorologische geografische kenmerken"/>
+								<xs:enumeration value="Milieubewakingsvoorzieningen"/>
+								<xs:enumeration value="Minerale bronnen"/>
+								<xs:enumeration value="Nutsdiensten en overheidsdiensten"/>
+								<xs:enumeration value="Oceanografische geografische kenmerken"/>
+								<xs:enumeration value="Orthobeeldvorming"/>
+								<xs:enumeration value="Spreiding van de bevolking — demografie"/>
+								<xs:enumeration value="Spreiding van soorten"/>
+								<xs:enumeration value="Statistische eenheden"/>
+								<xs:enumeration value="Systemen voor verwijzing door middel van coördinaten"/>
+								<xs:enumeration value="Vervoersnetwerken"/>
+								<xs:enumeration value="Zeegebieden"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Interoperability-->
+	<xs:complexType name="resLocInspireInteroperabilityRegulation_dut">
+		<xs:complexContent>
+			<xs:restriction base="resourceLocatorType">
+				<xs:sequence>
+					<xs:element name="URL">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:NL:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="MediaType">
+						<xs:simpleType>
+							<xs:restriction base="mediaType">
+								<xs:enumeration value="application/pdf"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="citationInspireInteroperabilityRegulation_dut">
+		<xs:complexContent>
+			<xs:restriction base="citationConformity">
+				<xs:sequence>
+					<xs:element name="Title">
+						<xs:simpleType>
+							<xs:restriction base="notEmptyString">
+								<xs:enumeration value="VERORDENING (EU) Nr. 1089/2010 VAN DE COMMISSIE van 23 november 2010 ter uitvoering van Richtlijn 2007/2/EG van het Europees Parlement en de Raad betreffende de interoperabiliteit van verzamelingen ruimtelijke gegevens en van diensten met betrekking tot ruimtelijke gegevens"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:choice>
+						<xs:element name="DateOfPublication">
+							<xs:simpleType>
+								<xs:restriction base="iso8601Date">
+									<xs:enumeration value="2010-12-08"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:choice>
+					<xs:element name="URI" minOccurs="1" maxOccurs="1">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="OJ:L:2010:323:0011:0102:NL:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="ResourceLocator" type="resLocInspireInteroperabilityRegulation_dut" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

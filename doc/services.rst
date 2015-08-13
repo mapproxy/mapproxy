@@ -31,6 +31,8 @@ Web Map Service (OGC WMS)
 
 The WMS server is accessible at ``/service``, ``/ows`` and ``/wms``  and it supports the WMS versions 1.0.0, 1.1.1 and 1.3.0.
 
+See :doc:`inspire` for configuring INSPIRE metadata.
+
 The WMS service will use all configured :ref:`layers <layers>`.
 
 The service takes the following additional option.
@@ -48,6 +50,10 @@ Adds an attribution (copyright) line to all WMS requests.
 ``md``
 """"""
 ``md`` is for metadata. These fields are used for the WMS ``GetCapabilities`` responses. See the example below for all supported keys.
+
+.. versionadded:: 1.8.1
+
+  ``keyword_list``
 
 .. _wms_srs:
 
@@ -175,7 +181,10 @@ Full example
           email: you@example.org
         access_constraints: This service is intended for private and evaluation use only.
         fees: 'None'
-
+        keyword_list:
+         - vocabulary: GEMET
+           keywords:   [Orthoimagery]
+         - keywords:   ["View Service", MapProxy]
 
 
 .. index:: WMS-C Service

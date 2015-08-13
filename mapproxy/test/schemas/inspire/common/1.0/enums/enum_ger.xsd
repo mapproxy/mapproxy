@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2011 sp1 (http://www.altova.com) by - - (European Commission DG JRC IES) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://inspire.ec.europa.eu/schemas/common/1.0" targetNamespace="http://inspire.ec.europa.eu/schemas/common/1.0" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0.1">
+	<xs:complexType name="inspireTheme_ger">
+		<xs:complexContent>
+			<xs:restriction base="inspireTheme">
+				<xs:sequence>
+					<xs:element name="OriginatingControlledVocabulary" type="originatingControlledVocabularyGemetInspireThemes"/>
+					<xs:element name="KeywordValue">
+						<xs:simpleType>
+							<xs:restriction base="keywordValue">
+								<xs:enumeration value="Adressen"/>
+								<xs:enumeration value="Atmosphärische Bedingungen"/>
+								<xs:enumeration value="Bewirtschaftungsgebiete/Schutzgebiete/geregelte Gebiete und Berichterstattungseinheiten"/>
+								<xs:enumeration value="Biogeografische Regionen"/>
+								<xs:enumeration value="Boden"/>
+								<xs:enumeration value="Bodenbedeckung"/>
+								<xs:enumeration value="Bodennutzung"/>
+								<xs:enumeration value="Energiequellen"/>
+								<xs:enumeration value="Flurstücke/Grundstücke (Katasterparzellen)"/>
+								<xs:enumeration value="Gebäude"/>
+								<xs:enumeration value="Gebiete mit naturbedingten Risiken"/>
+								<xs:enumeration value="Geografische Bezeichnungen"/>
+								<xs:enumeration value="Geografische Gittersysteme"/>
+								<xs:enumeration value="Geologie"/>
+								<xs:enumeration value="Gesundheit und Sicherheit"/>
+								<xs:enumeration value="Gewässernetz"/>
+								<xs:enumeration value="Höhe"/>
+								<xs:enumeration value="Koordinatenreferenzsysteme"/>
+								<xs:enumeration value="Landwirtschaftliche Anlagen und Aquakulturanlagen"/>
+								<xs:enumeration value="Lebensräume und Biotope"/>
+								<xs:enumeration value="Meeresregionen"/>
+								<xs:enumeration value="Meteorologisch-geografische Kennwerte"/>
+								<xs:enumeration value="Mineralische Bodenschätze"/>
+								<xs:enumeration value="Orthofotografie"/>
+								<xs:enumeration value="Ozeanografisch-geografische Kennwerte"/>
+								<xs:enumeration value="Produktions- und Industrieanlagen"/>
+								<xs:enumeration value="Schutzgebiete"/>
+								<xs:enumeration value="Statistische Einheiten"/>
+								<xs:enumeration value="Umweltüberwachung"/>
+								<xs:enumeration value="Verkehrsnetze"/>
+								<xs:enumeration value="Versorgungswirtschaft und staatliche Dienste"/>
+								<xs:enumeration value="Verteilung der Arten"/>
+								<xs:enumeration value="Verteilung der Bevölkerung — Demografie"/>
+								<xs:enumeration value="Verwaltungseinheiten"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Interoperability-->
+	<xs:complexType name="resLocInspireInteroperabilityRegulation_ger">
+		<xs:complexContent>
+			<xs:restriction base="resourceLocatorType">
+				<xs:sequence>
+					<xs:element name="URL">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:DE:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="MediaType">
+						<xs:simpleType>
+							<xs:restriction base="mediaType">
+								<xs:enumeration value="application/pdf"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="citationInspireInteroperabilityRegulation_ger">
+		<xs:complexContent>
+			<xs:restriction base="citationConformity">
+				<xs:sequence>
+					<xs:element name="Title">
+						<xs:simpleType>
+							<xs:restriction base="notEmptyString">
+								<xs:enumeration value="VERORDNUNG (EG) Nr. 1089/2010 DER KOMMISSION vom 23. November 2010 zur Durchführung der Richtlinie 2007/2/EG des Europäischen Parlaments und des Rates hinsichtlich der Interoperabilität von Geodatensätzen und -diensten"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:choice>
+						<xs:element name="DateOfPublication">
+							<xs:simpleType>
+								<xs:restriction base="iso8601Date">
+									<xs:enumeration value="2010-12-08"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:choice>
+					<xs:element name="URI" minOccurs="1" maxOccurs="1">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="OJ:L:2010:323:0011:0102:DE:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="ResourceLocator" type="resLocInspireInteroperabilityRegulation_ger" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

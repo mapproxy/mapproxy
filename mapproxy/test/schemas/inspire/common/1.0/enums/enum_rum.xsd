@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2011 sp1 (http://www.altova.com) by - - (European Commission DG JRC IES) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://inspire.ec.europa.eu/schemas/common/1.0" targetNamespace="http://inspire.ec.europa.eu/schemas/common/1.0" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0.1">
+	<xs:complexType name="inspireTheme_rum">
+		<xs:complexContent>
+			<xs:restriction base="inspireTheme">
+				<xs:sequence>
+					<xs:element name="OriginatingControlledVocabulary" type="originatingControlledVocabularyGemetInspireThemes"/>
+					<xs:element name="KeywordValue">
+						<xs:simpleType>
+							<xs:restriction base="keywordValue">
+								<xs:enumeration value="Acoperire terestră"/>
+								<xs:enumeration value="Adrese"/>
+								<xs:enumeration value="Caracteristici geografice meteorologice"/>
+								<xs:enumeration value="Caracteristici geografice oceanografice"/>
+								<xs:enumeration value="Clădiri"/>
+								<xs:enumeration value="Condiţii atmosferice"/>
+								<xs:enumeration value="Denumiri geografice"/>
+								<xs:enumeration value="Elevaţie"/>
+								<xs:enumeration value="Geologie"/>
+								<xs:enumeration value="Habitate şi biotopuri"/>
+								<xs:enumeration value="Hidrografie"/>
+								<xs:enumeration value="Instalaţii agricole şi pentru acvacultură"/>
+								<xs:enumeration value="Instalaţii de producţie şi industriale"/>
+								<xs:enumeration value="Instalaţii de supraveghere a mediului"/>
+								<xs:enumeration value="Ortoimagini"/>
+								<xs:enumeration value="Parcele cadastrale"/>
+								<xs:enumeration value="Regiuni biogeografice"/>
+								<xs:enumeration value="Regiuni maritime"/>
+								<xs:enumeration value="Repartizarea populaţiei – demografie"/>
+								<xs:enumeration value="Repartizarea speciilor"/>
+								<xs:enumeration value="Resurse energetice"/>
+								<xs:enumeration value="Resurse minerale"/>
+								<xs:enumeration value="Reţele de transport"/>
+								<xs:enumeration value="Sănătate şi siguranţă umană"/>
+								<xs:enumeration value="Servicii de utilitate publică şi servicii publice"/>
+								<xs:enumeration value="Sisteme de caroiaj geografic"/>
+								<xs:enumeration value="Sisteme de coordonate de referinţă"/>
+								<xs:enumeration value="Soluri"/>
+								<xs:enumeration value="Unităţi administrative"/>
+								<xs:enumeration value="Unităţi statistice"/>
+								<xs:enumeration value="Utilizarea terenului"/>
+								<xs:enumeration value="Zone de administrare/restricţie/reglementare şi unităţi de raportare"/>
+								<xs:enumeration value="Zone de risc natural"/>
+								<xs:enumeration value="Zone protejate"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Interoperability-->
+	<xs:complexType name="resLocInspireInteroperabilityRegulation_rum">
+		<xs:complexContent>
+			<xs:restriction base="resourceLocatorType">
+				<xs:sequence>
+					<xs:element name="URL">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:RO:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="MediaType">
+						<xs:simpleType>
+							<xs:restriction base="mediaType">
+								<xs:enumeration value="application/pdf"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="citationInspireInteroperabilityRegulation_rum">
+		<xs:complexContent>
+			<xs:restriction base="citationConformity">
+				<xs:sequence>
+					<xs:element name="Title">
+						<xs:simpleType>
+							<xs:restriction base="notEmptyString">
+								<xs:enumeration value="REGULAMENTUL (UE) NR. 1089/2010 AL COMISIEI din 23 noiembrie 2010 de punere în aplicare a Directivei 2007/2/CE a Parlamentului European şi a Consiliului în ceea ce priveşte interoperabilitatea seturilor şi serviciilor de date spaţiale"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:choice>
+						<xs:element name="DateOfPublication">
+							<xs:simpleType>
+								<xs:restriction base="iso8601Date">
+									<xs:enumeration value="2010-12-08"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:choice>
+					<xs:element name="URI" minOccurs="1" maxOccurs="1">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="OJ:L:2010:323:0011:0102:RO:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="ResourceLocator" type="resLocInspireInteroperabilityRegulation_rum" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

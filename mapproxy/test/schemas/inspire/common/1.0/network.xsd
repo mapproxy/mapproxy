@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+26-APR-2011 1.0.1 Conformity element:
+                    Restricted allowed citations to "INSPIRE interoperability of spatial data sets and services", according to the MD regulation,
+                    requirements for the conformity element (page 17 of the MD regulation).
+                  Inspire Themes:
+                    Removed leading blank for German, Bulgarian, Czech and Danish translations
+18-FEB-2011 Added types for encoding for Language Elements in Network Services
+18-DEC-2010 ResourceLocator made mandatory since we are dealing with Network Services
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://inspire.ec.europa.eu/schemas/common/1.0" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" targetNamespace="http://inspire.ec.europa.eu/schemas/common/1.0" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0.1" jaxb:version="2.0">
+	<xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+	<xs:complexType name="ExtendedCapabilitiesType">
+		<xs:annotation>
+			<xs:documentation>Extended capabilities for ISO 19128 , OGC CSW, OGC OWS services</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:sequence>
+				<xs:annotation>
+					<xs:documentation>Scenario 1: Mandatory MetadataUrl element pointing to an INSPIRE Compliant ISO metadata document plus language parameters </xs:documentation>
+				</xs:annotation>
+				<xs:element name="MetadataUrl" type="resourceLocatorType"/>
+				<xs:element name="SupportedLanguages" type="supportedLanguagesType"/>
+				<xs:element name="ResponseLanguage" type="languageElementISO6392B"/>
+			</xs:sequence>
+			<xs:sequence>
+				<xs:annotation>
+					<xs:documentation>Scenario 2: Mandatory (where appropriate) metadata elements not mapped to standard capabilities, plus mandatory language parameters, plus OPTIONAL MetadataUrl pointing to an INSPIRE Compliant ISO metadata document</xs:documentation>
+				</xs:annotation>
+				<xs:element name="ResourceLocator" type="resourceLocatorType" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Mandatory linkage to the network service</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="ResourceType" type="serviceSpatialDataResourceType"/>
+				<xs:element name="TemporalReference" type="temporalReference" maxOccurs="unbounded"/>
+				<xs:element name="Conformity" type="conformity" maxOccurs="unbounded"/>
+				<xs:element name="MetadataPointOfContact" type="metadataPointOfContact" maxOccurs="unbounded"/>
+				<xs:element name="MetadataDate" type="iso8601Date"/>
+				<xs:element name="SpatialDataServiceType" type="spatialDataServiceType"/>
+				<xs:element name="MandatoryKeyword" type="classificationOfSpatialDataService" maxOccurs="unbounded"/>
+				<xs:element name="Keyword" type="keyword" minOccurs="0" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation xml:lang="en">If the resource is a spatial data service, at least one keyword from Part D.4 shall be provided.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="SupportedLanguages" type="supportedLanguagesType"/>
+				<xs:element name="ResponseLanguage" type="languageElementISO6392B"/>
+				<xs:element name="MetadataUrl" type="resourceLocatorType" minOccurs="0"/>
+			</xs:sequence>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="supportedLanguagesType">
+		<xs:sequence>
+			<xs:element name="DefaultLanguage" type="languageElementISO6392B"/>
+			<xs:element name="SupportedLanguage" type="languageElementISO6392B" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>It is not necessary to repeat the default
+language</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="DiscoveryService" type="discoveryService"/>
+	<xs:element name="ViewService" type="viewService"/>
+	<xs:element name="DownloadService" type="downloadService"/>
+	<xs:element name="TransformationService" type="transformationService"/>
+	<xs:element name="InvokeService" type="invokeService"/>
+	<xs:element name="OtherService" type="otherService"/>
+	<!--	<xs:element name="ViewServiceClient" type="viewServiceClient"/> -->
+	<!--Type definitions-->
+	<!--Discovery  Service-->
+	<xs:complexType name="discoveryService_ext">
+		<xs:complexContent>
+			<xs:extension base="service">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="discoveryService">
+		<xs:complexContent>
+			<xs:restriction base="discoveryService_ext">
+				<xs:sequence>
+					<xs:element name="ResourceTitle" type="notEmptyString"/>
+					<xs:element name="ResourceAbstract" type="notEmptyString"/>
+					<xs:element name="ResourceType" type="serviceSpatialDataResourceType"/>
+					<xs:element name="ResourceLocator" type="resourceLocatorType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to the service is available</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MandatoryKeyword" type="classificationOfSpatialDataService" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="Keyword" type="keyword" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If the resource is a spatial data service, at least one keyword from Part D.4 shall be provided.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="GeographicBoundingBox" type="geographicBoundingBox" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory for services with an explicit geographic extent.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TemporalReference" type="temporalReference" maxOccurs="unbounded"/>
+					<xs:element name="SpatialResolution" type="spatialResolution" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory when there is a restriction on the spatial resolution for this service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Conformity" type="conformity" maxOccurs="unbounded"/>
+					<xs:element name="ConditionsForAccessAndUse" type="notEmptyString" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>The element must have values. If no conditions apply to the access and use of the resource, ‘no conditions apply’ shall be used. If conditions are unknown, ‘conditions unknown’ shall be used.
+			</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LimitationsOnPublicAccess" type="notEmptyString" maxOccurs="unbounded"/>
+					<xs:element name="ResponsibleOrganisation" type="responsibleOrganisation" maxOccurs="unbounded"/>
+					<xs:element name="MetadataPointOfContact" type="metadataPointOfContact" maxOccurs="unbounded"/>
+					<xs:element name="MetadataDate" type="iso8601Date"/>
+					<xs:element name="MetadataLanguage" type="euLanguageISO6392B"/>
+					<xs:element name="CoupledResource" type="uniqueResourceIdentifier" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to data sets on which the service operates are available.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SpatialDataServiceType" type="discoverySpatialDataServiceType"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--View Service-->
+	<xs:complexType name="layers">
+		<xs:sequence>
+			<xs:element name="Layer">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Name" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>Harmonised name of the layer</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ResourceTitle" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>Layer Title</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ResourceAbstract" type="xs:string"/>
+						<xs:element name="Keyword" type="keyword" minOccurs="0" maxOccurs="unbounded"/>
+						<xs:element name="GeographicBoundingBox" type="geographicBoundingBox" maxOccurs="unbounded"/>
+						<xs:element name="UniqueResourceIdentifier" type="uniqueResourceIdentifier" minOccurs="1" maxOccurs="unbounded"/>
+						<xs:element name="CoordinateReferenceSystems">
+							<xs:annotation>
+								<xs:documentation>List of Coordinate Reference Systems in which the layer is available</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="CRS" maxOccurs="unbounded">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="CRSName" type="xs:string"/>
+												<xs:element name="CRSLabel" type="xs:string"/>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="Styles">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Style">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="StyleName" type="xs:string"/>
+												<xs:element name="StyleTitle" type="xs:string"/>
+												<xs:element name="StyleAbstract">
+													<xs:complexType/>
+												</xs:element>
+												<xs:element name="StyleFormat">
+													<xs:complexType/>
+												</xs:element>
+												<xs:element name="StyleURL">
+													<xs:complexType/>
+												</xs:element>
+												<xs:element name="LegendList">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="Legend">
+																<xs:complexType>
+																	<xs:sequence>
+																		<xs:element name="LegendFormat">
+																			<xs:complexType/>
+																		</xs:element>
+																		<xs:element name="LegendHeight" type="xs:byte"/>
+																		<xs:element name="LegendWidth" type="xs:byte"/>
+																		<xs:element name="LegendURL">
+																			<xs:complexType/>
+																		</xs:element>
+																	</xs:sequence>
+																</xs:complexType>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+											<xs:attribute name="name" type="xs:string" use="required"/>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="layerName" type="xs:string"/>
+					<xs:attribute name="queryable" type="xs:boolean"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="viewService_ext">
+		<xs:complexContent>
+			<xs:extension base="service">
+				<xs:sequence>
+					<xs:element name="Layers" type="layers"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="viewService">
+		<xs:complexContent>
+			<xs:restriction base="viewService_ext">
+				<xs:sequence>
+					<xs:element name="ResourceTitle" type="notEmptyString"/>
+					<xs:element name="ResourceAbstract" type="notEmptyString"/>
+					<xs:element name="ResourceType" type="serviceSpatialDataResourceType"/>
+					<xs:element name="ResourceLocator" type="resourceLocatorType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to the service is available</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MandatoryKeyword" type="classificationOfSpatialDataService" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="Keyword" type="keyword" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If the resource is a spatial data service, at least one keyword from Part D.4 shall be provided.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="GeographicBoundingBox" type="geographicBoundingBox" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory for services with an explicit geographic extent.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TemporalReference" type="temporalReference" maxOccurs="unbounded"/>
+					<xs:element name="SpatialResolution" type="spatialResolution" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory when there is a restriction on the spatial resolution for this service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Conformity" type="conformity" maxOccurs="unbounded"/>
+					<xs:element name="ConditionsForAccessAndUse" type="notEmptyString" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>The element must have values. If no conditions apply to the access and use of the resource, ‘no conditions apply’
+shall be used. If conditions are unknown, ‘conditions unknown’ shall be used.
+			</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LimitationsOnPublicAccess" type="notEmptyString" maxOccurs="unbounded"/>
+					<xs:element name="ResponsibleOrganisation" type="responsibleOrganisation" maxOccurs="unbounded"/>
+					<xs:element name="MetadataPointOfContact" type="metadataPointOfContact" maxOccurs="unbounded"/>
+					<xs:element name="MetadataDate" type="iso8601Date"/>
+					<xs:element name="MetadataLanguage" type="euLanguageISO6392B"/>
+					<xs:element name="CoupledResource" type="uniqueResourceIdentifier" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to data sets on which the service operates are available.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SpatialDataServiceType" type="viewSpatialDataServiceType"/>
+					<xs:element name="Layers" type="layers"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Download Service-->
+	<xs:complexType name="downloadService_ext">
+		<xs:complexContent>
+			<xs:extension base="service">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="downloadService">
+		<xs:complexContent>
+			<xs:restriction base="downloadService_ext">
+				<xs:sequence>
+					<xs:element name="ResourceTitle" type="notEmptyString"/>
+					<xs:element name="ResourceAbstract" type="notEmptyString"/>
+					<xs:element name="ResourceType" type="serviceSpatialDataResourceType"/>
+					<xs:element name="ResourceLocator" type="resourceLocatorType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to the service is available</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MandatoryKeyword" type="classificationOfSpatialDataService" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="Keyword" type="keyword" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If the resource is a spatial data service, at least one keyword from Part D.4 shall be provided.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="GeographicBoundingBox" type="geographicBoundingBox" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory for services with an explicit geographic extent.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TemporalReference" type="temporalReference" maxOccurs="unbounded"/>
+					<xs:element name="SpatialResolution" type="spatialResolution" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory when there is a restriction on the spatial resolution for this service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Conformity" type="conformity" maxOccurs="unbounded"/>
+					<xs:element name="ConditionsForAccessAndUse" type="notEmptyString" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>The element must have values. If no conditions apply to the access and use of the resource, ‘no conditions apply’
+shall be used. If conditions are unknown, ‘conditions unknown’ shall be used.
+			</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LimitationsOnPublicAccess" type="notEmptyString" maxOccurs="unbounded"/>
+					<xs:element name="ResponsibleOrganisation" type="responsibleOrganisation" maxOccurs="unbounded"/>
+					<xs:element name="MetadataPointOfContact" type="metadataPointOfContact" maxOccurs="unbounded"/>
+					<xs:element name="MetadataDate" type="iso8601Date"/>
+					<xs:element name="MetadataLanguage" type="euLanguageISO6392B"/>
+					<xs:element name="CoupledResource" type="uniqueResourceIdentifier" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to data sets on which the service operates are available.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SpatialDataServiceType" type="transformationSpatialDataServiceType"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Transformation  Service-->
+	<xs:complexType name="transformationService_ext">
+		<xs:complexContent>
+			<xs:extension base="service">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="transformationService">
+		<xs:complexContent>
+			<xs:restriction base="transformationService_ext">
+				<xs:sequence>
+					<xs:element name="ResourceTitle" type="notEmptyString"/>
+					<xs:element name="ResourceAbstract" type="notEmptyString"/>
+					<xs:element name="ResourceType" type="serviceSpatialDataResourceType"/>
+					<xs:element name="ResourceLocator" type="resourceLocatorType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to the service is available</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MandatoryKeyword" type="classificationOfSpatialDataService" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="Keyword" type="keyword" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If the resource is a spatial data service, at least one keyword from Part D.4 shall be provided.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="GeographicBoundingBox" type="geographicBoundingBox" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory for services with an explicit geographic extent.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TemporalReference" type="temporalReference" maxOccurs="unbounded"/>
+					<xs:element name="SpatialResolution" type="spatialResolution" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory when there is a restriction on the spatial resolution for this service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Conformity" type="conformity" maxOccurs="unbounded"/>
+					<xs:element name="ConditionsForAccessAndUse" type="notEmptyString" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>The element must have values. If no conditions apply to the access and use of the resource, ‘no conditions apply’
+shall be used. If conditions are unknown, ‘conditions unknown’ shall be used.
+			</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LimitationsOnPublicAccess" type="notEmptyString" maxOccurs="unbounded"/>
+					<xs:element name="ResponsibleOrganisation" type="responsibleOrganisation" maxOccurs="unbounded"/>
+					<xs:element name="MetadataPointOfContact" type="metadataPointOfContact" maxOccurs="unbounded"/>
+					<xs:element name="MetadataDate" type="iso8601Date"/>
+					<xs:element name="MetadataLanguage" type="euLanguageISO6392B"/>
+					<xs:element name="CoupledResource" type="uniqueResourceIdentifier" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to data sets on which the service operates are available.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SpatialDataServiceType" type="transformationSpatialDataServiceType"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Invoke Service-->
+	<xs:complexType name="invokeService_ext">
+		<xs:complexContent>
+			<xs:extension base="service">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="invokeService">
+		<xs:complexContent>
+			<xs:restriction base="invokeService_ext">
+				<xs:sequence>
+					<xs:element name="ResourceTitle" type="notEmptyString"/>
+					<xs:element name="ResourceAbstract" type="notEmptyString"/>
+					<xs:element name="ResourceType" type="serviceSpatialDataResourceType"/>
+					<xs:element name="ResourceLocator" type="resourceLocatorType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to the service is available</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MandatoryKeyword" type="classificationOfSpatialDataService" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="Keyword" type="keyword" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If the resource is a spatial data service, at least one keyword from Part D.4 shall be provided.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="GeographicBoundingBox" type="geographicBoundingBox" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory for services with an explicit geographic extent.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TemporalReference" type="temporalReference" maxOccurs="unbounded"/>
+					<xs:element name="SpatialResolution" type="spatialResolution" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory when there is a restriction on the spatial resolution for this service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Conformity" type="conformity" maxOccurs="unbounded"/>
+					<xs:element name="ConditionsForAccessAndUse" type="notEmptyString" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>The element must have values. If no conditions apply to the access and use of the resource, ‘no conditions apply’
+shall be used. If conditions are unknown, ‘conditions unknown’ shall be used.
+			</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LimitationsOnPublicAccess" type="notEmptyString" maxOccurs="unbounded"/>
+					<xs:element name="ResponsibleOrganisation" type="responsibleOrganisation" maxOccurs="unbounded"/>
+					<xs:element name="MetadataPointOfContact" type="metadataPointOfContact" maxOccurs="unbounded"/>
+					<xs:element name="MetadataDate" type="iso8601Date"/>
+					<xs:element name="MetadataLanguage" type="euLanguageISO6392B"/>
+					<xs:element name="CoupledResource" type="uniqueResourceIdentifier" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to data sets on which the service operates are available.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SpatialDataServiceType" type="discoverySpatialDataServiceType"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Other  Service-->
+	<xs:complexType name="otherService_ext">
+		<xs:complexContent>
+			<xs:extension base="service">
+				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="otherService">
+		<xs:complexContent>
+			<xs:restriction base="otherService_ext">
+				<xs:sequence>
+					<xs:element name="ResourceTitle" type="notEmptyString"/>
+					<xs:element name="ResourceAbstract" type="notEmptyString"/>
+					<xs:element name="ResourceType" type="serviceSpatialDataResourceType"/>
+					<xs:element name="ResourceLocator" type="resourceLocatorType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to the service is available</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MandatoryKeyword" type="classificationOfSpatialDataService" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="Keyword" type="keyword" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If the resource is a spatial data service, at least one keyword from Part D.4 shall be provided.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="GeographicBoundingBox" type="geographicBoundingBox" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory for services with an explicit geographic extent.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TemporalReference" type="temporalReference" maxOccurs="unbounded"/>
+					<xs:element name="SpatialResolution" type="spatialResolution" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory when there is a restriction on the spatial resolution for this service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Conformity" type="conformity" maxOccurs="unbounded"/>
+					<xs:element name="ConditionsForAccessAndUse" type="notEmptyString" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>The element must have values. If no conditions apply to the access and use of the resource, ‘no conditions apply’
+shall be used. If conditions are unknown, ‘conditions unknown’ shall be used.
+			</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LimitationsOnPublicAccess" type="notEmptyString" maxOccurs="unbounded"/>
+					<xs:element name="ResponsibleOrganisation" type="responsibleOrganisation" maxOccurs="unbounded"/>
+					<xs:element name="MetadataPointOfContact" type="metadataPointOfContact" maxOccurs="unbounded"/>
+					<xs:element name="MetadataDate" type="iso8601Date"/>
+					<xs:element name="MetadataLanguage" type="euLanguageISO6392B"/>
+					<xs:element name="CoupledResource" type="uniqueResourceIdentifier" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to data sets on which the service operates are available.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SpatialDataServiceType" type="discoverySpatialDataServiceType"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>
