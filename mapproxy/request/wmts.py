@@ -60,7 +60,7 @@ class WMTSTileRequestParams(RequestParams):
     def _get_coord(self):
         x = int(self['tilecol'])
         y = int(self['tilerow'])
-        z = self['tilematrix']
+        z = int(self['tilematrix'])
         return x, y, z
     def _set_coord(self, value):
         x, y, z = value
