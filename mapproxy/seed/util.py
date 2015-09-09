@@ -254,7 +254,7 @@ def format_seed_task(task):
     info.append("    Seeding cache '%s' with grid '%s' in %s" % (
                  task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:
-        info.append('    Limited to: %s (EPSG:4326)' % (format_bbox(task.coverage.extent.llbbox), ))
+        info.append('    Limited to coverage in: %s (EPSG:4326)' % (format_bbox(task.coverage.extent.llbbox), ))
     else:
         info.append('   Complete grid: %s (EPSG:4326)' % (format_bbox(map_extent_from_grid(task.grid).llbbox), ))
     info.append('    Levels: %s' % (task.levels, ))
@@ -280,7 +280,7 @@ def format_cleanup_task(task):
     info.append("    Cleaning up cache '%s' with grid '%s' in %s" % (
                  task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:
-        info.append('    Limited to: %s (EPSG:4326)' % (format_bbox(task.coverage.extent.llbbox), ))
+        info.append('    Limited to coverage in: %s (EPSG:4326)' % (format_bbox(task.coverage.extent.llbbox), ))
     else:
         info.append('    Complete grid: %s (EPSG:4326)' % (format_bbox(map_extent_from_grid(task.grid).llbbox), ))
     info.append('    Levels: %s' % (task.levels, ))
