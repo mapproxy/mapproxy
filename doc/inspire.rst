@@ -31,7 +31,7 @@ For example::
         inspire_md:
           type: linked
           metadata_url:
-            mediatype: application/vnd.iso.19139+xml
+            media_type: application/vnd.iso.19139+xml
             url: http://example.org/csw/doc
           languages:
             default: eng
@@ -111,7 +111,7 @@ Here is a full example::
               keyword_value: Orthoimagery
           metadata_date: 2015-07-23
           metadata_url:
-            mediatype: application/vnd.iso.19139+xml
+            media_type: application/vnd.iso.19139+xml
             url: http://example.org/csw/doc
 
 
