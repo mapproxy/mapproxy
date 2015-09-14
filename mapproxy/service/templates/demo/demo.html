@@ -42,35 +42,41 @@ jscript_openlayers=None
                 <span><a href="../service?REQUEST=GetCapabilities">(download as xml)</a></span>
                 <span><a href="../demo/?wms_capabilities">(view as html)</a></span>
             </div>
-            <table class="code">
-                <tr>
-                  <th>Layer</th>
-                  <th>Coordinate-System</th>
-                  <th>Image-Format</th>
-                </tr>
-                {{for layer in layers.values()}}
-                <tr>
-                    <td rowspan="{{len(formats)}}">{{layer.name}}</td>
-                    {{for loop, format in looper(formats)}}
-                    <td class="value epsg-codes">
-                            <form action="" method="GET">
-                            <select name="srs" onchange="this.form.submit()">
-                                {{for srs_name, srs_code in layer_srs(layer)}}
-                                <option value="{{srs_code}}">{{srs_name}}</option>
-                                {{endfor}}
-                            </select>
-                            <input type="hidden" name="format" value="{{format}}">
-                            <input type="hidden" name="wms_layer" value="{{layer.name}}">
-                            </form>
-                    </td>
-                    <td class="value">
-                        <a href="#" onclick="NeighborFormSubmit(this)">{{format | strip}}</a>
-                    </td>
-                </tr>
+            {{if 'wms_111' in services }}
+                <table class="code">
+                    <tr>
+                      <th>Layer</th>
+                      <th>Coordinate-System</th>
+                      <th>Image-Format</th>
+                    </tr>
+                    {{for layer in layers.values()}}
+                    <tr>
+                        <td rowspan="{{len(formats)}}">{{layer.name}}</td>
+                        {{for loop, format in looper(formats)}}
+                        <td class="value epsg-codes">
+                                <form action="" method="GET">
+                                <select name="srs" onchange="this.form.submit()">
+                                    {{for srs_name, srs_code in layer_srs(layer)}}
+                                    <option value="{{srs_code}}">{{srs_name}}</option>
+                                    {{endfor}}
+                                </select>
+                                <input type="hidden" name="format" value="{{format}}">
+                                <input type="hidden" name="wms_layer" value="{{layer.name}}">
+                                </form>
+                        </td>
+                        <td class="value">
+                            <a href="#" onclick="NeighborFormSubmit(this)">{{format | strip}}</a>
+                        </td>
+                    </tr>
+                        {{endfor}}
                     {{endfor}}
-                {{endfor}}
-            </table>
-            <p>Coordinate systems marked with * are supported without reprojection.</p>
+                </table>
+                <p>Coordinate systems marked with * are supported without reprojection.</p>
+                {{else}}
+                <div class="capabilities">
+                    <span>The demo service only supports WMS 1.1.1. Enable 1.1.1 to see a list of your configured layers.</span>
+                </div>
+                {{endif}}
             {{else}}
             <div class="capabilities">
                 <span>This service is not available with the current configuration.</span>

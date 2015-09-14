@@ -1652,6 +1652,12 @@ class ServiceConfiguration(ConfigurationBase):
             if restful:
                 services.append('wmts_restful')
 
+        if 'wms' in self.context.services.conf:
+            versions = self.context.services.conf['wms'].get('versions', ['1.1.1'])
+            if '1.1.1' in versions:
+                # demo service only supports 1.1.1, use wms_111 as an indicator
+                services.append('wms_111')
+
         return DemoServer(layers, md, tile_layers=tile_layers,
             image_formats=image_formats, srs=srs, services=services, restful_template=restful_template)
 
