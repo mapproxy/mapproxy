@@ -50,10 +50,10 @@ Dependencies
 Read :ref:`dependency_details` for more information about all dependencies.
 
 
-PIL and YAML
-~~~~~~~~~~~~
+Pillow and YAML
+~~~~~~~~~~~~~~~
 
-PIL and PyYAML are installed automatically by ``easy_install``.
+Pillow and PyYAML are installed automatically by ``easy_install``.
 
 PyProj
 ~~~~~~
