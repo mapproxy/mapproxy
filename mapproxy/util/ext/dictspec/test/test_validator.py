@@ -164,6 +164,34 @@ class TestTypeSpec(unittest.TestCase):
         validate(spec, {'type': 'foo', 'alpha': 'yes'})
         validate(spec, {'type': 'bar', 'one': 2})
 
+    def test_missing_type(self):
+        spec = type_spec('type', {'foo': {'alpha': str()}, 'bar': {'one': 1, 'two': str()}})
+        try:
+            validate(spec, {'alpha': 'yes'})
+        except ValidationError as ex:
+            assert "'type' not in ." in ex.errors[0]
+        else:
+            assert False
+
+    def test_unknown_type(self):
+        spec = type_spec('type', {'foo': {'alpha': str()}, 'bar': {'one': 1, 'two': str()}})
+        try:
+            validate(spec, {'type': 'baz', 'alpha': 'yes'})
+        except ValidationError as ex:
+            assert "unknown type value 'baz' in ." in ex.errors[0], ex
+        else:
+            assert False
+
+    def test_no_type_dict(self):
+        spec = {'dict': type_spec('type', {'foo': {'alpha': str()}, 'bar': {'one': 1, 'two': str()}})}
+        try:
+            validate(spec, {'dict': None})
+        except ValidationError as ex:
+            assert "dict is empty" in ex.errors[0], ex
+        else:
+            assert False
+
+
 class TestErrors(unittest.TestCase):
     def test_invalid_types(self):
         spec = {'str': str, 'str()': str(), 'string_type': string_type, '1': 1, 'int': int}
