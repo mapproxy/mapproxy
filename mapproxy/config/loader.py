@@ -28,7 +28,7 @@ from functools import partial
 import logging
 log = logging.getLogger('mapproxy.config')
 
-from mapproxy.config import load_default_config, finish_base_config, validator
+from mapproxy.config import load_default_config, finish_base_config, validator, defaults
 from mapproxy.config.spec import validate_mapproxy_conf
 from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
@@ -63,12 +63,9 @@ class ProxyConfiguration(object):
 
     def load_grids(self):
         self.grids = {}
-
-        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(dict(srs='EPSG:4326', origin='sw', name='GLOBAL_GEODETIC'), context=self)
-        self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913', origin='sw', name='GLOBAL_MERCATOR'), context=self)
-        self.grids['GLOBAL_WEBMERCATOR'] = GridConfiguration(dict(srs='EPSG:3857', origin='nw', name='GLOBAL_WEBMERCATOR'), context=self)
-
-        for grid_name, grid_conf in iteritems((self.configuration.get('grids') or {})):
+        grid_configs = dict(defaults.grids)
+        grid_configs.update(self.configuration.get('grids') or {})
+        for grid_name, grid_conf in iteritems(grid_configs):
             grid_conf.setdefault('name', grid_name)
             self.grids[grid_name] = GridConfiguration(grid_conf, context=self)
 
