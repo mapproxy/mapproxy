@@ -93,8 +93,8 @@ class Validator(object):
 
     def _split_tagged_source(self, source_name):
         layers = None
-        if ':' in source_name:
-            source_name, layers = source_name.split(':')
+        if ':' in str(source_name):
+            source_name, layers = str(source_name).split(':')
             layers = layers.split(',') if layers is not None else None
         return source_name, layers
 
@@ -108,11 +108,11 @@ class Validator(object):
             self._validate_mapnik_source(name, source, layers)
 
     def _validate_wms_source(self, name, source, layers):
-        if not source['req'].get('layers') and layers is None:
+        if source['req'].get('layers') is None and layers is None:
             self.errors.append('Missing "layers" for source %s' % (
                 name
             ))
-        if source['req'].get('layers') and layers is not None:
+        if source['req'].get('layers') is not None and layers is not None:
             self._validate_tagged_layer_source(
                 name,
                 source['req'].get('layers'),

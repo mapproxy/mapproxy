@@ -304,3 +304,28 @@ class TestValidator(object):
 
         errors = validate(conf)
         eq_(errors, [])
+
+    def test_with_int_0_as_names_and_layers(self):
+        conf = self._test_conf('''
+            services:
+                wms:
+                    md:
+                        title: MapProxy
+            layers:
+                - name: 0
+                  title: One
+                  sources: [0]
+            caches:
+                0:
+                    grids: [GLOBAL_MERCATOR]
+                    sources: [0]
+            sources:
+                0:
+                    type: wms
+                    req:
+                        url: http://localhost/service?
+                        layers: 0
+        ''')
+
+        errors = validate(conf)
+        eq_(errors, [])
