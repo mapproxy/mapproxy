@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2015 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,195 +32,176 @@ TAGGED_SOURCE_TYPES = [
 
 
 def validate(conf_dict):
-    log.info('Validator starts')
-    errors = []
-    sources_conf = conf_dict.get('sources', False)
-    caches_conf = conf_dict.get('caches', False)
-    layers_conf = conf_dict.get('layers', False)
-    services_conf = conf_dict.get('services', False)
-    grids_conf = conf_dict.get('grids', False)
-    globals_conf = conf_dict.get('globals', False)
+    validator = Validator(conf_dict)
+    return validator.validate()
 
-    if not layers_conf:
-        errors.append('Missing layers section')
-    if not services_conf:
-        errors.append('Missing services section')
 
-    if len(errors) > 0:
-        return errors
+class Validator(object):
 
-    known_grids = set(KNOWN_GRIDS)
-    if grids_conf:
-        known_grids = known_grids.union(set(grids_conf.keys()))
+    def __init__(self, conf_dict):
+        self.sources_conf = conf_dict.get('sources', {})
+        self.caches_conf = conf_dict.get('caches', {})
+        self.layers_conf = conf_dict.get('layers')
+        self.services_conf = conf_dict.get('services')
+        self.grids_conf = conf_dict.get('grids')
+        self.globals_conf = conf_dict.get('globals')
 
-    for layer in layers_conf:
-        layer_sources = layer.get('sources', False)
-        if not layer_sources:
-            errors.append(
+        self.errors = []
+        self.known_grids = set(KNOWN_GRIDS)
+        if self.grids_conf:
+            self.known_grids.update(self.grids_conf.keys())
+
+    def validate(self):
+        if not self.layers_conf:
+            self.errors.append('Missing layers section')
+        if not self.services_conf:
+            self.errors.append('Missing services section')
+
+        if len(self.errors) > 0:
+            return self.errors
+
+        for layer in self.layers_conf:
+            self._validate_layer(layer)
+
+        return self.errors
+
+    def _validate_layer(self, layer):
+        layer_sources = layer.get('sources', [])
+        child_layers = layer.get('layers', [])
+
+        if not layer_sources and not child_layers:
+            self.errors.append(
                 'Missing sources for layer %s' % layer.get('name')
             )
+        for child_layer in child_layers:
+            self._validate_layer(child_layer)
+
         for source in layer_sources:
-            if caches_conf and source in caches_conf:
-                errors += validate_cache(source, caches_conf.get(source), sources_conf,
-                                         caches_conf, globals_conf, known_grids)
+            if source in self.caches_conf:
+                self._validate_cache(source, self.caches_conf[source])
                 continue
-            if sources_conf and source in sources_conf:
-                source, layers = split_tagged_source(source)
-                errors += validate_source(source, sources_conf.get(source), layers,
-                                          globals_conf)
+            if source in self.sources_conf:
+                source, layers = self._split_tagged_source(source)
+                self._validate_source(source, self.sources_conf[source], layers)
                 continue
 
-            errors.append(
+            self.errors.append(
                 'Source %s for layer %s not in cache or source section' % (
                     source,
                     layer['name']
                 )
             )
-    return errors
 
+    def _split_tagged_source(self, source_name):
+        layers = None
+        if ':' in source_name:
+            source_name, layers = source_name.split(':')
+            layers = layers.split(',') if layers is not None else None
+        return source_name, layers
 
-def validate_source(name, source, layers, globals_conf):
-    source_type = source.get('type', False)
-    if source_type == 'wms':
-        return validate_wms_source(name, source, layers)
-    if source_type == 'mapserver':
-        return validate_mapserver_source(name, source, layers, globals_conf)
-    if source_type == 'mapnik':
-        return validate_mapnik_source(name, source, layers)
-    return []
+    def _validate_source(self, name, source, layers):
+        source_type = source.get('type')
+        if source_type == 'wms':
+            self._validate_wms_source(name, source, layers)
+        if source_type == 'mapserver':
+            self._validate_mapserver_source(name, source, layers)
+        if source_type == 'mapnik':
+            self._validate_mapnik_source(name, source, layers)
 
-
-def validate_wms_source(name, source, layers):
-    errors = []
-    if not source['req'].get('layers', False) and layers is None:
-        errors.append('Missing "layers" for source %s' % (
-            name
-        ))
-    if source['req'].get('layers', False) and layers is not None:
-        errors += validate_tagged_layer_source(
-            name,
-            source['req'].get('layers'),
-            layers
-        )
-    return errors
-
-
-def validate_mapserver_source(name, source, layers, globals_conf):
-    errors = []
-    mapserver = source.get('mapserver', False)
-    if mapserver is False:
-        if (
-            not globals_conf or
-            not globals_conf.get('mapserver', False) or
-            not globals_conf['mapserver'].get('binary', False)
-        ):
-            errors.append('Missing mapserver binary for source %s' % (
+    def _validate_wms_source(self, name, source, layers):
+        if not source['req'].get('layers') and layers is None:
+            self.errors.append('Missing "layers" for source %s' % (
                 name
             ))
-        elif not os.path.isfile(globals_conf['mapserver'].get('binary', False)):
-            errors.append('Could not find mapserver binary (%s)' % (
-                globals_conf['mapserver'].get('binary', False)
-            ))
-    elif mapserver is None or not source['mapserver'].get('binary', False):
-        errors.append('Missing mapserver binary for source %s' % (
-            name
-        ))
-    elif not os.path.isfile(source['mapserver'].get('binary', False)):
-        errors.append('Could not find mapserver binary (%s)' % (
-            source['mapserver'].get('binary', False)
-        ))
-
-    if source['req'].get('layers', False) and layers is not None:
-        errors += validate_tagged_layer_source(
-            name,
-            source['req'].get('layers'),
-            layers
-        )
-    return errors
-
-
-def validate_mapnik_source(name, source, layers):
-    if source.get('layers', False) and layers is not None:
-        return validate_tagged_layer_source(
-            name,
-            source.get('layers'),
-            layers
-        )
-    return []
-
-
-def split_tagged_source(source_name):
-    layers = None
-    if ':' in source_name:
-        source_name, layers = source_name.split(':')
-        layers = layers.split(',') if layers is not None else None
-    return source_name, layers
-
-
-def validate_tagged_layer_source(name, supported_layers, requested_layers):
-    if isinstance(supported_layers, basestring):
-        supported_layers = [supported_layers]
-    if not set(requested_layers).issubset(set(supported_layers)):
-        return [
-            'Supported layers for source %s are %s but tagged source requested '
-            'layers %s' % (
+        if source['req'].get('layers') and layers is not None:
+            self._validate_tagged_layer_source(
                 name,
-                ', '.join(supported_layers),
-                ', '.join(requested_layers)
-            )]
-    return []
+                source['req'].get('layers'),
+                layers
+            )
 
-
-def validate_cache(name, cache, sources_conf, caches_conf, globals_conf, known_grids):
-    errors = []
-    for cache_source in cache.get('sources', []):
-        cache_source, layers = split_tagged_source(cache_source)
-        if sources_conf and cache_source in sources_conf:
-            source = sources_conf.get(cache_source)
+    def _validate_mapserver_source(self, name, source, layers):
+        mapserver = source.get('mapserver')
+        if mapserver is None:
             if (
-                layers is not None and
-                source.get('type', None) not in TAGGED_SOURCE_TYPES
+                not self.globals_conf or
+                not self.globals_conf.get('mapserver') or
+                not self.globals_conf['mapserver'].get('binary')
             ):
-                errors += [
-                    'Found tagged source %s in cache %s but tagged sources only '
-                    'supported for %s sources' % (
-                        cache_source,
-                        name,
-                        ', '.join(TAGGED_SOURCE_TYPES)
-                    )
-                ]
-                continue
-            errors += validate_source(
-                cache_source,
-                source,
-                layers,
-                globals_conf
-            )
-            continue
-        if caches_conf and cache_source in caches_conf:
-            errors += validate_cache(
-                cache_source,
-                caches_conf.get(cache_source),
-                sources_conf,
-                caches_conf,
-                globals_conf,
-                known_grids
-            )
-            continue
-        errors.append(
-            'Source %s for cache %s not found in config' % (
-                cache_source,
+                self.errors.append('Missing mapserver binary for source %s' % (
+                    name
+                ))
+            elif not os.path.isfile(self.globals_conf['mapserver']['binary']):
+                self.errors.append('Could not find mapserver binary (%s)' % (
+                    self.globals_conf['mapserver'].get('binary')
+                ))
+        elif mapserver is None or not source['mapserver'].get('binary'):
+            self.errors.append('Missing mapserver binary for source %s' % (
                 name
-            )
-        )
+            ))
+        elif not os.path.isfile(source['mapserver']['binary']):
+            self.errors.append('Could not find mapserver binary (%s)' % (
+                source['mapserver']['binary']
+            ))
 
-    for grid in cache.get('grids', False):
-        if grid not in known_grids:
-            errors.append(
-                'Grid %s for cache %s not found in config' % (
-                    grid,
+        if source['req'].get('layers') and layers is not None:
+            self._validate_tagged_layer_source(
+                name,
+                source['req'].get('layers'),
+                layers
+            )
+
+    def _validate_mapnik_source(self, name, source, layers):
+        if source.get('layers') and layers is not None:
+            self._validate_tagged_layer_source(name, source.get('layers'), layers)
+
+    def _validate_tagged_layer_source(self, name, supported_layers, requested_layers):
+        if isinstance(supported_layers, basestring):
+            supported_layers = [supported_layers]
+        if not set(requested_layers).issubset(set(supported_layers)):
+            self.errors.append(
+                'Supported layers for source %s are %s but tagged source requested '
+                'layers %s' % (
+                    name,
+                    ', '.join(supported_layers),
+                    ', '.join(requested_layers)
+                ))
+
+    def _validate_cache(self, name, cache):
+        for cache_source in cache.get('sources', []):
+            cache_source, layers = self._split_tagged_source(cache_source)
+            if self.sources_conf and cache_source in self.sources_conf:
+                source = self.sources_conf.get(cache_source)
+                if (
+                    layers is not None and
+                    source.get('type') not in TAGGED_SOURCE_TYPES
+                ):
+                    self.errors.append(
+                        'Found tagged source %s in cache %s but tagged sources only '
+                        'supported for %s sources' % (
+                            cache_source,
+                            name,
+                            ', '.join(TAGGED_SOURCE_TYPES)
+                        )
+                    )
+                    continue
+                self._validate_source(cache_source, source, layers)
+                continue
+            if self.caches_conf and cache_source in self.caches_conf:
+                self._validate_cache(cache_source, self.caches_conf[cache_source])
+                continue
+            self.errors.append(
+                'Source %s for cache %s not found in config' % (
+                    cache_source,
                     name
                 )
             )
 
-    return errors
+        for grid in cache.get('grids', []):
+            if grid not in self.known_grids:
+                self.errors.append(
+                    'Grid %s for cache %s not found in config' % (
+                        grid,
+                        name
+                    )
+                )
