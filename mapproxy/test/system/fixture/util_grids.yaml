@@ -1,3 +1,9 @@
+services:
+    demo:
+layers:
+    - name: grid_layer
+      title: Grid Layer
+      sources: [test_cache]
 caches:
     test_cache:
         grids: [global_geodetic_sqrt2, grid_full_example, another_grid_full_example]
