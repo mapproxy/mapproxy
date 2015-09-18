@@ -18,11 +18,7 @@ import os.path
 import logging
 log = logging.getLogger('mapproxy.config')
 
-KNOWN_GRIDS = [
-    'GLOBAL_GEODETIC',
-    'GLOBAL_MERCATOR',
-    'GLOBAL_WEBMERCATOR',
-]
+import mapproxy.config.defaults
 
 TAGGED_SOURCE_TYPES = [
     'wms',
@@ -47,7 +43,7 @@ class Validator(object):
         self.globals_conf = conf_dict.get('globals')
 
         self.errors = []
-        self.known_grids = set(KNOWN_GRIDS)
+        self.known_grids = set(mapproxy.config.defaults.grids.keys())
         if self.grids_conf:
             self.known_grids.update(self.grids_conf.keys())
 
