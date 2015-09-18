@@ -1,0 +1,205 @@
+# This file is part of the MapProxy project.
+# Copyright (C) 2015 Omniscale <http://omniscale.de>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from __future__ import print_function
+import yaml
+
+from mapproxy.config.validator import validate
+
+from nose.tools import eq_
+
+
+class TestValidator(object):
+    def _test_conf(self, yaml_part=None):
+        base = yaml.load('''
+            services:
+                wms:
+                    md:
+                        title: MapProxy
+            layers:
+                - name: one
+                  title: One
+                  sources: [one_cache]
+            caches:
+                one_cache:
+                    grids: [GLOBAL_MERCATOR]
+                    sources: [one_source]
+            sources:
+                one_source:
+                    type: wms
+                    req:
+                        url: http://localhost/service?
+                        layers: one
+        ''')
+        if yaml_part is not None:
+            base.update(yaml.load(yaml_part))
+        return base
+
+    def test_valid_config(self):
+        conf = self._test_conf()
+
+        errors = validate(conf)
+        eq_(errors, [])
+
+    def test_missing_layer_source(self):
+        conf = self._test_conf()
+        del conf['caches']['one_cache']
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Source one_cache for layer one not in cache or source section'
+        ])
+
+    def test_empty_layer_sources(self):
+        conf = self._test_conf('''
+            layers:
+                - name: one
+                  title: One
+                  sources: []
+        ''')
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Missing sources for layer one'
+        ])
+
+    def test_missing_cache_source(self):
+        conf = self._test_conf()
+        del conf['sources']['one_source']
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Source one_source for cache one_cache not found in config'
+        ])
+
+    def test_missing_layers_section(self):
+        conf = self._test_conf()
+        del conf['layers']
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Missing layers section'
+        ])
+
+    def test_missing_services_section(self):
+        conf = self._test_conf()
+        del conf['services']
+        errors = validate(conf)
+        eq_(errors, [
+            'Missing services section'
+        ])
+
+    def test_missing_grid(self):
+        conf = self._test_conf('''
+            caches:
+                one_cache:
+                    grids: [MYGRID]
+        ''')
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Grid MYGRID for cache one_cache not found in config'
+        ])
+
+    def test_misconfigured_wms_source(self):
+        conf = self._test_conf()
+
+        del conf['sources']['one_source']['req']['layers']
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Missing "layers" for source one_source'
+        ])
+
+    def test_misconfigured_mapserver_source_without_globals(self):
+        conf = self._test_conf('''
+            sources:
+                one_source:
+                    type: mapserver
+                    req:
+                        map: foo.map
+                    mapserver:
+                        binary: /foo/bar/baz
+        ''')
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Could not find mapserver binary (/foo/bar/baz)'
+        ])
+
+        del conf['sources']['one_source']['mapserver']['binary']
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Missing mapserver binary for source one_source'
+        ])
+
+        del conf['sources']['one_source']['mapserver']
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Missing mapserver binary for source one_source'
+        ])
+
+    def test_misconfigured_mapserver_source_with_globals(self):
+        conf = self._test_conf('''
+            sources:
+                one_source:
+                    type: mapserver
+                    req:
+                        map: foo.map
+            globals:
+                mapserver:
+                    binary: /foo/bar/baz
+        ''')
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Could not find mapserver binary (/foo/bar/baz)'
+        ])
+
+        del conf['globals']['mapserver']['binary']
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Missing mapserver binary for source one_source'
+        ])
+
+    def test_tagged_sources_with_layers(self):
+        conf = self._test_conf('''
+            caches:
+                one_cache:
+                    grids: [GLOBAL_MERCATOR]
+                    sources: ['one_source:foo,bar']
+        ''')
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Supported layers for source one_source are one but tagged source requested '
+            'layers foo, bar'
+        ])
+
+    def test_tagged_source_without_layers(self):
+        conf = self._test_conf('''
+            caches:
+                one_cache:
+                    grids: [GLOBAL_MERCATOR]
+                    sources: ['one_source:foo,bar']
+        ''')
+
+        del conf['sources']['one_source']['req']['layers']
+
+        errors = validate(conf)
+        eq_(errors, [])

@@ -28,7 +28,7 @@ from functools import partial
 import logging
 log = logging.getLogger('mapproxy.config')
 
-from mapproxy.config import load_default_config, finish_base_config
+from mapproxy.config import load_default_config, finish_base_config, validator
 from mapproxy.config.spec import validate_mapproxy_conf
 from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
@@ -1674,6 +1674,9 @@ def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=
         log.warn(error)
     if not informal_only or (errors and not ignore_warnings):
         raise ConfigurationError('invalid configuration')
+    errors = validator.validate(conf_dict)
+    for error in errors:
+        log.warn(error)
     return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed,
         renderd=renderd)
 
