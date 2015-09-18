@@ -206,3 +206,101 @@ class TestValidator(object):
 
         errors = validate(conf)
         eq_(errors, [])
+
+    def test_with_grouped_layer(self):
+        conf = self._test_conf('''
+            layers:
+                - name: group
+                  title: Group
+                  layers:
+                    - name: one
+                      title: One
+                      sources: [one_cache]
+        ''')
+
+        errors = validate(conf)
+        eq_(errors, [])
+
+    def test_without_cache(self):
+        conf = self._test_conf('''
+            layers:
+              - name: one
+                title: One
+                sources: [one_source]
+        ''')
+
+        errors = validate(conf)
+        eq_(errors, [])
+
+    def test_mapserver_with_tagged_layers(self):
+        conf = self._test_conf('''
+            sources:
+                one_source:
+                    type: mapserver
+                    req:
+                        map: foo.map
+                        layers: one
+                    mapserver:
+                        binary: /foo/bar/baz
+            caches:
+                one_cache:
+                    grids: [GLOBAL_MERCATOR]
+                    sources: ['one_source:foo,bar']
+        ''')
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Could not find mapserver binary (/foo/bar/baz)',
+            'Supported layers for source one_source are one but tagged source requested '
+            'layers foo, bar'
+        ])
+
+    def test_mapnik_with_tagged_layers(self):
+        conf = self._test_conf('''
+            sources:
+                one_source:
+                    type: mapnik
+                    mapfile: foo.map
+                    layers: one
+            caches:
+                one_cache:
+                    grids: [GLOBAL_MERCATOR]
+                    sources: ['one_source:foo,bar']
+        ''')
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Supported layers for source one_source are one but tagged source requested '
+            'layers foo, bar'
+        ])
+
+    def test_tagged_layers_for_unsupported_source_type(self):
+        conf = self._test_conf('''
+            sources:
+                one_source:
+                    type: tile
+                    url: http://localhost/tiles/
+            caches:
+                one_cache:
+                    grids: [GLOBAL_MERCATOR]
+                    sources: ['one_source:foo,bar']
+        ''')
+
+        errors = validate(conf)
+        eq_(errors, [
+            'Found tagged source one_source in cache one_cache but tagged sources only '
+            'supported for wms, mapserver, mapnik sources'
+        ])
+
+    def test_cascaded_caches(self):
+        conf = self._test_conf('''
+            caches:
+                one_cache:
+                    sources: [two_cache]
+                two_cache:
+                    grids: [GLOBAL_MERCATOR]
+                    sources: ['one_source']
+        ''')
+
+        errors = validate(conf)
+        eq_(errors, [])
