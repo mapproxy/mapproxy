@@ -105,12 +105,15 @@ class TestValidator(object):
         conf = self._test_conf('''
             caches:
                 one_cache:
-                    grids: [MYGRID]
+                    grids: [MYGRID_OTHERGRID]
+            grids:
+                MYGRID:
+                    base: GLOBAL_GEODETIC
         ''')
 
         errors = validate(conf)
         eq_(errors, [
-            'Grid MYGRID for cache one_cache not found in config'
+            'Grid MYGRID_OTHERGRID for cache one_cache not found in config'
         ])
 
     def test_misconfigured_wms_source(self):
