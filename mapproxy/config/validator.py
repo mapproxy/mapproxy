@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os.path
+from mapproxy.compat import string_type
 
 import logging
 log = logging.getLogger('mapproxy.config')
@@ -154,7 +155,7 @@ class Validator(object):
             self._validate_tagged_layer_source(name, source.get('layers'), layers)
 
     def _validate_tagged_layer_source(self, name, supported_layers, requested_layers):
-        if isinstance(supported_layers, basestring):
+        if isinstance(supported_layers, string_type):
             supported_layers = [supported_layers]
         if not set(requested_layers).issubset(set(supported_layers)):
             self.errors.append(
