@@ -54,6 +54,8 @@ class Validator(object):
     def validate(self):
         if not self.layers_conf:
             self.errors.append('Missing layers section')
+        if isinstance(self.layers_conf, dict):
+            return []
         if not self.services_conf:
             self.errors.append('Missing services section')
 
