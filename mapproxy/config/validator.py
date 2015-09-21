@@ -50,11 +50,11 @@ class Validator(object):
 
     def validate(self):
         if not self.layers_conf:
-            self.errors.append('Missing layers section')
+            self.errors.append("Missing layers section")
         if isinstance(self.layers_conf, dict):
             return []
         if not self.services_conf:
-            self.errors.append('Missing services section')
+            self.errors.append("Missing services section")
 
         if len(self.errors) > 0:
             return self.errors
@@ -70,7 +70,7 @@ class Validator(object):
 
         if not layer_sources and not child_layers:
             self.errors.append(
-                'Missing sources for layer %s' % layer.get('name')
+                "Missing sources for layer '%s'" % layer.get('name')
             )
         for child_layer in child_layers:
             self._validate_layer(child_layer)
@@ -85,7 +85,7 @@ class Validator(object):
                 continue
 
             self.errors.append(
-                'Source %s for layer %s not in cache or source section' % (
+                "Source '%s' for layer '%s' not in cache or source section" % (
                     source,
                     layer['name']
                 )
@@ -109,7 +109,7 @@ class Validator(object):
 
     def _validate_wms_source(self, name, source, layers):
         if source['req'].get('layers') is None and layers is None:
-            self.errors.append('Missing "layers" for source %s' % (
+            self.errors.append("Missing 'layers' for source '%s'" % (
                 name
             ))
         if source['req'].get('layers') is not None and layers is not None:
@@ -127,19 +127,19 @@ class Validator(object):
                 not self.globals_conf.get('mapserver') or
                 not self.globals_conf['mapserver'].get('binary')
             ):
-                self.errors.append('Missing mapserver binary for source %s' % (
+                self.errors.append("Missing mapserver binary for source '%s'" % (
                     name
                 ))
             elif not os.path.isfile(self.globals_conf['mapserver']['binary']):
-                self.errors.append('Could not find mapserver binary (%s)' % (
+                self.errors.append("Could not find mapserver binary (%s)" % (
                     self.globals_conf['mapserver'].get('binary')
                 ))
         elif mapserver is None or not source['mapserver'].get('binary'):
-            self.errors.append('Missing mapserver binary for source %s' % (
+            self.errors.append("Missing mapserver binary for source '%s'" % (
                 name
             ))
         elif not os.path.isfile(source['mapserver']['binary']):
-            self.errors.append('Could not find mapserver binary (%s)' % (
+            self.errors.append("Could not find mapserver binary (%s)" % (
                 source['mapserver']['binary']
             ))
 
@@ -159,8 +159,8 @@ class Validator(object):
             supported_layers = [supported_layers]
         if not set(requested_layers).issubset(set(supported_layers)):
             self.errors.append(
-                'Supported layers for source %s are %s but tagged source requested '
-                'layers %s' % (
+                "Supported layers for source '%s' are '%s' but tagged source requested "
+                "layers '%s'" % (
                     name,
                     ', '.join(supported_layers),
                     ', '.join(requested_layers)
@@ -176,8 +176,8 @@ class Validator(object):
                     source.get('type') not in TAGGED_SOURCE_TYPES
                 ):
                     self.errors.append(
-                        'Found tagged source %s in cache %s but tagged sources only '
-                        'supported for %s sources' % (
+                        "Found tagged source '%s' in cache '%s' but tagged sources only "
+                        "supported for '%s' sources" % (
                             cache_source,
                             name,
                             ', '.join(TAGGED_SOURCE_TYPES)
@@ -190,7 +190,7 @@ class Validator(object):
                 self._validate_cache(cache_source, self.caches_conf[cache_source])
                 continue
             self.errors.append(
-                'Source %s for cache %s not found in config' % (
+                "Source '%s' for cache '%s' not found in config" % (
                     cache_source,
                     name
                 )
@@ -199,7 +199,7 @@ class Validator(object):
         for grid in cache.get('grids', []):
             if grid not in self.known_grids:
                 self.errors.append(
-                    'Grid %s for cache %s not found in config' % (
+                    "Grid '%s' for cache '%s' not found in config" % (
                         grid,
                         name
                     )
