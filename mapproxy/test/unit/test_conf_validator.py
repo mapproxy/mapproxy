@@ -59,7 +59,7 @@ class TestValidator(object):
 
         errors = validate(conf)
         eq_(errors, [
-            'Source one_cache for layer one not in cache or source section'
+            "Source 'one_cache' for layer 'one' not in cache or source section"
         ])
 
     def test_empty_layer_sources(self):
@@ -72,7 +72,7 @@ class TestValidator(object):
 
         errors = validate(conf)
         eq_(errors, [
-            'Missing sources for layer one'
+            "Missing sources for layer 'one'"
         ])
 
     def test_missing_cache_source(self):
@@ -81,7 +81,7 @@ class TestValidator(object):
 
         errors = validate(conf)
         eq_(errors, [
-            'Source one_source for cache one_cache not found in config'
+            "Source 'one_source' for cache 'one_cache' not found in config"
         ])
 
     def test_missing_layers_section(self):
@@ -113,7 +113,7 @@ class TestValidator(object):
 
         errors = validate(conf)
         eq_(errors, [
-            'Grid MYGRID_OTHERGRID for cache one_cache not found in config'
+            "Grid 'MYGRID_OTHERGRID' for cache 'one_cache' not found in config"
         ])
 
     def test_misconfigured_wms_source(self):
@@ -123,7 +123,7 @@ class TestValidator(object):
 
         errors = validate(conf)
         eq_(errors, [
-            'Missing "layers" for source one_source'
+            "Missing 'layers' for source 'one_source'"
         ])
 
     def test_misconfigured_mapserver_source_without_globals(self):
@@ -146,14 +146,14 @@ class TestValidator(object):
 
         errors = validate(conf)
         eq_(errors, [
-            'Missing mapserver binary for source one_source'
+            "Missing mapserver binary for source 'one_source'"
         ])
 
         del conf['sources']['one_source']['mapserver']
 
         errors = validate(conf)
         eq_(errors, [
-            'Missing mapserver binary for source one_source'
+            "Missing mapserver binary for source 'one_source'"
         ])
 
     def test_misconfigured_mapserver_source_with_globals(self):
@@ -177,7 +177,7 @@ class TestValidator(object):
 
         errors = validate(conf)
         eq_(errors, [
-            'Missing mapserver binary for source one_source'
+            "Missing mapserver binary for source 'one_source'"
         ])
 
     def test_tagged_sources_with_layers(self):
@@ -190,8 +190,8 @@ class TestValidator(object):
 
         errors = validate(conf)
         eq_(errors, [
-            'Supported layers for source one_source are one but tagged source requested '
-            'layers foo, bar'
+            "Supported layers for source 'one_source' are 'one' but tagged source "
+            "requested layers 'foo, bar'"
         ])
 
     def test_tagged_source_without_layers(self):
@@ -251,8 +251,8 @@ class TestValidator(object):
         errors = validate(conf)
         eq_(errors, [
             'Could not find mapserver binary (/foo/bar/baz)',
-            'Supported layers for source one_source are one but tagged source requested '
-            'layers foo, bar'
+            "Supported layers for source 'one_source' are 'one' but tagged source "
+            "requested layers 'foo, bar'"
         ])
 
     def test_mapnik_with_tagged_layers(self):
@@ -270,8 +270,8 @@ class TestValidator(object):
 
         errors = validate(conf)
         eq_(errors, [
-            'Supported layers for source one_source are one but tagged source requested '
-            'layers foo, bar'
+            "Supported layers for source 'one_source' are 'one' but tagged source "
+            "requested layers 'foo, bar'"
         ])
 
     def test_tagged_layers_for_unsupported_source_type(self):
@@ -288,8 +288,8 @@ class TestValidator(object):
 
         errors = validate(conf)
         eq_(errors, [
-            'Found tagged source one_source in cache one_cache but tagged sources only '
-            'supported for wms, mapserver, mapnik sources'
+            "Found tagged source 'one_source' in cache 'one_cache' but tagged sources "
+            "only supported for 'wms, mapserver, mapnik' sources"
         ])
 
     def test_cascaded_caches(self):
