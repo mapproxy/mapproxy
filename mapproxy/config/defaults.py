@@ -69,6 +69,18 @@ grid = dict(
     tile_size = (256, 256),
 )
 
+grids = dict(
+    GLOBAL_GEODETIC=dict(
+        srs='EPSG:4326', origin='sw', name='GLOBAL_GEODETIC'
+    ),
+    GLOBAL_MERCATOR=dict(
+        srs='EPSG:900913', origin='sw', name='GLOBAL_MERCATOR'
+    ),
+    GLOBAL_WEBMERCATOR=dict(
+        srs='EPSG:3857', origin='nw', name='GLOBAL_WEBMERCATOR'
+    )
+)
+
 tiles = dict(
     expires_hours = 72,
 )
