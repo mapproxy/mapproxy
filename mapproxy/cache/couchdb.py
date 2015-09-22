@@ -60,7 +60,7 @@ class CouchDBCache(TileCacheBase):
         if json is None:
             raise ImportError("CouchDB backend requires 'simplejson' package or Python 2.6+.")
 
-        self.lock_cache_id = 'couchdb-' + hashlib.md5(url + db_name).hexdigest()
+        self.lock_cache_id = 'couchdb-' + hashlib.md5((url + db_name).encode('utf-8')).hexdigest()
         self.file_ext = file_ext
         self.tile_grid = tile_grid
         self.md_template = md_template
