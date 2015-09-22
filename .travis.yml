@@ -1,10 +1,12 @@
 language: python
+
 python:
   - "2.6"
   - "2.7"
   - "3.3"
   - "3.4"
   - "3.5"
+
 services:
   - couchdb
   - riak
@@ -28,6 +30,10 @@ addons:
 
 env:
   - MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984
+
+cache:
+  directories:
+    - $HOME/.cache/pip
 
 install:
     # riak packages are not compatible with Python 3
