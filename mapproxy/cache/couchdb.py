@@ -15,10 +15,12 @@
 
 from __future__ import with_statement
 
+import codecs
 import datetime
 import socket
 import time
 import hashlib
+import base64
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import (
@@ -137,7 +139,10 @@ class CouchDBCache(TileCacheBase):
         tile_doc['_attachments'] = {
             'tile': {
                 'content_type': 'image/' + self.file_ext,
-                'data': data.encode('base64').replace('\n', ''),
+                'data': codecs.decode(
+                    base64.b64encode(data).replace(b'\n', b''),
+                    'ascii',
+                ),
             }
         }
         return tile_id, tile_doc
@@ -221,7 +226,7 @@ class CouchDBCache(TileCacheBase):
         resp = self.req_session.get(url, headers={'Accept': 'application/json'})
         if resp.status_code == 200:
             doc = json.loads(resp.content)
-            tile_data = BytesIO(doc['_attachments']['tile']['data'].decode('base64'))
+            tile_data = BytesIO(base64.b64decode(doc['_attachments']['tile']['data']))
             tile.source = ImageSource(tile_data)
             tile.timestamp = doc.get(self.md_template.timestamp_key)
             return True
