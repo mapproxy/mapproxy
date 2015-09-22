@@ -1,3 +1,28 @@
+1.8.1 2015-09-22
+~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- WMS 1.3.0: support for metadata required by INSPIRE View Services
+- WMS: OnlineResource defaults to service URL
+
+Fixes:
+
+- mapproxy-seed: fix race-condition which prevented termination at the
+  end of the seeding process
+- autoconfig: parse capabilities without ContactInformation
+- SQLite cache: close files after seeding
+- sqlite/mbtiles: fix tile lock location
+- WMS 1.0.0: fix image format for source requests
+- WMS: allow floats for X/Y in GetFeatureInfo requests
+- CouchDB: fix for Python 3
+
+Other:
+
+- mapproxy-seed: seeding a cache with disable_storage: true returns
+  an error
+- all changes are now tested against Python 2.7, 3.3, 3.4 and 3.5
+
 1.8.0 2015-05-18
 ~~~~~~~~~~~~~~~~
 
