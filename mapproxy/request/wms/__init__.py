@@ -427,10 +427,13 @@ class WMSFeatureInfoRequestParams(WMSMapRequestParams):
 
     def _get_pos(self):
         """x, y query image coordinates (in pixel)"""
+        if '.' in self['x'] or '.' in self['y']:
+            return float(self['x']), float(self['y'])
         return int(self['x']), int(self['y'])
+
     def _set_pos(self, value):
-        self['x'] = str(int(round(value[0])))
-        self['y'] = str(int(round(value[1])))
+        self['x'] = str(value[0])
+        self['y'] = str(value[1])
     pos = property(_get_pos, _set_pos)
     del _get_pos
     del _set_pos
