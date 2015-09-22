@@ -944,7 +944,6 @@ class CacheConfiguration(ConfigurationBase):
 
         return FileCache(
             cache_dir,
-            lock_dir=self.lock_dir(),
             file_ext=file_ext,
             directory_layout=directory_layout,
             lock_timeout=lock_timeout,
@@ -1004,7 +1003,7 @@ class CacheConfiguration(ConfigurationBase):
         tile_id = self.conf['cache'].get('tile_id')
 
         return CouchDBCache(url=url, db_name=db_name,
-            lock_dir=self.lock_dir(), file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
+            file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
             md_template=md_template, tile_id_template=tile_id)
 
     def _riak_cache(self, grid_conf, file_ext):
@@ -1034,7 +1033,6 @@ class CacheConfiguration(ConfigurationBase):
 
         return RiakCache(nodes=nodes, protocol=protocol, bucket=bucket,
             tile_grid=grid_conf.tile_grid(),
-            lock_dir=self.lock_dir(),
             use_secondary_index=use_secondary_index,
         )
 
