@@ -28,7 +28,7 @@ TAGGED_SOURCE_TYPES = [
 ]
 
 
-def validate(conf_dict):
+def validate_references(conf_dict):
     validator = Validator(conf_dict)
     return validator.validate()
 

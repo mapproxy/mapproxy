@@ -28,8 +28,9 @@ from functools import partial
 import logging
 log = logging.getLogger('mapproxy.config')
 
-from mapproxy.config import load_default_config, finish_base_config, validator, defaults
-from mapproxy.config.spec import validate_mapproxy_conf
+from mapproxy.config import load_default_config, finish_base_config, defaults
+from mapproxy.config.validator import validate_references
+from mapproxy.config.spec import validate_options
 from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
@@ -1662,18 +1663,29 @@ class ServiceConfiguration(ConfigurationBase):
 def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=False):
     conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
 
+    # A configuration is checked/validated four times, each step has a different
+    # focus and returns different errors. The steps are:
+    # 1. YAML loading: checks YAML syntax like tabs vs. space, indention errors, etc.
+    # 2. Options: checks all options agains the spec and validates their types,
+    #             e.g is disable_storage a bool, is layers a list, etc.
+    # 3. References: checks if all referenced caches, sources and grids exist
+    # 4. Initialization: creates all MapProxy objects, returns on first error
+
     try:
         conf_dict = load_configuration_file([os.path.basename(mapproxy_conf)], conf_base_dir)
     except YAMLError as ex:
         raise ConfigurationError(ex)
-    errors, informal_only = validate_mapproxy_conf(conf_dict)
+
+    errors, informal_only = validate_options(conf_dict)
     for error in errors:
         log.warn(error)
     if not informal_only or (errors and not ignore_warnings):
         raise ConfigurationError('invalid configuration')
-    errors = validator.validate(conf_dict)
+
+    errors = validate_references(conf_dict)
     for error in errors:
         log.warn(error)
+
     return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed,
         renderd=renderd)
 

@@ -22,10 +22,12 @@ from mapproxy.util.ext.dictspec.spec import one_of, anything, number
 from mapproxy.util.ext.dictspec.spec import recursive, required, type_spec, combined
 from mapproxy.compat import string_type
 
-def validate_mapproxy_conf(conf_dict):
+def validate_options(conf_dict):
     """
     Validate `conf_dict` agains mapproxy.yaml spec.
-    Returns lists with errors. List is empty when no errors where found.
+    Returns tuple with a list of errors and a bool.
+    The list is empty when no errors where found.
+    The bool is True when the errors are informal and not critical.
     """
     try:
         validate(mapproxy_yaml_spec, conf_dict)
