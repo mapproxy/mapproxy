@@ -90,6 +90,21 @@ class TestImageSource(object):
         assert is_tiff(ir.as_buffer(TIFF_FORMAT))
         assert is_tiff(ir.as_buffer())
 
+
+    def test_output_formats_greyscale_png(self):
+        img = Image.new('L', (100, 100))
+        ir = ImageSource(img, image_opts=PNG_FORMAT)
+        img = Image.open(ir.as_buffer(ImageOptions(colors=256, transparent=True, format='image/png')))
+        assert img.mode == 'P'
+        assert img.getpixel((0, 0)) == 255
+
+    def test_output_formats_greyscale_alpha_png(self):
+        img = Image.new('LA', (100, 100))
+        ir = ImageSource(img, image_opts=PNG_FORMAT)
+        img = Image.open(ir.as_buffer(ImageOptions(colors=256, transparent=True, format='image/png')))
+        assert img.mode == 'LA'
+        assert img.getpixel((0, 0)) == (0, 0)
+
     def test_output_formats_png8(self):
         img = Image.new('RGBA', (100, 100))
         ir = ImageSource(img, image_opts=PNG_FORMAT)
