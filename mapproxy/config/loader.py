@@ -971,11 +971,8 @@ class CacheConfiguration(ConfigurationBase):
 
     def _s3_cache(self, grid_conf, file_ext):
         from mapproxy.cache.s3 import S3Cache
-        
-        cache_dir = self.conf.get('cache', {}).get('cache_dir', None)
-        #bucket = self.conf.get('cache', {}).get('bucket', 'mapproxy')
 
-        #bucket = self.context.globals.get_value('bucket', self.conf, global_key='cache.bucket')
+        cache_dir = self.conf.get('cache', {}).get('cache_dir', None)
 
         bucket_name = self.context.globals.get_value('bucket_name', self.conf,
             global_key='cache.bucket_name')
@@ -983,23 +980,18 @@ class CacheConfiguration(ConfigurationBase):
         profile_name = self.context.globals.get_value('profile_name', self.conf,
             global_key='cache.s3_profile_name')
 
-
-        directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tc')
-        g=grid_conf.tile_grid()
-        log.debug("S3 loader: name=%s, srs=%s" %  (g.name, g.srs))
+        directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tms')
 
         if cache_dir is None:
             if self.conf.get('cache', {}).get('use_grid_names'):
                 cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
             else:
                 suffix = grid_conf.conf['srs'].replace(':', '')
-            
+
             cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
 
-        #cache_dir ='/1.0.0/osm/default/current/3857/'
-        
         lock_timeout = self.context.globals.get_value('http.client_timeout', {})
-        
+
         return S3Cache(cache_dir, file_ext=file_ext, directory_layout=directory_layout,
             lock_timeout=lock_timeout, bucket_name=bucket_name, profile_name=profile_name)
 

@@ -18,7 +18,7 @@ log = logging.getLogger('mapproxy.cache.s3')
 s3_connection = None
 
 class S3Connection:
-    def __init__(self, profile_name='mapproxy'):
+    def __init__(self, profile_name=None):
         if boto is None:
             raise ImportError("S3 Cache requires 'boto' package.")
         self.conn = None
@@ -26,27 +26,22 @@ class S3Connection:
 
     def get(self):
         if self.conn is None:
-            try:
-                self.conn = boto.connect_s3(profile_name=self.profile_name)
-            except Exception as e:
-                raise Error('S3: Error during connection %s' % e)
+            if self.profile_name is not None:
+                try:
+                    self.conn = boto.connect_s3(profile_name=self.profile_name)
+                except boto.provider.ProfileNotFoundError:
+                    raise Error('S3: Profile no found %s' % e)
+                except Exception as e:
+                    raise Error('S3: Error during connection %s' % e)
+            else:
+                try:
+                    self.conn = boto.connect_s3()
+                except boto.exception.NoAuthHandlerFound as e:
+                    raise Error('S3: No handler found %s' % e)
+
         return self.conn
 
 
-
-def get_bucket(profile_name, bucket_name):
-        global s3_connection
-        if s3_connection is None:
-            s3_connection = S3Connection(profile_name=profile_name)
-        try:
-            conn = s3_connection.get()
-            bucket = conn.get_bucket(bucket_name)
-        except boto.exception.S3ResponseError as e:
-            if e.error_code == 'NoSuchBucket':
-                log.error('No such bucket: %s' % bucket_name)
-                raise e
-        return bucket
-               
 
 class S3Cache(FileCache):
 
@@ -62,19 +57,26 @@ class S3Cache(FileCache):
             each tile (e.g. 'png')
         """
         global s3_connection
-        
+
         if s3_connection is None:
             s3_connection = S3Connection(profile_name=profile_name)
+
+        conn = s3_connection.get()
+
         try:
-            conn = s3_connection.get()
             self.bucket = conn.get_bucket(bucket_name)
         except boto.exception.S3ResponseError as e:
+            log.error("Fuck %s" % e.error_code)
             if e.error_code == 'NoSuchBucket':
                 log.error('No such bucket: %s' % bucket_name)
                 raise e
+            elif e.error_code == 'AccessDenied':
+                log.error('Access denied. Check your credentials')
+                raise e
+            else:
+                log.error('Unknown error %e' % e)
+                raise e
 
-
-  
         super(S3Cache, self).__init__(cache_dir, file_ext=file_ext, directory_layout=directory_layout, lock_timeout=lock_timeout, link_single_color_images=False)
 
 
