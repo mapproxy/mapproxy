@@ -121,6 +121,9 @@ cache_types = {
         'tile_id': str(),
         'tile_lock_dir': str(),
     },
+    'mongodb': {
+        'url': str(),
+    },
     'riak': {
         'nodes': [riak_node],
         'protocol': one_of('pbc', 'http', 'https'),

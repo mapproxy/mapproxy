@@ -987,6 +987,15 @@ class CacheConfiguration(ConfigurationBase):
             cache_dir,
         )
 
+    def _mongodb_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.mongodb import MongoDBCache
+
+        url = self.conf['cache'].get('url')
+        grid = grid_conf.conf['srs'].replace(':', '')
+        db_name = self.conf['name'] + '_' + grid
+
+        return MongoDBCache(url, db_name, grid)
+
     def _couchdb_cache(self, grid_conf, file_ext):
         from mapproxy.cache.couchdb import CouchDBCache, CouchDBMDTemplate
 
