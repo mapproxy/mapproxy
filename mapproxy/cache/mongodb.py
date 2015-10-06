@@ -38,11 +38,14 @@ class MongoDBCache(TileCacheBase):
             return True
         return self.load_tile(tile)
 
-    def store_tile(self, tile):
+    def store_tile(self, tile): 
+        if tile.stored:
+            return True
         x,y,z = tile.coord
         f = self.fs.new_file(x=x,y=y,z=z,name=self.name,grid=self.grid)
         f.write(tile.source_buffer())
         f.close()
+        return True
 
     def _tile_doc(self, tile):
         return {
@@ -54,6 +57,8 @@ class MongoDBCache(TileCacheBase):
         }
 
     def load_tile(self, tile, with_metadata=False):
+        if tile.source or tile.coord is None:
+            return True 
         tile_data = self.db.mapproxy.fs.files.find_one(self._tile_doc(tile))
         if tile_data is not None:
             tile_file = self.fs.get(tile_data['_id'])
@@ -65,7 +70,8 @@ class MongoDBCache(TileCacheBase):
 
     def remove_tile(self, tile):
         tile_data = self.db.mapproxy.fs.files.find_one(self._tile_doc(tile))
+        if tile_data is None:
+            return True
         if tile_data is not None:
             self.fs.delete(tile_data['_id'])
             return True
-        return False
