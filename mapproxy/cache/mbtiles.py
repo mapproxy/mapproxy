@@ -206,8 +206,8 @@ class MBTilesCache(TileCacheBase):
         loaded_tiles = 0
 
         # SQLite is limited to 1000 args -> split into multiple requests if more arguments are needed
-        while len(coords) > 0:
-            cur_coords = coords[:999] if len(coords) > 999 else coords
+        while coords:
+            cur_coords = coords[:999]
 
             stmt = stmt_base + ' OR '.join(
                 ['(tile_column = ? AND tile_row = ? AND zoom_level = ?)'] * (len(cur_coords) // 3))
@@ -225,7 +225,7 @@ class MBTilesCache(TileCacheBase):
                     tile.timestamp = sqlite_datetime_to_timestamp(row[3])
             cursor.close()
 
-            coords = coords[999:] if len(coords) > 999 else []
+            coords = coords[999:]
 
         return loaded_tiles == len(tile_dict)
 
