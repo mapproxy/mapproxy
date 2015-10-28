@@ -632,6 +632,8 @@ class WMSLayerBase(object):
     res_range = None
     "MapExtend of the layer"
     extent = None
+    "Dimensions of the layer"
+    dimensions=[]
 
     def is_opaque(self):
         return not self.transparent
@@ -653,8 +655,10 @@ class WMSLayer(WMSLayerBase):
     """
     is_active = True
     layers = []
+    "Dimensions of the layer"
+    dimensions=[]
     def __init__(self, name, title, map_layers, info_layers=[], legend_layers=[],
-                 res_range=None, md=None):
+                 res_range=None, md=None, dimensions=[]):
         self.name = name
         self.title = title
         self.md = md or {}
@@ -668,6 +672,7 @@ class WMSLayer(WMSLayerBase):
         self.queryable = True if info_layers else False
         self.transparent = all(not map_lyr.is_opaque() for map_lyr in self.map_layers)
         self.has_legend = True if legend_layers else False
+        self.dimensions=dimensions
 
     def renders_query(self, query):
         if self.res_range and not self.res_range.contains(query.bbox, query.size, query.srs):

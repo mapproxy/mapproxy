@@ -233,6 +233,29 @@
     {{for srs_code, bbox in layer_srs_bbox(layer, epsg_axis_order=True)}}
     <BoundingBox CRS="{{srs_code}}" minx="{{ bbox[0] }}" miny="{{ bbox[1] }}" maxx="{{ bbox[2] }}" maxy="{{ bbox[3] }}" />
     {{endfor}}
+	{{if len(layer.dimensions)>0}}
+	{{for dmn in layer.dimensions}}
+	    {{py:dimension=bunch(default='',**layer.dimensions)[dmn]}}
+	    {{if len(dimension)>0 and dimension.units}}
+	        <Dimension 
+	            name="{{dimension.identifier}}"
+                units="{{dimension.units}}"
+                {{if dimension.unitSymbol}}
+    	            unitSymbol="{{dimension.unitSymbol}}"
+                {{endif}}
+	            default="{{dimension.default}}"
+	            {{if dimension.multipleValues}}
+	            multipleValues="1"
+	            {{endif}}
+	            {{if dimension.current}}
+	            current="1"
+	            {{endif}}
+            >
+            {{",".join(dimension)}}
+            </Dimension>
+	    {{endif}}
+	{{endfor}}
+	{{endif}}
     {{if md.attribution}}
     {{py: attribution = bunch(default='', **md.attribution)}}
     <Attribution>

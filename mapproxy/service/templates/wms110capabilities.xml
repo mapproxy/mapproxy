@@ -115,6 +115,29 @@
     {{for srs_code, bbox in layer_srs_bbox(layer)}}
     <BoundingBox SRS="{{srs_code}}" minx="{{ bbox[0] }}" miny="{{ bbox[1] }}" maxx="{{ bbox[2] }}" maxy="{{ bbox[3] }}" />
     {{endfor}}
+	{{if len(layer.dimensions)>0}}
+	    {{for dmn in layer.dimensions}}
+	        {{py:dimension=bunch(default='',**layer.dimensions)[dmn]}}
+	        {{if len(dimension)>0 and dimension.units}}
+	            <Dimension 
+	                name="{{dimension.identifier}}"
+	                units="{{dimension.units}}"
+	                {{if dimension.unitSymbol}}
+        	            unitSymbol="{{dimension.unitSymbol}}"
+                    {{endif}}
+                />
+                <Extent
+	                name="{{dimension.identifier}}"
+	                default="{{dimension.default}}"
+	                {{if dimension.multipleValues}}
+	                multipleValues="1"
+	                {{endif}}
+                >
+                    {{",".join(dimension)}}
+                </Extent>
+	        {{endif}}
+	    {{endfor}}
+	{{endif}}
     {{if layer.is_active and layer.has_legend and layer.legend_url}}
     <Style>
         <Name>default</Name>
