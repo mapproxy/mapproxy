@@ -1410,7 +1410,7 @@ class LayerConfiguration(ConfigurationBase):
                         continue
                     conf_sources.append(self.context.sources[source_name].source())
 
-                pass
+                continue
             else:
                 conf_sources.append(self.context.caches[source_name].map_layer())
             sources.append(source_name)
