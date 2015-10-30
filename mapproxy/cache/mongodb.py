@@ -21,6 +21,7 @@ from pymongo import MongoClient
 
 import gridfs
 import hashlib
+import calendar
 
 import logging
 log = logging.getLogger(__name__)
@@ -63,7 +64,7 @@ class MongoDBCache(TileCacheBase):
         if tile_data is not None:
             tile_file = self.fs.get(tile_data['_id'])
             tile.source = ImageSource(tile_file)
-            tile.timestamp = tile_file.upload_date
+            tile.timestamp = calendar.timegm(tile_file.upload_date.timetuple())
             return True
         x,y,z = tile.coord
         return False
