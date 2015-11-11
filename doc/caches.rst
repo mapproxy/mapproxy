@@ -31,7 +31,7 @@ The following backend types are available.
 This is the default cache type and it uses a single file for each tile. Available options are:
 
 ``directory_layout``:
-  The directory layout MapProxy uses to store tiles on disk. Defaults to ``tc`` which uses a TileCache compatible directory layout (``zz/xxx/xxx/xxx/yyy/yyy/yyy.format``). ``tms`` uses TMS compatible directories (``zz/xxxx/yyyy.format``). ``quadkey`` uses Microsoft Virtual Earth or quadkey compatible directories (see http://msdn.microsoft.com/en-us/library/bb259689.aspx);
+  The directory layout MapProxy uses to store tiles on disk. Defaults to ``tc`` which uses a TileCache compatible directory layout (``zz/xxx/xxx/xxx/yyy/yyy/yyy.format``). ``mp`` uses a directory layout with less nesting (``zz/xxxx/xxxx/yyyy/yyyy.format```). ``tms`` uses TMS compatible directories (``zz/xxxx/yyyy.format``). ``quadkey`` uses Microsoft Virtual Earth or quadkey compatible directories (see http://msdn.microsoft.com/en-us/library/bb259689.aspx);
 
   .. note::
     ``tms`` and ``quadkey`` layout are not suited for large caches, since it will create directories with thousands of files, which most file systems do not handle well.
