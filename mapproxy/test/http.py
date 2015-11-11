@@ -190,7 +190,7 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
                 query_actual = set(query_to_dict(self.query_data).items())
                 query_expected = set(query_to_dict(req['path']).items())
                 self.server.assertions.append(
-                    RequestMissmatch('requests params differ', query_actual - query_expected, query_expected - query_actual)
+                    RequestMissmatch('requests params differ', query_expected - query_actual, query_actual - query_expected)
                 )
                 self.server.shutdown = True
             if 'req_assert_function' in req:
