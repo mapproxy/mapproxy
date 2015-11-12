@@ -235,6 +235,8 @@ class TestLayerConfiguration(object):
 
     def test_without_sources_or_layers(self):
         conf = self._test_conf('''
+            services:
+                wms:
             layers:
               title: Root Layer
               layers:
@@ -242,12 +244,14 @@ class TestLayerConfiguration(object):
                   title: Layer One
         ''')
         conf = ProxyConfiguration(conf)
+        assert conf.wms_root_layer.wms_layer() == None
         try:
-            conf.wms_root_layer.wms_layer()
-        except ValueError:
+            conf.services.services()
+        except ConfigurationError:
+            # found no WMS layer
             pass
         else:
-            assert False, 'expected ValueError'
+            assert False, 'expected ConfigurationError'
 
 
 class TestGridConfiguration(object):
