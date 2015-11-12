@@ -65,6 +65,7 @@ class MongoDBCache(TileCacheBase):
             tile_file = self.fs.get(tile_data['_id'])
             tile.source = ImageSource(tile_file)
             tile.timestamp = calendar.timegm(tile_file.upload_date.timetuple())
+            #todo tile.size
             return True
         x,y,z = tile.coord
         return False
@@ -76,3 +77,6 @@ class MongoDBCache(TileCacheBase):
         if tile_data is not None:
             self.fs.delete(tile_data['_id'])
             return True
+
+    def load_tile_metadata(self, tile):
+        return True
