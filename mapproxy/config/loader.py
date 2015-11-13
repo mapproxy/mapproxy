@@ -158,7 +158,9 @@ class ProxyConfiguration(object):
         if layers_conf is None: return
 
         if isinstance(layers_conf, list):
-            if isinstance(layers_conf[0], dict) and len(layers_conf[0].keys()) == 1:
+            if 0 == len(layers_conf):
+                layers_conf = dict(title=None, layers=[])
+            elif isinstance(layers_conf[0], dict) and len(layers_conf[0].keys()) == 1:
                 # looks like ordered legacy config
                 layers_conf = self._legacy_layers_conf_dict()
             elif len(layers_conf) == 1 and ('layers' in layers_conf[0] or 'sources' in layers_conf[0]):
@@ -1293,10 +1295,7 @@ class WMSLayerConfiguration(ConfigurationBase):
         if 'sources' in self.conf or 'legendurl' in self.conf:
             this_layer = LayerConfiguration(self.conf, self.context).wms_layer()
 
-        if not layers and not this_layer:
-            raise ValueError('wms layer requires sources and/or layers')
-
-        if not layers:
+        if not layers and this_layer:
             layer = this_layer
         else:
             layer = WMSGroupLayer(name=self.conf.get('name'), title=self.conf.get('title'),
