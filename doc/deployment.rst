@@ -290,7 +290,7 @@ Here are the most important loggers:
   Logs errors and warnings for service ``XXX``.
 
 ``mapproxy.source.request``
-  Logs all requests to sources with URL, size in kB and duration in milliseconds.
+  Logs all requests to sources with URL, size in kB and duration in milliseconds. The duration is the time it took to receive the header of the response. The actual request duration might be longer, especially for larger images or when the network bandwith is limited.
 
 
 Enabling logging
