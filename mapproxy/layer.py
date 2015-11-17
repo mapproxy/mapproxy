@@ -26,6 +26,7 @@ from mapproxy.image.tile import TiledImage
 from mapproxy.srs import SRS, bbox_equals, merge_bbox, make_lin_transf
 from mapproxy.proj import ProjError
 from mapproxy.compat import iteritems
+import re
 
 import logging
 from functools import reduce
@@ -159,13 +160,164 @@ class LegendQuery(object):
         self.format = format
         self.scale = scale
 
+'''
+Heuristics for Dimensions
+'''
+dim_heuristics={
+"time":lambda x,y:("ISO8601",None),
+"date":lambda x,y:("ISO8601",None),
+"elevation":lambda x,y:("ESPG:5030","m" if y is None else y),
+"temp":lambda x,y:("Kelvin","K" if y is None else y)
+}
+
+'''
+For xml evaluation
+'''
+dim_xml={
+    '1.1.1':{
+        'xpath':[
+            '//n:Layer[n:Name[translate(text(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")="%s"]]/n:Dimension[translate(@name,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")="%s"]/text()',
+            '//n:Layer[n:Name[translate(text(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")="%s"]]/n:Extent[translate(@name,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")="%s"]/text()'],
+        'defvalue':[
+            '//n:Layer[n:Name[translate(text(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")="%s"]]/n:Dimension[translate(@name,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")="%s"]/@default',
+            '//n:Layer[n:Name[translate(text(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")="%s"]]/n:Extent[translate(@name,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")="%s"]/@default'],
+        'namespace':{'n':'http://www.opengis.net/wms'},
+        'split':re.compile("\s*,\s*",re.I)
+    }
+}
+dim_xml['1.1.0']={
+    'xpath':dim_xml['1.1.1']['xpath'],
+    'defvalue':dim_xml['1.1.1']['defvalue'],
+    'namespace':dim_xml['1.1.1']['namespace'],
+    'split':dim_xml['1.1.1']['split']
+}
+dim_xml['1.3.0']={
+    'xpath':dim_xml['1.1.1']['xpath'],
+    'defvalue':dim_xml['1.1.1']['defvalue'],
+    'namespace':dim_xml['1.1.1']['namespace'],
+    'split':dim_xml['1.1.1']['split']
+}
+dim_source_test=[
+    (
+        lambda s:hasattr(s,'map_layer'),
+        lambda s:s.map_layer()
+    ),
+    (
+        lambda s:hasattr(s,'tile_manager') and hasattr(s.tile_manager,'sources'),
+        lambda s:s.tile_manager.sources
+    )
+]
+import mapproxy.util.lazylist as lazylist
+from mapproxy.request.base import BaseRequest
+
+@lazylist.decorateList(lazylist.lazy(ready="ready"))
 class Dimension(list):
-    def __init__(self, identifier, values, default=None):
+    def __init__(self, identifier, values, default=None,
+                    units=None,unitSymbol=None,multipleValues=False,current=False
+                    ,sources=None,refresh=None):
         self.identifier = identifier
         if not default and values:
             default = values[0]
         self.default = default
+        if not units and values:
+# Heuristics to fill unit
+# time
+            if identifier.lower() in dim_heuristics.keys():
+                (units,unitSymbol)=dim_heuristics[identifier.lower()](units,unitSymbol)
+# GetCapabilites render <dimension> tag iff unit!=None
+        self.units = units
+        self.unitSymbol = unitSymbol
+        self.multipleValues = multipleValues
+        self.current = current
+# Check, sources must have dimension param
+        if sources:
+            self.sources=set()
+            self._check_sources(sources)
         list.__init__(self, values)
+        refresh=refresh or 0
+        log.debug("Refresh after %s seconds (0 means refresh once after load)" % refresh)
+        self.ready=lazylist.measure(refresh,first=True)
+        self.newval=values[:]
+
+    def get_value(self):
+        '''
+        Try to get dimension values from source
+        We try to build http-request and
+        try to parse responce.
+        If not data found or we can't parse
+        responce then we leave values unchanged
+        NOTE! When parsing xml a version should be
+        taken as attribute of root element of
+        xml, not from request!
+        '''
+        def gen_req(client):
+            req=BaseRequest(client.request_template.adapt_params_to_version(),client.request_template.url)
+            for i in ["bbox","styles","format","transparent"]:
+                req.params.__delitem__(i)
+            req.params.update({("request","GetCapabilities")})
+            return req
+
+        ret=self.newval
+        defval=None
+        try:
+            from lxml import etree
+            values=set()
+            for source in self.sources:
+                req=gen_req(source)
+                data=source.http_client.open(req.complete_url,data=None)
+                tree=etree.parse(data)
+                docversion=tree.getroot().get("version")
+                identifier=self.identifier.lower()
+                if docversion and docversion in dim_xml.keys():
+                    vallist=[]
+                    for layer in dim_xml[docversion]["split"].split(req.params.layers.lower()):
+                        log.debug("Check layer %s"%layer)
+                        for xpath in dim_xml[docversion]["xpath"]:
+                            v=tree.xpath(xpath % (layer,identifier),namespaces=dim_xml[docversion]["namespace"])
+                            vallist=vallist+[t for k in v for t in dim_xml[docversion]["split"].split(k.strip())]
+                        for xpath in dim_xml[docversion]["defvalue"]:
+                            _def=tree.xpath(xpath % (layer,identifier),namespaces=dim_xml[docversion]["namespace"])
+                            if _def and vallist:
+                                defval=_def[0] or vallist[-1]
+                    values=values.union(vallist)
+
+        except:
+            raise
+        ret=list(values)
+        self.default=defval
+        return ret
+
+    def _check_sources(self,sources):
+        name=self.identifier.lower()
+
+        def check_sources(sources):
+            ret=0
+            for source in sources:
+                ret=max(ret,check_source(source))
+            return ret
+
+        def check_source(source):
+                if hasattr(source,'fwd_req_params'):
+                    if name in [p.lower() for p in source.fwd_req_params]:
+                        self.sources.add(source.client)
+                        return 1
+                    else:
+                        return 0
+                ret=-1
+                for (tst,act) in dim_source_test:
+                    if tst(source):
+                        ret=max(ret,check_sources(act(source)))
+                if ret==-1:
+                    ret=2
+                return ret
+# main loop
+        ret=0
+        for source in sources:
+            ret=max(ret,check_source(source))
+        if ret==0:
+            log.error("Dimension %s not found in sources" % name)
+            raise MapError("dimension %s not found in sources %s" % (name,sources))
+        return ret
 
 
 def map_extent_from_grid(grid):

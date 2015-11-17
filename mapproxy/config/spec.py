@@ -489,6 +489,10 @@ mapproxy_yaml_spec = {
                 anything(): {
                     required('values'): [one_of(string_type, float, int)],
                     'default': one_of(string_type, float, int),
+                    'unit':string_type,
+                    'multiplyValues':bool(),
+                    'current':bool(),
+                    'refresh':int,
                 }
             }
         })])

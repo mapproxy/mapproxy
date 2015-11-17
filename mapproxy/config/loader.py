@@ -1369,18 +1369,25 @@ class LayerConfiguration(ConfigurationBase):
         res_range = resolution_range(self.conf)
 
         layer = WMSLayer(self.conf.get('name'), self.conf.get('title'),
-                         sources, fi_sources, lg_sources, res_range=res_range, md=self.conf.get('md'))
+                         sources, fi_sources, lg_sources, res_range=res_range, md=self.conf.get('md'),dimensions=self.dimensions(sources))
         return layer
 
-    @memoize
-    def dimensions(self):
+#    @memoize
+    def dimensions(self,sources=None):
         from mapproxy.layer import Dimension
         dimensions = {}
 
         for dimension, conf in iteritems(self.conf.get('dimensions', {})):
             values = [str(val) for val in  conf.get('values', ['default'])]
             default = conf.get('default', values[-1])
-            dimensions[dimension.lower()] = Dimension(dimension, values, default=default)
+            units = conf.get('units',None)
+            multipleValues = conf.get('multipleValues',False)
+            current = conf.get('current',False)
+            refresh = conf.get('refresh',None)
+            dimensions[dimension.lower()] = Dimension(dimension, values, default=default,
+                                                        units=units,unitSymbol=None,
+                                                        multipleValues=multipleValues,current=current,
+                                                        sources=sources,refresh=refresh)
         return dimensions
 
     @memoize
@@ -1389,6 +1396,7 @@ class LayerConfiguration(ConfigurationBase):
         from mapproxy.cache.dummy import DummyCache
 
         sources = []
+        conf_sources=[]
         for source_name in self.conf.get('sources', []):
             # we only support caches for tiled access...
             if not source_name in self.context.caches:
@@ -1400,14 +1408,17 @@ class LayerConfiguration(ConfigurationBase):
                     # and WMS layers with map: False (i.e. FeatureInfo only sources)
                     if src_conf['type'] == 'wms' and src_conf.get('wms_opts', {}).get('map', True) == False:
                         continue
+                    conf_sources.append(self.context.sources[source_name].source())
 
-                return []
+                continue
+            else:
+                conf_sources.append(self.context.caches[source_name].map_layer())
             sources.append(source_name)
 
         if len(sources) > 1:
             return []
 
-        dimensions = self.dimensions()
+        dimensions = self.dimensions(conf_sources)
 
         tile_layers = []
         for cache_name in sources:

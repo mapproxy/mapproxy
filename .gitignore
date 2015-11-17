@@ -1,6 +1,7 @@
 *.egg-info
 *.pyc
 *.patch
+*~
 build/
 dist/
 doc/_build
