@@ -480,6 +480,7 @@ mapproxy_yaml_spec = {
         },
         recursive([combined(scale_hints, {
             'sources': [string_type],
+            'tile_sources': [string_type],
             'name': str(),
             required('title'): string_type,
             'legendurl': str(),

@@ -192,6 +192,14 @@ A list of data sources for this layer. You can use sources defined in the ``sour
 
 WMS and Mapserver sources also support tagged names (``wms:lyr1,lyr2``). See :ref:`tagged_source_names`.
 
+``tile_sources``
+""""""""""""""""
+
+.. versionadded:: 1.8.2
+
+A list of caches for this layer. This list overrides ``sources`` for WMTS and TMS. ``tile_sources`` are not merged like ``sources``, instead all the caches are added as additional tile (matrix) sets.
+
+
 ``min_res``, ``max_res`` or ``min_scale``, ``max_scale``
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 .. NOTE paragraph also in sources/wms section

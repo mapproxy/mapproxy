@@ -161,7 +161,10 @@ class ProxyConfiguration(object):
             if isinstance(layers_conf[0], dict) and len(layers_conf[0].keys()) == 1:
                 # looks like ordered legacy config
                 layers_conf = self._legacy_layers_conf_dict()
-            elif len(layers_conf) == 1 and ('layers' in layers_conf[0] or 'sources' in layers_conf[0]):
+            elif len(layers_conf) == 1 and (
+                'layers' in layers_conf[0]
+                or 'sources' in layers_conf[0]
+                or 'tile_sources' in layers_conf[0]):
                 # single root layer in list -> remove list
                 layers_conf = layers_conf[0]
             else:
@@ -186,7 +189,7 @@ class ProxyConfiguration(object):
             for layer in layers_conf.pop('layers'):
                 self._flatten_layers_conf_dict(layer, layers)
 
-        if 'sources' in layers_conf and 'name' in layers_conf:
+        if 'name' in layers_conf and ('sources' in layers_conf or 'tile_sources' in layers_conf):
             layers[layers_conf['name']] = layers_conf
 
         return layers
@@ -1288,13 +1291,15 @@ class WMSLayerConfiguration(ConfigurationBase):
         if 'layers' in self.conf:
             layers_conf = self.conf['layers']
             for layer_conf in layers_conf:
-                layers.append(WMSLayerConfiguration(layer_conf, self.context).wms_layer())
+                lyr = WMSLayerConfiguration(layer_conf, self.context).wms_layer()
+                if lyr:
+                    layers.append(lyr)
 
         if 'sources' in self.conf or 'legendurl' in self.conf:
             this_layer = LayerConfiguration(self.conf, self.context).wms_layer()
 
         if not layers and not this_layer:
-            raise ValueError('wms layer requires sources and/or layers')
+            return None
 
         if not layers:
             layer = this_layer
@@ -1389,23 +1394,26 @@ class LayerConfiguration(ConfigurationBase):
         from mapproxy.cache.dummy import DummyCache
 
         sources = []
-        for source_name in self.conf.get('sources', []):
-            # we only support caches for tiled access...
-            if not source_name in self.context.caches:
-                if source_name in self.context.sources:
-                    src_conf = self.context.sources[source_name].conf
-                    # but we ignore debug layers for convenience
-                    if src_conf['type'] == 'debug':
-                        continue
-                    # and WMS layers with map: False (i.e. FeatureInfo only sources)
-                    if src_conf['type'] == 'wms' and src_conf.get('wms_opts', {}).get('map', True) == False:
-                        continue
+        if 'tile_sources' in self.conf:
+            sources = self.conf['tile_sources']
+        else:
+            for source_name in self.conf.get('sources', []):
+                # we only support caches for tiled access...
+                if not source_name in self.context.caches:
+                    if source_name in self.context.sources:
+                        src_conf = self.context.sources[source_name].conf
+                        # but we ignore debug layers for convenience
+                        if src_conf['type'] == 'debug':
+                            continue
+                        # and WMS layers with map: False (i.e. FeatureInfo only sources)
+                        if src_conf['type'] == 'wms' and src_conf.get('wms_opts', {}).get('map', True) == False:
+                            continue
 
+                    return []
+                sources.append(source_name)
+
+            if len(sources) > 1:
                 return []
-            sources.append(source_name)
-
-        if len(sources) > 1:
-            return []
 
         dimensions = self.dimensions()
 
@@ -1531,7 +1539,7 @@ class ServiceConfiguration(ConfigurationBase):
 
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
-        layers = self.tile_layers(conf)
+        layers = self.tile_layers(conf, use_grid_names=True)
 
         kvp = conf.get('kvp')
         restful = conf.get('restful')
@@ -1567,6 +1575,8 @@ class ServiceConfiguration(ConfigurationBase):
         on_source_errors = self.context.globals.get_value('on_source_errors',
             conf, global_key='wms.on_source_errors')
         root_layer = self.context.wms_root_layer.wms_layer()
+        if not root_layer:
+            raise ConfigurationError("found no WMS layer")
         if not root_layer.title:
             # set title of root layer to WMS title
             root_layer.title = md.get('title')
@@ -1623,7 +1633,9 @@ class ServiceConfiguration(ConfigurationBase):
         md.update(conf.get('md', {}))
         layers = odict()
         for layer_name, layer_conf in iteritems(self.context.layers):
-            layers[layer_name] = layer_conf.wms_layer()
+            lyr = layer_conf.wms_layer()
+            if lyr:
+                layers[layer_name] = lyr
         tile_layers = self.tile_layers(conf)
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')

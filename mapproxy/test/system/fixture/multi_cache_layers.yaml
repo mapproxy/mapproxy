@@ -1,0 +1,100 @@
+globals:
+  cache:
+    base_dir: cache_data/
+    meta_size: [1, 1]
+    meta_buffer: 0
+  image:
+    # resampling: 'bicubic'
+    paletted: False
+
+services:
+  tms:
+  kml:
+  wmts:
+    restful_template: '/myrest/{{Layer}}/{{TileMatrixSet}}/{{TileMatrix}}/{{TileCol}}/{{TileRow}}.{{Format}}'
+  wms:
+    md:
+      title: MapProxy test fixture
+      abstract: This is MapProxy.
+      online_resource: http://mapproxy.org/
+      contact:
+        person: Oliver Tonnhofer
+        position: Technical Director
+        organization: Omniscale
+        address: Nadorster Str. 60
+        city: Oldenburg
+        postcode: 26123
+        country: Germany
+        phone: +49(0)441-9392774-0
+        fax: +49(0)441-9392774-9
+        email: info@omniscale.de
+
+layers:
+  - name: multi_cache
+    title: WMTS only layer
+    tile_sources: [utm_cache, webmerc_cache, gk_cache]
+  - name: wms_only
+    title: WMS only layer
+    tile_sources: []
+    sources: [utm_cache]
+  - name: cache
+    title: single cache layer
+    sources: [utm_cache]
+
+caches:
+  utm_cache:
+    grids: [utm32]
+    sources: [wms_source]
+  webmerc_cache:
+    grids: [GLOBAL_WEBMERCATOR, wmts_incompatible_grid, crs84quad]
+    sources: [wms_source]
+  gk_cache:
+    grids: [gk3]
+    disable_storage: true
+    sources: [utm_cache]
+
+sources:
+  wms_source:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar
+
+grids:
+  wmts_incompatible_grid: # shoud no be included in WMTS
+    srs: 'EPSG:25832'
+    bbox: [3000000, 5000000, 4000000, 6000000]
+    res_factor: sqrt2
+    origin: 'll'
+
+  crs84quad:
+    name: InspireCrs84Quad
+    srs: 'CRS:84'
+    bbox: [-180, -90, 180, 90]
+    origin: 'ul'
+    min_res: 0.703125
+
+  gk3:
+    bbox: [3400000, 5400000, 3600000, 5600000]
+    srs: 'EPSG:31467'
+
+  utm32:
+    srs: 'EPSG:25832'
+    res:
+      - 4891.96981025128
+      - 2445.98490512564
+      - 1222.99245256282
+      - 611.49622628141
+      - 305.748113140705
+      - 152.874056570353
+      - 76.4370282851763
+      - 38.2185141425881
+      - 19.1092570712941
+      - 9.55462853564703
+      - 4.77731426782352
+      - 2.38865713391176
+      - 1.19432856695588
+      - 0.597164283477939
+    bbox: [-46133.17, 5048875.26857567, 1206211.10142433, 6301219.54]
+    bbox_srs: 'EPSG:25832'
+    origin: 'ul'
