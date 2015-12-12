@@ -288,3 +288,53 @@ Example
         default_ports:
             pb: 8087
             http: 8098
+
+``s3``
+===========
+
+.. versionadded:: 1.x.x
+
+Store tiles in a `Amazon Simple Storage Service (S3) <https://aws.amazon.com/s3/>`_.
+
+
+Requirements
+------------
+
+
+You will need the Python `boto <https://github.com/boto/boto>`_  version 2.34.0 or newer. You can install it in the usual way, for example with ``pip install boto``. 
+
+
+Configuration
+-------------
+
+
+Available options:
+
+``bucketname``:
+  The bucket MapProxy uses for this cache. The bucket is unique for all layers using this type of cache.
+
+``profilename``:
+  Optional boto `credentials <http://boto.cloudhackers.com/en/latest/boto_config_tut.html>`_ for this cache. Alternative methods of authentification are using the  ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY`` environmental variables, or by using an `IAM role <http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html>`_ when using an Amazon EC2 instance.
+
+
+Example
+-------
+
+::
+
+    
+    cache:
+        my_layer_20110501_epsg_4326_cache_out:
+            cache:
+                cache_dir: /1.0.0/my_layer/default/20110501/4326/
+                directory_layout: tms
+                type: s3
+            disable_storage: false
+            format: image/png
+        sources:
+            - my_layer_20110501_cache
+
+    globals:
+        cache:
+            bucket_name: my-s3-tiles-cache
+
