@@ -81,6 +81,16 @@ class TiledSource(MapLayer):
             log.warn('could not retrieve tile: %s', e)
             reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
+
+class UTFGridFeatureInfoSource(InfoSource):
+    def __init__(self, grid, client);
+        pass
+
+    def get_info(self, query):
+        tile = self.client.get_tile(tile_coord, format=query.format)
+        return create_featureinfo_doc('yo dawg', 'text/plain')
+
+
 class CacheSource(CacheMapLayer):
     def __init__(self, tile_manager, extent=None, image_opts=None,
         max_tile_limit=None, tiled_only=False):

@@ -876,8 +876,67 @@ class TileSourceConfiguration(SourceConfiguration):
 
         format = file_ext(params['format'])
         client = TileClient(TileURLTemplate(url, format=format), http_client=http_client, grid=grid)
+
         return TiledSource(grid, client, coverage=coverage, image_opts=image_opts,
-            error_handler=error_handler, res_range=res_range)
+            error_handler=error_handler, res_range=res_range,
+            fi_utfgrid_client=fi_utfgrid_client)
+
+    def fi_source(self, params=None):
+        fi_source = None
+
+        if self.conf['featureinfo_utfgrid']:
+            grid_name = self.conf.get('grid')
+            if grid_name is None:
+                log.warn("tile source for %s does not have a grid configured and defaults to GLOBAL_MERCATOR. default will change with MapProxy 2.0", url)
+                grid_name = "GLOBAL_MERCATOR"
+
+            grid = self.context.grids[grid_name].tile_grid()
+            coverage = self.coverage()
+            res_range = resolution_range(self.conf)
+
+            image_opts = self.image_opts()
+            error_handler = self.on_error_handler()
+
+            url = self.conf['featureinfo_utfgrid']
+            http_client, url = self.http_client(url)
+            utfgrid_client = TileClient(TileURLTemplate(url, format=format),
+                http_client=fi_http_client, grid=grid)
+
+            fi_source = UTFGridFeatureInfoSource()
+        else:
+            fi_utfgrid_client = None
+
+        return fi_source
+
+        #from mapproxy.client.wms import WMSInfoClient
+        #from mapproxy.request.wms import create_request
+        #from mapproxy.source.wms import WMSInfoSource
+        #from mapproxy.srs import SRS
+
+        #if params is None: params = {}
+        #request_format = self.conf['req'].get('format')
+        #if request_format:
+            #params['format'] = request_format
+        #supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
+        #fi_source = None
+        #if self.conf.get('wms_opts', {}).get('featureinfo', False):
+            #wms_opts = self.conf['wms_opts']
+            #version = wms_opts.get('version', '1.1.1')
+            #if 'featureinfo_format' in wms_opts:
+                #params['info_format'] = wms_opts['featureinfo_format']
+            #fi_request = create_request(self.conf['req'], params,
+                #req_type='featureinfo', version=version,
+                #abspath=self.context.globals.abspath)
+
+            #fi_transformer = self.fi_xslt_transformer(self.conf.get('wms_opts', {}),
+                                                     #self.context)
+
+            #http_client, fi_request.url = self.http_client(fi_request.url)
+            #fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs,
+                                      #http_client=http_client)
+            #fi_source = WMSInfoSource(fi_client, fi_transformer=fi_transformer)
+        #return fi_source
+
 
 
 def file_ext(mimetype):
