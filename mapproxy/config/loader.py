@@ -878,13 +878,15 @@ class TileSourceConfiguration(SourceConfiguration):
         client = TileClient(TileURLTemplate(url, format=format), http_client=http_client, grid=grid)
 
         return TiledSource(grid, client, coverage=coverage, image_opts=image_opts,
-            error_handler=error_handler, res_range=res_range,
-            fi_utfgrid_client=fi_utfgrid_client)
+            error_handler=error_handler, res_range=res_range)
 
     def fi_source(self, params=None):
+        from mapproxy.client.tile import UTFGridClient, TileURLTemplate
+        from mapproxy.source.tile import UTFGridFeatureInfoSource
         fi_source = None
 
-        if self.conf['featureinfo_utfgrid']:
+        featureinfo_utfgrid_url = self.conf.get('featureinfo_utfgrid_url')
+        if featureinfo_utfgrid_url:
             grid_name = self.conf.get('grid')
             if grid_name is None:
                 log.warn("tile source for %s does not have a grid configured and defaults to GLOBAL_MERCATOR. default will change with MapProxy 2.0", url)
@@ -897,14 +899,11 @@ class TileSourceConfiguration(SourceConfiguration):
             image_opts = self.image_opts()
             error_handler = self.on_error_handler()
 
-            url = self.conf['featureinfo_utfgrid']
-            http_client, url = self.http_client(url)
-            utfgrid_client = TileClient(TileURLTemplate(url, format=format),
-                http_client=fi_http_client, grid=grid)
+            http_client, url = self.http_client(featureinfo_utfgrid_url)
+            utfgrid_client = UTFGridClient(TileURLTemplate(url, format=format),
+                http_client=http_client, grid=grid)
 
-            fi_source = UTFGridFeatureInfoSource()
-        else:
-            fi_utfgrid_client = None
+            fi_source = UTFGridFeatureInfoSource(grid=grid, client=utfgrid_client)
 
         return fi_source
 

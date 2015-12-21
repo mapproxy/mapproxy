@@ -13,7 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from mapproxy.client.http import retrieve_image
+from mapproxy.client.http import retrieve_image, retrieve_url
+
+try:
+    import simrplejson as json
+except ImportError:
+    import json
 
 class TMSClient(object):
     def __init__(self, url, format='png', http_client=None):
@@ -47,6 +52,36 @@ class TileClient(object):
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.url_template)
+
+class UTFGridClient(TileClient):
+    def get_tile(self, tile_coord, format=None):
+        url = self.url_template.substitute(tile_coord, format, self.grid)
+        if self.http_client:
+            response = self.http_client.open(url)
+        else:
+            response = retrieve_url(url)
+
+        grid_json = json.load(response)
+        return UTFGrid(grid_json)
+
+class UTFGrid(object):
+    def __init__(self, grid_json):
+        self.data = grid_json.get('data')
+        self.grid = grid_json.get('grid')
+        self.keys = grid_json.get('keys')
+        self.factor = 256.0 / len(self.grid)
+
+    def get_data(self, x, y):
+        row = int(y / self.factor)
+        col = int(x / self.factor)
+        key = ord(self.grid[row][col])
+        if key > 93:
+            key-=1
+        if key > 35:
+            key-=1
+        key -= 32
+        decoded = self.keys[key]
+        return self.data[decoded]
 
 class TileURLTemplate(object):
     """

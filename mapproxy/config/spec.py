@@ -451,7 +451,8 @@ mapproxy_yaml_spec = {
                 'transparent': bool(),
                 'image': image_opts,
                 'grid': str(),
-                'featureinfo_utfgrid': str(),
+                'featureinfo_utfgrid_url': str(),
+                'featureinfo_utfgrid_template': str(),
                 'request_format': str(),
                 'origin': str(), # TODO: remove with 1.5
                 'http': http_opts,

@@ -17,13 +17,18 @@
 Retrieve tiles from different tile servers (TMS/TileCache/etc.).
 """
 
+import itertools
 import sys
 from mapproxy.image.opts import ImageOptions
 from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClientError
-from mapproxy.source import InvalidSourceQuery
+from mapproxy.source import InfoSource, InvalidSourceQuery
 from mapproxy.layer import BlankImage, map_extent_from_grid, CacheMapLayer, MapLayer
+from mapproxy.featureinfo import create_featureinfo_doc
+from mapproxy.srs import make_lin_transf
 from mapproxy.util.py import reraise_exception
+
+from math import log as _log, pi as _pi
 
 import logging
 log = logging.getLogger('mapproxy.source.tile')
@@ -83,12 +88,39 @@ class TiledSource(MapLayer):
 
 
 class UTFGridFeatureInfoSource(InfoSource):
-    def __init__(self, grid, client);
-        pass
+    def __init__(self, grid, client):
+        self.grid = grid
+        self.client = client
 
     def get_info(self, query):
-        tile = self.client.get_tile(tile_coord, format=query.format)
-        return create_featureinfo_doc('yo dawg', 'text/plain')
+        # convert query bbox to grid srs
+        query_bbox_pts = [
+            (query.bbox[0], query.bbox[1]),
+            (query.bbox[2], query.bbox[3])
+        ]
+        grid_bbox_pts = query.srs.transform_to(self.grid.srs, query_bbox_pts)
+        grid_bbox = [i for i in itertools.chain(*grid_bbox_pts)]
+
+        # convert query coordinates to grid srs
+        grid_x, grid_y = query.srs.transform_to(self.grid.srs, query.coord)
+
+        # get zoom level
+        src_bbox, level = self.grid.get_affected_bbox_and_level(grid_bbox, self.grid.tile_size)
+
+        # get tile TMS numbers (x/y/z)
+        tile_coord = self.grid.tile(grid_x, grid_y, level)
+
+        # get the coordinate on the tile of the query location
+        tile_bbox = self.grid.tile_bbox(tile_coord)
+        tile_x, tile_y = make_lin_transf(tile_bbox, [0, 0, self.grid.tile_size[0], self.grid.tile_size[1]])([grid_x, grid_y])
+
+        # get utfgrid tile
+        utfgrid_tile = self.client.get_tile(tile_coord, format="application/json")
+
+        data = utfgrid_tile.get_data(int(tile_x), int(tile_y))
+
+        #tile = self.client.get_tile(tile_coord, format=query.format)
+        return create_featureinfo_doc(data['quadname'], 'text/html')
 
 
 class CacheSource(CacheMapLayer):
@@ -104,3 +136,19 @@ class CacheSource(CacheMapLayer):
             query.tiled_only = True
         return CacheMapLayer.get_map(self, query)
 
+
+def _webmercator_to_tms(x, y):
+    """ Convert from Point object in EPSG:900913 to a TMS coordinate (x, y, z)
+
+    borrowed from TileStache
+    (https://github.com/TileStache/TileStache/blob/291271657b1ee809a0aedb74a0b813a44992c429/TileStache/Geography.py#L74)
+    """
+    # the zoom at which we're dealing with meters on the ground
+    diameter = 2 * _pi * 6378137
+    zoom = _log(diameter) / _log(2)
+
+    # global offsets
+    column = x + diameter/2
+    row = diameter/2 - y
+
+    return column, row, zoom
