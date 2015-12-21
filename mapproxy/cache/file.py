@@ -195,13 +195,11 @@ class FileCache(TileCacheBase):
         >>> from mapproxy.cache.file import FileCache
         >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png', directory_layout='arcgis')
         >>> c.tile_location(Tile((1234567, 87654321, 9))).replace('\\\\', '/')
-        '/tmp/cache/L09/R05397FB1/C0012D687.png'
+        '/tmp/cache/L09/R05397fb1/C0012d687.png'
         """
         if tile.location is None:
             x, y, z = tile.coord
-            row = ('R%08x' % y).upper()
-            col = ('C%08x' % x).upper()
-            parts = (self.level_location('L%02d' % z), row, '%s.%s' % (col, self.file_ext))
+            parts = (self.level_location('L%02d' % z), 'R%08x' % y, 'C%08x.%s' % (x, self.file_ext))
             tile.location = os.path.join(*parts)
         if create_dir:
             ensure_directory(tile.location)
