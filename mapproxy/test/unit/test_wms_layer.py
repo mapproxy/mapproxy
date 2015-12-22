@@ -15,7 +15,7 @@
 
 from __future__ import with_statement, division
 
-from mapproxy.layer import MapQuery
+from mapproxy.layer import MapQuery, InfoQuery
 from mapproxy.srs import SRS
 from mapproxy.service.wms import combined_layers
 from nose.tools import eq_
@@ -76,3 +76,9 @@ class TestCombinedLayers(object):
         eq_(combined[1].client.request_template.params.layers, ['c', 'd'])
         eq_(combined[2].client.request_template.params.layers, ['e', 'f'])
 
+
+class TestInfoQuery(object):
+    def test_coord(self):
+        query = InfoQuery((8, 50, 9, 51), (400, 1000),
+                           SRS(4326), (100, 600), 'text/plain')
+        eq_(query.coord, (8.25, 50.4))
