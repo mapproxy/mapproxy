@@ -907,36 +907,6 @@ class TileSourceConfiguration(SourceConfiguration):
 
         return fi_source
 
-        #from mapproxy.client.wms import WMSInfoClient
-        #from mapproxy.request.wms import create_request
-        #from mapproxy.source.wms import WMSInfoSource
-        #from mapproxy.srs import SRS
-
-        #if params is None: params = {}
-        #request_format = self.conf['req'].get('format')
-        #if request_format:
-            #params['format'] = request_format
-        #supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
-        #fi_source = None
-        #if self.conf.get('wms_opts', {}).get('featureinfo', False):
-            #wms_opts = self.conf['wms_opts']
-            #version = wms_opts.get('version', '1.1.1')
-            #if 'featureinfo_format' in wms_opts:
-                #params['info_format'] = wms_opts['featureinfo_format']
-            #fi_request = create_request(self.conf['req'], params,
-                #req_type='featureinfo', version=version,
-                #abspath=self.context.globals.abspath)
-
-            #fi_transformer = self.fi_xslt_transformer(self.conf.get('wms_opts', {}),
-                                                     #self.context)
-
-            #http_client, fi_request.url = self.http_client(fi_request.url)
-            #fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs,
-                                      #http_client=http_client)
-            #fi_source = WMSInfoSource(fi_client, fi_transformer=fi_transformer)
-        #return fi_source
-
-
 
 def file_ext(mimetype):
     from mapproxy.request.base import split_mime_type
