@@ -76,9 +76,9 @@ class UTFGrid(object):
         col = int(x / self.factor)
         key = ord(self.grid[row][col])
         if key > 93:
-            key-=1
+            key -= 1
         if key > 35:
-            key-=1
+            key -= 1
         key -= 32
         decoded = self.keys[key]
         return self.data[decoded]
