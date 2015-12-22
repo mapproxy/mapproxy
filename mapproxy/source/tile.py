@@ -93,19 +93,11 @@ class UTFGridFeatureInfoSource(InfoSource):
         self.client = client
 
     def get_info(self, query):
-        # convert query bbox to grid srs
-        query_bbox_pts = [
-            (query.bbox[0], query.bbox[1]),
-            (query.bbox[2], query.bbox[3])
-        ]
-        grid_bbox_pts = query.srs.transform_to(self.grid.srs, query_bbox_pts)
-        grid_bbox = [i for i in itertools.chain(*grid_bbox_pts)]
-
-        # convert query coordinates to grid srs
-        grid_x, grid_y = query.srs.transform_to(self.grid.srs, query.coord)
-
         # get zoom level
-        src_bbox, level = self.grid.get_affected_bbox_and_level(grid_bbox, self.grid.tile_size)
+        src_bbox, level = self.grid.get_affected_bbox_and_level(query.bbox, query.size, req_srs=query.srs)
+
+        # transform query coordinates to grid srs
+        grid_x, grid_y = query.srs.transform_to(self.grid.srs, query.coord)
 
         # get tile TMS numbers (x/y/z)
         tile_coord = self.grid.tile(grid_x, grid_y, level)
