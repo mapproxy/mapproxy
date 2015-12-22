@@ -51,6 +51,8 @@ class FileCache(TileCacheBase):
             self.tile_location = self._tile_location_tms
         elif directory_layout == 'quadkey':
             self.tile_location = self._tile_location_quadkey
+        elif directory_layout == 'arcgis':
+            self.tile_location = self._tile_location_arcgiscache
         else:
             raise ValueError('unknown directory_layout "%s"' % directory_layout)
 
@@ -176,6 +178,29 @@ class FileCache(TileCacheBase):
             tile.location = os.path.join(
                 self.cache_dir, quadKey + '.' + self.file_ext
             )
+        if create_dir:
+            ensure_directory(tile.location)
+        return tile.location
+
+    def _tile_location_arcgiscache(self, tile, create_dir=False):
+        """
+        Return the location of the `tile`. Caches the result as ``location``
+        property of the `tile`.
+
+        :param tile: the tile object
+        :param create_dir: if True, create all necessary directories
+        :return: the full filename of the tile
+
+        >>> from mapproxy.cache.tile import Tile
+        >>> from mapproxy.cache.file import FileCache
+        >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png', directory_layout='arcgis')
+        >>> c.tile_location(Tile((1234567, 87654321, 9))).replace('\\\\', '/')
+        '/tmp/cache/L09/R05397fb1/C0012d687.png'
+        """
+        if tile.location is None:
+            x, y, z = tile.coord
+            parts = (self.level_location('L%02d' % z), 'R%08x' % y, 'C%08x.%s' % (x, self.file_ext))
+            tile.location = os.path.join(*parts)
         if create_dir:
             ensure_directory(tile.location)
         return tile.location
