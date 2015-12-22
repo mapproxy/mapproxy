@@ -127,20 +127,3 @@ class CacheSource(CacheMapLayer):
         if self.tiled_only:
             query.tiled_only = True
         return CacheMapLayer.get_map(self, query)
-
-
-def _webmercator_to_tms(x, y):
-    """ Convert from Point object in EPSG:900913 to a TMS coordinate (x, y, z)
-
-    borrowed from TileStache
-    (https://github.com/TileStache/TileStache/blob/291271657b1ee809a0aedb74a0b813a44992c429/TileStache/Geography.py#L74)
-    """
-    # the zoom at which we're dealing with meters on the ground
-    diameter = 2 * _pi * 6378137
-    zoom = _log(diameter) / _log(2)
-
-    # global offsets
-    column = x + diameter/2
-    row = diameter/2 - y
-
-    return column, row, zoom
