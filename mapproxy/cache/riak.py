@@ -57,7 +57,9 @@ class RiakCache(TileCacheBase):
 
     @property
     def bucket(self):
-        return self.connection.bucket(self.bucket_name)
+        if not getattr(self._db_conn_cache, 'bucket', None):
+            self._db_conn_cache.bucket = self.connection.bucket(self.bucket_name)
+        return self._db_conn_cache.bucket
 
     def _get_object(self, coord):
         (x, y, z) = coord
@@ -82,9 +84,7 @@ class RiakCache(TileCacheBase):
         return 0.0
 
     def is_cached(self, tile):
-        if tile.source:
-            return True
-        return self.load_tile(tile)
+        return self.load_tile(tile, True)
 
     def _store_bulk(self, tiles):
         for tile in tiles:
@@ -101,7 +101,7 @@ class RiakCache(TileCacheBase):
                 res.add_index('tile_coord_bin', '%02d-%07d-%07d' % (z, x, y))
 
             try:
-                res.store(return_body=False, timeout=self.request_timeout)
+                res.store(w=1, dw=1, pw=1, return_body=False, timeout=self.request_timeout)
             except riak.RiakError as ex:
                 log.warn('unable to store tile: %s', ex)
                 return False
@@ -126,6 +126,8 @@ class RiakCache(TileCacheBase):
         self.load_tile(tile, True)
 
     def load_tile(self, tile, with_metadata=False):
+        if tile.timestamp is None:
+            tile.timestamp = 0
         if tile.source or tile.coord is None:
             return True
 

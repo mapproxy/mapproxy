@@ -247,7 +247,7 @@ This backend is good for very large caches which can be distributed over many no
 Requirements
 ------------
 
-You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_ version 2.0 or newer. You can install it in the usual way, for example with ``pip install riak``. Environments with older version must be upgraded with ``pip install -U riak``.
+You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_ version 2.3 or newer. You can install it in the usual way, for example with ``pip install riak``. Environments with older version must be upgraded with ``pip install -U riak``. Python library depends on packages `python-dev` and `libffi-dev`.
 
 Configuration
 -------------
