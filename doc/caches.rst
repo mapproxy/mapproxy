@@ -274,17 +274,19 @@ Example
 
 ::
 
-    myriakcache:
-        sources: [mywms]
-        grids: [mygrid]
-        type: riak
-        nodes:
-            - host: 1.example.org
-              pb_port: 9999
-            - host: 1.example.org
-            - host: 1.example.org
-        protocol: pbc
-        bucket: myriakcachetiles
-        default_ports:
-            pb: 8087
-            http: 8098
+  myriakcache:
+    sources: [mywms]
+    grids: [mygrid]
+    cache:
+      type: riak
+      nodes:
+        - host: 1.example.org
+          pb_port: 9999
+        - host: 1.example.org
+        - host: 1.example.org
+      protocol: pbc
+      bucket: myriakcachetiles
+      default_ports:
+        pb: 8087
+        http: 8098
+
