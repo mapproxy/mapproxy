@@ -36,7 +36,6 @@ cache:
     - $HOME/.cache/pip
 
 install:
-    - "export MAPPROXY_TEST_RIAK_PBC=pbc://localhost:8087"
     - "export MAPPROXY_TEST_RIAK_HTTP=http://localhost:8098"
     - "pip install -r requirements-tests.txt"
 
