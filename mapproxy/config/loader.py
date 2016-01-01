@@ -1033,10 +1033,12 @@ class CacheConfiguration(ConfigurationBase):
             bucket = self.conf['name'] + '_' + suffix
 
         use_secondary_index = self.conf['cache'].get('secondary_index', False)
+        timeout = self.context.globals.get_value('http.client_timeout', 60)
 
         return RiakCache(nodes=nodes, protocol=protocol, bucket=bucket,
             tile_grid=grid_conf.tile_grid(),
             use_secondary_index=use_secondary_index,
+            timeout=timeout
         )
 
     def _tile_cache(self, grid_conf, file_ext):
