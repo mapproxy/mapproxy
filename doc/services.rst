@@ -175,6 +175,7 @@ Full example
           address: Fakestreet 123
           city: Somewhere
           postcode: 12345
+          state: XYZ
           country: Germany
           phone: +49(0)000-000000-0
           fax: +49(0)000-000000-0
