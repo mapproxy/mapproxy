@@ -81,7 +81,7 @@ class UTFGrid(object):
             key -= 1
         key -= 32
         decoded = self.keys[key]
-        return self.data[decoded]
+        return self.data.get(decoded)
 
 class TileURLTemplate(object):
     """
