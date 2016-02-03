@@ -19,16 +19,25 @@ Retrieve tiles from different tile servers (TMS/TileCache/etc.).
 
 import itertools
 import sys
+
+import dicttoxml
+import pystache
+
 from mapproxy.image.opts import ImageOptions
 from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClientError
 from mapproxy.source import InfoSource, InvalidSourceQuery
 from mapproxy.layer import BlankImage, map_extent_from_grid, CacheMapLayer, MapLayer
-from mapproxy.featureinfo import create_featureinfo_doc
+from mapproxy.featureinfo import combined_inputs, create_featureinfo_doc
 from mapproxy.srs import make_lin_transf
 from mapproxy.util.py import reraise_exception
-
 from math import log as _log, pi as _pi
+
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 
 import logging
 log = logging.getLogger('mapproxy.source.tile')
@@ -88,9 +97,13 @@ class TiledSource(MapLayer):
 
 
 class UTFGridFeatureInfoSource(InfoSource):
-    def __init__(self, grid, client):
+    def __init__(self, grid, client, template=None):
         self.grid = grid
         self.client = client
+        self.template = template
+        if self.template:
+            self.renderer = pystache.Renderer()
+            self.parsed_template = pystache.parse(unicode(template))
 
     def get_info(self, query):
         # get zoom level
@@ -109,10 +122,19 @@ class UTFGridFeatureInfoSource(InfoSource):
         # get utfgrid tile
         utfgrid_tile = self.client.get_tile(tile_coord, format="application/json")
 
+        # get data for the queried coordinate
         data = utfgrid_tile.get_data(int(tile_x), int(tile_y))
 
-        #tile = self.client.get_tile(tile_coord, format=query.format)
-        return create_featureinfo_doc(data['quadname'], 'text/html')
+        # return featureinfo
+        if query.info_format == 'text/xml':
+            xml = dicttoxml.dicttoxml(data)
+            info = combined_inputs([xml])
+        else:
+            if self.template:
+                info = self.renderer.render(self.parsed_template, data)
+            else:
+                info = str(data)
+        return create_featureinfo_doc(info, query.info_format)
 
 
 class CacheSource(CacheMapLayer):

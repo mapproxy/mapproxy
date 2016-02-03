@@ -903,7 +903,8 @@ class TileSourceConfiguration(SourceConfiguration):
             utfgrid_client = UTFGridClient(TileURLTemplate(url, format=format),
                 http_client=http_client, grid=grid)
 
-            fi_source = UTFGridFeatureInfoSource(grid=grid, client=utfgrid_client)
+            template = self.conf.get('featureinfo_utfgrid_template')
+            fi_source = UTFGridFeatureInfoSource(grid=grid, client=utfgrid_client, template=template)
 
         return fi_source
 
