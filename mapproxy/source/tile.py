@@ -20,9 +20,6 @@ Retrieve tiles from different tile servers (TMS/TileCache/etc.).
 import itertools
 import sys
 
-import dicttoxml
-import pystache
-
 from mapproxy.image.opts import ImageOptions
 from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClientError
@@ -92,10 +89,21 @@ class TiledSource(MapLayer):
 
 class UTFGridFeatureInfoSource(InfoSource):
     def __init__(self, grid, client, template=None):
+        try:
+            import dicttoxml
+        except ImportError:
+            raise ImportError('could not find the dicttoxml package, which is required to support utfgrid featureinfo sources')
+
         self.grid = grid
         self.client = client
         self.template = template
+
         if self.template:
+            try:
+                import pystache
+            except ImportError:
+                raise ImportError('could not find the pystache package, which is required to support utfgrid featureinfo sources')
+
             self.renderer = pystache.Renderer()
             self.parsed_template = pystache.parse(unicode(template))
 
