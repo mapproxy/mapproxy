@@ -33,12 +33,6 @@ from mapproxy.srs import make_lin_transf
 from mapproxy.util.py import reraise_exception
 from math import log as _log, pi as _pi
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
-
 import logging
 log = logging.getLogger('mapproxy.source.tile')
 log_config = logging.getLogger('mapproxy.config')

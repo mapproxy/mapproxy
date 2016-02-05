@@ -16,9 +16,10 @@
 from mapproxy.client.http import retrieve_image, retrieve_url
 
 try:
-    import simrplejson as json
+    import simplejson as json
 except ImportError:
     import json
+
 
 class TMSClient(object):
     def __init__(self, url, format='png', http_client=None):
