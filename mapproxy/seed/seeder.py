@@ -128,9 +128,21 @@ class TileWorkerPool(TileProcessor):
                       For use when workers might be shutdown already by KeyboardInterrupt.
         """
         if not force:
+            alives = 0
             for proc in self.procs:
                 if proc.is_alive():
-                    self.tiles_queue.put(None)
+                    alives += 1
+
+            while alives:
+                # put None-sentinels to queue as long as we have workers alive
+                try:
+                    self.tiles_queue.put(None, timeout=1)
+                    alives -= 1
+                except Queue.Full:
+                    alives = 0
+                    for proc in self.procs:
+                        if proc.is_alive():
+                            alives += 1
 
         if force:
             timeout = 1.0

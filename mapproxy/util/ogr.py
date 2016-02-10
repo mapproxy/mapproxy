@@ -118,6 +118,9 @@ class CtypesOGRShapeReader(object):
             if feature is None:
                 break
             geom = libgdal.OGR_F_GetGeometryRef(feature)
+            if geom is None:
+                libgdal.OGR_F_Destroy(feature)
+                continue
             res = c_char_p()
             libgdal.OGR_G_ExportToWkt(geom, ctypes.byref(res))
             yield res.value

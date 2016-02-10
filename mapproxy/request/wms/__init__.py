@@ -230,7 +230,7 @@ class WMSMapRequest(WMSRequest):
     def validate_styles(self):
         if 'styles' in self.params:
             styles = self.params['styles']
-            if not set(styles.split(',')).issubset(set(['default', ''])):
+            if not set(styles.split(',')).issubset(set(['default', '', 'inspire_common:DEFAULT'])):
                 raise RequestError('unsupported styles: ' + self.params['styles'],
                                    code='StyleNotDefined', request=self)
 
@@ -290,6 +290,10 @@ class WMS100MapRequest(WMSMapRequest):
         params = WMSMapRequest.adapt_params_to_version(self)
         del params['version']
         del params['service']
+
+        image_format = params['format']
+        if '/' in image_format:
+            params['format'] = image_format.split('/', 1)[1].upper()
         return params
 
     def validate_format(self, image_formats):
@@ -423,10 +427,13 @@ class WMSFeatureInfoRequestParams(WMSMapRequestParams):
 
     def _get_pos(self):
         """x, y query image coordinates (in pixel)"""
+        if '.' in self['x'] or '.' in self['y']:
+            return float(self['x']), float(self['y'])
         return int(self['x']), int(self['y'])
+
     def _set_pos(self, value):
-        self['x'] = str(int(round(value[0])))
-        self['y'] = str(int(round(value[1])))
+        self['x'] = str(value[0])
+        self['y'] = str(value[1])
     pos = property(_get_pos, _set_pos)
     del _get_pos
     del _set_pos

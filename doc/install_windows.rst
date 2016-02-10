@@ -3,7 +3,7 @@ Installation on Windows
 
 .. note:: You can also :doc:`install MapProxy inside an existing OSGeo4W installation<install_osgeo4w>`.
 
-At frist you need a working Python installation. You can download Python from: http://www.python.org/download/. MapProxy requires Python 2.5, 2.6 or 2.7.  Python 2.5 is not recommended anymore and the support for it will end with MapProxy 1.8. Python 3 support is planned for MapProxy 1.8.
+At frist you need a working Python installation. You can download Python from: http://www.python.org/download/. MapProxy requires Python 2.7, 3.3 or 3.4. Python 2.6 should still work, but it is no longer officially supported.
 
 
 Virtualenv
@@ -50,10 +50,10 @@ Dependencies
 Read :ref:`dependency_details` for more information about all dependencies.
 
 
-PIL and YAML
-~~~~~~~~~~~~
+Pillow and YAML
+~~~~~~~~~~~~~~~
 
-PIL and PyYAML are installed automatically by ``easy_install``.
+Pillow and PyYAML are installed automatically by ``easy_install``.
 
 PyProj
 ~~~~~~

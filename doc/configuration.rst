@@ -170,6 +170,14 @@ A list of data sources for this layer. You can use sources defined in the ``sour
 
 WMS and Mapserver sources also support tagged names (``wms:lyr1,lyr2``). See :ref:`tagged_source_names`.
 
+``tile_sources``
+""""""""""""""""
+
+.. versionadded:: 1.8.2
+
+A list of caches for this layer. This list overrides ``sources`` for WMTS and TMS. ``tile_sources`` are not merged like ``sources``, instead all the caches are added as additional tile (matrix) sets.
+
+
 ``min_res``, ``max_res`` or ``min_scale``, ``max_scale``
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 .. NOTE paragraph also in sources/wms section
@@ -185,12 +193,16 @@ Pleas read :ref:`scale vs. resolution <scale_resolution>` for some notes on `sca
 
 Configure a URL to an image that should be returned as the legend for this layer. Local URLs (``file://``) are also supported. MapProxy ignores the legends from the sources of this layer if you configure a ``legendurl`` here.
 
+.. _layer_metadata:
+
 ``md``
 """"""
 
 .. versionadded:: 1.4.0
 
 Add additional metadata for this layer. This metadata appears in the WMS 1.3.0 capabilities documents. Refer to the OGC 1.3.0 specification for a description of each option.
+
+See also :doc:`inspire` for configuring additional INSPIRE metadata.
 
 Here is an example layer with extended layer capabilities::
 
@@ -941,9 +953,7 @@ The following encoding options are available:
 
 ``quantizer``
   The algorithm used to quantize (reduce) the image colors. Quantizing is used for GIF and paletted PNG images. Available quantizers are ``mediancut`` and ``fastoctree``. ``fastoctree`` is much faster and also supports 8bit PNG with full alpha support, but the image quality can be better with ``mediancut`` in some cases.
-  The quantizing is done by the Python Image Library (PIL). ``fastoctree`` is a `new quantizer <fastoctree_mp_blog>`_ that is only available in Pillow >=2.0. See :ref:`installation of PIL<dependencies_pil>`.
-
-.. _fastoctree_mp_blog: http://mapproxy.org/blog/improving-the-performance-for-png-requests/
+  The quantizing is done by the Python Image Library (PIL). ``fastoctree`` is a `new quantizer <http://mapproxy.org/blog/improving-the-performance-for-png-requests/>`_ that is only available in Pillow >=2.0. See :ref:`installation of PIL<dependencies_pil>`.
 
 Global
 """"""

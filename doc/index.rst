@@ -18,10 +18,12 @@ MapProxy Documentation
    mapproxy_util_autoconfig
    deployment
    configuration_examples
+   inspire
    labeling
    auth
    decorate_img
    development
+   mapproxy_2
 
 .. todolist::
 

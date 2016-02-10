@@ -85,9 +85,26 @@ def serve_develop_command(args):
     except ConfigurationError:
         sys.exit(2)
 
+    extra_files = app.config_files.keys()
+
+    if options.debug:
+        try:
+            from repoze.profile import ProfileMiddleware
+            app = ProfileMiddleware(
+               app,
+               log_filename='/tmp/mapproxy_profile.log',
+               discard_first_request=True,
+               flush_at_shutdown=True,
+               path='/__profile__',
+               unwind=False,
+            )
+            print('Installed profiler at /__profile__')
+        except ImportError:
+            pass
+
     run_simple(host, port, app, use_reloader=True, processes=1,
         threaded=True, passthrough_errors=True,
-        extra_files=app.config_files.keys())
+        extra_files=extra_files)
 
 def serve_multiapp_develop_command(args):
     parser = optparse.OptionParser("usage: %prog serve-multiapp-develop [options] projects/")

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2011 sp1 (http://www.altova.com) by - - (European Commission DG JRC IES) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://inspire.ec.europa.eu/schemas/common/1.0" targetNamespace="http://inspire.ec.europa.eu/schemas/common/1.0" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0.1">
+	<xs:complexType name="inspireTheme_est">
+		<xs:complexContent>
+			<xs:restriction base="inspireTheme">
+				<xs:sequence>
+					<xs:element name="OriginatingControlledVocabulary" type="originatingControlledVocabularyGemetInspireThemes"/>
+					<xs:element name="KeywordValue">
+						<xs:simpleType>
+							<xs:restriction base="keywordValue">
+								<xs:enumeration value="Aadressid"/>
+								<xs:enumeration value="Atmosfääritingimused"/>
+								<xs:enumeration value="Bio-geograafilised piirkonnad"/>
+								<xs:enumeration value="Ehitised"/>
+								<xs:enumeration value="Elanikkonna jaotumine – demograafia"/>
+								<xs:enumeration value="Elupaigad ja biotoobid"/>
+								<xs:enumeration value="Energiaressursid"/>
+								<xs:enumeration value="Geograafilised nimed"/>
+								<xs:enumeration value="Geograafilised ruutvõrgud"/>
+								<xs:enumeration value="Geoloogia"/>
+								<xs:enumeration value="Haldusüksused"/>
+								<xs:enumeration value="Hüdrograafia"/>
+								<xs:enumeration value="Inimeste tervis ja ohutus"/>
+								<xs:enumeration value="Kaitsealused kohad"/>
+								<xs:enumeration value="Katastriüksused"/>
+								<xs:enumeration value="Keskkonnaseirerajatised"/>
+								<xs:enumeration value="Kommunaal- ja riiklikud teenused"/>
+								<xs:enumeration value="Koordinaatsüsteemid"/>
+								<xs:enumeration value="Kõrgused"/>
+								<xs:enumeration value="Liikide jaotumine"/>
+								<xs:enumeration value="Looduslikud ohutsoonid"/>
+								<xs:enumeration value="Maakasutus"/>
+								<xs:enumeration value="Maakate"/>
+								<xs:enumeration value="Maavarad"/>
+								<xs:enumeration value="Merepiirkonnad"/>
+								<xs:enumeration value="Meteoroloogilis-geograafilised tunnusjooned"/>
+								<xs:enumeration value="Okeanograafilis-geograafilised tunnusjooned"/>
+								<xs:enumeration value="Ortokujutised"/>
+								<xs:enumeration value="Pinnas"/>
+								<xs:enumeration value="Põllumajandus- ja vesiviljelusrajatised"/>
+								<xs:enumeration value="Statistilised üksused"/>
+								<xs:enumeration value="Tootmis- ja tööstusrajatised"/>
+								<xs:enumeration value="Transpordivõrgud"/>
+								<xs:enumeration value="Üldplaneering/piirangu-/reguleeritud tsoonid ja aruandlusüksused"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Interoperability-->
+	<xs:complexType name="resLocInspireInteroperabilityRegulation_est">
+		<xs:complexContent>
+			<xs:restriction base="resourceLocatorType">
+				<xs:sequence>
+					<xs:element name="URL">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:ET:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="MediaType">
+						<xs:simpleType>
+							<xs:restriction base="mediaType">
+								<xs:enumeration value="application/pdf"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="citationInspireInteroperabilityRegulation_est">
+		<xs:complexContent>
+			<xs:restriction base="citationConformity">
+				<xs:sequence>
+					<xs:element name="Title">
+						<xs:simpleType>
+							<xs:restriction base="notEmptyString">
+								<xs:enumeration value="KOMISJONI MÄÄRUS (EL) nr 1089/2010, 23. november 2010, millega rakendatakse Euroopa Parlamendi ja nõukogu direktiivi 2007/2/EÜ seoses ruumiandmekogumite ja -teenuste ristkasutatavusega"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:choice>
+						<xs:element name="DateOfPublication">
+							<xs:simpleType>
+								<xs:restriction base="iso8601Date">
+									<xs:enumeration value="2010-12-08"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:choice>
+					<xs:element name="URI" minOccurs="1" maxOccurs="1">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="OJ:L:2010:323:0011:0102:ET:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="ResourceLocator" type="resLocInspireInteroperabilityRegulation_est" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

@@ -108,6 +108,9 @@ class type_spec(object):
                 v[self.type_key] = str()
 
     def subspec(self, data, context):
+        if not data:
+            raise ValueError("%s is empty" % (context.current_pos, ))
+
         if self.type_key not in data:
             raise ValueError("'%s' not in %s" % (self.type_key, context.current_pos))
         key = data[self.type_key]

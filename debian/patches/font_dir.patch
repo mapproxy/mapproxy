@@ -1,6 +1,23 @@
-diff -Nur -x '*.orig' -x '*~' mapproxy_trunk//mapproxy/config/defaults.py mapproxy_trunk.new//mapproxy/config/defaults.py
---- mapproxy_trunk//mapproxy/config/defaults.py	2011-05-24 12:26:58.129903954 +0200
-+++ mapproxy_trunk.new//mapproxy/config/defaults.py	2011-05-24 12:29:48.828784289 +0200
+Index: mapproxy/MANIFEST.in
+===================================================================
+--- mapproxy.orig/MANIFEST.in	2015-07-17 09:16:34.000000000 +0000
++++ mapproxy/MANIFEST.in	2015-07-17 09:17:08.000000000 +0000
+@@ -18,9 +18,8 @@
+ include doc/_templates/*.html
+ 
+ recursive-include mapproxy/config_template *.ini *.wsgi *.yaml
+-recursive-include mapproxy/image/fonts *.ttf LICENSE
+ recursive-include mapproxy/service/templates *.css *.cfg *.gif *.png *.xml *.html *.js
+ recursive-include mapproxy/test/schemas *.xml *.xsd *.dtd *.wsdl *.txt
+ recursive-include mapproxy/test/system/fixture *.yaml *.mbtiles *.geojson *.xml *.jpeg *.png *.py
+ recursive-include mapproxy/test/unit epsg *.dbf *.shp *.shx
+-recursive-include mapproxy/util/ext/wmsparse/test *.xml
+\ No newline at end of file
++recursive-include mapproxy/util/ext/wmsparse/test *.xml
+Index: mapproxy/mapproxy/config/defaults.py
+===================================================================
+--- mapproxy.orig/mapproxy/config/defaults.py	2015-07-17 09:16:34.000000000 +0000
++++ mapproxy/mapproxy/config/defaults.py	2015-07-17 09:16:42.000000000 +0000
 @@ -43,7 +43,7 @@
      max_shrink_factor = 4.0,
      paletted = True,
@@ -10,9 +27,10 @@ diff -Nur -x '*.orig' -x '*~' mapproxy_trunk//mapproxy/config/defaults.py mappro
  )
  # number of concurrent requests to a tile source
  
-diff -Nur -x '*.orig' -x '*~' mapproxy_trunk//mapproxy/image/fonts/LICENSE mapproxy_trunk.new//mapproxy/image/fonts/LICENSE
---- mapproxy_trunk//mapproxy/image/fonts/LICENSE	2011-05-24 12:10:12.269506668 +0200
-+++ mapproxy_trunk.new//mapproxy/image/fonts/LICENSE	1970-01-01 01:00:00.000000000 +0100
+Index: mapproxy/mapproxy/image/fonts/LICENSE
+===================================================================
+--- mapproxy.orig/mapproxy/image/fonts/LICENSE	2015-07-17 09:16:34.000000000 +0000
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
 @@ -1,99 +0,0 @@
 -Fonts are (c) Bitstream (see below). DejaVu changes are in public domain.
 -Glyphs imported from Arev fonts are (c) Tavmjong Bah (see below)
@@ -113,13 +131,3 @@ diff -Nur -x '*.orig' -x '*~' mapproxy_trunk//mapproxy/image/fonts/LICENSE mappr
 -. fr.
 -
 -$Id: LICENSE 2133 2007-11-28 02:46:28Z lechimp $
-
-diff -Nur -x '*.orig' -x '*~' mapproxy_trunk//MANIFEST.in mapproxy_trunk.new//MANIFEST.in
---- mapproxy_trunk//MANIFEST.in	2011-05-24 12:42:00.437902981 +0200
-+++ mapproxy_trunk.new//MANIFEST.in	2011-05-24 12:42:15.555917095 +0200
-@@ -6,4 +6,4 @@
- include COPYING.txt
- 
- recursive-include mapproxy *
--recursive-exclude mapproxy *.pyc *.class *.pyd .DS_Store *.rej *.orig *.lck .empty
-+recursive-exclude mapproxy *.pyc *.class *.pyd .DS_Store *.rej *.orig *.lck .empty *.ttf

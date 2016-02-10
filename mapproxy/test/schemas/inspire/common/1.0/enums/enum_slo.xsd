@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2011 sp1 (http://www.altova.com) by - - (European Commission DG JRC IES) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://inspire.ec.europa.eu/schemas/common/1.0" targetNamespace="http://inspire.ec.europa.eu/schemas/common/1.0" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0.1">
+	<xs:complexType name="inspireTheme_slo">
+		<xs:complexContent>
+			<xs:restriction base="inspireTheme">
+				<xs:sequence>
+					<xs:element name="OriginatingControlledVocabulary" type="originatingControlledVocabularyGemetInspireThemes"/>
+					<xs:element name="KeywordValue">
+						<xs:simpleType>
+							<xs:restriction base="keywordValue">
+								<xs:enumeration value="Adresy"/>
+								<xs:enumeration value="Atmosférické podmienky"/>
+								<xs:enumeration value="Biogeografické regióny"/>
+								<xs:enumeration value="Chránené územia"/>
+								<xs:enumeration value="Dopravné siete"/>
+								<xs:enumeration value="Geografické systémy sietí"/>
+								<xs:enumeration value="Geológia"/>
+								<xs:enumeration value="Habitaty a biotopy"/>
+								<xs:enumeration value="Hydrografia"/>
+								<xs:enumeration value="Katastrálne parcely"/>
+								<xs:enumeration value="Krajinná pokrývka (land cover)"/>
+								<xs:enumeration value="Ľudské zdravie a bezpečnosť"/>
+								<xs:enumeration value="Meteorologické geografické prvky"/>
+								<xs:enumeration value="Morské regióny"/>
+								<xs:enumeration value="Oceánografické geografické prvky"/>
+								<xs:enumeration value="Ortometria"/>
+								<xs:enumeration value="Pôda"/>
+								<xs:enumeration value="Poľnohospodárske zariadenia a zariadenia akvakultúry"/>
+								<xs:enumeration value="Rozmiestnenie obyvateľstva – demografia"/>
+								<xs:enumeration value="Správne jednotky"/>
+								<xs:enumeration value="Spravované/obmedzené/regulované zóny a jednotky podávajúce správy"/>
+								<xs:enumeration value="Štatistické jednotky"/>
+								<xs:enumeration value="Stavby"/>
+								<xs:enumeration value="Súradnicové referenčné systémy"/>
+								<xs:enumeration value="Verejné a štátne služby"/>
+								<xs:enumeration value="Výrobné a priemyselné zariadenia"/>
+								<xs:enumeration value="Výška"/>
+								<xs:enumeration value="Výskyt druhov"/>
+								<xs:enumeration value="Využitie územia"/>
+								<xs:enumeration value="Zariadenia na monitorovanie životného prostredia"/>
+								<xs:enumeration value="Zdroje energie"/>
+								<xs:enumeration value="Zdroje nerastných surovín"/>
+								<xs:enumeration value="Zemepisné názvy"/>
+								<xs:enumeration value="Zóny prírodného rizika"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Interoperability-->
+	<xs:complexType name="resLocInspireInteroperabilityRegulation_slo">
+		<xs:complexContent>
+			<xs:restriction base="resourceLocatorType">
+				<xs:sequence>
+					<xs:element name="URL">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:SK:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="MediaType">
+						<xs:simpleType>
+							<xs:restriction base="mediaType">
+								<xs:enumeration value="application/pdf"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="citationInspireInteroperabilityRegulation_slo">
+		<xs:complexContent>
+			<xs:restriction base="citationConformity">
+				<xs:sequence>
+					<xs:element name="Title">
+						<xs:simpleType>
+							<xs:restriction base="notEmptyString">
+								<xs:enumeration value="NARIADENIE KOMISIE (EÚ) č. 1089/2010 z 23. novembra 2010, ktorým sa vykonáva smernica Európskeho parlamentu a Rady 2007/2/ES, pokiaľ ide o interoperabilitu súborov a služieb priestorových údajov"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:choice>
+						<xs:element name="DateOfPublication">
+							<xs:simpleType>
+								<xs:restriction base="iso8601Date">
+									<xs:enumeration value="2010-12-08"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:choice>
+					<xs:element name="URI" minOccurs="1" maxOccurs="1">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="OJ:L:2010:323:0011:0102:SK:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="ResourceLocator" type="resLocInspireInteroperabilityRegulation_slo" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

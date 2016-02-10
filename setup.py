@@ -54,7 +54,7 @@ def long_description(changelog_releases=10):
 
 setup(
     name='MapProxy',
-    version="1.8.0a",
+    version="1.8.2a0",
     description='An accelerating proxy for web map services',
     long_description=long_description(7),
     author='Oliver Tonnhofer',
@@ -86,9 +86,11 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2.5",
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
         "Topic :: Internet :: Proxy Servers",
         "Topic :: Internet :: WWW/HTTP :: WSGI",
         "Topic :: Scientific/Engineering :: GIS",

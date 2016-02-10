@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2011 sp1 (http://www.altova.com) by - - (European Commission DG JRC IES) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://inspire.ec.europa.eu/schemas/common/1.0" targetNamespace="http://inspire.ec.europa.eu/schemas/common/1.0" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0.1">
+	<xs:complexType name="inspireTheme_fin">
+		<xs:complexContent>
+			<xs:restriction base="inspireTheme">
+				<xs:sequence>
+					<xs:element name="OriginatingControlledVocabulary" type="originatingControlledVocabularyGemetInspireThemes"/>
+					<xs:element name="KeywordValue">
+						<xs:simpleType>
+							<xs:restriction base="keywordValue">
+								<xs:enumeration value="Aluesuunnittelun, rajoitusten ja sääntelyn piiriin kuuluvat alueet ja raportointiyksiköt"/>
+								<xs:enumeration value="Biomaantieteelliset alueet"/>
+								<xs:enumeration value="Elinympäristöt ja biotoopit"/>
+								<xs:enumeration value="Energiavarat"/>
+								<xs:enumeration value="Geologia"/>
+								<xs:enumeration value="Hallinnolliset yksiköt"/>
+								<xs:enumeration value="Hydrografia"/>
+								<xs:enumeration value="Ilmakehän tila"/>
+								<xs:enumeration value="Ilmaston maantieteelliset ominaispiirteet"/>
+								<xs:enumeration value="Kiinteistöt"/>
+								<xs:enumeration value="Koordinaattijärjestelmät"/>
+								<xs:enumeration value="Korkeus"/>
+								<xs:enumeration value="Lajien levinneisyys"/>
+								<xs:enumeration value="Liikenneverkot"/>
+								<xs:enumeration value="Luonnonriskialueet"/>
+								<xs:enumeration value="Maankäyttö"/>
+								<xs:enumeration value="Maanpeite"/>
+								<xs:enumeration value="Maaperä"/>
+								<xs:enumeration value="Maatalous- ja vesiviljelylaitokset"/>
+								<xs:enumeration value="Merentutkimuksen maantieteelliset ominaispiirteet"/>
+								<xs:enumeration value="Merialueet"/>
+								<xs:enumeration value="Mineraalivarat"/>
+								<xs:enumeration value="Ortoilmakuvat"/>
+								<xs:enumeration value="Osoitteet"/>
+								<xs:enumeration value="Paikannimet"/>
+								<xs:enumeration value="Paikannusruudustot"/>
+								<xs:enumeration value="Rakennukset"/>
+								<xs:enumeration value="Suojellut alueet"/>
+								<xs:enumeration value="Tilastoyksiköt"/>
+								<xs:enumeration value="Tuotanto- ja teollisuuslaitokset"/>
+								<xs:enumeration value="Väestöjakauma – demografia"/>
+								<xs:enumeration value="Väestön terveys ja turvallisuus"/>
+								<xs:enumeration value="Yleishyödylliset ja muut julkiset palvelut"/>
+								<xs:enumeration value="Ympäristön tilan seurantalaitteet"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Interoperability-->
+	<xs:complexType name="resLocInspireInteroperabilityRegulation_fin">
+		<xs:complexContent>
+			<xs:restriction base="resourceLocatorType">
+				<xs:sequence>
+					<xs:element name="URL">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:FI:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="MediaType">
+						<xs:simpleType>
+							<xs:restriction base="mediaType">
+								<xs:enumeration value="application/pdf"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="citationInspireInteroperabilityRegulation_fin">
+		<xs:complexContent>
+			<xs:restriction base="citationConformity">
+				<xs:sequence>
+					<xs:element name="Title">
+						<xs:simpleType>
+							<xs:restriction base="notEmptyString">
+								<xs:enumeration value="KOMISSION ASETUS (EU) N:o 1089/2010, annettu 23 päivänä marraskuuta 2010, Euroopan parlamentin ja neuvoston direktiivin 2007/2/EY täytäntöönpanosta paikkatietoaineistojen ja -palvelujen yhteentoimivuuden osalta"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:choice>
+						<xs:element name="DateOfPublication">
+							<xs:simpleType>
+								<xs:restriction base="iso8601Date">
+									<xs:enumeration value="2010-12-08"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:choice>
+					<xs:element name="URI" minOccurs="1" maxOccurs="1">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="OJ:L:2010:323:0011:0102:FI:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="ResourceLocator" type="resLocInspireInteroperabilityRegulation_fin" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

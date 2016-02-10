@@ -20,6 +20,7 @@ import time
 import operator
 from functools import reduce
 
+from mapproxy.cache.dummy import DummyCache
 from mapproxy.compat import iteritems, itervalues, iterkeys
 from mapproxy.config import abspath
 from mapproxy.config.loader import ConfigurationError
@@ -91,6 +92,9 @@ class SeedingConfiguration(object):
             raise SeedConfigurationError('cache %s not found. available caches: %s' % (
                 cache_name, ','.join(self.mapproxy_conf.caches.keys())))
         for tile_grid, extent, tile_mgr in self.mapproxy_conf.caches[cache_name].caches():
+            if isinstance(tile_mgr.cache, DummyCache):
+                raise SeedConfigurationError('can\'t seed cache %s (disable_storage: true)' %
+                    cache_name)
             grid_name = self.grids[tile_grid]
             cache[grid_name] = tile_mgr
         return cache

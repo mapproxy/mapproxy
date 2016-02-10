@@ -1,4 +1,37 @@
-1.8.0 2015-xx-xx
+1.8.2 2016-01-22
+~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- serve-develop: fixed reloader for Windows installations made
+  with recent pip version
+
+1.8.1 2015-09-22
+~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- WMS 1.3.0: support for metadata required by INSPIRE View Services
+- WMS: OnlineResource defaults to service URL
+
+Fixes:
+
+- mapproxy-seed: fix race-condition which prevented termination at the
+  end of the seeding process
+- autoconfig: parse capabilities without ContactInformation
+- SQLite cache: close files after seeding
+- sqlite/mbtiles: fix tile lock location
+- WMS 1.0.0: fix image format for source requests
+- WMS: allow floats for X/Y in GetFeatureInfo requests
+- CouchDB: fix for Python 3
+
+Other:
+
+- mapproxy-seed: seeding a cache with disable_storage: true returns
+  an error
+- all changes are now tested against Python 2.7, 3.3, 3.4 and 3.5
+
+1.8.0 2015-05-18
 ~~~~~~~~~~~~~~~~
 
 Features:
@@ -23,11 +56,13 @@ Fixes:
 - accept PNG/JPEG style image_format for WMS 1.0.0
 - fix TMS capabilities in demo for TMS with use_grid_names
 - fix ctrl+c behaviour in mapproxy-seed
+- fix BBOX parsing in autoconf for WMS 1.3.0 services
 
 Other:
 
 - 1.8.0 is expected to work with Python 2.6, but it is no longer officially supported
-
+- MapProxy will now issue warnings about configurations that will change with 2.0.
+  doc/mapproxy_2.rst lists some of the planed incompatible changes
 
 1.7.1 2014-07-08
 ~~~~~~~~~~~~~~~~

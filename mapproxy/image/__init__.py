@@ -318,7 +318,10 @@ def quantize(img, colors=256, alpha=False, defaults=None, quantizer=None):
     if hasattr(Image, 'FASTOCTREE') and quantizer in (None, 'fastoctree'):
         if not alpha:
             img = img.convert('RGB')
-        img = img.quantize(colors, Image.FASTOCTREE)
+        try:
+            img = img.quantize(colors, Image.FASTOCTREE)
+        except ValueError:
+            pass
     else:
         if alpha and img.mode == 'RGBA':
             img.load() # split might fail if image is not loaded

@@ -42,7 +42,7 @@ This will change the ``PATH`` for you and will last for that terminal session.
 Install Dependencies
 --------------------
 
-MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 2.5, 2.6 and 2.7, which should already be installed with most Linux distributions. Python 2.5 is not recommended anymore and the support for it will end with MapProxy 1.8. Python 3 support is planned for MapProxy 1.8.
+MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 2.7, 3.3 and 3.4 which should already be installed with most Linux distributions. Python 2.6 should still work, but it is no longer officially supported.
 
 MapProxy has some dependencies, other libraries that are required to run. There are different ways to install each dependency. Read :ref:`dependency_details` for a list of all required and optional dependencies.
 
@@ -72,19 +72,16 @@ MapProxy uses the Proj4 C Library for all coordinate transformation tasks. It is
 
 .. _dependencies_pil:
 
-PIL
-~~~
-The Python Image Library (PIL) is used for the image processing and it is included in most distributions as ``python-imaging``.
+Pillow
+~~~~~~
+Pillow, the successor of the Python Image Library (PIL), is used for the image processing and it is included in most distributions as ``python-imaging``. Please make sure that you have Pillow installed as MapProxy is no longer compatible with the original PIL. The version of ``python-imaging`` should be >=2.
 
-Pillow, the successor of PIL `contains some enhancements for PNGs <http://mapproxy.org/blog/improving-the-performance-for-png-requests/>`_.
-You will also need Pillow to overlay multiple transparent layers.
-You can install this version from source with::
+You can install a new version of Pillow from source with::
 
   sudo aptitude install build-essential python-dev libjpeg-dev \
     zlib1g-dev libfreetype6-dev
   pip install Pillow
 
-.. note:: All changes mentioned in the blog post above are included in Pillow since version 2.0.
 
 YAML
 ~~~~
@@ -119,11 +116,11 @@ To install you need to call::
 
 You specify the release version of MapProxy. E.g.::
 
-  pip install MapProxy==1.1.0
+  pip install MapProxy==1.8.0
 
-or to get the latest 1.1.0 version::
+or to get the latest 1.8.0 version::
 
-  pip install "MapProxy>=1.1.0,<=1.1.99"
+  pip install "MapProxy>=1.8.0,<=1.8.99"
 
 To check if the MapProxy was successfully installed, you can call the `mapproxy-util` command.
 ::
@@ -171,9 +168,9 @@ Upgrade
 You can upgrade MapProxy with pip in combination with a version number or with the ``--upgrade`` option.
 Use the ``--no-deps`` option to avoid upgrading the dependencies.
 
-To upgrade to version 1.x.0::
+To upgrade to version 1.x.y::
 
-  pip install 'MapProxy==1.x.0'
+  pip install 'MapProxy==1.x.y'
 
 
 To upgrade to the latest release::

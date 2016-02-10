@@ -1,0 +1,126 @@
+globals:
+  cache:
+    base_dir: cache_data/
+    meta_size: [1, 1]
+    meta_buffer: 0
+    tile_lock_dir: defaulttilelockdir
+
+  image:
+    # resampling: 'bicubic'
+    paletted: False
+    formats:
+      custom:
+        format: image/jpeg
+      png8:
+        format: 'image/png; mode=8bit'
+        colors: 256
+services:
+  tms:
+  kml:
+  wmts:
+  wms:
+    image_formats: ['image/png', 'image/jpeg', 'png8']
+    srs: ['EPSG:4326', 'EPSG:4258', 'CRS:84', 'EPSG:900913', 'EPSG:3857', 'EPSG:31466', 'EPSG:31467', 'EPSG:31468', 'EPSG:25831', 'EPSG:25832', 'EPSG:25833']
+    bbox_srs:
+        - bbox: [2750000, 5000000, 4250000, 6500000]
+          srs: 'EPSG:31467'
+        - 'EPSG:3857'
+    md:
+      title: MapProxy test fixture ☃
+      abstract: This is MapProxy.
+      online_resource: http://mapproxy.org/
+      contact:
+        person: Oliver Tonnhofer
+        position: Technical Director
+        organization: Omniscale
+        address: Nadorster Str. 60
+        city: Oldenburg
+        postcode: 26123
+        country: Germany
+        phone: +49(0)441-9392774-0
+        fax: +49(0)441-9392774-9
+        email: info@omniscale.de
+      access_constraints:
+        This service is intended for private and evaluation use only.
+        The data is licensed as Creative Commons Attribution-Share Alike 2.0
+        (http://creativecommons.org/licenses/by-sa/2.0/)
+      keyword_list:
+       - vocabulary: GEMET
+         keywords:   [Orthoimagery]
+       - keywords:   ["INSPIRE View Service", MapProxy]
+
+    inspire_md:
+      type: embedded
+      languages:
+        default: eng
+      resource_locators:
+        - url: http://example.org/metadata
+          media_type: application/vnd.iso.19139+xml
+      temporal_reference:
+        date_of_creation: "2015-05-01" # as string
+      metadata_points_of_contact:
+        - organisation_name: Example Inc.
+          email: bar@example.org
+      conformities:
+        - title: test
+          date_of_publication: 2010-12-08
+          resource_locators:
+          - url: http://example.org/metadata
+            media_type: application/vnd.iso.19139+xml
+          degree: notEvaluated
+      mandatory_keywords: ['infoMapAccessService']
+      keywords:
+        - title: GEMET - INSPIRE themes
+          date_of_publication: 2008-06-01
+          keyword_value: Orthoimagery
+      metadata_date: 2015-07-23 # as datetime
+
+layers:
+  - name: inspire_example
+    title: Example layer with Inspire View Service metadata
+    sources: [direct]
+    md:
+      abstract: Some abstract
+      keyword_list:
+       - vocabulary: Name of the vocabulary
+         keywords:   [keyword1, keyword2]
+       - vocabulary: Name of another vocabulary
+         keywords:   [keyword1, keyword2]
+       - keywords:   ["keywords without vocabulary"]
+      attribution:
+       title: My attribution title
+       url:   http://some.url/
+       logo:
+         url:    http://some.url/logo.jpg
+         width:  100
+         height: 100
+         format: image/jpeg
+      identifier:
+       - url:    http://some.url/
+         name:   HKU1234
+         value:  Some value
+      metadata:
+       - url:    http://some.url/
+         type:   INSPIRE
+         format: application/xml
+       - url:    http://some.url/
+         type:   ISO19115:2003
+         format: application/xml
+      data:
+       - url:    http://some.url/datasets/test.shp
+         format: application/octet-stream
+       - url:    http://some.url/datasets/test.gml
+         format: text/xml; subtype=gml/3.2.1
+      feature_list:
+       - url:    http://some.url/datasets/test.pdf
+         format: application/pdf
+
+sources:
+  direct:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: bar
+    coverage:
+      bbox: [-180, -80, 170, 80]
+      srs: 'EPSG:4326'
