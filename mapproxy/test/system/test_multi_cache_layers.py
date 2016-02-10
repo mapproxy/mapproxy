@@ -77,7 +77,7 @@ class TestMultiCacheLayer(SystemTest):
         assert 'http://localhost/tms/1.0.0/multi_cache/gk3' in resp
         assert 'http://localhost/tms/1.0.0/cache/utm32' in resp
         xml = resp.lxml
-        assert xml.xpath('count(//TileMap)') == 5
+        assert xml.xpath('count(//TileMap)') == 6
 
     def test_wmts_capabilities(self):
         req = str(self.common_cap_req)
