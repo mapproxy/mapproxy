@@ -372,6 +372,18 @@ You need to enable ``transparent`` for your source, if you use ``on_error`` resp
         cache: False
 
 
+``featureinfo_utfgrid_url``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An optional URL template that points to `UTFGrid tiles <https://github.com/mapbox/utfgrid-spec/blob/master/1.3/utfgrid.md>`_ containing information about features at a given point. This can be used to answer WMS GetFeatureInfo requests. It uses the same format as the ``url`` option.
+
+
+``featureinfo_utfgrid_template``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An optional `mustache template string <https://mustache.github.io/mustache.5.html>`_ that will be used to render GetFeatureInfo text or html responses.
+
+
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 ::
