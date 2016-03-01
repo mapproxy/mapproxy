@@ -78,7 +78,7 @@ class ETA(object):
             return 'N/A'
         try:
             return time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(timestamp))
-        except ValueError:
+        except (ValueError, OSError): # OSError since Py 3.3
             # raised when time is out of range (e.g. year >2038)
             return 'N/A'
 
