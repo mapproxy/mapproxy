@@ -48,7 +48,7 @@ class SeedScript(object):
     parser = OptionParser(usage)
     parser.add_option("-q", "--quiet",
                       action="count", dest="quiet", default=0,
-                      help="don't print status messages to stdout")
+                      help="reduce number of messages to stdout, repeat to disable progress output")
     parser.add_option("-s", "--seed-conf",
                       dest="seed_file", default=None,
                       help="seed configuration")
