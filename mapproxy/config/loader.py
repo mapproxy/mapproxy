@@ -1589,7 +1589,7 @@ class ServiceConfiguration(ConfigurationBase):
         for format in image_formats_names:
             opts = self.context.globals.image_options.image_opts({}, format)
             if opts.format in image_formats:
-                log.warn('duplicate mime-type for WMS image_formats: "%s" already configured',
+                log.warn('duplicate mime-type for WMS image_formats: "%s" already configured, will use last format',
                     opts.format)
             image_formats[opts.format] = opts
         info_types = conf.get('featureinfo_types')
