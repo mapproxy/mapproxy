@@ -22,6 +22,7 @@ from mapproxy.request.tile import TMSRequest, tile_request, TileRequest
 from mapproxy.request.wms import (wms_request, WMSMapRequest, WMSMapRequestParams,
                               WMS111MapRequest, WMS100MapRequest, WMS130MapRequest,
                               WMS111FeatureInfoRequest)
+from mapproxy.request.arcgis import ArcGISRequest
 from mapproxy.exception import RequestError
 from mapproxy.request.wms.exception import (WMS111ExceptionHandler, WMSImageExceptionHandler,
                                      WMSBlankExceptionHandler)
@@ -212,6 +213,24 @@ class TestWMS111FeatureInfoRequest(TestWMSMapRequest):
     def test_pos_coords(self):
         req = wms_request(DummyRequest(self.base_req))
         eq_(req.params.pos_coords, (7.25, 50.5))
+
+
+class TestArcGISRequest(object):
+    def test_base_request(self):
+        req = ArcGISRequest(url="http://example.com/ArcGIS/rest/MapServer/")
+        eq_("http://example.com/ArcGIS/rest/MapServer/export", req.url)
+        req.params.bbox = [-180.0, -90.0, 180.0, 90.0]
+        eq_((-180.0, -90.0, 180.0, 90.0), req.params.bbox)
+        eq_("-180.0,-90.0,180.0,90.0", req.params["bbox"])
+        req.params.size = [256, 256]
+        eq_((256, 256), req.params.size)
+        eq_("256,256", req.params["size"])
+        req.params.imageSR = "EPSG:4326"
+        eq_("4326", req.params.imageSR)
+        eq_("4326", req.params["imageSR"])
+        req.params.bboxSR = SRS("EPSG:4326")
+        eq_("4326", req.params.bboxSR)
+        eq_("4326", req.params["bboxSR"])
 
 
 class TestRequest(object):

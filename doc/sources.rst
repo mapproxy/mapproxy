@@ -6,6 +6,7 @@ Sources
 MapProxy supports the following sources:
 
 - :ref:`wms_label`
+- :ref:`arcgis_label`
 - :ref:`tiles_label`
 - :ref:`mapserver_label`
 - :ref:`mapnik_label`
@@ -252,6 +253,85 @@ Full example::
       another_param: bar
       transparent: true
 
+
+.. _arcgis_label:
+
+ArcGIS REST API
+"""
+
+Use the type ``arcgis`` to for ArcGIS servers.
+
+``req``
+^^^^^^^
+
+This describes the ArcGIS source. The only required option is ``url``. You need to set ``transparent`` to ``true`` if you want to use this source as an overlay.
+::
+
+  req:
+    url: http://example.org/ArcGIS/rest/services/Imagery/MapService
+    layers: show: 0,1
+    transparent: true
+
+``coverage``
+^^^^^^^^^^^^
+
+Define the covered area of the source. The source will only be requested if there is an intersection etween the requested data and the coverage. See :doc:`coverages <coverages>` for more information about he configuration. The intersection is calculated for meta-tiles and not the actual client request, so ou should expect more visible data at the coverage boundaries.
+
+.. _supported_srs:
+
+``supported_srs``
+^^^^^^^^^^^^^^^^^
+
+A list with SRSs that should be requested from the ArcGIS server. MapProxy will only query the source in hese SRSs. It will reproject data if it needs to get data from this layer in any other SRS.
+
+In most cases you should not need to configure this because ArcGIS servers should be able to dynamically eproject to any SRS.
+
+If MapProxy needs to reproject and the source has multiple ``supported_srs``, then it will use the fist rojected SRS for requests in projected SRS, or the fist geographic SRS for requests in geographic SRS. E. when `supported_srs` is ``['EPSG:4326', 'EPSG:31467']`` caches with EPSG:900913 will use EPSG:32467.
+
+  ..  .. note:: For the configuration of SRS for MapProxy see `srs_configuration`_.
+
+
+``http``
+^^^^^^^^
+
+You can configure the following HTTP related options for this source:
+
+- ``headers``
+- ``client_timeout``
+- ``ssl_ca_certs``
+- ``ssl_no_cert_checks`` (see below)
+
+See :ref:`HTTP Options <http_ssl>` for detailed documentation.
+
+.. _arcgis_source-ssl_no_cert_checks:
+
+``ssl_no_cert_checks``
+
+  MapProxy checks the SSL server certificates for any ``req.url`` that use HTTPS. You need to supply a ile (see) that includes that certificate, otherwise MapProxy will fail to establish the connection. You an set the ``http.ssl_no_cert_checks`` options to ``true`` to disable this verification.
+
+.. _tagged_source_names:
+
+Example configuration
+^^^^^^^^^^^^^^^^^^^^^
+
+Minimal example::
+
+  my_minimal_arcgissource:
+    type: arcgis
+    req:
+      url: http://example.org/ArcGIS/rest/services/Imagery/MapService
+
+Full example::
+
+  my_arcgissource:
+    type: arcgis
+    coverage:
+       polygons: GM.txt
+       polygons_srs: EPSG:900913
+    req:
+      url: http://example.org/ArcGIS/rest/services/Imagery/MapService
+      layers: show:0,1
+      transparent: true
 
 .. _tiles_label:
 
