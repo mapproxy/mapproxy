@@ -36,7 +36,6 @@ class TestArcgisSource(SystemTest):
     config = test_config
     def setup(self):
         SystemTest.setup(self)
-        self.common_map_req = ArcGISRequest(url='/arcgis/rest/services/ExampleLayer/ImageServer')
 
     def test_get_tile(self):
         expected_req = [({'path': '/arcgis/rest/services/ExampleLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.3428,-20037508.3428,20037508.3428,20037508.3428&size=512,512'},
@@ -51,10 +50,10 @@ class TestArcgisSource(SystemTest):
             assert is_png(data)
 
     def test_get_tile_from_missing_arcgis_layer(self):
-        expected_req = [({'path': '/arcgis/rest/services/ExampleLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.3428,-20037508.3428,20037508.3428,20037508.3428&size=512,512'},
-                 {'body': b'', 'status': 500}),
+        expected_req = [({'path': '/arcgis/rest/services/NonExistentLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.3428,-20037508.3428,20037508.3428,20037508.3428&size=512,512'},
+                 {'body': b'', 'status': 400}),
                 ]
 
         with mock_httpd(('localhost', 42423), expected_req):
-            resp = self.app.get('/tms/1.0.0/app2_layer/0/0/1.png')
-            eq_(resp.status, 500)
+            resp = self.app.get('/tms/1.0.0/app2_wrong_url_layer/0/0/0.png', status=500)
+            eq_(resp.status_code, 500)
