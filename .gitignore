@@ -15,3 +15,10 @@ nosetests*.xml
 .settings
 .pydevproject
 .tox/
+.idea/.name
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+*.iml
+.idea/vcs.xml
+.idea/workspace.xml
