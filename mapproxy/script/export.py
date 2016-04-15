@@ -209,12 +209,6 @@ def export_command(args=None):
             'type': 'file',
             'directory': options.dest,
         }
-    elif options.type == 'arcgis':
-        cache_conf['cache'] = {
-            'type': 'file',
-            'directory_layout': 'arcgis',
-            'directory': options.dest,
-        }
     elif options.type in ('tms', None): # default
         cache_conf['cache'] = {
             'type': 'file',

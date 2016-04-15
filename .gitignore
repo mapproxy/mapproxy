@@ -15,4 +15,3 @@ nosetests*.xml
 .settings
 .pydevproject
 .tox/
-.idea/
