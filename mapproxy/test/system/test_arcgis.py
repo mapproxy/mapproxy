@@ -41,7 +41,7 @@ class TestArcgisSource(SystemTest):
         self.expected_bbox_str = ','.join(str(x) for x in expected_bbox)
 
     def test_get_tile(self):
-        expected_req = [({'path': '/arcgis/rest/services/ExampleLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox={}&size=512,512'.format(self.expected_bbox_str)},
+        expected_req = [({'path': '/arcgis/rest/services/ExampleLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox={bbox}&size=512,512'.format(bbox=self.expected_bbox_str)},
                  {'body': transp, 'headers': {'content-type': 'image/png'}}),
                 ]
 
@@ -53,7 +53,7 @@ class TestArcgisSource(SystemTest):
             assert is_png(data)
 
     def test_get_tile_from_missing_arcgis_layer(self):
-        expected_req = [({'path': '/arcgis/rest/services/NonExistentLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox={}&size=512,512'.format(self.expected_bbox_str)},
+        expected_req = [({'path': '/arcgis/rest/services/NonExistentLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox={bbox}&size=512,512'.format(bbox=self.expected_bbox_str)},
                  {'body': b'', 'status': 400}),
                 ]
 
