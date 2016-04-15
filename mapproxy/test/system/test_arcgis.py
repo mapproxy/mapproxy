@@ -36,9 +36,12 @@ class TestArcgisSource(SystemTest):
     config = test_config
     def setup(self):
         SystemTest.setup(self)
+        # Doing the string joining here to handle the case of python27 and python3 rounding floats differently
+        expected_bbox = (-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244)
+        self.expected_bbox_str = ','.join(str(x) for x in expected_bbox)
 
     def test_get_tile(self):
-        expected_req = [({'path': '/arcgis/rest/services/ExampleLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.3428,-20037508.3428,20037508.3428,20037508.3428&size=512,512'},
+        expected_req = [({'path': '/arcgis/rest/services/ExampleLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox={}&size=512,512'.format(self.expected_bbox_str)},
                  {'body': transp, 'headers': {'content-type': 'image/png'}}),
                 ]
 
@@ -50,10 +53,10 @@ class TestArcgisSource(SystemTest):
             assert is_png(data)
 
     def test_get_tile_from_missing_arcgis_layer(self):
-        expected_req = [({'path': '/arcgis/rest/services/NonExistentLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.3428,-20037508.3428,20037508.3428,20037508.3428&size=512,512'},
+        expected_req = [({'path': '/arcgis/rest/services/NonExistentLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox={}&size=512,512'.format(self.expected_bbox_str)},
                  {'body': b'', 'status': 400}),
                 ]
 
         with mock_httpd(('localhost', 42423), expected_req):
-            resp = self.app.get('/tms/1.0.0/app2_wrong_url_layer/0/0/0.png', status=500)
+            resp = self.app.get('/tms/1.0.0/app2_wrong_url_layer/0/0/1.png', status=500)
             eq_(resp.status_code, 500)
