@@ -92,7 +92,7 @@ class LayerMerger(object):
                     alpha = img.split()[3]
                     alpha = ImageChops.multiply(
                         alpha,
-                        ImageChops.constant(alpha, 255 * opacity)
+                        ImageChops.constant(alpha, int(255 * opacity))
                     )
                     img.putalpha(alpha)
                 if img.mode == 'RGB':
