@@ -119,7 +119,8 @@ class ImageTransformer(object):
             result = src_img.as_image().crop((minx, miny,
                                               minx+dst_size[0], miny+dst_size[1]))
         else:
-            result = src_img.as_image().transform(dst_size, Image.EXTENT,
+            img = img_for_resampling(src_img.as_image(), image_opts.resampling)
+            result = img.transform(dst_size, Image.EXTENT,
                                                   (minx, miny, maxx, maxy),
                                                   image_filter[image_opts.resampling])
         return ImageSource(result, size=dst_size, image_opts=image_opts)
@@ -152,7 +153,8 @@ class ImageTransformer(object):
         for quad in griddify(dst_quad, mesh_div):
             meshes.append(dst_quad_to_src(quad))
 
-        result = src_img.as_image().transform(dst_size, Image.MESH, meshes,
+        img = img_for_resampling(src_img.as_image(), image_opts.resampling)
+        result = img.transform(dst_size, Image.MESH, meshes,
                                               image_filter[image_opts.resampling])
         return ImageSource(result, size=dst_size, image_opts=image_opts)
 
@@ -173,6 +175,15 @@ class ImageTransformer(object):
                 self.src_srs == self.dst_srs and
                 bbox_equals(src_bbox, dst_bbox, xres/10, yres/10))
 
+def img_for_resampling(img, resampling):
+    """
+    Convert P images to RGB(A) for non-NEAREST resamplings.
+    """
+    resampling = image_filter[resampling]
+    if img.mode == 'P' and resampling != Image.NEAREST:
+        img.load() # load to get actual palette mode
+        img = img.convert(img.palette.mode)
+    return img
 
 def griddify(quad, steps):
     """
