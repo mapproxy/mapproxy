@@ -320,6 +320,9 @@ def quantize(img, colors=256, alpha=False, defaults=None, quantizer=None):
         if not alpha:
             img = img.convert('RGB')
         try:
+            if img.mode == 'P':
+                # quantize with alpha does not work with P images
+                img = img.convert('RGBA')
             img = img.quantize(colors, Image.FASTOCTREE)
         except ValueError:
             pass
