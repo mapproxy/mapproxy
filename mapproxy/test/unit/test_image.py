@@ -661,3 +661,40 @@ class TestBandMerge(object):
         img = result.as_image()
 
         eq_(img.getpixel((0, 0)), (210, 127, 120, 255))
+
+    def test_l_merge(self):
+        """
+        Check merge bands to grayscale image
+        """
+        merger = BandMerger()
+
+        merger.add_ops(dst_band=0, src_img=0, src_band=2, factor=0.2)
+        merger.add_ops(dst_band=0, src_img=2, src_band=1, factor=0.3)
+        merger.add_ops(dst_band=0, src_img=3, src_band=1, factor=0.5)
+
+        img_opts = ImageOptions('L')
+        result = merger.merge([self.img0, self.img1, self.img2, self.img3], img_opts)
+        img = result.as_image()
+
+        eq_(img.getpixel((0, 0)), int(20*0.2) + int(210*0.3) + int(255*0.5))
+
+    def test_p_merge(self):
+        """
+        Check merge bands to paletted image
+        """
+        merger = BandMerger()
+
+        merger.add_ops(dst_band=1, src_img=0, src_band=0, factor=0.5)
+        merger.add_ops(dst_band=1, src_img=3, src_band=1, factor=0.5)
+        merger.add_ops(dst_band=0, src_img=2, src_band=1)
+        merger.add_ops(dst_band=2, src_img=1, src_band=2)
+
+        img_opts = ImageOptions('P', format='image/png')
+        result = merger.merge([self.img0, self.img1, self.img2, self.img3], img_opts)
+
+        # need to encode to get conversion to P
+        img = Image.open(result.as_buffer())
+
+        eq_(img.mode, 'P')
+        img = img.convert('RGB')
+        eq_(img.getpixel((0, 0)), (210, 127, 120))

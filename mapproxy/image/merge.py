@@ -169,17 +169,28 @@ class BandMerger(object):
                 img = img.convert('RGBA')
             src_img_bands.append(img.split())
 
+        dst_mode = tmp_mode = image_opts.mode
+
+        if dst_mode == 'P':
+            if image_opts.transparent:
+                tmp_mode = 'RGBA'
+            else:
+                tmp_mode = 'RGB'
+
         # TODO image_opts P or L
-        if image_opts.mode == 'RGBA':
+        if tmp_mode == 'RGBA':
             result_bands = [None, None, None, None]
-        else:
+        elif tmp_mode == 'RGB':
             result_bands = [None, None, None]
+        elif tmp_mode == 'L':
+            result_bands = [None]
+        else:
+            raise ValueError("unsupported destination mode %s", image_opts.mode)
 
         for op in self.ops:
             chan = src_img_bands[op.src_img][op.src_band]
             if op.factor != 1.0:
                 chan = ImageMath.eval("convert(int(float(a) * %f), 'L')" % op.factor, a=chan)
-
                 if result_bands[op.dst_band] is None:
                     result_bands[op.dst_band] = chan
                 else:
@@ -196,7 +207,7 @@ class BandMerger(object):
                 b = Image.new("L", size, 255 if i == 3 else 0)
                 result_bands[i] = b
 
-        result = Image.merge(image_opts.mode, result_bands)
+        result = Image.merge(tmp_mode, result_bands)
         return ImageSource(result, size=size, image_opts=image_opts)
 
 
