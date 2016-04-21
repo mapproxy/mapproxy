@@ -19,14 +19,14 @@ __all__ = ['Image', 'ImageColor', 'ImageDraw', 'ImageFont', 'ImagePalette',
            'ImageChops', 'quantize']
 
 try:
-    from PIL import Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops
+    from PIL import Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops, ImageMath
     # prevent pyflakes warnings
-    Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops
+    Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops, ImageMath
 except ImportError:
     try:
-        import Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops
+        import Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops, ImageMath
         # prevent pyflakes warnings
-        Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops
+        Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops, ImageMath
     except ImportError:
         # allow MapProxy to start without PIL (for tilecache only).
         # issue warning and raise ImportError on first use of

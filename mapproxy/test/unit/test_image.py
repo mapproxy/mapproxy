@@ -21,7 +21,7 @@ from io import BytesIO
 from mapproxy.compat.image import Image, ImageDraw
 from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image
 from mapproxy.image import peek_image_format
-from mapproxy.image.merge import merge_images
+from mapproxy.image.merge import merge_images, BandMerger
 from mapproxy.image import _make_transparent as make_transparent, SubImageSource, img_has_transparency, quantize
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TileMerger, TileSplitter
@@ -575,3 +575,89 @@ class TestPeekImageFormat(object):
         buf = BytesIO()
         Image.new('RGB', (100, 100)).save(buf, format)
         eq_(peek_image_format(buf), expected_format)
+
+class TestBandMerge(object):
+    def setup(self):
+        self.img0 = ImageSource(Image.new('RGB', (10, 10), (0, 10, 20)))
+        self.img1 = ImageSource(Image.new('RGB', (10, 10), (100, 110, 120)))
+        self.img2 = ImageSource(Image.new('RGB', (10, 10), (200, 210, 220)))
+        self.img3 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 0)))
+
+    def test_merge_noops(self):
+        """
+        Check that black image is returned for no ops.
+        """
+        merger = BandMerger()
+
+        img_opts = ImageOptions('RGB')
+        result = merger.merge([self.img0], img_opts)
+        img = result.as_image()
+        eq_(img.size, (10, 10))
+        eq_(img.getpixel((0, 0)), (0, 0, 0))
+
+    def test_rgb_merge(self):
+        """
+        Check missing band is set to 0
+        """
+        merger = BandMerger()
+
+        merger.add_ops(dst_band=1, src_img=0, src_band=0, factor=0.5)
+        merger.add_ops(dst_band=1, src_img=3, src_band=1, factor=0.5)
+        merger.add_ops(dst_band=0, src_img=2, src_band=1)
+        merger.add_ops(dst_band=2, src_img=1, src_band=2)
+
+        img_opts = ImageOptions('RGB')
+        result = merger.merge([self.img0, self.img1, self.img2, self.img3], img_opts)
+        img = result.as_image()
+
+        eq_(img.getpixel((0, 0)), (210, 127, 120))
+
+    def test_rgb_merge_missing(self):
+        """
+        Check missing band is set to 0
+        """
+        merger = BandMerger()
+
+        merger.add_ops(dst_band=0, src_img=2, src_band=1)
+        merger.add_ops(dst_band=2, src_img=1, src_band=2)
+
+        img_opts = ImageOptions('RGB')
+        result = merger.merge([self.img0, self.img1, self.img2, self.img3], img_opts)
+        img = result.as_image()
+
+        eq_(img.getpixel((0, 0)), (210, 0, 120))
+
+    def test_rgba_merge(self):
+        """
+        Check merge of RGBA bands
+        """
+        merger = BandMerger()
+
+        merger.add_ops(dst_band=1, src_img=0, src_band=0, factor=0.5)
+        merger.add_ops(dst_band=1, src_img=3, src_band=1, factor=0.5)
+        merger.add_ops(dst_band=0, src_img=2, src_band=1)
+        merger.add_ops(dst_band=2, src_img=1, src_band=2)
+        merger.add_ops(dst_band=3, src_img=1, src_band=1)
+
+        img_opts = ImageOptions('RGBA')
+        result = merger.merge([self.img0, self.img1, self.img2, self.img3], img_opts)
+        img = result.as_image()
+
+        eq_(img.getpixel((0, 0)), (210, 127, 120, 110))
+
+    def test_rgba_merge_missing_a(self):
+        """
+        Check that missing alpha band defaults to opaque
+        """
+        merger = BandMerger()
+
+        merger.add_ops(dst_band=1, src_img=0, src_band=0, factor=0.5)
+        merger.add_ops(dst_band=1, src_img=3, src_band=1, factor=0.5)
+        merger.add_ops(dst_band=0, src_img=2, src_band=1)
+        merger.add_ops(dst_band=2, src_img=1, src_band=2)
+
+        img_opts = ImageOptions('RGBA')
+        result = merger.merge([self.img0, self.img1, self.img2, self.img3], img_opts)
+        img = result.as_image()
+
+        eq_(img.getpixel((0, 0)), (210, 127, 120, 255))
