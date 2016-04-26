@@ -296,6 +296,26 @@ Here is an example that makes OSM tiles available as tiles in UTM. Note that rep
         origin: nw
 
 
+Create grayscale images
+=======================
+
+.. versionadded:: 1.9.0
+
+You can create a grayscale layer from an existing source by creating a cache that merges multiple bands into a single band.
+The band sources can come from caches, but also from any direct source. You can ``disable_storage`` to make this conversion on-the-fly.
+The following example mixes the RGB bands of a source with factors that matches the intensity perception of most humans::
+
+  caches:
+   grayscale_cache:
+       disable_storage: true
+       sources:
+           l: [
+               {source: dop, channel: 0, factor: 0.21},
+               {source: dop, channel: 1, factor: 0.72},
+               {source: dop, channel: 2, factor: 0.07},
+           ]
+
+
 Cache raster data
 =================
 
@@ -856,7 +876,7 @@ However, this is limited to a single cache for each layer. You can't reuse the t
 You need to use ``tile_sources`` to make multiple caches available as a single layer.
 ``tile_sources`` allows you to override ``sources`` for tile services. This allows you to `use caches that build up on other caches  <using_existing_caches>`_.
 
-For example:
+For example::
 
   layers:
     - name: map
