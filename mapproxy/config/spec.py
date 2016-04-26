@@ -283,12 +283,18 @@ ogc_service_md = {
     ],
 }
 
+band_source = {
+    required('source'): str(),
+    required('band'): int,
+    'factor': number(),
+}
+
 band_sources = {
-    'r': [dict],
-    'g': [dict],
-    'b': [dict],
-    'a': [dict],
-    'l': [dict],
+    'r': [band_source],
+    'g': [band_source],
+    'b': [band_source],
+    'a': [band_source],
+    'l': [band_source],
 }
 
 mapproxy_yaml_spec = {

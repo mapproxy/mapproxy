@@ -1179,9 +1179,12 @@ class CacheConfiguration(ConfigurationBase):
             mode = 'RGB'
 
         band_merger = BandMerger(mode=mode)
+        available_bands = {'r': 0, 'g': 1, 'b': 2, 'a': 3, 'l': 0}
         for band, band_sources in iteritems(sources_conf):
-            # TODO unsupported band
-            band_idx = {'r': 0, 'g': 1, 'b': 2, 'a': 3, 'l': 0}[band]
+            band_idx = available_bands.get(band)
+            if band_idx is None:
+                raise ConfigurationError("unsupported band '%s' for cache %s"
+                    % (band, self.conf['name']))
             for source in band_sources:
                 band_merger.add_ops(
                     dst_band=band_idx,
