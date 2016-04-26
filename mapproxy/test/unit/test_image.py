@@ -409,7 +409,7 @@ class TestTransform(object):
         result = transformer.transform(self.src_img, self.src_bbox, self.dst_size, self.dst_bbox,
             image_opts=ImageOptions(resampling='nearest'))
         assert isinstance(result, ImageSource)
-        assert result.as_image() != self.src_img
+        assert result.as_image() != self.src_img.as_image()
         assert result.size == (100, 150)
 
     def _test_compare_mesh_div(self):

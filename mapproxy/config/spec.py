@@ -283,6 +283,14 @@ ogc_service_md = {
     ],
 }
 
+band_sources = {
+    'r': [dict],
+    'g': [dict],
+    'b': [dict],
+    'a': [dict],
+    'l': [dict],
+}
+
 mapproxy_yaml_spec = {
     '__config_files__': anything(), # only used internaly
     'globals': {
@@ -336,7 +344,7 @@ mapproxy_yaml_spec = {
     },
     'caches': {
         anything(): {
-            required('sources'): [string_type],
+            required('sources'): one_of([string_type], band_sources),
             'name': str(),
             'grids': [str()],
             'cache_dir': str(),

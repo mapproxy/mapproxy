@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010,2012 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2016 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -144,9 +144,10 @@ class BandMerger(object):
                {source: dop_cache, band: 2, factor: 0.1},
            ]
     """
-    def __init__(self):
+    def __init__(self, mode=None):
         self.ops = []
         self.cacheable = True
+        self.mode = mode
 
     def add_ops(self, dst_band, src_img, src_band, factor=1.0):
         self.ops.append(band_ops(
@@ -155,7 +156,6 @@ class BandMerger(object):
             src_band=src_band,
             factor=factor,
          ))
-
 
     def merge(self, sources, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None):
         if size is None:
@@ -169,7 +169,7 @@ class BandMerger(object):
                 img = img.convert('RGBA')
             src_img_bands.append(img.split())
 
-        dst_mode = tmp_mode = image_opts.mode
+        dst_mode = tmp_mode = image_opts.mode or self.mode
 
         if dst_mode == 'P':
             if image_opts.transparent:
@@ -177,7 +177,6 @@ class BandMerger(object):
             else:
                 tmp_mode = 'RGB'
 
-        # TODO image_opts P or L
         if tmp_mode == 'RGBA':
             result_bands = [None, None, None, None]
         elif tmp_mode == 'RGB':
