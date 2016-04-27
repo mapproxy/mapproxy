@@ -101,6 +101,18 @@ class TestValidator(object):
             'Missing services section'
         ])
 
+    def test_tile_source(self):
+        conf = self._test_conf('''
+            layers:
+                - name: one
+                  tile_sources: [missing]
+        ''')
+
+        errors = validate_references(conf)
+        eq_(errors, [
+            "Tile source 'missing' for layer 'one' not in cache section"
+        ])
+
     def test_missing_grid(self):
         conf = self._test_conf('''
             caches:
