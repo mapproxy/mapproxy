@@ -273,7 +273,9 @@ def img_has_transparency(img):
 def img_to_buf(img, image_opts):
     defaults = {}
     image_opts = image_opts.copy()
-    if image_opts.mode and img.mode[0] == 'I' and img.mode != image_opts.mode:
+
+    # convert I or L images to target mode
+    if image_opts.mode and img.mode[0] in ('I', 'L') and img.mode != image_opts.mode:
         img = img.convert(image_opts.mode)
 
     if (image_opts.colors is None and base_config().image.paletted
