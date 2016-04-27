@@ -587,7 +587,7 @@ class TestBandMerge(object):
         """
         Check that black image is returned for no ops.
         """
-        merger = BandMerger()
+        merger = BandMerger(mode='RGB')
 
         img_opts = ImageOptions('RGB')
         result = merger.merge([self.img0], img_opts)
@@ -597,9 +597,9 @@ class TestBandMerge(object):
 
     def test_rgb_merge(self):
         """
-        Check missing band is set to 0
+        Check merge of RGB bands
         """
-        merger = BandMerger()
+        merger = BandMerger(mode='RGB')
 
         merger.add_ops(dst_band=1, src_img=0, src_band=0, factor=0.5)
         merger.add_ops(dst_band=1, src_img=3, src_band=1, factor=0.5)
@@ -616,7 +616,7 @@ class TestBandMerge(object):
         """
         Check missing band is set to 0
         """
-        merger = BandMerger()
+        merger = BandMerger(mode='RGB')
 
         merger.add_ops(dst_band=0, src_img=2, src_band=1)
         merger.add_ops(dst_band=2, src_img=1, src_band=2)
@@ -631,7 +631,7 @@ class TestBandMerge(object):
         """
         Check merge of RGBA bands
         """
-        merger = BandMerger()
+        merger = BandMerger(mode='RGBA')
 
         merger.add_ops(dst_band=1, src_img=0, src_band=0, factor=0.5)
         merger.add_ops(dst_band=1, src_img=3, src_band=1, factor=0.5)
@@ -649,7 +649,7 @@ class TestBandMerge(object):
         """
         Check that missing alpha band defaults to opaque
         """
-        merger = BandMerger()
+        merger = BandMerger(mode='RGBA')
 
         merger.add_ops(dst_band=1, src_img=0, src_band=0, factor=0.5)
         merger.add_ops(dst_band=1, src_img=3, src_band=1, factor=0.5)
@@ -666,7 +666,7 @@ class TestBandMerge(object):
         """
         Check merge bands to grayscale image
         """
-        merger = BandMerger()
+        merger = BandMerger(mode='L')
 
         merger.add_ops(dst_band=0, src_img=0, src_band=2, factor=0.2)
         merger.add_ops(dst_band=0, src_img=2, src_band=1, factor=0.3)
@@ -682,14 +682,14 @@ class TestBandMerge(object):
         """
         Check merge bands to paletted image
         """
-        merger = BandMerger()
+        merger = BandMerger(mode='RGB')
 
         merger.add_ops(dst_band=1, src_img=0, src_band=0, factor=0.5)
         merger.add_ops(dst_band=1, src_img=3, src_band=1, factor=0.5)
         merger.add_ops(dst_band=0, src_img=2, src_band=1)
         merger.add_ops(dst_band=2, src_img=1, src_band=2)
 
-        img_opts = ImageOptions('P', format='image/png')
+        img_opts = ImageOptions('P', format='image/png', encoding_options={'quantizer': 'mediancut'})
         result = merger.merge([self.img0, self.img1, self.img2, self.img3], img_opts)
 
         # need to encode to get conversion to P
@@ -698,3 +698,25 @@ class TestBandMerge(object):
         eq_(img.mode, 'P')
         img = img.convert('RGB')
         eq_(img.getpixel((0, 0)), (210, 127, 120))
+
+    def test_from_p_merge(self):
+        """
+        Check merge bands from paletted image
+        """
+        merger = BandMerger(mode='RGB')
+
+        merger.add_ops(dst_band=0, src_img=0, src_band=2)
+        merger.add_ops(dst_band=1, src_img=0, src_band=1)
+        merger.add_ops(dst_band=2, src_img=0, src_band=0)
+
+        img = Image.new('RGB', (10, 10), (0, 100, 200)).quantize(256)
+        eq_(img.mode, 'P')
+        # src img is P but we can still access RGB bands
+        src_img = ImageSource(img)
+
+        img_opts = ImageOptions('RGB')
+        result = merger.merge([src_img], img_opts)
+
+        img = result.as_image()
+        eq_(img.mode, 'RGB')
+        eq_(img.getpixel((0, 0)), (200, 100, 0))

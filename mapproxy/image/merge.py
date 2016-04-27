@@ -169,13 +169,7 @@ class BandMerger(object):
                 img = img.convert('RGBA')
             src_img_bands.append(img.split())
 
-        dst_mode = tmp_mode = image_opts.mode or self.mode
-
-        if dst_mode == 'P':
-            if image_opts.transparent:
-                tmp_mode = 'RGBA'
-            else:
-                tmp_mode = 'RGB'
+        tmp_mode = self.mode
 
         if tmp_mode == 'RGBA':
             result_bands = [None, None, None, None]
