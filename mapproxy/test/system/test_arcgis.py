@@ -36,16 +36,13 @@ class TestArcgisSource(SystemTest):
     config = test_config
     def setup(self):
         SystemTest.setup(self)
-        # Doing the string joining here to handle the case of python27 and python3 rounding floats differently
-        expected_bbox = (-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244)
-        self.expected_bbox_str = ','.join(str(x) for x in expected_bbox)
 
     def test_get_tile(self):
-        expected_req = [({'path': '/arcgis/rest/services/ExampleLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox={bbox}&size=512,512'.format(bbox=self.expected_bbox_str)},
+        expected_req = [({'path': '/arcgis/rest/services/ExampleLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512'},
                  {'body': transp, 'headers': {'content-type': 'image/png'}}),
                 ]
 
-        with mock_httpd(('localhost', 42423), expected_req):
+        with mock_httpd(('localhost', 42423), expected_req, bbox_aware_query_comparator=True):
             resp = self.app.get('/tms/1.0.0/app2_layer/0/0/1.png')
             eq_(resp.content_type, 'image/png')
             eq_(resp.content_length, len(resp.body))
@@ -53,10 +50,10 @@ class TestArcgisSource(SystemTest):
             assert is_png(data)
 
     def test_get_tile_from_missing_arcgis_layer(self):
-        expected_req = [({'path': '/arcgis/rest/services/NonExistentLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox={bbox}&size=512,512'.format(bbox=self.expected_bbox_str)},
+        expected_req = [({'path': '/arcgis/rest/services/NonExistentLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512'},
                  {'body': b'', 'status': 400}),
                 ]
 
-        with mock_httpd(('localhost', 42423), expected_req):
+        with mock_httpd(('localhost', 42423), expected_req, bbox_aware_query_comparator=True):
             resp = self.app.get('/tms/1.0.0/app2_wrong_url_layer/0/0/1.png', status=500)
             eq_(resp.status_code, 500)
