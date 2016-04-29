@@ -28,6 +28,7 @@ except ImportError:
     import pickle
 
 from mapproxy.layer import map_extent_from_grid
+from mapproxy.util.fs import write_atomic
 
 import logging
 log = logging.getLogger(__name__)
@@ -78,7 +79,7 @@ class ETA(object):
             return 'N/A'
         try:
             return time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(timestamp))
-        except ValueError:
+        except (ValueError, OSError): # OSError since Py 3.3
             # raised when time is out of range (e.g. year >2038)
             return 'N/A'
 
@@ -121,11 +122,7 @@ class ProgressStore(object):
 
     def write(self):
         try:
-            with open(self.filename + '.tmp', 'wb') as f:
-                f.write(pickle.dumps(self.status))
-                f.flush()
-                os.fsync(f.fileno())
-            os.rename(self.filename + '.tmp', self.filename)
+            write_atomic(self.filename, pickle.dumps(self.status))
         except (IOError, OSError) as ex:
             log.error('unable to write seed progress: %s', ex)
 

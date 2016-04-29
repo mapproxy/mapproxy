@@ -66,9 +66,10 @@ class Validator(object):
 
     def _validate_layer(self, layer):
         layer_sources = layer.get('sources', [])
+        tile_sources = layer.get('tile_sources', [])
         child_layers = layer.get('layers', [])
 
-        if not layer_sources and not child_layers:
+        if not layer_sources and not child_layers and not tile_sources:
             self.errors.append(
                 "Missing sources for layer '%s'" % layer.get('name')
             )
@@ -90,6 +91,19 @@ class Validator(object):
                     layer['name']
                 )
             )
+
+        for source in tile_sources:
+            if source in self.caches_conf:
+                self._validate_cache(source, self.caches_conf[source])
+                continue
+
+            self.errors.append(
+                "Tile source '%s' for layer '%s' not in cache section" % (
+                    source,
+                    layer['name']
+                )
+            )
+
 
     def _split_tagged_source(self, source_name):
         layers = None

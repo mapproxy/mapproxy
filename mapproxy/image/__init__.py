@@ -273,7 +273,9 @@ def img_has_transparency(img):
 def img_to_buf(img, image_opts):
     defaults = {}
     image_opts = image_opts.copy()
-    if image_opts.mode and img.mode[0] == 'I' and img.mode != image_opts.mode:
+
+    # convert I or L images to target mode
+    if image_opts.mode and img.mode[0] in ('I', 'L') and img.mode != image_opts.mode:
         img = img.convert(image_opts.mode)
 
     if (image_opts.colors is None and base_config().image.paletted
@@ -290,7 +292,8 @@ def img_to_buf(img, image_opts):
             image_opts.colors = None
             image_opts.transparent = False
 
-    if image_opts.colors:
+    # quantize if colors is set, but not if we already have a paletted image
+    if image_opts.colors and not (img.mode == 'P' and len(img.getpalette()) == image_opts.colors*3):
         quantizer = None
         if 'quantizer' in image_opts.encoding_options:
             quantizer = image_opts.encoding_options['quantizer']
@@ -319,6 +322,9 @@ def quantize(img, colors=256, alpha=False, defaults=None, quantizer=None):
         if not alpha:
             img = img.convert('RGB')
         try:
+            if img.mode == 'P':
+                # quantize with alpha does not work with P images
+                img = img.convert('RGBA')
             img = img.quantize(colors, Image.FASTOCTREE)
         except ValueError:
             pass

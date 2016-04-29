@@ -1,3 +1,11 @@
+1.8.2 2016-01-22
+~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- serve-develop: fixed reloader for Windows installations made
+  with recent pip version
+
 1.8.1 2015-09-22
 ~~~~~~~~~~~~~~~~
 
