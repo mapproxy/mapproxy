@@ -37,6 +37,7 @@ cache:
 
 install:
     - "export MAPPROXY_TEST_RIAK_HTTP=http://localhost:8098"
+    - "export MAPPROXY_TEST_RIAK_PBC=pbc://localhost:8087"
     - "pip install -r requirements-tests.txt"
 
 script: nosetests mapproxy
