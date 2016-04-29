@@ -506,6 +506,9 @@ Export types
 ``mbtile``:
     Exports tiles into a MBTile file.
 
+``arcgis``:
+    Exports tiles in a ArcGIS exploded cache directory structure.
+
 
 
 Examples
