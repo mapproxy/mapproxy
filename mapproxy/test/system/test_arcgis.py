@@ -49,6 +49,18 @@ class TestArcgisSource(SystemTest):
             data = BytesIO(resp.body)
             assert is_png(data)
 
+    def test_get_tile_with_layer(self):
+        expected_req = [({'path': '/arcgis/rest/services/ExampleLayer/ImageServer/export?f=image&format=png&layers=show:0,1&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512'},
+                 {'body': transp, 'headers': {'content-type': 'image/png'}}),
+                ]
+
+        with mock_httpd(('localhost', 42423), expected_req, bbox_aware_query_comparator=True):
+            resp = self.app.get('/tms/1.0.0/app2_with_layer_layer/0/0/1.png')
+            eq_(resp.content_type, 'image/png')
+            eq_(resp.content_length, len(resp.body))
+            data = BytesIO(resp.body)
+            assert is_png(data)
+
     def test_get_tile_from_missing_arcgis_layer(self):
         expected_req = [({'path': '/arcgis/rest/services/NonExistentLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512'},
                  {'body': b'', 'status': 400}),
