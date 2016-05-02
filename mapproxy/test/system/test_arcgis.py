@@ -55,7 +55,7 @@ class TestArcgisSource(SystemTest):
                 ]
 
         with mock_httpd(('localhost', 42423), expected_req, bbox_aware_query_comparator=True):
-            resp = self.app.get('/tms/1.0.0/app2_with_layer_layer/0/0/1.png')
+            resp = self.app.get('/tms/1.0.0/app2_with_layers_layer/0/0/1.png')
             eq_(resp.content_type, 'image/png')
             eq_(resp.content_length, len(resp.body))
             data = BytesIO(resp.body)
