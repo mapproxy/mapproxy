@@ -22,7 +22,8 @@ function init(){
     projection: new OpenLayers.Projection('{{srs}}'),
     resolutions: [{{', '.join(str(r) for r in resolutions)}}],
     units: '{{units}}',
-    maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}})
+    maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}}),
+    tileSize: new OpenLayers.Size({{', '.join(str(s) for s in layer.grid.tile_size)}})
     };
 
     map = new OpenLayers.Map('map', mapOptions);
