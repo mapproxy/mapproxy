@@ -34,7 +34,7 @@ from mapproxy.image.message import attribution_image, message_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, LimitedLayer
 from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
 from mapproxy.util import async
-from mapproxy.util.py import cached_property
+from mapproxy.util.py import cached_property, reraise
 from mapproxy.util.coverage import load_limited_to
 from mapproxy.util.ext.odict import odict
 from mapproxy.template import template_loader, bunch, recursive_bunch
@@ -552,7 +552,7 @@ class LayerRenderer(object):
                 else:
                     ex = layer_task.exception
                     async_pool.shutdown(True)
-                    raise ex[1]
+                    reraise(ex)
         except SourceError as ex:
             raise RequestError(ex.args[0], request=self.request)
 
@@ -575,7 +575,7 @@ class LayerRenderer(object):
                     errors.append(ex[1].args[0])
                 else:
                     async_pool.shutdown(True)
-                    raise ex[1]
+                    reraise(ex)
 
         if render_layers and not rendered:
             errors = '\n'.join(errors)
