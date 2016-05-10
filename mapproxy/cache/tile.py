@@ -254,8 +254,9 @@ class TileCreator(object):
             if not self.is_cached(tile):
                 source = self._query_sources(query)
                 if not source: return []
-                # call as_buffer to force conversion into cache format
-                source.as_buffer(self.tile_mgr.image_opts)
+                if self.tile_mgr.image_opts != source.image_opts:
+                    # call as_buffer to force conversion into cache format
+                    source.as_buffer(self.tile_mgr.image_opts)
                 source.image_opts = self.tile_mgr.image_opts
                 tile.source = source
                 tile.cacheable = source.cacheable
