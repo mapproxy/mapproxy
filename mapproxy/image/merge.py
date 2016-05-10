@@ -158,6 +158,9 @@ class BandMerger(object):
          ))
 
     def merge(self, sources, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None):
+        if not sources:
+            return BlankImageSource(size=size, image_opts=image_opts, cacheable=True)
+
         if size is None:
             size = sources[0].size
 

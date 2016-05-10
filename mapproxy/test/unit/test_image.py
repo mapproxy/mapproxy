@@ -595,6 +595,20 @@ class TestBandMerge(object):
         eq_(img.size, (10, 10))
         eq_(img.getpixel((0, 0)), (0, 0, 0))
 
+    def test_merge_no_source(self):
+        """
+        Check that empty source list returns BlankImageSource.
+        """
+        merger = BandMerger(mode='RGB')
+        merger.add_ops(dst_band=0, src_img=0, src_band=0)
+
+        img_opts = ImageOptions('RGBA', transparent=True)
+        result = merger.merge([], img_opts, size=(10, 10))
+        img = result.as_image()
+
+        eq_(img.size, (10, 10))
+        eq_(img.getpixel((0, 0)), (255, 255, 255, 0))
+
     def test_rgb_merge(self):
         """
         Check merge of RGB bands
