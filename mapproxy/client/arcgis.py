@@ -30,6 +30,6 @@ class ArcGISClient(object):
         req.params.size = query.size
         req.params.bboxSR = query.srs
         req.params.imageSR = query.srs
-        req.params.transparent = "True"
+        req.params.transparent = query.transparent
 
         return req.complete_url
