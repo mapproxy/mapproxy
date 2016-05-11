@@ -324,10 +324,49 @@ Available options are:
 
 A list of data sources for this cache. You can use sources defined in the ``sources`` and ``caches`` section. This parameter is `required`. MapProxy will merge multiple sources from left (bottom) to right (top) before they are stored on disk.
 
+::
+
+    caches:
+      my_cache:
+        sources: [background_wms, overlay_wms]
+        ...
+
 WMS and Mapserver sources also support tagged names (``wms:lyr1,lyr2``). See :ref:`tagged_source_names`.
 
-Cache souces
+Band merging
 ^^^^^^^^^^^^
+.. versionadded:: 1.9.0
+
+You can also define a list of sources for each color band (channel). The target color bands are specified as ``r``, ``g``, ``b`` for RGB images, optionally with ``a`` for the alpha band. You can also use ``l`` (luminance) to create tiles with a single color band (e.g. grayscale images).
+
+You need to define the ``source`` and the ``band`` index for each source band. The indices of the source bands are numeric and start from 0.
+
+
+The following example creates a colored infra-red (false-color) image by using near infra-red for red, red (band 0) for green, and green (band 1) for blue::
+
+  caches:
+    cir_cache:
+       sources:
+           r: [{source: nir_cache, channel: 0}]
+           g: [{source: dop_cache, channel: 0}]
+           b: [{source: dop_cache, channel: 1}]
+
+
+You can define multiple sources for each target band. The values are summed and clipped at 255. An optional ``factor`` allows you to reduce the values. You can use this to mix multiple bands into a single grayscale image::
+
+  caches:
+   grayscale_cache:
+       sources:
+           l: [
+               {source: dop_cache, channel: 0, factor: 0.21},
+               {source: dop_cache, channel: 1, factor: 0.72},
+               {source: dop_cache, channel: 2, factor: 0.07},
+           ]
+
+
+
+Cache sources
+^^^^^^^^^^^^^
 .. versionadded:: 1.5.0
 
 You can also use other caches as a source. MapProxy loads tiles directly from that cache if the grid of the target cache is identical or *compatible* with the grid of the source cache. You have a compatible grid when all tiles in the cache grid are also available in source grid, even if the tile coordinates (X/Y/Z) are different.

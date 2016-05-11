@@ -24,6 +24,7 @@ from mapproxy.config.loader import (
     merge_dict,
     ConfigurationError,
 )
+from mapproxy.config.spec import validate_options
 from mapproxy.cache.tile import TileManager
 from mapproxy.test.helper import TempFile
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
@@ -514,6 +515,35 @@ class TestWMSSourceConfiguration(object):
             conf.sources['osm'].source({'format': 'image/png'})
         except ImportError:
             raise SkipTest('no ssl support')
+
+
+class TestBandMergeConfig(object):
+
+    def test_invalid_band(self):
+        conf_dict = {
+            'caches': {
+                'osm': {
+                    'sources': {'f': [{'source': 'foo', 'band': 1}]},
+                    'grids': ['GLOBAL_WEBMERCATOR'],
+                }
+            }
+        }
+        errors, informal_only = validate_options(conf_dict)
+        eq_(len(errors), 1)
+        assert "unknown 'f' in caches" in errors[0]
+
+    def test_no_band_cache(self):
+        conf_dict = {
+            'caches': {
+                'osm': {
+                    'sources': {'l': [{'source': 'foo'}]},
+                    'grids': ['GLOBAL_WEBMERCATOR'],
+                }
+            }
+        }
+        errors, informal_only = validate_options(conf_dict)
+        eq_(len(errors), 1)
+        assert "missing 'band', not in caches" in errors[0], errors
 
 
 def load_services(conf_file):

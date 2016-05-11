@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import os.path
-from mapproxy.compat import string_type
+from mapproxy.compat import string_type, iteritems
 
 import logging
 log = logging.getLogger('mapproxy.config')
@@ -181,34 +181,15 @@ class Validator(object):
                 ))
 
     def _validate_cache(self, name, cache):
-        for cache_source in cache.get('sources', []):
-            cache_source, layers = self._split_tagged_source(cache_source)
-            if self.sources_conf and cache_source in self.sources_conf:
-                source = self.sources_conf.get(cache_source)
-                if (
-                    layers is not None and
-                    source.get('type') not in TAGGED_SOURCE_TYPES
-                ):
-                    self.errors.append(
-                        "Found tagged source '%s' in cache '%s' but tagged sources only "
-                        "supported for '%s' sources" % (
-                            cache_source,
-                            name,
-                            ', '.join(TAGGED_SOURCE_TYPES)
-                        )
-                    )
-                    continue
-                self._validate_source(cache_source, source, layers)
-                continue
-            if self.caches_conf and cache_source in self.caches_conf:
-                self._validate_cache(cache_source, self.caches_conf[cache_source])
-                continue
-            self.errors.append(
-                "Source '%s' for cache '%s' not found in config" % (
-                    cache_source,
-                    name
-                )
-            )
+        if isinstance(cache.get('sources', []), dict):
+            self._validate_bands(name, set(cache['sources'].keys()))
+            for band, confs  in iteritems(cache['sources']):
+                for conf in confs:
+                    band_source = conf['source']
+                    self._validate_cache_source(name, band_source)
+        else:
+            for cache_source in cache.get('sources', []):
+                self._validate_cache_source(name, cache_source)
 
         for grid in cache.get('grids', []):
             if grid not in self.known_grids:
@@ -218,3 +199,41 @@ class Validator(object):
                         name
                     )
                 )
+
+    def _validate_cache_source(self, cache_name, source_name):
+        source_name, layers = self._split_tagged_source(source_name)
+        if self.sources_conf and source_name in self.sources_conf:
+            source = self.sources_conf.get(source_name)
+            if (
+                layers is not None and
+                source.get('type') not in TAGGED_SOURCE_TYPES
+            ):
+                self.errors.append(
+                    "Found tagged source '%s' in cache '%s' but tagged sources only "
+                    "supported for '%s' sources" % (
+                        source_name,
+                        cache_name,
+                        ', '.join(TAGGED_SOURCE_TYPES)
+                    )
+                )
+                return
+            self._validate_source(source_name, source, layers)
+            return
+        if self.caches_conf and source_name in self.caches_conf:
+            self._validate_cache(source_name, self.caches_conf[source_name])
+            return
+        self.errors.append(
+            "Source '%s' for cache '%s' not found in config" % (
+                source_name,
+                cache_name
+            )
+        )
+
+    def _validate_bands(self, cache_name, bands):
+        if 'l' in bands and len(bands) > 1:
+            self.errors.append(
+                "Cannot combine 'l' band with bands in cache '%s'" % (
+                    cache_name
+                )
+            )
+
