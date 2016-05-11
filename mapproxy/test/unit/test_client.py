@@ -153,7 +153,7 @@ class TestHTTPClient(object):
         mapproxy.client.http._max_set_timeout = None
 
         client1 = HTTPClient(timeout=0.1)
-        client2 = HTTPClient(timeout=0.2)
+        client2 = HTTPClient(timeout=0.5)
         with mock_httpd(TESTSERVER_ADDRESS, [test_req]):
             try:
                 start = time.time()
@@ -174,14 +174,9 @@ class TestHTTPClient(object):
                 assert False, 'HTTPClientError expected'
             duration2 = time.time() - start
 
-        if sys.version_info >= (2, 6):
-            # check individual timeouts
-            assert 0.1 <= duration1 < 0.2
-            assert 0.2 <= duration2 < 0.3
-        else:
-            # use max timeout in Python 2.5
-            assert 0.2 <= duration1 < 0.3
-            assert 0.2 <= duration2 < 0.3
+        # check individual timeouts
+        assert 0.1 <= duration1 < 0.5
+        assert 0.5 <= duration2 < 1.0
 
         mapproxy.client.http._max_set_timeout = old_timeout
 
