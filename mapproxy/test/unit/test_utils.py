@@ -381,8 +381,8 @@ class TestCleanupDirectory(DirTest):
         for filename in files[1::2]:
             assert os.path.exists(filename), filename
 
-def write_atomic_data(xxx_todo_changeme):
-    (i, filename) = xxx_todo_changeme
+def _write_atomic_data(i_filename):
+    (i, filename) = i_filename
     data = str(i) + '\n' + 'x' * 10000
     write_atomic(filename, data.encode('utf-8'))
     time.sleep(0.001)
@@ -402,7 +402,7 @@ class TestWriteAtomic(object):
         concurrent_writes = 8
 
         p = multiprocessing.Pool(concurrent_writes)
-        p.map(write_atomic_data, ((i, filename) for i in range(num_writes)))
+        p.map(_write_atomic_data, ((i, filename) for i in range(num_writes)))
         p.close()
         p.join()
 
