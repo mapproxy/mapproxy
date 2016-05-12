@@ -6,6 +6,7 @@ Sources
 MapProxy supports the following sources:
 
 - :ref:`wms_label`
+- :ref:`arcgis_label`
 - :ref:`tiles_label`
 - :ref:`mapserver_label`
 - :ref:`mapnik_label`
@@ -181,7 +182,7 @@ You can configure the following HTTP related options for this source:
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 
-.. _wms_source-ssl_no_cert_checks:
+.. _wms_source_ssl_no_cert_checks:
 
 ``ssl_no_cert_checks``
 
@@ -252,6 +253,50 @@ Full example::
       another_param: bar
       transparent: true
 
+
+.. _arcgis_label:
+
+ArcGIS REST API
+"""
+
+Use the type ``arcgis`` for ArcGIS MapServer and ImageServer REST server endpoints. This
+source is based on :ref:`the WMS source <wms_label>` and most WMS options apply to the
+ArcGIS source too.
+
+``req``
+^^^^^^^
+
+This describes the ArcGIS source. The only required option is ``url``. You need to set ``transparent`` to ``true`` if you want to use this source as an overlay.
+::
+
+  req:
+    url: http://example.org/ArcGIS/rest/services/Imagery/MapService
+    layers: show: 0,1
+    transparent: true
+
+.. _example_configuration:
+
+Example configuration
+^^^^^^^^^^^^^^^^^^^^^
+
+Minimal example::
+
+  my_minimal_arcgissource:
+    type: arcgis
+    req:
+      url: http://example.org/ArcGIS/rest/services/Imagery/MapService
+
+Full example::
+
+  my_arcgissource:
+    type: arcgis
+    coverage:
+       polygons: GM.txt
+       polygons_srs: EPSG:900913
+    req:
+      url: http://example.org/ArcGIS/rest/services/Imagery/MapService
+      layers: show:0,1
+      transparent: true
 
 .. _tiles_label:
 
