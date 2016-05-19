@@ -928,11 +928,28 @@ class DebugSourceConfiguration(SourceConfiguration):
         return DebugSource()
 
 
+class CartopyConfiguration(SourceConfiguration):
+    source_type = ('cartopy',)
+
+    def source(self, params=None):
+        from mapproxy.source.cartopy import CartopySource
+        import imp
+
+        mod_fname = self.context.globals.abspath(self.conf['module'])
+        mod_name = os.path.splitext(mod_fname)[0]
+        func_name = self.conf.get('function', 'main')
+
+        module = imp.load_source(mod_name, mod_fname)
+        axes_fn = getattr(module, func_name)
+        return CartopySource(axes_fn)
+
+
 source_configuration_types = {
     'wms': WMSSourceConfiguration,
     'arcgis': ArcGISSourceConfiguration,
     'tile': TileSourceConfiguration,
     'debug': DebugSourceConfiguration,
+    'cartopy': CartopyConfiguration,
     'mapserver': MapServerSourceConfiguration,
     'mapnik': MapnikSourceConfiguration,
 }

@@ -489,7 +489,11 @@ mapproxy_yaml_spec = {
                 'supported_srs': [str()],
                 'http': http_opts
             }),
-            'debug': {
+            'cartopy': {
+               required('module'): str(),
+               required('function'): str()
+            },
+           'debug': {
             },
         })
     },
