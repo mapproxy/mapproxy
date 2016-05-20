@@ -144,7 +144,7 @@ class TestHTTPClient(object):
                 assert_re(e.args[0], r'Could not verify connection to URL')
 
     def test_timeouts(self):
-        test_req = ({'path': '/', 'req_assert_function': lambda x: time.sleep(1.5) or True},
+        test_req = ({'path': '/', 'req_assert_function': lambda x: time.sleep(0.9) or True},
                     {'body': b'nothing'})
 
         import mapproxy.client.http
@@ -176,7 +176,7 @@ class TestHTTPClient(object):
 
         # check individual timeouts
         assert 0.1 <= duration1 < 0.5, duration1
-        assert 0.5 <= duration2 < 1.0, duration2
+        assert 0.5 <= duration2 < 0.9, duration2
 
         mapproxy.client.http._max_set_timeout = old_timeout
 
