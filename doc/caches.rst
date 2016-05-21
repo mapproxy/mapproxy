@@ -247,7 +247,7 @@ This backend is good for very large caches which can be distributed over many no
 Requirements
 ------------
 
-You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_ version 2.0 or newer. You can install it in the usual way, for example with ``pip install riak``. Environments with older version must be upgraded with ``pip install -U riak``.
+You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_ version 2.5.2 or newer. You can install it in the usual way, for example with ``pip install riak``. Environments with older version must be upgraded with ``pip install -U riak``. Python library depends on packages `python-dev` and `libffi-dev`.
 
 Configuration
 -------------
@@ -274,17 +274,19 @@ Example
 
 ::
 
-    myriakcache:
-        sources: [mywms]
-        grids: [mygrid]
-        type: riak
-        nodes:
-            - host: 1.example.org
-              pb_port: 9999
-            - host: 1.example.org
-            - host: 1.example.org
-        protocol: pbc
-        bucket: myriakcachetiles
-        default_ports:
-            pb: 8087
-            http: 8098
+  myriakcache:
+    sources: [mywms]
+    grids: [mygrid]
+    cache:
+      type: riak
+      nodes:
+        - host: 1.example.org
+          pb_port: 9999
+        - host: 1.example.org
+        - host: 1.example.org
+      protocol: pbc
+      bucket: myriakcachetiles
+      default_ports:
+        pb: 8087
+        http: 8098
+
