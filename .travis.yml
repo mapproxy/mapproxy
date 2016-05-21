@@ -27,6 +27,7 @@ addons:
       - libfreetype6-dev
       - protobuf-compiler
       - libprotoc-dev
+      - openjdk-7-jre
 
 env:
   - MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984
@@ -34,6 +35,9 @@ env:
 cache:
   directories:
     - $HOME/.cache/pip
+
+before_install:
+    - ulimit -n 4096 && sudo service riak restart	# default open file limit is too low for riak
 
 install:
     - "export MAPPROXY_TEST_RIAK_HTTP=http://localhost:8098"
