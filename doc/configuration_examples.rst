@@ -310,9 +310,9 @@ The following example mixes the RGB bands of a source with factors that matches 
        disable_storage: true
        sources:
            l: [
-               {source: dop, channel: 0, factor: 0.21},
-               {source: dop, channel: 1, factor: 0.72},
-               {source: dop, channel: 2, factor: 0.07},
+               {source: dop, band: 0, factor: 0.21},
+               {source: dop, band: 1, factor: 0.72},
+               {source: dop, band: 2, factor: 0.07},
            ]
 
 

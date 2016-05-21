@@ -148,6 +148,7 @@ class BandMerger(object):
         self.ops = []
         self.cacheable = True
         self.mode = mode
+        self.max_band = {}
 
     def add_ops(self, dst_band, src_img, src_band, factor=1.0):
         self.ops.append(band_ops(
@@ -156,6 +157,8 @@ class BandMerger(object):
             src_band=src_band,
             factor=factor,
          ))
+        # store highest requested band index for each source
+        self.max_band[src_img] = max(self.max_band.get(src_img, 0), src_band)
 
     def merge(self, sources, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None):
         if not sources:
@@ -166,10 +169,19 @@ class BandMerger(object):
 
         # load src bands
         src_img_bands = []
-        for layer_img in sources:
+        for i, layer_img in enumerate(sources):
             img = layer_img.as_image()
-            if img.mode == 'P':
+
+            if i not in self.max_band:
+                # do not split img if not requested by any op
+                src_img_bands.append(None)
+                continue
+
+            if self.max_band[i] == 3 and img.mode != 'RGBA':
+                # convert to RGBA if band idx 3 is requestd (e.g. P or RGB src)
                 img = img.convert('RGBA')
+            elif img.mode == 'P':
+                img = img.convert('RGB')
             src_img_bands.append(img.split())
 
         tmp_mode = self.mode

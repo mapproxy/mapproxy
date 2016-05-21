@@ -14,19 +14,19 @@ services:
 addons:
   apt:
     packages:
-      -libproj0
-      -libgeos-dev
-      -libgdal-dev
-      -libgdal1h
-      -libxslt1-dev
-      -libxml2-dev
-      -build-essential
-      -python-dev
-      -libjpeg-dev
-      -zlib1g-dev
-      -libfreetype6-dev
-      -protobuf-compiler
-      -libprotoc-dev
+      - libproj0
+      - libgeos-dev
+      - libgdal-dev
+      - libgdal1h
+      - libxslt1-dev
+      - libxml2-dev
+      - build-essential
+      - python-dev
+      - libjpeg-dev
+      - zlib1g-dev
+      - libfreetype6-dev
+      - protobuf-compiler
+      - libprotoc-dev
 
 env:
   - MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984

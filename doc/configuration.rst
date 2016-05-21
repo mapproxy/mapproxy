@@ -337,7 +337,7 @@ Band merging
 ^^^^^^^^^^^^
 .. versionadded:: 1.9.0
 
-You can also define a list of sources for each color band (channel). The target color bands are specified as ``r``, ``g``, ``b`` for RGB images, optionally with ``a`` for the alpha band. You can also use ``l`` (luminance) to create tiles with a single color band (e.g. grayscale images).
+You can also define a list of sources for each color band. The target color bands are specified as ``r``, ``g``, ``b`` for RGB images, optionally with ``a`` for the alpha band. You can also use ``l`` (luminance) to create tiles with a single color band (e.g. grayscale images).
 
 You need to define the ``source`` and the ``band`` index for each source band. The indices of the source bands are numeric and start from 0.
 
@@ -347,9 +347,9 @@ The following example creates a colored infra-red (false-color) image by using n
   caches:
     cir_cache:
        sources:
-           r: [{source: nir_cache, channel: 0}]
-           g: [{source: dop_cache, channel: 0}]
-           b: [{source: dop_cache, channel: 1}]
+           r: [{source: nir_cache, band: 0}]
+           g: [{source: dop_cache, band: 0}]
+           b: [{source: dop_cache, band: 1}]
 
 
 You can define multiple sources for each target band. The values are summed and clipped at 255. An optional ``factor`` allows you to reduce the values. You can use this to mix multiple bands into a single grayscale image::
@@ -358,9 +358,9 @@ You can define multiple sources for each target band. The values are summed and 
    grayscale_cache:
        sources:
            l: [
-               {source: dop_cache, channel: 0, factor: 0.21},
-               {source: dop_cache, channel: 1, factor: 0.72},
-               {source: dop_cache, channel: 2, factor: 0.07},
+               {source: dop_cache, band: 0, factor: 0.21},
+               {source: dop_cache, band: 1, factor: 0.72},
+               {source: dop_cache, band: 2, factor: 0.07},
            ]
 
 

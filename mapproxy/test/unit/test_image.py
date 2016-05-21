@@ -734,3 +734,25 @@ class TestBandMerge(object):
         img = result.as_image()
         eq_(img.mode, 'RGB')
         eq_(img.getpixel((0, 0)), (200, 100, 0))
+
+    def test_from_mixed_merge(self):
+        """
+        Check merge RGBA bands from image without alpha (mixed)
+        """
+        merger = BandMerger(mode='RGBA')
+
+        merger.add_ops(dst_band=0, src_img=0, src_band=2)
+        merger.add_ops(dst_band=1, src_img=0, src_band=1)
+        merger.add_ops(dst_band=2, src_img=0, src_band=0)
+        merger.add_ops(dst_band=3, src_img=0, src_band=3)
+
+        img = Image.new('RGB', (10, 10), (0, 100, 200))
+        src_img = ImageSource(img)
+
+        img_opts = ImageOptions('RGBA')
+        result = merger.merge([src_img], img_opts)
+
+        img = result.as_image()
+        eq_(img.mode, 'RGBA')
+        eq_(img.getpixel((0, 0)), (200, 100, 0, 255))
+
