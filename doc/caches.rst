@@ -247,7 +247,7 @@ This backend is good for very large caches which can be distributed over many no
 Requirements
 ------------
 
-You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_ version 2.0 or newer. You can install it in the usual way, for example with ``pip install riak``. Environments with older version must be upgraded with ``pip install -U riak``.
+You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_ version 2.4.2 or older. You can install it in the usual way, for example with ``pip install riak==2.4.2``. Environments with older version must be upgraded with ``pip install -U riak==2.4.2``. Python library depends on packages `python-dev`, `libffi-dev` and `libssl-dev`.
 
 Configuration
 -------------
@@ -255,13 +255,13 @@ Configuration
 Available options:
 
 ``nodes``:
-    A list of riak nodes. Each node needs a ``host`` and optionally a ``pb_port`` and an ``http_port`` if the ports differ from the default. A single localhost node is used if you don't configure any nodes.
+    A list of riak nodes. Each node needs a ``host`` and optionally a ``pb_port`` and an ``http_port`` if the ports differ from the default. Defaults to single localhost node.
 
 ``protocol``:
     Communication protocol. Allowed options is ``http``, ``https`` and ``pbc``. Defaults to ``pbc``.
 
 ``bucket``:
-    The name of the bucket MapProxy uses for this cache. The bucket is the namespace for the tiles and needs to be unique for each cache. Defaults to cache name suffixed with grid name (e.g. ``mycache_webmercator``).
+    The name of the bucket MapProxy uses for this cache. The bucket is the namespace for the tiles and must be unique for each cache. Defaults to cache name suffixed with grid name (e.g. ``mycache_webmercator``).
 
 ``default_ports``:
     Default ``pb`` and ``http`` ports for ``pbc`` and ``http`` protocols. Will be used as the default for each defined node.
@@ -274,17 +274,19 @@ Example
 
 ::
 
-    myriakcache:
-        sources: [mywms]
-        grids: [mygrid]
-        type: riak
-        nodes:
-            - host: 1.example.org
-              pb_port: 9999
-            - host: 1.example.org
-            - host: 1.example.org
-        protocol: pbc
-        bucket: myriakcachetiles
-        default_ports:
-            pb: 8087
-            http: 8098
+  myriakcache:
+    sources: [mywms]
+    grids: [mygrid]
+    cache:
+      type: riak
+      nodes:
+        - host: 1.example.org
+          pb_port: 9999
+        - host: 1.example.org
+        - host: 1.example.org
+      protocol: pbc
+      bucket: myriakcachetiles
+      default_ports:
+        pb: 8087
+        http: 8098
+

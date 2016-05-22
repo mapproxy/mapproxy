@@ -25,7 +25,7 @@ Patches and Suggestions
 - Matt Walker
 - Miloslav Kmeť
 - Paul Norman
-- Ramūnas
+- Ramūnas Dronga
 - Richard Duivenvoorde
 - Stephan Holl
 - Steven D. Lander
