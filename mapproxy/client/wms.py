@@ -141,6 +141,7 @@ class WMSInfoClient(object):
 
         info_coord = req_srs.transform_to(info_srs, req_coord)
         info_pos = make_lin_transf((info_bbox), (0, query.size[1], query.size[0], 0))(info_coord)
+        info_pos = int(round(info_pos[0])), int(round(info_pos[1]))
 
         info_query = InfoQuery(
             bbox=info_bbox,

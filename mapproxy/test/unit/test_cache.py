@@ -186,7 +186,7 @@ class TestTileManagerRemoveTiles(object):
 
 class TestTileManagerTiledSource(object):
     def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
+        self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = MockTileClient()
         self.source = TiledSource(self.grid, self.client)
@@ -204,7 +204,7 @@ class TestTileManagerTiledSource(object):
 
 class TestTileManagerDifferentSourceGrid(object):
     def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
+        self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.source_grid = TileGrid(SRS(4326), bbox=[0, -90, 180, 90])
         self.client = MockTileClient()
@@ -239,7 +239,7 @@ class MockSource(MapLayer):
 
 class TestTileManagerSource(object):
     def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
+        self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.source = MockSource()
         self.image_opts = ImageOptions(format='image/png')
@@ -266,7 +266,7 @@ class MockWMSClient(object):
 
 class TestTileManagerWMSSource(object):
     def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
+        self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = MockWMSClient()
         self.source = WMSSource(self.client)
@@ -325,7 +325,7 @@ class TestTileManagerWMSSource(object):
 
 class TestTileManagerWMSSourceMinimalMetaRequests(object):
     def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
+        self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = MockWMSClient()
         self.source = WMSSource(self.client)
@@ -366,7 +366,7 @@ class SlowMockSource(MockSource):
 class TestTileManagerLocking(object):
     def setup(self):
         self.tile_dir = tempfile.mkdtemp()
-        self.file_cache = MockFileCache(self.tile_dir, 'png', lock_dir=tmp_lock_dir)
+        self.file_cache = MockFileCache(self.tile_dir, 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.source = SlowMockSource()
         self.image_opts = ImageOptions(format='image/png')
@@ -403,7 +403,7 @@ class TestTileManagerLocking(object):
 
 class TestTileManagerMultipleSources(object):
     def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
+        self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.source_base = MockSource()
         self.source_overlay = MockSource()
@@ -433,7 +433,7 @@ class SolidColorMockSource(MockSource):
 
 class TestTileManagerMultipleSourcesWithMetaTiles(object):
     def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
+        self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.source_base = SolidColorMockSource(color='#ff0000')
         self.source_base.supports_meta_tiles = True
@@ -486,7 +486,7 @@ default_image_opts = ImageOptions(resampling='bicubic')
 
 class TestCacheMapLayer(object):
     def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
+        self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = MockWMSClient()
         self.source = WMSSource(self.client)
@@ -559,7 +559,7 @@ class TestCacheMapLayer(object):
 
 class TestCacheMapLayerWithExtent(object):
     def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png', lock_dir=tmp_lock_dir)
+        self.file_cache = MockFileCache('/dev/null', 'png')
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = MockWMSClient()
         self.source = WMSSource(self.client)

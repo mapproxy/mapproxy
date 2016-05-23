@@ -34,10 +34,10 @@ from mapproxy.image.message import attribution_image, message_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, LimitedLayer
 from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
 from mapproxy.util import async
-from mapproxy.util.py import cached_property
+from mapproxy.util.py import cached_property, reraise
 from mapproxy.util.coverage import load_limited_to
 from mapproxy.util.ext.odict import odict
-from mapproxy.template import template_loader, bunch
+from mapproxy.template import template_loader, bunch, recursive_bunch
 from mapproxy.service import template_helper
 from mapproxy.layer import DefaultMapExtent, MapExtent
 
@@ -56,7 +56,9 @@ class WMSServer(Server):
         info_types=None, strict=False, on_error='raise',
         concurrent_layer_renderer=1, max_output_pixels=None,
         srs_extents=None, max_tile_age=None,
-        versions=None):
+        versions=None,
+        inspire_md=None,
+        ):
         Server.__init__(self)
         self.request_parser = request_parser or partial(wms_request, strict=strict, versions=versions)
         self.root_layer = root_layer
@@ -73,6 +75,7 @@ class WMSServer(Server):
         self.srs_extents = srs_extents
         self.max_output_pixels = max_output_pixels
         self.max_tile_age = max_tile_age
+        self.inspire_md = inspire_md
 
     def map(self, map_request):
         self.check_map_request(map_request)
@@ -188,7 +191,8 @@ class WMSServer(Server):
             info_types = self.fi_transformers.keys()
         info_formats = [mimetype_from_infotype(map_request.version, info_type) for info_type in info_types]
         result = Capabilities(service, root_layer, tile_layers,
-            self.image_formats, info_formats, srs=self.srs, srs_extents=self.srs_extents
+            self.image_formats, info_formats, srs=self.srs, srs_extents=self.srs_extents,
+            inspire_md=self.inspire_md,
             ).render(map_request)
         return Response(result, mimetype=map_request.mime_type)
 
@@ -463,7 +467,9 @@ class Capabilities(object):
     Renders WMS capabilities documents.
     """
     def __init__(self, server_md, layers, tile_layers, image_formats, info_formats,
-        srs, srs_extents=None, epsg_axis_order=False):
+        srs, srs_extents=None, epsg_axis_order=False,
+        inspire_md=None,
+        ):
         self.service = server_md
         self.layers = layers
         self.tile_layers = tile_layers
@@ -471,6 +477,7 @@ class Capabilities(object):
         self.info_formats = info_formats
         self.srs = srs
         self.srs_extents = limit_srs_extents(srs_extents, srs)
+        self.inspire_md = inspire_md
 
     def layer_srs_bbox(self, layer, epsg_axis_order=False):
         layer_srs_code = layer.extent.srs.srs_code
@@ -496,6 +503,9 @@ class Capabilities(object):
 
     def _render_template(self, template):
         template = get_template(template)
+        inspire_md = None
+        if self.inspire_md:
+            inspire_md = recursive_bunch(default='', **self.inspire_md)
         doc = template.substitute(service=bunch(default='', **self.service),
                                    layers=self.layers,
                                    formats=self.image_formats,
@@ -503,6 +513,7 @@ class Capabilities(object):
                                    srs=self.srs,
                                    tile_layers=self.tile_layers,
                                    layer_srs_bbox=self.layer_srs_bbox,
+                                   inspire_md=inspire_md,
         )
         # strip blank lines
         doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())
@@ -541,7 +552,7 @@ class LayerRenderer(object):
                 else:
                     ex = layer_task.exception
                     async_pool.shutdown(True)
-                    raise ex[1]
+                    reraise(ex)
         except SourceError as ex:
             raise RequestError(ex.args[0], request=self.request)
 
@@ -564,7 +575,7 @@ class LayerRenderer(object):
                     errors.append(ex[1].args[0])
                 else:
                     async_pool.shutdown(True)
-                    raise ex[1]
+                    reraise(ex)
 
         if render_layers and not rendered:
             errors = '\n'.join(errors)
@@ -697,6 +708,10 @@ class WMSLayer(WMSLayerBase):
             return req.complete_url
         else:
             return None
+
+    def child_layers(self):
+        return {self.name: self}
+
 
 class WMSGroupLayer(WMSLayerBase):
     """

@@ -49,8 +49,7 @@ class RiakCacheTestBase(TileCacheTestBase):
 
         TileCacheTestBase.setup(self)
 
-        self.cache = RiakCache([node], protocol, db_name, tile_grid=tile_grid(3857, name='global-webmarcator'),
-                lock_dir=self.cache_dir)
+        self.cache = RiakCache([node], protocol, db_name, tile_grid=tile_grid(3857, name='global-webmarcator'))
 
     def teardown(self):
         import riak

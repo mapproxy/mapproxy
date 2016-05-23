@@ -14,10 +14,11 @@
 # limitations under the License.
 
 from __future__ import with_statement
+import hashlib
 import os
-import time
 import sqlite3
 import threading
+import time
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, tile_buffer, CacheBackendError
@@ -38,7 +39,7 @@ class MBTilesCache(TileCacheBase):
     supports_timestamp = False
 
     def __init__(self, mbtile_file, with_timestamps=False):
-        self.lock_cache_id = mbtile_file
+        self.lock_cache_id = 'mbtiles-' + hashlib.md5(mbtile_file.encode('utf-8')).hexdigest()
         self.mbtile_file = mbtile_file
         self.supports_timestamp = with_timestamps
         self.ensure_mbtile()
@@ -197,29 +198,35 @@ class MBTilesCache(TileCacheBase):
             # all tiles loaded or coords are None
             return True
 
-        if len(coords) > 1000:
-            # SQLite is limited to 1000 args
-            raise CacheBackendError('cannot query SQLite for more than 333 tiles')
-
         if self.supports_timestamp:
-            stmt = "SELECT tile_column, tile_row, tile_data, last_modified FROM tiles WHERE "
+            stmt_base = "SELECT tile_column, tile_row, tile_data, last_modified FROM tiles WHERE "
         else:
-            stmt = "SELECT tile_column, tile_row, tile_data FROM tiles WHERE "
-        stmt += ' OR '.join(['(tile_column = ? AND tile_row = ? AND zoom_level = ?)'] * (len(coords)//3))
-
-        cursor = self.db.cursor()
-        cursor.execute(stmt, coords)
+            stmt_base = "SELECT tile_column, tile_row, tile_data FROM tiles WHERE "
 
         loaded_tiles = 0
-        for row in cursor:
-            loaded_tiles += 1
-            tile = tile_dict[(row[0], row[1])]
-            data = row[2]
-            tile.size = len(data)
-            tile.source = ImageSource(BytesIO(data))
-            if self.supports_timestamp:
-                tile.timestamp = sqlite_datetime_to_timestamp(row[3])
-        cursor.close()
+
+        # SQLite is limited to 1000 args -> split into multiple requests if more arguments are needed
+        while coords:
+            cur_coords = coords[:999]
+
+            stmt = stmt_base + ' OR '.join(
+                ['(tile_column = ? AND tile_row = ? AND zoom_level = ?)'] * (len(cur_coords) // 3))
+
+            cursor = self.db.cursor()
+            cursor.execute(stmt, cur_coords)
+
+            for row in cursor:
+                loaded_tiles += 1
+                tile = tile_dict[(row[0], row[1])]
+                data = row[2]
+                tile.size = len(data)
+                tile.source = ImageSource(BytesIO(data))
+                if self.supports_timestamp:
+                    tile.timestamp = sqlite_datetime_to_timestamp(row[3])
+            cursor.close()
+
+            coords = coords[999:]
+
         return loaded_tiles == len(tile_dict)
 
     def remove_tile(self, tile):
@@ -265,7 +272,7 @@ class MBTilesLevelCache(TileCacheBase):
     supports_timestamp = True
 
     def __init__(self, mbtiles_dir):
-        self.lock_cache_id = mbtiles_dir
+        self.lock_cache_id = 'sqlite-' + hashlib.md5(mbtiles_dir.encode('utf-8')).hexdigest()
         self.cache_dir = mbtiles_dir
         self._mbtiles = {}
         self._mbtiles_lock = threading.Lock()
@@ -283,6 +290,14 @@ class MBTilesLevelCache(TileCacheBase):
                 )
 
         return self._mbtiles[level]
+
+    def cleanup(self):
+        """
+        Close all open connection and remove them from cache.
+        """
+        with self._mbtiles_lock:
+            for mbtile in self._mbtiles.values():
+                mbtile.cleanup()
 
     def is_cached(self, tile):
         if tile.coord is None:
@@ -334,4 +349,3 @@ class MBTilesLevelCache(TileCacheBase):
             return True
         else:
             return level_cache.remove_level_tiles_before(level, timestamp)
-

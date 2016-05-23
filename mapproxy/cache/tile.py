@@ -196,13 +196,14 @@ class TileManager(object):
         return tile
 
 class TileCreator(object):
-    def __init__(self, tile_mgr, dimensions=None):
+    def __init__(self, tile_mgr, dimensions=None, image_merger=None):
         self.cache = tile_mgr.cache
         self.sources = tile_mgr.sources
         self.grid = tile_mgr.grid
         self.meta_grid = tile_mgr.meta_grid
         self.tile_mgr = tile_mgr
         self.dimensions = dimensions
+        self.image_merger = image_merger
 
     def is_cached(self, tile):
         """
@@ -254,8 +255,9 @@ class TileCreator(object):
             if not self.is_cached(tile):
                 source = self._query_sources(query)
                 if not source: return []
-                # call as_buffer to force conversion into cache format
-                source.as_buffer(self.tile_mgr.image_opts)
+                if self.tile_mgr.image_opts != source.image_opts:
+                    # call as_buffer to force conversion into cache format
+                    source.as_buffer(self.tile_mgr.image_opts)
                 source.image_opts = self.tile_mgr.image_opts
                 tile.source = source
                 tile.cacheable = source.cacheable
@@ -271,7 +273,7 @@ class TileCreator(object):
         Query all sources and return the results as a single ImageSource.
         Multiple sources will be merged into a single image.
         """
-        if len(self.sources) == 1:
+        if len(self.sources) == 1 and not self.image_merger:
             try:
                 return self.sources[0].get_map(query)
             except BlankImage:
@@ -290,8 +292,10 @@ class TileCreator(object):
             if img is not None:
                 imgs.append(img)
 
-        if not imgs: return None
-        return merge_images(imgs, size=query.size, image_opts=self.tile_mgr.image_opts)
+        merger = self.image_merger
+        if not merger:
+            merger = merge_images
+        return merger(imgs, size=query.size, image_opts=self.tile_mgr.image_opts)
 
     def _create_meta_tiles(self, meta_tiles):
         if self.tile_mgr.concurrent_tile_creators > 1 and len(meta_tiles) > 1:

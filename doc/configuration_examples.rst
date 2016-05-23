@@ -296,6 +296,26 @@ Here is an example that makes OSM tiles available as tiles in UTM. Note that rep
         origin: nw
 
 
+Create grayscale images
+=======================
+
+.. versionadded:: 1.9.0
+
+You can create a grayscale layer from an existing source by creating a cache that merges multiple bands into a single band.
+The band sources can come from caches, but also from any direct source. You can ``disable_storage`` to make this conversion on-the-fly.
+The following example mixes the RGB bands of a source with factors that matches the intensity perception of most humans::
+
+  caches:
+   grayscale_cache:
+       disable_storage: true
+       sources:
+           l: [
+               {source: dop, band: 0, factor: 0.21},
+               {source: dop, band: 1, factor: 0.72},
+               {source: dop, band: 2, factor: 0.07},
+           ]
+
+
 Cache raster data
 =================
 
@@ -829,3 +849,48 @@ With that configuration ``/wmts/mapnik/webmercator/0/0/0.png`` returns a regular
 ``/wmts/mapnik_hq/webmercator_hq/0/0/0.png`` returns the same tile with 512x512 pixel:
 
 .. image:: imgs/mapnik-webmerc-hq.png
+
+
+Serve multiple caches for a single layer
+========================================
+
+.. versionadded:: 1.8.2
+
+You have a data set that you need to serve with different grids (i.e. WMTS tile matrix sets).
+
+You can create a cache with multiple grids and use this as a layers source::
+
+  layers:
+    - name: map
+      title: Layer with multiple grids
+      sources: [cache]
+
+  caches:
+    cache:
+      grids: [full_grid, sub_grid]
+      sources: [source]
+
+This `map` layer is available in WMS and in tile services. The grids are available as separate tile matrix sets in the WMTS.
+However, this is limited to a single cache for each layer. You can't reuse the tiles from the `full_grid` for the `sub_grid`.
+
+You need to use ``tile_sources`` to make multiple caches available as a single layer.
+``tile_sources`` allows you to override ``sources`` for tile services. This allows you to `use caches that build up on other caches  <using_existing_caches>`_.
+
+For example::
+
+  layers:
+    - name: map
+      title: Layer with sources for tile services and for WMS
+      tile_sources: [full_cache, inspire_cache]
+      sources: [full_cache]
+
+  caches:
+    full_cache:
+      grids: [full_grid]
+      sources: [source]
+    inspire_cache:
+      grids: [sub_grid]
+      sources: [full_cache]
+      disable_storage: true
+
+

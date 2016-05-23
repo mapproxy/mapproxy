@@ -69,6 +69,9 @@ def upload_docs_command():
 def build_sdist_command():
     sh('python setup.py egg_info -b "" -D sdist')
 
+def build_wheel_command():
+    sh('python setup.py egg_info -b "" -D bdist_wheel')
+
 def upload_sdist_command():
     sh('python setup.py egg_info -b "" -D sdist')
     ver = version()
@@ -77,6 +80,9 @@ def upload_sdist_command():
 
 def upload_final_sdist_command():
     sh('python setup.py egg_info -b "" -D sdist upload')
+
+def upload_final_wheel_command():
+    sh('python setup.py egg_info -b "" -D bdist_wheel upload')
 
 def register_command():
     sh('python setup.py egg_info -b "" -D register')

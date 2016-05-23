@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2011 sp1 (http://www.altova.com) by - - (European Commission DG JRC IES) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://inspire.ec.europa.eu/schemas/common/1.0" targetNamespace="http://inspire.ec.europa.eu/schemas/common/1.0" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0.1">
+	<xs:complexType name="inspireTheme_bul">
+		<xs:complexContent>
+			<xs:restriction base="inspireTheme">
+				<xs:sequence>
+					<xs:element name="OriginatingControlledVocabulary" type="originatingControlledVocabularyGemetInspireThemes" minOccurs="1"/>
+					<xs:element name="KeywordValue">
+						<xs:simpleType>
+							<xs:restriction base="keywordValue">
+								<xs:enumeration value="Административни единици"/>
+								<xs:enumeration value="Адреси"/>
+								<xs:enumeration value="Атмосферни условия"/>
+								<xs:enumeration value="Биогеографски региони"/>
+								<xs:enumeration value="Географски координатни системи"/>
+								<xs:enumeration value="Географски наименования"/>
+								<xs:enumeration value="Геология"/>
+								<xs:enumeration value="Енергийни източници"/>
+								<xs:enumeration value="Защитени обекти"/>
+								<xs:enumeration value="Здраве и безопасност на човека"/>
+								<xs:enumeration value="Земна покривка"/>
+								<xs:enumeration value="Кадастрални парцели"/>
+								<xs:enumeration value="Комунално-битови и обществени услуги"/>
+								<xs:enumeration value="Координатни справочни системи"/>
+								<xs:enumeration value="Местообитания и биотопи"/>
+								<xs:enumeration value="Метеорологични географски характеристики"/>
+								<xs:enumeration value="Минерални ресурси"/>
+								<xs:enumeration value="Морски региони"/>
+								<xs:enumeration value="Океанографски географски характеристики"/>
+								<xs:enumeration value="Ортоизображение"/>
+								<xs:enumeration value="Ползване на земята"/>
+								<xs:enumeration value="Почва"/>
+								<xs:enumeration value="Природни рискови зони"/>
+								<xs:enumeration value="Производствени и промишлени съоръжения"/>
+								<xs:enumeration value="Разпределение на видовете"/>
+								<xs:enumeration value="Разпределение на населението — демография"/>
+								<xs:enumeration value="Релеф"/>
+								<xs:enumeration value="Сгради"/>
+								<xs:enumeration value="Селскостопански и водностопански съоръжения"/>
+								<xs:enumeration value="Статистически единици"/>
+								<xs:enumeration value="Съоръжения за управление на околната среда"/>
+								<xs:enumeration value="Транспортни мрежи"/>
+								<xs:enumeration value="Управление на територията/ограничени/регулирани зони и отчетни единици"/>
+								<xs:enumeration value="Хидрография"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Interoperability-->
+	<xs:complexType name="resLocInspireInteroperabilityRegulation_bul">
+		<xs:complexContent>
+			<xs:restriction base="resourceLocatorType">
+				<xs:sequence>
+					<xs:element name="URL">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:BG:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="MediaType">
+						<xs:simpleType>
+							<xs:restriction base="mediaType">
+								<xs:enumeration value="application/pdf"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="citationInspireInteroperabilityRegulation_bul">
+		<xs:complexContent>
+			<xs:restriction base="citationConformity">
+				<xs:sequence>
+					<xs:element name="Title">
+						<xs:simpleType>
+							<xs:restriction base="notEmptyString">
+								<xs:enumeration value="РЕГЛАМЕНТ (ЕС) № 1089/2010 НА КОМИСИЯТА от 23 ноември 2010 година за прилагане на Директива 2007/2/ЕО на Европейския парламент и на Съвета по отношение на оперативната съвместимост на масиви от пространствени данни и услуги за пространствени данни"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:choice>
+						<xs:element name="DateOfPublication">
+							<xs:simpleType>
+								<xs:restriction base="iso8601Date">
+									<xs:enumeration value="2010-12-08"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:choice>
+					<xs:element name="URI" minOccurs="1" maxOccurs="1">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="OJ:L:2010:323:0011:0102:BG:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="ResourceLocator" type="resLocInspireInteroperabilityRegulation_bul" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

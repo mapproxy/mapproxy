@@ -41,6 +41,21 @@ class ImageOptions(object):
                 options.append('%s=%r' % (k, v))
         return 'ImageOptions(%s)' % (', '.join(options), )
 
+    def __eq__(self, other):
+        if not isinstance(other, ImageOptions):
+            return NotImplemented
+
+        return (
+                self.transparent == other.transparent
+            and self.opacity == other.opacity
+            and self.resampling == other.resampling
+            and self.format == other.format
+            and self.mode == other.mode
+            and self.bgcolor == other.bgcolor
+            and self.colors == other.colors
+            and self.encoding_options == other.encoding_options
+        )
+
     def copy(self):
         return copy.copy(self)
 

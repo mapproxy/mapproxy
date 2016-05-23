@@ -1,0 +1,1461 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://inspire.ec.europa.eu/schemas/common/1.0" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" targetNamespace="http://inspire.ec.europa.eu/schemas/common/1.0" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0.1" jaxb:version="2.0">
+<!--
+26-APR-2011 1.0.1 Conformity element:
+                    Restricted allowed citations to "INSPIRE interoperability of spatial data sets and services", according to the MD regulation,
+                    requirements for the conformity element (page 17 of the MD regulation).
+                  Inspire Themes:
+                    Removed leading blank for German, Bulgarian, Czech and Danish translations
+18-FEB-2011 Added types for encoding for Language Elements in Network Services
+05-FEB-2011 Added comment to classificationOfSpatialDataService
+04-FEB-2011 Renamed codelists as enumerations. No change required in exsiting xml documents.
+02-FEB-2011 Refactored originating controlled vocabulary to derive from citation. No change required in exsiting xml documents.
+31-JAN-2011 Removed language dependent schema implementations. This is now the top schema file.
+-->
+	<xs:annotation>
+		<xs:appinfo>
+			<jaxb:globalBindings typesafeEnumMaxMembers="1000"/>
+		</xs:appinfo>
+	</xs:annotation>
+	<xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="../../../xml.xsd"/>
+	<xs:include schemaLocation="network.xsd"/>
+	<!--Load language dependent types-->
+	<xs:include schemaLocation="enums/enum_bul.xsd"/>
+	<xs:include schemaLocation="enums/enum_cze.xsd"/>
+	<xs:include schemaLocation="enums/enum_dan.xsd"/>
+	<xs:include schemaLocation="enums/enum_dut.xsd"/>
+	<xs:include schemaLocation="enums/enum_eng.xsd"/>
+	<xs:include schemaLocation="enums/enum_est.xsd"/>
+	<xs:include schemaLocation="enums/enum_fin.xsd"/>
+	<xs:include schemaLocation="enums/enum_fre.xsd"/>
+	<xs:include schemaLocation="enums/enum_ger.xsd"/>
+	<xs:include schemaLocation="enums/enum_gle.xsd"/>
+	<xs:include schemaLocation="enums/enum_gre.xsd"/>
+	<xs:include schemaLocation="enums/enum_hun.xsd"/>
+	<xs:include schemaLocation="enums/enum_ita.xsd"/>
+	<xs:include schemaLocation="enums/enum_lav.xsd"/>
+	<xs:include schemaLocation="enums/enum_lit.xsd"/>
+	<xs:include schemaLocation="enums/enum_mlt.xsd"/>
+	<xs:include schemaLocation="enums/enum_pol.xsd"/>
+	<xs:include schemaLocation="enums/enum_por.xsd"/>
+	<xs:include schemaLocation="enums/enum_rum.xsd"/>
+	<xs:include schemaLocation="enums/enum_slo.xsd"/>
+	<xs:include schemaLocation="enums/enum_slv.xsd"/>
+	<xs:include schemaLocation="enums/enum_spa.xsd"/>
+	<xs:include schemaLocation="enums/enum_swe.xsd"/>
+	<xs:element name="SpatialDataService" type="service"/>
+	<xs:element name="SpatialDataSet" type="dataset"/>
+	<xs:element name="SpatialDataSetSeries" type="series"/>
+	<!--TBD
+	<xs:element name="INSPIREResource" type="resource">
+	</xs:element>
+-->
+	<!--Types-->
+	<xs:complexType name="resource" abstract="true">
+		<xs:sequence>
+			<xs:element name="ResourceTitle" type="notEmptyString"/>
+			<xs:element name="ResourceAbstract" type="notEmptyString"/>
+			<xs:element name="ResourceType" type="resourceType"/>
+			<xs:element name="ResourceLocator" type="resourceLocatorType" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Mandatory if a URL is available to obtain more information on
+the resource, and/or access related services.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="MandatoryKeyword" type="keyword" minOccurs="1" maxOccurs="unbounded"/>
+			<xs:element name="Keyword" type="keyword" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">If a resource is a spatial data set or spatial data set series, at least one keyword shall be provided from the general environmental multilingual thesaurus (GEMET) describing the relevant spatial data theme as defined in Annex I, II or III to Directive 2007/2/EC.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GeographicBoundingBox" type="geographicBoundingBox" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="TemporalReference" type="temporalReference" maxOccurs="unbounded"/>
+			<xs:element name="SpatialResolution" type="spatialResolution" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Mandatory when there is a restriction on the spatial resolution for this service.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Conformity" type="conformity" maxOccurs="unbounded"/>
+			<xs:element name="ConditionsForAccessAndUse" type="notEmptyString" maxOccurs="unbounded"/>
+			<xs:element name="LimitationsOnPublicAccess" type="notEmptyString" maxOccurs="unbounded"/>
+			<xs:element name="ResponsibleOrganisation" type="responsibleOrganisation" maxOccurs="unbounded"/>
+			<xs:element name="MetadataPointOfContact" type="metadataPointOfContact" maxOccurs="unbounded"/>
+			<xs:element name="MetadataDate" type="iso8601Date"/>
+			<xs:element name="MetadataLanguage" type="euLanguageISO6392B"/>
+		</xs:sequence>
+		<xs:attribute ref="xml:lang"/>
+	</xs:complexType>
+	<xs:complexType name="data" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="resource">
+				<xs:sequence>
+					<xs:element name="UniqueResourceIdentifier" type="uniqueResourceIdentifier" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="ResourceLanguage" type="languageISO6392B" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if the resource includes textual information.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TopicCategory" type="topicCategory" maxOccurs="unbounded"/>
+					<xs:element name="Lineage" type="notEmptyString"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="dataset">
+		<xs:complexContent>
+			<xs:restriction base="data">
+				<xs:sequence>
+					<xs:element name="ResourceTitle" type="notEmptyString"/>
+					<xs:element name="ResourceAbstract" type="notEmptyString"/>
+					<xs:element name="ResourceType">
+						<xs:simpleType>
+							<xs:restriction base="resourceType">
+								<xs:enumeration value="dataset"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="ResourceLocator" type="resourceLocatorType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if a URL is available to obtain more information on
+the resource, and/or access related services.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MandatoryKeyword" type="inspireTheme" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="Keyword" type="keyword" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If a resource is a spatial data set or spatial data set series, at least one keyword shall be provided from the general environmental multilingual thesaurus (GEMET) describing the relevant spatial data theme as defined in Annex I, II or III to Directive 2007/2/EC.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="GeographicBoundingBox" type="geographicBoundingBox" maxOccurs="unbounded"/>
+					<xs:element name="TemporalReference" type="temporalReference" maxOccurs="unbounded"/>
+					<xs:element name="SpatialResolution" type="spatialResolution" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory when there is a restriction on the spatial resolution for this service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Conformity" type="conformity" maxOccurs="unbounded"/>
+					<xs:element name="ConditionsForAccessAndUse" type="notEmptyString" maxOccurs="unbounded"/>
+					<xs:element name="LimitationsOnPublicAccess" type="notEmptyString" maxOccurs="unbounded"/>
+					<xs:element name="ResponsibleOrganisation" type="responsibleOrganisation" maxOccurs="unbounded"/>
+					<xs:element name="MetadataPointOfContact" type="metadataPointOfContact" maxOccurs="unbounded"/>
+					<xs:element name="MetadataDate" type="iso8601Date"/>
+					<xs:element name="MetadataLanguage" type="euLanguageISO6392B"/>
+					<xs:element name="UniqueResourceIdentifier" type="uniqueResourceIdentifier" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="ResourceLanguage" type="languageISO6392B" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if the resource includes textual information.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TopicCategory" type="topicCategory" maxOccurs="unbounded"/>
+					<xs:element name="Lineage" type="notEmptyString"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="series">
+		<xs:complexContent>
+			<xs:restriction base="data">
+				<xs:sequence>
+					<xs:element name="ResourceTitle" type="notEmptyString"/>
+					<xs:element name="ResourceAbstract" type="notEmptyString"/>
+					<xs:element name="ResourceType">
+						<xs:simpleType>
+							<xs:restriction base="resourceType">
+								<xs:enumeration value="series"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="ResourceLocator" type="resourceLocatorType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if a URL is available to obtain more information on
+the resource, and/or access related services.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MandatoryKeyword" type="inspireTheme" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="Keyword" type="keyword" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If a resource is a spatial data set or spatial data set series, at least one keyword shall be provided from the general environmental multilingual thesaurus (GEMET) describing the relevant spatial data theme as defined in Annex I, II or III to Directive 2007/2/EC.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="GeographicBoundingBox" type="geographicBoundingBox" maxOccurs="unbounded"/>
+					<xs:element name="TemporalReference" type="temporalReference" maxOccurs="unbounded"/>
+					<xs:element name="SpatialResolution" type="spatialResolution" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory when there is a restriction on the spatial resolution for this service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Conformity" type="conformity" maxOccurs="unbounded"/>
+					<xs:element name="ConditionsForAccessAndUse" type="notEmptyString" maxOccurs="unbounded"/>
+					<xs:element name="LimitationsOnPublicAccess" type="notEmptyString" maxOccurs="unbounded"/>
+					<xs:element name="ResponsibleOrganisation" type="responsibleOrganisation" maxOccurs="unbounded"/>
+					<xs:element name="MetadataPointOfContact" type="metadataPointOfContact" maxOccurs="unbounded"/>
+					<xs:element name="MetadataDate" type="iso8601Date"/>
+					<xs:element name="MetadataLanguage" type="euLanguageISO6392B"/>
+					<xs:element name="UniqueResourceIdentifier" type="uniqueResourceIdentifier" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="ResourceLanguage" type="languageISO6392B" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if the resource includes textual information.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TopicCategory" type="topicCategory" maxOccurs="unbounded"/>
+					<xs:element name="Lineage" type="notEmptyString"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Service-->
+	<xs:complexType name="service_ext" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="resource">
+				<xs:sequence>
+					<xs:element name="CoupledResource" type="uniqueResourceIdentifier" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to data sets on which the service operates are available.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SpatialDataServiceType" type="spatialDataServiceType"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="service">
+		<xs:complexContent>
+			<xs:restriction base="service_ext">
+				<xs:sequence>
+					<xs:element name="ResourceTitle" type="notEmptyString"/>
+					<xs:element name="ResourceAbstract" type="notEmptyString"/>
+					<xs:element name="ResourceType" type="serviceSpatialDataResourceType"/>
+					<xs:element name="ResourceLocator" type="resourceLocatorType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to the service is available</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MandatoryKeyword" type="classificationOfSpatialDataService" minOccurs="1" maxOccurs="unbounded"/>
+					<xs:element name="Keyword" type="keyword" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If the resource is a spatial data service, at least one keyword from Part D.4 shall be provided.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="GeographicBoundingBox" type="geographicBoundingBox" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory for services with an explicit geographic extent.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TemporalReference" type="temporalReference" maxOccurs="unbounded"/>
+					<xs:element name="SpatialResolution" type="spatialResolution" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory when there is a restriction on the spatial resolution for this service.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Conformity" type="conformity" maxOccurs="unbounded"/>
+					<xs:element name="ConditionsForAccessAndUse" type="notEmptyString" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>The element must have values. If no conditions apply to the access and use of the resource, ‘no conditions apply’
+shall be used. If conditions are unknown, ‘conditions unknown’ shall be used.
+			</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LimitationsOnPublicAccess" type="notEmptyString" maxOccurs="unbounded"/>
+					<xs:element name="ResponsibleOrganisation" type="responsibleOrganisation" maxOccurs="unbounded"/>
+					<xs:element name="MetadataPointOfContact" type="metadataPointOfContact" maxOccurs="unbounded"/>
+					<xs:element name="MetadataDate" type="iso8601Date"/>
+					<xs:element name="MetadataLanguage" type="euLanguageISO6392B"/>
+					<xs:element name="CoupledResource" type="uniqueResourceIdentifier" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Mandatory if linkage to data sets on which the service operates are available.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SpatialDataServiceType" type="spatialDataServiceType"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Shared types-->
+	<xs:element name="SpatialDataServiceType" type="spatialDataServiceType"/>
+	<xs:simpleType name="serviceSpatialDataResourceType">
+		<xs:restriction base="resourceType">
+			<xs:enumeration value="service"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="viewSpatialDataServiceType">
+		<xs:restriction base="spatialDataServiceType">
+			<xs:enumeration value="view"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="discoverySpatialDataServiceType">
+		<xs:restriction base="spatialDataServiceType">
+			<xs:enumeration value="discovery"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="transformationSpatialDataServiceType">
+		<xs:restriction base="spatialDataServiceType">
+			<xs:enumeration value="transformation"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="invokeSpatialDataServiceType">
+		<xs:restriction base="spatialDataServiceType">
+			<xs:enumeration value="invoke"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="otherSpatialDataServiceType">
+		<xs:restriction base="spatialDataServiceType">
+			<xs:enumeration value="other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="metadataPointOfContact">
+		<xs:sequence>
+			<xs:element name="OrganisationName" type="xs:string"/>
+			<xs:element name="EmailAddress" type="emailType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="responsibleOrganisation">
+		<xs:sequence>
+			<xs:element name="ResponsibleParty">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="OrganisationName" type="notEmptyString"/>
+						<xs:element name="EmailAddress" type="emailType"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="ResponsiblePartyRole" type="responsiblePartyRole"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="citation">
+		<xs:sequence>
+			<xs:element name="Title" type="notEmptyString"/>
+			<xs:choice>
+				<xs:element name="DateOfPublication" type="iso8601Date"/>
+				<xs:element name="DateOfCreation" type="iso8601Date"/>
+				<xs:element name="DateOfLastRevision" type="iso8601Date"/>
+			</xs:choice>
+			<xs:element name="URI" type="xs:anyURI" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>One or more Documentation URIs if available</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ResourceLocator" type="resourceLocatorType" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>One or more URLs if available</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="citationConformity">
+		<xs:complexContent>
+			<xs:restriction base="citation">
+				<xs:sequence>
+					<xs:element name="Title" type="notEmptyString"/>
+					<xs:choice>
+						<xs:element name="DateOfPublication" type="iso8601Date"/>
+						<xs:element name="DateOfCreation" type="iso8601Date"/>
+						<xs:element name="DateOfLastRevision" type="iso8601Date"/>
+					</xs:choice>
+					<xs:element name="URI" type="xs:anyURI" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>One or more Documentation URIs if available</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ResourceLocator" type="resourceLocatorType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>One or more URLs if available</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="conformity">
+		<xs:sequence>
+			<xs:element name="Specification" type="citationConformity"/>
+			<xs:element name="Degree" type="degreeOfConformity"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="originatingControlledVocabulary">
+		<xs:complexContent>
+			<xs:restriction base="citation">
+				<xs:sequence>
+					<xs:element name="Title" type="notEmptyString"/>
+					<xs:choice>
+						<xs:element name="DateOfPublication" type="iso8601Date"/>
+						<xs:element name="DateOfCreation" type="iso8601Date"/>
+						<xs:element name="DateOfLastRevision" type="iso8601Date"/>
+					</xs:choice>
+					<xs:element name="URI" type="xs:anyURI" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>One or more Documentation URIs if available</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ResourceLocator" type="resourceLocatorType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>One or more URLs if available</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="originatingControlledVocabularyGemetInspireThemes">
+		<xs:complexContent>
+			<xs:restriction base="originatingControlledVocabulary">
+				<xs:sequence>
+					<xs:element name="Title">
+						<xs:simpleType>
+							<xs:restriction base="notEmptyString">
+								<xs:enumeration value="GEMET - INSPIRE themes"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:choice>
+						<xs:element name="DateOfPublication">
+							<xs:simpleType>
+								<xs:restriction base="iso8601Date">
+									<xs:enumeration value="2008-06-01"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="originatingControlledVocabularyMD">
+		<xs:complexContent>
+			<xs:restriction base="originatingControlledVocabulary">
+				<xs:sequence>
+					<xs:element name="Title">
+						<xs:simpleType>
+							<xs:restriction base="notEmptyString">
+								<xs:enumeration value="GEMET - INSPIRE themes"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:choice>
+						<xs:element name="DateOfPublication">
+							<xs:simpleType>
+								<xs:restriction base="iso8601Date">
+									<xs:enumeration value="2008-06-01"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="temporalReference">
+		<xs:sequence>
+			<xs:element name="DateOfCreation" type="iso8601Date" minOccurs="0"/>
+			<xs:element name="DateOfLastRevision" type="iso8601Date" minOccurs="0"/>
+			<xs:element name="DateOfPublication" type="iso8601Date" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="TemporalExtent" type="temporalExtent" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="TemporalExtentElement" abstract="true"/>
+	<xs:element name="IndividualDate" type="iso8601Date" substitutionGroup="TemporalExtentElement"/>
+	<xs:element name="IntervalOfDates" substitutionGroup="TemporalExtentElement">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="StartingDate" type="iso8601Date"/>
+				<xs:element name="EndDate" type="iso8601Date"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="temporalExtent">
+		<xs:sequence>
+			<xs:element ref="TemporalExtentElement" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="keywordValue">
+		<xs:restriction base="notEmptyString"/>
+	</xs:simpleType>
+	<xs:complexType name="keyword">
+		<xs:sequence>
+			<xs:element name="OriginatingControlledVocabulary" type="originatingControlledVocabulary" minOccurs="0"/>
+			<xs:element name="KeywordValue" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="topicCategory">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="farming"/>
+			<xs:enumeration value="biota"/>
+			<xs:enumeration value="boundaries"/>
+			<xs:enumeration value="climatologyMeteorologyAtmosphere"/>
+			<xs:enumeration value="economy"/>
+			<xs:enumeration value="elevation"/>
+			<xs:enumeration value="environment"/>
+			<xs:enumeration value="geoscientificInformation"/>
+			<xs:enumeration value="health"/>
+			<xs:enumeration value="imageryBaseMapsEarthCover"/>
+			<xs:enumeration value="intelligenceMilitary"/>
+			<xs:enumeration value="inlandWaters"/>
+			<xs:enumeration value="location"/>
+			<xs:enumeration value="oceans"/>
+			<xs:enumeration value="planningCadastre"/>
+			<xs:enumeration value="society"/>
+			<xs:enumeration value="structure"/>
+			<xs:enumeration value="transportation"/>
+			<xs:enumeration value="utilitiesCommunication"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="classificationOfSpatialDataService">
+		<xs:complexContent>
+			<xs:restriction base="keyword">
+				<xs:sequence>
+					<xs:element name="OriginatingControlledVocabulary" type="originatingControlledVocabulary" minOccurs="0" maxOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The INSPIRE Metadata Regulation for spatial data services requires that a mandatory keyword which comes from a list and not an originating controlled vocabulary. This is also what the INSPIRE Metadata Technical Guidelines implement</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="KeywordValue">
+						<xs:simpleType>
+							<xs:restriction base="keywordValue">
+								<xs:enumeration value="chainDefinitionService"/>
+								<xs:enumeration value="comEncodingService"/>
+								<xs:enumeration value="comGeographicCompressionService"/>
+								<xs:enumeration value="comGeographicFormatConversionService"/>
+								<xs:enumeration value="comMessagingService"/>
+								<xs:enumeration value="comRemoteFileAndExecutableManagement"/>
+								<xs:enumeration value="comService"/>
+								<xs:enumeration value="comTransferService"/>
+								<xs:enumeration value="humanCatalogueViewer"/>
+								<xs:enumeration value="humanChainDefinitionEditor"/>
+								<xs:enumeration value="humanFeatureGeneralizationEditor"/>
+								<xs:enumeration value="humanGeographicDataStructureViewer"/>
+								<xs:enumeration value="humanGeographicFeatureEditor"/>
+								<xs:enumeration value="humanGeographicSpreadsheetViewer"/>
+								<xs:enumeration value="humanGeographicSymbolEditor"/>
+								<xs:enumeration value="humanGeographicViewer"/>
+								<xs:enumeration value="humanInteractionService"/>
+								<xs:enumeration value="humanServiceEditor"/>
+								<xs:enumeration value="humanWorkflowEnactmentManager"/>
+								<xs:enumeration value="infoCatalogueService"/>
+								<xs:enumeration value="infoCoverageAccessService"/>
+								<xs:enumeration value="infoFeatureAccessService"/>
+								<xs:enumeration value="infoFeatureTypeService"/>
+								<xs:enumeration value="infoGazetteerService"/>
+								<xs:enumeration value="infoManagementService"/>
+								<xs:enumeration value="infoMapAccessService"/>
+								<xs:enumeration value="infoOrderHandlingService"/>
+								<xs:enumeration value="infoProductAccessService"/>
+								<xs:enumeration value="infoRegistryService"/>
+								<xs:enumeration value="infoSensorDescriptionService"/>
+								<xs:enumeration value="infoStandingOrderService"/>
+								<xs:enumeration value="metadataGeographicAnnotationService"/>
+								<xs:enumeration value="metadataProcessingService"/>
+								<xs:enumeration value="metadataStatisticalCalculationService"/>
+								<xs:enumeration value="spatialCoordinateConversionService"/>
+								<xs:enumeration value="spatialCoordinateTransformationService"/>
+								<xs:enumeration value="spatialCoverageVectorConversionService"/>
+								<xs:enumeration value="spatialDimensionMeasurementService"/>
+								<xs:enumeration value="spatialFeatureGeneralizationService"/>
+								<xs:enumeration value="spatialFeatureManipulationService"/>
+								<xs:enumeration value="spatialFeatureMatchingService"/>
+								<xs:enumeration value="spatialImageCoordinateConversionService"/>
+								<xs:enumeration value="spatialImageGeometryModelConversionService"/>
+								<xs:enumeration value="spatialOrthorectificationService"/>
+								<xs:enumeration value="spatialPositioningService"/>
+								<xs:enumeration value="spatialProcessingService"/>
+								<xs:enumeration value="spatialProximityAnalysisService"/>
+								<xs:enumeration value="spatialRectificationService"/>
+								<xs:enumeration value="spatialRouteDeterminationService"/>
+								<xs:enumeration value="spatialSamplingService"/>
+								<xs:enumeration value="spatialSensorGeometryModelAdjustmentService"/>
+								<xs:enumeration value="spatialSubsettingService"/>
+								<xs:enumeration value="spatialTilingChangeService"/>
+								<xs:enumeration value="subscriptionService"/>
+								<xs:enumeration value="taskManagementService"/>
+								<xs:enumeration value="temporalProcessingService"/>
+								<xs:enumeration value="temporalProximityAnalysisService"/>
+								<xs:enumeration value="temporalReferenceSystemTransformationService"/>
+								<xs:enumeration value="temporalSamplingService"/>
+								<xs:enumeration value="temporalSubsettingService"/>
+								<xs:enumeration value="thematicChangeDetectionService"/>
+								<xs:enumeration value="thematicClassificationService"/>
+								<xs:enumeration value="thematicFeatureGeneralizationService"/>
+								<xs:enumeration value="thematicGeocodingService"/>
+								<xs:enumeration value="thematicGeographicInformationExtractionService"/>
+								<xs:enumeration value="thematicGeoparsingService"/>
+								<xs:enumeration value="thematicGoparameterCalculationService"/>
+								<xs:enumeration value="thematicImageManipulationService"/>
+								<xs:enumeration value="thematicImageProcessingService"/>
+								<xs:enumeration value="thematicImageSynthesisService"/>
+								<xs:enumeration value="thematicImageUnderstandingService"/>
+								<xs:enumeration value="thematicMultibandImageManipulationService"/>
+								<xs:enumeration value="thematicObjectDetectionService"/>
+								<xs:enumeration value="thematicProcessingService"/>
+								<xs:enumeration value="thematicReducedResolutionGenerationService"/>
+								<xs:enumeration value="thematicSpatialCountingService"/>
+								<xs:enumeration value="thematicSubsettingService"/>
+								<xs:enumeration value="workflowEnactmentService"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="notEmptyString">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="mediaType">
+		<xs:annotation>
+			<xs:documentation>
+	Draft implementation to be refined
+	</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="text/plain"/>
+			<xs:enumeration value="text/html"/>
+			<xs:enumeration value="text/xml"/>
+			<xs:enumeration value="application/xml"/>
+			<xs:enumeration value="application/json"/>
+			<xs:enumeration value="application/pdf"/>
+			<xs:enumeration value="application/rdf+xml"/>
+			<xs:enumeration value="application/json"/>
+			<xs:enumeration value="application/soap+xml"/>
+			<xs:enumeration value="application/vnd.eu.europa.ec.inspire.resource+xml">
+				<xs:annotation>
+					<xs:documentation>Official mime type for INSPIRE Resources</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="application/vnd.google-earth.kml+xml"/>
+			<xs:enumeration value="application/vnd.google-earth.kml"/>
+			<xs:enumeration value="application/vnd.google-earth.kmx"/>
+			<xs:enumeration value="application/vnd.msword"/>
+			<xs:enumeration value="application/vnd.ms-excel"/>
+			<xs:enumeration value="application/vnd.ms-powerpoint"/>
+			<xs:enumeration value="application/vnd.oasis.opendocument.text"/>
+			<xs:enumeration value="application/vnd.oasis.opendocument.spreadsheet"/>
+			<xs:enumeration value="application/vnd.oasis.opendocument.presentation"/>
+			<xs:enumeration value="application/vnd.oasis.opendocument.graphics"/>
+			<xs:enumeration value="application/gml+xml">
+				<xs:annotation>
+					<xs:documentation>Official mime type for OGC GML currently in the registration process of IANA</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="application/vnd.ogc.wms_xml">
+				<xs:annotation>
+					<xs:documentation>Unofficial mime type for OGC WMS</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="application/vnd.ogc.csw_xml">
+				<xs:annotation>
+					<xs:documentation>Unofficial mime type for OGC CSW</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="application/vnd.ogc.csw.capabilities.response_xml">
+				<xs:annotation>
+					<xs:documentation>Unofficial mime type for OGC CSW Capabilities response document</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="application/vnd.ogc.csw.GetRecordByIdResponse_xml">
+				<xs:annotation>
+					<xs:documentation>Unofficial mime type for OGC CSW Capabilities response document</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="application/vnd.ogc.csw.GetRecordsResponse_xml">
+				<xs:annotation>
+					<xs:documentation>Unofficial mime type for OGC CSW Capabilities response document</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="application/vnd.ogc.wfs_xml">
+				<xs:annotation>
+					<xs:documentation>Unofficial mime type for OGC WFS</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="application/vnd.ogc.se_xml">
+				<xs:annotation>
+					<xs:documentation>Unofficial mime type for OGC Service Exception</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="application/vnd.iso.19139+xml">
+				<xs:annotation>
+					<xs:documentation>Unofficial mime type for ISO 19139 metadata</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="resourceLocatorType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Mandatory if a URL is available to obtain more information on
+the resource, and/or access related services.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="URL" type="xs:anyURI"/>
+			<xs:element name="MediaType" type="mediaType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="emailType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[^@]+@[^\.]+\..+"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="iso8601Date">
+		<xs:restriction base="xs:string">
+			<xs:annotation>
+				<xs:documentation>Simplified ISO 8601 implementation</xs:documentation>
+			</xs:annotation>
+			<xs:pattern value="\d{4}-(1[0-2]|0[1-9])-(3[0-1]|0[1-9]|[1-2][0-9])(T(2[0-3]|[0-1][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?)?(Z|([+|-](2[0-3]|[0-1][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9])?)?)?">
+				<xs:annotation>
+					<xs:documentation>YEAR MONTH DAY-----------------------TIME--------------------FRACTIONAL SECONDS---------TIME ZONE</xs:documentation>
+				</xs:annotation>
+			</xs:pattern>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="resourceType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="dataset"/>
+			<xs:enumeration value="series"/>
+			<xs:enumeration value="service"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="spatialDataServiceType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="discovery"/>
+			<xs:enumeration value="view"/>
+			<xs:enumeration value="download"/>
+			<xs:enumeration value="transformation"/>
+			<xs:enumeration value="invoke"/>
+			<xs:enumeration value="other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="degreeOfConformity">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="conformant"/>
+			<xs:enumeration value="notConformant"/>
+			<xs:enumeration value="notEvaluated"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="euLanguageISO6392B">
+		<xs:restriction base="languageISO6392B">
+			<xs:enumeration value="bul"/>
+			<xs:enumeration value="cze"/>
+			<xs:enumeration value="dan"/>
+			<xs:enumeration value="dut"/>
+			<xs:enumeration value="eng"/>
+			<xs:enumeration value="est"/>
+			<xs:enumeration value="fin"/>
+			<xs:enumeration value="fre"/>
+			<xs:enumeration value="ger"/>
+			<xs:enumeration value="gre"/>
+			<xs:enumeration value="hun"/>
+			<xs:enumeration value="gle"/>
+			<xs:enumeration value="ita"/>
+			<xs:enumeration value="lav"/>
+			<xs:enumeration value="lit"/>
+			<xs:enumeration value="mlt"/>
+			<xs:enumeration value="pol"/>
+			<xs:enumeration value="por"/>
+			<xs:enumeration value="rum"/>
+			<xs:enumeration value="slo"/>
+			<xs:enumeration value="slv"/>
+			<xs:enumeration value="spa"/>
+			<xs:enumeration value="swe"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="languageISO6392B">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="aar"/>
+			<xs:enumeration value="abk"/>
+			<xs:enumeration value="ace"/>
+			<xs:enumeration value="ach"/>
+			<xs:enumeration value="ada"/>
+			<xs:enumeration value="ady"/>
+			<xs:enumeration value="afa"/>
+			<xs:enumeration value="afh"/>
+			<xs:enumeration value="afr"/>
+			<xs:enumeration value="ain"/>
+			<xs:enumeration value="aka"/>
+			<xs:enumeration value="akk"/>
+			<xs:enumeration value="alb"/>
+			<xs:enumeration value="ale"/>
+			<xs:enumeration value="alg"/>
+			<xs:enumeration value="alt"/>
+			<xs:enumeration value="amh"/>
+			<xs:enumeration value="ang"/>
+			<xs:enumeration value="anp"/>
+			<xs:enumeration value="apa"/>
+			<xs:enumeration value="ara"/>
+			<xs:enumeration value="arc"/>
+			<xs:enumeration value="arg"/>
+			<xs:enumeration value="arm"/>
+			<xs:enumeration value="arn"/>
+			<xs:enumeration value="arp"/>
+			<xs:enumeration value="art"/>
+			<xs:enumeration value="arw"/>
+			<xs:enumeration value="asm"/>
+			<xs:enumeration value="ast"/>
+			<xs:enumeration value="ath"/>
+			<xs:enumeration value="aus"/>
+			<xs:enumeration value="ava"/>
+			<xs:enumeration value="ave"/>
+			<xs:enumeration value="awa"/>
+			<xs:enumeration value="aym"/>
+			<xs:enumeration value="aze"/>
+			<xs:enumeration value="bad"/>
+			<xs:enumeration value="bai"/>
+			<xs:enumeration value="bak"/>
+			<xs:enumeration value="bal"/>
+			<xs:enumeration value="bam"/>
+			<xs:enumeration value="ban"/>
+			<xs:enumeration value="baq"/>
+			<xs:enumeration value="bas"/>
+			<xs:enumeration value="bat"/>
+			<xs:enumeration value="bej"/>
+			<xs:enumeration value="bel"/>
+			<xs:enumeration value="bem"/>
+			<xs:enumeration value="ben"/>
+			<xs:enumeration value="ber"/>
+			<xs:enumeration value="bho"/>
+			<xs:enumeration value="bih"/>
+			<xs:enumeration value="bik"/>
+			<xs:enumeration value="bin"/>
+			<xs:enumeration value="bis"/>
+			<xs:enumeration value="bla"/>
+			<xs:enumeration value="bnt"/>
+			<xs:enumeration value="bos"/>
+			<xs:enumeration value="bra"/>
+			<xs:enumeration value="bre"/>
+			<xs:enumeration value="btk"/>
+			<xs:enumeration value="bua"/>
+			<xs:enumeration value="bug"/>
+			<xs:enumeration value="bul"/>
+			<xs:enumeration value="bur"/>
+			<xs:enumeration value="byn"/>
+			<xs:enumeration value="cad"/>
+			<xs:enumeration value="cai"/>
+			<xs:enumeration value="car"/>
+			<xs:enumeration value="cat"/>
+			<xs:enumeration value="cau"/>
+			<xs:enumeration value="ceb"/>
+			<xs:enumeration value="cel"/>
+			<xs:enumeration value="cha"/>
+			<xs:enumeration value="chb"/>
+			<xs:enumeration value="che"/>
+			<xs:enumeration value="chg"/>
+			<xs:enumeration value="chi"/>
+			<xs:enumeration value="chk"/>
+			<xs:enumeration value="chm"/>
+			<xs:enumeration value="chn"/>
+			<xs:enumeration value="cho"/>
+			<xs:enumeration value="chp"/>
+			<xs:enumeration value="chr"/>
+			<xs:enumeration value="chu"/>
+			<xs:enumeration value="chv"/>
+			<xs:enumeration value="chy"/>
+			<xs:enumeration value="cmc"/>
+			<xs:enumeration value="cop"/>
+			<xs:enumeration value="cor"/>
+			<xs:enumeration value="cos"/>
+			<xs:enumeration value="cpe"/>
+			<xs:enumeration value="cpf"/>
+			<xs:enumeration value="cpp"/>
+			<xs:enumeration value="cre"/>
+			<xs:enumeration value="crh"/>
+			<xs:enumeration value="crp"/>
+			<xs:enumeration value="csb"/>
+			<xs:enumeration value="cus"/>
+			<xs:enumeration value="cze"/>
+			<xs:enumeration value="dak"/>
+			<xs:enumeration value="dan"/>
+			<xs:enumeration value="dar"/>
+			<xs:enumeration value="day"/>
+			<xs:enumeration value="del"/>
+			<xs:enumeration value="den"/>
+			<xs:enumeration value="dgr"/>
+			<xs:enumeration value="din"/>
+			<xs:enumeration value="div"/>
+			<xs:enumeration value="doi"/>
+			<xs:enumeration value="dra"/>
+			<xs:enumeration value="dsb"/>
+			<xs:enumeration value="dua"/>
+			<xs:enumeration value="dum"/>
+			<xs:enumeration value="dut"/>
+			<xs:enumeration value="dyu"/>
+			<xs:enumeration value="dzo"/>
+			<xs:enumeration value="efi"/>
+			<xs:enumeration value="egy"/>
+			<xs:enumeration value="eka"/>
+			<xs:enumeration value="elx"/>
+			<xs:enumeration value="eng"/>
+			<xs:enumeration value="enm"/>
+			<xs:enumeration value="epo"/>
+			<xs:enumeration value="est"/>
+			<xs:enumeration value="ewe"/>
+			<xs:enumeration value="ewo"/>
+			<xs:enumeration value="fan"/>
+			<xs:enumeration value="fao"/>
+			<xs:enumeration value="fat"/>
+			<xs:enumeration value="fij"/>
+			<xs:enumeration value="fil"/>
+			<xs:enumeration value="fin"/>
+			<xs:enumeration value="fiu"/>
+			<xs:enumeration value="fon"/>
+			<xs:enumeration value="fre"/>
+			<xs:enumeration value="frm"/>
+			<xs:enumeration value="fro"/>
+			<xs:enumeration value="frr"/>
+			<xs:enumeration value="frs"/>
+			<xs:enumeration value="fry"/>
+			<xs:enumeration value="ful"/>
+			<xs:enumeration value="fur"/>
+			<xs:enumeration value="gaa"/>
+			<xs:enumeration value="gay"/>
+			<xs:enumeration value="gba"/>
+			<xs:enumeration value="gem"/>
+			<xs:enumeration value="geo"/>
+			<xs:enumeration value="ger"/>
+			<xs:enumeration value="gez"/>
+			<xs:enumeration value="gil"/>
+			<xs:enumeration value="gla"/>
+			<xs:enumeration value="gle"/>
+			<xs:enumeration value="glg"/>
+			<xs:enumeration value="glv"/>
+			<xs:enumeration value="gmh"/>
+			<xs:enumeration value="goh"/>
+			<xs:enumeration value="gon"/>
+			<xs:enumeration value="gor"/>
+			<xs:enumeration value="got"/>
+			<xs:enumeration value="grb"/>
+			<xs:enumeration value="grc"/>
+			<xs:enumeration value="gre"/>
+			<xs:enumeration value="grn"/>
+			<xs:enumeration value="gsw"/>
+			<xs:enumeration value="guj"/>
+			<xs:enumeration value="gwi"/>
+			<xs:enumeration value="hai"/>
+			<xs:enumeration value="hat"/>
+			<xs:enumeration value="hau"/>
+			<xs:enumeration value="haw"/>
+			<xs:enumeration value="heb"/>
+			<xs:enumeration value="her"/>
+			<xs:enumeration value="hil"/>
+			<xs:enumeration value="him"/>
+			<xs:enumeration value="hin"/>
+			<xs:enumeration value="hit"/>
+			<xs:enumeration value="hmn"/>
+			<xs:enumeration value="hmo"/>
+			<xs:enumeration value="hrv"/>
+			<xs:enumeration value="hsb"/>
+			<xs:enumeration value="hun"/>
+			<xs:enumeration value="hup"/>
+			<xs:enumeration value="iba"/>
+			<xs:enumeration value="ibo"/>
+			<xs:enumeration value="ice"/>
+			<xs:enumeration value="ido"/>
+			<xs:enumeration value="iii"/>
+			<xs:enumeration value="ijo"/>
+			<xs:enumeration value="iku"/>
+			<xs:enumeration value="ile"/>
+			<xs:enumeration value="ilo"/>
+			<xs:enumeration value="ina"/>
+			<xs:enumeration value="inc"/>
+			<xs:enumeration value="ind"/>
+			<xs:enumeration value="ine"/>
+			<xs:enumeration value="inh"/>
+			<xs:enumeration value="ipk"/>
+			<xs:enumeration value="ira"/>
+			<xs:enumeration value="iro"/>
+			<xs:enumeration value="ita"/>
+			<xs:enumeration value="jav"/>
+			<xs:enumeration value="jbo"/>
+			<xs:enumeration value="jpn"/>
+			<xs:enumeration value="jpr"/>
+			<xs:enumeration value="jrb"/>
+			<xs:enumeration value="kaa"/>
+			<xs:enumeration value="kab"/>
+			<xs:enumeration value="kac"/>
+			<xs:enumeration value="kal"/>
+			<xs:enumeration value="kam"/>
+			<xs:enumeration value="kan"/>
+			<xs:enumeration value="kar"/>
+			<xs:enumeration value="kas"/>
+			<xs:enumeration value="kau"/>
+			<xs:enumeration value="kaw"/>
+			<xs:enumeration value="kaz"/>
+			<xs:enumeration value="kbd"/>
+			<xs:enumeration value="kha"/>
+			<xs:enumeration value="khi"/>
+			<xs:enumeration value="khm"/>
+			<xs:enumeration value="kho"/>
+			<xs:enumeration value="kik"/>
+			<xs:enumeration value="kin"/>
+			<xs:enumeration value="kir"/>
+			<xs:enumeration value="kmb"/>
+			<xs:enumeration value="kok"/>
+			<xs:enumeration value="kom"/>
+			<xs:enumeration value="kon"/>
+			<xs:enumeration value="kor"/>
+			<xs:enumeration value="kos"/>
+			<xs:enumeration value="kpe"/>
+			<xs:enumeration value="krc"/>
+			<xs:enumeration value="krl"/>
+			<xs:enumeration value="kro"/>
+			<xs:enumeration value="kru"/>
+			<xs:enumeration value="kua"/>
+			<xs:enumeration value="kum"/>
+			<xs:enumeration value="kur"/>
+			<xs:enumeration value="kut"/>
+			<xs:enumeration value="lad"/>
+			<xs:enumeration value="lah"/>
+			<xs:enumeration value="lam"/>
+			<xs:enumeration value="lao"/>
+			<xs:enumeration value="lat"/>
+			<xs:enumeration value="lav"/>
+			<xs:enumeration value="lez"/>
+			<xs:enumeration value="lim"/>
+			<xs:enumeration value="lin"/>
+			<xs:enumeration value="lit"/>
+			<xs:enumeration value="lol"/>
+			<xs:enumeration value="loz"/>
+			<xs:enumeration value="ltz"/>
+			<xs:enumeration value="lua"/>
+			<xs:enumeration value="lub"/>
+			<xs:enumeration value="lug"/>
+			<xs:enumeration value="lui"/>
+			<xs:enumeration value="lun"/>
+			<xs:enumeration value="luo"/>
+			<xs:enumeration value="lus"/>
+			<xs:enumeration value="mac"/>
+			<xs:enumeration value="mad"/>
+			<xs:enumeration value="mag"/>
+			<xs:enumeration value="mah"/>
+			<xs:enumeration value="mai"/>
+			<xs:enumeration value="mak"/>
+			<xs:enumeration value="mal"/>
+			<xs:enumeration value="man"/>
+			<xs:enumeration value="mao"/>
+			<xs:enumeration value="map"/>
+			<xs:enumeration value="mar"/>
+			<xs:enumeration value="mas"/>
+			<xs:enumeration value="may"/>
+			<xs:enumeration value="mdf"/>
+			<xs:enumeration value="mdr"/>
+			<xs:enumeration value="men"/>
+			<xs:enumeration value="mga"/>
+			<xs:enumeration value="mic"/>
+			<xs:enumeration value="min"/>
+			<xs:enumeration value="mis"/>
+			<xs:enumeration value="mkh"/>
+			<xs:enumeration value="mlg"/>
+			<xs:enumeration value="mlt"/>
+			<xs:enumeration value="mnc"/>
+			<xs:enumeration value="mni"/>
+			<xs:enumeration value="mno"/>
+			<xs:enumeration value="moh"/>
+			<xs:enumeration value="mon"/>
+			<xs:enumeration value="mos"/>
+			<xs:enumeration value="mul"/>
+			<xs:enumeration value="mun"/>
+			<xs:enumeration value="mus"/>
+			<xs:enumeration value="mwl"/>
+			<xs:enumeration value="mwr"/>
+			<xs:enumeration value="myn"/>
+			<xs:enumeration value="myv"/>
+			<xs:enumeration value="nah"/>
+			<xs:enumeration value="nai"/>
+			<xs:enumeration value="nap"/>
+			<xs:enumeration value="nau"/>
+			<xs:enumeration value="nav"/>
+			<xs:enumeration value="nbl"/>
+			<xs:enumeration value="nde"/>
+			<xs:enumeration value="ndo"/>
+			<xs:enumeration value="nds"/>
+			<xs:enumeration value="nep"/>
+			<xs:enumeration value="new"/>
+			<xs:enumeration value="nia"/>
+			<xs:enumeration value="nia"/>
+			<xs:enumeration value="nic"/>
+			<xs:enumeration value="niu"/>
+			<xs:enumeration value="nno"/>
+			<xs:enumeration value="nob"/>
+			<xs:enumeration value="nog"/>
+			<xs:enumeration value="non"/>
+			<xs:enumeration value="nor"/>
+			<xs:enumeration value="nqo"/>
+			<xs:enumeration value="nso"/>
+			<xs:enumeration value="nub"/>
+			<xs:enumeration value="nwc"/>
+			<xs:enumeration value="nya"/>
+			<xs:enumeration value="nym"/>
+			<xs:enumeration value="nyn"/>
+			<xs:enumeration value="nyo"/>
+			<xs:enumeration value="nzi"/>
+			<xs:enumeration value="oci"/>
+			<xs:enumeration value="oji"/>
+			<xs:enumeration value="ori"/>
+			<xs:enumeration value="orm"/>
+			<xs:enumeration value="osa"/>
+			<xs:enumeration value="oss"/>
+			<xs:enumeration value="ota"/>
+			<xs:enumeration value="oto"/>
+			<xs:enumeration value="paa"/>
+			<xs:enumeration value="pag"/>
+			<xs:enumeration value="pal"/>
+			<xs:enumeration value="pam"/>
+			<xs:enumeration value="pan"/>
+			<xs:enumeration value="pap"/>
+			<xs:enumeration value="pau"/>
+			<xs:enumeration value="peo"/>
+			<xs:enumeration value="per"/>
+			<xs:enumeration value="phi"/>
+			<xs:enumeration value="phn"/>
+			<xs:enumeration value="pli"/>
+			<xs:enumeration value="pol"/>
+			<xs:enumeration value="pon"/>
+			<xs:enumeration value="por"/>
+			<xs:enumeration value="pra"/>
+			<xs:enumeration value="pro"/>
+			<xs:enumeration value="pus"/>
+			<xs:enumeration value="qaa-qtz"/>
+			<xs:enumeration value="que"/>
+			<xs:enumeration value="raj"/>
+			<xs:enumeration value="rap"/>
+			<xs:enumeration value="rar"/>
+			<xs:enumeration value="roa"/>
+			<xs:enumeration value="roh"/>
+			<xs:enumeration value="rom"/>
+			<xs:enumeration value="rum"/>
+			<xs:enumeration value="run"/>
+			<xs:enumeration value="rup"/>
+			<xs:enumeration value="rus"/>
+			<xs:enumeration value="sad"/>
+			<xs:enumeration value="sag"/>
+			<xs:enumeration value="sah"/>
+			<xs:enumeration value="sai"/>
+			<xs:enumeration value="sal"/>
+			<xs:enumeration value="sam"/>
+			<xs:enumeration value="san"/>
+			<xs:enumeration value="sas"/>
+			<xs:enumeration value="sat"/>
+			<xs:enumeration value="scn"/>
+			<xs:enumeration value="sco"/>
+			<xs:enumeration value="sel"/>
+			<xs:enumeration value="sem"/>
+			<xs:enumeration value="sga"/>
+			<xs:enumeration value="sgn"/>
+			<xs:enumeration value="shn"/>
+			<xs:enumeration value="sid"/>
+			<xs:enumeration value="sin"/>
+			<xs:enumeration value="sio"/>
+			<xs:enumeration value="sit"/>
+			<xs:enumeration value="sla"/>
+			<xs:enumeration value="slo"/>
+			<xs:enumeration value="slv"/>
+			<xs:enumeration value="sma"/>
+			<xs:enumeration value="sme"/>
+			<xs:enumeration value="smi"/>
+			<xs:enumeration value="smj"/>
+			<xs:enumeration value="smn"/>
+			<xs:enumeration value="smo"/>
+			<xs:enumeration value="sms"/>
+			<xs:enumeration value="sna"/>
+			<xs:enumeration value="snd"/>
+			<xs:enumeration value="snk"/>
+			<xs:enumeration value="sog"/>
+			<xs:enumeration value="som"/>
+			<xs:enumeration value="son"/>
+			<xs:enumeration value="sot"/>
+			<xs:enumeration value="spa"/>
+			<xs:enumeration value="srd"/>
+			<xs:enumeration value="srn"/>
+			<xs:enumeration value="srp"/>
+			<xs:enumeration value="srr"/>
+			<xs:enumeration value="ssa"/>
+			<xs:enumeration value="ssw"/>
+			<xs:enumeration value="suk"/>
+			<xs:enumeration value="sun"/>
+			<xs:enumeration value="sus"/>
+			<xs:enumeration value="sux"/>
+			<xs:enumeration value="swa"/>
+			<xs:enumeration value="swe"/>
+			<xs:enumeration value="syc"/>
+			<xs:enumeration value="syr"/>
+			<xs:enumeration value="tah"/>
+			<xs:enumeration value="tai"/>
+			<xs:enumeration value="tam"/>
+			<xs:enumeration value="tat"/>
+			<xs:enumeration value="tel"/>
+			<xs:enumeration value="tem"/>
+			<xs:enumeration value="ter"/>
+			<xs:enumeration value="tet"/>
+			<xs:enumeration value="tgk"/>
+			<xs:enumeration value="tgl"/>
+			<xs:enumeration value="tha"/>
+			<xs:enumeration value="tib"/>
+			<xs:enumeration value="tig"/>
+			<xs:enumeration value="tir"/>
+			<xs:enumeration value="tiv"/>
+			<xs:enumeration value="tkl"/>
+			<xs:enumeration value="tlh"/>
+			<xs:enumeration value="tli"/>
+			<xs:enumeration value="tmh"/>
+			<xs:enumeration value="tog"/>
+			<xs:enumeration value="ton"/>
+			<xs:enumeration value="tpi"/>
+			<xs:enumeration value="tsi"/>
+			<xs:enumeration value="tsn"/>
+			<xs:enumeration value="tso"/>
+			<xs:enumeration value="tuk"/>
+			<xs:enumeration value="tum"/>
+			<xs:enumeration value="tup"/>
+			<xs:enumeration value="tur"/>
+			<xs:enumeration value="tut"/>
+			<xs:enumeration value="tvl"/>
+			<xs:enumeration value="twi"/>
+			<xs:enumeration value="tyv"/>
+			<xs:enumeration value="udm"/>
+			<xs:enumeration value="uga"/>
+			<xs:enumeration value="uig"/>
+			<xs:enumeration value="ukr"/>
+			<xs:enumeration value="umb"/>
+			<xs:enumeration value="und"/>
+			<xs:enumeration value="urd"/>
+			<xs:enumeration value="uzb"/>
+			<xs:enumeration value="vai"/>
+			<xs:enumeration value="ven"/>
+			<xs:enumeration value="vie"/>
+			<xs:enumeration value="vol"/>
+			<xs:enumeration value="vot"/>
+			<xs:enumeration value="wak"/>
+			<xs:enumeration value="wal"/>
+			<xs:enumeration value="war"/>
+			<xs:enumeration value="was"/>
+			<xs:enumeration value="wel"/>
+			<xs:enumeration value="wen"/>
+			<xs:enumeration value="wln"/>
+			<xs:enumeration value="wol"/>
+			<xs:enumeration value="xal"/>
+			<xs:enumeration value="xho"/>
+			<xs:enumeration value="yao"/>
+			<xs:enumeration value="yap"/>
+			<xs:enumeration value="yid"/>
+			<xs:enumeration value="yor"/>
+			<xs:enumeration value="ypk"/>
+			<xs:enumeration value="zap"/>
+			<xs:enumeration value="zbl"/>
+			<xs:enumeration value="zen"/>
+			<xs:enumeration value="zha"/>
+			<xs:enumeration value="znd"/>
+			<xs:enumeration value="zul"/>
+			<xs:enumeration value="zun"/>
+			<xs:enumeration value="zxx"/>
+			<xs:enumeration value="zza"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="languageIETF">
+		<xs:restriction base="xs:language"/>
+	</xs:simpleType>
+	<xs:simpleType name="euLanguageIETF">
+		<xs:restriction base="languageIETF">
+			<xs:enumeration value="bg"/>
+			<xs:enumeration value="bg-BG"/>
+			<xs:enumeration value="cs"/>
+			<xs:enumeration value="cs-CZ"/>
+			<xs:enumeration value="da"/>
+			<xs:enumeration value="da-DK"/>
+			<xs:enumeration value="nl"/>
+			<xs:enumeration value="nl-NL"/>
+			<xs:enumeration value="en"/>
+			<xs:enumeration value="en-GB"/>
+			<xs:enumeration value="et"/>
+			<xs:enumeration value="et-EE"/>
+			<xs:enumeration value="fi"/>
+			<xs:enumeration value="fi-FI"/>
+			<xs:enumeration value="fr"/>
+			<xs:enumeration value="fr-FR"/>
+			<xs:enumeration value="de"/>
+			<xs:enumeration value="de-DE"/>
+			<xs:enumeration value="de-AT"/>
+			<xs:enumeration value="el"/>
+			<xs:enumeration value="el-GR"/>
+			<xs:enumeration value="hu"/>
+			<xs:enumeration value="hu-HU"/>
+			<xs:enumeration value="ga"/>
+			<xs:enumeration value="ga-IE"/>
+			<xs:enumeration value="it"/>
+			<xs:enumeration value="it-IT"/>
+			<xs:enumeration value="lv"/>
+			<xs:enumeration value="lv-LV"/>
+			<xs:enumeration value="lt"/>
+			<xs:enumeration value="lt-LT"/>
+			<xs:enumeration value="mt"/>
+			<xs:enumeration value="mt-MT"/>
+			<xs:enumeration value="pl"/>
+			<xs:enumeration value="pl-PL"/>
+			<xs:enumeration value="pt"/>
+			<xs:enumeration value="pt-PT"/>
+			<xs:enumeration value="ro"/>
+			<xs:enumeration value="ro-RO"/>
+			<xs:enumeration value="sk"/>
+			<xs:enumeration value="sk-SK"/>
+			<xs:enumeration value="sl"/>
+			<xs:enumeration value="sl-SI"/>
+			<xs:enumeration value="es"/>
+			<xs:enumeration value="es-ES"/>
+			<xs:enumeration value="sv"/>
+			<xs:enumeration value="sv-SE"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="languageElement" abstract="true">
+		<xs:sequence>
+			<xs:element name="Language" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="languageElementISO6392B">
+		<xs:complexContent>
+			<xs:restriction base="languageElement">
+				<xs:sequence>
+					<xs:element name="Language" type="euLanguageISO6392B"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="languageElementIETF">
+		<xs:complexContent>
+			<xs:restriction base="languageElement">
+				<xs:sequence>
+					<xs:element name="Language" type="euLanguageIETF"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="geographicBoundingBox">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Mandatory for services with an explicit geographic extent.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="East" type="geoBoxDigits"/>
+			<xs:element name="West" type="geoBoxDigits"/>
+			<xs:element name="North" type="geoBoxDigits"/>
+			<xs:element name="South" type="geoBoxDigits"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="spatialResolution">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Mandatory if an equivalent scale or a resolution distance is available</xs:documentation>
+			<xs:documentation xml:lang="en">Mandatory for services when there is a restriction on the spatial resolution for service</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="EquivalentScale" type="xs:integer">
+				<xs:annotation>
+					<xs:documentation>An equivalent scale is generally expressed as an integer value expressing the scale denominator</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:sequence>
+				<xs:element name="ResolutionDistance" type="xs:integer">
+					<xs:annotation>
+						<xs:documentation>A resolution distance shall be expressed as a numerical value associated with a unit of length</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="UnitOfMeasure" type="xs:string"/>
+			</xs:sequence>
+		</xs:choice>
+		<xs:attribute name="abstract" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+		ISO 19139 does not offer encoding of spatial resolution for services and INSPIRE Guidelines recommend to put it inside the abstract element in unstructured format, making it virtually impossible to extract the spatial resolution from the rest of the abstract text. The original abstract text is copied for reference.
+		</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="uniqueResourceIdentifier">
+		<xs:sequence>
+			<xs:element name="Code" type="notEmptyString"/>
+			<xs:element name="Namespace" type="xs:anyURI" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute name="metadataURL" type="xs:anyURI"/>
+	</xs:complexType>
+	<!--
+	<xs:complexType name="inspireTheme">
+		<xs:complexContent>
+			<xs:restriction base="keyword">
+				<xs:sequence>
+					<xs:element name="OriginatingControlledVocabulary" type="originatingControlledVocabularyGemetInspireThemes" minOccurs="0"/>
+					<xs:element name="KeywordValue" type="keywordValue"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+-->
+	<xs:simpleType name="responsiblePartyRole">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="resourceProvider">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Resource Provider (resourceProvider): Party that supplies the resource.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="custodian">
+				<xs:annotation>
+					<xs:documentation>6.2. Custodian (custodian): Party that accepts accountability and responsibility for the data and ensures appropriate care and maintenance of the resource.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="owner">
+				<xs:annotation>
+					<xs:documentation>6.3. Owner (owner): Party that owns the resource.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="user">
+				<xs:annotation>
+					<xs:documentation>6.4. User (user): Party who uses the resource.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="distributor">
+				<xs:annotation>
+					<xs:documentation>6.5. Distributor (distributor): Party who distributes the resource.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="originator">
+				<xs:annotation>
+					<xs:documentation>6.6. Originator (originator): Party who created the resource</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="pointOfContact">
+				<xs:annotation>
+					<xs:documentation>6.7. Point of Contact (pointOfContact): Party who can be contacted for acquiring knowledge about or acquisition of the resource.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="principalInvestigator">
+				<xs:annotation>
+					<xs:documentation>6.8. Principal Investigator (principalInvestigator): Key party responsible for gathering information and conducting research.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="processor">
+				<xs:annotation>
+					<xs:documentation>6.9. Processor (processor): Party who has processed the data in a manner such that the resource has been modified.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="publisher">
+				<xs:annotation>
+					<xs:documentation>6.10. Publisher (publisher): Party who published the resource.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="author">
+				<xs:annotation>
+					<xs:documentation>6.11. Author (author): Party who authored the resource.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="geoBoxDigits">
+		<xs:restriction base="xs:string">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The bounding box shall be expressed with westbound and eastbound longitudes, and southbound and northbound latitudes in decimal degrees, with a precision of at least two decimals.</xs:documentation>
+			</xs:annotation>
+			<xs:pattern value="-?(0+|(0*[1-9]\d*))(\.\d{2,})"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="inspireTheme" abstract="true">
+		<xs:complexContent>
+			<xs:restriction base="keyword">
+				<xs:sequence>
+					<xs:element name="OriginatingControlledVocabulary" type="originatingControlledVocabularyGemetInspireThemes" minOccurs="1"/>
+					<xs:element name="KeywordValue" type="keywordValue"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

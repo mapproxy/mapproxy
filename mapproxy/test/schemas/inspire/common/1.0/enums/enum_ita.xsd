@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2011 sp1 (http://www.altova.com) by - - (European Commission DG JRC IES) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://inspire.ec.europa.eu/schemas/common/1.0" targetNamespace="http://inspire.ec.europa.eu/schemas/common/1.0" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0.1">
+	<xs:complexType name="inspireTheme_ita">
+		<xs:complexContent>
+			<xs:restriction base="inspireTheme">
+				<xs:sequence>
+					<xs:element name="OriginatingControlledVocabulary" type="originatingControlledVocabularyGemetInspireThemes"/>
+					<xs:element name="KeywordValue">
+						<xs:simpleType>
+							<xs:restriction base="keywordValue">
+								<xs:enumeration value="Condizioni atmosferiche"/>
+								<xs:enumeration value="Copertura del suolo"/>
+								<xs:enumeration value="Distribuzione della popolazione — demografia"/>
+								<xs:enumeration value="Distribuzione delle specie"/>
+								<xs:enumeration value="Edifici"/>
+								<xs:enumeration value="Elementi geografici meteorologici"/>
+								<xs:enumeration value="Elementi geografici oceanografici"/>
+								<xs:enumeration value="Elevazione"/>
+								<xs:enumeration value="Geologia"/>
+								<xs:enumeration value="Habitat e biotopi"/>
+								<xs:enumeration value="Idrografia"/>
+								<xs:enumeration value="Impianti agricoli e di acquacoltura"/>
+								<xs:enumeration value="Impianti di monitoraggio ambientale"/>
+								<xs:enumeration value="Indirizzi"/>
+								<xs:enumeration value="Nomi geografici"/>
+								<xs:enumeration value="Orto immagini"/>
+								<xs:enumeration value="Parcelle catastali"/>
+								<xs:enumeration value="Produzione e impianti industriali"/>
+								<xs:enumeration value="Regioni biogeografiche"/>
+								<xs:enumeration value="Regioni marine"/>
+								<xs:enumeration value="Reti di trasporto"/>
+								<xs:enumeration value="Risorse energetiche"/>
+								<xs:enumeration value="Risorse minerarie"/>
+								<xs:enumeration value="Salute umana e sicurezza"/>
+								<xs:enumeration value="Servizi di pubblica utilità e servizi amministrativi"/>
+								<xs:enumeration value="Sistemi di coordinate"/>
+								<xs:enumeration value="Sistemi di griglie geografiche"/>
+								<xs:enumeration value="Siti protetti"/>
+								<xs:enumeration value="Suolo"/>
+								<xs:enumeration value="Unità amministrative"/>
+								<xs:enumeration value="Unità statistiche"/>
+								<xs:enumeration value="Utilizzo del territorio"/>
+								<xs:enumeration value="Zone a rischio naturale"/>
+								<xs:enumeration value="Zone sottoposte a gestione/limitazioni/regolamentazione e unità con obbligo di comunicare dati"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<!--Interoperability-->
+	<xs:complexType name="resLocInspireInteroperabilityRegulation_ita">
+		<xs:complexContent>
+			<xs:restriction base="resourceLocatorType">
+				<xs:sequence>
+					<xs:element name="URL">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:IT:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="MediaType">
+						<xs:simpleType>
+							<xs:restriction base="mediaType">
+								<xs:enumeration value="application/pdf"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="citationInspireInteroperabilityRegulation_ita">
+		<xs:complexContent>
+			<xs:restriction base="citationConformity">
+				<xs:sequence>
+					<xs:element name="Title">
+						<xs:simpleType>
+							<xs:restriction base="notEmptyString">
+								<xs:enumeration value="REGOLAMENTO (UE) N. 1089/2010 DELLA COMMISSIONE del 23 novembre 2010 recante attuazione della direttiva 2007/2/CE del Parlamento europeo e del Consiglio per quanto riguarda l'interoperabilità dei set di dati territoriali e dei servizi di dati territoriali"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:choice>
+						<xs:element name="DateOfPublication">
+							<xs:simpleType>
+								<xs:restriction base="iso8601Date">
+									<xs:enumeration value="2010-12-08"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:choice>
+					<xs:element name="URI" minOccurs="1" maxOccurs="1">
+						<xs:simpleType>
+							<xs:restriction base="xs:anyURI">
+								<xs:enumeration value="OJ:L:2010:323:0011:0102:IT:PDF"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="ResourceLocator" type="resLocInspireInteroperabilityRegulation_ita" minOccurs="1" maxOccurs="1"/>
+				</xs:sequence>
+			</xs:restriction>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>
