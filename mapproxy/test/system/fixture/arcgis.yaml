@@ -1,0 +1,39 @@
+services:
+  tms:
+
+layers:
+  - name: app2_layer
+    title: ArcGIS Cache Layer
+    sources: [app2_cache]
+  - name: app2_with_layers_layer
+    title: ArcGIS Cache Layer
+    sources: [app2_with_layers_cache]
+  - name: app2_wrong_url_layer
+    title: ArcGIS Cache Layer
+    sources: [app2_wrong_url_cache]
+
+caches:
+  app2_cache:
+    grids: [GLOBAL_MERCATOR]
+    sources: [app2_source]
+  app2_with_layers_cache:
+    grids: [GLOBAL_MERCATOR]
+    sources: [app2_with_layers_source]
+  app2_wrong_url_cache:
+    grids: [GLOBAL_MERCATOR]
+    sources: [app2_wrong_url_source]
+
+sources:
+  app2_source:
+    type: arcgis
+    req:
+      url: http://localhost:42423/arcgis/rest/services/ExampleLayer/ImageServer
+  app2_with_layers_source:
+    type: arcgis
+    req:
+      layers: show:0,1
+      url: http://localhost:42423/arcgis/rest/services/ExampleLayer/ImageServer
+  app2_wrong_url_source:
+    type: arcgis
+    req:
+      url: http://localhost:42423/arcgis/rest/services/NonExistentLayer/ImageServer

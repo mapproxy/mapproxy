@@ -139,13 +139,11 @@ def build_multipolygon(polygons, simplify=False):
             geom = simplify_geom(geom)
         return geom.bounds, geom
 
-    mp = shapely.geometry.MultiPolygon(polygons)
-
     if simplify:
-        mp = simplify_geom(mp)
+        polygons = [simplify_geom(g) for g in polygons]
 
-    # eliminate any self-intersections
-    mp = shapely.ops.cascaded_union(mp)
+    # eliminate any self-overlaps
+    mp = shapely.ops.cascaded_union(polygons)
 
     return mp.bounds, mp
 
@@ -155,7 +153,10 @@ def simplify_geom(geom):
         raise EmptyGeometryError('Empty geometry given')
     w, h = bounds[2] - bounds[0], bounds[3] - bounds[1]
     tolerance = min((w/1e6, h/1e6))
-    return geom.simplify(tolerance, preserve_topology=True)
+    geom = geom.simplify(tolerance, preserve_topology=True)
+    if not geom.is_valid:
+        geom = geom.buffer(0)
+    return geom
 
 def bbox_polygon(bbox):
     """

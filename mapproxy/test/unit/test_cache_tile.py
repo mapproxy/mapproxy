@@ -254,12 +254,22 @@ class TestMBTileCache(TileCacheTestBase):
         TileCacheTestBase.setup(self)
         self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'))
 
+    def teardown(self):
+        if self.cache:
+            self.cache.cleanup()
+        TileCacheTestBase.teardown(self)
+
     def test_load_empty_tileset(self):
         assert self.cache.load_tiles([Tile(None)]) == True
         assert self.cache.load_tiles([Tile(None), Tile(None), Tile(None)]) == True
 
-    def test_load_1001_tiles(self):
-        assert_raises(CacheBackendError, self.cache.load_tiles, [Tile((19, 1, 1))] * 1001)
+    def test_load_more_than_2000_tiles(self):
+        # prepare data
+        for i in range(0, 2010):
+            assert self.cache.store_tile(Tile((i, 0, 10),  ImageSource(BytesIO(b'foo'))))
+
+        tiles = [Tile((i, 0, 10)) for i in range(0, 2010)]
+        assert self.cache.load_tiles(tiles)
 
     def test_timeouts(self):
         self.cache._db_conn_cache.db = sqlite3.connect(self.cache.mbtile_file, timeout=0.05)

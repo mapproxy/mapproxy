@@ -456,7 +456,7 @@ class TestWMS111(WMSTest):
         self.created_tiles.append('wms_cache_100_EPSG900913/01/000/000/001/000/000/001.jpeg')
         # request_format tiff, cache format jpeg, wms request in png
         with tmp_image((256, 256), format='tiff') as img:
-            expected_req = ({'path': r'/service?LAYERs=foo,bar&FORMAT=image%2Ftiff'
+            expected_req = ({'path': r'/service?LAYERs=foo,bar&FORMAT=TIFF'
                                       '&REQUEST=map&HEIGHT=256&SRS=EPSG%3A900913&styles='
                                       '&WMTVER=1.0.0&BBOX=0.0,0.0,20037508.3428,20037508.3428'
                                       '&WIDTH=256'},
@@ -507,6 +507,21 @@ class TestWMS111(WMSTest):
                         {'body': b'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             self.common_fi_req.params['feature_count'] = 100
+            resp = self.app.get(self.common_fi_req)
+            eq_(resp.content_type, 'text/plain')
+            eq_(resp.body, b'info')
+
+
+    def test_get_featureinfo_float(self):
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles='
+                                  '&WIDTH=200&QUERY_LAYERS=foo,bar&X=10.123&Y=20.567&feature_count=100'},
+                        {'body': b'info', 'headers': {'content-type': 'text/plain'}})
+        with mock_httpd(('localhost', 42423), [expected_req]):
+            self.common_fi_req.params['feature_count'] = 100
+            self.common_fi_req.params['x'] = 10.123
+            self.common_fi_req.params['y'] = 20.567
             resp = self.app.get(self.common_fi_req)
             eq_(resp.content_type, 'text/plain')
             eq_(resp.body, b'info')
@@ -806,7 +821,7 @@ class TestWMS100(WMSTest):
         xml = resp.lxml
         eq_(xml.xpath('/WMTException/@version')[0], '1.0.0')
         eq_(xml.xpath('//WMTException/text()')[0].strip(),
-                      'unsupported image format: image/ascii')
+                      'unsupported image format: ASCII')
 
     def test_invalid_format_img_exception(self):
         self.common_map_req.params['format'] = 'image/ascii'

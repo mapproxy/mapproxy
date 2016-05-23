@@ -15,10 +15,12 @@
 
 from __future__ import with_statement
 
+import codecs
 import datetime
 import socket
 import time
 import hashlib
+import base64
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import (
@@ -60,7 +62,7 @@ class CouchDBCache(TileCacheBase):
         if json is None:
             raise ImportError("CouchDB backend requires 'simplejson' package or Python 2.6+.")
 
-        self.lock_cache_id = 'couchdb-' + hashlib.md5(url + db_name).hexdigest()
+        self.lock_cache_id = 'couchdb-' + hashlib.md5((url + db_name).encode('utf-8')).hexdigest()
         self.file_ext = file_ext
         self.tile_grid = tile_grid
         self.md_template = md_template
@@ -111,7 +113,7 @@ class CouchDBCache(TileCacheBase):
             self.init_db()
             resp = self.req_session.get(url)
             if resp.status_code == 200:
-                doc = json.loads(resp.content)
+                doc = json.loads(codecs.decode(resp.content, 'utf-8'))
                 tile.timestamp = doc.get(self.md_template.timestamp_key)
                 return True
         except (requests.exceptions.RequestException, socket.error) as ex:
@@ -137,7 +139,10 @@ class CouchDBCache(TileCacheBase):
         tile_doc['_attachments'] = {
             'tile': {
                 'content_type': 'image/' + self.file_ext,
-                'data': data.encode('base64').replace('\n', ''),
+                'data': codecs.decode(
+                    base64.b64encode(data).replace(b'\n', b''),
+                    'ascii',
+                ),
             }
         }
         return tile_id, tile_doc
@@ -160,14 +165,14 @@ class CouchDBCache(TileCacheBase):
         """
         POST multiple tiles, returns all tile docs with conflicts during POST.
         """
-        doc = {'docs': tile_docs.values()}
+        doc = {'docs': list(tile_docs.values())}
         data = json.dumps(doc)
         self.init_db()
         resp = self.req_session.post(self.couch_url + '/_bulk_docs', data=data, headers={'Content-type': 'application/json'})
         if resp.status_code != 201:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
 
-        resp_doc = json.loads(resp.content)
+        resp_doc = json.loads(codecs.decode(resp.content, 'utf-8'))
         duplicate_tiles = {}
         for tile in resp_doc:
             if tile.get('error', 'false') == 'conflict':
@@ -182,14 +187,14 @@ class CouchDBCache(TileCacheBase):
         """
         Request all revs for tile_docs and insert it into the tile_docs.
         """
-        keys_doc = {'keys': tile_docs.keys()}
+        keys_doc = {'keys': list(tile_docs.keys())}
         data = json.dumps(keys_doc)
         self.init_db()
         resp = self.req_session.post(self.couch_url + '/_all_docs', data=data, headers={'Content-type': 'application/json'})
         if resp.status_code != 200:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
 
-        resp_doc = json.loads(resp.content)
+        resp_doc = json.loads(codecs.decode(resp.content, 'utf-8'))
         for tile in resp_doc['rows']:
             tile_docs[tile['id']]['_rev'] = tile['value']['rev']
 
@@ -220,8 +225,8 @@ class CouchDBCache(TileCacheBase):
         self.init_db()
         resp = self.req_session.get(url, headers={'Accept': 'application/json'})
         if resp.status_code == 200:
-            doc = json.loads(resp.content)
-            tile_data = BytesIO(doc['_attachments']['tile']['data'].decode('base64'))
+            doc = json.loads(codecs.decode(resp.content, 'utf-8'))
+            tile_data = BytesIO(base64.b64decode(doc['_attachments']['tile']['data']))
             tile.source = ImageSource(tile_data)
             tile.timestamp = doc.get(self.md_template.timestamp_key)
             return True

@@ -36,7 +36,6 @@ code {
   top: 5px;
 }
 
-
 .bs-sidenav .nav > li > a {
   padding: 3px 20px;
 }
@@ -47,11 +46,6 @@ code {
 
 .nav-list li.toctree-l2 {
   background-color: #F5F5F5;
-}
-
-
-.navbar-brand {
-  padding-top: 0px;
 }
 
 .navbar-default, .footer, .bs-sidenav {

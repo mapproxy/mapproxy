@@ -36,7 +36,7 @@ class UnexpectedResponse(CacheBackendError):
     pass
 
 class RiakCache(TileCacheBase):
-    def __init__(self, nodes, protocol, bucket, tile_grid, lock_dir, use_secondary_index=False):
+    def __init__(self, nodes, protocol, bucket, tile_grid, use_secondary_index=False):
         if riak is None:
             raise ImportError("Riak backend requires 'riak' package.")
 

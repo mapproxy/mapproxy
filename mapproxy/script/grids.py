@@ -81,19 +81,13 @@ def display_grid(grid_conf, coverage=None):
 
         if coverage:
             coverage_tiles = total_tiles * area_ratio
-            print("        %.2d:  %r,%s# %6d * %-6d = %8s (%s)" % (level, res, ' '*spaces, tiles_in_x, tiles_in_y, human_readable_number(total_tiles), human_readable_number(coverage_tiles)))
+            print("        %.2d:  %r,%s# %6d * %-6d = %10s (%s)" % (level, res, ' '*spaces, tiles_in_x, tiles_in_y, human_readable_number(total_tiles), human_readable_number(coverage_tiles)))
         else:
-            print("        %.2d:  %r,%s# %6d * %-6d = %8s" % (level, res, ' '*spaces, tiles_in_x, tiles_in_y, human_readable_number(total_tiles)))
+            print("        %.2d:  %r,%s# %6d * %-6d = %10s" % (level, res, ' '*spaces, tiles_in_x, tiles_in_y, human_readable_number(total_tiles)))
 
 def human_readable_number(num):
-    if num > 10**12:
-        return '%.3fT' % (num/10**12)
-    if num > 10**9:
-        return '%.3fG' % (num/10**9)
     if num > 10**6:
-        return '%.3fM' % (num/10**6)
-    if num > 10**3:
-        return '%.3fK' % (num/10**3)
+        return '%7.2fM' % (num/10**6)
     return '%d' % num
 
 def display_grids_list(grids):
@@ -143,26 +137,26 @@ def grids_command(args=None):
         print('ERROR: invalid configuration (see above)', file=sys.stderr)
         sys.exit(2)
 
-    if options.show_all or options.grid_name:
-        grids = proxy_configuration.grids
-    else:
-        caches = proxy_configuration.caches
-        grids = {}
-        for cache in caches.values():
-            grids.update(cache.grid_confs())
-        grids = dict(grids)
+    with local_base_config(proxy_configuration.base_config):
+        if options.show_all or options.grid_name:
+            grids = proxy_configuration.grids
+        else:
+            caches = proxy_configuration.caches
+            grids = {}
+            for cache in caches.values():
+                grids.update(cache.grid_confs())
+            grids = dict(grids)
 
-    if options.grid_name:
-        options.grid_name = options.grid_name.lower()
-        # ignore case for keys
-        grids = dict((key.lower(), value) for (key, value) in iteritems(grids))
-        if not grids.get(options.grid_name, False):
-            print('grid not found: %s' % (options.grid_name,))
-            sys.exit(1)
+        if options.grid_name:
+            options.grid_name = options.grid_name.lower()
+            # ignore case for keys
+            grids = dict((key.lower(), value) for (key, value) in iteritems(grids))
+            if not grids.get(options.grid_name, False):
+                print('grid not found: %s' % (options.grid_name,))
+                sys.exit(1)
 
-    coverage = None
-    if options.coverage and options.seed_config:
-        with local_base_config(proxy_configuration.base_config):
+        coverage = None
+        if options.coverage and options.seed_config:
             try:
                 seed_conf = load_seed_tasks_conf(options.seed_config, proxy_configuration)
             except SeedConfigurationError as e:
@@ -176,16 +170,16 @@ def grids_command(args=None):
             coverage = seed_conf.coverage(options.coverage)
             coverage.name = options.coverage
 
-    elif (options.coverage and not options.seed_config) or (not options.coverage and options.seed_config):
-        print('--coverage and --seed-conf can only be used together')
-        sys.exit(1)
+        elif (options.coverage and not options.seed_config) or (not options.coverage and options.seed_config):
+            print('--coverage and --seed-conf can only be used together')
+            sys.exit(1)
 
-    if options.list_grids:
-        display_grids_list(grids)
-    elif options.grid_name:
-        display_grids({options.grid_name: grids[options.grid_name]}, coverage=coverage)
-    else:
-        display_grids(grids, coverage=coverage)
+        if options.list_grids:
+            display_grids_list(grids)
+        elif options.grid_name:
+            display_grids({options.grid_name: grids[options.grid_name]}, coverage=coverage)
+        else:
+            display_grids(grids, coverage=coverage)
 
 
 

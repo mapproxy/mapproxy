@@ -5,7 +5,7 @@ Shapely==1.5.8
 PyYAML==3.10
 Pillow==2.8.1
 WebOb==1.2.3
-beautifulsoup4==4.3.2
+beautifulsoup4==4.4.0
 coverage==3.7
 requests==2.0.1
 six==1.4.1

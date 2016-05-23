@@ -364,6 +364,7 @@ class TestCleanupDirectory(DirTest):
 
     def test_remove_some(self):
         files = []
+        # create a few files, every other file is one week old
         new_date = timestamp_before(weeks=1)
         for n in range(10):
             fname = 'foo'+str(n)
@@ -372,17 +373,24 @@ class TestCleanupDirectory(DirTest):
                 os.utime(filename, (new_date, new_date))
             files.append(filename)
 
+        # check all files are present
         for filename in files:
             assert os.path.exists(filename), filename
-        cleanup_directory(self.tmpdir, timestamp_before())
+
+        # cleanup_directory for all files older then one minute
+        cleanup_directory(self.tmpdir, timestamp_before(minutes=1))
+
+        # check old files and dirs are removed
         for filename in files[::2]:
             assert not os.path.exists(filename), filename
             assert not os.path.exists(os.path.dirname(filename)), filename
+
+        # check new files are still present
         for filename in files[1::2]:
             assert os.path.exists(filename), filename
 
-def write_atomic_data(xxx_todo_changeme):
-    (i, filename) = xxx_todo_changeme
+def _write_atomic_data(i_filename):
+    (i, filename) = i_filename
     data = str(i) + '\n' + 'x' * 10000
     write_atomic(filename, data.encode('utf-8'))
     time.sleep(0.001)
@@ -402,7 +410,7 @@ class TestWriteAtomic(object):
         concurrent_writes = 8
 
         p = multiprocessing.Pool(concurrent_writes)
-        p.map(write_atomic_data, ((i, filename) for i in range(num_writes)))
+        p.map(_write_atomic_data, ((i, filename) for i in range(num_writes)))
         p.close()
         p.join()
 

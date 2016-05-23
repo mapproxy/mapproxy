@@ -1,0 +1,73 @@
+services:
+  demo:
+  wmts:
+  wms:
+    md:
+      title: Foo
+
+layers:
+  - name: dop_l
+    title: DOP L
+    sources: [dop_l_cache]
+    tile_sources: [dop_l_cache]
+  - name: dop_0
+    title: DOP 0
+    tile_sources: [dop_0_cache]
+  - name: dop_021
+    title: DOP 021
+    tile_sources: [dop_021_cache]
+  - name: dop_0122
+    title: DOP 0122
+    tile_sources: [dop_0122_cache]
+
+caches:
+
+  dop_l_cache:
+    grids: [GLOBAL_WEBMERCATOR]
+    disable_storage: true
+    sources:
+      l: [
+        {source: dop_cache, band: 0, factor: 0.25},
+        {source: dop_cache, band: 1, factor: 0.7},
+        {source: dop_cache, band: 2, factor: 0.05},
+      ]
+
+  dop_0_cache:
+    grids: [GLOBAL_WEBMERCATOR]
+    disable_storage: true
+    image:
+      mode: RGB
+    sources:
+      l: [{source: dop_cache, band: 0}]
+
+  dop_021_cache:
+    grids: [GLOBAL_WEBMERCATOR]
+    disable_storage: true
+    sources:
+      r: [{source: dop_cache, band: 0}]
+      g: [{source: dop_cache, band: 2}]
+      b: [{source: dop_cache, band: 1}]
+
+  dop_0122_cache:
+    grids: [GLOBAL_WEBMERCATOR]
+    disable_storage: true
+    sources:
+      r: [{source: dop_cache, band: 0}]
+      g: [{source: dop_cache, band: 1}]
+      b: [{source: dop_cache, band: 2}]
+      a: [{source: dop_cache, band: 2, factor: 0.25}]
+
+  dop_cache:
+    grids: [GLOBAL_WEBMERCATOR]
+    sources: [dop_wms]
+
+sources:
+  dop_wms:
+    type: wms
+    req:
+      url: http://localhost:42423/
+      layers: dop
+
+globals:
+  image:
+    paletted: false

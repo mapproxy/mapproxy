@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010-2012 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2016 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,8 +28,9 @@ from functools import partial
 import logging
 log = logging.getLogger('mapproxy.config')
 
-from mapproxy.config import load_default_config, finish_base_config
-from mapproxy.config.spec import validate_mapproxy_conf
+from mapproxy.config import load_default_config, finish_base_config, defaults
+from mapproxy.config.validator import validate_references
+from mapproxy.config.spec import validate_options
 from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
@@ -63,12 +64,9 @@ class ProxyConfiguration(object):
 
     def load_grids(self):
         self.grids = {}
-
-        self.grids['GLOBAL_GEODETIC'] = GridConfiguration(dict(srs='EPSG:4326', origin='sw', name='GLOBAL_GEODETIC'), context=self)
-        self.grids['GLOBAL_MERCATOR'] = GridConfiguration(dict(srs='EPSG:900913', origin='sw', name='GLOBAL_MERCATOR'), context=self)
-        self.grids['GLOBAL_WEBMERCATOR'] = GridConfiguration(dict(srs='EPSG:3857', origin='nw', name='GLOBAL_WEBMERCATOR'), context=self)
-
-        for grid_name, grid_conf in iteritems((self.configuration.get('grids') or {})):
+        grid_configs = dict(defaults.grids)
+        grid_configs.update(self.configuration.get('grids') or {})
+        for grid_name, grid_conf in iteritems(grid_configs):
             grid_conf.setdefault('name', grid_name)
             self.grids[grid_name] = GridConfiguration(grid_conf, context=self)
 
@@ -163,7 +161,10 @@ class ProxyConfiguration(object):
             if isinstance(layers_conf[0], dict) and len(layers_conf[0].keys()) == 1:
                 # looks like ordered legacy config
                 layers_conf = self._legacy_layers_conf_dict()
-            elif len(layers_conf) == 1 and 'layers' in layers_conf[0]:
+            elif len(layers_conf) == 1 and (
+                'layers' in layers_conf[0]
+                or 'sources' in layers_conf[0]
+                or 'tile_sources' in layers_conf[0]):
                 # single root layer in list -> remove list
                 layers_conf = layers_conf[0]
             else:
@@ -188,7 +189,7 @@ class ProxyConfiguration(object):
             for layer in layers_conf.pop('layers'):
                 self._flatten_layers_conf_dict(layer, layers)
 
-        if 'sources' in layers_conf and 'name' in layers_conf:
+        if 'name' in layers_conf and ('sources' in layers_conf or 'tile_sources' in layers_conf):
             layers[layers_conf['name']] = layers_conf
 
         return layers
@@ -594,6 +595,40 @@ def resolution_range(conf):
                                 max_scale=conf.get('max_scale'))
 
 
+class ArcGISSourceConfiguration(SourceConfiguration):
+    source_type = ('arcgis',)
+    def __init__(self, conf, context):
+        SourceConfiguration.__init__(self, conf, context)
+
+    def source(self, params=None):
+        from mapproxy.client.arcgis import ArcGISClient
+        from mapproxy.source.arcgis import ArcGISSource
+        from mapproxy.srs import SRS
+        from mapproxy.request.arcgis import create_request
+
+        # Get the supported SRS codes and formats from the configuration.
+        supported_srs = [SRS(code) for code in self.conf.get("supported_srs", [])]
+        supported_formats = [file_ext(f) for f in self.conf.get("supported_formats", [])]
+
+        # Construct the parameters
+        if params is None:
+            params = {}
+
+        request_format = self.conf['req'].get('format')
+        if request_format:
+            params['format'] = request_format
+
+        request = create_request(self.conf["req"], params)
+        http_client, request.url = self.http_client(request.url)
+        coverage = self.coverage()
+
+        client = ArcGISClient(request, http_client)
+        image_opts = self.image_opts(format=params.get('format'))
+        return ArcGISSource(client, image_opts=image_opts, coverage=coverage,
+                            supported_srs=supported_srs,
+                            supported_formats=supported_formats or None)
+
+
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
 
@@ -895,6 +930,7 @@ class DebugSourceConfiguration(SourceConfiguration):
 
 source_configuration_types = {
     'wms': WMSSourceConfiguration,
+    'arcgis': ArcGISSourceConfiguration,
     'tile': TileSourceConfiguration,
     'debug': DebugSourceConfiguration,
     'mapserver': MapServerSourceConfiguration,
@@ -946,7 +982,6 @@ class CacheConfiguration(ConfigurationBase):
 
         return FileCache(
             cache_dir,
-            lock_dir=self.lock_dir(),
             file_ext=file_ext,
             directory_layout=directory_layout,
             lock_timeout=lock_timeout,
@@ -1006,7 +1041,7 @@ class CacheConfiguration(ConfigurationBase):
         tile_id = self.conf['cache'].get('tile_id')
 
         return CouchDBCache(url=url, db_name=db_name,
-            lock_dir=self.lock_dir(), file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
+            file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
             md_template=md_template, tile_id_template=tile_id)
 
     def _riak_cache(self, grid_conf, file_ext):
@@ -1036,7 +1071,6 @@ class CacheConfiguration(ConfigurationBase):
 
         return RiakCache(nodes=nodes, protocol=protocol, bucket=bucket,
             tile_grid=grid_conf.tile_grid(),
-            lock_dir=self.lock_dir(),
             use_secondary_index=use_secondary_index,
         )
 
@@ -1110,6 +1144,92 @@ class CacheConfiguration(ConfigurationBase):
             image_opts=image_opts, tiled_only=tiled_only)
         return source
 
+    def _sources_for_grid(self, source_names, grid_conf, request_format):
+        sources = []
+        source_image_opts = []
+
+        # a cache can directly access source tiles when _all_ sources are caches too
+        # and when they have compatible grids by using tiled_only on the CacheSource
+        # check if all sources support tiled_only
+        tiled_only = True
+        for source_name in source_names:
+            if source_name in self.context.sources:
+                tiled_only = False
+                break
+            elif source_name in self.context.caches:
+                cache_conf = self.context.caches[source_name]
+                tiled_only = cache_conf.supports_tiled_only_access(
+                    params={'format': request_format},
+                    tile_grid=grid_conf.tile_grid(),
+                )
+                if not tiled_only:
+                    break
+
+        for source_name in source_names:
+            if source_name in self.context.sources:
+                source_conf = self.context.sources[source_name]
+                source = source_conf.source({'format': request_format})
+            elif source_name in self.context.caches:
+                cache_conf = self.context.caches[source_name]
+                source = cache_conf.source(
+                    params={'format': request_format},
+                    tile_grid=grid_conf.tile_grid(),
+                    tiled_only=tiled_only,
+                )
+            else:
+                raise ConfigurationError('unknown source %s' % source_name)
+            if source:
+                sources.append(source)
+                source_image_opts.append(source.image_opts)
+
+        return sources, source_image_opts
+
+    def _sources_for_band_merge(self, sources_conf, grid_conf, request_format):
+        from mapproxy.image.merge import BandMerger
+
+        source_names = []
+
+        for band, band_sources in iteritems(sources_conf):
+            for source in band_sources:
+                name = source['source']
+                if name in source_names:
+                    idx = source_names.index(name)
+                else:
+                    source_names.append(name)
+                    idx = len(source_names) - 1
+
+                source["src_idx"] = idx
+
+        sources, source_image_opts = self._sources_for_grid(
+            source_names=source_names,
+            grid_conf=grid_conf,
+            request_format=request_format,
+        )
+
+        if 'l' in sources_conf:
+            mode = 'L'
+        elif 'a' in sources_conf:
+            mode = 'RGBA'
+        else:
+            mode = 'RGB'
+
+        band_merger = BandMerger(mode=mode)
+        available_bands = {'r': 0, 'g': 1, 'b': 2, 'a': 3, 'l': 0}
+        for band, band_sources in iteritems(sources_conf):
+            band_idx = available_bands.get(band)
+            if band_idx is None:
+                raise ConfigurationError("unsupported band '%s' for cache %s"
+                    % (band, self.conf['name']))
+            for source in band_sources:
+                band_merger.add_ops(
+                    dst_band=band_idx,
+                    src_img=source['src_idx'],
+                    src_band=source['band'],
+                    factor=source.get('factor', 1.0),
+                )
+
+        return band_merger.merge, sources, source_image_opts
+
     @memoize
     def caches(self):
         from mapproxy.cache.dummy import DummyCache, DummyLocker
@@ -1140,43 +1260,21 @@ class CacheConfiguration(ConfigurationBase):
 
         renderd_address = self.context.globals.get_value('renderd.address', self.conf)
 
+        band_merger = None
         for grid_name, grid_conf in self.grid_confs():
-            sources = []
-            source_image_opts = []
+            if isinstance(self.conf['sources'], dict):
+                band_merger, sources, source_image_opts = self._sources_for_band_merge(
+                    self.conf['sources'],
+                    grid_conf=grid_conf,
+                    request_format=request_format,
+                )
+            else:
+                sources, source_image_opts = self._sources_for_grid(
+                    self.conf['sources'],
+                    grid_conf=grid_conf,
+                    request_format=request_format,
+                )
 
-            # a cache can directly access source tiles when _all_ sources are caches too
-            # and when they have compatible grids by using tiled_only on the CacheSource
-            # check if all sources support tiled_only
-            tiled_only = True
-            for source_name in self.conf['sources']:
-                if source_name in self.context.sources:
-                    tiled_only = False
-                    break
-                elif source_name in self.context.caches:
-                    cache_conf = self.context.caches[source_name]
-                    tiled_only = cache_conf.supports_tiled_only_access(
-                        params={'format': request_format},
-                        tile_grid=grid_conf.tile_grid(),
-                    )
-                    if not tiled_only:
-                        break
-
-            for source_name in self.conf['sources']:
-                if source_name in self.context.sources:
-                    source_conf = self.context.sources[source_name]
-                    source = source_conf.source({'format': request_format})
-                elif source_name in self.context.caches:
-                    cache_conf = self.context.caches[source_name]
-                    source = cache_conf.source(
-                        params={'format': request_format},
-                        tile_grid=grid_conf.tile_grid(),
-                        tiled_only=tiled_only,
-                    )
-                else:
-                    raise ConfigurationError('unknown source %s' % source_name)
-                if source:
-                    sources.append(source)
-                    source_image_opts.append(source.image_opts)
             if not sources:
                 from mapproxy.source import DummySource
                 sources = [DummySource()]
@@ -1214,8 +1312,13 @@ class CacheConfiguration(ConfigurationBase):
 
                 lock_timeout = self.context.globals.get_value('http.client_timeout', {})
                 locker = TileLocker(lock_dir, lock_timeout, identifier + '_renderd')
+                # TODO band_merger
                 tile_creator_class = partial(RenderdTileCreator, renderd_address,
                     priority=priority, tile_locker=locker)
+
+            else:
+                from mapproxy.cache.tile import TileCreator
+                tile_creator_class = partial(TileCreator, image_merger=band_merger)
 
             if isinstance(cache, DummyCache):
                 locker = DummyLocker()
@@ -1292,13 +1395,15 @@ class WMSLayerConfiguration(ConfigurationBase):
         if 'layers' in self.conf:
             layers_conf = self.conf['layers']
             for layer_conf in layers_conf:
-                layers.append(WMSLayerConfiguration(layer_conf, self.context).wms_layer())
+                lyr = WMSLayerConfiguration(layer_conf, self.context).wms_layer()
+                if lyr:
+                    layers.append(lyr)
 
         if 'sources' in self.conf or 'legendurl' in self.conf:
             this_layer = LayerConfiguration(self.conf, self.context).wms_layer()
 
         if not layers and not this_layer:
-            raise ValueError('wms layer requires sources and/or layers')
+            return None
 
         if not layers:
             layer = this_layer
@@ -1393,23 +1498,26 @@ class LayerConfiguration(ConfigurationBase):
         from mapproxy.cache.dummy import DummyCache
 
         sources = []
-        for source_name in self.conf.get('sources', []):
-            # we only support caches for tiled access...
-            if not source_name in self.context.caches:
-                if source_name in self.context.sources:
-                    src_conf = self.context.sources[source_name].conf
-                    # but we ignore debug layers for convenience
-                    if src_conf['type'] == 'debug':
-                        continue
-                    # and WMS layers with map: False (i.e. FeatureInfo only sources)
-                    if src_conf['type'] == 'wms' and src_conf.get('wms_opts', {}).get('map', True) == False:
-                        continue
+        if 'tile_sources' in self.conf:
+            sources = self.conf['tile_sources']
+        else:
+            for source_name in self.conf.get('sources', []):
+                # we only support caches for tiled access...
+                if not source_name in self.context.caches:
+                    if source_name in self.context.sources:
+                        src_conf = self.context.sources[source_name].conf
+                        # but we ignore debug layers for convenience
+                        if src_conf['type'] == 'debug':
+                            continue
+                        # and WMS layers with map: False (i.e. FeatureInfo only sources)
+                        if src_conf['type'] == 'wms' and src_conf.get('wms_opts', {}).get('map', True) == False:
+                            continue
 
+                    return []
+                sources.append(source_name)
+
+            if len(sources) > 1:
                 return []
-            sources.append(source_name)
-
-        if len(sources) > 1:
-            return []
 
         dimensions = self.dimensions()
 
@@ -1535,7 +1643,7 @@ class ServiceConfiguration(ConfigurationBase):
 
         md = self.context.services.conf.get('wms', {}).get('md', {}).copy()
         md.update(conf.get('md', {}))
-        layers = self.tile_layers(conf)
+        layers = self.tile_layers(conf, use_grid_names=True)
 
         kvp = conf.get('kvp')
         restful = conf.get('restful')
@@ -1564,12 +1672,15 @@ class ServiceConfiguration(ConfigurationBase):
         from mapproxy.request.wms import Version
 
         md = conf.get('md', {})
+        inspire_md = conf.get('inspire_md', {})
         tile_layers = self.tile_layers(conf)
         attribution = conf.get('attribution')
         strict = self.context.globals.get_value('strict', conf, global_key='wms.strict')
         on_source_errors = self.context.globals.get_value('on_source_errors',
             conf, global_key='wms.on_source_errors')
         root_layer = self.context.wms_root_layer.wms_layer()
+        if not root_layer:
+            raise ConfigurationError("found no WMS layer")
         if not root_layer.title:
             # set title of root layer to WMS title
             root_layer.title = md.get('title')
@@ -1582,7 +1693,7 @@ class ServiceConfiguration(ConfigurationBase):
         for format in image_formats_names:
             opts = self.context.globals.image_options.image_opts({}, format)
             if opts.format in image_formats:
-                log.warn('duplicate mime-type for WMS image_formats: "%s" already configured',
+                log.warn('duplicate mime-type for WMS image_formats: "%s" already configured, will use last format',
                     opts.format)
             image_formats[opts.format] = opts
         info_types = conf.get('featureinfo_types')
@@ -1611,7 +1722,9 @@ class ServiceConfiguration(ConfigurationBase):
             srs=srs, tile_layers=tile_layers, strict=strict, on_error=on_source_errors,
             concurrent_layer_renderer=concurrent_layer_renderer,
             max_output_pixels=max_output_pixels, srs_extents=srs_extents,
-            max_tile_age=max_tile_age, versions=versions)
+            max_tile_age=max_tile_age, versions=versions,
+            inspire_md=inspire_md,
+            )
 
         server.fi_transformers = fi_xslt_transformers(conf, self.context)
 
@@ -1624,7 +1737,9 @@ class ServiceConfiguration(ConfigurationBase):
         md.update(conf.get('md', {}))
         layers = odict()
         for layer_name, layer_conf in iteritems(self.context.layers):
-            layers[layer_name] = layer_conf.wms_layer()
+            lyr = layer_conf.wms_layer()
+            if lyr:
+                layers[layer_name] = lyr
         tile_layers = self.tile_layers(conf)
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
@@ -1649,6 +1764,12 @@ class ServiceConfiguration(ConfigurationBase):
             if restful:
                 services.append('wmts_restful')
 
+        if 'wms' in self.context.services.conf:
+            versions = self.context.services.conf['wms'].get('versions', ['1.1.1'])
+            if '1.1.1' in versions:
+                # demo service only supports 1.1.1, use wms_111 as an indicator
+                services.append('wms_111')
+
         return DemoServer(layers, md, tile_layers=tile_layers,
             image_formats=image_formats, srs=srs, services=services, restful_template=restful_template)
 
@@ -1656,15 +1777,29 @@ class ServiceConfiguration(ConfigurationBase):
 def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=False):
     conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
 
+    # A configuration is checked/validated four times, each step has a different
+    # focus and returns different errors. The steps are:
+    # 1. YAML loading: checks YAML syntax like tabs vs. space, indention errors, etc.
+    # 2. Options: checks all options agains the spec and validates their types,
+    #             e.g is disable_storage a bool, is layers a list, etc.
+    # 3. References: checks if all referenced caches, sources and grids exist
+    # 4. Initialization: creates all MapProxy objects, returns on first error
+
     try:
         conf_dict = load_configuration_file([os.path.basename(mapproxy_conf)], conf_base_dir)
     except YAMLError as ex:
         raise ConfigurationError(ex)
-    errors, informal_only = validate_mapproxy_conf(conf_dict)
+
+    errors, informal_only = validate_options(conf_dict)
     for error in errors:
         log.warn(error)
     if not informal_only or (errors and not ignore_warnings):
         raise ConfigurationError('invalid configuration')
+
+    errors = validate_references(conf_dict)
+    for error in errors:
+        log.warn(error)
+
     return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed,
         renderd=renderd)
 

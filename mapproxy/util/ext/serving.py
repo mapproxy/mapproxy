@@ -602,7 +602,14 @@ def restart_with_reloader():
     """
     while 1:
         _log('info', ' * Restarting with reloader')
+
         args = [sys.executable] + sys.argv
+        # pip installs commands as .exe, but sys.argv[0]
+        # can miss the prefix. add .exe to avoid file-not-found
+        # in subprocess call
+        if os.name == 'nt' and '.' not in args[1]:
+            args[1] = args[1] + '.exe'
+
         new_environ = os.environ.copy()
         new_environ['WERKZEUG_RUN_MAIN'] = 'true'
 

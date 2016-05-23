@@ -1,10 +1,19 @@
-<?xml version="1.0"?>
-<WMS_Capabilities xmlns="http://www.opengis.net/wms" xmlns:sld="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.3.0" xsi:schemaLocation="http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd">
+<?xml version="1.0" ?>
+<WMS_Capabilities xmlns="http://www.opengis.net/wms" xmlns:sld="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" {{if inspire_md}}xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0" xmlns:inspire_vs="http://inspire.ec.europa.eu/schemas/inspire_vs/1.0" {{endif}}version="1.3.0" xsi:schemaLocation="http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/sld_capabilities.xsd{{if inspire_md}} http://inspire.ec.europa.eu/schemas/inspire_vs/1.0 http://inspire.ec.europa.eu/schemas/inspire_vs/1.0/inspire_vs.xsd{{endif}}">
 <Service>
   <Name>WMS</Name>
   <Title>{{service.title}}</Title>
   <Abstract>{{service.abstract}}</Abstract>
-{{if service.online_resource}}
+  {{if service.keyword_list and len(service.keyword_list) > 0}}
+  <KeywordList>
+  {{for list in service.keyword_list}}
+    {{py: kw=bunch(default='', **list)}}
+    {{for keyword in kw.keywords}}
+    <Keyword{{if kw.vocabulary}} vocabulary="{{kw.vocabulary}}"{{endif}}>{{keyword}}</Keyword>
+    {{endfor}}
+  {{endfor}}
+  </KeywordList>
+  {{endif}}{{if service.online_resource}}
   <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.online_resource}}"/>
 {{else}}
   <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{{service.url}}"/>
@@ -82,6 +91,111 @@
     <Format>INIMAGE</Format>
     <Format>BLANK</Format>
   </Exception>
+{{if inspire_md}}
+
+{{def inspire_dates(config)}}
+  {{if 'date_of_publication' in config}}
+<inspire_common:DateOfPublication>{{config['date_of_publication']}}</inspire_common:DateOfPublication>
+  {{endif}}
+  {{if 'date_of_creation' in config}}
+<inspire_common:DateOfCreation>{{config['date_of_creation']}}</inspire_common:DateOfCreation>
+  {{endif}}
+  {{if 'date_of_last_revision' in config}}
+<inspire_common:DateOfLastRevision>{{config['date_of_last_revision']}}</inspire_common:DateOfLastRevision>
+  {{endif}}
+{{enddef}}
+
+  <inspire_vs:ExtendedCapabilities>
+  {{if inspire_md.type == 'linked'}}
+    <inspire_common:MetadataUrl>
+      <inspire_common:URL>{{ inspire_md.metadata_url.url | escape }}</inspire_common:URL>
+      <inspire_common:MediaType>{{ inspire_md.metadata_url.media_type }}</inspire_common:MediaType>
+    </inspire_common:MetadataUrl>
+    <inspire_common:SupportedLanguages>
+      <inspire_common:DefaultLanguage>
+        <inspire_common:Language>{{ inspire_md.languages.default }}</inspire_common:Language>
+      </inspire_common:DefaultLanguage>
+    </inspire_common:SupportedLanguages>
+    <inspire_common:ResponseLanguage>
+      <inspire_common:Language>{{ inspire_md.languages.default }}</inspire_common:Language>
+    </inspire_common:ResponseLanguage>
+  {{else}}
+    {{for rl in inspire_md.resource_locators}}
+    <inspire_common:ResourceLocator>
+      <inspire_common:URL>{{ rl['url'] | escape }}</inspire_common:URL>
+      <inspire_common:MediaType>{{ rl['media_type'] }}</inspire_common:MediaType>
+    </inspire_common:ResourceLocator>
+    {{endfor}}
+    <inspire_common:ResourceType>service</inspire_common:ResourceType>
+    <inspire_common:TemporalReference>
+      {{ inspire_dates(inspire_md.temporal_reference) }}
+    </inspire_common:TemporalReference>
+    {{for c in inspire_md.conformities}}
+    <inspire_common:Conformity>
+      <inspire_common:Specification>
+        <inspire_common:Title>{{c['title']}}</inspire_common:Title>
+        {{ inspire_dates(c) }}
+        {{for uri in c.get('uris', [])}}
+        <inspire_common:URI>{{uri | escape}}</inspire_common:URI>
+        {{endfor}}
+        {{for rl in c.get('resource_locators')}}
+        <inspire_common:ResourceLocator>
+          <inspire_common:URL>{{ rl['url'] | escape }}</inspire_common:URL>
+          <inspire_common:MediaType>{{ rl['media_type'] }}</inspire_common:MediaType>
+        </inspire_common:ResourceLocator>
+        {{endfor}}
+      </inspire_common:Specification>
+      <inspire_common:Degree>{{c['degree']}}</inspire_common:Degree>
+    </inspire_common:Conformity>
+    {{endfor}}
+    {{for c in inspire_md.metadata_points_of_contact}}
+    <inspire_common:MetadataPointOfContact>
+      <inspire_common:OrganisationName>{{c['organisation_name']}}</inspire_common:OrganisationName>
+      <inspire_common:EmailAddress>{{c['email']}}</inspire_common:EmailAddress>
+    </inspire_common:MetadataPointOfContact>
+    {{endfor}}
+    <inspire_common:MetadataDate>{{inspire_md.metadata_date}}</inspire_common:MetadataDate>
+    <inspire_common:SpatialDataServiceType>view</inspire_common:SpatialDataServiceType>
+    {{for k in inspire_md.mandatory_keywords}}
+    <inspire_common:MandatoryKeyword>
+      <inspire_common:KeywordValue>{{ k }}</inspire_common:KeywordValue>
+    </inspire_common:MandatoryKeyword>
+    {{endfor}}
+    {{for k in inspire_md.get('keywords', [])}}
+    <inspire_common:Keyword>
+      <inspire_common:OriginatingControlledVocabulary>
+        <inspire_common:Title>{{ k['title']}}</inspire_common:Title>
+        {{ inspire_dates(k) }}
+        {{for uri in k.get('uris', [])}}
+        <inspire_common:URI>{{uri | escape}}</inspire_common:URI>
+        {{endfor}}
+        {{for rl in k.get('resource_locators', [])}}
+        <inspire_common:ResourceLocator>
+          <inspire_common:URL>{{ rl['url'] | escape }}</inspire_common:URL>
+          <inspire_common:MediaType>{{ rl['media_type'] }}</inspire_common:MediaType>
+        </inspire_common:ResourceLocator>
+        {{endfor}}
+      </inspire_common:OriginatingControlledVocabulary>
+      <inspire_common:KeywordValue>{{ k['keyword_value']}}</inspire_common:KeywordValue>
+    </inspire_common:Keyword>
+    {{endfor}}
+    <inspire_common:SupportedLanguages>
+      <inspire_common:DefaultLanguage>
+        <inspire_common:Language>{{ inspire_md.languages.default }}</inspire_common:Language>
+      </inspire_common:DefaultLanguage>
+    </inspire_common:SupportedLanguages>
+    <inspire_common:ResponseLanguage>
+      <inspire_common:Language>{{ inspire_md.languages.default }}</inspire_common:Language>
+    </inspire_common:ResponseLanguage>
+    {{if inspire_md.metadata_url}}
+    <inspire_common:MetadataUrl>
+      <inspire_common:URL>{{ inspire_md.metadata_url.url | escape }}</inspire_common:URL>
+      <inspire_common:MediaType>{{ inspire_md.metadata_url.media_type }}</inspire_common:MediaType>
+    </inspire_common:MetadataUrl>
+    {{endif}}
+  {{endif}}
+  </inspire_vs:ExtendedCapabilities>
+{{endif}}
 {{def layer_capabilities(layer, with_srs)}}
   {{py: md = bunch(default='', **layer.md)}}
 
@@ -160,9 +274,9 @@
 {{if md.feature_list}}{{layer_meta_tag('FeatureListURL', md.feature_list)}}{{endif}}
 {{if layer.is_active and layer.has_legend and layer.legend_url}}
     <Style>
-      <Name>default</Name>
+      <Name>{{if inspire_md}}inspire_common:DEFAULT{{else}}default{{endif}}</Name>
       <Title>default</Title>
-      <LegendURL>
+      <LegendURL width="{{layer.legend_size[0]}}" height="{{layer.legend_size[1]}}">
         <Format>image/png</Format>
         <OnlineResource xlink:type="simple" xlink:href="{{service.url}}{{layer.legend_url|escape}}" />
       </LegendURL>

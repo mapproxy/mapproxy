@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010,2012 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2016 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,8 @@ Image and tile manipulation (transforming, merging, etc).
 """
 from __future__ import with_statement
 
-from mapproxy.compat.image import Image, ImageColor, ImageChops
+from collections import namedtuple
+from mapproxy.compat.image import Image, ImageColor, ImageChops, ImageMath
 from mapproxy.compat.image import has_alpha_composite_support
 from mapproxy.image import BlankImageSource, ImageSource
 from mapproxy.image.opts import create_image, ImageOptions
@@ -92,7 +93,7 @@ class LayerMerger(object):
                     alpha = img.split()[3]
                     alpha = ImageChops.multiply(
                         alpha,
-                        ImageChops.constant(alpha, 255 * opacity)
+                        ImageChops.constant(alpha, int(255 * opacity))
                     )
                     img.putalpha(alpha)
                 if img.mode == 'RGB':
@@ -123,6 +124,100 @@ class LayerMerger(object):
             result = bg
 
         return ImageSource(result, size=size, image_opts=image_opts, cacheable=cacheable)
+
+
+band_ops = namedtuple("band_ops", ["dst_band", "src_img", "src_band", "factor"])
+
+class BandMerger(object):
+    """
+    Merge bands from multiple sources into one image.
+
+       sources:
+           r: [{source: nir_cache, band: 0, factor: 0.4}, {source: dop_cache, band: 0, factor: 0.6}]
+           g: [{source: dop_cache, band: 2}]
+           b: [{source: dop_cache, band: 1}]
+
+       sources:
+           l: [
+               {source: dop_cache, band: 0, factor: 0.6},
+               {source: dop_cache, band: 1, factor: 0.3},
+               {source: dop_cache, band: 2, factor: 0.1},
+           ]
+    """
+    def __init__(self, mode=None):
+        self.ops = []
+        self.cacheable = True
+        self.mode = mode
+        self.max_band = {}
+
+    def add_ops(self, dst_band, src_img, src_band, factor=1.0):
+        self.ops.append(band_ops(
+            dst_band=dst_band,
+            src_img=src_img,
+            src_band=src_band,
+            factor=factor,
+         ))
+        # store highest requested band index for each source
+        self.max_band[src_img] = max(self.max_band.get(src_img, 0), src_band)
+
+    def merge(self, sources, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None):
+        if not sources:
+            return BlankImageSource(size=size, image_opts=image_opts, cacheable=True)
+
+        if size is None:
+            size = sources[0].size
+
+        # load src bands
+        src_img_bands = []
+        for i, layer_img in enumerate(sources):
+            img = layer_img.as_image()
+
+            if i not in self.max_band:
+                # do not split img if not requested by any op
+                src_img_bands.append(None)
+                continue
+
+            if self.max_band[i] == 3 and img.mode != 'RGBA':
+                # convert to RGBA if band idx 3 is requestd (e.g. P or RGB src)
+                img = img.convert('RGBA')
+            elif img.mode == 'P':
+                img = img.convert('RGB')
+            src_img_bands.append(img.split())
+
+        tmp_mode = self.mode
+
+        if tmp_mode == 'RGBA':
+            result_bands = [None, None, None, None]
+        elif tmp_mode == 'RGB':
+            result_bands = [None, None, None]
+        elif tmp_mode == 'L':
+            result_bands = [None]
+        else:
+            raise ValueError("unsupported destination mode %s", image_opts.mode)
+
+        for op in self.ops:
+            chan = src_img_bands[op.src_img][op.src_band]
+            if op.factor != 1.0:
+                chan = ImageMath.eval("convert(int(float(a) * %f), 'L')" % op.factor, a=chan)
+                if result_bands[op.dst_band] is None:
+                    result_bands[op.dst_band] = chan
+                else:
+                    result_bands[op.dst_band] = ImageChops.add(
+                        result_bands[op.dst_band],
+                        chan,
+                    )
+            else:
+                result_bands[op.dst_band] = chan
+
+        for i, b in enumerate(result_bands):
+            if b is None:
+                # band not set
+                b = Image.new("L", size, 255 if i == 3 else 0)
+                result_bands[i] = b
+
+        result = Image.merge(tmp_mode, result_bands)
+        return ImageSource(result, size=size, image_opts=image_opts)
+
 
 def merge_images(images, image_opts, size=None):
     """

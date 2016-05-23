@@ -35,3 +35,18 @@ def template_loader(module_name, location='templates', namespace={}):
             return Template.from_filename(template_file, namespace=namespace, encoding='utf-8',
                                           default_inherit=default_inherit, get_template=self)
     return loader()
+
+
+class recursive_bunch(bunch):
+
+    def __getitem__(self, key):
+        if 'default' in self:
+            try:
+                value = dict.__getitem__(self, key)
+            except KeyError:
+                value = dict.__getitem__(self, 'default')
+        else:
+            value = dict.__getitem__(self, key)
+        if isinstance(value, dict):
+            value = recursive_bunch(**value)
+        return value

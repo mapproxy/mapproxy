@@ -132,7 +132,7 @@ class Validator(object):
         for k in iterkeys(spec):
             if isinstance(k, required):
                 if k not in data:
-                    self._handle_error("missing '%s' not in %s" %
+                    self._handle_error("missing '%s', not in %s" %
                         (k, self.context.current_pos))
             if isinstance(k, anything):
                 accept_any_key = True
