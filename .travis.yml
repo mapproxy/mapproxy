@@ -28,8 +28,6 @@ addons:
       - libfreetype6-dev
       - protobuf-compiler
       - libprotoc-dev
-      - cython
-      - cython3
 
 env:
   - CASSANDRA_SERVER='localhost' CASS_DRIVER_NO_CYTHON=1
