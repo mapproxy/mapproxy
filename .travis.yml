@@ -11,7 +11,6 @@ services:
   - couchdb
   - riak
   - cassandra
-# command to install dependencies
 
 addons:
   apt:
@@ -32,6 +31,7 @@ addons:
 
 env:
   - MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984
+  - CASSANDRA_SERVER='localhost'
 
 cache:
   directories:
