@@ -28,9 +28,10 @@ addons:
       - libfreetype6-dev
       - protobuf-compiler
       - libprotoc-dev
+      - cython
+      - cython3
 
 env:
-  - MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984
   - CASSANDRA_SERVER='localhost'
 
 cache:
