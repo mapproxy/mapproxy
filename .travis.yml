@@ -1,5 +1,3 @@
-sudo: required
-dist: trusty
 language: python
 
 python:
@@ -34,7 +32,7 @@ addons:
       - cython3
 
 env:
-  - CASSANDRA_SERVER='localhost'
+  - CASSANDRA_SERVER='localhost' CASS_DRIVER_NO_CYTHON=1
 
 cache:
   directories:
