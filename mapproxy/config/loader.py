@@ -1009,6 +1009,26 @@ class CacheConfiguration(ConfigurationBase):
             wal=wal,
         )
 
+    def _geopackage_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.geopackage import GeopackageCache
+        from mapproxy.srs import get_epsg_num
+
+        filename = self.conf.get('cache').get('filename')
+        table_name = self.conf.get('cache').get('table_name') or \
+                     "{}_{}".format(self.conf.get('name'), get_epsg_num(grid_conf.conf.get('srs')))
+
+        if not filename:
+            filename = self.conf['name'] + '.gpkg'
+
+        if filename.startswith('.' + os.sep):
+            gpkg_file_path = self.context.globals.abspath(filename)
+        else:
+            gpkg_file_path = os.path.join(self.cache_dir(), filename)
+
+        return GeopackageCache(
+                gpkg_file_path, grid_conf, table_name
+        )
+
     def _sqlite_cache(self, grid_conf, file_ext):
         from mapproxy.cache.mbtiles import MBTilesLevelCache
 

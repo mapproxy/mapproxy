@@ -308,3 +308,39 @@ Example
         default_ports:
             pb: 8087
             http: 8098
+
+
+``geopackage``
+========
+
+.. versionadded:: 1.8.x
+
+Store tiles in a `geopackage <http://www.geopackage.org/>`_ database. MapProxy creates a tile table if one isn't defined and populates the required meta data fields.
+This backend is good for datasets that require portabilitiy. Data can be distributed over multiple nodes providing a fault-tolernt and high-available storage. A Riak cluster is masterless and each node can handle read and write requests.
+
+Available options:
+
+``filename``:
+  The path to the geopackage file. Defaults to ``cachename.gpkg``.
+
+``table_name``:
+  The name of the table where the tiles should be stored (or retrieved if using an existing cache). Defaults to the ``cachename_projection``.
+
+
+You can set the ``sources`` to an empty list, if you use an existing geopackage file and do not have a source.
+
+::
+
+  caches:
+    geopackage_cache:
+      sources: []
+      grids: [GLOBAL_MERCATOR]
+      cache:
+        type: geopackage
+        filename: /path/to/bluemarble.gpkg
+        table_name: bluemarble_tiles
+
+.. note::
+
+  The geopackage format specification does not include any timestamps for each tile and the seeding function is limited therefore. If you include any ``refresh_before`` time in a seed task, all tiles will be recreated regardless of the value. The cleanup process does not support any ``remove_before`` times for geopackage and it always removes all tiles.
+  Use the ``--summary`` option of the ``mapproxy-seed`` tool.
