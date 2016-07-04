@@ -96,10 +96,13 @@ class GeopackageCache(TileCacheBase):
 
     def check_gpkg(self):
         if not self._verify_table():
+            print("table invalid")
             return False
         if not self._verify_gpkg_contents():
+            print("gpkg_contents invalid")
             return False
         if not self._verify_tile_size():
+            print("tile_size invalid")
             return False
         return True
 
@@ -197,12 +200,6 @@ class GeopackageCache(TileCacheBase):
                                                                                                   resolution))
             log.info("The current mapproxy configuration is invalid for this geopackage.")
             raise ValueError("res is improperly configured.")
-        if count > 20:
-            raise ValueError(
-                "The geopackage {0} has an invalid number of levels for table {1}.".format(self.geopackage_file,
-                                                                                         self.table_name))
-        if count < 20:
-            return False
         return True
 
     def _initialize_gpkg(self):
