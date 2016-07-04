@@ -1596,6 +1596,15 @@ def extents_for_srs(bbox_srs):
 
 
 class ServiceConfiguration(ConfigurationBase):
+    def __init__(self, conf, context):
+        if 'wms' in conf:
+            if conf['wms'] is None:
+                conf['wms'] = {}
+            if 'md' not in conf['wms']:
+                conf['wms']['md'] = {'title': 'MapProxy WMS'}
+
+        ConfigurationBase.__init__(self, conf, context)
+
     def services(self):
         services = []
         ows_services = []

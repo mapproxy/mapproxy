@@ -15,9 +15,12 @@
 
 from __future__ import division, with_statement
 
+import os
+
 from mapproxy.srs import SRS, bbox_equals
 from mapproxy.util.geom import (
     load_polygons,
+    load_datasource,
     transform_geometry,
     geom_support,
     bbox_polygon,
@@ -345,3 +348,19 @@ class TestMapExtent(object):
         bbox = SRS(3857).transform_bbox_to(SRS(4326), (0, 0, 100000, 100000), 0)
         assert bbox_equals(bbox, sub.bbox)
 
+
+class TestLoadDatasource(object):
+    def test_shp(self):
+        polygon_file = os.path.join(os.path.dirname(__file__), 'polygons', 'polygons.shp')
+        geoms = load_datasource(polygon_file)
+        eq_(len(geoms), 3)
+
+    def test_wkt(self):
+        with TempFile() as fname:
+            with open(fname, 'wb') as f:
+                f.write(VALID_POLYGON1)
+                f.write(b"\n")
+                f.write(VALID_POLYGON1)
+
+            geoms = load_datasource(fname)
+            eq_(len(geoms), 2)
