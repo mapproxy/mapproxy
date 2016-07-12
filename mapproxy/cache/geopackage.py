@@ -115,30 +115,19 @@ class GeopackageCache(TileCacheBase):
 
     def _verify_gpkg_contents(self):
         with sqlite3.connect(self.geopackage_file) as db:
-            try:
-                cur = db.execute("""SELECT table_name, data_type, srs_id FROM gpkg_contents WHERE table_name = ?"""
-                                 , (self.table_name,))
-            except sqlite3.OperationalError as oe:
-                if 'no such column' in str(oe):
-                    return False
-                else:
-                    raise
+            cur = db.execute("""SELECT * FROM gpkg_contents WHERE table_name = ?"""
+                             , (self.table_name,))
 
         results = cur.fetchone()
         if not results:
             # Table doesn't exist in gpkg_contents _initialize_gpkg will add it.
             return False
-        gpkg_table_name, gpkg_data_type, gpkg_srs_id = results
-        try:
-            cur = db.execute("""SELECT organization_coordsys_id FROM gpkg_spatial_ref_sys WHERE srs_id = ?"""
-                             , (gpkg_srs_id,))
-        except sqlite3.OperationalError as oe:
-            if 'no such column' in str(oe):
-                return False
-            else:
-                raise
+        gpkg_data_type = results[1]
+        gpkg_srs_id = results[9]
+        cur = db.execute("""SELECT * FROM gpkg_spatial_ref_sys WHERE srs_id = ?"""
+                         , (gpkg_srs_id,))
 
-        gpkg_coordsys_id = cur.fetchone()[0]
+        gpkg_coordsys_id = cur.fetchone()[3]
         if gpkg_data_type.lower() != "tiles":
             log.info("The geopackage table name already exists for a data type other than tiles.")
             raise ValueError("table_name is improperly configured.")
@@ -152,19 +141,11 @@ class GeopackageCache(TileCacheBase):
 
     def _verify_tile_size(self):
         with sqlite3.connect(self.geopackage_file) as db:
-            try:
-                cur = db.execute(
-                    """SELECT table_name, zoom_level, tile_width, tile_height, pixel_x_size, pixel_y_size\
-                      FROM gpkg_tile_matrix WHERE table_name = ?""",
-                    (self.table_name,))
-            except sqlite3.OperationalError as oe:
-                if 'no such column' in str(oe):
-                    return False
-                else:
-                    raise
+            cur = db.execute(
+                """SELECT * FROM gpkg_tile_matrix WHERE table_name = ?""",
+                (self.table_name,))
 
         results = cur.fetchall()
-        count = len(results)
         results = results[0]
         tile_size = self.grid_conf.tile_grid().tile_size
 
@@ -172,7 +153,8 @@ class GeopackageCache(TileCacheBase):
             # There is no tile conflict. Return to allow the creation of new tiles.
             return True
 
-        gpkg_table_name, gpkg_zoom_level, gpkg_tile_width, gpkg_tile_height, gpkg_pixel_x_size, gpkg_pixel_y_size = results
+        gpkg_table_name, gpkg_zoom_level, gpkg_matrix_width, gpkg_matrix_height, gpkg_tile_width, gpkg_tile_height, \
+            gpkg_pixel_x_size, gpkg_pixel_y_size = results
         resolution = self.grid_conf.tile_grid().resolution(gpkg_zoom_level)
         if gpkg_tile_width != tile_size[0] or gpkg_tile_height != tile_size[1]:
             log.info(
@@ -185,7 +167,7 @@ class GeopackageCache(TileCacheBase):
                                                                                        tile_size[1]))
             log.info("The current mapproxy configuration is invalid for this geopackage.")
             raise ValueError("tile_size is improperly configured.")
-        if not isclose(gpkg_pixel_x_size, resolution) or not isclose(gpkg_pixel_y_size, resolution):
+        if not is_close(gpkg_pixel_x_size, resolution) or not is_close(gpkg_pixel_y_size, resolution):
             log.info(
                 "The geopackage {0} table name {1} already exists and level {2} a resolution of ({3:.13f},{4:.13f})"
                 " which is different than the configured resolution of ({5:.13f},{6:.13f}).".format(self.geopackage_file,
@@ -197,12 +179,6 @@ class GeopackageCache(TileCacheBase):
                                                                                                   resolution))
             log.info("The current mapproxy configuration is invalid for this geopackage.")
             raise ValueError("res is improperly configured.")
-        if count > 20:
-            raise ValueError(
-                "The geopackage {0} has an invalid number of levels for table {1}.".format(self.geopackage_file,
-                                                                                         self.table_name))
-        if count < 20:
-            return False
         return True
 
     def _initialize_gpkg(self):
@@ -271,87 +247,49 @@ class GeopackageCache(TileCacheBase):
 
         db.execute("PRAGMA foreign_keys = 1;")
 
-        # List of WKT execute statements and data.
-        wkts = [("""
-                INSERT OR REPLACE INTO gpkg_spatial_ref_sys (
-                    srs_id,
-                    organization,
-                    organization_coordsys_id,
-                    srs_name,
-                    definition)
-                VALUES (3857, 'epsg', 3857, 'WGS 84 / Pseudo-Mercator', ?)
-            """,
-                 """
- PROJCS["WGS 84 / Pseudo-Mercator",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,\
- AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],\
- UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","9122"]]AUTHORITY["EPSG","4326"]],\
- PROJECTION["Mercator_1SP"],PARAMETER["central_meridian",0],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],\
- PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["X",EAST],AXIS["Y",NORTH]\
-                 """
-                 ),
-                (
-                    """
-                INSERT OR REPLACE INTO gpkg_spatial_ref_sys (
-                        srs_id,
-                        organization,
-                        organization_coordsys_id,
-                        srs_name,
-                        definition)
-                    VALUES (4326, 'epsg', 4326, 'WGS 84', ?)
-                    """,
-                    """
+        # List of WKT execute statements and data.("""
+        wkt_statement = """
+                            INSERT OR REPLACE INTO gpkg_spatial_ref_sys (
+                                srs_id,
+                                organization,
+                                organization_coordsys_id,
+                                srs_name,
+                                definition)
+                            VALUES (?, ?, ?, ?, ?)
+                        """
+        wkt_entries = [(3857, 'epsg', 3857, 'WGS 84 / Pseudo-Mercator',
+                        """
+PROJCS["WGS 84 / Pseudo-Mercator",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,\
+AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],\
+UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","9122"]]AUTHORITY["EPSG","4326"]],\
+PROJECTION["Mercator_1SP"],PARAMETER["central_meridian",0],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],\
+PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["X",EAST],AXIS["Y",NORTH]\
+                        """
+                        ),
+                       (4326, 'epsg', 4326, 'WGS 84',
+                        """
 GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],\
 AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,\
 AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
-                    """
-                ), (
-                    """
-                    INSERT OR REPLACE INTO gpkg_spatial_ref_sys (
-                        srs_id,
-                        organization,
-                        organization_coordsys_id,
-                        srs_name,
-                        definition)
-                    VALUES (-1, 'NONE', -1, ' ', ?)
-                    """,
-                    "undefined"
-                ), (
-                    """
-                    INSERT OR REPLACE INTO gpkg_spatial_ref_sys (
-                        srs_id,
-                        organization,
-                        organization_coordsys_id,
-                        srs_name,
-                        definition)
-                    VALUES (0, 'NONE', 0, ' ', ?)
-                    """
-                    ,
-                    "undefined"
-                )
-                ]
+                        """
+                        ),
+                       (-1, 'NONE', -1, ' ', 'undefined'),
+                       (0, 'NONE', 0, ' ', 'undefined')
+                       ]
 
         if get_epsg_num(self.grid_conf.conf.get('srs')) not in [4326, 3857]:
-            wkts.append(("""
-                    INSERT OR REPLACE INTO gpkg_spatial_ref_sys (
-                        srs_id,
-                        organization,
-                        organization_coordsys_id,
-                        srs_name,
-                        definition)
-                    VALUES ({0}, 'epsg', {1}, 'Not provided', ?)
-                """.format(proj, proj),
-                         "Added via Mapproxy."))
+            wkt_entries.append((proj, 'epsg', proj, 'Not provided', "Added via Mapproxy."))
         db.commit()
 
         # Add geopackage version to the header (1.0)
         db.execute("PRAGMA application_id = 1196437808;")
         db.commit()
 
-        for wkt in wkts:
+        for wkt_entry in wkt_entries:
             try:
-                db.execute(wkt[0], (wkt[1],))
+                db.execute(wkt_statement, (wkt_entry[0], wkt_entry[1], wkt_entry[2], wkt_entry[3], wkt_entry[4]))
             except sqlite3.IntegrityError:
-                log.info("srs_id already exists.".format(wkt[0]))
+                log.info("srs_id already exists.".format(wkt_entry[0]))
         db.commit()
 
         # Ensure that tile table exists here, don't overwrite a valid entry.
@@ -384,20 +322,8 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
         # Ensure that tile set exists here, don't overwrite a valid entry.
         try:
             db.execute("""
-                INSERT INTO gpkg_tile_matrix_set (
-                    table_name,
-                    srs_id,
-                    min_x,
-                    max_x,
-                    min_y,
-                    max_y)
-                VALUES (
-                    ?,
-                    ?,
-                    ?,
-                    ?,
-                    ?,
-                    ?);
+                INSERT INTO gpkg_tile_matrix_set (table_name, srs_id, min_x, max_x, min_y, max_y)
+                VALUES (?, ?, ?, ?, ?, ?);
             """, (
                 self.table_name, proj, self.tile_grid.bbox[0], self.tile_grid.bbox[2], self.tile_grid.bbox[1],
                 self.tile_grid.bbox[3]))
@@ -635,19 +561,19 @@ def is_alnum(data):
     return False
 
 
-def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
+def is_close(a, b, rel_tol=1e-09, abs_tol=0.0):
     """
     See PEP 485, added here for legacy versions.
 
-    >>> isclose(0.0, 0.0)
+    >>> is_close(0.0, 0.0)
     True
-    >>> isclose(1, 1.0)
+    >>> is_close(1, 1.0)
     True
-    >>> isclose(0.01, 0.001)
+    >>> is_close(0.01, 0.001)
     False
-    >>> isclose(0.0001001, 0.0001, rel_tol=1e-02)
+    >>> is_close(0.0001001, 0.0001, rel_tol=1e-02)
     True
-    >>> isclose(0.0001001, 0.0001)
+    >>> is_close(0.0001001, 0.0001)
     False
 
     @param a: An int or float.

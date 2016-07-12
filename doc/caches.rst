@@ -97,7 +97,7 @@ Use SQLite databases to store the tiles, similar to ``mbtiles`` cache. The diffe
 Available options:
 
 ``dirname``:
-  The direcotry where the level databases will be stored.
+  The directory where the level databases will be stored.
 
 ``tile_lock_dir``:
   Directory where MapProxy should write lock files when it creates new tiles for this cache. Defaults to ``cache_data/tile_locks``.
@@ -296,8 +296,7 @@ Example
 .. versionadded:: 1.8.x
 
 Store tiles in a `geopackage <http://www.geopackage.org/>`_ database. MapProxy creates a tile table if one isn't defined and populates the required meta data fields.
-This backend is good for datasets that require portabilitiy. Data can be distributed over multiple nodes providing a fault-tolernt and high-available storage. A Riak cluster is masterless and each node can handle read and write requests.
-
+This backend is good for datasets that require portability.
 Available options:
 
 ``filename``:
@@ -306,6 +305,12 @@ Available options:
 ``table_name``:
   The name of the table where the tiles should be stored (or retrieved if using an existing cache). Defaults to the ``cachename_projection``.
 
+``levels``:
+  Set this to true to cache to a directory where each level is stored in a separate geopackage. Defaults to ``false``.
+  If set to true, ``filename`` is ignored.
+
+``dirname``:
+  If levels is true use this to specify the directory to store geopackage files.
 
 You can set the ``sources`` to an empty list, if you use an existing geopackage file and do not have a source.
 

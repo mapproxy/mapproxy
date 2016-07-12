@@ -114,8 +114,10 @@ cache_types = {
     },
     'geopackage': {
         'filename': str(),
+        'dirname': str(),
         'tile_lock_dir': str(),
-        'table_name': str()
+        'table_name': str(),
+        'levels': bool(),
     },
     'couchdb': {
         'url': str(),
