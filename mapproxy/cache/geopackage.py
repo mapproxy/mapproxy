@@ -96,13 +96,10 @@ class GeopackageCache(TileCacheBase):
 
     def check_gpkg(self):
         if not self._verify_table():
-            print("table invalid")
             return False
         if not self._verify_gpkg_contents():
-            print("gpkg_contents invalid")
             return False
         if not self._verify_tile_size():
-            print("tile_size invalid")
             return False
         return True
 
