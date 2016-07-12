@@ -16,4 +16,4 @@ nosetests*.xml
 .pydevproject
 .tox/
 
-.idea/
+mapproxy/.idea/*
