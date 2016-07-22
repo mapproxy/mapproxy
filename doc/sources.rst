@@ -257,7 +257,7 @@ Full example::
 .. _arcgis_label:
 
 ArcGIS REST API
-"""
+"""""""""""""""
 
 Use the type ``arcgis`` for ArcGIS MapServer and ImageServer REST server endpoints. This
 source is based on :ref:`the WMS source <wms_label>` and most WMS options apply to the
@@ -361,7 +361,7 @@ You can configure the following HTTP related options for this source:
 - ``headers``
 - ``client_timeout``
 - ``ssl_ca_certs``
-- ``ssl_no_cert_checks`` (:ref:`see above <wms_source-ssl_no_cert_checks>`)
+- ``ssl_no_cert_checks`` (:ref:`see above <wms_source_ssl_no_cert_checks>`)
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 

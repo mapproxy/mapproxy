@@ -897,7 +897,7 @@ See the `Python SSL documentation <http://docs.python.org/dev/library/ssl.html#s
   http:
     ssl_ca_certs: /etc/ssl/certs/ca-certificates.crt
 
-If you want to use SSL but do not need certificate verification, then you can disable it with the ``ssl_no_cert_checks`` option. You can also disable this check on a source level, see :ref:`WMS source options <wms_source-ssl_no_cert_checks>`.
+If you want to use SSL but do not need certificate verification, then you can disable it with the ``ssl_no_cert_checks`` option. You can also disable this check on a source level, see :ref:`WMS source options <wms_source_ssl_no_cert_checks>`.
 ::
 
   http:
