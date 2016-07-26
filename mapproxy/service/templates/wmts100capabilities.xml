@@ -3,6 +3,16 @@
   <ows:ServiceIdentification>
     <ows:Title>{{service.title}}</ows:Title>
     <ows:Abstract>{{service.abstract}}</ows:Abstract>
+    {{if service.keyword_list and len(service.keyword_list) > 0}}
+    <ows:KeywordList>
+    {{for list in service.keyword_list}}
+      {{py: kw=bunch(default='', **list)}}
+      {{for keyword in kw.keywords}}
+        <ows:Keyword{{if kw.vocabulary}} vocabulary="{{kw.vocabulary}}"{{endif}}>{{keyword}}</ows:Keyword>
+      {{endfor}}
+    {{endfor}}
+    </ows:KeywordList> 
+    {{endif}}
     <ows:ServiceType>OGC WMTS</ows:ServiceType>
     <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
     <ows:Fees>{{service.get('fees', 'none')}}</ows:Fees>
