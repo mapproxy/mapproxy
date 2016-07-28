@@ -29,6 +29,7 @@ from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 from mapproxy.cache.geopackage import GeopackageCache, GeopackageLevelCache
 from mapproxy.config.loader import load_configuration
 from mapproxy.image import ImageSource
+from mapproxy.grid import TileGrid
 import time, threading
 from nose.tools import eq_
 import sqlite3
@@ -43,6 +44,7 @@ def setup_module():
         test_config['base_dir'])
     create_app(test_config)
 
+
 def teardown_module():
     module_teardown(test_config)
 
@@ -55,7 +57,7 @@ class TestGeopackageCache(SystemTest, TileCacheTestBase):
         configuration = load_configuration(self.config.get('config_file'))
         TileCacheTestBase.setup(self)
         self.cache = GeopackageCache(os.path.join(self.cache_dir, 'tmp.geopackage'),
-                                     configuration.grids.get('GLOBAL_GEODETIC'),
+                                     configuration.grids.get('GLOBAL_GEODETIC').tile_grid(),
                                      self.table_name)
 
     def teardown(self):
@@ -106,24 +108,6 @@ class TestGeopackageCache(SystemTest, TileCacheTestBase):
         data = BytesIO(resp.body)
         assert is_png(data)
 
-    def test_bad_config_geopackage_srs(self):
-        error_msg = None
-        try:
-            prepare_env(test_config, 'cache_geopackage_srs.yaml')
-            create_app(test_config)
-        except ValueError as ve:
-            error_msg = ve
-        assert "srs is improperly configured." in str(error_msg)
-
-    def test_bad_config_geopackage_tile(self):
-        error_msg = None
-        try:
-            prepare_env(test_config, 'cache_geopackage_tile.yaml')
-            create_app(test_config)
-        except ValueError as ve:
-            error_msg = ve
-        assert "tile_size is improperly configured." in str(error_msg)
-
     def test_bad_config_geopackage_no_gpkg_contents(self):
         gpkg_file = os.path.join(test_config['base_dir'], 'cache.gpkg')
         table_name = 'no_gpkg_contents'
@@ -140,8 +124,7 @@ class TestGeopackageCache(SystemTest, TileCacheTestBase):
             content = cur.fetchone()
             assert not content
 
-        prepare_env(test_config, 'cache_geopackage_no_gpkg_contents.yaml')
-        create_app(test_config)
+        GeopackageCache(gpkg_file, TileGrid(srs=4326), table_name=table_name)
 
         with sqlite3.connect(gpkg_file) as db:
             cur = db.execute('''SELECT table_name FROM gpkg_contents WHERE table_name=?''',
@@ -152,6 +135,7 @@ class TestGeopackageCache(SystemTest, TileCacheTestBase):
     def test_bad_config_geopackage_no_spatial_ref_sys(self):
         gpkg_file = os.path.join(test_config['base_dir'], 'cache.gpkg')
         organization_coordsys_id = 3785
+        table_name='no_gpkg_spatial_ref_sys'
 
         with sqlite3.connect(gpkg_file) as db:
             cur = db.execute('''SELECT organization_coordsys_id FROM gpkg_spatial_ref_sys WHERE organization_coordsys_id=?''',
@@ -159,8 +143,7 @@ class TestGeopackageCache(SystemTest, TileCacheTestBase):
             content = cur.fetchone()
             assert not content
 
-        prepare_env(test_config, 'cache_geopackage_no_gpkg_spatial_ref_sys.yaml')
-        create_app(test_config)
+        GeopackageCache(gpkg_file, TileGrid(srs=3785), table_name=table_name)
 
         with sqlite3.connect(gpkg_file) as db:
             cur = db.execute(
@@ -168,17 +151,6 @@ class TestGeopackageCache(SystemTest, TileCacheTestBase):
                 (organization_coordsys_id,))
             content = cur.fetchone()
             assert content[0] == organization_coordsys_id
-
-
-
-    def test_bad_config_geopackage_res(self):
-        error_msg = None
-        try:
-            prepare_env(test_config, 'cache_geopackage_res.yaml')
-            create_app(test_config)
-        except ValueError as ve:
-            error_msg = ve
-        assert "res is improperly configured." in str(error_msg)
 
     def test_new_geopackage(self):
         SystemTest.setup(self)
@@ -266,7 +238,7 @@ class TestGeopackageLevelCache(SystemTest, TileCacheTestBase):
         TileCacheTestBase.setup(self)
         self.cache_dir = os.path.join(self.cache_dir, 'tmp.geopackage')
         self.cache = GeopackageLevelCache(self.cache_dir,
-                                         configuration.grids.get('GLOBAL_GEODETIC'),
+                                         configuration.grids.get('GLOBAL_GEODETIC').tile_grid(),
                                          self.table_name)
 
     def teardown(self):

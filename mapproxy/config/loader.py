@@ -1041,11 +1041,11 @@ class CacheConfiguration(ConfigurationBase):
 
         if levels:
             return GeopackageLevelCache(
-                cache_dir, grid_conf, table_name
+                cache_dir, grid_conf.tile_grid(), table_name
             )
         else:
             return GeopackageCache(
-                gpkg_file_path, grid_conf, table_name
+                gpkg_file_path, grid_conf.tile_grid(), table_name
             )
 
     def _sqlite_cache(self, grid_conf, file_ext):
