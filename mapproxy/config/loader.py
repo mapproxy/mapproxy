@@ -1096,7 +1096,7 @@ class CacheConfiguration(ConfigurationBase):
 
     @memoize
     def image_opts(self):
-        from mapproxy.image.opts import ImageFormat
+        from mapproxy.image.opts import ImageFormat, MVTFormat
 
         format = None
         if 'format' not in self.conf.get('image', {}):
@@ -1105,6 +1105,8 @@ class CacheConfiguration(ConfigurationBase):
         if image_opts.format is None:
             if format is not None and format.startswith('image/'):
                 image_opts.format = ImageFormat(format)
+	    elif format is not None and format.endswith('/pbf'):
+                image_opts.format = MVTFormat('application/pbf') # THIS IS WHAT SET FORMAT
             else:
                 image_opts.format = ImageFormat('image/png')
         return image_opts

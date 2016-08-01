@@ -42,6 +42,7 @@ log = logging.getLogger(__name__)
 from mapproxy.template import template_loader, bunch
 get_template = template_loader(__name__, 'templates')
 
+
 class TileServer(Server):
     """
     A Tile Server. Supports strict TMS and non-TMS requests. The difference is the
@@ -287,7 +288,6 @@ class TileLayer(object):
             raise RequestError('invalid format (%s). this tile set only supports (%s)'
                                % (tile_request.format, self.format), request=tile_request,
                                code='InvalidParameterValue')
-
         tile_coord = self._internal_tile_coord(tile_request, use_profiles=use_profiles)
 
         coverage_intersects = False

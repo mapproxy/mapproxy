@@ -59,6 +59,43 @@ class ImageOptions(object):
     def copy(self):
         return copy.copy(self)
 
+class MVTFormat(str):
+    def __new__(cls, value, *args, **keywargs):
+        if isinstance(value, ImageFormat):
+            return value
+        return str.__new__(cls, value)
+
+    @property
+    def mime_type(self):
+        if self.startswith('application/'):
+            return self
+        return 'application/' + self
+
+    @property
+    def ext(self):
+        ext = self
+        if '/' in ext:
+            ext = ext.split('/', 1)[1]
+        if ';' in ext:
+            ext = ext.split(';', 1)[0]
+
+        return ext.strip()
+
+    def __eq__(self, other):
+        if isinstance(other, string_type):
+            other = ImageFormat(other)
+        elif not isinstance(other, ImageFormat):
+            return NotImplemented
+
+        return self.ext == other.ext
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class ImageFormat(str):
     def __new__(cls, value, *args, **keywargs):
         if isinstance(value, ImageFormat):
