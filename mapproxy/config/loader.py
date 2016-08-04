@@ -1493,7 +1493,7 @@ class LayerConfiguration(ConfigurationBase):
         return dimensions
 
     @memoize
-    def tile_layers(self):
+    def tile_layers(self, grid_name_as_path=False):
         from mapproxy.service.tile import TileLayer
         from mapproxy.cache.dummy import DummyCache
 
@@ -1535,8 +1535,11 @@ class LayerConfiguration(ConfigurationBase):
                 md = {}
                 md['title'] = self.conf['title']
                 md['name'] = self.conf['name']
-                md['name_path'] = (self.conf['name'], grid.srs.srs_code.replace(':', '').upper())
                 md['grid_name'] = grid.name
+                if grid_name_as_path:
+                    md['name_path'] = (md['name'], md['grid_name'])
+                else:
+                    md['name_path'] = (self.conf['name'], grid.srs.srs_code.replace(':', '').upper())
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['cache_name'] = cache_name
@@ -1612,11 +1615,9 @@ class ServiceConfiguration(ConfigurationBase):
     def tile_layers(self, conf, use_grid_names=False):
         layers = odict()
         for layer_name, layer_conf in iteritems(self.context.layers):
-            for tile_layer in layer_conf.tile_layers():
+            for tile_layer in layer_conf.tile_layers(grid_name_as_path=use_grid_names):
                 if not tile_layer: continue
                 if use_grid_names:
-                    # new style layer names are tuples
-                    tile_layer.md['name_path'] = (tile_layer.md['name'], tile_layer.md['grid_name'])
                     layers[tile_layer.md['name_path']] = tile_layer
                 else:
                     layers[tile_layer.md['name_internal']] = tile_layer
