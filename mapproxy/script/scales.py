@@ -91,9 +91,9 @@ def scales_command(args=None):
     if args[0] == '-':
         values = values_from_stdin()
     elif options.eval:
-        values = map(eval, args)
+        values = [eval(a) for a in args]
     else:
-        values = map(float, args)
+        values = [float(a) for a in args]
 
     values.sort(reverse=True)
 
