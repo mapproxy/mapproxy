@@ -21,10 +21,10 @@ import threading
 import time
 
 from mapproxy.image import ImageSource
-from mapproxy.cache.base import TileCacheBase, tile_buffer, CacheBackendError
+from mapproxy.cache.base import TileCacheBase, tile_buffer
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
-from mapproxy.compat import BytesIO, PY2
+from mapproxy.compat import BytesIO, PY2, itertools
 
 import logging
 log = logging.getLogger(__name__)
@@ -135,25 +135,42 @@ class MBTilesCache(TileCacheBase):
     def store_tile(self, tile):
         if tile.stored:
             return True
-        with tile_buffer(tile) as buf:
-            if PY2:
-                content = buffer(buf.read())
-            else:
-                content = buf.read()
-            x, y, level = tile.coord
-            cursor = self.db.cursor()
-            try:
-                if self.supports_timestamp:
-                    stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data, last_modified) VALUES (?,?,?,?, datetime(?, 'unixepoch', 'localtime'))"
-                    cursor.execute(stmt, (level, x, y, content, time.time()))
+        return self._store_bulk([tile])
+
+    def store_tiles(self, tiles):
+        tiles = [t for t in tiles if not t.stored]
+        return self._store_bulk(tiles)
+
+    def _store_bulk(self, tiles):
+        records = []
+        # tile_buffer (as_buffer) will encode the tile to the target format
+        # we collect all tiles before, to avoid having the db transaction
+        # open during this slow encoding
+        for tile in tiles:
+            with tile_buffer(tile) as buf:
+                if PY2:
+                    content = buffer(buf.read())
                 else:
-                    stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
-                    cursor.execute(stmt, (level, x, y, content))
-                self.db.commit()
-            except sqlite3.OperationalError as ex:
-                log.warn('unable to store tile: %s', ex)
-                return False
-            return True
+                    content = buf.read()
+                x, y, level = tile.coord
+                if self.supports_timestamp:
+                    records.append((level, x, y, content, time.time()))
+                else:
+                    records.append((level, x, y, content))
+
+        cursor = self.db.cursor()
+        try:
+            if self.supports_timestamp:
+                stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data, last_modified) VALUES (?,?,?,?, datetime(?, 'unixepoch', 'localtime'))"
+                cursor.executemany(stmt, records)
+            else:
+                stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
+                cursor.executemany(stmt, records)
+            self.db.commit()
+        except sqlite3.OperationalError as ex:
+            log.warn('unable to store tile: %s', ex)
+            return False
+        return True
 
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
@@ -312,6 +329,14 @@ class MBTilesLevelCache(TileCacheBase):
             return True
 
         return self._get_level(tile.coord[2]).store_tile(tile)
+
+    def store_tiles(self, tiles):
+        failed = False
+        for level, tiles in itertools.groupby(tiles, key=lambda t: t.coord[2]):
+            tiles = [t for t in tiles if not t.stored]
+            res = self._get_level(level).store_tiles(tiles)
+            if not res: failed = True
+        return failed
 
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
