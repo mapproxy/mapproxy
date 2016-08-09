@@ -37,6 +37,7 @@ Tile caching (creation, caching and retrieval of tiles).
 
 from __future__ import with_statement
 
+from functools import partial
 from contextlib import contextmanager
 from mapproxy.grid import MetaGrid
 from mapproxy.image.merge import merge_images
@@ -78,6 +79,11 @@ class TileManager(object):
                 self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
             elif any(source.supports_meta_tiles for source in sources):
                 raise ValueError('meta tiling configured but not supported by all sources')
+            else:
+                # meta tiles configured but all sources are tiled
+                # use bulk_meta_tile mode that download tiles in parallel
+                self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=0)
+                self.tile_creator_class = partial(tile_creator_class, bulk_meta_tiles=True)
 
     @contextmanager
     def session(self):
@@ -196,11 +202,12 @@ class TileManager(object):
         return tile
 
 class TileCreator(object):
-    def __init__(self, tile_mgr, dimensions=None, image_merger=None):
+    def __init__(self, tile_mgr, dimensions=None, image_merger=None, bulk_meta_tiles=False):
         self.cache = tile_mgr.cache
         self.sources = tile_mgr.sources
         self.grid = tile_mgr.grid
         self.meta_grid = tile_mgr.meta_grid
+        self.bulk_meta_tiles = bulk_meta_tiles
         self.tile_mgr = tile_mgr
         self.dimensions = dimensions
         self.image_merger = image_merger
@@ -298,15 +305,25 @@ class TileCreator(object):
         return merger(imgs, size=query.size, image_opts=self.tile_mgr.image_opts)
 
     def _create_meta_tiles(self, meta_tiles):
+        if self.bulk_meta_tiles:
+            created_tiles = []
+            for meta_tile in meta_tiles:
+                    created_tiles.extend(self._create_bulk_meta_tile(meta_tile))
+            return created_tiles
+
         if self.tile_mgr.concurrent_tile_creators > 1 and len(meta_tiles) > 1:
-            return self._create_threaded(self._create_meta_tile, meta_tiles)
+            return self._create_threaded(self._create_split_meta_tile, meta_tiles)
 
         created_tiles = []
         for meta_tile in meta_tiles:
-            created_tiles.extend(self._create_meta_tile(meta_tile))
+            created_tiles.extend(self._create_split_meta_tile(meta_tile))
         return created_tiles
 
-    def _create_meta_tile(self, meta_tile):
+    def _create_split_meta_tile(self, meta_tile):
+        """
+        _create_split_meta_tile queries a single meta tile and splits it into
+        tiles.
+        """
         tile_size = self.grid.tile_size
         query = MapQuery(meta_tile.bbox, meta_tile.size, self.grid.srs, self.tile_mgr.request_format,
             dimensions=self.dimensions)
@@ -321,10 +338,54 @@ class TileCreator(object):
                 if meta_tile_image.cacheable:
                     self.cache.store_tiles(splitted_tiles)
                 return splitted_tiles
-        # else
+            # else
         tiles = [Tile(coord) for coord in meta_tile.tiles]
         self.cache.load_tiles(tiles)
         return tiles
+
+    def _create_bulk_meta_tile(self, meta_tile):
+        """
+        _create_bulk_meta_tile queries each tile of the meta tile in parallel
+        (using concurrent_tile_creators).
+        """
+        tile_size = self.grid.tile_size
+        main_tile = Tile(meta_tile.main_tile_coord)
+        with self.tile_mgr.lock(main_tile):
+            if not all(self.is_cached(t) for t in meta_tile.tiles if t is not None):
+                async_pool = async.Pool(self.tile_mgr.concurrent_tile_creators)
+                def query_tile(coord):
+                    try:
+                        query = MapQuery(self.grid.tile_bbox(coord), tile_size, self.grid.srs, self.tile_mgr.request_format,
+                            dimensions=self.dimensions)
+                        tile_image = self._query_sources(query)
+                        if tile_image is None:
+                            return None
+
+                        if self.tile_mgr.image_opts != tile_image.image_opts:
+                            # call as_buffer to force conversion into cache format
+                            tile_image.as_buffer(self.tile_mgr.image_opts)
+
+                        tile = Tile(coord, cacheable=tile_image.cacheable)
+                        tile.source = tile_image
+                        tile = self.tile_mgr.apply_tile_filter(tile)
+                    except BlankImage:
+                        return None
+                    else:
+                        return tile
+
+                tiles = []
+                for tile in async_pool.imap(query_tile, meta_tile.tiles):
+                    if tile is not None:
+                        tiles.append(tile)
+
+                self.cache.store_tiles([t for t in tiles if t.cacheable])
+                return tiles
+
+            # else
+        tiles = [Tile(coord) for coord in meta_tile.tiles]
+        self.cache.load_tiles(tiles)
+        return tiles
+
 
 class Tile(object):
     """
