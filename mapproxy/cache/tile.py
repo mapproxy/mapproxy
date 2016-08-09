@@ -57,7 +57,9 @@ class TileManager(object):
     """
     def __init__(self, grid, cache, sources, format, locker, image_opts=None, request_format=None,
         meta_buffer=None, meta_size=None, minimize_meta_requests=False, identifier=None,
-        pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None):
+        pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None,
+        bulk_meta_tiles=False,
+        ):
         self.grid = grid
         self.cache = cache
         self.locker = locker
@@ -79,11 +81,11 @@ class TileManager(object):
                 self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
             elif any(source.supports_meta_tiles for source in sources):
                 raise ValueError('meta tiling configured but not supported by all sources')
-            else:
+            elif meta_size and not meta_size == [1, 1] and bulk_meta_tiles:
                 # meta tiles configured but all sources are tiled
                 # use bulk_meta_tile mode that download tiles in parallel
                 self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=0)
-                self.tile_creator_class = partial(tile_creator_class, bulk_meta_tiles=True)
+                self.tile_creator_class = partial(self.tile_creator_class, bulk_meta_tiles=True)
 
     @contextmanager
     def session(self):
@@ -312,16 +314,16 @@ class TileCreator(object):
             return created_tiles
 
         if self.tile_mgr.concurrent_tile_creators > 1 and len(meta_tiles) > 1:
-            return self._create_threaded(self._create_split_meta_tile, meta_tiles)
+            return self._create_threaded(self._create_meta_tile, meta_tiles)
 
         created_tiles = []
         for meta_tile in meta_tiles:
-            created_tiles.extend(self._create_split_meta_tile(meta_tile))
+            created_tiles.extend(self._create_meta_tile(meta_tile))
         return created_tiles
 
-    def _create_split_meta_tile(self, meta_tile):
+    def _create_meta_tile(self, meta_tile):
         """
-        _create_split_meta_tile queries a single meta tile and splits it into
+        _create_meta_tile queries a single meta tile and splits it into
         tiles.
         """
         tile_size = self.grid.tile_size

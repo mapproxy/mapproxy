@@ -360,6 +360,7 @@ mapproxy_yaml_spec = {
             'cache_dir': str(),
             'meta_size': [number()],
             'meta_buffer': number(),
+            'bulk_meta_tiles': bool(),
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
             'disable_storage': bool(),
