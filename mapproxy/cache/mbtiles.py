@@ -38,18 +38,19 @@ def sqlite_datetime_to_timestamp(datetime):
 class MBTilesCache(TileCacheBase):
     supports_timestamp = False
 
-    def __init__(self, mbtile_file, with_timestamps=False):
+    def __init__(self, mbtile_file, with_timestamps=False, timeout=30):
         self.lock_cache_id = 'mbtiles-' + hashlib.md5(mbtile_file.encode('utf-8')).hexdigest()
         self.mbtile_file = mbtile_file
         self.supports_timestamp = with_timestamps
         self.ensure_mbtile()
+        self.timeout = timeout
         self._db_conn_cache = threading.local()
 
     @property
     def db(self):
         if not getattr(self._db_conn_cache, 'db', None):
             self.ensure_mbtile()
-            self._db_conn_cache.db = sqlite3.connect(self.mbtile_file)
+            self._db_conn_cache.db = sqlite3.connect(self.mbtile_file, self.timeout)
         return self._db_conn_cache.db
 
     def cleanup(self):
@@ -288,10 +289,11 @@ class MBTilesCache(TileCacheBase):
 class MBTilesLevelCache(TileCacheBase):
     supports_timestamp = True
 
-    def __init__(self, mbtiles_dir):
+    def __init__(self, mbtiles_dir, timeout=30):
         self.lock_cache_id = 'sqlite-' + hashlib.md5(mbtiles_dir.encode('utf-8')).hexdigest()
         self.cache_dir = mbtiles_dir
         self._mbtiles = {}
+        self.timeout = timeout
         self._mbtiles_lock = threading.Lock()
 
     def _get_level(self, level):
@@ -304,6 +306,7 @@ class MBTilesLevelCache(TileCacheBase):
                 self._mbtiles[level] = MBTilesCache(
                     mbtile_filename,
                     with_timestamps=True,
+                    timeout=self.timeout,
                 )
 
         return self._mbtiles[level]

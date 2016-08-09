@@ -1000,8 +1000,11 @@ class CacheConfiguration(ConfigurationBase):
         else:
             mbfile_path = os.path.join(self.cache_dir(), filename)
 
+        sqlite_timeout = self.context.globals.get_value('cache.sqlite_timeout', self.conf)
+
         return MBTilesCache(
             mbfile_path,
+            timeout=sqlite_timeout,
         )
 
     def _sqlite_cache(self, grid_conf, file_ext):
@@ -1021,8 +1024,11 @@ class CacheConfiguration(ConfigurationBase):
                 grid_conf.tile_grid().name
             )
 
+        sqlite_timeout = self.context.globals.get_value('cache.sqlite_timeout', self.conf)
+
         return MBTilesLevelCache(
             cache_dir,
+            timeout=sqlite_timeout,
         )
 
     def _couchdb_cache(self, grid_conf, file_ext):
