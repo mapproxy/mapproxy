@@ -106,10 +106,14 @@ cache_types = {
     },
     'sqlite': {
         'directory': str(),
+        'sqlite_timeout': number(),
+        'wal': bool(),
         'tile_lock_dir': str(),
     },
     'mbtiles': {
         'filename': str(),
+        'sqlite_timeout': number(),
+        'wal': bool(),
         'tile_lock_dir': str(),
     },
     'couchdb': {

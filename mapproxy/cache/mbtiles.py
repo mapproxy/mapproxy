@@ -38,12 +38,13 @@ def sqlite_datetime_to_timestamp(datetime):
 class MBTilesCache(TileCacheBase):
     supports_timestamp = False
 
-    def __init__(self, mbtile_file, with_timestamps=False, timeout=30):
+    def __init__(self, mbtile_file, with_timestamps=False, timeout=30, wal=False):
         self.lock_cache_id = 'mbtiles-' + hashlib.md5(mbtile_file.encode('utf-8')).hexdigest()
         self.mbtile_file = mbtile_file
         self.supports_timestamp = with_timestamps
-        self.ensure_mbtile()
         self.timeout = timeout
+        self.wal = wal
+        self.ensure_mbtile()
         self._db_conn_cache = threading.local()
 
     @property
@@ -72,6 +73,10 @@ class MBTilesCache(TileCacheBase):
     def _initialize_mbtile(self):
         log.info('initializing MBTile file %s', self.mbtile_file)
         db  = sqlite3.connect(self.mbtile_file)
+
+        if self.wal:
+            db.execute('PRAGMA journal_mode=wal')
+
         stmt = """
             CREATE TABLE tiles (
                 zoom_level integer,
@@ -289,11 +294,12 @@ class MBTilesCache(TileCacheBase):
 class MBTilesLevelCache(TileCacheBase):
     supports_timestamp = True
 
-    def __init__(self, mbtiles_dir, timeout=30):
+    def __init__(self, mbtiles_dir, timeout=30, wal=False):
         self.lock_cache_id = 'sqlite-' + hashlib.md5(mbtiles_dir.encode('utf-8')).hexdigest()
         self.cache_dir = mbtiles_dir
         self._mbtiles = {}
         self.timeout = timeout
+        self.wal = wal
         self._mbtiles_lock = threading.Lock()
 
     def _get_level(self, level):
@@ -307,6 +313,7 @@ class MBTilesLevelCache(TileCacheBase):
                     mbtile_filename,
                     with_timestamps=True,
                     timeout=self.timeout,
+                    wal=self.wal,
                 )
 
         return self._mbtiles[level]
