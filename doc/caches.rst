@@ -87,6 +87,8 @@ You can set the ``sources`` to an empty list, if you use an existing MBTiles fil
   The MBTiles format specification does not include any timestamps for each tile and the seeding function is limited therefore. If you include any ``refresh_before`` time in a seed task, all tiles will be recreated regardless of the value. The cleanup process does not support any ``remove_before`` times for MBTiles and it always removes all tiles.
   Use the ``--summary`` option of the ``mapproxy-seed`` tool.
 
+The note about ``bulk_meta_tiles`` for SQLite below applies to MBtiles as well.
+
 ``sqlite``
 ===========
 
@@ -113,6 +115,24 @@ Available options:
       cache:
         type: sqlite
         directory: /path/to/cache
+
+
+.. note::
+
+  .. versionadded:: 1.10.0
+
+  All tiles from a meta tile request are stored in one transaction into the SQLite file to increase performance. You need to activate the :ref:`bulk_meta_tiles <bulk_meta_tiles>` option to get the same benefit when you are using tiled sources.
+
+  ::
+
+    caches:
+      sqlite_cache:
+        sources: [mytilesource]
+        bulk_meta_tiles: true
+        grids: [GLOBAL_MERCATOR]
+        cache:
+          type: sqlite
+          directory: /path/to/cache
 
 
 ``couchdb``
