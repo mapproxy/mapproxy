@@ -409,9 +409,16 @@ class TileGrid(object):
                 threshold = thresholds.pop() if thresholds else None
 
             if threshold_result is not None:
-                return threshold_result
+                # Use previous level that was within stretch_factor,
+                # but only if this level res is smaller then res.
+                # This fixes selection for resolutions that are closer together then stretch_factor.
+                #
+                if l_res < res:
+                    return threshold_result
 
             if l_res <= res*self.stretch_factor:
+                # l_res within stretch_factor
+                # remember this level, check for thresholds or better res in next loop
                 threshold_result = level
             prev_l_res = l_res
         return level
