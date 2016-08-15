@@ -106,10 +106,14 @@ cache_types = {
     },
     'sqlite': {
         'directory': str(),
+        'sqlite_timeout': number(),
+        'sqlite_wal': bool(),
         'tile_lock_dir': str(),
     },
     'mbtiles': {
         'filename': str(),
+        'sqlite_timeout': number(),
+        'sqlite_wal': bool(),
         'tile_lock_dir': str(),
     },
     'couchdb': {
@@ -356,6 +360,7 @@ mapproxy_yaml_spec = {
             'cache_dir': str(),
             'meta_size': [number()],
             'meta_buffer': number(),
+            'bulk_meta_tiles': bool(),
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
             'disable_storage': bool(),

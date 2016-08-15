@@ -1000,8 +1000,13 @@ class CacheConfiguration(ConfigurationBase):
         else:
             mbfile_path = os.path.join(self.cache_dir(), filename)
 
+        sqlite_timeout = self.context.globals.get_value('cache.sqlite_timeout', self.conf)
+        wal = self.context.globals.get_value('cache.sqlite_wal', self.conf)
+
         return MBTilesCache(
             mbfile_path,
+            timeout=sqlite_timeout,
+            wal=wal,
         )
 
     def _sqlite_cache(self, grid_conf, file_ext):
@@ -1021,8 +1026,13 @@ class CacheConfiguration(ConfigurationBase):
                 grid_conf.tile_grid().name
             )
 
+        sqlite_timeout = self.context.globals.get_value('cache.sqlite_timeout', self.conf)
+        wal = self.context.globals.get_value('cache.sqlite_wal', self.conf)
+
         return MBTilesLevelCache(
             cache_dir,
+            timeout=sqlite_timeout,
+            wal=wal,
         )
 
     def _couchdb_cache(self, grid_conf, file_ext):
@@ -1253,6 +1263,8 @@ class CacheConfiguration(ConfigurationBase):
             global_key='cache.meta_buffer')
         meta_size = self.context.globals.get_value('meta_size', self.conf,
             global_key='cache.meta_size')
+        bulk_meta_tiles = self.context.globals.get_value('bulk_meta_tiles', self.conf,
+            global_key='cache.bulk_meta_tiles')
         minimize_meta_requests = self.context.globals.get_value('minimize_meta_requests', self.conf,
             global_key='cache.minimize_meta_requests')
         concurrent_tile_creators = self.context.globals.get_value('concurrent_tile_creators', self.conf,
@@ -1336,7 +1348,9 @@ class CacheConfiguration(ConfigurationBase):
                 minimize_meta_requests=minimize_meta_requests,
                 concurrent_tile_creators=concurrent_tile_creators,
                 pre_store_filter=tile_filter,
-                tile_creator_class=tile_creator_class)
+                tile_creator_class=tile_creator_class,
+                bulk_meta_tiles=bulk_meta_tiles,
+            )
             extent = merge_layer_extents(sources)
             if extent.is_default:
                 extent = map_extent_from_grid(tile_grid)

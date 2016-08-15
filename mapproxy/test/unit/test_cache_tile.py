@@ -347,3 +347,17 @@ class TestMBTileLevelCache(TileCacheTestBase):
 
         eq_(sorted(os.listdir(self.cache_dir)), ['1.mbtile', '2.mbtile'])
         assert self.cache.is_cached(Tile((0, 0, 2)))
+
+    def test_bulk_store_tiles_with_different_levels(self):
+        self.cache.store_tiles([
+            self.create_tile((0, 0, 1)),
+            self.create_tile((0, 0, 2)),
+            self.create_tile((1, 0, 2)),
+            self.create_tile((1, 0, 1)),
+        ])
+
+        eq_(sorted(os.listdir(self.cache_dir)), ['1.mbtile', '2.mbtile'])
+        assert self.cache.is_cached(Tile((0, 0, 1)))
+        assert self.cache.is_cached(Tile((1, 0, 1)))
+        assert self.cache.is_cached(Tile((0, 0, 2)))
+        assert self.cache.is_cached(Tile((1, 0, 2)))
