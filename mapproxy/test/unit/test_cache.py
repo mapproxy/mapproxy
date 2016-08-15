@@ -509,12 +509,19 @@ class TestTileManagerBulkMetaTiles(object):
         eq_(len(tiles), 2*2)
         eq_(self.file_cache.stored_tiles, set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)]))
         for requested in [self.source_base.requested, self.source_overlay.requested]:
-            eq_(requested, [
+            eq_(set(requested), set([
                 ((-180.0, 0.0, -90.0, 90.0), (256, 256), SRS(4326)),
                 ((-90.0, 0.0, 0.0, 90.0), (256, 256), SRS(4326)),
                 ((-180.0, -90.0, -90.0, 0.0), (256, 256), SRS(4326)),
                 ((-90.0, -90.0, 0.0, 0.0), (256, 256), SRS(4326)),
-            ])
+            ]))
+
+    def test_bulk_get_error(self):
+        self.tile_mgr.sources = [self.source_base, ErrorSource()]
+        try:
+            self.tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
+        except Exception as ex:
+            eq_(ex.args[0], "source error")
 
     def test_bulk_get_multiple_meta_tiles(self):
         tiles = self.tile_mgr.creator().create_tiles([Tile((1, 0, 2)), Tile((2, 0, 2))])
@@ -523,6 +530,15 @@ class TestTileManagerBulkMetaTiles(object):
             (0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
             (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2),
         ]))
+
+class ErrorSource(MapLayer):
+    def __init__(self, *args):
+        MapLayer.__init__(self, *args)
+        self.requested = []
+
+    def get_map(self, query):
+        self.requested.append((query.bbox, query.size, query.srs))
+        raise Exception("source error")
 
 class TestTileManagerBulkMetaTilesConcurrent(TestTileManagerBulkMetaTiles):
     def setup(self):

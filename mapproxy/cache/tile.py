@@ -44,6 +44,7 @@ from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
 from mapproxy.util import async
+from mapproxy.util.py import reraise
 
 class TileManager(object):
     """
@@ -376,9 +377,18 @@ class TileCreator(object):
                         return tile
 
                 tiles = []
-                for tile in async_pool.imap(query_tile, meta_tile.tiles):
-                    if tile is not None:
-                        tiles.append(tile)
+                for tile_task in async_pool.imap(query_tile,
+                    [t for t in meta_tile.tiles if t is not None],
+                    use_result_objects=True,
+                ):
+                    if tile_task.exception is None:
+                        tile = tile_task.result
+                        if tile is not None:
+                            tiles.append(tile)
+                    else:
+                        ex = tile_task.exception
+                        async_pool.shutdown(True)
+                        reraise(ex)
 
                 self.cache.store_tiles([t for t in tiles if t.cacheable])
                 return tiles
