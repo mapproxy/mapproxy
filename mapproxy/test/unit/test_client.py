@@ -43,11 +43,17 @@ class TestHTTPClient(object):
         self.client = HTTPClient()
 
     def test_post(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?foo=bar', 'method': 'POST'},
                                               {'status': '200', 'body': b''})]):
             self.client.open(TESTSERVER_URL + '/service', data=b"foo=bar")
 
     def test_internal_error_response(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         try:
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/'},
                                                   {'status': '500', 'body': b''})]):
@@ -87,6 +93,9 @@ class TestHTTPClient(object):
 
     @attr('online')
     def test_https_no_ssl_module_error(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         from mapproxy.client import http
         old_ssl = http.ssl
         try:
@@ -102,6 +111,9 @@ class TestHTTPClient(object):
 
     @attr('online')
     def test_https_no_ssl_module_insecure(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         from mapproxy.client import http
         old_ssl = http.ssl
         try:
@@ -113,6 +125,9 @@ class TestHTTPClient(object):
 
     @attr('online')
     def test_https_valid_cert(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         try:
             import ssl; ssl
         except ImportError:
@@ -131,6 +146,9 @@ class TestHTTPClient(object):
 
     @attr('online')
     def test_https_invalid_cert(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         try:
             import ssl; ssl
         except ImportError:
@@ -144,6 +162,9 @@ class TestHTTPClient(object):
                 assert_re(e.args[0], r'Could not verify connection to URL')
 
     def test_timeouts(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         test_req = ({'path': '/', 'req_assert_function': lambda x: time.sleep(0.9) or True},
                     {'body': b'nothing'})
 
@@ -209,6 +230,9 @@ class TestTMSClient(object):
     def setup(self):
         self.client = TMSClient(TESTSERVER_URL)
     def test_get_tile(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/9/5/13.png'},
                                                 {'body': b'tile', 'headers': {'content-type': 'image/png'}})]):
             resp = self.client.get_tile((5, 13, 9)).source.read()
@@ -216,6 +240,9 @@ class TestTMSClient(object):
 
 class TestTileClient(object):
     def test_tc_path(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         template = TileURLTemplate(TESTSERVER_URL + '/%(tc_path)s.png')
         client = TileClient(template)
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/09/000/000/005/000/000/013.png'},
@@ -225,6 +252,9 @@ class TestTileClient(object):
             eq_(resp, b'tile')
 
     def test_quadkey(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         template = TileURLTemplate(TESTSERVER_URL + '/key=%(quadkey)s&format=%(format)s')
         client = TileClient(template)
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/key=000002303&format=png'},
@@ -233,6 +263,9 @@ class TestTileClient(object):
             resp = client.get_tile((5, 13, 9)).source.read()
             eq_(resp, b'tile')
     def test_xyz(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         template = TileURLTemplate(TESTSERVER_URL + '/x=%(x)s&y=%(y)s&z=%(z)s&format=%(format)s')
         client = TileClient(template)
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/x=5&y=13&z=9&format=png'},
@@ -242,6 +275,9 @@ class TestTileClient(object):
             eq_(resp, b'tile')
 
     def test_arcgiscache_path(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         template = TileURLTemplate(TESTSERVER_URL + '/%(arcgiscache_path)s.png')
         client = TileClient(template)
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/L09/R0000000d/C00000005.png'},
@@ -251,6 +287,9 @@ class TestTileClient(object):
             eq_(resp, b'tile')
 
     def test_bbox(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         grid = tile_grid(4326)
         template = TileURLTemplate(TESTSERVER_URL + '/service?BBOX=%(bbox)s')
         client = TileClient(template, grid=grid)

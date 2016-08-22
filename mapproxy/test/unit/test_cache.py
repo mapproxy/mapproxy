@@ -56,6 +56,7 @@ from mapproxy.test.http import assert_query_eq, wms_query_eq, query_eq, mock_htt
 from collections import defaultdict
 
 from nose.tools import eq_, raises, assert_not_equal, assert_raises
+from nose.plugins.skip import SkipTest
 
 TEST_SERVER_ADDRESS = ('127.0.0.1', 56413)
 GLOBAL_GEOGRAPHIC_EXTENT = MapExtent((-180, -90, 180, 90), SRS(4326))
@@ -744,6 +745,9 @@ class TestWMSSourceWithClient(object):
         self.source = WMSSource(self.client)
 
     def test_get_map(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         with tmp_image((512, 512)) as img:
             expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                                      '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326&styles='
@@ -757,6 +761,9 @@ class TestWMSSourceWithClient(object):
                 assert is_png(result.as_buffer(seekable=True))
                 eq_(result.as_image().size, (512, 512))
     def test_get_map_non_image_content_type(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         with tmp_image((512, 512)) as img:
             expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                                      '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326&styles='
@@ -771,6 +778,9 @@ class TestWMSSourceWithClient(object):
                 else:
                     assert False, 'no SourceError raised'
     def test_basic_auth(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         http_client = HTTPClient(self.req_template.url, username='foo', password='bar@')
         self.client.http_client = http_client
         def assert_auth(req_handler):
