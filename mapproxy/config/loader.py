@@ -1009,6 +1009,45 @@ class CacheConfiguration(ConfigurationBase):
             wal=wal,
         )
 
+    def _geopackage_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.geopackage import GeopackageCache, GeopackageLevelCache
+        from mapproxy.srs import get_epsg_num
+
+        filename = self.conf.get('cache').get('filename')
+        table_name = self.conf.get('cache').get('table_name') or \
+                     "{}_{}".format(self.conf.get('name'), get_epsg_num(grid_conf.conf.get('srs')))
+        levels = self.conf.get('cache').get('levels')
+        cache_dir = self.conf.get('cache', {}).get('dirname')
+
+        if not filename:
+            filename = self.conf['name'] + '.gpkg'
+        if filename.startswith('.' + os.sep):
+            gpkg_file_path = self.context.globals.abspath(filename)
+        else:
+            gpkg_file_path = os.path.join(self.cache_dir(), filename)
+
+        if cache_dir:
+            cache_dir = os.path.join(
+                self.context.globals.abspath(cache_dir),
+                grid_conf.tile_grid().name
+            )
+        else:
+            cache_dir = self.cache_dir()
+            cache_dir = os.path.join(
+                cache_dir,
+                self.conf['name'],
+                grid_conf.tile_grid().name
+            )
+
+        if levels:
+            return GeopackageLevelCache(
+                cache_dir, grid_conf.tile_grid(), table_name
+            )
+        else:
+            return GeopackageCache(
+                gpkg_file_path, grid_conf.tile_grid(), table_name
+            )
+
     def _sqlite_cache(self, grid_conf, file_ext):
         from mapproxy.cache.mbtiles import MBTilesLevelCache
 

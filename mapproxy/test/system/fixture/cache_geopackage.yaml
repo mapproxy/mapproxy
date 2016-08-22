@@ -1,0 +1,56 @@
+globals:
+  cache:
+    base_dir: cache_data/
+
+services:
+  tms:
+  wms:
+    md:
+      title: MapProxy test fixture
+
+layers:
+  - name: gpkg
+    title: TMS Cache Layer
+    sources: [gpkg_cache, new_gpkg, new_gpkg_table]
+  - name: gpkg_new
+    title: TMS Cache Layer
+    sources: [new_gpkg]
+
+caches:
+  gpkg_cache:
+    grids: [cache_grid]
+    cache:
+      type: geopackage
+      filename: ./cache.gpkg
+      table_name: cache
+      tile_lock_dir: ./testlockdir
+    sources: [tms]
+  new_gpkg:
+    grids: [new_grid]
+    sources: []
+    cache:
+      type: geopackage
+      filename: ./cache_new.gpkg
+      table_name: cache
+      tile_lock_dir: ./testlockdir
+  new_gpkg_table:
+    grids: [cache_grid]
+    cache:
+      type: geopackage
+      filename: ./cache.gpkg
+      table_name: new_cache
+      tile_lock_dir: ./testlockdir
+    sources: [tms]
+
+grids:
+  cache_grid:
+    srs: EPSG:900913
+  new_grid:
+    srs: EPSG:4326
+
+
+sources:
+  tms:
+    type: tile
+    url: http://localhost:42423/tiles/%(tc_path)s.png
+
