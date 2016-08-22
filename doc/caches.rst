@@ -99,7 +99,7 @@ Use SQLite databases to store the tiles, similar to ``mbtiles`` cache. The diffe
 Available options:
 
 ``dirname``:
-  The direcotry where the level databases will be stored.
+  The directory where the level databases will be stored.
 
 ``tile_lock_dir``:
   Directory where MapProxy should write lock files when it creates new tiles for this cache. Defaults to ``cache_data/tile_locks``.
@@ -308,3 +308,44 @@ Example
         default_ports:
             pb: 8087
             http: 8098
+
+
+``geopackage``
+========
+
+.. versionadded:: 1.8.x
+
+Store tiles in a `geopackage <http://www.geopackage.org/>`_ database. MapProxy creates a tile table if one isn't defined and populates the required meta data fields.
+This backend is good for datasets that require portability.
+Available options:
+
+``filename``:
+  The path to the geopackage file. Defaults to ``cachename.gpkg``.
+
+``table_name``:
+  The name of the table where the tiles should be stored (or retrieved if using an existing cache). Defaults to the ``cachename_projection``.
+
+``levels``:
+  Set this to true to cache to a directory where each level is stored in a separate geopackage. Defaults to ``false``.
+  If set to true, ``filename`` is ignored.
+
+``dirname``:
+  If levels is true use this to specify the directory to store geopackage files.
+
+You can set the ``sources`` to an empty list, if you use an existing geopackage file and do not have a source.
+
+::
+
+  caches:
+    geopackage_cache:
+      sources: []
+      grids: [GLOBAL_MERCATOR]
+      cache:
+        type: geopackage
+        filename: /path/to/bluemarble.gpkg
+        table_name: bluemarble_tiles
+
+.. note::
+
+  The geopackage format specification does not include any timestamps for each tile and the seeding function is limited therefore. If you include any ``refresh_before`` time in a seed task, all tiles will be recreated regardless of the value. The cleanup process does not support any ``remove_before`` times for geopackage and it always removes all tiles.
+  Use the ``--summary`` option of the ``mapproxy-seed`` tool.
