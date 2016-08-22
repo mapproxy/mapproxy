@@ -48,25 +48,23 @@ class TestGeopackageCache(SystemTest):
     config = test_config
     table_name = 'cache'
 
+    def setup(self):
+        SystemTest.setup(self)
+        self.common_map_req = WMS111MapRequest(url='/service?',
+            param=dict(service='WMS',
+                       version='1.1.1', bbox='-180,-80,0,0',
+                       width='200', height='200',
+                       layers='gpkg', srs='EPSG:4326',
+                       format='image/png',
+                       styles='', request='GetMap'))
+
     def test_get_map_cached(self):
-        self.common_map_req = WMS111MapRequest(url='/service?', param=dict(service='WMS',
-                                                                           version='1.1.1', bbox='-180,-80,0,0',
-                                                                           width='200', height='200',
-                                                                           layers='gpkg', srs='EPSG:4326',
-                                                                           format='image/png',
-                                                                           styles='', request='GetMap'))
         resp = self.app.get(self.common_map_req)
         eq_(resp.content_type, 'image/png')
         data = BytesIO(resp.body)
         assert is_png(data)
 
     def test_get_map_uncached(self):
-        self.common_map_req = WMS111MapRequest(url='/service?', param=dict(service='WMS',
-                                                                           version='1.1.1', bbox='-180,-80,0,0',
-                                                                           width='200', height='200',
-                                                                           layers='gpkg', srs='EPSG:4326',
-                                                                           format='image/png',
-                                                                           styles='', request='GetMap'))
         assert os.path.exists(os.path.join(test_config['base_dir'], 'cache.gpkg')) # already created on startup
 
         self.common_map_req.params.bbox = '-180,0,0,80'
@@ -128,4 +126,3 @@ class TestGeopackageCache(SystemTest):
                 (organization_coordsys_id,))
             content = cur.fetchone()
             assert content[0] == organization_coordsys_id
-
