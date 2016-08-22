@@ -23,7 +23,7 @@ from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, tile_buffer
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
-from mapproxy.compat import BytesIO, PY2
+from mapproxy.compat import BytesIO, PY2, itertools
 from mapproxy.srs import get_epsg_num
 
 import logging
@@ -33,12 +33,15 @@ log = logging.getLogger(__name__)
 class GeopackageCache(TileCacheBase):
     supports_timestamp = False
 
-    def __init__(self, geopackage_file, tile_grid, table_name, with_timestamps=False):
+    def __init__(self, geopackage_file, tile_grid, table_name, with_timestamps=False, timeout=30, wal=False):
         self.tile_grid = tile_grid
         self.table_name = self._check_table_name(table_name)
         self.lock_cache_id = 'gpkg' + hashlib.md5(geopackage_file.encode('utf-8')).hexdigest()
         self.geopackage_file = geopackage_file
+        # XXX timestamps not implemented
         self.supports_timestamp = with_timestamps
+        self.timeout = timeout
+        self.wal = wal
         self.ensure_gpkg()
         self._db_conn_cache = threading.local()
 
@@ -46,7 +49,7 @@ class GeopackageCache(TileCacheBase):
     def db(self):
         if not getattr(self._db_conn_cache, 'db', None):
             self.ensure_gpkg()
-            self._db_conn_cache.db = sqlite3.connect(self.geopackage_file)
+            self._db_conn_cache.db = sqlite3.connect(self.geopackage_file, timeout=self.timeout)
         return self._db_conn_cache.db
 
     def cleanup(self):
@@ -184,6 +187,10 @@ class GeopackageCache(TileCacheBase):
     def _initialize_gpkg(self):
         log.info('initializing Geopackage file %s', self.geopackage_file)
         db = sqlite3.connect(self.geopackage_file)
+
+        if self.wal:
+            db.execute('PRAGMA journal_mode=wal')
+
         proj = get_epsg_num(self.tile_grid.srs.srs_code)
         stmts = ["""
                 CREATE TABLE IF NOT EXISTS gpkg_contents
@@ -349,27 +356,41 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
 
         return self.load_tile(tile)
 
-    def store_tile(self, tile, grid=None):
 
+    def store_tile(self, tile):
         if tile.stored:
             return True
+        return self._store_bulk([tile])
 
-        with tile_buffer(tile) as buf:
-            if PY2:
-                content = buffer(buf.read())
-            else:
-                content = buf.read()
-            x, y, level = tile.coord
-            cursor = self.db.cursor()
-            try:
-                stmt = "INSERT OR REPLACE INTO {0} (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)".format(
+    def store_tiles(self, tiles):
+        tiles = [t for t in tiles if not t.stored]
+        return self._store_bulk(tiles)
+
+
+    def _store_bulk(self, tiles):
+        records = []
+        # tile_buffer (as_buffer) will encode the tile to the target format
+        # we collect all tiles before, to avoid having the db transaction
+        # open during this slow encoding
+        for tile in tiles:
+            with tile_buffer(tile) as buf:
+                if PY2:
+                    content = buffer(buf.read())
+                else:
+                    content = buf.read()
+                x, y, level = tile.coord
+                records.append((level, x, y, content))
+
+        cursor = self.db.cursor()
+        try:
+            stmt = "INSERT OR REPLACE INTO {0} (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)".format(
                     self.table_name)
-                cursor.execute(stmt, (level, x, y, content))
-                self.db.commit()
-            except sqlite3.OperationalError as ex:
-                log.warn('unable to store tile: %s', ex)
-                return False
-            return True
+            cursor.executemany(stmt, records)
+            self.db.commit()
+        except sqlite3.OperationalError as ex:
+            log.warn('unable to store tile: %s', ex)
+            return False
+        return True
 
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
@@ -458,11 +479,13 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
 
 class GeopackageLevelCache(TileCacheBase):
 
-    def __init__(self, geopackage_dir, tile_grid, table_name):
+    def __init__(self, geopackage_dir, tile_grid, table_name, timeout=30, wal=False):
         self.lock_cache_id = 'gpkg-' + hashlib.md5(geopackage_dir.encode('utf-8')).hexdigest()
         self.cache_dir = geopackage_dir
         self.tile_grid = tile_grid
         self.table_name = table_name
+        self.timeout = timeout
+        self.wal = wal
         self._geopackage = {}
         self._geopackage_lock = threading.Lock()
 
@@ -478,6 +501,8 @@ class GeopackageLevelCache(TileCacheBase):
                     self.tile_grid,
                     self.table_name,
                     with_timestamps=True,
+                    timeout=self.timeout,
+                    wal=self.wal,
                 )
 
         return self._geopackage[level]
@@ -503,6 +528,14 @@ class GeopackageLevelCache(TileCacheBase):
             return True
 
         return self._get_level(tile.coord[2]).store_tile(tile)
+
+    def store_tiles(self, tiles):
+        failed = False
+        for level, tiles in itertools.groupby(tiles, key=lambda t: t.coord[2]):
+            tiles = [t for t in tiles if not t.stored]
+            res = self._get_level(level).store_tiles(tiles)
+            if not res: failed = True
+        return failed
 
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
