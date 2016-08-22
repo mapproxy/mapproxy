@@ -311,9 +311,9 @@ Example
 
 
 ``geopackage``
-========
+==============
 
-.. versionadded:: 1.8.x
+.. versionadded:: 1.10.0
 
 Store tiles in a `geopackage <http://www.geopackage.org/>`_ database. MapProxy creates a tile table if one isn't defined and populates the required meta data fields.
 This backend is good for datasets that require portability.
