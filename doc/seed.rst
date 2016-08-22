@@ -21,7 +21,7 @@ Options
 
 .. option:: -s <seed.yaml>, --seed-conf==<seed.yaml>
 
-  The seed configuration. You can also pass the configration as the last argument to ``mapproxy-seed``
+  The seed configuration. You can also pass the configuration as the last argument to ``mapproxy-seed``
 
 .. option:: -f <mapproxy.yaml>, --proxy-conf=<mapproxy.yaml>
 
