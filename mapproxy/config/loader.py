@@ -1122,6 +1122,16 @@ class CacheConfiguration(ConfigurationBase):
             use_secondary_index=use_secondary_index,
         )
 
+    def _compact_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.compact import CompactCache
+
+        cache_dir = self.cache_dir()
+        cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
+
+        return CompactCache(
+            cache_dir,
+        )
+
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):
             from mapproxy.cache.dummy import DummyCache
