@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
-
-import os
-import random
+try:
+    import boto
+    from moto import mock_s3
+except ImportError:
+    boto = None
+    mock_s3 = None
 
 from nose.plugins.skip import SkipTest
 
@@ -28,16 +30,27 @@ class TestS3Cache(TileCacheTestBase):
     always_loads_metadata = True
 
     def setup(self):
-        if not os.environ.get('MAPPROXY_TEST_S3'):
-            raise SkipTest()
-
-        bucket_name = os.environ['MAPPROXY_TEST_S3']
-        dir_name = 'mapproxy/test_%d' % random.randint(0, 100000)
+        if not mock_s3 or not boto:
+            raise SkipTest("boto and moto required for S3 tests")
 
         TileCacheTestBase.setup(self)
 
-        self.cache = S3Cache(dir_name, file_ext='png', directory_layout='tms',
-                             lock_timeout=10, bucket_name=bucket_name, profile_name=None)
+        self.mock = mock_s3()
+        self.mock.start()
+
+        bucket_name = "test"
+        dir_name = 'mapproxy'
+
+        boto.connect_s3().create_bucket(bucket_name)
+
+        self.cache = S3Cache(dir_name,
+            file_ext='png',
+            directory_layout='tms',
+            lock_timeout=10,
+            bucket_name=bucket_name,
+            profile_name=None,
+        )
 
     def teardown(self):
+        self.mock.stop()
         TileCacheTestBase.teardown(self)
