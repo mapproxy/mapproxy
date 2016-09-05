@@ -1,9 +1,10 @@
 from __future__ import with_statement
 
-import os
+import sys
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import tile_buffer
 from mapproxy.cache.file import FileCache
+from mapproxy.util.py import reraise_exception
 
 try:
     import boto
@@ -15,33 +16,20 @@ import StringIO
 import logging
 log = logging.getLogger('mapproxy.cache.s3')
 
-s3_connection = None
 
-class S3Connection:
-    def __init__(self, profile_name=None):
-        if boto is None:
-            raise ImportError("S3 Cache requires 'boto' package.")
-        self.conn = None
-        self.profile_name = profile_name
+def connect(profile_name=None):
+    if boto is None:
+        raise ImportError("S3 Cache requires 'boto' package.")
 
-    def get(self):
-        if self.conn is None:
-            if self.profile_name is not None:
-                try:
-                    self.conn = boto.connect_s3(profile_name=self.profile_name)
-                except boto.provider.ProfileNotFoundError:
-                    raise Error('S3: Profile no found %s' % e)
-                except Exception as e:
-                    raise Error('S3: Error during connection %s' % e)
-            else:
-                try:
-                    self.conn = boto.connect_s3()
-                except boto.exception.NoAuthHandlerFound as e:
-                    raise Error('S3: No handler found %s' % e)
+    try:
+        return boto.connect_s3(profile_name=profile_name, host='s3.eu-central-1.amazonaws.com')
+    except boto.provider.ProfileNotFoundError as e:
+        raise S3ConnectionError('Profile no found %s' % e)
+    except Exception as e:
+        raise S3ConnectionError('Error during connection %s' % e)
 
-        return self.conn
-
-
+class S3ConnectionError(Exception):
+    pass
 
 class S3Cache(FileCache):
 
@@ -56,28 +44,28 @@ class S3Cache(FileCache):
         :param file_ext: the file extension that will be appended to
             each tile (e.g. 'png')
         """
-        global s3_connection
 
-        if s3_connection is None:
-            s3_connection = S3Connection(profile_name=profile_name)
-
-        conn = s3_connection.get()
+        conn = connect()
 
         try:
             self.bucket = conn.get_bucket(bucket_name)
         except boto.exception.S3ResponseError as e:
-            log.error("Fuck %s" % e.error_code)
             if e.error_code == 'NoSuchBucket':
-                log.error('No such bucket: %s' % bucket_name)
-                raise e
+                raise S3ConnectionError('No such bucket: %s' % bucket_name)
             elif e.error_code == 'AccessDenied':
-                log.error('Access denied. Check your credentials')
-                raise e
+                raise S3ConnectionError('Access denied. Check your credentials')
             else:
-                log.error('Unknown error %e' % e)
-                raise e
+                reraise_exception(
+                    S3ConnectionError('Unknown error: %s' % e),
+                    sys.exc_info(),
+                )
 
-        super(S3Cache, self).__init__(cache_dir, file_ext=file_ext, directory_layout=directory_layout, lock_timeout=lock_timeout, link_single_color_images=False)
+        super(S3Cache, self).__init__(cache_dir,
+            file_ext=file_ext,
+            directory_layout=directory_layout,
+            lock_timeout=lock_timeout,
+            link_single_color_images=False,
+        )
 
 
     def load_tile_metadata(self, tile):

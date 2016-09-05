@@ -133,12 +133,12 @@ cache_types = {
         'tile_lock_dir': str(),
     },
     's3': {
-                'bucket_name': str(),
-                'directory_layout': str(),
-                'use_grid_names': bool(),
-                'cache_dir': str(),
-                'profile_name': str(),
-         },
+        required('bucket_name'): str(),
+        'directory_layout': str(),
+        'use_grid_names': bool(),
+        'cache_dir': str(),
+        'profile_name': str(),
+     },
     'riak': {
         'nodes': [riak_node],
         'protocol': one_of('pbc', 'http', 'https'),

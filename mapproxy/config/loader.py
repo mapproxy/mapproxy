@@ -1051,28 +1051,25 @@ class CacheConfiguration(ConfigurationBase):
     def _s3_cache(self, grid_conf, file_ext):
         from mapproxy.cache.s3 import S3Cache
 
-        cache_dir = self.conf.get('cache', {}).get('cache_dir', None)
+        bucket_name = self.context.globals.get_value('cache.bucket_name', self.conf,
+            global_key='cache.s3.bucket_name')
 
-        bucket_name = self.context.globals.get_value('bucket_name', self.conf,
-            global_key='cache.bucket_name')
-
-        profile_name = self.context.globals.get_value('profile_name', self.conf,
-            global_key='cache.s3_profile_name')
+        profile_name = self.context.globals.get_value('cache.profile_name', self.conf,
+            global_key='cache.s3.profile_name')
 
         directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tms')
 
-        if cache_dir is None:
-            if self.conf.get('cache', {}).get('use_grid_names'):
-                cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
-            else:
-                suffix = grid_conf.conf['srs'].replace(':', '')
-
-            cache_dir = os.path.join(cache_dir, self.conf['name'] + '_' + suffix)
+        cache_path = os.path.join(self.conf['name'], grid_conf.tile_grid().name)
 
         lock_timeout = self.context.globals.get_value('http.client_timeout', {})
 
-        return S3Cache(cache_dir, file_ext=file_ext, directory_layout=directory_layout,
-            lock_timeout=lock_timeout, bucket_name=bucket_name, profile_name=profile_name)
+        return S3Cache(cache_path,
+            file_ext=file_ext,
+            directory_layout=directory_layout,
+            lock_timeout=lock_timeout,
+            bucket_name=bucket_name,
+            profile_name=profile_name,
+        )
 
     def _sqlite_cache(self, grid_conf, file_ext):
         from mapproxy.cache.mbtiles import MBTilesLevelCache
