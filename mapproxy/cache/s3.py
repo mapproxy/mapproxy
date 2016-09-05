@@ -7,24 +7,23 @@ from mapproxy.cache.file import FileCache
 from mapproxy.util.py import reraise_exception
 
 try:
-    import boto
+    import boto3
+    import botocore
 except ImportError:
-    boto = None
+    boto3 = None
 
-import StringIO
+from io import BytesIO
 
 import logging
 log = logging.getLogger('mapproxy.cache.s3')
 
 
 def connect(profile_name=None):
-    if boto is None:
-        raise ImportError("S3 Cache requires 'boto' package.")
+    if boto3 is None:
+        raise ImportError("S3 Cache requires 'boto3' package.")
 
     try:
-        return boto.connect_s3(profile_name=profile_name, host='s3.eu-central-1.amazonaws.com')
-    except boto.provider.ProfileNotFoundError as e:
-        raise S3ConnectionError('Profile no found %s' % e)
+        return boto3.client("s3")
     except Exception as e:
         raise S3ConnectionError('Error during connection %s' % e)
 
@@ -32,27 +31,16 @@ class S3ConnectionError(Exception):
     pass
 
 class S3Cache(FileCache):
-
-    """
-    This class is responsible to store and load the actual tile data.
-    """
-
     def __init__(self, cache_dir, file_ext, lock_dir=None, directory_layout='tms',
                  lock_timeout=60.0, bucket_name='mapproxy', profile_name=None):
-        """
-        :param cache_dir: the path where the tile will be stored
-        :param file_ext: the file extension that will be appended to
-            each tile (e.g. 'png')
-        """
-
-        conn = connect()
-
+        self.conn = connect()
+        self.bucket_name = bucket_name
         try:
-            self.bucket = conn.get_bucket(bucket_name)
-        except boto.exception.S3ResponseError as e:
-            if e.error_code == 'NoSuchBucket':
+            self.bucket = self.conn.head_bucket(Bucket=bucket_name)
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == '404':
                 raise S3ConnectionError('No such bucket: %s' % bucket_name)
-            elif e.error_code == 'AccessDenied':
+            elif e.response['Error']['Code'] == '403':
                 raise S3ConnectionError('Access denied. Check your credentials')
             else:
                 reraise_exception(
@@ -78,19 +66,16 @@ class S3Cache(FileCache):
         Returns ``True`` if the tile data is present.
         """
         if tile.is_missing():
-
             location = self.tile_location(tile)
 
-            k = boto.s3.key.Key(self.bucket)
-            k.key = location
-            if k.exists():
-                log.debug('S3: cache HIT, location: %s' % location)
-                return True
-            else:
-                log.debug('S3: cache MISS, location: %s' % location)
-                return False
-        else:
-            return True
+            try:
+                self.conn.head_object(Bucket=self.bucket_name, Key=location)
+            except botocore.exceptions.ClientError as e:
+                if e.response['Error']['Code'] == '404':
+                    return False
+                raise
+
+        return True
 
     def load_tile(self, tile, with_metadata=False):
         """
@@ -103,30 +88,22 @@ class S3Cache(FileCache):
         location = self.tile_location(tile)
         log.debug('S3:load_tile, location: %s' % location)
 
-        tile_data = StringIO.StringIO()
-        k = boto.s3.key.Key(self.bucket)
-        k.key = location
+        tile_data = BytesIO()
         try:
-            k.get_contents_to_file(tile_data)
-            tile.source = ImageSource(tile_data)
-            k.close()
-            return True
-        except boto.exception.S3ResponseError:
-            # NoSuchKey
-            pass
-        k.close()
-        return False
+            self.conn.download_fileobj(self.bucket_name, location, tile_data)
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == '404':
+                return False
+            raise
+        tile.source = ImageSource(tile_data)
+
+        return True
 
     def remove_tile(self, tile):
-
         location = self.tile_location(tile)
         log.debug('remove_tile, location: %s' % location)
 
-        k = boto.s3.key.Key(self.bucket)
-        k.key = location
-        if k.exists():
-            k.delete()
-        k.close()
+        self.conn.delete_object(Bucket=self.bucket_name, Key=location)
 
     def store_tile(self, tile):
         """
@@ -139,13 +116,16 @@ class S3Cache(FileCache):
         location = self.tile_location(tile)
         log.debug('S3: store_tile, location: %s' % location)
 
-        k = boto.s3.key.Key(self.bucket)
+        extra_args = {}
         if self.file_ext in ('jpeg', 'png'):
-            k.content_type = 'image/' + self.file_ext
-        k.key = location
+            extra_args['ContentType'] = 'image/' + self.file_ext
         with tile_buffer(tile) as buf:
-            k.set_contents_from_file(buf)
-        k.close()
+            self.conn.upload_fileobj(
+                NopCloser(buf), # upload_fileobj closes buf, wrap in NopCloser
+                self.bucket_name,
+                location,
+                ExtraArgs=extra_args)
+
 
         # Attempt making storing tiles non-blocking
 
@@ -170,3 +150,13 @@ class S3Cache(FileCache):
         print 'Storing %s, %s' % (key, tile)
         with tile_buffer(tile) as buf:
             key.set_contents_from_file(buf)
+
+class NopCloser(object):
+    def __init__(self, wrapped):
+        self.wrapped = wrapped
+
+    def close(self):
+        pass
+
+    def __getattr__(self, name):
+        return getattr(self.wrapped, name)

@@ -14,10 +14,10 @@
 # limitations under the License.
 
 try:
-    import boto
+    import boto3
     from moto import mock_s3
 except ImportError:
-    boto = None
+    boto3 = None
     mock_s3 = None
 
 from nose.plugins.skip import SkipTest
@@ -30,8 +30,8 @@ class TestS3Cache(TileCacheTestBase):
     always_loads_metadata = True
 
     def setup(self):
-        if not mock_s3 or not boto:
-            raise SkipTest("boto and moto required for S3 tests")
+        if not mock_s3 or not boto3:
+            raise SkipTest("boto3 and moto required for S3 tests")
 
         TileCacheTestBase.setup(self)
 
@@ -41,7 +41,7 @@ class TestS3Cache(TileCacheTestBase):
         bucket_name = "test"
         dir_name = 'mapproxy'
 
-        boto.connect_s3().create_bucket(bucket_name)
+        boto3.client("s3").create_bucket(Bucket=bucket_name)
 
         self.cache = S3Cache(dir_name,
             file_ext='png',
