@@ -1,9 +1,27 @@
+# This file is part of the MapProxy project.
+# Copyright (C) 2016 Omniscale <http://omniscale.de>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from __future__ import with_statement
 
 import sys
+import threading
+
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import tile_buffer
 from mapproxy.cache.file import FileCache
+from mapproxy.util import async
 from mapproxy.util.py import reraise_exception
 
 try:
@@ -12,31 +30,28 @@ try:
 except ImportError:
     boto3 = None
 
-from io import BytesIO
 
 import logging
 log = logging.getLogger('mapproxy.cache.s3')
 
 
-def connect(profile_name=None):
-    if boto3 is None:
-        raise ImportError("S3 Cache requires 'boto3' package.")
-
-    try:
-        return boto3.client("s3")
-    except Exception as e:
-        raise S3ConnectionError('Error during connection %s' % e)
+_s3_sessions_cache = threading.local()
+def s3_session():
+    if not getattr(_s3_sessions_cache, 'session', None):
+        _s3_sessions_cache.session = boto3.session.Session()
+    return _s3_sessions_cache.session
 
 class S3ConnectionError(Exception):
     pass
 
 class S3Cache(FileCache):
+    no_simple_cleanup = True
+
     def __init__(self, cache_dir, file_ext, lock_dir=None, directory_layout='tms',
                  lock_timeout=60.0, bucket_name='mapproxy', profile_name=None):
-        self.conn = connect()
         self.bucket_name = bucket_name
         try:
-            self.bucket = self.conn.head_bucket(Bucket=bucket_name)
+            self.bucket = self.conn().head_bucket(Bucket=bucket_name)
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == '404':
                 raise S3ConnectionError('No such bucket: %s' % bucket_name)
@@ -47,7 +62,6 @@ class S3Cache(FileCache):
                     S3ConnectionError('Unknown error: %s' % e),
                     sys.exc_info(),
                 )
-
         super(S3Cache, self).__init__(cache_dir,
             file_ext=file_ext,
             directory_layout=directory_layout,
@@ -55,61 +69,72 @@ class S3Cache(FileCache):
             link_single_color_images=False,
         )
 
+    def conn(self):
+        if boto3 is None:
+            raise ImportError("S3 Cache requires 'boto3' package.")
+
+        try:
+            return s3_session().client("s3")
+        except Exception as e:
+            raise S3ConnectionError('Error during connection %s' % e)
 
     def load_tile_metadata(self, tile):
-        # TODO Implement storing / retrieving tile metadata
-        tile.timestamp = 0
-        tile.size = 0
+        if tile.timestamp:
+            return
+        self.is_cached(tile)
+
+    def _set_metadata(self, response, tile):
+        if 'LastModified' in response:
+            tile.timestamp = float(response['LastModified'].strftime('%s'))
+        if 'ContentLength' in response:
+            tile.size = response['ContentLength']
 
     def is_cached(self, tile):
-        """
-        Returns ``True`` if the tile data is present.
-        """
         if tile.is_missing():
             location = self.tile_location(tile)
-
             try:
-                self.conn.head_object(Bucket=self.bucket_name, Key=location)
+                r = self.conn().head_object(Bucket=self.bucket_name, Key=location)
+                self._set_metadata(r, tile)
             except botocore.exceptions.ClientError as e:
-                if e.response['Error']['Code'] == '404':
+                if e.response['Error']['Code'] in ('404', 'NoSuchKey'):
                     return False
                 raise
 
         return True
 
-    def load_tile(self, tile, with_metadata=False):
-        """
-        Fills the `Tile.source` of the `tile` if it is cached.
-        If it is not cached or if the ``.coord`` is ``None``, nothing happens.
-        """
+    def load_tiles(self, tiles, with_metadata=True):
+        p = async.Pool(min(4, len(tiles)))
+        return all(p.map(self.load_tile, tiles))
+
+    def load_tile(self, tile, with_metadata=True):
         if not tile.is_missing():
             return True
 
         location = self.tile_location(tile)
         log.debug('S3:load_tile, location: %s' % location)
 
-        tile_data = BytesIO()
         try:
-            self.conn.download_fileobj(self.bucket_name, location, tile_data)
+            r  = self.conn().get_object(Bucket=self.bucket_name, Key=location)
+            self._set_metadata(r, tile)
+            tile.source = ImageSource(r['Body'])
         except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == '404':
+            error = e.response.get('Errors', e.response)['Error'] # moto get_object can return Error wrapped in Errors...
+            if error['Code'] in ('404', 'NoSuchKey'):
                 return False
             raise
-        tile.source = ImageSource(tile_data)
 
         return True
 
     def remove_tile(self, tile):
         location = self.tile_location(tile)
         log.debug('remove_tile, location: %s' % location)
+        self.conn().delete_object(Bucket=self.bucket_name, Key=location)
 
-        self.conn.delete_object(Bucket=self.bucket_name, Key=location)
+    def store_tiles(self, tiles):
+        p = async.Pool(min(4, len(tiles)))
+        p.map(self.store_tile, tiles)
 
     def store_tile(self, tile):
-        """
-        Add the given `tile` to the file cache. Stores the `Tile.source` to
-        `FileCache.tile_location`.
-        """
         if tile.stored:
             return
 
@@ -120,36 +145,11 @@ class S3Cache(FileCache):
         if self.file_ext in ('jpeg', 'png'):
             extra_args['ContentType'] = 'image/' + self.file_ext
         with tile_buffer(tile) as buf:
-            self.conn.upload_fileobj(
+            self.conn().upload_fileobj(
                 NopCloser(buf), # upload_fileobj closes buf, wrap in NopCloser
                 self.bucket_name,
                 location,
                 ExtraArgs=extra_args)
-
-
-        # Attempt making storing tiles non-blocking
-
-        # This is still blocking when I thought that it would not
-        # async.run_non_blocking(self.async_store, (k, tile))
-
-        # async_pool = async.Pool(4)
-        # for store in async_pool.map(self.async_store_, [(k, tile)]):
-        #     log.debug('stored...')
-
-        # This sometimes suffers from "ValueError: I/O operation on closed file"
-        # as I guess it's not advised to use threads within a wsgi app
-        # Timer(0.25, self.async_store, args=[k, tile]).start()
-
-    def async_store_(self, foo):
-        key, tile = foo
-        print 'Storing %s, %s' % (key, tile)
-        with tile_buffer(tile) as buf:
-            key.set_contents_from_file(buf)
-
-    def async_store(self, key, tile):
-        print 'Storing %s, %s' % (key, tile)
-        with tile_buffer(tile) as buf:
-            key.set_contents_from_file(buf)
 
 class NopCloser(object):
     def __init__(self, wrapped):
