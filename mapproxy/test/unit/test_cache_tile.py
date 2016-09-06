@@ -29,12 +29,11 @@ from PIL import Image
 from mapproxy.cache.tile import Tile
 from mapproxy.cache.file import FileCache
 from mapproxy.cache.mbtiles import MBTilesCache, MBTilesLevelCache
-from mapproxy.cache.base import CacheBackendError
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.test.image import create_tmp_image_buf, is_png
 
-from nose.tools import eq_, assert_raises
+from nose.tools import eq_
 
 tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
@@ -52,23 +51,23 @@ class TileCacheTestBase(object):
         if hasattr(self, 'cache_dir') and os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
 
-    def create_tile(self, coord=(0, 0, 4)):
+    def create_tile(self, coord=(3009, 589, 12)):
         return Tile(coord,
             ImageSource(tile_image,
                 image_opts=ImageOptions(format='image/png')))
 
-    def create_another_tile(self, coord=(0, 0, 4)):
+    def create_another_tile(self, coord=(3009, 589, 12)):
         return Tile(coord,
             ImageSource(tile_image2,
                 image_opts=ImageOptions(format='image/png')))
 
     def test_is_cached_miss(self):
-        assert not self.cache.is_cached(Tile((0, 0, 4)))
+        assert not self.cache.is_cached(Tile((3009, 589, 12)))
 
     def test_is_cached_hit(self):
         tile = self.create_tile()
         self.create_cached_tile(tile)
-        assert self.cache.is_cached(Tile((0, 0, 4)))
+        assert self.cache.is_cached(Tile((3009, 589, 12)))
 
     def test_is_cached_none(self):
         assert self.cache.is_cached(Tile(None))
@@ -77,7 +76,7 @@ class TileCacheTestBase(object):
         assert self.cache.load_tile(Tile(None))
 
     def test_load_tile_not_cached(self):
-        tile = Tile((0, 0, 4))
+        tile = Tile((3009, 589, 12))
         assert not self.cache.load_tile(tile)
         assert tile.source is None
         assert tile.is_missing()
@@ -85,16 +84,16 @@ class TileCacheTestBase(object):
     def test_load_tile_cached(self):
         tile = self.create_tile()
         self.create_cached_tile(tile)
-        tile = Tile((0, 0, 4))
+        tile = Tile((3009, 589, 12))
         assert self.cache.load_tile(tile) == True
         assert not tile.is_missing()
 
     def test_store_tiles(self):
-        tiles = [self.create_tile((x, 0, 4)) for x in range(4)]
+        tiles = [self.create_tile((x, 589, 12)) for x in range(4)]
         tiles[0].stored = True
         self.cache.store_tiles(tiles)
 
-        tiles = [Tile((x, 0, 4)) for x in range(4)]
+        tiles = [Tile((x, 589, 12)) for x in range(4)]
         assert tiles[0].is_missing()
         assert self.cache.load_tile(tiles[0]) == False
         assert tiles[0].is_missing()
@@ -172,13 +171,13 @@ class TileCacheTestBase(object):
         # tile object is marked as stored,
         # check that is is not stored 'again'
         # (used for disable_storage)
-        tile = Tile((0, 0, 4), ImageSource(BytesIO(b'foo')))
+        tile = Tile((1234, 589, 12), ImageSource(BytesIO(b'foo')))
         tile.stored = True
         self.cache.store_tile(tile)
 
         assert self.cache.is_cached(tile)
 
-        tile = Tile((0, 0, 4))
+        tile = Tile((1234, 589, 12))
         assert not self.cache.is_cached(tile)
 
     def test_remove(self):
