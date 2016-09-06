@@ -188,6 +188,11 @@ class TileCacheTestBase(object):
         self.cache.remove_tile(Tile((1, 0, 4)))
         assert not self.cache.is_cached(Tile((1, 0, 4)))
 
+        # check if we can recreate a removed tile
+        tile = self.create_tile((1, 0, 4))
+        self.create_cached_tile(tile)
+        assert self.cache.is_cached(Tile((1, 0, 4)))
+
     def create_cached_tile(self, tile):
         self.cache.store_tile(tile)
 

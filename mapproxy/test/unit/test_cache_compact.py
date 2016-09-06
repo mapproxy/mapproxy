@@ -16,19 +16,10 @@
 from __future__ import with_statement, division
 
 import os
-import time
-import sqlite3
-import threading
 
-from io import BytesIO
-
-from mapproxy.image import ImageSource
 from mapproxy.cache.compact import CompactCache
 from mapproxy.cache.tile import Tile
-from mapproxy.grid import tile_grid, TileGrid
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
-
-from nose.tools import eq_
 
 class TestCompactCache(TileCacheTestBase):
 
@@ -39,3 +30,36 @@ class TestCompactCache(TileCacheTestBase):
         self.cache = CompactCache(
             cache_dir=self.cache_dir,
         )
+
+    def test_bundle_files(self):
+        assert not os.path.exists(os.path.join(self.cache_dir, 'L00', 'R0000C0000.bundle'))
+        assert not os.path.exists(os.path.join(self.cache_dir, 'L00', 'R0000C0000.bundlx'))
+        self.cache.store_tile(self.create_tile(coord=(0, 0, 0)))
+        assert os.path.exists(os.path.join(self.cache_dir, 'L00', 'R0000C0000.bundle'))
+        assert os.path.exists(os.path.join(self.cache_dir, 'L00', 'R0000C0000.bundlx'))
+
+        assert not os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0000C0000.bundle'))
+        assert not os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0000C0000.bundlx'))
+        self.cache.store_tile(self.create_tile(coord=(127, 127, 12)))
+        assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0000C0000.bundle'))
+        assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0000C0000.bundlx'))
+
+        assert not os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0100C0080.bundle'))
+        assert not os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0100C0080.bundlx'))
+        self.cache.store_tile(self.create_tile(coord=(128, 256, 12)))
+        assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0100C0080.bundle'))
+        assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0100C0080.bundlx'))
+
+    def test_missing_tiles(self):
+        self.cache.store_tile(self.create_tile(coord=(0, 0, 0)))
+        assert os.path.exists(os.path.join(self.cache_dir, 'L00', 'R0000C0000.bundle'))
+        assert os.path.exists(os.path.join(self.cache_dir, 'L00', 'R0000C0000.bundlx'))
+
+        # test that all other tiles in this bundle are missing
+        assert self.cache.is_cached(Tile((0, 0, 0)))
+        for x in range(128):
+            for y in range(128):
+                if x == 0 and y == 0:
+                    continue
+                assert not self.cache.is_cached(Tile((x, y, 0)))
+                assert not self.cache.load_tile(Tile((x, y, 0)))
