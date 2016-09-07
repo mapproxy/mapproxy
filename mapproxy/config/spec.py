@@ -143,6 +143,8 @@ cache_types = {
         'secondary_index': bool(),
     },
     'compact': {
+        'directory': str(),
+        required('version'): number(),
     },
 }
 

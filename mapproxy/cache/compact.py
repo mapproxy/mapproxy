@@ -30,9 +30,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-
-
-class CompactCache(TileCacheBase):
+class CompactCacheV1(TileCacheBase):
     supports_timestamp = False
 
     def __init__(self, cache_dir):

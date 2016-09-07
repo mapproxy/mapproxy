@@ -18,17 +18,17 @@ from __future__ import with_statement, division
 import os
 import time
 
-from mapproxy.cache.compact import CompactCache
+from mapproxy.cache.compact import CompactCacheV1
 from mapproxy.cache.tile import Tile
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
-class TestCompactCache(TileCacheTestBase):
+class TestCompactCacheV1(TileCacheTestBase):
 
     always_loads_metadata = True
 
     def setup(self):
         TileCacheTestBase.setup(self)
-        self.cache = CompactCache(
+        self.cache = CompactCacheV1(
             cache_dir=self.cache_dir,
         )
 
