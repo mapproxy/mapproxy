@@ -16,6 +16,7 @@
 from __future__ import with_statement, division
 
 import os
+import time
 
 from mapproxy.cache.compact import CompactCache
 from mapproxy.cache.tile import Tile
@@ -63,3 +64,17 @@ class TestCompactCache(TileCacheTestBase):
                     continue
                 assert not self.cache.is_cached(Tile((x, y, 0)))
                 assert not self.cache.load_tile(Tile((x, y, 0)))
+
+    def test_remove_level_tiles_before(self):
+        self.cache.store_tile(self.create_tile(coord=(0, 0, 12)))
+        assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0000C0000.bundle'))
+        assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0000C0000.bundlx'))
+
+        # not removed with timestamp
+        self.cache.remove_level_tiles_before(12, time.time())
+        assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0000C0000.bundle'))
+        assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0000C0000.bundlx'))
+
+        # removed with timestamp=0 (remove_all:true in seed.yaml)
+        self.cache.remove_level_tiles_before(12, 0)
+        assert not os.path.exists(os.path.join(self.cache_dir, 'L12'))

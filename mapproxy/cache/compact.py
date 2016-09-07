@@ -17,16 +17,14 @@ from __future__ import with_statement
 import errno
 import hashlib
 import os
-import sqlite3
-import threading
-import time
+import shutil
 import struct
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, tile_buffer
 from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.util.lock import FileLock
-from mapproxy.compat import BytesIO, PY2, itertools
+from mapproxy.compat import BytesIO
 
 import logging
 log = logging.getLogger(__name__)
@@ -81,9 +79,12 @@ class CompactCache(TileCacheBase):
     def load_tile_metadata(self, tile):
         self.load_tile(tile)
 
-    # TODO
-    # def remove_level_tiles_before(self, level, timestamp):
-        # pass
+    def remove_level_tiles_before(self, level, timestamp):
+        if timestamp == 0:
+            level_dir = os.path.join(self.cache_dir, 'L%02d' % level)
+            shutil.rmtree(level_dir, ignore_errors=True)
+            return True
+        return False
 
 BUNDLE_EXT = '.bundle'
 BUNDLEX_EXT = '.bundlx'
@@ -129,7 +130,6 @@ class Bundle(object):
             idx.update_tile_offset(x, y, offset=offset, size=size)
 
         return True
-
 
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
