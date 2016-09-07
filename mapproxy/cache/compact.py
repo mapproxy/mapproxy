@@ -24,7 +24,7 @@ import struct
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, tile_buffer
-from mapproxy.util.fs import ensure_directory
+from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.util.lock import FileLock
 from mapproxy.compat import BytesIO, PY2, itertools
 
@@ -88,13 +88,10 @@ class CompactCache(TileCacheBase):
 BUNDLE_EXT = '.bundle'
 BUNDLEX_EXT = '.bundlx'
 
-class Bundle(TileCacheBase):
-    supports_timestamp = False
-
+class Bundle(object):
     def __init__(self, base_filename):
-        self.lock_cache_id = 'compactcache-' + hashlib.md5(base_filename.encode('utf-8')).hexdigest()
         self.base_filename = base_filename
-
+        self.lock_filename = base_filename + '.lck'
 
     def _rel_tile_coord(self, tile_coord):
         return (
@@ -123,12 +120,13 @@ class Bundle(TileCacheBase):
         with tile_buffer(tile) as buf:
             data = buf.read()
 
-        bundle = BundleData(self.base_filename + BUNDLE_EXT)
-        offset, size = bundle.append_tile(data)
+        with FileLock(self.lock_filename):
+            bundle = BundleData(self.base_filename + BUNDLE_EXT)
+            offset, size = bundle.append_tile(data)
 
-        idx = BundleIndex(self.base_filename + BUNDLEX_EXT)
-        x, y = self._rel_tile_coord(tile.coord)
-        idx.update_tile_offset(x, y, offset=offset, size=size)
+            idx = BundleIndex(self.base_filename + BUNDLEX_EXT)
+            x, y = self._rel_tile_coord(tile.coord)
+            idx.update_tile_offset(x, y, offset=offset, size=size)
 
         return True
 
@@ -155,9 +153,11 @@ class Bundle(TileCacheBase):
         if tile.coord is None:
             return True
 
-        idx = BundleIndex(self.base_filename + BUNDLEX_EXT)
-        x, y = self._rel_tile_coord(tile.coord)
-        idx.remove_tile_offset(x, y)
+        with FileLock(self.lock_filename):
+            idx = BundleIndex(self.base_filename + BUNDLEX_EXT)
+            x, y = self._rel_tile_coord(tile.coord)
+            idx.remove_tile_offset(x, y)
+
         return True
 
 
@@ -176,12 +176,12 @@ class BundleIndex(object):
 
     def _init_index(self):
         ensure_directory(self.filename)
-        fd = os.open(self.filename, os.O_WRONLY|os.O_CREAT|os.O_EXCL)
-        os.write(fd, BUNDLEX_HEADER)
+        buf = BytesIO()
+        buf.write(BUNDLEX_HEADER)
         for i in range(BUNDLEX_GRID_WIDTH * BUNDLEX_GRID_HEIGHT):
-            os.write(fd, struct.pack('<Q', (i*4)+BUNDLE_HEADER_SIZE)[:5])
-        os.write(fd, BUNDLEX_FOOTER)
-        os.close(fd)
+            buf.write(struct.pack('<Q', (i*4)+BUNDLE_HEADER_SIZE)[:5])
+        buf.write(BUNDLEX_FOOTER)
+        write_atomic(self.filename, buf.getvalue())
 
     def _tile_offset(self, x, y):
         return BUNDLEX_HEADER_SIZE + (x * BUNDLEX_GRID_HEIGHT + y) * 5
@@ -228,10 +228,8 @@ class BundleData(object):
 
     def _init_bundle(self):
         ensure_directory(self.filename)
-        fd = os.open(self.filename, os.O_WRONLY|os.O_CREAT|os.O_EXCL)
-        os.write(fd, BUNDLE_HEADER)
-        os.write(fd, b'\x00' * BUNDLEX_GRID_HEIGHT * BUNDLEX_GRID_WIDTH * 4)
-        os.close(fd)
+        write_atomic(self.filename,
+            BUNDLE_HEADER + (b'\x00' * BUNDLEX_GRID_HEIGHT * BUNDLEX_GRID_WIDTH * 4))
 
     def read_size(self, offset):
         with open(self.filename, 'rb') as f:
