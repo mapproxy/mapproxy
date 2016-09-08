@@ -38,19 +38,47 @@ class TestS3Cache(TileCacheTestBase):
         self.mock = mock_s3()
         self.mock.start()
 
-        bucket_name = "test"
+        self.bucket_name = "test"
         dir_name = 'mapproxy'
 
-        boto3.client("s3").create_bucket(Bucket=bucket_name)
+        boto3.client("s3").create_bucket(Bucket=self.bucket_name)
 
         self.cache = S3Cache(dir_name,
             file_ext='png',
             directory_layout='tms',
             lock_timeout=10,
-            bucket_name=bucket_name,
+            bucket_name=self.bucket_name,
             profile_name=None,
         )
 
     def teardown(self):
         self.mock.stop()
         TileCacheTestBase.teardown(self)
+
+    def check_tile_key(self, layout, tile_coord, key):
+        cache = S3Cache('/mycache/webmercator', 'png', bucket_name=self.bucket_name, directory_layout=layout)
+        cache.store_tile(self.create_tile(tile_coord))
+
+        # raises, if key is missing
+        boto3.client("s3").head_object(Bucket=self.bucket_name, Key=key)
+
+    def test_tile_keys(self):
+        yield self.check_tile_key, 'mp', (12345, 67890,  2), '/mycache/webmercator/02/0001/2345/0006/7890.png'
+        yield self.check_tile_key, 'mp', (12345, 67890, 12), '/mycache/webmercator/12/0001/2345/0006/7890.png'
+
+        yield self.check_tile_key, 'tc', (12345, 67890,  2), '/mycache/webmercator/02/000/012/345/000/067/890.png'
+        yield self.check_tile_key, 'tc', (12345, 67890, 12), '/mycache/webmercator/12/000/012/345/000/067/890.png'
+
+        yield self.check_tile_key, 'tms', (12345, 67890,  2), '/mycache/webmercator/2/12345/67890.png'
+        yield self.check_tile_key, 'tms', (12345, 67890, 12), '/mycache/webmercator/12/12345/67890.png'
+
+        yield self.check_tile_key, 'quadkey', (0, 0, 0), '/mycache/webmercator/.png'
+        yield self.check_tile_key, 'quadkey', (0, 0, 1), '/mycache/webmercator/0.png'
+        yield self.check_tile_key, 'quadkey', (1, 1, 1), '/mycache/webmercator/3.png'
+        yield self.check_tile_key, 'quadkey', (12345, 67890, 12), '/mycache/webmercator/200200331021.png'
+
+        yield self.check_tile_key, 'arcgis', (1, 2, 3), '/mycache/webmercator/L03/R00000002/C00000001.png'
+        yield self.check_tile_key, 'arcgis', (9, 2, 3), '/mycache/webmercator/L03/R00000002/C00000009.png'
+        yield self.check_tile_key, 'arcgis', (10, 2, 3), '/mycache/webmercator/L03/R00000002/C0000000a.png'
+        yield self.check_tile_key, 'arcgis', (12345, 67890, 12), '/mycache/webmercator/L12/R00010932/C00003039.png'
+
