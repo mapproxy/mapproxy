@@ -135,8 +135,7 @@ cache_types = {
     's3': {
         required('bucket_name'): str(),
         'directory_layout': str(),
-        'use_grid_names': bool(),
-        'cache_dir': str(),
+        'directory': str(),
         'profile_name': str(),
      },
     'riak': {

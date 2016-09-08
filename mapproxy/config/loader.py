@@ -1057,16 +1057,16 @@ class CacheConfiguration(ConfigurationBase):
         profile_name = self.context.globals.get_value('cache.profile_name', self.conf,
             global_key='cache.s3.profile_name')
 
-        directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tms')
+        directory_layout = self.conf['cache'].get('directory_layout', 'tms')
 
-        cache_path = os.path.join(self.conf['name'], grid_conf.tile_grid().name)
+        base_path = self.conf['cache'].get('directory', None)
+        if base_path is None:
+            base_path = os.path.join(self.conf['name'], grid_conf.tile_grid().name)
 
-        lock_timeout = self.context.globals.get_value('http.client_timeout', {})
-
-        return S3Cache(cache_path,
+        return S3Cache(
+            base_path=base_path,
             file_ext=file_ext,
             directory_layout=directory_layout,
-            lock_timeout=lock_timeout,
             bucket_name=bucket_name,
             profile_name=profile_name,
         )
