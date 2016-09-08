@@ -1054,6 +1054,9 @@ class CacheConfiguration(ConfigurationBase):
         bucket_name = self.context.globals.get_value('cache.bucket_name', self.conf,
             global_key='cache.s3.bucket_name')
 
+        if not bucket_name:
+            raise ConfigurationError("no bucket_name configured for s3 cache %s" % self.conf['name'])
+
         profile_name = self.context.globals.get_value('cache.profile_name', self.conf,
             global_key='cache.s3.profile_name')
 
