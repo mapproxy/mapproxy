@@ -29,7 +29,7 @@ def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
             continue
 
         if task.complete_extent:
-            if hasattr(task.tile_manager.cache, 'level_location') and not getattr(task.tile_manager.cache, 'no_simple_cleanup', False):
+            if hasattr(task.tile_manager.cache, 'level_location'):
                 simple_cleanup(task, dry_run=dry_run, progress_logger=progress_logger)
                 continue
             elif hasattr(task.tile_manager.cache, 'remove_level_tiles_before'):

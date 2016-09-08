@@ -15,12 +15,13 @@
 
 from __future__ import with_statement
 
+import hashlib
 import sys
 import threading
 
 from mapproxy.image import ImageSource
-from mapproxy.cache.base import tile_buffer
-from mapproxy.cache.file import FileCache
+from mapproxy.cache import path
+from mapproxy.cache.base import tile_buffer, TileCacheBase
 from mapproxy.util import async
 from mapproxy.util.py import reraise_exception
 
@@ -44,11 +45,12 @@ def s3_session():
 class S3ConnectionError(Exception):
     pass
 
-class S3Cache(FileCache):
-    no_simple_cleanup = True
+class S3Cache(TileCacheBase):
 
-    def __init__(self, cache_dir, file_ext, lock_dir=None, directory_layout='tms',
+    def __init__(self, base_path, file_ext, directory_layout='tms',
                  lock_timeout=60.0, bucket_name='mapproxy', profile_name=None):
+        super(S3Cache, self).__init__()
+        self.lock_cache_id = hashlib.md5(base_path.encode('utf-8') + bucket_name.encode('utf-8')).hexdigest()
         self.bucket_name = bucket_name
         try:
             self.bucket = self.conn().head_bucket(Bucket=bucket_name)
@@ -62,12 +64,11 @@ class S3Cache(FileCache):
                     S3ConnectionError('Unknown error: %s' % e),
                     sys.exc_info(),
                 )
-        super(S3Cache, self).__init__(cache_dir,
-            file_ext=file_ext,
-            directory_layout=directory_layout,
-            lock_timeout=lock_timeout,
-            link_single_color_images=False,
-        )
+
+        self.base_path = base_path
+        self.file_ext = file_ext
+
+        self._tile_location, _ = path.location_funcs(layout=directory_layout)
 
     def conn(self):
         if boto3 is None:
@@ -91,7 +92,7 @@ class S3Cache(FileCache):
 
     def is_cached(self, tile):
         if tile.is_missing():
-            location = self.tile_location(tile)
+            location = self._tile_location(tile, self.base_path, self.file_ext)
             try:
                 r = self.conn().head_object(Bucket=self.bucket_name, Key=location)
                 self._set_metadata(r, tile)
@@ -110,7 +111,7 @@ class S3Cache(FileCache):
         if not tile.is_missing():
             return True
 
-        location = self.tile_location(tile)
+        location = self._tile_location(tile, self.base_path, self.file_ext)
         log.debug('S3:load_tile, location: %s' % location)
 
         try:
@@ -126,7 +127,7 @@ class S3Cache(FileCache):
         return True
 
     def remove_tile(self, tile):
-        location = self.tile_location(tile)
+        location = self._tile_location(tile, self.base_path, self.file_ext)
         log.debug('remove_tile, location: %s' % location)
         self.conn().delete_object(Bucket=self.bucket_name, Key=location)
 
@@ -138,7 +139,7 @@ class S3Cache(FileCache):
         if tile.stored:
             return
 
-        location = self.tile_location(tile)
+        location = self._tile_location(tile, self.base_path, self.file_ext)
         log.debug('S3: store_tile, location: %s' % location)
 
         extra_args = {}
