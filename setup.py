@@ -17,9 +17,6 @@ def package_installed(pkg):
     else:
         return True
 
-# Depend on boto 2.34
-install_requires.append('boto>=2.34')
-
 # depend in Pillow if it is installed, otherwise
 # depend on PIL if it is installed, otherwise
 # require Pillow
