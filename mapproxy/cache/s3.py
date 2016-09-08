@@ -72,6 +72,9 @@ class S3Cache(TileCacheBase):
 
         self._tile_location, _ = path.location_funcs(layout=directory_layout)
 
+    def tile_key(self, tile):
+        return self._tile_location(tile, self.base_path, self.file_ext).lstrip('/')
+
     def conn(self):
         if boto3 is None:
             raise ImportError("S3 Cache requires 'boto3' package.")
@@ -94,9 +97,9 @@ class S3Cache(TileCacheBase):
 
     def is_cached(self, tile):
         if tile.is_missing():
-            location = self._tile_location(tile, self.base_path, self.file_ext)
+            key = self.tile_key(tile)
             try:
-                r = self.conn().head_object(Bucket=self.bucket_name, Key=location)
+                r = self.conn().head_object(Bucket=self.bucket_name, Key=key)
                 self._set_metadata(r, tile)
             except botocore.exceptions.ClientError as e:
                 if e.response['Error']['Code'] in ('404', 'NoSuchKey'):
@@ -113,11 +116,11 @@ class S3Cache(TileCacheBase):
         if not tile.is_missing():
             return True
 
-        location = self._tile_location(tile, self.base_path, self.file_ext)
-        log.debug('S3:load_tile, location: %s' % location)
+        key = self.tile_key(tile)
+        log.debug('S3:load_tile, key: %s' % key)
 
         try:
-            r  = self.conn().get_object(Bucket=self.bucket_name, Key=location)
+            r  = self.conn().get_object(Bucket=self.bucket_name, Key=key)
             self._set_metadata(r, tile)
             tile.source = ImageSource(r['Body'])
         except botocore.exceptions.ClientError as e:
@@ -129,9 +132,9 @@ class S3Cache(TileCacheBase):
         return True
 
     def remove_tile(self, tile):
-        location = self._tile_location(tile, self.base_path, self.file_ext)
-        log.debug('remove_tile, location: %s' % location)
-        self.conn().delete_object(Bucket=self.bucket_name, Key=location)
+        key = self.tile_key(tile)
+        log.debug('remove_tile, key: %s' % key)
+        self.conn().delete_object(Bucket=self.bucket_name, Key=key)
 
     def store_tiles(self, tiles):
         p = async.Pool(min(4, len(tiles)))
@@ -141,8 +144,8 @@ class S3Cache(TileCacheBase):
         if tile.stored:
             return
 
-        location = self._tile_location(tile, self.base_path, self.file_ext)
-        log.debug('S3: store_tile, location: %s' % location)
+        key = self.tile_key(tile)
+        log.debug('S3: store_tile, key: %s' % key)
 
         extra_args = {}
         if self.file_ext in ('jpeg', 'png'):
@@ -151,7 +154,7 @@ class S3Cache(TileCacheBase):
             self.conn().upload_fileobj(
                 NopCloser(buf), # upload_fileobj closes buf, wrap in NopCloser
                 self.bucket_name,
-                location,
+                key,
                 ExtraArgs=extra_args)
 
 class NopCloser(object):
