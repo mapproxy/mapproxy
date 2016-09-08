@@ -10,3 +10,5 @@ coverage==3.7
 requests==2.0.1
 six==1.4.1
 waitress==0.8.7
+boto3==1.4.0
+moto==0.4.25
