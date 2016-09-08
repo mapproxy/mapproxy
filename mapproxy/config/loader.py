@@ -1011,13 +1011,11 @@ class CacheConfiguration(ConfigurationBase):
 
     def _geopackage_cache(self, grid_conf, file_ext):
         from mapproxy.cache.geopackage import GeopackageCache, GeopackageLevelCache
-        from mapproxy.srs import get_epsg_num
 
-        filename = self.conf.get('cache').get('filename')
-        table_name = self.conf.get('cache').get('table_name') or \
-                     "{}_{}".format(self.conf.get('name'), get_epsg_num(grid_conf.conf.get('srs')))
-        levels = self.conf.get('cache').get('levels')
-        cache_dir = self.conf.get('cache', {}).get('dirname')
+        filename = self.conf['cache'].get('filename')
+        table_name = self.conf['cache'].get('table_name') or \
+                     "{}_{}".format(self.conf['name'], grid_conf.tile_grid().name)
+        levels = self.conf['cache'].get('levels')
 
         if not filename:
             filename = self.conf['name'] + '.gpkg'
@@ -1026,6 +1024,7 @@ class CacheConfiguration(ConfigurationBase):
         else:
             gpkg_file_path = os.path.join(self.cache_dir(), filename)
 
+        cache_dir = self.conf['cache'].get('directory')
         if cache_dir:
             cache_dir = os.path.join(
                 self.context.globals.abspath(cache_dir),
