@@ -55,7 +55,7 @@ def teardown_module():
     module_teardown(test_config)
     _mock.stop()
 
-class TestGeopackageCache(SystemTest):
+class TestS3Cache(SystemTest):
     config = test_config
     table_name = 'cache'
 
