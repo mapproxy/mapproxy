@@ -323,13 +323,13 @@ Available options:
   The path to the geopackage file. Defaults to ``cachename.gpkg``.
 
 ``table_name``:
-  The name of the table where the tiles should be stored (or retrieved if using an existing cache). Defaults to the ``cachename_projection``.
+  The name of the table where the tiles should be stored (or retrieved if using an existing cache). Defaults to the ``cachename_gridname``.
 
 ``levels``:
   Set this to true to cache to a directory where each level is stored in a separate geopackage. Defaults to ``false``.
   If set to true, ``filename`` is ignored.
 
-``dirname``:
+``directory``:
   If levels is true use this to specify the directory to store geopackage files.
 
 You can set the ``sources`` to an empty list, if you use an existing geopackage file and do not have a source.
