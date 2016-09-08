@@ -37,10 +37,12 @@ log = logging.getLogger('mapproxy.cache.s3')
 
 
 _s3_sessions_cache = threading.local()
-def s3_session():
-    if not getattr(_s3_sessions_cache, 'session', None):
-        _s3_sessions_cache.session = boto3.session.Session()
-    return _s3_sessions_cache.session
+def s3_session(profile_name=None):
+    if not hasattr(_s3_sessions_cache, 'sessions'):
+        _s3_sessions_cache.sessions = {}
+    if profile_name not in _s3_sessions_cache.sessions:
+        _s3_sessions_cache.sessions[profile_name] = boto3.session.Session(profile_name=profile_name)
+    return _s3_sessions_cache.sessions[profile_name]
 
 class S3ConnectionError(Exception):
     pass
