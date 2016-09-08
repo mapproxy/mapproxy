@@ -138,7 +138,7 @@ class TestMockServ(object):
                 resp = requests.get('http://localhost:%d/test1' % serv.port)
                 eq_(resp.content, b'hello1')
         except RequestsMissmatchError as ex:
-            assert 'requests missmatch:\n -  missing requests' in str(ex)
+            assert 'requests mismatch:\n -  missing requests' in str(ex)
         else:
             raise AssertionError('AssertionError expected')
 

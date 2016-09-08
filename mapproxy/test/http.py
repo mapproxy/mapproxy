@@ -36,7 +36,7 @@ if PY2:
 else:
     from http.server import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
 
-class RequestsMissmatchError(AssertionError):
+class RequestsMismatchError(AssertionError):
     def __init__(self, assertions):
         self.assertions = assertions
 
@@ -44,7 +44,7 @@ class RequestsMissmatchError(AssertionError):
         assertions = []
         for assertion in self.assertions:
             assertions.append(text_indent(str(assertion), '    ', ' -  '))
-        return 'requests missmatch:\n' + '\n'.join(assertions)
+        return 'requests mismatch:\n' + '\n'.join(assertions)
 
 class RequestError(str):
     pass
@@ -56,14 +56,14 @@ def text_indent(text, indent, first_indent=None):
     text = first_indent + text
     return text.replace('\n', '\n' + indent)
 
-class RequestMissmatch(object):
+class RequestMismatch(object):
     def __init__(self, msg, expected, actual):
         self.msg = msg
         self.expected = expected
         self.actual = actual
 
     def __str__(self):
-        return ('requests missmatch, expected:\n' +
+        return ('requests mismatch, expected:\n' +
             text_indent(str(self.expected), '    ') +
             '\n  got:\n' + text_indent(str(self.actual), '    '))
 
@@ -162,7 +162,7 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
             if 'method' in req:
                 if req['method'] != method:
                     self.server.assertions.append(
-                        RequestMissmatch('unexpected method', req['method'], method)
+                        RequestMismatch('unexpected method', req['method'], method)
                     )
                     self.server.shutdown = True
             if req.get('require_basic_auth', False):
@@ -177,20 +177,20 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
                 for k, v in req['headers'].items():
                     if k not in self.headers:
                         self.server.assertions.append(
-                            RequestMissmatch('missing header', k, self.headers)
+                            RequestMismatch('missing header', k, self.headers)
                         )
                     elif self.headers[k] != v:
                         self.server.assertions.append(
-                            RequestMissmatch('header missmatch', '%s: %s' % (k, v), self.headers)
+                            RequestMismatch('header mismatch', '%s: %s' % (k, v), self.headers)
                         )
             if not query_comparator(req['path'], self.query_data):
                 self.server.assertions.append(
-                    RequestMissmatch('requests differ', req['path'], self.query_data)
+                    RequestMismatch('requests differ', req['path'], self.query_data)
                 )
                 query_actual = set(query_to_dict(self.query_data).items())
                 query_expected = set(query_to_dict(req['path']).items())
                 self.server.assertions.append(
-                    RequestMissmatch('requests params differ', query_expected - query_actual, query_actual - query_expected)
+                    RequestMismatch('requests params differ', query_expected - query_actual, query_actual - query_expected)
                 )
                 self.server.shutdown = True
             if 'req_assert_function' in req:
@@ -271,11 +271,11 @@ class MockServ(object):
 
         if not self._thread.sucess and value:
             print('requests to mock httpd did not '
-            'match expectations:\n %s' % RequestsMissmatchError(self._thread.assertions))
+            'match expectations:\n %s' % RequestsMismatchError(self._thread.assertions))
         if value:
             raise reraise((type, value, traceback))
         if not self._thread.sucess:
-            raise RequestsMissmatchError(self._thread.assertions)
+            raise RequestsMismatchError(self._thread.assertions)
 
 def wms_query_eq(expected, actual):
     """
@@ -391,13 +391,13 @@ def mock_httpd(address, requests_responses, unordered=False, bbox_aware_query_co
         yield
     except:
         if not t.sucess:
-            print(str(RequestsMissmatchError(t.assertions)))
+            print(str(RequestsMismatchError(t.assertions)))
         raise
     finally:
         t.shutdown = True
         t.join(1)
     if not t.sucess:
-        raise RequestsMissmatchError(t.assertions)
+        raise RequestsMismatchError(t.assertions)
 
 @contextmanager
 def mock_single_req_httpd(address, request_handler):
@@ -407,13 +407,13 @@ def mock_single_req_httpd(address, request_handler):
         yield
     except:
         if not t.sucess:
-            print(str(RequestsMissmatchError(t.assertions)))
+            print(str(RequestsMismatchError(t.assertions)))
         raise
     finally:
         t.shutdown = True
         t.join(1)
     if not t.sucess:
-        raise RequestsMissmatchError(t.assertions)
+        raise RequestsMismatchError(t.assertions)
 
 
 def make_wsgi_env(query_string, extra_environ={}):
