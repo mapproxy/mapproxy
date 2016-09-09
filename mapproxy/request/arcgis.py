@@ -16,6 +16,7 @@
 from functools import partial as fp
 from mapproxy.request.base import RequestParams, BaseRequest
 from mapproxy.compat import string_type
+from mapproxy.compat.modules import urlparse
 
 
 class ArcGISExportRequestParams(RequestParams):
@@ -93,9 +94,7 @@ class ArcGISRequest(BaseRequest):
     def __init__(self, param=None, url='', validate=False, http=None):
         BaseRequest.__init__(self, param, url, validate, http)
 
-        self.url = self.url.rstrip("/")
-        if not self.url.endswith("export"):
-            self.url += "/export"
+        self.url = rest_endpoint(url)
 
     def copy(self):
         return self.__class__(param=self.params.copy(), url=self.url)
@@ -123,3 +122,21 @@ def create_request(req_data, param):
         req_data['transparent'] = str(req_data['transparent'])
 
     return ArcGISRequest(url=url, param=req_data)
+
+
+def rest_endpoint(url):
+    parts = urlparse.urlsplit(url)
+    path = parts.path.rstrip('/').split('/')
+
+    if path[-1] in ('export', 'exportImage'):
+        if path[-2] == 'MapServer':
+            path[-1] = 'export'
+        elif path[-2] == 'ImageServer':
+            path[-1] = 'exportImage'
+    elif path[-1] == 'MapServer':
+        path.append('export')
+    elif path[-1] == 'ImageServer':
+        path.append('exportImage')
+
+    parts = parts[0], parts[1], '/'.join(path), parts[3], parts[4]
+    return urlparse.urlunsplit(parts)
