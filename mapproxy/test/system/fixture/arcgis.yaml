@@ -32,7 +32,7 @@ sources:
     type: arcgis
     req:
       layers: show:0,1
-      url: http://localhost:42423/arcgis/rest/services/ExampleLayer/ImageServer
+      url: http://localhost:42423/arcgis/rest/services/ExampleLayer/MapServer
   app2_wrong_url_source:
     type: arcgis
     req:
