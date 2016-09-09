@@ -232,6 +232,21 @@ class TestArcGISRequest(object):
         eq_("4326", req.params.bboxSR)
         eq_("4326", req.params["bboxSR"])
 
+    def check_endpoint(self, url, expected):
+        req = ArcGISRequest(url=url)
+        eq_(req.url, expected)
+
+    def test_endpoint_urls(self):
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer/', 'http://example.com/ArcGIS/rest/MapServer/export'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer', 'http://example.com/ArcGIS/rest/MapServer/export'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer/export', 'http://example.com/ArcGIS/rest/MapServer/export'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/ImageServer/', 'http://example.com/ArcGIS/rest/ImageServer/exportImage'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/ImageServer', 'http://example.com/ArcGIS/rest/ImageServer/exportImage'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/ImageServer/export', 'http://example.com/ArcGIS/rest/ImageServer/exportImage'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/ImageServer/exportImage', 'http://example.com/ArcGIS/rest/ImageServer/exportImage'
+
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer/export?param=foo', 'http://example.com/ArcGIS/rest/MapServer/export?param=foo'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/ImageServer/export?param=foo', 'http://example.com/ArcGIS/rest/ImageServer/exportImage?param=foo'
 
 class TestRequest(object):
     def setup(self):
