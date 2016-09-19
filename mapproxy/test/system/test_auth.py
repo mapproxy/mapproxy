@@ -264,7 +264,7 @@ class TestWMSAuth(SystemTest):
             return {
                 'authorized': 'partial',
                 'layers': {
-                    'layer1b': {'featureinfo': True, 'limited_to':  {'srs': 'EPSG:4326', 'geometry': [-40.0, -40.0, 0.0, 0.0]}},
+                    'layer1b': {'featureinfo': True, 'limited_to':  {'srs': 'EPSG:4326', 'geometry': [-80.0, -40.0, 0.0, -10.0]}},
                 }
             }
 
