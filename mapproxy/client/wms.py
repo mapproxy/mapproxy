@@ -134,18 +134,21 @@ class WMSInfoClient(object):
         """
         req_srs = query.srs
         req_bbox = query.bbox
+        req_coord = make_lin_transf((0, 0, query.size[0], query.size[1]), req_bbox)(query.pos)
+
         info_srs = self._best_supported_srs(req_srs)
         info_bbox = req_srs.transform_bbox_to(info_srs, req_bbox)
-
-        req_coord = make_lin_transf((0, query.size[1], query.size[0], 0), req_bbox)(query.pos)
+        # calculate new info_size to keep square pixels after transform_bbox_to
+        info_aratio = (info_bbox[3] - info_bbox[1])/(info_bbox[2] - info_bbox[0])
+        info_size = query.size[0], int(info_aratio*query.size[0])
 
         info_coord = req_srs.transform_to(info_srs, req_coord)
-        info_pos = make_lin_transf((info_bbox), (0, query.size[1], query.size[0], 0))(info_coord)
+        info_pos = make_lin_transf((info_bbox), (0, 0, info_size[0], info_size[1]))(info_coord)
         info_pos = int(round(info_pos[0])), int(round(info_pos[1]))
 
         info_query = InfoQuery(
             bbox=info_bbox,
-            size=query.size,
+            size=info_size,
             srs=info_srs,
             pos=info_pos,
             info_format=query.info_format,
