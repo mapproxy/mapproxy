@@ -629,6 +629,37 @@ class ArcGISSourceConfiguration(SourceConfiguration):
                             supported_formats=supported_formats or None)
 
 
+    def fi_source(self, params=None):
+        from mapproxy.client.arcgis import ArcGISInfoClient
+        from mapproxy.request.arcgis import create_identify_request
+        from mapproxy.source.arcgis import ArcGISInfoSource
+        from mapproxy.srs import SRS
+
+        if params is None: params = {}
+        request_format = self.conf['req'].get('format')
+        if request_format:
+            params['format'] = request_format
+        supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
+        fi_source = None
+        if self.conf.get('opts', {}).get('featureinfo', False):
+            opts = self.conf['opts']
+            tolerance = opts.get('featureinfo_tolerance', 5)
+            return_geometries = opts.get('featureinfo_return_geometries', False)
+
+            fi_request = create_identify_request(self.conf['req'], params)
+
+
+            http_client, fi_request.url = self.http_client(fi_request.url)
+            fi_client = ArcGISInfoClient(fi_request,
+                supported_srs=supported_srs,
+                http_client=http_client,
+                tolerance=tolerance,
+                return_geometries=return_geometries,
+            )
+            fi_source = ArcGISInfoSource(fi_client)
+        return fi_source
+
+
 class WMSSourceConfiguration(SourceConfiguration):
     source_type = ('wms',)
 

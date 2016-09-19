@@ -498,6 +498,11 @@ mapproxy_yaml_spec = {
                     'transparent': bool(),
                     'time': str()
                 },
+                'opts': {
+                    'featureinfo': bool(),
+                    'featureinfo_tolerance': number(),
+                    'featureinfo_return_geometries': bool(),
+                },
                 'supported_srs': [str()],
                 'http': http_opts
             }),
