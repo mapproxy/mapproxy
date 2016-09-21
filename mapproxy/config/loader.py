@@ -1603,13 +1603,8 @@ class LayerConfiguration(ConfigurationBase):
         tile_layers = []
         for cache_name in sources:
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
-
-
-                from mapproxy.cache.s3 import S3Cache
-
-                if dimensions and not isinstance(cache_source.cache, DummyCache) and not isinstance(cache_source.cache, S3Cache):
+                if dimensions and not isinstance(cache_source.cache, DummyCache):
                     # caching of dimension layers is not supported yet
-                    log.debug(type(cache_source.cache).__name__)
                     raise ConfigurationError(
                         "caching of dimension layer (%s) is not supported yet."
                         " need to `disable_storage: true` on %s cache" % (self.conf['name'], cache_name)
