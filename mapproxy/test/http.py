@@ -15,6 +15,7 @@
 
 from __future__ import print_function
 
+import re
 import threading
 import sys
 import cgi
@@ -312,6 +313,8 @@ def wms_query_eq(expected, actual):
 
     return True
 
+numbers_only = re.compile('^-?\d+\.\d+(,-?\d+\.\d+)*$')
+
 def query_eq(expected, actual):
     """
     >>> query_eq('bAR=baz&foo=bizz', 'foO=bizz&bar=baz')
@@ -322,11 +325,58 @@ def query_eq(expected, actual):
     True
     >>> query_eq('/1/2/3.png', '/1/2/0.png')
     False
+    >>> query_eq('/map?point=2.9999999999,1.00000000001', '/map?point=3.0,1.0')
+    True
     """
-    return (query_to_dict(expected) == query_to_dict(actual) and
-            path_from_query(expected) == path_from_query(actual))
 
-def assert_query_eq(expected, actual):
+    if path_from_query(expected) != path_from_query(actual):
+        return False
+
+    expected = query_to_dict(expected)
+    actual = query_to_dict(actual)
+
+    if set(expected.keys()) != set(actual.keys()):
+        return False
+
+    for ke, ve in expected.items():
+        if numbers_only.match(ve):
+            if not float_string_almost_eq(ve, actual[ke]):
+                return False
+        else:
+            if ve != actual[ke]:
+                return False
+
+    return True
+
+def float_string_almost_eq(expected, actual):
+    """
+    Compares if two strings with comma-separated floats are almost equal.
+    Strings must contain floats.
+
+    >>> float_string_almost_eq('12345678900', '12345678901')
+    False
+    >>> float_string_almost_eq('12345678900.0', '12345678901.0')
+    True
+
+    >>> float_string_almost_eq('12345678900.0,-3.0', '12345678901.0,-2.9999999999')
+    True
+    """
+    if not numbers_only.match(expected) or not numbers_only.match(actual):
+        return False
+
+    expected_nums = [float(x) for x in expected.split(',')]
+    actual_nums = [float(x) for x in actual.split(',')]
+
+    if len(expected_nums) != len(actual_nums):
+        return False
+
+    for e, a in zip(expected_nums, actual_nums):
+        if abs(e - a) > abs((e+a)/2)/10e9:
+            return False
+
+    return True
+
+def assert_query_eq(expected, actual, fuzzy_number_compare=False):
     path_actual = path_from_query(actual)
     path_expected = path_from_query(expected)
     assert path_expected == path_actual, path_expected + '!=' + path_actual
@@ -334,7 +384,11 @@ def assert_query_eq(expected, actual):
     query_actual = set(query_to_dict(actual).items())
     query_expected = set(query_to_dict(expected).items())
 
-    assert query_expected == query_actual, '%s != %s\t%s|%s' % (
+    if fuzzy_number_compare:
+        equal = query_eq(expected, actual)
+    else:
+        equal = query_expected == query_actual
+    assert equal, '%s != %s\t%s|%s' % (
         expected, actual, query_expected - query_actual, query_actual - query_expected)
 
 def path_from_query(query):

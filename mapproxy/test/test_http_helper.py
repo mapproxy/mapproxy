@@ -16,7 +16,7 @@
 import requests
 from mapproxy.test.http import (
     MockServ, RequestsMismatchError, mock_httpd,
-    basic_auth_value,
+    basic_auth_value, query_eq,
 )
 
 from nose.tools import eq_
@@ -207,3 +207,13 @@ class TestMockHttpd(object):
                     'Authorization': basic_auth_value('foo', 'bar'), 'Accept': 'Coffee'}
                 )
                 eq_(resp.content, b'ok')
+
+
+def test_query_eq():
+    assert query_eq('?baz=42&foo=bar', '?foo=bar&baz=42')
+    assert query_eq('?baz=42.00&foo=bar', '?foo=bar&baz=42.0')
+    assert query_eq('?baz=42.000000001&foo=bar', '?foo=bar&baz=42.0')
+    assert not query_eq('?baz=42.00000001&foo=bar', '?foo=bar&baz=42.0')
+
+    assert query_eq('?baz=42.000000001,23.99999999999&foo=bar', '?foo=bar&baz=42.0,24.0')
+    assert not query_eq('?baz=42.00000001&foo=bar', '?foo=bar&baz=42.0')
