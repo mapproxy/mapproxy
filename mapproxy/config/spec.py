@@ -132,6 +132,12 @@ cache_types = {
         'tile_id': str(),
         'tile_lock_dir': str(),
     },
+    's3': {
+        'bucket_name': str(),
+        'directory_layout': str(),
+        'directory': str(),
+        'profile_name': str(),
+     },
     'riak': {
         'nodes': [riak_node],
         'protocol': one_of('pbc', 'http', 'https'),
@@ -343,6 +349,10 @@ mapproxy_yaml_spec = {
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
             'link_single_color_images': bool(),
+            's3': {
+                'bucket_name': str(),
+                'profile_name': str(),
+            },
         },
         'grid': {
             'tile_size': [int()],

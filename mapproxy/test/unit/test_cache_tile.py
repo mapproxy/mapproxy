@@ -253,6 +253,58 @@ class TestFileTileCache(TileCacheTestBase):
             f.write(b'foo')
 
 
+    def check_tile_location(self, layout, tile_coord, path):
+        cache = FileCache('/tmp/foo', 'png', directory_layout=layout)
+        eq_(cache.tile_location(Tile(tile_coord)), path)
+
+    def test_tile_locations(self):
+        yield self.check_tile_location, 'mp', (12345, 67890,  2), '/tmp/foo/02/0001/2345/0006/7890.png'
+        yield self.check_tile_location, 'mp', (12345, 67890, 12), '/tmp/foo/12/0001/2345/0006/7890.png'
+
+        yield self.check_tile_location, 'tc', (12345, 67890,  2), '/tmp/foo/02/000/012/345/000/067/890.png'
+        yield self.check_tile_location, 'tc', (12345, 67890, 12), '/tmp/foo/12/000/012/345/000/067/890.png'
+
+        yield self.check_tile_location, 'tms', (12345, 67890,  2), '/tmp/foo/2/12345/67890.png'
+        yield self.check_tile_location, 'tms', (12345, 67890, 12), '/tmp/foo/12/12345/67890.png'
+
+        yield self.check_tile_location, 'quadkey', (0, 0, 0), '/tmp/foo/.png'
+        yield self.check_tile_location, 'quadkey', (0, 0, 1), '/tmp/foo/0.png'
+        yield self.check_tile_location, 'quadkey', (1, 1, 1), '/tmp/foo/3.png'
+        yield self.check_tile_location, 'quadkey', (12345, 67890, 12), '/tmp/foo/200200331021.png'
+
+        yield self.check_tile_location, 'arcgis', (1, 2, 3), '/tmp/foo/L03/R00000002/C00000001.png'
+        yield self.check_tile_location, 'arcgis', (9, 2, 3), '/tmp/foo/L03/R00000002/C00000009.png'
+        yield self.check_tile_location, 'arcgis', (10, 2, 3), '/tmp/foo/L03/R00000002/C0000000a.png'
+        yield self.check_tile_location, 'arcgis', (12345, 67890, 12), '/tmp/foo/L12/R00010932/C00003039.png'
+
+
+    def check_level_location(self, layout, level, path):
+        cache = FileCache('/tmp/foo', 'png', directory_layout=layout)
+        eq_(cache.level_location(level), path)
+
+    def test_level_locations(self):
+        yield self.check_level_location, 'mp', 2, '/tmp/foo/02'
+        yield self.check_level_location, 'mp', 12, '/tmp/foo/12'
+
+        yield self.check_level_location, 'tc',  2, '/tmp/foo/02'
+        yield self.check_level_location, 'tc', 12, '/tmp/foo/12'
+
+        yield self.check_level_location, 'tms',  '2', '/tmp/foo/2'
+        yield self.check_level_location, 'tms', 12, '/tmp/foo/12'
+
+        yield self.check_level_location, 'arcgis', 3, '/tmp/foo/L03'
+        yield self.check_level_location, 'arcgis', 3, '/tmp/foo/L03'
+        yield self.check_level_location, 'arcgis', 3, '/tmp/foo/L03'
+        yield self.check_level_location, 'arcgis', 12, '/tmp/foo/L12'
+
+    def test_level_location_quadkey(self):
+        try:
+            self.check_level_location('quadkey', 0, None)
+        except NotImplementedError:
+            pass
+        else:
+            assert False, "expected NotImplementedError"
+
 class TestMBTileCache(TileCacheTestBase):
     def setup(self):
         TileCacheTestBase.setup(self)

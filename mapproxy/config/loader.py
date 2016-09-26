@@ -1047,6 +1047,32 @@ class CacheConfiguration(ConfigurationBase):
                 gpkg_file_path, grid_conf.tile_grid(), table_name
             )
 
+    def _s3_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.s3 import S3Cache
+
+        bucket_name = self.context.globals.get_value('cache.bucket_name', self.conf,
+            global_key='cache.s3.bucket_name')
+
+        if not bucket_name:
+            raise ConfigurationError("no bucket_name configured for s3 cache %s" % self.conf['name'])
+
+        profile_name = self.context.globals.get_value('cache.profile_name', self.conf,
+            global_key='cache.s3.profile_name')
+
+        directory_layout = self.conf['cache'].get('directory_layout', 'tms')
+
+        base_path = self.conf['cache'].get('directory', None)
+        if base_path is None:
+            base_path = os.path.join(self.conf['name'], grid_conf.tile_grid().name)
+
+        return S3Cache(
+            base_path=base_path,
+            file_ext=file_ext,
+            directory_layout=directory_layout,
+            bucket_name=bucket_name,
+            profile_name=profile_name,
+        )
+
     def _sqlite_cache(self, grid_conf, file_ext):
         from mapproxy.cache.mbtiles import MBTilesLevelCache
 
@@ -1588,7 +1614,6 @@ class LayerConfiguration(ConfigurationBase):
         tile_layers = []
         for cache_name in sources:
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
-
                 if dimensions and not isinstance(cache_source.cache, DummyCache):
                     # caching of dimension layers is not supported yet
                     raise ConfigurationError(
