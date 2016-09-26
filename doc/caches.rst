@@ -420,3 +420,7 @@ Example
     cache:
       s3:
         profile_name: default
+
+
+.. note::
+  The hierarchical ``directory_layouts`` can hit limitations of S3 *"if you are routinely processing 100 or more requests per second"*. Please read `S3 Request Rate and Performance Considerations <http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html>`_ to understand the limitations.
