@@ -22,7 +22,7 @@ from mapproxy.request.tile import TMSRequest, tile_request, TileRequest
 from mapproxy.request.wms import (wms_request, WMSMapRequest, WMSMapRequestParams,
                               WMS111MapRequest, WMS100MapRequest, WMS130MapRequest,
                               WMS111FeatureInfoRequest)
-from mapproxy.request.arcgis import ArcGISRequest
+from mapproxy.request.arcgis import ArcGISRequest, ArcGISIdentifyRequest
 from mapproxy.exception import RequestError
 from mapproxy.request.wms.exception import (WMS111ExceptionHandler, WMSImageExceptionHandler,
                                      WMSBlankExceptionHandler)
@@ -247,6 +247,38 @@ class TestArcGISRequest(object):
 
         yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer/export?param=foo', 'http://example.com/ArcGIS/rest/MapServer/export?param=foo'
         yield self.check_endpoint, 'http://example.com/ArcGIS/rest/ImageServer/export?param=foo', 'http://example.com/ArcGIS/rest/ImageServer/exportImage?param=foo'
+
+
+class TestArcGISIndentifyRequest(object):
+    def test_base_request(self):
+        req = ArcGISIdentifyRequest(url="http://example.com/ArcGIS/rest/MapServer/")
+        eq_("http://example.com/ArcGIS/rest/MapServer/identify", req.url)
+        req.params.bbox = [-180.0, -90.0, 180.0, 90.0]
+        eq_((-180.0, -90.0, 180.0, 90.0), req.params.bbox)
+        eq_("-180.0,-90.0,180.0,90.0", req.params["mapExtent"])
+        req.params.size = [256, 256]
+        eq_((256, 256), req.params.size)
+        eq_("256,256,96", req.params["imageDisplay"])
+        req.params.srs = "EPSG:4326"
+        eq_("EPSG:4326", req.params.srs)
+        eq_("4326", req.params["sr"])
+
+    def check_endpoint(self, url, expected):
+        req = ArcGISIdentifyRequest(url=url)
+        eq_(req.url, expected)
+
+    def test_endpoint_urls(self):
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer/', 'http://example.com/ArcGIS/rest/MapServer/identify'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer', 'http://example.com/ArcGIS/rest/MapServer/identify'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer/export', 'http://example.com/ArcGIS/rest/MapServer/identify'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/ImageServer/', 'http://example.com/ArcGIS/rest/ImageServer/identify'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/ImageServer', 'http://example.com/ArcGIS/rest/ImageServer/identify'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/ImageServer/export', 'http://example.com/ArcGIS/rest/ImageServer/identify'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/ImageServer/exportImage', 'http://example.com/ArcGIS/rest/ImageServer/identify'
+
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer/export?param=foo', 'http://example.com/ArcGIS/rest/MapServer/identify?param=foo'
+        yield self.check_endpoint, 'http://example.com/ArcGIS/rest/ImageServer/export?param=foo', 'http://example.com/ArcGIS/rest/ImageServer/identify?param=foo'
+
 
 class TestRequest(object):
     def setup(self):

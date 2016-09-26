@@ -14,10 +14,10 @@
 # limitations under the License.
 
 from functools import partial as fp
-from mapproxy.request.base import RequestParams, BaseRequest
 from mapproxy.compat import string_type
 from mapproxy.compat.modules import urlparse
-
+from mapproxy.request.base import RequestParams, BaseRequest
+from mapproxy.srs import make_lin_transf
 
 class ArcGISExportRequestParams(RequestParams):
     """
@@ -87,6 +87,80 @@ class ArcGISExportRequestParams(RequestParams):
     del _set_srs
 
 
+
+class ArcGISIdentifyRequestParams(ArcGISExportRequestParams):
+    def _get_format(self):
+        """
+        The requested format as string (w/o any 'image/', 'text/', etc prefixes)
+        """
+        return self["format"]
+    def _set_format(self, format):
+        self["format"] = format.rsplit("/")[-1]
+    format = property(_get_format, _set_format)
+    del _get_format
+    del _set_format
+
+    def _get_bbox(self):
+        """
+        ``bbox`` as a tuple (minx, miny, maxx, maxy).
+        """
+        if 'mapExtent' not in self.params or self.params['mapExtent'] is None:
+            return None
+        points = [float(val) for val in self.params['mapExtent'].split(',')]
+        return tuple(points[:4])
+    def _set_bbox(self, value):
+        if value is not None and not isinstance(value, string_type):
+            value = ','.join(str(x) for x in value)
+        self['mapExtent'] = value
+    bbox = property(_get_bbox, _set_bbox)
+    del _get_bbox
+    del _set_bbox
+
+    def _get_size(self):
+        """
+        Size of the request in pixel as a tuple (width, height),
+        or None if one is missing.
+        """
+        if 'imageDisplay' not in self.params or self.params['imageDisplay'] is None:
+            return None
+        dim = [float(val) for val in self.params['imageDisplay'].split(',')]
+        return tuple(dim[:2])
+    def _set_size(self, value):
+        if value is not None and not isinstance(value, string_type):
+            value = ','.join(str(x) for x in value) + ',96'
+        self['imageDisplay'] = value
+    size = property(_get_size, _set_size)
+    del _get_size
+    del _set_size
+
+    def _get_pos(self):
+        size = self.size
+        vals = self['geometry'].split(',')
+        x, y = float(vals[0]), float(vals[1])
+        return make_lin_transf(self.bbox, (0, 0, size[0], size[1]))((x, y))
+
+    def _set_pos(self, value):
+        size = self.size
+        req_coord = make_lin_transf((0, 0, size[0], size[1]), self.bbox)(value)
+        self['geometry'] = '%f,%f' % req_coord
+    pos = property(_get_pos, _set_pos)
+    del _get_pos
+    del _set_pos
+
+    @property
+    def srs(self):
+        srs = self.params.get('sr', None)
+        if srs:
+            return 'EPSG:%s' % srs
+
+    @srs.setter
+    def srs(self, srs):
+        if hasattr(srs, 'srs_code'):
+            code = srs.srs_code
+        else:
+            code = srs
+        self.params['sr'] = code.rsplit(':', 1)[-1]
+
 class ArcGISRequest(BaseRequest):
     request_params = ArcGISExportRequestParams
     fixed_params = {"f": "image"}
@@ -106,6 +180,35 @@ class ArcGISRequest(BaseRequest):
             params[key] = value
         return params.query_string
 
+
+class ArcGISIdentifyRequest(BaseRequest):
+    request_params = ArcGISIdentifyRequestParams
+    fixed_params = {'geometryType': 'esriGeometryPoint'}
+    def __init__(self, param=None, url='', validate=False, http=None):
+        BaseRequest.__init__(self, param, url, validate, http)
+
+        self.url = rest_identify_endpoint(url)
+
+    def copy(self):
+        return self.__class__(param=self.params.copy(), url=self.url)
+
+    @property
+    def query_string(self):
+        params = self.params.copy()
+        for key, value in self.fixed_params.items():
+            params[key] = value
+        return params.query_string
+
+
+
+def create_identify_request(req_data, param):
+    req_data = req_data.copy()
+
+    # Pop the URL off the request data.
+    url = req_data['url']
+    del req_data['url']
+
+    return ArcGISIdentifyRequest(url=url, param=req_data)
 
 def create_request(req_data, param):
     req_data = req_data.copy()
@@ -140,3 +243,17 @@ def rest_endpoint(url):
 
     parts = parts[0], parts[1], '/'.join(path), parts[3], parts[4]
     return urlparse.urlunsplit(parts)
+
+
+def rest_identify_endpoint(url):
+    parts = urlparse.urlsplit(url)
+    path = parts.path.rstrip('/').split('/')
+
+    if path[-1] in ('export', 'exportImage'):
+        path[-1] = 'identify'
+    elif path[-1] in ('MapServer', 'ImageServer'):
+        path.append('identify')
+
+    parts = parts[0], parts[1], '/'.join(path), parts[3], parts[4]
+    return urlparse.urlunsplit(parts)
+

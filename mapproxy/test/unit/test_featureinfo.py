@@ -21,8 +21,13 @@ import tempfile
 from lxml import etree, html
 from nose.tools import eq_
 
-from mapproxy.featureinfo import (combined_inputs, XSLTransformer,
-    XMLFeatureInfoDoc, HTMLFeatureInfoDoc)
+from mapproxy.featureinfo import (
+    combined_inputs,
+    XSLTransformer,
+    XMLFeatureInfoDoc,
+    HTMLFeatureInfoDoc,
+    JSONFeatureInfoDoc,
+)
 from mapproxy.test.helper import strip_whitespace
 
 def test_combined_inputs():
@@ -177,3 +182,16 @@ class TestHTMLFeatureInfoDocsNoLXML(object):
             b"<p>baz2\n<p>foo</p>\n<body><p>bar</p></body>",
             result.as_string())
         eq_(result.info_type, 'text')
+
+class TestJSONFeatureInfoDocs(object):
+    def test_combine(self):
+        docs = [
+            JSONFeatureInfoDoc('{}'),
+            JSONFeatureInfoDoc('{"results": [{"foo": 1}]}'),
+            JSONFeatureInfoDoc('{"results": [{"bar": 2}]}'),
+        ]
+        result = JSONFeatureInfoDoc.combine(docs)
+
+        eq_('''{"results": [{"foo": 1}, {"bar": 2}]}''',
+            result.as_string())
+        eq_(result.info_type, 'json')
