@@ -147,7 +147,11 @@ cache_types = {
             'http': number(),
         },
         'secondary_index': bool(),
-    }
+    },
+    'compact': {
+        'directory': str(),
+        required('version'): number(),
+    },
 }
 
 on_error = {
