@@ -75,7 +75,8 @@ class CompactCacheV1(TileCacheBase):
         return self._get_bundle(tile.coord).remove_tile(tile)
 
     def load_tile_metadata(self, tile):
-        self.load_tile(tile)
+        if self.load_tile(tile):
+            tile.timestamp = -1
 
     def remove_level_tiles_before(self, level, timestamp):
         if timestamp == 0:
