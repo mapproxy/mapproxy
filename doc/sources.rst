@@ -266,37 +266,32 @@ ArcGIS source too.
 ``req``
 ^^^^^^^
 
-This describes the ArcGIS source. The only required option is ``url``. You need to set ``transparent`` to ``true`` if you want to use this source as an overlay.
-::
-
-  req:
-    url: http://example.org/ArcGIS/rest/services/Imagery/MapService
-    layers: show: 0,1
-    transparent: true
-
-.. _example_configuration:
+This describes the ArcGIS source. The only required option is ``url``. You need to set ``transparent`` to ``true`` if you want to use this source as an overlay. You can also add ArcGIS specific parameters to ``req``, for example to set the `interpolation method for ImageServers <http://resources.arcgis.com/en/help/rest/apiref/exportimage.html>`_.
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 
-Minimal example::
+MapServer example::
 
   my_minimal_arcgissource:
     type: arcgis
     req:
+      layers: show: 0,1
       url: http://example.org/ArcGIS/rest/services/Imagery/MapService
+      transparent: true
 
-Full example::
+ImageServer example::
 
   my_arcgissource:
     type: arcgis
     coverage:
        polygons: GM.txt
-       polygons_srs: EPSG:900913
+       srs: EPSG:3857
     req:
-      url: http://example.org/ArcGIS/rest/services/Imagery/MapService
-      layers: show:0,1
-      transparent: true
+      url: http://example.org/ArcGIS/rest/services/World/MODIS/ImageServer
+      interpolation: RSP_CubicConvolution
+      bandIds: 2,0,1
+
 
 .. _tiles_label:
 

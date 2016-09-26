@@ -15,7 +15,7 @@
 
 import requests
 from mapproxy.test.http import (
-    MockServ, RequestsMissmatchError, mock_httpd,
+    MockServ, RequestsMismatchError, mock_httpd,
     basic_auth_value,
 )
 
@@ -48,7 +48,7 @@ class TestMockServ(object):
         try:
             with serv:
                 requests.get('http://localhost:%d/test' % serv.port)
-        except RequestsMissmatchError as ex:
+        except RequestsMismatchError as ex:
             assert ex.assertions[0].expected == 'Accept: Coffee'
 
     def test_expects_post(self):
@@ -65,7 +65,7 @@ class TestMockServ(object):
         try:
             with serv:
                 requests.get('http://localhost:%d/test' % serv.port)
-        except RequestsMissmatchError as ex:
+        except RequestsMismatchError as ex:
             assert ex.assertions[0].expected == 'POST'
             assert ex.assertions[0].actual == 'GET'
         else:
@@ -137,8 +137,8 @@ class TestMockServ(object):
             with serv:
                 resp = requests.get('http://localhost:%d/test1' % serv.port)
                 eq_(resp.content, b'hello1')
-        except RequestsMissmatchError as ex:
-            assert 'requests missmatch:\n -  missing requests' in str(ex)
+        except RequestsMismatchError as ex:
+            assert 'requests mismatch:\n -  missing requests' in str(ex)
         else:
             raise AssertionError('AssertionError expected')
 
@@ -177,7 +177,7 @@ class TestMockServ(object):
                     raise AssertionError('RequestException expected')
                 resp = requests.get('http://localhost:%d/test2' % serv.port)
                 eq_(resp.content, b'hello2')
-        except RequestsMissmatchError as ex:
+        except RequestsMismatchError as ex:
             assert 'unexpected request' in ex.assertions[0]
         else:
             raise AssertionError('AssertionError expected')

@@ -118,7 +118,7 @@ cache_types = {
     },
     'geopackage': {
         'filename': str(),
-        'dirname': str(),
+        'directory': str(),
         'tile_lock_dir': str(),
         'table_name': str(),
         'levels': bool(),

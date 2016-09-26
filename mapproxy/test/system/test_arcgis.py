@@ -38,7 +38,7 @@ class TestArcgisSource(SystemTest):
         SystemTest.setup(self)
 
     def test_get_tile(self):
-        expected_req = [({'path': '/arcgis/rest/services/ExampleLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512'},
+        expected_req = [({'path': '/arcgis/rest/services/ExampleLayer/ImageServer/exportImage?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512'},
                  {'body': transp, 'headers': {'content-type': 'image/png'}}),
                 ]
 
@@ -50,7 +50,7 @@ class TestArcgisSource(SystemTest):
             assert is_png(data)
 
     def test_get_tile_with_layer(self):
-        expected_req = [({'path': '/arcgis/rest/services/ExampleLayer/ImageServer/export?f=image&format=png&layers=show:0,1&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512'},
+        expected_req = [({'path': '/arcgis/rest/services/ExampleLayer/MapServer/export?f=image&format=png&layers=show:0,1&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512'},
                  {'body': transp, 'headers': {'content-type': 'image/png'}}),
                 ]
 
@@ -62,7 +62,7 @@ class TestArcgisSource(SystemTest):
             assert is_png(data)
 
     def test_get_tile_from_missing_arcgis_layer(self):
-        expected_req = [({'path': '/arcgis/rest/services/NonExistentLayer/ImageServer/export?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512'},
+        expected_req = [({'path': '/arcgis/rest/services/NonExistentLayer/ImageServer/exportImage?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512'},
                  {'body': b'', 'status': 400}),
                 ]
 
