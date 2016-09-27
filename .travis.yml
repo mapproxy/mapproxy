@@ -36,6 +36,11 @@ env:
     # https://github.com/travis-ci/travis-ci/issues/5246#issuecomment-166460882
     - BOTO_CONFIG=/doesnotexist
 
+matrix:
+  allow_failures:
+    - python: "2.6"
+  fast_finish: true
+
 cache:
   directories:
     - $HOME/.cache/pip
