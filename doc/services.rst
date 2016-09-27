@@ -108,10 +108,12 @@ You can use this to offer global datasets with SRS that are only valid in a loca
 
 A list of image mime types the server should offer.
 
+.. _wms_featureinfo_types:
+
 ``featureinfo_types``
 """""""""""""""""""""
 
-A list of feature info types the server should offer. Available types are ``text``, ``html`` and ``xml``. The types then are advertised in the capabilities with the correct mime type.
+A list of feature info types the server should offer. Available types are ``text``, ``html``, ``xml`` and ``json``. The types are advertised in the capabilities with the correct mime type. Defaults to ``[text, html, xml]``.
 
 ``featureinfo_xslt``
 """"""""""""""""""""
