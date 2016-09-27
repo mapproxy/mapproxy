@@ -110,7 +110,6 @@ class TestS3Cache(SystemTest):
 
         self.common_map_req.params.layers = 'reverse'
         resp = self.app.get(self.common_map_req)
-        print resp.body
         eq_(resp.content_type, 'image/png')
         data = BytesIO(resp.body)
         assert is_png(data)
