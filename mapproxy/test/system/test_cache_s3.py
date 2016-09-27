@@ -46,7 +46,7 @@ def setup_module():
 
     boto3.client("s3").create_bucket(Bucket="default_bucket")
     boto3.client("s3").create_bucket(Bucket="tiles")
-
+    boto3.client("s3").create_bucket(Bucket="reversetiles")
 
     prepare_env(test_config, 'cache_s3.yaml')
     create_app(test_config)
@@ -63,8 +63,8 @@ class TestS3Cache(SystemTest):
         SystemTest.setup(self)
         self.common_map_req = WMS111MapRequest(url='/service?',
             param=dict(service='WMS',
-                       version='1.1.1', bbox='-180,-80,0,0',
-                       width='200', height='200',
+                       version='1.1.1', bbox='-150,-40,-140,-30',
+                       width='100', height='100',
                        layers='default', srs='EPSG:4326',
                        format='image/png',
                        styles='', request='GetMap'))
@@ -75,7 +75,7 @@ class TestS3Cache(SystemTest):
         boto3.client("s3").upload_fileobj(
                 BytesIO(tile),
                 Bucket='default_bucket',
-                Key='default_cache/WebMerc/1/0/1.png',
+                Key='default_cache/WebMerc/4/1/9.png',
         )
 
         resp = self.app.get(self.common_map_req)
@@ -90,11 +90,27 @@ class TestS3Cache(SystemTest):
         boto3.client("s3").upload_fileobj(
                 BytesIO(tile),
                 Bucket='tiles',
-                Key='quadkeytiles/2.png',
+                Key='quadkeytiles/2003.png',
         )
 
         self.common_map_req.params.layers = 'quadkey'
         resp = self.app.get(self.common_map_req)
+        eq_(resp.content_type, 'image/png')
+        data = BytesIO(resp.body)
+        assert is_png(data)
+
+    def test_get_map_cached_reverse_tms(self):
+        # mock_s3 interferes with MockServ, use boto to manually upload tile
+        tile = create_tmp_image((256, 256))
+        boto3.client("s3").upload_fileobj(
+                BytesIO(tile),
+                Bucket='tiles',
+                Key='reversetiles/9/1/4.png',
+        )
+
+        self.common_map_req.params.layers = 'reverse'
+        resp = self.app.get(self.common_map_req)
+        print resp.body
         eq_(resp.content_type, 'image/png')
         data = BytesIO(resp.body)
         assert is_png(data)

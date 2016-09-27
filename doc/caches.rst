@@ -401,7 +401,10 @@ Available options:
   Base directory (path) where all tiles are stored.
 
 ``directory_layout``:
-  Defines the directory layout for the tiles (``12/12345/67890.png``, ``L12/R00010932/C00003039.png``, etc.).  See :ref:`cache_file` for available options. Defaults to ``tms`` (e.g. `12/12345/67890.png`).
+  Defines the directory layout for the tiles (``12/12345/67890.png``, ``L12/R00010932/C00003039.png``, etc.).  See :ref:`cache_file` for available options. Defaults to ``tms`` (e.g. ``12/12345/67890.png``). This cache cache also supports ``reverse_tms`` where tiles are stored as ``y/x/z.format``. See *note* below.
+
+.. note::
+  The hierarchical ``directory_layouts`` can hit limitations of S3 *"if you are routinely processing 100 or more requests per second"*. ``directory_layout: reverse_tms`` can work around this limitation. Please read `S3 Request Rate and Performance Considerations <http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html>`_ for more information on this issue.
 
 Example
 -------
@@ -420,10 +423,6 @@ Example
     cache:
       s3:
         profile_name: default
-
-
-.. note::
-  The hierarchical ``directory_layouts`` can hit limitations of S3 *"if you are routinely processing 100 or more requests per second"*. Please read `S3 Request Rate and Performance Considerations <http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html>`_ to understand the limitations.
 
 
 ``compact``

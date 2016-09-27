@@ -25,6 +25,8 @@ def location_funcs(layout):
         return tile_location_mp, level_location
     elif layout == 'tms':
         return tile_location_tms, level_location
+    elif layout == 'reverse_tms':
+        return tile_location_reverse_tms, level_location
     elif layout == 'quadkey':
         return tile_location_quadkey, no_level_location
     elif layout == 'arcgis':
@@ -134,6 +136,28 @@ def tile_location_tms(tile, cache_dir, file_ext, create_dir=False):
         tile.location = os.path.join(
             cache_dir, level_part(str(z)),
             str(x), str(y) + '.' + file_ext
+        )
+    if create_dir:
+        ensure_directory(tile.location)
+    return tile.location
+
+def tile_location_reverse_tms(tile, cache_dir, file_ext, create_dir=False):
+    """
+    Return the location of the `tile`. Caches the result as ``location``
+    property of the `tile`.
+
+    :param tile: the tile object
+    :param create_dir: if True, create all necessary directories
+    :return: the full filename of the tile
+
+    >>> from mapproxy.cache.tile import Tile
+    >>> tile_location_reverse_tms(Tile((3, 4, 2)), '/tmp/cache', 'png').replace('\\\\', '/')
+    '/tmp/cache/4/3/2.png'
+    """
+    if tile.location is None:
+        x, y, z = tile.coord
+        tile.location = os.path.join(
+            cache_dir, str(y), str(x), str(z) + '.' + file_ext
         )
     if create_dir:
         ensure_directory(tile.location)

@@ -16,6 +16,9 @@ layers:
   - name: quadkey
     title: Quadkey
     sources: [quadkey_cache]
+  - name: reverse
+    title: Reverse
+    sources: [reverse_cache]
 
 caches:
   default_cache:
@@ -30,9 +33,17 @@ caches:
       type: s3
       bucket_name: tiles
       directory_layout: quadkey
-      directory: /quadkeytiles
+      directory: quadkeytiles
     sources: [tms]
 
+  reverse_cache:
+    grids: [webmercator]
+    cache:
+      type: s3
+      bucket_name: tiles
+      directory_layout: reverse_tms
+      directory: reversetiles
+    sources: [tms]
 
 grids:
   webmercator:
