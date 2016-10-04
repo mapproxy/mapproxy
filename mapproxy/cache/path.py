@@ -26,7 +26,7 @@ def location_funcs(layout):
     elif layout == 'tms':
         return tile_location_tms, level_location
     elif layout == 'reverse_tms':
-        return tile_location_reverse_tms, level_location
+        return tile_location_reverse_tms, None
     elif layout == 'quadkey':
         return tile_location_quadkey, no_level_location
     elif layout == 'arcgis':

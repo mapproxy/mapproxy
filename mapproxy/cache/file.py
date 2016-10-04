@@ -43,6 +43,8 @@ class FileCache(TileCacheBase):
         self.file_ext = file_ext
         self.link_single_color_images = link_single_color_images
         self._tile_location, self._level_location = path.location_funcs(layout=directory_layout)
+        if self._level_location is None:
+            self.level_location = None # disable level based clean-ups
 
     def tile_location(self, tile, create_dir=False):
         return self._tile_location(tile, self.cache_dir, self.file_ext, create_dir=create_dir)
