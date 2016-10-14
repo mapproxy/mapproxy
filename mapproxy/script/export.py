@@ -208,6 +208,22 @@ def export_command(args=None):
             'type': 'mbtiles',
             'filename': options.dest,
         }
+    elif options.type == 'sqlite':
+        cache_conf['cache'] = {
+            'type': 'sqlite',
+            'directory': options.dest,
+        }
+    elif options.type == 'geopackage':
+        cache_conf['cache'] = {
+            'type': 'geopackage',
+            'filename': options.dest,
+        }
+    elif options.type == 'compact-v1':
+        cache_conf['cache'] = {
+            'type': 'compact',
+            'version': 1,
+            'directory': options.dest,
+        }
     elif options.type in ('tc', 'mapproxy'):
         cache_conf['cache'] = {
             'type': 'file',

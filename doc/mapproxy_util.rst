@@ -504,11 +504,19 @@ Export types
     Export tiles like the internal cache directory structure. This is compatible with TileCache.
 
 ``mbtile``:
-    Exports tiles into a MBTile file.
+    Export tiles into a MBTile file.
+
+``sqlite``:
+    Export tiles into SQLite level files.
+
+``geopackage``:
+    Export tiles into a GeoPackage file.
 
 ``arcgis``:
-    Exports tiles in a ArcGIS exploded cache directory structure.
+    Export tiles in a ArcGIS exploded cache directory structure.
 
+``compact-v1``:
+    Export tiles as ArcGIS compact cache bundle files (version 1).
 
 
 Examples
