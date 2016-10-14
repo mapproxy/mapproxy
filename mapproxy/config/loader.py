@@ -984,6 +984,10 @@ class CacheConfiguration(ConfigurationBase):
         return self.context.globals.get_path('cache_dir', self.conf,
             global_key='cache.base_dir')
 
+    @memoize
+    def has_multiple_grids(self):
+        return len(self.grid_confs()) > 1
+
     def lock_dir(self):
         lock_dir = self.context.globals.get_path('cache.tile_lock_dir', self.conf)
         if not lock_dir:
@@ -996,6 +1000,11 @@ class CacheConfiguration(ConfigurationBase):
         cache_dir = self.cache_dir()
         directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tc')
         if self.conf.get('cache', {}).get('directory'):
+            if self.has_multiple_grids():
+                raise ConfigurationError(
+                    "using single directory for cache with multiple grids in %s" %
+                    (self.conf['name']),
+                )
             pass
         elif self.conf.get('cache', {}).get('use_grid_names'):
             cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
@@ -1183,7 +1192,15 @@ class CacheConfiguration(ConfigurationBase):
         from mapproxy.cache.compact import CompactCacheV1
 
         cache_dir = self.cache_dir()
-        cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
+        if self.conf.get('cache', {}).get('directory'):
+            if self.has_multiple_grids():
+                raise ConfigurationError(
+                    "using single directory for cache with multiple grids in %s" %
+                    (self.conf['name']),
+                )
+            pass
+        else:
+            cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
 
         if self.conf['cache']['version'] != 1:
             raise ConfigurationError("compact cache only supports version 1")

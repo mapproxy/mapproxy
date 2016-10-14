@@ -437,7 +437,7 @@ Only version 1 of the compact cache format (ArcGIS 10.0-10.2) is supported. Vers
 Available options:
 
 ``directory``:
-  The path where MapProxy stores the bundle files. The cache name and grid name are added to the path.
+  Directory where MapProxy should store the level directories. This will not add the cache name or grid name to the path. You can use this option to point MapProxy to an existing compact cache.
 
 ``version``:
   The version of the ArcGIS compact cache format. This option is required.
@@ -446,7 +446,7 @@ Available options:
 You can set the ``sources`` to an empty list, if you use an existing compact cache files and do not have a source.
 
 
-The following configuration will load tiles from ``/path/to/caches/compact_cache/webmercator/L00/R0000C0000.bundle``, etc.
+The following configuration will load tiles from ``/path/to/cache/L00/R0000C0000.bundle``, etc.
 
 ::
 
@@ -457,7 +457,7 @@ The following configuration will load tiles from ``/path/to/caches/compact_cache
       cache:
         type: compact
         version: 1
-        directory: /path/to/caches
+        directory: /path/to/cache
 
 .. note::
 
