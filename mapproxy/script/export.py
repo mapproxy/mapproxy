@@ -97,6 +97,10 @@ def export_command(args=None):
     parser.add_option("-f", "--mapproxy-conf", dest="mapproxy_conf",
         help="MapProxy configuration")
 
+    parser.add_option("-q", "--quiet",
+                      action="count", dest="quiet", default=0,
+                      help="reduce number of messages to stdout, repeat to disable progress output")
+
     parser.add_option("--source", dest="source",
         help="source to export (source or cache)")
 
@@ -257,7 +261,7 @@ def export_command(args=None):
 
     print(format_export_task(task, custom_grid=custom_grid))
 
-    logger = ProgressLog(verbose=True, silent=False)
+    logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2)
     try:
         seed_task(task, progress_logger=logger, dry_run=options.dry_run,
              concurrency=options.concurrency)
