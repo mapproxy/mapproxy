@@ -51,6 +51,13 @@ class TestCompactCacheV1(TileCacheTestBase):
         assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0100C0080.bundle'))
         assert os.path.exists(os.path.join(self.cache_dir, 'L12', 'R0100C0080.bundlx'))
 
+    def test_bundle_files_not_created_on_is_cached(self):
+        assert not os.path.exists(os.path.join(self.cache_dir, 'L00', 'R0000C0000.bundle'))
+        assert not os.path.exists(os.path.join(self.cache_dir, 'L00', 'R0000C0000.bundlx'))
+        self.cache.is_cached(Tile(coord=(0, 0, 0)))
+        assert not os.path.exists(os.path.join(self.cache_dir, 'L00', 'R0000C0000.bundle'))
+        assert not os.path.exists(os.path.join(self.cache_dir, 'L00', 'R0000C0000.bundlx'))
+
     def test_missing_tiles(self):
         self.cache.store_tile(self.create_tile(coord=(0, 0, 0)))
         assert os.path.exists(os.path.join(self.cache_dir, 'L00', 'R0000C0000.bundle'))

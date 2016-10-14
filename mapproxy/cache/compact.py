@@ -170,10 +170,14 @@ BUNDLEX_FOOTER = b'\x00\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x00\x00\x00\
 class BundleIndex(object):
     def __init__(self, filename):
         self.filename = filename
-        if not os.path.exists(self.filename):
-            self._init_index()
+        # defer initialization to update/remove calls to avoid
+        # index creation on is_cached (prevents new files in read-only caches)
+        self._initialized = False
 
     def _init_index(self):
+        self._initialized = True
+        if os.path.exists(self.filename):
+            return
         ensure_directory(self.filename)
         buf = BytesIO()
         buf.write(BUNDLEX_HEADER)
@@ -199,6 +203,7 @@ class BundleIndex(object):
             raise
 
     def update_tile_offset(self, x, y, offset, size):
+        self._init_index()
         idx_offset = self._tile_offset(x, y)
         offset = struct.pack('<Q', offset)[:5]
         with open(self.filename, 'r+b') as f:
@@ -206,6 +211,7 @@ class BundleIndex(object):
             f.write(offset)
 
     def remove_tile_offset(self, x, y):
+        self._init_index()
         idx_offset = self._tile_offset(x, y)
         with open(self.filename, 'r+b') as f:
             f.seek(idx_offset)
