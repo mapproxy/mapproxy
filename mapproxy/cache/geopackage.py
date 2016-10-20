@@ -20,7 +20,7 @@ import sqlite3
 import threading
 
 from mapproxy.image import ImageSource
-from mapproxy.cache.base import TileCacheBase, tile_buffer
+from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
 from mapproxy.compat import BytesIO, PY2, itertools
@@ -88,8 +88,8 @@ class GeopackageCache(TileCacheBase):
 
     def ensure_gpkg(self):
         if not os.path.isfile(self.geopackage_file):
-            with FileLock(os.path.join(os.path.dirname(self.geopackage_file), 'init.lck'),
-                          remove_on_unlock=True):
+            with FileLock(self.geopackage_file + '.init.lck',
+                          remove_on_unlock=REMOVE_ON_UNLOCK):
                 ensure_directory(self.geopackage_file)
                 self._initialize_gpkg()
         else:

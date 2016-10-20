@@ -21,7 +21,7 @@ import threading
 import time
 
 from mapproxy.image import ImageSource
-from mapproxy.cache.base import TileCacheBase, tile_buffer
+from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
 from mapproxy.compat import BytesIO, PY2, itertools
@@ -64,8 +64,8 @@ class MBTilesCache(TileCacheBase):
 
     def ensure_mbtile(self):
         if not os.path.exists(self.mbtile_file):
-            with FileLock(os.path.join(os.path.dirname(self.mbtile_file), 'init.lck'),
-                remove_on_unlock=True):
+            with FileLock(self.mbtile_file + '.init.lck',
+                remove_on_unlock=REMOVE_ON_UNLOCK):
                 if not os.path.exists(self.mbtile_file):
                     ensure_directory(self.mbtile_file)
                     self._initialize_mbtile()
