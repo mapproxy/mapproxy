@@ -17,6 +17,7 @@
 The WSGI application.
 """
 from __future__ import print_function
+import functools
 import re
 import os
 import sys
@@ -29,6 +30,7 @@ from mapproxy.request import Request
 from mapproxy.response import Response
 from mapproxy.config import local_base_config
 from mapproxy.config.loader import load_configuration, ConfigurationError
+from wsgiref.handlers import format_date_time
 
 import logging
 log = logging.getLogger('mapproxy.config')
@@ -174,11 +176,16 @@ class MapProxyApp(object):
         resp = None
         req = Request(environ)
 
+        def response_with_header(start_response, header):
+            @functools.wraps(start_response)
+            def response_with_header_wrapper(status, headers, **kwargs):
+                headers.append(header)
+                return start_response(status, headers, **kwargs)
+            return response_with_header_wrapper
+
         if self.cors_origin:
-            orig_start_response = start_response
-            def start_response(status, headers, exc_info=None):
-                headers.append(('Access-control-allow-origin', self.cors_origin))
-                return orig_start_response(status, headers, exc_info)
+            start_response = response_with_header(start_response,
+                ('Access-control-allow-origin', self.cors_origin))
 
         with local_base_config(self.base_config):
             match = self.handler_path_re.match(req.path)
@@ -199,6 +206,8 @@ class MapProxyApp(object):
             if resp is None:
                 if req.path in ('', '/'):
                     resp = self.welcome_response(req.script_url)
+                    start_response = response_with_header(start_response,
+                        ('Last-modified', format_date_time(max(self.config_files.values()))))
                 else:
                     resp = Response('not found', mimetype='text/plain', status=404)
             return resp(environ, start_response)
