@@ -46,7 +46,6 @@ class TestS3Cache(TileCacheTestBase):
         self.cache = S3Cache(dir_name,
             file_ext='png',
             directory_layout='tms',
-            lock_timeout=10,
             bucket_name=self.bucket_name,
             profile_name=None,
         )
