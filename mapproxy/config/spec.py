@@ -345,6 +345,7 @@ mapproxy_yaml_spec = {
             'tile_lock_dir': str(),
             'meta_size': [number()],
             'meta_buffer': number(),
+            'bulk_meta_tiles': bool(),
             'max_tile_limit': number(),
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
