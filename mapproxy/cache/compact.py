@@ -46,7 +46,7 @@ class CompactCacheV1(TileCacheBase):
         r = y // BUNDLEX_GRID_HEIGHT * BUNDLEX_GRID_HEIGHT
 
         basename = 'R%04xC%04x' % (r, c)
-        return Bundle(os.path.join(level_dir, basename))
+        return Bundle(os.path.join(level_dir, basename), offset=(c, r))
 
     def is_cached(self, tile):
         if tile.coord is None:
@@ -89,9 +89,10 @@ BUNDLE_EXT = '.bundle'
 BUNDLEX_EXT = '.bundlx'
 
 class Bundle(object):
-    def __init__(self, base_filename):
+    def __init__(self, base_filename, offset):
         self.base_filename = base_filename
         self.lock_filename = base_filename + '.lck'
+        self.offset = offset
 
     def _rel_tile_coord(self, tile_coord):
         return (
@@ -109,7 +110,7 @@ class Bundle(object):
         if offset == 0:
             return False
 
-        bundle = BundleData(self.base_filename + BUNDLE_EXT)
+        bundle = BundleData(self.base_filename + BUNDLE_EXT, self.offset)
         size = bundle.read_size(offset)
         return size != 0
 
@@ -121,11 +122,11 @@ class Bundle(object):
             data = buf.read()
 
         with FileLock(self.lock_filename):
-            bundle = BundleData(self.base_filename + BUNDLE_EXT)
-            offset, size = bundle.append_tile(data)
-
+            bundle = BundleData(self.base_filename + BUNDLE_EXT, self.offset)
             idx = BundleIndex(self.base_filename + BUNDLEX_EXT)
             x, y = self._rel_tile_coord(tile.coord)
+            offset = idx.tile_offset(x, y)
+            offset, size = bundle.append_tile(data, prev_offset=offset)
             idx.update_tile_offset(x, y, offset=offset, size=size)
 
         return True
@@ -140,7 +141,7 @@ class Bundle(object):
         if offset == 0:
             return False
 
-        bundle = BundleData(self.base_filename + BUNDLE_EXT)
+        bundle = BundleData(self.base_filename + BUNDLE_EXT, self.offset)
         data = bundle.read_tile(offset)
         if not data:
             return False
@@ -217,24 +218,45 @@ class BundleIndex(object):
             f.seek(idx_offset)
             f.write(b'\x00' * 5)
 
+# The bundle file has a header with 15 little-endian long values (60 bytes).
+# NOTE: the fixed values might be some flags for image options (format, aliasing)
+# all files available for testing had the same values however.
 BUNDLE_HEADER_SIZE = 60
-BUNDLE_HEADER = (
-    b'\x03\x00\x00\x00\x00\x40\x00\x00\x9c\x7a\x00\x00\x05\x00\x00\x00' +
-    b'\x10\x00\x00\x00\x00\x00\x00\x00\xd5\xd2\x02\x00\x00\x00\x00\x00' +
-    b'\x28\x00\x00\x00\x00\x00\x00\x00\x10\x00\x00\x00\x00\x00\x00\x00' +
-    b'\x7f\x00\x00\x00\x00\x00\x00\x00\x7f\x00\x00\x00'
-)
+BUNDLE_HEADER = [
+    3        , # 0,  fixed
+    16384    , # 1,  max. num of tiles 128*128 = 16384
+    16       , # 2,  size of largest tile
+    5        , # 3,  fixed
+    0        , # 4,  num of tiles in bundle (*4)
+    0        , # 5,  fixed
+    60+65536 , # 6,  bundle size
+    0        , # 7,  fixed
+    40       , # 8   fixed
+    0        , # 9,  fixed
+    16       , # 10, fixed
+    0        , # 11, x0
+    127      , # 12, x1
+    0        , # 13, y0
+    127      , # 14, y1
+]
+BUNDLE_HEADER_STRUCT_FORMAT = '<lllllllllllllll'
 
 class BundleData(object):
-    def __init__(self, filename):
+    def __init__(self, filename, tile_offsets):
         self.filename = filename
+        self.tile_offsets = tile_offsets
         if not os.path.exists(self.filename):
             self._init_bundle()
 
     def _init_bundle(self):
         ensure_directory(self.filename)
+        header = list(BUNDLE_HEADER)
+        header[11], header[13] = self.tile_offsets
+        header[12], header[14] = header[11]+127, header[13]+127
         write_atomic(self.filename,
-            BUNDLE_HEADER + (b'\x00' * BUNDLEX_GRID_HEIGHT * BUNDLEX_GRID_WIDTH * 4))
+            struct.pack(BUNDLE_HEADER_STRUCT_FORMAT, *header) +
+            # zero-size entry for each tile
+            (b'\x00' * (BUNDLEX_GRID_HEIGHT * BUNDLEX_GRID_WIDTH * 4)))
 
     def read_size(self, offset):
         with open(self.filename, 'rb') as f:
@@ -249,9 +271,16 @@ class BundleData(object):
                 return False
             return f.read(size)
 
-    def append_tile(self, data):
+    def append_tile(self, data, prev_offset):
         size = len(data)
+        is_new_tile = True
         with open(self.filename, 'r+b') as f:
+            if prev_offset:
+                f.seek(prev_offset, os.SEEK_SET)
+                if f.tell() == prev_offset:
+                    if struct.unpack('<L', f.read(4))[0] > 0:
+                        is_new_tile = False
+
             f.seek(0, os.SEEK_END)
             offset = f.tell()
             if offset == 0:
@@ -259,5 +288,15 @@ class BundleData(object):
                 offset = 16
             f.write(struct.pack('<L', size))
             f.write(data)
-        return offset, size
 
+            # update header
+            f.seek(0, os.SEEK_SET)
+            header = list(struct.unpack(BUNDLE_HEADER_STRUCT_FORMAT, f.read(60)))
+            header[2] = max(header[2], size)
+            header[6] += size + 4
+            if is_new_tile:
+                header[4] += 4
+            f.seek(0, os.SEEK_SET)
+            f.write(struct.pack(BUNDLE_HEADER_STRUCT_FORMAT, *header))
+
+        return offset, size
