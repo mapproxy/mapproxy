@@ -136,6 +136,7 @@ cache_types = {
         'bucket_name': str(),
         'directory_layout': str(),
         'directory': str(),
+        'tile_lock_dir': str(),
         'profile_name': str(),
      },
     'riak': {
