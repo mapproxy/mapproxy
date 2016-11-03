@@ -234,10 +234,10 @@ BUNDLE_HEADER = [
     40       , # 8   fixed
     0        , # 9,  fixed
     16       , # 10, fixed
-    0        , # 11, x0
-    127      , # 12, x1
-    0        , # 13, y0
-    127      , # 14, y1
+    0        , # 11, y0
+    127      , # 12, y1
+    0        , # 13, x0
+    127      , # 14, x1
 ]
 BUNDLE_HEADER_STRUCT_FORMAT = '<lllllllllllllll'
 
@@ -251,8 +251,8 @@ class BundleData(object):
     def _init_bundle(self):
         ensure_directory(self.filename)
         header = list(BUNDLE_HEADER)
-        header[11], header[13] = self.tile_offsets
-        header[12], header[14] = header[11]+127, header[13]+127
+        header[13], header[11] = self.tile_offsets
+        header[14], header[12] = header[13]+127, header[11]+127
         write_atomic(self.filename,
             struct.pack(BUNDLE_HEADER_STRUCT_FORMAT, *header) +
             # zero-size entry for each tile

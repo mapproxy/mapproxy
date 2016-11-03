@@ -103,10 +103,10 @@ class TestCompactCacheV1(TileCacheTestBase):
         def assert_header(tile_bytes_written, max_tile_bytes):
             with open(os.path.join(self.cache_dir, 'L12', 'R0380C1380.bundle'), 'r+b') as f:
                 header = struct.unpack('<lllllllllllllll', f.read(60))
-                eq_(header[11], 4992)
-                eq_(header[12], 5119)
-                eq_(header[13], 896)
-                eq_(header[14], 1023)
+                eq_(header[11], 896)
+                eq_(header[12], 1023)
+                eq_(header[13], 4992)
+                eq_(header[14], 5119)
                 eq_(header[6], 60 + 128*128*4 + sum(tile_bytes_written))
                 eq_(header[2], max_tile_bytes)
                 eq_(header[4], len(tile_bytes_written)*4)
