@@ -86,6 +86,11 @@ class LayerMerger(object):
             else:
                 merge_composite = has_alpha_composite_support()
 
+            if 'transparency' in img.info:
+                # non-paletted PNGs can have a fixed transparency value
+                # convert to RGBA to have full alpha
+                img = img.convert('RGBA')
+
             if merge_composite:
                 if opacity is not None and opacity < 1.0:
                     # fade-out img to add opacity value
