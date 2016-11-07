@@ -613,7 +613,9 @@ Requests with 1500, 1000 or 701m/px resolution will use the first level, request
 """"""""
 
 The extent of your grid. You can use either a list or a string with the lower left and upper right coordinates. You can set the SRS of the coordinates with the ``bbox_srs`` option. If that option is not set the ``srs`` of the grid will be used.
-::
+
+Mapproxy always expects your bbox coordinates order to be East, South, West, North,
+regardless of your CRS :ref:`axis order <axis_order>`::
 
   bbox: [0, 40, 15, 55]
     or
