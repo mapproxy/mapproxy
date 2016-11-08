@@ -26,7 +26,7 @@ services:
           srs: 'EPSG:31467'
         - 'EPSG:3857'
     md:
-      title: MapProxy test fixture ☃
+      title: MapProxy test fixture ☃ "<xml>"
       abstract: This is MapProxy.
       keyword_list:
        - vocabulary: Name of the vocabulary

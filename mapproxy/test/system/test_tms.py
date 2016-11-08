@@ -43,6 +43,8 @@ class TestTMS(SystemTest):
         assert 'TMS Cache Layer + FI' in resp
         xml = resp.lxml
         assert xml.xpath('count(//TileMap)') == 11
+        eq_(xml.xpath('//TileMapService/Title/text()'), [u'MapProxy test fixture \u2603 "<xml>"'])
+        ok_(len(xml.xpath('//TileMapService/Abstract')) == 1)
         eq_(xml.xpath('//TileMapService/KeywordList/text()'),
             ['keywordA keywordB keywordC keywordD keywords without vocabulary'])
         ok_(len(xml.xpath('//TileMapService/ContactInformation')) == 1)
@@ -62,7 +64,9 @@ class TestTMS(SystemTest):
         resp2 = self.app.get('/tms/')
         assert 'TileMapService' in resp and 'TileMapService' in resp2
         xml = resp.lxml
-        eq_(xml.xpath('//TileMapService/@version'),['1.0.0'])
+        eq_(xml.xpath('//TileMapService/@version'), ['1.0.0'])
+        eq_(xml.xpath('//TileMapService/@title'), [u'MapProxy test fixture \u2603 "<xml>"'])
+        ok_(xml.xpath('//TileMapService/@href')[0].endswith('/tms/1.0.0/'))
 
     def test_tms_get_out_of_bounds_tile(self):
         for coord in [(0, 0, -1), (-1, 0, 0), (0, -1, 0), (4, 2, 1), (1, 3, 0)]:

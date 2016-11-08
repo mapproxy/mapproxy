@@ -18,7 +18,7 @@ Loading of template files (e.g. capability documents)
 """
 import os
 import pkg_resources
-from mapproxy.util.ext.tempita import Template, bunch
+from mapproxy.util.ext.tempita import Template, HTMLTemplate, bunch
 from mapproxy.config.config import base_config
 
 __all__ = ['Template', 'bunch', 'template_loader']
@@ -32,8 +32,9 @@ def template_loader(module_name, location='templates', namespace={}):
                 template_file = os.path.join(base_config().template_dir, name)
             else:
                 template_file = pkg_resources.resource_filename(module_name, location + '/' + name)
-            return Template.from_filename(template_file, namespace=namespace, encoding='utf-8',
-                                          default_inherit=default_inherit, get_template=self)
+            template_class = HTMLTemplate if name.endswith('.xml') else Template
+            return getattr(template_class, 'from_filename')(template_file, namespace=namespace, encoding='utf-8',
+                                                            default_inherit=default_inherit, get_template=self)
     return loader()
 
 
