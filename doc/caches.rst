@@ -34,6 +34,7 @@ The following backend types are available.
 - :ref:`cache_couchdb`
 - :ref:`cache_riak`
 - :ref:`cache_s3`
+- :ref:`cache_compact`
 
 .. _cache_file:
 
@@ -423,6 +424,9 @@ Example
     cache:
       s3:
         profile_name: default
+
+
+.. _cache_compact:
 
 
 ``compact``
