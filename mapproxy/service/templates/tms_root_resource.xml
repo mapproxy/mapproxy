@@ -2,6 +2,6 @@
 <Services>
 {{if service}}
     <TileMapService title="{{service.title}}" version="1.0.0"
-        href="{{service.url if service.url.endswith('/') else service.url + '/'}}1.0.0/" />
+        href="{{service.url.rstrip('/')}}/1.0.0/" />
 {{endif}}
 </Services>
