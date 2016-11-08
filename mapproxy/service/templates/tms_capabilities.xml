@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-    <TileMapService version="1.0.0">
+<TileMapService version="1.0.0">
     <Title>{{service.title}}</Title>
     <Abstract>{{service.abstract}}</Abstract>
     <TileMaps>
