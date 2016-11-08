@@ -137,6 +137,7 @@ cache_types = {
         'directory_layout': str(),
         'directory': str(),
         'profile_name': str(),
+        'tile_lock_dir': str(),
      },
     'riak': {
         'nodes': [riak_node],
@@ -147,10 +148,12 @@ cache_types = {
             'http': number(),
         },
         'secondary_index': bool(),
+        'tile_lock_dir': str(),
     },
     'compact': {
         'directory': str(),
         required('version'): number(),
+        'tile_lock_dir': str(),
     },
 }
 
