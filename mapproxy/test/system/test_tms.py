@@ -21,7 +21,7 @@ from mapproxy.compat.image import Image
 from mapproxy.test.image import is_jpeg, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
-from nose.tools import eq_
+from nose.tools import eq_, ok_
 
 test_config = {}
 base_config = make_base_config(test_config)
@@ -43,6 +43,9 @@ class TestTMS(SystemTest):
         assert 'TMS Cache Layer + FI' in resp
         xml = resp.lxml
         assert xml.xpath('count(//TileMap)') == 11
+        eq_(xml.xpath('//TileMapService/KeywordList/text()'),
+            ['keywordA keywordB keywordC keywordD keywords without vocabulary'])
+        ok_(len(xml.xpath('//TileMapService/ContactInformation')) == 1)
 
         # without trailing space
         resp2 = self.app.get('/tms/1.0.0')

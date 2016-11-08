@@ -28,6 +28,12 @@ services:
     md:
       title: MapProxy test fixture ☃
       abstract: This is MapProxy.
+      keyword_list:
+       - vocabulary: Name of the vocabulary
+         keywords:   [keywordA, keywordB]
+       - vocabulary: Name of another vocabulary
+         keywords:   [keywordC, keywordD]
+       - keywords:   ["keywords without vocabulary"]
       online_resource: http://mapproxy.org/
       contact:
         person: Oliver Tonnhofer
