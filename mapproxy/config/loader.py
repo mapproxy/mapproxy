@@ -1018,13 +1018,10 @@ class CacheConfiguration(ConfigurationBase):
             log.warn('link_single_color_images not supported on windows')
             link_single_color_images = False
 
-        lock_timeout = self.context.globals.get_value('http.client_timeout', {})
-
         return FileCache(
             cache_dir,
             file_ext=file_ext,
             directory_layout=directory_layout,
-            lock_timeout=lock_timeout,
             link_single_color_images=link_single_color_images,
         )
 

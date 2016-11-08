@@ -50,7 +50,7 @@ class S3ConnectionError(Exception):
 class S3Cache(TileCacheBase):
 
     def __init__(self, base_path, file_ext, directory_layout='tms',
-                 lock_timeout=60.0, bucket_name='mapproxy', profile_name=None):
+                 bucket_name='mapproxy', profile_name=None):
         super(S3Cache, self).__init__()
         self.lock_cache_id = hashlib.md5(base_path.encode('utf-8') + bucket_name.encode('utf-8')).hexdigest()
         self.bucket_name = bucket_name

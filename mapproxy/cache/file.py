@@ -31,7 +31,7 @@ class FileCache(TileCacheBase):
     This class is responsible to store and load the actual tile data.
     """
     def __init__(self, cache_dir, file_ext, directory_layout='tc',
-                 link_single_color_images=False, lock_timeout=60.0):
+                 link_single_color_images=False):
         """
         :param cache_dir: the path where the tile will be stored
         :param file_ext: the file extension that will be appended to
