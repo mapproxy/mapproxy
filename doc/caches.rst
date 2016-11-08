@@ -109,7 +109,7 @@ The note about ``bulk_meta_tiles`` for SQLite below applies to MBtiles as well.
 
 .. versionadded:: 1.6.0
 
-Use SQLite databases to store the tiles, similar to ``mbtiles`` cache. The difference to ``mbtiles`` cache is that the ``sqlite`` cache stores each level into a separate databse. This makes it easy to remove complete levels during mapproxy-seed cleanup processes. The ``sqlite`` cache also stores the timestamp of each tile.
+Use SQLite databases to store the tiles, similar to ``mbtiles`` cache. The difference to ``mbtiles`` cache is that the ``sqlite`` cache stores each level into a separate database. This makes it easy to remove complete levels during mapproxy-seed cleanup processes. The ``sqlite`` cache also stores the timestamp of each tile.
 
 Available options:
 
