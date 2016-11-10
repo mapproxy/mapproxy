@@ -795,7 +795,7 @@ class TestWMS100(WMSTest):
         eq_(resp.content_type, 'text/xml')
         xml = resp.lxml
         eq_(xml.xpath('/WMT_MS_Capabilities/Service/Title/text()')[0],
-            u'MapProxy test fixture \u2603')
+            u'MapProxy test fixture \u2603 "<xml>"')
         layer_names = set(xml.xpath('//Layer/Layer/Name/text()'))
         expected_names = set(['direct_fwd_params', 'direct', 'wms_cache',
             'wms_cache_100', 'wms_cache_130', 'wms_cache_transparent',
@@ -937,7 +937,7 @@ class TestWMS130(WMSTest):
         eq_(resp.content_type, 'text/xml')
         xml = resp.lxml
         eq_xpath_wms130(xml, '/wms:WMS_Capabilities/wms:Service/wms:Title/text()',
-            u'MapProxy test fixture \u2603')
+            u'MapProxy test fixture \u2603 "<xml>"')
 
         # test for extended layer metadata
         eq_xpath_wms130(xml, '/wms:WMS_Capabilities/wms:Capability/wms:Layer/wms:Layer/wms:Attribution/wms:Title/text()',

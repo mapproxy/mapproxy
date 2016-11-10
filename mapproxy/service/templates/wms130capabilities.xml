@@ -128,13 +128,13 @@
     {{endfor}}
     <inspire_common:ResourceType>service</inspire_common:ResourceType>
     <inspire_common:TemporalReference>
-      {{ inspire_dates(inspire_md.temporal_reference) }}
+      {{ inspire_dates(inspire_md.temporal_reference)|html }}
     </inspire_common:TemporalReference>
     {{for c in inspire_md.conformities}}
     <inspire_common:Conformity>
       <inspire_common:Specification>
         <inspire_common:Title>{{c['title']}}</inspire_common:Title>
-        {{ inspire_dates(c) }}
+        {{ inspire_dates(c)|html }}
         {{for uri in c.get('uris', [])}}
         <inspire_common:URI>{{uri | escape}}</inspire_common:URI>
         {{endfor}}
@@ -165,7 +165,7 @@
     <inspire_common:Keyword>
       <inspire_common:OriginatingControlledVocabulary>
         <inspire_common:Title>{{ k['title']}}</inspire_common:Title>
-        {{ inspire_dates(k) }}
+        {{ inspire_dates(k)|html }}
         {{for uri in k.get('uris', [])}}
         <inspire_common:URI>{{uri | escape}}</inspire_common:URI>
         {{endfor}}
@@ -269,9 +269,9 @@
     <Identifier authority="{{idf.name}}">{{idf.value}}</Identifier>
     {{endfor}}
     {{endif}}
-{{if md.metadata}}{{ layer_meta_tag('MetadataURL', md.metadata) }}{{endif}}
-{{if md.data}}{{layer_meta_tag('DataURL', md.data)}}{{endif}}
-{{if md.feature_list}}{{layer_meta_tag('FeatureListURL', md.feature_list)}}{{endif}}
+{{if md.metadata}}{{layer_meta_tag('MetadataURL', md.metadata)|html}}{{endif}}
+{{if md.data}}{{layer_meta_tag('DataURL', md.data)|html}}{{endif}}
+{{if md.feature_list}}{{layer_meta_tag('FeatureListURL', md.feature_list)|html}}{{endif}}
 {{if layer.is_active and layer.has_legend and layer.legend_url}}
     <Style>
       <Name>{{if inspire_md}}inspire_common:DEFAULT{{else}}default{{endif}}</Name>
@@ -288,7 +288,7 @@
     {{if max_scale}}<MaxScaleDenominator>{{max_scale}}</MaxScaleDenominator>{{endif}}
     {{endif}}
     {{for layer in layer.layers}}
-{{layer_capabilities(layer, False)|indent}}
+{{layer_capabilities(layer, False)|indent|html}}
     {{endfor}}
   </Layer>
 {{enddef}}
@@ -305,7 +305,7 @@
   {{endfor}}
 {{enddef}}
 
-{{layer_capabilities(layers, True)}}
+{{layer_capabilities(layers, True)|html}}
 
 </Capability>
 </WMS_Capabilities>
