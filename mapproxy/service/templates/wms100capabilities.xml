@@ -67,6 +67,7 @@
   </Exception>
 
 {{def layer_capabilities(layer, with_srs)}}
+{{if layer.advertised}}
   <Layer{{if layer.queryable}} queryable="1"{{endif}}>
     {{if layer.name}}
     <Name>{{ layer.name }}</Name>
@@ -93,6 +94,7 @@
 {{layer_capabilities(layer, False)|indent}}
     {{endfor}}
   </Layer>
+{{endif}}
 {{enddef}}
 
 {{layer_capabilities(layers, True)}}

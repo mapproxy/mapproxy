@@ -203,13 +203,14 @@ class TileServer(Server):
         return template.substitute(service=bunch(default='', **service))
 
 class TileLayer(object):
-    def __init__(self, name, title, md, tile_manager, dimensions=None):
+    def __init__(self, name, title, md, tile_manager, dimensions=None, advertised=True):
         """
         :param md: the layer metadata
         :param tile_manager: the layer tile manager
         """
         self.name = name
         self.title = title
+        self.advertised = advertised
         self.md = md
         self.tile_manager = tile_manager
         self.dimensions = dimensions

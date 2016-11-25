@@ -1544,7 +1544,8 @@ class WMSLayerConfiguration(ConfigurationBase):
             layer = this_layer
         else:
             layer = WMSGroupLayer(name=self.conf.get('name'), title=self.conf.get('title'),
-                                  this=this_layer, layers=layers, md=self.conf.get('md'))
+                                  this=this_layer, layers=layers, md=self.conf.get('md'),
+                                  advertised=self.conf.get('advertised', True))
         return layer
 
 def cache_source_names(context, cache):
@@ -1613,7 +1614,8 @@ class LayerConfiguration(ConfigurationBase):
         res_range = resolution_range(self.conf)
 
         layer = WMSLayer(self.conf.get('name'), self.conf.get('title'),
-                         sources, fi_sources, lg_sources, res_range=res_range, md=self.conf.get('md'))
+                         sources, fi_sources, lg_sources, res_range=res_range, md=self.conf.get('md'),
+                         advertised=self.conf.get('advertised', True))
         return layer
 
     @memoize
@@ -1679,7 +1681,8 @@ class LayerConfiguration(ConfigurationBase):
                 md['cache_name'] = cache_name
                 md['extent'] = extent
                 tile_layers.append(TileLayer(self.conf['name'], self.conf['title'],
-                                             md, cache_source, dimensions=dimensions))
+                                             md, cache_source, dimensions=dimensions,
+                                             advertised=self.conf.get('advertised', True)))
 
         return tile_layers
 

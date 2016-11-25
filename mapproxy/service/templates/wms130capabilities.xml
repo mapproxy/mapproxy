@@ -198,7 +198,7 @@
 {{endif}}
 {{def layer_capabilities(layer, with_srs)}}
   {{py: md = bunch(default='', **layer.md)}}
-
+{{if layer.advertised}}
   <Layer{{if layer.queryable}} queryable="1"{{endif}}>
     {{if layer.name}}
     <Name>{{ layer.name }}</Name>
@@ -291,6 +291,7 @@
 {{layer_capabilities(layer, False)|indent}}
     {{endfor}}
   </Layer>
+{{endif}}
 {{enddef}}
 
 {{def layer_meta_tag(tag, config)}}

@@ -64,6 +64,7 @@
 {{endif}}
   <Contents>
 {{for layer in layers}}
+{{if layer.advertised}}
     <Layer>
       <ows:Title>{{layer.title}}</ows:Title>
       <ows:Abstract></ows:Abstract>
@@ -95,6 +96,7 @@
           template="{{format_resource_template(layer, resource_template, service)}}"/>
       {{endif}}
     </Layer>
+{{endif}}
 {{endfor}}
 {{for tile_matrix_set in tile_matrix_sets}}
     <TileMatrixSet>

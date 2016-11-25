@@ -4,10 +4,12 @@
     <Abstract>{{service.abstract}}</Abstract>
     <TileMaps>
 {{for layer in layers.values()}}
+{{if layer.advertised}}
         <TileMap title="{{layer.title}}"
                  srs="{{layer.grid.srs_name}}"
                  profile="{{layer.grid.profile}}"
                  href="{{service.url.rstrip('/')}}/{{'/'.join(layer.md['name_path'])}}" />
+{{endif}}
 {{endfor}}
     </TileMaps>
 </TileMapService>

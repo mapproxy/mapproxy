@@ -543,6 +543,7 @@ mapproxy_yaml_spec = {
             'tile_sources': [string_type],
             'name': str(),
             required('title'): string_type,
+            'advertised': bool(),
             'legendurl': str(),
             'layers': recursive(),
             'md': wms_130_layer_md,

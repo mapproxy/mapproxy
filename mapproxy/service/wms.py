@@ -654,9 +654,10 @@ class WMSLayer(WMSLayerBase):
     is_active = True
     layers = []
     def __init__(self, name, title, map_layers, info_layers=[], legend_layers=[],
-                 res_range=None, md=None):
+                 res_range=None, md=None, advertised=True):
         self.name = name
         self.title = title
+        self.advertised = advertised
         self.md = md or {}
         self.map_layers = map_layers
         self.info_layers = info_layers
@@ -720,9 +721,10 @@ class WMSGroupLayer(WMSLayerBase):
     Groups multiple wms layers, but can also contain a single layer (``this``)
     that represents this layer.
     """
-    def __init__(self, name, title, this, layers, md=None):
+    def __init__(self, name, title, this, layers, md=None, advertised=True):
         self.name = name
         self.title = title
+        self.advertised = advertised
         self.this = this
         self.md = md or {}
         self.is_active = True if this is not None else False
