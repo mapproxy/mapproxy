@@ -15,6 +15,7 @@
 
 from __future__ import with_statement, absolute_import
 
+import os
 import sys
 import time
 import threading
@@ -49,7 +50,7 @@ log = logging.getLogger(__name__)
 class MapnikSource(MapLayer):
     supports_meta_tiles = True
     def __init__(self, mapfile, layers=None, image_opts=None, coverage=None,
-        res_range=None, lock=None, reuse_map_objects=False, scale_factor=None):
+        res_range=None, lock=None, scale_factor=None):
         MapLayer.__init__(self, image_opts=image_opts)
         self.mapfile = mapfile
         self.coverage = coverage
@@ -58,8 +59,6 @@ class MapnikSource(MapLayer):
         self.scale_factor = scale_factor
         self.lock = lock
         self._map_objs = {}
-        self._map_objs_lock = threading.Lock()
-        self._cache_map_obj = reuse_map_objects
         if self.coverage:
             self.extent = MapExtent(self.coverage.bbox, self.coverage.srs)
         else:
@@ -94,23 +93,17 @@ class MapnikSource(MapLayer):
             return self.render_mapfile(mapfile, query)
 
     def map_obj(self, mapfile):
-        if not self._cache_map_obj:
+        pid = str(os.getpid()) + "_" + str(threading.current_thread().ident)
+
+        if pid not in self._map_objs:
+            self._map_objs[pid] = {}
+
+        if mapfile not in self._map_objs[pid]:
             m = mapnik.Map(0, 0)
             mapnik.load_map(m, str(mapfile))
-            return m
+            self._map_objs[pid][mapfile] = m
 
-        # cache loaded map objects
-        # only works when a single proc/thread accesses this object
-        # (forking the render process doesn't work because of open database
-        #  file handles that gets passed to the child)
-        if mapfile not in self._map_objs:
-            with self._map_objs_lock:
-                if mapfile not in self._map_objs:
-                    m = mapnik.Map(0, 0)
-                    mapnik.load_map(m, str(mapfile))
-                    self._map_objs[mapfile] = m
-
-        return self._map_objs[mapfile]
+        return self._map_objs[pid][mapfile]
 
     def render_mapfile(self, mapfile, query):
         return run_non_blocking(self._render_mapfile, (mapfile, query))

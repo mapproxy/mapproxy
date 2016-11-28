@@ -893,16 +893,9 @@ class MapnikSourceConfiguration(SourceConfiguration):
         if mapnik_api is None:
             raise ConfigurationError('Could not import Mapnik, please verify it is installed!')
 
-        if self.context.renderd:
-            # only renderd guarantees that we have a single proc/thread
-            # that accesses the same mapnik map object
-            reuse_map_objects = True
-        else:
-            reuse_map_objects = False
-
         return MapnikSource(mapfile, layers=layers, image_opts=image_opts,
             coverage=coverage, res_range=res_range, lock=lock,
-            reuse_map_objects=reuse_map_objects, scale_factor=scale_factor)
+            scale_factor=scale_factor)
 
 class TileSourceConfiguration(SourceConfiguration):
     supports_meta_tiles = False
