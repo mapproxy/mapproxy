@@ -441,6 +441,17 @@ class Tile(object):
         else:
             return None
 
+    def flip_coord(self):
+        """
+        Returns tile `coord` with the Y coordinate coordinate flipped between
+        XYZ or TMS scheme. Returns `None` if the coord is not set
+        """
+        if self.coord is None:
+            return None
+        x, y, z = self.coord
+        y = (1 << z) - 1 - y
+        return (x, y, z)
+
     def is_missing(self):
         """
         Returns ``True`` when the tile has no ``data``, except when the ``coord``
