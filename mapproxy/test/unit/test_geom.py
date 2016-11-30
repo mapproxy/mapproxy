@@ -16,11 +16,14 @@
 from __future__ import division, with_statement
 
 import os
+import tempfile
+import shutil
 
 from mapproxy.srs import SRS, bbox_equals
 from mapproxy.util.geom import (
     load_polygons,
     load_datasource,
+    load_expire_tiles,
     transform_geometry,
     geom_support,
     bbox_polygon,
@@ -363,4 +366,30 @@ class TestLoadDatasource(object):
                 f.write(VALID_POLYGON1)
 
             geoms = load_datasource(fname)
+            eq_(len(geoms), 2)
+
+    def test_expire_tiles_dir(self):
+        dirname = tempfile.mkdtemp()
+        try:
+            fname = os.path.join(dirname, 'tiles')
+            with open(fname, 'wb') as f:
+                f.write(b"4/2/5\n")
+                f.write(b"4/2/6\n")
+                f.write(b"4/4/3\n")
+
+            geoms = load_expire_tiles(dirname)
+            eq_(len(geoms), 2)
+        finally:
+            shutil.rmtree(dirname)
+
+    def test_expire_tiles_file(self):
+        with TempFile() as fname:
+            with open(fname, 'wb') as f:
+                f.write(b"4/2/5\n")
+                f.write(b"4/2/6\n")
+                f.write(b"4/4/3\n")
+                f.write(b"error\n")
+                f.write(b"4/2/1\n") # rest of file is ignored
+
+            geoms = load_expire_tiles(fname)
             eq_(len(geoms), 2)
