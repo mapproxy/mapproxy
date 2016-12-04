@@ -76,7 +76,9 @@ class TestWMTS(SystemTest):
         eq_(resp.content_type, 'application/xml')
         xml = resp.lxml
         assert validate_with_xsd(xml, xsd_name='wmts/1.0/wmtsGetCapabilities_response.xsd')
-        eq_(len(xml.xpath('//wmts:Layer', namespaces=ns_wmts)), 5)
+        eq_(xml.xpath('//wmts:Layer/ows:Identifier/text()', namespaces=ns_wmts),
+            ['wms_cache','wms_cache_multi','tms_cache','tms_cache_ul','gk3_cache'],
+        )
         eq_(len(xml.xpath('//wmts:Contents/wmts:TileMatrixSet', namespaces=ns_wmts)), 5)
 
         goog_matrixset = xml.xpath('//wmts:Contents/wmts:TileMatrixSet[./ows:Identifier/text()="GoogleMapsCompatible"]', namespaces=ns_wmts)[0]

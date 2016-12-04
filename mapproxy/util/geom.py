@@ -57,9 +57,9 @@ def load_datasource(datasource, where=None):
     """
     # check if it is a  wkt file
     if os.path.exists(os.path.abspath(datasource)):
-        with open(os.path.abspath(datasource), 'r') as fp:
+        with open(os.path.abspath(datasource), 'rb') as fp:
             data = fp.read(50)
-        if data.lower().lstrip().startswith(('polygon', 'multipolygon')):
+        if data.lower().lstrip().startswith((b'polygon', b'multipolygon')):
             return load_polygons(datasource)
 
     # otherwise pass to OGR
@@ -78,7 +78,7 @@ def load_ogr_datasource(datasource, where=None):
         with closing(OGRShapeReader(datasource)) as reader:
             for wkt in reader.wkts(where):
                 try:
-                    geom = shapely.wkt.loads(wkt)
+                    geom = shapely.wkt.loads(wkt.decode())
                 except ReadingError as ex:
                     raise GeometryError(ex)
                 if geom.type == 'Polygon':

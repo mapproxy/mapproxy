@@ -71,11 +71,11 @@ class TestMultiCacheLayer(SystemTest):
 
     def test_tms_capabilities(self):
         resp = self.app.get('/tms/1.0.0/')
-        assert 'http://localhost/tms/1.0.0/multi_cache/wmts_incompatible_grid' in resp
-        assert 'http://localhost/tms/1.0.0/multi_cache/GLOBAL_WEBMERCATOR' in resp
-        assert 'http://localhost/tms/1.0.0/multi_cache/InspireCrs84Quad' in resp
-        assert 'http://localhost/tms/1.0.0/multi_cache/gk3' in resp
-        assert 'http://localhost/tms/1.0.0/cache/utm32' in resp
+        assert 'http://localhost/tms/1.0.0/multi_cache/EPSG25832' in resp
+        assert 'http://localhost/tms/1.0.0/multi_cache/EPSG3857' in resp
+        assert 'http://localhost/tms/1.0.0/multi_cache/CRS84' in resp
+        assert 'http://localhost/tms/1.0.0/multi_cache/EPSG31467' in resp
+        assert 'http://localhost/tms/1.0.0/cache/EPSG25832' in resp
         xml = resp.lxml
         assert xml.xpath('count(//TileMap)') == 5
 

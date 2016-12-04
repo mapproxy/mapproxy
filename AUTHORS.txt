@@ -30,3 +30,4 @@ Patches and Suggestions
 - Stephan Holl
 - Steven D. Lander
 - Tom Payne
+- Joseph Svrcek

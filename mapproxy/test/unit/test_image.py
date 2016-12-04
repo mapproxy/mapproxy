@@ -311,6 +311,17 @@ class TestLayerMerge(object):
             (10*10, (127, 127, 255, 255)),
         ])
 
+    def test_merge_L(self):
+        img1 = ImageSource(Image.new('RGBA', (10, 10), (255, 0, 255, 255)))
+        img2 = ImageSource(Image.new('L', (10, 10), 100))
+
+        # img2 overlays img1
+        result = merge_images([img1, img2], ImageOptions(transparent=True))
+        img = result.as_image()
+        assert_img_colors_eq(img, [
+            (10*10, (100, 100, 100, 255)),
+        ])
+
     def test_paletted_merge(self):
         if not hasattr(Image, 'FASTOCTREE'):
             raise SkipTest()
@@ -346,6 +357,16 @@ class TestLayerMerge(object):
         result = merge_images([img1, img2], ImageOptions(transparent=False))
         img = result.as_image()
         eq_(img.getpixel((0, 0)), (0, 255, 255))
+
+    def test_merge_rgb_with_transp(self):
+        img1 = ImageSource(Image.new('RGB', (10, 10), (255, 0, 255)))
+        raw = Image.new('RGB', (10, 10), (0, 255, 255))
+        raw.info = {'transparency': (0, 255, 255)} # make full transparent
+        img2 = ImageSource(raw)
+
+        result = merge_images([img1, img2], ImageOptions(transparent=False))
+        img = result.as_image()
+        eq_(img.getpixel((0, 0)), (255, 0, 255))
 
 
 class TestLayerCompositeMerge(object):

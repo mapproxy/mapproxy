@@ -228,11 +228,11 @@ Here is an example of a cache in UTM that uses data from an existing cache in we
 
     caches:
       new_cache:
-        grids: [new_grid]
+        grids: [utm32n]
         sources: [existing_cache]
 
       existing_cache:
-        grids: [old_grid]
+        grids: [GLOBAL_WEBMERCATOR]
         sources: [my_source]
 
     grids:
@@ -242,10 +242,6 @@ Here is an example of a cache in UTM that uses data from an existing cache in we
         bbox_srs: 'EPSG:4326'
         origin: 'nw'
         min_res: 5700
-
-      osm_grid:
-        base: GLOBAL_MERCATOR
-        origin: nw
 
 
 Reprojecting Tiles
@@ -273,14 +269,14 @@ Here is an example that makes OSM tiles available as tiles in UTM. Note that rep
         sources: [osm_cache_in]
 
       osm_cache_in:
-        grids: [osm_grid]
+        grids: [GLOBAL_WEBMERCATOR]
         disable_storage: true
         sources: [osm_source]
 
     sources:
       osm_source:
         type: tile
-        grid: osm_grid
+        grid: GLOBAL_WEBMERCATOR
         url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
     grids:
@@ -290,10 +286,6 @@ Here is an example that makes OSM tiles available as tiles in UTM. Note that rep
         bbox_srs: 'EPSG:4326'
         origin: 'nw'
         min_res: 5700
-
-      osm_grid:
-        base: GLOBAL_MERCATOR
-        origin: nw
 
 
 Create grayscale images
@@ -775,16 +767,11 @@ Example part of ``mapproxy.yaml`` to generate a quadkey cache::
 
   caches:
     osm_cache:
-      grids: [osm_grid]
+      grids: [GLOBAL_WEBMERCATOR]
       sources: [osm_wms]
       cache:
         type: file
         directory_layout: quadkey
-
-  grids:
-    osm_grid:
-      base: GLOBAL_MERCATOR
-      origin: nw
 
 
 .. _hq_tiles:

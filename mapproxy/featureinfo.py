@@ -14,8 +14,12 @@
 # limitations under the License.
 
 import copy
+import json
+
+from functools import reduce
 from io import StringIO
-from mapproxy.compat import string_type, PY2, BytesIO
+
+from mapproxy.compat import string_type, PY2, BytesIO, iteritems
 
 try:
     from lxml import etree, html
@@ -120,12 +124,47 @@ class HTMLFeatureInfoDoc(XMLFeatureInfoDoc):
 
         return cls(result_tree)
 
+
+class JSONFeatureInfoDoc(FeatureInfoDoc):
+    info_type = 'json'
+
+    def __init__(self, content):
+        self.content = content
+
+    def as_string(self):
+        return self.content
+
+    @classmethod
+    def combine(cls, docs):
+        contents = [json.loads(d.content) for d in docs]
+        combined = reduce(lambda a, b: merge_dict(a, b), contents)
+        return cls(json.dumps(combined))
+
+
+def merge_dict(base, other):
+    """
+    Return `base` dict with values from `conf` merged in.
+    """
+    for k, v in iteritems(other):
+        if k not in base:
+            base[k] = v
+        else:
+            if isinstance(base[k], dict):
+                merge_dict(base[k], v)
+            elif isinstance(base[k], list):
+                base[k].extend(v)
+            else:
+                base[k] = v
+    return base
+
 def create_featureinfo_doc(content, info_format):
     info_format = info_format.split(';', 1)[0].strip() # remove mime options like charset
     if info_format in ('text/xml', 'application/vnd.ogc.gml'):
         return XMLFeatureInfoDoc(content)
     if info_format == 'text/html':
         return HTMLFeatureInfoDoc(content)
+    if info_format == 'application/json':
+        return JSONFeatureInfoDoc(content)
 
     return TextFeatureInfoDoc(content)
 

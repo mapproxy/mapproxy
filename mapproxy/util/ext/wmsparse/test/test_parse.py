@@ -14,7 +14,7 @@ class TestWMS111(object):
         md = cap.metadata()
         eq_(md['name'], 'OGC:WMS')
         eq_(md['title'], 'Omniscale OpenStreetMap WMS')
-        eq_(md['access_constraints'], 'This service is intended for private and evaluation use only. The data is licensed as Creative Commons Attribution-Share Alike 2.0 (http://creativecommons.org/licenses/by-sa/2.0/)')
+        eq_(md['access_constraints'], 'Here be dragons.')
         eq_(md['fees'], 'none')
         eq_(md['online_resource'], 'http://omniscale.de/')
         eq_(md['abstract'], 'Omniscale OpenStreetMap WMS (powered by MapProxy)')

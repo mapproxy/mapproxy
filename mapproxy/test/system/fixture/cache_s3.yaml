@@ -1,0 +1,58 @@
+globals:
+  cache:
+    s3:
+      bucket_name: default_bucket
+
+services:
+  tms:
+  wms:
+    md:
+      title: MapProxy S3
+
+layers:
+  - name: default
+    title: Default
+    sources: [default_cache]
+  - name: quadkey
+    title: Quadkey
+    sources: [quadkey_cache]
+  - name: reverse
+    title: Reverse
+    sources: [reverse_cache]
+
+caches:
+  default_cache:
+    grids: [webmercator]
+    cache:
+      type: s3
+    sources: [tms]
+
+  quadkey_cache:
+    grids: [webmercator]
+    cache:
+      type: s3
+      bucket_name: tiles
+      directory_layout: quadkey
+      directory: quadkeytiles
+    sources: [tms]
+
+  reverse_cache:
+    grids: [webmercator]
+    cache:
+      type: s3
+      bucket_name: tiles
+      directory_layout: reverse_tms
+      directory: reversetiles
+    sources: [tms]
+
+grids:
+  webmercator:
+    name: WebMerc
+    base: GLOBAL_WEBMERCATOR
+
+
+sources:
+  tms:
+    type: tile
+    url: http://localhost:42423/tiles/%(tc_path)s.png
+
