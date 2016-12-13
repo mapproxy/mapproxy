@@ -11,8 +11,8 @@ from scriptine import path
 from scriptine.shell import backtick_, sh
 
 PACKAGE_NAME = 'MapProxy'
-REMOTE_DOC_LOCATION = 'omniscale.de:domains/mapproxy.org/docs'
-REMOTE_REL_LOCATION = 'omniscale.de:domains/mapproxy.org/static/rel'
+REMOTE_DOC_LOCATION = 'mapproxy.org:/opt/www/mapproxy.org/docs'
+REMOTE_REL_LOCATION = 'mapproxy.org:/opt/www/mapproxy.org/static/rel'
 
 VERSION_FILES = [
     ('setup.py', 'version="###"'),
@@ -77,6 +77,10 @@ def upload_sdist_command():
     ver = version()
     remote_rel_location = REMOTE_REL_LOCATION
     sh('scp dist/MapProxy-%(ver)s.* %(remote_rel_location)s' % locals())
+
+def upload_test_sdist_command():
+    date = backtick_('date +%Y%m%d').strip()
+    print('python setup.py egg_info -R -D -b ".dev%s" register -r testpypi sdist upload -r testpypi' % (date, ))
 
 def upload_final_sdist_command():
     sh('python setup.py egg_info -b "" -D sdist upload')

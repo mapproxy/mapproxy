@@ -257,7 +257,9 @@ Full example::
 .. _arcgis_label:
 
 ArcGIS REST API
-"""
+"""""""""""""""
+
+.. versionadded: 1.9.0
 
 Use the type ``arcgis`` for ArcGIS MapServer and ImageServer REST server endpoints. This
 source is based on :ref:`the WMS source <wms_label>` and most WMS options apply to the
@@ -266,37 +268,49 @@ ArcGIS source too.
 ``req``
 ^^^^^^^
 
-This describes the ArcGIS source. The only required option is ``url``. You need to set ``transparent`` to ``true`` if you want to use this source as an overlay.
-::
+This describes the ArcGIS source. The only required option is ``url``. You need to set ``transparent`` to ``true`` if you want to use this source as an overlay. You can also add ArcGIS specific parameters to ``req``, for example to set the `interpolation method for ImageServers <http://resources.arcgis.com/en/help/rest/apiref/exportimage.html>`_.
 
-  req:
-    url: http://example.org/ArcGIS/rest/services/Imagery/MapService
-    layers: show: 0,1
-    transparent: true
 
-.. _example_configuration:
+``opts``
+^^^^^^^^
+
+.. versionadded: 1.10.0
+
+This option affects what request MapProxy sends to the source ArcGIS server.
+
+``featureinfo``
+  If this is set to ``true``, MapProxy will mark the layer as queryable and incoming `GetFeatureInfo` requests will be forwarded as ``identify`` requests to the source server. ArcGIS REST server support only HTML and JSON format. You need to enable support for JSON :ref:`wms_featureinfo_types`.
+
+``featureinfo_return_geometries``
+  Whether the source should include the feature geometries.
+
+``featureinfo_tolerance``
+  Tolerance in pixel within the ArcGIS server should identify features.
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 
-Minimal example::
+MapServer example::
 
   my_minimal_arcgissource:
     type: arcgis
     req:
+      layers: show: 0,1
       url: http://example.org/ArcGIS/rest/services/Imagery/MapService
+      transparent: true
 
-Full example::
+ImageServer example::
 
   my_arcgissource:
     type: arcgis
     coverage:
        polygons: GM.txt
-       polygons_srs: EPSG:900913
+       srs: EPSG:3857
     req:
-      url: http://example.org/ArcGIS/rest/services/Imagery/MapService
-      layers: show:0,1
-      transparent: true
+      url: http://example.org/ArcGIS/rest/services/World/MODIS/ImageServer
+      interpolation: RSP_CubicConvolution
+      bandIds: 2,0,1
+
 
 .. _tiles_label:
 
@@ -361,7 +375,7 @@ You can configure the following HTTP related options for this source:
 - ``headers``
 - ``client_timeout``
 - ``ssl_ca_certs``
-- ``ssl_no_cert_checks`` (:ref:`see above <wms_source-ssl_no_cert_checks>`)
+- ``ssl_no_cert_checks`` (:ref:`see above <wms_source_ssl_no_cert_checks>`)
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 

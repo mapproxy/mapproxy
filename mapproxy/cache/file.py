@@ -20,8 +20,8 @@ import hashlib
 
 from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.image import ImageSource, is_single_color_image
+from mapproxy.cache import path
 from mapproxy.cache.base import TileCacheBase, tile_buffer
-from mapproxy.compat import string_type
 
 import logging
 log = logging.getLogger('mapproxy.cache.file')
@@ -31,7 +31,7 @@ class FileCache(TileCacheBase):
     This class is responsible to store and load the actual tile data.
     """
     def __init__(self, cache_dir, file_ext, directory_layout='tc',
-                 link_single_color_images=False, lock_timeout=60.0):
+                 link_single_color_images=False):
         """
         :param cache_dir: the path where the tile will be stored
         :param file_ext: the file extension that will be appended to
@@ -42,179 +42,22 @@ class FileCache(TileCacheBase):
         self.cache_dir = cache_dir
         self.file_ext = file_ext
         self.link_single_color_images = link_single_color_images
+        self._tile_location, self._level_location = path.location_funcs(layout=directory_layout)
+        if self._level_location is None:
+            self.level_location = None # disable level based clean-ups
 
-        if directory_layout == 'tc':
-            self.tile_location = self._tile_location_tc
-            self.level_location = self._level_location
-        elif directory_layout == 'mp':
-            self.tile_location = self._tile_location_mp
-            self.level_location = self._level_location
-        elif directory_layout == 'tms':
-            self.tile_location = self._tile_location_tms
-            self.level_location = self._level_location_tms
-        elif directory_layout == 'quadkey':
-            self.tile_location = self._tile_location_quadkey
-            self.level_location = self._level_location
-        elif directory_layout == 'arcgis':
-            self.tile_location = self._tile_location_arcgiscache
-            self.level_location = self._level_location_arcgiscache
-        else:
-            raise ValueError('unknown directory_layout "%s"' % directory_layout)
+    def tile_location(self, tile, create_dir=False):
+        return self._tile_location(tile, self.cache_dir, self.file_ext, create_dir=create_dir)
 
-    def _level_location(self, level):
+    def level_location(self, level):
         """
         Return the path where all tiles for `level` will be stored.
 
         >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png')
-        >>> c._level_location(2)
+        >>> c.level_location(2)
         '/tmp/cache/02'
         """
-        if isinstance(level, string_type):
-            return os.path.join(self.cache_dir, level)
-        else:
-            return os.path.join(self.cache_dir, "%02d" % level)
-
-    def _tile_location_tc(self, tile, create_dir=False):
-        """
-        Return the location of the `tile`. Caches the result as ``location``
-        property of the `tile`.
-
-        :param tile: the tile object
-        :param create_dir: if True, create all necessary directories
-        :return: the full filename of the tile
-
-        >>> from mapproxy.cache.tile import Tile
-        >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png')
-        >>> c.tile_location(Tile((3, 4, 2))).replace('\\\\', '/')
-        '/tmp/cache/02/000/000/003/000/000/004.png'
-        """
-        if tile.location is None:
-            x, y, z = tile.coord
-            parts = (self._level_location(z),
-                     "%03d" % int(x / 1000000),
-                     "%03d" % (int(x / 1000) % 1000),
-                     "%03d" % (int(x) % 1000),
-                     "%03d" % int(y / 1000000),
-                     "%03d" % (int(y / 1000) % 1000),
-                     "%03d.%s" % (int(y) % 1000, self.file_ext))
-            tile.location = os.path.join(*parts)
-        if create_dir:
-            ensure_directory(tile.location)
-        return tile.location
-
-    def _tile_location_mp(self, tile, create_dir=False):
-        """
-        Return the location of the `tile`. Caches the result as ``location``
-        property of the `tile`.
-
-        :param tile: the tile object
-        :param create_dir: if True, create all necessary directories
-        :return: the full filename of the tile
-
-        >>> from mapproxy.cache.tile import Tile
-        >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png', directory_layout='mp')
-        >>> c.tile_location(Tile((3, 4, 2))).replace('\\\\', '/')
-        '/tmp/cache/02/0000/0003/0000/0004.png'
-        >>> c.tile_location(Tile((12345678, 98765432, 22))).replace('\\\\', '/')
-        '/tmp/cache/22/1234/5678/9876/5432.png'
-        """
-        if tile.location is None:
-            x, y, z = tile.coord
-            parts = (self._level_location(z),
-                     "%04d" % int(x / 10000),
-                     "%04d" % (int(x) % 10000),
-                     "%04d" % int(y / 10000),
-                     "%04d.%s" % (int(y) % 10000, self.file_ext))
-            tile.location = os.path.join(*parts)
-        if create_dir:
-            ensure_directory(tile.location)
-        return tile.location
-
-    def _tile_location_tms(self, tile, create_dir=False):
-        """
-        Return the location of the `tile`. Caches the result as ``location``
-        property of the `tile`.
-
-        :param tile: the tile object
-        :param create_dir: if True, create all necessary directories
-        :return: the full filename of the tile
-
-        >>> from mapproxy.cache.tile import Tile
-        >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png', directory_layout='tms')
-        >>> c.tile_location(Tile((3, 4, 2))).replace('\\\\', '/')
-        '/tmp/cache/2/3/4.png'
-        """
-        if tile.location is None:
-            x, y, z = tile.coord
-            tile.location = os.path.join(
-                self.level_location(str(z)),
-                str(x), str(y) + '.' + self.file_ext
-            )
-        if create_dir:
-            ensure_directory(tile.location)
-        return tile.location
-
-    def _level_location_tms(self, z):
-        return self._level_location(str(z))
-
-    def _tile_location_quadkey(self, tile, create_dir=False):
-        """
-        Return the location of the `tile`. Caches the result as ``location``
-        property of the `tile`.
-
-        :param tile: the tile object
-        :param create_dir: if True, create all necessary directories
-        :return: the full filename of the tile
-
-        >>> from mapproxy.cache.tile import Tile
-        >>> from mapproxy.cache.file import FileCache
-        >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png', directory_layout='quadkey')
-        >>> c.tile_location(Tile((3, 4, 2))).replace('\\\\', '/')
-        '/tmp/cache/11.png'
-        """
-        if tile.location is None:
-            x, y, z = tile.coord
-            quadKey = ""
-            for i in range(z,0,-1):
-                digit = 0
-                mask = 1 << (i-1)
-                if (x & mask) != 0:
-                    digit += 1
-                if (y & mask) != 0:
-                    digit += 2
-                quadKey += str(digit)
-            tile.location = os.path.join(
-                self.cache_dir, quadKey + '.' + self.file_ext
-            )
-        if create_dir:
-            ensure_directory(tile.location)
-        return tile.location
-
-    def _tile_location_arcgiscache(self, tile, create_dir=False):
-        """
-        Return the location of the `tile`. Caches the result as ``location``
-        property of the `tile`.
-
-        :param tile: the tile object
-        :param create_dir: if True, create all necessary directories
-        :return: the full filename of the tile
-
-        >>> from mapproxy.cache.tile import Tile
-        >>> from mapproxy.cache.file import FileCache
-        >>> c = FileCache(cache_dir='/tmp/cache/', file_ext='png', directory_layout='arcgis')
-        >>> c.tile_location(Tile((1234567, 87654321, 9))).replace('\\\\', '/')
-        '/tmp/cache/L09/R05397fb1/C0012d687.png'
-        """
-        if tile.location is None:
-            x, y, z = tile.coord
-            parts = (self._level_location_arcgiscache(z), 'R%08x' % y, 'C%08x.%s' % (x, self.file_ext))
-            tile.location = os.path.join(*parts)
-        if create_dir:
-            ensure_directory(tile.location)
-        return tile.location
-
-    def _level_location_arcgiscache(self, z):
-        return self._level_location('L%02d' % z)
+        return self._level_location(level, self.cache_dir)
 
     def _single_color_tile_location(self, color, create_dir=False):
         """

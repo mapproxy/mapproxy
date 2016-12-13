@@ -33,11 +33,11 @@ A simple middleware that authorizes random requests might look like::
       def __init__(self, app, global_conf):
           self.app = app
 
-      def __call__(self, environ, start_reponse):
+      def __call__(self, environ, start_response):
           if random.randint(0, 1) == 1:
-            return self.app(environ, start_reponse)
+            return self.app(environ, start_response)
           else:
-            start_reponse('403 Forbidden',
+            start_response('403 Forbidden',
               [('content-type', 'text/plain')])
             return ['no luck today']
 
@@ -86,10 +86,10 @@ Here is a more elaborate example that denies requests to all layers that start w
           self.app = app
           self.prefix = prefix
 
-      def __call__(self, environ, start_reponse):
+      def __call__(self, environ, start_response):
           # put authorize callback function into environment
           environ['mapproxy.authorize'] = self.authorize
-          return self.app(environ, start_reponse)
+          return self.app(environ, start_response)
 
       def authorize(self, service, layers=[], environ=None, **kw):
           allowed = denied = False
@@ -517,9 +517,9 @@ Example that rejects MapProxy instances where the name starts with ``secure``.
       def __init__(self, app, global_conf):
           self.app = app
 
-      def __call__(self, environ, start_reponse):
+      def __call__(self, environ, start_response):
           environ['mapproxy.authorize'] = self.authorize
-          return self.app(environ, start_reponse)
+          return self.app(environ, start_response)
 
       def authorize(self, service, layers=[]):
           instance_name = environ.get('mapproxy.instance_name', '')

@@ -21,10 +21,10 @@ import threading
 import time
 
 from mapproxy.image import ImageSource
-from mapproxy.cache.base import TileCacheBase, tile_buffer, CacheBackendError
+from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
-from mapproxy.compat import BytesIO, PY2
+from mapproxy.compat import BytesIO, PY2, itertools
 
 import logging
 log = logging.getLogger(__name__)
@@ -38,10 +38,12 @@ def sqlite_datetime_to_timestamp(datetime):
 class MBTilesCache(TileCacheBase):
     supports_timestamp = False
 
-    def __init__(self, mbtile_file, with_timestamps=False):
+    def __init__(self, mbtile_file, with_timestamps=False, timeout=30, wal=False):
         self.lock_cache_id = 'mbtiles-' + hashlib.md5(mbtile_file.encode('utf-8')).hexdigest()
         self.mbtile_file = mbtile_file
         self.supports_timestamp = with_timestamps
+        self.timeout = timeout
+        self.wal = wal
         self.ensure_mbtile()
         self._db_conn_cache = threading.local()
 
@@ -49,7 +51,7 @@ class MBTilesCache(TileCacheBase):
     def db(self):
         if not getattr(self._db_conn_cache, 'db', None):
             self.ensure_mbtile()
-            self._db_conn_cache.db = sqlite3.connect(self.mbtile_file)
+            self._db_conn_cache.db = sqlite3.connect(self.mbtile_file, self.timeout)
         return self._db_conn_cache.db
 
     def cleanup(self):
@@ -62,8 +64,8 @@ class MBTilesCache(TileCacheBase):
 
     def ensure_mbtile(self):
         if not os.path.exists(self.mbtile_file):
-            with FileLock(os.path.join(os.path.dirname(self.mbtile_file), 'init.lck'),
-                remove_on_unlock=True):
+            with FileLock(self.mbtile_file + '.init.lck',
+                remove_on_unlock=REMOVE_ON_UNLOCK):
                 if not os.path.exists(self.mbtile_file):
                     ensure_directory(self.mbtile_file)
                     self._initialize_mbtile()
@@ -71,6 +73,10 @@ class MBTilesCache(TileCacheBase):
     def _initialize_mbtile(self):
         log.info('initializing MBTile file %s', self.mbtile_file)
         db  = sqlite3.connect(self.mbtile_file)
+
+        if self.wal:
+            db.execute('PRAGMA journal_mode=wal')
+
         stmt = """
             CREATE TABLE tiles (
                 zoom_level integer,
@@ -135,25 +141,42 @@ class MBTilesCache(TileCacheBase):
     def store_tile(self, tile):
         if tile.stored:
             return True
-        with tile_buffer(tile) as buf:
-            if PY2:
-                content = buffer(buf.read())
-            else:
-                content = buf.read()
-            x, y, level = tile.coord
-            cursor = self.db.cursor()
-            try:
-                if self.supports_timestamp:
-                    stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data, last_modified) VALUES (?,?,?,?, datetime(?, 'unixepoch', 'localtime'))"
-                    cursor.execute(stmt, (level, x, y, content, time.time()))
+        return self._store_bulk([tile])
+
+    def store_tiles(self, tiles):
+        tiles = [t for t in tiles if not t.stored]
+        return self._store_bulk(tiles)
+
+    def _store_bulk(self, tiles):
+        records = []
+        # tile_buffer (as_buffer) will encode the tile to the target format
+        # we collect all tiles before, to avoid having the db transaction
+        # open during this slow encoding
+        for tile in tiles:
+            with tile_buffer(tile) as buf:
+                if PY2:
+                    content = buffer(buf.read())
                 else:
-                    stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
-                    cursor.execute(stmt, (level, x, y, content))
-                self.db.commit()
-            except sqlite3.OperationalError as ex:
-                log.warn('unable to store tile: %s', ex)
-                return False
-            return True
+                    content = buf.read()
+                x, y, level = tile.coord
+                if self.supports_timestamp:
+                    records.append((level, x, y, content, time.time()))
+                else:
+                    records.append((level, x, y, content))
+
+        cursor = self.db.cursor()
+        try:
+            if self.supports_timestamp:
+                stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data, last_modified) VALUES (?,?,?,?, datetime(?, 'unixepoch', 'localtime'))"
+                cursor.executemany(stmt, records)
+            else:
+                stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
+                cursor.executemany(stmt, records)
+            self.db.commit()
+        except sqlite3.OperationalError as ex:
+            log.warn('unable to store tile: %s', ex)
+            return False
+        return True
 
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
@@ -271,10 +294,12 @@ class MBTilesCache(TileCacheBase):
 class MBTilesLevelCache(TileCacheBase):
     supports_timestamp = True
 
-    def __init__(self, mbtiles_dir):
+    def __init__(self, mbtiles_dir, timeout=30, wal=False):
         self.lock_cache_id = 'sqlite-' + hashlib.md5(mbtiles_dir.encode('utf-8')).hexdigest()
         self.cache_dir = mbtiles_dir
         self._mbtiles = {}
+        self.timeout = timeout
+        self.wal = wal
         self._mbtiles_lock = threading.Lock()
 
     def _get_level(self, level):
@@ -287,6 +312,8 @@ class MBTilesLevelCache(TileCacheBase):
                 self._mbtiles[level] = MBTilesCache(
                     mbtile_filename,
                     with_timestamps=True,
+                    timeout=self.timeout,
+                    wal=self.wal,
                 )
 
         return self._mbtiles[level]
@@ -312,6 +339,14 @@ class MBTilesLevelCache(TileCacheBase):
             return True
 
         return self._get_level(tile.coord[2]).store_tile(tile)
+
+    def store_tiles(self, tiles):
+        failed = False
+        for level, tiles in itertools.groupby(tiles, key=lambda t: t.coord[2]):
+            tiles = [t for t in tiles if not t.stored]
+            res = self._get_level(level).store_tiles(tiles)
+            if not res: failed = True
+        return failed
 
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:

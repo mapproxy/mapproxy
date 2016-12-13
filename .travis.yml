@@ -29,7 +29,17 @@ addons:
       - libprotoc-dev
 
 env:
-  - MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984
+  global:
+    - MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984
+
+    # do not load /etc/boto.cfg with Python 3 incompatible plugin
+    # https://github.com/travis-ci/travis-ci/issues/5246#issuecomment-166460882
+    - BOTO_CONFIG=/doesnotexist
+
+matrix:
+  allow_failures:
+    - python: "2.6"
+  fast_finish: true
 
 cache:
   directories:
@@ -37,7 +47,8 @@ cache:
 
 install:
     # riak packages are not compatible with Python 3
-    - "if [[ $TRAVIS_PYTHON_VERSION = '2.7' ]]; then pip install --use-mirrors protobuf>=2.4.1 riak==2.2 riak_pb>=2.0; export MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984; export MAPPROXY_TEST_RIAK_PBC=pbc://localhost:8087; fi"
+    - "if [[ $TRAVIS_PYTHON_VERSION = '2.7' ]]; then pip install protobuf>=2.4.1 riak==2.2 riak_pb>=2.0; export MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984; export MAPPROXY_TEST_RIAK_PBC=pbc://localhost:8087; fi"
     - "pip install -r requirements-tests.txt"
+    - "pip freeze"
 
 script: nosetests mapproxy
