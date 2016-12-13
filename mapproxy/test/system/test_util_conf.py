@@ -158,7 +158,6 @@ class TestMapProxyConfCmd(object):
             }])
             eq_(len(conf['layers'][0]['layers']), 2)
 
-
     def test_test_gpkg_output(self):
         with capture(bytes=True) as (stdout, stderr):
             assert config_command(['mapproxy-conf',
@@ -189,7 +188,6 @@ class TestMapProxyConfCmd(object):
 
             eq_(conf['services'], {'wms': None, 'demo': None, 'tms': {'origin': 'nw', 'use_grid_names': True},
                           'kml': {'use_grid_names': True}, 'wmts': None})
-
 
     def test_overwrites(self):
         with capture(bytes=True) as (stdout, stderr):
@@ -270,12 +268,10 @@ class TestMapProxyConfCmd(object):
                              20037508.3427892)]
         eq_(expected_results, returned_contents)
 
-
     def test_get_layer_organization_coordsys_id(self):
         returned_contents = get_table_organization_coordsys_id(self.get_test_gpkg(), 900913)
         expected_results = 900913
         eq_(expected_results, returned_contents)
-
 
     def test_get_layer_organization_coordsys_id(self):
         returned_contents = get_table_tile_matrix(self.get_test_gpkg(), 'cache')
@@ -299,7 +295,6 @@ class TestMapProxyConfCmd(object):
                             (17, 131072, 131072, 256, 256, 1.194328566955879, 1.194328566955879),
                             (18, 262144, 262144, 256, 256, 0.5971642834779395, 0.5971642834779395)]
         eq_(expected_results, returned_contents)
-
 
     def test_get_estimated_tile_res_ratio(self):
         # Test one level
