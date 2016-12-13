@@ -2015,3 +2015,4 @@ def parse_color(color):
 
     return r, g, b
 
+
