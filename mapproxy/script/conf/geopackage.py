@@ -23,15 +23,9 @@ def get_gpkg_contents(geopackage_file, data_type='tiles'):
     :return: One or more tuples with the table_name, min_x, min_y, max_x, max_y, srs_id for each layer in the geopackage.
     """
     with sqlite3.connect(geopackage_file) as db:
-        try:
-            cur = db.execute("SELECT table_name, data_type, identifier, description, last_change, min_x, min_y, max_x, "
+        cur = db.execute("SELECT table_name, data_type, identifier, description, last_change, min_x, min_y, max_x, "
                              "max_y, srs_id "
                              "FROM gpkg_contents WHERE data_type = ?", (data_type,))
-        except sqlite3.OperationalError as oe:
-            if 'no such column' in str(oe):
-                return False
-            else:
-                raise
     return cur.fetchall()
 
 
@@ -42,14 +36,8 @@ def get_table_organization_coordsys_id(geopackage_file, srs_id):
     :return: An integer representing the organization_coordsys_id as an EPSG code.
     """
     with sqlite3.connect(geopackage_file) as db:
-        try:
-            cur = db.execute("SELECT organization_coordsys_id FROM gpkg_spatial_ref_sys WHERE srs_id = ?"
+        cur = db.execute("SELECT organization_coordsys_id FROM gpkg_spatial_ref_sys WHERE srs_id = ?"
                              , (srs_id,))
-        except sqlite3.OperationalError as oe:
-            if 'no such column' in str(oe):
-                return False
-            else:
-                raise
     results = cur.fetchone()
     if results:
         return results[0]
@@ -62,9 +50,9 @@ def get_table_tile_matrix(geopackage_file, table_name):
     :return: A tuple of tuple containing zoom_level, matrix_width, matrix_height, tile_width, tile_height, pixel_x_size,
     pixel_y_size for each zoom_level.
     """
+
     with sqlite3.connect(geopackage_file) as db:
-        try:
-            cur = db.execute("SELECT zoom_level,"
+        cur = db.execute("SELECT zoom_level,"
                              "matrix_width, "
                              "matrix_height, "
                              "tile_width, "
@@ -73,18 +61,13 @@ def get_table_tile_matrix(geopackage_file, table_name):
                              "pixel_y_size "
                              "FROM gpkg_tile_matrix WHERE table_name = ?"
                              "ORDER BY zoom_level", (table_name,))
-        except sqlite3.OperationalError as oe:
-            if 'no such column' in str(oe):
-                return False
-            else:
-                raise
-    return cur.fetchall()
+        return cur.fetchall()
 
 
 def get_estimated_tile_res_ratio(tile_matrix):
     """
 
-    :param tile_matrix: A tuple of tuples representing the geopackage tile matrix (without the table name included.
+    :param tile_matrix: A tuple of tuples representing the geopackage tile matrix (without the table name included).
     :return: The rate at which the resolution increases between levels.
     """
     default_res_factor = 2
