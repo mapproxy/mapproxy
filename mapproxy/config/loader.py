@@ -621,10 +621,12 @@ class ArcGISSourceConfiguration(SourceConfiguration):
         request = create_request(self.conf["req"], params)
         http_client, request.url = self.http_client(request.url)
         coverage = self.coverage()
+        res_range = resolution_range(self.conf)
 
         client = ArcGISClient(request, http_client)
         image_opts = self.image_opts(format=params.get('format'))
         return ArcGISSource(client, image_opts=image_opts, coverage=coverage,
+                            res_range=res_range,
                             supported_srs=supported_srs,
                             supported_formats=supported_formats or None)
 
