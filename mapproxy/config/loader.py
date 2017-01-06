@@ -1185,6 +1185,19 @@ class CacheConfiguration(ConfigurationBase):
             use_secondary_index=use_secondary_index,
         )
 
+    def _redis_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.redis import RedisCache
+
+        host = self.conf['cache'].get('host', '127.0.0.1')
+        port = self.conf['cache'].get('port', 6379)
+        db = self.conf['cache'].get('db', 0)
+
+        prefix = self.conf['cache'].get('prefix')
+        if not prefix:
+            prefix = self.conf['name'] + '_' + grid_conf.tile_grid().name
+
+        return RedisCache(host=host, port=port, db=db, prefix=prefix)
+
     def _compact_cache(self, grid_conf, file_ext):
         from mapproxy.cache.compact import CompactCacheV1
 
