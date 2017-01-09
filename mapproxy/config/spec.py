@@ -155,6 +155,7 @@ cache_types = {
         'port': int(),
         'db': int(),
         'prefix': str(),
+        'default_ttl': int(),
     },
     'compact': {
         'directory': str(),

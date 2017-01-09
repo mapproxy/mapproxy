@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2011 Omniscale <http://omniscale.de>
+# Copyright (C) 2017 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,12 +35,13 @@ log = logging.getLogger(__name__)
 
 
 class RedisCache(TileCacheBase):
-    def __init__(self, host, port, prefix, db=0):
+    def __init__(self, host, port, prefix, ttl=0, db=0):
         if redis is None:
             raise ImportError("Redis backend requires 'redis' package.")
 
         self.prefix = prefix
         self.lock_cache_id = 'redis-' + hashlib.md5((host + str(port) + prefix + str(db)).encode('utf-8')).hexdigest()
+        self.ttl = ttl
         self.r = redis.StrictRedis(host=host, port=port, db=db)
 
     def _key(self, tile):
@@ -62,7 +63,11 @@ class RedisCache(TileCacheBase):
         with tile_buffer(tile) as buf:
             data = buf.read()
 
-        return self.r.set(key, data)
+        r = self.r.set(key, data)
+        if self.ttl:
+            # use ms expire times for unit-tests
+            self.r.pexpire(key, int(self.ttl * 1000))
+        return r
 
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:

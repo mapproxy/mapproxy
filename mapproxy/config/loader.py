@@ -1191,12 +1191,19 @@ class CacheConfiguration(ConfigurationBase):
         host = self.conf['cache'].get('host', '127.0.0.1')
         port = self.conf['cache'].get('port', 6379)
         db = self.conf['cache'].get('db', 0)
+        ttl = self.conf['cache'].get('default_ttl', 3600)
 
         prefix = self.conf['cache'].get('prefix')
         if not prefix:
             prefix = self.conf['name'] + '_' + grid_conf.tile_grid().name
 
-        return RedisCache(host=host, port=port, db=db, prefix=prefix)
+        return RedisCache(
+            host=host,
+            port=port,
+            db=db,
+            prefix=prefix,
+            ttl=ttl,
+        )
 
     def _compact_cache(self, grid_conf, file_ext):
         from mapproxy.cache.compact import CompactCacheV1
