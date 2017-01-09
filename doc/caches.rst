@@ -33,6 +33,7 @@ The following backend types are available.
 - :ref:`cache_geopackage`
 - :ref:`cache_couchdb`
 - :ref:`cache_riak`
+- :ref:`cache_redis`
 - :ref:`cache_s3`
 - :ref:`cache_compact`
 
@@ -326,6 +327,59 @@ Example
         default_ports:
             pb: 8087
             http: 8098
+
+
+``redis``
+=========
+
+.. versionadded:: 1.10.0
+
+Store tiles in a `Redis <https://redis.io/>`_ in-memory database. This backend is useful for short-term caching. Typical use-case is a small Redis cache that allows you to benefit from meta-tiling.
+
+Your Redis database should be configured with ``maxmemory`` and ``maxmemory-policy`` options to limit the memory usage. For example::
+
+  maxmemory 256mb
+  maxmemory-policy volatile-ttl
+
+
+Requirements
+------------
+
+You will need the `Python Redis client <https://pypi.python.org/pypi/redis>`_. You can install it in the usual way, for example with ``pip install redis``.
+
+Configuration
+-------------
+
+Available options:
+
+``host``:
+    Host name of the Redis server. Defaults to ``127.0.0.1``.
+
+``port``:
+    Port of the Redis server. Defaults to ``6379``.
+
+``db``:
+    Number of the Redis database. Please refer to the Redis documentation. Defaults to `0`.
+
+``prefix``:
+    The prefix added to each tile-key in the Redis cache. Used to distinguish tiles from different caches and grids.  Defaults to ``cache-name_grid-name``.
+
+``default_ttl``:
+    The default Time-To-Live of each tile in the Redis cache in seconds. Defaults to 3600 seconds (1 hour).
+
+
+
+Example
+-------
+
+::
+
+    redis_cache:
+        sources: [mywms]
+        grids: [mygrid]
+        cache:
+          type: redis
+          default_ttl: 600
 
 
 .. _cache_geopackage:
