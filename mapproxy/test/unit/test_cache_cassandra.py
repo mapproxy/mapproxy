@@ -23,7 +23,8 @@ class TestCassandraCache(TileCacheTestBase):
             raise SkipTest()
         self.host = os.environ[self.cassandra_server_env]
 
-        self.cluster = Cluster([self.host], control_connection_timeout=5.0)
+        # cassandra sometimes slow on dockered test instance
+        self.cluster = Cluster([self.host], control_connection_timeout=10.0)
         self.session = self.cluster.connect()
         self.session.default_timeout = 15.0
 
