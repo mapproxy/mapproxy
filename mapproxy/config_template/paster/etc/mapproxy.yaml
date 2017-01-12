@@ -14,7 +14,7 @@ services:
       contact:
         person: Your Name Here
         position: Technical Director
-        organization: 
+        organization:
         address: Fakestreet 123
         city: Somewhere
         postcode: 12345
@@ -23,9 +23,7 @@ services:
         fax: +49(0)000-000000-0
         email: info@omniscale.de
       access_constraints:
-        This service is intended for private and evaluation use only.
-        The data is licensed as Creative Commons Attribution-Share Alike 2.0
-        (http://creativecommons.org/licenses/by-sa/2.0/)
+        Insert license and copyright information for this service.
       fees: 'None'
 
 layers:
@@ -35,12 +33,12 @@ layers:
   # - name: osm_full_example
   #   title: Omniscale OSM WMS - osm.omniscale.net
   #   sources: [osm_cache_full_example]
-    
+
 caches:
   osm_cache:
     grids: [GLOBAL_MERCATOR, global_geodetic_sqrt2]
     sources: [osm_wms]
-  
+
   # osm_cache_full_example:
   #   meta_buffer: 20
   #   meta_size: [5, 5]
@@ -77,7 +75,7 @@ sources:
   #     # # always request in this format
   #     # format: image/png
   #     map: /home/map/mapserver.map
-    
+
 
 grids:
   global_geodetic_sqrt2:

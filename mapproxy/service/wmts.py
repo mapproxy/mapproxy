@@ -29,6 +29,7 @@ from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
 from mapproxy.util.coverage import load_limited_to
+from mapproxy.util.ext.odict import odict
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
@@ -50,7 +51,7 @@ class WMTSServer(Server):
 
     def _matrix_sets(self, layers):
         sets = {}
-        layers_grids = {}
+        layers_grids = odict()
         for layer in layers.values():
             grid = layer.grid
             if not grid.supports_access_with_origin('nw'):
@@ -62,8 +63,8 @@ class WMTSServer(Server):
                     sets[grid.name] = TileMatrixSet(grid)
                 except AssertionError:
                     continue # TODO
-            layers_grids.setdefault(layer.name, {})[grid.name] = layer
-        wmts_layers = {}
+            layers_grids.setdefault(layer.name, odict())[grid.name] = layer
+        wmts_layers = odict()
         for layer_name, layers in layers_grids.items():
             wmts_layers[layer_name] = WMTSTileLayer(layers)
         return wmts_layers, sets.values()

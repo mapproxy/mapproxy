@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from mapproxy.source.wms import WMSSource
+from mapproxy.source.wms import WMSSource, WMSInfoSource
 
 import logging
 log = logging.getLogger('mapproxy.source.arcgis')
@@ -24,3 +24,12 @@ class ArcGISSource(WMSSource):
                  supported_srs=None, supported_formats=None):
         WMSSource.__init__(self, client, image_opts=image_opts, coverage=coverage,
                            supported_srs=supported_srs, supported_formats=supported_formats)
+
+
+class ArcGISInfoSource(WMSInfoSource):
+    def __init__(self, client):
+        self.client = client
+
+    def get_info(self, query):
+        doc = self.client.get_info(query)
+        return doc

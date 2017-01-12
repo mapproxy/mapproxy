@@ -5,6 +5,7 @@ Caches
 
 MapProxy supports multiple backends to store the internal tiles. The default backend is file based and does not require any further configuration.
 
+
 Configuration
 =============
 
@@ -24,6 +25,18 @@ Each backend has a ``type`` and one or more options.
 
 
 The following backend types are available.
+
+
+- :ref:`cache_file`
+- :ref:`cache_mbtiles`
+- :ref:`cache_sqlite`
+- :ref:`cache_geopackage`
+- :ref:`cache_couchdb`
+- :ref:`cache_riak`
+- :ref:`cache_s3`
+- :ref:`cache_compact`
+
+.. _cache_file:
 
 ``file``
 ========
@@ -53,6 +66,7 @@ This is the default cache type and it uses a single file for each tile. Availabl
 
   .. versionadded:: 1.6.0
 
+.. _cache_mbtiles:
 
 ``mbtiles``
 ===========
@@ -87,17 +101,21 @@ You can set the ``sources`` to an empty list, if you use an existing MBTiles fil
   The MBTiles format specification does not include any timestamps for each tile and the seeding function is limited therefore. If you include any ``refresh_before`` time in a seed task, all tiles will be recreated regardless of the value. The cleanup process does not support any ``remove_before`` times for MBTiles and it always removes all tiles.
   Use the ``--summary`` option of the ``mapproxy-seed`` tool.
 
+The note about ``bulk_meta_tiles`` for SQLite below applies to MBtiles as well.
+
+.. _cache_sqlite:
+
 ``sqlite``
 ===========
 
 .. versionadded:: 1.6.0
 
-Use SQLite databases to store the tiles, similar to ``mbtiles`` cache. The difference to ``mbtiles`` cache is that the ``sqlite`` cache stores each level into a separate databse. This makes it easy to remove complete levels during mapproxy-seed cleanup processes. The ``sqlite`` cache also stores the timestamp of each tile.
+Use SQLite databases to store the tiles, similar to ``mbtiles`` cache. The difference to ``mbtiles`` cache is that the ``sqlite`` cache stores each level into a separate database. This makes it easy to remove complete levels during mapproxy-seed cleanup processes. The ``sqlite`` cache also stores the timestamp of each tile.
 
 Available options:
 
 ``dirname``:
-  The direcotry where the level databases will be stored.
+  The directory where the level databases will be stored.
 
 ``tile_lock_dir``:
   Directory where MapProxy should write lock files when it creates new tiles for this cache. Defaults to ``cache_data/tile_locks``.
@@ -114,6 +132,25 @@ Available options:
         type: sqlite
         directory: /path/to/cache
 
+
+.. note::
+
+  .. versionadded:: 1.10.0
+
+  All tiles from a meta tile request are stored in one transaction into the SQLite file to increase performance. You need to activate the :ref:`bulk_meta_tiles <bulk_meta_tiles>` option to get the same benefit when you are using tiled sources.
+
+  ::
+
+    caches:
+      sqlite_cache:
+        sources: [mytilesource]
+        bulk_meta_tiles: true
+        grids: [GLOBAL_MERCATOR]
+        cache:
+          type: sqlite
+          directory: /path/to/cache
+
+.. _cache_couchdb:
 
 ``couchdb``
 ===========
@@ -235,6 +272,7 @@ MapProxy will place the JSON document for tile z=3, x=1, y=2 at ``http://localho
 
 The ``_attachments``-part is the internal structure of CouchDB where the tile itself is stored. You can access the tile directly at: ``http://localhost:9999/mywms_tiles/mygrid-3-1-2/tile``.
 
+.. _cache_riak:
 
 ``riak``
 ========
@@ -288,3 +326,150 @@ Example
         default_ports:
             pb: 8087
             http: 8098
+
+
+.. _cache_geopackage:
+
+``geopackage``
+==============
+
+.. versionadded:: 1.10.0
+
+Store tiles in a `geopackage <http://www.geopackage.org/>`_ database. MapProxy creates a tile table if one isn't defined and populates the required meta data fields.
+This backend is good for datasets that require portability.
+Available options:
+
+``filename``:
+  The path to the geopackage file. Defaults to ``cachename.gpkg``.
+
+``table_name``:
+  The name of the table where the tiles should be stored (or retrieved if using an existing cache). Defaults to the ``cachename_gridname``.
+
+``levels``:
+  Set this to true to cache to a directory where each level is stored in a separate geopackage. Defaults to ``false``.
+  If set to true, ``filename`` is ignored.
+
+``directory``:
+  If levels is true use this to specify the directory to store geopackage files.
+
+You can set the ``sources`` to an empty list, if you use an existing geopackage file and do not have a source.
+
+::
+
+  caches:
+    geopackage_cache:
+      sources: []
+      grids: [GLOBAL_MERCATOR]
+      cache:
+        type: geopackage
+        filename: /path/to/bluemarble.gpkg
+        table_name: bluemarble_tiles
+
+.. note::
+
+  The geopackage format specification does not include any timestamps for each tile and the seeding function is limited therefore. If you include any ``refresh_before`` time in a seed task, all tiles will be recreated regardless of the value. The cleanup process does not support any ``remove_before`` times for geopackage and it always removes all tiles.
+  Use the ``--summary`` option of the ``mapproxy-seed`` tool.
+
+
+.. _cache_s3:
+
+``s3``
+======
+
+.. versionadded:: 1.10.0
+
+Store tiles in a `Amazon Simple Storage Service (S3) <https://aws.amazon.com/s3/>`_.
+
+
+Requirements
+------------
+
+You will need the Python `boto3 <https://github.com/boto/boto3>`_ package. You can install it in the usual way, for example with ``pip install boto3``.
+
+Configuration
+-------------
+
+Available options:
+
+``bucket_name``:
+  The bucket used for this cache. You can set the default bucket with ``globals.cache.s3.bucket_name``.
+
+``profile_name``:
+  Optional profile name for `shared credentials <http://boto3.readthedocs.io/en/latest/guide/configuration.html>`_ for this cache. Alternative methods of authentification are using the  ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY`` environmental variables, or by using an `IAM role <http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html>`_ when using an Amazon EC2 instance.
+  You can set the default profile with ``globals.cache.s3.profile_name``.
+
+``directory``:
+  Base directory (path) where all tiles are stored.
+
+``directory_layout``:
+  Defines the directory layout for the tiles (``12/12345/67890.png``, ``L12/R00010932/C00003039.png``, etc.).  See :ref:`cache_file` for available options. Defaults to ``tms`` (e.g. ``12/12345/67890.png``). This cache cache also supports ``reverse_tms`` where tiles are stored as ``y/x/z.format``. See *note* below.
+
+.. note::
+  The hierarchical ``directory_layouts`` can hit limitations of S3 *"if you are routinely processing 100 or more requests per second"*. ``directory_layout: reverse_tms`` can work around this limitation. Please read `S3 Request Rate and Performance Considerations <http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html>`_ for more information on this issue.
+
+Example
+-------
+
+::
+
+  cache:
+    my_layer_20110501_epsg_4326_cache_out:
+      sources: [my_layer_20110501_cache]
+      cache:
+        type: s3
+        directory: /1.0.0/my_layer/default/20110501/4326/
+        bucket_name: my-s3-tiles-cache
+
+  globals:
+    cache:
+      s3:
+        profile_name: default
+
+
+.. _cache_compact:
+
+
+``compact``
+===========
+
+.. versionadded:: 1.10.0
+
+Store tiles in ArcGIS compatible compact cache files. A single compact cache ``.bundle`` file stores up to about 16,000 tiles. There is one additional ``.bundlx`` index file for each ``.bundle`` data file.
+
+Only version 1 of the compact cache format (ArcGIS 10.0-10.2) is supported. Version 2 (ArcGIS 10.3 or higher) is not supported at the moment.
+
+Available options:
+
+``directory``:
+  Directory where MapProxy should store the level directories. This will not add the cache name or grid name to the path. You can use this option to point MapProxy to an existing compact cache.
+
+``version``:
+  The version of the ArcGIS compact cache format. This option is required.
+
+
+You can set the ``sources`` to an empty list, if you use an existing compact cache files and do not have a source.
+
+
+The following configuration will load tiles from ``/path/to/cache/L00/R0000C0000.bundle``, etc.
+
+::
+
+  caches:
+    compact_cache:
+      sources: []
+      grids: [webmercator]
+      cache:
+        type: compact
+        version: 1
+        directory: /path/to/cache
+
+.. note::
+
+  The compact cache format does not include any timestamps for each tile and the seeding function is limited therefore. If you include any ``refresh_before`` time in a seed task, all tiles will be recreated regardless of the value. The cleanup process does not support any ``remove_before`` times for compact caches and it always removes all tiles.
+  Use the ``--summary`` option of the ``mapproxy-seed`` tool.
+
+
+.. note::
+
+  The compact cache format is append-only to allow parallel read and write operations. Removing or refreshing tiles with ``mapproxy-seed`` does not reduce the size of the cache files. Therefore, this format is not suitable for caches that require frequent updates.
+

@@ -152,7 +152,7 @@ class InfoQuery(object):
 
     @property
     def coord(self):
-        return make_lin_transf((0, self.size[1], self.size[0], 0), self.bbox)(self.pos)
+        return make_lin_transf((0, 0, self.size[0], self.size[1]), self.bbox)(self.pos)
 
 class LegendQuery(object):
     def __init__(self, format, scale):

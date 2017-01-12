@@ -1,3 +1,34 @@
+1.9.0 2016-07-22
+~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- New band merge feature. Allows to create false-color or grayscale
+  images on the fly.
+- Support for ArcGIS REST sources.
+- Support multiple tilesets for each WMTS layer with the new
+  tile_sources option.
+- Allow to build WMS images from SQLite cache with more then 330 tiles.
+- New `arcgis` cache layout. Compatible to ArcGIS exploded caches.
+- New `mp` cache layout. Reduces number of nested directories.
+- Prevent unneeded quantizing/re-encoding of images.
+- Demo client: Support custom tile_size.
+
+Fixes:
+
+- Fix quantization error for some image modes
+  (e.g. grayscale image with transparency)
+- Support custom Proj4/EPSG files in mapproxy-util grid.
+- Convert paletted images to RGB(A) to avoid NEAREST resampling.
+- Fix quantizing with FASTOCTREE for paletted images with alpha channel.
+- Keep configured layer order in WMTS capabilities.
+- Fix coverage loading with Python 3.
+
+Other:
+
+- Make the output of various utils more clear.
+- wms.md.title is no longer required, default to "MapProxy WMS".
+
 1.8.2 2016-01-22
 ~~~~~~~~~~~~~~~~
 
