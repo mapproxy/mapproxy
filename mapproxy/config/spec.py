@@ -159,7 +159,6 @@ cache_types = {
         required('version'): number(),
         'tile_lock_dir': str(),
     },
-    },
     'cassandra': {
         'port': number(),
         'nodes': [cassandra_node]

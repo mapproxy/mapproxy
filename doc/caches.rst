@@ -35,6 +35,7 @@ The following backend types are available.
 - :ref:`cache_riak`
 - :ref:`cache_s3`
 - :ref:`cache_compact`
+- :ref:`cache_cassandra`
 
 .. _cache_file:
 
@@ -106,7 +107,7 @@ The note about ``bulk_meta_tiles`` for SQLite below applies to MBtiles as well.
 .. _cache_sqlite:
 
 ``sqlite``
-===========
+==========
 
 .. versionadded:: 1.6.0
 
@@ -473,6 +474,7 @@ The following configuration will load tiles from ``/path/to/cache/L00/R0000C0000
 
   The compact cache format is append-only to allow parallel read and write operations. Removing or refreshing tiles with ``mapproxy-seed`` does not reduce the size of the cache files. Therefore, this format is not suitable for caches that require frequent updates.
 
+.. _cache_cassandra:
 
 ``cassandra``
 =============

@@ -23,8 +23,9 @@ class TestCassandraCache(TileCacheTestBase):
             raise SkipTest()
         self.host = os.environ[self.cassandra_server_env]
 
-        self.cluster = Cluster([self.host])
+        self.cluster = Cluster([self.host], control_connection_timeout=5.0)
         self.session = self.cluster.connect()
+        self.session.default_timeout = 15.0
 
         self.session.execute("create keyspace if not exists testspace with replication = "
                              "{'class': 'SimpleStrategy', 'replication_factor': 1}")
