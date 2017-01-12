@@ -97,6 +97,10 @@ def export_command(args=None):
     parser.add_option("-f", "--mapproxy-conf", dest="mapproxy_conf",
         help="MapProxy configuration")
 
+    parser.add_option("-q", "--quiet",
+                      action="count", dest="quiet", default=0,
+                      help="reduce number of messages to stdout, repeat to disable progress output")
+
     parser.add_option("--source", dest="source",
         help="source to export (source or cache)")
 
@@ -204,6 +208,22 @@ def export_command(args=None):
             'type': 'mbtiles',
             'filename': options.dest,
         }
+    elif options.type == 'sqlite':
+        cache_conf['cache'] = {
+            'type': 'sqlite',
+            'directory': options.dest,
+        }
+    elif options.type == 'geopackage':
+        cache_conf['cache'] = {
+            'type': 'geopackage',
+            'filename': options.dest,
+        }
+    elif options.type == 'compact-v1':
+        cache_conf['cache'] = {
+            'type': 'compact',
+            'version': 1,
+            'directory': options.dest,
+        }
     elif options.type in ('tc', 'mapproxy'):
         cache_conf['cache'] = {
             'type': 'file',
@@ -257,7 +277,7 @@ def export_command(args=None):
 
     print(format_export_task(task, custom_grid=custom_grid))
 
-    logger = ProgressLog(verbose=True, silent=False)
+    logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2)
     try:
         seed_task(task, progress_logger=logger, dry_run=options.dry_run,
              concurrency=options.concurrency)

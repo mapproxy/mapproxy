@@ -15,6 +15,7 @@
 
 from __future__ import print_function
 
+import re
 import threading
 import sys
 import cgi
@@ -36,7 +37,7 @@ if PY2:
 else:
     from http.server import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
 
-class RequestsMissmatchError(AssertionError):
+class RequestsMismatchError(AssertionError):
     def __init__(self, assertions):
         self.assertions = assertions
 
@@ -44,7 +45,7 @@ class RequestsMissmatchError(AssertionError):
         assertions = []
         for assertion in self.assertions:
             assertions.append(text_indent(str(assertion), '    ', ' -  '))
-        return 'requests missmatch:\n' + '\n'.join(assertions)
+        return 'requests mismatch:\n' + '\n'.join(assertions)
 
 class RequestError(str):
     pass
@@ -56,14 +57,14 @@ def text_indent(text, indent, first_indent=None):
     text = first_indent + text
     return text.replace('\n', '\n' + indent)
 
-class RequestMissmatch(object):
+class RequestMismatch(object):
     def __init__(self, msg, expected, actual):
         self.msg = msg
         self.expected = expected
         self.actual = actual
 
     def __str__(self):
-        return ('requests missmatch, expected:\n' +
+        return ('requests mismatch, expected:\n' +
             text_indent(str(self.expected), '    ') +
             '\n  got:\n' + text_indent(str(self.actual), '    '))
 
@@ -162,7 +163,7 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
             if 'method' in req:
                 if req['method'] != method:
                     self.server.assertions.append(
-                        RequestMissmatch('unexpected method', req['method'], method)
+                        RequestMismatch('unexpected method', req['method'], method)
                     )
                     self.server.shutdown = True
             if req.get('require_basic_auth', False):
@@ -177,20 +178,20 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
                 for k, v in req['headers'].items():
                     if k not in self.headers:
                         self.server.assertions.append(
-                            RequestMissmatch('missing header', k, self.headers)
+                            RequestMismatch('missing header', k, self.headers)
                         )
                     elif self.headers[k] != v:
                         self.server.assertions.append(
-                            RequestMissmatch('header missmatch', '%s: %s' % (k, v), self.headers)
+                            RequestMismatch('header mismatch', '%s: %s' % (k, v), self.headers)
                         )
             if not query_comparator(req['path'], self.query_data):
                 self.server.assertions.append(
-                    RequestMissmatch('requests differ', req['path'], self.query_data)
+                    RequestMismatch('requests differ', req['path'], self.query_data)
                 )
                 query_actual = set(query_to_dict(self.query_data).items())
                 query_expected = set(query_to_dict(req['path']).items())
                 self.server.assertions.append(
-                    RequestMissmatch('requests params differ', query_expected - query_actual, query_actual - query_expected)
+                    RequestMismatch('requests params differ', query_expected - query_actual, query_actual - query_expected)
                 )
                 self.server.shutdown = True
             if 'req_assert_function' in req:
@@ -271,11 +272,11 @@ class MockServ(object):
 
         if not self._thread.sucess and value:
             print('requests to mock httpd did not '
-            'match expectations:\n %s' % RequestsMissmatchError(self._thread.assertions))
+            'match expectations:\n %s' % RequestsMismatchError(self._thread.assertions))
         if value:
             raise reraise((type, value, traceback))
         if not self._thread.sucess:
-            raise RequestsMissmatchError(self._thread.assertions)
+            raise RequestsMismatchError(self._thread.assertions)
 
 def wms_query_eq(expected, actual):
     """
@@ -312,6 +313,8 @@ def wms_query_eq(expected, actual):
 
     return True
 
+numbers_only = re.compile('^-?\d+\.\d+(,-?\d+\.\d+)*$')
+
 def query_eq(expected, actual):
     """
     >>> query_eq('bAR=baz&foo=bizz', 'foO=bizz&bar=baz')
@@ -322,11 +325,58 @@ def query_eq(expected, actual):
     True
     >>> query_eq('/1/2/3.png', '/1/2/0.png')
     False
+    >>> query_eq('/map?point=2.9999999999,1.00000000001', '/map?point=3.0,1.0')
+    True
     """
-    return (query_to_dict(expected) == query_to_dict(actual) and
-            path_from_query(expected) == path_from_query(actual))
 
-def assert_query_eq(expected, actual):
+    if path_from_query(expected) != path_from_query(actual):
+        return False
+
+    expected = query_to_dict(expected)
+    actual = query_to_dict(actual)
+
+    if set(expected.keys()) != set(actual.keys()):
+        return False
+
+    for ke, ve in expected.items():
+        if numbers_only.match(ve):
+            if not float_string_almost_eq(ve, actual[ke]):
+                return False
+        else:
+            if ve != actual[ke]:
+                return False
+
+    return True
+
+def float_string_almost_eq(expected, actual):
+    """
+    Compares if two strings with comma-separated floats are almost equal.
+    Strings must contain floats.
+
+    >>> float_string_almost_eq('12345678900', '12345678901')
+    False
+    >>> float_string_almost_eq('12345678900.0', '12345678901.0')
+    True
+
+    >>> float_string_almost_eq('12345678900.0,-3.0', '12345678901.0,-2.9999999999')
+    True
+    """
+    if not numbers_only.match(expected) or not numbers_only.match(actual):
+        return False
+
+    expected_nums = [float(x) for x in expected.split(',')]
+    actual_nums = [float(x) for x in actual.split(',')]
+
+    if len(expected_nums) != len(actual_nums):
+        return False
+
+    for e, a in zip(expected_nums, actual_nums):
+        if abs(e - a) > abs((e+a)/2)/10e9:
+            return False
+
+    return True
+
+def assert_query_eq(expected, actual, fuzzy_number_compare=False):
     path_actual = path_from_query(actual)
     path_expected = path_from_query(expected)
     assert path_expected == path_actual, path_expected + '!=' + path_actual
@@ -334,7 +384,11 @@ def assert_query_eq(expected, actual):
     query_actual = set(query_to_dict(actual).items())
     query_expected = set(query_to_dict(expected).items())
 
-    assert query_expected == query_actual, '%s != %s\t%s|%s' % (
+    if fuzzy_number_compare:
+        equal = query_eq(expected, actual)
+    else:
+        equal = query_expected == query_actual
+    assert equal, '%s != %s\t%s|%s' % (
         expected, actual, query_expected - query_actual, query_actual - query_expected)
 
 def path_from_query(query):
@@ -391,13 +445,13 @@ def mock_httpd(address, requests_responses, unordered=False, bbox_aware_query_co
         yield
     except:
         if not t.sucess:
-            print(str(RequestsMissmatchError(t.assertions)))
+            print(str(RequestsMismatchError(t.assertions)))
         raise
     finally:
         t.shutdown = True
         t.join(1)
     if not t.sucess:
-        raise RequestsMissmatchError(t.assertions)
+        raise RequestsMismatchError(t.assertions)
 
 @contextmanager
 def mock_single_req_httpd(address, request_handler):
@@ -407,13 +461,13 @@ def mock_single_req_httpd(address, request_handler):
         yield
     except:
         if not t.sucess:
-            print(str(RequestsMissmatchError(t.assertions)))
+            print(str(RequestsMismatchError(t.assertions)))
         raise
     finally:
         t.shutdown = True
         t.join(1)
     if not t.sucess:
-        raise RequestsMissmatchError(t.assertions)
+        raise RequestsMismatchError(t.assertions)
 
 
 def make_wsgi_env(query_string, extra_environ={}):

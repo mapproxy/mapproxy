@@ -679,6 +679,22 @@ class TestGKTileGridUL(TileGridTest):
         assert t1[1] == t3[3]
 
 
+class TestClosestLevelTinyResFactor(object):
+    def setup(self):
+        self.grid = TileGrid(SRS(31467),
+            bbox=[420000,30000,900000,350000], origin='ul',
+            res=[4000,3750,3500,3250,3000,2750,2500,2250,2000,1750,1500,1250,1000,750,650,500,250,100,50,20,10,5,2.5,2,1.5,1,0.5],
+        )
+
+    def test_closest_level(self):
+        eq_(self.grid.closest_level(5000), 0)
+        eq_(self.grid.closest_level(4000), 0)
+        eq_(self.grid.closest_level(3750), 1)
+        eq_(self.grid.closest_level(3500), 2)
+        eq_(self.grid.closest_level(3250), 3)
+        eq_(self.grid.closest_level(3000), 4)
+
+
 class TestOrigins(object):
     def test_basic(self):
         grid = tile_grid(4326, bbox=(-180, -90, 180, 90), origin='ll')

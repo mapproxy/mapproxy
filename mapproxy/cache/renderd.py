@@ -30,6 +30,7 @@ except ImportError:
 from mapproxy.client.log import log_request
 from mapproxy.cache.tile import TileCreator, Tile
 from mapproxy.source import SourceError
+from mapproxy.util.lock import LockTimeout
 
 def has_renderd_support():
     if not json or not requests:
@@ -71,6 +72,9 @@ class RenderdTileCreator(TileCreator):
         if result['status'] == 'error':
             log_request(address, 500, None, duration=duration, method='RENDERD')
             raise SourceError("Error from renderd: %s" % result.get('error_message', 'unknown error from renderd'))
+        elif result['status'] == 'lock':
+            log_request(address, 503, None, duration=duration, method='RENDERD')
+            raise LockTimeout("Lock timeout from renderd: %s" % result.get('error_message', 'unknown lock timeout error from renderd'))
 
         log_request(address, 200, None, duration=duration, method='RENDERD')
 

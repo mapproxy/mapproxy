@@ -28,7 +28,7 @@
       <ContactElectronicMailAddress>osm@omniscale.de</ContactElectronicMailAddress>
   </ContactInformation>
   <Fees>none</Fees>
-  <AccessConstraints>This service is intended for private and evaluation use only. The data is licensed as Creative Commons Attribution-Share Alike 2.0 (http://creativecommons.org/licenses/by-sa/2.0/)</AccessConstraints>
+  <AccessConstraints>Here be dragons.</AccessConstraints>
 </Service>
 <Capability>
   <Request>

@@ -15,6 +15,7 @@
 
 from __future__ import print_function, division
 
+import math
 import sys
 import optparse
 
@@ -88,7 +89,9 @@ def display_grid(grid_conf, coverage=None):
 def human_readable_number(num):
     if num > 10**6:
         return '%7.2fM' % (num/10**6)
-    return '%d' % num
+    if math.isnan(num):
+        return '?'
+    return '%d' % int(num)
 
 def display_grids_list(grids):
     for grid_name in sorted(grids.keys()):

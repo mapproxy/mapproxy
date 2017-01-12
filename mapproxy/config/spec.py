@@ -110,11 +110,22 @@ cache_types = {
     },
     'sqlite': {
         'directory': str(),
+        'sqlite_timeout': number(),
+        'sqlite_wal': bool(),
         'tile_lock_dir': str(),
     },
     'mbtiles': {
         'filename': str(),
+        'sqlite_timeout': number(),
+        'sqlite_wal': bool(),
         'tile_lock_dir': str(),
+    },
+    'geopackage': {
+        'filename': str(),
+        'directory': str(),
+        'tile_lock_dir': str(),
+        'table_name': str(),
+        'levels': bool(),
     },
     'couchdb': {
         'url': str(),
@@ -125,6 +136,13 @@ cache_types = {
         'tile_id': str(),
         'tile_lock_dir': str(),
     },
+    's3': {
+        'bucket_name': str(),
+        'directory_layout': str(),
+        'directory': str(),
+        'profile_name': str(),
+        'tile_lock_dir': str(),
+     },
     'riak': {
         'nodes': [riak_node],
         'protocol': one_of('pbc', 'http', 'https'),
@@ -134,6 +152,13 @@ cache_types = {
             'http': number(),
         },
         'secondary_index': bool(),
+        'tile_lock_dir': str(),
+    },
+    'compact': {
+        'directory': str(),
+        required('version'): number(),
+        'tile_lock_dir': str(),
+    },
     },
     'cassandra': {
         'port': number(),
@@ -332,10 +357,15 @@ mapproxy_yaml_spec = {
             'tile_lock_dir': str(),
             'meta_size': [number()],
             'meta_buffer': number(),
+            'bulk_meta_tiles': bool(),
             'max_tile_limit': number(),
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
             'link_single_color_images': bool(),
+            's3': {
+                'bucket_name': str(),
+                'profile_name': str(),
+            },
         },
         'grid': {
             'tile_size': [int()],
@@ -364,6 +394,7 @@ mapproxy_yaml_spec = {
             'cache_dir': str(),
             'meta_size': [number()],
             'meta_buffer': number(),
+            'bulk_meta_tiles': bool(),
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
             'disable_storage': bool(),
@@ -493,6 +524,11 @@ mapproxy_yaml_spec = {
                     'layers': str(),
                     'transparent': bool(),
                     'time': str()
+                },
+                'opts': {
+                    'featureinfo': bool(),
+                    'featureinfo_tolerance': number(),
+                    'featureinfo_return_geometries': bool(),
                 },
                 'supported_srs': [str()],
                 'http': http_opts

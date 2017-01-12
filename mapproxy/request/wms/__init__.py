@@ -734,10 +734,12 @@ info_formats = {
     Version('1.3.0'): (('text', 'text/plain'),
                        ('html', 'text/html'),
                        ('xml', 'text/xml'),
+                       ('json', 'application/json'),
                       ),
     None: (('text', 'text/plain'),
            ('html', 'text/html'),
            ('xml', 'application/vnd.ogc.gml'),
+           ('json', 'application/json'),
           )
 }
 

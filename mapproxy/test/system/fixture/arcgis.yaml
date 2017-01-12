@@ -1,5 +1,7 @@
 services:
   tms:
+  wms:
+    featureinfo_types: ['json']
 
 layers:
   - name: app2_layer
@@ -8,6 +10,9 @@ layers:
   - name: app2_with_layers_layer
     title: ArcGIS Cache Layer
     sources: [app2_with_layers_cache]
+  - name: app2_with_layers_fi_layer
+    title: ArcGIS Cache Layer
+    sources: [app2_with_layers_fi_cache]
   - name: app2_wrong_url_layer
     title: ArcGIS Cache Layer
     sources: [app2_wrong_url_cache]
@@ -19,6 +24,9 @@ caches:
   app2_with_layers_cache:
     grids: [GLOBAL_MERCATOR]
     sources: [app2_with_layers_source]
+  app2_with_layers_fi_cache:
+    grids: [GLOBAL_MERCATOR]
+    sources: [app2_with_layers_fi_source]
   app2_wrong_url_cache:
     grids: [GLOBAL_MERCATOR]
     sources: [app2_wrong_url_source]
@@ -32,7 +40,17 @@ sources:
     type: arcgis
     req:
       layers: show:0,1
-      url: http://localhost:42423/arcgis/rest/services/ExampleLayer/ImageServer
+      url: http://localhost:42423/arcgis/rest/services/ExampleLayer/MapServer
+  app2_with_layers_fi_source:
+    type: arcgis
+    opts:
+      featureinfo: true
+      featureinfo_tolerance: 10
+      featureinfo_return_geometries: true
+    supported_srs: ['EPSG:3857']
+    req:
+      layers: show:1,2,3
+      url: http://localhost:42423/arcgis/rest/services/ExampleLayer/MapServer
   app2_wrong_url_source:
     type: arcgis
     req:

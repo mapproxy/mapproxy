@@ -419,7 +419,7 @@ with no data (e.g. water areas, areas with no roads, etc.).
 """"""""""""""""""""""""""
 If set to ``true``, MapProxy will only issue a single request to the source. This option can reduce the request latency for uncached areas (on demand caching).
 
-By default MapProxy requests all uncached meta tiles that intersect the requested bbox. With a typical configuration it is not uncommon that a requests will trigger four requests each larger than 2000x2000 pixel. With the ``minimize_meta_requests`` option enabled, each request will trigger only one request to the source. That request will be aligned to the next tile boundaries and the tiles will be cached.
+By default MapProxy requests all uncached meta-tiles that intersect the requested bbox. With a typical configuration it is not uncommon that a requests will trigger four requests each larger than 2000x2000 pixel. With the ``minimize_meta_requests`` option enabled, each request will trigger only one request to the source. That request will be aligned to the next tile boundaries and the tiles will be cached.
 
 .. index:: watermark
 
@@ -469,6 +469,11 @@ requests for geographical SRS will use ``EPSG:4326``.
 """""""""""""""""""""""""""""""""
 
 Change the ``meta_size`` and ``meta_buffer`` of this cache. See :ref:`global cache options <meta_size>` for more details.
+
+``bulk_meta_tiles``
+"""""""""""""""""""
+
+Enables meta-tile handling for tiled sources. See :ref:`global cache options <meta_size>` for more details.
 
 ``image``
 """""""""
@@ -608,6 +613,9 @@ Requests with 1500, 1000 or 701m/px resolution will use the first level, request
 """"""""
 
 The extent of your grid. You can use either a list or a string with the lower left and upper right coordinates. You can set the SRS of the coordinates with the ``bbox_srs`` option. If that option is not set the ``srs`` of the grid will be used.
+
+MapProxy always expects your BBOX coordinates order to be east, south, west, north, regardless of your SRS :ref:`axis order <axis_order>`.
+
 ::
 
   bbox: [0, 40, 15, 55]
@@ -633,11 +641,9 @@ The default origin (x=0, y=0) of the tile grid is the lower left corner, similar
 The following values are supported:
 
 ``ll`` or ``sw``:
-
   If the x=0, y=0 tile is in the lower-left/south-west corner of the tile grid. This is the default.
 
 ``ul`` or ``nw``:
-
   If the x=0, y=0 tile is in the upper-left/north-west corner of the tile grid.
 
 
@@ -788,13 +794,24 @@ Here you can define some options that affect the way MapProxy generates image re
 ``cache``
 """""""""
 
+The following options define how tiles are created and stored. Most options can be set individually for each cache as well.
+
 .. versionadded:: 1.6.0 ``tile_lock_dir``
+.. versionadded:: 1.10.0 ``bulk_meta_tiles``
 
 
 .. _meta_size:
 
 ``meta_size``
-  MapProxy does not make a single request for every tile but will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source WMS.
+  MapProxy does not make a single request for every tile it needs, but it will request a large meta-tile that consist of multiple tiles. ``meta_size`` defines how large a meta-tile is. A ``meta_size`` of ``[4, 4]`` will request 16 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source. Tiled sources are still requested tile by tile, but you can configure MapProxy to load multiple tiles in bulk with `bulk_meta_tiles`.
+
+
+.. _bulk_meta_tiles:
+
+``bulk_meta_tiles``
+  Enables meta-tile handling for caches with tile sources.
+  If set to `true`, MapProxy will request neighboring tiles from the source even if only one tile is requested from the cache. ``meta_size`` defines how many tiles should be requested in one step and ``concurrent_tile_creators`` defines how many requests are made in parallel. This option improves the performance for caches that allow to store multiple tiles with one request, like SQLite/MBTiles but not the ``file`` cache.
+
 
 ``meta_buffer``
   MapProxy will increase the size of each meta-tile request by this number of
@@ -822,10 +839,11 @@ Here you can define some options that affect the way MapProxy generates image re
   can either be absolute (e.g. ``/tmp/lock/mapproxy``) or relative to the
   mapproxy.yaml file. Defaults to ``./cache_data/dir_of_the_cache/tile_locks``.
 
-``concurrent_tile_creators``
-  This limits the number of parallel requests MapProxy will make to a source WMS. This limit is per request and not for all MapProxy requests. To limit the requests MapProxy makes to a single server use the ``concurrent_requests`` option.
 
-  Example: A request in an uncached region requires MapProxy to fetch four meta-tiles. A ``concurrent_tile_creators`` value of two allows MapProxy to make two requests to the source WMS request in parallel. The splitting of the meta tile and the encoding of the new tiles will happen in parallel to.
+``concurrent_tile_creators``
+  This limits the number of parallel requests MapProxy will make to a source. This limit is per request for this cache and not for all MapProxy requests. To limit the requests MapProxy makes to a single server use the ``concurrent_requests`` option.
+
+  Example: A request in an uncached region requires MapProxy to fetch four meta-tiles. A ``concurrent_tile_creators`` value of two allows MapProxy to make two requests to the source WMS request in parallel. The splitting of the meta-tile and the encoding of the new tiles will happen in parallel to.
 
 
 ``link_single_color_images``
@@ -897,7 +915,7 @@ See the `Python SSL documentation <http://docs.python.org/dev/library/ssl.html#s
   http:
     ssl_ca_certs: /etc/ssl/certs/ca-certificates.crt
 
-If you want to use SSL but do not need certificate verification, then you can disable it with the ``ssl_no_cert_checks`` option. You can also disable this check on a source level, see :ref:`WMS source options <wms_source-ssl_no_cert_checks>`.
+If you want to use SSL but do not need certificate verification, then you can disable it with the ``ssl_no_cert_checks`` option. You can also disable this check on a source level, see :ref:`WMS source options <wms_source_ssl_no_cert_checks>`.
 ::
 
   http:

@@ -29,12 +29,11 @@ from PIL import Image
 from mapproxy.cache.tile import Tile
 from mapproxy.cache.file import FileCache
 from mapproxy.cache.mbtiles import MBTilesCache, MBTilesLevelCache
-from mapproxy.cache.base import CacheBackendError
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.test.image import create_tmp_image_buf, is_png
 
-from nose.tools import eq_, assert_raises
+from nose.tools import eq_
 
 tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
@@ -52,23 +51,23 @@ class TileCacheTestBase(object):
         if hasattr(self, 'cache_dir') and os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
 
-    def create_tile(self, coord=(0, 0, 4)):
+    def create_tile(self, coord=(3009, 589, 12)):
         return Tile(coord,
             ImageSource(tile_image,
                 image_opts=ImageOptions(format='image/png')))
 
-    def create_another_tile(self, coord=(0, 0, 4)):
+    def create_another_tile(self, coord=(3009, 589, 12)):
         return Tile(coord,
             ImageSource(tile_image2,
                 image_opts=ImageOptions(format='image/png')))
 
     def test_is_cached_miss(self):
-        assert not self.cache.is_cached(Tile((0, 0, 4)))
+        assert not self.cache.is_cached(Tile((3009, 589, 12)))
 
     def test_is_cached_hit(self):
         tile = self.create_tile()
         self.create_cached_tile(tile)
-        assert self.cache.is_cached(Tile((0, 0, 4)))
+        assert self.cache.is_cached(Tile((3009, 589, 12)))
 
     def test_is_cached_none(self):
         assert self.cache.is_cached(Tile(None))
@@ -77,7 +76,7 @@ class TileCacheTestBase(object):
         assert self.cache.load_tile(Tile(None))
 
     def test_load_tile_not_cached(self):
-        tile = Tile((0, 0, 4))
+        tile = Tile((3009, 589, 12))
         assert not self.cache.load_tile(tile)
         assert tile.source is None
         assert tile.is_missing()
@@ -85,16 +84,16 @@ class TileCacheTestBase(object):
     def test_load_tile_cached(self):
         tile = self.create_tile()
         self.create_cached_tile(tile)
-        tile = Tile((0, 0, 4))
+        tile = Tile((3009, 589, 12))
         assert self.cache.load_tile(tile) == True
         assert not tile.is_missing()
 
     def test_store_tiles(self):
-        tiles = [self.create_tile((x, 0, 4)) for x in range(4)]
+        tiles = [self.create_tile((x, 589, 12)) for x in range(4)]
         tiles[0].stored = True
         self.cache.store_tiles(tiles)
 
-        tiles = [Tile((x, 0, 4)) for x in range(4)]
+        tiles = [Tile((x, 589, 12)) for x in range(4)]
         assert tiles[0].is_missing()
         assert self.cache.load_tile(tiles[0]) == False
         assert tiles[0].is_missing()
@@ -172,13 +171,13 @@ class TileCacheTestBase(object):
         # tile object is marked as stored,
         # check that is is not stored 'again'
         # (used for disable_storage)
-        tile = Tile((0, 0, 4), ImageSource(BytesIO(b'foo')))
+        tile = Tile((1234, 589, 12), ImageSource(BytesIO(b'foo')))
         tile.stored = True
         self.cache.store_tile(tile)
 
         assert self.cache.is_cached(tile)
 
-        tile = Tile((0, 0, 4))
+        tile = Tile((1234, 589, 12))
         assert not self.cache.is_cached(tile)
 
     def test_remove(self):
@@ -188,6 +187,11 @@ class TileCacheTestBase(object):
 
         self.cache.remove_tile(Tile((1, 0, 4)))
         assert not self.cache.is_cached(Tile((1, 0, 4)))
+
+        # check if we can recreate a removed tile
+        tile = self.create_tile((1, 0, 4))
+        self.create_cached_tile(tile)
+        assert self.cache.is_cached(Tile((1, 0, 4)))
 
     def create_cached_tile(self, tile):
         self.cache.store_tile(tile)
@@ -248,6 +252,58 @@ class TestFileTileCache(TileCacheTestBase):
         with open(loc, 'wb') as f:
             f.write(b'foo')
 
+
+    def check_tile_location(self, layout, tile_coord, path):
+        cache = FileCache('/tmp/foo', 'png', directory_layout=layout)
+        eq_(cache.tile_location(Tile(tile_coord)), path)
+
+    def test_tile_locations(self):
+        yield self.check_tile_location, 'mp', (12345, 67890,  2), '/tmp/foo/02/0001/2345/0006/7890.png'
+        yield self.check_tile_location, 'mp', (12345, 67890, 12), '/tmp/foo/12/0001/2345/0006/7890.png'
+
+        yield self.check_tile_location, 'tc', (12345, 67890,  2), '/tmp/foo/02/000/012/345/000/067/890.png'
+        yield self.check_tile_location, 'tc', (12345, 67890, 12), '/tmp/foo/12/000/012/345/000/067/890.png'
+
+        yield self.check_tile_location, 'tms', (12345, 67890,  2), '/tmp/foo/2/12345/67890.png'
+        yield self.check_tile_location, 'tms', (12345, 67890, 12), '/tmp/foo/12/12345/67890.png'
+
+        yield self.check_tile_location, 'quadkey', (0, 0, 0), '/tmp/foo/.png'
+        yield self.check_tile_location, 'quadkey', (0, 0, 1), '/tmp/foo/0.png'
+        yield self.check_tile_location, 'quadkey', (1, 1, 1), '/tmp/foo/3.png'
+        yield self.check_tile_location, 'quadkey', (12345, 67890, 12), '/tmp/foo/200200331021.png'
+
+        yield self.check_tile_location, 'arcgis', (1, 2, 3), '/tmp/foo/L03/R00000002/C00000001.png'
+        yield self.check_tile_location, 'arcgis', (9, 2, 3), '/tmp/foo/L03/R00000002/C00000009.png'
+        yield self.check_tile_location, 'arcgis', (10, 2, 3), '/tmp/foo/L03/R00000002/C0000000a.png'
+        yield self.check_tile_location, 'arcgis', (12345, 67890, 12), '/tmp/foo/L12/R00010932/C00003039.png'
+
+
+    def check_level_location(self, layout, level, path):
+        cache = FileCache('/tmp/foo', 'png', directory_layout=layout)
+        eq_(cache.level_location(level), path)
+
+    def test_level_locations(self):
+        yield self.check_level_location, 'mp', 2, '/tmp/foo/02'
+        yield self.check_level_location, 'mp', 12, '/tmp/foo/12'
+
+        yield self.check_level_location, 'tc',  2, '/tmp/foo/02'
+        yield self.check_level_location, 'tc', 12, '/tmp/foo/12'
+
+        yield self.check_level_location, 'tms',  '2', '/tmp/foo/2'
+        yield self.check_level_location, 'tms', 12, '/tmp/foo/12'
+
+        yield self.check_level_location, 'arcgis', 3, '/tmp/foo/L03'
+        yield self.check_level_location, 'arcgis', 3, '/tmp/foo/L03'
+        yield self.check_level_location, 'arcgis', 3, '/tmp/foo/L03'
+        yield self.check_level_location, 'arcgis', 12, '/tmp/foo/L12'
+
+    def test_level_location_quadkey(self):
+        try:
+            self.check_level_location('quadkey', 0, None)
+        except NotImplementedError:
+            pass
+        else:
+            assert False, "expected NotImplementedError"
 
 class TestMBTileCache(TileCacheTestBase):
     def setup(self):
@@ -347,3 +403,17 @@ class TestMBTileLevelCache(TileCacheTestBase):
 
         eq_(sorted(os.listdir(self.cache_dir)), ['1.mbtile', '2.mbtile'])
         assert self.cache.is_cached(Tile((0, 0, 2)))
+
+    def test_bulk_store_tiles_with_different_levels(self):
+        self.cache.store_tiles([
+            self.create_tile((0, 0, 1)),
+            self.create_tile((0, 0, 2)),
+            self.create_tile((1, 0, 2)),
+            self.create_tile((1, 0, 1)),
+        ])
+
+        eq_(sorted(os.listdir(self.cache_dir)), ['1.mbtile', '2.mbtile'])
+        assert self.cache.is_cached(Tile((0, 0, 1)))
+        assert self.cache.is_cached(Tile((1, 0, 1)))
+        assert self.cache.is_cached(Tile((0, 0, 2)))
+        assert self.cache.is_cached(Tile((1, 0, 2)))

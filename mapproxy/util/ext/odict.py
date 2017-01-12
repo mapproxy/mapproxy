@@ -282,7 +282,7 @@ class odict(dict):
     def setdefault(self, key, default=None):
         if key not in self:
             self._keys.append(key)
-        dict.setdefault(self, key, default)
+        return dict.setdefault(self, key, default)
 
     def update(self, *args, **kwargs):
         sources = []

@@ -70,12 +70,13 @@ class cached_property(object):
 
 def memoize(func):
     @wraps(func)
-    def wrapper(self, *args):
+    def wrapper(self, *args, **kwargs):
         if not hasattr(self, '__memoize_cache'):
             self.__memoize_cache = {}
         cache = self.__memoize_cache.setdefault(func, {})
-        if args not in cache:
-            cache[args] = func(self, *args)
-        return cache[args]
+        key = args + tuple(kwargs.items())
+        if key not in cache:
+            cache[key] = func(self, *args, **kwargs)
+        return cache[key]
     return wrapper
 

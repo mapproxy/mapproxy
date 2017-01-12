@@ -528,17 +528,17 @@ class TestWMS111(WMSTest):
 
     def test_get_featureinfo_transformed(self):
         expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=212&SRS=EPSG%3A900913'
                                   '&BBOX=5197367.93088,5312902.73895,5311885.44223,5434731.78213'
                                   '&styles=&VERSION=1.1.1&feature_count=100'
-                                  '&WIDTH=200&QUERY_LAYERS=foo,bar&X=14&Y=78'},
+                                  '&WIDTH=200&QUERY_LAYERS=foo,bar&X=70&Y=18'},
                         {'body': b'info', 'headers': {'content-type': 'text/plain'}})
 
         # out fi point at x=10,y=20
-        p_25832  = (3570269+10*(3643458 - 3570269)/200, 5540889+20*(5614078 - 5540889)/200)
-        # the transformed fi point at x=10,y=22
-        p_900913 = (5197367.93088+14*(5311885.44223 - 5197367.93088)/200,
-                    5312902.73895+78*(5434731.78213 - 5312902.73895)/200)
+        p_25832  = (3570269+10*(3643458 - 3570269)/200, 5614078-20*(5614078 - 5540889)/200)
+        # the transformed fi point at x=70,y=18
+        p_900913 = (5197367.93088+70*(5311885.44223 - 5197367.93088)/200,
+                    5434731.78213-18*(5434731.78213 - 5312902.73895)/212)
 
         # are they the same?
         # check with tolerance: pixel resolution is ~570 and x/y position is rounded to pizel
