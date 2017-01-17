@@ -47,6 +47,7 @@ coverage = {
     'datasource': one_of(str(), [number()]),
     'where': str(),
     'srs': str(),
+    'expire_tiles': str(),
 }
 image_opts = {
     'mode': str(),

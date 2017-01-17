@@ -248,4 +248,4 @@ def load_expire_tiles(expire_dir, grid=None):
         z, x, y = tile
         boxes.append(shapely.geometry.box(*grid.tile_bbox((x, y, z))))
 
-    return shapely.ops.cascaded_union(boxes).geoms
+    return boxes

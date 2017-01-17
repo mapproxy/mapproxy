@@ -21,6 +21,7 @@ from mapproxy.util.geom import (
     load_datasource,
     load_ogr_datasource,
     load_polygons,
+    load_expire_tiles,
     require_geom_support,
     build_multipolygon,
 )
@@ -73,7 +74,9 @@ def load_coverage(conf, base_path=None):
     elif 'expire_tiles' in conf:
         require_geom_support()
         filename = abspath(conf['expire_tiles'])
-        return coverage(load_expire_tiles(filename), SRS(3857))
+        geom = load_expire_tiles(filename)
+        _, geom = build_multipolygon(geom, simplify=False)
+        return coverage(geom, SRS(3857))
     else:
         return None
     return coverage(geom or bbox, SRS(srs))
