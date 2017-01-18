@@ -604,12 +604,17 @@ def restart_with_reloader():
         _log('info', ' * Restarting with reloader')
 
         args = [sys.executable] + sys.argv
-        # pip installs commands as .exe, but sys.argv[0]
-        # can miss the prefix. add .exe to avoid file-not-found
-        # in subprocess call
-        if os.name == 'nt' and '.' not in args[1]:
-            args[1] = args[1] + '.exe'
-
+        if os.name == 'nt':
+            # pip installs commands as .exe, but sys.argv[0]
+            # can miss the prefix.
+            # Add .exe to avoid file-not-found in subprocess call.
+            # Also, recent pip versions create .exe commands that are not
+            # executable by Python, but there is a -script.py which
+            # we need to call in this case. Check for this first.
+            if os.path.exists(args[1] + '-script.py'):
+                args[1] = args[1] + '-script.py'
+            elif not args[1].endswith('.exe'):
+                args[1] = args[1] + '.exe'
         new_environ = os.environ.copy()
         new_environ['WERKZEUG_RUN_MAIN'] = 'true'
 
