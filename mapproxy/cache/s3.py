@@ -50,7 +50,8 @@ class S3ConnectionError(Exception):
 class S3Cache(TileCacheBase):
 
     def __init__(self, base_path, file_ext, directory_layout='tms',
-                 bucket_name='mapproxy', profile_name=None):
+                 bucket_name='mapproxy', profile_name=None,
+                 _concurrent_writer=4):
         super(S3Cache, self).__init__()
         self.lock_cache_id = hashlib.md5(base_path.encode('utf-8') + bucket_name.encode('utf-8')).hexdigest()
         self.bucket_name = bucket_name
@@ -69,6 +70,7 @@ class S3Cache(TileCacheBase):
 
         self.base_path = base_path
         self.file_ext = file_ext
+        self._concurrent_writer = _concurrent_writer
 
         self._tile_location, _ = path.location_funcs(layout=directory_layout)
 
@@ -137,7 +139,7 @@ class S3Cache(TileCacheBase):
         self.conn().delete_object(Bucket=self.bucket_name, Key=key)
 
     def store_tiles(self, tiles):
-        p = async.Pool(min(4, len(tiles)))
+        p = async.Pool(min(self._concurrent_writer, len(tiles)))
         p.map(self.store_tile, tiles)
 
     def store_tile(self, tile):
