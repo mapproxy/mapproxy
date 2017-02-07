@@ -48,6 +48,7 @@ class TestS3Cache(TileCacheTestBase):
             directory_layout='tms',
             bucket_name=self.bucket_name,
             profile_name=None,
+            _concurrent_writer=1, # moto is not thread safe
         )
 
     def teardown(self):
