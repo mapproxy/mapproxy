@@ -13,6 +13,9 @@ There are three different ways to describe a coverage.
 - a text file with one or more (multi)polygons in WKT format,
 - (multi)polygons from any data source readable with OGR (e.g. Shapefile, GeoJSON, PostGIS)
 
+.. versionadded:: 1.10
+
+You can also build intersections, unions and differences between multiple coverages.
 
 Requirements
 ------------
@@ -85,6 +88,38 @@ with one tile coordinate per line. Only tiles in the webmercator grid are suppor
   File or directory with expire tile files. Directories are loaded recursive.
 
 
+Union
+"""""
+
+..versionadded:: 1.10
+
+A union coverage contains the combined coverage of one or more sub-coverages. This can be used to combine multiple coverages a single source. Each sub-coverage can be of any supported type and SRS.
+
+``union``:
+  A list of multiple coverages.
+
+Difference
+""""""""""
+
+..versionadded:: 1.10
+
+A difference coverage subtracts the coverage of other sub-coverages from the first coverage. This can be used to exclude parts from a coverage. Each sub-coverage can be of any supported type and SRS.
+
+``difference``:
+  A list of multiple coverages.
+
+
+Intersection
+""""""""""""
+
+..versionadded:: 1.10
+
+An intersection coverage contains only areas that are covered by all sub-coverages. This can be used to limit a larger coverage to a smaller area. Each sub-coverage can be of any supported type and SRS.
+
+``difference``:
+  A list of multiple coverages.
+
+
 Examples
 --------
 
@@ -104,6 +139,22 @@ Use the ``coverage`` option to define a coverage for a WMS or tile source.
       coverage:
         bbox: [5, 50, 10, 55]
         srs: 'EPSG:4326'
+
+
+Example of an intersection coverage::
+
+  sources:
+    mywms:
+      type: wms
+      req:
+        url: http://example.com/service?
+        layers: base
+      coverage:
+        intersection:
+          - bbox: [5, 50, 10, 55]
+            srs: 'EPSG:4326'
+          - datasource: coverage.geojson
+            srs: 'EPSG:4326'
 
 
 mapproxy-seed

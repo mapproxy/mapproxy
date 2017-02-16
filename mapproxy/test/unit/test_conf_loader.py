@@ -24,8 +24,10 @@ from mapproxy.config.loader import (
     merge_dict,
     ConfigurationError,
 )
+from mapproxy.config.coverage import load_coverage
 from mapproxy.config.spec import validate_options
 from mapproxy.cache.tile import TileManager
+from mapproxy.seed.spec import validate_seed_conf
 from mapproxy.test.helper import TempFile
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from nose.tools import eq_, assert_raises
@@ -923,3 +925,20 @@ class TestImageOptions(object):
 
         conf.globals.image_options.image_opts({}, 'image/jpeg')
 
+class TestLoadCoverage(object):
+    def test_union(self):
+        conf = {
+            'coverages': {
+                'covname': {
+                    'union': [
+                        {'bbox': [0, 0, 10, 10], 'srs': 'EPSG:4326'},
+                        {'bbox': [10, 0, 20, 10], 'srs': 'EPSG:4326', 'unknown': True},
+                    ],
+                },
+            },
+        }
+
+        errors, informal_only = validate_seed_conf(conf)
+        assert informal_only
+        assert len(errors) == 1
+        eq_(errors[0], "unknown 'unknown' in coverages.covname.union[1]")
