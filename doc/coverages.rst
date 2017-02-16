@@ -75,6 +75,16 @@ Any polygon datasource that is supported by OGR (e.g. Shapefile, GeoJSON, PostGI
   option is unset, the first layer from the datasource will be used.
 
 
+Expire tiles
+""""""""""""
+
+Text file with webmercator tile coordinates. The tiles should be in ``z/x/y`` format (e.g. ``14/1283/6201``),
+with one tile coordinate per line. Only tiles in the webmercator grid are supported (origin is always `nw`).
+
+``expire_tiles``:
+  File or directory with expire tile files. Directories are loaded recursive.
+
+
 Examples
 --------
 

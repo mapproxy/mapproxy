@@ -16,10 +16,13 @@
 from __future__ import division, with_statement
 
 import os
+import json
+import re
 import codecs
 from functools import partial
 from contextlib import closing
 
+from mapproxy.grid import tile_grid
 from mapproxy.compat import string_type
 
 import logging
@@ -216,4 +219,33 @@ def flatten_to_polygons(geometry):
 
     return []
 
+def load_expire_tiles(expire_dir, grid=None):
+    if grid is None:
+        grid = tile_grid(3857, origin='nw')
+    tiles = set()
 
+    def parse(filename):
+        with open(filename) as f:
+            try:
+                for line in f:
+                    if not line:
+                        continue
+                    tile = tuple(map(int, line.split('/')))
+                    tiles.add(tile)
+            except:
+                log_config.warn('found error in %s, skipping rest of file', filename)
+
+    if os.path.isdir(expire_dir):
+        for root, dirs, files in os.walk(expire_dir):
+            for name in files:
+                filename = os.path.join(root, name)
+                parse(filename)
+    else:
+        parse(expire_dir)
+
+    boxes = []
+    for tile in tiles:
+        z, x, y = tile
+        boxes.append(shapely.geometry.box(*grid.tile_bbox((x, y, z))))
+
+    return boxes
