@@ -25,6 +25,7 @@ from mapproxy.util.geom import (
     load_polygon_lines,
     transform_geometry,
     bbox_polygon,
+    EmptyGeometryError,
 )
 from mapproxy.srs import SRS
 
@@ -297,6 +298,9 @@ def diff_coverage(coverages, clip=None):
     sub = shapely.ops.cascaded_union(geoms[1:])
     diff = geoms[0].difference(sub)
 
+    if diff.is_empty:
+        raise EmptyGeometryError("diff did not return any geometry")
+
     return GeomCoverage(diff, srs=srs, clip=clip)
 
 def intersection_coverage(coverages, clip=None):
@@ -316,5 +320,8 @@ def intersection_coverage(coverages, clip=None):
             geoms.append(c.geom)
 
     intersection = reduce(lambda a, b: a.intersection(b), geoms)
+
+    if intersection.is_empty:
+        raise EmptyGeometryError("intersection did not return any geometry")
 
     return GeomCoverage(intersection, srs=srs, clip=clip)
