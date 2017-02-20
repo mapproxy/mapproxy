@@ -28,6 +28,7 @@ from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
 class TestS3Cache(TileCacheTestBase):
     always_loads_metadata = True
+    uses_utc = True
 
     def setup(self):
         if not mock_s3 or not boto3:
