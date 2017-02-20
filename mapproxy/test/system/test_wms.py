@@ -529,25 +529,25 @@ class TestWMS111(WMSTest):
 
     def test_get_featureinfo_transformed(self):
         expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetFeatureInfo&HEIGHT=212&SRS=EPSG%3A900913'
-                                  '&BBOX=5197367.93088,5312902.73895,5311885.44223,5434731.78213'
+                                  '&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913'
+                                  '&BBOX=1172272.30156,7196018.03449,1189711.04571,7213496.99738'
                                   '&styles=&VERSION=1.1.1&feature_count=100'
-                                  '&WIDTH=200&QUERY_LAYERS=foo,bar&X=70&Y=18'},
+                                  '&WIDTH=200&QUERY_LAYERS=foo,bar&X=14&Y=20'},
                         {'body': b'info', 'headers': {'content-type': 'text/plain'}})
 
         # out fi point at x=10,y=20
-        p_25832  = (3570269+10*(3643458 - 3570269)/200, 5614078-20*(5614078 - 5540889)/200)
-        # the transformed fi point at x=70,y=18
-        p_900913 = (5197367.93088+70*(5311885.44223 - 5197367.93088)/200,
-                    5434731.78213-18*(5434731.78213 - 5312902.73895)/212)
+        p_25832  = (600000+10*(610000 - 600000)/200, 6010000-20*(6010000 - 6000000)/200)
+        # the transformed fi point at x=14,y=20
+        p_900913 = (1172272.30156+14*(1189711.04571-1172272.30156)/200,
+                    7213496.99738-20*(7213496.99738 - 7196018.03449)/200)
 
         # are they the same?
-        # check with tolerance: pixel resolution is ~570 and x/y position is rounded to pizel
-        assert abs(SRS(25832).transform_to(SRS(900913), p_25832)[0] - p_900913[0]) < 570/2
-        assert abs(SRS(25832).transform_to(SRS(900913), p_25832)[1] - p_900913[1]) < 570/2
+        # check with tolerance: pixel resolution is ~50 and x/y position is rounded to pizel
+        assert abs(SRS(25832).transform_to(SRS(900913), p_25832)[0] - p_900913[0]) < 50
+        assert abs(SRS(25832).transform_to(SRS(900913), p_25832)[1] - p_900913[1]) < 50
 
         with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
-            self.common_fi_req.params['bbox'] = '3570269,5540889,3643458,5614078'
+            self.common_fi_req.params['bbox'] = '600000,6000000,610000,6010000'
             self.common_fi_req.params['srs'] = 'EPSG:25832'
             self.common_fi_req.params.pos = 10, 20
             self.common_fi_req.params['feature_count'] = 100
