@@ -142,7 +142,9 @@ class ProgressLog(object):
         if not out:
             out = sys.stdout
         self.out = out
-        self.lastlog = time.time()
+        self._laststep = time.time()
+        self._lastprogress = time.time()
+
         self.verbose = verbose
         self.silent = silent
         self.current_task_id = None
@@ -157,27 +159,39 @@ class ProgressLog(object):
     def log_step(self, progress):
         if not self.verbose:
             return
-        if (self.lastlog + .1) < time.time():
-            # log progress at most every 100ms
+        if (self._laststep + .5) < time.time():
+            # log progress at most every 500ms
             self.out.write('[%s] %6.2f%%\t%-20s ETA: %s\r' % (
                 timestamp(), progress.progress*100, progress.progress_str,
                 progress.eta
             ))
             self.out.flush()
-            self.lastlog = time.time()
+            self._laststep = time.time()
 
     def log_progress(self, progress, level, bbox, tiles):
-        if self.progress_store and self.current_task_id:
-            self.progress_store.add(self.current_task_id,
-                progress.current_progress_identifier())
-            self.progress_store.write()
+        progress_interval = 1
+        if not self.verbose:
+            progress_interval = 30
+
+        log_progess = False
+        if progress.progress == 1.0 or (self._lastprogress + progress_interval) < time.time():
+            self._lastprogress = time.time()
+            log_progess = True
+
+        if log_progess:
+            if self.progress_store and self.current_task_id:
+                self.progress_store.add(self.current_task_id,
+                    progress.current_progress_identifier())
+                self.progress_store.write()
 
         if self.silent:
             return
-        self.out.write('[%s] %2s %6.2f%% %s (%d tiles) ETA: %s\n' % (
-            timestamp(), level, progress.progress*100,
-            format_bbox(bbox), tiles, progress.eta))
-        self.out.flush()
+
+        if log_progess:
+            self.out.write('[%s] %2s %6.2f%% %s (%d tiles) ETA: %s\n' % (
+                timestamp(), level, progress.progress*100,
+                format_bbox(bbox), tiles, progress.eta))
+            self.out.flush()
 
 
 def limit_sub_bbox(bbox, sub_bbox):
