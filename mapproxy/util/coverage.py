@@ -39,11 +39,11 @@ except ImportError:
     # missing Shapely is handled by require_geom_support
     pass
 
-def coverage(geom, srs):
+def coverage(geom, srs, clip=False):
     if isinstance(geom, (list, tuple)):
-        return BBOXCoverage(geom, srs)
+        return BBOXCoverage(geom, srs, clip=clip)
     else:
-        return GeomCoverage(geom, srs)
+        return GeomCoverage(geom, srs, clip=clip)
 
 def load_limited_to(limited_to):
     require_geom_support()
@@ -107,11 +107,11 @@ class MultiCoverage(object):
         return '<MultiCoverage %r: %r>' % (self.extent.llbbox, self.coverages)
 
 class BBOXCoverage(object):
-    clip = False
-    def __init__(self, bbox, srs):
+    def __init__(self, bbox, srs, clip=False):
         self.bbox = bbox
         self.srs = srs
         self.geom = None
+        self.clip = clip
 
     @property
     def extent(self):
@@ -139,7 +139,7 @@ class BBOXCoverage(object):
 
         if intersection[0] >= intersection[2] or intersection[1] >= intersection[3]:
             return None
-        return BBOXCoverage(intersection, self.srs)
+        return BBOXCoverage(intersection, self.srs, clip=self.clip)
 
     def contains(self, bbox, srs):
         bbox = self._bbox_in_coverage_srs(bbox, srs)
@@ -150,7 +150,7 @@ class BBOXCoverage(object):
             return self
 
         bbox = self.srs.transform_bbox_to(srs, self.bbox)
-        return BBOXCoverage(bbox, srs)
+        return BBOXCoverage(bbox, srs, clip=self.clip)
 
     def __eq__(self, other):
         if not isinstance(other, BBOXCoverage):
@@ -218,7 +218,7 @@ class GeomCoverage(object):
             return self
 
         geom = transform_geometry(self.srs, srs, self.geom)
-        return GeomCoverage(geom, srs)
+        return GeomCoverage(geom, srs, clip=self.clip)
 
     def intersects(self, bbox, srs):
         bbox = self._geom_in_coverage_srs(bbox, srs)
@@ -227,7 +227,7 @@ class GeomCoverage(object):
 
     def intersection(self, bbox, srs):
         bbox = self._geom_in_coverage_srs(bbox, srs)
-        return GeomCoverage(self.geom.intersection(bbox), self.srs)
+        return GeomCoverage(self.geom.intersection(bbox), self.srs, clip=self.clip)
 
     def contains(self, bbox, srs):
         bbox = self._geom_in_coverage_srs(bbox, srs)

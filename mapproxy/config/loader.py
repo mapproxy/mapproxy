@@ -1361,7 +1361,7 @@ class CacheConfiguration(ConfigurationBase):
                     factor=source.get('factor', 1.0),
                 )
 
-        return band_merger.merge, sources, source_image_opts
+        return band_merger, sources, source_image_opts
 
     @memoize
     def caches(self):

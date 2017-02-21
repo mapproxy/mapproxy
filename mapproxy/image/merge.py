@@ -36,12 +36,15 @@ class LayerMerger(object):
         self.layers = []
         self.cacheable = True
 
-    def add(self, layer_img, layer=None):
+    def add(self, img, coverage=None):
         """
         Add one layer image to merge. Bottom-layers first.
         """
-        if layer_img is not None:
-            self.layers.append((layer_img, layer))
+        if img is not None:
+            self.layers.append((img, coverage))
+
+
+class LayerMerger(LayerMerger):
 
     def merge(self, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None):
         """
@@ -54,11 +57,11 @@ class LayerMerger(object):
         if not self.layers:
             return BlankImageSource(size=size, image_opts=image_opts, cacheable=True)
         if len(self.layers) == 1:
-            layer_img, layer = self.layers[0]
+            layer_img, layer_coverage = self.layers[0]
             layer_opts = layer_img.image_opts
             if (((layer_opts and not layer_opts.transparent) or image_opts.transparent)
                 and (not size or size == layer_img.size)
-                and (not layer or not layer.coverage or not layer.coverage.clip)
+                and (not layer_coverage or not layer_coverage.clip)
                 and not coverage):
                 # layer is opaque, no need to make transparent or add bgcolor
                 return layer_img
@@ -68,7 +71,7 @@ class LayerMerger(object):
 
         cacheable = self.cacheable
         result = create_image(size, image_opts)
-        for layer_img, layer in self.layers:
+        for layer_img, layer_coverage in self.layers:
             if not layer_img.cacheable:
                 cacheable = False
             img = layer_img.as_image()
@@ -78,8 +81,8 @@ class LayerMerger(object):
             else:
                 opacity = layer_image_opts.opacity
 
-            if layer and layer.coverage and layer.coverage.clip:
-                img = mask_image(img, bbox, bbox_srs, layer.coverage)
+            if layer_coverage and layer_coverage.clip:
+                img = mask_image(img, bbox, bbox_srs, layer_coverage)
 
             if result.mode != 'RGBA':
                 merge_composite = False
@@ -224,7 +227,7 @@ class BandMerger(object):
         return ImageSource(result, size=size, image_opts=image_opts)
 
 
-def merge_images(images, image_opts, size=None):
+def merge_images(layers, image_opts, size=None, bbox=None, bbox_srs=None, merger=None):
     """
     Merge multiple images into one.
 
@@ -232,12 +235,27 @@ def merge_images(images, image_opts, size=None):
     :param format: the format of the output `ImageSource`
     :param size: size of the merged image, if ``None`` the size
                  of the first image is used
+    :param bbox: Bounding box
+    :param bbox_srs: Bounding box SRS
+    :param merger: Image merger
     :rtype: `ImageSource`
     """
-    merger = LayerMerger()
-    for img in images:
-        merger.add(img)
-    return merger.merge(image_opts=image_opts, size=size)
+    if merger is None:
+        merger = LayerMerger()
+
+    # BandMerger does not have coverage support, passing only images
+    if isinstance(merger, BandMerger):
+        sources = [l[0] if isinstance(l, tuple) else l for l in layers]
+        return merger.merge(sources, image_opts=image_opts, size=size, bbox=bbox, bbox_srs=bbox_srs)
+
+    for layer in layers:
+        if isinstance(layer, tuple):
+            merger.add(layer[0], layer[1])
+        else:
+            merger.add(layer)
+
+    return merger.merge(image_opts=image_opts, size=size, bbox=bbox, bbox_srs=bbox_srs)
+
 
 def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transparent=True):
     """

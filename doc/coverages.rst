@@ -74,6 +74,14 @@ Any polygon datasource that is supported by OGR (e.g. Shapefile, GeoJSON, PostGI
   `OGR SQL support documentation <http://www.gdal.org/ogr/ogr_sql.html>`_. If this
   option is unset, the first layer from the datasource will be used.
 
+Clipping
+--------
+.. versionadded:: 1.10.0
+
+By default MapProxy tries to get and serve full source image even if coverage only touches it.
+Clipping by coverage can be enabled by setting option ``clip: true``. In such case all non covered
+areas will be served as transparent pixels.
+
 
 Expire tiles
 """"""""""""
@@ -139,5 +147,6 @@ And here is an example with a GeoJSON source::
     germany:
       datasource: 'boundary.geojson'
       srs: 'EPSG:4326'
+      clip: true
 
 See `the OGR driver list <http://www.gdal.org/ogr/ogr_formats.html>`_ for all supported formats.

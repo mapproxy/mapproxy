@@ -48,6 +48,7 @@ coverage = {
     'where': str(),
     'srs': str(),
     'expire_tiles': str(),
+    'clip': bool(),
 }
 image_opts = {
     'mode': str(),
