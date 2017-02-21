@@ -54,40 +54,11 @@ else:
     queue_class = multiprocessing.Queue
 
 
-class TileProcessor(object):
-    def __init__(self, dry_run=False):
-        self._lastlog = time.time()
-        self.dry_run = dry_run
-
-    def log_progress(self, progress):
-        if (self._lastlog + .1) < time.time():
-            # log progress at most every 100ms
-            print('[%s] %6.2f%% %s \tETA: %s\r' % (
-                timestamp(), progress[1]*100, progress[0],
-                progress[2]
-            ), end=' ')
-            sys.stdout.flush()
-            self._lastlog = time.time()
-
-    def process(self, tiles, progress):
-        if not self.dry_run:
-            self.process_tiles(tiles)
-
-        self.log_progress(progress)
-
-    def stop(self):
-        raise NotImplementedError()
-
-    def process_tiles(self, tiles):
-        raise NotImplementedError()
-
-
-class TileWorkerPool(TileProcessor):
+class TileWorkerPool(object):
     """
     Manages multiple TileWorker.
     """
     def __init__(self, task, worker_class, size=2, dry_run=False, progress_logger=None):
-        TileProcessor.__init__(self, dry_run=dry_run)
         self.tiles_queue = queue_class(size)
         self.task = task
         self.dry_run = dry_run
