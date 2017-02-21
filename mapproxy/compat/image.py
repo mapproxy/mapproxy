@@ -23,27 +23,22 @@ try:
     # prevent pyflakes warnings
     Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops, ImageMath
 except ImportError:
-    try:
-        import Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops, ImageMath
-        # prevent pyflakes warnings
-        Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops, ImageMath
-    except ImportError:
-        # allow MapProxy to start without PIL (for tilecache only).
-        # issue warning and raise ImportError on first use of
-        # a function that requires PIL
-        warnings.warn('PIL is not available')
-        class NoPIL(object):
-            def __getattr__(self, name):
-                if name.startswith('__'):
-                    raise AttributeError()
-                raise ImportError('PIL is not available')
-        ImageDraw = ImageFont = ImagePalette = ImageChops = NoPIL()
-        # add some dummy stuff required on import/load time
-        Image = NoPIL()
-        Image.NEAREST = Image.BILINEAR = Image.BICUBIC = 1
-        Image.Image = NoPIL
-        ImageColor = NoPIL()
-        ImageColor.getrgb = lambda x: x
+    # allow MapProxy to start without PIL (for tilecache only).
+    # issue warning and raise ImportError on first use of
+    # a function that requires PIL
+    warnings.warn('PIL is not available')
+    class NoPIL(object):
+        def __getattr__(self, name):
+            if name.startswith('__'):
+                raise AttributeError()
+            raise ImportError('PIL is not available')
+    ImageDraw = ImageFont = ImagePalette = ImageChops = NoPIL()
+    # add some dummy stuff required on import/load time
+    Image = NoPIL()
+    Image.NEAREST = Image.BILINEAR = Image.BICUBIC = 1
+    Image.Image = NoPIL
+    ImageColor = NoPIL()
+    ImageColor.getrgb = lambda x: x
 
 def has_alpha_composite_support():
     return hasattr(Image, 'alpha_composite')
