@@ -50,13 +50,23 @@ def image_mask_from_geom(size, bbox, polygons):
 
     # use negative ~.1 pixel buffer
     buffer = -0.1 * min((bbox[2] - bbox[0]) / size[0], (bbox[3] - bbox[1]) / size[1])
+
     draw = ImageDraw.Draw(mask)
 
-    for p in polygons:
-        # little bit smaller polygon does not include touched pixels outside coverage
-        p = p.buffer(buffer, resolution=1, join_style=2)
+    def draw_polygon(p):
         draw.polygon([transf(coord) for coord in p.exterior.coords], fill=0)
         for ring in p.interiors:
             draw.polygon([transf(coord) for coord in ring.coords], fill=255)
+
+    for p in polygons:
+        # little bit smaller polygon does not include touched pixels outside coverage
+        buffered = p.buffer(buffer, resolution=1, join_style=2)
+
+        if buffered.type == 'MultiPolygon':
+            # negative buffer can turn polygon into multipolygon
+            for p in buffered:
+                draw_polygon(p)
+        else:
+            draw_polygon(buffered)
 
     return mask
