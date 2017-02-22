@@ -23,6 +23,7 @@ from mapproxy.srs import SRS, bbox_equals
 from mapproxy.util.geom import (
     load_polygons,
     load_datasource,
+    load_geojson,
     load_expire_tiles,
     transform_geometry,
     geom_support,
@@ -140,6 +141,40 @@ class TestPolygonLoading(object):
             assert polygon.is_valid
             eq_(polygon.type, 'Polygon')
             assert polygon.equals(shapely.geometry.Polygon([(0, 0), (15, 0), (15, 10), (0, 10)]))
+
+
+class TestGeoJSONLoading(object):
+    def test_geojson(self):
+        yield (self.check_geojson,
+            '''{"type": "Polygon", "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 0]]]}''',
+            shapely.geometry.Polygon([[0, 0], [10, 0], [10, 10], [0, 0]]),
+        )
+
+        yield (self.check_geojson,
+            '''{"type": "MultiPolygon", "coordinates": [[[[0, 0], [10, 0], [10, 10], [0, 0]]], [[[20, 0], [30, 0], [20, 10], [20, 0]]]]}''',
+            shapely.geometry.Polygon([[0, 0], [10, 0], [10, 10], [0, 0]]).union(shapely.geometry.Polygon([[20, 0], [30, 0], [20, 10], [20, 0]])),
+        )
+
+        yield (self.check_geojson,
+            '''{"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 0]]]}}''',
+            shapely.geometry.Polygon([[0, 0], [10, 0], [10, 10], [0, 0]]),
+        )
+
+        yield (self.check_geojson,
+            '''{"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 0]]]}}]}''',
+            shapely.geometry.Polygon([[0, 0], [10, 0], [10, 10], [0, 0]]),
+        )
+
+    def check_geojson(self, geojson, geometry):
+        with TempFile() as fname:
+            with open(fname, 'w') as f:
+                f.write(geojson)
+            polygon = load_geojson(fname)
+            bbox, polygon = build_multipolygon(polygon, simplify=True)
+            assert polygon.is_valid
+            assert polygon.type in ('Polygon', 'MultiPolygon'), polygon.type
+            assert polygon.equals(geometry)
+
 
 class TestTransform(object):
     def test_polygon_transf(self):
@@ -367,6 +402,18 @@ class TestLoadDatasource(object):
 
             geoms = load_datasource(fname)
             eq_(len(geoms), 2)
+
+    def test_geojson(self):
+        with TempFile() as fname:
+            with open(fname, 'wb') as f:
+                f.write('''{"type": "FeatureCollection", "features": [
+                    {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 0]]]} },
+                    {"type": "Feature", "geometry": {"type": "MultiPolygon", "coordinates": [[[[0, 0], [10, 0], [10, 10], [0, 0]]], [[[0, 0], [10, 0], [10, 10], [0, 0]]], [[[0, 0], [10, 0], [10, 10], [0, 0]]]]} },
+                    {"type": "Feature", "geometry": {"type": "Point", "coordinates": [0, 0]} }
+                ]}''')
+
+            geoms = load_datasource(fname)
+            eq_(len(geoms), 4)
 
     def test_expire_tiles_dir(self):
         dirname = tempfile.mkdtemp()

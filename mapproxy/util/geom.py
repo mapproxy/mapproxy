@@ -58,13 +58,15 @@ def load_datasource(datasource, where=None):
 
     Returns a list of Shapely Polygons.
     """
-    # check if it is a  wkt file
+    # check if it is a  wkt or geojson file
     if os.path.exists(os.path.abspath(datasource)):
         with open(os.path.abspath(datasource), 'rb') as fp:
             data = fp.read(50)
         if data.lower().lstrip().startswith((b'polygon', b'multipolygon')):
             return load_polygons(datasource)
-
+        # only load geojson directly if we don't have a filter
+        if where is None and data and data[0] == '{':
+            return load_geojson(datasource)
     # otherwise pass to OGR
     return load_ogr_datasource(datasource, where=where)
 
@@ -111,6 +113,41 @@ def load_polygons(geom_files):
         # open with utf-8-sig encoding to get rid of UTF8 BOM from MS Notepad
         with codecs.open(geom_file, encoding='utf-8-sig') as f:
             polygons.extend(load_polygon_lines(f, source=geom_files))
+
+    return polygons
+
+def load_geojson(datasource):
+    with open(datasource) as f:
+        geojson = json.load(f)
+        t = geojson.get('type')
+        if not t:
+            raise CoverageReadError("not a GeoJSON")
+        geometries = []
+        if t == 'FeatureCollection':
+            for f in geojson.get('features'):
+                geom = f.get('geometry')
+                if geom:
+                    geometries.append(geom)
+        elif t == 'Feature':
+            if 'geometry' in geojson:
+                geometries.append(geojson['geometry'])
+        elif t in ('Polygon', 'MultiPolygon'):
+            geometries.append(geojson)
+        else:
+            log_config.warn('skipping feature of type %s from %s: not a Polygon/MultiPolygon',
+                        t, datasource)
+
+    polygons = []
+    for geom in geometries:
+        geom = shapely.geometry.asShape(geom)
+        if geom.type == 'Polygon':
+            polygons.append(geom)
+        elif geom.type == 'MultiPolygon':
+            for p in geom:
+                polygons.append(p)
+        else:
+            log_config.warn('ignoring non-polygon geometry (%s) from %s',
+                geom.type, datasource)
 
     return polygons
 

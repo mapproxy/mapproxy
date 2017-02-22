@@ -57,6 +57,17 @@ You can create your own files or use `one of the files we provide for every coun
 ``datasource``:
  The path to the polygon file. Should be relative to the proxy configuration or absolute.
 
+GeoJSON
+"""""""
+
+.. versionadded:: 1.10
+  Previous versions required OGR/GDAL for reading GeoJSON.
+
+You can use GeoJSON files with Polygon and MultiPolygons geometries. FeatureCollections and Features of these geometries are suppored as well. MapProxy uses OGR to read GeoJSON files if you define a ``where`` filter.
+
+``datasource``:
+ The path to the GeoJSON file. Should be relative to the proxy configuration or absolute.
+
 OGR datasource
 """"""""""""""
 
