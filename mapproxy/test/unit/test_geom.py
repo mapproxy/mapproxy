@@ -30,7 +30,13 @@ from mapproxy.util.geom import (
     bbox_polygon,
     build_multipolygon,
 )
-from mapproxy.util.coverage import coverage, MultiCoverage
+from mapproxy.util.coverage import (
+    coverage,
+    MultiCoverage,
+    union_coverage,
+    diff_coverage,
+    intersection_coverage,
+)
 from mapproxy.layer import MapExtent, DefaultMapExtent
 from mapproxy.test.helper import TempFile
 
@@ -304,6 +310,71 @@ class TestBBOXCoverage(object):
         assert coverage([-10, 10, 80, 80], SRS(4326)) == coverage([-10, 10.0, 80.0, 80], SRS(4326))
         assert coverage([-10, 10, 80, 80], SRS(4326)) != coverage([-10.1, 10.0, 80.0, 80], SRS(4326))
         assert coverage([-10, 10, 80, 80], SRS(4326)) != coverage([-10, 10.0, 80.0, 80], SRS(31467))
+
+
+class TestUnionCoverage(object):
+    def setup(self):
+        self.coverage = union_coverage([
+            coverage([0, 0, 10, 10], SRS(4326)),
+            coverage(shapely.wkt.loads("POLYGON((10 0, 20 0, 20 10, 10 10, 10 0))"), SRS(4326)),
+            coverage(shapely.wkt.loads("POLYGON((-1000000 0, 0 0, 0 1000000, -1000000 1000000, -1000000 0))"), SRS(3857)),
+        ])
+
+    def test_bbox(self):
+        assert bbox_equals(self.coverage.bbox, [-8.98315284, 0.0, 20.0, 10.0], 0.0001), self.coverage.bbox
+
+    def test_contains(self):
+        assert self.coverage.contains((0, 0, 5, 5), SRS(4326))
+        assert self.coverage.contains((-50000, 0, -20000, 20000), SRS(3857))
+        assert not self.coverage.contains((-50000, -100, -20000, 20000), SRS(3857))
+
+    def test_intersects(self):
+        assert self.coverage.intersects((0, 0, 5, 5), SRS(4326))
+        assert self.coverage.intersects((5, 0, 25, 5), SRS(4326))
+        assert self.coverage.intersects((-50000, 0, -20000, 20000), SRS(3857))
+        assert self.coverage.intersects((-50000, -100, -20000, 20000), SRS(3857))
+
+
+class TestDiffCoverage(object):
+    def setup(self):
+        g1 = coverage(shapely.wkt.loads("POLYGON((-10 0, 20 0, 20 10, -10 10, -10 0))"), SRS(4326))
+        g2 = coverage([0, 2, 8, 8], SRS(4326))
+        g3 = coverage(shapely.wkt.loads("POLYGON((-1000000 500000, 0 500000, 0 1000000, -1000000 1000000, -1000000 500000))"), SRS(3857))
+        self.coverage = diff_coverage([g1, g2, g3])
+
+    def test_bbox(self):
+        assert bbox_equals(self.coverage.bbox, [-10, 0.0, 20.0, 10.0], 0.0001), self.coverage.bbox
+
+    def test_contains(self):
+        assert self.coverage.contains((0, 0, 1, 1), SRS(4326))
+        assert self.coverage.contains((-1100000, 510000, -1050000, 600000), SRS(3857))
+        assert not self.coverage.contains((-1100000, 510000, -990000, 600000), SRS(3857)) # touches # g3
+        assert not self.coverage.contains((4, 4, 5, 5), SRS(4326)) # in g2
+
+    def test_intersects(self):
+        assert self.coverage.intersects((0, 0, 1, 1), SRS(4326))
+        assert self.coverage.intersects((-1100000, 510000, -1050000, 600000), SRS(3857))
+        assert self.coverage.intersects((-1100000, 510000, -990000, 600000), SRS(3857)) # touches # g3
+        assert not self.coverage.intersects((4, 4, 5, 5), SRS(4326)) # in g2
+
+
+class TestIntersectionCoverage(object):
+    def setup(self):
+        g1 = coverage(shapely.wkt.loads("POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))"), SRS(4326))
+        g2 = coverage([5, 5, 15, 15], SRS(4326))
+        self.coverage = intersection_coverage([g1, g2])
+
+    def test_bbox(self):
+        assert bbox_equals(self.coverage.bbox, [5.0, 5.0, 10.0, 10.0], 0.0001), self.coverage.bbox
+
+    def test_contains(self):
+        assert not self.coverage.contains((0, 0, 1, 1), SRS(4326))
+        assert self.coverage.contains((6, 6, 7, 7), SRS(4326))
+
+    def test_intersects(self):
+        assert self.coverage.intersection((3, 6, 7, 7), SRS(4326))
+        assert self.coverage.intersection((6, 6, 7, 7), SRS(4326))
+        assert not self.coverage.intersects((0, 0, 1, 1), SRS(4326))
 
 
 class TestMultiCoverage(object):

@@ -25,13 +25,33 @@ from mapproxy.util.geom import (
     require_geom_support,
     build_multipolygon,
 )
-from mapproxy.util.coverage import coverage
+from mapproxy.util.coverage import (
+    coverage,
+    diff_coverage,
+    union_coverage,
+    intersection_coverage,
+)
 from mapproxy.compat import string_type
 
 bbox_string_re = re.compile(r'[-+]?\d*.?\d+,[-+]?\d*.?\d+,[-+]?\d*.?\d+,[-+]?\d*.?\d+')
 
 def load_coverage(conf, base_path=None):
-    if 'ogr_datasource' in conf:
+    if 'union' in conf:
+        parts = []
+        for cov in conf['union']:
+            parts.append(load_coverage(cov))
+        return union_coverage(parts)
+    elif 'intersection' in conf:
+        parts = []
+        for cov in conf['intersection']:
+            parts.append(load_coverage(cov))
+        return intersection_coverage(parts)
+    elif 'difference' in conf:
+        parts = []
+        for cov in conf['difference']:
+            parts.append(load_coverage(cov))
+        return diff_coverage(parts)
+    elif 'ogr_datasource' in conf:
         require_geom_support()
         srs = conf['ogr_srs']
         datasource = conf['ogr_datasource']

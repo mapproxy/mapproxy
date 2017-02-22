@@ -36,7 +36,7 @@ def validate_options(conf_dict):
     else:
         return [], True
 
-coverage = {
+coverage = recursive({
     'polygons': str(),
     'polygons_srs': str(),
     'bbox': one_of(str(), [number()]),
@@ -48,7 +48,11 @@ coverage = {
     'where': str(),
     'srs': str(),
     'expire_tiles': str(),
-}
+    'union': [recursive()],
+    'difference': [recursive()],
+    'intersection': [recursive()],
+})
+
 image_opts = {
     'mode': str(),
     'colors': number(),

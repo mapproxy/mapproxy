@@ -25,6 +25,7 @@ from mapproxy.util.geom import (
     load_polygon_lines,
     transform_geometry,
     bbox_polygon,
+    EmptyGeometryError,
 )
 from mapproxy.srs import SRS
 
@@ -256,3 +257,71 @@ class GeomCoverage(object):
 
     def __repr__(self):
         return '<GeomCoverage %r: %r>' % (self.extent.llbbox, self.geom)
+
+def union_coverage(coverages, clip=None):
+    """
+    Create a coverage that is the union of all `coverages`.
+    Resulting coverage is in the SRS of the first coverage.
+    """
+    srs = coverages[0].srs
+
+    coverages = [c.transform_to(srs) for c in coverages]
+
+    geoms = []
+    for c in coverages:
+        if isinstance(c, BBOXCoverage):
+            geoms.append(bbox_polygon(c.bbox))
+        else:
+            geoms.append(c.geom)
+
+    import shapely.ops
+    union = shapely.ops.cascaded_union(geoms)
+
+    return GeomCoverage(union, srs=srs, clip=clip)
+
+def diff_coverage(coverages, clip=None):
+    """
+    Create a coverage by subtracting all `coverages` from the first one.
+    Resulting coverage is in the SRS of the first coverage.
+    """
+    srs = coverages[0].srs
+
+    coverages = [c.transform_to(srs) for c in coverages]
+
+    geoms = []
+    for c in coverages:
+        if isinstance(c, BBOXCoverage):
+            geoms.append(bbox_polygon(c.bbox))
+        else:
+            geoms.append(c.geom)
+
+    sub = shapely.ops.cascaded_union(geoms[1:])
+    diff = geoms[0].difference(sub)
+
+    if diff.is_empty:
+        raise EmptyGeometryError("diff did not return any geometry")
+
+    return GeomCoverage(diff, srs=srs, clip=clip)
+
+def intersection_coverage(coverages, clip=None):
+    """
+    Create a coverage by creating the intersection of all `coverages`.
+    Resulting coverage is in the SRS of the first coverage.
+    """
+    srs = coverages[0].srs
+
+    coverages = [c.transform_to(srs) for c in coverages]
+
+    geoms = []
+    for c in coverages:
+        if isinstance(c, BBOXCoverage):
+            geoms.append(bbox_polygon(c.bbox))
+        else:
+            geoms.append(c.geom)
+
+    intersection = reduce(lambda a, b: a.intersection(b), geoms)
+
+    if intersection.is_empty:
+        raise EmptyGeometryError("intersection did not return any geometry")
+
+    return GeomCoverage(intersection, srs=srs, clip=clip)
