@@ -17,7 +17,6 @@ from __future__ import division, with_statement
 
 import os
 import json
-import re
 import codecs
 from functools import partial
 from contextlib import closing
@@ -65,7 +64,7 @@ def load_datasource(datasource, where=None):
         if data.lower().lstrip().startswith((b'polygon', b'multipolygon')):
             return load_polygons(datasource)
         # only load geojson directly if we don't have a filter
-        if where is None and data and data[0] == '{':
+        if where is None and data and data.startswith(b'{'):
             return load_geojson(datasource)
     # otherwise pass to OGR
     return load_ogr_datasource(datasource, where=where)
