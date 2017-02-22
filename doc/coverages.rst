@@ -7,11 +7,13 @@ With coverages you can define areas where data is available or where data you ar
 MapProxy supports coverages for :doc:`sources <sources>` and in the :doc:`mapproxy-seed tool <seed>`. Refer to the corresponding section in the documentation.
 
 
-There are three different ways to describe a coverage.
+There are five different ways to describe a coverage:
 
 - a simple rectangular bounding box,
 - a text file with one or more (multi)polygons in WKT format,
-- (multi)polygons from any data source readable with OGR (e.g. Shapefile, GeoJSON, PostGIS)
+- a GeoJSON file with (multi)polygons features,
+- (multi)polygons from any data source readable with OGR (e.g. Shapefile, GeoJSON, PostGIS),
+- a file with webmercator tile coordinates.
 
 .. versionadded:: 1.10
 
