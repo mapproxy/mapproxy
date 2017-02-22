@@ -51,6 +51,7 @@ coverage = recursive({
     'union': [recursive()],
     'difference': [recursive()],
     'intersection': [recursive()],
+    'clip': bool(),
 })
 
 image_opts = {

@@ -99,4 +99,8 @@ def load_coverage(conf, base_path=None):
         return coverage(geom, SRS(3857))
     else:
         return None
-    return coverage(geom or bbox, SRS(srs))
+
+    clip = False
+    if 'clip' in conf:
+        clip = conf['clip']
+    return coverage(geom or bbox, SRS(srs), clip=clip)
