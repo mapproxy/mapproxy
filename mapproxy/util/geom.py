@@ -212,12 +212,15 @@ def transform_geometry(from_srs, to_srs, geometry):
     transf = partial(transform_xy, from_srs, to_srs)
 
     if geometry.type == 'Polygon':
-        return transform_polygon(transf, geometry)
+        result = transform_polygon(transf, geometry)
+    elif geometry.type == 'MultiPolygon':
+        result = transform_multipolygon(transf, geometry)
+    else:
+        raise ValueError('cannot transform %s' % geometry.type)
 
-    if geometry.type == 'MultiPolygon':
-        return transform_multipolygon(transf, geometry)
-
-    raise ValueError('cannot transform %s' % geometry.type)
+    if not result.is_valid:
+        result = result.buffer(0)
+    return result
 
 def transform_polygon(transf, polygon):
     ext = transf(polygon.exterior.xy)
