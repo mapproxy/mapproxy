@@ -477,7 +477,7 @@ class TestLoadDatasource(object):
     def test_geojson(self):
         with TempFile() as fname:
             with open(fname, 'wb') as f:
-                f.write('''{"type": "FeatureCollection", "features": [
+                f.write(b'''{"type": "FeatureCollection", "features": [
                     {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 0]]]} },
                     {"type": "Feature", "geometry": {"type": "MultiPolygon", "coordinates": [[[[0, 0], [10, 0], [10, 10], [0, 0]]], [[[0, 0], [10, 0], [10, 10], [0, 0]]], [[[0, 0], [10, 0], [10, 10], [0, 0]]]]} },
                     {"type": "Feature", "geometry": {"type": "Point", "coordinates": [0, 0]} }
