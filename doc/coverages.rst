@@ -90,14 +90,6 @@ Any polygon datasource that is supported by OGR (e.g. Shapefile, GeoJSON, PostGI
   `OGR SQL support documentation <http://www.gdal.org/ogr/ogr_sql.html>`_. If this
   option is unset, the first layer from the datasource will be used.
 
-Clipping
---------
-.. versionadded:: 1.10.0
-
-By default MapProxy tries to get and serve full source image even if coverage only touches it.
-Clipping by coverage can be enabled by setting option ``clip: true``. In such case all non covered
-areas will be served as transparent pixels.
-
 
 Expire tiles
 """"""""""""
@@ -141,6 +133,16 @@ An intersection coverage contains only areas that are covered by all sub-coverag
   A list of multiple coverages.
 
 
+Clipping
+--------
+.. versionadded:: 1.10.0
+
+By default MapProxy tries to get and serve full source image even if a coverage only touches it.
+Clipping by coverage can be enabled by setting ``clip: true``. If enabled, all areas outside the coverage will be converted to transparent pixels.
+
+The ``clip`` option is only active for source coverages and not for seeding coverages.
+
+
 Examples
 --------
 
@@ -162,7 +164,7 @@ Use the ``coverage`` option to define a coverage for a WMS or tile source.
         srs: 'EPSG:4326'
 
 
-Example of an intersection coverage::
+Example of an intersection coverage with clipping::
 
   sources:
     mywms:
@@ -171,6 +173,7 @@ Example of an intersection coverage::
         url: http://example.com/service?
         layers: base
       coverage:
+        clip: true
         intersection:
           - bbox: [5, 50, 10, 55]
             srs: 'EPSG:4326'
@@ -211,6 +214,5 @@ And here is an example with a GeoJSON source::
     germany:
       datasource: 'boundary.geojson'
       srs: 'EPSG:4326'
-      clip: true
 
 See `the OGR driver list <http://www.gdal.org/ogr/ogr_formats.html>`_ for all supported formats.
