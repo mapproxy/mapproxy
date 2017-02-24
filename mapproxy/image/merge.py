@@ -154,6 +154,7 @@ class BandMerger(object):
         self.cacheable = True
         self.mode = mode
         self.max_band = {}
+        self.max_src_images = 0
 
     def add_ops(self, dst_band, src_img, src_band, factor=1.0):
         self.ops.append(band_ops(
@@ -164,9 +165,10 @@ class BandMerger(object):
          ))
         # store highest requested band index for each source
         self.max_band[src_img] = max(self.max_band.get(src_img, 0), src_band)
+        self.max_src_images = max(src_img+1, self.max_src_images)
 
     def merge(self, sources, image_opts, size=None, bbox=None, bbox_srs=None, coverage=None):
-        if not sources:
+        if len(sources) < self.max_src_images:
             return BlankImageSource(size=size, image_opts=image_opts, cacheable=True)
 
         if size is None:
