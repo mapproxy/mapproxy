@@ -328,6 +328,7 @@ Example
             pb: 8087
             http: 8098
 
+.. _cache_redis:
 
 ``redis``
 =========
