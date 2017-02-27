@@ -156,6 +156,13 @@ cache_types = {
         'secondary_index': bool(),
         'tile_lock_dir': str(),
     },
+    'redis': {
+        'host': str(),
+        'port': int(),
+        'db': int(),
+        'prefix': str(),
+        'default_ttl': int(),
+    },
     'compact': {
         'directory': str(),
         required('version'): number(),

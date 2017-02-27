@@ -9,6 +9,7 @@ python:
 services:
   - couchdb
   - riak
+  - redis-server
 
 addons:
   apt:
@@ -30,6 +31,7 @@ addons:
 env:
   global:
     - MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984
+    - MAPPROXY_TEST_REDIS=127.0.0.1:6379
 
     # do not load /etc/boto.cfg with Python 3 incompatible plugin
     # https://github.com/travis-ci/travis-ci/issues/5246#issuecomment-166460882
