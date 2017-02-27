@@ -13,13 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from mapproxy.compat.image import Image
+from mapproxy.compat.image import Image, ImageDraw
 from mapproxy.srs import SRS
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.mask import mask_image_source_from_coverage
+from mapproxy.image.merge import LayerMerger
 from mapproxy.util.coverage import load_limited_to
-from mapproxy.test.image import assert_img_colors_eq
+from mapproxy.test.image import assert_img_colors_eq, create_image
+from nose.tools import eq_
 
 try:
     from shapely.geometry import Polygon
@@ -73,9 +75,9 @@ class TestMaskImage(object):
         geom = 'POLYGON((2 2, 2 8, 8 8, 8 2, 2 2), (4 4, 4 6, 6 6, 6 4, 4 4))'
 
         result = mask_image_source_from_coverage(img, [0, 0, 10, 10], SRS(4326), coverage(geom))
-        # 60*61 - 20*21 = 3240
+        # 60*60 - 20*20 = 3200
         assert_img_colors_eq(result.as_image().getcolors(),
-            [(10000-3240, (255, 255, 255, 0)), (3240, (100, 0, 200, 255))])
+            [(10000-3200, (255, 255, 255, 0)), (3200, (100, 0, 200, 255))])
 
     def test_shapely_mask_with_transform_partial_image_transparent(self):
         img = ImageSource(Image.new('RGB', (100, 100), color=(100, 0, 200)),
@@ -87,3 +89,38 @@ class TestMaskImage(object):
         # 20*20 = 400
         assert_img_colors_eq(result.as_image().getcolors(),
             [(10000-400, (255, 255, 255, 0)), (400, (100, 0, 200, 255))])
+
+
+class TestLayerCoverageMerge(object):
+    def setup(self):
+        self.coverage1 = coverage(Polygon([(0, 0), (0, 10), (10, 10), (10, 0)]), 3857)
+        self.coverage2 = coverage([2, 2, 8, 8], 3857)
+
+    def test_merge_single_coverage(self):
+        merger = LayerMerger()
+        merger.add(ImageSource(Image.new('RGB', (10, 10), (255, 255, 255))), self.coverage1)
+        result = merger.merge(image_opts=ImageOptions(transparent=True), bbox=(5, 0, 15, 10), bbox_srs=3857)
+        img = result.as_image()
+        eq_(img.mode, 'RGBA')
+        eq_(img.getpixel((4, 0)), (255, 255, 255, 255))
+        eq_(img.getpixel((6, 0)), (255, 255, 255, 0))
+
+    def test_merge_overlapping_coverage(self):
+        color1 = (255, 255, 0)
+        color2 = (0, 255, 255)
+        merger = LayerMerger()
+        merger.add(ImageSource(Image.new('RGB', (10, 10), color1)), self.coverage1)
+        merger.add(ImageSource(Image.new('RGB', (10, 10), color2)), self.coverage2)
+
+        result = merger.merge(image_opts=ImageOptions(), bbox=(0, 0, 10, 10), bbox_srs=3857)
+        img = result.as_image()
+        eq_(img.mode, 'RGB')
+
+        expected = create_image((10, 10), color1, 'RGB')
+        draw = ImageDraw.Draw(expected)
+        draw.polygon([(2, 2), (7, 2), (7, 7), (2, 7)], fill=color2)
+
+        for x in range(0, 9):
+            for y in range(0, 9):
+                eq_(img.getpixel((x, y)), expected.getpixel((x, y)))
+
