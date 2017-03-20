@@ -94,6 +94,8 @@ Any polygon datasource that is supported by OGR (e.g. Shapefile, GeoJSON, PostGI
 Expire tiles
 """"""""""""
 
+.. versionadded:: 1.10
+
 Text file with webmercator tile coordinates. The tiles should be in ``z/x/y`` format (e.g. ``14/1283/6201``),
 with one tile coordinate per line. Only tiles in the webmercator grid are supported (origin is always `nw`).
 
@@ -104,7 +106,7 @@ with one tile coordinate per line. Only tiles in the webmercator grid are suppor
 Union
 """""
 
-..versionadded:: 1.10
+.. versionadded:: 1.10
 
 A union coverage contains the combined coverage of one or more sub-coverages. This can be used to combine multiple coverages a single source. Each sub-coverage can be of any supported type and SRS.
 
@@ -114,7 +116,7 @@ A union coverage contains the combined coverage of one or more sub-coverages. Th
 Difference
 """"""""""
 
-..versionadded:: 1.10
+.. versionadded:: 1.10
 
 A difference coverage subtracts the coverage of other sub-coverages from the first coverage. This can be used to exclude parts from a coverage. Each sub-coverage can be of any supported type and SRS.
 
@@ -125,7 +127,7 @@ A difference coverage subtracts the coverage of other sub-coverages from the fir
 Intersection
 """"""""""""
 
-..versionadded:: 1.10
+.. versionadded:: 1.10
 
 An intersection coverage contains only areas that are covered by all sub-coverages. This can be used to limit a larger coverage to a smaller area. Each sub-coverage can be of any supported type and SRS.
 
