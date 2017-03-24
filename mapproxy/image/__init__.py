@@ -164,7 +164,7 @@ class ImageSource(object):
                 # need actual image_opts.format for next check
                 self.image_opts = self.image_opts.copy()
                 self.image_opts.format = peek_image_format(self._buf)
-            if self.image_opts and image_opts and self.image_opts.format != image_opts.format:
+            if self.image_opts and image_opts and not self.image_opts.__eq__(image_opts):
                 log.debug('converting image from %s -> %s' % (self.image_opts, image_opts))
                 self.source = self.as_image()
                 self._buf = None
