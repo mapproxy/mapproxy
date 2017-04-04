@@ -91,7 +91,7 @@ class Response(object):
 
         self.last_modified = timestamp
         if (timestamp or etag_data) and max_age is not None:
-            self.headers['Cache-control'] = 'max-age=%d public' % max_age
+            self.headers['Cache-control'] = 'public, max-age=%d, s-maxage=%d' % (max_age, max_age)
 
     def make_conditional(self, req):
         """
