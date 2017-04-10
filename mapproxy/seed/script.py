@@ -15,11 +15,16 @@
 
 from __future__ import print_function
 
+import errno
+import re
+import signal
 import sys
+import time
 import logging
 from logging.config import fileConfig
 
-from optparse import OptionParser
+from subprocess import Popen
+from optparse import OptionParser, OptionValueError
 
 from mapproxy.config.loader import load_configuration, ConfigurationError
 from mapproxy.seed.config import load_seed_tasks_conf
@@ -28,6 +33,9 @@ from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.util import (format_seed_task, format_cleanup_task,
     ProgressLog, ProgressStore)
 from mapproxy.seed.cachelock import CacheLocker
+
+SECONDS_PER_DAY = 60 * 60 * 24
+SECONDS_PER_MINUTE = 60
 
 def setup_logging(logging_conf=None):
     if logging_conf is not None:
@@ -42,6 +50,35 @@ def setup_logging(logging_conf=None):
         "[%(asctime)s] %(name)s - %(levelname)s - %(message)s")
     ch.setFormatter(formatter)
     mapproxy_log.addHandler(ch)
+
+
+def check_duration(option, opt, value, parser):
+    try:
+        setattr(parser.values, option.dest, parse_duration(value))
+    except ValueError:
+        raise OptionValueError(
+            "option %s: invalid duration value: %r, expected (10s, 15m, 0.5h, 3d, etc)"
+            % (opt, value),
+        )
+
+
+def parse_duration(string):
+    match = re.match(r'^(\d*.?\d+)(s|m|h|d)', string)
+    if not match:
+        raise ValueError('invalid duration, not in format: 10s, 0.5h, etc.')
+    duration = float(match.group(1))
+    unit = match.group(2)
+    if unit == 's':
+        return duration
+    duration *= 60
+    if unit == 'm':
+        return duration
+    duration *= 60
+    if unit == 'h':
+        return duration
+    duration *= 24
+    return duration
+
 
 class SeedScript(object):
     usage = "usage: %prog [options] seed_conf"
@@ -97,6 +134,10 @@ class SeedScript(object):
                       default=None,
                       help="filename for storing the seed progress (for --continue option)")
 
+    parser.add_option("--duration", dest="duration",
+                      help="stop seeding after (120s, 15m, 4h, 0.5d, etc)",
+                      type=str, action="callback", callback=check_duration)
+
     parser.add_option("--log-config", dest='logging_conf', default=None,
                       help="logging configuration")
 
@@ -117,6 +158,10 @@ class SeedScript(object):
             self.parser.error('missing mapproxy configuration -f/--proxy-conf')
 
         setup_logging(options.logging_conf)
+
+        if options.duration:
+            # calls with --duration are handled in call_with_duration
+            sys.exit(self.call_with_duration(options, args))
 
         try:
             mapproxy_conf = load_configuration(options.conf_file, seed=True)
@@ -225,6 +270,37 @@ class SeedScript(object):
 
         return seed_names, cleanup_names
 
+    def call_with_duration(self, options, args):
+        # --duration is implemented by calling mapproxy-seed again in a separate
+        # process (but without --duration) and terminating that process
+        # after --duration
+
+        argv = sys.argv[:]
+        for i, arg in enumerate(sys.argv):
+            if arg == '--duration':
+                argv = sys.argv[:i] + sys.argv[i+2:]
+                break
+            elif arg.startswith('--duration='):
+                argv = sys.argv[:i] + sys.argv[i+1:]
+                break
+
+        # call mapproxy-seed again, poll status, terminate after --duration
+        cmd = Popen(args=argv)
+        start = time.time()
+        while True:
+            if (time.time() - start) > options.duration:
+                try:
+                    cmd.send_signal(signal.SIGINT)
+                    cmd.wait()
+                except OSError as ex:
+                    if ex.errno != errno.ESRCH:  # no such process
+                        raise
+                return 0
+            if cmd.poll() is not None:
+                return cmd.returncode
+            time.sleep(1)
+
+
     def interactive(self, seed_tasks, cleanup_tasks):
         selected_seed_tasks = []
         print('========== Select seeding tasks ==========')
@@ -263,6 +339,7 @@ def split_comma_seperated_option(option):
         for args in option:
             result.extend(args.split(','))
     return result
+
 
 if __name__ == '__main__':
     main()
