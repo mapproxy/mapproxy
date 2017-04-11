@@ -16,6 +16,7 @@
 from __future__ import print_function
 
 import errno
+import os
 import re
 import signal
 import sys
@@ -138,6 +139,15 @@ class SeedScript(object):
                       help="stop seeding after (120s, 15m, 4h, 0.5d, etc)",
                       type=str, action="callback", callback=check_duration)
 
+    parser.add_option("--reseed-file", dest="reseed_file",
+                      help="start of last re-seed", metavar="FILE",
+                      default=None)
+    parser.add_option("--reseed-interval", dest="reseed_interval",
+                      help="only start seeding if --reseed-file is older then --reseed-interval",
+                      metavar="DURATION",
+                      type=str, action="callback", callback=check_duration,
+                      default=30*SECONDS_PER_DAY)
+
     parser.add_option("--log-config", dest='logging_conf', default=None,
                       help="logging configuration")
 
@@ -178,6 +188,32 @@ class SeedScript(object):
             # disable verbose output for non-ttys
             options.quiet = 1
 
+        progress = None
+        if options.continue_seed or options.progress_file:
+            if not options.progress_file:
+                options.progress_file = '.mapproxy_seed_progress'
+            progress = ProgressStore(options.progress_file,
+                                     continue_seed=options.continue_seed)
+
+        if options.reseed_file:
+            if not os.path.exists(options.reseed_file):
+                # create --reseed-file if missing
+                with open(options.reseed_file, 'w'):
+                    pass
+                # if options.reseed_interval:
+                #     # set mtime before --reseed-interval for initial seeding
+                #     past = time.time() - options.reseed_interval - 5*60
+                #     os.utime(options.reseed_file, (past, past))
+            else:
+                if progress and not os.path.exists(options.progress_file):
+                    # we have an existing --reseed-file but no --progress-file
+                    # meaning the last seed call was completed
+                    if (os.path.getmtime(options.reseed_file)
+                            > (time.time() - options.reseed_interval)):
+                        print("no need for re-seeding")
+                        sys.exit(1)
+                os.utime(options.reseed_file, (time.time(), time.time()))
+
         with mapproxy_conf:
             try:
                 seed_conf = load_seed_tasks_conf(options.seed_file, mapproxy_conf)
@@ -196,15 +232,6 @@ class SeedScript(object):
                 for task in cleanup_tasks:
                     print(format_cleanup_task(task))
                 return 0
-
-            progress = None
-            if options.continue_seed or options.progress_file:
-                if options.progress_file:
-                    progress_file = options.progress_file
-                else:
-                    progress_file = '.mapproxy_seed_progress'
-                progress = ProgressStore(progress_file,
-                    continue_seed=options.continue_seed)
 
             try:
                 if options.interactive:
