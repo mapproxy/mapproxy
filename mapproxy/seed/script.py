@@ -291,7 +291,14 @@ class SeedScript(object):
             if (time.time() - start) > options.duration:
                 try:
                     cmd.send_signal(signal.SIGINT)
-                    cmd.wait()
+                    # try to stop with sigint
+                    # send sigterm after 10 seconds
+                    for _ in range(10):
+                        time.sleep(1)
+                        if cmd.poll() is not None:
+                            break
+                    else:
+                        cmd.terminate()
                 except OSError as ex:
                     if ex.errno != errno.ESRCH:  # no such process
                         raise
