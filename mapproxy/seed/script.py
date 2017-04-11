@@ -298,7 +298,11 @@ class SeedScript(object):
                 return 0
             if cmd.poll() is not None:
                 return cmd.returncode
-            time.sleep(1)
+            try:
+                time.sleep(1)
+            except KeyboardInterrupt:
+                # force termination
+                start = 0
 
 
     def interactive(self, seed_tasks, cleanup_tasks):
