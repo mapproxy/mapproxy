@@ -143,7 +143,7 @@ class ProgressLog(object):
             out = sys.stdout
         self.out = out
         self._laststep = time.time()
-        self._lastprogress = time.time()
+        self._lastprogress = 0
 
         self.verbose = verbose
         self.silent = silent
