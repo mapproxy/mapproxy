@@ -33,7 +33,7 @@ from mapproxy.util.lock import LockTimeout
 from mapproxy.seed.util import format_seed_task, timestamp
 from mapproxy.seed.cachelock import DummyCacheLocker, CacheLockedError
 
-from mapproxy.seed.util import (exp_backoff, ETA, limit_sub_bbox,
+from mapproxy.seed.util import (exp_backoff, limit_sub_bbox,
     status_symbol, BackoffError)
 
 import logging
@@ -165,7 +165,6 @@ class TileCleanupWorker(TileWorker):
 class SeedProgress(object):
     def __init__(self, old_progress_identifier=None):
         self.progress = 0.0
-        self.eta = ETA()
         self.level_progress_percentages = [1.0]
         self.level_progresses = None
         self.level_progresses_level = 0
@@ -176,7 +175,6 @@ class SeedProgress(object):
 
     def step_forward(self, subtiles=1):
         self.progress += self.level_progress_percentages[-1] / subtiles
-        self.eta.update(self.progress)
 
     @property
     def progress_str(self):
