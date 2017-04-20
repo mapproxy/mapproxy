@@ -168,6 +168,7 @@ class SeedProgress(object):
         self.eta = ETA()
         self.level_progress_percentages = [1.0]
         self.level_progresses = []
+        self.level_progresses_level = 0
         self.progress_str_parts = []
         self.old_level_progresses = None
         if old_progress_identifier is not None:
@@ -183,53 +184,70 @@ class SeedProgress(object):
 
     @contextmanager
     def step_down(self, i, subtiles):
+        self.level_progresses = self.level_progresses[:self.level_progresses_level]
         self.level_progresses.append((i, subtiles))
+        self.level_progresses_level += 1
         self.progress_str_parts.append(status_symbol(i, subtiles))
         self.level_progress_percentages.append(self.level_progress_percentages[-1] / subtiles)
+
         yield
+
         self.level_progress_percentages.pop()
         self.progress_str_parts.pop()
-        self.level_progresses.pop()
+
+        self.level_progresses_level -= 1
+        if self.level_progresses_level == 0:
+            self.level_progresses = []
 
     def already_processed(self):
-        if self.old_level_progresses == []:
-            return True
-
         if self.old_level_progresses is None:
             return False
 
-        if self.progress_is_behind(self.old_level_progresses, self.level_progresses):
-            return True
-        else:
-            return False
+        return self.can_skip(self.old_level_progresses, self.level_progresses)
 
     def current_progress_identifier(self):
-        return self.level_progresses
+        return self.level_progresses[:]
 
     @staticmethod
-    def progress_is_behind(old_progress, current_progress):
+    def can_skip(old_progress, current_progress):
         """
         Return True if the `current_progress` is behind the `old_progress` -
         when it isn't as far as the old progress.
 
-        >>> SeedProgress.progress_is_behind([], [(0, 1)])
+        >>> SeedProgress.can_skip([], [(0, 4)])
         True
-        >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1)])
+        >>> SeedProgress.can_skip([(0, 4)], [(0, 4)])
         False
-        >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1), (0, 4)])
+        >>> SeedProgress.can_skip([(1, 4)], [(0, 4)])
         True
-        >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1), (1, 4)])
-        True
-        >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1), (3, 4)])
+        >>> SeedProgress.can_skip([(0, 4)], [(0, 4), (0, 4)])
         False
 
+        >>> SeedProgress.can_skip([(0, 4), (0, 4), (2, 4)], [(0, 4), (0, 4)])
+        False
+        >>> SeedProgress.can_skip([(0, 4), (0, 4), (2, 4)], [(0, 4), (0, 4), (1, 4)])
+        True
+        >>> SeedProgress.can_skip([(0, 4), (0, 4), (2, 4)], [(0, 4), (0, 4), (2, 4)])
+        False
+        >>> SeedProgress.can_skip([(0, 4), (0, 4), (2, 4)], [(0, 4), (0, 4), (3, 4)])
+        False
+        >>> SeedProgress.can_skip([(0, 4), (0, 4), (2, 4)], [(0, 4), (1, 4)])
+        False
+        >>> SeedProgress.can_skip([(0, 4), (0, 4), (2, 4)], [(0, 4), (1, 4), (0, 4)])
+        False
         """
-        for old, current in izip_longest(old_progress, current_progress, fillvalue=(9e15, 9e15)):
+        if old_progress == []:
+            return True
+        for old, current in izip_longest(old_progress, current_progress, fillvalue=None):
+            if old is None:
+                return False
+            if current is None:
+                return False
             if old < current:
                 return False
             if old > current:
                 return True
-        return True
+        return False
 
     def running(self):
         return True

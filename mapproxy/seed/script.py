@@ -212,7 +212,7 @@ class SeedScript(object):
                             > (time.time() - options.reseed_interval)):
                         print("no need for re-seeding")
                         sys.exit(1)
-                os.utime(options.reseed_file, (time.time(), time.time()))
+                    os.utime(options.reseed_file, (time.time(), time.time()))
 
         with mapproxy_conf:
             try:
