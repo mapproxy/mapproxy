@@ -146,7 +146,7 @@ class SeedScript(object):
                       help="only start seeding if --reseed-file is older then --reseed-interval",
                       metavar="DURATION",
                       type=str, action="callback", callback=check_duration,
-                      default=30*SECONDS_PER_DAY)
+                      default=None)
 
     parser.add_option("--log-config", dest='logging_conf', default=None,
                       help="logging configuration")
@@ -200,16 +200,13 @@ class SeedScript(object):
                 # create --reseed-file if missing
                 with open(options.reseed_file, 'w'):
                     pass
-                # if options.reseed_interval:
-                #     # set mtime before --reseed-interval for initial seeding
-                #     past = time.time() - options.reseed_interval - 5*60
-                #     os.utime(options.reseed_file, (past, past))
             else:
                 if progress and not os.path.exists(options.progress_file):
                     # we have an existing --reseed-file but no --progress-file
                     # meaning the last seed call was completed
-                    if (os.path.getmtime(options.reseed_file)
-                            > (time.time() - options.reseed_interval)):
+                    if options.reseed_interval and (
+                        os.path.getmtime(options.reseed_file) > (time.time() - options.reseed_interval)
+                    ):
                         print("no need for re-seeding")
                         sys.exit(1)
                     os.utime(options.reseed_file, (time.time(), time.time()))

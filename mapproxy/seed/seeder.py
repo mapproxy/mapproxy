@@ -167,7 +167,7 @@ class SeedProgress(object):
         self.progress = 0.0
         self.eta = ETA()
         self.level_progress_percentages = [1.0]
-        self.level_progresses = []
+        self.level_progresses = None
         self.level_progresses_level = 0
         self.progress_str_parts = []
         self.old_level_progresses = None
@@ -184,6 +184,8 @@ class SeedProgress(object):
 
     @contextmanager
     def step_down(self, i, subtiles):
+        if self.level_progresses is None:
+            self.level_progresses = []
         self.level_progresses = self.level_progresses[:self.level_progresses_level]
         self.level_progresses.append((i, subtiles))
         self.level_progresses_level += 1
@@ -200,12 +202,11 @@ class SeedProgress(object):
             self.level_progresses = []
 
     def already_processed(self):
-        if self.old_level_progresses is None:
-            return False
-
         return self.can_skip(self.old_level_progresses, self.level_progresses)
 
     def current_progress_identifier(self):
+        if self.already_processed() or self.level_progresses is None:
+            return self.old_level_progresses
         return self.level_progresses[:]
 
     @staticmethod
@@ -214,8 +215,12 @@ class SeedProgress(object):
         Return True if the `current_progress` is behind the `old_progress` -
         when it isn't as far as the old progress.
 
+        >>> SeedProgress.can_skip(None, [(0, 4)])
+        False
         >>> SeedProgress.can_skip([], [(0, 4)])
         True
+        >>> SeedProgress.can_skip([(0, 4)], None)
+        False
         >>> SeedProgress.can_skip([(0, 4)], [(0, 4)])
         False
         >>> SeedProgress.can_skip([(1, 4)], [(0, 4)])
@@ -236,6 +241,10 @@ class SeedProgress(object):
         >>> SeedProgress.can_skip([(0, 4), (0, 4), (2, 4)], [(0, 4), (1, 4), (0, 4)])
         False
         """
+        if current_progress is None:
+            return False
+        if old_progress is None:
+            return False
         if old_progress == []:
             return True
         for old, current in izip_longest(old_progress, current_progress, fillvalue=None):
@@ -279,7 +288,10 @@ class TileWalker(object):
         self.progress_logger = progress_logger
 
         num_seed_levels = len(task.levels)
-        self.report_till_level = task.levels[int(num_seed_levels * 0.8)]
+        if num_seed_levels >= 4:
+            self.report_till_level = task.levels[num_seed_levels-2]
+        else:
+            self.report_till_level = task.levels[num_seed_levels-1]
         meta_size = self.tile_mgr.meta_grid.meta_size if self.tile_mgr.meta_grid else (1, 1)
         self.tiles_per_metatile = meta_size[0] * meta_size[1]
         self.grid = MetaGrid(self.tile_mgr.grid, meta_size=meta_size, meta_buffer=0)
