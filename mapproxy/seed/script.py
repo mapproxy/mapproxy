@@ -247,7 +247,8 @@ class SeedScript(object):
                     print('========== Cleanup tasks ==========')
                     print('Start cleanup process (%d task%s)' % (
                         len(cleanup_tasks), 's' if len(cleanup_tasks) > 1 else ''))
-                    logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2)
+                    logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2,
+                        progress_store=progress)
                     cleanup(cleanup_tasks, verbose=options.quiet==0, dry_run=options.dry_run,
                             concurrency=options.concurrency, progress_logger=logger,
                             skip_geoms_for_last_levels=options.geom_levels)

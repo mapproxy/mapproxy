@@ -169,9 +169,7 @@ class SeedProgress(object):
         self.level_progresses = None
         self.level_progresses_level = 0
         self.progress_str_parts = []
-        self.old_level_progresses = None
-        if old_progress_identifier is not None:
-            self.old_level_progresses = old_progress_identifier
+        self.old_level_progresses = old_progress_identifier
 
     def step_forward(self, subtiles=1):
         self.progress += self.level_progress_percentages[-1] / subtiles
@@ -462,6 +460,10 @@ class CleanupTask(object):
         self.remove_timestamp = remove_timestamp
         self.coverage = coverage
         self.complete_extent = complete_extent
+
+    @property
+    def id(self):
+        return 'cleanup', self.md['name'], self.md['cache_name'], self.md['grid_name']
 
     def intersects(self, bbox):
         if self.coverage.contains(bbox, self.grid.srs): return CONTAINS
