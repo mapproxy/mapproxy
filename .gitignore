@@ -17,3 +17,4 @@ nosetests*.xml
 .tox/
 
 .idea/
+*.iml
