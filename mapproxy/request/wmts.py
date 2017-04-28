@@ -23,6 +23,7 @@ from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
 from mapproxy.request.tile import TileRequest
 from mapproxy.exception import XMLExceptionHandler
 from mapproxy.template import template_loader
+from mapproxy.request.wms import (Version)
 
 import mapproxy.service
 get_template = template_loader(mapproxy.service.__name__, 'templates')
@@ -205,6 +206,7 @@ class WMTSFeatureInfoRequestParams(WMTSTileRequestParams):
 
 
 class WMTS100FeatureInfoRequest(WMTS100TileRequest):
+    version = Version('1.0.0')
     request_params = WMTSFeatureInfoRequestParams
     request_handler_name = 'featureinfo'
     fixed_params = WMTS100TileRequest.fixed_params.copy()
