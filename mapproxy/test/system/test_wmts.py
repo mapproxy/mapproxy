@@ -23,7 +23,7 @@ import functools
 
 from io import BytesIO
 from mapproxy.request.wmts import (
-    WMTS100TileRequest, WMTS100CapabilitiesRequest
+    WMTS100TileRequest, WMTS100CapabilitiesRequest, WMTS100FeatureInfoRequest
 )
 from mapproxy.test.image import is_jpeg, create_tmp_image
 from mapproxy.test.http import MockServ
@@ -61,6 +61,10 @@ class TestWMTS(SystemTest):
         self.common_tile_req = WMTS100TileRequest(url='/service?', param=dict(service='WMTS',
              version='1.0.0', tilerow='0', tilecol='0', tilematrix='01', tilematrixset='GLOBAL_MERCATOR',
              layer='wms_cache', format='image/jpeg', style='', request='GetTile'))
+        self.common_featureinfo_req = WMTS100FeatureInfoRequest(url='/service?', param=dict(service='WMTS',
+             version='1.0.0', tilerow='0', tilecol='0', tilematrix='01', tilematrixset='GLOBAL_MERCATOR',
+             layer='wms_cache', format='image/jpeg', style='', request='GetFeatureInfo',
+             infoformat='application/vnd.ogc.gml', i='1', j='1'))
 
     def test_endpoints(self):
         for endpoint in ('service', 'ows'):
@@ -157,4 +161,11 @@ class TestWMTS(SystemTest):
         assert validate_with_xsd(xml, xsd_name='ows/1.1.0/owsExceptionReport.xsd')
         eq_xpath_wmts(xml, '/ows:ExceptionReport/ows:Exception/@exceptionCode',
             'InvalidParameterValue')
+
+    def test_get_featureinfo(self):
+        resp = self.app.get(str(self.common_featureinfo_req))
+        eq_(resp.content_type, 'image/jpeg')
+        data = BytesIO(resp.body)
+        assert is_jpeg(data)
+
 

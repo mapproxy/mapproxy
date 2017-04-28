@@ -332,6 +332,17 @@ class TileLayer(object):
         except SourceError as e:
             raise RequestError(e.args[0], request=tile_request, internal=True)
 
+    def get_info(self, info_request):
+        if info_request.format != self.format:
+            raise RequestError('invalid format (%s). this tile set only supports (%s)'
+                               % (info_request.format, self.format), request=info_request,
+                               code='InvalidParameterValue')
+        try:
+            with self.tile_manager.session():
+                return self.tile_manager.get_info(info_request)
+        except SourceError as e:
+            raise RequestError(e.args[0], request=info_request, internal=True)
+
 class ImageResponse(object):
     """
     Response from an image.

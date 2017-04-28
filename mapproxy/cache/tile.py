@@ -59,7 +59,7 @@ class TileManager(object):
     def __init__(self, grid, cache, sources, format, locker, image_opts=None, request_format=None,
         meta_buffer=None, meta_size=None, minimize_meta_requests=False, identifier=None,
         pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None,
-        bulk_meta_tiles=False,
+        bulk_meta_tiles=False, fi_sources=[]
         ):
         self.grid = grid
         self.cache = cache
@@ -70,6 +70,7 @@ class TileManager(object):
         self.image_opts = image_opts
         self.request_format = request_format or format
         self.sources = sources
+        self.fi_sources = fi_sources
         self.minimize_meta_requests = minimize_meta_requests
         self._expire_timestamp = None
         self.transparent = self.sources[0].transparent
@@ -203,6 +204,22 @@ class TileManager(object):
         for img_filter in self.pre_store_filter:
             tile = img_filter(tile)
         return tile
+
+    def get_info(self, query):
+        infos = []
+        if len(self.fi_sources) == 1:
+            info = self.fi_sources[0].get_info(query)
+            if info is not None:
+                infos.append(info)
+            return infos
+
+        def get_info_from_source(source):
+            return source.get_info(query)
+
+        for info in async.imap(get_info_from_source, self.fi_sources):
+            if info is not None:
+                infos.append(info)
+        return infos
 
 class TileCreator(object):
     def __init__(self, tile_mgr, dimensions=None, image_merger=None, bulk_meta_tiles=False):

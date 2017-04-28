@@ -21,11 +21,14 @@ from __future__ import print_function
 from functools import partial
 
 from mapproxy.compat import iteritems, itervalues, iterkeys
+from mapproxy.layer import InfoQuery
 from mapproxy.request.wmts import (
     wmts_request, make_wmts_rest_request_parser,
     URLTemplateConverter,
 )
+from mapproxy.request.wms import (mimetype_from_infotype, infotype_from_mimetype)
 from mapproxy.service.base import Server
+from mapproxy.srs import SRS
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
 from mapproxy.util.coverage import load_limited_to
@@ -40,6 +43,7 @@ log = logging.getLogger(__name__)
 
 class WMTSServer(Server):
     service = 'wmts'
+    fi_transformers = None
 
     def __init__(self, layers, md, request_parser=None, max_tile_age=None):
         Server.__init__(self)
@@ -98,6 +102,58 @@ class WMTSServer(Server):
                            max_age=self.max_tile_age)
         resp.make_conditional(request.http)
         return resp
+
+    def featureinfo(self, request):
+        self.check_request(request)
+
+        tile_layer = self.layers[request.layer][request.tilematrixset]
+        if not request.format:
+            request.format = tile_layer.format
+
+        self.check_request_dimensions(tile_layer, request)
+
+        bbox = tile_layer.tile_bbox(request)
+        p = request.params
+        query = InfoQuery(bbox, self.size(bbox), SRS(tile_layer.grid.srs.srs_code), p.pos,
+                          p['info_format'], format=request.params.format or None,
+                          feature_count=p.get('feature_count'))
+        infos = tile_layer.get_info(query)
+
+        mimetype = None
+        if 'info_format' in request.params:
+            mimetype = request.params.info_format
+
+        if not infos:
+            return Response('', mimetype=mimetype)
+
+        if self.fi_transformers:
+            doc = infos[0].combine(infos)
+            if doc.info_type == 'text':
+                resp = doc.as_string()
+                mimetype = 'text/plain'
+            else:
+                if not mimetype:
+                    if 'xml' in self.fi_transformers:
+                        info_type = 'xml'
+                    elif 'html' in self.fi_transformers:
+                        info_type = 'html'
+                    else:
+                        info_type = 'text'
+                    mimetype = mimetype_from_infotype(request.version, info_type)
+                else:
+                    info_type = infotype_from_mimetype(request.version, mimetype)
+                resp = self.fi_transformers[info_type](doc).as_string()
+        else:
+            mimetype = mimetype_from_infotype(request.version, infos[0].info_type)
+            if len(infos) > 1:
+                resp = infos[0].combine(infos).as_string()
+            else:
+                resp = infos[0].as_string()
+
+        return Response(resp, mimetype=mimetype)
+
+    def size(self, bbox):
+        return (bbox[2] - bbox[0]), (bbox[3] - bbox[1])
 
     def authorize_tile_layer(self, tile_layer, request):
         if 'mapproxy.authorize' in request.http.environ:
