@@ -26,7 +26,7 @@ from mapproxy.request.wmts import (
     WMTS100TileRequest, WMTS100CapabilitiesRequest, WMTS100FeatureInfoRequest
 )
 from mapproxy.test.image import is_jpeg, create_tmp_image
-from mapproxy.test.http import MockServ
+from mapproxy.test.http import MockServ, mock_httpd
 from mapproxy.test.helper import validate_with_xsd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
 from nose.tools import eq_
@@ -163,9 +163,14 @@ class TestWMTS(SystemTest):
             'InvalidParameterValue')
 
     def test_get_featureinfo(self):
-        resp = self.app.get(str(self.common_featureinfo_req))
-        eq_(resp.content_type, 'image/jpeg')
-        data = BytesIO(resp.body)
-        assert is_jpeg(data)
+        expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
+                                 '&REQUEST=GetFeatureInfo&HEIGHT=256&SRS=EPSG%3A900913'
+                                 '&VERSION=1.1.1&BBOX=-20037508.342789244,0.0,0.0,20037508.342789244&styles='
+                                 '&WIDTH=256&QUERY_LAYERS=foo,bar&X=1&Y=1'},
+                        {'body': b'info', 'headers': {'content-type': 'text/plain'}})
+        with mock_httpd(('localhost', 42423), [expected_req]):
+            resp = self.app.get(self.common_featureinfo_req)
+            eq_(resp.content_type, 'text/plain')
+            eq_(resp.body, b'info')
 
 
