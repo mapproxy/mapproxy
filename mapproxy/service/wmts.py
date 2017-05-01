@@ -114,7 +114,7 @@ class WMTSServer(Server):
 
         bbox = tile_layer.tile_bbox(request)
         p = request.params
-        query = InfoQuery(bbox, self.size(bbox), SRS(tile_layer.grid.srs.srs_code), p.pos,
+        query = InfoQuery(bbox, tile_layer.grid.tile_size, SRS(tile_layer.grid.srs.srs_code), p.pos,
                           p['info_format'], format=request.params.format or None,
                           feature_count=p.get('feature_count'))
         infos = tile_layer.get_info(query)
@@ -151,9 +151,6 @@ class WMTSServer(Server):
                 resp = infos[0].as_string()
 
         return Response(resp, mimetype=mimetype)
-
-    def size(self, bbox):
-        return (bbox[2] - bbox[0]), (bbox[3] - bbox[1])
 
     def authorize_tile_layer(self, tile_layer, request):
         if 'mapproxy.authorize' in request.http.environ:
