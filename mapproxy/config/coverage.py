@@ -21,16 +21,41 @@ from mapproxy.util.geom import (
     load_datasource,
     load_ogr_datasource,
     load_polygons,
+    load_expire_tiles,
     require_geom_support,
     build_multipolygon,
 )
-from mapproxy.util.coverage import coverage
+from mapproxy.util.coverage import (
+    coverage,
+    diff_coverage,
+    union_coverage,
+    intersection_coverage,
+)
 from mapproxy.compat import string_type
 
 bbox_string_re = re.compile(r'[-+]?\d*.?\d+,[-+]?\d*.?\d+,[-+]?\d*.?\d+,[-+]?\d*.?\d+')
 
 def load_coverage(conf, base_path=None):
-    if 'ogr_datasource' in conf:
+    clip = False
+    if 'clip' in conf:
+        clip = conf['clip']
+
+    if 'union' in conf:
+        parts = []
+        for cov in conf['union']:
+            parts.append(load_coverage(cov))
+        return union_coverage(parts, clip=clip)
+    elif 'intersection' in conf:
+        parts = []
+        for cov in conf['intersection']:
+            parts.append(load_coverage(cov))
+        return intersection_coverage(parts, clip=clip)
+    elif 'difference' in conf:
+        parts = []
+        for cov in conf['difference']:
+            parts.append(load_coverage(cov))
+        return diff_coverage(parts, clip=clip)
+    elif 'ogr_datasource' in conf:
         require_geom_support()
         srs = conf['ogr_srs']
         datasource = conf['ogr_datasource']
@@ -70,6 +95,13 @@ def load_coverage(conf, base_path=None):
             where = conf.get('where', None)
             geom = load_datasource(datasource, where)
             bbox, geom = build_multipolygon(geom, simplify=True)
+    elif 'expire_tiles' in conf:
+        require_geom_support()
+        filename = abspath(conf['expire_tiles'])
+        geom = load_expire_tiles(filename)
+        _, geom = build_multipolygon(geom, simplify=False)
+        return coverage(geom, SRS(3857))
     else:
         return None
-    return coverage(geom or bbox, SRS(srs))
+
+    return coverage(geom or bbox, SRS(srs), clip=clip)

@@ -15,6 +15,7 @@
 
 from __future__ import with_statement
 
+import datetime
 import os
 import shutil
 import threading
@@ -38,11 +39,10 @@ from nose.tools import eq_
 tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
 
-def timestamp_is_now(timestamp, delta=5):
-    return abs(timestamp - time.time()) <= delta
 
 class TileCacheTestBase(object):
     always_loads_metadata = False
+    uses_utc = False
 
     def setup(self):
         self.cache_dir = tempfile.mkdtemp()
@@ -144,7 +144,10 @@ class TileCacheTestBase(object):
         assert self.cache.load_tile(tile, with_metadata=True)
         assert tile.source is not None
         if tile.timestamp:
-            assert timestamp_is_now(tile.timestamp, delta=10)
+            now = time.time()
+            if self.uses_utc:
+                now = time.mktime(datetime.datetime.utcnow().timetuple())
+            assert abs(tile.timestamp - now) <= 10
         if tile.size:
             assert tile.size == size
 

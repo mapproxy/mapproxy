@@ -88,7 +88,7 @@ class TestKML(SystemTest):
             assert 'Last-modified' not in resp.headers
         else:
             eq_(resp.headers['Last-modified'], format_httpdate(timestamp))
-        eq_(resp.headers['Cache-control'], 'max-age=%d public' % max_age)
+        eq_(resp.headers['Cache-control'], 'public, max-age=%d, s-maxage=%d' % (max_age, max_age))
 
     def test_get_cached_tile(self):
         etag, max_age = self._update_timestamp()

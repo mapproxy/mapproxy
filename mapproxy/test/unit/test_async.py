@@ -32,7 +32,7 @@ class TestThreaded(object):
         stop = time.time()
 
         duration = stop - start
-        assert duration < 0.2
+        assert duration < 0.5, "took %s" % duration
 
         eq_(len(result), 40)
 
@@ -68,7 +68,7 @@ class TestEventlet(object):
         stop = time.time()
 
         duration = stop - start
-        assert duration < 0.1
+        assert duration < 0.2, "took %s" % duration
 
         eq_(len(result), 40)
 

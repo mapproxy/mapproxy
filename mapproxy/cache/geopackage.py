@@ -14,19 +14,21 @@
 # limitations under the License.
 
 from __future__ import with_statement
+
 import hashlib
+import logging
 import os
+import re
 import sqlite3
 import threading
 
-from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
+from mapproxy.compat import BytesIO, PY2, itertools
+from mapproxy.image import ImageSource
+from mapproxy.srs import get_epsg_num
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
-from mapproxy.compat import BytesIO, PY2, itertools
-from mapproxy.srs import get_epsg_num
 
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -67,6 +69,8 @@ class GeopackageCache(TileCacheBase):
         'test'
         >>> GeopackageCache._check_table_name("test_2")
         'test_2'
+        >>> GeopackageCache._check_table_name("test-2")
+        'test-2'
         >>> GeopackageCache._check_table_name("test3;")
         Traceback (most recent call last):
         ...
@@ -76,14 +80,17 @@ class GeopackageCache(TileCacheBase):
         ...
         ValueError: The table_name table name contains unsupported characters.
 
-        @param table_name: A desired name for an geopackage table table.
-        @return: The name of the table if it is good, other wise and exception.
+        @param table_name: A desired name for an geopackage table.
+        @return: The name of the table if it is good, otherwise an exception.
         """
-
-        if is_alnum(table_name):
+        # Regex string indicating table names which will be accepted.
+        regex_str = '^[a-zA-Z0-9_-]+$'
+        if re.match(regex_str, table_name):
             return table_name
         else:
-            log.info("The table name may only contain alphanumeric characters or an underscore.")
+            msg = ("The table name may only contain alphanumeric characters, an underscore, "
+                   "or a dash: {}".format(regex_str))
+            log.info(msg)
             raise ValueError("The table_name {0} contains unsupported characters.".format(table_name))
 
     def ensure_gpkg(self):
@@ -238,7 +245,7 @@ class GeopackageCache(TileCacheBase):
                   CONSTRAINT fk_gtms_table_name FOREIGN KEY (table_name) REFERENCES gpkg_contents(table_name), CONSTRAINT fk_gtms_srs FOREIGN KEY (srs_id) REFERENCES gpkg_spatial_ref_sys (srs_id))
                   """,
                  """
-                 CREATE TABLE IF NOT EXISTS {0}
+                 CREATE TABLE IF NOT EXISTS [{0}]
                     (id          INTEGER PRIMARY KEY AUTOINCREMENT, -- Autoincrement primary key
                      zoom_level  INTEGER NOT NULL,                  -- min(zoom_level) <= zoom_level <= max(zoom_level) for t_table_name
                      tile_column INTEGER NOT NULL,                  -- 0 to tile_matrix matrix_width - 1
@@ -383,7 +390,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
 
         cursor = self.db.cursor()
         try:
-            stmt = "INSERT OR REPLACE INTO {0} (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)".format(
+            stmt = "INSERT OR REPLACE INTO [{0}] (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)".format(
                     self.table_name)
             cursor.executemany(stmt, records)
             self.db.commit()
@@ -397,7 +404,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
             return True
 
         cur = self.db.cursor()
-        cur.execute("""SELECT tile_data FROM {0}
+        cur.execute("""SELECT tile_data FROM [{0}]
                 WHERE tile_column = ? AND
                       tile_row = ? AND
                       zoom_level = ?""".format(self.table_name), tile.coord)
@@ -426,7 +433,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
             # all tiles loaded or coords are None
             return True
 
-        stmt_base = "SELECT tile_column, tile_row, tile_data FROM {0} WHERE ".format(self.table_name)
+        stmt_base = "SELECT tile_column, tile_row, tile_data FROM [{0}] WHERE ".format(self.table_name)
 
         loaded_tiles = 0
 
@@ -455,7 +462,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
     def remove_tile(self, tile):
         cursor = self.db.cursor()
         cursor.execute(
-            "DELETE FROM {0} WHERE (tile_column = ? AND tile_row = ? AND zoom_level = ?)".format(self.table_name),
+            "DELETE FROM [{0}] WHERE (tile_column = ? AND tile_row = ? AND zoom_level = ?)".format(self.table_name),
             tile.coord)
         self.db.commit()
         if cursor.rowcount:
@@ -466,7 +473,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
         if timestamp == 0:
             cursor = self.db.cursor()
             cursor.execute(
-                "DELETE FROM {0} WHERE (zoom_level = ?)".format(self.table_name), (level,))
+                "DELETE FROM [{0}] WHERE (zoom_level = ?)".format(self.table_name), (level,))
             self.db.commit()
             log.info("Cursor rowcount = {0}".format(cursor.rowcount))
             if cursor.rowcount:
@@ -570,27 +577,6 @@ class GeopackageLevelCache(TileCacheBase):
             return True
         else:
             return level_cache.remove_level_tiles_before(level, timestamp)
-
-
-def is_alnum(data):
-    """
-    Used to ensure that only 'safe' data can be used to query or create data.
-    >>> is_alnum("test")
-    True
-    >>> is_alnum("test_2")
-    True
-    >>> is_alnum(";")
-    False
-    >>> is_alnum("test 4")
-    False
-
-    @param: String of data to be tested.
-    @return: if data is only alphanumeric or '_' chars.
-    """
-    import re
-    if re.match(r'\w+$', data):
-        return True
-    return False
 
 
 def is_close(a, b, rel_tol=1e-09, abs_tol=0.0):

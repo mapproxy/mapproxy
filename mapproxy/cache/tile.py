@@ -293,19 +293,17 @@ class TileCreator(object):
             try:
                 img = source.get_map(query)
             except BlankImage:
-                return None
+                return None, None
             else:
-                return img
+                return (img, source.coverage)
 
-        imgs = []
-        for img in async.imap(get_map_from_source, self.sources):
-            if img is not None:
-                imgs.append(img)
+        layers = []
+        for layer in async.imap(get_map_from_source, self.sources):
+            if layer[0] is not None:
+                layers.append(layer)
 
-        merger = self.image_merger
-        if not merger:
-            merger = merge_images
-        return merger(imgs, size=query.size, image_opts=self.tile_mgr.image_opts)
+        return merge_images(layers, size=query.size, bbox=query.bbox, bbox_srs=query.srs,
+                            image_opts=self.tile_mgr.image_opts, merger=self.image_merger)
 
     def _create_meta_tiles(self, meta_tiles):
         if self.bulk_meta_tiles:

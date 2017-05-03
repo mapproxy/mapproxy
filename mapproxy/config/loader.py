@@ -621,10 +621,12 @@ class ArcGISSourceConfiguration(SourceConfiguration):
         request = create_request(self.conf["req"], params)
         http_client, request.url = self.http_client(request.url)
         coverage = self.coverage()
+        res_range = resolution_range(self.conf)
 
         client = ArcGISClient(request, http_client)
         image_opts = self.image_opts(format=params.get('format'))
         return ArcGISSource(client, image_opts=image_opts, coverage=coverage,
+                            res_range=res_range,
                             supported_srs=supported_srs,
                             supported_formats=supported_formats or None)
 
@@ -1185,6 +1187,26 @@ class CacheConfiguration(ConfigurationBase):
             use_secondary_index=use_secondary_index,
         )
 
+    def _redis_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.redis import RedisCache
+
+        host = self.conf['cache'].get('host', '127.0.0.1')
+        port = self.conf['cache'].get('port', 6379)
+        db = self.conf['cache'].get('db', 0)
+        ttl = self.conf['cache'].get('default_ttl', 3600)
+
+        prefix = self.conf['cache'].get('prefix')
+        if not prefix:
+            prefix = self.conf['name'] + '_' + grid_conf.tile_grid().name
+
+        return RedisCache(
+            host=host,
+            port=port,
+            db=db,
+            prefix=prefix,
+            ttl=ttl,
+        )
+
     def _compact_cache(self, grid_conf, file_ext):
         from mapproxy.cache.compact import CompactCacheV1
 
@@ -1359,7 +1381,7 @@ class CacheConfiguration(ConfigurationBase):
                     factor=source.get('factor', 1.0),
                 )
 
-        return band_merger.merge, sources, source_image_opts
+        return band_merger, sources, source_image_opts
 
     @memoize
     def caches(self):

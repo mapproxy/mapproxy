@@ -548,7 +548,7 @@ class LayerRenderer(object):
                 if layer_task.exception is None:
                     layer, layer_img = layer_task.result
                     if layer_img is not None:
-                        layer_merger.add(layer_img, layer=layer)
+                        layer_merger.add(layer_img, layer.coverage)
                 else:
                     ex = layer_task.exception
                     async_pool.shutdown(True)
@@ -566,7 +566,7 @@ class LayerRenderer(object):
             if layer_task.exception is None:
                 layer, layer_img = layer_task.result
                 if layer_img is not None:
-                    layer_merger.add(layer_img, layer=layer)
+                    layer_merger.add(layer_img, layer.coverage)
                 rendered += 1
             else:
                 layer_merger.cacheable = False

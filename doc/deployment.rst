@@ -115,8 +115,10 @@ A more complete configuration might look like::
 
   <Directory /path/to/mapproxy/>
     Order deny,allow
-    Require all granted  # for Apache 2.4
-    # Allow from all     # for Apache 2.2
+    # For Apache 2.4:
+    Require all granted
+    # For Apache 2.2:
+    # Allow from all
   </Directory>
 
 

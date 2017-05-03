@@ -15,7 +15,7 @@
 
 from __future__ import division
 
-from mapproxy.compat.image import Image
+from mapproxy.compat.image import Image, transform_uses_center
 from mapproxy.image import ImageSource, image_filter
 from mapproxy.srs import make_lin_transf, bbox_equals
 
@@ -137,11 +137,19 @@ class ImageTransformer(object):
         to_src_px = make_lin_transf(src_bbox, src_quad)
         to_dst_w = make_lin_transf(dst_quad, dst_bbox)
         meshes = []
+
+        # more recent versions of Pillow use center coordinates for
+        # transformations, we manually need to add half a pixel otherwise
+        if transform_uses_center():
+            px_offset = 0.0
+        else:
+            px_offset = 0.5
+
         def dst_quad_to_src(quad):
             src_quad = []
             for dst_px in [(quad[0], quad[1]), (quad[0], quad[3]),
                            (quad[2], quad[3]), (quad[2], quad[1])]:
-                dst_w = to_dst_w((dst_px[0]+0.5, dst_px[1]+0.5))
+                dst_w = to_dst_w((dst_px[0]+px_offset, dst_px[1]+px_offset))
                 src_w = self.dst_srs.transform_to(self.src_srs, dst_w)
                 src_px = to_src_px(src_w)
                 src_quad.extend(src_px)
