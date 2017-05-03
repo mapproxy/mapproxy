@@ -94,7 +94,7 @@ You will need Shapely to use the :doc:`coverage feature <coverages>` of MapProxy
 
 GDAL *(optional)*
 ~~~~~~~~~~~~~~~~~
-The :doc:`coverage feature <coverages>` allows you to read geometries from OGR datasources (Shapefiles, PostGIS, etc.). This package is optional and only required for OGR datasource support. OGR is part of GDAL (``libgdal-dev``).
+The :doc:`coverage feature <coverages>` allows you to read geometries from OGR datasources (Shapefiles, PostGIS, etc.). This package is optional and only required for OGR datasource support (BBOX, WKT and GeoJSON coverages are supported natively). OGR is part of GDAL (``libgdal-dev``).
 
 .. _lxml_install:
 

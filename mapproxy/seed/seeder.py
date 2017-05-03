@@ -16,6 +16,7 @@
 from __future__ import print_function, division
 
 import sys
+from collections import deque
 from contextlib import contextmanager
 import time
 try:
@@ -54,40 +55,11 @@ else:
     queue_class = multiprocessing.Queue
 
 
-class TileProcessor(object):
-    def __init__(self, dry_run=False):
-        self._lastlog = time.time()
-        self.dry_run = dry_run
-
-    def log_progress(self, progress):
-        if (self._lastlog + .1) < time.time():
-            # log progress at most every 100ms
-            print('[%s] %6.2f%% %s \tETA: %s\r' % (
-                timestamp(), progress[1]*100, progress[0],
-                progress[2]
-            ), end=' ')
-            sys.stdout.flush()
-            self._lastlog = time.time()
-
-    def process(self, tiles, progress):
-        if not self.dry_run:
-            self.process_tiles(tiles)
-
-        self.log_progress(progress)
-
-    def stop(self):
-        raise NotImplementedError()
-
-    def process_tiles(self, tiles):
-        raise NotImplementedError()
-
-
-class TileWorkerPool(TileProcessor):
+class TileWorkerPool(object):
     """
     Manages multiple TileWorker.
     """
     def __init__(self, task, worker_class, size=2, dry_run=False, progress_logger=None):
-        TileProcessor.__init__(self, dry_run=dry_run)
         self.tiles_queue = queue_class(size)
         self.task = task
         self.dry_run = dry_run
@@ -270,6 +242,12 @@ class SeedInterrupted(Exception):
 
 
 class TileWalker(object):
+    """
+    TileWalker traverses through all tiles in a tile grid and calls worker_pool.process
+    for each (meta) tile. It traverses the tile grid (pyramid) depth-first.
+    Intersection with coverages are checked before handling subtiles in the next level,
+    allowing to determine if all subtiles should be seeded or skipped.
+    """
     def __init__(self, task, worker_pool, handle_stale=False, handle_uncached=False,
                  work_on_metatiles=True, skip_geoms_for_last_levels=0, progress_logger=None,
                  seed_progress=None):
@@ -289,6 +267,23 @@ class TileWalker(object):
         self.grid = MetaGrid(self.tile_mgr.grid, meta_size=meta_size, meta_buffer=0)
         self.count = 0
         self.seed_progress = seed_progress or SeedProgress()
+
+        # It is possible that we 'walk' through the same tile multiple times
+        # when seeding irregular tile grids[0]. limit_sub_bbox prevents that we
+        # recurse into the same area multiple times, but it is still possible
+        # that a tile is processed multiple times. Locking prevents that a tile
+        # is seeded multiple times, but it is possible that we count the same tile
+        # multiple times (in dry-mode, or while the tile is in the process queue).
+
+        # Tile counts can be off by 280% with sqrt2 grids.
+        # We keep a small cache of already processed tiles to skip most duplicates.
+        # A simple cache of 64 tile coordinates for each level already brings the
+        # difference down to ~8%, which is good enough and faster than a more
+        # sophisticated FIFO cache with O(1) lookup, or even caching all tiles.
+
+        # [0] irregular tile grids: where one tile does not have exactly 4 subtiles
+        # Typically when you use res_factor, or a custom res list.
+        self.seeded_tiles = {l: deque(maxlen=64) for l in task.levels}
 
     def walk(self):
         assert self.handle_stale or self.handle_uncached
@@ -330,7 +325,6 @@ class TileWalker(object):
         if current_level in levels:
             levels = levels[1:]
             process = True
-        current_level += 1
 
         for i, (subtile, sub_bbox, intersection) in enumerate(subtiles):
             if subtile is None: # no intersection
@@ -347,11 +341,16 @@ class TileWalker(object):
                     if self.seed_progress.already_processed():
                         self.seed_progress.step_forward()
                     else:
-                        self._walk(sub_bbox, levels, current_level=current_level,
+                        self._walk(sub_bbox, levels, current_level=current_level+1,
                             all_subtiles=all_subtiles)
 
             if not process:
                 continue
+
+            # check if subtile was already processed. see comment in __init__
+            if subtile in self.seeded_tiles[current_level]:
+                continue
+            self.seeded_tiles[current_level].appendleft(subtile)
 
             if not self.work_on_metatiles:
                 # collect actual tiles

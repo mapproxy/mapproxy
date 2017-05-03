@@ -1,3 +1,42 @@
+1.10.0 2017-xx-xx
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Support for S3 cache.
+- Support for the ArcGIS Compact Cache format version 1.
+- Support for GeoPackage files.
+- Support for Redis cache.
+- Support meta_tiles for tiles sources with bulk_meta_tiles option.
+- mbtiles/sqlite cache: Store multiple tiles in one transaction.
+- mbtiles/sqlite cache: Make timeout and WAL configurable.
+- ArcGIS REST source: Improve handling for ImageServer endpoints.
+- ArcGIS REST source: Support FeatureInfo requests.
+- ArcGIS REST source: Support min_res and max_res.
+- Support merging of RGB images with fixed transparency.
+- Coverages: Clip source requests at coverage boundaries.
+- Coverages: Build the difference, union or intersection of multiple coverages.
+- Coverages: Create coverages from webmercator tile coordinates like 05/182/123
+  with expire tiles files.
+- Coverages: Add native support for GeoJSON (no OGR/GDAL required).
+
+
+Fixes:
+
+- Fix level selection for grids with small res_factor.
+- mapproxy-util scales: Fix for Python 3.
+- WMS: Fix FeatureInfo precision for transformed requests.
+- Auth-API: Fix FeatureInfo for layers with limitto.
+- Fixes subpixel transformation deviations with Pillow 3.4 or higher.
+- mapproxy-seed: Reduce log output, especially in --quiet mode.
+- mapproxy-seed: Improve tile counter for tile grids with custom resolutions.
+- Fix band-merging when not all sources return an image.
+
+Other:
+
+- Python 2.6 is no longer supported.
+
+
 1.9.1 2017-01-18
 ~~~~~~~~~~~~~~~~
 

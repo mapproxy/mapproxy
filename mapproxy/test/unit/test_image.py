@@ -19,10 +19,18 @@ from __future__ import with_statement
 import os
 from io import BytesIO
 from mapproxy.compat.image import Image, ImageDraw
-from mapproxy.image import ImageSource, ReadBufWrapper, is_single_color_image
-from mapproxy.image import peek_image_format
+from mapproxy.image import (
+    ImageSource,
+    BlankImageSource,
+    ReadBufWrapper,
+    is_single_color_image,
+    peek_image_format,
+    _make_transparent as make_transparent,
+    SubImageSource,
+    img_has_transparency,
+    quantize,
+)
 from mapproxy.image.merge import merge_images, BandMerger
-from mapproxy.image import _make_transparent as make_transparent, SubImageSource, img_has_transparency, quantize
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TileMerger, TileSplitter
 from mapproxy.image.transform import ImageTransformer
@@ -603,6 +611,7 @@ class TestBandMerge(object):
         self.img1 = ImageSource(Image.new('RGB', (10, 10), (100, 110, 120)))
         self.img2 = ImageSource(Image.new('RGB', (10, 10), (200, 210, 220)))
         self.img3 = ImageSource(Image.new('RGB', (10, 10), (0, 255, 0)))
+        self.blank = BlankImageSource(size=(10, 10), image_opts=ImageOptions())
 
     def test_merge_noops(self):
         """
@@ -616,12 +625,15 @@ class TestBandMerge(object):
         eq_(img.size, (10, 10))
         eq_(img.getpixel((0, 0)), (0, 0, 0))
 
-    def test_merge_no_source(self):
+    def test_merge_missing_source(self):
         """
-        Check that empty source list returns BlankImageSource.
+        Check that empty source list or source list with missing images
+        returns BlankImageSource.
         """
         merger = BandMerger(mode='RGB')
         merger.add_ops(dst_band=0, src_img=0, src_band=0)
+        merger.add_ops(dst_band=1, src_img=1, src_band=0)
+        merger.add_ops(dst_band=2, src_img=2, src_band=0)
 
         img_opts = ImageOptions('RGBA', transparent=True)
         result = merger.merge([], img_opts, size=(10, 10))
@@ -629,6 +641,13 @@ class TestBandMerge(object):
 
         eq_(img.size, (10, 10))
         eq_(img.getpixel((0, 0)), (255, 255, 255, 0))
+
+        result = merger.merge([self.img0, self.img1], img_opts, size=(10, 10))
+        img = result.as_image()
+
+        eq_(img.size, (10, 10))
+        eq_(img.getpixel((0, 0)), (255, 255, 255, 0))
+
 
     def test_rgb_merge(self):
         """

@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,11 +33,11 @@ class TileMerger(object):
         """
         self.tile_grid = tile_grid
         self.tile_size = tile_size
-    
+
     def merge(self, ordered_tiles, image_opts):
         """
         Merge all tiles into one image.
-        
+
         :param ordered_tiles: list of tiles, sorted row-wise (top to bottom)
         :rtype: `ImageSource`
         """
@@ -47,7 +47,7 @@ class TileMerger(object):
                 tile = ordered_tiles.pop()
                 return tile
         src_size = self._src_size()
-        
+
         result = create_image(src_size, image_opts)
 
         cacheable = True
@@ -73,12 +73,12 @@ class TileMerger(object):
                 else:
                     raise
         return ImageSource(result, size=src_size, image_opts=image_opts, cacheable=cacheable)
-    
+
     def _src_size(self):
         width = self.tile_grid[0]*self.tile_size[0]
         height = self.tile_grid[1]*self.tile_size[1]
         return width, height
-    
+
     def _tile_offset(self, i):
         """
         Return the image offset (upper-left coord) of the i-th tile,
@@ -86,7 +86,7 @@ class TileMerger(object):
         """
         return (i%self.tile_grid[0]*self.tile_size[0],
                 i//self.tile_grid[0]*self.tile_size[1])
-    
+
 
 class TileSplitter(object):
     """
@@ -106,7 +106,7 @@ class TileSplitter(object):
         minx, miny = crop_coord
         maxx = minx + tile_size[0]
         maxy = miny + tile_size[1]
-        
+
         if (minx < 0 or miny < 0 or maxx > self.meta_img.size[0]
             or maxy > self.meta_img.size[1]):
 
@@ -121,7 +121,7 @@ class TileSplitter(object):
         else:
             crop = self.meta_img.crop((minx, miny, maxx, maxy))
         return ImageSource(crop, size=tile_size, image_opts=self.image_opts)
-    
+
 
 class TiledImage(object):
     """
@@ -142,20 +142,20 @@ class TiledImage(object):
         self.tile_size = tile_size
         self.src_bbox = src_bbox
         self.src_srs = src_srs
-    
+
     def image(self, image_opts):
         """
         Return the tiles as one merged image.
-        
+
         :rtype: `ImageSource`
         """
         tm = TileMerger(self.tile_grid, self.tile_size)
         return tm.merge(self.tiles, image_opts=image_opts)
-    
+
     def transform(self, req_bbox, req_srs, out_size, image_opts):
         """
         Return the the tiles as one merged and transformed image.
-        
+
         :param req_bbox: the bbox of the output image
         :param req_srs: the srs of the req_bbox
         :param out_size: the size in pixel of the output image

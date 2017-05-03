@@ -92,7 +92,7 @@ class EventletPool(object):
                         raise
         if len(args[0]) == 1:
             eventlet.sleep()
-            return _result_iter([call(*zip(*args)[0])], use_result_objects)
+            return _result_iter([call(*list(zip(*args))[0])], use_result_objects)
         pool = eventlet.greenpool.GreenPool(self.size)
         return _result_iter(pool.imap(call, *args), use_result_objects)
 

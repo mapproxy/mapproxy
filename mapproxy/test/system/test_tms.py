@@ -179,7 +179,7 @@ class TestTileService(SystemTest):
     def _check_cache_control_headers(self, resp, etag, max_age):
         eq_(resp.headers['ETag'], etag)
         eq_(resp.headers['Last-modified'], 'Fri, 13 Feb 2009 23:31:30 GMT')
-        eq_(resp.headers['Cache-control'], 'max-age=%d public' % max_age)
+        eq_(resp.headers['Cache-control'], 'public, max-age=%d, s-maxage=%d' % (max_age, max_age))
 
     def test_get_cached_tile(self):
         etag, max_age = self._update_timestamp()

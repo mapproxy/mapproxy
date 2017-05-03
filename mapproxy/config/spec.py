@@ -36,7 +36,7 @@ def validate_options(conf_dict):
     else:
         return [], True
 
-coverage = {
+coverage = recursive({
     'polygons': str(),
     'polygons_srs': str(),
     'bbox': one_of(str(), [number()]),
@@ -47,7 +47,13 @@ coverage = {
     'datasource': one_of(str(), [number()]),
     'where': str(),
     'srs': str(),
-}
+    'expire_tiles': str(),
+    'union': [recursive()],
+    'difference': [recursive()],
+    'intersection': [recursive()],
+    'clip': bool(),
+})
+
 image_opts = {
     'mode': str(),
     'colors': number(),
@@ -153,6 +159,13 @@ cache_types = {
         },
         'secondary_index': bool(),
         'tile_lock_dir': str(),
+    },
+    'redis': {
+        'host': str(),
+        'port': int(),
+        'db': int(),
+        'prefix': str(),
+        'default_ttl': int(),
     },
     'compact': {
         'directory': str(),
