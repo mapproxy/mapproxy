@@ -526,6 +526,11 @@ Set to ``true`` to render from mapnik sources with background-color="transparent
 Set the `Mapnik scale_factor <https://github.com/mapnik/mapnik/wiki/Scale-factor>`_ option. Mapnik scales most style options like the width of lines and font sizes by this factor.
 See also :ref:`hq_tiles`.
 
+``fonts``
+^^^^^^^^^
+
+Path to the directory where additional fonts are stored.
+
 Other options
 ^^^^^^^^^^^^^
 

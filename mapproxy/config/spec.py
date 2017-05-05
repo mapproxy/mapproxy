@@ -520,6 +520,7 @@ mapproxy_yaml_spec = {
                 'layers': one_of(str(), [str()]),
                 'use_mapnik2': bool(),
                 'scale_factor': number(),
+                'fonts': str(),
             }),
             'arcgis': combined(source_commons, {
                required('req'): {

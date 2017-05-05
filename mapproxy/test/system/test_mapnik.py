@@ -14,17 +14,17 @@
 # limitations under the License.
 
 from __future__ import with_statement, division
+
 import os
-
-from mapproxy.test.system import module_setup, module_teardown, SystemTest
-
-from mapproxy.compat.image import Image
+import shutil
 from io import BytesIO
 
 from nose.tools import eq_
 
-test_config = {}
+from mapproxy.compat.image import Image
+from mapproxy.test.system import module_setup, module_teardown, SystemTest
 
+test_config = {}
 
 mapnik_xml = b"""
 <?xml version="1.0"?>
@@ -47,7 +47,7 @@ mapnik_xml = b"""
 """.strip()
 
 test_point_geojson = b"""
-{"type": "Feature", "geometry": {"type": "Point", "coordinates": [-45, -45]}, "properties": {}}
+{"type": "Feature", "geometry": {"type": "Point", "coordinates": [-45, -45]}, "properties": {"name": "Test"}}
 """.strip()
 
 mapnik_transp_xml = b"""
@@ -57,8 +57,28 @@ mapnik_transp_xml = b"""
 </Map>
 """.strip()
 
-def setup_module():
+mapnik_fonts_xml = b"""
+<?xml version="1.0"?>
+<!DOCTYPE Map>
+<Map background-color="#ff0000" bgcolor="#ff0000" srs="+proj=latlong +datum=WGS84">
+    <Layer name="marker">
+        <StyleName>marker</StyleName>
+        <Datasource>
+            <Parameter name="type">ogr</Parameter>
+            <Parameter name="file">test_point.geojson</Parameter>
+            <Parameter name="layer">OGRGeoJSON</Parameter>
+        </Datasource>
+    </Layer>
+    <Style name="marker">
+        <Rule>
+            <TextSymbolizer face-name="Fira Sans Regular">[name]</TextSymbolizer>
+        </Rule>
+    </Style>
+</Map>
+""".strip()
 
+
+def setup_module():
     try:
         import mapnik
         mapnik
@@ -77,19 +97,24 @@ def setup_module():
         f.write(mapnik_xml)
     with open(os.path.join(test_config['base_dir'], 'mapnik-transparent.xml'), 'wb') as f:
         f.write(mapnik_transp_xml)
+    with open(os.path.join(test_config['base_dir'], 'mapnik-fonts.xml'), 'wb') as f:
+        f.write(mapnik_fonts_xml)
+    test_config['fonts_dir'] = os.path.join(test_config['base_dir'], 'fonts')
+    shutil.copytree(os.path.join(test_config['fixture_dir'], 'fonts'), test_config['fonts_dir'])
 
 
 def teardown_module():
     module_teardown(test_config)
+
 
 class TestMapnikSource(SystemTest):
     config = test_config
 
     def test_get_map(self):
         req = (r'/service?LAYERs=mapnik&SERVICE=WMS&FORMAT=image%2Fpng'
-                '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
-                '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
-                '&WIDTH=200&')
+               '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
+               '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
+               '&WIDTH=200&')
 
         resp = self.app.get(req)
         data = BytesIO(resp.body)
@@ -103,9 +128,9 @@ class TestMapnikSource(SystemTest):
 
     def test_get_map_hq(self):
         req = (r'/service?LAYERs=mapnik_hq&SERVICE=WMS&FORMAT=image%2Fpng'
-                '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
-                '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
-                '&WIDTH=200&')
+               '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
+               '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
+               '&WIDTH=200&')
 
         resp = self.app.get(req)
         data = BytesIO(resp.body)
@@ -119,9 +144,9 @@ class TestMapnikSource(SystemTest):
 
     def test_get_map_outside_coverage(self):
         req = (r'/service?LAYERs=mapnik&SERVICE=WMS&FORMAT=image%2Fpng'
-                '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
-                '&VERSION=1.1.1&BBOX=-175,-85,-172,-82&styles='
-                '&WIDTH=200&&BGCOLOR=0x00ff00')
+               '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
+               '&VERSION=1.1.1&BBOX=-175,-85,-172,-82&styles='
+               '&WIDTH=200&&BGCOLOR=0x00ff00')
 
         resp = self.app.get(req)
         data = BytesIO(resp.body)
@@ -130,26 +155,32 @@ class TestMapnikSource(SystemTest):
         # wms request bg color
         eq_(colors[0], (40000, (0, 255, 0)))
 
+    def test_get_map_fonts(self):
+        req = (r'/service?LAYERs=mapnik_fonts&SERVICE=WMS&FORMAT=image%2Fpng'
+               '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
+               '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
+               '&WIDTH=200&&BGCOLOR=0x00ff00')
+
+        resp = self.app.get(req)
+        eq_(resp.content_type, 'image/png')
+
     def test_get_map_unknown_file(self):
         req = (r'/service?LAYERs=mapnik_unknown&SERVICE=WMS&FORMAT=image%2Fpng'
-                '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
-                '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
-                '&WIDTH=200&&BGCOLOR=0x00ff00')
+               '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
+               '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
+               '&WIDTH=200&&BGCOLOR=0x00ff00')
 
         resp = self.app.get(req)
         assert 'unknown.xml' in resp.body, resp.body
 
     def test_get_map_transparent(self):
         req = (r'/service?LAYERs=mapnik_transparent&SERVICE=WMS&FORMAT=image%2Fpng'
-                '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
-                '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
-                '&WIDTH=200&transparent=True')
+               '&REQUEST=GetMap&HEIGHT=200&SRS=EPSG%3A4326'
+               '&VERSION=1.1.1&BBOX=-90,-90,0,0&styles='
+               '&WIDTH=200&transparent=True')
 
         resp = self.app.get(req)
         data = BytesIO(resp.body)
         img = Image.open(data)
         colors = sorted(img.getcolors(), reverse=True)
         eq_(colors[0], (40000, (0, 0, 0, 0)))
-
-
-

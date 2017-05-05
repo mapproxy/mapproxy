@@ -11,6 +11,9 @@ layers:
   - name: mapnik_transparent
     title: Mapnik Source
     sources: [mapnik_transparent]
+  - name: mapnik_fonts
+    title: Mapnik Source
+    sources: [mapnik_fonts]
   - name: mapnik_unknown
     title: Mapnik Source
     sources: [mapnik_unknown]
@@ -37,6 +40,14 @@ sources:
   mapnik_transparent:
     type: mapnik
     mapfile: ./mapnik-transparent.xml
+    coverage:
+      bbox: [-170, -80, 180, 90]
+      bbox_srs: 'EPSG:4326'
+
+  mapnik_fonts:
+    type: mapnik
+    mapfile: ./mapnik-fonts.xml
+    fonts: ./fonts
     coverage:
       bbox: [-170, -80, 180, 90]
       bbox_srs: 'EPSG:4326'
