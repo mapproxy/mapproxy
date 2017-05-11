@@ -1,7 +1,7 @@
 Installation
 ============
 
-This tutorial guides you to the MapProxy installation process on Unix systems. For Windows refer to :doc:`install_windows`. For Max refer to: :doc:`install_mac`.
+This tutorial guides you to the MapProxy installation process on Unix systems. For Windows refer to :doc:`install_windows`. For Mac refer to: :doc:`install_mac`.
 
 This tutorial was created and tested with Debian 5.0/6.0 and Ubuntu 10.04 LTS, if you're installing MapProxy on a different system you might need to change some package names.
 
