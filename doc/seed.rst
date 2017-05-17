@@ -67,6 +67,22 @@ Options
 
   Filename where MapProxy stores the seeding progress for the ``--continue`` option. Defaults to ``.mapproxy_seed_progress`` in the current working directory. MapProxy will remove that file after a successful seed.
 
+.. option:: --duration
+
+  Stop seeding process after this duration. This option accepts duration in the following format: 120s, 15m, 4h, 0.5d
+  Use this option in combination with ``--continue`` to be able to resume the seeding. By default, 
+
+.. option:: --reseed-file
+
+  File created by ``mapproxy-seed`` at the start of a new seeding.
+
+.. option:: --reseed-interval
+
+  Only start seeding if ``--reseed-file`` is older then this duration.
+  This option accepts duration in the following format: 120s, 15m, 4h, 0.5d
+  Use this option in combination with ``--continue`` to be able to resume the seeding. By default, 
+  
+
 .. option:: --use-cache-lock
 
   Lock each cache to prevent multiple parallel `mapproxy-seed` calls to work on the same cache.
@@ -81,6 +97,11 @@ Options
 
 .. versionadded:: 1.7.0
   ``--log-config`` option
+
+.. versionadded:: 1.10.0
+  ``--duration``, ``--reseed-file`` and ``--reseed-interval`` option
+
+
 
 
 Examples
@@ -378,6 +399,30 @@ Example
     austria:
       bbox: [9.36, 46.33, 17.28, 49.09]
       srs: 'EPSG:4326'
+
+
+.. _background_seeding:
+
+Example: Background seeding
+---------------------------
+
+.. versionadded:: 1.10.0
+
+The ``--duration`` option allows you run MapProxy seeding for a limited time. In combination with the ``--continue`` option, you can resume the seeding process at a later time.
+You can use this to call ``mapproxy-seed`` with ``cron`` to seed in the off-hours.
+
+However, this will restart the seeding process from the begining everytime the is seeding completed.
+You can prevent this with the ``--reeseed-interval`` and ``--reseed-file`` option. 
+The follwing example starts seeding for six hours. It will seed for another six hours, everytime you call this command again. Once all seed and cleanup tasks were proccessed the command will exit immediately everytime you call it within 14 days after the first call. After 14 days, the modification time of the ``reseed.time`` file will be updated and the re-seeding process starts again.
+
+::
+
+  mapproxy-seed -f mapproxy.yaml -s seed.yaml  \
+    --reseed-interval 14d --duration 6h --reseed-file reseed.time \ 
+    --continue --progress-file .mapproxy_seed_progress
+  
+You can use the ``--reseed-file`` as a ``refresh_before`` and ``remove_before`` ``mtime``-file.
+
 
 
 .. _seed_old_configuration:
