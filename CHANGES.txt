@@ -19,7 +19,7 @@ Improvements:
 - Coverages: Create coverages from webmercator tile coordinates like 05/182/123
   with expire tiles files.
 - Coverages: Add native support for GeoJSON (no OGR/GDAL required).
-
+- mapproxy-seed: Add --duration, -reseed-file and -reseed-interval options.
 
 Fixes:
 
@@ -30,6 +30,7 @@ Fixes:
 - Fixes subpixel transformation deviations with Pillow 3.4 or higher.
 - mapproxy-seed: Reduce log output, especially in --quiet mode.
 - mapproxy-seed: Improve tile counter for tile grids with custom resolutions.
+- mapproxy-seed: Improve saving of the seed progress for --continue.
 - Fix band-merging when not all sources return an image.
 
 Other:
