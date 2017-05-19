@@ -83,13 +83,14 @@ def upload_test_sdist_command():
     print('python setup.py egg_info -R -D -b ".dev%s" register -r testpypi sdist upload -r testpypi' % (date, ))
 
 def upload_final_sdist_command():
-    sh('python setup.py egg_info -b "" -D sdist upload')
+    build_sdist_command()
+    ver = version()
+    sh('twine upload dist/MapProxy-%(ver)s.tar.gz' % locals())
 
 def upload_final_wheel_command():
-    sh('python setup.py egg_info -b "" -D bdist_wheel upload')
-
-def register_command():
-    sh('python setup.py egg_info -b "" -D register')
+    build_wheel_command()
+    ver = version()
+    sh('twine upload dist/MapProxy-%(ver)s-py2.py3-none-any.whl' % locals())
 
 def link_latest_command(ver=None):
     if ver is None:
