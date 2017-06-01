@@ -50,10 +50,10 @@ except ImportError:
     import _thread as thread
 
 try:
-    from SocketServer import ThreadingMixIn, ForkingMixIn
+    from SocketServer import ThreadingMixIn
     from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 except ImportError:
-    from socketserver import ThreadingMixIn, ForkingMixIn
+    from socketserver import ThreadingMixIn
     from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from mapproxy.compat import iteritems, PY2, text_type
@@ -472,37 +472,6 @@ class ThreadedWSGIServer(ThreadingMixIn, BaseWSGIServer):
     multithread = True
 
 
-class ForkingWSGIServer(ForkingMixIn, BaseWSGIServer):
-    """A WSGI server that does forking."""
-    multiprocess = True
-
-    def __init__(self, host, port, app, processes=40, handler=None,
-                 passthrough_errors=False, ssl_context=None):
-        BaseWSGIServer.__init__(self, host, port, app, handler,
-                                passthrough_errors, ssl_context)
-        self.max_children = processes
-
-
-def make_server(host, port, app=None, threaded=False, processes=1,
-                request_handler=None, passthrough_errors=False,
-                ssl_context=None):
-    """Create a new server instance that is either threaded, or forks
-    or just processes one request after another.
-    """
-    if threaded and processes > 1:
-        raise ValueError("cannot have a multithreaded and "
-                         "multi process server.")
-    elif threaded:
-        return ThreadedWSGIServer(host, port, app, request_handler,
-                                  passthrough_errors, ssl_context)
-    elif processes > 1:
-        return ForkingWSGIServer(host, port, app, processes, request_handler,
-                                 passthrough_errors, ssl_context)
-    else:
-        return BaseWSGIServer(host, port, app, request_handler,
-                              passthrough_errors, ssl_context)
-
-
 def _iter_module_files():
     # The list call is necessary on Python 3 in case the module
     # dictionary modifies during iteration.
@@ -715,8 +684,7 @@ def run_simple(hostname, port, application, use_reloader=False,
         application = SharedDataMiddleware(application, static_files)
 
     def inner():
-        make_server(hostname, port, application, threaded,
-                    processes, request_handler,
+        ThreadedWSGIServer(hostname, port, application, request_handler,
                     passthrough_errors, ssl_context).serve_forever()
 
     if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
