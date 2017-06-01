@@ -13,6 +13,7 @@ if PY2:
         islice,
         chain,
         groupby,
+        cycle,
     )
 
 else:
@@ -23,5 +24,6 @@ else:
         islice,
         chain,
         groupby,
+        cycle,
     )
 
