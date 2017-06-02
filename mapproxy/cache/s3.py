@@ -15,6 +15,7 @@
 
 from __future__ import with_statement
 
+import calendar
 import hashlib
 import sys
 import threading
@@ -93,7 +94,7 @@ class S3Cache(TileCacheBase):
 
     def _set_metadata(self, response, tile):
         if 'LastModified' in response:
-            tile.timestamp = float(response['LastModified'].strftime('%s'))
+            tile.timestamp = calendar.timegm(response['LastModified'].timetuple())
         if 'ContentLength' in response:
             tile.size = response['ContentLength']
 
