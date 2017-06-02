@@ -22,7 +22,7 @@ from functools import partial
 from contextlib import closing
 
 from mapproxy.grid import tile_grid
-from mapproxy.compat import string_type
+from mapproxy.compat import string_type, text_type
 
 import logging
 log_config = logging.getLogger('mapproxy.config.coverage')
@@ -81,8 +81,10 @@ def load_ogr_datasource(datasource, where=None):
     try:
         with closing(OGRShapeReader(datasource)) as reader:
             for wkt in reader.wkts(where):
+                if not isinstance(wkt, text_type):
+                    wkt = wkt.decode()
                 try:
-                    geom = shapely.wkt.loads(wkt.decode())
+                    geom = shapely.wkt.loads(wkt)
                 except ReadingError as ex:
                     raise GeometryError(ex)
                 if geom.type == 'Polygon':
