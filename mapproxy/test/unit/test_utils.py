@@ -435,7 +435,7 @@ class TestWriteAtomic(object):
 
         try:
             write_atomic(filename, b'12345')
-        except OSError:
+        except (OSError, IOError):
             pass
         else:
             assert False, 'expected exception'
