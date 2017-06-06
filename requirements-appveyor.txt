@@ -30,3 +30,4 @@ waitress==1.0.2
 Werkzeug==0.11.15
 xmltodict==0.10.2
 redis==2.10.5
+pyproj==1.9.5.1
