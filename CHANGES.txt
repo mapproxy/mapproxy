@@ -1,3 +1,12 @@
+1.10.1 2017-06-06
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix mapproxy-util serve-develop for Python 3.6 on Windows
+- Fix OGR coverages on Windows with Python 3 and official OGR Python bindings
+- Fix --repeat option of mapproxy-util scales
+
 1.10.0 2017-05-18
 ~~~~~~~~~~~~~~~~~
 
