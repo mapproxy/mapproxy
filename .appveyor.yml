@@ -100,7 +100,7 @@ install:
 
   - "conda create -q -n test-environment python=%PYTHON_VERSION%"
   - activate test-environment
-  - conda install Shapely Pillow pyproj lxml
+  - conda install Shapely Pillow pyproj lxml fiona pyyaml
   - pip install -r requirements-appveyor.txt"
 
 build_script:
