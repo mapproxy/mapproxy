@@ -27,6 +27,7 @@ from mapproxy.cache.geopackage import GeopackageCache, GeopackageLevelCache
 from mapproxy.cache.tile import Tile
 from mapproxy.grid import tile_grid, TileGrid
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
+from mapproxy.test.helper import assert_files_in_dir
 
 from nose.tools import eq_
 
@@ -134,27 +135,27 @@ class TestGeopackageLevelCache(TileCacheTestBase):
 
     def test_level_files(self):
         if os.path.exists(self.cache_dir):
-            eq_(os.listdir(self.cache_dir), [])
+            assert_files_in_dir(self.cache_dir, [], glob='*.gpkg')
 
         self.cache.store_tile(self.create_tile((0, 0, 1)))
-        eq_(os.listdir(self.cache_dir), ['1.gpkg'])
+        assert_files_in_dir(self.cache_dir, ['1.gpkg'], glob='*.gpkg')
 
         self.cache.store_tile(self.create_tile((0, 0, 5)))
-        eq_(sorted(os.listdir(self.cache_dir)), ['1.gpkg', '5.gpkg'])
+        assert_files_in_dir(self.cache_dir, ['1.gpkg', '5.gpkg'], glob='*.gpkg')
 
     def test_remove_level_files(self):
         self.cache.store_tile(self.create_tile((0, 0, 1)))
         self.cache.store_tile(self.create_tile((0, 0, 2)))
-        eq_(sorted(os.listdir(self.cache_dir)), ['1.gpkg', '2.gpkg'])
+        assert_files_in_dir(self.cache_dir, ['1.gpkg', '2.gpkg'], glob='*.gpkg')
 
         self.cache.remove_level_tiles_before(1, timestamp=0)
-        eq_(os.listdir(self.cache_dir), ['2.gpkg'])
+        assert_files_in_dir(self.cache_dir, ['2.gpkg'], glob='*.gpkg')
 
     def test_remove_level_tiles_before(self):
         self.cache.store_tile(self.create_tile((0, 0, 1)))
         self.cache.store_tile(self.create_tile((0, 0, 2)))
 
-        eq_(sorted(os.listdir(self.cache_dir)), ['1.gpkg', '2.gpkg'])
+        assert_files_in_dir(self.cache_dir, ['1.gpkg', '2.gpkg'], glob='*.gpkg')
         assert self.cache.is_cached(Tile((0, 0, 1)))
 
         self.cache.remove_level_tiles_before(1, timestamp=time.time() - 60)
@@ -163,7 +164,7 @@ class TestGeopackageLevelCache(TileCacheTestBase):
         self.cache.remove_level_tiles_before(1, timestamp=0)
         assert not self.cache.is_cached(Tile((0, 0, 1)))
 
-        eq_(sorted(os.listdir(self.cache_dir)), ['1.gpkg', '2.gpkg'])
+        assert_files_in_dir(self.cache_dir, ['1.gpkg', '2.gpkg'], glob='*.gpkg')
         assert self.cache.is_cached(Tile((0, 0, 2)))
 
 
@@ -175,7 +176,7 @@ class TestGeopackageLevelCache(TileCacheTestBase):
             self.create_tile((1, 0, 1)),
         ])
 
-        eq_(sorted(os.listdir(self.cache_dir)), ['1.gpkg', '2.gpkg'])
+        assert_files_in_dir(self.cache_dir, ['1.gpkg', '2.gpkg'], glob='*.gpkg')
         assert self.cache.is_cached(Tile((0, 0, 1)))
         assert self.cache.is_cached(Tile((1, 0, 1)))
         assert self.cache.is_cached(Tile((0, 0, 2)))

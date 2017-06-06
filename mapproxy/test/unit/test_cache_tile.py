@@ -34,6 +34,7 @@ from mapproxy.cache.mbtiles import MBTilesCache, MBTilesLevelCache
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.test.image import create_tmp_image_buf, is_png
+from mapproxy.test.helper import assert_files_in_dir
 
 from nose.tools import eq_
 
@@ -259,7 +260,7 @@ class TestFileTileCache(TileCacheTestBase):
 
     def check_tile_location(self, layout, tile_coord, path):
         cache = FileCache('/tmp/foo', 'png', directory_layout=layout)
-        eq_(cache.tile_location(Tile(tile_coord)), path)
+        eq_(os.path.abspath(cache.tile_location(Tile(tile_coord))), os.path.abspath(path))
 
     def test_tile_locations(self):
         yield self.check_tile_location, 'mp', (12345, 67890,  2), '/tmp/foo/02/0001/2345/0006/7890.png'
@@ -284,7 +285,7 @@ class TestFileTileCache(TileCacheTestBase):
 
     def check_level_location(self, layout, level, path):
         cache = FileCache('/tmp/foo', 'png', directory_layout=layout)
-        eq_(cache.level_location(level), path)
+        eq_(os.path.abspath(cache.level_location(level)), os.path.abspath(path))
 
     def test_level_locations(self):
         yield self.check_level_location, 'mp', 2, '/tmp/foo/02'
@@ -376,27 +377,28 @@ class TestMBTileLevelCache(TileCacheTestBase):
         self.cache = MBTilesLevelCache(self.cache_dir)
 
     def test_level_files(self):
-        eq_(os.listdir(self.cache_dir), [])
+        assert_files_in_dir(self.cache_dir, [])
 
         self.cache.store_tile(self.create_tile((0, 0, 1)))
-        eq_(os.listdir(self.cache_dir), ['1.mbtile'])
+        assert_files_in_dir(self.cache_dir, ['1.mbtile'], glob='*.mbtile')
 
         self.cache.store_tile(self.create_tile((0, 0, 5)))
-        eq_(sorted(os.listdir(self.cache_dir)), ['1.mbtile', '5.mbtile'])
+        assert_files_in_dir(self.cache_dir, ['1.mbtile', '5.mbtile'], glob='*.mbtile')
 
     def test_remove_level_files(self):
         self.cache.store_tile(self.create_tile((0, 0, 1)))
         self.cache.store_tile(self.create_tile((0, 0, 2)))
-        eq_(sorted(os.listdir(self.cache_dir)), ['1.mbtile', '2.mbtile'])
+        assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
 
         self.cache.remove_level_tiles_before(1, timestamp=0)
+        assert_files_in_dir(self.cache_dir, ['2.mbtile'], glob='*.mbtile')
         eq_(os.listdir(self.cache_dir), ['2.mbtile'])
 
     def test_remove_level_tiles_before(self):
         self.cache.store_tile(self.create_tile((0, 0, 1)))
         self.cache.store_tile(self.create_tile((0, 0, 2)))
 
-        eq_(sorted(os.listdir(self.cache_dir)), ['1.mbtile', '2.mbtile'])
+        assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
         assert self.cache.is_cached(Tile((0, 0, 1)))
 
         self.cache.remove_level_tiles_before(1, timestamp=time.time() - 60)
@@ -405,7 +407,7 @@ class TestMBTileLevelCache(TileCacheTestBase):
         self.cache.remove_level_tiles_before(1, timestamp=time.time() + 60)
         assert not self.cache.is_cached(Tile((0, 0, 1)))
 
-        eq_(sorted(os.listdir(self.cache_dir)), ['1.mbtile', '2.mbtile'])
+        assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
         assert self.cache.is_cached(Tile((0, 0, 2)))
 
     def test_bulk_store_tiles_with_different_levels(self):
@@ -416,7 +418,7 @@ class TestMBTileLevelCache(TileCacheTestBase):
             self.create_tile((1, 0, 1)),
         ])
 
-        eq_(sorted(os.listdir(self.cache_dir)), ['1.mbtile', '2.mbtile'])
+        assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
         assert self.cache.is_cached(Tile((0, 0, 1)))
         assert self.cache.is_cached(Tile((1, 0, 1)))
         assert self.cache.is_cached(Tile((0, 0, 2)))
