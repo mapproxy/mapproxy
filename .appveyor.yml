@@ -5,35 +5,35 @@ environment:
     # a later point release.
     # See: http://www.appveyor.com/docs/installed-software#python
 
-    - PYTHON_VERSION: 2.7.x
+    - PYTHON_VERSION: 2.7
       MINICONDA: C:\Miniconda
       PYTHON_ARCH: "32"
 
-    # - PYTHON_VERSION: 3.4.x
+    # - PYTHON_VERSION: 3.4
     #   MINICONDA: C:\Miniconda3
     #   PYTHON_ARCH: "32"
 
-    # - PYTHON_VERSION: 3.5.x
+    # - PYTHON_VERSION: 3.5
     #   MINICONDA: C:\Miniconda35
     #   PYTHON_ARCH: "32"
 
-    # - PYTHON_VERSION: 3.6.x
+    # - PYTHON_VERSION: 3.6
     #   MINICONDA: C:\Miniconda36
     #   PYTHON_ARCH: "32"
 
-    # - PYTHON_VERSION: 2.7.x
+    # - PYTHON_VERSION: 2.7
     #   MINICONDA: C:\Miniconda-x64
     #   PYTHON_ARCH: "64"
 
-    # - PYTHON_VERSION: 3.4.x
+    # - PYTHON_VERSION: 3.4
     #   MINICONDA: C:\Miniconda3-x64
     #   PYTHON_ARCH: "64"
 
-    # - PYTHON_VERSION: 3.5.x
+    # - PYTHON_VERSION: 3.5
     #   MINICONDA: C:\Miniconda35-x64
     #   PYTHON_ARCH: "64"
 
-    - PYTHON_VERSION: 3.6.x
+    - PYTHON_VERSION: 3.6
       MINICONDA: C:\Miniconda36-x64
       PYTHON_ARCH: "64"
 
@@ -99,7 +99,10 @@ install:
   - "python --version"
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
 
-  - conda install --file requirements-appveyor.txt"
+  - "conda create -q -n test-environment python=%PYTHON_VERSION%"
+  - activate test-environment
+  - conda install Shapely Pillow pyproj
+  - pip install -r requirements-tests.txt"
 
 build_script:
   # Build the compiled extension
