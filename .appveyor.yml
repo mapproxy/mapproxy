@@ -78,7 +78,6 @@ install:
   - conda update -q conda
   - conda info -a
   - conda config --add channels conda-forge
-  - conda install shapely
 
   # If there is a newer build queued for the same PR, cancel this one.
   # The AppVeyor 'rollout builds' option is supposed to serve the same
@@ -101,8 +100,8 @@ install:
 
   - "conda create -q -n test-environment python=%PYTHON_VERSION%"
   - activate test-environment
-  - conda install Shapely Pillow pyproj
-  - pip install -r requirements-tests.txt"
+  - conda install Shapely Pillow pyproj lxml
+  - pip install -r requirements-appveyor.txt"
 
 build_script:
   # Build the compiled extension
