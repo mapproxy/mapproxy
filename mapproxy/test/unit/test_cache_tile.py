@@ -46,10 +46,14 @@ class TileCacheTestBase(object):
     always_loads_metadata = False
     uses_utc = False
 
+    cache = None # set by subclasses
+
     def setup(self):
         self.cache_dir = tempfile.mkdtemp()
 
     def teardown(self):
+        if hasattr(self.cache, 'cleanup'):
+            self.cache.cleanup()
         if hasattr(self, 'cache_dir') and os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
 
