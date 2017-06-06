@@ -63,14 +63,17 @@ def _clean_srs_code(code):
 class TransformationError(Exception):
     pass
 
-_proj_initalized = False
+_proj_initialized = False
 def _init_proj():
-    global _proj_initalized
-    if not _proj_initalized and 'proj_data_dir' in base_config().srs:
+    global _proj_initialized
+    if not _proj_initialized and 'proj_data_dir' in base_config().srs:
         proj_data_dir = base_config().srs['proj_data_dir']
+        if proj_data_dir is None:
+            _proj_initialized = True
+            return
         log_system.info('loading proj data from %s', proj_data_dir)
         set_datapath(proj_data_dir)
-        _proj_initalized = True
+        _proj_initialized = True
 
 _thread_local = threading.local()
 def SRS(srs_code):
