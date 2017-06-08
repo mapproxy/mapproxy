@@ -142,7 +142,7 @@ class MBTilesCache(TileCacheBase):
             return True
 
         return self.load_tile(tile)
-
+    
     def store_tile(self, tile):
         if tile.stored:
             return True
@@ -163,7 +163,7 @@ class MBTilesCache(TileCacheBase):
                     content = buffer(buf.read())
                 else:
                     content = buf.read()
-                x, y, level = tile.coord
+                x, y, level = tile.flip_coord()
                 if self.supports_timestamp:
                     records.append((level, x, y, content, time.time()))
                 else:
@@ -188,17 +188,18 @@ class MBTilesCache(TileCacheBase):
             return True
 
         cur = self.db.cursor()
+        x, y, level = tile.flip_coord()
         if self.supports_timestamp:
             cur.execute('''SELECT tile_data, last_modified
                 FROM tiles
                 WHERE tile_column = ? AND
                       tile_row = ? AND
-                      zoom_level = ?''', tile.coord)
+                      zoom_level = ?''', (x, y, level))
         else:
             cur.execute('''SELECT tile_data FROM tiles
                 WHERE tile_column = ? AND
                       tile_row = ? AND
-                      zoom_level = ?''', tile.coord)
+                      zoom_level = ?''', (x, y, level))
 
         content = cur.fetchone()
         if content:
@@ -216,7 +217,7 @@ class MBTilesCache(TileCacheBase):
         for tile in tiles:
             if tile.source or tile.coord is None:
                 continue
-            x, y, level = tile.coord
+            x, y, level = tile.flip_coord()
             coords.append(x)
             coords.append(y)
             coords.append(level)
@@ -261,7 +262,7 @@ class MBTilesCache(TileCacheBase):
         cursor = self.db.cursor()
         cursor.execute(
             "DELETE FROM tiles WHERE (tile_column = ? AND tile_row = ? AND zoom_level = ?)",
-            tile.coord)
+            tile.flip_coord())
         self.db.commit()
         if cursor.rowcount:
             return True
