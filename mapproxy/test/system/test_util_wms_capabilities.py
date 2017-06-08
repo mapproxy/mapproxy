@@ -17,6 +17,7 @@ from __future__ import with_statement
 import os
 
 from nose.tools import assert_raises
+from nose.plugins.skip import SkipTest
 
 from mapproxy.client.http import HTTPClient
 from mapproxy.script.wms_capabilities import wms_capabilities_command
@@ -36,6 +37,9 @@ class TestUtilWMSCapabilities(object):
         self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service']
 
     def test_http_error(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         self.args = ['command_dummy', '--host', 'http://foo.doesnotexist']
         with capture() as (out,err):
             assert_raises(SystemExit, wms_capabilities_command, self.args)
@@ -47,6 +51,9 @@ class TestUtilWMSCapabilities(object):
         assert err.getvalue().startswith("ERROR:")
 
     def test_request_not_parsable(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?request=GetCapabilities&version=1.1.1&service=WMS', 'method': 'GET'},
                                               {'status': '200', 'body': ''})]):
             with capture() as (out,err):
@@ -55,6 +62,9 @@ class TestUtilWMSCapabilities(object):
             assert error_msg.startswith('Could not parse the document')
 
     def test_service_exception(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities']
         with open(SERVICE_EXCEPTION_FILE, 'rb') as fp:
             capabilities_doc = fp.read()
@@ -66,6 +76,9 @@ class TestUtilWMSCapabilities(object):
                 assert 'Not a capabilities document' in error_msg
 
     def test_parse_capabilities(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities', '--version', '1.1.1']
         with open(CAPABILITIES111_FILE, 'rb') as fp:
             capabilities_doc = fp.read()
@@ -77,6 +90,9 @@ class TestUtilWMSCapabilities(object):
                 assert lines[1].startswith('Capabilities Document Version 1.1.1')
 
     def test_parse_130capabilities(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities', '--version', '1.3.0']
         with open(CAPABILITIES130_FILE, 'rb') as fp:
             capabilities_doc = fp.read()
@@ -88,6 +104,9 @@ class TestUtilWMSCapabilities(object):
                 assert lines[1].startswith('Capabilities Document Version 1.3.0')
 
     def test_key_error(self):
+        if 'OFFLINE_TESTS' in os.environ:
+            raise SkipTest
+
         self.args = ['command_dummy', '--host', TESTSERVER_URL + '/service?request=GetCapabilities']
         with open(CAPABILITIES111_FILE, 'rb') as fp:
             capabilities_doc = fp.read()
