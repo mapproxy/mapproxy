@@ -1,3 +1,10 @@
+1.10.2 2017-06-21
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix coverage clipping for caches with a single source
+
 1.10.1 2017-06-06
 ~~~~~~~~~~~~~~~~~
 
