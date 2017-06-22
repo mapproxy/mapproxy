@@ -171,8 +171,7 @@ def load_polygon_lines(line_iter, source='<string>'):
 
 def build_multipolygon(polygons, simplify=False):
     if not polygons:
-        p = shapely.geometry.Polygon()
-        return p.bounds, p
+        raise EmptyGeometryError('no polygons')
 
     if len(polygons) == 1:
         geom = polygons[0]
