@@ -948,13 +948,13 @@ class TestLoadCoverage(object):
     def test_load_empty_geojson(self):
         with TempFile() as tf:
             with open(tf, 'wb') as f:
-                f.write('{"type": "FeatureCollection", "features": []}')
+                f.write(b'{"type": "FeatureCollection", "features": []}')
             conf = {'datasource': tf, 'srs': 'EPSG:4326'}
             assert_raises(EmptyGeometryError, load_coverage, conf)
 
     def test_load_empty_geojson_ogr(self):
         with TempFile() as tf:
             with open(tf, 'wb') as f:
-                f.write('{"type": "FeatureCollection", "features": []}')
+                f.write(b'{"type": "FeatureCollection", "features": []}')
             conf = {'datasource': tf, 'where': '0 != 1', 'srs': 'EPSG:4326'}
             assert_raises(EmptyGeometryError, load_coverage, conf)
