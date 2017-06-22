@@ -1528,7 +1528,7 @@ class CacheConfiguration(ConfigurationBase):
         if len(caches) == 1:
             layer = caches[0][0]
         else:
-            layer = SRSConditional(caches, caches[0][0].extent, caches[0][0].transparent, opacity=image_opts.opacity)
+            layer = SRSConditional(caches, caches[0][0].extent, opacity=image_opts.opacity)
 
         if 'use_direct_from_level' in self.conf:
             self.conf['use_direct_from_res'] = main_grid.resolution(self.conf['use_direct_from_level'])

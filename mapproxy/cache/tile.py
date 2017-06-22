@@ -72,7 +72,6 @@ class TileManager(object):
         self.sources = sources
         self.minimize_meta_requests = minimize_meta_requests
         self._expire_timestamp = None
-        self.transparent = self.sources[0].transparent
         self.pre_store_filter = pre_store_filter or []
         self.concurrent_tile_creators = concurrent_tile_creators
         self.tile_creator_class = tile_creator_class or TileCreator

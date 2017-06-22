@@ -148,4 +148,4 @@ class MapnikSource(MapLayer):
                 status='200' if data else '500', size=size, method='API', duration=time.time()-start_time)
 
         return ImageSource(BytesIO(data), size=query.size,
-            image_opts=ImageOptions(transparent=self.transparent, format=query.format))
+            image_opts=ImageOptions(format=query.format))

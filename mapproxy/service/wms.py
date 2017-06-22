@@ -108,7 +108,7 @@ class WMSServer(Server):
             if layer.renders_query(query):
                 # if layer is not transparent and will be rendered,
                 # remove already added (then hidden) layers
-                if not layer.transparent:
+                if layer.is_opaque(query):
                     actual_layers = odict()
                 for layer_name, map_layers in layer.map_layers_for_query(query):
                     actual_layers[layer_name] = map_layers
@@ -621,8 +621,6 @@ class WMSLayerBase(object):
     "True if .info() is supported"
     queryable = False
 
-    transparent = False
-
     "True is .legend() is supported"
     has_legend = False
     legend_url = None
@@ -632,9 +630,6 @@ class WMSLayerBase(object):
     res_range = None
     "MapExtend of the layer"
     extent = None
-
-    def is_opaque(self):
-        return not self.transparent
 
     def map_layers_for_query(self, query):
         raise NotImplementedError()
@@ -666,8 +661,10 @@ class WMSLayer(WMSLayerBase):
             res_range = merge_layer_res_ranges(map_layers)
         self.res_range = res_range
         self.queryable = True if info_layers else False
-        self.transparent = all(not map_lyr.is_opaque() for map_lyr in self.map_layers)
         self.has_legend = True if legend_layers else False
+
+    def is_opaque(self, query):
+        return any(l.is_opaque(query) for l in self.map_layers)
 
     def renders_query(self, query):
         if self.res_range and not self.res_range.contains(query.bbox, query.size, query.srs):
@@ -727,12 +724,14 @@ class WMSGroupLayer(WMSLayerBase):
         self.md = md or {}
         self.is_active = True if this is not None else False
         self.layers = layers
-        self.transparent = True if this and not this.is_opaque() or all(not l.is_opaque() for l in layers) else False
         self.has_legend = True if this and this.has_legend or any(l.has_legend for l in layers) else False
         self.queryable = True if this and this.queryable or any(l.queryable for l in layers) else False
         all_layers = layers + ([self.this] if self.this else [])
         self.extent = merge_layer_extents(all_layers)
         self.res_range = merge_layer_res_ranges(all_layers)
+
+    def is_opaque(self, query):
+        return any(l.is_opaque(query) for l in self.layers)
 
     @property
     def legend_size(self):
