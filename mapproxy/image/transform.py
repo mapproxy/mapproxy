@@ -190,7 +190,11 @@ def img_for_resampling(img, resampling):
     resampling = image_filter[resampling]
     if img.mode == 'P' and resampling != Image.NEAREST:
         img.load() # load to get actual palette mode
-        img = img.convert(img.palette.mode)
+        if img.palette is not None:
+            # palette can still be None for cropped images
+            img = img.convert(img.palette.mode)
+        else:
+            img = img.convert('RGBA')
     return img
 
 def griddify(quad, steps):
