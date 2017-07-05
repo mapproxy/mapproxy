@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement, division
+from __future__ import division
 
 from mapproxy.layer import MapQuery, InfoQuery
 from mapproxy.srs import SRS

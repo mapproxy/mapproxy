@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement, division
+from __future__ import division
 
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
 from mapproxy.test.system.test_wms import is_110_capa, is_111_capa

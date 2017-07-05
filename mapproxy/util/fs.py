@@ -16,7 +16,7 @@
 """
 File system related utility functions.
 """
-from __future__ import with_statement, absolute_import
+from __future__ import absolute_import
 import time
 import os
 import sys

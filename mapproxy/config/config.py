@@ -16,7 +16,6 @@
 """
 System-wide configuration.
 """
-from __future__ import with_statement
 import os
 import copy
 import contextlib

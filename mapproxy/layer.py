@@ -18,7 +18,7 @@
 Layers that can get maps/infos from different sources/caches.
 """
 
-from __future__ import division, with_statement
+from __future__ import division
 from mapproxy.grid import NoTiles, GridError, merge_resolution_range, bbox_intersects, bbox_contains
 from mapproxy.image import SubImageSource, bbox_position_in_image
 from mapproxy.image.opts import ImageOptions

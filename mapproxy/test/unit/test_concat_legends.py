@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 from mapproxy.compat.image import Image
 from mapproxy.image import ImageSource
 from mapproxy.image.merge import concat_legends

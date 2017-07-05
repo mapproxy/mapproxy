@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.request.wmts import WMTS100CapabilitiesRequest
 from mapproxy.test.image import img_from_buf

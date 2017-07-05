@@ -35,7 +35,6 @@ Tile caching (creation, caching and retrieval of tiles).
 
 """
 
-from __future__ import with_statement
 
 from functools import partial
 from contextlib import contextmanager
