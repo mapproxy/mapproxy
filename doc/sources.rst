@@ -178,15 +178,9 @@ You can configure the following HTTP related options for this source:
 - ``headers``
 - ``client_timeout``
 - ``ssl_ca_certs``
-- ``ssl_no_cert_checks`` (see below)
+- ``ssl_no_cert_checks``
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
-
-.. _wms_source_ssl_no_cert_checks:
-
-``ssl_no_cert_checks``
-
-  MapProxy checks the SSL server certificates for any ``req.url`` that use HTTPS. You need to supply a file (see) that includes that certificate, otherwise MapProxy will fail to establish the connection. You can set the ``http.ssl_no_cert_checks`` options to ``true`` to disable this verification.
 
 .. _tagged_source_names:
 
@@ -375,7 +369,7 @@ You can configure the following HTTP related options for this source:
 - ``headers``
 - ``client_timeout``
 - ``ssl_ca_certs``
-- ``ssl_no_cert_checks`` (:ref:`see above <wms_source_ssl_no_cert_checks>`)
+- ``ssl_no_cert_checks``
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 

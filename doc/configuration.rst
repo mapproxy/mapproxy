@@ -900,14 +900,13 @@ The following options define how tiles are created and stored. Most options can 
 
 HTTP related options.
 
-Secure HTTPS Connections (HTTPS)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. note:: You need Python 2.6 or the `SSL module <http://pypi.python.org/pypi/ssl>`_ for this feature.
+Secure HTTP Connections (HTTPS)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 MapProxy supports access to HTTPS servers. Just use ``https`` instead of ``http`` when
-defining the URL of a source. MapProxy needs a file that contains the root and CA
-certificates. If the server certificate is signed by a "standard" root certificate (i.e. your browser does not warn you), then you can use a cert file that is distributed with your system. On Debian based systems you can use ``/etc/ssl/certs/ca-certificates.crt``.
+defining the URL of a source.
+
+MapProxy verifies the SSL/TLS connections against your systems "certification authority" (CA) certificates. You can provide your own set of root certificates with the ``ssl_ca_certs`` option.
 See the `Python SSL documentation <http://docs.python.org/dev/library/ssl.html#ssl-certificates>`_ for more information about the format.
 
 ::
@@ -915,11 +914,26 @@ See the `Python SSL documentation <http://docs.python.org/dev/library/ssl.html#s
   http:
     ssl_ca_certs: /etc/ssl/certs/ca-certificates.crt
 
-If you want to use SSL but do not need certificate verification, then you can disable it with the ``ssl_no_cert_checks`` option. You can also disable this check on a source level, see :ref:`WMS source options <wms_source_ssl_no_cert_checks>`.
+
+.. versionadded:: 1.11.0
+
+  MapProxy uses the systems CA files by default, if you use Python >=2.7.9 or >=3.4.
+
+
+.. note::
+
+  You need to supply a CA file that includes the root certificates if you use older MapProxy or older Python versions. Otherwise MapProxy will fail to establish the connection. You can set the ``http.ssl_no_cert_checks`` options to ``true`` to disable this verification.
+
+
+``ssl_no_cert_checks``
+
+If you want to use SSL/TLS but do not need certificate verification, then you can disable it with the ``ssl_no_cert_checks`` option. You can also disable this check on a source level.
+
 ::
 
   http:
-    ssl_no_cert_checks: True
+    ssl_no_cert_checks: true
+
 
 ``client_timeout``
 ^^^^^^^^^^^^^^^^^^

@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2017 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import os
 import time
 import sys
 
-from mapproxy.client.http import HTTPClient, HTTPClientError
+from mapproxy.client.http import HTTPClient, HTTPClientError, supports_ssl_default_context
 from mapproxy.client.tile import TMSClient, TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient
 from mapproxy.grid import tile_grid
@@ -86,38 +86,25 @@ class TestHTTPClient(object):
             assert False, 'expected HTTPClientError'
 
     @attr('online')
-    def test_https_no_ssl_module_error(self):
-        from mapproxy.client import http
-        old_ssl = http.ssl
-        try:
-            http.ssl = None
-            try:
-                self.client = HTTPClient('https://www.google.com/')
-            except ImportError:
-                pass
-            else:
-                assert False, 'no ImportError for missing ssl module'
-        finally:
-            http.ssl = old_ssl
-
-    @attr('online')
-    def test_https_no_ssl_module_insecure(self):
-        from mapproxy.client import http
-        old_ssl = http.ssl
-        try:
-            http.ssl = None
-            self.client = HTTPClient('https://www.google.com/', insecure=True)
-            self.client.open('https://www.google.com/')
-        finally:
-            http.ssl = old_ssl
-
-    @attr('online')
-    def test_https_valid_cert(self):
-        try:
-            import ssl; ssl
-        except ImportError:
+    def test_https_untrusted_root(self):
+        if not supports_ssl_default_context:
+            # old python versions require ssl_ca_certs
             raise SkipTest()
+        self.client = HTTPClient('https://untrusted-root.badssl.com/')
+        try:
+            self.client.open('https://untrusted-root.badssl.com/')
+        except HTTPClientError as e:
+            assert_re(e.args[0], r'Could not verify connection to URL')
 
+    @attr('online')
+    def test_https_insecure(self):
+        self.client = HTTPClient(
+            'https://untrusted-root.badssl.com/', insecure=True)
+        self.client.open('https://untrusted-root.badssl.com/')
+
+    @attr('online')
+    def test_https_valid_ca_cert_file(self):
+        # verify with fixed ca_certs file
         cert_file = '/etc/ssl/certs/ca-certificates.crt'
         if os.path.exists(cert_file):
             self.client = HTTPClient('https://www.google.com/', ssl_ca_certs=cert_file)
@@ -130,16 +117,23 @@ class TestHTTPClient(object):
                 self.client.open('https://www.google.com/')
 
     @attr('online')
-    def test_https_invalid_cert(self):
-        try:
-            import ssl; ssl
-        except ImportError:
+    def test_https_valid_default_cert(self):
+        # modern python should verify by default
+        if not supports_ssl_default_context:
             raise SkipTest()
+        self.client = HTTPClient('https://www.google.com/')
+        self.client.open('https://www.google.com/')
 
+    @attr('online')
+    def test_https_invalid_cert(self):
+        # load 'wrong' root cert
         with TempFile() as tmp:
-            self.client = HTTPClient('https://www.google.com/', ssl_ca_certs=tmp)
+            with open(tmp, 'wb') as f:
+                f.write(GOOGLE_ROOT_CERT)
+            self.client = HTTPClient(
+                'https://untrusted-root.badssl.com/', ssl_ca_certs=tmp)
             try:
-                self.client.open('https://www.google.com/')
+                self.client.open('https://untrusted-root.badssl.com/')
             except HTTPClientError as e:
                 assert_re(e.args[0], r'Could not verify connection to URL')
 
@@ -154,7 +148,7 @@ class TestHTTPClient(object):
         with mock_httpd(TESTSERVER_ADDRESS, [test_req]):
             try:
                 start = time.time()
-                client1.open(TESTSERVER_URL+'/')
+                client1.open(TESTSERVER_URL + '/')
             except HTTPClientError as ex:
                 assert 'timed out' in ex.args[0]
             else:
@@ -164,7 +158,7 @@ class TestHTTPClient(object):
         with mock_httpd(TESTSERVER_ADDRESS, [test_req]):
             try:
                 start = time.time()
-                client2.open(TESTSERVER_URL+'/')
+                client2.open(TESTSERVER_URL + '/')
             except HTTPClientError as ex:
                 assert 'timed out' in ex.args[0]
             else:

@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2017 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,17 +37,87 @@ else:
     from http import client as httplib
 
 import socket
+import ssl
+
+supports_ssl_default_context = False
+if hasattr(ssl, 'create_default_context'):
+    # Python >=2.7.9 and >=3.4.0
+    supports_ssl_default_context = True
 
 class HTTPClientError(Exception):
     def __init__(self, arg, response_code=None):
         Exception.__init__(self, arg)
         self.response_code = response_code
 
-try:
-    import ssl
-    ssl # prevent pyflakes warnings
-except ImportError:
-    ssl = None
+
+def build_https_handler(ssl_ca_certs, insecure):
+    if supports_ssl_default_context:
+        # python >=2.7.9 and >=3.4 supports ssl context in
+        # HTTPSHandler use this
+        if insecure:
+            ctx = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+            ctx.verify_mode = ssl.CERT_NONE
+        elif ssl_ca_certs:
+            ctx = ssl.create_default_context(cafile=ssl_ca_certs)
+        else:
+            ctx = ssl.create_default_context()
+        return urllib2.HTTPSHandler(context=ctx)
+    else:
+        if insecure:
+            return None
+        else:
+            connection_class = verified_https_connection_with_ca_certs(
+                ssl_ca_certs)
+            return VerifiedHTTPSHandler(connection_class=connection_class)
+
+
+class VerifiedHTTPSConnection(httplib.HTTPSConnection):
+    def __init__(self, *args, **kw):
+        self._ca_certs = kw.pop('ca_certs', None)
+        httplib.HTTPSConnection.__init__(self, *args, **kw)
+
+    def connect(self):
+        # overrides the version in httplib so that we do
+        #    certificate verification
+
+        if hasattr(socket, 'create_connection') and hasattr(self, 'source_address'):
+            sock = socket.create_connection((self.host, self.port),
+                                            self.timeout, self.source_address)
+        else:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((self.host, self.port))
+
+        if hasattr(self, '_tunnel_host') and self._tunnel_host:
+            # for Python >= 2.6 with proxy support
+            self.sock = sock
+            self._tunnel()
+
+        # wrap the socket using verification with the root
+        #    certs in self.ca_certs_path
+        self.sock = ssl.wrap_socket(sock,
+                                    self.key_file,
+                                    self.cert_file,
+                                    cert_reqs=ssl.CERT_REQUIRED,
+                                    ca_certs=self._ca_certs)
+
+
+def verified_https_connection_with_ca_certs(ca_certs):
+    """
+    Creates VerifiedHTTPSConnection classes with given ca_certs file.
+    """
+    def wrapper(*args, **kw):
+        kw['ca_certs'] = ca_certs
+        return VerifiedHTTPSConnection(*args, **kw)
+    return wrapper
+
+
+class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
+    def __init__(self, connection_class=VerifiedHTTPSConnection):
+        self.specialized_conn_class = connection_class
+        urllib2.HTTPSHandler.__init__(self)
+
+    def https_open(self, req):
+        return self.do_open(self.specialized_conn_class, req)
 
 
 class _URLOpenerCache(object):
@@ -60,12 +130,12 @@ class _URLOpenerCache(object):
     def __init__(self):
         self._opener = {}
 
-    def __call__(self, ssl_ca_certs, url, username, password):
-        if ssl_ca_certs not in self._opener:
+    def __call__(self, ssl_ca_certs, url, username, password, insecure=False):
+        cache_key = (ssl_ca_certs, insecure)
+        if cache_key not in self._opener:
             handlers = []
-            if ssl_ca_certs:
-                connection_class = verified_https_connection_with_ca_certs(ssl_ca_certs)
-                https_handler = VerifiedHTTPSHandler(connection_class=connection_class)
+            https_handler = build_https_handler(ssl_ca_certs, insecure)
+            if https_handler:
                 handlers.append(https_handler)
             passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
             authhandler = urllib2.HTTPBasicAuthHandler(passman)
@@ -74,11 +144,12 @@ class _URLOpenerCache(object):
             handlers.append(authhandler)
 
             opener = urllib2.build_opener(*handlers)
+
             opener.addheaders = [('User-agent', 'MapProxy-%s' % (version,))]
 
-            self._opener[ssl_ca_certs] = (opener, passman)
+            self._opener[cache_key] = (opener, passman)
         else:
-            opener, passman = self._opener[ssl_ca_certs]
+            opener, passman = self._opener[cache_key]
 
         if url is not None and username is not None and password is not None:
             passman.add_password(None, url, username, password)
@@ -94,16 +165,11 @@ class HTTPClient(object):
         if url and url.startswith('https'):
             if insecure:
                 ssl_ca_certs = None
-            else:
-                if ssl is None:
-                    raise ImportError('No ssl module found. SSL certificate '
-                        'verification requires Python 2.6 or ssl module. Upgrade '
-                        'or disable verification with http.ssl_no_cert_checks option.')
-                if ssl_ca_certs is None:
+            elif ssl_ca_certs is None and not supports_ssl_default_context:
                     raise HTTPClientError('No ca_certs file set (http.ssl_ca_certs). '
                         'Set file or disable verification with http.ssl_no_cert_checks option.')
 
-        self.opener = create_url_opener(ssl_ca_certs, url, username, password)
+        self.opener = create_url_opener(ssl_ca_certs, url, username, password, insecure=insecure)
         self.header_list = headers.items() if headers else []
 
     def open(self, url, data=None):
@@ -127,7 +193,7 @@ class HTTPClient(object):
             reraise_exception(HTTPClientError('HTTP Error "%s": %d'
                 % (url, e.code), response_code=code), sys.exc_info())
         except URLError as e:
-            if ssl and isinstance(e.reason, ssl.SSLError):
+            if isinstance(e.reason, ssl.SSLError):
                 e = HTTPClientError('Could not verify connection to URL "%s": %s'
                                      % (url, e.reason.args[1]))
                 reraise_exception(e, sys.exc_info())
@@ -202,49 +268,3 @@ def retrieve_image(url, client=None):
         raise HTTPClientError('response is not an image: (%s)' % (resp.read()))
     return ImageSource(resp)
 
-
-class VerifiedHTTPSConnection(httplib.HTTPSConnection):
-    def __init__(self, *args, **kw):
-        self._ca_certs = kw.pop('ca_certs', None)
-        httplib.HTTPSConnection.__init__(self, *args, **kw)
-
-    def connect(self):
-        # overrides the version in httplib so that we do
-        #    certificate verification
-
-        if hasattr(socket, 'create_connection') and hasattr(self, 'source_address'):
-            sock = socket.create_connection((self.host, self.port),
-                self.timeout, self.source_address)
-        else:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect((self.host, self.port))
-
-        if hasattr(self, '_tunnel_host') and self._tunnel_host:
-            # for Python >= 2.6 with proxy support
-            self.sock = sock
-            self._tunnel()
-
-        # wrap the socket using verification with the root
-        #    certs in self.ca_certs_path
-        self.sock = ssl.wrap_socket(sock,
-                                    self.key_file,
-                                    self.cert_file,
-                                    cert_reqs=ssl.CERT_REQUIRED,
-                                    ca_certs=self._ca_certs)
-
-def verified_https_connection_with_ca_certs(ca_certs):
-    """
-    Creates VerifiedHTTPSConnection classes with given ca_certs file.
-    """
-    def wrapper(*args, **kw):
-        kw['ca_certs'] = ca_certs
-        return VerifiedHTTPSConnection(*args, **kw)
-    return wrapper
-
-class VerifiedHTTPSHandler(urllib2.HTTPSHandler):
-    def __init__(self, connection_class=VerifiedHTTPSConnection):
-        self.specialized_conn_class = connection_class
-        urllib2.HTTPSHandler.__init__(self)
-
-    def https_open(self, req):
-        return self.do_open(self.specialized_conn_class, req)
