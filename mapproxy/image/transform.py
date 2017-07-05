@@ -129,42 +129,21 @@ class ImageTransformer(object):
         """
         Do a 'real' transformation with a transformed mesh (see above).
         """
-        src_bbox = self.src_srs.align_bbox(src_bbox)
-        dst_bbox = self.dst_srs.align_bbox(dst_bbox)
-        src_size = src_img.size
-        src_quad = (0, 0, src_size[0], src_size[1])
-        dst_quad = (0, 0, dst_size[0], dst_size[1])
-        to_src_px = make_lin_transf(src_bbox, src_quad)
-        to_dst_w = make_lin_transf(dst_quad, dst_bbox)
-        meshes = []
 
-        # more recent versions of Pillow use center coordinates for
-        # transformations, we manually need to add half a pixel otherwise
-        if transform_uses_center():
-            px_offset = 0.0
-        else:
-            px_offset = 0.5
-
-        def dst_quad_to_src(quad):
-            src_quad = []
-            for dst_px in [(quad[0], quad[1]), (quad[0], quad[3]),
-                           (quad[2], quad[3]), (quad[2], quad[1])]:
-                dst_w = to_dst_w((dst_px[0]+px_offset, dst_px[1]+px_offset))
-                src_w = self.dst_srs.transform_to(self.src_srs, dst_w)
-                src_px = to_src_px(src_w)
-                src_quad.extend(src_px)
-            return quad, src_quad
-
-        mesh_div = self.mesh_div
-        while mesh_div > 1 and (dst_size[0] / mesh_div < 10 or dst_size[1] / mesh_div < 10):
-            mesh_div -= 1
-        for quad in griddify(dst_quad, mesh_div):
-            meshes.append(dst_quad_to_src(quad))
-
+        meshes = transform_meshes(
+            src_size=src_img.size,
+            src_bbox=src_bbox,
+            src_srs=self.src_srs,
+            dst_size=dst_size,
+            dst_bbox=dst_bbox,
+            dst_srs=self.dst_srs,
+            mesh_div=self.mesh_div,
+        )
         img = img_for_resampling(src_img.as_image(), image_opts.resampling)
         result = img.transform(dst_size, Image.MESH, meshes,
                                               image_filter[image_opts.resampling])
         return ImageSource(result, size=dst_size, image_opts=image_opts)
+
 
     def _no_transformation_needed(self, src_size, src_bbox, dst_size, dst_bbox):
         """
@@ -182,6 +161,42 @@ class ImageTransformer(object):
         return (src_size == dst_size and
                 self.src_srs == self.dst_srs and
                 bbox_equals(src_bbox, dst_bbox, xres/10, yres/10))
+
+
+def transform_meshes(src_size, src_bbox, src_srs, dst_size, dst_bbox, dst_srs, mesh_div=8):
+        src_bbox = src_srs.align_bbox(src_bbox)
+        dst_bbox = dst_srs.align_bbox(dst_bbox)
+        src_quad = (0, 0, src_size[0], src_size[1])
+        dst_quad = (0, 0, dst_size[0], dst_size[1])
+        to_src_px = make_lin_transf(src_bbox, src_quad)
+        to_dst_w = make_lin_transf(dst_quad, dst_bbox)
+        meshes = []
+
+        # more recent versions of Pillow use center coordinates for
+        # transformations, we manually need to add half a pixel otherwise
+        if transform_uses_center():
+            px_offset = 0.0
+        else:
+            px_offset = 0.5
+
+        def dst_quad_to_src(quad):
+            src_quad = []
+            for dst_px in [(quad[0], quad[1]), (quad[0], quad[3]),
+                           (quad[2], quad[3]), (quad[2], quad[1])]:
+                dst_w = to_dst_w(
+                    (dst_px[0] + px_offset, dst_px[1] + px_offset))
+                src_w = dst_srs.transform_to(src_srs, dst_w)
+                src_px = to_src_px(src_w)
+                src_quad.extend(src_px)
+
+            return quad, src_quad
+
+        while mesh_div > 1 and (dst_size[0] / mesh_div < 10 or dst_size[1] / mesh_div < 10):
+            mesh_div -= 1
+        for quad in griddify(dst_quad, mesh_div):
+            meshes.append(dst_quad_to_src(quad))
+
+        return meshes
 
 def img_for_resampling(img, resampling):
     """
