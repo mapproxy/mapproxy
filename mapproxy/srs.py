@@ -345,15 +345,13 @@ def calculate_bbox(points):
     """
     points = list(points)
     # points can be INF for invalid transformations, filter out
-    # INF is not portable for <2.6 so we check against a large value
-    MAX = 1e300
     try:
-        minx = min(p[0] for p in points if p[0] <= MAX)
-        miny = min(p[1] for p in points if p[1] <= MAX)
-        maxx = max(p[0] for p in points if p[0] <= MAX)
-        maxy = max(p[1] for p in points if p[1] <= MAX)
+        minx = min(p[0] for p in points if p[0] != float('inf'))
+        miny = min(p[1] for p in points if p[1] != float('inf'))
+        maxx = max(p[0] for p in points if p[0] != float('inf'))
+        maxy = max(p[1] for p in points if p[1] != float('inf'))
         return (minx, miny, maxx, maxy)
-    except ValueError: # everything is INF
+    except ValueError: # min/max are called with empty list when everything is inf
         raise TransformationError()
 
 def merge_bbox(bbox1, bbox2):

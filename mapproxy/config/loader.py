@@ -1453,7 +1453,7 @@ class CacheConfiguration(ConfigurationBase):
             if use_renderd:
                 from mapproxy.cache.renderd import RenderdTileCreator, has_renderd_support
                 if not has_renderd_support():
-                    raise ConfigurationError("renderd requires Python >=2.6 and requests")
+                    raise ConfigurationError("renderd requires requests library")
                 if self.context.seed:
                     priority = 10
                 else:
