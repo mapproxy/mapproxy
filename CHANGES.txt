@@ -1,3 +1,12 @@
+1.10.3 2017-07-07
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix crash during clipping
+- Fix bilinear/bicubic resampling from cropped source
+- Fix loading empty coverages
+
 1.10.2 2017-06-21
 ~~~~~~~~~~~~~~~~~
 
