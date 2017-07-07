@@ -32,7 +32,11 @@ try:
     import shapely.geometry
     import shapely.ops
     import shapely.prepared
-    from shapely.geos import ReadingError
+    try:
+        # shapely >=1.6
+        from shapely.errors import ReadingError
+    except ImportError:
+        from shapely.geos import ReadingError
     geom_support = True
 except ImportError:
     geom_support = False
