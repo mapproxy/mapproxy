@@ -169,6 +169,11 @@ class TestWMS111(WMSTest):
             bbox_srs_from_boundingbox(bboxs['EPSG:4326']),
             [-180.0, -80.0, 170.0, 80.0])
 
+        bbox_srs = xml.xpath('//Layer/Layer/BoundingBox')
+        bbox_srs = set(e.attrib['SRS'] for e in bbox_srs)
+        # we have a coverage in EPSG:4258, but it is not in wms.srs (#288)
+        assert 'EPSG:4258' not in bbox_srs
+
         assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
 
     def test_invalid_layer(self):

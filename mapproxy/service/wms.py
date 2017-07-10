@@ -489,14 +489,17 @@ class Capabilities(object):
 
             if epsg_axis_order:
                 bbox = switch_bbox_epsg_axis_order(bbox, srs)
-            yield srs, bbox
+
+            if srs in self.srs:
+                yield srs, bbox
 
         # add native srs
         if layer_srs_code not in self.srs_extents:
             bbox = layer.extent.bbox
             if epsg_axis_order:
                 bbox = switch_bbox_epsg_axis_order(bbox, layer_srs_code)
-            yield layer_srs_code, bbox
+            if layer_srs_code in self.srs:
+                yield layer_srs_code, bbox
 
     def render(self, _map_request):
         return self._render_template(_map_request.capabilities_template)
