@@ -1058,8 +1058,7 @@ class TestBBOXContains(object):
 
 def assert_almost_equal_bbox(bbox1, bbox2, places=2):
     for coord1, coord2 in zip(bbox1, bbox2):
-        assert_almost_equal(coord1, coord2, places)
-
+        assert_almost_equal(coord1, coord2, places, msg='%s != %s' % (bbox1, bbox2))
 
 class TestResolutionRange(object):
     def test_meter(self):

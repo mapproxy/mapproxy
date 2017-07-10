@@ -222,7 +222,7 @@
     <CRS>{{s}}</CRS>
     {{endfor}}
     {{endif}}
-    {{py: extent = limit_llbbox(layer.extent.llbbox)}}
+    {{py: extent = layer_llbbox(layer)}}
     <EX_GeographicBoundingBox>
       <westBoundLongitude>{{ extent[0] }}</westBoundLongitude>
       <eastBoundLongitude>{{ extent[2] }}</eastBoundLongitude>

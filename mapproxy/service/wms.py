@@ -480,12 +480,16 @@ class Capabilities(object):
         self.inspire_md = inspire_md
 
     def layer_srs_bbox(self, layer, epsg_axis_order=False):
-        layer_srs_code = layer.extent.srs.srs_code
         for srs, extent in iteritems(self.srs_extents):
+            # is_default is True when no explicit bbox is defined for this srs
+            # use layer extent
             if extent.is_default:
                 bbox = layer.extent.bbox_for(SRS(srs))
-            else:
+            elif layer.extent.is_default:
                 bbox = extent.bbox_for(SRS(srs))
+            else:
+                # Use intersection of srs_extent and layer.extent.
+                bbox = extent.intersection(layer.extent).bbox_for(SRS(srs))
 
             if epsg_axis_order:
                 bbox = switch_bbox_epsg_axis_order(bbox, srs)
@@ -494,12 +498,19 @@ class Capabilities(object):
                 yield srs, bbox
 
         # add native srs
+        layer_srs_code = layer.extent.srs.srs_code
         if layer_srs_code not in self.srs_extents:
             bbox = layer.extent.bbox
             if epsg_axis_order:
                 bbox = switch_bbox_epsg_axis_order(bbox, layer_srs_code)
             if layer_srs_code in self.srs:
                 yield layer_srs_code, bbox
+
+    def layer_llbbox(self, layer):
+        if 'EPSG:4326' in self.srs_extents:
+            llbbox = self.srs_extents['EPSG:4326'].intersection(layer.extent).llbbox
+            return limit_llbbox(llbbox)
+        return limit_llbbox(layer.extent.llbbox)
 
     def render(self, _map_request):
         return self._render_template(_map_request.capabilities_template)
@@ -516,11 +527,33 @@ class Capabilities(object):
                                    srs=self.srs,
                                    tile_layers=self.tile_layers,
                                    layer_srs_bbox=self.layer_srs_bbox,
+                                   layer_llbbox=self.layer_llbbox,
                                    inspire_md=inspire_md,
         )
         # strip blank lines
         doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())
         return doc
+
+
+def limit_llbbox(bbox):
+    """
+    Limit the long/lat bounding box to +-180/89.99999999 degrees.
+
+    Some clients can't handle +-90 north/south, so we subtract a tiny bit.
+
+    >>> ', '.join('%.6f' % x for x in limit_llbbox((-200,-90.0, 180, 90)))
+    '-180.000000, -89.999999, 180.000000, 89.999999'
+    >>> ', '.join('%.6f' % x for x in limit_llbbox((-20,-9.0, 10, 10)))
+    '-20.000000, -9.000000, 10.000000, 10.000000'
+    """
+    minx, miny, maxx, maxy = bbox
+
+    minx = max(-180, minx)
+    miny = max(-89.999999, miny)
+    maxx = min(180, maxx)
+    maxy = min(89.999999, maxy)
+
+    return minx, miny, maxx, maxy
 
 class LayerRenderer(object):
     def __init__(self, layers, query, request, raise_source_errors=True,
