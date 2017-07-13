@@ -606,6 +606,13 @@ class ArcGISSourceConfiguration(SourceConfiguration):
         from mapproxy.srs import SRS
         from mapproxy.request.arcgis import create_request
 
+        if not self.conf.get('opts', {}).get('map', True):
+            return None
+
+        if not self.context.seed and self.conf.get('seed_only'):
+            from mapproxy.source import DummySource
+            return DummySource(coverage=self.coverage())
+
         # Get the supported SRS codes and formats from the configuration.
         supported_srs = [SRS(code) for code in self.conf.get("supported_srs", [])]
         supported_formats = [file_ext(f) for f in self.conf.get("supported_formats", [])]

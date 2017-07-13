@@ -268,7 +268,10 @@ This describes the ArcGIS source. The only required option is ``url``. You need 
 ``opts``
 ^^^^^^^^
 
-.. versionadded: 1.10.0
+.. versionadded:: 1.10.0
+.. versionadded:: 1.11.0
+  ``map`` option
+
 
 This option affects what request MapProxy sends to the source ArcGIS server.
 
@@ -280,6 +283,19 @@ This option affects what request MapProxy sends to the source ArcGIS server.
 
 ``featureinfo_tolerance``
   Tolerance in pixel within the ArcGIS server should identify features.
+
+
+``map``
+  If this is set to ``false``, MapProxy will not request images from this source. You can use this option in combination with ``featureinfo: true`` to create a source that is only used for feature info requests.
+
+
+
+``seed_only``
+^^^^^^^^^^^^^
+
+.. versionadded:: 1.11.0
+
+See :ref:`seed_only <wms_seed_only>`
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
