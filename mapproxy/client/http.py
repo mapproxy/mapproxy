@@ -236,17 +236,18 @@ def auth_data_from_url(url):
     ('http://localhost/bar', ('bar', 'b:az@'))
     >>> auth_data_from_url('http://bar foo; foo@bar:b:az@@localhost/bar')
     ('http://localhost/bar', ('bar foo; foo@bar', 'b:az@'))
+    >>> auth_data_from_url('https://bar:foo#;%$@localhost/bar')
+    ('https://localhost/bar', ('bar', 'foo#;%$'))
     """
     username = password = None
     if '@' in url:
-        scheme, host, path, query, frag = urlparse.urlsplit(url)
-        if '@' in host:
-            auth_data, host = host.rsplit('@', 1)
-            url = url.replace(auth_data+'@', '', 1)
-            if ':' in auth_data:
-                username, password = auth_data.split(':', 1)
-            else:
-                username = auth_data
+        head, url = url.rsplit('@', 1)
+        schema, auth_data = head.split('//', 1)
+        url = schema + '//' + url
+        if ':' in auth_data:
+            username, password = auth_data.split(':', 1)
+        else:
+            username = auth_data
     return url, (username, password)
 
 
