@@ -92,6 +92,10 @@ class LayerMerger(LayerMerger):
                 # non-paletted PNGs can have a fixed transparency value
                 # convert to RGBA to have full alpha
                 img = img.convert('RGBA')
+                # transparency is still in some cases
+                # see: https://github.com/python-pillow/Pillow/pull/2633
+                if 'transparency' in img.info:
+                    del(img.info['transparency'])
 
             if merge_composite:
                 if opacity is not None and opacity < 1.0:
