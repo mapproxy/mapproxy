@@ -312,6 +312,12 @@ def img_to_buf(img, image_opts):
             defaults['quality'] = image_opts.encoding_options['jpeg_quality']
         else:
             defaults['quality'] = base_config().image.jpeg_quality
+
+    # unsupported transparency tuple can still be in non-RGB img.infos
+    # see: https://github.com/python-pillow/Pillow/pull/2633
+    if format == 'png' and img.mode != 'RGB' and 'transparency' in img.info and isinstance(img.info['transparency'], tuple):
+        del img.info['transparency']
+
     img.save(buf, format, **defaults)
     buf.seek(0)
     return buf

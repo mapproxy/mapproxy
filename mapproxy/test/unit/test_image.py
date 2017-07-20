@@ -128,6 +128,17 @@ class TestImageSource(object):
         eq_(img.mode, 'RGBA')
         assert img.getpixel((0, 0)) == (0, 0, 0, 0)
 
+    def test_save_with_unsupported_transparency(self):
+        # check if encoding of non-RGB image with tuple as transparency
+        # works. workaround for Pillow #2633
+        img = Image.new('P', (100, 100))
+        img.info['transparency'] = (0, 0, 0)
+        image_opts = PNG_FORMAT.copy()
+
+        ir = ImageSource(img, image_opts=image_opts)
+        img = Image.open(ir.as_buffer())
+        eq_(img.mode, 'P')
+
 class TestSubImageSource(object):
     def test_full(self):
         sub_img = create_image((100, 100), color=[100, 120, 130, 140])
