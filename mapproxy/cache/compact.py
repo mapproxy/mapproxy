@@ -41,11 +41,11 @@ class CompactCacheV1(TileCacheBase):
 
         level_dir = os.path.join(self.cache_dir, 'L%02d' % z)
 
-        c = x // BUNDLEX_GRID_WIDTH * BUNDLEX_GRID_WIDTH
-        r = y // BUNDLEX_GRID_HEIGHT * BUNDLEX_GRID_HEIGHT
+        c = x // BUNDLEX_V1_GRID_WIDTH * BUNDLEX_V1_GRID_WIDTH
+        r = y // BUNDLEX_V1_GRID_HEIGHT * BUNDLEX_V1_GRID_HEIGHT
 
         basename = 'R%04xC%04x' % (r, c)
-        return Bundle(os.path.join(level_dir, basename), offset=(c, r))
+        return BundleV1(os.path.join(level_dir, basename), offset=(c, r))
 
     def is_cached(self, tile):
         if tile.coord is None:
@@ -85,9 +85,9 @@ class CompactCacheV1(TileCacheBase):
         return False
 
 BUNDLE_EXT = '.bundle'
-BUNDLEX_EXT = '.bundlx'
+BUNDLEX_V1_EXT = '.bundlx'
 
-class Bundle(object):
+class BundleV1(object):
     def __init__(self, base_filename, offset):
         self.base_filename = base_filename
         self.lock_filename = base_filename + '.lck'
@@ -95,21 +95,21 @@ class Bundle(object):
 
     def _rel_tile_coord(self, tile_coord):
         return (
-            tile_coord[0] % BUNDLEX_GRID_WIDTH,
-            tile_coord[1] % BUNDLEX_GRID_HEIGHT,
+            tile_coord[0] % BUNDLEX_V1_GRID_WIDTH,
+            tile_coord[1] % BUNDLEX_V1_GRID_HEIGHT,
         )
 
     def is_cached(self, tile):
         if tile.source or tile.coord is None:
             return True
 
-        idx = BundleIndex(self.base_filename + BUNDLEX_EXT)
+        idx = BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT)
         x, y = self._rel_tile_coord(tile.coord)
         offset = idx.tile_offset(x, y)
         if offset == 0:
             return False
 
-        bundle = BundleData(self.base_filename + BUNDLE_EXT, self.offset)
+        bundle = BundleDataV1(self.base_filename + BUNDLE_EXT, self.offset)
         size = bundle.read_size(offset)
         return size != 0
 
@@ -121,8 +121,8 @@ class Bundle(object):
             data = buf.read()
 
         with FileLock(self.lock_filename):
-            bundle = BundleData(self.base_filename + BUNDLE_EXT, self.offset)
-            idx = BundleIndex(self.base_filename + BUNDLEX_EXT)
+            bundle = BundleDataV1(self.base_filename + BUNDLE_EXT, self.offset)
+            idx = BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT)
             x, y = self._rel_tile_coord(tile.coord)
             offset = idx.tile_offset(x, y)
             offset, size = bundle.append_tile(data, prev_offset=offset)
@@ -134,13 +134,13 @@ class Bundle(object):
         if tile.source or tile.coord is None:
             return True
 
-        idx = BundleIndex(self.base_filename + BUNDLEX_EXT)
+        idx = BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT)
         x, y = self._rel_tile_coord(tile.coord)
         offset = idx.tile_offset(x, y)
         if offset == 0:
             return False
 
-        bundle = BundleData(self.base_filename + BUNDLE_EXT, self.offset)
+        bundle = BundleDataV1(self.base_filename + BUNDLE_EXT, self.offset)
         data = bundle.read_tile(offset)
         if not data:
             return False
@@ -153,21 +153,21 @@ class Bundle(object):
             return True
 
         with FileLock(self.lock_filename):
-            idx = BundleIndex(self.base_filename + BUNDLEX_EXT)
+            idx = BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT)
             x, y = self._rel_tile_coord(tile.coord)
             idx.remove_tile_offset(x, y)
 
         return True
 
 
-BUNDLEX_GRID_WIDTH = 128
-BUNDLEX_GRID_HEIGHT = 128
-BUNDLEX_HEADER_SIZE = 16
-BUNDLEX_HEADER = b'\x03\x00\x00\x00\x10\x00\x00\x00\x00\x40\x00\x00\x05\x00\x00\x00'
-BUNDLEX_FOOTER_SIZE = 16
-BUNDLEX_FOOTER = b'\x00\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x00\x00\x00\x00'
+BUNDLEX_V1_GRID_WIDTH = 128
+BUNDLEX_V1_GRID_HEIGHT = 128
+BUNDLEX_V1_HEADER_SIZE = 16
+BUNDLEX_V1_HEADER = b'\x03\x00\x00\x00\x10\x00\x00\x00\x00\x40\x00\x00\x05\x00\x00\x00'
+BUNDLEX_V1_FOOTER_SIZE = 16
+BUNDLEX_V1_FOOTER = b'\x00\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x00\x00\x00\x00'
 
-class BundleIndex(object):
+class BundleIndexV1(object):
     def __init__(self, filename):
         self.filename = filename
         # defer initialization to update/remove calls to avoid
@@ -180,14 +180,14 @@ class BundleIndex(object):
             return
         ensure_directory(self.filename)
         buf = BytesIO()
-        buf.write(BUNDLEX_HEADER)
-        for i in range(BUNDLEX_GRID_WIDTH * BUNDLEX_GRID_HEIGHT):
-            buf.write(struct.pack('<Q', (i*4)+BUNDLE_HEADER_SIZE)[:5])
-        buf.write(BUNDLEX_FOOTER)
+        buf.write(BUNDLEX_V1_HEADER)
+        for i in range(BUNDLEX_V1_GRID_WIDTH * BUNDLEX_V1_GRID_HEIGHT):
+            buf.write(struct.pack('<Q', (i*4)+BUNDLE_V1_HEADER_SIZE)[:5])
+        buf.write(BUNDLEX_V1_FOOTER)
         write_atomic(self.filename, buf.getvalue())
 
     def _tile_offset(self, x, y):
-        return BUNDLEX_HEADER_SIZE + (x * BUNDLEX_GRID_HEIGHT + y) * 5
+        return BUNDLEX_V1_HEADER_SIZE + (x * BUNDLEX_V1_GRID_HEIGHT + y) * 5
 
     def tile_offset(self, x, y):
         idx_offset = self._tile_offset(x, y)
@@ -220,8 +220,8 @@ class BundleIndex(object):
 # The bundle file has a header with 15 little-endian long values (60 bytes).
 # NOTE: the fixed values might be some flags for image options (format, aliasing)
 # all files available for testing had the same values however.
-BUNDLE_HEADER_SIZE = 60
-BUNDLE_HEADER = [
+BUNDLE_V1_HEADER_SIZE = 60
+BUNDLE_V1_HEADER = [
     3        , # 0,  fixed
     16384    , # 1,  max. num of tiles 128*128 = 16384
     16       , # 2,  size of largest tile
@@ -238,9 +238,9 @@ BUNDLE_HEADER = [
     0        , # 13, x0
     127      , # 14, x1
 ]
-BUNDLE_HEADER_STRUCT_FORMAT = '<lllllllllllllll'
+BUNDLE_V1_HEADER_STRUCT_FORMAT = '<lllllllllllllll'
 
-class BundleData(object):
+class BundleDataV1(object):
     def __init__(self, filename, tile_offsets):
         self.filename = filename
         self.tile_offsets = tile_offsets
@@ -249,13 +249,13 @@ class BundleData(object):
 
     def _init_bundle(self):
         ensure_directory(self.filename)
-        header = list(BUNDLE_HEADER)
+        header = list(BUNDLE_V1_HEADER)
         header[13], header[11] = self.tile_offsets
         header[14], header[12] = header[13]+127, header[11]+127
         write_atomic(self.filename,
-            struct.pack(BUNDLE_HEADER_STRUCT_FORMAT, *header) +
+            struct.pack(BUNDLE_V1_HEADER_STRUCT_FORMAT, *header) +
             # zero-size entry for each tile
-            (b'\x00' * (BUNDLEX_GRID_HEIGHT * BUNDLEX_GRID_WIDTH * 4)))
+            (b'\x00' * (BUNDLEX_V1_GRID_HEIGHT * BUNDLEX_V1_GRID_WIDTH * 4)))
 
     def read_size(self, offset):
         with open(self.filename, 'rb') as f:
@@ -290,12 +290,12 @@ class BundleData(object):
 
             # update header
             f.seek(0, os.SEEK_SET)
-            header = list(struct.unpack(BUNDLE_HEADER_STRUCT_FORMAT, f.read(60)))
+            header = list(struct.unpack(BUNDLE_V1_HEADER_STRUCT_FORMAT, f.read(60)))
             header[2] = max(header[2], size)
             header[6] += size + 4
             if is_new_tile:
                 header[4] += 4
             f.seek(0, os.SEEK_SET)
-            f.write(struct.pack(BUNDLE_HEADER_STRUCT_FORMAT, *header))
+            f.write(struct.pack(BUNDLE_V1_HEADER_STRUCT_FORMAT, *header))
 
         return offset, size
