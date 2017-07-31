@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2016 Omniscale <http://omniscale.de>
+# Copyright (C) 2016-2017 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,8 +29,9 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class CompactCacheV1(TileCacheBase):
+class CompactCacheBase(TileCacheBase):
     supports_timestamp = False
+    bundle_class = None
 
     def __init__(self, cache_dir):
         self.lock_cache_id = 'compactcache-' + hashlib.md5(cache_dir.encode('utf-8')).hexdigest()
@@ -45,7 +46,7 @@ class CompactCacheV1(TileCacheBase):
         r = y // BUNDLEX_V1_GRID_HEIGHT * BUNDLEX_V1_GRID_HEIGHT
 
         basename = 'R%04xC%04x' % (r, c)
-        return BundleV1(os.path.join(level_dir, basename), offset=(c, r))
+        return self.bundle_class(os.path.join(level_dir, basename), offset=(c, r))
 
     def is_cached(self, tile):
         if tile.coord is None:
@@ -227,18 +228,15 @@ BUNDLE_V1_HEADER = [
     16       , # 2,  size of largest tile
     5        , # 3,  fixed
     0        , # 4,  num of tiles in bundle (*4)
-    0        , # 5,  fixed
-    60+65536 , # 6,  bundle size
-    0        , # 7,  fixed
-    40       , # 8   fixed
-    0        , # 9,  fixed
-    16       , # 10, fixed
-    0        , # 11, y0
-    127      , # 12, y1
-    0        , # 13, x0
-    127      , # 14, x1
+    60+65536 , # 5,  bundle size
+    40       , # 6   fixed
+    16       , # 7,  fixed
+    0        , # 8,  y0
+    127      , # 9,  y1
+    0        , # 10, x0
+    127      , # 11, x1
 ]
-BUNDLE_V1_HEADER_STRUCT_FORMAT = '<lllllllllllllll'
+BUNDLE_V1_HEADER_STRUCT_FORMAT = '<4I3Q5I'
 
 class BundleDataV1(object):
     def __init__(self, filename, tile_offsets):
@@ -250,8 +248,8 @@ class BundleDataV1(object):
     def _init_bundle(self):
         ensure_directory(self.filename)
         header = list(BUNDLE_V1_HEADER)
-        header[13], header[11] = self.tile_offsets
-        header[14], header[12] = header[13]+127, header[11]+127
+        header[10], header[8] = self.tile_offsets
+        header[11], header[9] = header[10]+127, header[8]+127
         write_atomic(self.filename,
             struct.pack(BUNDLE_V1_HEADER_STRUCT_FORMAT, *header) +
             # zero-size entry for each tile
@@ -292,10 +290,180 @@ class BundleDataV1(object):
             f.seek(0, os.SEEK_SET)
             header = list(struct.unpack(BUNDLE_V1_HEADER_STRUCT_FORMAT, f.read(60)))
             header[2] = max(header[2], size)
-            header[6] += size + 4
+            header[5] += size + 4
             if is_new_tile:
                 header[4] += 4
             f.seek(0, os.SEEK_SET)
             f.write(struct.pack(BUNDLE_V1_HEADER_STRUCT_FORMAT, *header))
 
         return offset, size
+
+
+BUNDLE_V2_GRID_WIDTH = 128
+BUNDLE_V2_GRID_HEIGHT = 128
+BUNDLE_V2_TILES = BUNDLE_V2_GRID_WIDTH * BUNDLE_V2_GRID_HEIGHT
+BUNDLE_V2_INDEX_SIZE = BUNDLE_V2_TILES * 8
+
+BUNDLE_V2_HEADER = (
+    3,                          # Version
+    BUNDLE_V2_TILES,            # numRecords
+    0,                          # maxRecord Size
+    5,                          # Offset Size
+    0,                          # Slack Space
+    64 + BUNDLE_V2_INDEX_SIZE,  # File Size
+    40,                         # User Header Offset
+    20 + BUNDLE_V2_INDEX_SIZE,  # User Header Size
+    3,                          # Legacy 1
+    16,                         # Legacy 2 0?
+    BUNDLE_V2_TILES,            # Legacy 3
+    5,                          # Legacy 4
+    BUNDLE_V2_INDEX_SIZE        # Index Size
+)
+BUNDLE_V2_HEADER_STRUCT_FORMAT = '<4I3Q6I'
+BUNDLE_V2_HEADER_SIZE = 64
+
+
+class BundleV2(object):
+    def __init__(self, base_filename, offset=None):
+        # offset not used by V2
+        self.filename = base_filename + '.bundle'
+        self.lock_filename = base_filename + '.lck'
+
+        # defer initialization to update/remove calls to avoid
+        # index creation on is_cached (prevents new files in read-only caches)
+        self._initialized = False
+
+    def _init_index(self):
+        self._initialized = True
+        if os.path.exists(self.filename):
+            return
+        ensure_directory(self.filename)
+        buf = BytesIO()
+        buf.write(struct.pack(BUNDLE_V2_HEADER_STRUCT_FORMAT, *BUNDLE_V2_HEADER))
+        # Empty index (ArcGIS stores an offset of 4 and size of 0 for missing tiles)
+        buf.write(struct.pack('<%dQ' % BUNDLE_V2_TILES, *(4, ) * BUNDLE_V2_TILES))
+        write_atomic(self.filename, buf.getvalue())
+
+    def _tile_idx_offset(self, x, y):
+        return BUNDLE_V2_HEADER_SIZE + (x + BUNDLE_V2_GRID_HEIGHT * y) * 8
+
+    def _rel_tile_coord(self, tile_coord):
+        return (tile_coord[0] % BUNDLE_V2_GRID_WIDTH,
+                tile_coord[1] % BUNDLE_V2_GRID_HEIGHT, )
+
+    def _tile_offset_size(self, fh, x, y):
+        idx_offset = self._tile_idx_offset(x, y)
+        fh.seek(idx_offset)
+        val = struct.unpack('<Q', fh.read(8))[0]
+        # Index contains 8 bytes per tile.
+        # Size is stored in 24 most significant bits.
+        # Offset in the least significant 40 bits.
+        size = val >> 40
+        if size == 0:
+            return 0, 0
+        offset = val - (size << 40)
+        return offset, size
+
+    def load_tile(self, tile, with_metadata=False):
+        if tile.source or tile.coord is None:
+            return True
+
+        try:
+            with open(self.filename, 'rb') as f:
+                x, y = self._rel_tile_coord(tile.coord)
+                offset, size = self._tile_offset_size(f, x, y)
+                if not size:
+                    return False
+
+                f.seek(offset)
+                data = f.read(size)
+        except IOError as ex:
+            if ex.errno == errno.ENOENT:
+                # missing bundle file -> missing tile
+                return False
+            raise
+
+        tile.source = ImageSource(BytesIO(data))
+        return True
+
+    def is_cached(self, tile):
+        try:
+            with open(self.filename, 'rb') as f:
+                x, y = self._rel_tile_coord(tile.coord)
+                _, size = self._tile_offset_size(f, x, y)
+                if not size:
+                    return False
+                return True
+        except IOError as ex:
+            if ex.errno == errno.ENOENT:
+                # missing bundle file -> missing tile
+                return False
+            raise
+
+    def _update_tile_offset(self, fh, x, y, offset, size):
+        idx_offset = self._tile_idx_offset(x, y)
+        val = offset + (size << 40)
+
+        fh.seek(idx_offset, os.SEEK_SET)
+        fh.write(struct.pack('<Q', val))
+
+    def _append_tile(self, fh, data):
+        # Write tile size first, then tile data.
+        # Offset points to actual tile data.
+        fh.seek(0, os.SEEK_END)
+        fh.write(struct.pack('<L', len(data)))
+        offset = fh.tell()
+        fh.write(data)
+        return offset
+
+    def _update_metadata(self, fh, filesize, tilesize):
+        # Max record/tile size
+        fh.seek(8)
+        old_tilesize = struct.unpack('<I', fh.read(4))[0]
+        if tilesize > old_tilesize:
+            fh.seek(8)
+            fh.write(struct.pack('<I', tilesize))
+
+        # Complete file size
+        fh.seek(24)
+        fh.write(struct.pack("<Q", filesize))
+
+    def store_tile(self, tile):
+        if tile.stored:
+            return True
+
+        self._init_index()
+        with tile_buffer(tile) as buf:
+            data = buf.read()
+        size = len(data)
+        x, y = self._rel_tile_coord(tile.coord)
+
+        with FileLock(self.lock_filename):
+            with open(self.filename, 'r+b') as f:
+                offset = self._append_tile(f, data)
+                self._update_tile_offset(f, x, y, offset, size)
+
+                filesize = offset + size
+                self._update_metadata(f, filesize, size)
+
+        return True
+
+    def remove_tile(self, tile):
+        if tile.coord is None:
+            return True
+
+        self._init_index()
+        with FileLock(self.lock_filename):
+            with open(self.filename, 'r+b') as f:
+                x, y = self._rel_tile_coord(tile.coord)
+                self._update_tile_offset(f, x, y, 0, 0)
+
+        return True
+
+
+class CompactCacheV1(CompactCacheBase):
+    bundle_class = BundleV1
+
+class CompactCacheV2(CompactCacheBase):
+    bundle_class = BundleV2
+

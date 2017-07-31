@@ -224,6 +224,12 @@ def export_command(args=None):
             'version': 1,
             'directory': options.dest,
         }
+    elif options.type == 'compact-v2':
+        cache_conf['cache'] = {
+            'type': 'compact',
+            'version': 2,
+            'directory': options.dest,
+        }
     elif options.type in ('tc', 'mapproxy'):
         cache_conf['cache'] = {
             'type': 'file',
