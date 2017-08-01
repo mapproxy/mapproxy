@@ -172,6 +172,8 @@ def tmp_image(size, format='png', color=None, mode='RGB'):
         img = Image.new(mode, size, color=color)
     else:
         img = create_debug_img(size)
+    if format == 'jpeg':
+        img = img.convert('RGB')
     data = BytesIO()
     img.save(data, format)
     data.seek(0)
