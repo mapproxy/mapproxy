@@ -279,7 +279,7 @@ def export_command(args=None):
         print('WARN: grids are incompatible. needs to scale/reproject tiles for export.', file=sys.stderr)
 
     md = dict(name='export', cache_name='cache', grid_name=options.grid, dest=options.dest)
-    task = SeedTask(md, mgr, levels, None, seed_coverage)
+    task = SeedTask(md, mgr, levels, 1, seed_coverage)
 
     print(format_export_task(task, custom_grid=custom_grid))
 

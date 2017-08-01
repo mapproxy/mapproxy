@@ -207,6 +207,25 @@ class BundleV1(object):
 
         return True
 
+    def size(self):
+        total_size = 0
+
+        idx = BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT)
+        bundle = BundleDataV1(self.base_filename + BUNDLE_EXT, self.offset)
+
+        for y in range(BUNDLEX_V1_GRID_HEIGHT):
+            for x in range(BUNDLEX_V1_GRID_WIDTH):
+                offset = idx.tile_offset(x, y)
+                if not offset:
+                    continue
+                size = bundle.read_size(offset)
+                if not size:
+                    continue
+                total_size += size + 4
+
+        actual_size = os.path.getsize(bundle.filename)
+        return total_size + BUNDLE_V1_HEADER_SIZE + (BUNDLEX_V1_GRID_HEIGHT * BUNDLEX_V1_GRID_WIDTH * 4), actual_size
+
 
 BUNDLEX_V1_GRID_WIDTH = 128
 BUNDLEX_V1_GRID_HEIGHT = 128
@@ -214,6 +233,8 @@ BUNDLEX_V1_HEADER_SIZE = 16
 BUNDLEX_V1_HEADER = b'\x03\x00\x00\x00\x10\x00\x00\x00\x00\x40\x00\x00\x05\x00\x00\x00'
 BUNDLEX_V1_FOOTER_SIZE = 16
 BUNDLEX_V1_FOOTER = b'\x00\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x00\x00\x00\x00'
+
+INT64LE = struct.Struct('<Q')
 
 class BundleIndexV1(object):
     def __init__(self, filename):
@@ -229,8 +250,9 @@ class BundleIndexV1(object):
         ensure_directory(self.filename)
         buf = BytesIO()
         buf.write(BUNDLEX_V1_HEADER)
+
         for i in range(BUNDLEX_V1_GRID_WIDTH * BUNDLEX_V1_GRID_HEIGHT):
-            buf.write(struct.pack('<Q', (i*4)+BUNDLE_V1_HEADER_SIZE)[:5])
+            buf.write(INT64LE.pack((i*4)+BUNDLE_V1_HEADER_SIZE)[:5])
         buf.write(BUNDLEX_V1_FOOTER)
         write_atomic(self.filename, buf.getvalue())
 
@@ -253,7 +275,7 @@ class BundleIndexV1(object):
     def update_tile_offset(self, x, y, offset, size):
         self._init_index()
         idx_offset = self._tile_offset(x, y)
-        offset = struct.pack('<Q', offset)[:5]
+        offset = INT64LE.pack(offset)[:5]
         with open(self.filename, 'r+b') as f:
             f.seek(idx_offset, os.SEEK_SET)
             f.write(offset)
@@ -426,7 +448,6 @@ class BundleV2(object):
         tile.source = ImageSource(BytesIO(data))
         return True
 
-
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
             return True
@@ -476,7 +497,7 @@ class BundleV2(object):
         val = offset + (size << 40)
 
         fh.seek(idx_offset, os.SEEK_SET)
-        fh.write(struct.pack('<Q', val))
+        fh.write(INT64LE.pack(val))
 
     def _append_tile(self, fh, data):
         # Write tile size first, then tile data.
@@ -553,6 +574,24 @@ class BundleV2(object):
 
         return True
 
+    def size(self):
+        total_size = 0
+        try:
+            with open(self.filename, 'rb') as f:
+                for y in range(BUNDLE_V2_GRID_HEIGHT):
+                    for x in range(BUNDLE_V2_GRID_WIDTH):
+                        _, size = self._tile_offset_size(f, x, y)
+                        if size:
+                            total_size += size + 4
+                f.seek(0, os.SEEK_END)
+                actual_size = f.tell()
+                return total_size + 64 + BUNDLE_V2_INDEX_SIZE, actual_size
+        except IOError as ex:
+            if ex.errno == errno.ENOENT:
+                # missing bundle file -> missing tile
+                return 0, 0
+            raise
+
 
 class CompactCacheV1(CompactCacheBase):
     bundle_class = BundleV1
@@ -561,3 +600,13 @@ class CompactCacheV2(CompactCacheBase):
     bundle_class = BundleV2
     supports_bulk_load = True
     supports_bulk_store = True
+
+def main():
+    import sys
+    for f in sys.argv[1:]:
+        b = BundleV2(f.rstrip('.bundle'))
+        print b.filename, b.size()
+
+
+if __name__ == '__main__':
+    main()

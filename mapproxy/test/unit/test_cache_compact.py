@@ -18,6 +18,8 @@ from __future__ import division
 import os
 import time
 import struct
+import shutil
+import tempfile
 
 from io import BytesIO
 
@@ -25,6 +27,7 @@ from mapproxy.cache.compact import CompactCacheV1, CompactCacheV2
 from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
+from mapproxy.script.defrag import defrag_compact_cache
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
 from nose.tools import eq_
@@ -207,3 +210,60 @@ class TestCompactCacheV2(TileCacheTestBase):
         t = Tile((5000, 1001, 12), ImageSource(BytesIO(b'a' * 3000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
         assert_header([4000 + 4, 6000 + 4 + 3000 + 4, 1000 + 4], 6000) # still contains bytes from overwritten tile
+
+
+class DefragmentationTestBase(object):
+    def setup(self):
+        self.cache_dir = tempfile.mkdtemp()
+
+    def teardown(self):
+        if os.path.exists(self.cache_dir):
+            shutil.rmtree(self.cache_dir)
+
+    def test_defragmentation_min_bytes(self):
+        cache = self.cache_class(self.cache_dir)
+
+        for _ in range(2):
+            t = Tile((5000, 1000, 12),
+                ImageSource(BytesIO(b'a' * 60*1024), image_opts=ImageOptions(format='image/png')))
+            cache.store_tile(t)
+
+        fname = os.path.join(self.cache_dir, 'L12', 'R0380C1380.bundle')
+        before = os.path.getsize(fname)
+        defrag_compact_cache(cache)
+        after = os.path.getsize(fname)
+        assert before == after
+
+        before = os.path.getsize(fname)
+        defrag_compact_cache(cache, min_bytes=50000)
+        after = os.path.getsize(fname)
+        assert after < before
+
+    def test_defragmentation_min_percent(self):
+        cache = self.cache_class(self.cache_dir)
+
+        for x in range(100):
+            for _ in range(2 if x < 10 else 1):
+                t = Tile((5000+x, 1000, 12),
+                        ImageSource(
+                            BytesIO(b'a' * 120 * 1024),
+                            image_opts=ImageOptions(format='image/png')))
+                cache.store_tile(t)
+
+        fname = os.path.join(self.cache_dir, 'L12', 'R0380C1380.bundle')
+        before = os.path.getsize(fname)
+        defrag_compact_cache(cache)
+        after = os.path.getsize(fname)
+        assert before == after
+
+        before = os.path.getsize(fname)
+        defrag_compact_cache(cache, min_percent=0.08)
+        after = os.path.getsize(fname)
+        assert after < before
+
+
+class TestDefragmentationV1(DefragmentationTestBase):
+    cache_class = CompactCacheV1
+
+class TestDefragmentationV2(DefragmentationTestBase):
+    cache_class = CompactCacheV2
