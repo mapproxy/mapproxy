@@ -662,12 +662,3 @@ class CompactCacheV1(CompactCacheBase):
 class CompactCacheV2(CompactCacheBase):
     bundle_class = BundleV2
 
-def main():
-    import sys
-    for fh in sys.argv[1:]:
-        b = BundleV2(fh.rstrip('.bundle'))
-        print b.filename, b.size()
-
-
-if __name__ == '__main__':
-    main()
