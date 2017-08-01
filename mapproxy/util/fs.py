@@ -124,7 +124,7 @@ def write_atomic(filename, data):
         # where file locking does not work (network fs)
         path_tmp = filename + '.tmp-' + str(random.randint(0, 99999999))
         try:
-            fd = os.open(path_tmp, os.O_EXCL | os.O_CREAT | os.O_WRONLY, 0666)
+            fd = os.open(path_tmp, os.O_EXCL | os.O_CREAT | os.O_WRONLY, 0o666)
             with os.fdopen(fd, 'wb') as f:
                 f.write(data)
             os.rename(path_tmp, filename)
