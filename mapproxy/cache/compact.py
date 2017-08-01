@@ -18,12 +18,13 @@ import hashlib
 import os
 import shutil
 import struct
+import collections
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, tile_buffer
 from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.util.lock import FileLock
-from mapproxy.compat import BytesIO
+from mapproxy.compat import BytesIO, iteritems
 
 import logging
 log = logging.getLogger(__name__)
@@ -299,3 +300,319 @@ class BundleData(object):
             f.write(struct.pack(BUNDLE_HEADER_STRUCT_FORMAT, *header))
 
         return offset, size
+    
+
+class CompactCacheV2(TileCacheBase):
+    supports_timestamp=False
+
+    def __init__(self, cache_dir):
+        self.lock_cache_id='compactcache-'+hashlib.md5(cache_dir.encode('utf-8')).hexdigest()
+        self.cache_dir=cache_dir
+
+    def _get_bundle_tiles(self, tiles):
+        bundles={}
+        for tile in tiles:
+            x, y, z=tile.coord
+            c=x//BundleDataV2.BUNDLESIZE*BundleDataV2.BUNDLESIZE
+            r=y//BundleDataV2.BUNDLESIZE*BundleDataV2.BUNDLESIZE
+            bundle_file=os.path.join(self.cache_dir, 'L%02d'%z, 'R%04xC%04x'%(r, c))
+            if not bundles.get(bundle_file):
+                bundles[bundle_file]=[tile]
+            else: bundles[bundle_file].append(tile)
+        return bundles
+
+    def is_cached(self, tile):
+        if tile.source or tile.coord is None:
+            return True
+        for bundle_file, bundle_tiles in iteritems(self._get_bundle_tiles([tile])):
+            with BundleDataV2(bundle_file) as bundledata:
+                for tile in bundle_tiles:
+                    return bundledata.tile_size(tile.coord)!=0
+
+    def store_tile(self, tile):
+        if tile.stored:
+            return True
+        return self.store_tiles([tile])
+
+    def store_tiles(self, tiles):
+        tiles_to_store=[t for t in tiles if not t.stored]
+        tiles_stored=0
+        for bundle_file, bundle_tiles in iteritems(self._get_bundle_tiles(tiles_to_store)):
+            records=[]
+            for tile in bundle_tiles:
+                with tile_buffer(tile) as buf: records.append((buf.read(), tile))
+            with BundleDataV2(bundle_file, mode = "write") as bundledata:
+                for record in records:
+                    tiles_stored+=1 if bundledata.store_tile(*record) else 0
+
+        return tiles_stored==len(tiles_to_store)
+
+    def load_tile(self, tile, with_metadata = False):
+        if tile.source or tile.coord is None:
+            return True
+        return self.load_tiles([tile])
+
+    def load_tiles(self, tiles, with_metadata = False):
+        tiles_to_load=[t for t in tiles if not (t.source or t.coord is None)]
+        tiles_loaded=0
+        if not tiles_to_load:
+            return True
+        for bundle_file, bundle_tiles in iteritems(self._get_bundle_tiles(tiles_to_load)):
+            with BundleDataV2(bundle_file) as bundledata:
+                for tile in bundle_tiles:
+                    tiles_loaded+=1 if bundledata.load_tile(tile) else 0
+        log.debug("%i loaded tiles"%tiles_loaded)
+        return tiles_loaded==len(tiles_to_load)
+
+    def remove_tile(self, tile):
+        if tile.coord is None:
+            return True
+        for bundle_file, bundle_tiles in iteritems(self._get_bundle_tiles([tile])):
+            with BundleDataV2(bundle_file, mode = "write") as bundledata:
+                for tile in bundle_tiles:
+                    return bundledata.remove_tile(tile)
+
+    def load_tile_metadata(self, tile):
+        if self.is_cached(tile):
+            tile.timestamp=-1
+
+    def remove_level_tiles_before(self, level, timestamp):
+        if timestamp==0:
+            level_dir=os.path.join(self.cache_dir, 'L%02d'%level)
+            shutil.rmtree(level_dir, ignore_errors = True)
+            return True
+        return False
+
+
+class CompactCacheV2(TileCacheBase):
+
+    supports_timestamp = False
+
+    def __init__(self, cache_dir):
+        self.lock_cache_id = 'compactcache-' + \
+            hashlib.md5(cache_dir.encode('utf-8')).hexdigest()
+        self.cache_dir = cache_dir
+
+    def _get_bundle_tiles(self, tiles):
+        bundles = {}
+        for tile in tiles:
+            x, y, z = tile.coord
+            c = x // BundleDataV2.BUNDLESIZE * BundleDataV2.BUNDLESIZE
+            r = y // BundleDataV2.BUNDLESIZE * BundleDataV2.BUNDLESIZE
+            bundle_file = os.path.join(
+                self.cache_dir, 'L%02d' % z, 'R%04xC%04x' % (r, c))
+            if not bundles.get(bundle_file):
+                bundles[bundle_file] = [tile]
+            else:
+                bundles[bundle_file].append(tile)
+        return bundles
+
+    def is_cached(self, tile):
+        if tile.source or tile.coord is None:
+            return True
+        for bundle_file, bundle_tiles in iteritems(self._get_bundle_tiles([tile])):
+            with BundleDataV2(bundle_file) as bundledata:
+                for tile in bundle_tiles:
+                    return bundledata.tile_size(tile.coord) != 0
+
+    def store_tile(self, tile):
+        if tile.stored:
+            return True
+        return self.store_tiles([tile])
+
+    def store_tiles(self, tiles):
+        tiles_to_store = [t for t in tiles if not t.stored]
+        tiles_stored = 0
+        for bundle_file, bundle_tiles in iteritems(self._get_bundle_tiles(tiles_to_store)):
+            records = []
+            for tile in bundle_tiles:
+                with tile_buffer(tile) as buf:
+                    records.append((buf.read(), tile))
+            with BundleDataV2(bundle_file, mode="write") as bundledata:
+                for record in records:
+                    tiles_stored += 1 if bundledata.store_tile(*record) else 0
+
+        return tiles_stored == len(tiles_to_store)
+
+    def load_tile(self, tile, with_metadata=False):
+        if tile.source or tile.coord is None:
+            return True
+        return self.load_tiles([tile])
+
+    def load_tiles(self, tiles, with_metadata=False):
+        tiles_to_load = [t for t in tiles if not (t.source or t.coord is None)]
+        tiles_loaded = 0
+        if not tiles_to_load:
+            return True
+        for bundle_file, bundle_tiles in iteritems(self._get_bundle_tiles(tiles_to_load)):
+            with BundleDataV2(bundle_file) as bundledata:
+                for tile in bundle_tiles:
+                    tiles_loaded += 1 if bundledata.load_tile(tile) else 0
+        log.debug("%i loaded tiles" % tiles_loaded)
+        return tiles_loaded == len(tiles_to_load)
+
+    def remove_tile(self, tile):
+        if tile.coord is None:
+            return True
+        for bundle_file, bundle_tiles in iteritems(self._get_bundle_tiles([tile])):
+            with BundleDataV2(bundle_file, mode="write") as bundledata:
+                for tile in bundle_tiles:
+                    return bundledata.remove_tile(tile)
+
+    def load_tile_metadata(self, tile):
+        if self.is_cached(tile):
+            tile.timestamp = -1
+
+    def remove_level_tiles_before(self, level, timestamp):
+        if timestamp == 0:
+            level_dir = os.path.join(self.cache_dir, 'L%02d' % level)
+            shutil.rmtree(level_dir, ignore_errors=True)
+            return True
+        return False
+
+
+class BundleDataV2(object):
+
+    BUNDLE_CACHE = {}
+
+    BUNDLESIZE = 128    # Quadkey Base
+    BUNDLESIZE2 = BUNDLESIZE**2    # Tiles in Bundle
+    INDEXSIZE = BUNDLESIZE2 * 8
+    SLACKSPACE = 4    # Slack Space
+
+    BUNDLE_BYTEORDER = "<"    # little-endian
+    BUNDLE_HEADER_FORMAT = "4I3Q6I"
+    BUNDLE_INDEX_FORMAT = "%iQ" % BUNDLESIZE2
+    DEFAULT_BUNDLE_HEADER = collections.OrderedDict([
+        ("version", 3),
+        ("numRecords", BUNDLESIZE2),
+        ("maxRecordSize", 0),
+        ("offsetSize", 5),
+        ("slackSpace", SLACKSPACE),
+        ("fileSize", 64 + INDEXSIZE),
+        ("userHeaderOffset", 40),
+        ("userHeaderSize", 20 + INDEXSIZE),
+        ("legacy1", 3),
+        ("legacy2", 16),
+        ("legacy3", BUNDLESIZE2),
+        ("legacy4", 5),
+        ("indexSize", INDEXSIZE)
+    ])
+
+    def __init__(self, bundle, mode="read"):
+        self.mode = mode
+        self.filename = bundle + '.bundle'
+        self.filelock = FileLock(bundle + '.lck')
+        self.header = collections.OrderedDict(self.DEFAULT_BUNDLE_HEADER)
+        self.index = [4] * self.BUNDLESIZE2    # empty index
+
+        if not os.path.exists(self.filename):
+            self._init_bundle()
+
+        cache = self.BUNDLE_CACHE.get(self.filename, {})
+        if cache and cache['stat'][-4:] == os.stat(self.filename)[-4:]:
+            # log.debug("use BUNDLE_CACHE")
+            self.index = cache['index']
+            self.header = cache['header']
+        else:
+            self.__read_header()
+            self.__read_index()
+            self.BUNDLE_CACHE[self.filename] = {"stat": os.fstat(
+                self.filehandle.fileno()), "index": self.index, "header": self.header}
+
+    def _init_bundle(self):
+        log.info("Init Bundle %s" % self.filename)
+        ensure_directory(self.filename)
+        write_atomic(self.filename, struct.pack(*[self.BUNDLE_BYTEORDER + self.BUNDLE_HEADER_FORMAT + self.BUNDLE_INDEX_FORMAT] +
+                                                list(self.header.values()) +
+                                                self.index    # empty index
+                                                ))
+
+    def __read_header(self):
+        self.filehandle.seek(0)
+        header = struct.unpack(
+            self.BUNDLE_BYTEORDER + self.BUNDLE_HEADER_FORMAT, self.filehandle.read(64))
+        for value, key in zip(header, self.header.keys()):
+            self.header[key] = value
+        assert self.header["version"] is 3
+        assert self.header["fileSize"] == os.fstat(
+            self.filehandle.fileno()).st_size
+
+    def __read_index(self):
+        self.filehandle.seek(64)
+        self.index = list(struct.unpack(
+            self.BUNDLE_BYTEORDER + self.BUNDLE_INDEX_FORMAT, self.filehandle.read(self.header['indexSize'])))
+
+    def __tile_pos(self, col, row, level):
+        return (row % self.BUNDLESIZE) * self.BUNDLESIZE + col % self.BUNDLESIZE
+
+    def __get_tile_from_index(self, col, row, level):
+        tile_pos = self.__tile_pos(col, row, level)
+        index_value = self.index[tile_pos]
+        if index_value <= 4:
+            return 0, -1
+        size = index_value >> self.header['userHeaderOffset']
+        offset = index_value - (size << self.header['userHeaderOffset'])
+        return size, offset
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
+    def tile_size(self, tile):
+        size, unused = self.__get_tile_from_index(*tile)
+        return size
+
+    def load_tile(self, tile):
+        size, offset = self.__get_tile_from_index(*tile.coord)
+        if size <= 0 or offset == -1:
+            return False
+        self.filehandle.seek(offset)
+        tile.source = ImageSource(BytesIO(self.filehandle.read(size)))
+        return True
+
+    def store_tile(self, data, tile):
+        size = len(data)
+        self.filehandle.seek(0, os.SEEK_END)
+        self.filehandle.write(struct.pack("<I", size))
+
+        self.index[self.__tile_pos(
+            *tile.coord)] = self.filehandle.tell() + (size << self.header['userHeaderOffset'])
+        self.filehandle.write(data)
+        self.header['fileSize'] = self.filehandle.tell()
+        self.header['maxRecordSize'] = max(self.header['maxRecordSize'], size)
+
+        self.filehandle.seek(0)
+        self.filehandle.write(struct.pack(
+            *[self.BUNDLE_BYTEORDER + self.BUNDLE_HEADER_FORMAT + self.BUNDLE_INDEX_FORMAT] + list(self.header.values()) + self.index))
+        return True
+
+    def remove_tile(self, tile):
+        self.index[self.__tile_pos(*tile.coord)] = 4
+        self.filehandle.seek(0)
+        self.filehandle.write(struct.pack(
+            *[self.BUNDLE_BYTEORDER + self.BUNDLE_HEADER_FORMAT + self.BUNDLE_INDEX_FORMAT] + list(self.header.values()) + self.index))
+        return True
+
+    def close(self):
+        if hasattr(self, '_%s__filehandle' % self.__class__.__name__) and not self.__filehandle.closed:
+            log.debug("close")
+            self.__filehandle.close()
+        if self.mode == "write":
+            self.BUNDLE_CACHE[self.filename] = {}
+            self.filelock.unlock()
+
+    @property
+    def filehandle(self):
+        if not hasattr(self, '_%s__filehandle' % self.__class__.__name__):
+            log.debug("open")
+            if self.mode == "write":
+                self.filelock.lock()
+                self.__filehandle = open(self.filename, mode="r+b")
+            else:
+                self.__filehandle = open(self.filename, mode="rb")
+        return self.__filehandle
+
