@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import contextlib
 import errno
 import hashlib
 import os
@@ -147,18 +148,26 @@ class BundleV1(object):
             tile_coord[1] % BUNDLEX_V1_GRID_HEIGHT,
         )
 
+    def data(self):
+        return BundleDataV1(self.base_filename + BUNDLE_EXT, self.offset)
+
+    def index(self):
+        return BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT)
+
     def is_cached(self, tile):
         if tile.source or tile.coord is None:
             return True
 
-        idx = BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT)
-        x, y = self._rel_tile_coord(tile.coord)
-        offset = idx.tile_offset(x, y)
-        if offset == 0:
-            return False
+        with self.index().readonly() as idx:
+            if not idx:
+                return False
+            x, y = self._rel_tile_coord(tile.coord)
+            offset = idx.tile_offset(x, y)
+            if offset == 0:
+                return False
 
-        bundle = BundleDataV1(self.base_filename + BUNDLE_EXT, self.offset)
-        size = bundle.read_size(offset)
+        with self.data().readonly() as bundle:
+            size = bundle.read_size(offset)
         return size != 0
 
     def store_tile(self, tile):
@@ -169,12 +178,12 @@ class BundleV1(object):
             data = buf.read()
 
         with FileLock(self.lock_filename):
-            bundle = BundleDataV1(self.base_filename + BUNDLE_EXT, self.offset)
-            idx = BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT)
-            x, y = self._rel_tile_coord(tile.coord)
-            offset = idx.tile_offset(x, y)
-            offset, size = bundle.append_tile(data, prev_offset=offset)
-            idx.update_tile_offset(x, y, offset=offset, size=size)
+            with self.data().readwrite() as bundle:
+                with self.index().readwrite() as idx:
+                    x, y = self._rel_tile_coord(tile.coord)
+                    offset = idx.tile_offset(x, y)
+                    offset, size = bundle.append_tile(data, prev_offset=offset)
+                    idx.update_tile_offset(x, y, offset=offset, size=size)
 
         return True
 
@@ -182,14 +191,16 @@ class BundleV1(object):
         if tile.source or tile.coord is None:
             return True
 
-        idx = BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT)
-        x, y = self._rel_tile_coord(tile.coord)
-        offset = idx.tile_offset(x, y)
-        if offset == 0:
-            return False
+        with self.index().readonly() as idx:
+            if not idx:
+                return False
+            x, y = self._rel_tile_coord(tile.coord)
+            offset = idx.tile_offset(x, y)
+            if offset == 0:
+                return False
 
-        bundle = BundleDataV1(self.base_filename + BUNDLE_EXT, self.offset)
-        data = bundle.read_tile(offset)
+        with self.data().readonly() as bundle:
+            data = bundle.read_tile(offset)
         if not data:
             return False
         tile.source = ImageSource(BytesIO(data))
@@ -201,27 +212,29 @@ class BundleV1(object):
             return True
 
         with FileLock(self.lock_filename):
-            idx = BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT)
-            x, y = self._rel_tile_coord(tile.coord)
-            idx.remove_tile_offset(x, y)
+            with self.index().readwrite() as idx:
+                x, y = self._rel_tile_coord(tile.coord)
+                idx.remove_tile_offset(x, y)
 
         return True
 
     def size(self):
         total_size = 0
 
-        idx = BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT)
-        bundle = BundleDataV1(self.base_filename + BUNDLE_EXT, self.offset)
+        with self.index().readonly() as idx:
+            if not idx:
+                return 0, 0
 
-        for y in range(BUNDLEX_V1_GRID_HEIGHT):
-            for x in range(BUNDLEX_V1_GRID_WIDTH):
-                offset = idx.tile_offset(x, y)
-                if not offset:
-                    continue
-                size = bundle.read_size(offset)
-                if not size:
-                    continue
-                total_size += size + 4
+            with self.data().readonly() as bundle:
+                for y in range(BUNDLEX_V1_GRID_HEIGHT):
+                    for x in range(BUNDLEX_V1_GRID_WIDTH):
+                        offset = idx.tile_offset(x, y)
+                        if not offset:
+                            continue
+                        size = bundle.read_size(offset)
+                        if not size:
+                            continue
+                        total_size += size + 4
 
         actual_size = os.path.getsize(bundle.filename)
         return total_size + BUNDLE_V1_HEADER_SIZE + (BUNDLEX_V1_GRID_HEIGHT * BUNDLEX_V1_GRID_WIDTH * 4), actual_size
@@ -239,6 +252,7 @@ INT64LE = struct.Struct('<Q')
 class BundleIndexV1(object):
     def __init__(self, filename):
         self.filename = filename
+        self._fh = None
         # defer initialization to update/remove calls to avoid
         # index creation on is_cached (prevents new files in read-only caches)
         self._initialized = False
@@ -256,40 +270,59 @@ class BundleIndexV1(object):
         buf.write(BUNDLEX_V1_FOOTER)
         write_atomic(self.filename, buf.getvalue())
 
-    def _tile_offset(self, x, y):
+    def _tile_index_offset(self, x, y):
         return BUNDLEX_V1_HEADER_SIZE + (x * BUNDLEX_V1_GRID_HEIGHT + y) * 5
 
     def tile_offset(self, x, y):
-        idx_offset = self._tile_offset(x, y)
-        try:
-            with open(self.filename, 'rb') as f:
-                f.seek(idx_offset)
-                offset = struct.unpack('<Q', f.read(5) + b'\x00\x00\x00')[0]
-            return offset
-        except IOError as ex:
-            if ex.errno == errno.ENOENT:
-                # mising bundle file -> missing tile
-                return 0
-            raise
+        if self._fh is None:
+            raise RuntimeError('not called within readonly/readwrite context')
+        idx_offset = self._tile_index_offset(x, y)
+        self._fh.seek(idx_offset)
+        offset = INT64LE.unpack(self._fh.read(5) + b'\x00\x00\x00')[0]
+        return offset
 
     def update_tile_offset(self, x, y, offset, size):
-        self._init_index()
-        idx_offset = self._tile_offset(x, y)
+        if self._fh is None:
+            raise RuntimeError('not called within readwrite context')
+        idx_offset = self._tile_index_offset(x, y)
         offset = INT64LE.pack(offset)[:5]
-        with open(self.filename, 'r+b') as f:
-            f.seek(idx_offset, os.SEEK_SET)
-            f.write(offset)
+        self._fh.seek(idx_offset, os.SEEK_SET)
+        self._fh.write(offset)
 
     def remove_tile_offset(self, x, y):
-        self._init_index()
-        idx_offset = self._tile_offset(x, y)
-        with open(self.filename, 'r+b') as f:
-            f.seek(idx_offset)
-            f.write(b'\x00' * 5)
+        if self._fh is None:
+            raise RuntimeError('not called within readwrite context')
+        idx_offset = self._tile_index_offset(x, y)
+        self._fh.seek(idx_offset)
+        self._fh.write(b'\x00' * 5)
 
-# The bundle file has a header with 15 little-endian long values (60 bytes).
-# NOTE: the fixed values might be some flags for image options (format, aliasing)
-# all files available for testing had the same values however.
+    @contextlib.contextmanager
+    def readonly(self):
+        try:
+            with open(self.filename, 'rb') as fh:
+                b = BundleIndexV1(self.filename)
+                b._fh = fh
+                yield b
+        except IOError as ex:
+            if ex.errno == errno.ENOENT:
+                # missing bundle file -> missing tile
+                yield None
+            else:
+                raise ex
+
+    @contextlib.contextmanager
+    def readwrite(self):
+        self._init_index()
+        with open(self.filename, 'r+b') as fh:
+            b = BundleIndexV1(self.filename)
+            b._fh = fh
+            yield b
+
+
+
+    # The bundle file has a header with 15 little-endian long values (60 bytes).
+    # NOTE: the fixed values might be some flags for image options (format, aliasing)
+    # all files available for testing had the same values however.
 BUNDLE_V1_HEADER_SIZE = 60
 BUNDLE_V1_HEADER = [
     3        , # 0,  fixed
@@ -311,6 +344,7 @@ class BundleDataV1(object):
     def __init__(self, filename, tile_offsets):
         self.filename = filename
         self.tile_offsets = tile_offsets
+        self._fh = None
         if not os.path.exists(self.filename):
             self._init_bundle()
 
@@ -324,46 +358,64 @@ class BundleDataV1(object):
             # zero-size entry for each tile
             (b'\x00' * (BUNDLEX_V1_GRID_HEIGHT * BUNDLEX_V1_GRID_WIDTH * 4)))
 
+
+    @contextlib.contextmanager
+    def readonly(self):
+        with open(self.filename, 'rb') as fh:
+            b = BundleDataV1(self.filename, self.tile_offsets)
+            b._fh = fh
+            yield b
+
+    @contextlib.contextmanager
+    def readwrite(self):
+        with open(self.filename, 'r+b') as fh:
+            b = BundleDataV1(self.filename, self.tile_offsets)
+            b._fh = fh
+            yield b
+
     def read_size(self, offset):
-        with open(self.filename, 'rb') as f:
-            f.seek(offset)
-            return struct.unpack('<L', f.read(4))[0]
+        if self._fh is None:
+            raise RuntimeError('not called within readonly/readwrite context')
+        self._fh.seek(offset)
+        return struct.unpack('<L', self._fh.read(4))[0]
 
     def read_tile(self, offset):
-        with open(self.filename, 'rb') as f:
-            f.seek(offset)
-            size = struct.unpack('<L', f.read(4))[0]
-            if size <= 0:
-                return False
-            return f.read(size)
+        if self._fh is None:
+            raise RuntimeError('not called within readonly/readwrite context')
+        self._fh.seek(offset)
+        size = struct.unpack('<L', self._fh.read(4))[0]
+        if size <= 0:
+            return False
+        return self._fh.read(size)
 
     def append_tile(self, data, prev_offset):
+        if self._fh is None:
+            raise RuntimeError('not called within readwrite context')
         size = len(data)
         is_new_tile = True
-        with open(self.filename, 'r+b') as f:
-            if prev_offset:
-                f.seek(prev_offset, os.SEEK_SET)
-                if f.tell() == prev_offset:
-                    if struct.unpack('<L', f.read(4))[0] > 0:
-                        is_new_tile = False
+        if prev_offset:
+            self._fh.seek(prev_offset, os.SEEK_SET)
+            if self._fh.tell() == prev_offset:
+                if struct.unpack('<L', self._fh.read(4))[0] > 0:
+                    is_new_tile = False
 
-            f.seek(0, os.SEEK_END)
-            offset = f.tell()
-            if offset == 0:
-                f.write(b'\x00' * 16) # header
-                offset = 16
-            f.write(struct.pack('<L', size))
-            f.write(data)
+        self._fh.seek(0, os.SEEK_END)
+        offset = self._fh.tell()
+        if offset == 0:
+            self._fh.write(b'\x00' * 16) # header
+            offset = 16
+        self._fh.write(struct.pack('<L', size))
+        self._fh.write(data)
 
-            # update header
-            f.seek(0, os.SEEK_SET)
-            header = list(struct.unpack(BUNDLE_V1_HEADER_STRUCT_FORMAT, f.read(60)))
-            header[2] = max(header[2], size)
-            header[5] += size + 4
-            if is_new_tile:
-                header[4] += 4
-            f.seek(0, os.SEEK_SET)
-            f.write(struct.pack(BUNDLE_V1_HEADER_STRUCT_FORMAT, *header))
+        # update header
+        self._fh.seek(0, os.SEEK_SET)
+        header = list(struct.unpack(BUNDLE_V1_HEADER_STRUCT_FORMAT, self._fh.read(60)))
+        header[2] = max(header[2], size)
+        header[5] += size + 4
+        if is_new_tile:
+            header[4] += 4
+        self._fh.seek(0, os.SEEK_SET)
+        self._fh.write(struct.pack(BUNDLE_V1_HEADER_STRUCT_FORMAT, *header))
 
         return offset, size
 
@@ -423,7 +475,7 @@ class BundleV2(object):
     def _tile_offset_size(self, fh, x, y):
         idx_offset = self._tile_idx_offset(x, y)
         fh.seek(idx_offset)
-        val = struct.unpack('<Q', fh.read(8))[0]
+        val = INT64LE.unpack(fh.read(8))[0]
         # Index contains 8 bytes per tile.
         # Size is stored in 24 most significant bits.
         # Offset in the least significant 40 bits.
@@ -452,45 +504,36 @@ class BundleV2(object):
         if tile.source or tile.coord is None:
             return True
 
-        try:
-            with open(self.filename, 'rb') as f:
-                return self._load_tile(f, tile)
-        except IOError as ex:
-            if ex.errno == errno.ENOENT:
-                # missing bundle file -> missing tile
+        with self._readonly() as fh:
+            if not fh:
                 return False
-            raise
+            return self._load_tile(fh, tile)
 
     def load_tiles(self, tiles, with_metadata=False):
         missing = False
-        try:
-            with open(self.filename, 'rb') as f:
-                for t in tiles:
-                    if t.source or t.coord is None:
-                        continue
-                    if not self._load_tile(f, t):
-                        missing = True
-        except IOError as ex:
-            if ex.errno == errno.ENOENT:
-                # missing bundle file -> missing tile
+
+        with self._readonly() as fh:
+            if not fh:
                 return False
-            raise
+
+            for t in tiles:
+                if t.source or t.coord is None:
+                    continue
+                if not self._load_tile(fh, t):
+                    missing = True
 
         return not missing
 
     def is_cached(self, tile):
-        try:
-            with open(self.filename, 'rb') as f:
-                x, y = self._rel_tile_coord(tile.coord)
-                _, size = self._tile_offset_size(f, x, y)
-                if not size:
-                    return False
-                return True
-        except IOError as ex:
-            if ex.errno == errno.ENOENT:
-                # missing bundle file -> missing tile
+        with self._readonly() as fh:
+            if not fh:
                 return False
-            raise
+
+            x, y = self._rel_tile_coord(tile.coord)
+            _, size = self._tile_offset_size(fh, x, y)
+            if not size:
+                return False
+            return True
 
     def _update_tile_offset(self, fh, x, y, offset, size):
         idx_offset = self._tile_idx_offset(x, y)
@@ -538,8 +581,8 @@ class BundleV2(object):
             data = buf.read()
 
         with FileLock(self.lock_filename):
-            with open(self.filename, 'r+b') as f:
-                self._store_tile(f, tile.coord, data)
+            with self._readwrite() as fh:
+                self._store_tile(fh, tile.coord, data)
 
         return True
 
@@ -555,9 +598,9 @@ class BundleV2(object):
             tiles_data.append((t.coord, data))
 
         with FileLock(self.lock_filename):
-            with open(self.filename, 'r+b') as f:
+            with self._readwrite() as fh:
                 for tile_coord, data in tiles_data:
-                    self._store_tile(f, tile_coord, data)
+                    self._store_tile(fh, tile_coord, data)
 
         return True
 
@@ -568,29 +611,44 @@ class BundleV2(object):
 
         self._init_index()
         with FileLock(self.lock_filename):
-            with open(self.filename, 'r+b') as f:
+            with self._readwrite() as fh:
                 x, y = self._rel_tile_coord(tile.coord)
-                self._update_tile_offset(f, x, y, 0, 0)
+                self._update_tile_offset(fh, x, y, 0, 0)
 
         return True
 
     def size(self):
         total_size = 0
+        with self._readonly() as fh:
+            if not fh:
+                return 0, 0
+            for y in range(BUNDLE_V2_GRID_HEIGHT):
+                for x in range(BUNDLE_V2_GRID_WIDTH):
+                    _, size = self._tile_offset_size(fh, x, y)
+                    if size:
+                        total_size += size + 4
+            fh.seek(0, os.SEEK_END)
+            actual_size = fh.tell()
+            return total_size + 64 + BUNDLE_V2_INDEX_SIZE, actual_size
+
+    @contextlib.contextmanager
+    def _readonly(self):
         try:
-            with open(self.filename, 'rb') as f:
-                for y in range(BUNDLE_V2_GRID_HEIGHT):
-                    for x in range(BUNDLE_V2_GRID_WIDTH):
-                        _, size = self._tile_offset_size(f, x, y)
-                        if size:
-                            total_size += size + 4
-                f.seek(0, os.SEEK_END)
-                actual_size = f.tell()
-                return total_size + 64 + BUNDLE_V2_INDEX_SIZE, actual_size
+            with open(self.filename, 'rb') as fh:
+                yield fh
         except IOError as ex:
             if ex.errno == errno.ENOENT:
                 # missing bundle file -> missing tile
-                return 0, 0
-            raise
+                yield None
+            else:
+                raise ex
+
+    @contextlib.contextmanager
+    def _readwrite(self):
+        self._init_index()
+        with open(self.filename, 'r+b') as fh:
+            yield fh
+
 
 
 class CompactCacheV1(CompactCacheBase):
@@ -603,8 +661,8 @@ class CompactCacheV2(CompactCacheBase):
 
 def main():
     import sys
-    for f in sys.argv[1:]:
-        b = BundleV2(f.rstrip('.bundle'))
+    for fh in sys.argv[1:]:
+        b = BundleV2(fh.rstrip('.bundle'))
         print b.filename, b.size()
 
 
