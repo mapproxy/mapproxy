@@ -100,19 +100,12 @@ def defrag_compact_cache(cache, min_percent=0.1, min_bytes=1024*1024):
             tmp_bundle = os.path.join(level_dir, 'tmp_defrag')
             defb = cache.bundle_class(tmp_bundle, offset)
 
-            if cache.supports_bulk_load and cache.supports_bulk_store:
-                for y in range(128):
-                    tiles = [Tile((x, y, 0)) for x in range(128)]
-                    b.load_tiles(tiles)
-                    tiles = [t for t in tiles if t.source]
-                    if tiles:
-                        defb.store_tiles(tiles)
-            else:
-                for y in range(128):
-                    for x in range(128):
-                        tile = Tile((x, y, 0))
-                        if b.load_tile(tile):
-                            defb.store_tile(tile)
+            for y in range(128):
+                tiles = [Tile((x, y, 0)) for x in range(128)]
+                b.load_tiles(tiles)
+                tiles = [t for t in tiles if t.source]
+                if tiles:
+                    defb.store_tiles(tiles)
 
             os.rename(tmp_bundle + '.bundle', bundle_file)
             if os.path.exists(tmp_bundle + '.bundlx'):

@@ -33,8 +33,6 @@ log = logging.getLogger(__name__)
 class CompactCacheBase(TileCacheBase):
     supports_timestamp = False
     bundle_class = None
-    supports_bulk_load = False
-    supports_bulk_store = False
 
     def __init__(self, cache_dir):
         self.lock_cache_id = 'compactcache-' + hashlib.md5(cache_dir.encode('utf-8')).hexdigest()
@@ -70,7 +68,7 @@ class CompactCacheBase(TileCacheBase):
         return self._get_bundle(tile.coord).store_tile(tile)
 
     def store_tiles(self, tiles):
-        if self.supports_bulk_store:
+        if len(tiles) > 1:
             # Check if all tiles are from a single bundle.
             bundle_files = set()
             tile_coord = None
@@ -82,7 +80,7 @@ class CompactCacheBase(TileCacheBase):
             if len(bundle_files) == 1:
                 return self._get_bundle(tile_coord).store_tiles(tiles)
 
-        # No support_bulk_store or tiles are across multiple bundles
+        # Tiles are across multiple bundles
         failed = False
         for tile in tiles:
             if not self.store_tile(tile):
@@ -97,7 +95,7 @@ class CompactCacheBase(TileCacheBase):
         return self._get_bundle(tile.coord).load_tile(tile)
 
     def load_tiles(self, tiles, with_metadata=False):
-        if self.supports_bulk_load:
+        if len(tiles) > 1:
             # Check if all tiles are from a single bundle.
             bundle_files = set()
             tile_coord = None
@@ -173,39 +171,57 @@ class BundleV1(object):
     def store_tile(self, tile):
         if tile.stored:
             return True
+        return self.store_tiles([tile])
 
-        with tile_buffer(tile) as buf:
-            data = buf.read()
+    def store_tiles(self, tiles):
+        tiles_data = []
+        for t in tiles:
+            if t.stored:
+                continue
+            with tile_buffer(t) as buf:
+                data = buf.read()
+            tiles_data.append((t.coord, data))
 
         with FileLock(self.lock_filename):
             with self.data().readwrite() as bundle:
                 with self.index().readwrite() as idx:
-                    x, y = self._rel_tile_coord(tile.coord)
-                    offset = idx.tile_offset(x, y)
-                    offset, size = bundle.append_tile(data, prev_offset=offset)
-                    idx.update_tile_offset(x, y, offset=offset, size=size)
+                    for tile_coord, data in tiles_data:
+                        x, y = self._rel_tile_coord(tile_coord)
+                        offset = idx.tile_offset(x, y)
+                        offset, size = bundle.append_tile(data, prev_offset=offset)
+                        idx.update_tile_offset(x, y, offset=offset, size=size)
 
         return True
+
 
     def load_tile(self, tile, with_metadata=False):
         if tile.source or tile.coord is None:
             return True
+        return self.load_tiles([tile], with_metadata)
+
+    def load_tiles(self, tiles, with_metadata=False):
+        missing = False
 
         with self.index().readonly() as idx:
             if not idx:
                 return False
-            x, y = self._rel_tile_coord(tile.coord)
-            offset = idx.tile_offset(x, y)
-            if offset == 0:
-                return False
+            with self.data().readonly() as bundle:
+                for t in tiles:
+                    if t.source or t.coord is None:
+                        continue
+                    x, y = self._rel_tile_coord(t.coord)
+                    offset = idx.tile_offset(x, y)
+                    if offset == 0:
+                        missing = True
+                        continue
 
-        with self.data().readonly() as bundle:
-            data = bundle.read_tile(offset)
-        if not data:
-            return False
-        tile.source = ImageSource(BytesIO(data))
+                    data = bundle.read_tile(offset)
+                    if not data:
+                        missing = True
+                        continue
+                    t.source = ImageSource(BytesIO(data))
 
-        return True
+        return not missing
 
     def remove_tile(self, tile):
         if tile.coord is None:
@@ -504,10 +520,7 @@ class BundleV2(object):
         if tile.source or tile.coord is None:
             return True
 
-        with self._readonly() as fh:
-            if not fh:
-                return False
-            return self._load_tile(fh, tile)
+        return self.load_tiles([tile], with_metadata)
 
     def load_tiles(self, tiles, with_metadata=False):
         missing = False
@@ -576,15 +589,7 @@ class BundleV2(object):
         if tile.stored:
             return True
 
-        self._init_index()
-        with tile_buffer(tile) as buf:
-            data = buf.read()
-
-        with FileLock(self.lock_filename):
-            with self._readwrite() as fh:
-                self._store_tile(fh, tile.coord, data)
-
-        return True
+        return self.store_tiles([tile])
 
     def store_tiles(self, tiles):
         self._init_index()
@@ -656,8 +661,6 @@ class CompactCacheV1(CompactCacheBase):
 
 class CompactCacheV2(CompactCacheBase):
     bundle_class = BundleV2
-    supports_bulk_load = True
-    supports_bulk_store = True
 
 def main():
     import sys
