@@ -212,6 +212,20 @@ class TestCompactCacheV2(TileCacheTestBase):
         assert_header([4000 + 4, 6000 + 4 + 3000 + 4, 1000 + 4], 6000) # still contains bytes from overwritten tile
 
 
+class mockProgressLog(object):
+    def __init__(self):
+        self.logs = []
+
+    def log(self, fname, fragmentation, fragmentation_bytes, num, total, defrag):
+        self.logs.append({
+            'fname': fname,
+            'fragmentation': fragmentation,
+            'fragmentation_bytes': fragmentation_bytes,
+            'num': num,
+            'total': total,
+            'defrag': defrag,
+        })
+
 class DefragmentationTestBase(object):
     def setup(self):
         self.cache_dir = tempfile.mkdtemp()
@@ -228,19 +242,31 @@ class DefragmentationTestBase(object):
                 ImageSource(BytesIO(b'a' * 60*1024), image_opts=ImageOptions(format='image/png')))
             cache.store_tile(t)
 
+        logger = mockProgressLog()
         fname = os.path.join(self.cache_dir, 'L12', 'R0380C1380.bundle')
         before = os.path.getsize(fname)
-        defrag_compact_cache(cache)
+        defrag_compact_cache(cache, log_progress=logger)
+        assert len(logger.logs) == 1
+        eq_(logger.logs[0]['defrag'], False)
         after = os.path.getsize(fname)
         assert before == after
 
+        logger = mockProgressLog()
         before = os.path.getsize(fname)
-        defrag_compact_cache(cache, min_bytes=50000)
+        defrag_compact_cache(cache, min_bytes=50000, log_progress=logger)
+        assert len(logger.logs) == 1
+        eq_(logger.logs[0]['defrag'], True)
         after = os.path.getsize(fname)
         assert after < before
 
     def test_defragmentation_min_percent(self):
         cache = self.cache_class(self.cache_dir)
+
+        t = Tile((10000, 2000, 13),
+                        ImageSource(
+                            BytesIO(b'a' * 120 * 1024),
+                            image_opts=ImageOptions(format='image/png')))
+        cache.store_tile(t)
 
         for x in range(100):
             for _ in range(2 if x < 10 else 1):
@@ -250,14 +276,22 @@ class DefragmentationTestBase(object):
                             image_opts=ImageOptions(format='image/png')))
                 cache.store_tile(t)
 
+        logger = mockProgressLog()
         fname = os.path.join(self.cache_dir, 'L12', 'R0380C1380.bundle')
         before = os.path.getsize(fname)
-        defrag_compact_cache(cache)
+        defrag_compact_cache(cache, log_progress=logger)
+        assert len(logger.logs) == 2
+        eq_(logger.logs[0]['defrag'], False)
+        eq_(logger.logs[1]['defrag'], False)
         after = os.path.getsize(fname)
         assert before == after
 
+        logger = mockProgressLog()
         before = os.path.getsize(fname)
-        defrag_compact_cache(cache, min_percent=0.08)
+        defrag_compact_cache(cache, min_percent=0.08, log_progress=logger)
+        assert len(logger.logs) == 2
+        eq_(logger.logs[0]['defrag'], True)
+        eq_(logger.logs[1]['defrag'], False)
         after = os.path.getsize(fname)
         assert after < before
 

@@ -34,14 +34,15 @@ from mapproxy.script.wms_capabilities import wms_capabilities_command
 from mapproxy.version import version
 
 
-def setup_logging(level=logging.INFO):
+def setup_logging(level=logging.INFO, format=None):
     mapproxy_log = logging.getLogger('mapproxy')
     mapproxy_log.setLevel(level)
 
     ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        "[%(asctime)s] %(name)s - %(levelname)s - %(message)s")
+    ch.setLevel(level)
+    if not format:
+        format = "[%(asctime)s] %(name)s - %(levelname)s - %(message)s"
+    formatter = logging.Formatter(format)
     ch.setFormatter(formatter)
     mapproxy_log.addHandler(ch)
 
