@@ -225,6 +225,7 @@ class mockProgressLog(object):
             'total': total,
             'defrag': defrag,
         })
+        self.logs.sort(key=lambda x: (x['fname'], 'num'))
 
 class DefragmentationTestBase(object):
     def setup(self):
