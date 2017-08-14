@@ -34,6 +34,7 @@ from mapproxy.config.spec import validate_options
 from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
+from mapproxy.util.fs import find_exec
 from mapproxy.compat.modules import urlparse
 from mapproxy.compat import string_type, iteritems
 
@@ -842,6 +843,9 @@ class MapServerSourceConfiguration(WMSSourceConfiguration):
         WMSSourceConfiguration.__init__(self, conf, context)
         self.script = self.context.globals.get_path('mapserver.binary',
             self.conf)
+        if not self.script:
+            self.script = find_exec('mapserv')
+
         if not self.script or not os.path.isfile(self.script):
             raise ConfigurationError('could not find mapserver binary (%r)' %
                 (self.script, ))

@@ -137,3 +137,19 @@ def write_atomic(filename, data):
     else:
         with open(filename, 'wb') as f:
             f.write(data)
+
+
+def find_exec(executable):
+    """
+    Search executable in PATH environment. Return path if found, None if not.
+    """
+    path = os.environ.get('PATH')
+    if not path:
+        return
+    for p in path.split(os.path.pathsep):
+        p = os.path.join(p, executable)
+        if os.path.exists(p):
+            return p
+        p += '.exe'
+        if os.path.exists(p):
+            return p

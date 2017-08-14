@@ -479,6 +479,9 @@ You can also set these options in the :ref:`globals-conf-label` section.
   Path where the Mapserver should be executed from. It should be the directory where any relative paths in your mapfile are based on.
 
 
+.. versionadded:: 1.11.0
+  The ``mapserv`` binary is searched in all directories of the ``PATH`` environment, if ``binary`` is not set.
+
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 
