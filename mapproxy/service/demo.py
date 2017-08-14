@@ -22,6 +22,7 @@ import os
 import pkg_resources
 import mimetypes
 from collections import defaultdict
+from xml.sax.saxutils import escape
 
 from mapproxy.config.config import base_config
 from mapproxy.compat import PY2
@@ -108,7 +109,10 @@ class DemoServer(Server):
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMTS', url)
         elif 'tms_capabilities' in req.args:
             if 'layer' in req.args and 'srs' in req.args:
-                url = '%s/tms/1.0.0/%s/%s'%(req.script_url, req.args['layer'], req.args['srs'])
+                # prevent dir traversal (seems it's not possible with urllib2, but better safe then sorry)
+                layer = req.args['layer'].replace('..', '')
+                srs = req.args['srs'].replace('..', '')
+                url = '%s/tms/1.0.0/%s/%s'%(req.script_url, layer, srs)
             else:
                 url = '%s/tms/1.0.0/'%(req.script_url)
             capabilities = urllib2.urlopen(url)
@@ -171,14 +175,14 @@ class DemoServer(Server):
     def _render_wms_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
         layer = self.layers[req.args['wms_layer']]
-        srs = req.args['srs']
+        srs = escape(req.args['srs'])
         bbox = layer.extent.bbox_for(SRS(srs))
         width = bbox[2] - bbox[0]
         height = bbox[3] - bbox[1]
         min_res = max(width/256, height/256)
         return template.substitute(layer=layer,
                                    image_formats=self.image_formats,
-                                   format=req.args['format'],
+                                   format=escape(req.args['format']),
                                    srs=srs,
                                    layer_srs=self.layer_srs,
                                    bbox=bbox,
@@ -202,8 +206,8 @@ class DemoServer(Server):
         else:
             add_res_to_options = False
         return template.substitute(layer=tile_layer,
-                                   srs=req.args['srs'],
-                                   format=req.args['format'],
+                                   srs=escape(req.args['srs']),
+                                   format=escape(req.args['format']),
                                    resolutions=res,
                                    units=units,
                                    add_res_to_options=add_res_to_options,
@@ -223,8 +227,8 @@ class DemoServer(Server):
             units = 'm'
         return template.substitute(layer=wmts_layer,
                                    matrix_set=wmts_layer.grid.name,
-                                   format=req.args['format'],
-                                   srs=req.args['srs'],
+                                   format=escape(req.args['format']),
+                                   srs=escape(req.args['srs']),
                                    resolutions=wmts_layer.grid.resolutions,
                                    units=units,
                                    all_tile_layers=self.tile_layers,
