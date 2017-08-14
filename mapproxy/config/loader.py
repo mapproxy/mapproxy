@@ -848,7 +848,7 @@ class MapServerSourceConfiguration(WMSSourceConfiguration):
 
         # set url to dummy script name, required as identifier
         # for concurrent_request
-        self.conf['req']['url'] = 'http://localhost' + self.script
+        self.conf['req']['url'] = 'mapserver://' + self.script
 
         mapfile = self.context.globals.abspath(self.conf['req']['map'])
         self.conf['req']['map'] = mapfile
