@@ -22,6 +22,7 @@ import threading
 import tempfile
 import time
 import sqlite3
+import sys
 
 from io import BytesIO
 
@@ -36,6 +37,7 @@ from mapproxy.test.image import create_tmp_image_buf, is_png
 from mapproxy.test.helper import assert_files_in_dir
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
@@ -217,6 +219,8 @@ class TestFileTileCache(TileCacheTestBase):
         assert os.path.exists(tile_location), tile_location
 
     def test_single_color_tile_store(self):
+        if sys.platform == 'win32':
+            raise SkipTest('link_single_color_tiles not supported on windows')
         img = Image.new('RGB', (256, 256), color='#ff0105')
         tile = Tile((0, 0, 4), ImageSource(img, image_opts=ImageOptions(format='image/png')))
         self.cache.link_single_color_images = True
@@ -239,6 +243,8 @@ class TestFileTileCache(TileCacheTestBase):
         assert os.path.samefile(loc, loc2)
 
     def test_single_color_tile_store_w_alpha(self):
+        if sys.platform == 'win32':
+            raise SkipTest('link_single_color_tiles not supported on windows')
         img = Image.new('RGBA', (256, 256), color='#ff0105')
         tile = Tile((0, 0, 4), ImageSource(img, image_opts=ImageOptions(format='image/png')))
         self.cache.link_single_color_images = True
