@@ -108,7 +108,7 @@ class WMSServer(Server):
             if layer.renders_query(query):
                 # if layer is not transparent and will be rendered,
                 # remove already added (then hidden) layers
-                if not layer.transparent:
+                if layer.is_opaque(query):
                     actual_layers = odict()
                 for layer_name, map_layers in layer.map_layers_for_query(query):
                     actual_layers[layer_name] = map_layers
@@ -480,23 +480,37 @@ class Capabilities(object):
         self.inspire_md = inspire_md
 
     def layer_srs_bbox(self, layer, epsg_axis_order=False):
-        layer_srs_code = layer.extent.srs.srs_code
         for srs, extent in iteritems(self.srs_extents):
+            # is_default is True when no explicit bbox is defined for this srs
+            # use layer extent
             if extent.is_default:
                 bbox = layer.extent.bbox_for(SRS(srs))
-            else:
+            elif layer.extent.is_default:
                 bbox = extent.bbox_for(SRS(srs))
+            else:
+                # Use intersection of srs_extent and layer.extent.
+                bbox = extent.intersection(layer.extent).bbox_for(SRS(srs))
 
             if epsg_axis_order:
                 bbox = switch_bbox_epsg_axis_order(bbox, srs)
-            yield srs, bbox
+
+            if srs in self.srs:
+                yield srs, bbox
 
         # add native srs
+        layer_srs_code = layer.extent.srs.srs_code
         if layer_srs_code not in self.srs_extents:
             bbox = layer.extent.bbox
             if epsg_axis_order:
                 bbox = switch_bbox_epsg_axis_order(bbox, layer_srs_code)
-            yield layer_srs_code, bbox
+            if layer_srs_code in self.srs:
+                yield layer_srs_code, bbox
+
+    def layer_llbbox(self, layer):
+        if 'EPSG:4326' in self.srs_extents:
+            llbbox = self.srs_extents['EPSG:4326'].intersection(layer.extent).llbbox
+            return limit_llbbox(llbbox)
+        return limit_llbbox(layer.extent.llbbox)
 
     def render(self, _map_request):
         return self._render_template(_map_request.capabilities_template)
@@ -513,11 +527,33 @@ class Capabilities(object):
                                    srs=self.srs,
                                    tile_layers=self.tile_layers,
                                    layer_srs_bbox=self.layer_srs_bbox,
+                                   layer_llbbox=self.layer_llbbox,
                                    inspire_md=inspire_md,
         )
         # strip blank lines
         doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())
         return doc
+
+
+def limit_llbbox(bbox):
+    """
+    Limit the long/lat bounding box to +-180/89.99999999 degrees.
+
+    Some clients can't handle +-90 north/south, so we subtract a tiny bit.
+
+    >>> ', '.join('%.6f' % x for x in limit_llbbox((-200,-90.0, 180, 90)))
+    '-180.000000, -89.999999, 180.000000, 89.999999'
+    >>> ', '.join('%.6f' % x for x in limit_llbbox((-20,-9.0, 10, 10)))
+    '-20.000000, -9.000000, 10.000000, 10.000000'
+    """
+    minx, miny, maxx, maxy = bbox
+
+    minx = max(-180, minx)
+    miny = max(-89.999999, miny)
+    maxx = min(180, maxx)
+    maxy = min(89.999999, maxy)
+
+    return minx, miny, maxx, maxy
 
 class LayerRenderer(object):
     def __init__(self, layers, query, request, raise_source_errors=True,
@@ -621,8 +657,6 @@ class WMSLayerBase(object):
     "True if .info() is supported"
     queryable = False
 
-    transparent = False
-
     "True is .legend() is supported"
     has_legend = False
     legend_url = None
@@ -632,9 +666,6 @@ class WMSLayerBase(object):
     res_range = None
     "MapExtend of the layer"
     extent = None
-
-    def is_opaque(self):
-        return not self.transparent
 
     def map_layers_for_query(self, query):
         raise NotImplementedError()
@@ -666,8 +697,10 @@ class WMSLayer(WMSLayerBase):
             res_range = merge_layer_res_ranges(map_layers)
         self.res_range = res_range
         self.queryable = True if info_layers else False
-        self.transparent = all(not map_lyr.is_opaque() for map_lyr in self.map_layers)
         self.has_legend = True if legend_layers else False
+
+    def is_opaque(self, query):
+        return any(l.is_opaque(query) for l in self.map_layers)
 
     def renders_query(self, query):
         if self.res_range and not self.res_range.contains(query.bbox, query.size, query.srs):
@@ -727,12 +760,14 @@ class WMSGroupLayer(WMSLayerBase):
         self.md = md or {}
         self.is_active = True if this is not None else False
         self.layers = layers
-        self.transparent = True if this and not this.is_opaque() or all(not l.is_opaque() for l in layers) else False
         self.has_legend = True if this and this.has_legend or any(l.has_legend for l in layers) else False
         self.queryable = True if this and this.queryable or any(l.queryable for l in layers) else False
         all_layers = layers + ([self.this] if self.this else [])
         self.extent = merge_layer_extents(all_layers)
         self.res_range = merge_layer_res_ranges(all_layers)
+
+    def is_opaque(self, query):
+        return any(l.is_opaque(query) for l in self.layers)
 
     @property
     def legend_size(self):

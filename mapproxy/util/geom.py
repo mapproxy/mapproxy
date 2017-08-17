@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division, with_statement
+from __future__ import division
 
 import os
 import json
@@ -32,7 +32,11 @@ try:
     import shapely.geometry
     import shapely.ops
     import shapely.prepared
-    from shapely.geos import ReadingError
+    try:
+        # shapely >=1.6
+        from shapely.errors import ReadingError
+    except ImportError:
+        from shapely.geos import ReadingError
     geom_support = True
 except ImportError:
     geom_support = False
@@ -171,8 +175,7 @@ def load_polygon_lines(line_iter, source='<string>'):
 
 def build_multipolygon(polygons, simplify=False):
     if not polygons:
-        p = shapely.geometry.Polygon()
-        return p.bounds, p
+        raise EmptyGeometryError('no polygons')
 
     if len(polygons) == 1:
         geom = polygons[0]

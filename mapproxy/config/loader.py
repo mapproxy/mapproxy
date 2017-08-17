@@ -16,7 +16,7 @@
 """
 Configuration loading and system initializing.
 """
-from __future__ import with_statement, division
+from __future__ import division
 
 import os
 import sys
@@ -34,6 +34,7 @@ from mapproxy.config.spec import validate_options
 from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
+from mapproxy.util.fs import find_exec
 from mapproxy.compat.modules import urlparse
 from mapproxy.compat import string_type, iteritems
 
@@ -606,6 +607,13 @@ class ArcGISSourceConfiguration(SourceConfiguration):
         from mapproxy.srs import SRS
         from mapproxy.request.arcgis import create_request
 
+        if not self.conf.get('opts', {}).get('map', True):
+            return None
+
+        if not self.context.seed and self.conf.get('seed_only'):
+            from mapproxy.source import DummySource
+            return DummySource(coverage=self.coverage())
+
         # Get the supported SRS codes and formats from the configuration.
         supported_srs = [SRS(code) for code in self.conf.get("supported_srs", [])]
         supported_formats = [file_ext(f) for f in self.conf.get("supported_formats", [])]
@@ -835,13 +843,16 @@ class MapServerSourceConfiguration(WMSSourceConfiguration):
         WMSSourceConfiguration.__init__(self, conf, context)
         self.script = self.context.globals.get_path('mapserver.binary',
             self.conf)
+        if not self.script:
+            self.script = find_exec('mapserv')
+
         if not self.script or not os.path.isfile(self.script):
             raise ConfigurationError('could not find mapserver binary (%r)' %
                 (self.script, ))
 
         # set url to dummy script name, required as identifier
         # for concurrent_request
-        self.conf['req']['url'] = 'http://localhost' + self.script
+        self.conf['req']['url'] = 'mapserver://' + self.script
 
         mapfile = self.context.globals.abspath(self.conf['req']['map'])
         self.conf['req']['map'] = mapfile
@@ -1208,7 +1219,7 @@ class CacheConfiguration(ConfigurationBase):
         )
 
     def _compact_cache(self, grid_conf, file_ext):
-        from mapproxy.cache.compact import CompactCacheV1
+        from mapproxy.cache.compact import CompactCacheV1, CompactCacheV2
 
         cache_dir = self.cache_dir()
         if self.conf.get('cache', {}).get('directory'):
@@ -1221,11 +1232,13 @@ class CacheConfiguration(ConfigurationBase):
         else:
             cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
 
-        if self.conf['cache']['version'] != 1:
-            raise ConfigurationError("compact cache only supports version 1")
-        return CompactCacheV1(
-            cache_dir=cache_dir,
-        )
+        version = self.conf['cache']['version']
+        if version == 1:
+            return CompactCacheV1(cache_dir=cache_dir)
+        elif version == 2:
+            return CompactCacheV2(cache_dir=cache_dir)
+
+        raise ConfigurationError("compact cache only supports version 1 or 2")
 
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):
@@ -1453,7 +1466,7 @@ class CacheConfiguration(ConfigurationBase):
             if use_renderd:
                 from mapproxy.cache.renderd import RenderdTileCreator, has_renderd_support
                 if not has_renderd_support():
-                    raise ConfigurationError("renderd requires Python >=2.6 and requests")
+                    raise ConfigurationError("renderd requires requests library")
                 if self.context.seed:
                     priority = 10
                 else:
@@ -1528,7 +1541,7 @@ class CacheConfiguration(ConfigurationBase):
         if len(caches) == 1:
             layer = caches[0][0]
         else:
-            layer = SRSConditional(caches, caches[0][0].extent, caches[0][0].transparent, opacity=image_opts.opacity)
+            layer = SRSConditional(caches, caches[0][0].extent, opacity=image_opts.opacity)
 
         if 'use_direct_from_level' in self.conf:
             self.conf['use_direct_from_res'] = main_grid.resolution(self.conf['use_direct_from_level'])

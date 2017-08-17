@@ -18,6 +18,8 @@ from __future__ import print_function
 import sys
 import optparse
 
+from xml import etree
+
 from mapproxy.compat import iteritems, BytesIO
 from mapproxy.compat.modules import urlparse
 from mapproxy.client.http import open_url, HTTPClientError
@@ -102,9 +104,7 @@ def parse_capabilities(fileobj, version='1.1.1'):
     except ValueError as ex:
         log_error('%s\n%s\n%s\n%s\nNot a capabilities document: %s', 'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
         sys.exit(1)
-    except Exception as ex:
-        # catch all, etree.ParseError only avail since Python 2.7
-        # 2.5 and 2.6 raises exc from underlying implementation like expat
+    except etree.ElementTree.ParseError as ex:
         log_error('%s\n%s\n%s\n%s\nCould not parse the document: %s', 'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
         sys.exit(1)
 

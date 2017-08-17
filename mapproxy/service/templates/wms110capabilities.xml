@@ -110,7 +110,7 @@
     {{if with_srs}}
     <SRS>{{for s in srs}}{{s}} {{endfor}}</SRS>
     {{endif}}
-    {{py: extent = limit_llbbox(layer.extent.llbbox)}}
+    {{py: extent = layer_llbbox(layer)}}
     <LatLonBoundingBox minx="{{ extent[0] }}" miny="{{ extent[1] }}" maxx="{{ extent[2] }}" maxy="{{ extent[3] }}" />
     {{for srs_code, bbox in layer_srs_bbox(layer)}}
     <BoundingBox SRS="{{srs_code}}" minx="{{ bbox[0] }}" miny="{{ bbox[1] }}" maxx="{{ bbox[2] }}" maxy="{{ bbox[3] }}" />

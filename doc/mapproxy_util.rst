@@ -31,6 +31,7 @@ The current sub-commands are:
 - :ref:`mapproxy_util_wms_capabilities`
 - :ref:`mapproxy_util_grids`
 - :ref:`mapproxy_util_export`
+- :ref:`mapproxy_defrag_compact_cache`
 - ``autoconfig`` (see :ref:`mapproxy_util_autoconfig`)
 
 
@@ -54,7 +55,7 @@ This sub-command creates example configurations for you. There are templates for
 
 .. cmdoption:: -f <mapproxy.yaml>, --mapproxy-conf <mapproxy.yaml>
 
-  The path to the MapProxy configuration. Required for some templates.
+  The path of the MapProxy configuration. Required for some templates.
 
 .. cmdoption:: --force
 
@@ -457,7 +458,7 @@ Required arguments:
 
 .. cmdoption:: -f, --mapproxy-conf
 
-  The path to the MapProxy configuration of the source cache.
+  The path of the MapProxy configuration of the source cache.
 
 .. cmdoption:: --source
 
@@ -547,3 +548,49 @@ Export tiles into an MBTiles file using a custom grid definition.
         --grid "srs='EPSG:4326' bbox=[5,50,10,60] tile_size=[512,512]" \
         --source osm_cache --dest osm.mbtiles --type mbtile \
 
+
+
+.. _mapproxy_defrag_compact_cache:
+
+``defrag-compact-cache``
+========================
+
+
+The ArcGIS compact cache format version 1 and 2 are append only. Updating existing tiles will increase the file size. Bundle files become larger and fragmented with time. The ``defrag-compact-cache`` sub-command compacts existing bundle files by rewriting and reorganizing each bundle file.
+
+
+.. program:: mapproxy-util defrag-compact-cache
+
+
+Required arguments:
+
+.. cmdoption:: -f, --mapproxy-conf
+
+  The path of the MapProxy configuration with the configured compact caches.
+
+Optional arguments:
+
+.. cmdoption:: --caches
+
+  Comma separated list of caches to defragment. By default all configured compact caches will be defragmented.
+
+.. cmdoption:: --min-percent, --min-mb
+
+  Bundle files with only a minmal fragmentation are skipped. You can define this threshold with ``--min-percent`` as the required minimal percentage of unused space and ``--min-mb`` as the minimal required unused space in megabytes. Both thresholds must be exceeded. Defaults to 10% and 1MB.
+
+.. option:: -n, --dry-run
+
+  This will simulate the defragmentation process.
+
+
+Examples
+--------
+
+Defragment bundle files from ``map1_cache`` and ``map2_cache`` when they have more than 20% and 5MB of unused space. E.g. a 20 MB bundle file only gets rewritten if it becomes smaller then 15MB after defragmentation; a 500MB bundle file only gets rewritten if it becomes smaller then 400MB after defragmentation.
+
+::
+
+  mapproxy-util defrag-compact-cache -f mapproxy.yaml \
+    --min-percent 20 \
+    --min-mb 5 \
+    --caches map1_cache,map2_cache

@@ -16,7 +16,6 @@
 """
 Service requests (parsing, handling, etc).
 """
-from __future__ import with_statement
 import codecs
 from mapproxy.request.wms import exception
 from mapproxy.exception import RequestError

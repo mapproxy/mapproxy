@@ -35,7 +35,6 @@ Tile caching (creation, caching and retrieval of tiles).
 
 """
 
-from __future__ import with_statement
 
 from functools import partial
 from contextlib import contextmanager
@@ -72,7 +71,6 @@ class TileManager(object):
         self.sources = sources
         self.minimize_meta_requests = minimize_meta_requests
         self._expire_timestamp = None
-        self.transparent = self.sources[0].transparent
         self.pre_store_filter = pre_store_filter or []
         self.concurrent_tile_creators = concurrent_tile_creators
         self.tile_creator_class = tile_creator_class or TileCreator
@@ -283,7 +281,14 @@ class TileCreator(object):
         Query all sources and return the results as a single ImageSource.
         Multiple sources will be merged into a single image.
         """
-        if len(self.sources) == 1 and not self.image_merger:
+
+        # directly return get_map without merge if ...
+        if (len(self.sources) == 1 and
+            not self.image_merger and # no special image_merger (like BandMerger)
+            not (self.sources[0].coverage and  # no clipping coverage
+                 self.sources[0].coverage.clip and
+                 self.sources[0].coverage.intersects(query.bbox, query.srs))
+        ):
             try:
                 return self.sources[0].get_map(query)
             except BlankImage:

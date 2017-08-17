@@ -178,15 +178,9 @@ You can configure the following HTTP related options for this source:
 - ``headers``
 - ``client_timeout``
 - ``ssl_ca_certs``
-- ``ssl_no_cert_checks`` (see below)
+- ``ssl_no_cert_checks``
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
-
-.. _wms_source_ssl_no_cert_checks:
-
-``ssl_no_cert_checks``
-
-  MapProxy checks the SSL server certificates for any ``req.url`` that use HTTPS. You need to supply a file (see) that includes that certificate, otherwise MapProxy will fail to establish the connection. You can set the ``http.ssl_no_cert_checks`` options to ``true`` to disable this verification.
 
 .. _tagged_source_names:
 
@@ -274,7 +268,10 @@ This describes the ArcGIS source. The only required option is ``url``. You need 
 ``opts``
 ^^^^^^^^
 
-.. versionadded: 1.10.0
+.. versionadded:: 1.10.0
+.. versionadded:: 1.11.0
+  ``map`` option
+
 
 This option affects what request MapProxy sends to the source ArcGIS server.
 
@@ -286,6 +283,19 @@ This option affects what request MapProxy sends to the source ArcGIS server.
 
 ``featureinfo_tolerance``
   Tolerance in pixel within the ArcGIS server should identify features.
+
+
+``map``
+  If this is set to ``false``, MapProxy will not request images from this source. You can use this option in combination with ``featureinfo: true`` to create a source that is only used for feature info requests.
+
+
+
+``seed_only``
+^^^^^^^^^^^^^
+
+.. versionadded:: 1.11.0
+
+See :ref:`seed_only <wms_seed_only>`
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
@@ -375,7 +385,7 @@ You can configure the following HTTP related options for this source:
 - ``headers``
 - ``client_timeout``
 - ``ssl_ca_certs``
-- ``ssl_no_cert_checks`` (:ref:`see above <wms_source_ssl_no_cert_checks>`)
+- ``ssl_no_cert_checks``
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 
@@ -468,6 +478,9 @@ You can also set these options in the :ref:`globals-conf-label` section.
 
   Path where the Mapserver should be executed from. It should be the directory where any relative paths in your mapfile are based on.
 
+
+.. versionadded:: 1.11.0
+  The ``mapserv`` binary is searched in all directories of the ``PATH`` environment, if ``binary`` is not set.
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^

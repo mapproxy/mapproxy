@@ -20,11 +20,11 @@ services:
   wmts:
   wms:
     image_formats: ['image/png', 'image/jpeg', 'png8']
-    srs: ['EPSG:4326', 'EPSG:4258', 'CRS:84', 'EPSG:900913', 'EPSG:3857', 'EPSG:31466', 'EPSG:31467', 'EPSG:31468', 'EPSG:25831', 'EPSG:25832', 'EPSG:25833']
+    srs: ['EPSG:4326', 'CRS:84', 'EPSG:900913', 'EPSG:3857', 'EPSG:31466', 'EPSG:31467', 'EPSG:31468', 'EPSG:25831', 'EPSG:25832', 'EPSG:25833']
     bbox_srs:
-        - bbox: [2750000, 5000000, 4250000, 6500000]
-          srs: 'EPSG:31467'
         - 'EPSG:3857'
+        - bbox: [-180, -70, 180, 90]
+          srs: 'EPSG:4326'
     md:
       title: MapProxy test fixture ☃
       abstract: This is MapProxy.
@@ -174,6 +174,11 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: bar
+    coverage:
+      # coverage in projection not in wms.srs,
+      # should not be advertised in capabilities #288
+      bbox: [-180, -80, 170, 80]
+      srs: 'EPSG:4258'
   wms_cache:
     type: wms
     supported_srs: ['EPSG:900913', 'EPSG:4326']

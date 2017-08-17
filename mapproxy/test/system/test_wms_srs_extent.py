@@ -13,12 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement, division
+from __future__ import division
 
+from mapproxy.request.wms import WMS111MapRequest, WMS111CapabilitiesRequest
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
 from mapproxy.test.image import is_png, is_transparent
 from mapproxy.test.image import tmp_image, assert_colors_equal, img_from_buf
 from mapproxy.test.http import mock_httpd
+
+from mapproxy.test.system.test_wms import bbox_srs_from_boundingbox
+from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from nose.tools import eq_
 
 test_config = {}
@@ -32,6 +36,54 @@ def teardown_module():
 
 class TestWMSSRSExtentTest(SystemTest):
     config = test_config
+
+    def setup(self):
+        SystemTest.setup(self)
+        self.common_req = WMS111MapRequest(url='/service?', param=dict(service='WMS',
+                                                                       version='1.1.1'))
+
+    def test_wms_capabilities(self):
+        req = WMS111CapabilitiesRequest(url='/service?').copy_with_request_params(self.common_req)
+        resp = self.app.get(req)
+        eq_(resp.content_type, 'application/vnd.ogc.wms_xml')
+        xml = resp.lxml
+
+        bboxs = xml.xpath('//Layer/Layer[1]/BoundingBox')
+        bboxs = dict((e.attrib['SRS'], e) for e in bboxs)
+
+        assert_almost_equal_bbox(
+            bbox_srs_from_boundingbox(bboxs['EPSG:31467']),
+            [2750000.0, 5000000.0, 4250000.0, 6500000.0])
+        assert_almost_equal_bbox(
+            bbox_srs_from_boundingbox(bboxs['EPSG:25832']),
+            [0.0, 3500000.0, 1000000.0, 8500000.0])
+
+        assert_almost_equal_bbox(
+            bbox_srs_from_boundingbox(bboxs['EPSG:3857']),
+            [-20037508.3428, -147730762.670, 20037508.3428, 147730758.195])
+        assert_almost_equal_bbox(
+            bbox_srs_from_boundingbox(bboxs['EPSG:4326']),
+            [-180.0, -90.0, 180.0, 90.0])
+
+
+        # bboxes clipped to coverage
+        bboxs = xml.xpath('//Layer/Layer[2]/BoundingBox')
+        bboxs = dict((e.attrib['SRS'], e) for e in bboxs)
+        assert_almost_equal_bbox(
+            bbox_srs_from_boundingbox(bboxs['EPSG:31467']),
+            [3213331.57335, 5540436.91132, 3571769.72263, 6104110.432])
+        assert_almost_equal_bbox(
+            bbox_srs_from_boundingbox(bboxs['EPSG:25832']),
+            [213372.048961, 5538660.64621, 571666.447504, 6102110.74547])
+
+        assert_almost_equal_bbox(
+            bbox_srs_from_boundingbox(bboxs['EPSG:3857']),
+            [556597.453966, 6446275.84102, 1113194.90793, 7361866.11305])
+        assert_almost_equal_bbox(
+            bbox_srs_from_boundingbox(bboxs['EPSG:4326']),
+            [5.0, 50.0, 10.0, 55.0])
+
+
 
     def test_out_of_extent(self):
         resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetMap'

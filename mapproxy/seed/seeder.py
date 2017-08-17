@@ -375,6 +375,8 @@ class TileWalker(object):
 
             # check if subtile was already processed. see comment in __init__
             if subtile in self.seeded_tiles[current_level]:
+                if not levels:
+                    self.seed_progress.step_forward(total_subtiles)
                 continue
             self.seeded_tiles[current_level].appendleft(subtile)
 

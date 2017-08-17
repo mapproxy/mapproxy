@@ -62,6 +62,9 @@ def image_mask_from_geom(size, bbox, polygons):
         # little bit smaller polygon does not include touched pixels outside coverage
         buffered = p.buffer(buffer, resolution=1, join_style=2)
 
+        if buffered.is_empty: # can be empty after negative buffer
+            continue
+
         if buffered.type == 'MultiPolygon':
             # negative buffer can turn polygon into multipolygon
             for p in buffered:

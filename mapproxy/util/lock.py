@@ -16,7 +16,6 @@
 """
 Utility methods and classes (file locking, asynchronous execution pools, etc.).
 """
-from __future__ import with_statement
 
 import random
 import time

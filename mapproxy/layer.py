@@ -18,7 +18,7 @@
 Layers that can get maps/infos from different sources/caches.
 """
 
-from __future__ import division, with_statement
+from __future__ import division
 from mapproxy.grid import NoTiles, GridError, merge_resolution_range, bbox_intersects, bbox_contains
 from mapproxy.image import SubImageSource, bbox_position_in_image
 from mapproxy.image.opts import ImageOptions
@@ -50,14 +50,6 @@ class MapLayer(object):
     def __init__(self, image_opts=None):
         self.image_opts = image_opts or ImageOptions()
 
-    def _get_transparent(self):
-        return self.image_opts.transparent
-
-    def _set_transparent(self, value):
-        self.image_opts.transparent = value
-
-    transparent = property(_get_transparent, _set_transparent)
-
     def _get_opacity(self):
         return self.image_opts.opacity
 
@@ -66,10 +58,17 @@ class MapLayer(object):
 
     opacity = property(_get_opacity, _set_opacity)
 
-    def is_opaque(self):
-        if self.opacity is None:
-            return not self.transparent
-        return self.opacity >= 0.99
+    def is_opaque(self, query):
+        """
+        Whether the query result is opaque.
+
+        This method is used for optimizations: layers below an opaque
+        layer can be skipped. As sources with `transparent: false`
+        still can return transparent images (min_res/max_res/coverages),
+        implementations of this method need to be certain that the image
+        is indeed opaque. is_opaque should return False if in doubt.
+        """
+        return False
 
     def check_res_range(self, query):
         if (self.res_range and
@@ -305,8 +304,6 @@ class ResolutionConditional(MapLayer):
         self.resolution = resolution
         self.srs = srs
 
-        #TODO
-        self.transparent = self.one.transparent
         self.opacity = opacity
         self.extent = extent
 
@@ -331,9 +328,8 @@ class SRSConditional(MapLayer):
     PROJECTED = 'PROJECTED'
     GEOGRAPHIC = 'GEOGRAPHIC'
 
-    def __init__(self, layers, extent, transparent=False, opacity=None):
+    def __init__(self, layers, extent, opacity=None):
         MapLayer.__init__(self)
-        self.transparent = transparent
         # TODO geographic/projected fallback
         self.srs_map = {}
         self.res_range = merge_layer_res_ranges([l[0] for l in layers])
@@ -403,7 +399,6 @@ class CacheMapLayer(MapLayer):
         self.grid = tile_manager.grid
         self.extent = extent or map_extent_from_grid(self.grid)
         self.res_range = merge_layer_res_ranges(self.tile_manager.sources)
-        self.transparent = tile_manager.transparent
         self.max_tile_limit = max_tile_limit
 
     def get_map(self, query):

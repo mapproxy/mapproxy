@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
+import glob
 import hashlib
 import os
 import sqlite3
@@ -28,6 +28,10 @@ from mapproxy.compat import BytesIO, PY2, itertools
 
 import logging
 log = logging.getLogger(__name__)
+
+if not hasattr(glob, 'escape'):
+    import re
+    glob.escape = lambda pathname: re.sub(r'([*?[])', r'[\1]', pathname)
 
 def sqlite_datetime_to_timestamp(datetime):
     if datetime is None:
@@ -381,6 +385,8 @@ class MBTilesLevelCache(TileCacheBase):
         if timestamp == 0:
             level_cache.cleanup()
             os.unlink(level_cache.mbtile_file)
+            for file in glob.glob("%s-*" % glob.escape(level_cache.mbtile_file)):
+                os.unlink(file)
             return True
         else:
             return level_cache.remove_level_tiles_before(level, timestamp)
