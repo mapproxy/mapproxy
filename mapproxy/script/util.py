@@ -25,23 +25,24 @@ import textwrap
 import logging
 
 from mapproxy.compat import iteritems
-from mapproxy.version import version
+from mapproxy.script.conf.app import config_command
+from mapproxy.script.defrag import defrag_command
+from mapproxy.script.export import export_command
+from mapproxy.script.grids import grids_command
 from mapproxy.script.scales import scales_command
 from mapproxy.script.wms_capabilities import wms_capabilities_command
-from mapproxy.script.grids import grids_command
-from mapproxy.script.export import export_command
-from mapproxy.script.conf.app import config_command
+from mapproxy.version import version
 
 
-
-def setup_logging(level=logging.INFO):
+def setup_logging(level=logging.INFO, format=None):
     mapproxy_log = logging.getLogger('mapproxy')
     mapproxy_log.setLevel(level)
 
     ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        "[%(asctime)s] %(name)s - %(levelname)s - %(message)s")
+    ch.setLevel(level)
+    if not format:
+        format = "[%(asctime)s] %(name)s - %(levelname)s - %(message)s"
+    formatter = logging.Formatter(format)
     ch.setFormatter(formatter)
     mapproxy_log.addHandler(ch)
 
@@ -312,6 +313,10 @@ commands = {
     'autoconfig': {
         'func': config_command,
         'help': 'Create config from WMS capabilities.'
+    },
+    'defrag-compact-cache': {
+        'func': defrag_command,
+        'help': 'De-fragmentate compact caches.'
     }
 }
 

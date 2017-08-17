@@ -1219,7 +1219,7 @@ class CacheConfiguration(ConfigurationBase):
         )
 
     def _compact_cache(self, grid_conf, file_ext):
-        from mapproxy.cache.compact import CompactCacheV1
+        from mapproxy.cache.compact import CompactCacheV1, CompactCacheV2
 
         cache_dir = self.cache_dir()
         if self.conf.get('cache', {}).get('directory'):
@@ -1232,11 +1232,13 @@ class CacheConfiguration(ConfigurationBase):
         else:
             cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
 
-        if self.conf['cache']['version'] != 1:
-            raise ConfigurationError("compact cache only supports version 1")
-        return CompactCacheV1(
-            cache_dir=cache_dir,
-        )
+        version = self.conf['cache']['version']
+        if version == 1:
+            return CompactCacheV1(cache_dir=cache_dir)
+        elif version == 2:
+            return CompactCacheV2(cache_dir=cache_dir)
+
+        raise ConfigurationError("compact cache only supports version 1 or 2")
 
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):
