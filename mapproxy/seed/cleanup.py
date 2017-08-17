@@ -47,9 +47,11 @@ def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
             if callable(getattr(task.tile_manager.cache, 'level_location', None)):
                 simple_cleanup(task, dry_run=dry_run, progress_logger=progress_logger,
                     cleanup_progress=cleanup_progress)
+                task.tile_manager.cleanup()
                 continue
             elif callable(getattr(task.tile_manager.cache, 'remove_level_tiles_before', None)):
                 cache_cleanup(task, dry_run=dry_run, progress_logger=progress_logger)
+                task.tile_manager.cleanup()
                 continue
 
         tilewalker_cleanup(task, dry_run=dry_run, concurrency=concurrency,
@@ -57,6 +59,7 @@ def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
                          progress_logger=progress_logger,
                          seed_progress=seed_progress,
         )
+        task.tile_manager.cleanup()
 
 
 def simple_cleanup(task, dry_run, progress_logger=None, cleanup_progress=None):
