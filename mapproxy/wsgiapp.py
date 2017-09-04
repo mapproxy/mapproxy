@@ -24,6 +24,13 @@ import time
 import threading
 import warnings
 
+try:
+    # time.strptime is thread-safe, but not the first call.
+    # Import _strptime as a workaround. See: http://bugs.python.org/issue7980
+    import _strptime
+except ImportError:
+    pass
+
 from mapproxy.compat import iteritems
 from mapproxy.request import Request
 from mapproxy.response import Response
