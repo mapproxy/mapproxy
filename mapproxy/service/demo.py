@@ -190,7 +190,12 @@ class DemoServer(Server):
 
     def _render_tms_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
-        tile_layer = self.tile_layers['_'.join([req.args['tms_layer'], req.args['srs'].replace(':','')])]
+        for tms_layer in self.tile_layers.values():
+            if (tms_layer.name == req.args['tms_layer'] and
+                    tms_layer.grid.srs.srs_code == req.args['srs']):
+                tile_layer = tms_layer
+                break
+
         resolutions = tile_layer.grid.tile_sets
         res = []
         for level, resolution in resolutions:
