@@ -1708,7 +1708,7 @@ class LayerConfiguration(ConfigurationBase):
                 if grid_name_as_path:
                     md['name_path'] = (md['name'], md['grid_name'])
                 else:
-                    md['name_path'] = (self.conf['name'], grid.srs.srs_code.replace(':', '').upper())
+                    md['name_path'] = (md['name'], grid.srs.srs_code.replace(':', '').upper())
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['cache_name'] = cache_name
@@ -1919,9 +1919,11 @@ class ServiceConfiguration(ConfigurationBase):
             lyr = layer_conf.wms_layer()
             if lyr:
                 layers[layer_name] = lyr
-        tile_layers = self.tile_layers(conf)
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
+        tms_conf = self.context.services.conf.get('tms', {}) or {}
+        use_grid_names = tms_conf.get('use_grid_names', False)
+        tile_layers = self.tile_layers(tms_conf, use_grid_names=use_grid_names)
 
         # WMTS restful template
         wmts_conf = self.context.services.conf.get('wmts', {}) or {}
