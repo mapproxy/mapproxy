@@ -219,6 +219,19 @@ class TestValidator(object):
         errors = validate_references(conf)
         eq_(errors, [])
 
+    def test_tagged_source_with_colons(self):
+        conf = self._test_conf('''
+            caches:
+                one_cache:
+                    grids: [GLOBAL_MERCATOR]
+                    sources: ['one_source:ns:foo,ns:bar']
+        ''')
+
+        del conf['sources']['one_source']['req']['layers']
+
+        errors = validate_references(conf)
+        eq_(errors, [])
+
     def test_with_grouped_layer(self):
         conf = self._test_conf('''
             layers:
