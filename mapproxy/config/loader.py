@@ -1921,8 +1921,6 @@ class ServiceConfiguration(ConfigurationBase):
                 layers[layer_name] = lyr
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
-
-        # TMS template
         tms_conf = self.context.services.conf.get('tms', {}) or {}
         use_grid_names = tms_conf.get('use_grid_names', False)
         tile_layers = self.tile_layers(tms_conf, use_grid_names=use_grid_names)

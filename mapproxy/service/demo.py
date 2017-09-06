@@ -190,10 +190,10 @@ class DemoServer(Server):
 
     def _render_tms_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
-        for tms_layer in self.tile_layers.values():
-            if (tms_layer.name == req.args['tms_layer'] and
-                    tms_layer.grid.srs.srs_code == req.args['srs']):
-                tile_layer = tms_layer
+        for layer in self.tile_layers.values():
+            if (layer.name == req.args['tms_layer'] and
+                    layer.grid.srs.srs_code == req.args['srs']):
+                tile_layer = layer
                 break
 
         resolutions = tile_layer.grid.tile_sets
@@ -220,7 +220,11 @@ class DemoServer(Server):
 
     def _render_wmts_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
-        wmts_layer = self.tile_layers['_'.join([req.args['wmts_layer'], req.args['srs'].replace(':','')])]
+        for layer in self.tile_layers.values():
+            if (layer.name == req.args['wmts_layer'] and
+                    layer.grid.srs.srs_code == req.args['srs']):
+                wmts_layer = layer
+                break
 
         restful_url = self.restful_template.replace('{Layer}', wmts_layer.name, 1)
         if '{Format}' in restful_url:
