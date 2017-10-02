@@ -18,9 +18,7 @@ Please refer to the `OSGeo4W installer FAQ <http://trac.osgeo.org/osgeo4w/wiki/F
 
 At this point, you should see an OSGeo4W shell icon on your desktop and/or start menu. Right-click that, and *run as administrator*.
 
-As happens with the standard Windows installation, you need to `install the distribute package <http://pypi.python.org/pypi/distribute#distribute-setup-py>`_ to get the ``easy_install`` command. Run this in your administrator OSGeo4W shell, e.g.::
-
- C:\OSGeo4W> python C:\Users\MyUsername\Downloads\distribute-setup.py
+As happens with the standard Windows installation, you need to `install pip with get-pip.py <https://pip.pypa.io/en/stable/installing/#installing-with-get-pip-py>`_ to get the ``easy_install`` command.
 
 Once ``easy_install`` is working within the OSGeo4W python environment, run::
 
