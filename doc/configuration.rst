@@ -127,7 +127,7 @@ The old syntax to configure each layer as a dictionary with the key as the name 
   layers:
     mylayer:
       title: My Layer
-      source: [mysoruce]
+      source: [mysource]
 
 should become
 
@@ -136,7 +136,7 @@ should become
   layers:
     - name: mylayer
       title: My Layer
-      source: [mysoruce]
+      source: [mysource]
 
 The mixed format where the layers are a list (``-``) but each layer is still a dictionary is no longer supported (e.g. ``- mylayer:`` becomes ``- name: mylayer``).
 
