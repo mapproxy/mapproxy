@@ -61,7 +61,6 @@ setup(
     author_email='olt@omniscale.de',
     url='http://mapproxy.org',
     license='Apache Software License 2.0',
-    namespace_packages = ['mapproxy'],
     packages=find_packages(),
     include_package_data=True,
     entry_points = {
