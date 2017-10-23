@@ -160,15 +160,19 @@ def defrag_compact_cache(cache, min_percent=0.1, min_bytes=1024*1024, log_progre
 
         tmp_bundle = os.path.join(cache.cache_dir, 'tmp_defrag')
         defb = cache.bundle_class(tmp_bundle, offset)
+        stored_tiles = False
 
         for y in range(128):
             tiles = [Tile((x, y, 0)) for x in range(128)]
             b.load_tiles(tiles)
             tiles = [t for t in tiles if t.source]
             if tiles:
+                stored_tiles = True
                 defb.store_tiles(tiles)
 
-        os.rename(tmp_bundle + '.bundle', bundle_file)
-        if os.path.exists(tmp_bundle + '.bundlx'):
-            os.rename(tmp_bundle + '.bundlx', bundle_file[:-1] + 'x')
-        os.unlink(tmp_bundle + '.lck')
+        if stored_tiles:
+            os.rename(tmp_bundle + '.bundle', bundle_file)
+            if os.path.exists(tmp_bundle + '.bundlx'):
+                os.rename(tmp_bundle + '.bundlx', bundle_file[:-1] + 'x')
+            os.unlink(tmp_bundle + '.lck')
+
