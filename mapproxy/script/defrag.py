@@ -171,8 +171,13 @@ def defrag_compact_cache(cache, min_percent=0.1, min_bytes=1024*1024, log_progre
                 defb.store_tiles(tiles)
 
         if stored_tiles:
+            if sys.platform == 'win32':
+                # os.rename does not work when destination exists
+                if os.path.exists(bundle_file): os.remove(bundle_file)
+                if os.path.exists(bundle_file[:-1] + 'x'): os.remove(bundle_file[:-1] + 'x')
             os.rename(tmp_bundle + '.bundle', bundle_file)
             if os.path.exists(tmp_bundle + '.bundlx'):
                 os.rename(tmp_bundle + '.bundlx', bundle_file[:-1] + 'x')
-            os.unlink(tmp_bundle + '.lck')
+            if os.path.exists(tmp_bundle + '.lck'):
+                os.unlink(tmp_bundle + '.lck')
 
