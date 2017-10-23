@@ -24,11 +24,8 @@ from collections import OrderedDict
 
 from mapproxy.cache.compact import CompactCacheV1, CompactCacheV2
 from mapproxy.cache.tile import Tile
-from mapproxy.compat import iteritems
 from mapproxy.config import local_base_config
 from mapproxy.config.loader import load_configuration, ConfigurationError
-from mapproxy.seed.config import (load_seed_tasks_conf, SeedConfigurationError,
-                                  SeedingConfiguration)
 
 import logging
 log = logging.getLogger('mapproxy.defrag')
