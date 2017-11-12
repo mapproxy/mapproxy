@@ -39,3 +39,8 @@ if PY2:
         from StringIO import StringIO as BytesIO
 else:
     from io import BytesIO
+
+if PY2:
+    raw_input = raw_input
+else:
+    raw_input = input
