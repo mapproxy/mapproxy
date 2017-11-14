@@ -67,6 +67,7 @@ class DummySource(MapLayer):
     """
     def __init__(self, coverage=None):
         MapLayer.__init__(self)
+        self.image_opts.transparent = True
         self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
         self.extent = MapExtent(coverage.bbox, coverage.srs) if coverage else DefaultMapExtent()
 
