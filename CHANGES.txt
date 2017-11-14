@@ -1,3 +1,72 @@
+1.11.0 2017-11-xx
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Improve reprojection perfromance and accurracy.
+- ArcGIS compact cache: Support for version 2.
+- ArcGIS compact cache: Improve performance for version 1.
+- ArcGIS compact cache: Add ``mapproxy-util defrag`` to reduce bundle size
+  after tiles were removed/updated.
+- ArcGIS REST source: Support opts.map and seed_only.
+- Use systems CA certs by default and fix ssl_no_cert_checks
+  for Python >=2.7.9 and >=3.4
+- WMS: Improve Bounding Boxes in Capabilities.
+- Mapserver: Find mapserv binary in PATH environment.
+
+Fixes:
+
+- Seed: Always show last log line (100%).
+- Fix saving transparent PNGs for some versions of Pillow
+  (workaround for Pillow bug #2633)
+- SQLite: Fix possible errors on first request after start.
+- Demo: Fix demo client with `use_grid_names`.
+- serve-develop: Fix header encoding for Python 3.
+- Seed: Fix --interactive for Python 3.
+- Support tagged layers for sources with colons in name.
+- Support # character in Basis Authentication password.
+- Fix import error with shapely>=1.6
+
+Other:
+
+- Remove support for Python 2.6
+
+1.10.4 2017-08-17
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix Cross Site Scripting (XSS) issue in demo service (#322).
+  A targeted attack could be used for information disclosure. For
+  example: Session cookies of a third party application running on
+  the same domain.
+
+
+1.10.3 2017-07-07
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix crash during clipping
+- Fix bilinear/bicubic resampling from cropped source
+- Fix loading empty coverages
+
+1.10.2 2017-06-21
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix coverage clipping for caches with a single source
+
+1.10.1 2017-06-06
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix mapproxy-util serve-develop for Python 3.6 on Windows
+- Fix OGR coverages on Windows with Python 3 and official OGR Python bindings
+- Fix --repeat option of mapproxy-util scales
+
 1.10.0 2017-05-18
 ~~~~~~~~~~~~~~~~~
 
