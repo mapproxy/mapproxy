@@ -3,7 +3,7 @@
 
 Improvements:
 
-- Improve reprojection perfromance and accurracy.
+- Improve reprojection performance and accuracy.
 - ArcGIS compact cache: Support for version 2.
 - ArcGIS compact cache: Improve performance for version 1.
 - ArcGIS compact cache: Add ``mapproxy-util defrag`` to reduce bundle size
@@ -26,6 +26,7 @@ Fixes:
 - Support tagged layers for sources with colons in name.
 - Support # character in Basis Authentication password.
 - Fix import error with shapely>=1.6
+- Fix duplicate level caches when using WMTS KVP with MBtile/SQLite/CouchDB.
 
 Other:
 
