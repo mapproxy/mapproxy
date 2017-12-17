@@ -632,7 +632,7 @@ def _parse_version(req):
     if 'wmtver' in req.args:
         return Version(req.args['wmtver'])
 
-    return Version('1.1.1') # default
+    return None
 
 def _parse_request_type(req):
     if 'request' in req.args:
@@ -684,7 +684,16 @@ def wms_request(req, validate=True, strict=True, versions=None):
     version = _parse_version(req)
     req_type = _parse_request_type(req)
 
-    if versions and version not in versions:
+    if versions is None:
+        versions = sorted([
+            Version(v) for v in ('1.0.0', '1.1.0', '1.1.1', '1.3.0')])
+
+    if version is None:
+        # If no version number is specified in the request,
+        # the server shall respond with the highest version.
+        version = max(versions)
+
+    if version not in versions:
         version_requests = None
     else:
         version_requests = request_mapping.get(version, None)
