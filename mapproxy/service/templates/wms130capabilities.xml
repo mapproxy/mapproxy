@@ -41,6 +41,10 @@
 {{endif}}
     <Fees>{{service.get('fees', 'none')}}</Fees>
     <AccessConstraints>{{service.get('access_constraints', 'none')}}</AccessConstraints>
+{{if max_output_size}}
+    <MaxWidth>{{max_output_size[0]}}</MaxWidth>
+    <MaxHeight>{{max_output_size[1]}}</MaxHeight>
+{{endif}}
 </Service>
 
 <Capability>
