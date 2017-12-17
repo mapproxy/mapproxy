@@ -1886,10 +1886,6 @@ class ServiceConfiguration(ConfigurationBase):
         if versions:
             versions = sorted([Version(v) for v in versions])
 
-        versions = conf.get('versions')
-        if versions:
-            versions = sorted([Version(v) for v in versions])
-
         max_output_pixels = self.context.globals.get_value('max_output_pixels', conf,
             global_key='wms.max_output_pixels')
         if isinstance(max_output_pixels, list):
