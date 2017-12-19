@@ -251,9 +251,10 @@ def auth_data_from_url(url):
     return url, (username, password)
 
 
-_http_client = HTTPClient()
 def open_url(url):
-    return _http_client.open(url)
+    url, (username, password) = auth_data_from_url(url)
+    http_client = HTTPClient(url, username, password)
+    return http_client.open(url)
 
 retrieve_url = open_url
 
