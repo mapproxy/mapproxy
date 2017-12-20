@@ -19,7 +19,7 @@ import time
 import sys
 
 from mapproxy.client.http import HTTPClient, HTTPClientError, supports_ssl_default_context
-from mapproxy.client.tile import TMSClient, TileClient, TileURLTemplate
+from mapproxy.client.tile import TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient
 from mapproxy.grid import tile_grid
 from mapproxy.layer import MapQuery, InfoQuery
@@ -234,16 +234,6 @@ A4GBAFjOKer89961zgK5F7WF0bnj4JXMJTENAKaSbn+2kmOeUJXRmm/kEd5jhW6Y
 1voqZiegDfqnc1zqcPGUIWVEX/r87yloqaKHee9570+sB3c4
 -----END CERTIFICATE-----
 """
-
-
-class TestTMSClient(object):
-    def setup(self):
-        self.client = TMSClient(TESTSERVER_URL)
-    def test_get_tile(self):
-        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/9/5/13.png'},
-                                                {'body': b'tile', 'headers': {'content-type': 'image/png'}})]):
-            resp = self.client.get_tile((5, 13, 9)).source.read()
-            eq_(resp, b'tile')
 
 class TestTileClient(object):
     def test_tc_path(self):

@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,36 +15,19 @@
 
 from mapproxy.client.http import retrieve_image
 
-class TMSClient(object):
-    def __init__(self, url, format='png', http_client=None):
-        self.url = url
-        self.http_client = http_client
-        self.format = format
-    
-    def get_tile(self, tile_coord, format=None):
-        x, y, z = tile_coord
-        url = '%s/%d/%d/%d.%s' % (self.url, z, x, y, format or self.format)
-        if self.http_client:
-            return self.http_client.open_image(url)
-        else:
-            return retrieve_image(url)
-    
-    def __repr__(self):
-        return '%s(%r, %r)' % (self.__class__.__name__, self.url, self.format)
-
 class TileClient(object):
     def __init__(self, url_template, http_client=None, grid=None):
         self.url_template = url_template
         self.http_client = http_client
         self.grid = grid
-    
+
     def get_tile(self, tile_coord, format=None):
         url = self.url_template.substitute(tile_coord, format, self.grid)
         if self.http_client:
             return self.http_client.open_image(url)
         else:
             return retrieve_image(url)
-    
+
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.url_template)
 
@@ -61,15 +44,15 @@ class TileURLTemplate(object):
     >>> t = TileURLTemplate('http://foo/tiles/%(tc_path)s.png')
     >>> t.substitute((7, 4, 3))
     'http://foo/tiles/03/000/000/007/000/000/004.png'
-    
+
     >>> t = TileURLTemplate('http://foo/tms/1.0.0/%(tms_path)s.%(format)s')
     >>> t.substitute((7, 4, 3))
     'http://foo/tms/1.0.0/3/7/4.png'
-    
+
     >>> t = TileURLTemplate('http://foo/tms/1.0.0/lyr/%(tms_path)s.%(format)s')
     >>> t.substitute((7, 4, 3), 'jpeg')
     'http://foo/tms/1.0.0/lyr/3/7/4.jpeg'
-    
+
     """
     def __init__(self, template, format='png'):
         self.template= template
@@ -96,7 +79,7 @@ class TileURLTemplate(object):
             data['bbox'] = bbox(tile_coord, grid)
 
         return self.template % data
-    
+
     def __repr__(self):
         return '%s(%r, format=%r)' % (
             self.__class__.__name__, self.template, self.format)
@@ -159,7 +142,7 @@ def bbox(tile_coord, grid):
     '0.00000000,-15.00000000,10.00000000,-5.00000000'
     >>> bbox((0, 0, 1), grid)
     '0.00000000,-15.00000000,5.00000000,-10.00000000'
-    
+
     >>> grid = tile_grid(4326, bbox=(0, -15, 10, -5), origin='nw')
     >>> bbox((0, 0, 1), grid)
     '0.00000000,-10.00000000,5.00000000,-5.00000000'
