@@ -256,8 +256,6 @@ def open_url(url):
     http_client = HTTPClient(url, username, password)
     return http_client.open(url)
 
-retrieve_url = open_url
-
 def retrieve_image(url, client=None):
     """
     Retrive an image from `url`.
