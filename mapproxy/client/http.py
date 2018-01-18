@@ -29,12 +29,15 @@ from mapproxy.compat.modules import urlparse
 
 if PY2:
     import urllib2
-    from urllib2 import URLError, HTTPError
+    from urllib2 import URLError, HTTPError, HTTPCookieProcessor
     import httplib
+    from cookielib import CookieJar
 else:
     from urllib import request as urllib2
     from urllib.error import URLError, HTTPError
+    from urllib.request import HTTPCookieProcessor
     from http import client as httplib
+    from http.cookiejar import CookieJar
 
 import socket
 import ssl
@@ -130,8 +133,8 @@ class _URLOpenerCache(object):
     def __init__(self):
         self._opener = {}
 
-    def __call__(self, ssl_ca_certs, url, username, password, insecure=False):
-        cache_key = (ssl_ca_certs, insecure)
+    def __call__(self, ssl_ca_certs, url, username, password, insecure=False, manage_cookies=False):
+        cache_key = (ssl_ca_certs, insecure, manage_cookies)
         if cache_key not in self._opener:
             handlers = []
             https_handler = build_https_handler(ssl_ca_certs, insecure)
@@ -142,6 +145,9 @@ class _URLOpenerCache(object):
             handlers.append(authhandler)
             authhandler = urllib2.HTTPDigestAuthHandler(passman)
             handlers.append(authhandler)
+            if (manage_cookies):
+                cj = CookieJar()
+                handlers.append(HTTPCookieProcessor(cj))
 
             opener = urllib2.build_opener(*handlers)
 
@@ -160,7 +166,7 @@ create_url_opener = _URLOpenerCache()
 
 class HTTPClient(object):
     def __init__(self, url=None, username=None, password=None, insecure=False,
-                 ssl_ca_certs=None, timeout=None, headers=None):
+                 ssl_ca_certs=None, timeout=None, headers=None, manage_cookies=False):
         self._timeout = timeout
         if url and url.startswith('https'):
             if insecure:
@@ -169,7 +175,7 @@ class HTTPClient(object):
                     raise HTTPClientError('No ca_certs file set (http.ssl_ca_certs). '
                         'Set file or disable verification with http.ssl_no_cert_checks option.')
 
-        self.opener = create_url_opener(ssl_ca_certs, url, username, password, insecure=insecure)
+        self.opener = create_url_opener(ssl_ca_certs, url, username, password, insecure=insecure, manage_cookies=manage_cookies)
         self.header_list = headers.items() if headers else []
 
     def open(self, url, data=None):
