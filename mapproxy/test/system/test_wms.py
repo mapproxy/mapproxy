@@ -195,6 +195,7 @@ class TestWMS111(SysTest):
                 "wms_cache_link_single",
                 "wms_cache_110",
                 "watermark_cache",
+                "wms_managed_cookies_cache",
             ]
         )
         assert layer_names == expected_names
@@ -902,6 +903,7 @@ class TestWMS110(SysTest):
                 "wms_cache_link_single",
                 "wms_cache_110",
                 "watermark_cache",
+                "wms_managed_cookies_cache",
             ]
         )
         assert layer_names == expected_names
@@ -1056,6 +1058,41 @@ class TestWMS110(SysTest):
         assert "tms_cache is not queryable" in xml.xpath("//ServiceException/text()")[0]
         assert validate_with_dtd(xml, "wms/1.1.0/exception_1_1_0.dtd")
 
+    def test_managed_cookies(self, app):
+        def assert_no_cookie(req_handler):
+            return 'Cookie' not in req_handler.headers
+
+        def assert_cookie(req_handler):
+            assert 'Cookie' in req_handler.headers
+            cookie_name, cookie_val = req_handler.headers['Cookie'].split(';')[0].split('=')
+            assert cookie_name == 'testcookie'
+            assert cookie_val == '42'
+            return True
+
+        url = (r"/service?LAYERs=layer1&SERVICE=WMS&FORMAT=image%2Fpng"
+                "&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913"
+                "&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles="
+                "&WIDTH=200&QUERY_LAYERS=layer1&X=10&Y=20")
+        # First response has a Set-Cookie => with managed_cookies=True, mapproxy should send the
+        # cookie in the second request
+        expected_requests = [
+            (
+                {'path': url, 'req_assert_function': assert_no_cookie},
+                {'body': b'nothing', 'headers': {'Set-Cookie': "testcookie=42"}}
+            ),
+            (
+                {'path': url, 'req_assert_function': assert_cookie},
+                {'body': b'nothing'}
+            )
+        ]
+        with mock_httpd(("localhost", 42423), expected_requests):
+            self.common_fi_req.params["layers"] = "wms_managed_cookies_cache"
+            self.common_fi_req.params["query_layers"] = "wms_managed_cookies_cache"
+            resp = app.get(self.common_fi_req)
+            assert resp.body == b"nothing"
+            resp = app.get(self.common_fi_req)
+            assert resp.body == b"nothing"
+
 
 class TestWMS100(SysTest):
     config_file = "layer.yaml"
@@ -1119,6 +1156,7 @@ class TestWMS100(SysTest):
                 "wms_cache_link_single",
                 "wms_cache_110",
                 "watermark_cache",
+                "wms_managed_cookies_cache",
             ]
         )
         assert layer_names == expected_names
@@ -1334,6 +1372,7 @@ class TestWMS130(SysTest):
                 "wms_cache_link_single",
                 "wms_cache_110",
                 "watermark_cache",
+                "wms_managed_cookies_cache",
             ]
         )
         assert layer_names == expected_names

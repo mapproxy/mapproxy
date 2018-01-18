@@ -184,6 +184,7 @@ You can configure the following HTTP related options for this source:
 - ``client_timeout``
 - ``ssl_ca_certs``
 - ``ssl_no_cert_checks``
+- ``manage_cookies``
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 
@@ -432,6 +433,7 @@ You can configure the following HTTP related options for this source:
 - ``client_timeout``
 - ``ssl_ca_certs``
 - ``ssl_no_cert_checks``
+- ``manage_cookies``
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 
