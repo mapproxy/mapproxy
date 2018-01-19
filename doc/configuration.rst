@@ -968,6 +968,16 @@ Add additional HTTP headers to all requests to your sources.
 
 Sets the ``Access-control-allow-origin`` header to HTTP responses for `Cross-origin resource sharing <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_. This header is required for WebGL or Canvas web clients. Defaults to `*`. Leave empty to disable the header. This option is only available in `globals`.
 
+``manage_cookies``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.12.0
+
+Enables MapProxy cookie management for HTTP sources. When enabled MapProxy will accept and store server cookies. Accepted cookies will be passed 
+back to the source on subsequent requests. Usefull for sources which require to maintain an HTTP session to work efficiently, maybe in combination
+with basic authentication. Depending on your deployment MapProxy will still start multiple sessions (e.g. one per MapProxy process). 
+At least after a restart new sessions will be started.
+Cookie handling is based on Python `CookieJar <https://docs.python.org/3/library/http.cookiejar.html>`_. Disabled by default.
 
 ``tiles``
 """"""""""

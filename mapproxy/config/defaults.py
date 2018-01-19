@@ -93,4 +93,5 @@ http = dict(
     concurrent_requests = 0,
     method = 'AUTO',
     access_control_allow_origin = '*',
+    manage_cookies = False,
 )

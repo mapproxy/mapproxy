@@ -701,6 +701,8 @@ You can disable the certificate verification if you you don't need it.
       url: https://username:mypassword@example.org/service?
       layers: securelayer
 
+.. note:: Regarding authentication see issue `Basic auth header not added to request <https://github.com/mapproxy/mapproxy/issues/182>`_.
+
 .. _http_proxy:
 
 Access sources through HTTP proxy
@@ -726,11 +728,28 @@ You can also set this in your :ref:`server script <server_script>`::
 
 Add a username and password to the URL if your HTTP proxy requires authentication. For example ``http://username:password@example.com:3128``.
 
+.. note:: Regarding authentication see issue `Basic auth header not added to request <https://github.com/mapproxy/mapproxy/issues/182>`_.
+
 You can use the ``no_proxy`` environment variable if you need to bypass the proxy for some hosts::
 
   $ export no_proxy="localhost,127.0.0.1,196.168.1.99"
 
 ``no_proxy`` is available since Python 2.6.3.
+
+Cookie Management
+==================
+
+MapProxy can handle server cookies of HTTP sources, like browsers do. That is, MapProxy accepts cookies and passes them back
+on subsequent calls::
+
+  sources:
+    wms_with_session_management:
+      type: wms
+      http:
+        manage_cookies: true
+      req:
+        url: http://example.org/service?
+        layers: layer0
 
 .. _paster_urlmap:
 

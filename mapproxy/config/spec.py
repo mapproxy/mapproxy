@@ -74,6 +74,7 @@ http_opts = {
     'headers': {
         anything(): str()
     },
+    'manage_cookies': bool(),
 }
 
 mapserver_opts = {
