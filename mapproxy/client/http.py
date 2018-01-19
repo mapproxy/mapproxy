@@ -145,7 +145,7 @@ class _URLOpenerCache(object):
             handlers.append(authhandler)
             authhandler = urllib2.HTTPDigestAuthHandler(passman)
             handlers.append(authhandler)
-            if (manage_cookies):
+            if manage_cookies:
                 cj = CookieJar()
                 handlers.append(HTTPCookieProcessor(cj))
 
