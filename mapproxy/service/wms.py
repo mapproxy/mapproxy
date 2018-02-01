@@ -159,10 +159,8 @@ class WMSServer(Server):
             raise RequestError('error while processing image file: %s' % ex,
                 request=map_request)
 
-        # HERE GOES THE MAGIC
-        if query.format == 'GeoTIFF':
+        if query.format.lower() == 'geotiff':
             result_buf = georeference(result, result_buf, query.srs, query.bbox)
-        # END OF THE MAGIC
 
         resp = Response(result_buf, content_type=img_opts.format.mime_type)
 

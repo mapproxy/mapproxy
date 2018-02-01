@@ -1,6 +1,7 @@
 from osgeo import gdal, osr
 from mapproxy.proj import Proj, transform
 from mapproxy.srs import get_epsg_num
+import uuid
 
 def get_geotransform(size, bbox):
     print bbox
@@ -9,16 +10,14 @@ def get_geotransform(size, bbox):
     return (bbox[0], resx, 0.0, bbox[3], 0.0, -resy)
 
 def georeference(image, buffer, srs, bbox):
-    # Open image in gdal
-    gdal.FileFromMemBuffer("/vsimem/tmp.tif", buffer.read())
-    source_dataset = gdal.Open('/vsimem/tmp.tif')
+    source_temp_name = '/vsimem/{}.tif'.format(uuid.uuid4())
+    gdal.FileFromMemBuffer(source_temp_name, buffer.read())
+    source_dataset = gdal.Open(source_temp_name)
 
-    # Copy to source dataset
+    destination_temp_name = '/vsimem/{}.tif'.format(uuid.uuid4())
     driver = gdal.GetDriverByName("GTiff")
-    destination_dataset = driver.CreateCopy('/vsimem/dest.tif', source_dataset, 0)
+    destination_dataset = driver.CreateCopy(destination_temp_name, source_dataset, 0)
 
-
-    # Georeference
     gt = get_geotransform(image.size, bbox)
     destination_dataset.SetGeoTransform(gt)
     srs2 = osr.SpatialReference()
@@ -26,22 +25,17 @@ def georeference(image, buffer, srs, bbox):
     srs_as_wkt = srs2.ExportToWkt()
     destination_dataset.SetProjection(srs_as_wkt)
 
-    print(gdal.Info(destination_dataset))
-
     source_dataset = None
     destination_dataset = None
-    # Convert to buffer
-    f = gdal.VSIFOpenL('/vsimem/dest.tif', 'rb')
+
+    f = gdal.VSIFOpenL(destination_temp_name, 'rb')
     gdal.VSIFSeekL(f, 0, 2) # seek to end
     size = gdal.VSIFTellL(f)
-    print "size: " + str(size)
     gdal.VSIFSeekL(f, 0, 0) # seek to beginning
     georeferenced_buffer = gdal.VSIFReadL(1, size, f)
-    print len(georeferenced_buffer)
     gdal.VSIFCloseL(f)
 
-    # Close
-    gdal.Unlink("/vsimem/tmp.tif")
+    gdal.Unlink(source_temp_name)
+    gdal.Unlink(destination_temp_name)
     
-    # Return
     return georeferenced_buffer
