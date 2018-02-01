@@ -351,7 +351,7 @@ sources:
   osm_wms:
     type: wms
     req:
-      url: http://osm.omniscale.net/proxy/service?
+      url: https://maps.omniscale.net/v2/demo/style.default/service?
       layers: osm
 
   # WMS source for use with tagged sources
