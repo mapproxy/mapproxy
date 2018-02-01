@@ -41,6 +41,7 @@ from mapproxy.util.ext.odict import odict
 from mapproxy.template import template_loader, bunch, recursive_bunch
 from mapproxy.service import template_helper
 from mapproxy.layer import DefaultMapExtent, MapExtent
+from mapproxy.image.georeferencing import georeference
 
 get_template = template_loader(__name__, 'templates', namespace=template_helper.__dict__)
 
@@ -83,6 +84,8 @@ class WMSServer(Server):
 
         params = map_request.params
         query = MapQuery(params.bbox, params.size, SRS(params.srs), params.format)
+
+        print query.__dict__
 
         if map_request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
@@ -155,6 +158,11 @@ class WMSServer(Server):
         except IOError as ex:
             raise RequestError('error while processing image file: %s' % ex,
                 request=map_request)
+
+        # HERE GOES THE MAGIC
+        if query.format == 'GeoTIFF':
+            result_buf = georeference(result, result_buf, query.srs, query.bbox)
+        # END OF THE MAGIC
 
         resp = Response(result_buf, content_type=img_opts.format.mime_type)
 
