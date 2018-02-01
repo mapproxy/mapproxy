@@ -4,7 +4,6 @@ from mapproxy.srs import get_epsg_num
 import uuid
 
 def get_geotransform(size, bbox):
-    print bbox
     resx = (bbox[2] - bbox[0]) / float(size[0])
     resy = (bbox[3] - bbox[1]) / float(size[1])
     return (bbox[0], resx, 0.0, bbox[3], 0.0, -resy)
