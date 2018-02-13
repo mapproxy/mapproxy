@@ -561,10 +561,11 @@ class SourceConfiguration(ConfigurationBase):
 
         timeout = self.context.globals.get_value('http.client_timeout', self.conf)
         headers = self.context.globals.get_value('http.headers', self.conf)
+        hide_exception_url = self.context.globals.get_value('http.hide_exception_url', self.conf)
 
         http_client = HTTPClient(url, username, password, insecure=insecure,
                                  ssl_ca_certs=ssl_ca_certs, timeout=timeout,
-                                 headers=headers)
+                                 headers=headers, hide_exception_url=hide_exception_url)
         return http_client, url
 
     @memoize
