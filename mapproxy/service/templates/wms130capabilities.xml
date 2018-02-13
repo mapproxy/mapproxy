@@ -41,6 +41,10 @@
 {{endif}}
     <Fees>{{service.get('fees', 'none')}}</Fees>
     <AccessConstraints>{{service.get('access_constraints', 'none')}}</AccessConstraints>
+{{if max_output_size}}
+    <MaxWidth>{{max_output_size[0]}}</MaxWidth>
+    <MaxHeight>{{max_output_size[1]}}</MaxHeight>
+{{endif}}
 </Service>
 
 <Capability>
@@ -222,7 +226,7 @@
     <CRS>{{s}}</CRS>
     {{endfor}}
     {{endif}}
-    {{py: extent = limit_llbbox(layer.extent.llbbox)}}
+    {{py: extent = layer_llbbox(layer)}}
     <EX_GeographicBoundingBox>
       <westBoundLongitude>{{ extent[0] }}</westBoundLongitude>
       <eastBoundLongitude>{{ extent[2] }}</eastBoundLongitude>

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division, with_statement
+from __future__ import division
 import yaml
 import time
 from mapproxy.srs import SRS
@@ -30,8 +30,8 @@ from mapproxy.cache.tile import TileManager
 from mapproxy.seed.spec import validate_seed_conf
 from mapproxy.test.helper import TempFile
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
+from mapproxy.util.geom import EmptyGeometryError
 from nose.tools import eq_, assert_raises
-from nose.plugins.skip import SkipTest
 
 class TestLayerConfiguration(object):
     def _test_conf(self, yaml_part):
@@ -925,7 +925,7 @@ class TestImageOptions(object):
 
         conf.globals.image_options.image_opts({}, 'image/jpeg')
 
-class TestLoadCoverage(object):
+class TestCoverageValidation(object):
     def test_union(self):
         conf = {
             'coverages': {
@@ -942,3 +942,19 @@ class TestLoadCoverage(object):
         assert informal_only
         assert len(errors) == 1
         eq_(errors[0], "unknown 'unknown' in coverages.covname.union[1]")
+
+
+class TestLoadCoverage(object):
+    def test_load_empty_geojson(self):
+        with TempFile() as tf:
+            with open(tf, 'wb') as f:
+                f.write(b'{"type": "FeatureCollection", "features": []}')
+            conf = {'datasource': tf, 'srs': 'EPSG:4326'}
+            assert_raises(EmptyGeometryError, load_coverage, conf)
+
+    def test_load_empty_geojson_ogr(self):
+        with TempFile() as tf:
+            with open(tf, 'wb') as f:
+                f.write(b'{"type": "FeatureCollection", "features": []}')
+            conf = {'datasource': tf, 'where': '0 != 1', 'srs': 'EPSG:4326'}
+            assert_raises(EmptyGeometryError, load_coverage, conf)

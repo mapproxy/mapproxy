@@ -45,8 +45,8 @@ class DebugSource(MapLayer):
     def __init__(self):
         MapLayer.__init__(self)
         self.extent = DefaultMapExtent()
-        self.transparent = True
         self.res_range = None
+
     def get_map(self, query):
         bbox = query.bbox
         w = bbox[2] - bbox[0]
@@ -67,8 +67,9 @@ class DummySource(MapLayer):
     """
     def __init__(self, coverage=None):
         MapLayer.__init__(self)
+        self.image_opts.transparent = True
         self.extent = MapExtent((-180, -90, 180, 90), SRS(4326))
-        self.transparent = True
         self.extent = MapExtent(coverage.bbox, coverage.srs) if coverage else DefaultMapExtent()
+
     def get_map(self, query):
         raise BlankImage()

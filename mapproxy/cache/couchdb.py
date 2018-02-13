@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import codecs
 import datetime
+import json
 import socket
 import time
 import hashlib
@@ -37,13 +37,6 @@ try:
 except ImportError:
     requests = None
 
-try:
-    import simplejson as json
-except ImportError:
-    try:
-        import json
-    except ImportError:
-        json = None
 
 import logging
 log = logging.getLogger(__name__)
@@ -58,9 +51,6 @@ class CouchDBCache(TileCacheBase):
 
         if requests is None:
             raise ImportError("CouchDB backend requires 'requests' package.")
-
-        if json is None:
-            raise ImportError("CouchDB backend requires 'simplejson' package or Python 2.6+.")
 
         self.lock_cache_id = 'couchdb-' + hashlib.md5((url + db_name).encode('utf-8')).hexdigest()
         self.file_ext = file_ext

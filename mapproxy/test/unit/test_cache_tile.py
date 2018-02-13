@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
+import calendar
 import datetime
 import os
 import shutil
@@ -146,7 +146,7 @@ class TileCacheTestBase(object):
         if tile.timestamp:
             now = time.time()
             if self.uses_utc:
-                now = time.mktime(datetime.datetime.utcnow().timetuple())
+                now = calendar.timegm(datetime.datetime.utcnow().timetuple())
             assert abs(tile.timestamp - now) <= 10
         if tile.size:
             assert tile.size == size

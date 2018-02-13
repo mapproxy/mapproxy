@@ -44,13 +44,37 @@ class WMSSource(MapLayer):
         self.transparent_color = transparent_color
         self.transparent_color_tolerance = transparent_color_tolerance
         if self.transparent_color:
-            self.transparent = True
+            self.image_opts.transparent = True
         self.coverage = coverage
         self.res_range = res_range
         if self.coverage:
             self.extent = MapExtent(self.coverage.bbox, self.coverage.srs)
         else:
             self.extent = DefaultMapExtent()
+
+    def is_opaque(self, query):
+        """
+        Returns true if we are sure that the image is not transparent.
+        """
+        if self.res_range and not self.res_range.contains(query.bbox, query.size,
+                                                          query.srs):
+            return False
+
+        if self.image_opts.transparent:
+            return False
+
+        if self.opacity is not None and (0.0 < self.opacity < 0.99):
+            return False
+
+        if not self.coverage:
+            # not transparent and no coverage
+            return True
+
+        if self.coverage.contains(query.bbox, query.srs):
+            # not transparent and completely inside coverage
+            return True
+
+        return False
 
     def get_map(self, query):
         if self.res_range and not self.res_range.contains(query.bbox, query.size,

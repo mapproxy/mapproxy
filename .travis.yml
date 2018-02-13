@@ -5,6 +5,7 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
+  - "3.6"
 
 services:
   - couchdb
@@ -32,19 +33,31 @@ env:
   global:
     - MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984
     - MAPPROXY_TEST_REDIS=127.0.0.1:6379
+    - MAPPROXY_TEST_RIAK_HTTP=http://localhost:8098
+    - MAPPROXY_TEST_RIAK_PBC=pbc://localhost:8087
 
     # do not load /etc/boto.cfg with Python 3 incompatible plugin
     # https://github.com/travis-ci/travis-ci/issues/5246#issuecomment-166460882
     - BOTO_CONFIG=/doesnotexist
 
+matrix:
+  # Test 2.7 and 3.6 also with latest Pillow version
+  include:
+    - python: "2.7"
+      env: USE_LATEST_PILLOW=1
+    - python: "3.6"
+      env: USE_LATEST_PILLOW=1
+
 cache:
   directories:
     - $HOME/.cache/pip
 
+before_install:
+    - echo -n "ulimit -n 4096" | sudo tee /etc/default/riak && sudo service riak restart	# default open file limit is too low for riak
+
 install:
-    # riak packages are not compatible with Python 3
-    - "if [[ $TRAVIS_PYTHON_VERSION = '2.7' ]]; then pip install protobuf>=2.4.1 riak==2.2 riak_pb>=2.0; export MAPPROXY_TEST_RIAK_PBC=pbc://localhost:8087; fi"
     - "pip install -r requirements-tests.txt"
+    - "if [[ $USE_LATEST_PILLOW = '1' ]]; then pip install -U Pillow; fi"
     - "pip freeze"
 
 script: nosetests mapproxy

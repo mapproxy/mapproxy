@@ -16,7 +16,6 @@
 """
 Image and tile manipulation (transforming, merging, etc).
 """
-from __future__ import with_statement
 import io
 from io import BytesIO
 
@@ -196,7 +195,7 @@ def SubImageSource(source, size, offset, image_opts, cacheable=True):
         source = ImageSource(source)
     subimg = source.as_image()
     img.paste(subimg, offset)
-    return ImageSource(img, size=size, image_opts=image_opts, cacheable=cacheable)
+    return ImageSource(img, size=size, image_opts=new_image_opts, cacheable=cacheable)
 
 class BlankImageSource(object):
     """
@@ -313,6 +312,12 @@ def img_to_buf(img, image_opts):
             defaults['quality'] = image_opts.encoding_options['jpeg_quality']
         else:
             defaults['quality'] = base_config().image.jpeg_quality
+
+    # unsupported transparency tuple can still be in non-RGB img.infos
+    # see: https://github.com/python-pillow/Pillow/pull/2633
+    if format == 'png' and img.mode != 'RGB' and 'transparency' in img.info and isinstance(img.info['transparency'], tuple):
+        del img.info['transparency']
+
     img.save(buf, format, **defaults)
     buf.seek(0)
     return buf

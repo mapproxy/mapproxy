@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
-from mapproxy.client.tile import TMSClient
+from mapproxy.client.tile import TileClient, TileURLTemplate
 from mapproxy.grid import TileGrid
 from mapproxy.srs import SRS
 from mapproxy.source.tile import TiledSource
@@ -26,12 +25,12 @@ from mapproxy.test.http import mock_httpd
 from nose.tools import eq_
 
 TEST_SERVER_ADDRESS = ('127.0.0.1', 56413)
-TESTSERVER_URL = 'http://%s:%d' % TEST_SERVER_ADDRESS
+TESTSERVER_URL = ('http://%s:%d' % TEST_SERVER_ADDRESS) + '/%(tms_path)s.png'
 
 class TestTileClientOnError(object):
     def setup(self):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.client = TMSClient(TESTSERVER_URL)
+        self.client = TileClient(TileURLTemplate(TESTSERVER_URL))
 
     def test_cacheable_response(self):
         error_handler = HTTPSourceErrorHandler()

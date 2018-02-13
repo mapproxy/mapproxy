@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement, absolute_import
+from __future__ import absolute_import
 
 import sys
 import time
@@ -148,4 +148,4 @@ class MapnikSource(MapLayer):
                 status='200' if data else '500', size=size, method='API', duration=time.time()-start_time)
 
         return ImageSource(BytesIO(data), size=query.size,
-            image_opts=ImageOptions(transparent=self.transparent, format=query.format))
+            image_opts=ImageOptions(format=query.format))

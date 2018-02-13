@@ -93,7 +93,7 @@ def format_export_task(task, custom_grid):
     return '\n'.join(info)
 
 def export_command(args=None):
-    parser = optparse.OptionParser("%prog grids [options] mapproxy_conf")
+    parser = optparse.OptionParser("%prog export [options] mapproxy_conf")
     parser.add_option("-f", "--mapproxy-conf", dest="mapproxy_conf",
         help="MapProxy configuration")
 
@@ -224,6 +224,12 @@ def export_command(args=None):
             'version': 1,
             'directory': options.dest,
         }
+    elif options.type == 'compact-v2':
+        cache_conf['cache'] = {
+            'type': 'compact',
+            'version': 2,
+            'directory': options.dest,
+        }
     elif options.type in ('tc', 'mapproxy'):
         cache_conf['cache'] = {
             'type': 'file',
@@ -273,7 +279,7 @@ def export_command(args=None):
         print('WARN: grids are incompatible. needs to scale/reproject tiles for export.', file=sys.stderr)
 
     md = dict(name='export', cache_name='cache', grid_name=options.grid, dest=options.dest)
-    task = SeedTask(md, mgr, levels, None, seed_coverage)
+    task = SeedTask(md, mgr, levels, 1, seed_coverage)
 
     print(format_export_task(task, custom_grid=custom_grid))
 

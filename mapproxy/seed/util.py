@@ -42,56 +42,6 @@ class bidict(dict):
             dict.__setitem__(self, key, val)
             dict.__setitem__(self, val, key)
 
-class ETA(object):
-    def __init__(self):
-        self.avgs = []
-        self.last_tick_start = time.time()
-        self.progress = 0.0
-        self.ticks = 10000
-        self.tick_duration_sums = 0.0
-        self.tick_duration_divisor = 0.0
-        self.tick_count = 0
-
-    def update(self, progress):
-        self.progress = progress
-        missing_ticks = (self.progress * self.ticks) - self.tick_count
-        if missing_ticks:
-            tick_duration = (time.time() - self.last_tick_start) / missing_ticks
-
-            while missing_ticks > 0:
-
-                # reduce the influence of older messurements
-                self.tick_duration_sums *= 0.999
-                self.tick_duration_divisor *= 0.999
-
-                self.tick_count += 1
-
-                self.tick_duration_sums += tick_duration
-                self.tick_duration_divisor += 1
-
-                missing_ticks -= 1
-
-            self.last_tick_start = time.time()
-
-    def eta_string(self):
-        timestamp = self.eta()
-        if timestamp is None:
-            return 'N/A'
-        try:
-            return time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime(timestamp))
-        except (ValueError, OSError): # OSError since Py 3.3
-            # raised when time is out of range (e.g. year >2038)
-            return 'N/A'
-
-    def eta(self):
-        if not self.tick_count: return
-        return (self.last_tick_start +
-                ((self.tick_duration_sums/self.tick_duration_divisor)
-                 * (self.ticks - self.tick_count)))
-
-    def __str__(self):
-        return self.eta_string()
-
 class ProgressStore(object):
     """
     Reads and stores seed progresses to a file.
@@ -143,7 +93,7 @@ class ProgressLog(object):
             out = sys.stdout
         self.out = out
         self._laststep = time.time()
-        self._lastprogress = time.time()
+        self._lastprogress = 0
 
         self.verbose = verbose
         self.silent = silent
@@ -161,9 +111,8 @@ class ProgressLog(object):
             return
         if (self._laststep + .5) < time.time():
             # log progress at most every 500ms
-            self.out.write('[%s] %6.2f%%\t%-20s ETA: %s\r' % (
+            self.out.write('[%s] %6.2f%%\t%-20s \r' % (
                 timestamp(), progress.progress*100, progress.progress_str,
-                progress.eta
             ))
             self.out.flush()
             self._laststep = time.time()
@@ -188,9 +137,9 @@ class ProgressLog(object):
             return
 
         if log_progess:
-            self.out.write('[%s] %2s %6.2f%% %s (%d tiles) ETA: %s\n' % (
+            self.out.write('[%s] %2s %6.2f%% %s (%d tiles)\n' % (
                 timestamp(), level, progress.progress*100,
-                format_bbox(bbox), tiles, progress.eta))
+                format_bbox(bbox), tiles))
             self.out.flush()
 
 

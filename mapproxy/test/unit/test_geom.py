@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division, with_statement
+from __future__ import division
 
 import os
 import tempfile
@@ -47,6 +47,11 @@ from mapproxy.util.coverage import BBOXCoverage
 
 import shapely
 import shapely.prepared
+try:
+    # shapely >=1.6
+    from shapely.errors import ReadingError
+except ImportError:
+    from shapely.geos import ReadingError
 
 from nose.tools import eq_, raises
 
@@ -117,7 +122,7 @@ class TestPolygonLoading(object):
             assert polygon.is_valid
             eq_(polygon.type, 'MultiPolygon')
 
-    @raises(shapely.geos.ReadingError)
+    @raises(ReadingError)
     def test_loading_broken(self):
         with TempFile() as fname:
             with open(fname, 'wb') as f:

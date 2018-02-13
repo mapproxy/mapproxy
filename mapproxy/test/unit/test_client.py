@@ -1,5 +1,5 @@
 # This file is part of the MapProxy project.
-# Copyright (C) 2010 Omniscale <http://omniscale.de>
+# Copyright (C) 2010-2017 Omniscale <http://omniscale.de>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import os
 import time
 import sys
 
-from mapproxy.client.http import HTTPClient, HTTPClientError
-from mapproxy.client.tile import TMSClient, TileClient, TileURLTemplate
+from mapproxy.client.http import HTTPClient, HTTPClientError, supports_ssl_default_context
+from mapproxy.client.tile import TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient
 from mapproxy.grid import tile_grid
 from mapproxy.layer import MapQuery, InfoQuery
@@ -86,38 +85,25 @@ class TestHTTPClient(object):
             assert False, 'expected HTTPClientError'
 
     @attr('online')
-    def test_https_no_ssl_module_error(self):
-        from mapproxy.client import http
-        old_ssl = http.ssl
-        try:
-            http.ssl = None
-            try:
-                self.client = HTTPClient('https://www.google.com/')
-            except ImportError:
-                pass
-            else:
-                assert False, 'no ImportError for missing ssl module'
-        finally:
-            http.ssl = old_ssl
-
-    @attr('online')
-    def test_https_no_ssl_module_insecure(self):
-        from mapproxy.client import http
-        old_ssl = http.ssl
-        try:
-            http.ssl = None
-            self.client = HTTPClient('https://www.google.com/', insecure=True)
-            self.client.open('https://www.google.com/')
-        finally:
-            http.ssl = old_ssl
-
-    @attr('online')
-    def test_https_valid_cert(self):
-        try:
-            import ssl; ssl
-        except ImportError:
+    def test_https_untrusted_root(self):
+        if not supports_ssl_default_context:
+            # old python versions require ssl_ca_certs
             raise SkipTest()
+        self.client = HTTPClient('https://untrusted-root.badssl.com/')
+        try:
+            self.client.open('https://untrusted-root.badssl.com/')
+        except HTTPClientError as e:
+            assert_re(e.args[0], r'Could not verify connection to URL')
 
+    @attr('online')
+    def test_https_insecure(self):
+        self.client = HTTPClient(
+            'https://untrusted-root.badssl.com/', insecure=True)
+        self.client.open('https://untrusted-root.badssl.com/')
+
+    @attr('online')
+    def test_https_valid_ca_cert_file(self):
+        # verify with fixed ca_certs file
         cert_file = '/etc/ssl/certs/ca-certificates.crt'
         if os.path.exists(cert_file):
             self.client = HTTPClient('https://www.google.com/', ssl_ca_certs=cert_file)
@@ -130,16 +116,23 @@ class TestHTTPClient(object):
                 self.client.open('https://www.google.com/')
 
     @attr('online')
-    def test_https_invalid_cert(self):
-        try:
-            import ssl; ssl
-        except ImportError:
+    def test_https_valid_default_cert(self):
+        # modern python should verify by default
+        if not supports_ssl_default_context:
             raise SkipTest()
+        self.client = HTTPClient('https://www.google.com/')
+        self.client.open('https://www.google.com/')
 
+    @attr('online')
+    def test_https_invalid_cert(self):
+        # load 'wrong' root cert
         with TempFile() as tmp:
-            self.client = HTTPClient('https://www.google.com/', ssl_ca_certs=tmp)
+            with open(tmp, 'wb') as f:
+                f.write(GOOGLE_ROOT_CERT)
+            self.client = HTTPClient(
+                'https://untrusted-root.badssl.com/', ssl_ca_certs=tmp)
             try:
-                self.client.open('https://www.google.com/')
+                self.client.open('https://untrusted-root.badssl.com/')
             except HTTPClientError as e:
                 assert_re(e.args[0], r'Could not verify connection to URL')
 
@@ -149,15 +142,12 @@ class TestHTTPClient(object):
 
         import mapproxy.client.http
 
-        old_timeout = mapproxy.client.http._max_set_timeout
-        mapproxy.client.http._max_set_timeout = None
-
         client1 = HTTPClient(timeout=0.1)
         client2 = HTTPClient(timeout=0.5)
         with mock_httpd(TESTSERVER_ADDRESS, [test_req]):
             try:
                 start = time.time()
-                client1.open(TESTSERVER_URL+'/')
+                client1.open(TESTSERVER_URL + '/')
             except HTTPClientError as ex:
                 assert 'timed out' in ex.args[0]
             else:
@@ -167,7 +157,7 @@ class TestHTTPClient(object):
         with mock_httpd(TESTSERVER_ADDRESS, [test_req]):
             try:
                 start = time.time()
-                client2.open(TESTSERVER_URL+'/')
+                client2.open(TESTSERVER_URL + '/')
             except HTTPClientError as ex:
                 assert 'timed out' in ex.args[0]
             else:
@@ -178,11 +168,52 @@ class TestHTTPClient(object):
         assert 0.1 <= duration1 < 0.5, duration1
         assert 0.5 <= duration2 < 0.9, duration2
 
-        mapproxy.client.http._max_set_timeout = old_timeout
 
-# Equifax Secure Certificate Authority
-# Expires: 2018-08-22
+# root certificates for google.com, if no ca-certificates.cert
+# file is found
 GOOGLE_ROOT_CERT = b"""
+-----BEGIN CERTIFICATE-----
+MIIDVDCCAjygAwIBAgIDAjRWMA0GCSqGSIb3DQEBBQUAMEIxCzAJBgNVBAYTAlVT
+MRYwFAYDVQQKEw1HZW9UcnVzdCBJbmMuMRswGQYDVQQDExJHZW9UcnVzdCBHbG9i
+YWwgQ0EwHhcNMDIwNTIxMDQwMDAwWhcNMjIwNTIxMDQwMDAwWjBCMQswCQYDVQQG
+EwJVUzEWMBQGA1UEChMNR2VvVHJ1c3QgSW5jLjEbMBkGA1UEAxMSR2VvVHJ1c3Qg
+R2xvYmFsIENBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2swYYzD9
+9BcjGlZ+W988bDjkcbd4kdS8odhM+KhDtgPpTSEHCIjaWC9mOSm9BXiLnTjoBbdq
+fnGk5sRgprDvgOSJKA+eJdbtg/OtppHHmMlCGDUUna2YRpIuT8rxh0PBFpVXLVDv
+iS2Aelet8u5fa9IAjbkU+BQVNdnARqN7csiRv8lVK83Qlz6cJmTM386DGXHKTubU
+1XupGc1V3sjs0l44U+VcT4wt/lAjNvxm5suOpDkZALeVAjmRCw7+OC7RHQWa9k0+
+bw8HHa8sHo9gOeL6NlMTOdReJivbPagUvTLrGAMoUgRx5aszPeE4uwc2hGKceeoW
+MPRfwCvocWvk+QIDAQABo1MwUTAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBTA
+ephojYn7qwVkDBF9qn1luMrMTjAfBgNVHSMEGDAWgBTAephojYn7qwVkDBF9qn1l
+uMrMTjANBgkqhkiG9w0BAQUFAAOCAQEANeMpauUvXVSOKVCUn5kaFOSPeCpilKIn
+Z57QzxpeR+nBsqTP3UEaBU6bS+5Kb1VSsyShNwrrZHYqLizz/Tt1kL/6cdjHPTfS
+tQWVYrmm3ok9Nns4d0iXrKYgjy6myQzCsplFAMfOEVEiIuCl6rYVSAlk6l5PdPcF
+PseKUgzbFbS9bZvlxrFUaKnjaZC2mqUPuLk/IH2uSrW4nOQdtqvmlKXBx4Ot2/Un
+hw4EbNX/3aBd7YdStysVAq45pmp06drE57xNNB6pXE0zX5IJL4hmXXeXxx12E6nV
+5fEWCRE11azbJHFwLJhWC9kXtNHjUStedejV0NxPNO3CBWaAocvmMw==
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+MIIDujCCAqKgAwIBAgILBAAAAAABD4Ym5g0wDQYJKoZIhvcNAQEFBQAwTDEgMB4G
+A1UECxMXR2xvYmFsU2lnbiBSb290IENBIC0gUjIxEzARBgNVBAoTCkdsb2JhbFNp
+Z24xEzARBgNVBAMTCkdsb2JhbFNpZ24wHhcNMDYxMjE1MDgwMDAwWhcNMjExMjE1
+MDgwMDAwWjBMMSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3QgQ0EgLSBSMjETMBEG
+A1UEChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbjCCASIwDQYJKoZI
+hvcNAQEBBQADggEPADCCAQoCggEBAKbPJA6+Lm8omUVCxKs+IVSbC9N/hHD6ErPL
+v4dfxn+G07IwXNb9rfF73OX4YJYJkhD10FPe+3t+c4isUoh7SqbKSaZeqKeMWhG8
+eoLrvozps6yWJQeXSpkqBy+0Hne/ig+1AnwblrjFuTosvNYSuetZfeLQBoZfXklq
+tTleiDTsvHgMCJiEbKjNS7SgfQx5TfC4LcshytVsW33hoCmEofnTlEnLJGKRILzd
+C9XZzPnqJworc5HGnRusyMvo4KD0L5CLTfuwNhv2GXqF4G3yYROIXJ/gkwpRl4pa
+zq+r1feqCapgvdzZX99yqWATXgAByUr6P6TqBwMhAo6CygPCm48CAwEAAaOBnDCB
+mTAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUm+IH
+V2ccHsBqBt5ZtJot39wZhi4wNgYDVR0fBC8wLTAroCmgJ4YlaHR0cDovL2NybC5n
+bG9iYWxzaWduLm5ldC9yb290LXIyLmNybDAfBgNVHSMEGDAWgBSb4gdXZxwewGoG
+3lm0mi3f3BmGLjANBgkqhkiG9w0BAQUFAAOCAQEAmYFThxxol4aR7OBKuEQLq4Gs
+J0/WwbgcQ3izDJr86iw8bmEbTUsp9Z8FHSbBuOmDAGJFtqkIk7mpM0sYmsL4h4hO
+291xNBrBVNpGP+DTKqttVCL1OmLNIG+6KYnX3ZHu01yiPqFbQfXf5WRDLenVOavS
+ot+3i9DAgBkcRcAtjOj4LaR0VknFBbVPFd5uRHg5h6h+u/N5GJG79G+dwfCMNYxd
+AfvDbbnvRG15RjF+Cv6pgsH/76tuIMRQyV+dTZsXjAzlAcmgQWpzU/qlULRuJQ/7
+TBj0/VLZjmmx6BEP3ojY+x1J96relc8geMJgEtslQIxq/H5COEBkEveegeGTLg==
+-----END CERTIFICATE-----
 -----BEGIN CERTIFICATE-----
 MIIDIDCCAomgAwIBAgIENd70zzANBgkqhkiG9w0BAQUFADBOMQswCQYDVQQGEwJV
 UzEQMA4GA1UEChMHRXF1aWZheDEtMCsGA1UECxMkRXF1aWZheCBTZWN1cmUgQ2Vy
@@ -203,16 +234,6 @@ A4GBAFjOKer89961zgK5F7WF0bnj4JXMJTENAKaSbn+2kmOeUJXRmm/kEd5jhW6Y
 1voqZiegDfqnc1zqcPGUIWVEX/r87yloqaKHee9570+sB3c4
 -----END CERTIFICATE-----
 """
-
-
-class TestTMSClient(object):
-    def setup(self):
-        self.client = TMSClient(TESTSERVER_URL)
-    def test_get_tile(self):
-        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/9/5/13.png'},
-                                                {'body': b'tile', 'headers': {'content-type': 'image/png'}})]):
-            resp = self.client.get_tile((5, 13, 9)).source.read()
-            eq_(resp, b'tile')
 
 class TestTileClient(object):
     def test_tc_path(self):

@@ -16,7 +16,7 @@
 """
 File system related utility functions.
 """
-from __future__ import with_statement, absolute_import
+from __future__ import absolute_import
 import time
 import os
 import sys
@@ -124,7 +124,7 @@ def write_atomic(filename, data):
         # where file locking does not work (network fs)
         path_tmp = filename + '.tmp-' + str(random.randint(0, 99999999))
         try:
-            fd = os.open(path_tmp, os.O_EXCL | os.O_CREAT | os.O_WRONLY)
+            fd = os.open(path_tmp, os.O_EXCL | os.O_CREAT | os.O_WRONLY, 0o666)
             with os.fdopen(fd, 'wb') as f:
                 f.write(data)
             os.rename(path_tmp, filename)
@@ -137,3 +137,19 @@ def write_atomic(filename, data):
     else:
         with open(filename, 'wb') as f:
             f.write(data)
+
+
+def find_exec(executable):
+    """
+    Search executable in PATH environment. Return path if found, None if not.
+    """
+    path = os.environ.get('PATH')
+    if not path:
+        return
+    for p in path.split(os.path.pathsep):
+        p = os.path.join(p, executable)
+        if os.path.exists(p):
+            return p
+        p += '.exe'
+        if os.path.exists(p):
+            return p

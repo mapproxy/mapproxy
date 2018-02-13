@@ -24,6 +24,13 @@ import time
 import threading
 import warnings
 
+try:
+    # time.strptime is thread-safe, but not the first call.
+    # Import _strptime as a workaround. See: http://bugs.python.org/issue7980
+    import _strptime
+except ImportError:
+    pass
+
 from mapproxy.compat import iteritems
 from mapproxy.request import Request
 from mapproxy.response import Response
@@ -92,9 +99,6 @@ def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True, 
     :param services_conf: the file name of the mapproxy.yaml configuration
     :param reloader: reload mapproxy.yaml when it changed
     """
-
-    if sys.version_info[0] == 2 and sys.version_info[1] == 5:
-        warnings.warn('Support for Python 2.5 is deprecated since 1.7.0 and will be dropped with 1.8.0', FutureWarning)
 
     if reloader:
         make_app = lambda: make_wsgi_app(services_conf=services_conf, debug=debug,

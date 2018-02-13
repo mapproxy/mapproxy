@@ -30,13 +30,11 @@ class ImageTransformer(object):
            The quadrilateral will then be transformed with the source coordinates
            into the destination quad (affine).
 
-           This method will perform good transformation results if the number of
-           quads is high enough (even transformations with strong distortions).
-           Tests on images up to 1500x1500 have shown that meshes beyond 8x8
-           will not improve the results.
+           The number of quads is calculated dynamically to keep the deviation in
+           the image transformation below one pixel.
 
            .. _PIL Image.transform:
-              http://www.pythonware.com/library/pil/handbook/image.htm#Image.transform
+              http://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.transform
 
            ::
 
@@ -49,20 +47,17 @@ class ImageTransformer(object):
             ---------------.
             large src image                   large dst image
     """
-    def __init__(self, src_srs, dst_srs, mesh_div=8):
+    def __init__(self, src_srs, dst_srs, max_px_err=1):
         """
         :param src_srs: the srs of the source image
         :param dst_srs: the srs of the target image
         :param resampling: the resampling method used for transformation
         :type resampling: nearest|bilinear|bicubic
-        :param mesh_div: the number of quads in each direction to use
-                         for transformation (totals to ``mesh_div**2`` quads)
-
         """
         self.src_srs = src_srs
         self.dst_srs = dst_srs
-        self.mesh_div = mesh_div
         self.dst_bbox = self.dst_size = None
+        self.max_px_err = max_px_err
 
     def transform(self, src_img, src_bbox, dst_size, dst_bbox, image_opts):
         """
@@ -129,42 +124,38 @@ class ImageTransformer(object):
         """
         Do a 'real' transformation with a transformed mesh (see above).
         """
-        src_bbox = self.src_srs.align_bbox(src_bbox)
-        dst_bbox = self.dst_srs.align_bbox(dst_bbox)
-        src_size = src_img.size
-        src_quad = (0, 0, src_size[0], src_size[1])
-        dst_quad = (0, 0, dst_size[0], dst_size[1])
-        to_src_px = make_lin_transf(src_bbox, src_quad)
-        to_dst_w = make_lin_transf(dst_quad, dst_bbox)
-        meshes = []
 
         # more recent versions of Pillow use center coordinates for
         # transformations, we manually need to add half a pixel otherwise
         if transform_uses_center():
-            px_offset = 0.0
+            use_center_px = False
         else:
-            px_offset = 0.5
+            use_center_px = True
 
-        def dst_quad_to_src(quad):
-            src_quad = []
-            for dst_px in [(quad[0], quad[1]), (quad[0], quad[3]),
-                           (quad[2], quad[3]), (quad[2], quad[1])]:
-                dst_w = to_dst_w((dst_px[0]+px_offset, dst_px[1]+px_offset))
-                src_w = self.dst_srs.transform_to(self.src_srs, dst_w)
-                src_px = to_src_px(src_w)
-                src_quad.extend(src_px)
-            return quad, src_quad
-
-        mesh_div = self.mesh_div
-        while mesh_div > 1 and (dst_size[0] / mesh_div < 10 or dst_size[1] / mesh_div < 10):
-            mesh_div -= 1
-        for quad in griddify(dst_quad, mesh_div):
-            meshes.append(dst_quad_to_src(quad))
+        meshes = transform_meshes(
+            src_size=src_img.size,
+            src_bbox=src_bbox,
+            src_srs=self.src_srs,
+            dst_size=dst_size,
+            dst_bbox=dst_bbox,
+            dst_srs=self.dst_srs,
+            max_px_err=self.max_px_err,
+            use_center_px=use_center_px,
+        )
 
         img = img_for_resampling(src_img.as_image(), image_opts.resampling)
         result = img.transform(dst_size, Image.MESH, meshes,
                                               image_filter[image_opts.resampling])
+
+        if False:
+            # draw mesh for debuging
+            from PIL import ImageDraw
+            draw = ImageDraw.Draw(result)
+            for g, _ in meshes:
+                draw.rectangle(g, fill=None, outline=(255, 0, 0))
+
         return ImageSource(result, size=dst_size, image_opts=image_opts)
+
 
     def _no_transformation_needed(self, src_size, src_bbox, dst_size, dst_bbox):
         """
@@ -183,6 +174,128 @@ class ImageTransformer(object):
                 self.src_srs == self.dst_srs and
                 bbox_equals(src_bbox, dst_bbox, xres/10, yres/10))
 
+
+def transform_meshes(
+        src_size, src_bbox, src_srs,
+        dst_size, dst_bbox, dst_srs,
+        max_px_err=1,
+        use_center_px=False,
+    ):
+    """
+    transform_meshes creates a list of QUAD transformation parameters for PIL's
+    MESH image transformation.
+
+    Each QUAD is a rectangle in the destination image, like ``(0, 0, 100, 100)`` and
+    a list of four pixel coordinates in the source image that match the destination rectangle.
+    The four points form a quadliteral (i.e. not a rectangle).
+    PIL's image transform uses affine transformation to fill each rectangle in the destination
+    image with data from the source quadliteral.
+
+    The number of QUADs is calculated dynamically to keep the deviation in the image
+    transformation below one pixel. Image transformations for large map scales can be transformed with
+    1-4 QUADs most of the time. For low scales, transform_meshes can generate a few hundred QUADs.
+
+    It generates a maximum of one QUAD per 50 pixel.
+    """
+    src_bbox = src_srs.align_bbox(src_bbox)
+    dst_bbox = dst_srs.align_bbox(dst_bbox)
+    src_rect = (0, 0, src_size[0], src_size[1])
+    dst_rect = (0, 0, dst_size[0], dst_size[1])
+    to_src_px = make_lin_transf(src_bbox, src_rect)
+    to_src_w = make_lin_transf(src_rect, src_bbox)
+    to_dst_w = make_lin_transf(dst_rect, dst_bbox)
+    meshes = []
+
+    if use_center_px:
+        px_offset = 0.5
+    else:
+        px_offset = 0.0
+
+    def dst_quad_to_src(quad):
+        src_quad = []
+        for dst_px in [(quad[0], quad[1]), (quad[0], quad[3]),
+                        (quad[2], quad[3]), (quad[2], quad[1])]:
+            dst_w = to_dst_w(
+                (dst_px[0] + px_offset, dst_px[1] + px_offset))
+            src_w = dst_srs.transform_to(src_srs, dst_w)
+            src_px = to_src_px(src_w)
+            src_quad.extend(src_px)
+
+        return quad, src_quad
+
+    res = (dst_bbox[2] - dst_bbox[0]) / dst_size[0]
+    max_err = max_px_err * res
+
+    def is_good(quad, src_quad):
+        w = quad[2] - quad[0]
+        h = quad[3] - quad[1]
+
+        if w < 50 or h < 50:
+            return True
+
+        xc = quad[0] + w / 2.0 - 0.5
+        yc = quad[1] + h / 2.0 - 0.5
+
+        # coordinate for the center of the quad
+        dst_w = to_dst_w((xc, yc))
+
+        # actual coordinate for the center of the quad
+        src_px = center_quad_transform(quad, src_quad)
+        real_dst_w = src_srs.transform_to(dst_srs, to_src_w(src_px))
+
+        err = max(abs(dst_w[0] - real_dst_w[0]), abs(dst_w[1] - real_dst_w[1]))
+        return err < max_err
+
+
+    # recursively add meshes. divide each quad into four sub quad till
+    # accuracy is good enough.
+    def add_meshes(quads):
+        for quad in quads:
+            quad, src_quad = dst_quad_to_src(quad)
+            if is_good(quad, src_quad):
+                meshes.append((quad, src_quad))
+            else:
+                add_meshes(divide_quad(quad))
+
+    add_meshes([(0, 0, dst_size[0], dst_size[1])])
+    return meshes
+
+
+def center_quad_transform(quad, src_quad):
+    """
+    center_quad_transfrom transforms the center pixel coordinates
+    from ``quad`` to ``src_quad`` by using affine transformation
+    as used by PIL.Image.transform.
+    """
+    w = quad[2] - quad[0]
+    h = quad[3] - quad[1]
+
+    nw = src_quad[0:2]
+    sw = src_quad[2:4]
+    se = src_quad[4:6]
+    ne = src_quad[6:8]
+    x0, y0 = nw
+    As = 1.0 / w
+    At = 1.0 / h
+
+    a0 = x0
+    a1 = (ne[0] - x0) * As
+    a2 = (sw[0] - x0) * At
+    a3 = (se[0] - sw[0] - ne[0] + x0) * As * At
+    a4 = y0
+    a5 = (ne[1] - y0) * As
+    a6 = (sw[1] - y0) * At
+    a7 = (se[1] - sw[1] - ne[1] + y0) * As * At
+
+    x = w / 2.0 - 0.5
+    y = h / 2.0 - 0.5
+
+    return (
+        a0 + a1*x + a2*y + a3*x*y,
+        a4 + a5*x + a6*y + a7*x*y
+    )
+
+
 def img_for_resampling(img, resampling):
     """
     Convert P images to RGB(A) for non-NEAREST resamplings.
@@ -190,25 +303,48 @@ def img_for_resampling(img, resampling):
     resampling = image_filter[resampling]
     if img.mode == 'P' and resampling != Image.NEAREST:
         img.load() # load to get actual palette mode
-        img = img.convert(img.palette.mode)
+        if img.palette is not None:
+            # palette can still be None for cropped images
+            img = img.convert(img.palette.mode)
+        else:
+            img = img.convert('RGBA')
     return img
 
-def griddify(quad, steps):
-    """
-    Divides a box (`quad`) into multiple boxes (``steps x steps``).
 
-    >>> list(griddify((0, 0, 500, 500), 2))
+def divide_quad(quad):
+    """
+    divide_quad in up to four sub quads. Only divide horizontal if quad is twice as wide then high,
+    and vertical vice versa.
+    PIL.Image.transform expects that the lower-right corner
+    of a quad overlaps by one pixel.
+
+    >>> divide_quad((0, 0, 500, 500))
     [(0, 0, 250, 250), (250, 0, 500, 250), (0, 250, 250, 500), (250, 250, 500, 500)]
-    """
-    w = quad[2]-quad[0]
-    h = quad[3]-quad[1]
-    x_step = w / float(steps)
-    y_step = h / float(steps)
+    >>> divide_quad((0, 0, 2000, 500))
+    [(0, 0, 1000, 500), (1000, 0, 2000, 500)]
+    >>> divide_quad((100, 200, 200, 500))
+    [(100, 200, 200, 350), (100, 350, 200, 500)]
 
-    y = quad[1]
-    for _ in range(steps):
-        x = quad[0]
-        for _ in range(steps):
-            yield (int(x), int(y), int(x+x_step), int(y+y_step))
-            x += x_step
-        y += y_step
+    """
+    w = quad[2] - quad[0]
+    h = quad[3] - quad[1]
+    xc = int(quad[0] + w/2)
+    yc = int(quad[1] + h/2)
+
+    if w > 2*h:
+        return [
+            (quad[0], quad[1], xc, quad[3]),
+            (xc, quad[1], quad[2], quad[3]),
+        ]
+    if h > 2*w:
+        return [
+            (quad[0], quad[1], quad[2], yc),
+            (quad[0], yc, quad[2], quad[3]),
+        ]
+
+    return [
+        (quad[0], quad[1], xc, yc),
+        (xc, quad[1], quad[2], yc),
+        (quad[0], yc, xc, quad[3]),
+        (xc, yc, quad[2], quad[3]),
+    ]

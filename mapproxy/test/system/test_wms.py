@@ -160,14 +160,16 @@ class TestWMS111(WMSTest):
         bboxs = xml.xpath('//Layer/Layer[1]/BoundingBox')
         bboxs = dict((e.attrib['SRS'], e) for e in bboxs)
         assert_almost_equal_bbox(
-            bbox_srs_from_boundingbox(bboxs['EPSG:31467']),
-            [2750000.0, 5000000.0, 4250000.0, 6500000.0])
-        assert_almost_equal_bbox(
             bbox_srs_from_boundingbox(bboxs['EPSG:3857']),
             [-20037508.3428, -15538711.0963, 18924313.4349, 15538711.0963])
         assert_almost_equal_bbox(
             bbox_srs_from_boundingbox(bboxs['EPSG:4326']),
-            [-180.0, -80.0, 170.0, 80.0])
+            [-180.0, -70.0, 170.0, 80.0])
+
+        bbox_srs = xml.xpath('//Layer/Layer/BoundingBox')
+        bbox_srs = set(e.attrib['SRS'] for e in bbox_srs)
+        # we have a coverage in EPSG:4258, but it is not in wms.srs (#288)
+        assert 'EPSG:4258' not in bbox_srs
 
         assert validate_with_dtd(xml, dtd_name='wms/1.1.1/WMS_MS_Capabilities.dtd')
 
@@ -647,7 +649,7 @@ class TestWMS110(WMSTest):
 
         llbox = xml.xpath('//Capability/Layer/LatLonBoundingBox')[0]
         # some clients don't like 90deg north/south
-        assert_almost_equal(float(llbox.attrib['miny']), -89.999999, 6)
+        assert_almost_equal(float(llbox.attrib['miny']), -70.0, 6)
         assert_almost_equal(float(llbox.attrib['maxy']), 89.999999, 6)
         assert_almost_equal(float(llbox.attrib['minx']), -180.0, 6)
         assert_almost_equal(float(llbox.attrib['maxx']), 180.0, 6)

@@ -16,7 +16,7 @@
 """
 Configuration loading and system initializing.
 """
-from __future__ import with_statement, division
+from __future__ import division
 
 import os
 import sys
@@ -34,6 +34,7 @@ from mapproxy.config.spec import validate_options
 from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
+from mapproxy.util.fs import find_exec
 from mapproxy.compat.modules import urlparse
 from mapproxy.compat import string_type, iteritems
 
@@ -606,6 +607,13 @@ class ArcGISSourceConfiguration(SourceConfiguration):
         from mapproxy.srs import SRS
         from mapproxy.request.arcgis import create_request
 
+        if not self.conf.get('opts', {}).get('map', True):
+            return None
+
+        if not self.context.seed and self.conf.get('seed_only'):
+            from mapproxy.source import DummySource
+            return DummySource(coverage=self.coverage())
+
         # Get the supported SRS codes and formats from the configuration.
         supported_srs = [SRS(code) for code in self.conf.get("supported_srs", [])]
         supported_formats = [file_ext(f) for f in self.conf.get("supported_formats", [])]
@@ -835,13 +843,16 @@ class MapServerSourceConfiguration(WMSSourceConfiguration):
         WMSSourceConfiguration.__init__(self, conf, context)
         self.script = self.context.globals.get_path('mapserver.binary',
             self.conf)
+        if not self.script:
+            self.script = find_exec('mapserv')
+
         if not self.script or not os.path.isfile(self.script):
             raise ConfigurationError('could not find mapserver binary (%r)' %
                 (self.script, ))
 
         # set url to dummy script name, required as identifier
         # for concurrent_request
-        self.conf['req']['url'] = 'http://localhost' + self.script
+        self.conf['req']['url'] = 'mapserver://' + self.script
 
         mapfile = self.context.globals.abspath(self.conf['req']['map'])
         self.conf['req']['map'] = mapfile
@@ -1181,10 +1192,12 @@ class CacheConfiguration(ConfigurationBase):
             bucket = self.conf['name'] + '_' + suffix
 
         use_secondary_index = self.conf['cache'].get('secondary_index', False)
+        timeout = self.context.globals.get_value('http.client_timeout', self.conf)
 
         return RiakCache(nodes=nodes, protocol=protocol, bucket=bucket,
             tile_grid=grid_conf.tile_grid(),
             use_secondary_index=use_secondary_index,
+            timeout=timeout
         )
 
     def _redis_cache(self, grid_conf, file_ext):
@@ -1208,7 +1221,7 @@ class CacheConfiguration(ConfigurationBase):
         )
 
     def _compact_cache(self, grid_conf, file_ext):
-        from mapproxy.cache.compact import CompactCacheV1
+        from mapproxy.cache.compact import CompactCacheV1, CompactCacheV2
 
         cache_dir = self.cache_dir()
         if self.conf.get('cache', {}).get('directory'):
@@ -1221,11 +1234,13 @@ class CacheConfiguration(ConfigurationBase):
         else:
             cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
 
-        if self.conf['cache']['version'] != 1:
-            raise ConfigurationError("compact cache only supports version 1")
-        return CompactCacheV1(
-            cache_dir=cache_dir,
-        )
+        version = self.conf['cache']['version']
+        if version == 1:
+            return CompactCacheV1(cache_dir=cache_dir)
+        elif version == 2:
+            return CompactCacheV2(cache_dir=cache_dir)
+
+        raise ConfigurationError("compact cache only supports version 1 or 2")
 
     def _tile_cache(self, grid_conf, file_ext):
         if self.conf.get('disable_storage', False):
@@ -1463,7 +1478,7 @@ class CacheConfiguration(ConfigurationBase):
             if use_renderd:
                 from mapproxy.cache.renderd import RenderdTileCreator, has_renderd_support
                 if not has_renderd_support():
-                    raise ConfigurationError("renderd requires Python >=2.6 and requests")
+                    raise ConfigurationError("renderd requires requests library")
                 if self.context.seed:
                     priority = 10
                 else:
@@ -1539,7 +1554,7 @@ class CacheConfiguration(ConfigurationBase):
         if len(caches) == 1:
             layer = caches[0][0]
         else:
-            layer = SRSConditional(caches, caches[0][0].extent, caches[0][0].transparent, opacity=image_opts.opacity)
+            layer = SRSConditional(caches, caches[0][0].extent, opacity=image_opts.opacity)
 
         if 'use_direct_from_level' in self.conf:
             self.conf['use_direct_from_res'] = main_grid.resolution(self.conf['use_direct_from_level'])
@@ -1706,7 +1721,7 @@ class LayerConfiguration(ConfigurationBase):
                 if grid_name_as_path:
                     md['name_path'] = (md['name'], md['grid_name'])
                 else:
-                    md['name_path'] = (self.conf['name'], grid.srs.srs_code.replace(':', '').upper())
+                    md['name_path'] = (md['name'], grid.srs.srs_code.replace(':', '').upper())
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['cache_name'] = cache_name
@@ -1882,10 +1897,6 @@ class ServiceConfiguration(ConfigurationBase):
         if versions:
             versions = sorted([Version(v) for v in versions])
 
-        versions = conf.get('versions')
-        if versions:
-            versions = sorted([Version(v) for v in versions])
-
         max_output_pixels = self.context.globals.get_value('max_output_pixels', conf,
             global_key='wms.max_output_pixels')
         if isinstance(max_output_pixels, list):
@@ -1917,9 +1928,11 @@ class ServiceConfiguration(ConfigurationBase):
             lyr = layer_conf.wms_layer()
             if lyr:
                 layers[layer_name] = lyr
-        tile_layers = self.tile_layers(conf)
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
+        tms_conf = self.context.services.conf.get('tms', {}) or {}
+        use_grid_names = tms_conf.get('use_grid_names', False)
+        tile_layers = self.tile_layers(tms_conf, use_grid_names=use_grid_names)
 
         # WMTS restful template
         wmts_conf = self.context.services.conf.get('wmts', {}) or {}

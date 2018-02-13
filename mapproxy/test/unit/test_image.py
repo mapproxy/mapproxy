@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 
 import os
 from io import BytesIO
@@ -33,10 +32,10 @@ from mapproxy.image import (
 from mapproxy.image.merge import merge_images, BandMerger
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TileMerger, TileSplitter
-from mapproxy.image.transform import ImageTransformer
+from mapproxy.image.transform import ImageTransformer, transform_meshes
 from mapproxy.test.image import is_png, is_jpeg, is_tiff, create_tmp_image_file, check_format, create_debug_img, create_image
 from mapproxy.srs import SRS
-from nose.tools import eq_
+from nose.tools import eq_, assert_almost_equal
 from mapproxy.test.image import assert_img_colors_eq
 from nose.plugins.skip import SkipTest
 
@@ -128,6 +127,17 @@ class TestImageSource(object):
         img = Image.open(ir.as_buffer())
         eq_(img.mode, 'RGBA')
         assert img.getpixel((0, 0)) == (0, 0, 0, 0)
+
+    def test_save_with_unsupported_transparency(self):
+        # check if encoding of non-RGB image with tuple as transparency
+        # works. workaround for Pillow #2633
+        img = Image.new('P', (100, 100))
+        img.info['transparency'] = (0, 0, 0)
+        image_opts = PNG_FORMAT.copy()
+
+        ir = ImageSource(img, image_opts=image_opts)
+        img = Image.open(ir.as_buffer())
+        eq_(img.mode, 'P')
 
 class TestSubImageSource(object):
     def test_full(self):
@@ -433,23 +443,84 @@ class TestTransform(object):
         self.dst_srs = SRS(4326)
         self.dst_bbox = (0.2, 45.1, 8.3, 53.2)
         self.src_bbox = self.dst_srs.transform_bbox_to(self.src_srs, self.dst_bbox)
-    def test_transform(self, mesh_div=4):
-        transformer = ImageTransformer(self.src_srs, self.dst_srs, mesh_div=mesh_div)
+    def test_transform(self):
+        transformer = ImageTransformer(self.src_srs, self.dst_srs)
         result = transformer.transform(self.src_img, self.src_bbox, self.dst_size, self.dst_bbox,
             image_opts=ImageOptions(resampling='nearest'))
         assert isinstance(result, ImageSource)
         assert result.as_image() != self.src_img.as_image()
         assert result.size == (100, 150)
 
-    def _test_compare_mesh_div(self):
+    def _test_compare_max_px_err(self):
         """
         Create transformations with different div values.
         """
-        for div in [1, 2, 4, 6, 8, 12, 16]:
-            transformer = ImageTransformer(self.src_srs, self.dst_srs, mesh_div=div)
+        for err in [0.2, 0.5, 1, 2, 4, 6, 8, 12, 16]:
+            transformer = ImageTransformer(self.src_srs, self.dst_srs, max_px_err=err)
             result = transformer.transform(self.src_img, self.src_bbox,
-                                           self.dst_size, self.dst_bbox)
-            result.as_image().save('/tmp/transform-%d.png' % (div,))
+                                           self.dst_size, self.dst_bbox,
+                                           image_opts=ImageOptions(resampling='nearest'))
+            result.as_image().save('/tmp/transform-%03d.png' % (err*10,))
+
+
+class TestMesh(object):
+
+    def test_mesh_utm(self):
+        meshes = transform_meshes(
+            src_size=(1335, 1531),
+            src_bbox=(3.65, 39.84, 17.00, 55.15),
+            src_srs=SRS(4326),
+            dst_size=(853, 1683),
+            dst_bbox=(158512, 4428236, 1012321, 6111268),
+            dst_srs=SRS(25832),
+        )
+        eq_(len(meshes), 40)
+
+    def test_mesh_none(self):
+        meshes = transform_meshes(
+            src_size=(1000, 1500),
+            src_bbox=(0, 0, 10, 15),
+            src_srs=SRS(4326),
+            dst_size=(1000, 1500),
+            dst_bbox=(0, 0, 10, 15),
+            dst_srs=SRS(4326),
+        )
+
+        eq_(meshes, [((0, 0, 1000, 1500), [0.0, 0.0, 0.0, 1500.0, 1000.0, 1500.0, 1000.0, 0.0])])
+        eq_(len(meshes), 1)
+
+
+    def test_mesh(self):
+        # low map scale -> more meshes
+        # print(SRS(4326).transform_bbox_to(SRS(3857), (5, 50, 10, 55)))
+        meshes = transform_meshes(
+            src_size=(1000, 2000),
+            src_bbox=(556597, 6446275, 1113194, 7361866),
+            src_srs=SRS(3857),
+            dst_size=(1000, 1000),
+            dst_bbox=(5, 50, 10, 55),
+            dst_srs=SRS(4326),
+        )
+        eq_(len(meshes), 16)
+
+        # large map scale -> one meshes
+        # print(SRS(4326).transform_bbox_to(SRS(3857), (5, 50, 5.1, 50.1)))
+        meshes = transform_meshes(
+            src_size=(1000, 2000),
+            src_bbox=(556597.4539663672, 6446275.841017158,
+                      567729.4030456939, 6463612.124257667),
+            src_srs=SRS(3857),
+            dst_size=(1000, 1000),
+            dst_bbox=(5, 50, 5.1, 50.1),
+            dst_srs=SRS(4326),
+        )
+        eq_(len(meshes), 1)
+
+        # quad stretches whole image plus 1 pixel
+        eq_(meshes[0][0], (0, 0, 1000, 1000))
+        for e, a in zip(meshes[0][1], [0.0, 0.0, 0.0, 2000.0, 1000.0, 2000.0, 1000.0, 0.0]):
+            assert_almost_equal(e, a)
+
 
 
 class TestSingleColorImage(object):

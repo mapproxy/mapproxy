@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement, division
+from __future__ import division
 
 import os
 import time
@@ -154,7 +154,7 @@ class TestSeeder(object):
 
     def test_seed_full_bbox_continue(self):
         task = self.make_bbox_task([-180, -90, 180, 90], SRS(4326), [0, 1, 2])
-        seed_progress = SeedProgress([(0, 1), (0, 2)])
+        seed_progress = SeedProgress([(0, 1), (1, 2)])
         seeder = TileWalker(task, self.seed_pool, handle_uncached=True, seed_progress=seed_progress)
         seeder.walk()
 
@@ -263,3 +263,53 @@ class TestRemovebreforeTimetamp(object):
             before_timestamp_from_options({'minutes': 15}) + 60 * 15,
             time.time(), -1
         )
+
+class TestSeedProgress(object):
+    def test_progress_identifier(self):
+        old = SeedProgress()
+        with old.step_down(0, 2):
+            with old.step_down(0, 4):
+                eq_(old.current_progress_identifier(), [(0, 2), (0, 4)])
+            # previous leafs are still present
+            eq_(old.current_progress_identifier(), [(0, 2), (0, 4)])
+            with old.step_down(1, 4):
+                eq_(old.current_progress_identifier(), [(0, 2), (1, 4)])
+            eq_(old.current_progress_identifier(), [(0, 2), (1, 4)])
+
+        eq_(old.current_progress_identifier(), []) # empty list after seed
+
+        with old.step_down(1, 2):
+            eq_(old.current_progress_identifier(), [(1, 2)])
+            with old.step_down(0, 4):
+                with old.step_down(1, 4):
+                    eq_(old.current_progress_identifier(), [(1, 2), (0, 4), (1, 4)])
+
+    def test_already_processed(self):
+        new = SeedProgress([(0, 2)])
+        with new.step_down(0, 2):
+            assert not new.already_processed()
+            with new.step_down(0, 2):
+                assert not new.already_processed()
+
+        new = SeedProgress([(1, 2)])
+        with new.step_down(0, 2):
+            assert new.already_processed()
+            with new.step_down(0, 2):
+                assert new.already_processed()
+
+
+        new = SeedProgress([(0, 2), (1, 4), (2, 4)])
+        with new.step_down(0, 2):
+            assert not new.already_processed()
+            with new.step_down(0, 4):
+                assert new.already_processed()
+            with new.step_down(1, 4):
+                assert not new.already_processed()
+                with new.step_down(1, 4):
+                    assert new.already_processed()
+                with new.step_down(2, 4):
+                    assert not new.already_processed()
+                with new.step_down(3, 4):
+                    assert not new.already_processed()
+            with new.step_down(2, 4):
+                assert not new.already_processed()

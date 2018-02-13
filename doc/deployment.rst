@@ -145,7 +145,7 @@ You need a server script that creates the MapProxy application (see :ref:`above 
 To start MapProxy with the Gunicorn web server with four processes, the eventlet worker and our server script (without ``.py``)::
 
   cd /path/of/config.py/
-  gunicorn -k eventlet -w 4 -b :8080 config:application
+  gunicorn -k eventlet -w 4 -b :8080 config:application --no-sendfile
 
 
 An example upstart script (``/etc/init/mapproxy.conf``) might look like::
@@ -160,7 +160,9 @@ An example upstart script (``/etc/init/mapproxy.conf``) might look like::
 
     chdir /etc/opt/mapproxy
 
-    exec /opt/mapproxy/bin/gunicorn -k eventlet -w 8 -b :8080 application \
+    exec /opt/mapproxy/bin/gunicorn -k eventlet -w 8 -b :8080 \
+        --no-sendfile \
+        application \
         >>/var/log/mapproxy/gunicorn.log 2>&1
 
 

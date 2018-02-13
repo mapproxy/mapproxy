@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
 import os
 import errno
 import hashlib
@@ -164,11 +163,8 @@ class FileCache(TileCacheBase):
         if os.path.exists(tile_loc) or os.path.islink(tile_loc):
             os.unlink(tile_loc)
 
-        # Use relative path for the symlink if os.path.relpath is available
-        # (only supported with >= Python 2.6)
-        if hasattr(os.path, 'relpath'):
-            real_tile_loc = os.path.relpath(real_tile_loc,
-                                            os.path.dirname(tile_loc))
+        # Use relative path for the symlink
+        real_tile_loc = os.path.relpath(real_tile_loc, os.path.dirname(tile_loc))
 
         try:
             os.symlink(real_tile_loc, tile_loc)

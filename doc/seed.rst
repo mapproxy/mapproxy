@@ -1,13 +1,44 @@
 Seeding
 =======
 
+Introduction
+------------
+
 The MapProxy creates all tiles on demand. To improve the performance for commonly
-requested views it is possible to pre-generate these tiles. The ``mapproxy-seed`` script does this task.
+requested areas it is possible to pre-generate these tiles. The ``mapproxy-seed`` script does this task.
 
-The tool can seed one or more polygon or BBOX areas for each cached layer.
+The tool can seed one or more polygon or BBOX areas for each cache. It can seed missing tiles and refresh old tiles. A `cleanup` can be used to remove old tiles.
 
-MapProxy does not seed the tile pyramid level by level, but traverses the tile pyramid depth-first, from bottom to top. This is optimized to work `with` the caches of your operating system and geospatial database, and not against.
 
+.. _seed_method:
+
+Method
+~~~~~~
+
+MapProxy does not seed the tile pyramid level by level, but traverses the tile pyramid depth-first. It starts in the first zoom level and decides if the tiles in the next zoom level need to be seeded by checking each subtile for intersection with the coverage. It recursively repeats this step for all tiles below till it reaches the last zoom level to seed. Only then, before getting back to the parent tile, the tile is actually seeded.
+
+The following shows in which order tiles are seeded for a simple cache with three levels::
+
+    Level 0 with 1 tile:
+
+              21
+
+    Level 1 with 4 tiles:
+
+             5  10
+            15  20
+
+    Level 2 with 16 tiles:
+
+          1  2  6  7
+          3  4  8  9
+         11 12 16 17
+         13 14 18 19
+
+
+This method is optimized to work `with` the caches of your operating system and geospatial database, as the same area is requested for multiple scales in direct succession.
+
+It also makes checks against complex coverages efficient as subtiles can be rejected early on.
 
 mapproxy-seed
 -------------
@@ -42,6 +73,10 @@ Options
 
   Print a summary of all seeding and cleanup tasks and exit.
 
+.. option:: --quiet
+
+  Reduce the output of the progress logger.
+
 .. option:: -i, --interactive
 
   Print a summary of each seeding and cleanup task and ask if ``mapproxy-seed`` should seed/cleanup that task. It will query for each task before it starts.
@@ -67,6 +102,21 @@ Options
 
   Filename where MapProxy stores the seeding progress for the ``--continue`` option. Defaults to ``.mapproxy_seed_progress`` in the current working directory. MapProxy will remove that file after a successful seed.
 
+.. option:: --duration
+
+  Stop seeding process after this duration. This option accepts duration in the following format: 120s, 15m, 4h, 0.5d
+  Use this option in combination with ``--continue`` to be able to resume the seeding. By default,
+
+.. option:: --reseed-file
+
+  File created by ``mapproxy-seed`` at the start of a new seeding.
+
+.. option:: --reseed-interval
+
+  Only start seeding if ``--reseed-file`` is older then this duration.
+  This option accepts duration in the following format: 120s, 15m, 4h, 0.5d
+  Use this option in combination with ``--continue`` to be able to resume the seeding. By default,
+
 .. option:: --use-cache-lock
 
   Lock each cache to prevent multiple parallel `mapproxy-seed` calls to work on the same cache.
@@ -81,6 +131,11 @@ Options
 
 .. versionadded:: 1.7.0
   ``--log-config`` option
+
+.. versionadded:: 1.10.0
+  ``--duration``, ``--reseed-file`` and ``--reseed-interval`` option
+
+
 
 
 Examples
@@ -102,6 +157,7 @@ Seed task1 and task2 and cleanup task3 with concurrency of 2::
 
     mapproxy-seed -f mapproxy.yaml -s seed.yaml -c 2 --seed task1,task2 \
      --cleanup task3
+
 
 
 Configuration
@@ -164,7 +220,7 @@ A list with the caches that should be seeded for this task. The names should mat
 ``grids``
 ~~~~~~~~~
 A list with the grid names that should be seeded for the ``caches``.
-The names should match the grid names in your mapproxy configuration.
+The names should match the grid names in your MapProxy configuration.
 All caches of this tasks need to support the grids you specify here.
 By default, the grids that are common to all configured caches will be seeded.
 
@@ -252,12 +308,12 @@ Here you can define multiple cleanup tasks. Each task is configured as a diction
 ``caches``
 ~~~~~~~~~~
 
-A list with the caches where you want to cleanup old tiles. The names should match the cache names in your mapproxy configuration.
+A list with the caches where you want to cleanup old tiles. The names should match the cache names in your MapProxy configuration.
 
 ``grids``
 ~~~~~~~~~
 A list with the grid names for the ``caches`` where you want to cleanup.
-The names should match the grid names in your mapproxy configuration.
+The names should match the grid names in your MapProxy configuration.
 All caches of this tasks need to support the grids you specify here.
 By default, the grids that are common to all configured caches will be used.
 
@@ -378,6 +434,46 @@ Example
     austria:
       bbox: [9.36, 46.33, 17.28, 49.09]
       srs: 'EPSG:4326'
+
+
+
+Output
+------
+
+``mapproxy-seed`` prints out the progress of the current seeding task on the console.
+
+Example progress log::
+
+    [16:48:26]  4  41.00% 582388, 4734701, 586740, 4737666 (5812 tiles)
+
+
+The output starts with the current time and ends with the number of tiles it has seeded or removed so far. The third value is the current progress in percent. The progress can make large jumps, if the seeding detects that a tile and all its subtiles are outside of the seeding coverage.
+The second and fourth value show the level and bounding box of where the seeding tool is in this moment. Keep in mind, that it does not seed level by level. This is described in :ref:`seeding method <seed_method>`.
+
+
+
+.. _background_seeding:
+
+Example: Background seeding
+---------------------------
+
+.. versionadded:: 1.10.0
+
+The ``--duration`` option allows you run MapProxy seeding for a limited time. In combination with the ``--continue`` option, you can resume the seeding process at a later time.
+You can use this to call ``mapproxy-seed`` with ``cron`` to seed in the off-hours.
+
+However, this will restart the seeding process from the beginning every time the is seeding completed.
+You can prevent this with the ``--reeseed-interval`` and ``--reseed-file`` option.
+The following example starts seeding for six hours. It will seed for another six hours, every time you call this command again. Once all seed and cleanup tasks were processed the command will exit immediately every time you call it within 14 days after the first call. After 14 days, the modification time of the ``reseed.time`` file will be updated and the re-seeding process starts again.
+
+::
+
+  mapproxy-seed -f mapproxy.yaml -s seed.yaml  \
+    --reseed-interval 14d --duration 6h --reseed-file reseed.time \
+    --continue --progress-file .mapproxy_seed_progress
+
+You can use the ``--reseed-file`` as a ``refresh_before`` and ``remove_before`` ``mtime``-file.
+
 
 
 .. _seed_old_configuration:

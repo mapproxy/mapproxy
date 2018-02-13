@@ -17,6 +17,7 @@ docutils==0.13.1
 enum-compat==0.0.2
 futures==3.0.5
 greenlet==0.4.12
+riak==2.6.1
 httpretty==0.8.10
 Jinja2==2.9.5
 jmespath==0.9.1

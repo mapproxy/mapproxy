@@ -50,8 +50,7 @@ sources:
   osm_wms:
     type: wms
     req:
-      # use of this source is only permitted for testing
-      url: http://osm.omniscale.net/proxy/service?
+      url: https://maps.omniscale.net/v2/demo/style.default/service?
       layers: osm
 
 grids:
