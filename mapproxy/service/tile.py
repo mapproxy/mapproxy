@@ -218,6 +218,7 @@ class TileLayer(object):
         self._empty_tile = None
         self._mixed_format = True if self.md.get('format', False) == 'mixed' else False
         self.empty_response_as_png = True
+        self.fi_sources = tile_manager.fi_sources
 
     @property
     def bbox(self):
@@ -338,8 +339,20 @@ class TileLayer(object):
                                % (info_request.format, self.format), request=info_request,
                                code='InvalidParameterValue')
         try:
-            with self.tile_manager.session():
-                return self.tile_manager.get_info(info_request)
+            infos = []
+            if len(self.fi_sources) == 1:
+                info = self.fi_sources[0].get_info(info_request)
+                if info is not None:
+                    infos.append(info)
+                return infos
+
+            def get_info_from_source(source):
+                return source.get_info(info_request)
+
+            for info in async.imap(get_info_from_source, self.fi_sources):
+                if info is not None:
+                    infos.append(info)
+            return infos
         except SourceError as e:
             raise RequestError(e.args[0], request=info_request, internal=True)
 
