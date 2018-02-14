@@ -62,9 +62,9 @@ class TestWMTS(SystemTest):
              version='1.0.0', tilerow='0', tilecol='0', tilematrix='01', tilematrixset='GLOBAL_MERCATOR',
              layer='wms_cache', format='image/jpeg', style='', request='GetTile'))
         self.common_featureinfo_req = WMTS100FeatureInfoRequest(url='/service?', param=dict(service='WMTS',
-             version='1.0.0', tilerow='0', tilecol='0', tilematrix='01', tilematrixset='GLOBAL_MERCATOR',
+             version='1.0.0', tilerow='2', tilecol='3', tilematrix='04', tilematrixset='GLOBAL_MERCATOR',
              layer='wms_cache', format='image/jpeg', style='', request='GetFeatureInfo',
-             infoformat='application/vnd.ogc.gml', i='1', j='1'))
+             infoformat='application/vnd.ogc.gml', i='19', j='232'))
 
     def test_endpoints(self):
         for endpoint in ('service', 'ows'):
@@ -172,8 +172,8 @@ class TestWMTS(SystemTest):
     def test_get_featureinfo(self):
         expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
                                  '&REQUEST=GetFeatureInfo&HEIGHT=256&SRS=EPSG%3A900913'
-                                 '&VERSION=1.1.1&BBOX=-20037508.342789244,0.0,0.0,20037508.342789244&styles='
-                                 '&WIDTH=256&QUERY_LAYERS=foo,bar&X=1&Y=1'},
+                                 '&VERSION=1.1.1&BBOX=-12523442.7142,12523442.7142,-10018754.1714,15028131.2571&styles='
+                                 '&WIDTH=256&QUERY_LAYERS=foo,bar&X=19&Y=232'},
                         {'body': b'info', 'headers': {'content-type': 'text/plain'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             resp = self.app.get(self.common_featureinfo_req)
