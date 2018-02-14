@@ -203,22 +203,6 @@ class TileManager(object):
             tile = img_filter(tile)
         return tile
 
-    def get_info(self, query):
-        infos = []
-        if len(self.fi_sources) == 1:
-            info = self.fi_sources[0].get_info(query)
-            if info is not None:
-                infos.append(info)
-            return infos
-
-        def get_info_from_source(source):
-            return source.get_info(query)
-
-        for info in async.imap(get_info_from_source, self.fi_sources):
-            if info is not None:
-                infos.append(info)
-        return infos
-
 class TileCreator(object):
     def __init__(self, tile_mgr, dimensions=None, image_merger=None, bulk_meta_tiles=False):
         self.cache = tile_mgr.cache
