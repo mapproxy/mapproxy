@@ -29,7 +29,7 @@ class FileCache(TileCacheBase):
     """
     This class is responsible to store and load the actual tile data.
     """
-    def __init__(self, cache_dir, file_ext, directory_layout='tc',
+    def __init__(self, cache_dir, file_ext, grid_name=None, directory_layout='tc',
                  link_single_color_images=False):
         """
         :param cache_dir: the path where the tile will be stored
@@ -41,7 +41,7 @@ class FileCache(TileCacheBase):
         self.cache_dir = cache_dir
         self.file_ext = file_ext
         self.link_single_color_images = link_single_color_images
-        self._tile_location, self._level_location = path.location_funcs(layout=directory_layout)
+        self._tile_location, self._level_location = path.location_funcs(layout=directory_layout, grid_name=grid_name)
         if self._level_location is None:
             self.level_location = None # disable level based clean-ups
 

@@ -1019,6 +1019,13 @@ class CacheConfiguration(ConfigurationBase):
                     (self.conf['name']),
                 )
             pass
+        elif directory_layout == 'geowebcache':
+            if grid_conf.tile_grid().origin != 'll':
+                raise ConfigurationError(
+                    "Geowebcache layout is compatible only with grids with sw origin in %s" %
+                    (self.conf['name']),
+                )
+            cache_dir = os.path.join(cache_dir, self.conf['name'].replace(':', '_'))
         elif self.conf.get('cache', {}).get('use_grid_names'):
             cache_dir = os.path.join(cache_dir, self.conf['name'], grid_conf.tile_grid().name)
         else:
@@ -1034,6 +1041,7 @@ class CacheConfiguration(ConfigurationBase):
         return FileCache(
             cache_dir,
             file_ext=file_ext,
+            grid_name=grid_conf.tile_grid().name,
             directory_layout=directory_layout,
             link_single_color_images=link_single_color_images,
         )

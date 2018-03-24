@@ -16,9 +16,10 @@
 import os
 from mapproxy.compat import string_type
 from mapproxy.util.fs import ensure_directory
+from functools import partial
 
 
-def location_funcs(layout):
+def location_funcs(layout, grid_name):
     if layout == 'tc':
         return tile_location_tc, level_location
     elif layout == 'mp':
@@ -31,6 +32,10 @@ def location_funcs(layout):
         return tile_location_quadkey, no_level_location
     elif layout == 'arcgis':
         return tile_location_arcgiscache, level_location_arcgiscache
+    elif layout == 'geowebcache':
+        if not grid_name:
+            raise ValueError('grid_name can not be empty for geowebcache layout')
+        return partial(tile_location_gwc, grid_name=grid_name), partial(level_location_gwc, grid_name=grid_name)
     else:
         raise ValueError('unknown directory_layout "%s"' % layout)
 
@@ -38,7 +43,7 @@ def level_location(level, cache_dir):
     """
     Return the path where all tiles for `level` will be stored.
 
-    >>> level_location(2, '/tmp/cache')
+    >>> level_location(2, '/tmp/cache').replace('\\\\', '/')
     '/tmp/cache/02'
     """
     if isinstance(level, string_type):
@@ -224,3 +229,63 @@ def tile_location_arcgiscache(tile, cache_dir, file_ext, create_dir=False):
 
 def level_location_arcgiscache(z, cache_dir):
     return level_location('L%02d' % z, cache_dir=cache_dir)
+
+def tile_location_gwc(tile, cache_dir, file_ext, grid_name, create_dir=False):
+    """
+    Return the location of the `tile`. Caches the result as ``location``
+    property of the `tile`.
+
+    :param tile: the tile object
+    :param grid_name: The grid name that act as a prefix in level directory names
+    :param create_dir: if True, create all necessary directories
+    :return: the full filename of the tile
+
+    >>> from mapproxy.cache.tile import Tile
+    >>> tile_location_gwc(Tile((0, 0, 0)), '/tmp/cache', 'png', 'EPSG:2163').replace('\\\\', '/')
+    '/tmp/cache/EPSG_2163_00/0_0/00_00.png'
+    """
+
+    from math import ceil, log10
+
+    def gwczeropadder(number, order):
+        ''' Ported from org.geowebcache.storage.blobstore.file.FilePathUtils.java
+        https://github.com/GeoWebCache/geowebcache/blob/master/geowebcache/core/src/main/java/org/geowebcache/storage/blobstore/file/FilePathUtils.java '''
+
+        
+        if number <= 9:
+            numorder = 1
+        elif number in (10, 11):
+            numorder = 2
+        elif number > 11:
+            numorder = int(ceil(log10(number) - 0.001))
+        
+        padwidth = order - numorder
+        
+        return padwidth*'0'+str(number)
+
+
+    if tile.location is None:
+        x, y, z = tile.coord
+        
+        shift = int(z / 2)
+        half = 2 * (2**shift)
+        digits = 1
+        if half > 10:
+            digits = int(log10(half)) + 1
+        halfx = int(x / half)
+        halfy = int(y / half)
+    
+        z_folder = level_location_gwc(z, cache_dir, grid_name)
+        cell_folder = gwczeropadder(halfx, digits)+'_'+gwczeropadder(halfy, digits)
+        filename = gwczeropadder(x, 2*digits)+'_'+gwczeropadder(y, 2*digits)+'.'+file_ext
+        tile.location = os.path.join(z_folder, cell_folder, filename)
+
+    if create_dir:
+        ensure_directory(tile.location)
+    return tile.location
+
+def level_location_gwc(level, cache_dir, grid_name):
+    level_prefix = grid_name.replace(':', '_')
+    level_dir = '{0}_{1:02d}'.format(level_prefix, level)
+
+    return level_location(level_dir, cache_dir=cache_dir)
