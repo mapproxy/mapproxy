@@ -257,7 +257,7 @@ class TestFileTileCache(TileCacheTestBase):
 
 
     def check_tile_location(self, layout, tile_coord, path):
-        cache = FileCache('/tmp/foo', 'png', directory_layout=layout)
+        cache = FileCache('/tmp/foo', 'png', 'grid:name', directory_layout=layout)
         eq_(cache.tile_location(Tile(tile_coord)), path)
 
     def test_tile_locations(self):
@@ -280,9 +280,11 @@ class TestFileTileCache(TileCacheTestBase):
         yield self.check_tile_location, 'arcgis', (10, 2, 3), '/tmp/foo/L03/R00000002/C0000000a.png'
         yield self.check_tile_location, 'arcgis', (12345, 67890, 12), '/tmp/foo/L12/R00010932/C00003039.png'
 
+        yield self.check_tile_location, 'geowebcache', (1, 2, 3), '/tmp/foo/grid_name_03/0_0/01_02.png'
+        yield self.check_tile_location, 'geowebcache', (286, 372, 9), '/tmp/foo/grid_name_09/08_11/0286_0372.png'
 
     def check_level_location(self, layout, level, path):
-        cache = FileCache('/tmp/foo', 'png', directory_layout=layout)
+        cache = FileCache('/tmp/foo', 'png', 'grid:name', directory_layout=layout)
         eq_(cache.level_location(level), path)
 
     def test_level_locations(self):
@@ -299,6 +301,9 @@ class TestFileTileCache(TileCacheTestBase):
         yield self.check_level_location, 'arcgis', 3, '/tmp/foo/L03'
         yield self.check_level_location, 'arcgis', 3, '/tmp/foo/L03'
         yield self.check_level_location, 'arcgis', 12, '/tmp/foo/L12'
+
+        yield self.check_level_location, 'geowebcache', 1, '/tmp/foo/grid_name_01'
+        yield self.check_level_location, 'geowebcache', 2, '/tmp/foo/grid_name_02'
 
     def test_level_location_quadkey(self):
         try:
