@@ -434,7 +434,7 @@ You can set the ``sources`` to an empty list, if you use an existing geopackage 
 
 .. versionadded:: 1.10.0
 
-Store tiles in a `Amazon Simple Storage Service (S3) <https://aws.amazon.com/s3/>`_ or any other S3 compatible object server.
+Store tiles in a `Amazon Simple Storage Service (S3) <https://aws.amazon.com/s3/>`_ or any other S3 compatible object storage.
 
 
 Requirements
