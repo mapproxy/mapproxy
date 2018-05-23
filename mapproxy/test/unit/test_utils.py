@@ -137,16 +137,22 @@ class TestFileLock(Mocker):
         l.lock()
         assert os.path.exists(self.lock_file)
         l.unlock()
-        assert not os.path.exists(self.lock_file)
+        if is_win: # not removed on windows
+            assert os.path.exists(self.lock_file)
+        else:
+            assert not os.path.exists(self.lock_file)
 
-        l.lock()
-        assert os.path.exists(self.lock_file)
-        os.remove(self.lock_file)
-        assert not os.path.exists(self.lock_file)
-        # ignore removed lock
-        l.unlock()
-        assert not os.path.exists(self.lock_file)
-
+        if is_win:
+            # not possible to remove lock file when lock is held
+            pass
+        else:
+            l.lock()
+            assert os.path.exists(self.lock_file)
+            os.remove(self.lock_file)
+            assert not os.path.exists(self.lock_file)
+            # ignore removed lock
+            l.unlock()
+            assert not os.path.exists(self.lock_file)
 
     def _create_lock(self):
         lock = FileLock(self.lock_file)
@@ -428,7 +434,7 @@ class TestWriteAtomic(object):
 
         try:
             write_atomic(filename, b'12345')
-        except OSError:
+        except (OSError, IOError):
             pass
         else:
             assert False, 'expected exception'

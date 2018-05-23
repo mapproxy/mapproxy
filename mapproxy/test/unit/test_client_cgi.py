@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import os
 import shutil
 import stat
@@ -23,6 +24,7 @@ from mapproxy.client.cgi import CGIClient, split_cgi_response
 from mapproxy.source import SourceError
 
 from nose.tools import eq_
+from nose.plugins.skip import SkipTest
 
 class TestSplitHTTPResponse(object):
     def test_n(self):
@@ -61,6 +63,8 @@ if not os.path.exists('testfile'):
 
 class TestCGIClient(object):
     def setup(self):
+        if sys.platform == 'win32':
+            raise SkipTest()
         self.script_dir = tempfile.mkdtemp()
 
     def teardown(self):

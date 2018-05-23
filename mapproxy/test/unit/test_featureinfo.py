@@ -40,7 +40,8 @@ def test_combined_inputs():
 
 class TestXSLTransformer(object):
     def setup(self):
-        fd_, self.xsl_script = tempfile.mkstemp('.xsl')
+        fd, self.xsl_script = tempfile.mkstemp('.xsl')
+        os.close(fd)
         xsl = b"""
         <xsl:stylesheet version="1.0"
          xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -53,7 +54,8 @@ class TestXSLTransformer(object):
              <foo><xsl:value-of select="text()" /></foo>
          </xsl:template>
         </xsl:stylesheet>""".strip()
-        open(self.xsl_script, 'wb').write(xsl)
+        with open(self.xsl_script, 'wb') as f:
+            f.write(xsl)
 
     def teardown(self):
         os.remove(self.xsl_script)

@@ -38,8 +38,8 @@ def level_location(level, cache_dir):
     """
     Return the path where all tiles for `level` will be stored.
 
-    >>> level_location(2, '/tmp/cache')
-    '/tmp/cache/02'
+    >>> os.path.abspath(level_location(2, '/tmp/cache')) == os.path.abspath('/tmp/cache/02')
+    True
     """
     if isinstance(level, string_type):
         return os.path.join(cache_dir, level)

@@ -572,16 +572,18 @@ sources:
 """
 
     def test_loading(self):
-        with TempFile() as f:
-            open(f, 'wb').write(self.yaml_string)
-            services = load_services(f)
+        with TempFile() as tf:
+            with open(tf, 'wb') as f:
+                f.write(self.yaml_string)
+            services = load_services(tf)
         assert 'service' in services[0].names
 
     def test_loading_broken_yaml(self):
-        with TempFile() as f:
-            open(f, 'wb').write(b'\tbroken:foo')
+        with TempFile() as tf:
+            with open(tf, 'wb') as f:
+                f.write(b'\tbroken:foo')
             try:
-                load_services(f)
+                load_services(tf)
             except ConfigurationError:
                 pass
             else:

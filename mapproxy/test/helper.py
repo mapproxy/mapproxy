@@ -19,6 +19,7 @@ import tempfile
 import os
 import re
 import sys
+from glob import glob as globfunc
 from contextlib import contextmanager
 from lxml import etree
 
@@ -139,6 +140,21 @@ def assert_re(value, regex):
     """
     match = re.search(regex, value)
     assert match is not None, '%s ~= %s' % (value, regex)
+
+
+def assert_files_in_dir(dir, expected, glob=None):
+    """
+    assert that (only) ``expected`` files are in ``dir``.
+    ``filter`` can be a globbing patter, other files are ignored if it is set.
+    """
+    if glob is not None:
+        files = globfunc(os.path.join(dir, glob))
+        files = [os.path.basename(f) for f in files]
+    else:
+        files = os.listdir(dir)
+    files.sort()
+    eq_(sorted(expected), files)
+
 
 def validate_with_dtd(doc, dtd_name, dtd_basedir=None):
     if dtd_basedir is None:

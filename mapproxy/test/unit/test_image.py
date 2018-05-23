@@ -295,6 +295,7 @@ class TestGetCrop(object):
 
         eq_(img.size, (200, 200))
         eq_(len(img.getcolors()), 2)
+        img.close()
 
     def test_simple_resize_bilinear(self):
         bbox = (-10, -5, 30, 35)
@@ -306,6 +307,7 @@ class TestGetCrop(object):
         eq_(img.size, (200, 200))
         # some shades of grey with bilinear
         assert len(img.getcolors()) >= 4
+        img.close()
 
 
 class TestLayerMerge(object):
