@@ -27,9 +27,14 @@ from mapproxy.exception import RequestError
 from mapproxy.request.wms.exception import (WMS111ExceptionHandler, WMSImageExceptionHandler,
                                      WMSBlankExceptionHandler)
 from mapproxy.test.http import make_wsgi_env, assert_url_eq, assert_query_eq
+from mapproxy.test.helper import todo_convert_yield_to_pytest
 
 import pickle
 from nose.tools import eq_
+
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
 
 class TestNoCaseMultiDict(object):
     def test_from_iterable(self):
@@ -237,6 +242,7 @@ class TestArcGISRequest(object):
         eq_(req.url, expected)
 
     def test_endpoint_urls(self):
+        todo_convert_yield_to_pytest()
         yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer/', 'http://example.com/ArcGIS/rest/MapServer/export'
         yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer', 'http://example.com/ArcGIS/rest/MapServer/export'
         yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer/export', 'http://example.com/ArcGIS/rest/MapServer/export'
@@ -268,6 +274,7 @@ class TestArcGISIndentifyRequest(object):
         eq_(req.url, expected)
 
     def test_endpoint_urls(self):
+        todo_convert_yield_to_pytest()
         yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer/', 'http://example.com/ArcGIS/rest/MapServer/identify'
         yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer', 'http://example.com/ArcGIS/rest/MapServer/identify'
         yield self.check_endpoint, 'http://example.com/ArcGIS/rest/MapServer/export', 'http://example.com/ArcGIS/rest/MapServer/identify'

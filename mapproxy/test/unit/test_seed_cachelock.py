@@ -24,6 +24,10 @@ from mapproxy.seed.cachelock import CacheLocker, CacheLockedError
 
 from nose.plugins.skip import SkipTest
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 class TestCacheLock(object):
 
     def setup(self):

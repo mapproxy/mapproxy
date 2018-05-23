@@ -26,6 +26,10 @@ from mapproxy.test.image import is_png, create_tmp_image
 from mapproxy.test.system import prepare_env, create_app, module_teardown, SystemTest
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 test_config = {}
 
 def setup_module():

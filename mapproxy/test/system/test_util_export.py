@@ -24,6 +24,9 @@ from mapproxy.test.image import tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import capture
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 
 @contextlib.contextmanager

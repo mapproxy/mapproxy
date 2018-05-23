@@ -32,6 +32,9 @@ from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
 class TestCompactCacheV1(TileCacheTestBase):
 
     always_loads_metadata = True

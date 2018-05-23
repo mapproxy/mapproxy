@@ -18,6 +18,10 @@ from mapproxy.config import Options, base_config, load_base_config
 
 from mapproxy.test.helper import TempFiles
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 def teardown_module():
     load_base_config(clear_existing=True)
 

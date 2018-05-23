@@ -30,6 +30,10 @@ from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
 from mapproxy.test.system.test_wms import is_111_capa, eq_xpath_wms130, ns130
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 test_config = {}
 
 def setup_module():

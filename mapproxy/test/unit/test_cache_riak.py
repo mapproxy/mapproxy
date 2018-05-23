@@ -25,6 +25,10 @@ from mapproxy.compat.modules import urlparse
 from mapproxy.test.image import create_tmp_image_buf
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
 

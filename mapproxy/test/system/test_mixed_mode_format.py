@@ -15,6 +15,7 @@
 
 from __future__ import division
 import os
+from contextlib import contextmanager
 from io import BytesIO
 from mapproxy.compat.image import (
     Image,
@@ -27,7 +28,10 @@ from mapproxy.test.image import check_format, is_transparent
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
 from nose.tools import eq_
-from contextlib import contextmanager
+
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
 
 test_config = {}
 base_config = make_base_config(test_config)

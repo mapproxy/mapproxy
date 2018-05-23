@@ -25,6 +25,10 @@ from mapproxy.test.system.test_wms import bbox_srs_from_boundingbox
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 test_config = {}
 base_config = make_base_config(test_config)
 

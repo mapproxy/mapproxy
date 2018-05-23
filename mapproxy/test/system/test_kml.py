@@ -20,8 +20,12 @@ from mapproxy.srs import bbox_equals
 from mapproxy.util.times import format_httpdate
 from mapproxy.test.image import is_jpeg, tmp_image
 from mapproxy.test.http import mock_httpd
-from mapproxy.test.helper import validate_with_xsd
+from mapproxy.test.helper import validate_with_xsd, todo_convert_yield_to_pytest
 from nose.tools import eq_
+
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
 
 ns = {'kml': 'http://www.opengis.net/kml/2.2'}
 
@@ -40,6 +44,7 @@ class TestKML(SystemTest):
     config = test_config
 
     def test_get_out_of_bounds_tile(self):
+        todo_convert_yield_to_pytest()
         for coord in [(0, 0, -1), (-1, 0, 0), (0, -1, 0), (4, 2, 1), (1, 3, 0)]:
             yield self.check_out_of_bounds, coord
 

@@ -18,6 +18,10 @@ from mapproxy.util.ogr import OGRShapeReader, libgdal
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 if not libgdal:
     raise SkipTest('libgdal not found')
 

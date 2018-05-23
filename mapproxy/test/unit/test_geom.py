@@ -38,7 +38,10 @@ from mapproxy.util.coverage import (
     intersection_coverage,
 )
 from mapproxy.layer import MapExtent, DefaultMapExtent
-from mapproxy.test.helper import TempFile
+from mapproxy.test.helper import TempFile, todo_convert_yield_to_pytest
+
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
 
 if not geom_support:
     from nose.plugins.skip import SkipTest
@@ -156,6 +159,7 @@ class TestPolygonLoading(object):
 
 class TestGeoJSONLoading(object):
     def test_geojson(self):
+        todo_convert_yield_to_pytest()
         yield (self.check_geojson,
             '''{"type": "Polygon", "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 0]]]}''',
             shapely.geometry.Polygon([[0, 0], [10, 0], [10, 10], [0, 0]]),

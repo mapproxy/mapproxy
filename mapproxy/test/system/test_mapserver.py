@@ -29,6 +29,10 @@ from mapproxy.test.system import prepare_env, create_app, module_teardown, Syste
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 test_config = {}
 
 def setup_module():

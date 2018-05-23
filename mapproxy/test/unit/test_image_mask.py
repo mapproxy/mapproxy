@@ -23,6 +23,10 @@ from mapproxy.util.coverage import load_limited_to
 from mapproxy.test.image import assert_img_colors_eq, create_image
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 try:
     from shapely.geometry import Polygon
     geom_support = True

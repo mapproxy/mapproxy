@@ -1,12 +1,12 @@
 # This file is part of the MapProxy project.
 # Copyright (C) 2010 Omniscale <http://omniscale.de>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,10 @@ from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from mapproxy.test.system.test_wms import is_111_capa, is_110_capa, is_100_capa, is_130_capa, ns130
 
 from nose.tools import eq_
+
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
 
 test_config = {}
 test_config_with_root = {}
@@ -47,7 +51,7 @@ class TestWMSWithRoot(SystemTest):
             ['layer1', 'layer2'])
         eq_(xml.xpath('//Capability/Layer/Layer[1]/Layer/Name/text()'),
             ['layer1a', 'layer1b'])
-        
+
     def _check_layernames_with_namespace(self, xml, namespaces=None):
         eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Title/text()', namespaces=namespaces),
             ['Root Layer'])
@@ -64,7 +68,7 @@ class TestWMSWithRoot(SystemTest):
         xml = resp.lxml
         assert is_100_capa(xml)
         self._check_layernames(xml)
-        
+
     def test_110_capa(self):
         resp = self.app.get("/service?request=GetCapabilities&service=WMS&version=1.1.0")
         xml = resp.lxml
@@ -102,7 +106,7 @@ class TestWMSWithoutRoot(SystemTest):
             ['layer2a', 'layer2b'])
         eq_(xml.xpath('//Capability/Layer/Layer[2]/Layer/Layer[1]/Name/text()'),
             ['layer2b1'])
-        
+
     def _check_layernames_with_namespace(self, xml, namespaces=None):
         eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Title/text()', namespaces=namespaces),
             ['My WMS'])
@@ -123,7 +127,7 @@ class TestWMSWithoutRoot(SystemTest):
         xml = resp.lxml
         assert is_100_capa(xml)
         self._check_layernames(xml)
-        
+
     def test_110_capa(self):
         resp = self.app.get("/service?request=GetCapabilities&service=WMS&version=1.1.0")
         xml = resp.lxml

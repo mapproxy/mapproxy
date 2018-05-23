@@ -40,6 +40,10 @@ from mapproxy.test.helper import Mocker
 
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 is_win = sys.platform == 'win32'
 
 class TestFileLock(Mocker):

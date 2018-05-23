@@ -24,6 +24,10 @@ from mapproxy.layer import MapQuery
 from mapproxy.test.http import mock_httpd
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 TEST_SERVER_ADDRESS = ('127.0.0.1', 56413)
 TESTSERVER_URL = ('http://%s:%d' % TEST_SERVER_ADDRESS) + '/%(tms_path)s.png'
 

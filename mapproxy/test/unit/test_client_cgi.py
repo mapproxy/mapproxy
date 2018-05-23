@@ -26,6 +26,10 @@ from mapproxy.source import SourceError
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 class TestSplitHTTPResponse(object):
     def test_n(self):
         eq_(split_cgi_response(b'header1: foo\nheader2: bar\n\ncontent\n\ncontent'),

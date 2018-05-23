@@ -12,6 +12,8 @@ from mapproxy.test.http import make_wsgi_env
 from mapproxy.util.ext.odict import odict
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
 
 class DummyLayer(MapLayer):
     transparent = True

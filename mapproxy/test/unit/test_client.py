@@ -34,6 +34,9 @@ from nose.tools import eq_
 from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
 TESTSERVER_ADDRESS = ('127.0.0.1', 56413)
 TESTSERVER_URL = 'http://%s:%s' % TESTSERVER_ADDRESS
 

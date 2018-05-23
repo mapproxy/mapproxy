@@ -33,6 +33,10 @@ from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from mapproxy.util.geom import EmptyGeometryError
 from nose.tools import eq_, assert_raises
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 class TestLayerConfiguration(object):
     def _test_conf(self, yaml_part):
         base = {'sources': {'s': {'type': 'wms', 'req': {'url': ''}}}}

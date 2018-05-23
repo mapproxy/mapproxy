@@ -22,6 +22,10 @@ from mapproxy.script.wms_capabilities import wms_capabilities_command
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import capture
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 TESTSERVER_ADDRESS = ('127.0.0.1', 56413)
 TESTSERVER_URL = 'http://%s:%s' % TESTSERVER_ADDRESS
 CAPABILITIES111_FILE = os.path.join(os.path.dirname(__file__), 'fixture', 'util_wms_capabilities111.xml')

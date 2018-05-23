@@ -19,8 +19,12 @@ from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from mapproxy.test.image import img_from_buf, create_tmp_image, is_transparent
 from mapproxy.test.http import MockServ
 from nose.tools import eq_
+
 from mapproxy.util.geom import geom_support
 from mapproxy.srs import bbox_equals
+
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
 
 
 test_config = {}

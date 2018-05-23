@@ -17,6 +17,7 @@ from __future__ import division
 
 import os
 import shutil
+import sqlite3
 
 from io import BytesIO
 
@@ -27,7 +28,10 @@ from mapproxy.test.system import prepare_env, create_app, module_teardown, Syste
 from mapproxy.cache.geopackage import GeopackageCache
 from mapproxy.grid import TileGrid
 from nose.tools import eq_
-import sqlite3
+
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
 
 test_config = {}
 

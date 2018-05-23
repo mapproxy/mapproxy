@@ -60,4 +60,6 @@ install:
     - "if [[ $USE_LATEST_PILLOW = '1' ]]; then pip install -U Pillow; fi"
     - "pip freeze"
 
-script: nosetests mapproxy
+script:
+    - nosetests mapproxy
+    - pytest mapproxy

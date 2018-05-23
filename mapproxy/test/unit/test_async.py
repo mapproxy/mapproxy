@@ -18,9 +18,13 @@ from __future__ import print_function
 import time
 import threading
 from mapproxy.util.async import imap_async_threaded, ThreadPool
+from mapproxy.test.helper import todo_convert_yield_to_pytest
 
 from nose.tools import eq_
 from nose.plugins.skip import SkipTest
+
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
 
 class TestThreaded(object):
     def test_map(self):
@@ -91,6 +95,7 @@ class CommonPoolTests(object):
         eq_(result, [3])
 
     def test_single_argument(self):
+        todo_convert_yield_to_pytest()
         f1 = lambda x, y: x+y
         pool = self.mk_pool()
         check = self._check_single_arg
@@ -109,6 +114,7 @@ class CommonPoolTests(object):
             assert False, 'expected ValueError'
 
     def test_single_argument_raise(self):
+        todo_convert_yield_to_pytest()
         def f1(x, y):
             raise ValueError
         pool = self.mk_pool()
@@ -124,6 +130,7 @@ class CommonPoolTests(object):
         assert isinstance(result[0].exception[1], ValueError)
 
     def test_single_argument_result_object(self):
+        todo_convert_yield_to_pytest()
         def f1(x, y):
             raise ValueError
         pool = self.mk_pool()
@@ -139,6 +146,7 @@ class CommonPoolTests(object):
         eq_(result, [3, 5])
 
     def test_multiple_arguments(self):
+        todo_convert_yield_to_pytest()
         f1 = lambda x, y: x+y
         pool = self.mk_pool()
         check = self._check_multiple_args
@@ -154,6 +162,7 @@ class CommonPoolTests(object):
         eq_(result[2].result, 7)
 
     def test_multiple_arguments_exceptions_result_object(self):
+        todo_convert_yield_to_pytest()
         def f1(x, y):
             if x+y == 5:
                 raise ValueError()
@@ -178,6 +187,7 @@ class CommonPoolTests(object):
             assert False, 'expected ValueError'
 
     def test_multiple_arguments_exceptions(self):
+        todo_convert_yield_to_pytest()
         def f1(x, y):
             if x+y == 5:
                 raise ValueError()

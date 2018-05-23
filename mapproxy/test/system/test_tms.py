@@ -17,10 +17,15 @@ import os
 import hashlib
 from io import BytesIO
 from mapproxy.compat.image import Image
+from mapproxy.test.helper import todo_convert_yield_to_pytest
 from mapproxy.test.image import is_jpeg, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
 from nose.tools import eq_
+
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
 
 test_config = {}
 base_config = make_base_config(test_config)
@@ -61,6 +66,7 @@ class TestTMS(SystemTest):
         eq_(xml.xpath('//TileMapService/@version'),['1.0.0'])
 
     def test_tms_get_out_of_bounds_tile(self):
+        todo_convert_yield_to_pytest()
         for coord in [(0, 0, -1), (-1, 0, 0), (0, -1, 0), (4, 2, 1), (1, 3, 0)]:
             yield self.check_out_of_bounds, coord
 
@@ -134,6 +140,7 @@ class TestTileService(SystemTest):
     config = test_config
 
     def test_get_out_of_bounds_tile(self):
+        todo_convert_yield_to_pytest()
         for coord in [(0, 0, -1), (-1, 0, 0), (0, -1, 0), (4, 2, 1), (1, 3, 0)]:
             yield self.check_out_of_bounds, coord
 
@@ -206,6 +213,7 @@ class TestTileService(SystemTest):
         self._check_tile_resp(resp)
 
     def test_if_modified_since(self):
+        todo_convert_yield_to_pytest()
         etag, max_age = self._update_timestamp()
         for date, modified in (
                 ('Fri, 15 Feb 2009 23:31:30 GMT', False),

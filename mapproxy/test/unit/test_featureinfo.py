@@ -20,6 +20,10 @@ import tempfile
 from lxml import etree, html
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 from mapproxy.featureinfo import (
     combined_inputs,
     XSLTransformer,

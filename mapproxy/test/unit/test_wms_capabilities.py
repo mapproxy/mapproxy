@@ -19,6 +19,10 @@ from mapproxy.srs import SRS
 
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 class TestLimitSRSExtents(object):
     def test_defaults(self):
         eq_(

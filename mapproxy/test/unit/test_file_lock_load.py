@@ -9,6 +9,9 @@ from mapproxy.util.lock import FileLock
 
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
 lock_dir = tempfile.mkdtemp()
 lock_file = os.path.join(lock_dir, 'lock.lck')
 count_file = os.path.join(lock_dir, 'count.txt')

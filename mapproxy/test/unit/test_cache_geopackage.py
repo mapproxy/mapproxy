@@ -31,6 +31,10 @@ from mapproxy.test.helper import assert_files_in_dir
 
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 class TestGeopackageCache(TileCacheTestBase):
 
     always_loads_metadata = True

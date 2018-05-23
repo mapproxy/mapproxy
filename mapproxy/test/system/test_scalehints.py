@@ -27,6 +27,10 @@ from mapproxy.test.http import mock_httpd
 from mapproxy.test.system.test_wms import is_111_capa, is_130_capa, ns130
 from nose.tools import assert_almost_equal
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 test_config = {}
 
 def setup_module():

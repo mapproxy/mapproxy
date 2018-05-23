@@ -19,6 +19,10 @@ from mapproxy.test.image import img_from_buf
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 test_config = {}
 base_config = make_base_config(test_config)
 

@@ -27,6 +27,8 @@ from mapproxy.test import mocker
 from mapproxy.compat import string_type, PY2
 from nose.tools import eq_
 
+import pytest
+
 class Mocker(object):
     """
     This is a base class for unit-tests that use ``mocker``. This class follows
@@ -244,3 +246,12 @@ def capture(bytes=False):
     finally:
         sys.stdout = backup_stdout
         sys.stderr = backup_stderr
+
+
+def todo_convert_yield_to_pytest():
+    """
+    Mark a yield test. Skip running with pytest (module-wide skip ignores yield-tests).
+    """
+    # see conftest.py
+    if hasattr(sys, '_called_from_pytest'):
+        pytest.skip()

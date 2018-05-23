@@ -24,6 +24,10 @@ from mapproxy.test.system import module_setup, module_teardown, SystemTest
 from mapproxy.test.system.test_wms import is_111_exception
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 test_config = {}
 test_config_raise = {}
 

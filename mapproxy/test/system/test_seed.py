@@ -33,6 +33,10 @@ from mapproxy.test.image import tmp_image, create_tmp_image_buf, create_tmp_imag
 
 from nose.tools import eq_
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 
 class SeedTestEnvironment(object):

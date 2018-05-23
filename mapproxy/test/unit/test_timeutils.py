@@ -17,6 +17,10 @@ from datetime import datetime
 from mapproxy.util.times import parse_httpdate, format_httpdate, timestamp
 from nose.tools import eq_, raises
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 class TestHTTPDate(object):
     def test_parse_httpdate(self):
         for date in (

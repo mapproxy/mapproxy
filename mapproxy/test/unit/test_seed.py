@@ -39,6 +39,10 @@ from collections import defaultdict
 from nose.tools import eq_, assert_almost_equal, raises
 from nose.plugins.skip import SkipTest
 
+import pytest
+pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+
 try:
     from shapely.wkt import loads as load_wkt
     load_wkt # prevent lint warning
