@@ -76,6 +76,9 @@ class TestWMTS(SystemTest):
         with serv:
             resp = self.app.get('/wmts/myrest/tms_cache_ul/ulgrid/01/0/0.png', status=200)
             eq_(resp.content_type, 'image/png')
+            # test without leading 0 in level
+            resp = self.app.get('/wmts/myrest/tms_cache_ul/ulgrid/1/0/0.png', status=200)
+            eq_(resp.content_type, 'image/png')
 
     def test_get_tile_source_error(self):
         resp = self.app.get('/wmts/myrest/tms_cache/GLOBAL_MERCATOR/01/0/0.png', status=500)

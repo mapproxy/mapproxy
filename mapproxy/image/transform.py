@@ -125,6 +125,13 @@ class ImageTransformer(object):
         Do a 'real' transformation with a transformed mesh (see above).
         """
 
+        # more recent versions of Pillow use center coordinates for
+        # transformations, we manually need to add half a pixel otherwise
+        if transform_uses_center():
+            use_center_px = False
+        else:
+            use_center_px = True
+
         meshes = transform_meshes(
             src_size=src_img.size,
             src_bbox=src_bbox,
@@ -133,6 +140,7 @@ class ImageTransformer(object):
             dst_bbox=dst_bbox,
             dst_srs=self.dst_srs,
             max_px_err=self.max_px_err,
+            use_center_px=use_center_px,
         )
 
         img = img_for_resampling(src_img.as_image(), image_opts.resampling)
@@ -167,7 +175,12 @@ class ImageTransformer(object):
                 bbox_equals(src_bbox, dst_bbox, xres/10, yres/10))
 
 
-def transform_meshes(src_size, src_bbox, src_srs, dst_size, dst_bbox, dst_srs, max_px_err=1):
+def transform_meshes(
+        src_size, src_bbox, src_srs,
+        dst_size, dst_bbox, dst_srs,
+        max_px_err=1,
+        use_center_px=False,
+    ):
     """
     transform_meshes creates a list of QUAD transformation parameters for PIL's
     MESH image transformation.
@@ -193,12 +206,10 @@ def transform_meshes(src_size, src_bbox, src_srs, dst_size, dst_bbox, dst_srs, m
     to_dst_w = make_lin_transf(dst_rect, dst_bbox)
     meshes = []
 
-    # more recent versions of Pillow use center coordinates for
-    # transformations, we manually need to add half a pixel otherwise
-    if transform_uses_center():
-        px_offset = 0.0
-    else:
+    if use_center_px:
         px_offset = 0.5
+    else:
+        px_offset = 0.0
 
     def dst_quad_to_src(quad):
         src_quad = []

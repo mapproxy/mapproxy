@@ -32,10 +32,16 @@ from mapproxy.compat import iteritems, PY2, text_type
 from mapproxy.compat.itertools import chain
 from mapproxy.util.py import reraise
 
-def wsgi_encoding_dance(s, charset='utf-8', errors='replace'):
-    if isinstance(s, bytes):
-        return s
-    return s.encode(charset, errors)
+if PY2:
+    def wsgi_encoding_dance(s, charset='utf-8', errors='replace'):
+        if isinstance(s, bytes):
+            return s
+        return s.encode(charset, errors)
+else:
+    def wsgi_encoding_dance(s, charset='utf-8', errors='replace'):
+        if isinstance(s, text_type):
+            s = s.encode(charset)
+        return s.decode('latin1', errors)
 
 try:
     from urllib.parse import urlparse as url_parse, unquote as url_unquote

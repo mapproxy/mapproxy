@@ -235,6 +235,22 @@ class DefragmentationTestBase(object):
         if os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
 
+    def test_defragmentation_empty_bundle(self):
+        cache = self.cache_class(self.cache_dir)
+
+        t = Tile((5000, 1000, 12),
+            ImageSource(BytesIO(b'a' * 60*1024), image_opts=ImageOptions(format='image/png')))
+        cache.store_tile(t)
+        cache.remove_tile(t)
+
+        fname = os.path.join(self.cache_dir, 'L12', 'R0380C1380.bundle')
+        assert os.path.exists(fname)
+
+        logger = mockProgressLog()
+        defrag_compact_cache(cache, min_bytes=50000, log_progress=logger)
+
+        assert not os.path.exists(fname)
+
     def test_defragmentation_min_bytes(self):
         cache = self.cache_class(self.cache_dir)
 

@@ -1192,10 +1192,12 @@ class CacheConfiguration(ConfigurationBase):
             bucket = self.conf['name'] + '_' + suffix
 
         use_secondary_index = self.conf['cache'].get('secondary_index', False)
+        timeout = self.context.globals.get_value('http.client_timeout', self.conf)
 
         return RiakCache(nodes=nodes, protocol=protocol, bucket=bucket,
             tile_grid=grid_conf.tile_grid(),
             use_secondary_index=use_secondary_index,
+            timeout=timeout
         )
 
     def _redis_cache(self, grid_conf, file_ext):
@@ -1708,7 +1710,7 @@ class LayerConfiguration(ConfigurationBase):
                 if grid_name_as_path:
                     md['name_path'] = (md['name'], md['grid_name'])
                 else:
-                    md['name_path'] = (self.conf['name'], grid.srs.srs_code.replace(':', '').upper())
+                    md['name_path'] = (md['name'], grid.srs.srs_code.replace(':', '').upper())
                 md['name_internal'] = md['name_path'][0] + '_' + md['name_path'][1]
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['cache_name'] = cache_name
@@ -1884,10 +1886,6 @@ class ServiceConfiguration(ConfigurationBase):
         if versions:
             versions = sorted([Version(v) for v in versions])
 
-        versions = conf.get('versions')
-        if versions:
-            versions = sorted([Version(v) for v in versions])
-
         max_output_pixels = self.context.globals.get_value('max_output_pixels', conf,
             global_key='wms.max_output_pixels')
         if isinstance(max_output_pixels, list):
@@ -1919,9 +1917,11 @@ class ServiceConfiguration(ConfigurationBase):
             lyr = layer_conf.wms_layer()
             if lyr:
                 layers[layer_name] = lyr
-        tile_layers = self.tile_layers(conf)
         image_formats = self.context.globals.get_value('image_formats', conf, global_key='wms.image_formats')
         srs = self.context.globals.get_value('srs', conf, global_key='wms.srs')
+        tms_conf = self.context.services.conf.get('tms', {}) or {}
+        use_grid_names = tms_conf.get('use_grid_names', False)
+        tile_layers = self.tile_layers(tms_conf, use_grid_names=use_grid_names)
 
         # WMTS restful template
         wmts_conf = self.context.services.conf.get('wmts', {}) or {}

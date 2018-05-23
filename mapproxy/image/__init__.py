@@ -195,7 +195,7 @@ def SubImageSource(source, size, offset, image_opts, cacheable=True):
         source = ImageSource(source)
     subimg = source.as_image()
     img.paste(subimg, offset)
-    return ImageSource(img, size=size, image_opts=image_opts, cacheable=cacheable)
+    return ImageSource(img, size=size, image_opts=new_image_opts, cacheable=cacheable)
 
 class BlankImageSource(object):
     """

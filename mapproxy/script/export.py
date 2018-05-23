@@ -93,7 +93,7 @@ def format_export_task(task, custom_grid):
     return '\n'.join(info)
 
 def export_command(args=None):
-    parser = optparse.OptionParser("%prog grids [options] mapproxy_conf")
+    parser = optparse.OptionParser("%prog export [options] mapproxy_conf")
     parser.add_option("-f", "--mapproxy-conf", dest="mapproxy_conf",
         help="MapProxy configuration")
 

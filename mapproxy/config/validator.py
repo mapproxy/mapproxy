@@ -108,7 +108,7 @@ class Validator(object):
     def _split_tagged_source(self, source_name):
         layers = None
         if ':' in str(source_name):
-            source_name, layers = str(source_name).split(':')
+            source_name, layers = str(source_name).split(':', 1)
             layers = layers.split(',') if layers is not None else None
         return source_name, layers
 

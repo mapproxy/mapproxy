@@ -152,7 +152,7 @@ class WMTS100TileRequest(WMTSRequest):
         self.layer = self.params.layer
         self.tilematrixset = self.params.tilematrixset
         self.format = self.params.format # TODO
-        self.tile = (int(self.params.coord[0]), int(self.params.coord[1]), self.params.coord[2]) # TODO
+        self.tile = (int(self.params.coord[0]), int(self.params.coord[1]), int(self.params.coord[2]))
         self.origin = 'nw'
         self.dimensions = self.params.dimensions
 

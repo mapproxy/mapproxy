@@ -97,6 +97,13 @@ class TestWMTS(SystemTest):
         data = BytesIO(resp.body)
         assert is_jpeg(data)
 
+        # test with integer tilematrix
+        url = str(self.common_tile_req).replace('=01', '=1')
+        resp = self.app.get(url)
+        eq_(resp.content_type, 'image/jpeg')
+        data = BytesIO(resp.body)
+        assert is_jpeg(data)
+
     def test_get_tile_flipped_axis(self):
         # test default tile lock directory
         tiles_lock_dir = os.path.join(test_config['base_dir'], 'cache_data', 'tile_locks')

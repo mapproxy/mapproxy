@@ -19,6 +19,7 @@ WMS service handler
 from mapproxy.compat import iteritems
 from mapproxy.compat.itertools import chain
 from functools import partial
+from math import sqrt
 from mapproxy.cache.tile import CacheInfo
 from mapproxy.request.wms import (wms_request, WMS111LegendGraphicRequest,
     mimetype_from_infotype, infotype_from_mimetype, switch_bbox_epsg_axis_order)
@@ -192,7 +193,7 @@ class WMSServer(Server):
         info_formats = [mimetype_from_infotype(map_request.version, info_type) for info_type in info_types]
         result = Capabilities(service, root_layer, tile_layers,
             self.image_formats, info_formats, srs=self.srs, srs_extents=self.srs_extents,
-            inspire_md=self.inspire_md,
+            inspire_md=self.inspire_md, max_output_pixels=self.max_output_pixels
             ).render(map_request)
         return Response(result, mimetype=map_request.mime_type)
 
@@ -468,7 +469,7 @@ class Capabilities(object):
     """
     def __init__(self, server_md, layers, tile_layers, image_formats, info_formats,
         srs, srs_extents=None, epsg_axis_order=False,
-        inspire_md=None,
+        inspire_md=None, max_output_pixels=None
         ):
         self.service = server_md
         self.layers = layers
@@ -478,6 +479,7 @@ class Capabilities(object):
         self.srs = srs
         self.srs_extents = limit_srs_extents(srs_extents, srs)
         self.inspire_md = inspire_md
+        self.max_output_pixels = max_output_pixels
 
     def layer_srs_bbox(self, layer, epsg_axis_order=False):
         for srs, extent in iteritems(self.srs_extents):
@@ -520,6 +522,12 @@ class Capabilities(object):
         inspire_md = None
         if self.inspire_md:
             inspire_md = recursive_bunch(default='', **self.inspire_md)
+
+        max_output_size = None
+        if self.max_output_pixels:
+            output_width = output_height = int(sqrt(self.max_output_pixels))
+            max_output_size = (output_width, output_height)
+
         doc = template.substitute(service=bunch(default='', **self.service),
                                    layers=self.layers,
                                    formats=self.image_formats,
@@ -529,6 +537,7 @@ class Capabilities(object):
                                    layer_srs_bbox=self.layer_srs_bbox,
                                    layer_llbbox=self.layer_llbbox,
                                    inspire_md=inspire_md,
+                                   max_output_size=max_output_size,
         )
         # strip blank lines
         doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())
