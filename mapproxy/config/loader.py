@@ -1315,6 +1315,7 @@ class CacheConfiguration(ConfigurationBase):
     def _sources_for_grid(self, source_names, grid_conf, request_format):
         sources = []
         source_image_opts = []
+        fi_sources = []
 
         # a cache can directly access source tiles when _all_ sources are caches too
         # and when they have compatible grids by using tiled_only on the CacheSource
@@ -1337,6 +1338,7 @@ class CacheConfiguration(ConfigurationBase):
             if source_name in self.context.sources:
                 source_conf = self.context.sources[source_name]
                 source = source_conf.source({'format': request_format})
+                fi_source = self.get_fi_source(source_conf)
             elif source_name in self.context.caches:
                 cache_conf = self.context.caches[source_name]
                 source = cache_conf.source(
@@ -1344,13 +1346,21 @@ class CacheConfiguration(ConfigurationBase):
                     tile_grid=grid_conf.tile_grid(),
                     tiled_only=tiled_only,
                 )
+                fi_source = self.get_fi_source(cache_conf)
             else:
                 raise ConfigurationError('unknown source %s' % source_name)
             if source:
                 sources.append(source)
                 source_image_opts.append(source.image_opts)
+            if fi_source:
+                fi_sources.append(fi_source)
 
-        return sources, source_image_opts
+        return sources, source_image_opts, fi_sources
+
+    def get_fi_source(self, source_conf):
+        if hasattr(source_conf, 'fi_source'):
+            return source_conf.fi_source()
+        return None
 
     def _sources_for_band_merge(self, sources_conf, grid_conf, request_format):
         from mapproxy.image.merge import BandMerger
@@ -1368,7 +1378,7 @@ class CacheConfiguration(ConfigurationBase):
 
                 source["src_idx"] = idx
 
-        sources, source_image_opts = self._sources_for_grid(
+        sources, source_image_opts, fi_sources = self._sources_for_grid(
             source_names=source_names,
             grid_conf=grid_conf,
             request_format=request_format,
@@ -1396,7 +1406,7 @@ class CacheConfiguration(ConfigurationBase):
                     factor=source.get('factor', 1.0),
                 )
 
-        return band_merger, sources, source_image_opts
+        return band_merger, sources, source_image_opts, fi_sources
 
     @memoize
     def caches(self):
@@ -1433,13 +1443,13 @@ class CacheConfiguration(ConfigurationBase):
         band_merger = None
         for grid_name, grid_conf in self.grid_confs():
             if isinstance(self.conf['sources'], dict):
-                band_merger, sources, source_image_opts = self._sources_for_band_merge(
+                band_merger, sources, source_image_opts, fi_sources = self._sources_for_band_merge(
                     self.conf['sources'],
                     grid_conf=grid_conf,
                     request_format=request_format,
                 )
             else:
-                sources, source_image_opts = self._sources_for_grid(
+                sources, source_image_opts, fi_sources = self._sources_for_grid(
                     self.conf['sources'],
                     grid_conf=grid_conf,
                     request_format=request_format,
@@ -1508,6 +1518,7 @@ class CacheConfiguration(ConfigurationBase):
                 pre_store_filter=tile_filter,
                 tile_creator_class=tile_creator_class,
                 bulk_meta_tiles=bulk_meta_tiles,
+                fi_sources=fi_sources
             )
             extent = merge_layer_extents(sources)
             if extent.is_default:

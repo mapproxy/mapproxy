@@ -58,7 +58,7 @@ class TileManager(object):
     def __init__(self, grid, cache, sources, format, locker, image_opts=None, request_format=None,
         meta_buffer=None, meta_size=None, minimize_meta_requests=False, identifier=None,
         pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None,
-        bulk_meta_tiles=False,
+        bulk_meta_tiles=False, fi_sources=[]
         ):
         self.grid = grid
         self.cache = cache
@@ -69,6 +69,7 @@ class TileManager(object):
         self.image_opts = image_opts
         self.request_format = request_format or format
         self.sources = sources
+        self.fi_sources = fi_sources
         self.minimize_meta_requests = minimize_meta_requests
         self._expire_timestamp = None
         self.pre_store_filter = pre_store_filter or []

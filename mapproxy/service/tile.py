@@ -218,6 +218,7 @@ class TileLayer(object):
         self._empty_tile = None
         self._mixed_format = True if self.md.get('format', False) == 'mixed' else False
         self.empty_response_as_png = True
+        self.fi_sources = tile_manager.fi_sources
 
     @property
     def bbox(self):
@@ -331,6 +332,29 @@ class TileLayer(object):
             return TileResponse(tile, format=format, image_opts=self.tile_manager.image_opts)
         except SourceError as e:
             raise RequestError(e.args[0], request=tile_request, internal=True)
+
+    def get_info(self, info_request):
+        if info_request.format != self.format:
+            raise RequestError('invalid format (%s). this tile set only supports (%s)'
+                               % (info_request.format, self.format), request=info_request,
+                               code='InvalidParameterValue')
+        try:
+            infos = []
+            if len(self.fi_sources) == 1:
+                info = self.fi_sources[0].get_info(info_request)
+                if info is not None:
+                    infos.append(info)
+                return infos
+
+            def get_info_from_source(source):
+                return source.get_info(info_request)
+
+            for info in async.imap(get_info_from_source, self.fi_sources):
+                if info is not None:
+                    infos.append(info)
+            return infos
+        except SourceError as e:
+            raise RequestError(e.args[0], request=info_request, internal=True)
 
 class ImageResponse(object):
     """
