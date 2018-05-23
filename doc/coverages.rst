@@ -86,7 +86,7 @@ Any polygon datasource that is supported by OGR (e.g. Shapefile, GeoJSON, PostGI
 
 ``where``:
   Restrict which polygons should be loaded from the datasource. Either a simple where
-  statement (e.g. ``'CNTRY_NAME="Germany"'``) or a full select statement. Refer to the
+  statement (e.g. ``"CNTRY_NAME='Germany'"``) or a full select statement. Refer to the
   `OGR SQL support documentation <http://www.gdal.org/ogr/ogr_sql.html>`_. If this
   option is unset, the first layer from the datasource will be used.
 
@@ -193,7 +193,7 @@ To define a seed-area in the ``seed.yaml``, add the coverage directly to the vie
   coverages:
     germany:
       datasource: 'shps/world_boundaries_m.shp'
-      where: 'CNTRY_NAME = "Germany"'
+      where: CNTRY_NAME = 'Germany'
       srs: 'EPSG:900913'
 
 .. index:: PostGIS, PostgreSQL

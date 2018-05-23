@@ -32,10 +32,10 @@ class TestOGRShapeReader(object):
         for wkt in wkts:
             assert wkt.startswith(b'POLYGON ('), 'unexpected WKT: %s' % wkt
     def test_read_filter(self):
-        wkts = list(self.reader.wkts(where='name = "germany"'))
+        wkts = list(self.reader.wkts(where="name = 'germany'"))
         eq_(len(wkts), 2)
         for wkt in wkts:
             assert wkt.startswith(b'POLYGON ('), 'unexpected WKT: %s' % wkt
     def test_read_filter_no_match(self):
-        wkts = list(self.reader.wkts(where='name = "foo"'))
+        wkts = list(self.reader.wkts(where="name = 'foo'"))
         eq_(len(wkts), 0)
