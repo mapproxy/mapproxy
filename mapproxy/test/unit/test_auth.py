@@ -1,19 +1,36 @@
-from mapproxy.grid import tile_grid
-from mapproxy.layer import MapLayer, DefaultMapExtent
-from mapproxy.image import BlankImageSource
-from mapproxy.image.opts import ImageOptions
-from mapproxy.request.base import Request
-from mapproxy.exception import RequestError
-from mapproxy.request.wms import wms_request
-from mapproxy.request.tile import tile_request
-from mapproxy.service.wms import WMSLayer, WMSGroupLayer, WMSServer
-from mapproxy.service.tile import TileServer
-from mapproxy.service.kml import KMLServer, kml_request
-from mapproxy.test.http import make_wsgi_env
-from nose.tools import raises, eq_
+# This file is part of the MapProxy project.
+# Copyright (C) 2018 Omniscale <http://omniscale.de>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+from mapproxy.exception import RequestError
+from mapproxy.grid import tile_grid
+from mapproxy.image import BlankImageSource
+from mapproxy.image.opts import ImageOptions
+from mapproxy.layer import MapLayer, DefaultMapExtent
+from mapproxy.request.base import Request
+from mapproxy.request.tile import tile_request
+from mapproxy.request.wms import wms_request
+from mapproxy.service.kml import KMLServer, kml_request
+from mapproxy.service.tile import TileServer
+from mapproxy.service.wms import WMSLayer, WMSGroupLayer, WMSServer
+from mapproxy.test.http import make_wsgi_env
+
+from mapproxy.test.helper import  skip_with_nosetest
+skip_with_nosetest()
+
 
 class DummyLayer(MapLayer):
     transparent = True
@@ -36,6 +53,7 @@ class DummyLayer(MapLayer):
 
 MAP_REQ = "FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG%3A4326&BBOX=5,46,8,48&WIDTH=60&HEIGHT=40"
 FI_REQ = "FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&STYLES=&SRS=EPSG%3A4326&BBOX=5,46,8,48&WIDTH=60&HEIGHT=40&X=30&Y=20"
+
 
 class TestWMSAuth(object):
     def setup(self):
@@ -94,7 +112,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
 
     def test_allow_all(self):
         def auth(service, layers, **kw):
-            eq_(layers, 'layer1a layer1b'.split())
+            assert layers == 'layer1a layer1b'.split()
             return { 'authorized': 'full' }
         self.server.map(self.map_request('layer1', auth))
         assert self.layers['layer1a'].requested
@@ -103,7 +121,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
     def test_root_with_partial_sublayers(self):
         # filter out sublayer layer1b
         def auth(service, layers, **kw):
-            eq_(layers, 'layer1a layer1b'.split())
+            assert layers == 'layer1a layer1b'.split()
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -118,7 +136,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
 
     def test_accept_sublayer(self):
         def auth(service, layers, **kw):
-            eq_(layers, 'layer1a'.split())
+            assert layers == 'layer1a'.split()
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -133,7 +151,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
 
     def test_accept_sublayer_w_root_denied(self):
         def auth(service, layers, **kw):
-            eq_(layers, 'layer1a'.split())
+            assert layers == 'layer1a'.split()
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -146,10 +164,9 @@ class TestWMSGetMapAuth(TestWMSAuth):
         assert self.layers['layer1a'].requested
         assert not self.layers['layer1b'].requested
 
-    @raises(RequestError)
     def test_deny_sublayer(self):
         def auth(service, layers, **kw):
-            eq_(layers, 'layer1b'.split())
+            assert layers == 'layer1b'.split()
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -158,23 +175,25 @@ class TestWMSGetMapAuth(TestWMSAuth):
                     'layer1b': {'map': False},
                 }
             }
-        self.server.map(self.map_request('layer1b', auth))
 
-    @raises(RequestError)
+        with pytest.raises(RequestError):
+            self.server.map(self.map_request('layer1b', auth))
+
     def test_deny_group_layer_w_source(self):
         def auth(service, layers, **kw):
-            eq_(layers, 'layer2b'.split())
+            assert layers == 'layer2b'.split()
             return {
                 'authorized': 'partial',
                 'layers': {
                     'layer2b': {'map': False},
                 }
             }
-        self.server.map(self.map_request('layer2b', auth))
+        with pytest.raises(RequestError):
+            self.server.map(self.map_request('layer2b', auth))
 
     def test_nested_layers_with_partial_sublayers(self):
         def auth(service, layers, **kw):
-            eq_(layers, 'layer1a layer1b layer2a layer2b'.split())
+            assert layers == 'layer1a layer1b layer2a layer2b'.split()
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -193,7 +212,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
 
     def test_unauthenticated(self):
         def auth(service, layers, **kw):
-            eq_(layers, 'layer1b'.split())
+            assert layers == 'layer1b'.split()
             return {
                 'authorized': 'unauthenticated',
             }
@@ -214,7 +233,7 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
     def test_root_with_partial_sublayers(self):
         # filter out sublayer layer1b
         def auth(service, layers, **kw):
-            eq_(layers, 'layer1a layer1b'.split())
+            assert layers == 'layer1a layer1b'.split()
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -229,7 +248,7 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
 
     def test_accept_sublayer(self):
         def auth(service, layers, **kw):
-            eq_(layers, 'layer1a'.split())
+            assert layers == 'layer1a'.split()
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -244,7 +263,7 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
 
     def test_accept_sublayer_w_root_denied(self):
         def auth(service, layers, **kw):
-            eq_(layers, 'layer1a'.split())
+            assert layers == 'layer1a'.split()
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -257,10 +276,9 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
         assert self.layers['layer1a'].queried
         assert not self.layers['layer1b'].queried
 
-    @raises(RequestError)
     def test_deny_sublayer(self):
         def auth(service, layers, **kw):
-            eq_(layers, 'layer1b'.split())
+            assert layers == 'layer1b'.split()
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -269,23 +287,24 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
                     'layer1b': {'featureinfo': False},
                 }
             }
-        self.server.featureinfo(self.fi_request('layer1b', auth))
+        with pytest.raises(RequestError):
+            self.server.featureinfo(self.fi_request('layer1b', auth))
 
-    @raises(RequestError)
     def test_deny_group_layer_w_source(self):
         def auth(service, layers, **kw):
-            eq_(layers, 'layer2b'.split())
+            assert layers == 'layer2b'.split()
             return {
                 'authorized': 'partial',
                 'layers': {
                     'layer2b': {'featureinfo': False},
                 }
             }
-        self.server.featureinfo(self.fi_request('layer2b', auth))
+        with pytest.raises(RequestError):
+            self.server.featureinfo(self.fi_request('layer2b', auth))
 
     def test_nested_layers_with_partial_sublayers(self):
         def auth(service, layers, **kw):
-            eq_(layers, 'layer1a layer1b layer2a layer2b'.split())
+            assert layers == 'layer1a layer1b layer2a layer2b'.split()
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -335,21 +354,20 @@ class TestTMSAuth(object):
         req = Request(env)
         return tile_request(req)
 
-    @raises(RequestError)
     def test_deny_all(self):
         def auth(service, layers, **kw):
-            eq_(service, self.service)
-            eq_(layers, 'layer1'.split())
+            assert service == self.service
+            assert layers == 'layer1'.split()
             return {
                 'authorized': 'none',
             }
-        self.server.map(self.tile_request('layer1/0/0/0.png', auth))
+        with pytest.raises(RequestError):
+            self.server.map(self.tile_request('layer1/0/0/0.png', auth))
 
-    @raises(RequestError)
     def test_deny_layer(self):
         def auth(service, layers, **kw):
-            eq_(service, self.service)
-            eq_(layers, 'layer1'.split())
+            assert service == self.service
+            assert layers == 'layer1'.split()
             return {
                 'authorized': 'partial',
                 'layers': {
@@ -357,12 +375,13 @@ class TestTMSAuth(object):
                     'layer2': {'tile': True},
                 }
             }
-        self.server.map(self.tile_request('layer1/0/0/0.png', auth))
+        with pytest.raises(RequestError):
+            self.server.map(self.tile_request('layer1/0/0/0.png', auth))
 
     def test_allow_all(self):
         def auth(service, layers, **kw):
-            eq_(service, self.service)
-            eq_(layers, 'layer1'.split())
+            assert service == self.service
+            assert layers == 'layer1'.split()
             return {
                 'authorized': 'full',
             }
@@ -371,8 +390,8 @@ class TestTMSAuth(object):
 
     def test_allow_layer(self):
         def auth(service, layers, **kw):
-            eq_(service, self.service)
-            eq_(layers, 'layer1'.split())
+            assert service == self.service
+            assert layers == 'layer1'.split()
             return {
                 'authorized': 'partial',
                 'layers': {

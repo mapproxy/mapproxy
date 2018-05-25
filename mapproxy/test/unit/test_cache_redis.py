@@ -13,35 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import time
+
+import pytest
 
 try:
     import redis
 except ImportError:
     redis = None
 
-import time
-import os
-
-from nose.plugins.skip import SkipTest
-
-from mapproxy.cache.tile import Tile
 from mapproxy.cache.redis import RedisCache
-
+from mapproxy.cache.tile import Tile
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+from mapproxy.test.helper import skip_with_nosetest
+skip_with_nosetest()
 
 
+@pytest.mark.skipif(not redis or not os.environ.get('MAPPROXY_TEST_REDIS'),
+                    reason="redis package and MAPPROXY_TEST_REDIS env required")
 class TestRedisCache(TileCacheTestBase):
     always_loads_metadata = False
-    def setup(self):
-        if not redis:
-            raise SkipTest("redis required for Redis tests")
 
-        redis_host = os.environ.get('MAPPROXY_TEST_REDIS')
-        if not redis_host:
-            raise SkipTest()
+    def setup(self):
+        redis_host = os.environ['MAPPROXY_TEST_REDIS']
         self.host, self.port = redis_host.split(':')
 
         TileCacheTestBase.setup(self)

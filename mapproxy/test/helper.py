@@ -247,6 +247,9 @@ def capture(bytes=False):
         sys.stdout = backup_stdout
         sys.stderr = backup_stderr
 
+#
+# helper functions for conversion from nose to pytest
+#
 
 def todo_convert_yield_to_pytest():
     """
@@ -255,3 +258,13 @@ def todo_convert_yield_to_pytest():
     # see conftest.py
     if hasattr(sys, '_called_from_pytest'):
         pytest.skip()
+
+def skip_with_nosetest():
+    """
+    Raise nose.plugin.skip.SkipTest when called outside of pytest.
+    """
+    # see conftest.py
+    if not hasattr(sys, '_called_from_pytest'):
+        from nose.plugins.skip import SkipTest
+        raise SkipTest()
+

@@ -17,14 +17,14 @@ from __future__ import print_function
 
 import time
 import threading
-from mapproxy.util.async import imap_async_threaded, ThreadPool
-from mapproxy.test.helper import todo_convert_yield_to_pytest
-
-from nose.tools import eq_
-from nose.plugins.skip import SkipTest
 
 import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+from mapproxy.util.async import imap_async_threaded, ThreadPool
+
+from mapproxy.test.helper import  skip_with_nosetest
+skip_with_nosetest()
+
 
 class TestThreaded(object):
     def test_map(self):
@@ -38,7 +38,7 @@ class TestThreaded(object):
         duration = stop - start
         assert duration < 0.5, "took %s" % duration
 
-        eq_(len(result), 40)
+        assert len(result) == 40
 
     def test_map_with_exception(self):
         def func(x):
@@ -58,10 +58,8 @@ try:
 except ImportError:
     _has_eventlet = False
 
+@pytest.mark.skipif(not _has_eventlet, reason="eventlet required")
 class TestEventlet(object):
-    def setup(self):
-        if not _has_eventlet:
-            raise SkipTest('eventlet required')
 
     def test_map(self):
         def func(x):
@@ -74,7 +72,7 @@ class TestEventlet(object):
         duration = stop - start
         assert duration < 0.2, "took %s" % duration
 
-        eq_(len(result), 40)
+        assert len(result) == 40
 
     def test_map_with_exception(self):
         def func(x):
@@ -92,17 +90,16 @@ class TestEventlet(object):
 class CommonPoolTests(object):
     def _check_single_arg(self, func):
         result = list(func())
-        eq_(result, [3])
+        assert result == [3]
 
     def test_single_argument(self):
-        todo_convert_yield_to_pytest()
         f1 = lambda x, y: x+y
         pool = self.mk_pool()
         check = self._check_single_arg
-        yield check, lambda: pool.map(f1, [1], [2])
-        yield check, lambda: pool.imap(f1, [1], [2])
-        yield check, lambda: pool.starmap(f1, [(1, 2)])
-        yield check, lambda: pool.starcall([(f1, 1, 2)])
+        check(lambda: pool.map(f1, [1], [2]))
+        check(lambda: pool.imap(f1, [1], [2]))
+        check(lambda: pool.starmap(f1, [(1, 2)]))
+        check(lambda: pool.starcall([(f1, 1, 2)]))
 
 
     def _check_single_arg_raise(self, func):
@@ -114,15 +111,14 @@ class CommonPoolTests(object):
             assert False, 'expected ValueError'
 
     def test_single_argument_raise(self):
-        todo_convert_yield_to_pytest()
         def f1(x, y):
             raise ValueError
         pool = self.mk_pool()
         check = self._check_single_arg_raise
-        yield check, lambda: pool.map(f1, [1], [2])
-        yield check, lambda: pool.imap(f1, [1], [2])
-        yield check, lambda: pool.starmap(f1, [(1, 2)])
-        yield check, lambda: pool.starcall([(f1, 1, 2)])
+        check(lambda: pool.map(f1, [1], [2]))
+        check(lambda: pool.imap(f1, [1], [2]))
+        check(lambda: pool.starmap(f1, [(1, 2)]))
+        check(lambda: pool.starcall([(f1, 1, 2)]))
 
     def _check_single_arg_result_object(self, func):
         result = list(func())
@@ -130,56 +126,53 @@ class CommonPoolTests(object):
         assert isinstance(result[0].exception[1], ValueError)
 
     def test_single_argument_result_object(self):
-        todo_convert_yield_to_pytest()
         def f1(x, y):
             raise ValueError
         pool = self.mk_pool()
         check = self._check_single_arg_result_object
-        yield check, lambda: pool.map(f1, [1], [2], use_result_objects=True)
-        yield check, lambda: pool.imap(f1, [1], [2], use_result_objects=True)
-        yield check, lambda: pool.starmap(f1, [(1, 2)], use_result_objects=True)
-        yield check, lambda: pool.starcall([(f1, 1, 2)], use_result_objects=True)
+        check(lambda: pool.map(f1, [1], [2], use_result_objects=True))
+        check(lambda: pool.imap(f1, [1], [2], use_result_objects=True))
+        check(lambda: pool.starmap(f1, [(1, 2)], use_result_objects=True))
+        check(lambda: pool.starcall([(f1, 1, 2)], use_result_objects=True))
 
 
     def _check_multiple_args(self, func):
         result = list(func())
-        eq_(result, [3, 5])
+        assert result == [3, 5]
 
     def test_multiple_arguments(self):
-        todo_convert_yield_to_pytest()
         f1 = lambda x, y: x+y
         pool = self.mk_pool()
         check = self._check_multiple_args
-        yield check, lambda: pool.map(f1, [1, 2], [2, 3])
-        yield check, lambda: pool.imap(f1, [1, 2], [2, 3])
-        yield check, lambda: pool.starmap(f1, [(1, 2), (2, 3)])
-        yield check, lambda: pool.starcall([(f1, 1, 2), (f1, 2, 3)])
+        check(lambda: pool.map(f1, [1, 2], [2, 3]))
+        check(lambda: pool.imap(f1, [1, 2], [2, 3]))
+        check(lambda: pool.starmap(f1, [(1, 2), (2, 3)]))
+        check(lambda: pool.starcall([(f1, 1, 2), (f1, 2, 3)]))
 
     def _check_multiple_args_with_exceptions_result_object(self, func):
         result = list(func())
-        eq_(result[0].result, 3)
-        eq_(type(result[1].exception[1]), ValueError)
-        eq_(result[2].result, 7)
+        assert result[0].result == 3
+        assert type(result[1].exception[1]) == ValueError
+        assert result[2].result == 7
 
     def test_multiple_arguments_exceptions_result_object(self):
-        todo_convert_yield_to_pytest()
         def f1(x, y):
             if x+y == 5:
                 raise ValueError()
             return x+y
         pool = self.mk_pool()
         check = self._check_multiple_args_with_exceptions_result_object
-        yield check, lambda: pool.map(f1, [1, 2, 3], [2, 3, 4], use_result_objects=True)
-        yield check, lambda: pool.imap(f1, [1, 2, 3], [2, 3, 4], use_result_objects=True)
-        yield check, lambda: pool.starmap(f1, [(1, 2), (2, 3), (3, 4)], use_result_objects=True)
-        yield check, lambda: pool.starcall([(f1, 1, 2), (f1, 2, 3), (f1, 3, 4)], use_result_objects=True)
+        check(lambda: pool.map(f1, [1, 2, 3], [2, 3, 4], use_result_objects=True))
+        check(lambda: pool.imap(f1, [1, 2, 3], [2, 3, 4], use_result_objects=True))
+        check(lambda: pool.starmap(f1, [(1, 2), (2, 3), (3, 4)], use_result_objects=True))
+        check(lambda: pool.starcall([(f1, 1, 2), (f1, 2, 3), (f1, 3, 4)], use_result_objects=True))
 
     def _check_multiple_args_with_exceptions(self, func):
         result = func()
         try:
             # first result might aleady raise the exception when
             # when second result is returned faster by the ThreadPoolWorker
-            eq_(next(result), 3)
+            assert next(result) == 3
             next(result)
         except ValueError:
             pass
@@ -187,7 +180,6 @@ class CommonPoolTests(object):
             assert False, 'expected ValueError'
 
     def test_multiple_arguments_exceptions(self):
-        todo_convert_yield_to_pytest()
         def f1(x, y):
             if x+y == 5:
                 raise ValueError()
@@ -202,10 +194,10 @@ class CommonPoolTests(object):
                 pass
             else:
                 assert False, 'expected ValueError'
-        yield check_pool_map
-        yield check, lambda: pool.imap(f1, [1, 2, 3], [2, 3, 4])
-        yield check, lambda: pool.starmap(f1, [(1, 2), (2, 3), (3, 4)])
-        yield check, lambda: pool.starcall([(f1, 1, 2), (f1, 2, 3), (f1, 3, 4)])
+        check_pool_map()
+        check(lambda: pool.imap(f1, [1, 2, 3], [2, 3, 4]))
+        check(lambda: pool.starmap(f1, [(1, 2), (2, 3), (3, 4)]))
+        check(lambda: pool.starcall([(f1, 1, 2), (f1, 2, 3), (f1, 3, 4)]))
 
 
 
@@ -264,14 +256,10 @@ class TestThreadPool(CommonPoolTests):
         assert 'bar' in base_config()
 
 
+@pytest.mark.skipif(not _has_eventlet, reason="eventlet required")
 class TestEventletPool(CommonPoolTests):
-    def setup(self):
-        if not _has_eventlet:
-            raise SkipTest('eventlet required')
 
     def mk_pool(self):
-        if not _has_eventlet:
-            raise SkipTest('eventlet required')
         return EventletPool()
 
     def test_base_config(self):

@@ -13,16 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import tempfile
 
 from lxml import etree, html
-from nose.tools import eq_
-
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
-
 
 from mapproxy.featureinfo import (
     combined_inputs,
@@ -33,13 +27,17 @@ from mapproxy.featureinfo import (
 )
 from mapproxy.test.helper import strip_whitespace
 
+from mapproxy.test.helper import skip_with_nosetest
+skip_with_nosetest()
+
+
 def test_combined_inputs():
     foo = '<a><b>foo</b></a>'
     bar = '<a><b>bar</b></a>'
 
     result = combined_inputs([foo, bar])
     result = etree.tostring(result)
-    eq_(result, b'<a><b>foo</b><b>bar</b></a>')
+    assert result == b'<a><b>foo</b><b>bar</b></a>'
 
 
 class TestXSLTransformer(object):
@@ -67,7 +65,7 @@ class TestXSLTransformer(object):
     def test_transformer(self):
         t = XSLTransformer(self.xsl_script)
         doc = t.transform(XMLFeatureInfoDoc('<a><b>Text</b></a>'))
-        eq_(strip_whitespace(doc.as_string()), b'<root><foo>Text</foo></root>')
+        assert strip_whitespace(doc.as_string()) == b'<root><foo>Text</foo></root>'
 
     def test_multiple(self):
         t = XSLTransformer(self.xsl_script)
@@ -77,26 +75,26 @@ class TestXSLTransformer(object):
                  b'<a><b>ab1</b><b>ab2</b><b>ab3</b></a>',
                  b'<a><b>ab1</b><c>ac</c><b>ab2</b></a>',
             ]]))
-        eq_(strip_whitespace(doc.as_string()),
+        assert (strip_whitespace(doc.as_string()) ==
             strip_whitespace(b'''
             <root>
               <foo>ab</foo>
               <foo>ab1</foo><foo>ab2</foo><foo>ab3</foo>
               <foo>ab1</foo><foo>ab2</foo>
             </root>'''))
-        eq_(doc.info_type, 'xml')
+        assert doc.info_type == 'xml'
 
 
 class TestXMLFeatureInfoDocs(object):
     def test_as_string(self):
         input_tree = etree.fromstring('<root></root>')
         doc = XMLFeatureInfoDoc(input_tree)
-        eq_(strip_whitespace(doc.as_string()),
+        assert (strip_whitespace(doc.as_string()) ==
             b'<root/>')
 
     def test_as_etree(self):
         doc = XMLFeatureInfoDoc('<root>hello</root>')
-        eq_(doc.as_etree().getroot().text, 'hello')
+        assert doc.as_etree().getroot().text == 'hello'
 
     def test_combine(self):
         docs = [
@@ -106,9 +104,9 @@ class TestXMLFeatureInfoDocs(object):
         ]
         result = XMLFeatureInfoDoc.combine(docs)
 
-        eq_(strip_whitespace(result.as_string()),
+        assert (strip_whitespace(result.as_string()) ==
             strip_whitespace(b'<root><a>foo</a><b>bar</b><a>baz</a></root>'))
-        eq_(result.info_type, 'xml')
+        assert result.info_type == 'xml'
 
 
 class TestXMLFeatureInfoDocsNoLXML(object):
@@ -128,9 +126,9 @@ class TestXMLFeatureInfoDocsNoLXML(object):
         ]
         result = XMLFeatureInfoDoc.combine(docs)
 
-        eq_(b'<root><a>foo</a></root>\n<root><b>bar</b></root>\n<other_root><a>baz</a></other_root>',
+        assert (b'<root><a>foo</a></root>\n<root><b>bar</b></root>\n<other_root><a>baz</a></other_root>' ==
             result.as_string())
-        eq_(result.info_type, 'text')
+        assert result.info_type == 'text'
 
 class TestHTMLFeatureInfoDocs(object):
     def test_as_string(self):
@@ -140,7 +138,7 @@ class TestHTMLFeatureInfoDocs(object):
 
     def test_as_etree(self):
         doc = HTMLFeatureInfoDoc('<p>hello</p>')
-        eq_(doc.as_etree().find('body/p').text, 'hello')
+        assert doc.as_etree().find('body/p').text == 'hello'
 
     def test_combine(self):
         docs = [
@@ -152,7 +150,7 @@ class TestHTMLFeatureInfoDocs(object):
         assert b'<title>Hello</title>' in result.as_string()
         assert (b'<body><p>baz</p><p>baz2</p><p>foo</p><p>bar</p></body>' in
             result.as_string())
-        eq_(result.info_type, 'html')
+        assert result.info_type == 'html'
 
     def test_combine_parts(self):
         docs = [
@@ -164,7 +162,7 @@ class TestHTMLFeatureInfoDocs(object):
 
         assert (b'<body><p>foo</p><p>bar</p><p>baz</p><p>baz2</p></body>' in
             result.as_string())
-        eq_(result.info_type, 'html')
+        assert result.info_type == 'html'
 
 class TestHTMLFeatureInfoDocsNoLXML(object):
     def setup(self):
@@ -183,10 +181,10 @@ class TestHTMLFeatureInfoDocsNoLXML(object):
         ]
         result = HTMLFeatureInfoDoc.combine(docs)
 
-        eq_(b"<html><head><title>Hello<body><p>baz</p>"
-            b"<p>baz2\n<p>foo</p>\n<body><p>bar</p></body>",
+        assert (b"<html><head><title>Hello<body><p>baz</p>"
+            b"<p>baz2\n<p>foo</p>\n<body><p>bar</p></body>"==
             result.as_string())
-        eq_(result.info_type, 'text')
+        assert result.info_type == 'text'
 
 class TestJSONFeatureInfoDocs(object):
     def test_combine(self):
@@ -197,6 +195,6 @@ class TestJSONFeatureInfoDocs(object):
         ]
         result = JSONFeatureInfoDoc.combine(docs)
 
-        eq_('''{"results": [{"foo": 1}, {"bar": 2}]}''',
+        assert ('''{"results": [{"foo": 1}, {"bar": 2}]}''' ==
             result.as_string())
-        eq_(result.info_type, 'json')
+        assert result.info_type == 'json'

@@ -13,19 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from mapproxy.compat.image import Image
 from io import BytesIO
+
+from mapproxy.compat.image import Image
+from mapproxy.exception import RequestError
+from mapproxy.request import url_decode
+from mapproxy.request.wms import WMSMapRequest
+from mapproxy.request.wms.exception import (
+    WMS100ExceptionHandler,
+    WMS111ExceptionHandler,
+    WMS130ExceptionHandler,
+    WMS110ExceptionHandler,
+)
 from mapproxy.test.helper import Mocker, validate_with_dtd, validate_with_xsd
 from mapproxy.test.image import is_png
-from mapproxy.request.wms import WMSMapRequest
-from mapproxy.request import url_decode
-from mapproxy.exception import RequestError
-from mapproxy.request.wms.exception import (WMS100ExceptionHandler, WMS111ExceptionHandler,
-                                     WMS130ExceptionHandler, WMS110ExceptionHandler)
-from nose.tools import eq_
 
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+from mapproxy.test.helper import skip_with_nosetest
+skip_with_nosetest()
 
 
 class ExceptionHandlerTest(Mocker):
@@ -111,7 +115,7 @@ class TestWMS110ExceptionHandler(Mocker):
     <ServiceException code="InvalidFormat">the exception message</ServiceException>
 </ServiceExceptionReport>
 """
-        eq_(expected_resp.strip(), response.data)
+        assert expected_resp.strip() == response.data
         assert validate_with_dtd(response.data, 'wms/1.1.0/exception_1_1_0.dtd')
 
 class TestWMS130ExceptionHandler(Mocker):
@@ -205,10 +209,9 @@ class TestWMSImageExceptionHandler(ExceptionHandlerTest):
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
-        eq_(sorted([x for x in img.histogram() if x > 25]),
-            [377, 14623])
+        assert sorted([x for x in img.histogram() if x > 25]) == [377, 14623]
         img = img.convert('RGBA')
-        eq_(img.getpixel((0, 0))[3], 0)
+        assert img.getpixel((0, 0))[3] == 0
 
 
 class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
@@ -223,8 +226,8 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
-        eq_(img.getpixel((0, 0)), 0) #pallete image
-        eq_(img.getpalette()[0:3], [255, 255, 255])
+        assert img.getpixel((0, 0)) == 0  #pallete image
+        assert img.getpalette()[0:3] == [255, 255, 255]
     def test_exception_w_bgcolor(self):
         self.req.set('exceptions', 'blank')
         self.req.set('bgcolor', '0xff00ff')
@@ -238,8 +241,8 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
-        eq_(img.getpixel((0, 0)), 0) #pallete image
-        eq_(img.getpalette()[0:3], [255, 0, 255])
+        assert img.getpixel((0, 0)) == 0  #pallete image
+        assert img.getpalette()[0:3] == [255, 0, 255]
     def test_exception_w_transparent(self):
         self.req.set('exceptions', 'blank')
         self.req.set('transparent', 'true' )
@@ -255,4 +258,4 @@ class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
         assert img.size == (150, 100)
         assert img.mode == 'P'
         img = img.convert('RGBA')
-        eq_(img.getpixel((0, 0))[3], 0)
+        assert img.getpixel((0, 0))[3] == 0

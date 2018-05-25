@@ -15,11 +15,10 @@
 
 
 from mapproxy.config import Options, base_config, load_base_config
-
 from mapproxy.test.helper import TempFiles
 
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+from mapproxy.test.helper import skip_with_nosetest
+skip_with_nosetest()
 
 
 def teardown_module():

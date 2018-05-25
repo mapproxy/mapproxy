@@ -13,31 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import random
 
-from nose.plugins.skip import SkipTest
+import pytest
 
 from mapproxy.cache.riak import RiakCache
-from mapproxy.grid import tile_grid
 from mapproxy.compat.modules import urlparse
+from mapproxy.grid import tile_grid
 from mapproxy.test.image import create_tmp_image_buf
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
-
+from mapproxy.test.helper import skip_with_nosetest
+skip_with_nosetest()
 
 tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
 
+
 class RiakCacheTestBase(TileCacheTestBase):
     always_loads_metadata = True
     def setup(self):
-        if not os.environ.get(self.riak_url_env):
-            raise SkipTest()
-
         url = os.environ[self.riak_url_env]
         urlparts = urlparse.urlparse(url)
         protocol = urlparts.scheme.lower()
@@ -67,8 +63,14 @@ class RiakCacheTestBase(TileCacheTestBase):
         assert self.cache.remove_tile(tile)
         assert self.cache.remove_tile(tile)
 
+
+@pytest.mark.skipif('MAPPROXY_TEST_RIAK_HTTP' not in os.environ,
+                    reason="MAPPROXY_TEST_RIAK_HTTP not set")
 class TestRiakCacheHTTP(RiakCacheTestBase):
     riak_url_env = 'MAPPROXY_TEST_RIAK_HTTP'
 
+
+@pytest.mark.skipif('MAPPROXY_TEST_RIAK_PBC' not in os.environ,
+                    reason="MAPPROXY_TEST_RIAK_PBC not set")
 class TestRiakCachePBC(RiakCacheTestBase):
     riak_url_env = 'MAPPROXY_TEST_RIAK_PBC'

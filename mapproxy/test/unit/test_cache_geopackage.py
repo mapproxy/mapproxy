@@ -16,23 +16,21 @@
 from __future__ import division
 
 import os
-import time
 import sqlite3
 import threading
+import time
 
 from io import BytesIO
 
-from mapproxy.image import ImageSource
 from mapproxy.cache.geopackage import GeopackageCache, GeopackageLevelCache
 from mapproxy.cache.tile import Tile
 from mapproxy.grid import tile_grid, TileGrid
-from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
+from mapproxy.image import ImageSource
 from mapproxy.test.helper import assert_files_in_dir
+from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
-from nose.tools import eq_
-
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+from mapproxy.test.helper import skip_with_nosetest
+skip_with_nosetest()
 
 
 class TestGeopackageCache(TileCacheTestBase):
