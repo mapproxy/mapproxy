@@ -140,6 +140,9 @@ class Response(object):
     def fixed_headers(self):
         headers = []
         for key, value in iteritems(self.headers):
+            if not isinstance(value, text_type):
+                # for str subclasses like ImageFormat
+                value = str(value)
             if PY2 and isinstance(value, unicode):
                 value = value.encode('utf-8')
             headers.append((key, value))
