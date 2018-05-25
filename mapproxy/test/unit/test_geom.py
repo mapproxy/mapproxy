@@ -19,6 +19,15 @@ import os
 import tempfile
 import shutil
 
+import pytest
+import shapely
+import shapely.prepared
+try:
+    # shapely >=1.6
+    from shapely.errors import ReadingError
+except ImportError:
+    from shapely.geos import ReadingError
+
 from mapproxy.srs import SRS, bbox_equals
 from mapproxy.util.geom import (
     load_polygons,
@@ -38,25 +47,15 @@ from mapproxy.util.coverage import (
     intersection_coverage,
 )
 from mapproxy.layer import MapExtent, DefaultMapExtent
-from mapproxy.test.helper import TempFile, todo_convert_yield_to_pytest
-
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
-
-if not geom_support:
-    from nose.plugins.skip import SkipTest
-    raise SkipTest('requires Shapely')
+from mapproxy.test.helper import TempFile
 from mapproxy.util.coverage import BBOXCoverage
 
-import shapely
-import shapely.prepared
-try:
-    # shapely >=1.6
-    from shapely.errors import ReadingError
-except ImportError:
-    from shapely.geos import ReadingError
+pytestmark = pytest.mark.skipif(not geom_support,
+                                reason="requires Shapely")
 
-from nose.tools import eq_, raises
+from mapproxy.test.helper import skip_with_nosetest
+skip_with_nosetest()
+
 
 VALID_POLYGON1 = b"""POLYGON ((953296.704552185838111 7265916.626927595585585,
 944916.907243740395643 7266183.505430161952972,
@@ -112,7 +111,7 @@ class TestPolygonLoading(object):
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
             assert polygon.is_valid
-            eq_(polygon.type, 'Polygon')
+            assert polygon.type == 'Polygon'
 
     def test_loading_multipolygon(self):
         with TempFile() as fname:
@@ -123,16 +122,14 @@ class TestPolygonLoading(object):
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
             assert polygon.is_valid
-            eq_(polygon.type, 'MultiPolygon')
+            assert polygon.type == 'MultiPolygon'
 
-    @raises(ReadingError)
     def test_loading_broken(self):
         with TempFile() as fname:
             with open(fname, 'wb') as f:
                 f.write(b"POLYGON((")
-            polygon = load_polygons(fname)
-            assert polygon.is_valid
-            bbox, polygon = build_multipolygon(polygon, simplify=True)
+            with pytest.raises(ReadingError):
+                load_polygons(fname)
 
     def test_loading_skip_non_polygon(self):
         with TempFile() as fname:
@@ -142,7 +139,7 @@ class TestPolygonLoading(object):
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
             assert polygon.is_valid
-            eq_(polygon.type, 'Polygon')
+            assert polygon.type == 'Polygon'
 
     def test_loading_intersecting_polygons(self):
         # check that the self intersection is eliminated
@@ -153,34 +150,22 @@ class TestPolygonLoading(object):
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
             assert polygon.is_valid
-            eq_(polygon.type, 'Polygon')
+            assert polygon.type == 'Polygon'
             assert polygon.equals(shapely.geometry.Polygon([(0, 0), (15, 0), (15, 10), (0, 10)]))
 
 
 class TestGeoJSONLoading(object):
-    def test_geojson(self):
-        todo_convert_yield_to_pytest()
-        yield (self.check_geojson,
-            '''{"type": "Polygon", "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 0]]]}''',
-            shapely.geometry.Polygon([[0, 0], [10, 0], [10, 10], [0, 0]]),
-        )
-
-        yield (self.check_geojson,
-            '''{"type": "MultiPolygon", "coordinates": [[[[0, 0], [10, 0], [10, 10], [0, 0]]], [[[20, 0], [30, 0], [20, 10], [20, 0]]]]}''',
-            shapely.geometry.Polygon([[0, 0], [10, 0], [10, 10], [0, 0]]).union(shapely.geometry.Polygon([[20, 0], [30, 0], [20, 10], [20, 0]])),
-        )
-
-        yield (self.check_geojson,
-            '''{"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 0]]]}}''',
-            shapely.geometry.Polygon([[0, 0], [10, 0], [10, 10], [0, 0]]),
-        )
-
-        yield (self.check_geojson,
-            '''{"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 0]]]}}]}''',
-            shapely.geometry.Polygon([[0, 0], [10, 0], [10, 10], [0, 0]]),
-        )
-
-    def check_geojson(self, geojson, geometry):
+    @pytest.mark.parametrize('geojson,geometry', [
+        [ '''{"type": "Polygon", "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 0]]]}''',
+            shapely.geometry.Polygon([[0, 0], [10, 0], [10, 10], [0, 0]]), ],
+        [ '''{"type": "MultiPolygon", "coordinates": [[[[0, 0], [10, 0], [10, 10], [0, 0]]], [[[20, 0], [30, 0], [20, 10], [20, 0]]]]}''',
+            shapely.geometry.Polygon([[0, 0], [10, 0], [10, 10], [0, 0]]).union(shapely.geometry.Polygon([[20, 0], [30, 0], [20, 10], [20, 0]])), ],
+        [ '''{"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 0]]]}}''',
+            shapely.geometry.Polygon([[0, 0], [10, 0], [10, 10], [0, 0]]), ],
+        [ '''{"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 0]]]}}]}''',
+            shapely.geometry.Polygon([[0, 0], [10, 0], [10, 10], [0, 0]]), ],
+    ])
+    def test_geojson(self, geojson, geometry):
         with TempFile() as fname:
             with open(fname, 'w') as f:
                 f.write(geojson)
@@ -215,15 +200,15 @@ class TestTransform(object):
 
         assert mp3.symmetric_difference(mp1).area < 0.00001
 
-    @raises(ValueError)
     def test_invalid_transf(self):
         p = shapely.geometry.Point((0, 0))
-        transform_geometry(SRS(4326), SRS(900913), p)
+        with pytest.raises(ValueError):
+            transform_geometry(SRS(4326), SRS(900913), p)
 
 class TestBBOXPolygon(object):
     def test_bbox_polygon(self):
         p = bbox_polygon([5, 53, 6, 54])
-        eq_(p.type, 'Polygon')
+        assert p.type == 'Polygon'
 
 
 class TestGeomCoverage(object):
@@ -237,7 +222,7 @@ class TestGeomCoverage(object):
         assert bbox_equals(self.coverage.bbox, [-10, 10, 80, 80], 0.0001)
 
     def test_geom(self):
-        eq_(self.coverage.geom.type, 'Polygon')
+        assert self.coverage.geom.type == 'Polygon'
 
     def test_contains(self):
         assert self.coverage.contains((15, 15, 20, 20), SRS(4326))
@@ -278,7 +263,7 @@ class TestBBOXCoverage(object):
         assert bbox_equals(self.coverage.bbox, [-10, 10, 80, 80], 0.0001)
 
     def test_geom(self):
-        eq_(self.coverage.geom, None)
+        assert self.coverage.geom == None
 
     def test_contains(self):
         assert self.coverage.contains((15, 15, 20, 20), SRS(4326))
@@ -297,17 +282,17 @@ class TestBBOXCoverage(object):
         assert self.coverage.intersects((0, 0, 1500000, 1500000), SRS(900913))
 
     def test_intersection(self):
-        eq_(self.coverage.intersection((15, 15, 20, 20), SRS(4326)),
+        assert (self.coverage.intersection((15, 15, 20, 20), SRS(4326)) ==
             BBOXCoverage((15, 15, 20, 20), SRS(4326)))
-        eq_(self.coverage.intersection((15, 15, 80, 20), SRS(4326)),
+        assert (self.coverage.intersection((15, 15, 80, 20), SRS(4326)) ==
             BBOXCoverage((15, 15, 80, 20), SRS(4326)))
-        eq_(self.coverage.intersection((9, 10, 20, 20), SRS(4326)),
+        assert (self.coverage.intersection((9, 10, 20, 20), SRS(4326)) ==
             BBOXCoverage((9, 10, 20, 20), SRS(4326)))
-        eq_(self.coverage.intersection((-30, 10, -8, 70), SRS(4326)),
+        assert (self.coverage.intersection((-30, 10, -8, 70), SRS(4326)) ==
             BBOXCoverage((-10, 10, -8, 70), SRS(4326)))
-        eq_(self.coverage.intersection((-30, 10, -11, 70), SRS(4326)),
+        assert (self.coverage.intersection((-30, 10, -11, 70), SRS(4326)) ==
             None)
-        eq_(self.coverage.intersection((0, 0, 1000, 1000), SRS(900913)),
+        assert (self.coverage.intersection((0, 0, 1000, 1000), SRS(900913)) ==
             None)
         assert bbox_equals(
             self.coverage.intersection((0, 0, 1500000, 1500000), SRS(900913)).bbox,
@@ -471,7 +456,7 @@ class TestLoadDatasource(object):
     def test_shp(self):
         polygon_file = os.path.join(os.path.dirname(__file__), 'polygons', 'polygons.shp')
         geoms = load_datasource(polygon_file)
-        eq_(len(geoms), 3)
+        assert len(geoms) == 3
 
     def test_wkt(self):
         with TempFile() as fname:
@@ -481,7 +466,7 @@ class TestLoadDatasource(object):
                 f.write(VALID_POLYGON1)
 
             geoms = load_datasource(fname)
-            eq_(len(geoms), 2)
+            assert len(geoms) == 2
 
     def test_geojson(self):
         with TempFile() as fname:
@@ -493,7 +478,7 @@ class TestLoadDatasource(object):
                 ]}''')
 
             geoms = load_datasource(fname)
-            eq_(len(geoms), 4)
+            assert len(geoms) == 4
 
     def test_expire_tiles_dir(self):
         dirname = tempfile.mkdtemp()
@@ -505,7 +490,7 @@ class TestLoadDatasource(object):
                 f.write(b"4/4/3\n")
 
             geoms = load_expire_tiles(dirname)
-            eq_(len(geoms), 3)
+            assert len(geoms) == 3
         finally:
             shutil.rmtree(dirname)
 
@@ -518,4 +503,4 @@ class TestLoadDatasource(object):
                 f.write(b"4/2/1\n") # rest of file is ignored
 
             geoms = load_expire_tiles(fname)
-            eq_(len(geoms), 2)
+            assert len(geoms) == 2
