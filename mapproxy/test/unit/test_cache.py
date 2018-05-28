@@ -138,95 +138,103 @@ def create_cached_tile(tile, cache, timestamp=None):
         os.utime(loc, (timestamp, timestamp))
 
 
+@pytest.fixture
+def file_cache(tmpdir):
+    return FileCache(cache_dir=tmpdir.join('cache').strpath, file_ext='png')
+
+@pytest.fixture
+def tile_locker(tmpdir):
+    return TileLocker(tmpdir.join('lock').strpath, 10, "id")
+
+@pytest.fixture
+def mock_tile_client():
+    return MockTileClient()
+
+@pytest.fixture
+def mock_file_cache():
+    return MockFileCache('/dev/null', 'png')
+
+
 class TestTileManagerStaleTiles(object):
-    def setup(self):
-        self.cache_dir = tempfile.mkdtemp()
-        self.file_cache = FileCache(cache_dir=self.cache_dir, file_ext='png')
-        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.client = MockTileClient()
-        self.source = TiledSource(self.grid, self.client)
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png', locker=self.locker)
-    def teardown(self):
-        shutil.rmtree(self.cache_dir)
 
-    def test_is_stale_missing(self):
-        assert not self.tile_mgr.is_stale(Tile((0, 0, 1)))
+    @pytest.fixture
+    def tile_mgr(self, file_cache, tile_locker):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        client = MockTileClient()
+        source = TiledSource(grid, client)
+        tile_mgr = TileManager(grid, file_cache, [source], 'png', locker=tile_locker)
+        return tile_mgr
 
-    def test_is_stale_not_expired(self):
-        create_cached_tile(Tile((0, 0, 1)), self.file_cache)
-        assert not self.tile_mgr.is_stale(Tile((0, 0, 1)))
+    def test_is_stale_missing(self, tile_mgr):
+        assert not tile_mgr.is_stale(Tile((0, 0, 1)))
 
-    def test_is_stale_expired(self):
-        create_cached_tile(Tile((0, 0, 1)), self.file_cache, timestamp=time.time()-3600)
-        self.tile_mgr._expire_timestamp = time.time()
-        assert self.tile_mgr.is_stale(Tile((0, 0, 1)))
+    def test_is_stale_not_expired(self, tile_mgr, file_cache):
+        create_cached_tile(Tile((0, 0, 1)), file_cache)
+        assert not tile_mgr.is_stale(Tile((0, 0, 1)))
+
+    def test_is_stale_expired(self, tile_mgr, file_cache):
+        create_cached_tile(Tile((0, 0, 1)), file_cache, timestamp=time.time()-3600)
+        tile_mgr._expire_timestamp = time.time()
+        assert tile_mgr.is_stale(Tile((0, 0, 1)))
 
 
 class TestTileManagerRemoveTiles(object):
-    def setup(self):
-        self.cache_dir = tempfile.mkdtemp()
-        self.file_cache = FileCache(cache_dir=self.cache_dir, file_ext='png')
-        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.client = MockTileClient()
-        self.source = TiledSource(self.grid, self.client)
-        self.image_opts = ImageOptions(format='image/png')
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            image_opts=self.image_opts,
-            locker=self.locker)
-    def teardown(self):
-        shutil.rmtree(self.cache_dir)
+    @pytest.fixture
+    def tile_mgr(self, file_cache, tile_locker):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        client = MockTileClient()
+        source = TiledSource(grid, client)
+        image_opts = ImageOptions(format='image/png')
+        return TileManager(grid, file_cache, [source], 'png',
+            image_opts=image_opts,
+            locker=tile_locker)
 
-    def test_remove_missing(self):
-        self.tile_mgr.remove_tile_coords([(0, 0, 0), (0, 0, 1)])
+    def test_remove_missing(self, tile_mgr):
+        tile_mgr.remove_tile_coords([(0, 0, 0), (0, 0, 1)])
 
-    def test_remove_existing(self):
-        create_cached_tile(Tile((0, 0, 1)), self.file_cache)
-        assert self.tile_mgr.is_cached(Tile((0, 0, 1)))
-        self.tile_mgr.remove_tile_coords([(0, 0, 0), (0, 0, 1)])
-        assert not self.tile_mgr.is_cached(Tile((0, 0, 1)))
+    def test_remove_existing(self, tile_mgr, file_cache):
+        create_cached_tile(Tile((0, 0, 1)), file_cache)
+        assert tile_mgr.is_cached(Tile((0, 0, 1)))
+        tile_mgr.remove_tile_coords([(0, 0, 0), (0, 0, 1)])
+        assert not tile_mgr.is_cached(Tile((0, 0, 1)))
+
 
 class TestTileManagerTiledSource(object):
-    def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png')
-        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.client = MockTileClient()
-        self.source = TiledSource(self.grid, self.client)
-        self.image_opts = ImageOptions(format='image/png')
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            image_opts=self.image_opts,
-            locker=self.locker,
+    @pytest.fixture
+    def tile_mgr(self, tile_locker, mock_file_cache, mock_tile_client):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        source = TiledSource(grid, mock_tile_client)
+        image_opts = ImageOptions(format='image/png')
+        return TileManager(grid, mock_file_cache, [source], 'png',
+            image_opts=image_opts,
+            locker=tile_locker,
         )
 
-    def test_create_tiles(self):
-        self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
-        assert self.file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
-        assert sorted(self.client.requested_tiles) == [(0, 0, 1), (1, 0, 1)]
+    def test_create_tiles(self, tile_mgr, mock_file_cache, mock_tile_client):
+        tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert sorted(mock_tile_client.requested_tiles) == [(0, 0, 1), (1, 0, 1)]
 
 class TestTileManagerDifferentSourceGrid(object):
-    def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png')
-        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.source_grid = TileGrid(SRS(4326), bbox=[0, -90, 180, 90])
-        self.client = MockTileClient()
-        self.source = TiledSource(self.source_grid, self.client)
-        self.image_opts = ImageOptions(format='image/png')
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            image_opts=self.image_opts,
-            locker=self.locker,
+    @pytest.fixture
+    def tile_mgr(self, mock_file_cache, mock_tile_client, tile_locker):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        source_grid = TileGrid(SRS(4326), bbox=[0, -90, 180, 90])
+        source = TiledSource(source_grid, mock_tile_client)
+        image_opts = ImageOptions(format='image/png')
+        return TileManager(grid, mock_file_cache, [source], 'png',
+            image_opts=image_opts,
+            locker=tile_locker,
         )
 
-    def test_create_tiles(self):
-        self.tile_mgr.creator().create_tiles([Tile((1, 0, 1))])
-        assert self.file_cache.stored_tiles == set([(1, 0, 1)])
-        assert self.client.requested_tiles == [(0, 0, 0)]
+    def test_create_tiles(self, tile_mgr, mock_file_cache, mock_tile_client):
+        tile_mgr.creator().create_tiles([Tile((1, 0, 1))])
+        assert mock_file_cache.stored_tiles == set([(1, 0, 1)])
+        assert mock_tile_client.requested_tiles == [(0, 0, 0)]
 
-    def test_create_tiles_out_of_bounds(self):
+    def test_create_tiles_out_of_bounds(self, tile_mgr):
         with pytest.raises(InvalidSourceQuery):
-            self.tile_mgr.creator().create_tiles([Tile((0, 0, 0))])
+            tile_mgr.creator().create_tiles([Tile((0, 0, 0))])
 
 class MockSource(MapLayer):
     def __init__(self, *args):
@@ -240,22 +248,25 @@ class MockSource(MapLayer):
         self.requested.append((query.bbox, query.size, query.srs))
         return ImageSource(self._image(query.size))
 
+@pytest.fixture
+def mock_source():
+    return MockSource()
+
 class TestTileManagerSource(object):
-    def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png')
-        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.source = MockSource()
-        self.image_opts = ImageOptions(format='image/png')
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            image_opts=self.image_opts,
-            locker=self.locker,
+
+    @pytest.fixture
+    def tile_mgr(self, mock_file_cache, mock_source, tile_locker):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        image_opts = ImageOptions(format='image/png')
+        return TileManager(grid, mock_file_cache, [mock_source], 'png',
+            image_opts=image_opts,
+            locker=tile_locker,
         )
 
-    def test_create_tile(self):
-        self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
-        assert self.file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
-        assert sorted(self.source.requested) == \
+    def test_create_tile(self, tile_mgr, mock_file_cache, mock_source):
+        tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert sorted(mock_source.requested) == \
             [((-180.0, -90.0, 0.0, 90.0), (256, 256), SRS(4326)),
              ((0.0, -90.0, 180.0, 90.0), (256, 256), SRS(4326))]
 
@@ -267,100 +278,107 @@ class MockWMSClient(object):
         self.requested.append((query.bbox, query.size, query.srs))
         return create_debug_img(query.size)
 
+@pytest.fixture
+def mock_wms_client():
+    return MockWMSClient()
+
 class TestTileManagerWMSSource(object):
-    def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png')
-        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.client = MockWMSClient()
-        self.source = WMSSource(self.client)
-        self.image_opts = ImageOptions(format='image/png')
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            meta_size=[2, 2], meta_buffer=0, image_opts=self.image_opts,
-            locker=self.locker,
+    @pytest.fixture
+    def tile_mgr(self, mock_file_cache, tile_locker, mock_wms_client):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        source = WMSSource(mock_wms_client)
+        image_opts = ImageOptions(format='image/png')
+        return TileManager(grid, mock_file_cache, [source], 'png',
+            meta_size=[2, 2], meta_buffer=0, image_opts=image_opts,
+            locker=tile_locker,
         )
 
-    def test_same_lock_for_meta_tile(self):
-        assert self.tile_mgr.lock(Tile((0, 0, 1))).lock_file == \
-            self.tile_mgr.lock(Tile((1, 0, 1))).lock_file
-    def test_locks_for_meta_tiles(self):
-        assert self.tile_mgr.lock(Tile((0, 0, 2))).lock_file != \
-            self.tile_mgr.lock(Tile((2, 0, 2))).lock_file
+    def test_same_lock_for_meta_tile(self, tile_mgr):
+        assert tile_mgr.lock(Tile((0, 0, 1))).lock_file == \
+            tile_mgr.lock(Tile((1, 0, 1))).lock_file
+    def test_locks_for_meta_tiles(self, tile_mgr):
+        assert tile_mgr.lock(Tile((0, 0, 2))).lock_file != \
+            tile_mgr.lock(Tile((2, 0, 2))).lock_file
 
-    def test_create_tile_first_level(self):
-        self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
-        assert self.file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
-        assert self.client.requested == \
+    def test_create_tile_first_level(self, tile_mgr, mock_file_cache, mock_wms_client):
+        tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert mock_wms_client.requested == \
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))]
 
-    def test_create_tile(self):
-        self.tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
-        assert self.file_cache.stored_tiles == \
+    def test_create_tile(self, tile_mgr, mock_file_cache, mock_wms_client):
+        tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
+        assert mock_file_cache.stored_tiles == \
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)])
-        assert sorted(self.client.requested) == \
+        assert sorted(mock_wms_client.requested) == \
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326))]
 
-    def test_create_tiles(self):
-        self.tile_mgr.creator().create_tiles([Tile((0, 0, 2)), Tile((2, 0, 2))])
-        assert self.file_cache.stored_tiles == \
+    def test_create_tiles(self, tile_mgr, mock_file_cache, mock_wms_client):
+        tile_mgr.creator().create_tiles([Tile((0, 0, 2)), Tile((2, 0, 2))])
+        assert mock_file_cache.stored_tiles == \
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
                  (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)])
-        assert sorted(self.client.requested) == \
+        assert sorted(mock_wms_client.requested) == \
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326)),
              ((0.0, -90.0, 180.0, 90.0), (512, 512), SRS(4326))]
 
-    def test_load_tile_coords(self):
-        tiles = self.tile_mgr.load_tile_coords(((0, 0, 2), (2, 0, 2)))
+    def test_load_tile_coords(self, tile_mgr, mock_file_cache, mock_wms_client):
+        tiles = tile_mgr.load_tile_coords(((0, 0, 2), (2, 0, 2)))
         assert tiles[0].coord == (0, 0, 2)
         assert isinstance(tiles[0].source, ImageSource)
         assert tiles[1].coord == (2, 0, 2)
         assert isinstance(tiles[1].source, ImageSource)
 
-        assert self.file_cache.stored_tiles == \
+        assert mock_file_cache.stored_tiles == \
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
                  (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)])
-        assert sorted(self.client.requested) == \
+        assert sorted(mock_wms_client.requested) == \
             [((-180.0, -90.0, 0.0, 90.0), (512, 512), SRS(4326)),
              ((0.0, -90.0, 180.0, 90.0), (512, 512), SRS(4326))]
 
 
 class TestTileManagerWMSSourceConcurrent(TestTileManagerWMSSource):
-    def setup(self):
-        TestTileManagerWMSSource.setup(self)
-        self.tile_mgr.concurrent_tile_creators = 2
-
-class TestTileManagerWMSSourceMinimalMetaRequests(object):
-    def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png')
-        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.client = MockWMSClient()
-        self.source = WMSSource(self.client)
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            meta_size=[2, 2], meta_buffer=10, minimize_meta_requests=True,
-            locker=self.locker,
+    @pytest.fixture
+    def tile_mgr(self, mock_file_cache, tile_locker, mock_wms_client):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        source = WMSSource(mock_wms_client)
+        image_opts = ImageOptions(format='image/png')
+        return TileManager(grid, mock_file_cache, [source], 'png',
+            meta_size=[2, 2], meta_buffer=0, image_opts=image_opts,
+            locker=tile_locker,
+            concurrent_tile_creators=2,
         )
 
-    def test_create_tile_single(self):
+class TestTileManagerWMSSourceMinimalMetaRequests(object):
+    @pytest.fixture
+    def tile_mgr(self, mock_file_cache, mock_wms_client, tile_locker):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        source = WMSSource(mock_wms_client)
+        return TileManager(grid, mock_file_cache, [source], 'png',
+            meta_size=[2, 2], meta_buffer=10, minimize_meta_requests=True,
+            locker=tile_locker,
+        )
+
+    def test_create_tile_single(self, tile_mgr, mock_file_cache, mock_wms_client):
         # not enabled for single tile requests
-        self.tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
-        assert self.file_cache.stored_tiles == \
+        tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
+        assert mock_file_cache.stored_tiles == \
             set([(0, 0, 2), (0, 1, 2), (1, 0, 2), (1, 1, 2)])
-        assert sorted(self.client.requested) == \
+        assert sorted(mock_wms_client.requested) == \
             [((-180.0, -90.0, 3.515625, 90.0), (522, 512), SRS(4326))]
 
-    def test_create_tile_multiple(self):
-        self.tile_mgr.creator().create_tiles([Tile((4, 0, 3)), Tile((4, 1, 3)), Tile((4, 2, 3))])
-        assert self.file_cache.stored_tiles == \
+    def test_create_tile_multiple(self, tile_mgr, mock_file_cache, mock_wms_client):
+        tile_mgr.creator().create_tiles([Tile((4, 0, 3)), Tile((4, 1, 3)), Tile((4, 2, 3))])
+        assert mock_file_cache.stored_tiles == \
             set([(4, 0, 3), (4, 1, 3), (4, 2, 3)])
-        assert sorted(self.client.requested) == \
+        assert sorted(mock_wms_client.requested) == \
             [((-1.7578125, -90, 46.7578125, 46.7578125), (276, 778), SRS(4326))]
 
-    def test_create_tile_multiple_fragmented(self):
-        self.tile_mgr.creator().create_tiles([Tile((4, 0, 3)), Tile((5, 2, 3))])
-        assert self.file_cache.stored_tiles == \
+    def test_create_tile_multiple_fragmented(self, tile_mgr, mock_file_cache, mock_wms_client):
+        tile_mgr.creator().create_tiles([Tile((4, 0, 3)), Tile((5, 2, 3))])
+        assert mock_file_cache.stored_tiles == \
             set([(4, 0, 3), (4, 1, 3), (4, 2, 3), (5, 0, 3), (5, 1, 3), (5, 2, 3)])
-        assert sorted(self.client.requested) == \
+        assert sorted(mock_wms_client.requested) == \
             [((-1.7578125, -90, 91.7578125, 46.7578125), (532, 778), SRS(4326))]
 
 class SlowMockSource(MockSource):
@@ -370,64 +388,70 @@ class SlowMockSource(MockSource):
         return MockSource.get_map(self, query)
 
 class TestTileManagerLocking(object):
-    def setup(self):
-        self.tile_dir = tempfile.mkdtemp()
-        self.file_cache = MockFileCache(self.tile_dir, 'png')
-        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.source = SlowMockSource()
-        self.image_opts = ImageOptions(format='image/png')
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            meta_size=[2, 2], meta_buffer=0, image_opts=self.image_opts,
-            locker=self.locker,
+    @pytest.fixture
+    def slow_source(self):
+        return SlowMockSource()
+    @pytest.fixture
+    def mock_file_cache(self, tmpdir):
+        return MockFileCache(tmpdir.strpath, 'png')
+
+    @pytest.fixture
+    def tile_mgr(self, mock_file_cache, slow_source, tile_locker):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        image_opts = ImageOptions(format='image/png')
+        return TileManager(grid, mock_file_cache, [slow_source], 'png',
+            meta_size=[2, 2], meta_buffer=0, image_opts=image_opts,
+            locker=tile_locker,
         )
 
-    def test_get_single(self):
-        self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
-        assert self.file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
-        assert self.source.requested == \
+    def test_get_single(self, tile_mgr, mock_file_cache, slow_source):
+        tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert slow_source.requested == \
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))]
 
-    def test_concurrent(self):
+    def test_concurrent(self, tile_mgr, mock_file_cache, slow_source):
         def do_it():
-            self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+            tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
 
         threads = [threading.Thread(target=do_it) for _ in range(3)]
         [t.start() for t in threads]
         [t.join() for t in threads]
 
-        assert self.file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
-        assert self.file_cache.loaded_tiles == counting_set([(0, 0, 1), (1, 0, 1), (0, 0, 1), (1, 0, 1)])
-        assert self.source.requested == \
+        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert mock_file_cache.loaded_tiles == counting_set([(0, 0, 1), (1, 0, 1), (0, 0, 1), (1, 0, 1)])
+        assert slow_source.requested == \
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))]
 
-        assert os.path.exists(self.file_cache.tile_location(Tile((0, 0, 1))))
+        assert os.path.exists(mock_file_cache.tile_location(Tile((0, 0, 1))))
 
-    def teardown(self):
-        shutil.rmtree(self.tile_dir)
 
 
 class TestTileManagerMultipleSources(object):
-    def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png')
-        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.source_base = MockSource()
-        self.source_overlay = MockSource()
-        self.image_opts = ImageOptions(format='image/png')
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache,
-            [self.source_base, self.source_overlay], 'png',
-            image_opts=self.image_opts,
-            locker=self.locker,
-        )
-        self.layer = CacheMapLayer(self.tile_mgr)
+    @pytest.fixture
+    def source_base(self):
+        return MockSource()
 
-    def test_get_single(self):
-        self.tile_mgr.creator().create_tiles([Tile((0, 0, 1))])
-        assert self.file_cache.stored_tiles == set([(0, 0, 1)])
-        assert self.source_base.requested == \
+    @pytest.fixture
+    def source_overlay(self):
+        return MockSource()
+
+    @pytest.fixture
+    def tile_mgr(self, mock_file_cache, tile_locker, source_base, source_overlay):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        image_opts = ImageOptions(format='image/png')
+        return TileManager(grid, mock_file_cache,
+            [source_base, source_overlay], 'png',
+            image_opts=image_opts,
+            locker=tile_locker,
+        )
+
+    def test_get_single(self, tile_mgr, mock_file_cache, source_base, source_overlay):
+        tile_mgr.creator().create_tiles([Tile((0, 0, 1))])
+        assert mock_file_cache.stored_tiles == set([(0, 0, 1)])
+        assert source_base.requested == \
             [((-180.0, -90.0, 0.0, 90.0), (256, 256), SRS(4326))]
-        assert self.source_overlay.requested == \
+        assert source_overlay.requested == \
             [((-180.0, -90.0, 0.0, 90.0), (256, 256), SRS(4326))]
 
 class SolidColorMockSource(MockSource):
@@ -438,26 +462,35 @@ class SolidColorMockSource(MockSource):
         return Image.new('RGB', size, self.color)
 
 class TestTileManagerMultipleSourcesWithMetaTiles(object):
-    def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png')
-        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.source_base = SolidColorMockSource(color='#ff0000')
-        self.source_base.supports_meta_tiles = True
-        self.source_overlay = MockSource()
-        self.source_overlay.supports_meta_tiles = True
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache,
-            [self.source_base, self.source_overlay], 'png',
+    @pytest.fixture
+    def source_base(self):
+        src = SolidColorMockSource(color='#ff0000')
+        src.supports_meta_tiles = True
+        return src
+
+    @pytest.fixture
+    def source_overlay(self):
+        src = MockSource()
+        src.supports_meta_tiles = True
+        return src
+
+    @pytest.fixture
+    def tile_mgr(self, mock_file_cache, tile_locker, source_base, source_overlay):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        image_opts = ImageOptions(format='image/png')
+        return TileManager(grid, mock_file_cache,
+            [source_base, source_overlay], 'png',
+            image_opts=image_opts,
             meta_size=[2, 2], meta_buffer=0,
-            locker=self.locker,
+            locker=tile_locker,
         )
 
-    def test_merged_tiles(self):
-        tiles = self.tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
-        assert self.file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
-        assert self.source_base.requested == \
+    def test_merged_tiles(self, tile_mgr, mock_file_cache, source_base, source_overlay):
+        tiles = tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
+        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert source_base.requested == \
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))]
-        assert self.source_overlay.requested == \
+        assert source_overlay.requested == \
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))]
 
         hist = tiles[0].source.as_image().histogram()
@@ -467,49 +500,56 @@ class TestTileManagerMultipleSourcesWithMetaTiles(object):
         assert 55000 < hist[512]         # blue  = 0x00
 
 
-    def test_sources_with_mixed_support_for_meta_tiles(self):
-        self.source_base.supports_meta_tiles = False
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
+    def test_sources_with_mixed_support_for_meta_tiles(self, mock_file_cache, source_base, source_overlay, tile_locker):
+        source_base.supports_meta_tiles = False
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         with pytest.raises(ValueError):
-            self.tile_mgr = TileManager(self.grid, self.file_cache,
-                [self.source_base, self.source_overlay], 'png',
+            TileManager(grid, file_cache,
+                [source_base, source_overlay], 'png',
                 meta_size=[2, 2], meta_buffer=0,
-                locker=self.locker)
+                locker=tile_locker)
 
-    def test_sources_with_no_support_for_meta_tiles(self):
-        self.source_base.supports_meta_tiles = False
-        self.source_overlay.supports_meta_tiles = False
+    def test_sources_with_no_support_for_meta_tiles(self, mock_file_cache, source_base, source_overlay, tile_locker):
+        source_base.supports_meta_tiles = False
+        source_overlay.supports_meta_tiles = False
 
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache,
-            [self.source_base, self.source_overlay], 'png',
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        tile_mgr = TileManager(grid, mock_file_cache,
+            [source_base, source_overlay], 'png',
             meta_size=[2, 2], meta_buffer=0,
-            locker=self.locker)
+            locker=tile_locker)
 
-        assert self.tile_mgr.meta_grid is None
+        assert tile_mgr.meta_grid is None
 
 
 class TestTileManagerBulkMetaTiles(object):
-    def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png')
-        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90], origin='ul')
-        self.source_base = SolidColorMockSource(color='#ff0000')
-        self.source_base.supports_meta_tiles = False
-        self.source_overlay = MockSource()
-        self.source_overlay.supports_meta_tiles = False
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache,
-            [self.source_base, self.source_overlay], 'png',
+    @pytest.fixture
+    def source_base(self):
+        src = SolidColorMockSource(color='#ff0000')
+        src.supports_meta_tiles = False
+        return src
+
+    @pytest.fixture
+    def source_overlay(self):
+        src = MockSource()
+        src.supports_meta_tiles = False
+        return src
+
+    @pytest.fixture
+    def tile_mgr(self, mock_file_cache, source_base, source_overlay, tile_locker):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90], origin='ul')
+        return TileManager(grid, mock_file_cache,
+            [source_base, source_overlay], 'png',
             meta_size=[2, 2], meta_buffer=0,
-            locker=self.locker,
+            locker=tile_locker,
             bulk_meta_tiles=True,
         )
 
-    def test_bulk_get(self):
-        tiles = self.tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
+    def test_bulk_get(self, tile_mgr, mock_file_cache, source_base, source_overlay):
+        tiles = tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
         assert len(tiles) == 2*2
-        assert self.file_cache.stored_tiles == set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)])
-        for requested in [self.source_base.requested, self.source_overlay.requested]:
+        assert mock_file_cache.stored_tiles == set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2)])
+        for requested in [source_base.requested, source_overlay.requested]:
             assert set(requested) == set([
                 ((-180.0, 0.0, -90.0, 90.0), (256, 256), SRS(4326)),
                 ((-90.0, 0.0, 0.0, 90.0), (256, 256), SRS(4326)),
@@ -517,20 +557,33 @@ class TestTileManagerBulkMetaTiles(object):
                 ((-90.0, -90.0, 0.0, 0.0), (256, 256), SRS(4326)),
             ])
 
-    def test_bulk_get_error(self):
-        self.tile_mgr.sources = [self.source_base, ErrorSource()]
+    def test_bulk_get_error(self, tile_mgr, source_base):
+        tile_mgr.sources = [source_base, ErrorSource()]
         try:
-            self.tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
+            tile_mgr.creator().create_tiles([Tile((0, 0, 2))])
         except Exception as ex:
             assert ex.args[0] == "source error"
 
-    def test_bulk_get_multiple_meta_tiles(self):
-        tiles = self.tile_mgr.creator().create_tiles([Tile((1, 0, 2)), Tile((2, 0, 2))])
+    def test_bulk_get_multiple_meta_tiles(self, tile_mgr, mock_file_cache):
+        tiles = tile_mgr.creator().create_tiles([Tile((1, 0, 2)), Tile((2, 0, 2))])
         assert len(tiles) == 2*2*2
-        assert self.file_cache.stored_tiles, set([
+        assert mock_file_cache.stored_tiles, set([
             (0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
             (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2),
         ])
+
+class TestTileManagerBulkMetaTilesConcurrent(TestTileManagerBulkMetaTiles):
+    @pytest.fixture
+    def tile_mgr(self, mock_file_cache, source_base, source_overlay, tile_locker):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90], origin='ul')
+        return TileManager(
+            grid, mock_file_cache,
+            [source_base, source_overlay], 'png',
+            meta_size=[2, 2], meta_buffer=0,
+            locker=tile_locker,
+            bulk_meta_tiles=True,
+            concurrent_tile_creators=2,
+        )
 
 class ErrorSource(MapLayer):
     def __init__(self, *args):
@@ -541,158 +594,150 @@ class ErrorSource(MapLayer):
         self.requested.append((query.bbox, query.size, query.srs))
         raise Exception("source error")
 
-class TestTileManagerBulkMetaTilesConcurrent(TestTileManagerBulkMetaTiles):
-    def setup(self):
-        TestTileManagerBulkMetaTiles.setup(self)
-        self.tile_mgr.concurrent_tile_creators = 2
-
 
 default_image_opts = ImageOptions(resampling='bicubic')
 
 class TestCacheMapLayer(object):
-    def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png')
-        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.client = MockWMSClient()
-        self.source = WMSSource(self.client)
-        self.image_opts = ImageOptions(resampling='nearest')
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            meta_size=[2, 2], meta_buffer=0, image_opts=self.image_opts,
-            locker=self.locker)
-        self.layer = CacheMapLayer(self.tile_mgr, image_opts=default_image_opts)
+    @pytest.fixture
+    def layer(self, mock_file_cache, mock_wms_client, tile_locker):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        source = WMSSource(mock_wms_client)
+        image_opts = ImageOptions(resampling='nearest')
+        tile_mgr = TileManager(grid, mock_file_cache, [source], 'png',
+            meta_size=[2, 2], meta_buffer=0, image_opts=image_opts,
+            locker=tile_locker)
+        return CacheMapLayer(tile_mgr, image_opts=default_image_opts)
 
-    def test_get_map_small(self):
-        result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
-        assert self.file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+    def test_get_map_small(self, layer, mock_file_cache):
+        result = layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
+        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
         assert result.size == (300, 150)
 
-    def test_get_map_large(self):
+    def test_get_map_large(self, layer, mock_file_cache):
         # gets next resolution layer
-        result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (600, 300), SRS(4326), 'png'))
-        assert self.file_cache.stored_tiles == \
+        result = layer.get_map(MapQuery((-180, -90, 180, 90), (600, 300), SRS(4326), 'png'))
+        assert mock_file_cache.stored_tiles == \
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
                  (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)])
         assert result.size == (600, 300)
 
-    def test_transformed(self):
-        result = self.layer.get_map(MapQuery(
+    def test_transformed(self, layer, mock_file_cache):
+        result = layer.get_map(MapQuery(
             (-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
             SRS(900913), 'png'))
-        assert self.file_cache.stored_tiles == \
+        assert mock_file_cache.stored_tiles == \
             set([(0, 0, 2), (1, 0, 2), (0, 1, 2), (1, 1, 2),
                  (2, 0, 2), (3, 0, 2), (2, 1, 2), (3, 1, 2)])
         assert result.size == (500, 500)
 
-    def test_single_tile_match(self):
-        result = self.layer.get_map(MapQuery(
+    def test_single_tile_match(self, layer, mock_file_cache):
+        result = layer.get_map(MapQuery(
             (0.001, 0, 90, 90), (256, 256), SRS(4326), 'png', tiled_only=True))
-        assert self.file_cache.stored_tiles == \
+        assert mock_file_cache.stored_tiles == \
             set([(3, 0, 2), (2, 0, 2), (3, 1, 2), (2, 1, 2)])
         assert result.size == (256, 256)
 
-    def test_single_tile_no_match(self):
+    def test_single_tile_no_match(self, layer):
         with pytest.raises(MapBBOXError):
-            self.layer.get_map(
+            layer.get_map(
                 MapQuery((0.1, 0, 90, 90), (256, 256),
                          SRS(4326), 'png', tiled_only=True)
             )
 
-    def test_get_map_with_res_range(self):
+    def test_get_map_with_res_range(self, mock_file_cache, mock_wms_client, tile_locker):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         res_range = resolution_range(1000, 10)
-        self.source = WMSSource(self.client, res_range=res_range)
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            meta_size=[2, 2], meta_buffer=0, image_opts=self.image_opts,
-            locker=self.locker)
-        self.layer = CacheMapLayer(self.tile_mgr, image_opts=default_image_opts)
+        source = WMSSource(mock_wms_client, res_range=res_range)
+        image_opts = ImageOptions(resampling='nearest')
+        tile_mgr = TileManager(grid, mock_file_cache, [source], 'png',
+            meta_size=[2, 2], meta_buffer=0, image_opts=image_opts,
+            locker=tile_locker)
+        layer = CacheMapLayer(tile_mgr, image_opts=default_image_opts)
 
-        try:
-            result = self.layer.get_map(MapQuery(
+        with pytest.raises(BlankImage):
+            result = layer.get_map(MapQuery(
                 (-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
                 SRS(900913), 'png'))
-        except BlankImage:
-            pass
-        else:
-            assert False, 'expected BlankImage exception'
-        assert self.file_cache.stored_tiles == set()
+        assert mock_file_cache.stored_tiles == set()
 
-        result = self.layer.get_map(MapQuery(
+        result = layer.get_map(MapQuery(
                 (0, 0, 10000, 10000), (50, 50),
                 SRS(900913), 'png'))
-        assert self.file_cache.stored_tiles == \
+        assert mock_file_cache.stored_tiles == \
             set([(512, 257, 10), (513, 256, 10), (512, 256, 10), (513, 257, 10)])
         assert result.size == (50, 50)
 
 class TestCacheMapLayerWithExtent(object):
-    def setup(self):
-        self.file_cache = MockFileCache('/dev/null', 'png')
-        self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
-        self.client = MockWMSClient()
-        self.source = WMSSource(self.client)
-        self.image_opts = ImageOptions(resampling='nearest', format='png')
-        self.locker = TileLocker(tmp_lock_dir, 10, "id")
-        self.tile_mgr = TileManager(self.grid, self.file_cache, [self.source], 'png',
-            meta_size=[1, 1], meta_buffer=0, image_opts=self.image_opts,
-            locker=self.locker)
-        self.layer = CacheMapLayer(self.tile_mgr, image_opts=default_image_opts)
-        self.layer.extent = BBOXCoverage([0, 0, 90, 45], SRS(4326)).extent
+    @pytest.fixture
+    def source(self, mock_wms_client):
+        return WMSSource(mock_wms_client)
 
-    def test_get_outside_extent(self):
+    @pytest.fixture
+    def layer(self, mock_file_cache, source, tile_locker):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        image_opts = ImageOptions(resampling='nearest', format='png')
+        tile_mgr = TileManager(grid, mock_file_cache, [source], 'png',
+            meta_size=[1, 1], meta_buffer=0, image_opts=image_opts,
+            locker=tile_locker)
+        layer = CacheMapLayer(tile_mgr, image_opts=default_image_opts)
+        layer.extent = BBOXCoverage([0, 0, 90, 45], SRS(4326)).extent
+        return layer
+
+    def test_get_outside_extent(self, layer):
         with pytest.raises(BlankImage):
-            self.layer.get_map(MapQuery((-180, -90, 0, 0), (300, 150), SRS(4326), 'png'))
+            layer.get_map(MapQuery((-180, -90, 0, 0), (300, 150), SRS(4326), 'png'))
 
-    def test_get_map_small(self):
-        result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
-        assert self.file_cache.stored_tiles == set([(1, 0, 1)])
+    def test_get_map_small(self, layer, mock_file_cache, mock_wms_client):
+        result = layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
+        assert mock_file_cache.stored_tiles == set([(1, 0, 1)])
         # source requests one tile (no meta-tiling configured)
-        assert self.client.requested == [((0.0, -90.0, 180.0, 90.0), (256, 256), SRS('EPSG:4326'))]
+        assert mock_wms_client.requested == [((0.0, -90.0, 180.0, 90.0), (256, 256), SRS('EPSG:4326'))]
         assert result.size == (300, 150)
 
-    def test_get_map_small_with_source_extent(self):
-        self.source.extent = BBOXCoverage([0, 0, 90, 45], SRS(4326)).extent
-        result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
-        assert self.file_cache.stored_tiles == set([(1, 0, 1)])
+    def test_get_map_small_with_source_extent(self, source, layer, mock_file_cache, mock_wms_client):
+        source.extent = BBOXCoverage([0, 0, 90, 45], SRS(4326)).extent
+        result = layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
+        assert mock_file_cache.stored_tiles == set([(1, 0, 1)])
         # source requests one tile (no meta-tiling configured) limited to source.extent
-        assert self.client.requested == [((0, 0, 90, 45), (128, 64), (SRS(4326)))]
+        assert mock_wms_client.requested == [((0, 0, 90, 45), (128, 64), (SRS(4326)))]
         assert result.size == (300, 150)
 
 class TestDirectMapLayer(object):
-    def setup(self):
-        self.client = MockWMSClient()
-        self.source = WMSSource(self.client)
-        self.layer = DirectMapLayer(self.source, GLOBAL_GEOGRAPHIC_EXTENT)
+    @pytest.fixture
+    def layer(self, mock_wms_client):
+        source = WMSSource(mock_wms_client)
+        return DirectMapLayer(source, GLOBAL_GEOGRAPHIC_EXTENT)
 
-    def test_get_map(self):
-        result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
-        assert self.client.requested == [((-180, -90, 180, 90), (300, 150), SRS(4326))]
+    def test_get_map(self, layer, mock_wms_client):
+        result = layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
+        assert mock_wms_client.requested == [((-180, -90, 180, 90), (300, 150), SRS(4326))]
         assert result.size == (300, 150)
 
-    def test_get_map_mercator(self):
-        result = self.layer.get_map(MapQuery(
+    def test_get_map_mercator(self, layer, mock_wms_client):
+        result = layer.get_map(MapQuery(
             (-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
             SRS(900913), 'png'))
-        assert self.client.requested == \
+        assert mock_wms_client.requested == \
             [((-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
               SRS(900913))]
         assert result.size == (500, 500)
 
 class TestDirectMapLayerWithSupportedSRS(object):
-    def setup(self):
-        self.client = MockWMSClient()
-        self.source = WMSSource(self.client)
-        self.layer = DirectMapLayer(self.source, GLOBAL_GEOGRAPHIC_EXTENT)
+    @pytest.fixture
+    def layer(self, mock_wms_client):
+        source = WMSSource(mock_wms_client)
+        return DirectMapLayer(source, GLOBAL_GEOGRAPHIC_EXTENT)
 
-    def test_get_map(self):
-        result = self.layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
-        assert self.client.requested == [((-180, -90, 180, 90), (300, 150), SRS(4326))]
+    def test_get_map(self, layer, mock_wms_client):
+        result = layer.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326), 'png'))
+        assert mock_wms_client.requested == [((-180, -90, 180, 90), (300, 150), SRS(4326))]
         assert result.size == (300, 150)
 
-    def test_get_map_mercator(self):
-        result = self.layer.get_map(MapQuery(
+    def test_get_map_mercator(self, layer, mock_wms_client):
+        result = layer.get_map(MapQuery(
             (-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
             SRS(900913), 'png'))
-        assert self.client.requested == \
+        assert mock_wms_client.requested == \
             [((-20037508.34, -20037508.34, 20037508.34, 20037508.34), (500, 500),
               SRS(900913))]
         assert result.size == (500, 500)
@@ -715,39 +760,54 @@ class MockHTTPClient(object):
         result.headers = {'Content-type': 'image/'+format}
         return result
 
+
+@pytest.fixture
+def mock_http_client():
+    return MockHTTPClient()
+
 class TestWMSSourceTransform(object):
-    def setup(self):
-        self.http_client = MockHTTPClient()
-        self.req_template = WMS111MapRequest(url='http://localhost/service?', param={
+    @pytest.fixture
+    def source(self, mock_http_client):
+        req_template = WMS111MapRequest(url='http://localhost/service?', param={
             'format': 'image/png', 'layers': 'foo'
         })
-        self.client = WMSClient(self.req_template, http_client=self.http_client)
-        self.source = WMSSource(self.client, supported_srs=[SRS(4326)],
+        client = WMSClient(req_template, http_client=mock_http_client)
+        return WMSSource(client, supported_srs=[SRS(4326)],
             image_opts=ImageOptions(resampling='bilinear'))
 
-    def test_get_map(self):
-        self.source.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326)))
-        assert query_eq(self.http_client.requested[0], "http://localhost/service?"
+    def test_get_map(self, source, mock_http_client):
+        source.get_map(MapQuery((-180, -90, 180, 90), (300, 150), SRS(4326)))
+        assert query_eq(mock_http_client.requested[0], "http://localhost/service?"
             "layers=foo&width=300&version=1.1.1&bbox=-180,-90,180,90&service=WMS"
             "&format=image%2Fpng&styles=&srs=EPSG%3A4326&request=GetMap&height=150")
 
-    def test_get_map_transformed(self):
-        self.source.get_map(MapQuery(
+    def test_get_map_transformed(self, source, mock_http_client):
+        source.get_map(MapQuery(
            (556597, 4865942, 1669792, 7361866), (300, 150), SRS(900913)))
-        assert wms_query_eq(self.http_client.requested[0], "http://localhost/service?"
+        assert wms_query_eq(mock_http_client.requested[0], "http://localhost/service?"
             "layers=foo&width=300&version=1.1.1"
             "&bbox=4.99999592195,39.9999980766,14.999996749,54.9999994175&service=WMS"
             "&format=image%2Fpng&styles=&srs=EPSG%3A4326&request=GetMap&height=450")
 
-class TestWMSSourceWithClient(object):
-    def setup(self):
-        self.req_template = WMS111MapRequest(
-            url='http://%s:%d/service?' % TEST_SERVER_ADDRESS,
-            param={'format': 'image/png', 'layers': 'foo'})
-        self.client = WMSClient(self.req_template)
-        self.source = WMSSource(self.client)
 
-    def test_get_map(self):
+class TestWMSSourceWithClient(object):
+
+    @pytest.fixture
+    def req_template(self):
+        return WMS111MapRequest(
+            url='http://%s:%d/service?' % TEST_SERVER_ADDRESS,
+            param={'format': 'image/png', 'layers': 'foo'},
+        )
+
+    @pytest.fixture
+    def client(self, req_template):
+        return WMSClient(req_template)
+
+    @pytest.fixture
+    def source(self, client):
+        return WMSSource(client)
+
+    def test_get_map(self, source):
         with tmp_image((512, 512)) as img:
             expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                                      '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326&styles='
@@ -755,12 +815,13 @@ class TestWMSSourceWithClient(object):
                            {'body': img.read(), 'headers': {'content-type': 'image/png'}})
             with mock_httpd(TEST_SERVER_ADDRESS, [expected_req]):
                 q = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
-                result = self.source.get_map(q)
+                result = source.get_map(q)
                 assert isinstance(result, ImageSource)
                 assert result.size == (512, 512)
                 assert is_png(result.as_buffer(seekable=True))
                 assert result.as_image().size == (512, 512)
-    def test_get_map_non_image_content_type(self):
+
+    def test_get_map_non_image_content_type(self, source):
         with tmp_image((512, 512)) as img:
             expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                                      '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326&styles='
@@ -769,14 +830,15 @@ class TestWMSSourceWithClient(object):
             with mock_httpd(TEST_SERVER_ADDRESS, [expected_req]):
                 q = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
                 try:
-                    self.source.get_map(q)
+                    source.get_map(q)
                 except SourceError as e:
                     assert 'no image returned' in e.args[0]
                 else:
                     assert False, 'no SourceError raised'
-    def test_basic_auth(self):
-        http_client = HTTPClient(self.req_template.url, username='foo', password='bar@')
-        self.client.http_client = http_client
+
+    def test_basic_auth(self, req_template, client, source):
+        http_client = HTTPClient(req_template.url, username='foo', password='bar@')
+        client.http_client = http_client
         def assert_auth(req_handler):
             assert 'Authorization' in req_handler.headers
             auth_data = req_handler.headers['Authorization'].split()[1]
@@ -791,32 +853,34 @@ class TestWMSSourceWithClient(object):
                         {'body': b'no image', 'headers': {'content-type': 'image/png'}})
         with mock_httpd(TEST_SERVER_ADDRESS, [expected_req]):
             q = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
-            self.source.get_map(q)
+            source.get_map(q)
 
 TESTSERVER_URL = 'http://%s:%d' % TEST_SERVER_ADDRESS
 
 class TestWMSSource(object):
-    def setup(self):
-        self.req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo'})
-        self.http = MockHTTPClient()
-        self.wms = WMSClient(self.req, http_client=self.http)
-        self.source = WMSSource(self.wms, supported_srs=[SRS(4326)],
+
+    @pytest.fixture
+    def source(self, mock_http_client):
+        req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo'})
+        wms = WMSClient(req, http_client=mock_http_client)
+        return WMSSource(wms, supported_srs=[SRS(4326)],
             image_opts=ImageOptions(resampling='bilinear'))
-    def test_request(self):
+
+    def test_request(self, source, mock_http_client):
         req = MapQuery((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326), 'png')
-        self.source.get_map(req)
-        assert len(self.http.requested) == 1
-        assert_query_eq(self.http.requested[0],
+        source.get_map(req)
+        assert len(mock_http_client.requested) == 1
+        assert_query_eq(mock_http_client.requested[0],
             TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                            '&REQUEST=GetMap&HEIGHT=256&SRS=EPSG%3A4326'
                            '&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&WIDTH=512&STYLES=')
 
-    def test_transformed_request(self):
+    def test_transformed_request(self, source, mock_http_client):
         req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
-        resp = self.source.get_map(req)
-        assert len(self.http.requested) == 1
+        resp = source.get_map(req)
+        assert len(mock_http_client.requested) == 1
 
-        assert wms_query_eq(self.http.requested[0],
+        assert wms_query_eq(mock_http_client.requested[0],
             TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                            '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
                            '&VERSION=1.1.1&WIDTH=512&STYLES='
@@ -824,36 +888,36 @@ class TestWMSSource(object):
         img = resp.as_image()
         assert img.mode in ('P', 'RGB')
 
-    def test_similar_srs(self):
+    def test_similar_srs(self, mock_http_client):
         # request in 3857 and source supports only 900913
         # 3857 and 900913 are equal but the client requests must use 900913
-        self.req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
+        req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
                                     param={'layers':'foo', 'transparent': 'true'})
-        self.wms = WMSClient(self.req, http_client=self.http)
-        self.source = WMSSource(self.wms, supported_srs=[SRS(900913)],
+        wms = WMSClient(req, http_client=mock_http_client)
+        source = WMSSource(wms, supported_srs=[SRS(900913)],
             image_opts=ImageOptions(resampling='bilinear'))
         req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(3857), 'png')
-        self.source.get_map(req)
-        assert len(self.http.requested) == 1
+        source.get_map(req)
+        assert len(mock_http_client.requested) == 1
 
-        assert_query_eq(self.http.requested[0],
+        assert_query_eq(mock_http_client.requested[0],
             TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                            '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A900913'
                            '&VERSION=1.1.1&WIDTH=512&STYLES=&transparent=true'
                            '&BBOX=-200000,-200000,200000,200000')
 
-    def test_transformed_request_transparent(self):
-        self.req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
+    def test_transformed_request_transparent(self, mock_http_client):
+        req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
                                     param={'layers':'foo', 'transparent': 'true'})
-        self.wms = WMSClient(self.req, http_client=self.http)
-        self.source = WMSSource(self.wms, supported_srs=[SRS(4326)],
+        wms = WMSClient(req, http_client=mock_http_client)
+        source = WMSSource(wms, supported_srs=[SRS(4326)],
             image_opts=ImageOptions(resampling='bilinear'))
 
         req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
-        resp = self.source.get_map(req)
-        assert len(self.http.requested) == 1
+        resp = source.get_map(req)
+        assert len(mock_http_client.requested) == 1
 
-        assert wms_query_eq(self.http.requested[0],
+        assert wms_query_eq(mock_http_client.requested[0],
             TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                            '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
                            '&VERSION=1.1.1&WIDTH=512&STYLES=&transparent=true'
@@ -870,74 +934,63 @@ class MockLayer(object):
     def get_map(self, query):
         self.requested.append((query.bbox, query.size, query.srs))
 
-class TestResolutionConditionalLayers(object):
-    def setup(self):
-        self.low = MockLayer()
-        self.high = MockLayer()
-        self.layer = ResolutionConditional(self.low, self.high, 10, SRS(900913),
-            GLOBAL_GEOGRAPHIC_EXTENT)
-    def test_resolution_low(self):
-        self.layer.get_map(MapQuery((0, 0, 10000, 10000), (100, 100), SRS(900913)))
-        assert self.low.requested
-        assert not self.high.requested
-    def test_resolution_high(self):
-        self.layer.get_map(MapQuery((0, 0, 100, 100), (100, 100), SRS(900913)))
-        assert not self.low.requested
-        assert self.high.requested
-    def test_resolution_match(self):
-        self.layer.get_map(MapQuery((0, 0, 10, 10), (100, 100), SRS(900913)))
-        assert not self.low.requested
-        assert self.high.requested
-    def test_resolution_low_transform(self):
-        self.layer.get_map(MapQuery((0, 0, 0.1, 0.1), (100, 100), SRS(4326)))
-        assert self.low.requested
-        assert not self.high.requested
-    def test_resolution_high_transform(self):
-        self.layer.get_map(MapQuery((0, 0, 0.005, 0.005), (100, 100), SRS(4326)))
-        assert not self.low.requested
-        assert self.high.requested
+@pytest.mark.parametrize('case,map_query,low_requested', [
+    ['low', MapQuery((0, 0, 10000, 10000), (100, 100), SRS(3857)), True],
+    ['high', MapQuery((0, 0, 100, 100), (100, 100), SRS(3857)), False],
+    ['match', MapQuery((0, 0, 10, 10), (100, 100), SRS(3857)), False],
+    ['low_transform', MapQuery((0, 0, 0.1, 0.1), (100, 100), SRS(4326)), True],
+    ['high_transform', MapQuery((0, 0, 0.005, 0.005), (100, 100), SRS(4326)), False],
+])
+def test_resolution_conditional_layers(case, map_query, low_requested):
+    low = MockLayer()
+    high = MockLayer()
+    layer = ResolutionConditional(low, high, 10, SRS(3857),
+        GLOBAL_GEOGRAPHIC_EXTENT)
 
-class TestSRSConditionalLayers(object):
-    def setup(self):
-        self.l4326 = MockLayer()
-        self.l900913 = MockLayer()
-        self.l32632 = MockLayer()
-        self.layer = SRSConditional([
-            (self.l4326, (SRS('EPSG:4326'),)),
-            (self.l900913, (SRS('EPSG:900913'), SRS('EPSG:31467'))),
-            (self.l32632, (SRSConditional.PROJECTED,)),
-        ], GLOBAL_GEOGRAPHIC_EXTENT)
-    def test_srs_match(self):
-        assert self.layer._select_layer(SRS(4326)) == self.l4326
-        assert self.layer._select_layer(SRS(900913)) == self.l900913
-        assert self.layer._select_layer(SRS(31467)) == self.l900913
-    def test_srs_match_type(self):
-        assert self.layer._select_layer(SRS(31466)) == self.l32632
-        assert self.layer._select_layer(SRS(32633)) == self.l32632
-    def test_no_match_first_type(self):
-        assert self.layer._select_layer(SRS(4258)) == self.l4326
+    layer.get_map(map_query)
+    assert bool(low.requested) == low_requested
+    assert bool(high.requested) != low_requested
 
-class TestNeastedConditionalLayers(object):
-    def setup(self):
-        self.direct = MockLayer()
-        self.l900913 = MockLayer()
-        self.l4326 = MockLayer()
-        self.layer = ResolutionConditional(
-            SRSConditional([
-                (self.l900913, (SRS('EPSG:900913'),)),
-                (self.l4326, (SRS('EPSG:4326'),))
-            ], GLOBAL_GEOGRAPHIC_EXTENT),
-            self.direct, 10, SRS(900913), GLOBAL_GEOGRAPHIC_EXTENT
-            )
-    def test_resolution_high_900913(self):
-        self.layer.get_map(MapQuery((0, 0, 100, 100), (100, 100), SRS(900913)))
-        assert self.direct.requested
-    def test_resolution_high_4326(self):
-        self.layer.get_map(MapQuery((0, 0, 0.0001, 0.0001), (100, 100), SRS(4326)))
-        assert self.direct.requested
-    def test_resolution_low_4326(self):
-        self.layer.get_map(MapQuery((0, 0, 10, 10), (100, 100), SRS(4326)))
-        assert self.l4326.requested
-    def test_resolution_low_projected(self):
-        self.layer.get_map(MapQuery((0, 0, 10000, 10000), (100, 100), SRS(31467)))
-        assert self.l900913.requested
+
+def test_srs_conditional_layers():
+    l4326 = MockLayer()
+    l900913 = MockLayer()
+    l32632 = MockLayer()
+    layer = SRSConditional([
+        (l4326, (SRS('EPSG:4326'),)),
+        (l900913, (SRS('EPSG:900913'), SRS('EPSG:31467'))),
+        (l32632, (SRSConditional.PROJECTED,)),
+    ], GLOBAL_GEOGRAPHIC_EXTENT)
+
+    # srs match
+    assert layer._select_layer(SRS(4326)) == l4326
+    assert layer._select_layer(SRS(900913)) == l900913
+    assert layer._select_layer(SRS(31467)) == l900913
+    # type match (projected)
+    assert layer._select_layer(SRS(31466)) == l32632
+    assert layer._select_layer(SRS(32633)) == l32632
+    # fallback is first layer
+    assert layer._select_layer(SRS(4258)) == l4326
+
+@pytest.mark.parametrize('case,map_query,is_direct,is_l3857,is_l4326', [
+    ['high_3857', MapQuery((0, 0, 100, 100), (100, 100), SRS(900913)), True, False, False],
+    ['high_4326', MapQuery((0, 0, 0.0001, 0.0001), (100, 100), SRS(4326)), True, False, False],
+    ['low_4326', MapQuery((0, 0, 10, 10), (100, 100), SRS(4326)), False, False, True],
+    ['low_3857', MapQuery((0, 0, 10000, 10000), (100, 100), SRS(31467)), False, True, False],
+    ['low_projected', MapQuery((0, 0, 10000, 10000), (100, 100), SRS(31467)), False, True, False],
+])
+def test_neasted_conditional_layers(case, map_query, is_direct, is_l3857, is_l4326):
+    direct = MockLayer()
+    l3857 = MockLayer()
+    l4326 = MockLayer()
+    layer = ResolutionConditional(
+        SRSConditional([
+            (l3857, (SRS('EPSG:3857'),)),
+            (l4326, (SRS('EPSG:4326'),))
+        ], GLOBAL_GEOGRAPHIC_EXTENT),
+        direct, 10, SRS(3857), GLOBAL_GEOGRAPHIC_EXTENT
+        )
+    layer.get_map(map_query)
+    assert bool(direct.requested) == is_direct
+    assert bool(l3857.requested) == is_l3857
+    assert bool(l4326.requested) == is_l4326
