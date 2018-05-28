@@ -5,6 +5,7 @@ __all__ = ['b', 'basestring_', 'bytes', 'next', 'is_unicode']
 if sys.version < "3":
     b = bytes = str
     basestring_ = basestring
+    text = unicode
 else:
 
     def b(s):
@@ -13,7 +14,7 @@ else:
         return bytes(s)
     basestring_ = (bytes, str)
     bytes = bytes
-text = str
+    text = str
 
 if sys.version < "3":
 
@@ -39,7 +40,7 @@ def coerce_text(v):
         else:
             attr = '__str__'
         if hasattr(v, attr):
-            return unicode(v)
+            return text(v)
         else:
             return bytes(v)
     return v
