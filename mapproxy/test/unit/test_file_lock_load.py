@@ -23,7 +23,8 @@ from mapproxy.test.helper import skip_with_nosetest
 skip_with_nosetest()
 
 
-def lock((lock_file, count_file)):
+def lock(args):
+    lock_file, count_file = args
     l = FileLock(lock_file.strpath, timeout=60)
     l.lock()
     counter = int(count_file.read())

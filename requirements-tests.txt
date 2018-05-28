@@ -31,7 +31,7 @@ enum-compat==0.0.2
 enum34==1.1.6
 eventlet==0.23.0
 funcsigs==1.0.2
-futures==3.2.0
+futures==3.2.0;python_version<"3.0"
 greenlet==0.4.13
 httpretty==0.9.4
 idna==2.6
