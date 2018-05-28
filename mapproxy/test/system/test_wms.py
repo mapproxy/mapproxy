@@ -34,7 +34,6 @@ from mapproxy.request.wms import WMS100MapRequest, WMS111MapRequest, WMS130MapRe
 from mapproxy.test.image import is_jpeg, is_png, tmp_image, create_tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
-from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from nose.tools import eq_, assert_almost_equal
 
 import pytest
@@ -1103,3 +1102,6 @@ if sys.platform != 'win32':
                 resp = self.app.get(self.common_map_req)
                 eq_(resp.content_type, 'image/png')
 
+
+def assert_almost_equal_bbox(bbox1, bbox2, rel=0.01):
+    assert bbox1 == pytest.approx(bbox2, rel=rel)

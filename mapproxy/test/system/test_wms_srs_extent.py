@@ -22,7 +22,6 @@ from mapproxy.test.image import tmp_image, assert_colors_equal, img_from_buf
 from mapproxy.test.http import mock_httpd
 
 from mapproxy.test.system.test_wms import bbox_srs_from_boundingbox
-from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from nose.tools import eq_
 
 import pytest
@@ -152,3 +151,6 @@ class TestWMSSRSExtentTest(SystemTest):
             assert is_png(resp.body)
             assert_colors_equal(img_from_buf(resp.body).convert('RGBA'),
                 [(50 * 100, [255, 0, 0, 255]), (50 * 100, [0, 255, 0, 255])])
+
+def assert_almost_equal_bbox(bbox1, bbox2, rel=0.01):
+    assert bbox1 == pytest.approx(bbox2, rel=rel)
