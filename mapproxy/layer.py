@@ -268,6 +268,9 @@ class MapExtent(object):
             min(source[3], sub[3])),
             self.srs)
 
+    def transform(self, srs):
+        return MapExtent(self.bbox_for(srs), srs)
+
 class DefaultMapExtent(MapExtent):
     """
     Default extent that covers the whole world.

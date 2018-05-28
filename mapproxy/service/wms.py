@@ -483,6 +483,9 @@ class Capabilities(object):
 
     def layer_srs_bbox(self, layer, epsg_axis_order=False):
         for srs, extent in iteritems(self.srs_extents):
+            if srs not in self.srs:
+                continue
+
             # is_default is True when no explicit bbox is defined for this srs
             # use layer extent
             if extent.is_default:
@@ -491,13 +494,15 @@ class Capabilities(object):
                 bbox = extent.bbox_for(SRS(srs))
             else:
                 # Use intersection of srs_extent and layer.extent.
-                bbox = extent.intersection(layer.extent).bbox_for(SRS(srs))
+                # Use 4326 extents to avoid transformation errors.
+                a = extent.transform(SRS(4326))
+                b = layer.extent.transform(SRS(4326))
+                bbox = a.intersection(b).bbox_for(SRS(srs))
 
             if epsg_axis_order:
                 bbox = switch_bbox_epsg_axis_order(bbox, srs)
 
-            if srs in self.srs:
-                yield srs, bbox
+            yield srs, bbox
 
         # add native srs
         layer_srs_code = layer.extent.srs.srs_code
