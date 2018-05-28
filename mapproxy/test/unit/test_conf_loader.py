@@ -302,13 +302,13 @@ class TestGridConfiguration(object):
         conf = {'grids': {'grid': {'srs': 'EPSG:25832', 'bbox': [5, 50, 10, 55], 'bbox_srs': 'EPSG:4326'}}}
         conf = ProxyConfiguration(conf)
         grid = conf.grids['grid'].tile_grid()
-        assert_almost_equal_bbox([213372, 5538660, 571666, 6102110], grid.bbox, -3)
+        assert_almost_equal_bbox([213372, 5538660, 571666, 6102110], grid.bbox, 1)
 
     def test_with_min_res(self):
         conf = {'grids': {'grid': {'srs': 'EPSG:4326', 'bbox': [5, 50, 10, 55], 'min_res': 0.0390625}}}
         conf = ProxyConfiguration(conf)
         grid = conf.grids['grid'].tile_grid()
-        assert_almost_equal_bbox([5, 50, 10, 55], grid.bbox, 2)
+        assert_almost_equal_bbox([5, 50, 10, 55], grid.bbox)
         assert grid.resolution(0) == 0.0390625
         assert grid.resolution(1) == 0.01953125
 
@@ -316,7 +316,7 @@ class TestGridConfiguration(object):
         conf = {'grids': {'grid': {'srs': 'EPSG:4326', 'bbox': [5, 50, 10, 55], 'max_res': 0.0048828125}}}
         conf = ProxyConfiguration(conf)
         grid = conf.grids['grid'].tile_grid()
-        assert_almost_equal_bbox([5, 50, 10, 55], grid.bbox, 2)
+        assert_almost_equal_bbox([5, 50, 10, 55], grid.bbox)
         assert grid.resolution(0) == 0.01953125
         assert grid.resolution(1) == 0.01953125/2
 
