@@ -143,6 +143,8 @@ cache_types = {
         'directory_layout': str(),
         'directory': str(),
         'profile_name': str(),
+        'region_name': str(),
+        'endpoint_url': str(),
         'tile_lock_dir': str(),
      },
     'riak': {
@@ -369,6 +371,8 @@ mapproxy_yaml_spec = {
             's3': {
                 'bucket_name': str(),
                 'profile_name': str(),
+                'region_name': str(),
+                'endpoint_url': str(),
             },
         },
         'grid': {
