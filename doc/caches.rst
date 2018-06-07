@@ -460,6 +460,9 @@ Available options:
 ``endpoint_url``:
   Optional endpoint_url for the S3. You can set the default endpoint_url with ``globals.cache.s3.endpoint_url``.
 
+``access_control_list``:
+  Optional access control list for the S3. You can set the default access_control_list with ``globals.cache.s3.access_control_list``.
+
 ``directory``:
   Base directory (path) where all tiles are stored.
 

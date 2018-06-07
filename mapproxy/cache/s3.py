@@ -51,12 +51,13 @@ class S3Cache(TileCacheBase):
 
     def __init__(self, base_path, file_ext, directory_layout='tms',
                  bucket_name='mapproxy', profile_name=None, region_name=None, endpoint_url=None,
-                 _concurrent_writer=4):
+                 _concurrent_writer=4, access_control_list=None):
         super(S3Cache, self).__init__()
         self.lock_cache_id = hashlib.md5(base_path.encode('utf-8') + bucket_name.encode('utf-8')).hexdigest()
         self.bucket_name = bucket_name
         self.region_name = region_name
         self.endpoint_url = endpoint_url
+        self.access_control_list = access_control_list
 
         try:
             self.bucket = self.conn().head_bucket(Bucket=bucket_name)
@@ -155,6 +156,8 @@ class S3Cache(TileCacheBase):
         extra_args = {}
         if self.file_ext in ('jpeg', 'png'):
             extra_args['ContentType'] = 'image/' + self.file_ext
+	if self.access_control_list:
+	    extra_args['ACL'] = self.access_control_list
         with tile_buffer(tile) as buf:
             self.conn().upload_fileobj(
                 NopCloser(buf), # upload_fileobj closes buf, wrap in NopCloser

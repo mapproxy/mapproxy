@@ -1115,6 +1115,9 @@ class CacheConfiguration(ConfigurationBase):
         endpoint_url = self.context.globals.get_value('cache.endpoint_url', self.conf,
             global_key='cache.s3.endpoint_url')
 
+        access_control_list = self.context.globals.get_value('cache.access_control_list', self.conf,
+            global_key='cache.s3.access_control_list')
+
         directory_layout = self.conf['cache'].get('directory_layout', 'tms')
 
         base_path = self.conf['cache'].get('directory', None)
@@ -1128,7 +1131,8 @@ class CacheConfiguration(ConfigurationBase):
             bucket_name=bucket_name,
             profile_name=profile_name,
             region_name=region_name,
-            endpoint_url=endpoint_url
+            endpoint_url=endpoint_url,
+	    access_control_list=access_control_list
         )
 
     def _sqlite_cache(self, grid_conf, file_ext):
