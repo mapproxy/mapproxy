@@ -161,12 +161,12 @@
     <ScaleHint {{if min_scale}}min="{{min_scale}}"{{endif}} {{if max_scale}}max="{{max_scale}}"{{endif}} />
     {{endif}}
     {{for layer in layer.layers}}
-{{layer_capabilities(layer, False)|indent}}
+{{layer_capabilities(layer, False)|indent|html}}
     {{endfor}}
   </Layer>
 {{enddef}}
 
-{{layer_capabilities(layers, True)}}
+{{layer_capabilities(layers, True)|html}}
 
 </Capability>
 </WMT_MS_Capabilities>

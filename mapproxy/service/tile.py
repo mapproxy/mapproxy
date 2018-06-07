@@ -40,7 +40,8 @@ log = logging.getLogger(__name__)
 
 
 from mapproxy.template import template_loader, bunch
-get_template = template_loader(__name__, 'templates')
+env = {'bunch': bunch}
+get_template = template_loader(__name__, 'templates', namespace=env)
 
 class TileServer(Server):
     """
@@ -187,6 +188,16 @@ class TileServer(Server):
 
     def _service_md(self, map_request):
         md = dict(self.md)
+        # TMS Capabilities do not support concept of keywords vocabulary
+        keyword_list = md.get('keyword_list')
+        if keyword_list is not None:
+            keywords = []
+            for keyword_list_entry in keyword_list:
+                if type(keyword_list_entry) is dict:
+                    keywords.extend(keyword_list_entry.get('keywords', []))
+                else:
+                    keywords.append(keyword_list_entry)
+            md['keyword_list'] = keywords
         md['url'] = map_request.http.base_url
         return md
 

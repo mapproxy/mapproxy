@@ -21,7 +21,7 @@ from mapproxy.test.helper import todo_convert_yield_to_pytest
 from mapproxy.test.image import is_jpeg, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
-from nose.tools import eq_
+from nose.tools import eq_, ok_
 
 import pytest
 pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
@@ -47,6 +47,11 @@ class TestTMS(SystemTest):
         assert 'TMS Cache Layer + FI' in resp
         xml = resp.lxml
         assert xml.xpath('count(//TileMap)') == 11
+        eq_(xml.xpath('//TileMapService/Title/text()'), [u'MapProxy test fixture \u2603 "<xml>"'])
+        ok_(len(xml.xpath('//TileMapService/Abstract')) == 1)
+        eq_(xml.xpath('//TileMapService/KeywordList/text()'),
+            ['keywordA keywordB keywordC keywordD keywords without vocabulary'])
+        ok_(len(xml.xpath('//TileMapService/ContactInformation')) == 1)
 
         # without trailing space
         resp2 = self.app.get('/tms/1.0.0')
@@ -63,7 +68,9 @@ class TestTMS(SystemTest):
         resp2 = self.app.get('/tms/')
         assert 'TileMapService' in resp and 'TileMapService' in resp2
         xml = resp.lxml
-        eq_(xml.xpath('//TileMapService/@version'),['1.0.0'])
+        eq_(xml.xpath('//TileMapService/@version'), ['1.0.0'])
+        eq_(xml.xpath('//TileMapService/@title'), [u'MapProxy test fixture \u2603 "<xml>"'])
+        ok_(xml.xpath('//TileMapService/@href')[0].endswith('/tms/1.0.0/'))
 
     def test_tms_get_out_of_bounds_tile(self):
         todo_convert_yield_to_pytest()

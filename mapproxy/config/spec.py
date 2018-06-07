@@ -426,6 +426,12 @@ mapproxy_yaml_spec = {
         'tms': {
             'use_grid_names': bool(),
             'origin': str(),
+            'md': {
+                'title': string_type,
+                'abstract': string_type,
+                'keyword_list': [string_type],
+                'contact': anything(),
+            },
         },
         'wmts': {
             'kvp': bool(),
