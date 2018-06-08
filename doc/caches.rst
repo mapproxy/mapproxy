@@ -511,6 +511,7 @@ Example usage with DigitalOcean Spaces
         profile_name: default
         region_name: nyc3
         endpoint_url: https://nyc3.digitaloceanspaces.com
+        access_control_list: public-read
 
 
 .. _cache_compact:
