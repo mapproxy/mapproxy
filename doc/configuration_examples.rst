@@ -706,16 +706,16 @@ You can disable the certificate verification if you you don't need it.
 Access sources through HTTP proxy
 =================================
 
-MapProxy can use an HTTP proxy to make requests to your sources, if your system does not allow direct access to the source. You need to set the ``http_proxy`` environment variable to the proxy URL. This also applies if you install MapProxy with ``pip`` or ``easy_install``.
+MapProxy can use an HTTP proxy to make requests to your sources, if your system does not allow direct access to the source. You need to set the ``http_proxy`` and ``https_proxy`` environment variable to the proxy URL. This also applies if you install MapProxy with ``pip``.
 
 On Linux/Unix::
 
-  $ export http_proxy="http://example.com:3128"
+  $ export http_proxy="http://example.com:3128" https_proxy="http://example.com:3128"
   $ mapproxy-util serve-develop mapproxy.yaml
 
 On Windows::
 
-  c:\> set http_proxy="http://example.com:3128"
+  c:\> set http_proxy="http://example.com:3128" https_proxy="http://example.com:3128"
   c:\> mapproxy-util serve-develop mapproxy.yaml
 
 
@@ -723,6 +723,7 @@ You can also set this in your :ref:`server script <server_script>`::
 
   import os
   os.environ["http_proxy"] = "http://example.com:3128"
+  os.environ["https_proxy"] = "http://example.com:3128"
 
 Add a username and password to the URL if your HTTP proxy requires authentication. For example ``http://username:password@example.com:3128``.
 
@@ -730,7 +731,6 @@ You can use the ``no_proxy`` environment variable if you need to bypass the prox
 
   $ export no_proxy="localhost,127.0.0.1,196.168.1.99"
 
-``no_proxy`` is available since Python 2.6.3.
 
 .. _paster_urlmap:
 

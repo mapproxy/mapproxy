@@ -286,7 +286,7 @@ This backend is good for very large caches which can be distributed over many no
 Requirements
 ------------
 
-You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_ version 2.4.2 or older. You can install it in the usual way, for example with ``pip install riak==2.4.2``. Environments with older version must be upgraded with ``pip install -U riak==2.4.2``. Python library depends on packages `python-dev`, `libffi-dev` and `libssl-dev`.
+You will need the `Python Riak client <https://pypi.org/project/riak>`_ version 2.4.2 or older. You can install it in the usual way, for example with ``pip install riak==2.4.2``. Environments with older version must be upgraded with ``pip install -U riak==2.4.2``. Python library depends on packages `python-dev`, `libffi-dev` and `libssl-dev`.
 
 Configuration
 -------------
@@ -347,7 +347,7 @@ Your Redis database should be configured with ``maxmemory`` and ``maxmemory-poli
 Requirements
 ------------
 
-You will need the `Python Redis client <https://pypi.python.org/pypi/redis>`_. You can install it in the usual way, for example with ``pip install redis``.
+You will need the `Python Redis client <https://pypi.org/project/redis>`_. You can install it in the usual way, for example with ``pip install redis``.
 
 Configuration
 -------------
