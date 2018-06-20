@@ -14,32 +14,38 @@
 # limitations under the License.
 
 import os
-from mapproxy.util.ogr import OGRShapeReader, libgdal
-from nose.tools import eq_
-from nose.plugins.skip import SkipTest
 
 import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+from mapproxy.util.ogr import OGRShapeReader, libgdal
+
+from mapproxy.test.helper import skip_with_nosetest
+
+skip_with_nosetest()
 
 
-if not libgdal:
-    raise SkipTest('libgdal not found')
+polygon_file = os.path.join(os.path.dirname(__file__), "polygons", "polygons.shp")
 
-polygon_file = os.path.join(os.path.dirname(__file__), 'polygons', 'polygons.shp')
 
+@pytest.mark.skipif(not libgdal, reason="libgdal not found")
 class TestOGRShapeReader(object):
-    def setup(self):
-        self.reader = OGRShapeReader(polygon_file)
-    def test_read_all(self):
-        wkts = list(self.reader.wkts())
-        eq_(len(wkts), 3)
+
+    @pytest.fixture
+    def reader(self):
+        return OGRShapeReader(polygon_file)
+
+    def test_read_all(self, reader):
+        wkts = list(reader.wkts())
+        assert len(wkts) == 3
         for wkt in wkts:
-            assert wkt.startswith(b'POLYGON ('), 'unexpected WKT: %s' % wkt
-    def test_read_filter(self):
-        wkts = list(self.reader.wkts(where="name = 'germany'"))
-        eq_(len(wkts), 2)
+            assert wkt.startswith(b"POLYGON ("), "unexpected WKT: %s" % wkt
+
+    def test_read_filter(self, reader):
+        wkts = list(reader.wkts(where="name = 'germany'"))
+        assert len(wkts) == 2
         for wkt in wkts:
-            assert wkt.startswith(b'POLYGON ('), 'unexpected WKT: %s' % wkt
-    def test_read_filter_no_match(self):
-        wkts = list(self.reader.wkts(where="name = 'foo'"))
-        eq_(len(wkts), 0)
+            assert wkt.startswith(b"POLYGON ("), "unexpected WKT: %s" % wkt
+
+    def test_read_filter_no_match(self, reader):
+        wkts = list(reader.wkts(where="name = 'foo'"))
+        assert len(wkts) == 0

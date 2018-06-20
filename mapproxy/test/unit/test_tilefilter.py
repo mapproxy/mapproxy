@@ -15,21 +15,21 @@
 
 from mapproxy.tilefilter import tile_watermark_placement
 
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+from mapproxy.test.helper import skip_with_nosetest
+
+skip_with_nosetest()
 
 
 def test_tile_watermark_placement():
-    from nose.tools import eq_
-    eq_(tile_watermark_placement((0, 0, 0)), 'c')
-    eq_(tile_watermark_placement((1, 0, 0)), 'c')
-    eq_(tile_watermark_placement((0, 1, 0)), 'b')
-    eq_(tile_watermark_placement((1, 1, 0)), 'b')
+    assert tile_watermark_placement((0, 0, 0)) == "c"
+    assert tile_watermark_placement((1, 0, 0)) == "c"
+    assert tile_watermark_placement((0, 1, 0)) == "b"
+    assert tile_watermark_placement((1, 1, 0)) == "b"
 
-    eq_(tile_watermark_placement((0, 0, 0), True), None)
-    eq_(tile_watermark_placement((1, 0, 0), True), 'c')
-    eq_(tile_watermark_placement((2, 0, 0), True), None)
+    assert tile_watermark_placement((0, 0, 0), True) == None
+    assert tile_watermark_placement((1, 0, 0), True) == "c"
+    assert tile_watermark_placement((2, 0, 0), True) == None
 
-    eq_(tile_watermark_placement((0, 1, 0), True), 'c')
-    eq_(tile_watermark_placement((1, 1, 0), True), None)
-    eq_(tile_watermark_placement((2, 1, 0), True), 'c')
+    assert tile_watermark_placement((0, 1, 0), True) == "c"
+    assert tile_watermark_placement((1, 1, 0), True) == None
+    assert tile_watermark_placement((2, 1, 0), True) == "c"

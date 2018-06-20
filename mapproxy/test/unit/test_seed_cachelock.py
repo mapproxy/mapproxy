@@ -14,41 +14,36 @@
 # limitations under the License.
 
 import multiprocessing
-import os
-import shutil
-import tempfile
 import time
 import sys
 
+import pytest
+
 from mapproxy.seed.cachelock import CacheLocker, CacheLockedError
 
-from nose.plugins.skip import SkipTest
+from mapproxy.test.helper import skip_with_nosetest
 
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+skip_with_nosetest()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="test not supported for Windows")
 class TestCacheLock(object):
 
-    def setup(self):
-        if sys.platform == 'win32':
-            raise SkipTest()
-        self.tmp_dir = tempfile.mkdtemp()
-        self.lock_file = os.path.join(self.tmp_dir, 'lock')
+    @pytest.fixture
+    def lock_file(self, tmpdir):
+        return (tmpdir / "lock").strpath
 
-    def teardown(self):
-        shutil.rmtree(self.tmp_dir)
-
-    def test_free_lock(self):
-        locker = CacheLocker(self.lock_file)
-        with locker.lock('foo'):
+    def test_free_lock(self, lock_file):
+        locker = CacheLocker(lock_file)
+        with locker.lock("foo"):
             assert True
 
-    def test_locked_by_process_no_block(self):
+    def test_locked_by_process_no_block(self, lock_file):
         proc_is_locked = multiprocessing.Event()
+
         def lock():
-            locker = CacheLocker(self.lock_file)
-            with locker.lock('foo'):
+            locker = CacheLocker(lock_file)
+            with locker.lock("foo"):
                 proc_is_locked.set()
                 time.sleep(10)
 
@@ -57,15 +52,15 @@ class TestCacheLock(object):
         # wait for process to start
         proc_is_locked.wait()
 
-        locker = CacheLocker(self.lock_file)
+        locker = CacheLocker(lock_file)
 
         # test unlocked bar
-        with locker.lock('bar', no_block=True):
+        with locker.lock("bar", no_block=True):
             assert True
 
         # test locked foo
         try:
-            with locker.lock('foo', no_block=True):
+            with locker.lock("foo", no_block=True):
                 assert False
         except CacheLockedError:
             pass
@@ -73,11 +68,12 @@ class TestCacheLock(object):
             p.terminate()
             p.join()
 
-    def test_locked_by_process_waiting(self):
+    def test_locked_by_process_waiting(self, lock_file):
         proc_is_locked = multiprocessing.Event()
+
         def lock():
-            locker = CacheLocker(self.lock_file)
-            with locker.lock('foo'):
+            locker = CacheLocker(lock_file)
+            with locker.lock("foo"):
                 proc_is_locked.set()
                 time.sleep(.1)
 
@@ -87,9 +83,9 @@ class TestCacheLock(object):
         # wait for process to start
         proc_is_locked.wait()
 
-        locker = CacheLocker(self.lock_file, polltime=0.02)
+        locker = CacheLocker(lock_file, polltime=0.02)
         try:
-            with locker.lock('foo', no_block=False):
+            with locker.lock("foo", no_block=False):
                 diff = time.time() - start_time
                 assert diff > 0.1
         finally:
