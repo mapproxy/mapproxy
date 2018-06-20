@@ -432,9 +432,10 @@ You can set the ``sources`` to an empty list, if you use an existing geopackage 
 ``s3``
 ======
 
-.. versionadded:: 1.10.0
+.. versionadded:: 1.11.0
+  ``region_name``, ``endpoint_url`` and ``access_control_list``
 
-Store tiles in a `Amazon Simple Storage Service (S3) <https://aws.amazon.com/s3/>`_.
+Store tiles in a `Amazon Simple Storage Service (S3) <https://aws.amazon.com/s3/>`_ or any other S3 compatible object storage.
 
 
 Requirements
@@ -453,6 +454,15 @@ Available options:
 ``profile_name``:
   Optional profile name for `shared credentials <http://boto3.readthedocs.io/en/latest/guide/configuration.html>`_ for this cache. Alternative methods of authentification are using the  ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY`` environmental variables, or by using an `IAM role <http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html>`_ when using an Amazon EC2 instance.
   You can set the default profile with ``globals.cache.s3.profile_name``.
+
+``region_name``:
+  Optional name of the region. You can set the default region_name with ``globals.cache.s3.region_name``
+
+``endpoint_url``:
+  Optional endpoint_url for the S3. You can set the default endpoint_url with ``globals.cache.s3.endpoint_url``.
+
+``access_control_list``:
+  Optional access control list for the S3. You can set the default access_control_list with ``globals.cache.s3.access_control_list``.
 
 ``directory``:
   Base directory (path) where all tiles are stored.
@@ -480,6 +490,28 @@ Example
     cache:
       s3:
         profile_name: default
+
+
+Example usage with DigitalOcean Spaces 
+--------------------------------------
+
+::
+
+  cache:
+    my_layer_20110501_epsg_4326_cache_out:
+      sources: [my_layer_20110501_cache]
+      cache:
+        type: s3
+        directory: /1.0.0/my_layer/default/20110501/4326/
+        bucket_name: my-s3-tiles-cache
+
+  globals:
+    cache:
+      s3:
+        profile_name: default
+        region_name: nyc3
+        endpoint_url: https://nyc3.digitaloceanspaces.com
+        access_control_list: public-read
 
 
 .. _cache_compact:
