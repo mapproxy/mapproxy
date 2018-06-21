@@ -15,64 +15,59 @@
 
 from __future__ import division
 
-from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
-
 import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
 
-test_config = {}
-base_config = make_base_config(test_config)
+from mapproxy.test.system import SysTest
 
-def setup_module():
-    module_setup(test_config, 'layer.yaml', with_cache_data=True)
-
-def teardown_module():
-    module_teardown(test_config)
+from mapproxy.test.helper import skip_with_nosetest
+skip_with_nosetest()
 
 
-class TestWMSBehindProxy(SystemTest):
+class TestWMSBehindProxy(SysTest):
     """
     Check WMS OnlineResources for requests behind HTTP proxies.
     """
-    config = test_config
+    @pytest.fixture(scope='class')
+    def config_file(self):
+        return 'layer.yaml'
 
-    def test_no_proxy(self):
-        resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
+    def test_no_proxy(self, app):
+        resp = app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
                             '&VERSION=1.1.0')
         assert '"http://localhost/service' in resp
 
-    def test_with_script_name(self):
-        resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
+    def test_with_script_name(self, app):
+        resp = app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
                             '&VERSION=1.1.0', extra_environ={'HTTP_X_SCRIPT_NAME': '/foo'})
         assert '"http://localhost/service' not in resp
         assert '"http://localhost/foo/service' in resp
 
-    def test_with_host(self):
-        resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
+    def test_with_host(self, app):
+        resp = app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
                             '&VERSION=1.1.0', extra_environ={'HTTP_HOST': 'example.org'})
         assert '"http://localhost/service' not in resp
         assert '"http://example.org/service' in resp
 
-    def test_with_host_and_script_name(self):
-        resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
+    def test_with_host_and_script_name(self, app):
+        resp = app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
             '&VERSION=1.1.0', extra_environ={'HTTP_X_SCRIPT_NAME': '/foo', 'HTTP_HOST': 'example.org'})
         assert '"http://localhost/service' not in resp
         assert '"http://example.org/foo/service' in resp
 
-    def test_with_forwarded_host(self):
-        resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
+    def test_with_forwarded_host(self, app):
+        resp = app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
                             '&VERSION=1.1.0', extra_environ={'HTTP_X_FORWARDED_HOST': 'example.org, bar.org'})
         assert '"http://localhost/service' not in resp
         assert '"http://example.org/service' in resp
 
-    def test_with_forwarded_host_and_script_name(self):
-        resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
+    def test_with_forwarded_host_and_script_name(self, app):
+        resp = app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
             '&VERSION=1.1.0', extra_environ={'HTTP_X_FORWARDED_HOST': 'example.org', 'HTTP_X_SCRIPT_NAME': '/foo'})
         assert '"http://localhost/service' not in resp
         assert '"http://example.org/foo/service' in resp
 
-    def test_with_forwarded_proto_and_script_name_and_host(self):
-        resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
+    def test_with_forwarded_proto_and_script_name_and_host(self, app):
+        resp = app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
             '&VERSION=1.1.0', extra_environ={
                 'HTTP_X_FORWARDED_PROTO': 'https',
                 'HTTP_X_SCRIPT_NAME': '/foo',

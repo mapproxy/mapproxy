@@ -15,45 +15,74 @@
 
 from __future__ import division
 
-from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
-from mapproxy.test.system.test_wms import is_110_capa, is_111_capa
+from mapproxy.test.system import SysTest
+from mapproxy.test.system.test_wms import is_110_capa, is_111_capa, is_130_capa
 
 import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+from mapproxy.test.helper import skip_with_nosetest
 
-test_config = {}
-base_config = make_base_config(test_config)
+skip_with_nosetest()
 
-def setup_module():
-    module_setup(test_config, 'wms_versions.yaml')
 
-def teardown_module():
-    module_teardown(test_config)
+class TestLimitedWMSVersionsTest(SysTest):
 
-class TestWMSVersionsTest(SystemTest):
-    config = test_config
+    @pytest.fixture(scope="class")
+    def config_file(self):
+        return "wms_versions.yaml"
 
-    def test_supported_version_110(self):
-        resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
-                            '&VERSION=1.1.0')
+    def test_default_version_130(self, app):
+        resp = app.get("http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities")
+        assert is_111_capa(resp.lxml)
+
+    def test_supported_version_110(self, app):
+        resp = app.get(
+            "http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities"
+            "&VERSION=1.1.0"
+        )
         assert is_110_capa(resp.lxml)
 
-    def test_unknown_version_113(self):
-        resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
-                            '&VERSION=1.1.3')
+    def test_unknown_version_113(self, app):
+        resp = app.get(
+            "http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities"
+            "&VERSION=1.1.3"
+        )
         assert is_111_capa(resp.lxml)
 
-    def test_unknown_version_090(self):
-        resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
-                            '&WMTVER=0.9.0')
+    def test_unknown_version_090(self, app):
+        resp = app.get(
+            "http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities"
+            "&WMTVER=0.9.0"
+        )
         assert is_110_capa(resp.lxml)
 
-    def test_unsupported_version_130(self):
-        resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
-                            '&VERSION=1.3.0')
+    def test_unsupported_version_130(self, app):
+        resp = app.get(
+            "http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities"
+            "&VERSION=1.3.0"
+        )
         assert is_111_capa(resp.lxml)
 
-    def test_unknown_version_200(self):
-        resp = self.app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
-                            '&VERSION=2.0.0')
+    def test_unknown_version_200(self, app):
+        resp = app.get(
+            "http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities"
+            "&VERSION=2.0.0"
+        )
         assert is_111_capa(resp.lxml)
+
+
+class TestWMSVersionsTest(SysTest):
+
+    @pytest.fixture(scope="class")
+    def config_file(self):
+        return "layer.yaml"
+
+    def test_default_version_130(self, app):
+        resp = app.get("http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities")
+        assert is_130_capa(resp.lxml)
+
+    def test_unknown_version_200(self, app):
+        resp = app.get(
+            "http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities"
+            "&VERSION=2.0.0"
+        )
+        assert is_130_capa(resp.lxml)
