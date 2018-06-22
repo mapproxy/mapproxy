@@ -27,7 +27,7 @@ from mapproxy.test.system import module_setup, module_teardown, make_base_config
 from mapproxy.test.image import is_png, tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
-from mapproxy.test.system.test_wms import is_111_capa, eq_xpath_wms130, ns130
+from mapproxy.test.system.test_wms import is_111_capa, assert_xpath_wms130, ns130
 from nose.tools import eq_
 
 import pytest
