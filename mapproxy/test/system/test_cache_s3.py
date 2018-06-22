@@ -15,13 +15,15 @@
 
 from __future__ import division
 
-from io import BytesIO
+import sys
 
-import pytest
+from io import BytesIO
 
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.test.image import is_png, create_tmp_image
 from mapproxy.test.system import SysTest
+
+import pytest
 
 from mapproxy.test.helper import skip_with_nosetest
 
@@ -43,23 +45,18 @@ def config_file():
 @pytest.fixture(scope="module")
 def s3_buckets():
     with mock_s3():
-        s3 = boto3.client("s3")
-        tile = create_tmp_image((256, 256))
-        s3.create_bucket(Bucket="default_bucket")
-        s3.upload_fileobj(
-            BytesIO(tile),
-            Bucket="default_bucket",
-            Key="default_cache/WebMerc/4/1/9.png",
-        )
-
-        s3.create_bucket(Bucket="tiles")
-        s3.upload_fileobj(BytesIO(tile), Bucket="tiles", Key="quadkeytiles/2003.png")
-        s3.upload_fileobj(BytesIO(tile), Bucket="tiles", Key="reversetiles/9/1/4.png")
+        boto3.client("s3").create_bucket(Bucket="default_bucket")
+        boto3.client("s3").create_bucket(Bucket="tiles")
+        boto3.client("s3").create_bucket(Bucket="reversetiles")
 
         yield
 
 
 @pytest.mark.skipif(not (boto3 and mock_s3), reason="boto3 and moto required")
+@pytest.mark.xfail(
+    sys.version_info[:2] in ((3, 4), (3, 5)),
+    reason="moto tests unreliable with Python 3.4/3.5",
+)
 @pytest.mark.usefixtures("s3_buckets")
 class TestS3Cache(SysTest):
 
@@ -81,12 +78,26 @@ class TestS3Cache(SysTest):
         )
 
     def test_get_map_cached(self, app):
+        # mock_s3 interferes with MockServ, use boto to manually upload tile
+        tile = create_tmp_image((256, 256))
+        boto3.client("s3").upload_fileobj(
+            BytesIO(tile),
+            Bucket="default_bucket",
+            Key="default_cache/WebMerc/4/1/9.png",
+        )
+
         resp = app.get(self.common_map_req)
         assert resp.content_type == "image/png"
         data = BytesIO(resp.body)
         assert is_png(data)
 
     def test_get_map_cached_quadkey(self, app):
+        # mock_s3 interferes with MockServ, use boto to manually upload tile
+        tile = create_tmp_image((256, 256))
+        boto3.client("s3").upload_fileobj(
+            BytesIO(tile), Bucket="tiles", Key="quadkeytiles/2003.png"
+        )
+
         self.common_map_req.params.layers = "quadkey"
         resp = app.get(self.common_map_req)
         assert resp.content_type == "image/png"
@@ -94,6 +105,12 @@ class TestS3Cache(SysTest):
         assert is_png(data)
 
     def test_get_map_cached_reverse_tms(self, app):
+        # mock_s3 interferes with MockServ, use boto to manually upload tile
+        tile = create_tmp_image((256, 256))
+        boto3.client("s3").upload_fileobj(
+            BytesIO(tile), Bucket="tiles", Key="reversetiles/9/1/4.png"
+        )
+
         self.common_map_req.params.layers = "reverse"
         resp = app.get(self.common_map_req)
         assert resp.content_type == "image/png"
