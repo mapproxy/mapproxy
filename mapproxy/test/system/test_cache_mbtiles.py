@@ -23,57 +23,66 @@ from io import BytesIO
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.test.http import MockServ
 from mapproxy.test.image import is_png, create_tmp_image
-from mapproxy.test.system import prepare_env, create_app, module_teardown, SystemTest
-from nose.tools import eq_
+from mapproxy.test.system import SysTest
 
 import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+from mapproxy.test.helper import skip_with_nosetest
+
+skip_with_nosetest()
 
 
-test_config = {}
+@pytest.fixture(scope="module")
+def config_file():
+    return "cache_mbtiles.yaml"
 
-def setup_module():
-    prepare_env(test_config, 'cache_mbtiles.yaml')
 
-    shutil.copy(os.path.join(test_config['fixture_dir'], 'cache.mbtiles'),
-        test_config['base_dir'])
-    create_app(test_config)
+@pytest.fixture(scope="class")
+def fixture_gpkg(base_dir):
+    shutil.copy(
+        os.path.join(os.path.dirname(__file__), "fixture", "cache.mbtiles"),
+        base_dir.strpath,
+    )
 
-def teardown_module():
-    module_teardown(test_config)
 
-class TestMBTilesCache(SystemTest):
-    config = test_config
+@pytest.mark.usefixtures("fixture_gpkg")
+class TestMBTilesCache(SysTest):
+
     def setup(self):
-        SystemTest.setup(self)
-        self.common_map_req = WMS111MapRequest(url='/service?', param=dict(service='WMS',
-             version='1.1.1', bbox='-180,-80,0,0', width='200', height='200',
-             layers='mb', srs='EPSG:4326', format='image/png',
-             styles='', request='GetMap'))
+        self.common_map_req = WMS111MapRequest(
+            url="/service?",
+            param=dict(
+                service="WMS",
+                version="1.1.1",
+                bbox="-180,-80,0,0",
+                width="200",
+                height="200",
+                layers="mb",
+                srs="EPSG:4326",
+                format="image/png",
+                styles="",
+                request="GetMap",
+            ),
+        )
 
-    def test_get_map_cached(self):
-        resp = self.app.get(self.common_map_req)
-        eq_(resp.content_type, 'image/png')
+    def test_get_map_cached(self, app):
+        resp = app.get(self.common_map_req)
+        assert resp.content_type == "image/png"
         data = BytesIO(resp.body)
         assert is_png(data)
 
-    def test_get_map_uncached(self):
-        mbtiles_file = os.path.join(test_config['base_dir'], 'cache.mbtiles')
-
-        assert os.path.exists(mbtiles_file) # already created on startup
-
-        self.common_map_req.params.bbox = '-180,0,0,80'
+    def test_get_map_uncached(self, app):
+        self.common_map_req.params.bbox = "-180,0,0,80"
         serv = MockServ(port=42423)
-        serv.expects('/tiles/01/000/000/000/000/000/001.png')
+        serv.expects("/tiles/01/000/000/000/000/000/001.png")
         serv.returns(create_tmp_image((256, 256)))
         with serv:
-            resp = self.app.get(self.common_map_req)
-            eq_(resp.content_type, 'image/png')
+            resp = app.get(self.common_map_req)
+            assert resp.content_type == "image/png"
             data = BytesIO(resp.body)
             assert is_png(data)
 
         # now cached
-        resp = self.app.get(self.common_map_req)
-        eq_(resp.content_type, 'image/png')
+        resp = app.get(self.common_map_req)
+        assert resp.content_type == "image/png"
         data = BytesIO(resp.body)
         assert is_png(data)

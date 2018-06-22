@@ -16,104 +16,129 @@
 from __future__ import division
 
 from io import BytesIO
+
+import pytest
+
 from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.compat.image import Image
 from mapproxy.test.image import is_png, tmp_image
 from mapproxy.test.http import mock_httpd
-from mapproxy.test.system import module_setup, module_teardown, SystemTest
-from nose.tools import eq_
+from mapproxy.test.system import SysTest
 
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+from mapproxy.test.helper import skip_with_nosetest
+
+skip_with_nosetest()
 
 
-test_config = {}
+@pytest.fixture(scope="module")
+def config_file():
+    return "coverage.yaml"
 
-def setup_module():
-    module_setup(test_config, 'coverage.yaml')
 
-def teardown_module():
-    module_teardown(test_config)
+class TestCoverageWMS(SysTest):
 
-class TestCoverageWMS(SystemTest):
-    config = test_config
     def setup(self):
-        SystemTest.setup(self)
-        self.common_map_req = WMS111MapRequest(url='/service?', param=dict(service='WMS',
-             version='1.1.1', bbox='-180,0,0,80', width='200', height='200',
-             layers='wms_cache', srs='EPSG:4326', format='image/png',
-             styles='', request='GetMap'))
+        self.common_map_req = WMS111MapRequest(
+            url="/service?",
+            param=dict(
+                service="WMS",
+                version="1.1.1",
+                bbox="-180,0,0,80",
+                width="200",
+                height="200",
+                layers="wms_cache",
+                srs="EPSG:4326",
+                format="image/png",
+                styles="",
+                request="GetMap",
+            ),
+        )
 
-    def test_capababilities(self):
-        resp = self.app.get('/service?request=GetCapabilities&service=WMS&version=1.1.1')
+    def test_capababilities(self, app):
+        resp = app.get("/service?request=GetCapabilities&service=WMS&version=1.1.1")
         xml = resp.lxml
         # First: combined root, second: wms_cache, third: tms_cache, last: seed_only
-        eq_(xml.xpath('//LatLonBoundingBox/@minx'), ['10', '10', '12', '14'])
-        eq_(xml.xpath('//LatLonBoundingBox/@miny'), ['10', '15', '10', '13'])
-        eq_(xml.xpath('//LatLonBoundingBox/@maxx'), ['35', '30', '35', '24'])
-        eq_(xml.xpath('//LatLonBoundingBox/@maxy'), ['31', '31', '30', '23'])
+        assert xml.xpath("//LatLonBoundingBox/@minx") == ["10", "10", "12", "14"]
+        assert xml.xpath("//LatLonBoundingBox/@miny") == ["10", "15", "10", "13"]
+        assert xml.xpath("//LatLonBoundingBox/@maxx") == ["35", "30", "35", "24"]
+        assert xml.xpath("//LatLonBoundingBox/@maxy") == ["31", "31", "30", "23"]
 
-    def test_get_map_outside(self):
+    def test_get_map_outside(self, app):
         self.common_map_req.params.bbox = -90, 0, 0, 90
-        self.common_map_req.params['bgcolor'] = '0xff0005'
-        resp = self.app.get(self.common_map_req)
-        eq_(resp.content_type, 'image/png')
+        self.common_map_req.params["bgcolor"] = "0xff0005"
+        resp = app.get(self.common_map_req)
+        assert resp.content_type == "image/png"
         data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
-        eq_(img.mode, 'RGB')
-        eq_(img.getcolors(), [(200*200, (255, 0, 5))])
+        assert img.mode == "RGB"
+        assert img.getcolors() == [(200 * 200, (255, 0, 5))]
 
-    def test_get_map_outside_transparent(self):
+    def test_get_map_outside_transparent(self, app):
         self.common_map_req.params.bbox = -90, 0, 0, 90
         self.common_map_req.params.transparent = True
-        resp = self.app.get(self.common_map_req)
-        eq_(resp.content_type, 'image/png')
+        resp = app.get(self.common_map_req)
+        assert resp.content_type == "image/png"
         data = BytesIO(resp.body)
         assert is_png(data)
         img = Image.open(data)
-        eq_(img.mode, 'RGBA')
-        eq_(img.getcolors()[0][0], 200*200)
-        eq_(img.getcolors()[0][1][3], 0) # transparent
+        assert img.mode == "RGBA"
+        assert img.getcolors()[0][0] == 200 * 200
+        assert img.getcolors()[0][1][3] == 0  # transparent
 
-    def test_get_map_intersection(self):
-        self.created_tiles.append('wms_cache_EPSG4326/03/000/000/004/000/000/002.jpeg')
-        with tmp_image((256, 256), format='jpeg') as img:
-            expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
-                                      '&REQUEST=GetMap&HEIGHT=91&SRS=EPSG%3A4326&styles='
-                                      '&VERSION=1.1.1&BBOX=10,15,30,31'
-                                      '&WIDTH=114'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
+    def test_get_map_intersection(self, app, cache_dir):
+        with tmp_image((256, 256), format="jpeg") as img:
+            expected_req = (
+                {
+                    "path": r"/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg"
+                    "&REQUEST=GetMap&HEIGHT=91&SRS=EPSG%3A4326&styles="
+                    "&VERSION=1.1.1&BBOX=10,15,30,31"
+                    "&WIDTH=114"
+                },
+                {"body": img.read(), "headers": {"content-type": "image/jpeg"}},
+            )
+            with mock_httpd(("localhost", 42423), [expected_req]):
                 self.common_map_req.params.bbox = 0, 0, 40, 40
                 self.common_map_req.params.transparent = True
-                resp = self.app.get(self.common_map_req)
-                eq_(resp.content_type, 'image/png')
+                resp = app.get(self.common_map_req)
+                assert resp.content_type == "image/png"
                 data = BytesIO(resp.body)
                 assert is_png(data)
-                eq_(Image.open(data).mode, 'RGBA')
+                assert Image.open(data).mode == "RGBA"
+        assert cache_dir.join(
+            "wms_cache_EPSG4326/03/000/000/004/000/000/002.jpeg"
+        ).check()
 
-class TestCoverageTMS(SystemTest):
-    config = test_config
 
-    def test_get_tile_intersections(self):
-        with tmp_image((256, 256), format='jpeg') as img:
-            expected_req = ({'path': r'/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg'
-                                      '&REQUEST=GetMap&HEIGHT=25&SRS=EPSG%3A900913&styles='
-                                      '&VERSION=1.1.1&BBOX=1113194.90793,1689200.13961,3339584.7238,3632749.14338'
-                                      '&WIDTH=28'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
-                resp = self.app.get('/tms/1.0.0/wms_cache/0/1/1.jpeg')
-                eq_(resp.content_type, 'image/jpeg')
-                self.created_tiles.append('wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
+class TestCoverageTMS(SysTest):
 
-    def test_get_tile_intersection_tms(self):
-        with tmp_image((256, 256), format='jpeg') as img:
-            expected_req = ({'path': r'/tms/1.0.0/foo/1/1/1.jpeg'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/jpeg'}})
-            with mock_httpd(('localhost', 42423), [expected_req], bbox_aware_query_comparator=True):
-                resp = self.app.get('/tms/1.0.0/tms_cache/0/1/1.jpeg')
-                eq_(resp.content_type, 'image/jpeg')
-                self.created_tiles.append('tms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg')
+    def test_get_tile_intersections(self, app, cache_dir):
+        with tmp_image((256, 256), format="jpeg") as img:
+            expected_req = (
+                {
+                    "path": r"/service?LAYERs=foo,bar&SERVICE=WMS&FORMAT=image%2Fjpeg"
+                    "&REQUEST=GetMap&HEIGHT=25&SRS=EPSG%3A900913&styles="
+                    "&VERSION=1.1.1&BBOX=1113194.90793,1689200.13961,3339584.7238,3632749.14338"
+                    "&WIDTH=28"
+                },
+                {"body": img.read(), "headers": {"content-type": "image/jpeg"}},
+            )
+            with mock_httpd(
+                ("localhost", 42423), [expected_req], bbox_aware_query_comparator=True
+            ):
+                resp = app.get("/tms/1.0.0/wms_cache/0/1/1.jpeg")
+                assert resp.content_type == "image/jpeg"
+        cache_dir.join("wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg").check()
 
+    def test_get_tile_intersection_tms(self, app, cache_dir):
+        with tmp_image((256, 256), format="jpeg") as img:
+            expected_req = (
+                {"path": r"/tms/1.0.0/foo/1/1/1.jpeg"},
+                {"body": img.read(), "headers": {"content-type": "image/jpeg"}},
+            )
+            with mock_httpd(
+                ("localhost", 42423), [expected_req], bbox_aware_query_comparator=True
+            ):
+                resp = app.get("/tms/1.0.0/tms_cache/0/1/1.jpeg")
+                assert resp.content_type == "image/jpeg"
+        cache_dir.join("tms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg").check()

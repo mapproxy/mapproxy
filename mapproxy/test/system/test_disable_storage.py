@@ -13,45 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+import pytest
 
 from mapproxy.test.image import is_png, tmp_image
 from mapproxy.test.http import mock_httpd
-from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
-from nose.tools import eq_
+from mapproxy.test.system import SysTest
 
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+from mapproxy.test.helper import skip_with_nosetest
+
+skip_with_nosetest()
 
 
-test_config = {}
-base_config = make_base_config(test_config)
+@pytest.fixture(scope="module")
+def config_file():
+    return "disable_storage.yaml"
 
-def setup_module():
-    module_setup(test_config, 'disable_storage.yaml', with_cache_data=False)
 
-def teardown_module():
-    module_teardown(test_config)
+class TestDisableStorage(SysTest):
 
-class TestDisableStorage(SystemTest):
-    config = test_config
+    def test_get_tile_without_caching(self, app, cache_dir):
+        for _ in range(2):
+            with tmp_image((256, 256), format="png") as img:
+                expected_req = (
+                    {"path": r"/tile.png"},
+                    {"body": img.read(), "headers": {"content-type": "image/png"}},
+                )
+                with mock_httpd(("localhost", 42423), [expected_req]):
+                    resp = app.get("/tms/1.0.0/tiles/0/0/0.png")
+                    assert resp.content_type == "image/png"
+                    is_png(resp.body)
 
-    def test_get_tile_without_caching(self):
-        with tmp_image((256, 256), format='png') as img:
-            expected_req = ({'path': r'/tile.png'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/png'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
-                resp = self.app.get('/tms/1.0.0/tiles/0/0/0.png')
-                eq_(resp.content_type, 'image/png')
-                is_png(resp.body)
-
-        assert not os.path.exists(test_config['cache_dir'])
-
-        with tmp_image((256, 256), format='png') as img:
-            expected_req = ({'path': r'/tile.png'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/png'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
-                resp = self.app.get('/tms/1.0.0/tiles/0/0/0.png')
-                eq_(resp.content_type, 'image/png')
-                is_png(resp.body)
-
+            assert not cache_dir.check()
