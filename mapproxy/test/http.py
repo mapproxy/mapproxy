@@ -268,7 +268,7 @@ class MockServ(object):
 
     def __exit__(self, type, value, traceback):
         self._thread.shutdown = True
-        self._thread.join()
+        self._thread.join(30)
 
         if not self._thread.sucess and value:
             print('requests to mock httpd did not '
@@ -449,7 +449,7 @@ def mock_httpd(address, requests_responses, unordered=False, bbox_aware_query_co
         raise
     finally:
         t.shutdown = True
-        t.join(1)
+        t.join(30)
     if not t.sucess:
         raise RequestsMismatchError(t.assertions)
 
@@ -465,7 +465,7 @@ def mock_single_req_httpd(address, request_handler):
         raise
     finally:
         t.shutdown = True
-        t.join(1)
+        t.join(30)
     if not t.sucess:
         raise RequestsMismatchError(t.assertions)
 
