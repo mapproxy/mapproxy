@@ -13,43 +13,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from mapproxy.test.image import is_jpeg
-from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
-from nose.tools import eq_
-
 import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+from mapproxy.test.image import is_jpeg
+from mapproxy.test.system import SysTest
+
+from mapproxy.test.helper import skip_with_nosetest
+
+skip_with_nosetest()
 
 
-test_config = {}
-base_config = make_base_config(test_config)
+@pytest.fixture(scope="module")
+def config_file():
+    return "tileservice_origin.yaml"
 
-def setup_module():
-    module_setup(test_config, 'tileservice_origin.yaml', with_cache_data=True)
 
-def teardown_module():
-    module_teardown(test_config)
-
-class TestTileServicesOrigin(SystemTest):
-    config = test_config
+@pytest.mark.usefixtures("fixture_cache_data")
+class TestTileServicesOrigin(SysTest):
 
     ###
     # tile 0/0/1 is cached, check if we can access it with different URLs
 
-    def test_get_cached_tile_tms(self):
-        resp = self.app.get('/tms/1.0.0/wms_cache/0/0/1.jpeg')
-        eq_(resp.content_type, 'image/jpeg')
+    def test_get_cached_tile_tms(self, app):
+        resp = app.get("/tms/1.0.0/wms_cache/0/0/1.jpeg")
+        assert resp.content_type == "image/jpeg"
         assert is_jpeg(resp.body)
 
-    def test_get_cached_tile_service_origin(self):
-        resp = self.app.get('/tiles/wms_cache/1/0/0.jpeg')
-        eq_(resp.content_type, 'image/jpeg')
+    def test_get_cached_tile_service_origin(self, app):
+        resp = app.get("/tiles/wms_cache/1/0/0.jpeg")
+        assert resp.content_type == "image/jpeg"
         assert is_jpeg(resp.body)
 
-    def test_get_cached_tile_request_origin(self):
-        resp = self.app.get('/tiles/wms_cache/1/0/1.jpeg?origin=sw')
-        eq_(resp.content_type, 'image/jpeg')
+    def test_get_cached_tile_request_origin(self, app):
+        resp = app.get("/tiles/wms_cache/1/0/1.jpeg?origin=sw")
+        assert resp.content_type == "image/jpeg"
         assert is_jpeg(resp.body)
-
-
-

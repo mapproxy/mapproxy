@@ -17,6 +17,7 @@ import os
 import time
 import shutil
 import tempfile
+
 from mapproxy.config.loader import load_configuration
 from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
@@ -31,11 +32,9 @@ from mapproxy.test.helper import assert_files_in_dir
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.image import tmp_image, create_tmp_image_buf, create_tmp_image
 
-from nose.tools import eq_
+from mapproxy.test.helper import skip_with_nosetest
 
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
-
+skip_with_nosetest()
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 

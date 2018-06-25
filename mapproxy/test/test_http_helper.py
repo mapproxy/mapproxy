@@ -14,15 +14,17 @@
 # limitations under the License.
 
 import requests
+import pytest
+
 from mapproxy.test.http import (
     MockServ, RequestsMismatchError, mock_httpd,
     basic_auth_value, query_eq,
 )
 
-from nose.tools import eq_
 
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+from mapproxy.test.helper import skip_with_nosetest
+
+skip_with_nosetest()
 
 
 class TestMockServ(object):
@@ -36,8 +38,8 @@ class TestMockServ(object):
         serv.expects('/test')
         with serv:
             resp = requests.get('http://localhost:%d/test' % serv.port)
-            eq_(resp.status_code, 200)
-            eq_(resp.content, b'')
+            assert resp.status_code == 200
+            assert resp.content == b''
 
     def test_expects_w_header(self):
         serv = MockServ()
@@ -83,7 +85,7 @@ class TestMockServ(object):
         with serv:
             resp = requests.get('http://localhost:%d/test' % serv.port)
             assert 'Content-type' not in resp.headers
-            eq_(resp.content, b'hello')
+            assert resp.content == b'hello'
 
     def test_returns_headers(self):
         serv = MockServ()
@@ -92,8 +94,8 @@ class TestMockServ(object):
 
         with serv:
             resp = requests.get('http://localhost:%d/test' % serv.port)
-            eq_(resp.headers['Content-type'], 'text/plain')
-            eq_(resp.content, b'hello')
+            assert resp.headers['Content-type'] == 'text/plain'
+            assert resp.content == b'hello'
 
     def test_returns_status(self):
         serv = MockServ()
@@ -102,8 +104,8 @@ class TestMockServ(object):
 
         with serv:
             resp = requests.get('http://localhost:%d/test' % serv.port)
-            eq_(resp.status_code, 418)
-            eq_(resp.content, b'hello')
+            assert resp.status_code == 418
+            assert resp.content == b'hello'
 
 
     def test_multiple_requests(self):
@@ -113,9 +115,9 @@ class TestMockServ(object):
 
         with serv:
             resp = requests.get('http://localhost:%d/test1' % serv.port)
-            eq_(resp.content, b'hello1')
+            assert resp.content == b'hello1'
             resp = requests.get('http://localhost:%d/test2' % serv.port)
-            eq_(resp.content, b'hello2')
+            assert resp.content == b'hello2'
 
 
     def test_too_many_requests(self):
@@ -124,7 +126,7 @@ class TestMockServ(object):
 
         with serv:
             resp = requests.get('http://localhost:%d/test1' % serv.port)
-            eq_(resp.content, b'hello1')
+            assert resp.content == b'hello1'
             try:
                 requests.get('http://localhost:%d/test2' % serv.port)
             except requests.exceptions.RequestException:
@@ -140,7 +142,7 @@ class TestMockServ(object):
         try:
             with serv:
                 resp = requests.get('http://localhost:%d/test1' % serv.port)
-                eq_(resp.content, b'hello1')
+                assert resp.content == b'hello1'
         except RequestsMismatchError as ex:
             assert 'requests mismatch:\n -  missing requests' in str(ex)
         else:
@@ -153,16 +155,16 @@ class TestMockServ(object):
 
         with serv:
             resp = requests.get('http://localhost:%d/test1' % serv.port)
-            eq_(resp.content, b'hello1')
+            assert resp.content == b'hello1'
             resp = requests.get('http://localhost:%d/test2' % serv.port)
-            eq_(resp.content, b'hello2')
+            assert resp.content == b'hello2'
 
         serv.reset()
         with serv:
             resp = requests.get('http://localhost:%d/test2' % serv.port)
-            eq_(resp.content, b'hello2')
+            assert resp.content == b'hello2'
             resp = requests.get('http://localhost:%d/test1' % serv.port)
-            eq_(resp.content, b'hello1')
+            assert resp.content == b'hello1'
 
     def test_unexpected(self):
         serv = MockServ(unordered=True)
@@ -172,7 +174,7 @@ class TestMockServ(object):
         try:
             with serv:
                 resp = requests.get('http://localhost:%d/test1' % serv.port)
-                eq_(resp.content, b'hello1')
+                assert resp.content == b'hello1'
                 try:
                     requests.get('http://localhost:%d/test3' % serv.port)
                 except requests.exceptions.RequestException:
@@ -180,7 +182,7 @@ class TestMockServ(object):
                 else:
                     raise AssertionError('RequestException expected')
                 resp = requests.get('http://localhost:%d/test2' % serv.port)
-                eq_(resp.content, b'hello2')
+                assert resp.content == b'hello2'
         except RequestsMismatchError as ex:
             assert 'unexpected request' in ex.assertions[0]
         else:
@@ -204,13 +206,13 @@ class TestMockHttpd(object):
             ({'path':'/test', 'headers': {'Accept': 'Coffee'}, 'require_basic_auth': True},
              {'body': b'ok', 'status': 418})]):
                 resp = requests.get('http://localhost:42423/test')
-                eq_(resp.status_code, 401)
-                eq_(resp.content, b'no access')
+                assert resp.status_code == 401
+                assert resp.content == b'no access'
 
                 resp = requests.get('http://localhost:42423/test', headers={
                     'Authorization': basic_auth_value('foo', 'bar'), 'Accept': 'Coffee'}
                 )
-                eq_(resp.content, b'ok')
+                assert resp.content == b'ok'
 
 
 def test_query_eq():

@@ -13,41 +13,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+
 from mapproxy.test.image import tmp_image
 from mapproxy.test.http import mock_httpd
-from mapproxy.test.system import module_setup, module_teardown, SystemTest, make_base_config
-from nose.tools import eq_
+from mapproxy.test.system import SysTest
 
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+from mapproxy.test.helper import skip_with_nosetest
+
+skip_with_nosetest()
 
 
-test_config = {}
-base_config = make_base_config(test_config)
+@pytest.fixture(scope="module")
+def config_file():
+    return "tilesource_minmax_res.yaml"
 
-def setup_module():
-    module_setup(test_config, 'tilesource_minmax_res.yaml')
 
-def teardown_module():
-    module_teardown(test_config)
+class TestTileSourceMinMaxRes(SysTest):
 
-class TestTileSourceMinMaxRes(SystemTest):
-    config = test_config
+    def test_get_tile_res_a(self, app, cache_dir):
+        with tmp_image((256, 256), format="jpeg") as img:
+            expected_req = (
+                {"path": r"/tiles_a/06/000/000/000/000/000/001.png"},
+                {"body": img.read(), "headers": {"content-type": "image/png"}},
+            )
+            with mock_httpd(("localhost", 42423), [expected_req]):
+                resp = app.get("/tiles/tms_cache/6/0/1.png")
+                assert resp.content_type == "image/png"
+        assert cache_dir.join(
+            "tms_cache_EPSG900913/06/000/000/000/000/000/001.png"
+        ).check()
 
-    def test_get_tile_res_a(self):
-        with tmp_image((256, 256), format='jpeg') as img:
-            expected_req = ({'path': r'/tiles_a/06/000/000/000/000/000/001.png'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/png'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
-                resp = self.app.get('/tiles/tms_cache/6/0/1.png')
-                eq_(resp.content_type, 'image/png')
-                self.created_tiles.append('tms_cache_EPSG900913/06/000/000/000/000/000/001.png')
-
-    def test_get_tile_res_b(self):
-        with tmp_image((256, 256), format='jpeg') as img:
-            expected_req = ({'path': r'/tiles_b/07/000/000/000/000/000/001.png'},
-                            {'body': img.read(), 'headers': {'content-type': 'image/png'}})
-            with mock_httpd(('localhost', 42423), [expected_req]):
-                resp = self.app.get('/tiles/tms_cache/7/0/1.png')
-                eq_(resp.content_type, 'image/png')
-                self.created_tiles.append('tms_cache_EPSG900913/07/000/000/000/000/000/001.png')
+    def test_get_tile_res_b(self, app, cache_dir):
+        with tmp_image((256, 256), format="jpeg") as img:
+            expected_req = (
+                {"path": r"/tiles_b/07/000/000/000/000/000/001.png"},
+                {"body": img.read(), "headers": {"content-type": "image/png"}},
+            )
+            with mock_httpd(("localhost", 42423), [expected_req]):
+                resp = app.get("/tiles/tms_cache/7/0/1.png")
+                assert resp.content_type == "image/png"
+        assert cache_dir.join(
+            "tms_cache_EPSG900913/07/000/000/000/000/000/001.png"
+        ).check()

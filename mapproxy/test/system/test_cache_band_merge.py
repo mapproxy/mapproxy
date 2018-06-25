@@ -19,7 +19,6 @@ from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.request.wmts import WMTS100CapabilitiesRequest
 from mapproxy.test.image import img_from_buf
 from mapproxy.test.system import SysTest
-from nose.tools import eq_
 
 from mapproxy.test.helper import skip_with_nosetest
 
@@ -61,48 +60,48 @@ class TestCacheSource(SysTest):
     def test_capabilities(self, app):
         req = str(self.common_cap_req)
         resp = app.get(req)
-        eq_(resp.content_type, "application/xml")
+        assert resp.content_type == "application/xml"
 
     def test_get_tile_021(self, app):
         resp = app.get("/wmts/dop_021/GLOBAL_WEBMERCATOR/0/0/0.png")
-        eq_(resp.content_type, "image/png")
+        assert resp.content_type == "image/png"
         img = img_from_buf(resp.body)
-        eq_(img.mode, "RGB")
-        eq_(img.getpixel((0, 0)), (50, 200, 100))
+        assert img.mode == "RGB"
+        assert img.getpixel((0, 0)) == (50, 200, 100)
 
     def test_get_tile_l(self, app):
         resp = app.get("/wmts/dop_l/GLOBAL_WEBMERCATOR/0/0/0.png")
-        eq_(resp.content_type, "image/png")
+        assert resp.content_type == "image/png"
         img = img_from_buf(resp.body)
-        eq_(img.mode, "L")
-        eq_(img.getpixel((0, 0)), int(50 * 0.25 + 0.7 * 100 + 0.05 * 200))
+        assert img.mode == "L"
+        assert img.getpixel((0, 0)) == int(50 * 0.25 + 0.7 * 100 + 0.05 * 200)
 
     def test_get_tile_0(self, app):
         resp = app.get("/wmts/dop_0/GLOBAL_WEBMERCATOR/0/0/0.png")
-        eq_(resp.content_type, "image/png")
+        assert resp.content_type == "image/png"
         img = img_from_buf(resp.body)
-        eq_(img.mode, "RGB")  # forced with image.mode
-        eq_(img.getpixel((0, 0)), (50, 50, 50))
+        assert img.mode == "RGB"  # forced with image.mode
+        assert img.getpixel((0, 0)) == (50, 50, 50)
 
     def test_get_tile_0122(self, app):
         resp = app.get("/wmts/dop_0122/GLOBAL_WEBMERCATOR/0/0/0.png")
-        eq_(resp.content_type, "image/png")
+        assert resp.content_type == "image/png"
         img = img_from_buf(resp.body)
-        eq_(img.mode, "RGBA")
-        eq_(img.getpixel((0, 0)), (50, 100, 200, 50))
+        assert img.mode == "RGBA"
+        assert img.getpixel((0, 0)) == (50, 100, 200, 50)
 
     def test_get_map_l(self, app):
         resp = app.get(str(self.common_map_req))
-        eq_(resp.content_type, "image/png")
+        assert resp.content_type == "image/png"
         img = img_from_buf(resp.body)
-        eq_(img.mode, "L")
-        eq_(img.getpixel((0, 0)), int(50 * 0.25 + 0.7 * 100 + 0.05 * 200))
+        assert img.mode == "L"
+        assert img.getpixel((0, 0)) == int(50 * 0.25 + 0.7 * 100 + 0.05 * 200)
 
     def test_get_map_l_jpeg(self, app):
         self.common_map_req.params.format = "image/jpeg"
         resp = app.get(str(self.common_map_req))
-        eq_(resp.content_type, "image/jpeg")
+        assert resp.content_type == "image/jpeg"
         img = img_from_buf(resp.body)
-        eq_(img.mode, "RGB")
+        assert img.mode == "RGB"
         # L converted to RGB for jpeg
-        eq_(img.getpixel((0, 0)), (92, 92, 92))
+        assert img.getpixel((0, 0)) == (92, 92, 92)

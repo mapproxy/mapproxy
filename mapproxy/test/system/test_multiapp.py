@@ -14,94 +14,83 @@
 # limitations under the License.
 
 from __future__ import division
+
 import io
 import os
-import tempfile
 import shutil
-from webtest import TestApp as WebTestApp
-from mapproxy.multiapp import app_factory
 
 import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+from mapproxy.multiapp import make_wsgi_app
+
+from mapproxy.test.system import SysTest, WSGITestApp
+
+from mapproxy.test.helper import skip_with_nosetest
+
+skip_with_nosetest()
 
 
-def module_setup(test_config, config_files):
-    fixture_dir = os.path.join(os.path.dirname(__file__), 'fixture')
+class TestMultiapp(SysTest):
 
-    test_config['base_dir'] = tempfile.mkdtemp()
-    test_config['config_files'] = []
+    @pytest.fixture(scope="class")
+    def app(self, base_dir):
+        app = make_wsgi_app(base_dir.strpath, allow_listing=False)
+        return WSGITestApp(app, use_unicode=False)
 
-    for config_file in config_files:
-        config_file_src = os.path.join(fixture_dir, config_file)
-        config_file_dst = os.path.join(test_config['base_dir'], config_file)
-        shutil.copy(config_file_src, config_file_dst)
-        test_config['config_files'].append(config_file_dst)
+    @pytest.fixture(scope="class")
+    def base_dir(self, tmpdir_factory):
+        dir = tmpdir_factory.mktemp("base_dir")
 
-    app = app_factory({}, config_dir=test_config['base_dir'], allow_listing=False)
-    test_config['multiapp'] = app
-    test_config['app'] = WebTestApp(app, use_unicode=False)
+        fixture_dir = os.path.join(os.path.dirname(__file__), "fixture")
+        shutil.copy(os.path.join(fixture_dir, "multiapp1.yaml"), dir.strpath)
+        shutil.copy(os.path.join(fixture_dir, "multiapp2.yaml"), dir.strpath)
 
-def module_teardown(test_config):
-    shutil.rmtree(test_config['base_dir'])
-    test_config.clear()
+        return dir
 
+    def test_index_without_list(self, app):
+        resp = app.get("/")
+        assert "MapProxy" in resp
+        assert "multiapp1" not in resp
 
-test_config = {}
-
-def setup_module():
-    module_setup(test_config, ['multiapp1.yaml', 'multiapp2.yaml'])
-
-def teardown_module():
-    module_teardown(test_config)
-
-class TestMultiapp(object):
-    def setup(self):
-        self.multiapp = test_config['multiapp']
-        self.app = test_config['app']
-
-    def test_index_without_list(self):
-        resp = self.app.get('/')
-        assert 'MapProxy' in resp
-        assert 'multiapp1' not in resp
-
-    def test_index_with_list(self):
+    def test_index_with_list(self, app):
         try:
-            self.multiapp.list_apps = True
-            resp = self.app.get('/')
-            assert 'MapProxy' in resp
-            assert 'multiapp1' in resp
+            app.app.list_apps = True
+            resp = app.get("/")
+            assert "MapProxy" in resp
+            assert "multiapp1" in resp
         finally:
-            self.multiapp.list_apps = False
+            app.app.list_apps = False
 
-    def test_unknown_app(self):
-        self.app.get('/unknownapp', status=404)
+    def test_unknown_app(self, app):
+        app.get("/unknownapp", status=404)
         # assert status == 404 Not Found in app.get
 
-    def test_known_app(self):
-        resp = self.app.get('/multiapp1')
-        assert 'demo' in resp
+    def test_known_app(self, app):
+        resp = app.get("/multiapp1")
+        assert "demo" in resp
 
-    def test_reloading(self):
-        resp = self.app.get('/multiapp1')
-        assert 'demo' in resp
-        app_config = test_config['config_files'][0]
+    def test_reloading(self, app, base_dir):
+        resp = app.get("/multiapp1")
+        assert "demo" in resp
+        app_config = base_dir.join("multiapp1.yaml").strpath
 
-        replace_text_in_file(app_config, '  demo:', '  #demo:', ts_delta=5)
+        replace_text_in_file(app_config, "  demo:", "  #demo:", ts_delta=5)
 
-        resp = self.app.get('/multiapp1')
-        assert 'demo' not in resp
+        resp = app.get("/multiapp1")
+        assert "demo" not in resp
 
-        replace_text_in_file(app_config, '  #demo:', '  demo:', ts_delta=10)
+        replace_text_in_file(app_config, "  #demo:", "  demo:", ts_delta=10)
 
-        resp = self.app.get('/multiapp1')
-        assert 'demo' in resp
+        resp = app.get("/multiapp1")
+        assert "demo" in resp
+
 
 def replace_text_in_file(filename, old, new, ts_delta=2):
-    text = io.open(filename, encoding='utf-8').read()
+    text = io.open(filename, encoding="utf-8").read()
     text = text.replace(old, new)
-    io.open(filename, 'w', encoding='utf-8').write(text)
+    io.open(filename, "w", encoding="utf-8").write(text)
 
     # file timestamps are not precise enough (1sec)
     # add larger delta to force reload
     m_time = os.path.getmtime(filename)
-    os.utime(filename, (m_time+ts_delta, m_time+ts_delta))
+    os.utime(filename, (m_time + ts_delta, m_time + ts_delta))

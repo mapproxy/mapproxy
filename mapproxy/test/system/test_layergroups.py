@@ -15,133 +15,150 @@
 
 from __future__ import division
 
-from mapproxy.test.system import module_setup, module_teardown, SystemTest
-from mapproxy.test.system.test_wms import is_111_capa, is_110_capa, is_100_capa, is_130_capa, ns130
-
-from nose.tools import eq_
-
 import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+
+from mapproxy.test.system import SysTest
+from mapproxy.test.system.test_wms import (
+    is_111_capa,
+    is_110_capa,
+    is_100_capa,
+    is_130_capa,
+    ns130,
+)
+
+from mapproxy.test.helper import skip_with_nosetest
+
+skip_with_nosetest()
 
 
-test_config = {}
-test_config_with_root = {}
+TESTSERVER_ADDRESS = "localhost", 42423
 
-def setup_module():
-    module_setup(test_config, 'layergroups.yaml')
-    module_setup(test_config_with_root, 'layergroups_root.yaml')
 
-def teardown_module():
-    module_teardown(test_config)
-    module_teardown(test_config_with_root)
+class TestWMSWithRoot(SysTest):
 
-TESTSERVER_ADDRESS = 'localhost', 42423
-
-class TestWMSWithRoot(SystemTest):
-    config = test_config_with_root
-    def setup(self):
-        SystemTest.setup(self)
+    @pytest.fixture(scope="class")
+    def config_file(self):
+        return "layergroups_root.yaml"
 
     def _check_layernames(self, xml):
-        eq_(xml.xpath('//Capability/Layer/Title/text()'),
-            ['Root Layer'])
-        eq_(xml.xpath('//Capability/Layer/Name/text()'),
-            ['root'])
-        eq_(xml.xpath('//Capability/Layer/Layer/Name/text()'),
-            ['layer1', 'layer2'])
-        eq_(xml.xpath('//Capability/Layer/Layer[1]/Layer/Name/text()'),
-            ['layer1a', 'layer1b'])
+        assert xml.xpath("//Capability/Layer/Title/text()") == ["Root Layer"]
+        assert xml.xpath("//Capability/Layer/Name/text()") == ["root"]
+        assert xml.xpath("//Capability/Layer/Layer/Name/text()") == ["layer1", "layer2"]
+        assert xml.xpath("//Capability/Layer/Layer[1]/Layer/Name/text()") == [
+            "layer1a",
+            "layer1b",
+        ]
 
     def _check_layernames_with_namespace(self, xml, namespaces=None):
-        eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Title/text()', namespaces=namespaces),
-            ['Root Layer'])
-        eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Name/text()', namespaces=namespaces),
-            ['root'])
-        eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Layer/wms:Name/text()', namespaces=namespaces),
-            ['layer1', 'layer2'])
-        eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Layer[1]/wms:Layer/wms:Name/text()', namespaces=namespaces),
-            ['layer1a', 'layer1b'])
+        assert xml.xpath(
+            "//wms:Capability/wms:Layer/wms:Title/text()", namespaces=namespaces
+        ) == ["Root Layer"]
+        assert xml.xpath(
+            "//wms:Capability/wms:Layer/wms:Name/text()", namespaces=namespaces
+        ) == ["root"]
+        assert xml.xpath(
+            "//wms:Capability/wms:Layer/wms:Layer/wms:Name/text()",
+            namespaces=namespaces,
+        ) == ["layer1", "layer2"]
+        assert xml.xpath(
+            "//wms:Capability/wms:Layer/wms:Layer[1]/wms:Layer/wms:Name/text()",
+            namespaces=namespaces,
+        ) == ["layer1a", "layer1b"]
 
-
-    def test_100_capa(self):
-        resp = self.app.get("/service?request=GetCapabilities&service=WMS&wmtver=1.0.0")
+    def test_100_capa(self, app):
+        resp = app.get("/service?request=GetCapabilities&service=WMS&wmtver=1.0.0")
         xml = resp.lxml
         assert is_100_capa(xml)
         self._check_layernames(xml)
 
-    def test_110_capa(self):
-        resp = self.app.get("/service?request=GetCapabilities&service=WMS&version=1.1.0")
+    def test_110_capa(self, app):
+        resp = app.get("/service?request=GetCapabilities&service=WMS&version=1.1.0")
         xml = resp.lxml
         assert is_110_capa(xml)
         self._check_layernames(xml)
 
-    def test_111_capa(self):
-        resp = self.app.get("/service?request=GetCapabilities&service=WMS&version=1.1.1")
+    def test_111_capa(self, app):
+        resp = app.get("/service?request=GetCapabilities&service=WMS&version=1.1.1")
         xml = resp.lxml
         assert is_111_capa(xml)
         self._check_layernames(xml)
 
-    def test_130_capa(self):
-        resp = self.app.get("/service?request=GetCapabilities&service=WMS&version=1.3.0")
+    def test_130_capa(self, app):
+        resp = app.get("/service?request=GetCapabilities&service=WMS&version=1.3.0")
         xml = resp.lxml
         assert is_130_capa(xml)
         self._check_layernames_with_namespace(xml, ns130)
 
 
-class TestWMSWithoutRoot(SystemTest):
-    config = test_config
-    def setup(self):
-        SystemTest.setup(self)
+class TestWMSWithoutRoot(SysTest):
+
+    @pytest.fixture(scope="class")
+    def config_file(self):
+        return "layergroups.yaml"
 
     def _check_layernames(self, xml):
-        eq_(xml.xpath('//Capability/Layer/Title/text()'),
-            ['My WMS'])
-        eq_(xml.xpath('//Capability/Layer/Name/text()'),
-            [])
-        eq_(xml.xpath('//Capability/Layer/Layer/Name/text()'),
-            ['layer1', 'layer2'])
-        eq_(xml.xpath('//Capability/Layer/Layer[1]/Layer/Name/text()'),
-            ['layer1a', 'layer1b'])
-        eq_(xml.xpath('//Capability/Layer/Layer[2]/Layer/Name/text()'),
-            ['layer2a', 'layer2b'])
-        eq_(xml.xpath('//Capability/Layer/Layer[2]/Layer/Layer[1]/Name/text()'),
-            ['layer2b1'])
+        assert xml.xpath("//Capability/Layer/Title/text()") == ["My WMS"]
+        assert xml.xpath("//Capability/Layer/Name/text()") == []
+        assert xml.xpath("//Capability/Layer/Layer/Name/text()") == ["layer1", "layer2"]
+        assert xml.xpath("//Capability/Layer/Layer[1]/Layer/Name/text()") == [
+            "layer1a",
+            "layer1b",
+        ]
+        assert xml.xpath("//Capability/Layer/Layer[2]/Layer/Name/text()") == [
+            "layer2a",
+            "layer2b",
+        ]
+        assert xml.xpath("//Capability/Layer/Layer[2]/Layer/Layer[1]/Name/text()") == [
+            "layer2b1"
+        ]
 
     def _check_layernames_with_namespace(self, xml, namespaces=None):
-        eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Title/text()', namespaces=namespaces),
-            ['My WMS'])
-        eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Name/text()', namespaces=namespaces),
-            [])
-        eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Layer/wms:Name/text()', namespaces=namespaces),
-            ['layer1', 'layer2'])
-        eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Layer[1]/wms:Layer/wms:Name/text()', namespaces=namespaces),
-            ['layer1a', 'layer1b'])
-        eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Layer[2]/wms:Layer/wms:Name/text()', namespaces=namespaces),
-            ['layer2a', 'layer2b'])
-        eq_(xml.xpath('//wms:Capability/wms:Layer/wms:Layer[2]/wms:Layer/wms:Layer[1]/wms:Name/text()', namespaces=namespaces),
-            ['layer2b1'])
+        assert xml.xpath(
+            "//wms:Capability/wms:Layer/wms:Title/text()", namespaces=namespaces
+        ) == ["My WMS"]
+        assert (
+            xml.xpath(
+                "//wms:Capability/wms:Layer/wms:Name/text()", namespaces=namespaces
+            )
+            == []
+        )
+        assert xml.xpath(
+            "//wms:Capability/wms:Layer/wms:Layer/wms:Name/text()",
+            namespaces=namespaces,
+        ), ["layer1" == "layer2"]
+        assert xml.xpath(
+            "//wms:Capability/wms:Layer/wms:Layer[1]/wms:Layer/wms:Name/text()",
+            namespaces=namespaces,
+        ) == ["layer1a", "layer1b"]
+        assert xml.xpath(
+            "//wms:Capability/wms:Layer/wms:Layer[2]/wms:Layer/wms:Name/text()",
+            namespaces=namespaces,
+        ) == ["layer2a", "layer2b"]
+        assert xml.xpath(
+            "//wms:Capability/wms:Layer/wms:Layer[2]/wms:Layer/wms:Layer[1]/wms:Name/text()",
+            namespaces=namespaces,
+        ) == ["layer2b1"]
 
-
-    def test_100_capa(self):
-        resp = self.app.get("/service?request=GetCapabilities&service=WMS&wmtver=1.0.0")
+    def test_100_capa(self, app):
+        resp = app.get("/service?request=GetCapabilities&service=WMS&wmtver=1.0.0")
         xml = resp.lxml
         assert is_100_capa(xml)
         self._check_layernames(xml)
 
-    def test_110_capa(self):
-        resp = self.app.get("/service?request=GetCapabilities&service=WMS&version=1.1.0")
+    def test_110_capa(self, app):
+        resp = app.get("/service?request=GetCapabilities&service=WMS&version=1.1.0")
         xml = resp.lxml
         assert is_110_capa(xml)
         self._check_layernames(xml)
 
-    def test_111_capa(self):
-        resp = self.app.get("/service?request=GetCapabilities&service=WMS&version=1.1.1")
+    def test_111_capa(self, app):
+        resp = app.get("/service?request=GetCapabilities&service=WMS&version=1.1.1")
         xml = resp.lxml
         assert is_111_capa(xml)
         self._check_layernames(xml)
 
-    def test_130_capa(self):
-        resp = self.app.get("/service?request=GetCapabilities&service=WMS&version=1.3.0")
+    def test_130_capa(self, app):
+        resp = app.get("/service?request=GetCapabilities&service=WMS&version=1.3.0")
         xml = resp.lxml
         assert is_130_capa(xml)
         self._check_layernames_with_namespace(xml, ns130)

@@ -14,8 +14,8 @@
 # limitations under the License.
 
 from __future__ import division
-import os
-import tempfile
+
+import pytest
 
 try:
     from urllib.parse import quote
@@ -23,70 +23,102 @@ except ImportError:
     from urllib import quote
 
 from mapproxy.request.wms import WMS111MapRequest
-from mapproxy.test.system import module_setup, module_teardown, make_base_config, SystemTest
+from mapproxy.test.system import SysTest
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.image import create_tmp_image
 
-from nose.tools import eq_
+from mapproxy.test.helper import skip_with_nosetest
 
-import pytest
-pytestmark = pytest.mark.skip(reason="TODO: convert from nosetest")
+skip_with_nosetest()
 
 
-test_config = {}
+@pytest.fixture(scope="module")
+def config_file():
+    return "sld.yaml"
 
-def setup_module():
-    test_config['base_dir'] = tempfile.mkdtemp()
-    with open(os.path.join(test_config['base_dir'], 'mysld.xml'), 'wb') as f:
-        f.write(b'<sld>')
-    module_setup(test_config, 'sld.yaml')
 
-def teardown_module():
-    module_teardown(test_config)
+TESTSERVER_ADDRESS = "localhost", 42423
 
-base_config = make_base_config(test_config)
 
-TESTSERVER_ADDRESS = 'localhost', 42423
+class TestWMS(SysTest):
 
-class TestWMS(SystemTest):
-    config = test_config
+    @pytest.fixture(scope="class")
+    def additional_files(self, base_dir):
+        base_dir.join("mysld.xml").write("<sld>")
+
     def setup(self):
-        SystemTest.setup(self)
-        self.common_map_req = WMS111MapRequest(url='/service?', param=dict(service='WMS',
-             version='1.1.1', bbox='0,0,10,10', width='200', height='200',
-             srs='EPSG:4326', format='image/png', styles='', request='GetMap',
-             exceptions='xml'))
-        self.common_wms_url = ("/service?styles=&srs=EPSG%3A4326&version=1.1.1&"
+        self.common_map_req = WMS111MapRequest(
+            url="/service?",
+            param=dict(
+                service="WMS",
+                version="1.1.1",
+                bbox="0,0,10,10",
+                width="200",
+                height="200",
+                srs="EPSG:4326",
+                format="image/png",
+                styles="",
+                request="GetMap",
+                exceptions="xml",
+            ),
+        )
+        self.common_wms_url = (
+            "/service?styles=&srs=EPSG%3A4326&version=1.1.1&"
             "bbox=0.0,0.0,10.0,10.0&service=WMS&format=image%2Fpng&request=GetMap"
-            "&width=200&height=200")
+            "&width=200&height=200"
+        )
 
-    def test_sld_url(self):
-        self.common_map_req.params['layers'] = 'sld_url'
-        with mock_httpd(TESTSERVER_ADDRESS, [
-          ({'path': self.common_wms_url + '&sld=' +quote('http://example.org/sld.xml'),
-            'method': 'GET'},
-           {'body': create_tmp_image((200, 200), format='png')}
-          )]):
-            resp = self.app.get(self.common_map_req)
-            eq_(resp.content_type, 'image/png')
+    def test_sld_url(self, app):
+        self.common_map_req.params["layers"] = "sld_url"
+        with mock_httpd(
+            TESTSERVER_ADDRESS,
+            [
+                (
+                    {
+                        "path": self.common_wms_url
+                        + "&sld="
+                        + quote("http://example.org/sld.xml"),
+                        "method": "GET",
+                    },
+                    {"body": create_tmp_image((200, 200), format="png")},
+                )
+            ],
+        ):
+            resp = app.get(self.common_map_req)
+            assert resp.content_type == "image/png"
 
-    def test_sld_file(self):
-        self.common_map_req.params['layers'] = 'sld_file'
-        with mock_httpd(TESTSERVER_ADDRESS, [
-          ({'path': self.common_wms_url + '&sld_body=' +quote('<sld>'), 'method': 'GET'},
-           {'body': create_tmp_image((200, 200), format='png')}
-          )]):
-            resp = self.app.get(self.common_map_req)
-            eq_(resp.content_type, 'image/png')
+    def test_sld_file(self, app):
+        self.common_map_req.params["layers"] = "sld_file"
+        with mock_httpd(
+            TESTSERVER_ADDRESS,
+            [
+                (
+                    {
+                        "path": self.common_wms_url + "&sld_body=" + quote("<sld>"),
+                        "method": "GET",
+                    },
+                    {"body": create_tmp_image((200, 200), format="png")},
+                )
+            ],
+        ):
+            resp = app.get(self.common_map_req)
+            assert resp.content_type == "image/png"
 
-    def test_sld_body(self):
-        self.common_map_req.params['layers'] = 'sld_body'
-        with mock_httpd(TESTSERVER_ADDRESS, [
-          ({'path': self.common_wms_url + '&sld_body=' +quote('<sld:StyledLayerDescriptor />'),
-            'method': 'POST'},
-           {'body': create_tmp_image((200, 200), format='png')}
-          )]):
-            resp = self.app.get(self.common_map_req)
-            eq_(resp.content_type, 'image/png')
-
-
+    def test_sld_body(self, app):
+        self.common_map_req.params["layers"] = "sld_body"
+        with mock_httpd(
+            TESTSERVER_ADDRESS,
+            [
+                (
+                    {
+                        "path": self.common_wms_url
+                        + "&sld_body="
+                        + quote("<sld:StyledLayerDescriptor />"),
+                        "method": "POST",
+                    },
+                    {"body": create_tmp_image((200, 200), format="png")},
+                )
+            ],
+        ):
+            resp = app.get(self.common_map_req)
+            assert resp.content_type == "image/png"

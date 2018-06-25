@@ -25,7 +25,6 @@ from lxml import etree
 
 from mapproxy.test import mocker
 from mapproxy.compat import string_type, PY2
-from nose.tools import eq_
 
 import pytest
 
@@ -155,7 +154,7 @@ def assert_files_in_dir(dir, expected, glob=None):
     else:
         files = os.listdir(dir)
     files.sort()
-    eq_(sorted(expected), files)
+    assert sorted(expected) == files
 
 
 def validate_with_dtd(doc, dtd_name, dtd_basedir=None):
@@ -200,7 +199,7 @@ class XPathValidator(object):
             if callable(expected):
                 assert expected(self.xml.xpath(xpath)[0])
             else:
-                eq_(self.xml.xpath(xpath)[0], expected)
+                assert self.xml.xpath(xpath)[0] == expected
     def xpath(self, xpath):
         return self.xml.xpath(xpath)
 

@@ -16,6 +16,10 @@
 from __future__ import print_function, division
 
 import os
+import tempfile
+
+from io import BytesIO
+from contextlib import contextmanager
 
 from mapproxy.compat.image import (
     Image,
@@ -24,17 +28,13 @@ from mapproxy.compat.image import (
 )
 from mapproxy.compat import string_type, iteritems
 
-import tempfile
-from nose.tools import eq_
-from io import BytesIO
-from contextlib import contextmanager
 
 
 def assert_image_mode(img, mode):
     pos = img.tell()
     try:
         img = Image.open(img)
-        eq_(img.mode, mode)
+        assert img.mode == mode
     finally:
         img.seek(pos)
 
