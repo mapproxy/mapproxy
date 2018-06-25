@@ -105,7 +105,7 @@ Options
 .. option:: --duration
 
   Stop seeding process after this duration. This option accepts duration in the following format: 120s, 15m, 4h, 0.5d
-  Use this option in combination with ``--continue`` to be able to resume the seeding. By default,
+  Use this option in combination with ``--continue`` to be able to resume the seeding. Works only on Linux and Unix systems.
 
 .. option:: --reseed-file
 
@@ -457,7 +457,7 @@ The second and fourth value show the level and bounding box of where the seeding
 Example: Background seeding
 ---------------------------
 
-.. versionadded:: 1.10.0
+.. versionadded:: 1.10.0 Works on Linux and Unix only
 
 The ``--duration`` option allows you run MapProxy seeding for a limited time. In combination with the ``--continue`` option, you can resume the seeding process at a later time.
 You can use this to call ``mapproxy-seed`` with ``cron`` to seed in the off-hours.
