@@ -60,5 +60,4 @@ install:
     - "pip freeze"
 
 script:
-    - nosetests mapproxy
     - pytest mapproxy
