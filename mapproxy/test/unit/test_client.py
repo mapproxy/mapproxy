@@ -35,8 +35,6 @@ from mapproxy.test.helper import assert_re, TempFile
 from mapproxy.test.http import mock_httpd, query_eq, assert_query_eq, wms_query_eq
 from mapproxy.test.unit.test_cache import MockHTTPClient
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
 
 TESTSERVER_ADDRESS = ('127.0.0.1', 56413)
 TESTSERVER_URL = 'http://%s:%s' % TESTSERVER_ADDRESS

@@ -31,10 +31,6 @@ from mapproxy.test.image import create_tmp_image
 from mapproxy.test.system.test_wms import is_111_exception
 from mapproxy.cache.renderd import has_renderd_support
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 @pytest.fixture(scope="module")
 def config_file():

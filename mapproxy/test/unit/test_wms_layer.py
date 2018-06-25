@@ -22,10 +22,6 @@ from mapproxy.source.wms import WMSSource
 from mapproxy.client.wms import WMSClient
 from mapproxy.request.wms import create_request
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 class TestCombinedLayers(object):
     q = MapQuery((0, 0, 10000, 10000), (100, 100), SRS(3857))

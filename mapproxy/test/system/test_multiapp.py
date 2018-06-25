@@ -25,10 +25,6 @@ from mapproxy.multiapp import make_wsgi_app
 
 from mapproxy.test.system import SysTest, WSGITestApp
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 class TestMultiapp(SysTest):
 

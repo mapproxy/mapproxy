@@ -19,9 +19,6 @@ import yaml
 
 from mapproxy.config.validator import validate_references
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 class TestValidator(object):
     def _test_conf(self, yaml_part=None):

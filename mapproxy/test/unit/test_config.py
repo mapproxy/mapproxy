@@ -17,9 +17,6 @@
 from mapproxy.config import Options, base_config, load_base_config
 from mapproxy.test.helper import TempFiles
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 def teardown_module():
     load_base_config(clear_existing=True)

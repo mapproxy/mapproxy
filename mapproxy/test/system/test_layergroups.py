@@ -26,10 +26,6 @@ from mapproxy.test.system.test_wms import (
     ns130,
 )
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 TESTSERVER_ADDRESS = "localhost", 42423
 

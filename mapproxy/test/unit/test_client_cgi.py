@@ -25,9 +25,6 @@ from mapproxy.client.cgi import CGIClient, split_cgi_response
 from mapproxy.client.http import HTTPClientError
 from mapproxy.source import SourceError
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 class TestSplitHTTPResponse(object):
     def test_n(self):

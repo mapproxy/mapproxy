@@ -23,10 +23,6 @@ from mapproxy.request.wms import WMS130CapabilitiesRequest
 from mapproxy.test.helper import validate_with_xsd
 from mapproxy.test.system import SysTest
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 def is_inpire_vs_capa(xml):
     return validate_with_xsd(xml, xsd_name="inspire/inspire_vs/1.0/inspire_vs.xsd")

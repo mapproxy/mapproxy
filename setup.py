@@ -95,5 +95,4 @@ setup(
         "Topic :: Scientific/Engineering :: GIS",
     ],
     zip_safe=False,
-    test_suite='nose.collector',
 )

@@ -41,10 +41,6 @@ from mapproxy.request.wms.exception import (
 )
 from mapproxy.test.http import make_wsgi_env, assert_url_eq, assert_query_eq
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 class TestNoCaseMultiDict(object):
 

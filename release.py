@@ -1,11 +1,3 @@
-try:
-    from nose.plugins.skip import SkipTest
-    import sys
-    if 'nosetest' in ''.join(sys.argv):
-        raise SkipTest()
-except ImportError:
-    pass
-
 import scriptine
 from scriptine import path
 from scriptine.shell import backtick_, sh

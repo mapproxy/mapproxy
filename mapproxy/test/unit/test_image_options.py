@@ -20,10 +20,6 @@ from mapproxy.image.opts import (
     compatible_image_options,
 )
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 class TestCreateImage(object):
 

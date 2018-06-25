@@ -36,9 +36,6 @@ from mapproxy.test.helper import TempFile
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
 from mapproxy.util.geom import EmptyGeometryError
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 class TestLayerConfiguration(object):
     def _test_conf(self, yaml_part):

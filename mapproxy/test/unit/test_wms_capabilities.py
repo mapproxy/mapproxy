@@ -17,10 +17,6 @@ from mapproxy.service.wms import limit_srs_extents
 from mapproxy.layer import DefaultMapExtent, MapExtent
 from mapproxy.srs import SRS
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 class TestLimitSRSExtents(object):
 

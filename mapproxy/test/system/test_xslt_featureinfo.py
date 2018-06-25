@@ -22,10 +22,6 @@ from mapproxy.test.system import SysTest
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import strip_whitespace
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 xslt_input = (
     b"""

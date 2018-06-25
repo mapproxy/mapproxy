@@ -45,10 +45,6 @@ from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
 from mapproxy.test.system import SysTest
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 @pytest.fixture(scope="module")
 def config_file():

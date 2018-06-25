@@ -22,10 +22,6 @@ from mapproxy.source.error import HTTPSourceErrorHandler
 from mapproxy.layer import MapQuery
 from mapproxy.test.http import mock_httpd
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 TEST_SERVER_ADDRESS = ("127.0.0.1", 56413)
 TESTSERVER_URL = ("http://%s:%d" % TEST_SERVER_ADDRESS) + "/%(tms_path)s.png"

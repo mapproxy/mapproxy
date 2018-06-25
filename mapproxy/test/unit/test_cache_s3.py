@@ -25,9 +25,6 @@ except ImportError:
 from mapproxy.cache.s3 import S3Cache
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 @pytest.mark.skipif(not mock_s3 or not boto3,
                     reason="boto3 and moto required for S3 tests")

@@ -26,11 +26,6 @@ from mapproxy.test.image import tmp_image
 from mapproxy.test.system import SysTest
 
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
-
 @pytest.fixture(scope="module")
 def config_file():
     return "watermark.yaml"

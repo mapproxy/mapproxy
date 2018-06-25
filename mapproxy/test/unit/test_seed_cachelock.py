@@ -21,10 +21,6 @@ import pytest
 
 from mapproxy.seed.cachelock import CacheLocker, CacheLockedError
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 @pytest.mark.skipif(sys.platform == "win32", reason="test not supported for Windows")
 class TestCacheLock(object):

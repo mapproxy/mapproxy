@@ -20,10 +20,6 @@ from mapproxy.test.mocker import ANY
 from mapproxy.response import Response
 from mapproxy.compat import string_type
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 class TestResponse(Mocker):
 

@@ -18,10 +18,6 @@ from mapproxy.util.times import parse_httpdate, format_httpdate, timestamp
 
 import pytest
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 class TestHTTPDate(object):
 

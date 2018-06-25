@@ -21,10 +21,6 @@ import pytest
 
 from mapproxy.multiapp import DirectoryConfLoader, MultiMapProxy
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 class TestDirectoryConfLoader(object):
 

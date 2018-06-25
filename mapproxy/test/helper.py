@@ -26,12 +26,11 @@ from lxml import etree
 from mapproxy.test import mocker
 from mapproxy.compat import string_type, PY2
 
-import pytest
 
 class Mocker(object):
     """
     This is a base class for unit-tests that use ``mocker``. This class follows
-    the nosetest naming conventions for setup and teardown methods.
+    the xUnit naming conventions for setup and teardown methods.
 
     `setup` will initialize a `mocker.Mocker`. The `teardown` method
     will run ``mocker.verify()``.
@@ -245,25 +244,4 @@ def capture(bytes=False):
     finally:
         sys.stdout = backup_stdout
         sys.stderr = backup_stderr
-
-#
-# helper functions for conversion from nose to pytest
-#
-
-def todo_convert_yield_to_pytest():
-    """
-    Mark a yield test. Skip running with pytest (module-wide skip ignores yield-tests).
-    """
-    # see conftest.py
-    if hasattr(sys, '_called_from_pytest'):
-        pytest.skip()
-
-def skip_with_nosetest():
-    """
-    Raise nose.plugin.skip.SkipTest when called outside of pytest.
-    """
-    # see conftest.py
-    if not hasattr(sys, '_called_from_pytest'):
-        from nose.plugins.skip import SkipTest
-        raise SkipTest()
 

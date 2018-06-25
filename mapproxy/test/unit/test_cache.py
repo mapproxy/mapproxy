@@ -56,9 +56,6 @@ from mapproxy.test.http import assert_query_eq, wms_query_eq, query_eq, mock_htt
 from mapproxy.test.image import create_debug_img, is_png, tmp_image
 from mapproxy.util.coverage import BBOXCoverage
 
-from mapproxy.test.helper import  skip_with_nosetest
-skip_with_nosetest()
-
 
 TEST_SERVER_ADDRESS = ('127.0.0.1', 56413)
 GLOBAL_GEOGRAPHIC_EXTENT = MapExtent((-180, -90, 180, 90), SRS(4326))

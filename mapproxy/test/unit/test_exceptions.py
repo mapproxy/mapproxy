@@ -28,9 +28,6 @@ from mapproxy.request.wms.exception import (
 from mapproxy.test.helper import Mocker, validate_with_dtd, validate_with_xsd
 from mapproxy.test.image import is_png
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 class ExceptionHandlerTest(Mocker):
     def setup(self):

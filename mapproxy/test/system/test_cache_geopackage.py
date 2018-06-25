@@ -30,10 +30,6 @@ from mapproxy.test.system import SysTest
 from mapproxy.cache.geopackage import GeopackageCache
 from mapproxy.grid import TileGrid
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 @pytest.fixture(scope="module")
 def config_file():

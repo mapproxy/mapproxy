@@ -22,9 +22,6 @@ import pytest
 
 from mapproxy.util.async import imap_async_threaded, ThreadPool
 
-from mapproxy.test.helper import  skip_with_nosetest
-skip_with_nosetest()
-
 
 class TestThreaded(object):
     def test_map(self):

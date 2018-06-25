@@ -24,10 +24,6 @@ import yaml
 from mapproxy.script.conf.app import config_command
 from mapproxy.test.helper import capture
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 def filename(name):
     return os.path.join(os.path.dirname(__file__), "fixture", name)

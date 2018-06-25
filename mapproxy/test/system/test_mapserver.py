@@ -34,10 +34,6 @@ pytestmark = pytest.mark.skipif(
     sys.platform == "win32", reason="CGI tests not ported for Windows"
 )
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 @pytest.fixture(scope="module")
 def config_file():

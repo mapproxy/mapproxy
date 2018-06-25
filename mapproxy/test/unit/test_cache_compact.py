@@ -30,9 +30,6 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.script.defrag import defrag_compact_cache
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 class TestCompactCacheV1(TileCacheTestBase):
 

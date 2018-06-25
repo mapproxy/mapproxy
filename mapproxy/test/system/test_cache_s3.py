@@ -25,9 +25,6 @@ from mapproxy.test.system import SysTest
 
 import pytest
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
 
 try:
     import boto3

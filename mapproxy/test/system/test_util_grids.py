@@ -20,10 +20,6 @@ import pytest
 from mapproxy.script.grids import grids_command
 from mapproxy.test.helper import capture
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "fixture")
 GRID_NAMES = ["global_geodetic_sqrt2", "grid_full_example", "another_grid_full_example"]

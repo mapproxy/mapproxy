@@ -22,10 +22,6 @@ import pytest
 from mapproxy.compat.image import Image
 from mapproxy.test.system import SysTest
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 has_mapnik = True
 try:

@@ -19,10 +19,6 @@ import tempfile
 from mapproxy.util.yaml import load_yaml, load_yaml_file, YAMLError
 from mapproxy.compat import string_type
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 class TestLoadYAMLFile(object):
 

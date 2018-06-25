@@ -24,10 +24,6 @@ from mapproxy.compat.image import Image
 from mapproxy.test.image import is_png, is_jpeg
 from mapproxy.test.system import SysTest
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 @pytest.fixture(scope="module")
 def config_file():

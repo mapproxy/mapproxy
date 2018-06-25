@@ -26,9 +26,6 @@ from mapproxy.test.image import is_png, create_tmp_image
 from mapproxy.test.system import SysTest
 
 import pytest
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
 
 
 @pytest.fixture(scope="module")

@@ -19,9 +19,6 @@ import time
 
 from mapproxy.util.lock import FileLock
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 def lock(args):
     lock_file, count_file = args

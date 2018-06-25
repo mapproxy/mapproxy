@@ -28,9 +28,6 @@ from mapproxy.service.tile import TileServer
 from mapproxy.service.wms import WMSLayer, WMSGroupLayer, WMSServer
 from mapproxy.test.http import make_wsgi_env
 
-from mapproxy.test.helper import  skip_with_nosetest
-skip_with_nosetest()
-
 
 class DummyLayer(MapLayer):
     transparent = True

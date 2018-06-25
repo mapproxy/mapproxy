@@ -18,10 +18,6 @@ from copy import deepcopy
 
 from mapproxy.script.conf.utils import update_config
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 class TestUpdateConfig(object):
 

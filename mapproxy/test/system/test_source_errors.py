@@ -30,11 +30,6 @@ from mapproxy.test.system import SysTest
 from mapproxy.test.system.test_wms import is_111_exception
 
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
-
 transp = create_tmp_image((200, 200), mode="RGBA", color=(0, 0, 0, 0))
 
 

@@ -45,11 +45,6 @@ from mapproxy.seed.util import ProgressStore
 from mapproxy.test.helper import TempFile
 
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
-
 try:
     from shapely.wkt import loads as load_wkt
 

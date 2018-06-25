@@ -20,10 +20,6 @@ from mapproxy.request.wmts import WMTS100CapabilitiesRequest
 from mapproxy.test.image import img_from_buf
 from mapproxy.test.system import SysTest
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 @pytest.fixture(scope="module")
 def config_file():

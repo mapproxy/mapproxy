@@ -37,9 +37,6 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.test.helper import assert_files_in_dir
 from mapproxy.test.image import create_tmp_image_buf, is_png
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')

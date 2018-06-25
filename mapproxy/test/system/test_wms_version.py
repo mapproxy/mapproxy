@@ -19,9 +19,6 @@ from mapproxy.test.system import SysTest
 from mapproxy.test.system.test_wms import is_110_capa, is_111_capa, is_130_capa
 
 import pytest
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
 
 
 class TestLimitedWMSVersionsTest(SysTest):

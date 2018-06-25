@@ -27,9 +27,6 @@ from mapproxy.cache.redis import RedisCache
 from mapproxy.cache.tile import Tile
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 @pytest.mark.skipif(not redis or not os.environ.get('MAPPROXY_TEST_REDIS'),
                     reason="redis package and MAPPROXY_TEST_REDIS env required")

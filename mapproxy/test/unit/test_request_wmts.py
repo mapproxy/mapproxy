@@ -19,10 +19,6 @@ from mapproxy.request.base import url_decode
 
 import pytest
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 def dummy_req(url):
     return DummyRequest(url_decode(url.replace("\n", "")))

@@ -19,10 +19,6 @@ import pytest
 
 from mapproxy.util.ogr import OGRShapeReader, libgdal
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 polygon_file = os.path.join(os.path.dirname(__file__), "polygons", "polygons.shp")
 

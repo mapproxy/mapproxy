@@ -26,9 +26,6 @@ from mapproxy.service.wmts import WMTSServer
 from mapproxy.test.http import make_wsgi_env
 from mapproxy.util.ext.odict import odict
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 class DummyLayer(MapLayer):
     transparent = True

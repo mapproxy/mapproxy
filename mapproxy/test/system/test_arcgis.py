@@ -25,11 +25,6 @@ from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import SysTest
 
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
-
 @pytest.fixture(scope="module")
 def config_file():
     return "arcgis.yaml"

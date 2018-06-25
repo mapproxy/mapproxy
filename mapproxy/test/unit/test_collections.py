@@ -17,9 +17,6 @@ import pytest
 
 from mapproxy.util.collections import LRU, ImmutableDictList
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 class TestLRU(object):
     def test_missing_key(self):

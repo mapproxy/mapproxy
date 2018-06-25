@@ -21,10 +21,6 @@ from mapproxy.config import base_config
 from mapproxy import srs
 from mapproxy.srs import SRS
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 class TestSRS(object):
 

@@ -14,17 +14,11 @@
 # limitations under the License.
 
 import requests
-import pytest
 
 from mapproxy.test.http import (
     MockServ, RequestsMismatchError, mock_httpd,
     basic_auth_value, query_eq,
 )
-
-
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
 
 
 class TestMockServ(object):

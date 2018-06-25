@@ -16,10 +16,6 @@ from mapproxy.util.times import timestamp_from_isodate
 
 import pytest
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 def test_timestamp_from_isodate():
     ts = timestamp_from_isodate("2009-06-09T10:57:00")

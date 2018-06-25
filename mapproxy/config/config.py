@@ -75,10 +75,8 @@ def base_config():
     config = _config.top
     if config is None:
         import warnings
-        import sys
-        if 'nosetests' not in sys.argv[0]:
-            warnings.warn("calling un-configured base_config",
-                DeprecationWarning, stacklevel=2)
+        warnings.warn("calling un-configured base_config",
+            DeprecationWarning, stacklevel=2)
         config = load_default_config()
         config.conf_base_dir = os.getcwd()
         finish_base_config(config)

@@ -15,10 +15,6 @@
 
 from mapproxy.tilefilter import tile_watermark_placement
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 def test_tile_watermark_placement():
     assert tile_watermark_placement((0, 0, 0)) == "c"

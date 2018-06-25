@@ -33,8 +33,6 @@ from mapproxy.srs import SRS, TransformationError
 
 import pytest
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
 
 class TestResolution(object):
     def test_min_res(self):

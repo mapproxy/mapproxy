@@ -53,9 +53,6 @@ from mapproxy.util.coverage import BBOXCoverage
 pytestmark = pytest.mark.skipif(not geom_support,
                                 reason="requires Shapely")
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 VALID_POLYGON1 = b"""POLYGON ((953296.704552185838111 7265916.626927595585585,
 944916.907243740395643 7266183.505430161952972,

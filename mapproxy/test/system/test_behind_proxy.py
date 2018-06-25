@@ -19,9 +19,6 @@ import pytest
 
 from mapproxy.test.system import SysTest
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 class TestWMSBehindProxy(SysTest):
     """

@@ -23,10 +23,6 @@ from mapproxy.image.message import TextDraw, message_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.tilefilter import watermark_filter
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 PNG_FORMAT = ImageOptions(format="image/png")
 

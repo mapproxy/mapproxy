@@ -35,10 +35,6 @@ from mapproxy.util.times import timestamp_before
 from mapproxy.test.helper import Mocker
 
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 is_win = sys.platform == "win32"
 
 

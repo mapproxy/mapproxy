@@ -33,10 +33,6 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not geom_support, reason="requires shapely")
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 def coverage(geom, srs="EPSG:4326"):
     return load_limited_to({"srs": srs, "geometry": geom})

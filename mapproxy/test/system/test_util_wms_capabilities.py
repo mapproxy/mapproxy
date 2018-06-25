@@ -22,10 +22,6 @@ from mapproxy.script.wms_capabilities import wms_capabilities_command
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import capture
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 TESTSERVER_ADDRESS = ("127.0.0.1", 56413)
 TESTSERVER_URL = "http://%s:%s" % TESTSERVER_ADDRESS

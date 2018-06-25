@@ -27,9 +27,6 @@ from mapproxy.featureinfo import (
 )
 from mapproxy.test.helper import strip_whitespace
 
-from mapproxy.test.helper import skip_with_nosetest
-skip_with_nosetest()
-
 
 def test_combined_inputs():
     foo = '<a><b>foo</b></a>'

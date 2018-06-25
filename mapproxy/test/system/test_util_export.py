@@ -25,10 +25,6 @@ from mapproxy.test.image import tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import capture
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "fixture")
 

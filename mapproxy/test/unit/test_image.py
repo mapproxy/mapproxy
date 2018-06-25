@@ -49,10 +49,6 @@ from mapproxy.test.image import (
     assert_img_colors_eq,
 )
 
-from mapproxy.test.helper import skip_with_nosetest
-
-skip_with_nosetest()
-
 
 PNG_FORMAT = ImageOptions(format="image/png")
 JPEG_FORMAT = ImageOptions(format="image/jpeg")
