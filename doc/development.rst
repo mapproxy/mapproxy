@@ -80,9 +80,6 @@ Mailing list
 
 The preferred medium for all MapProxy related discussions is our mailing list mapproxy@lists.osgeo.org You must `subscribe <http://lists.osgeo.org/mailman/listinfo/mapproxy>`_ to the list before you can write. The archive is `available here <http://lists.osgeo.org/pipermail/mapproxy/>`_.
 
-IRC
-"""
-There is also a channel on `Freenode <http://freenode.net/>`_: ``#mapproxy``. It is a quiet place but you might find someone during business hours (central european time).
 
 Tips on development
 -------------------
