@@ -30,10 +30,8 @@ def load_yaml_file(file_or_filename):
             return load_yaml(f)
     return load_yaml(file_or_filename)
 
-def load_yaml(doc):
-    """
-    Load yaml from file object or string.
-    """
+def _load_yaml(doc):
+    # try different methods to load yaml
     try:
         if getattr(yaml, '__with_libyaml__', False):
             try:
@@ -45,4 +43,14 @@ def load_yaml(doc):
         return yaml.load(doc)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as ex:
         raise YAMLError(str(ex))
+
+def load_yaml(doc):
+    """
+    Load yaml from file object or string.
+    """
+    data = _load_yaml(doc)
+    if type(data) is not dict:
+        # all configs are dicts, raise YAMLError to prevent later AttributeErrors (#352)
+        raise YAMLError("configuration not a YAML dictionary")
+    return data
 

@@ -59,3 +59,11 @@ class TestLoadYAMLFile(object):
             assert "line 2" in str(ex)
         else:
             assert False, "expected YAMLError"
+
+    def test_load_yaml_string_error(self):
+        try:
+            load_yaml('only a string')
+        except YAMLError as ex:
+            assert "not a YAML dict" in str(ex)
+        else:
+            assert False, "expected YAMLError"
