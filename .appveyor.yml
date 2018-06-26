@@ -110,7 +110,7 @@ build_script:
 
 test_script:
   # Run the project tests
-  - nosetests mapproxy"
+  - pytest mapproxy"
 
 after_test:
   # If tests are successful, create binary packages for the project.
