@@ -10,7 +10,14 @@ services:
   tms:
   kml:
   wmts:
-    restful_template: '/myrest/{{Layer}}/{{TileMatrixSet}}/{{TileMatrix}}/{{TileCol}}/{{TileRow}}.{{Format}}'
+    featureinfo_formats:
+      - mimetype: application/gml+xml; version=3.1
+        suffix: gml
+      - mimetype: application/json
+        suffix: geojson
+
+    restful_template: '/myrest/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}'
+    restful_featureinfo_template: '/myrest/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.{InfoFormat}'
   wms:
     md:
       title: MapProxy test fixture
@@ -49,12 +56,14 @@ layers:
 caches:
   wms_cache:
     format: image/jpeg
+    grids: [GLOBAL_MERCATOR]
     sources: [wms_cache]
   wms_cache_multi:
     format: image/jpeg
     grids: [CustomGridSet, GoogleMapsCompatible]
     sources: [wms_cache_130]
   tms_cache:
+    grids: [GLOBAL_MERCATOR]
     sources: [tms_cache]
   tms_cache_ul:
     grids: [ulgrid]
@@ -66,7 +75,7 @@ caches:
 sources:
   wms_cache:
     type: wms
-    supported_srs: ['EPSG:900913', 'EPSG:4326']
+    supported_srs: ['EPSG:3857', 'EPSG:4326']
     wms_opts:
       featureinfo: True
     req:

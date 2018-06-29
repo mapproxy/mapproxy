@@ -21,6 +21,7 @@ from mapproxy.compat.itertools import chain
 from functools import partial
 from math import sqrt
 from mapproxy.cache.tile import CacheInfo
+from mapproxy.featureinfo import combine_docs
 from mapproxy.request.wms import (wms_request, WMS111LegendGraphicRequest,
     mimetype_from_infotype, infotype_from_mimetype, switch_bbox_epsg_axis_order)
 from mapproxy.srs import SRS, TransformationError
@@ -241,28 +242,20 @@ class WMSServer(Server):
             return Response('', mimetype=mimetype)
 
         if self.fi_transformers:
-            doc = infos[0].combine(infos)
-            if doc.info_type == 'text':
-                resp = doc.as_string()
-                mimetype = 'text/plain'
-            else:
-                if not mimetype:
-                    if 'xml' in self.fi_transformers:
-                        info_type = 'xml'
-                    elif 'html' in self.fi_transformers:
-                        info_type = 'html'
-                    else:
-                        info_type = 'text'
-                    mimetype = mimetype_from_infotype(request.version, info_type)
+            if not mimetype:
+                if 'xml' in self.fi_transformers:
+                    info_type = 'xml'
+                elif 'html' in self.fi_transformers:
+                    info_type = 'html'
                 else:
-                    info_type = infotype_from_mimetype(request.version, mimetype)
-                resp = self.fi_transformers[info_type](doc).as_string()
-        else:
-            mimetype = mimetype_from_infotype(request.version, infos[0].info_type)
-            if len(infos) > 1:
-                resp = infos[0].combine(infos).as_string()
+                    info_type = 'text'
+                mimetype = mimetype_from_infotype(request.version, info_type)
             else:
-                resp = infos[0].as_string()
+                info_type = infotype_from_mimetype(request.version, mimetype)
+            resp, _ = combine_docs(infos, self.fi_transformers[info_type])
+        else:
+            resp, info_type = combine_docs(infos)
+            mimetype = mimetype_from_infotype(request.version, info_type)
 
         return Response(resp, mimetype=mimetype)
 

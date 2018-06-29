@@ -49,7 +49,7 @@ assert_xpath_wmts = functools.partial(assert_xpath, namespaces=ns_wmts)
 class TestWMTS(SysTest):
 
     def test_capabilities(self, app):
-        resp = app.get("/wmts/myrest/1.0.0/WMTSCapabilities.xml")
+        resp = app.get("/wmts/1.0.0/WMTSCapabilities.xml")
         xml = resp.lxml
         assert validate_with_xsd(
             xml, xsd_name="wmts/1.0/wmtsGetCapabilities_response.xsd"
@@ -59,6 +59,49 @@ class TestWMTS(SysTest):
             len(xml.xpath("//wmts:Contents/wmts:TileMatrixSet", namespaces=ns_wmts))
             == 5
         )
+        # check InfoFormat for queryable layers
+        for layer in xml.xpath("//wmts:Layer", namespaces=ns_wmts):
+            if layer.findtext("ows:Identifier", namespaces=ns_wmts) in (
+                "wms_cache",
+                "wms_cache_multi",
+                "gk3_cache",
+            ):
+                assert layer.xpath("wmts:InfoFormat/text()", namespaces=ns_wmts) == [
+                    "application/gml+xml; version=3.1",
+                    "application/json",
+                ]
+            else:
+                assert layer.xpath("wmts:InfoFormat/text()", namespaces=ns_wmts) == []
+
+        # check ResourceURL for wms_cache
+        layer = xml.xpath(
+            '//wmts:Layer[ows:Identifier/text()="wms_cache"]', namespaces=ns_wmts
+        )[0]
+        resourceURLs = layer.xpath("wmts:ResourceURL", namespaces=ns_wmts)
+
+        for rurl, format, type, template in [
+            [
+                resourceURLs[0],
+                "image/jpeg",
+                "tile",
+                "http://localhost/wmts/myrest/wms_cache/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
+            ],
+            [
+                resourceURLs[1],
+                "application/gml+xml; version=3.1",
+                "FeatureInfo",
+                "http://localhost/wmts/myrest/wms_cache/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.gml",
+            ],
+            [
+                resourceURLs[2],
+                "application/json",
+                "FeatureInfo",
+                "http://localhost/wmts/myrest/wms_cache/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.geojson",
+            ],
+        ]:
+            assert rurl.attrib["format"] == format
+            assert rurl.attrib["resourceType"] == type
+            assert rurl.attrib["template"] == template
 
     def test_get_tile(self, app, fixture_cache_data):
         resp = app.get("/wmts/myrest/wms_cache/GLOBAL_MERCATOR/01/0/0.jpeg")
@@ -124,3 +167,31 @@ class TestWMTS(SysTest):
             "/ows:ExceptionReport/ows:Exception/@exceptionCode",
             "InvalidParameterValue",
         )
+
+    def test_getfeatureinfo(self, app):
+        fi_req = '/wmts/myrest/wms_cache/GLOBAL_MERCATOR/00/0/0/17/27.geojson'
+        serv = MockServ(port=42423)
+        serv.expects(
+            "/service?layers=foo,bar"
+            + "&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244"
+            + "&width=256&height=256&x=17&y=27&query_layers=foo,bar&format=image%2Fpng&srs=EPSG%3A900913"
+            + "&request=GetFeatureInfo&version=1.1.1&service=WMS&styles=&info_format=application/json"
+        )
+        serv.returns(b'{"data": 43}')
+        with serv:
+            resp = app.get(fi_req, status=200)
+            assert resp.content_type == "application/json"
+
+    def test_getfeatureinfo_xml(self, app):
+        fi_req = '/wmts/myrest/wms_cache/GLOBAL_MERCATOR/00/0/0/17/27.gml'
+        serv = MockServ(port=42423)
+        serv.expects(
+            "/service?layers=foo,bar"
+            + "&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244"
+            + "&width=256&height=256&x=17&y=27&query_layers=foo,bar&format=image%2Fpng&srs=EPSG%3A900913"
+            + "&request=GetFeatureInfo&version=1.1.1&service=WMS&styles=&info_format=application/gml%2bxml%3b%20version=3.1"
+        )
+        serv.returns(b"<root />")
+        with serv:
+            resp = app.get(str(fi_req), status=200)
+            assert resp.headers["Content-type"] == "application/gml+xml; version=3.1"

@@ -713,7 +713,7 @@ class TestWMS111(SysTest):
             self.common_fi_req.params["info_format"] = "text/html"
             resp = app.get(self.common_fi_req)
             assert resp.content_type == "text/html"
-            assert resp.body == b"info"
+            assert resp.body == b"<html><body><p>info</p></body></html>"
 
     def test_get_featureinfo_130(self, app):
         expected_req = (
