@@ -1866,7 +1866,7 @@ class ServiceConfiguration(ConfigurationBase):
         max_tile_age *= 60 * 60 # seconds
 
         info_formats = conf.get('featureinfo_formats', [])
-        info_formats = dict((f['suffix'], f['mimetype']) for f in info_formats)
+        info_formats = odict((f['suffix'], f['mimetype']) for f in info_formats)
 
         if kvp is None and restful is None:
             kvp = restful = True
