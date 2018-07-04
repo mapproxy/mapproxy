@@ -252,7 +252,9 @@ class WMSServer(Server):
                 mimetype = mimetype_from_infotype(request.version, info_type)
             else:
                 info_type = infotype_from_mimetype(request.version, mimetype)
-            resp, _ = combine_docs(infos, self.fi_transformers[info_type])
+            resp, actual_info_type = combine_docs(infos, self.fi_transformers[info_type])
+            if actual_info_type is not None and info_type != actual_info_type:
+                mimetype = mimetype_from_infotype(request.version, actual_info_type)
         else:
             resp, info_type = combine_docs(infos)
             mimetype = mimetype_from_infotype(request.version, info_type)

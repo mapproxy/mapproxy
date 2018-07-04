@@ -121,26 +121,9 @@ class WMTSServer(Server):
               request.infoformat,
         )
 
-        # self.check_request_dimensions(tile_layer, request)
+        self.check_request_dimensions(tile_layer, request)
 
-        # TODO
-        # limited_to = self.authorize_tile_layer(tile_layer, request)
-
-        coverage = None
-        # actual_layers = odict()
-        #
-        # for layer_name in request.params.query_layers:
-        #     layer = self.layers[layer_name]
-        #     if not layer.queryable:
-        #         raise RequestError('layer %s is not queryable' % layer_name, request=request)
-        #     for layer_name, info_layers in layer.info_layers_for_query(query):
-        #         actual_layers[layer_name] = info_layers
-        #
-        # authorized_layers, coverage = self.authorized_layers('featureinfo', actual_layers.keys(),
-        #     request.http.environ, query_extent=(query.srs.srs_code, query.bbox))
-        # self.filter_actual_layers(actual_layers, request.params.layers, authorized_layers)
-
-        # outside of auth-coverage
+        coverage = self.authorize_tile_layer(tile_layer, request, featureinfo=True)
 
         if not tile_layer.info_sources:
             raise RequestError('layer %s not queryable' % str(request.layer),
@@ -164,25 +147,34 @@ class WMTSServer(Server):
 
         return Response(resp, mimetype=mimetype)
 
-    def authorize_tile_layer(self, tile_layer, request):
-        if 'mapproxy.authorize' in request.http.environ:
-            query_extent = tile_layer.grid.srs.srs_code, tile_layer.tile_bbox(request)
-            result = request.http.environ['mapproxy.authorize']('wmts', [tile_layer.name],
-                query_extent=query_extent, environ=request.http.environ)
-            if result['authorized'] == 'unauthenticated':
-                raise RequestError('unauthorized', status=401)
-            if result['authorized'] == 'full':
-                return
-            if result['authorized'] == 'partial':
-                if result['layers'].get(tile_layer.name, {}).get('tile', False) == True:
-                    limited_to = result['layers'][tile_layer.name].get('limited_to')
-                    if not limited_to:
-                        limited_to = result.get('limited_to')
-                    if limited_to:
-                        return load_limited_to(limited_to)
-                    else:
-                        return None
-            raise RequestError('forbidden', status=403)
+    def authorize_tile_layer(self, tile_layer, request, featureinfo=False):
+        if 'mapproxy.authorize' not in request.http.environ:
+            return
+
+        query_extent = tile_layer.grid.srs.srs_code, tile_layer.tile_bbox(request)
+
+        service = 'wmts'
+        key = 'tile'
+        if featureinfo:
+            service += '.featureinfo'
+            key = 'featureinfo'
+
+        result = request.http.environ['mapproxy.authorize'](service, [tile_layer.name],
+            query_extent=query_extent, environ=request.http.environ)
+        if result['authorized'] == 'unauthenticated':
+            raise RequestError('unauthorized', status=401)
+        if result['authorized'] == 'full':
+            return
+        if result['authorized'] == 'partial':
+            if result['layers'].get(tile_layer.name, {}).get(key, False) == True:
+                limited_to = result['layers'][tile_layer.name].get('limited_to')
+                if not limited_to:
+                    limited_to = result.get('limited_to')
+                if limited_to:
+                    return load_limited_to(limited_to)
+                else:
+                    return None
+        raise RequestError('forbidden', status=403)
 
     def authorized_tile_layers(self, env):
         if 'mapproxy.authorize' in env:

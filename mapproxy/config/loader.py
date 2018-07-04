@@ -638,7 +638,7 @@ class ArcGISSourceConfiguration(SourceConfiguration):
                             supported_srs=supported_srs,
                             supported_formats=supported_formats or None)
 
-
+    @memoize
     def fi_source(self, params=None):
         from mapproxy.client.arcgis import ArcGISInfoClient
         from mapproxy.request.arcgis import create_identify_request
@@ -1682,6 +1682,7 @@ class LayerConfiguration(ConfigurationBase):
         from mapproxy.cache.dummy import DummyCache
 
         sources = []
+        fi_only_sources = []
         if 'tile_sources' in self.conf:
             sources = self.conf['tile_sources']
         else:
@@ -1695,13 +1696,14 @@ class LayerConfiguration(ConfigurationBase):
                             continue
                         # and WMS layers with map: False (i.e. FeatureInfo only sources)
                         if src_conf['type'] == 'wms' and src_conf.get('wms_opts', {}).get('map', True) == False:
-                            # TODO add to fi_sources?!
+                            fi_only_sources.append(source_name)
                             continue
 
                     return []
                 sources.append(source_name)
 
             if len(sources) > 1:
+                # skip layers with more then one source
                 return []
 
 
@@ -1712,7 +1714,7 @@ class LayerConfiguration(ConfigurationBase):
             fi_sources = []
             fi_source_names = cache_source_names(self.context, cache_name)
 
-            for fi_source_name in fi_source_names:
+            for fi_source_name in fi_source_names + fi_only_sources:
                 if fi_source_name not in self.context.sources: continue
                 if not hasattr(self.context.sources[fi_source_name], 'fi_source'): continue
                 fi_source = self.context.sources[fi_source_name].fi_source()

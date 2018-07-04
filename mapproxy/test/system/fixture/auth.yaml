@@ -2,6 +2,9 @@ services:
   tms:
   kml:
   wmts:
+    featureinfo_formats:
+      - mimetype: application/json
+        suffix: geojson
   demo:
   wms:
     md:
