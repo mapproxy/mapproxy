@@ -141,7 +141,12 @@ class JSONFeatureInfoDoc(FeatureInfoDoc):
 
     @classmethod
     def combine(cls, docs):
-        contents = [json.loads(d.content) for d in docs]
+        contents = []
+        for d in docs:
+            content = d.content
+            if not isinstance(content, string_type):
+                content = content.decode('UTF-8')
+            contents.append(json.loads(content))
         combined = reduce(lambda a, b: merge_dict(a, b), contents)
         return cls(json.dumps(combined))
 
