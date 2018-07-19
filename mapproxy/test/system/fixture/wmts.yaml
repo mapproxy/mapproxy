@@ -11,10 +11,15 @@ services:
   kml:
   wmts:
     restful_template: '/myrest/{{Layer}}/{{TileMatrixSet}}/{{TileMatrix}}/{{TileCol}}/{{TileRow}}.{{Format}}'
+    md:
+      keyword_list:
+        - keywords: [wmtskey1,wmtskey2,wmtskey3]
   wms:
     md:
       title: MapProxy test fixture
       abstract: This is MapProxy.
+      keyword_list:
+        - keywords: [wmskey1,wmskey2,wmskey3]
       online_resource: http://mapproxy.org/
       contact:
         person: Oliver Tonnhofer
