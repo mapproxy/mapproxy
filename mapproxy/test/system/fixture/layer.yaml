@@ -165,6 +165,8 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: bar
+    wms_opts:
+      featureinfo: True
     coverage:
       bbox: [-180, -80, 170, 80]
       srs: 'EPSG:4326'
@@ -233,3 +235,6 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: fi
+    coverage:
+      bbox: [-180,-90,170,80]
+      srs: 'EPSG:4326'

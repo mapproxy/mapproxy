@@ -46,7 +46,7 @@ layers:
     sources: [wms_cache_multi]
   - name: tms_cache
     title: TMS Cache Layer
-    sources: [tms_cache]
+    sources: [tms_cache, wms_fi_only]
   - name: tms_cache_ul
     title: TMS Cache Layer
     sources: [tms_cache_ul]
@@ -102,6 +102,17 @@ sources:
   tms_cache:
     type: tile
     url: http://localhost:42423/tiles/%(tc_path)s.png
+  wms_fi_only:
+    type: wms
+    wms_opts:
+      featureinfo: True
+      map: False
+    req:
+      url: http://localhost:42423/service
+      layers: fi
+    coverage:
+      bbox: [-180,-90,170,80]
+      srs: 'EPSG:4326'
 
 grids:
   gk3:

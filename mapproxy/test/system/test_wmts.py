@@ -136,6 +136,7 @@ class TestWMTS(SysTest):
                 "wms_cache",
                 "wms_cache_multi",
                 "gk3_cache",
+                "tms_cache",
             ):
                 assert layer.xpath("wmts:InfoFormat/text()", namespaces=ns_wmts) == [
                     "application/gml+xml; version=3.1",
@@ -261,6 +262,28 @@ class TestWMTS(SysTest):
         with serv:
             resp = app.get(str(fi_req), status=200)
             assert resp.content_type == "application/json"
+
+
+    def test_getfeatureinfo_coverage(self, app, fi_req):
+        fi_req.params['layer'] = 'tms_cache'
+        fi_req.params['i'] = '250'
+        fi_req.params['j'] = '50'
+        resp = app.get(str(fi_req), status=200)
+        assert resp.content_type == "application/json"
+
+        fi_req.params['i'] = '150'
+        serv = MockServ(port=42423)
+        serv.expects(
+            "/service?layers=fi"
+            + "&bbox=-20037508.3428,-20037508.3428,20037508.3428,20037508.3428"
+            + "&width=256&height=256&x=150&y=50&query_layers=fi&format=image%2Fpng&srs=EPSG%3A900913"
+            + "&request=GetFeatureInfo&version=1.1.1&service=WMS&styles=&info_format=application/json"
+        )
+        serv.returns(b'{"data": 43}')
+        with serv:
+            resp = app.get(str(fi_req), status=200)
+            assert resp.content_type == "application/json"
+
 
     def test_getfeatureinfo_xml(self, app, fi_req):
         fi_req.params["infoformat"] = "application/gml+xml; version=3.1"

@@ -797,7 +797,9 @@ class WMSSourceConfiguration(SourceConfiguration):
             http_client, fi_request.url = self.http_client(fi_request.url)
             fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs,
                                       http_client=http_client)
-            fi_source = WMSInfoSource(fi_client, fi_transformer=fi_transformer)
+            coverage = self.coverage()
+            fi_source = WMSInfoSource(fi_client, fi_transformer=fi_transformer,
+                                      coverage=coverage)
         return fi_source
 
     def lg_source(self, params=None):

@@ -152,7 +152,7 @@ class TestWMSAuth(SysTest):
                 "authorized": "partial",
                 "limited_to": {
                     "srs": "EPSG:4326",
-                    "geometry": [-40.0, -50.0, 0.0, 5.0],
+                    "geometry": [171.0, -50.0, 178.0, 5.0],
                 },
                 "layers": {
                     "layer1": {"map": True},
@@ -169,9 +169,9 @@ class TestWMSAuth(SysTest):
         # layer2/2b/2b1 not included because coverage of 2b1 is outside of global limited_to
         assert xml.xpath("//Layer/Name/text()") == ["layer1", "layer1a"]
         limited_bbox = xml.xpath("//Layer/LatLonBoundingBox")[1]
-        assert float(limited_bbox.attrib["minx"]) == -40.0
+        assert float(limited_bbox.attrib["minx"]) == 171.0
         assert float(limited_bbox.attrib["miny"]) == -50.0
-        assert float(limited_bbox.attrib["maxx"]) == 0.0
+        assert float(limited_bbox.attrib["maxx"]) == 178.0
         assert float(limited_bbox.attrib["maxy"]) == 5.0
 
     def test_capabilities_authorize_partial_with_fi(self, app):

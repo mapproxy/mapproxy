@@ -641,6 +641,36 @@ class TestWMS111(SysTest):
             assert resp.content_type == "text/plain"
             assert resp.body == b"info"
 
+    def test_get_featureinfo_coverage(self, app):
+        self.common_fi_req.params["bbox"] = "-180.0,-90.0,180.0,90.0"
+        self.common_fi_req.params["srs"] = "EPSG:4326"
+        self.common_fi_req.params["width"] = "400"
+        self.common_fi_req.params["height"] = "200"
+        self.common_fi_req.params["x"] = 395  # outside of coverage
+        self.common_fi_req.params["y"] = 50
+        self.common_fi_req.params["layers"] = 'tms_fi_cache'
+        self.common_fi_req.params["query_layers"] = 'tms_fi_cache'
+
+        resp = app.get(self.common_fi_req)
+        assert resp.body == b""
+        assert resp.content_type == "text/plain"
+
+        expected_req = (
+            {
+                "path": r"/service?LAYERs=fi&SERVICE=WMS&FORMAT=image%2Fpng"
+                "&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A4326"
+                "&VERSION=1.1.1&BBOX=-180.0,-90.0,180.0,90.0&styles="
+                "&WIDTH=400&QUERY_LAYERS=fi&X=380&Y=50"
+            },
+            {"body": b"info", "headers": {"content-type": "text/plain"}},
+        )
+        with mock_httpd(("localhost", 42423), [expected_req]):
+            self.common_fi_req.params["x"] = 380  # inside of coverage
+
+            resp = app.get(self.common_fi_req)
+            assert resp.body == b"info"
+            assert resp.content_type == "text/plain"
+
     def test_get_featureinfo_float(self, app):
         expected_req = (
             {

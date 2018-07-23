@@ -65,6 +65,7 @@ class TestWMTS(SysTest):
                 "wms_cache",
                 "wms_cache_multi",
                 "gk3_cache",
+                "tms_cache",
             ):
                 assert layer.xpath("wmts:InfoFormat/text()", namespaces=ns_wmts) == [
                     "application/gml+xml; version=3.1",

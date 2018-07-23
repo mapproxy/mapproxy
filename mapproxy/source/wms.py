@@ -208,11 +208,14 @@ class WMSSource(MapLayer):
         )
 
 class WMSInfoSource(InfoSource):
-    def __init__(self, client, fi_transformer=None):
+    def __init__(self, client, fi_transformer=None, coverage=None):
         self.client = client
         self.fi_transformer = fi_transformer
+        self.coverage = coverage
 
     def get_info(self, query):
+        if self.coverage and not self.coverage.contains(query.coord, query.srs):
+            return None
         doc = self.client.get_info(query)
         if self.fi_transformer:
             doc = self.fi_transformer(doc)
