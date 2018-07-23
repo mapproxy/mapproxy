@@ -10,6 +10,9 @@ services:
   tms:
   kml:
   wmts:
+    md:
+      keyword_list:
+        - keywords: [wmtskey1, wmtskey2, wmtskey3]
     featureinfo_formats:
       - mimetype: application/gml+xml; version=3.1
         suffix: gml
@@ -22,6 +25,8 @@ services:
     md:
       title: MapProxy test fixture
       abstract: This is MapProxy.
+      keyword_list:
+        - keywords: [wmskey1,wmskey2,wmskey3]
       online_resource: http://mapproxy.org/
       contact:
         person: Oliver Tonnhofer
