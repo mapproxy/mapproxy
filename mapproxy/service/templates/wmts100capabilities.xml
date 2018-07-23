@@ -70,6 +70,19 @@
         </ows:HTTP>
       </ows:DCP>
     </ows:Operation>
+    <ows:Operation name="GetFeatureInfo">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="{{service.url}}?">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>KVP</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
   </ows:OperationsMetadata>
 {{endif}}
   <Contents>
@@ -86,6 +99,11 @@
         <ows:Identifier>default</ows:Identifier>
       </Style>
       <Format>image/{{layer.format}}</Format>
+      {{if layer.queryable}}
+      {{for format in info_formats.values()}}
+      <InfoFormat>{{ format }}</InfoFormat>
+      {{endfor}}
+      {{endif}}
       {{for dimension in layer.dimensions}}
       <Dimension>
         <ows:Identifier>{{ dimension_keys[dimension] }}</ows:Identifier>
@@ -102,7 +120,14 @@
       {{endfor}}
       {{if restful}}
       <ResourceURL format="image/{{layer.format}}" resourceType="tile"
-          template="{{format_resource_template(layer, resource_template, service)}}"/>
+        template="{{format_resource_template(layer, resource_template, service)}}"/>
+
+      {{if layer.queryable}}
+      {{for suffix, mimetype in info_formats.items()}}
+      <ResourceURL format="{{mimetype}}" resourceType="FeatureInfo" template="{{format_info_resource_template(layer, fi_resource_template, suffix, service)}}"/>
+      {{endfor}}
+      {{endif}}
+
       {{endif}}
     </Layer>
 {{endfor}}

@@ -20,7 +20,7 @@ import threading
 
 import pytest
 
-from mapproxy.util.async import imap_async_threaded, ThreadPool
+from mapproxy.util.async_ import imap_async_threaded, ThreadPool
 
 
 class TestThreaded(object):
@@ -50,7 +50,7 @@ class TestThreaded(object):
 
 try:
     import eventlet
-    from mapproxy.util.async import imap_async_eventlet, EventletPool
+    from mapproxy.util.async_ import imap_async_eventlet, EventletPool
     _has_eventlet = True
 except ImportError:
     _has_eventlet = False

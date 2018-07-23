@@ -148,7 +148,7 @@ class WMTS100TileRequest(WMTSRequest):
         WMTSRequest.__init__(self, param=param, url=url, validate=validate,
                             non_strict=non_strict, **kw)
 
-    def make_tile_request(self):
+    def make_request(self):
         self.layer = self.params.layer
         self.tilematrixset = self.params.tilematrixset
         self.format = self.params.format # TODO
@@ -212,6 +212,10 @@ class WMTS100FeatureInfoRequest(WMTS100TileRequest):
     expected_param = WMTS100TileRequest.expected_param[:] + ['infoformat', 'i', 'j']
     non_strict_params = set(['format', 'styles'])
 
+    def make_request(self):
+        WMTS100TileRequest.make_request(self)
+        self.infoformat = self.params.infoformat
+        self.pos = self.params.pos
 
 class WMTS100CapabilitiesRequest(WMTSRequest):
     request_handler_name = 'capabilities'
@@ -281,9 +285,12 @@ class URLTemplateConverter(object):
         'TileMatrix': r'\d+',
         'TileRow': r'-?\d+',
         'TileCol': r'-?\d+',
+        'I': r'\d+',
+        'J': r'\d+',
         'Style': r'[\w_.:-]+',
         'Layer': r'[\w_.:-]+',
-        'Format': r'\w+'
+        'Format': r'\w+',
+        'InfoFormat': r'\w+',
     }
 
     required = set(['TileCol', 'TileRow', 'TileMatrix', 'TileMatrixSet', 'Layer'])
@@ -311,41 +318,74 @@ class URLTemplateConverter(object):
         if self._regexp:
             return self._regexp
         converted_re = self.var_re.sub(self.substitute_var, re.escape(self.template))
-        wmts_re = re.compile(converted_re)
+        wmts_re = re.compile('/wmts' + converted_re)
         if not self.found.issuperset(self.required):
             raise InvalidWMTSTemplate('missing required variables in WMTS restful template: %s' %
                 self.required.difference(self.found))
         self._regexp = wmts_re
         return wmts_re
 
+class FeatureInfoURLTemplateConverter(URLTemplateConverter):
+    required = set(['TileCol', 'TileRow', 'TileMatrix', 'TileMatrixSet', 'Layer', 'I', 'J'])
+
 class WMTS100RestTileRequest(TileRequest):
     """
-    Class for TMS-like KML requests.
+    Class for RESTful WMTS requests.
     """
     xml_exception_handler = WMTS100ExceptionHandler
     request_handler_name = 'tile'
     origin = 'nw'
-    url_converter = None
 
-    def __init__(self, request):
+    def __init__(self, request, req_vars, url_converter=None):
         self.http = request
         self.url = request.base_url
         self.dimensions = {}
+        self.req_vars = req_vars
+        self.url_converter = url_converter
 
-    def make_tile_request(self):
+    def make_request(self):
         """
         Initialize tile request. Sets ``tile`` and ``layer`` and ``format``.
         :raise RequestError: if the format does not match the URL template``
         """
-        match = self.tile_req_re.search(self.http.path)
-        if not match:
-            raise RequestError('invalid request (%s)' % (self.http.path), request=self)
-
-        req_vars = match.groupdict()
-
+        req_vars = self.req_vars
         self.layer = req_vars['Layer']
         self.tile = int(req_vars['TileCol']), int(req_vars['TileRow']), int(req_vars['TileMatrix'])
         self.format = req_vars.get('Format')
+        self.tilematrixset = req_vars['TileMatrixSet']
+        if self.url_converter and self.url_converter.dimensions:
+            for dim in self.url_converter.dimensions:
+                self.dimensions[dim.lower()] = req_vars[dim.lower()]
+
+    @property
+    def exception_handler(self):
+        return self.xml_exception_handler()
+
+class WMTS100RestFeatureInfoRequest(TileRequest):
+    """
+    Class for RESTful WMTS FeatureInfo requests.
+    """
+    xml_exception_handler = WMTS100ExceptionHandler
+    request_handler_name = 'featureinfo'
+
+    def __init__(self, request, req_vars, url_converter=None):
+        self.http = request
+        self.url = request.base_url
+        self.dimensions = {}
+        self.req_vars = req_vars
+        self.url_converter = url_converter
+
+    def make_request(self):
+        """
+        Initialize tile request. Sets ``tile`` and ``layer`` and ``format``.
+        :raise RequestError: if the format does not match the URL template``
+        """
+        req_vars = self.req_vars
+        self.layer = req_vars['Layer']
+        self.tile = int(req_vars['TileCol']), int(req_vars['TileRow']), int(req_vars['TileMatrix'])
+        self.pos = int(req_vars['I']), int(req_vars['J'])
+        self.format = req_vars.get('Format')
+        self.infoformat = req_vars.get('InfoFormat')
         self.tilematrixset = req_vars['TileMatrixSet']
         if self.url_converter and self.url_converter.dimensions:
             for dim in self.url_converter.dimensions:
@@ -374,14 +414,23 @@ class WMTS100RestCapabilitiesRequest(object):
         return self.xml_exception_handler()
 
 
-def make_wmts_rest_request_parser(url_converter_):
-    class WMTSRequestWrapper(WMTS100RestTileRequest):
-        url_converter = url_converter_
-        tile_req_re = url_converter.regexp()
+def make_wmts_rest_request_parser(url_converter, fi_url_converter):
+    tile_req_re = url_converter.regexp()
+    fi_req_re = fi_url_converter.regexp()
 
     def wmts_request(req):
         if req.path.endswith(RESTFUL_CAPABILITIES_PATH):
             return WMTS100RestCapabilitiesRequest(req)
-        return WMTSRequestWrapper(req)
+
+        match = tile_req_re.search(req.path)
+        if not match:
+            match = fi_req_re.search(req.path)
+            if not match:
+                raise RequestError('invalid request (%s)' % (req.path))
+
+            req_vars = match.groupdict()
+            return WMTS100RestFeatureInfoRequest(req, req_vars, fi_url_converter)
+        req_vars = match.groupdict()
+        return WMTS100RestTileRequest(req, req_vars, url_converter)
 
     return wmts_request

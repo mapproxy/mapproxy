@@ -21,6 +21,7 @@ from mapproxy.compat.itertools import chain
 from functools import partial
 from math import sqrt
 from mapproxy.cache.tile import CacheInfo
+from mapproxy.featureinfo import combine_docs
 from mapproxy.request.wms import (wms_request, WMS111LegendGraphicRequest,
     mimetype_from_infotype, infotype_from_mimetype, switch_bbox_epsg_axis_order)
 from mapproxy.srs import SRS, TransformationError
@@ -34,7 +35,7 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, LimitedLayer
 from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
-from mapproxy.util import async
+from mapproxy.util import async_
 from mapproxy.util.py import cached_property, reraise
 from mapproxy.util.coverage import load_limited_to
 from mapproxy.util.ext.odict import odict
@@ -241,28 +242,22 @@ class WMSServer(Server):
             return Response('', mimetype=mimetype)
 
         if self.fi_transformers:
-            doc = infos[0].combine(infos)
-            if doc.info_type == 'text':
-                resp = doc.as_string()
-                mimetype = 'text/plain'
-            else:
-                if not mimetype:
-                    if 'xml' in self.fi_transformers:
-                        info_type = 'xml'
-                    elif 'html' in self.fi_transformers:
-                        info_type = 'html'
-                    else:
-                        info_type = 'text'
-                    mimetype = mimetype_from_infotype(request.version, info_type)
+            if not mimetype:
+                if 'xml' in self.fi_transformers:
+                    info_type = 'xml'
+                elif 'html' in self.fi_transformers:
+                    info_type = 'html'
                 else:
-                    info_type = infotype_from_mimetype(request.version, mimetype)
-                resp = self.fi_transformers[info_type](doc).as_string()
-        else:
-            mimetype = mimetype_from_infotype(request.version, infos[0].info_type)
-            if len(infos) > 1:
-                resp = infos[0].combine(infos).as_string()
+                    info_type = 'text'
+                mimetype = mimetype_from_infotype(request.version, info_type)
             else:
-                resp = infos[0].as_string()
+                info_type = infotype_from_mimetype(request.version, mimetype)
+            resp, actual_info_type = combine_docs(infos, self.fi_transformers[info_type])
+            if actual_info_type is not None and info_type != actual_info_type:
+                mimetype = mimetype_from_infotype(request.version, actual_info_type)
+        else:
+            resp, info_type = combine_docs(infos)
+            mimetype = mimetype_from_infotype(request.version, info_type)
 
         return Response(resp, mimetype=mimetype)
 
@@ -582,7 +577,7 @@ class LayerRenderer(object):
         render_layers = combined_layers(self.layers, self.query)
         if not render_layers: return
 
-        async_pool = async.Pool(size=min(len(render_layers), self.concurrent_rendering))
+        async_pool = async_.Pool(size=min(len(render_layers), self.concurrent_rendering))
 
         if self.raise_source_errors:
             return self._render_raise_exceptions(async_pool, render_layers, layer_merger)

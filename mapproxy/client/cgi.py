@@ -26,7 +26,7 @@ from mapproxy.source import SourceError
 from mapproxy.image import ImageSource
 from mapproxy.client.http import HTTPClientError
 from mapproxy.client.log import log_request
-from mapproxy.util.async import import_module
+from mapproxy.util.async_ import import_module
 from mapproxy.compat.modules import urlparse
 from mapproxy.compat import BytesIO
 

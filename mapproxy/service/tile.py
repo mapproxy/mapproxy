@@ -203,7 +203,7 @@ class TileServer(Server):
         return template.substitute(service=bunch(default='', **service))
 
 class TileLayer(object):
-    def __init__(self, name, title, md, tile_manager, dimensions=None):
+    def __init__(self, name, title, md, tile_manager, info_sources=[], dimensions=None):
         """
         :param md: the layer metadata
         :param tile_manager: the layer tile manager
@@ -212,6 +212,7 @@ class TileLayer(object):
         self.title = title
         self.md = md
         self.tile_manager = tile_manager
+        self.info_sources = info_sources
         self.dimensions = dimensions
         self.grid = TileServiceGrid(tile_manager.grid)
         self.extent = map_extent_from_grid(self.grid)
@@ -231,6 +232,10 @@ class TileLayer(object):
     def format(self):
         _mime_class, format, _options = split_mime_type(self.format_mime_type)
         return format
+
+    @property
+    def queryable(self):
+        return bool(self.info_sources)
 
     @property
     def format_mime_type(self):
@@ -331,6 +336,58 @@ class TileLayer(object):
             return TileResponse(tile, format=format, image_opts=self.tile_manager.image_opts)
         except SourceError as e:
             raise RequestError(e.args[0], request=tile_request, internal=True)
+
+    def get_info(self, info_request):
+        if info_request.format != self.format:
+            raise RequestError('invalid format (%s). this tile set only supports (%s)'
+                               % (info_request.format, self.format), request=info_request,
+                               code='InvalidParameterValue')
+
+        tile_coord = self._internal_tile_coord(info_request)
+
+        coverage_intersects = False
+        if coverage:
+            tile_bbox = self.grid.tile_bbox(tile_coord)
+            if coverage.contains(tile_bbox, self.grid.srs):
+                pass
+            elif coverage.intersects(tile_bbox, self.grid.srs):
+                coverage_intersects = True
+            else:
+                return self.empty_response()
+
+        dimensions = self.checked_dimensions(info_request)
+
+        try:
+            with self.tile_manager.session():
+                tile = self.tile_manager.load_tile_coord(tile_coord,
+                    dimensions=dimensions, with_metadata=True)
+            if tile.source is None:
+                return self.empty_response()
+
+            # Provide the wrapping WSGI app or filter the opportunity to process the
+            # image before it's wrapped up in a response
+            if decorate_img:
+                tile.source = decorate_img(tile.source)
+
+            if coverage_intersects:
+                if self.empty_response_as_png:
+                    format = 'png'
+                    image_opts = ImageOptions(transparent=True, format='png')
+                else:
+                    format = self.format
+                    image_opts = tile.source.image_opts
+
+                tile.source = mask_image_source_from_coverage(
+                    tile.source, tile_bbox, self.grid.srs, coverage, image_opts)
+
+                return TileResponse(tile, format=format, image_opts=image_opts)
+
+            format = None if self._mixed_format else info_request.format
+            return TileResponse(tile, format=format, image_opts=self.tile_manager.image_opts)
+        except SourceError as e:
+            raise RequestError(e.args[0], request=info_request, internal=True)
+
+
 
 class ImageResponse(object):
     """

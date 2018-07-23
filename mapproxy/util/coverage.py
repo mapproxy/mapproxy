@@ -120,6 +120,9 @@ class BBOXCoverage(object):
         return MapExtent(self.bbox, self.srs)
 
     def _bbox_in_coverage_srs(self, bbox, srs):
+        if len(bbox) == 2:
+            # point to bbox
+            bbox = [bbox[0], bbox[1], bbox[0], bbox[1]]
         if srs != self.srs:
             bbox = srs.transform_bbox_to(self.srs, bbox)
         return bbox
