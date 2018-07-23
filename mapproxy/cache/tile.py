@@ -42,7 +42,7 @@ from mapproxy.grid import MetaGrid
 from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
-from mapproxy.util import async
+from mapproxy.util import async_
 from mapproxy.util.py import reraise
 
 class TileManager(object):
@@ -250,7 +250,7 @@ class TileCreator(object):
 
     def _create_threaded(self, create_func, tiles):
         result = []
-        async_pool = async.Pool(self.tile_mgr.concurrent_tile_creators)
+        async_pool = async_.Pool(self.tile_mgr.concurrent_tile_creators)
         for new_tiles in async_pool.imap(create_func, tiles):
             result.extend(new_tiles)
         return result
@@ -303,7 +303,7 @@ class TileCreator(object):
                 return (img, source.coverage)
 
         layers = []
-        for layer in async.imap(get_map_from_source, self.sources):
+        for layer in async_.imap(get_map_from_source, self.sources):
             if layer[0] is not None:
                 layers.append(layer)
 
@@ -358,7 +358,7 @@ class TileCreator(object):
         main_tile = Tile(meta_tile.main_tile_coord)
         with self.tile_mgr.lock(main_tile):
             if not all(self.is_cached(t) for t in meta_tile.tiles if t is not None):
-                async_pool = async.Pool(self.tile_mgr.concurrent_tile_creators)
+                async_pool = async_.Pool(self.tile_mgr.concurrent_tile_creators)
                 def query_tile(coord):
                     try:
                         query = MapQuery(self.grid.tile_bbox(coord), tile_size, self.grid.srs, self.tile_mgr.request_format,

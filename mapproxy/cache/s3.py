@@ -22,7 +22,7 @@ import threading
 from mapproxy.image import ImageSource
 from mapproxy.cache import path
 from mapproxy.cache.base import tile_buffer, TileCacheBase
-from mapproxy.util import async
+from mapproxy.util import async_
 from mapproxy.util.py import reraise_exception
 
 try:
@@ -115,7 +115,7 @@ class S3Cache(TileCacheBase):
         return True
 
     def load_tiles(self, tiles, with_metadata=True):
-        p = async.Pool(min(4, len(tiles)))
+        p = async_.Pool(min(4, len(tiles)))
         return all(p.map(self.load_tile, tiles))
 
     def load_tile(self, tile, with_metadata=True):
@@ -143,7 +143,7 @@ class S3Cache(TileCacheBase):
         self.conn().delete_object(Bucket=self.bucket_name, Key=key)
 
     def store_tiles(self, tiles):
-        p = async.Pool(min(self._concurrent_writer, len(tiles)))
+        p = async_.Pool(min(self._concurrent_writer, len(tiles)))
         p.map(self.store_tile, tiles)
 
     def store_tile(self, tile):
