@@ -356,6 +356,7 @@ mapproxy_yaml_spec = {
             http_opts,
             {
                 'access_control_allow_origin': one_of(str(), {}),
+                'x_robots_tag': one_of(str(), {}),
             }
         ),
         'cache': {

@@ -170,6 +170,7 @@ class MapProxyApp(object):
         self.handlers = {}
         self.base_config = base_config
         self.cors_origin = base_config.http.access_control_allow_origin
+        self.bots_x_tag = base_config.http.x_robots_tag
         for service in services:
             for name in service.names:
                 self.handlers[name] = service
@@ -178,10 +179,13 @@ class MapProxyApp(object):
         resp = None
         req = Request(environ)
 
-        if self.cors_origin:
+        if self.cors_origin or self.bots_x_tag:
             orig_start_response = start_response
             def start_response(status, headers, exc_info=None):
-                headers.append(('Access-control-allow-origin', self.cors_origin))
+                if self.cors_origin:
+                    headers.append(('Access-control-allow-origin', self.cors_origin))
+                if self.bots_x_tag:
+                    headers.append(('X-Robots-Tag', self.bots_x_tag))
                 return orig_start_response(status, headers, exc_info)
 
         with local_base_config(self.base_config):
