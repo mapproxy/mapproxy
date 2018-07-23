@@ -2,6 +2,9 @@ services:
   tms:
   kml:
   wmts:
+    featureinfo_formats:
+      - mimetype: application/json
+        suffix: geojson
   demo:
   wms:
     md:
@@ -57,7 +60,7 @@ sources:
     wms_opts:
       featureinfo: True
     coverage:
-      bbox: [179, 89, 180, 89.9]
+      bbox: [-180, -90, 170, 89.9]
       bbox_srs: 'EPSG:4326'
     req:
       url: http://localhost:42423/service

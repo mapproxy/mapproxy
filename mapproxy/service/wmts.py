@@ -18,13 +18,18 @@ WMS service handler
 """
 from __future__ import print_function
 
+import re
+
 from functools import partial
 
 from mapproxy.compat import iteritems, itervalues, iterkeys
 from mapproxy.request.wmts import (
     wmts_request, make_wmts_rest_request_parser,
     URLTemplateConverter,
+    FeatureInfoURLTemplateConverter,
 )
+from mapproxy.layer import InfoQuery
+from mapproxy.featureinfo import combine_docs
 from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
@@ -41,13 +46,15 @@ log = logging.getLogger(__name__)
 class WMTSServer(Server):
     service = 'wmts'
 
-    def __init__(self, layers, md, request_parser=None, max_tile_age=None):
+    def __init__(self, layers, md, request_parser=None, max_tile_age=None, info_formats={}):
         Server.__init__(self)
         self.request_parser = request_parser or wmts_request
         self.md = md
         self.max_tile_age = max_tile_age
         self.layers, self.matrix_sets = self._matrix_sets(layers)
         self.capabilities_class = Capabilities
+        self.fi_transformers = None
+        self.info_formats = info_formats
 
     def _matrix_sets(self, layers):
         sets = {}
@@ -72,7 +79,9 @@ class WMTSServer(Server):
     def capabilities(self, request):
         service = self._service_md(request)
         layers = self.authorized_tile_layers(request.http.environ)
-        result = self.capabilities_class(service, layers, self.matrix_sets).render(request)
+
+
+        result = self.capabilities_class(service, layers, self.matrix_sets, info_formats=self.info_formats).render(request)
         return Response(result, mimetype='application/xml')
 
     def tile(self, request):
@@ -99,25 +108,73 @@ class WMTSServer(Server):
         resp.make_conditional(request.http)
         return resp
 
-    def authorize_tile_layer(self, tile_layer, request):
-        if 'mapproxy.authorize' in request.http.environ:
-            query_extent = tile_layer.grid.srs.srs_code, tile_layer.tile_bbox(request)
-            result = request.http.environ['mapproxy.authorize']('wmts', [tile_layer.name],
-                query_extent=query_extent, environ=request.http.environ)
-            if result['authorized'] == 'unauthenticated':
-                raise RequestError('unauthorized', status=401)
-            if result['authorized'] == 'full':
-                return
-            if result['authorized'] == 'partial':
-                if result['layers'].get(tile_layer.name, {}).get('tile', False) == True:
-                    limited_to = result['layers'][tile_layer.name].get('limited_to')
-                    if not limited_to:
-                        limited_to = result.get('limited_to')
-                    if limited_to:
-                        return load_limited_to(limited_to)
-                    else:
-                        return None
-            raise RequestError('forbidden', status=403)
+    def featureinfo(self, request):
+        infos = []
+        self.check_request(request, self.info_formats)
+
+        tile_layer = self.layers[request.layer][request.tilematrixset]
+        if not request.format:
+            request.format = tile_layer.format
+
+        bbox = tile_layer.grid.tile_bbox(request.tile)
+        query = InfoQuery(bbox, tile_layer.grid.tile_size, tile_layer.grid.srs, request.pos,
+              request.infoformat,
+        )
+
+        self.check_request_dimensions(tile_layer, request)
+
+        coverage = self.authorize_tile_layer(tile_layer, request, featureinfo=True)
+
+        if not tile_layer.info_sources:
+            raise RequestError('layer %s not queryable' % str(request.layer),
+                code='OperationNotSupported', request=request)
+
+        if coverage and not coverage.contains(query.coord, query.srs):
+            infos = []
+        else:
+            for source in tile_layer.info_sources:
+                info = source.get_info(query)
+                if info is None:
+                    continue
+                infos.append(info)
+
+        mimetype = request.infoformat
+
+        if not infos:
+            return Response('', mimetype=mimetype)
+
+        resp, _ = combine_docs(infos)
+
+        return Response(resp, mimetype=mimetype)
+
+    def authorize_tile_layer(self, tile_layer, request, featureinfo=False):
+        if 'mapproxy.authorize' not in request.http.environ:
+            return
+
+        query_extent = tile_layer.grid.srs.srs_code, tile_layer.tile_bbox(request)
+
+        service = 'wmts'
+        key = 'tile'
+        if featureinfo:
+            service += '.featureinfo'
+            key = 'featureinfo'
+
+        result = request.http.environ['mapproxy.authorize'](service, [tile_layer.name],
+            query_extent=query_extent, environ=request.http.environ)
+        if result['authorized'] == 'unauthenticated':
+            raise RequestError('unauthorized', status=401)
+        if result['authorized'] == 'full':
+            return
+        if result['authorized'] == 'partial':
+            if result['layers'].get(tile_layer.name, {}).get(key, False) == True:
+                limited_to = result['layers'][tile_layer.name].get('limited_to')
+                if not limited_to:
+                    limited_to = result.get('limited_to')
+                if limited_to:
+                    return load_limited_to(limited_to)
+                else:
+                    return None
+        raise RequestError('forbidden', status=403)
 
     def authorized_tile_layers(self, env):
         if 'mapproxy.authorize' in env:
@@ -137,14 +194,26 @@ class WMTSServer(Server):
         else:
             return self.layers.values()
 
-    def check_request(self, request):
-        request.make_tile_request()
+    def check_request(self, request, info_formats=None):
+        request.make_request()
         if request.layer not in self.layers:
             raise RequestError('unknown layer: ' + str(request.layer),
                 code='InvalidParameterValue', request=request)
         if request.tilematrixset not in self.layers[request.layer]:
             raise RequestError('unknown tilematrixset: ' + str(request.tilematrixset),
                 code='InvalidParameterValue', request=request)
+
+        if info_formats is not None:
+            if '/' in request.infoformat:  # mimetype
+                if request.infoformat not in self.info_formats.values():
+                    raise RequestError('unknown infoformat: ' + str(request.infoformat),
+                        code='InvalidParameterValue', request=request)
+            else: # RESTful suffix
+                if request.infoformat not in self.info_formats:
+                    raise RequestError('unknown infoformat: ' + str(request.infoformat),
+                        code='InvalidParameterValue', request=request)
+                # set mimetype as infoformat
+                request.infoformat = self.info_formats[request.infoformat]
 
     def check_request_dimensions(self, tile_layer, request):
         # allow arbitrary dimensions in KVP service
@@ -165,14 +234,18 @@ class WMTSRestServer(WMTSServer):
     names = ('wmts',)
     request_methods = ('tile', 'capabilities')
     default_template = '/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}'
+    default_info_template = '/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.{InfoFormat}'
 
-    def __init__(self, layers, md, max_tile_age=None, template=None):
+    def __init__(self, layers, md, max_tile_age=None, template=None, fi_template=None, info_formats={}):
         WMTSServer.__init__(self, layers, md)
         self.max_tile_age = max_tile_age
         self.template = template or self.default_template
+        self.fi_template = fi_template or self.default_info_template
+        self.info_formats = info_formats
         self.url_converter = URLTemplateConverter(self.template)
-        self.request_parser = make_wmts_rest_request_parser(self.url_converter)
-        self.capabilities_class = partial(RestfulCapabilities, url_converter=self.url_converter)
+        self.fi_url_converter = FeatureInfoURLTemplateConverter(self.fi_template)
+        self.request_parser = make_wmts_rest_request_parser(self.url_converter, self.fi_url_converter)
+        self.capabilities_class = partial(RestfulCapabilities, url_converter=self.url_converter, fi_url_converter=self.fi_url_converter)
 
     def check_request_dimensions(self, tile_layer, request):
         # check that unknown dimension for this layer are set to default
@@ -188,9 +261,10 @@ class Capabilities(object):
     """
     Renders WMS capabilities documents.
     """
-    def __init__(self, server_md, layers, matrix_sets):
+    def __init__(self, server_md, layers, matrix_sets, info_formats={}):
         self.service = server_md
         self.layers = layers
+        self.info_formats = info_formats
         self.matrix_sets = matrix_sets
 
     def render(self, _map_request):
@@ -200,6 +274,7 @@ class Capabilities(object):
         return dict(service=bunch(default='', **self.service),
                     restful=False,
                     layers=self.layers,
+                    info_formats=self.info_formats,
                     tile_matrix_sets=self.matrix_sets)
 
     def _render_template(self, template):
@@ -210,28 +285,38 @@ class Capabilities(object):
         return doc
 
 class RestfulCapabilities(Capabilities):
-    def __init__(self, server_md, layers, matrix_sets, url_converter):
-        Capabilities.__init__(self, server_md, layers, matrix_sets)
+    def __init__(self, server_md, layers, matrix_sets, url_converter, fi_url_converter, info_formats={}):
+        Capabilities.__init__(self, server_md, layers, matrix_sets, info_formats=info_formats)
         self.url_converter = url_converter
+        self.fi_url_converter = fi_url_converter
 
     def template_context(self):
         return dict(service=bunch(default='', **self.service),
                     restful=True,
                     layers=self.layers,
+                    info_formats=self.info_formats,
                     tile_matrix_sets=self.matrix_sets,
                     resource_template=self.url_converter.template,
+                    fi_resource_template=self.fi_url_converter.template,
                     # dimension_key maps lowercase dimensions to the actual
                     # casing from the restful template
                     dimension_keys=dict((k.lower(), k) for k in self.url_converter.dimensions),
                     format_resource_template=format_resource_template,
+                    format_info_resource_template=format_info_resource_template,
                     )
 
 def format_resource_template(layer, template, service):
-    # TODO: remove {{Format}} in 1.6
-    if '{{Format}}' in template:
-        template = template.replace('{{Format}}', layer.format)
     if '{Format}' in template:
         template = template.replace('{Format}', layer.format)
+
+    if '{Layer}' in template:
+        template = template.replace('{Layer}', layer.name)
+
+    return service.url + template
+
+def format_info_resource_template(layer, template, info_format, service):
+    if '{InfoFormat}' in template:
+        template = template.replace('{InfoFormat}', info_format)
 
     if '{Layer}' in template:
         template = template.replace('{Layer}', layer.name)
@@ -257,7 +342,6 @@ class WMTSTileLayer(object):
         return self.layers[gridname]
 
 
-from mapproxy.grid import tile_grid
 
 # calculated from well-known scale set GoogleCRS84Quad
 METERS_PER_DEEGREE = 111319.4907932736
@@ -293,7 +377,3 @@ class TileMatrixSet(object):
                 scale_denom=scale_denom,
                 tile_size=self.grid.tile_size,
             )
-
-if __name__ == '__main__':
-    print(TileMatrixSet(tile_grid(900913)).tile_matrixes())
-    print(TileMatrixSet(tile_grid(4326, origin='ul')).tile_matrixes())

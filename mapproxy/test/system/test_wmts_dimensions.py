@@ -64,7 +64,7 @@ TEST_TILE = create_tmp_image((256, 256))
 class TestWMTS(SysTest):
 
     def test_capabilities(self, app):
-        resp = app.get("/wmts/myrest/1.0.0/WMTSCapabilities.xml")
+        resp = app.get("/wmts/1.0.0/WMTSCapabilities.xml")
         xml = resp.lxml
         assert validate_with_xsd(
             xml, xsd_name="wmts/1.0/wmtsGetCapabilities_response.xsd"
@@ -83,8 +83,8 @@ class TestWMTS(SysTest):
             )
         ) == set(
             [
-                "http://localhost/wmts/myrest/dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png",
-                "http://localhost/wmts/myrest/no_dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png",
+                "http://localhost/wmts/dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png",
+                "http://localhost/wmts/no_dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png",
             ]
         )
 

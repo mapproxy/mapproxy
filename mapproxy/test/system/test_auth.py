@@ -152,7 +152,7 @@ class TestWMSAuth(SysTest):
                 "authorized": "partial",
                 "limited_to": {
                     "srs": "EPSG:4326",
-                    "geometry": [-40.0, -50.0, 0.0, 5.0],
+                    "geometry": [171.0, -50.0, 178.0, 5.0],
                 },
                 "layers": {
                     "layer1": {"map": True},
@@ -169,9 +169,9 @@ class TestWMSAuth(SysTest):
         # layer2/2b/2b1 not included because coverage of 2b1 is outside of global limited_to
         assert xml.xpath("//Layer/Name/text()") == ["layer1", "layer1a"]
         limited_bbox = xml.xpath("//Layer/LatLonBoundingBox")[1]
-        assert float(limited_bbox.attrib["minx"]) == -40.0
+        assert float(limited_bbox.attrib["minx"]) == 171.0
         assert float(limited_bbox.attrib["miny"]) == -50.0
-        assert float(limited_bbox.attrib["maxx"]) == 0.0
+        assert float(limited_bbox.attrib["maxx"]) == 178.0
         assert float(limited_bbox.attrib["maxy"]) == 5.0
 
     def test_capabilities_authorize_partial_with_fi(self, app):
@@ -1004,6 +1004,85 @@ class TestWMTSAuth(SysTest):
             status=403,
         )
 
+    def test_get_featureinfo_kvp(self, app):
+
+        def auth(service, layers, environ, **kw):
+            assert environ["PATH_INFO"] == "/service"
+            assert service == "wmts.featureinfo"
+            assert len(layers) == 1
+            return {"authorized": "partial", "layers": {"layer1b": {"featureinfo": True}}}
+
+
+        serv = MockServ(port=42423)
+        serv.expects(
+            "/service?request=GetFeatureInfo&service=WMS&Version=1.1.1&SRS=EPSG:900913"
+            "&BBOX=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244"
+            "&WIDTH=256&HEIGHT=256&styles=&FORMAT=image/png&X=10&Y=20"
+            "&query_layers=fi&layers=fi&info_format=application/json"
+        )
+        serv.returns(b"{}")
+        with serv:
+            resp = app.get(
+                "/service?service=WMTS&version=1.0.0&layer=layer1b&request=GetFeatureInfo&"
+                "style=&tilematrixset=GLOBAL_MERCATOR&tilematrix=00&tilerow=0&tilecol=0&format=image/png"
+                "&infoformat=application/json&i=10&j=20",
+                extra_environ={"mapproxy.authorize": auth},
+            )
+            assert resp.content_type == "application/json"
+
+    def test_get_featureinfo_kvp_authorized_none(self, app):
+
+        def auth(service, layers, environ, **kw):
+            assert environ["PATH_INFO"] == "/service"
+            assert service == "wmts.featureinfo"
+            assert len(layers) == 1
+            return {"authorized": "partial", "layers": {"layer1b": {"tile": True}}}
+
+        app.get(
+            "/service?service=WMTS&version=1.0.0&layer=layer1b&request=GetFeatureInfo&"
+            "style=&tilematrixset=GLOBAL_MERCATOR&tilematrix=00&tilerow=0&tilecol=0&format=image/png"
+            "&infoformat=application/json&i=10&j=20",
+            extra_environ={"mapproxy.authorize": auth},
+            status=403,
+        )
+
+    def test_get_featureinfo_rest(self, app):
+
+        def auth(service, layers, environ, **kw):
+            assert environ["PATH_INFO"].startswith('/wmts/layer1b/')
+            assert service == "wmts.featureinfo"
+            assert len(layers) == 1
+            return {"authorized": "partial", "layers": {"layer1b": {"featureinfo": True}}}
+
+
+        serv = MockServ(port=42423)
+        serv.expects(
+            "/service?request=GetFeatureInfo&service=WMS&Version=1.1.1&SRS=EPSG:900913"
+            "&BBOX=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244"
+            "&WIDTH=256&HEIGHT=256&styles=&FORMAT=image/png&X=10&Y=20"
+            "&query_layers=fi&layers=fi&info_format=application/json"
+        )
+        serv.returns(b"{}")
+        with serv:
+            resp = app.get(
+                "/wmts/layer1b/GLOBAL_MERCATOR/00/0/0/10/20.geojson",
+                extra_environ={"mapproxy.authorize": auth},
+            )
+            assert resp.content_type == "application/json"
+
+    def test_get_featureinfo_rest_authorized_none(self, app):
+
+        def auth(service, layers, environ, **kw):
+            assert environ["PATH_INFO"].startswith('/wmts/layer1b/')
+            assert service == "wmts.featureinfo"
+            assert len(layers) == 1
+            return {"authorized": "partial", "layers": {"layer1b": {"tile": True}}}
+
+        app.get(
+            "/wmts/layer1b/GLOBAL_MERCATOR/00/0/0/10/20.geojson",
+            extra_environ={"mapproxy.authorize": auth},
+            status=403,
+        )
 
 class TestDemoAuth(SysTest):
 

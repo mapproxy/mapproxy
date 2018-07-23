@@ -638,7 +638,7 @@ class ArcGISSourceConfiguration(SourceConfiguration):
                             supported_srs=supported_srs,
                             supported_formats=supported_formats or None)
 
-
+    @memoize
     def fi_source(self, params=None):
         from mapproxy.client.arcgis import ArcGISInfoClient
         from mapproxy.request.arcgis import create_identify_request
@@ -797,7 +797,9 @@ class WMSSourceConfiguration(SourceConfiguration):
             http_client, fi_request.url = self.http_client(fi_request.url)
             fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs,
                                       http_client=http_client)
-            fi_source = WMSInfoSource(fi_client, fi_transformer=fi_transformer)
+            coverage = self.coverage()
+            fi_source = WMSInfoSource(fi_client, fi_transformer=fi_transformer,
+                                      coverage=coverage)
         return fi_source
 
     def lg_source(self, params=None):
@@ -1682,6 +1684,7 @@ class LayerConfiguration(ConfigurationBase):
         from mapproxy.cache.dummy import DummyCache
 
         sources = []
+        fi_only_sources = []
         if 'tile_sources' in self.conf:
             sources = self.conf['tile_sources']
         else:
@@ -1695,18 +1698,31 @@ class LayerConfiguration(ConfigurationBase):
                             continue
                         # and WMS layers with map: False (i.e. FeatureInfo only sources)
                         if src_conf['type'] == 'wms' and src_conf.get('wms_opts', {}).get('map', True) == False:
+                            fi_only_sources.append(source_name)
                             continue
 
                     return []
                 sources.append(source_name)
 
             if len(sources) > 1:
+                # skip layers with more then one source
                 return []
+
 
         dimensions = self.dimensions()
 
         tile_layers = []
         for cache_name in sources:
+            fi_sources = []
+            fi_source_names = cache_source_names(self.context, cache_name)
+
+            for fi_source_name in fi_source_names + fi_only_sources:
+                if fi_source_name not in self.context.sources: continue
+                if not hasattr(self.context.sources[fi_source_name], 'fi_source'): continue
+                fi_source = self.context.sources[fi_source_name].fi_source()
+                if fi_source:
+                    fi_sources.append(fi_source)
+
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
                 if dimensions and not isinstance(cache_source.cache, DummyCache):
                     # caching of dimension layers is not supported yet
@@ -1727,8 +1743,15 @@ class LayerConfiguration(ConfigurationBase):
                 md['format'] = self.context.caches[cache_name].image_opts().format
                 md['cache_name'] = cache_name
                 md['extent'] = extent
-                tile_layers.append(TileLayer(self.conf['name'], self.conf['title'],
-                                             md, cache_source, dimensions=dimensions))
+                tile_layers.append(
+                    TileLayer(
+                        self.conf['name'], self.conf['title'],
+                        info_sources=fi_sources,
+                        md=md,
+                        tile_manager=cache_source,
+                        dimensions=dimensions,
+                    )
+                )
 
         return tile_layers
 
@@ -1844,19 +1867,35 @@ class ServiceConfiguration(ConfigurationBase):
         max_tile_age = self.context.globals.get_value('tiles.expires_hours')
         max_tile_age *= 60 * 60 # seconds
 
+        info_formats = conf.get('featureinfo_formats', [])
+        info_formats = odict((f['suffix'], f['mimetype']) for f in info_formats)
+
         if kvp is None and restful is None:
             kvp = restful = True
 
         services = []
         if kvp:
-            services.append(WMTSServer(layers, md, max_tile_age=max_tile_age))
+            services.append(
+                WMTSServer(
+                    layers, md, max_tile_age=max_tile_age,
+                    info_formats=info_formats,
+                )
+            )
+
         if restful:
             template = conf.get('restful_template')
+            fi_template = conf.get('restful_featureinfo_template')
             if template and '{{' in template:
                 # TODO remove warning in 1.6
                 log.warn("double braces in WMTS restful_template are deprecated {{x}} -> {x}")
-            services.append(WMTSRestServer(layers, md, template=template,
-                max_tile_age=max_tile_age))
+            services.append(
+                WMTSRestServer(
+                    layers, md, template=template,
+                    fi_template=fi_template,
+                    max_tile_age=max_tile_age,
+                    info_formats=info_formats,
+                    )
+            )
 
         return services
 

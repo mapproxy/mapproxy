@@ -493,7 +493,9 @@ WMTS Service
 
 The WMTS authorization is similar to the TMS authorization, including the ``limited_to`` option.
 
-The WMTS service uses ``wmts`` as the service string for all authorization requests.
+The WMTS service uses ``wmts`` as the service string for tile requests and ``wmts.featureinfo`` for feature info requests.
+
+.. versionadded:: 1.12 ``wmts.featureinfo``
 
 
 Demo Service

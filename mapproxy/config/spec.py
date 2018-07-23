@@ -436,7 +436,14 @@ mapproxy_yaml_spec = {
             'kvp': bool(),
             'restful': bool(),
             'restful_template': str(),
+            'restful_featureinfo_template': str(),
             'md': ogc_service_md,
+            'featureinfo_formats': [
+                {
+                    required('mimetype'): str(),
+                    'suffix': str(),
+                },
+            ],
         },
         'wms': {
             'srs': [str()],

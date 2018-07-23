@@ -393,6 +393,7 @@ You can specify a different factor that is used to calculate the resolutions. By
       res_factor: 1.6
 
 The third options is a convenient variation of the previous option. A factor of 1.41421, the square root of two, would get resolutions of 10, 7.07, 5, 3.54, 2.5,…. Notice that every second resolution is identical to the power-of-two resolutions. This comes in handy if you use the layer not only in classic WMS clients but also want to use it in tile-based clients like OpenLayers, which only request in these resolutions.
+
 ::
 
   grids:
@@ -469,6 +470,7 @@ Reproject WMS layers
 If you do not want to cache data but still want to use MapProxy's ability to reproject WMS layers on the fly, you can use a direct layer. Add your source directly to your layer instead of a cache.
 
 You should explicitly define the SRS the source WMS supports. Requests in other SRS will be reprojected. You should specify at least one geographic and one projected SRS to limit the distortions from reprojection.
+
 ::
 
   layers:
@@ -503,6 +505,9 @@ MapProxy can pass-through FeatureInformation requests to your WMS sources. You n
 
 
 MapProxy will mark all layers that use this source as ``queryable``. It also works for sources that are used with caching.
+
+FeatureInfo support is enabled by default for WMS. For :ref:`WMTS you need to enable FeatureInfo queries by configuring the supported formats <wmts_feature_info>`.
+
 
 .. note:: The more advanced features :ref:`require the lxml library <lxml_install>`.
 
@@ -586,6 +591,7 @@ One source only offers HTML feature information. The XSLT script extracts data f
 
 
 The second source supports XML feature information. The script converts the XML data to the same format as the HTML script. This service uses WMS 1.3.0 and the format is ``text/xml``.
+
 ::
 
     fi_source:

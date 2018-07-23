@@ -23,7 +23,11 @@ from io import BytesIO
 
 import pytest
 
-from mapproxy.request.wmts import WMTS100TileRequest, WMTS100CapabilitiesRequest
+from mapproxy.request.wmts import (
+    WMTS100TileRequest,
+    WMTS100FeatureInfoRequest,
+    WMTS100CapabilitiesRequest,
+)
 from mapproxy.test.image import is_jpeg, create_tmp_image
 from mapproxy.test.http import MockServ
 from mapproxy.test.helper import validate_with_xsd
@@ -47,6 +51,28 @@ def assert_xpath(xml, xpath, expected, namespaces=None):
 
 
 assert_xpath_wmts = functools.partial(assert_xpath, namespaces=ns_wmts)
+
+
+@pytest.fixture
+def fi_req():
+    return WMTS100FeatureInfoRequest(
+        url="/service?",
+        param=dict(
+            service="WMTS",
+            version="1.0.0",
+            tilerow="0",
+            tilecol="0",
+            tilematrix="00",
+            tilematrixset="GLOBAL_MERCATOR",
+            layer="wms_cache",
+            format="image/png",
+            infoformat="application/json",
+            style="",
+            request="GetFeatureInfo",
+            i="17",
+            j="27",
+        ),
+    )
 
 
 class TestWMTS(SysTest):
@@ -104,6 +130,21 @@ class TestWMTS(SysTest):
             == 5
         )
 
+        # check InfoFormat for queryable layers
+        for layer in xml.xpath("//wmts:Layer", namespaces=ns_wmts):
+            if layer.findtext("ows:Identifier", namespaces=ns_wmts) in (
+                "wms_cache",
+                "wms_cache_multi",
+                "gk3_cache",
+                "tms_cache",
+            ):
+                assert layer.xpath("wmts:InfoFormat/text()", namespaces=ns_wmts) == [
+                    "application/gml+xml; version=3.1",
+                    "application/json",
+                ]
+            else:
+                assert layer.xpath("wmts:InfoFormat/text()", namespaces=ns_wmts) == []
+
         goog_matrixset = xml.xpath(
             '//wmts:Contents/wmts:TileMatrixSet[./ows:Identifier/text()="GoogleMapsCompatible"]',
             namespaces=ns_wmts,
@@ -114,7 +155,7 @@ class TestWMTS(SysTest):
         )
         # top left corner: min X first then max Y
         assert re.match(
-            "-20037508\.\d+ 20037508\.\d+",
+            r"-20037508\.\d+ 20037508\.\d+",
             goog_matrixset.findtext(
                 "./wmts:TileMatrix[1]/wmts:TopLeftCorner", namespaces=ns_wmts
             ),
@@ -208,3 +249,52 @@ class TestWMTS(SysTest):
             "/ows:ExceptionReport/ows:Exception/@exceptionCode",
             "InvalidParameterValue",
         )
+
+    def test_getfeatureinfo(self, app, fi_req):
+        serv = MockServ(port=42423)
+        serv.expects(
+            "/service?layers=foo,bar"
+            + "&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244"
+            + "&width=256&height=256&x=17&y=27&query_layers=foo,bar&format=image%2Fpng&srs=EPSG%3A900913"
+            + "&request=GetFeatureInfo&version=1.1.1&service=WMS&styles=&info_format=application/json"
+        )
+        serv.returns(b'{"data": 43}')
+        with serv:
+            resp = app.get(str(fi_req), status=200)
+            assert resp.content_type == "application/json"
+
+
+    def test_getfeatureinfo_coverage(self, app, fi_req):
+        fi_req.params['layer'] = 'tms_cache'
+        fi_req.params['i'] = '250'
+        fi_req.params['j'] = '50'
+        resp = app.get(str(fi_req), status=200)
+        assert resp.content_type == "application/json"
+
+        fi_req.params['i'] = '150'
+        serv = MockServ(port=42423)
+        serv.expects(
+            "/service?layers=fi"
+            + "&bbox=-20037508.3428,-20037508.3428,20037508.3428,20037508.3428"
+            + "&width=256&height=256&x=150&y=50&query_layers=fi&format=image%2Fpng&srs=EPSG%3A900913"
+            + "&request=GetFeatureInfo&version=1.1.1&service=WMS&styles=&info_format=application/json"
+        )
+        serv.returns(b'{"data": 43}')
+        with serv:
+            resp = app.get(str(fi_req), status=200)
+            assert resp.content_type == "application/json"
+
+
+    def test_getfeatureinfo_xml(self, app, fi_req):
+        fi_req.params["infoformat"] = "application/gml+xml; version=3.1"
+        serv = MockServ(port=42423)
+        serv.expects(
+            "/service?layers=foo,bar"
+            + "&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244"
+            + "&width=256&height=256&x=17&y=27&query_layers=foo,bar&format=image%2Fpng&srs=EPSG%3A900913"
+            + "&request=GetFeatureInfo&version=1.1.1&service=WMS&styles=&info_format=application/gml%2bxml%3b%20version=3.1"
+        )
+        serv.returns(b"<root />")
+        with serv:
+            resp = app.get(str(fi_req), status=200)
+            assert resp.headers["Content-type"] == "application/gml+xml; version=3.1"

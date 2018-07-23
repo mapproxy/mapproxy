@@ -360,14 +360,14 @@ You can enable or disable the RESTful service with the ``restful`` option. It is
 URL Template
 ~~~~~~~~~~~~
 
-WMTS RESTful services supports custom tile URLs. You can configure your own URL template with the ``restful_template`` option.
+WMTS RESTful service supports custom URLs. You can configure your own URL templates with the ``restful_template`` and ``restful_fi_template``.
 
-The default template is ``/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}``
+The default template is ``/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}`` for tile requests and ``/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.{InfoFormat}`` for feature info requests. All RESTful WMTS requests begin with with ``/wmts`` and this prefix must not be added to the template.
 
-The template variables are identical with the WMTS specification. ``TileMatrixSet`` is the grid name, ``TileMatrix`` is the zoom level, ``TileCol`` and ``TileRow`` are the x and y of the tile.
+The template variables are identical with the WMTS specification. ``TileMatrixSet`` is the grid name, ``TileMatrix`` is the zoom level, ``TileCol`` and ``TileRow`` are the x and y of the tile. ``InfoFormat`` is the suffix of the requested feature info format. ``I`` and ``J`` are pixel column and row of the requested feature.
 
 
-You can access the tile x=3, y=9, z=4 at ``http://example.org//1.0.0/mylayer-mygrid/4-3-9/tile``
+You can access the tile x=3, y=9, z=4 at ``http://example.org/wmts/1.0.0/mylayer-mygrid/4-3-9/tile``
 with the following configuration::
 
   services:
@@ -375,6 +375,38 @@ with the following configuration::
       restful: true
       restful_template:
           '/1.0.0/{Layer}-{TileMatrixSet}/{TileMatrix}-{TileCol}-{TileRow}/tile'
+      restful_fi_template:
+          '/1.0.0/{Layer}-{TileMatrixSet}/{TileMatrix}-{TileCol}-{TileRow}/{I}-{J}/{InfoFormat}'
+
+
+.. _wmts_feature_info:
+
+Feature Info
+~~~~~~~~~~~~
+
+
+.. versionadded:: 1.12
+
+``featureinfo_formats``
+"""""""""""""""""""""""
+
+A list of feature info formats that the WMTS service should offer. Each format requires the full mimetype and a filename suffix. The mimetype is the ``infoformat`` requested by KVP clients. The suffix is the ``{InfoFormat}`` requested by RESTful clients.
+
+No ``featureinfo_formats`` are configured by default.
+
+To enable GML and HTML feature info requests::
+
+  services:
+    wmts:
+      featureinfo_formats:
+        - mimetype: application/gml+xml; version=3.1
+          suffix: gml
+        - mimetype: text/html
+          suffix: html
+
+You need to enable ``wms_opts.featureinfo`` for each queryable source.
+
+.. note:: The configuration differs from WMS as older WMS versions required a type like ``html`` instead of a mimetype like ``text/html``.
 
 
 .. index:: Demo Service, OpenLayers

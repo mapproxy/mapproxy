@@ -64,7 +64,7 @@ class RequestMismatch(object):
         self.actual = actual
 
     def __str__(self):
-        return ('requests mismatch, expected:\n' +
+        return ('requests mismatch (%s), expected:\n' % self.msg +
             text_indent(str(self.expected), '    ') +
             '\n  got:\n' + text_indent(str(self.actual), '    '))
 
