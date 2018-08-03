@@ -17,6 +17,7 @@ from __future__ import with_statement
 import os
 import errno
 import hashlib
+import json
 
 from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.image import ImageSource, is_single_color_image
@@ -31,7 +32,8 @@ class FileCache(TileCacheBase):
     This class is responsible to store and load the actual tile data.
     """
     def __init__(self, cache_dir, file_ext, directory_layout='tc',
-                 link_single_color_images=False, lock_timeout=60.0):
+                 link_single_color_images=False, lock_timeout=60.0,
+                 dimensions=None):
         """
         :param cache_dir: the path where the tile will be stored
         :param file_ext: the file extension that will be appended to
@@ -42,7 +44,8 @@ class FileCache(TileCacheBase):
         self.cache_dir = cache_dir
         self.file_ext = file_ext
         self.link_single_color_images = link_single_color_images
-
+        self.dimensions = dimensions
+        
         if directory_layout == 'tc':
             self.tile_location = self._tile_location_tc
             self.level_location = self._level_location
@@ -61,7 +64,18 @@ class FileCache(TileCacheBase):
         else:
             raise ValueError('unknown directory_layout "%s"' % directory_layout)
 
-    def _level_location(self, level):
+
+    def _dimensions_location(self, dimensions):
+        """
+        Return the subpath where all tiles for `dimensions` will be stored.
+        >>> c = FileCache(dimensions=['reference-time', 'time'])
+        >>> c._dimensions_location({"time": "2016-11-24T18:00Z", "reference-time": "2016-11-24T00:00Z"})
+        '2016-11-24T00:00Z/2016-11-24T18:00Z'
+        """
+        return os.path.join(*(map(lambda k: str(dimensions.get(k, 'default')),
+                                  self.dimensions)))
+
+    def _level_location(self, level, dimensions=None):
         """
         Return the path where all tiles for `level` will be stored.
 
@@ -69,12 +83,16 @@ class FileCache(TileCacheBase):
         >>> c._level_location(2)
         '/tmp/cache/02'
         """
-        if isinstance(level, string_type):
-            return os.path.join(self.cache_dir, level)
-        else:
-            return os.path.join(self.cache_dir, "%02d" % level)
 
-    def _tile_location_tc(self, tile, create_dir=False):
+        dim_path = ''
+        if self.dimensions:
+            dim_path = self._dimensions_location(dimensions)
+        if isinstance(level, string_type):
+            return os.path.join(self.cache_dir, dim_path, level)
+        else:
+            return os.path.join(self.cache_dir, dim_path, "%02d" % level)
+
+    def _tile_location_tc(self, tile, create_dir=False, dimensions=None):
         """
         Return the location of the `tile`. Caches the result as ``location``
         property of the `tile`.
@@ -90,7 +108,7 @@ class FileCache(TileCacheBase):
         """
         if tile.location is None:
             x, y, z = tile.coord
-            parts = (self._level_location(z),
+            parts = (self._level_location(z, dimensions),
                      "%03d" % int(x / 1000000),
                      "%03d" % (int(x / 1000) % 1000),
                      "%03d" % (int(x) % 1000),
@@ -102,7 +120,7 @@ class FileCache(TileCacheBase):
             ensure_directory(tile.location)
         return tile.location
 
-    def _tile_location_mp(self, tile, create_dir=False):
+    def _tile_location_mp(self, tile, create_dir=False, dimensions=None):
         """
         Return the location of the `tile`. Caches the result as ``location``
         property of the `tile`.
@@ -120,7 +138,7 @@ class FileCache(TileCacheBase):
         """
         if tile.location is None:
             x, y, z = tile.coord
-            parts = (self._level_location(z),
+            parts = (self._level_location(z, dimensions),
                      "%04d" % int(x / 10000),
                      "%04d" % (int(x) % 10000),
                      "%04d" % int(y / 10000),
@@ -130,7 +148,7 @@ class FileCache(TileCacheBase):
             ensure_directory(tile.location)
         return tile.location
 
-    def _tile_location_tms(self, tile, create_dir=False):
+    def _tile_location_tms(self, tile, create_dir=False, dimensions=None):
         """
         Return the location of the `tile`. Caches the result as ``location``
         property of the `tile`.
@@ -147,17 +165,19 @@ class FileCache(TileCacheBase):
         if tile.location is None:
             x, y, z = tile.coord
             tile.location = os.path.join(
-                self.level_location(str(z)),
+                self.level_location(str(z), dimensions),
                 str(x), str(y) + '.' + self.file_ext
             )
+        
         if create_dir:
             ensure_directory(tile.location)
+
         return tile.location
 
-    def _level_location_tms(self, z):
-        return self._level_location(str(z))
+    def _level_location_tms(self, z, dimensions=None):
+        return self._level_location(str(z), dimensions)
 
-    def _tile_location_quadkey(self, tile, create_dir=False):
+    def _tile_location_quadkey(self, tile, create_dir=False, dimensions=None):
         """
         Return the location of the `tile`. Caches the result as ``location``
         property of the `tile`.
@@ -174,6 +194,9 @@ class FileCache(TileCacheBase):
         """
         if tile.location is None:
             x, y, z = tile.coord
+            dim_path = ''
+            if self.dimensions:
+                dim_path = self._dimensions_location(dimensions)
             quadKey = ""
             for i in range(z,0,-1):
                 digit = 0
@@ -184,13 +207,13 @@ class FileCache(TileCacheBase):
                     digit += 2
                 quadKey += str(digit)
             tile.location = os.path.join(
-                self.cache_dir, quadKey + '.' + self.file_ext
+                self.cache_dir, dim_path, quadKey + '.' + self.file_ext
             )
         if create_dir:
             ensure_directory(tile.location)
         return tile.location
 
-    def _tile_location_arcgiscache(self, tile, create_dir=False):
+    def _tile_location_arcgiscache(self, tile, create_dir=False, dimensions=None):
         """
         Return the location of the `tile`. Caches the result as ``location``
         property of the `tile`.
@@ -207,14 +230,15 @@ class FileCache(TileCacheBase):
         """
         if tile.location is None:
             x, y, z = tile.coord
-            parts = (self._level_location_arcgiscache(z), 'R%08x' % y, 'C%08x.%s' % (x, self.file_ext))
+            parts = (self._level_location_arcgiscache(z, dimensions),
+                     'R%08x' % y, 'C%08x.%s' % (x, self.file_ext))
             tile.location = os.path.join(*parts)
         if create_dir:
             ensure_directory(tile.location)
         return tile.location
 
-    def _level_location_arcgiscache(self, z):
-        return self._level_location('L%02d' % z)
+    def _level_location_arcgiscache(self, z, dimensions=None):
+        return self._level_location('L%02d' % z, dimensions)
 
     def _single_color_tile_location(self, color, create_dir=False):
         """
@@ -232,8 +256,8 @@ class FileCache(TileCacheBase):
             ensure_directory(location)
         return location
 
-    def load_tile_metadata(self, tile):
-        location = self.tile_location(tile)
+    def load_tile_metadata(self, tile, dimensions=None):
+        location = self.tile_location(tile, dimensions=dimensions)
         try:
             stats = os.lstat(location)
             tile.timestamp = stats.st_mtime
@@ -243,12 +267,12 @@ class FileCache(TileCacheBase):
             tile.timestamp = 0
             tile.size = 0
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         """
         Returns ``True`` if the tile data is present.
         """
         if tile.is_missing():
-            location = self.tile_location(tile)
+            location = self.tile_location(tile, dimensions=dimensions)
             if os.path.exists(location):
                 return True
             else:
@@ -256,7 +280,7 @@ class FileCache(TileCacheBase):
         else:
             return True
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         """
         Fills the `Tile.source` of the `tile` if it is cached.
         If it is not cached or if the ``.coord`` is ``None``, nothing happens.
@@ -264,11 +288,11 @@ class FileCache(TileCacheBase):
         if not tile.is_missing():
             return True
 
-        location = self.tile_location(tile)
+        location = self.tile_location(tile, dimensions=dimensions)
 
         if os.path.exists(location):
             if with_metadata:
-                self.load_tile_metadata(tile)
+                self.load_tile_metadata(tile, dimensions=dimensions)
             tile.source = ImageSource(location)
             return True
         return False
@@ -280,7 +304,7 @@ class FileCache(TileCacheBase):
         except OSError as ex:
             if ex.errno != errno.ENOENT: raise
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         """
         Add the given `tile` to the file cache. Stores the `Tile.source` to
         `FileCache.tile_location`.
@@ -288,7 +312,7 @@ class FileCache(TileCacheBase):
         if tile.stored:
             return
 
-        tile_loc = self.tile_location(tile, create_dir=True)
+        tile_loc = self.tile_location(tile, create_dir=True, dimensions=dimensions)
 
         if self.link_single_color_images:
             color = is_single_color_image(tile.source.as_image())

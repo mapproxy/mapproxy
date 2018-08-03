@@ -44,6 +44,9 @@ from mapproxy.image.tile import TileSplitter
 from mapproxy.layer import MapQuery, BlankImage
 from mapproxy.util import async
 
+import logging
+log = logging.getLogger('mapproxy.cache.tile')
+
 class TileManager(object):
     """
     Manages tiles for a single grid.
@@ -98,7 +101,7 @@ class TileManager(object):
 
     def load_tile_coord(self, tile_coord, dimensions=None, with_metadata=False):
         tile = Tile(tile_coord)
-        self.cache.load_tile(tile, with_metadata)
+        self.cache.load_tile(tile, with_metadata, dimensions=dimensions)
 
         if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
             # missing or staled
@@ -151,7 +154,7 @@ class TileManager(object):
             tile = Tile(tile)
         if tile.coord is None:
             return True
-        cached = self.cache.is_cached(tile)
+        cached = self.cache.is_cached(tile, dimensions=dimensions)
         max_mtime = self.expire_timestamp(tile)
         if cached and max_mtime is not None:
             self.cache.load_tile_metadata(tile)
@@ -205,11 +208,11 @@ class TileCreator(object):
         self.dimensions = dimensions
         self.image_merger = image_merger
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         """
         Return True if the tile is cached.
         """
-        return self.tile_mgr.is_cached(tile)
+        return self.tile_mgr.is_cached(tile, dimensions=dimensions)
 
     def create_tiles(self, tiles):
         if not self.meta_grid:
@@ -312,14 +315,14 @@ class TileCreator(object):
             dimensions=self.dimensions)
         main_tile = Tile(meta_tile.main_tile_coord)
         with self.tile_mgr.lock(main_tile):
-            if not all(self.is_cached(t) for t in meta_tile.tiles if t is not None):
+            if not all(self.is_cached(t, dimensions=self.dimensions) for t in meta_tile.tiles if t is not None):
                 meta_tile_image = self._query_sources(query)
                 if not meta_tile_image: return []
                 splitted_tiles = split_meta_tiles(meta_tile_image, meta_tile.tile_patterns,
                                                   tile_size, self.tile_mgr.image_opts)
                 splitted_tiles = [self.tile_mgr.apply_tile_filter(t) for t in splitted_tiles]
                 if meta_tile_image.cacheable:
-                    self.cache.store_tiles(splitted_tiles)
+                    self.cache.store_tiles(splitted_tiles, dimensions=self.dimensions)
                 return splitted_tiles
         # else
         tiles = [Tile(coord) for coord in meta_tile.tiles]
@@ -341,7 +344,8 @@ class Tile(object):
         self._cacheable = cacheable
         self.size = None
         self.timestamp = None
-
+        log.info(self)
+        
     def _cacheable_get(self):
         return CacheInfo(cacheable=self._cacheable, timestamp=self.timestamp,
             size=self.size)

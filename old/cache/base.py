@@ -21,6 +21,9 @@ from contextlib import contextmanager
 
 from mapproxy.util.lock import FileLock, cleanup_lockdir, DummyLock
 
+import logging
+log = logging.getLogger('mapproxy.cache.base')
+
 class CacheBackendError(Exception):
     pass
 
@@ -55,10 +58,11 @@ class TileCacheBase(object):
     def store_tile(self, tile):
         raise NotImplementedError()
 
-    def store_tiles(self, tiles):
+    def store_tiles(self, tiles, dimensions=None):
         all_succeed = True
+        log.info(dimensions)
         for tile in tiles:
-            if not self.store_tile(tile):
+            if not self.store_tile(tile, dimensions=dimensions):
                 all_succeed = False
         return all_succeed
 

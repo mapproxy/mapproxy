@@ -980,12 +980,21 @@ class CacheConfiguration(ConfigurationBase):
 
         lock_timeout = self.context.globals.get_value('http.client_timeout', {})
 
+        dimensions = self.context.globals.get_value('dimensions', self.conf,
+            global_key='cache.dimensions')
+
+        # if dimensions:
+        #     dim_parts = map(lambda s: "{%s}" % s, dimensions)
+        #     cache_dir = os.path.join(cache_dir, *dim_parts)
+        #     log.info("Cache dir: " + cache_dir)
+        
         return FileCache(
             cache_dir,
             file_ext=file_ext,
             directory_layout=directory_layout,
             lock_timeout=lock_timeout,
             link_single_color_images=link_single_color_images,
+            dimensions=dimensions,
         )
 
     def _mbtiles_cache(self, grid_conf, file_ext):
@@ -1525,12 +1534,12 @@ class LayerConfiguration(ConfigurationBase):
         for cache_name in sources:
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
 
-                if dimensions and not isinstance(cache_source.cache, DummyCache):
-                    # caching of dimension layers is not supported yet
-                    raise ConfigurationError(
-                        "caching of dimension layer (%s) is not supported yet."
-                        " need to `disable_storage: true` on %s cache" % (self.conf['name'], cache_name)
-                    )
+                # if dimensions and not isinstance(cache_source.cache, DummyCache):
+                #     # caching of dimension layers is not supported yet
+                #     raise ConfigurationError(
+                #         "caching of dimension layer (%s) is not supported yet."
+                #         " need to `disable_storage: true` on %s cache" % (self.conf['name'], cache_name)
+                #     )
 
                 md = {}
                 md['title'] = self.conf['title']
