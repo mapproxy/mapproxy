@@ -375,6 +375,7 @@ mapproxy_yaml_spec = {
                 'region_name': str(),
                 'endpoint_url': str(),
             },
+            'dimensions': [str()],
         },
         'grid': {
             'tile_size': [int()],
