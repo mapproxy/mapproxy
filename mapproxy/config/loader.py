@@ -1033,11 +1033,15 @@ class CacheConfiguration(ConfigurationBase):
             log.warn('link_single_color_images not supported on windows')
             link_single_color_images = False
 
+        dimensions = self.context.globals.get_value('dimensions', self.conf,
+                                                    global_key='cache.dimensions')
+
         return FileCache(
             cache_dir,
             file_ext=file_ext,
             directory_layout=directory_layout,
             link_single_color_images=link_single_color_images,
+            dimensions=dimensions,
         )
 
     def _mbtiles_cache(self, grid_conf, file_ext):
