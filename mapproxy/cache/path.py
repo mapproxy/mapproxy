@@ -89,7 +89,7 @@ def tile_location_tc(tile, cache_dir, file_ext, create_dir=False, dimensionlist=
     if tile.location is None:
         x, y, z = tile.coord
         parts = (cache_dir,
-                 dimension_part(dimensionlist, dimensions),
+                 dimensions_part(dimensionlist, dimensions),
                  level_part(z),
                  "%03d" % int(x / 1000000),
                  "%03d" % (int(x / 1000) % 1000),
@@ -120,7 +120,7 @@ def tile_location_mp(tile, cache_dir, file_ext, create_dir=False, dimensionlist=
     if tile.location is None:
         x, y, z = tile.coord
         parts = (cache_dir,
-                 dimension_part(dimensionlist, dimensions),
+                 dimensions_part(dimensionlist, dimensions),
                  level_part(z),
                  "%04d" % int(x / 10000),
                  "%04d" % (int(x) % 10000),
@@ -147,7 +147,7 @@ def tile_location_tms(tile, cache_dir, file_ext, create_dir=False, dimensionlist
     if tile.location is None:
         x, y, z = tile.coord
         tile.location = os.path.join(
-            cache_dir, dimension_part(dimensionlist, dimensions),
+            cache_dir, dimensions_part(dimensionlist, dimensions),
             level_part(str(z)), str(x), str(y) + '.' + file_ext
         )
     if create_dir:
@@ -170,7 +170,7 @@ def tile_location_reverse_tms(tile, cache_dir, file_ext, create_dir=False, dimen
     if tile.location is None:
         x, y, z = tile.coord
         tile.location = os.path.join(
-            cache_dir, dimension_part(dimensionlist, dimensions), str(y), str(x), str(z) + '.' + file_ext
+            cache_dir, dimensions_part(dimensionlist, dimensions), str(y), str(x), str(z) + '.' + file_ext
         )
     if create_dir:
         ensure_directory(tile.location)
@@ -204,7 +204,7 @@ def tile_location_quadkey(tile, cache_dir, file_ext, create_dir=False, dimension
                 digit += 2
             quadKey += str(digit)
         tile.location = os.path.join(
-            cache_dir, dimension_part(dimensionlist, dimensions), quadKey + '.' + file_ext
+            cache_dir, dimensions_part(dimensionlist, dimensions), quadKey + '.' + file_ext
         )
     if create_dir:
         ensure_directory(tile.location)
@@ -229,7 +229,7 @@ def tile_location_arcgiscache(tile, cache_dir, file_ext, create_dir=False, dimen
     """
     if tile.location is None:
         x, y, z = tile.coord
-        parts = (cache_dir, dimension_part(dimensionlist, dimensions), 'L%02d' % z, 'R%08x' % y, 'C%08x.%s' % (x, file_ext))
+        parts = (cache_dir, dimensions_part(dimensionlist, dimensions), 'L%02d' % z, 'R%08x' % y, 'C%08x.%s' % (x, file_ext))
         tile.location = os.path.join(*parts)
     if create_dir:
         ensure_directory(tile.location)

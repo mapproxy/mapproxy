@@ -338,14 +338,14 @@ class TileCreator(object):
             dimensions=self.dimensions)
         main_tile = Tile(meta_tile.main_tile_coord)
         with self.tile_mgr.lock(main_tile):
-            if not all(self.is_cached(t, dimensions=dimensions) for t in meta_tile.tiles if t is not None):
+            if not all(self.is_cached(t, dimensions=self.dimensions) for t in meta_tile.tiles if t is not None):
                 meta_tile_image = self._query_sources(query)
                 if not meta_tile_image: return []
                 splitted_tiles = split_meta_tiles(meta_tile_image, meta_tile.tile_patterns,
                                                   tile_size, self.tile_mgr.image_opts)
                 splitted_tiles = [self.tile_mgr.apply_tile_filter(t) for t in splitted_tiles]
                 if meta_tile_image.cacheable:
-                    self.cache.store_tiles(splitted_tiles, dimensions=dimensions)
+                    self.cache.store_tiles(splitted_tiles, dimensions=self.dimensions)
                 return splitted_tiles
             # else
         tiles = [Tile(coord) for coord in meta_tile.tiles]
