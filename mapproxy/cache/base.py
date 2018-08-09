@@ -21,9 +21,6 @@ from contextlib import contextmanager
 
 from mapproxy.util.lock import FileLock, cleanup_lockdir, DummyLock
 
-import logging
-log = logging.getLogger('mapproxy.cache.base')
-
 class CacheBackendError(Exception):
     pass
 
