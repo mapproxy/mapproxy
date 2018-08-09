@@ -1728,12 +1728,13 @@ class LayerConfiguration(ConfigurationBase):
                     fi_sources.append(fi_source)
 
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
-#               if dimensions and not isinstance(cache_source.cache, DummyCache):
-#                   # caching of dimension layers is not supported yet
-#                   raise ConfigurationError(
-#                       "caching of dimension layer (%s) is not supported yet."
-#                       " need to `disable_storage: true` on %s cache" % (self.conf['name'], cache_name)
-#                   )
+               if dimensions and not (isinstance(cache_source.cache, FileCache)
+                                      or isinstance(cache_source.cache, DummyCache)):
+                   # caching of dimension layers is only supported by FileCache
+                   raise ConfigurationError(
+                       "caching of dimension layer (%s) is not supported yet by this cache backend."
+                       " need to use a FileCache, or `disable_storage: true` on %s cache" % (self.conf['name'], cache_name)
+                   )
 
                 md = {}
                 md['title'] = self.conf['title']
