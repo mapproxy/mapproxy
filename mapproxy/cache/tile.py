@@ -45,9 +45,6 @@ from mapproxy.layer import MapQuery, BlankImage
 from mapproxy.util import async_
 from mapproxy.util.py import reraise
 
-import logging
-log = logging.getLogger('mapproxy.cache.tile')
-
 class TileManager(object):
     """
     Manages tiles for a single grid.
@@ -421,8 +418,6 @@ class Tile(object):
         self.size = None
         self.timestamp = None
 
-        log.info(self)
-        
     def _cacheable_get(self):
         return CacheInfo(cacheable=self._cacheable, timestamp=self.timestamp,
             size=self.size)
