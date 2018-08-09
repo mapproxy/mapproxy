@@ -16,7 +16,6 @@
 import os
 import errno
 import hashlib
-import json
 
 from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.image import ImageSource, is_single_color_image
