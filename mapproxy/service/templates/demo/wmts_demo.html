@@ -12,8 +12,10 @@ def approx_bbox(layer, srs):
 
 menu_title= "WMTS %s %s"%(layer.name, srs)
 jscript_functions=None
+
 }}
 {{def jscript_openlayers}}
+
 <script src="static/OpenLayers.js"></script>
 <script type="text/javascript">
 var map;
@@ -36,17 +38,34 @@ function init(){
      format: '{{format}}',
      isBaseLayer: true,
      style: 'default',
+{{if layer.dimensions}}
+     dimensions: [{{", ".join(('"%s"' % str(d)) for d in layer.dimensions)}}],
+     params: { {{", ".join(('"%s": "%s"' % (str(k), v[0])) for k, v in layer.dimensions.items())}} },
+{{endif}}
      requestEncoding: 'REST'
+  
     });
 
     map.addLayer(layer)
     map.zoomToExtent(new OpenLayers.Bounds({{approx_bbox(layer, srs)}}));
 }
+
+function setDimension (layer, dimension, value) {
+    layer.params[dimension.toUpperCase()] = value;
+    layer.redraw();
+}
+
 </script>
 {{enddef}}
             <h2>Openlayers Client - Layer {{layer.name}}</h2>
             <table>
-                <tr><th>Coordinate System</th><th>Image format</th></tr>
+              <tr>
+		<th>Coordinate System</th>
+		<th>Image format</th>
+		{{for dim in layer.dimensions}}
+		<th>{{str(dim)}}</th>
+		{{endfor}}
+	      </tr>
                 <tr><td>
                         <select name="srs" size="1" onchange="this.form.submit()">
                                 {{for wmts_layer in all_tile_layers.values()}}
@@ -62,7 +81,17 @@ function init(){
                             <input type="hidden" name="format" value="{{format}}">
                             <input type="hidden" name="wmts_layer" value="{{layer.name}}">
                     </td>
-                    <td>{{layer.format}}</td></tr>
+                  <td>{{layer.format}}</td>
+		  {{for dim in layer.dimensions}}
+                  <td>
+		    <select name="{{str(dim)}}" size="1" onchange="setDimension(map.layers[0], &quot;{{str(dim)}}&quot;, this.value);">
+		      {{for value in layer.dimensions[dim]}}
+                        <option value="{{value}}">{{value}}</option>
+		      {{endfor}}
+		    </select>
+		  </td>
+		  {{endfor}}
+		</tr>
             </table>
             <div id='map'></div>
             <h3>Bounding Box</h3>
