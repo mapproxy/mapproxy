@@ -1686,7 +1686,8 @@ class LayerConfiguration(ConfigurationBase):
     def tile_layers(self, grid_name_as_path=False):
         from mapproxy.service.tile import TileLayer
         from mapproxy.cache.dummy import DummyCache
-
+        from mapproxy.cache.file import FileCache
+        
         sources = []
         fi_only_sources = []
         if 'tile_sources' in self.conf:
@@ -1728,13 +1729,13 @@ class LayerConfiguration(ConfigurationBase):
                     fi_sources.append(fi_source)
 
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
-               if dimensions and not (isinstance(cache_source.cache, FileCache)
-                                      or isinstance(cache_source.cache, DummyCache)):
-                   # caching of dimension layers is only supported by FileCache
-                   raise ConfigurationError(
-                       "caching of dimension layer (%s) is not supported yet by this cache backend."
-                       " need to use a FileCache, or `disable_storage: true` on %s cache" % (self.conf['name'], cache_name)
-                   )
+                log.info("Cache source: " + str(type(cache_source.cache)))
+                if dimensions and not isinstance(cache_source.cache, (FileCache, DummyCache)):
+                    # caching of dimension layers is only supported by FileCache
+                    raise ConfigurationError(
+                        "caching of dimension layer (%s) is not supported yet by this cache backend."
+                        " need to use a FileCache, or `disable_storage: true` on %s cache" % (self.conf['name'], cache_name)
+                    )
 
                 md = {}
                 md['title'] = self.conf['title']

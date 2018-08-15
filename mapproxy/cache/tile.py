@@ -122,7 +122,7 @@ class TileManager(object):
         uncached_tiles = []
 
         # load all in batch
-        self.cache.load_tiles(tiles, with_metadata)
+        self.cache.load_tiles(tiles, with_metadata, dimensions=self.dimensions)
 
         for tile in tiles:
             if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
@@ -346,7 +346,7 @@ class TileCreator(object):
                 return splitted_tiles
             # else
         tiles = [Tile(coord) for coord in meta_tile.tiles]
-        self.cache.load_tiles(tiles)
+        self.cache.load_tiles(tiles, dimensions=self.dimensions)
         return tiles
 
     def _create_bulk_meta_tile(self, meta_tile):
@@ -398,7 +398,7 @@ class TileCreator(object):
 
             # else
         tiles = [Tile(coord) for coord in meta_tile.tiles]
-        self.cache.load_tiles(tiles)
+        self.cache.load_tiles(tiles, dimensions=self.dimensions)
         return tiles
 
 
