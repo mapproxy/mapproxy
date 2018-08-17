@@ -16,6 +16,7 @@
 import os
 from mapproxy.compat import string_type
 from mapproxy.util.fs import ensure_directory
+from mapproxy.request.base import NoCaseMultiDict
 
 
 def location_funcs(layout):
@@ -56,7 +57,8 @@ def dimensions_part(dimensionlist, dimensions):
     '2016-11-24T00:00Z/2016-11-24T18:00Z'
     """
     if dimensionlist:
-        return os.path.join(*(map(lambda k: str(dimensions.get(k, 'default')),
+        dims = NoCaseMultiDict(dimensions)
+        return os.path.join(*(map(lambda k: str(dims.get(k, 'default')),
                                   dimensionlist)))
     else:
         return ""

@@ -12,10 +12,8 @@ def approx_bbox(layer, srs):
 
 menu_title= "WMTS %s %s"%(layer.name, srs)
 jscript_functions=None
-
 }}
 {{def jscript_openlayers}}
-
 <script src="static/OpenLayers.js"></script>
 <script type="text/javascript">
 var map;
@@ -43,7 +41,6 @@ function init(){
      params: { {{", ".join(('"%s": "%s"' % (str(k), v[0])) for k, v in layer.dimensions.items())}} },
 {{endif}}
      requestEncoding: 'REST'
-  
     });
 
     map.addLayer(layer)
@@ -54,7 +51,6 @@ function setDimension (layer, dimension, value) {
     layer.params[dimension.toUpperCase()] = value;
     layer.redraw();
 }
-
 </script>
 {{enddef}}
             <h2>Openlayers Client - Layer {{layer.name}}</h2>

@@ -83,7 +83,7 @@ class WMSServer(Server):
         self.check_map_request(map_request)
 
         params = map_request.params
-        query = MapQuery(params.bbox, params.size, SRS(params.srs), params.format)
+        query = MapQuery(params.bbox, params.size, SRS(params.srs), params.format, dimensions=map_request.dimensions)
 
         if map_request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
@@ -694,7 +694,7 @@ class WMSLayer(WMSLayerBase):
     is_active = True
     layers = []
     def __init__(self, name, title, map_layers, info_layers=[], legend_layers=[],
-                 res_range=None, md=None):
+                 res_range=None, md=None, dimensions=None):
         self.name = name
         self.title = title
         self.md = md or {}
@@ -707,6 +707,7 @@ class WMSLayer(WMSLayerBase):
         self.res_range = res_range
         self.queryable = True if info_layers else False
         self.has_legend = True if legend_layers else False
+        self.dimensions = dimensions
 
     def is_opaque(self, query):
         return any(l.is_opaque(query) for l in self.map_layers)

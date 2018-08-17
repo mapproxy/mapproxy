@@ -58,7 +58,7 @@ class TileManager(object):
     def __init__(self, grid, cache, sources, format, locker, image_opts=None, request_format=None,
         meta_buffer=None, meta_size=None, minimize_meta_requests=False, identifier=None,
         pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None,
-        bulk_meta_tiles=False,
+        bulk_meta_tiles=False, dimensions=None
         ):
         self.grid = grid
         self.cache = cache
@@ -74,6 +74,7 @@ class TileManager(object):
         self.pre_store_filter = pre_store_filter or []
         self.concurrent_tile_creators = concurrent_tile_creators
         self.tile_creator_class = tile_creator_class or TileCreator
+        self.dimensions = dimensions
 
         if meta_buffer or (meta_size and not meta_size == [1, 1]):
             if all(source.supports_meta_tiles for source in sources):
@@ -122,7 +123,7 @@ class TileManager(object):
         uncached_tiles = []
 
         # load all in batch
-        self.cache.load_tiles(tiles, with_metadata, dimensions=self.dimensions)
+        self.cache.load_tiles(tiles, with_metadata, dimensions=dimensions)
 
         for tile in tiles:
             if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):

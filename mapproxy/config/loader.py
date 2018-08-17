@@ -1035,7 +1035,6 @@ class CacheConfiguration(ConfigurationBase):
 
         dimensionlist = self.context.globals.get_value('dimensions', self.conf,
                                                     global_key='cache.dimensions')
-        #log.warn("Dimensionlist: " + dimensionlist)
         return FileCache(
             cache_dir,
             file_ext=file_ext,
@@ -1516,6 +1515,9 @@ class CacheConfiguration(ConfigurationBase):
                         lock_timeout=self.context.globals.get_value('http.client_timeout', {}),
                         lock_cache_id=cache.lock_cache_id,
                 )
+            dimensionlist = self.context.globals.get_value('dimensions', self.conf,
+                                                           global_key='cache.dimensions')
+
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
                 locker=locker,
                 image_opts=image_opts, identifier=identifier,
@@ -1526,6 +1528,7 @@ class CacheConfiguration(ConfigurationBase):
                 pre_store_filter=tile_filter,
                 tile_creator_class=tile_creator_class,
                 bulk_meta_tiles=bulk_meta_tiles,
+                dimensions=dimensionlist,
             )
             extent = merge_layer_extents(sources)
             if extent.is_default:
@@ -1666,9 +1669,11 @@ class LayerConfiguration(ConfigurationBase):
                         lg_sources.append(lg_source)
 
         res_range = resolution_range(self.conf)
+        dimensions = self.dimensions()
 
         layer = WMSLayer(self.conf.get('name'), self.conf.get('title'),
-                         sources, fi_sources, lg_sources, res_range=res_range, md=self.conf.get('md'))
+                         sources, fi_sources, lg_sources, res_range=res_range, md=self.conf.get('md'),
+                         dimensions=dimensions)
         return layer
 
     @memoize
@@ -1687,7 +1692,7 @@ class LayerConfiguration(ConfigurationBase):
         from mapproxy.service.tile import TileLayer
         from mapproxy.cache.dummy import DummyCache
         from mapproxy.cache.file import FileCache
-        
+
         sources = []
         fi_only_sources = []
         if 'tile_sources' in self.conf:
