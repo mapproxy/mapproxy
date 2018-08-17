@@ -1734,7 +1734,6 @@ class LayerConfiguration(ConfigurationBase):
                     fi_sources.append(fi_source)
 
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
-                log.info("Cache source: " + str(type(cache_source.cache)))
                 if dimensions and not isinstance(cache_source.cache, (FileCache, DummyCache)):
                     # caching of dimension layers is only supported by FileCache
                     raise ConfigurationError(
