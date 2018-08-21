@@ -198,7 +198,11 @@ class WMSMapRequest(WMSRequest):
         if (param):
             regex = "(?i)%s%s" % (("^%s|" % self.dimension_prefix if self.dimension_prefix else ""),
                                   "^(%s)$" % "|".join(self.dimension_params))
-            keys = list(map (lambda k: k[0], param.iteritems()))
+            keys = []
+            if (isinstance(param, RequestParams)):
+                keys = list(map (lambda k: k[0], param.iteritems()))
+            else:
+                keys = list(param.keys())
             if (len(keys) > 0):
                 return dict(map(lambda k: (k, param.get(k)), filter (lambda k: re.search(regex, k), keys)))
             else:
