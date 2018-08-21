@@ -53,7 +53,7 @@ class CompactCacheBase(TileCacheBase):
         bundle_fname, offset = self._get_bundle_fname_and_offset(tile_coord)
         return self.bundle_class(bundle_fname, offset=offset)
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
             return True
         if tile.source:
@@ -61,7 +61,7 @@ class CompactCacheBase(TileCacheBase):
 
         return self._get_bundle(tile.coord).is_cached(tile)
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
 
@@ -88,13 +88,13 @@ class CompactCacheBase(TileCacheBase):
         return not failed
 
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.source or tile.coord is None:
             return True
 
         return self._get_bundle(tile.coord).load_tile(tile)
 
-    def load_tiles(self, tiles, with_metadata=False):
+    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
         if len(tiles) > 1:
             # Check if all tiles are from a single bundle.
             bundle_files = set()
@@ -152,7 +152,7 @@ class BundleV1(object):
     def index(self):
         return BundleIndexV1(self.base_filename + BUNDLEX_V1_EXT)
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         if tile.source or tile.coord is None:
             return True
 
@@ -168,7 +168,7 @@ class BundleV1(object):
             size = bundle.read_size(offset)
         return size != 0
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
         return self.store_tiles([tile])
@@ -194,12 +194,12 @@ class BundleV1(object):
         return True
 
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.source or tile.coord is None:
             return True
         return self.load_tiles([tile], with_metadata)
 
-    def load_tiles(self, tiles, with_metadata=False):
+    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
         missing = False
 
         with self.index().readonly() as idx:
@@ -516,13 +516,13 @@ class BundleV2(object):
         tile.source = ImageSource(BytesIO(data))
         return True
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.source or tile.coord is None:
             return True
 
         return self.load_tiles([tile], with_metadata)
 
-    def load_tiles(self, tiles, with_metadata=False):
+    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
         missing = False
 
         with self._readonly() as fh:
@@ -537,7 +537,7 @@ class BundleV2(object):
 
         return not missing
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         with self._readonly() as fh:
             if not fh:
                 return False
@@ -585,7 +585,7 @@ class BundleV2(object):
         filesize = offset + size
         self._update_metadata(fh, filesize, size)
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
 

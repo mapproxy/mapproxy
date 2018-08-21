@@ -101,7 +101,7 @@ class S3Cache(TileCacheBase):
         if 'ContentLength' in response:
             tile.size = response['ContentLength']
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         if tile.is_missing():
             key = self.tile_key(tile)
             try:
@@ -114,7 +114,7 @@ class S3Cache(TileCacheBase):
 
         return True
 
-    def load_tiles(self, tiles, with_metadata=True):
+    def load_tiles(self, tiles, with_metadata=True, dimensions=None):
         p = async_.Pool(min(4, len(tiles)))
         return all(p.map(self.load_tile, tiles))
 
@@ -146,7 +146,7 @@ class S3Cache(TileCacheBase):
         p = async_.Pool(min(self._concurrent_writer, len(tiles)))
         p.map(self.store_tile, tiles)
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return
 

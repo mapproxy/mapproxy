@@ -95,7 +95,7 @@ class CouchDBCache(TileCacheBase):
             else:
                 return '%(couch_url)s/%(grid_name)s-%(z)s-%(x)s-%(y)s' % locals()
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         if tile.coord is None or tile.source:
             return True
         url = self.document_url(tile.coord)
@@ -188,7 +188,7 @@ class CouchDBCache(TileCacheBase):
         for tile in resp_doc['rows']:
             tile_docs[tile['id']]['_rev'] = tile['value']['rev']
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
 
@@ -205,7 +205,7 @@ class CouchDBCache(TileCacheBase):
         # is_cached loads metadata
         self.is_cached(tile)
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         # bulk loading with load_tiles is not implemented, because
         # CouchDB's /all_docs? does not include attachments
 

@@ -355,7 +355,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
         db.commit()
         db.close()
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
             return True
         if tile.source:
@@ -364,7 +364,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
         return self.load_tile(tile)
 
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
         return self._store_bulk([tile])
@@ -399,7 +399,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
             return False
         return True
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.source or tile.coord is None:
             return True
 
@@ -416,7 +416,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
         else:
             return False
 
-    def load_tiles(self, tiles, with_metadata=False):
+    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
         # associate the right tiles with the cursor
         tile_dict = {}
         coords = []
@@ -522,7 +522,7 @@ class GeopackageLevelCache(TileCacheBase):
             for gp in self._geopackage.values():
                 gp.cleanup()
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
             return True
         if tile.source:
@@ -530,7 +530,7 @@ class GeopackageLevelCache(TileCacheBase):
 
         return self._get_level(tile.coord[2]).is_cached(tile)
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
 
@@ -544,13 +544,13 @@ class GeopackageLevelCache(TileCacheBase):
             if not res: failed = True
         return failed
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.source or tile.coord is None:
             return True
 
         return self._get_level(tile.coord[2]).load_tile(tile, with_metadata=with_metadata)
 
-    def load_tiles(self, tiles, with_metadata=False):
+    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
         level = None
         for tile in tiles:
             if tile.source or tile.coord is None:

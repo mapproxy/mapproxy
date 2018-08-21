@@ -195,11 +195,14 @@ class WMSMapRequest(WMSRequest):
 
     def _get_dimensions(self, param):
         import re
-        regex = "(?i)%s%s" % (("^%s|" % self.dimension_prefix if self.dimension_prefix else ""),
-                              "^(%s)$" % "|".join(self.dimension_params))
-        keys = list(map (lambda k: k[0], param.iteritems()))
-        if (len(keys) > 0):
-            return dict(map(lambda k: (k, param.get(k)), filter (lambda k: re.search(regex, k), keys)))
+        if (param):
+            regex = "(?i)%s%s" % (("^%s|" % self.dimension_prefix if self.dimension_prefix else ""),
+                                  "^(%s)$" % "|".join(self.dimension_params))
+            keys = list(map (lambda k: k[0], param.iteritems()))
+            if (len(keys) > 0):
+                return dict(map(lambda k: (k, param.get(k)), filter (lambda k: re.search(regex, k), keys)))
+            else:
+                return None
         else:
             return None
         
