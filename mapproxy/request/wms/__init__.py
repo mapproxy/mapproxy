@@ -72,8 +72,8 @@ class WMSMapRequestParams(RequestParams):
         """
         if 'height' not in self or 'width' not in self:
             return None
-        width = int(self.params['width'])
-        height = int(self.params['height'])
+        width = int(float(self.params['width'])) # allow float sizes (100.0), but truncate decimals
+        height = int(float(self.params['height']))
         return (width, height)
     def _set_size(self, value):
         self['width'] = str(value[0])

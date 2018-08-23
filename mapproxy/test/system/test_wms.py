@@ -293,6 +293,15 @@ class TestWMS111(SysTest):
         assert is_png(data)
         assert Image.open(data).mode == "RGB"
 
+    def test_get_map_float_size(self, app, fixture_cache_data):
+        self.common_map_req.params['width'] = '200.0'
+        resp = app.get(self.common_map_req)
+        assert "Cache-Control" not in resp.headers
+        assert resp.content_type == "image/png"
+        data = BytesIO(resp.body)
+        assert is_png(data)
+        assert Image.open(data).mode == "RGB"
+
     def test_get_map_png8_custom_format(self, app, fixture_cache_data):
         self.common_map_req.params["layers"] = "wms_cache"
         self.common_map_req.params["format"] = "image/png; mode=8bit"
