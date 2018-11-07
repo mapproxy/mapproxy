@@ -481,7 +481,12 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
             return False
 
     def load_tile_metadata(self, tile):
-        self.load_tile(tile)
+        if not self.supports_timestamp:
+            # GPKG specification does not include tile timestamps.
+            # This sets the timestamp of the tile to epoch (1970s)
+            tile.timestamp = -1
+        else:
+            self.load_tile(tile)
 
 
 class GeopackageLevelCache(TileCacheBase):
@@ -507,7 +512,7 @@ class GeopackageLevelCache(TileCacheBase):
                     geopackage_filename,
                     self.tile_grid,
                     self.table_name,
-                    with_timestamps=True,
+                    with_timestamps=False,
                     timeout=self.timeout,
                     wal=self.wal,
                 )
