@@ -61,7 +61,9 @@ cache:
     - $HOME/.cache/pip
 
 before_install:
-    - echo -n "ulimit -n 4096" | sudo tee /etc/default/riak && sudo service riak restart	# default open file limit is too low for riak
+    # default open file limit is too low for riak
+    - echo -n "ulimit -n 4096" | sudo tee /etc/default/riak
+    - sudo service riak restart || sudo systemctl restart riak
 
 install:
     - "pip install -r requirements-tests.txt"
