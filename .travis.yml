@@ -18,7 +18,6 @@ addons:
       - libproj0
       - libgeos-dev
       - libgdal-dev
-      - libgdal1h
       - libxslt1-dev
       - libxml2-dev
       - build-essential
@@ -53,6 +52,9 @@ matrix:
     - python: "3.7"
       sudo: required
       dist: xenial
+
+  allow_failures:
+    - python: "3.7"
 
 cache:
   directories:
