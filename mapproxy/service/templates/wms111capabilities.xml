@@ -113,7 +113,7 @@
   </VendorSpecificCapabilities>
 {{endif}}
 
-{{def layer_capabilities(layer, with_srs)}}
+{{def layer_capabilities(layer, with_srs=False)}}
   <Layer{{if layer.queryable}} queryable="1"{{endif}}>
     {{if layer.name}}
     <Name>{{ layer.name }}</Name>
