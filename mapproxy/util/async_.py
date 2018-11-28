@@ -181,7 +181,7 @@ class ThreadPool(object):
                     yield func(*arg)
                 except Exception:
                     yield sys.exc_info()
-            raise StopIteration()
+            return
 
         self.pool = self._init_pool()
 
