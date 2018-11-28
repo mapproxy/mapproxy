@@ -15,7 +15,7 @@ services:
 addons:
   apt:
     packages:
-      - libproj0
+      - proj-bin
       - libgeos-dev
       - libgdal-dev
       - libxslt1-dev
