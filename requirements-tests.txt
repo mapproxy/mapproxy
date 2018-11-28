@@ -23,7 +23,7 @@ cffi==1.11.5
 chardet==3.0.4
 cookies==2.2.1
 coverage==4.5.1
-cryptography==2.2.2
+cryptography==2.3.0
 docker==3.3.0
 docker-pycreds==0.2.3
 docutils==0.14
@@ -55,7 +55,7 @@ pytest==3.6.0
 python-dateutil==2.6.1
 pytz==2018.4
 redis==2.10.6
-requests==2.18.4
+requests==2.20.0
 responses==0.9.0
 riak==2.7.0
 s3transfer==0.1.13
