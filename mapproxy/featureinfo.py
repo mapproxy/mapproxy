@@ -169,30 +169,46 @@ def merge_dict(base, other):
 
 
 def create_featureinfo_doc(content, info_format):
-    info_format = info_format.split(";", 1)[
-        0
-    ].strip()  # remove mime options like charset
-    if info_format in ("text/xml", "application/gml+xml", "application/vnd.ogc.gml"):
+    info_type = featureinfo_type(info_format)
+    if info_type == "xml":
         return XMLFeatureInfoDoc(content)
-    if info_format == "text/html":
+    if info_type == "html":
         return HTMLFeatureInfoDoc(content)
-    if info_format == "application/json":
+    if info_type == "json":
         return JSONFeatureInfoDoc(content)
 
     return TextFeatureInfoDoc(content)
 
+def featureinfo_type(info_format):
+    info_format = info_format.split(";", 1)[
+        0
+    ].strip()  # remove mime options like charset
+    if info_format in ("text/xml", "application/xml",
+                       "application/gml+xml", "application/vnd.ogc.gml"):
+        return "xml"
+    if info_format == "text/html":
+        return "html"
+    if info_format == "application/json":
+        return "json"
+
+    return "text"
+
 
 class XSLTransformer(object):
 
-    def __init__(self, xsltscript):
+    def __init__(self, xsltscript, info_format=None):
         self.xsltscript = xsltscript
+        self.info_type = featureinfo_type(info_format or "text/xml")
 
     def transform(self, input_doc):
         input_tree = input_doc.as_etree()
         xslt_tree = etree.parse(self.xsltscript)
         transform = etree.XSLT(xslt_tree)
         output_tree = transform(input_tree)
-        return XMLFeatureInfoDoc(output_tree)
+        if self.info_type == "html":
+            return HTMLFeatureInfoDoc(output_tree)
+        else:
+            return XMLFeatureInfoDoc(output_tree)
 
     __call__ = transform
 

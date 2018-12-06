@@ -696,7 +696,10 @@ class WMSSourceConfiguration(SourceConfiguration):
             if not has_xslt_support:
                 raise ValueError('featureinfo_xslt requires lxml. Please install.')
             fi_xslt = context.globals.abspath(fi_xslt)
-            fi_transformer = XSLTransformer(fi_xslt)
+            fi_format = conf.get('featureinfo_out_format')
+            if not fi_format:
+                fi_format = conf.get('featureinfo_format')
+            fi_transformer = XSLTransformer(fi_xslt, fi_format)
         return fi_transformer
 
     def image_opts(self, format=None):

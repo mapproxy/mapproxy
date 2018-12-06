@@ -122,8 +122,14 @@ class WMSInfoClient(object):
         if self.supported_srs and query.srs not in self.supported_srs:
             query = self._get_transformed_query(query)
         resp = self._retrieve(query)
-        info_format = resp.headers.get('Content-type', None)
+
+        # use from template if available
+        info_format = self.request_template.params.get('info_format')
         if not info_format:
+            # otherwise from response
+            info_format = resp.headers.get('Content-type', None)
+        if not info_format:
+            # otherwise from query
             info_format = query.info_format
         return create_featureinfo_doc(resp.read(), info_format)
 

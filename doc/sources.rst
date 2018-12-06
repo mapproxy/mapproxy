@@ -80,16 +80,21 @@ This option affects what request MapProxy sends to the source WMS server.
 ``featureinfo``
   If this is set to ``true``, MapProxy will mark the layer as queryable and incoming `GetFeatureInfo` requests will be forwarded to the source server.
 
-``featureinfo_xslt``
-  Path to an XSLT script that should be used to transform incoming feature information.
-
 ``featureinfo_format``
   The ``INFO_FORMAT`` for FeatureInfo requests. By default MapProxy will use the same format as requested by the client.
 
-  ``featureinfo_xslt`` and ``featureinfo_format``
+``featureinfo_xslt``
+  Path to an XSLT script that should be used to transform incoming feature information.
+
+``featureinfo_out_format``
+  Output format returned by the XSLT script. By default MapProxy will use ``featureinfo_format``.
+
+.. versionadded:: 1.12.0
+  ``featureinfo_out_format``
 
 
 See :ref:`FeatureInformation for more information <fi_xslt>`.
+
 
 ``coverage``
 ^^^^^^^^^^^^

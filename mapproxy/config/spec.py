@@ -476,6 +476,7 @@ mapproxy_yaml_spec = {
                     'legendurl': str(),
                     'featureinfo_format': str(),
                     'featureinfo_xslt': str(),
+                    'featureinfo_out_format': str(),
                 },
                 'image': combined(image_opts, {
                     'opacity':number(),

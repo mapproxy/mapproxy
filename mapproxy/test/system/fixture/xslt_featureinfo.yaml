@@ -41,6 +41,7 @@ sources:
       featureinfo: true
       featureinfo_xslt: ./fi_in_html.xsl
       featureinfo_format: text/html
+      featureinfo_out_format: text/xml
     req:
       url: http://localhost:42423/service_d
       layers: d_one

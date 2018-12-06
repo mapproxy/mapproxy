@@ -577,7 +577,7 @@ Example
 
 Lets assume we have two WMS sources where we have no control over the format of the feature info responses.
 
-One source only offers HTML feature information. The XSLT script extracts data from a table. We force the ``INFO_FORMAT`` to HTML, so that MapProxy will not query another format.
+One source only offers HTML feature information. The XSLT script extracts data from a table. We force the WMS ``INFO_FORMAT`` to HTML with the ``featureinfo_format`` option, so that MapProxy will not query another format. The XSLT script returns XML and not HTML. We configure this with the ``featureinfo_out_format`` option.
 
 ::
 
@@ -587,6 +587,7 @@ One source only offers HTML feature information. The XSLT script extracts data f
         featureinfo: true
         featureinfo_xslt: ./html_in.xslt
         featureinfo_format: text/html
+        featureinfo_out_format: text/xml
       req: [...]
 
 
