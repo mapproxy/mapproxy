@@ -19,7 +19,6 @@ import tempfile
 from lxml import etree, html
 
 from mapproxy.featureinfo import (
-    combined_inputs,
     XSLTransformer,
     TextFeatureInfoDoc,
     XMLFeatureInfoDoc,
@@ -28,15 +27,6 @@ from mapproxy.featureinfo import (
     combine_docs,
 )
 from mapproxy.test.helper import strip_whitespace
-
-
-def test_combined_inputs():
-    foo = "<a><b>foo</b></a>"
-    bar = "<a><b>bar</b></a>"
-
-    result = combined_inputs([foo, bar])
-    result = etree.tostring(result)
-    assert result == b"<a><b>foo</b><b>bar</b></a>"
 
 
 class TestXSLTransformer(object):

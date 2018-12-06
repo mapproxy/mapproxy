@@ -207,15 +207,6 @@ def as_io(doc):
             return BytesIO(doc)
 
 
-def combined_inputs(input_docs):
-    doc = input_docs.pop(0)
-    input_tree = etree.parse(as_io(doc))
-    for doc in input_docs:
-        doc_tree = etree.parse(as_io(doc))
-        input_tree.getroot().extend(doc_tree.getroot().iterchildren())
-    return input_tree
-
-
 def combine_docs(docs, transformer=None):
     """
     Combine multiple FeatureInfoDocs.
