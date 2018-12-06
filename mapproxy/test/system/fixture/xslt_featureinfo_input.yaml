@@ -1,0 +1,51 @@
+services:
+  wms:
+
+layers:
+  - name: fi_layer
+    title: Layer with fi source
+    sources: [fi_wms1]
+  - name: fi_without_xslt_layer
+    title: Layer with fi source
+    sources: [fi_without_xslt]
+  - name: fi_multi_layer
+    title: Layer with fi source
+    sources: [fi_wms1, fi_wms2, fi_wms3]
+
+sources:
+  fi_wms1:
+    type: wms
+    wms_opts:
+      version: 1.3.0
+      featureinfo: true
+      featureinfo_xslt: ./fi_in.xsl
+      featureinfo_format: text/xml
+    req:
+      url: http://localhost:42423/service_a
+      layers: a_one
+  fi_wms2:
+    type: wms
+    wms_opts:
+      featureinfo: true
+      featureinfo_xslt: ./fi_in.xsl
+      featureinfo_format: text/xml
+    req:
+      url: http://localhost:42423/service_b
+      layers: b_one
+  fi_wms3:
+    type: wms
+    wms_opts:
+      featureinfo: true
+      featureinfo_xslt: ./fi_in_html.xsl
+      featureinfo_format: text/html
+      featureinfo_out_format: text/xml
+    req:
+      url: http://localhost:42423/service_d
+      layers: d_one
+  fi_without_xslt:
+    type: wms
+    wms_opts:
+      featureinfo: true
+    req:
+      url: http://localhost:42423/service_c
+      layers: c_one
