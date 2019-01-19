@@ -220,6 +220,43 @@ This works for layers and caches::
 You can either omit the ``layers`` in the ``req`` parameter, or you can use them to limit the tagged layers. In this case MapProxy will raise an error if you configure ``layers: lyr1,lyr2`` and then try to access ``wms:lyr2,lyr3`` for example.
 
 
+``on_error``
+^^^^^^^^^^^^
+
+.. versionadded:: 1.12.0
+
+You can configure what MapProxy should do when the tile service returns an error. Instead of raising an error, MapProxy can generate a single color tile. You can configure if MapProxy should cache this tile, or if it should use it only to generate a tile or WMS response.
+
+You can configure multiple status codes within the ``on_error`` option. You can also use the catch-all value ``other``. This will not only catch all other HTTP status codes, but also source errors like HTTP timeouts or non-image responses.
+
+Each status code takes the following options:
+
+``response``
+
+  Specify the color of the tile that should be returned in case of this error. Can be either a list of color values (``[255, 255, 255]``, ``[255, 255, 255, 0]``)) or a hex string (``'#ffffff'``, ``'#fa1fbb00'``) with RGBA values, or the string ``transparent``.
+
+``cache``
+
+  Set this to ``True`` if MapProxy should cache the single color tile. Otherwise (``False``) MapProxy will use this generated tile only for this request. This is the default.
+
+You need to enable ``transparent`` for your source, if you use ``on_error`` responses with transparency.
+
+::
+
+  my_tile_source:
+    type: wms
+    req:
+      url: http://localhost:8080/service?
+      layers: base
+    on_error:
+      500:
+        response: '#ede9e3'
+        cache: False
+      other:
+        response: '#ff0000'
+        cache: False
+
+
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -313,6 +350,10 @@ MapServer example::
       layers: show: 0,1
       url: http://example.org/ArcGIS/rest/services/Imagery/MapService
       transparent: true
+    on_error:
+      500:
+        response: transparent
+        cache: True
 
 ImageServer example::
 
