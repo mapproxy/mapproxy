@@ -125,10 +125,8 @@ class LayerMerger(LayerMerger):
 
         # apply global clip coverage
         if coverage:
-            bg = create_image(size, image_opts)
             mask = mask_image(result, bbox, bbox_srs, coverage)
-            bg.paste(result, (0, 0), mask)
-            result = bg
+            result = mask 
 
         return ImageSource(result, size=size, image_opts=image_opts, cacheable=cacheable)
 

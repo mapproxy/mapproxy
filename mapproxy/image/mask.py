@@ -25,9 +25,7 @@ def mask_image_source_from_coverage(img_source, bbox, bbox_srs, coverage,
         image_opts = img_source.image_opts
     img = img_source.as_image()
     img = mask_image(img, bbox, bbox_srs, coverage)
-    result = create_image(img.size, image_opts)
-    result.paste(img, (0, 0), img)
-    return ImageSource(result, image_opts=image_opts)
+    return ImageSource(img, image_opts=image_opts)
 
 def mask_image(img, bbox, bbox_srs, coverage):
     geom = mask_polygons(bbox, SRS(bbox_srs), coverage)
