@@ -83,7 +83,7 @@ class ProxyConfiguration(object):
             self.caches[cache_name] = CacheConfiguration(conf=cache_conf, context=self)
 
     def load_prefetchers(self):
-        print("Loading Prefetchers")
+        warnings.warn('Prefetchers start warn', RuntimeWarning)
         self.prefetchers = odict()
         prefetchers_conf = self.configuration.get('prefetchers')
         if not prefetchers_conf: return
@@ -92,7 +92,7 @@ class ProxyConfiguration(object):
         for prefetcher_name, prefetcher_conf in iteritems(prefetchers_conf):
             prefetcher_conf['name'] = prefetcher_name
             self.prefetchers[prefetcher_name] = prefetcher_conf
-            print(self.prefetchers)
+            warnings.warn(self.prefetchers, RuntimeWarning)
 
     def load_sources(self):
         self.sources = SourcesCollection()
