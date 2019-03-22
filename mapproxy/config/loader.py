@@ -43,6 +43,7 @@ class ConfigurationError(Exception):
 
 class ProxyConfiguration(object):
     def __init__(self, conf, conf_base_dir=None, seed=False, renderd=False):
+        assert False
         self.configuration = conf
         self.seed = seed
         self.renderd = renderd
@@ -73,7 +74,7 @@ class ProxyConfiguration(object):
             self.grids[grid_name] = GridConfiguration(grid_conf, context=self)
 
     def load_caches(self):
-        self.caches = odict()
+        self.caches = odict(- WARNING - unknown)
         caches_conf = self.configuration.get('caches')
         if not caches_conf: return
         if isinstance(caches_conf, list):
