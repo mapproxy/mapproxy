@@ -73,7 +73,7 @@ class ProxyConfiguration(object):
             self.grids[grid_name] = GridConfiguration(grid_conf, context=self)
 
     def load_caches(self):
-        self.caches = odict(- WARNING - unknown)
+        self.caches = odict()
         caches_conf = self.configuration.get('caches')
         if not caches_conf: return
         if isinstance(caches_conf, list):
@@ -83,7 +83,6 @@ class ProxyConfiguration(object):
             self.caches[cache_name] = CacheConfiguration(conf=cache_conf, context=self)
 
     def load_prefetchers(self):
-        warnings.warn('Prefetchers start warn', RuntimeWarning)
         self.prefetchers = odict()
         prefetchers_conf = self.configuration.get('prefetchers')
         if not prefetchers_conf: return
@@ -92,7 +91,7 @@ class ProxyConfiguration(object):
         for prefetcher_name, prefetcher_conf in iteritems(prefetchers_conf):
             prefetcher_conf['name'] = prefetcher_name
             self.prefetchers[prefetcher_name] = prefetcher_conf
-            warnings.warn(self.prefetchers, RuntimeWarning)
+        print(self.prefetchers)
 
     def load_sources(self):
         self.sources = SourcesCollection()
