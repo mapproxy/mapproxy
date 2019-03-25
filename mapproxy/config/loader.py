@@ -43,7 +43,6 @@ class ConfigurationError(Exception):
 
 class ProxyConfiguration(object):
     def __init__(self, conf, conf_base_dir=None, seed=False, renderd=False):
-        assert False
         self.configuration = conf
         self.seed = seed
         self.renderd = renderd
