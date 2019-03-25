@@ -427,7 +427,7 @@ mapproxy_yaml_spec = {
                 'opacity': number(),
                 'spacing': str(),
             },
-            'cache': type_spec('type', prefetcher_types)
+            'cache': type_spec('type', cache_types)
         }
     },
     'prefetchers': {

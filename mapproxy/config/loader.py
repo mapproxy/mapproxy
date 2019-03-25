@@ -53,7 +53,7 @@ class ProxyConfiguration(object):
         self.load_globals(conf_base_dir=conf_base_dir)
         self.load_grids()
         self.load_caches()
-        # self.load_prefetchers()
+        self.load_prefetchers()
         self.load_sources()
         self.load_wms_root_layer()
         self.load_tile_layers()
@@ -82,16 +82,15 @@ class ProxyConfiguration(object):
             cache_conf['name'] = cache_name
             self.caches[cache_name] = CacheConfiguration(conf=cache_conf, context=self)
 
-    # def load_prefetchers(self):
-    #     self.prefetchers = odict()
-    #     prefetchers_conf = self.configuration.get('prefetchers')
-    #     if not prefetchers_conf: return
-    #     if isinstance(prefetchers_conf, list):
-    #         prefetchers_conf = list_of_dicts_to_ordered_dict(prefetchers_conf)
-    #     for prefetcher_name, prefetcher_conf in iteritems(prefetchers_conf):
-    #         prefetcher_conf['name'] = prefetcher_name
-    #         self.prefetchers[prefetcher_name] = prefetcher_conf
-    #     print(self.prefetchers)
+    def load_prefetchers(self):
+        self.prefetchers = odict()
+        prefetchers_conf = self.configuration.get('prefetchers')
+        if not prefetchers_conf: return
+        if isinstance(prefetchers_conf, list):
+            prefetchers_conf = list_of_dicts_to_ordered_dict(prefetchers_conf)
+        for prefetcher_name, prefetcher_conf in iteritems(prefetchers_conf):
+            prefetcher_conf['name'] = prefetcher_name
+            self.prefetchers[prefetcher_name] = PrefetcherConfiguration(conf=prefetchers_conf, context=self)
 
     def load_sources(self):
         self.sources = SourcesCollection()
@@ -998,6 +997,11 @@ source_configuration_types = {
     'mapnik': MapnikSourceConfiguration,
 }
 
+class PrefetcherConfiguration(ConfigurationBase):
+
+    def _expander_prefetcher(self):
+        from mapproxy.prefetcher.expander import ExpanderPrefetcher
+        return ExpanderPrefetcher()
 
 class CacheConfiguration(ConfigurationBase):
     defaults = {'format': 'image/png'}
