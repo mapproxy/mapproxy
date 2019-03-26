@@ -952,9 +952,13 @@ class MapnikSourceConfiguration(SourceConfiguration):
         else:
             reuse_map_objects = False
 
+        concurrent_tile_creators = self.context.globals.get_value('concurrent_tile_creators', self.conf,
+            global_key='cache.concurrent_tile_creators')
+
         return MapnikSource(mapfile, layers=layers, image_opts=image_opts,
-            coverage=coverage, res_range=res_range, lock=lock,
-            reuse_map_objects=reuse_map_objects, scale_factor=scale_factor)
+                            coverage=coverage, res_range=res_range, lock=lock,
+                            reuse_map_objects=reuse_map_objects, scale_factor=scale_factor,
+                            concurrent_tile_creators=concurrent_tile_creators)
 
 class TileSourceConfiguration(SourceConfiguration):
     supports_meta_tiles = False
