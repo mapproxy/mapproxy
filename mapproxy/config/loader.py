@@ -1630,6 +1630,14 @@ def cache_source_names(context, cache):
 
     return source_names
 
+def prefetcher_source_names(context, prefetcher):
+    """
+
+    :param context:
+    :param prefetcher:
+    :return:
+    """
+
 class LayerConfiguration(ConfigurationBase):
     @memoize
     def wms_layer(self):
@@ -1708,8 +1716,8 @@ class LayerConfiguration(ConfigurationBase):
             sources = self.conf['tile_sources']
         else:
             for source_name in self.conf.get('sources', []):
-                # we only support caches for tiled access...
-                if not source_name in self.context.caches:
+                # we only support caches or prefetchers for tiled access...
+                if not source_name in self.context.caches and not source_name in self.context.prefetchers:
                     if source_name in self.context.sources:
                         src_conf = self.context.sources[source_name].conf
                         # but we ignore debug layers for convenience
@@ -1731,7 +1739,14 @@ class LayerConfiguration(ConfigurationBase):
         dimensions = self.dimensions()
 
         tile_layers = []
-        for cache_name in sources:
+        for cache_or_prefetcher in sources:
+            # Check if cache or prefetcher
+            if cache_or_prefetcher in self.context.caches:
+                cache_name = cache_or_prefetcher
+            else:
+                # Get the name of the cache source inside the prefetcher
+                cache_name = self.context.prefetchers[cache_or_prefetcher].conf[cache_or_prefetcher]['sources'][0]
+
             fi_sources = []
             fi_source_names = cache_source_names(self.context, cache_name)
 

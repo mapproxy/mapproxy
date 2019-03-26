@@ -38,6 +38,7 @@ class Validator(object):
     def __init__(self, conf_dict):
         self.sources_conf = conf_dict.get('sources', {})
         self.caches_conf = conf_dict.get('caches', {})
+        self.prefetchers_conf = conf_dict.get('prefetchers')
         self.layers_conf = conf_dict.get('layers')
         self.services_conf = conf_dict.get('services')
         self.grids_conf = conf_dict.get('grids')
@@ -79,6 +80,9 @@ class Validator(object):
         for source in layer_sources:
             if source in self.caches_conf:
                 self._validate_cache(source, self.caches_conf[source])
+                continue
+            if source in self.prefetchers_conf:
+                self._validate_prefetcher(source, self.prefetchers_conf[source])
                 continue
             if source in self.sources_conf:
                 source, layers = self._split_tagged_source(source)
@@ -199,6 +203,9 @@ class Validator(object):
                         name
                     )
                 )
+
+    def _validate_prefetcher(self, name, prefetcher):
+        pass
 
     def _validate_cache_source(self, cache_name, source_name):
         source_name, layers = self._split_tagged_source(source_name)

@@ -104,8 +104,6 @@ class FileCache(TileCacheBase):
         If it is not cached or if the ``.coord`` is ``None``, nothing happens.
         """
 
-        print("Requested Tile: ", tile)
-
         if not tile.is_missing():
             return True
 
