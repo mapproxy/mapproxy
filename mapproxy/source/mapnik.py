@@ -17,6 +17,8 @@ from __future__ import absolute_import
 
 import sys
 import time
+import queue
+import random
 import threading
 import multiprocessing
 
@@ -62,11 +64,46 @@ class MapnikSource(MapLayer):
         # global objects to support multiprocessing
         global _map_objs
         _map_objs = {}
+        global _last_activity
+        _last_activity = time.time()
         self._cache_map_obj = reuse_map_objects
         if self.coverage:
             self.extent = MapExtent(self.coverage.bbox, self.coverage.srs)
         else:
             self.extent = DefaultMapExtent()
+        # pre-created mapfiles for higher reactivity
+        global _last_mapfile
+        _last_mapfile = None
+        # pre-create more maps than the typical number of threads to allow for fast start
+        global _map_objs_precreated
+        if self._cache_map_obj:
+            _precreate_count = 1
+        else:
+            _precreate_count = (2 * concurrent_tile_creators if concurrent_tile_creators else 4) # 4 is the default for async_.ThreadPool
+        _map_objs_precreated = queue.Queue(_precreate_count)
+        self.map_obj_pre_creating_thread = threading.Thread(target=self._precreate_maps)
+        self.map_obj_pre_creating_thread.daemon = True
+        self.map_obj_pre_creating_thread.start()
+
+    def _idle(self):
+        return time.time() > _last_activity + 30
+
+    def _restart_idle_timer(self):
+        global _last_activity
+        _last_activity = time.time()
+
+    def _precreate_maps(self):
+        while True:
+            mapfile = _last_mapfile
+            if mapfile is None or _map_objs_precreated.full():
+                time.sleep(60 * random.random()) # randomized wait to avoid multiprocessing issues
+                continue
+            if not self._idle():
+                time.sleep(10 * random.random())
+                continue
+            _map_objs_precreated.put((mapfile, self._create_map_obj(mapfile)))
+            # prefer creating currently needed maps to filling the cache
+            time.sleep(5 + (10 * random.random()))
 
     def get_map(self, query):
         if self.res_range and not self.res_range.contains(query.bbox, query.size,
@@ -99,9 +136,23 @@ class MapnikSource(MapLayer):
     def _create_map_obj(self, mapfile):
         m = mapnik.Map(0, 0)
         mapnik.load_map(m, str(mapfile))
+        global _last_mapfile
+        _last_mapfile = mapfile
         return m
 
+    def _get_map_obj(self, mapfile):
+        while not _map_objs_precreated.empty():
+            try:
+                mf, m = _map_objs_precreated.get()
+            except queue.Empty:
+                break
+            if mf == mapfile:
+                return m
+        return self._create_map_obj(mapfile)
+
     def map_obj(self, mapfile):
+        # avoid concurrent cache filling
+        self._restart_idle_timer()
         # cache loaded map objects
         # only works when a single proc/thread accesses the map
         # (forking the render process doesn't work because of open database
@@ -114,7 +165,7 @@ class MapnikSource(MapLayer):
             process_id = multiprocessing.current_process()._identity
             cachekey = (process_id, thread_id, mapfile)
         if cachekey not in _map_objs:
-            _map_objs[cachekey] = self._create_map_obj(mapfile)
+            _map_objs[cachekey] = self._get_map_obj(mapfile)
 
         # clean up no longer used cached maps
         process_cache_keys = [k for k in _map_objs.keys()
@@ -131,6 +182,7 @@ class MapnikSource(MapLayer):
                     m.remove_all() # cleanup
                     mapnik.clear_cache()
 
+        self._restart_idle_timer()
         return _map_objs[cachekey]
 
     def render_mapfile(self, mapfile, query):
