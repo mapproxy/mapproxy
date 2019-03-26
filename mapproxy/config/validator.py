@@ -38,7 +38,7 @@ class Validator(object):
     def __init__(self, conf_dict):
         self.sources_conf = conf_dict.get('sources', {})
         self.caches_conf = conf_dict.get('caches', {})
-        self.prefetchers_conf = conf_dict.get('prefetchers')
+        self.prefetchers_conf = conf_dict.get('prefetchers', {})
         self.layers_conf = conf_dict.get('layers')
         self.services_conf = conf_dict.get('services')
         self.grids_conf = conf_dict.get('grids')
