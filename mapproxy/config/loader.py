@@ -90,7 +90,7 @@ class ProxyConfiguration(object):
             prefetchers_conf = list_of_dicts_to_ordered_dict(prefetchers_conf)
         for prefetcher_name, prefetcher_conf in iteritems(prefetchers_conf):
             prefetcher_conf['name'] = prefetcher_name
-            self.prefetchers[prefetcher_name] = PrefetcherConfiguration(conf=prefetchers_conf, context=self)
+            self.prefetchers[prefetcher_name] = PrefetcherConfiguration(conf=prefetcher_conf, context=self)
 
     def load_sources(self):
         self.sources = SourcesCollection()
@@ -999,9 +999,18 @@ source_configuration_types = {
 
 class PrefetcherConfiguration(ConfigurationBase):
 
-    def _expander_prefetcher(self):
+    def _expander_prefetcher(self, prefetcher_values):
         from mapproxy.prefetcher.expander import ExpanderPrefetcher
-        return ExpanderPrefetcher()
+        return ExpanderPrefetcher(prefetcher_values)
+
+    def tile_prefetcher(self):
+        # Check if a prefetcher exists
+        if self.conf.get('prefetcher', {}) == {}:
+            return None
+
+        prefetcher_type = self.conf.get('prefetcher', {}).get('type', 'expander')
+        prefetcher_values = self.conf.get('prefetcher', {})
+        return getattr(self, '_%s_prefetcher' % prefetcher_type)(prefetcher_values)
 
 class CacheConfiguration(ConfigurationBase):
     defaults = {'format': 'image/png'}
@@ -1486,6 +1495,12 @@ class CacheConfiguration(ConfigurationBase):
             tile_filter = self._tile_filter()
             image_opts = compatible_image_options(source_image_opts, base_opts=base_image_opts)
             cache = self._tile_cache(grid_conf, image_opts.format.ext)
+
+            cache_name = self.conf.get('name')
+            for prefetcher_name, prefetcher_conf in iteritems(self.context.prefetchers):
+                if cache_name in prefetcher_conf.conf['sources']:
+                    prefetcher = prefetcher_conf.tile_prefetcher()
+
             identifier = self.conf['name'] + '_' + tile_grid.name
 
             tile_creator_class = None
@@ -1540,7 +1555,7 @@ class CacheConfiguration(ConfigurationBase):
                 concurrent_tile_creators=concurrent_tile_creators,
                 pre_store_filter=tile_filter,
                 tile_creator_class=tile_creator_class,
-                bulk_meta_tiles=bulk_meta_tiles,
+                bulk_meta_tiles=bulk_meta_tiles, prefetcher=prefetcher
             )
             extent = merge_layer_extents(sources)
             if extent.is_default:
@@ -1745,7 +1760,7 @@ class LayerConfiguration(ConfigurationBase):
                 cache_name = cache_or_prefetcher
             else:
                 # Get the name of the cache source inside the prefetcher
-                cache_name = self.context.prefetchers[cache_or_prefetcher].conf[cache_or_prefetcher]['sources'][0]
+                cache_name = self.context.prefetchers[cache_or_prefetcher].conf['sources'][0]
 
             fi_sources = []
             fi_source_names = cache_source_names(self.context, cache_name)

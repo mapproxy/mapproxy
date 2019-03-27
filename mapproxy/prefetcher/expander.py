@@ -14,17 +14,25 @@
 # limitations under the License.
 
 # TODO LOG
-# TODO LIteral edge cases
+# TODO Literal edge cases
 
 from mapproxy.prefetcher.base import TilePrefetcherBase
+
 
 class ExpanderPrefetcher(TilePrefetcherBase):
     """
     This class is responsible to prefetch based on incoming requests.
     """
-    def __init__(self):
+    def __init__(self, prefetcher_values):
         super(TilePrefetcherBase, self).__init__()
+        self.expansion_amount = prefetcher_values.get('expansion_amount', '1')
 
-    def prefetch_for_tile(self, tile, with_metadata=False):
-        if not tile.is_missing():
-            return True
+    def prefetch_for_tile(self, tile):
+        tile_cord = tile
+        tiles_to_prefetch = []
+        for x in range(tile_cord[0] - self.expansion_amount, tile_cord[0] + self.expansion_amount + 1):
+            for y in range(tile_cord[1] - self.expansion_amount, tile_cord[1] + self.expansion_amount + 1):
+                current_coord = (x, y, tile_cord[2])
+                if current_coord != tile_cord:
+                    tiles_to_prefetch.append(current_coord)
+        return tiles_to_prefetch

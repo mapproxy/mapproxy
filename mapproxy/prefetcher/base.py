@@ -18,12 +18,13 @@ class TilePrefetcherBase(object):
     Base implementation of a tile prefetcher.
     """
 
-    def prefetch_for_tile(self, tile, with_metadata=False):
+    def prefetch_for_tile(self, tile):
         raise NotImplementedError()
 
-    def prefetch_for_tiles(self, tiles, with_metadata=False):
-        all_succeed = True
+    def prefetch_for_tiles(self, tiles):
+        all_prefetched = []
         for tile in tiles:
-            if not self.prefetch_for_tile(tile, with_metadata=with_metadata):
-                all_succeed = False
-        return all_succeed
+            single_prefetch_list = self.prefetch_for_tile(tile)
+            for prefetch in single_prefetch_list:
+                all_prefetched.append(prefetch)
+        return all_prefetched

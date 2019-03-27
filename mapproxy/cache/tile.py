@@ -58,10 +58,11 @@ class TileManager(object):
     def __init__(self, grid, cache, sources, format, locker, image_opts=None, request_format=None,
         meta_buffer=None, meta_size=None, minimize_meta_requests=False, identifier=None,
         pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None,
-        bulk_meta_tiles=False,
+        bulk_meta_tiles=False, prefetcher=None
         ):
         self.grid = grid
         self.cache = cache
+        self.prefetcher = prefetcher
         self.locker = locker
         self.identifier = identifier
         self.meta_grid = None
@@ -104,26 +105,53 @@ class TileManager(object):
             self.cache.cleanup()
 
     def load_tile_coord(self, tile_coord, dimensions=None, with_metadata=False):
-        tile = Tile(tile_coord)
-        self.cache.load_tile(tile, with_metadata)
+        if self.prefetcher is None:
+            tiles = Tile(tile_coord)
+            self.cache.load_tile(tiles, with_metadata)
+        else:
+            tile_coords = self.prefetcher.prefetch_for_tile(tile_coord)
+            tile_coords.append(tile_coord)
+            tiles = TileCollection(tile_coords)
 
-        if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
-            # missing or staled
+        self.cache.load_tiles(tiles, with_metadata)
+
+        uncached_tiles = []
+        for tile in tiles:
+            if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
+                # missing or staled
+                uncached_tiles.append(tile)
+
+        if uncached_tiles:
             creator = self.creator(dimensions=dimensions)
-            created_tiles = creator.create_tiles([tile])
+            created_tiles = creator.create_tiles(uncached_tiles)
             for created_tile in created_tiles:
-                if created_tile.coord == tile_coord:
-                    return created_tile
+                if created_tile.coord in tiles:
+                    tiles[created_tile.coord].source = created_tile.source
 
-        return tile
+        return tile  # Note how tile is the last in the for loop because of append
+
+        # How it worked before prefetcher
+        # if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
+        #     # missing or staled
+        #     creator = self.creator(dimensions=dimensions)
+        #     created_tiles = creator.create_tiles([tile])
+        #     for created_tile in created_tiles:
+        #         if created_tile.coord == tile_coord:
+        #             return created_tile
+        #
+        # return tile
 
     def load_tile_coords(self, tile_coords, dimensions=None, with_metadata=False):
-        tiles = TileCollection(tile_coords)
-        uncached_tiles = []
+        if self.prefetcher is None:
+            tiles = TileCollection(tile_coords)
+        else:
+            tile_coords = self.prefetcher.prefetch_for_tiles(tile_coords)
+            tiles = TileCollection(tile_coords)
 
         # load all in batch
         self.cache.load_tiles(tiles, with_metadata)
 
+        uncached_tiles = []
         for tile in tiles:
             if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
                 # missing or staled
