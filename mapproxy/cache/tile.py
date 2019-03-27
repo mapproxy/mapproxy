@@ -121,7 +121,6 @@ class TileManager(object):
 
         # If a prefetcher exists
         tile_coords = self.prefetcher.prefetch_for_tile(tile_coord)
-        tile_coords.append(tile_coord)
         tiles = TileCollection(tile_coords)
         self.cache.load_tiles(tiles, with_metadata)
 
@@ -139,14 +138,14 @@ class TileManager(object):
                 if created_tile.coord in tiles:
                     tiles[created_tile.coord].source = created_tile.source
 
-        return tile  # Note how tile is the last in the for loop because of append
+        return tiles[tile_coord]  # Only return the 1 tile requested, the rest only cached
 
     def load_tile_coords(self, tile_coords, dimensions=None, with_metadata=False):
         if self.prefetcher is None:
             tiles = TileCollection(tile_coords)
         else:
-            tile_coords = self.prefetcher.prefetch_for_tiles(tile_coords)
-            tiles = TileCollection(tile_coords)
+            pref_tile_coords = self.prefetcher.prefetch_for_tiles(tile_coords)
+            tiles = TileCollection(pref_tile_coords)
 
         # load all in batch
         self.cache.load_tiles(tiles, with_metadata)
@@ -163,6 +162,13 @@ class TileManager(object):
             for created_tile in created_tiles:
                 if created_tile.coord in tiles:
                     tiles[created_tile.coord].source = created_tile.source
+
+        # Only return the tiles requested
+        if self.prefetcher is not None:
+            for tile in tiles:
+                if tile.coord not in tile_coords:
+                    tiles.tiles.remove(tile)
+                    tiles.tiles_dict.pop(tile.coord)
 
         return tiles
 

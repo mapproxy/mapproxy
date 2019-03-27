@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 class TilePrefetcherBase(object):
     """
     Base implementation of a tile prefetcher.
@@ -22,9 +23,18 @@ class TilePrefetcherBase(object):
         raise NotImplementedError()
 
     def prefetch_for_tiles(self, tiles):
-        all_prefetched = []
+        all_prefetched = set()
+
         for tile in tiles:
+            # Get the requested tile
+            if tile not in all_prefetched:
+                all_prefetched.add(tile)
+            # Get the related prefetches
             single_prefetch_list = self.prefetch_for_tile(tile)
             for prefetch in single_prefetch_list:
-                all_prefetched.append(prefetch)
-        return all_prefetched
+                if prefetch not in all_prefetched:
+                    all_prefetched.add(prefetch)
+        return list(all_prefetched)
+
+    def _verify_proper_tile(self, coord):
+        pass
