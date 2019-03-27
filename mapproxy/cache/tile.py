@@ -105,6 +105,7 @@ class TileManager(object):
             self.cache.cleanup()
 
     def load_tile_coord(self, tile_coord, dimensions=None, with_metadata=False):
+        print ("tile_coord: ", tile_coord)
         if self.prefetcher is None:
             # Get the tile
             tile = Tile(tile_coord)
@@ -141,6 +142,7 @@ class TileManager(object):
         return tiles[tile_coord]  # Only return the 1 tile requested, the rest only cached
 
     def load_tile_coords(self, tile_coords, dimensions=None, with_metadata=False):
+        print ("tile_coords: ", tile_coords)
         if self.prefetcher is None:
             tiles = TileCollection(tile_coords)
         else:
@@ -148,7 +150,9 @@ class TileManager(object):
             tiles = TileCollection(pref_tile_coords)
 
         # load all in batch
-        self.cache.load_tiles(tiles, with_metadata)
+        # self.cache.load_tiles(tiles, with_metadata)
+        tiles = TileCollection(tile_coords)
+        self.cache.load_tiles(tile_coords, with_metadata)
 
         uncached_tiles = []
         for tile in tiles:

@@ -23,6 +23,7 @@ class TilePrefetcherBase(object):
         raise NotImplementedError()
 
     def prefetch_for_tiles(self, tiles):
+        print ("pref_base input: ", tiles)
         all_prefetched = set()
 
         for tile in tiles:
@@ -34,7 +35,8 @@ class TilePrefetcherBase(object):
             for prefetch in single_prefetch_list:
                 if prefetch not in all_prefetched:
                     all_prefetched.add(prefetch)
+        print ("pref_base output: ", all_prefetched)
         return list(all_prefetched)
 
     def _verify_proper_tile(self, coord):
-        pass
+        return True
