@@ -122,6 +122,7 @@ class TileManager(object):
                         return created_tile
             return tile
 
+        assert False, "Should never be here load_tile_coord "
         # If a prefetcher exists
         tile_coords = self.prefetcher.prefetch_for_tile(tile_coord)
         tiles = TileCollection(tile_coords)
@@ -148,6 +149,7 @@ class TileManager(object):
         if self.prefetcher is None:
             tiles = TileCollection(tile_coords)
         else:
+            assert False, "Should never be here load_tile_coords 1 "
             pref_tile_coords = self.prefetcher.prefetch_for_tiles(tile_coords)
             tiles = TileCollection(pref_tile_coords)
 
@@ -171,6 +173,7 @@ class TileManager(object):
 
         # Only return the tiles requested
         if self.prefetcher is not None:
+            assert False, "Should never be here load_tile_coords 2 "
             for tile in tiles:
                 if tile.coord not in tile_coords:
                     tiles.tiles.remove(tile)
