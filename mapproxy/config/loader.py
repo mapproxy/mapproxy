@@ -1497,6 +1497,7 @@ class CacheConfiguration(ConfigurationBase):
             cache = self._tile_cache(grid_conf, image_opts.format.ext)
 
             cache_name = self.conf.get('name')
+            prefetcher = None
             for prefetcher_name, prefetcher_conf in iteritems(self.context.prefetchers):
                 if cache_name in prefetcher_conf.conf['sources']:
                     prefetcher = prefetcher_conf.tile_prefetcher()
