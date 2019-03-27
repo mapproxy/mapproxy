@@ -156,7 +156,7 @@ class TileManager(object):
         # load all in batch
         # self.cache.load_tiles(tiles, with_metadata)
         # tiles = TileCollection(tile_coords)
-        self.cache.load_tiles(tile_coords, with_metadata)
+        self.cache.load_tiles(tiles, with_metadata)
 
         uncached_tiles = []
         for tile in tiles:
