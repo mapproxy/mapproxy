@@ -76,6 +76,8 @@ class TileManager(object):
         self.concurrent_tile_creators = concurrent_tile_creators
         self.tile_creator_class = tile_creator_class or TileCreator
 
+        assert self.prefetcher is None, "Why isn't this None???"
+
         if meta_buffer or (meta_size and not meta_size == [1, 1]):
             if all(source.supports_meta_tiles for source in sources):
                 self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
