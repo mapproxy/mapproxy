@@ -28,14 +28,12 @@ class TilePrefetcherBase(object):
         all_prefetched = set()
         for tile in tiles:
             # Get the requested tile
-            if tile not in all_prefetched:
-                all_prefetched.add(tile)
+            all_prefetched.add(tile)
             # Get the related prefetches
-            single_prefetch_list = self.prefetch_for_tile(tile)
-            for prefetch in single_prefetch_list:
-                if prefetch not in all_prefetched:
-                    all_prefetched.add(prefetch)
-        return list(all_prefetched)
+            single_prefetch_set = self.prefetch_for_tile(tile)
+            for prefetch_coord in single_prefetch_set:
+                all_prefetched.add(prefetch_coord)
+        return all_prefetched
 
     def _verify_proper_tile(self, coord):
         return self.tile_grid.limit_tile(coord) is not None

@@ -58,11 +58,11 @@ class TileManager(object):
     def __init__(self, grid, cache, sources, format, locker, image_opts=None, request_format=None,
         meta_buffer=None, meta_size=None, minimize_meta_requests=False, identifier=None,
         pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None,
-        bulk_meta_tiles=False, prefetcher=None
+        bulk_meta_tiles=False, prefetchers=None
         ):
         self.grid = grid
         self.cache = cache
-        self.prefetcher = prefetcher
+        self.prefetchers = prefetchers
         self.locker = locker
         self.identifier = identifier
         self.meta_grid = None
@@ -105,11 +105,14 @@ class TileManager(object):
             self.cache.cleanup()
 
     def load_tile_coord(self, tile_coord, dimensions=None, with_metadata=False):
-        if self.prefetcher is None:
+        if self.prefetchers is None:
             tiles = TileCollection([tile_coord])
         else:
-            tile_coords = self.prefetcher.prefetch_for_tile(tile_coord)
-            tiles = TileCollection(tile_coords)
+            total_coords = set()  # Gather the predicted tiles from every prefetcher attached to this cache
+            for prefetcher in self.prefetchers:
+                tile_coords = prefetcher.prefetch_for_tile(tile_coord)
+                total_coords = set.union(total_coords, tile_coords)
+            tiles = TileCollection(total_coords)
 
         # Load tiles in bulk from cache and then create any that don't exist
         self.cache.load_tiles(tiles, with_metadata)
@@ -118,18 +121,21 @@ class TileManager(object):
         return tiles[tile_coord]  # Only return the 1 tile requested, the rest only cached
 
     def load_tile_coords(self, tile_coords, dimensions=None, with_metadata=False):
-        if self.prefetcher is None:
+        if self.prefetchers is None:
             tiles = TileCollection(tile_coords)
         else:
-            pref_tile_coords = self.prefetcher.prefetch_for_tiles(tile_coords)
-            tiles = TileCollection(pref_tile_coords)
+            total_coords = set()  # Gather the predicted tiles from every prefetcher attached to this cache
+            for prefetcher in self.prefetchers:
+                tile_coords = prefetcher.prefetch_for_tiles(tile_coords)
+                total_coords = set.union(total_coords, tile_coords)
+            tiles = TileCollection(total_coords)
 
         # Load tiles in bulk from cache and then create any that don't exist
         self.cache.load_tiles(tiles, with_metadata)
         self._create_uncached_tiles(tiles, dimensions)
 
         # Only return the tiles requested
-        if self.prefetcher is not None:
+        if self.prefetchers is not None:
             for tile in tiles:
                 if tile.coord not in tile_coords:
                     tiles.tiles.remove(tile)
