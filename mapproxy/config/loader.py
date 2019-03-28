@@ -1684,12 +1684,12 @@ class LayerConfiguration(ConfigurationBase):
                 map_layer = source_conf.source()
                 fi_source_names = [source_name]
                 lg_source_names = [source_name]
-            # elif source_name in self.context.prefetchers:
-            #     prefetcher = self.context.prefetchers[source_name]
-            #     cache_name = prefetcher.conf['sources'][0]
-            #     map_layer = self.context.caches[cache_name].map_layer()
-            #     fi_source_names = cache_source_names(self.context, cache_name)
-            #     lg_source_names = cache_source_names(self.context, cache_name)
+            elif source_name in self.context.prefetchers:
+                prefetcher = self.context.prefetchers[source_name]
+                cache_name = prefetcher.conf['sources'][0]
+                map_layer = self.context.caches[cache_name].map_layer()
+                fi_source_names = cache_source_names(self.context, cache_name)
+                lg_source_names = cache_source_names(self.context, cache_name)
             else:
                 raise ConfigurationError('source/cache "%s" not found' % source_name)
 

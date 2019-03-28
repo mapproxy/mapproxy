@@ -76,8 +76,6 @@ class TileManager(object):
         self.concurrent_tile_creators = concurrent_tile_creators
         self.tile_creator_class = tile_creator_class or TileCreator
 
-        assert self.prefetcher is None, "Why isn't this None???"
-
         if meta_buffer or (meta_size and not meta_size == [1, 1]):
             if all(source.supports_meta_tiles for source in sources):
                 self.meta_grid = MetaGrid(grid, meta_size=meta_size, meta_buffer=meta_buffer)
@@ -122,7 +120,6 @@ class TileManager(object):
                         return created_tile
             return tile
 
-        assert False, "Should never be here load_tile_coord "
         # If a prefetcher exists
         tile_coords = self.prefetcher.prefetch_for_tile(tile_coord)
         tiles = TileCollection(tile_coords)
@@ -149,7 +146,6 @@ class TileManager(object):
         if self.prefetcher is None:
             tiles = TileCollection(tile_coords)
         else:
-            assert False, "Should never be here load_tile_coords 1 "
             pref_tile_coords = self.prefetcher.prefetch_for_tiles(tile_coords)
             tiles = TileCollection(pref_tile_coords)
 
@@ -173,7 +169,6 @@ class TileManager(object):
 
         # Only return the tiles requested
         if self.prefetcher is not None:
-            assert False, "Should never be here load_tile_coords 2 "
             for tile in tiles:
                 if tile.coord not in tile_coords:
                     tiles.tiles.remove(tile)
