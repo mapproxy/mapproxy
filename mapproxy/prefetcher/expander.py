@@ -12,10 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-# TODO LOG
-# TODO Literal edge cases
-
 from mapproxy.prefetcher.base import TilePrefetcherBase
 
 
@@ -32,6 +28,6 @@ class ExpanderPrefetcher(TilePrefetcherBase):
         for x in range(tile[0] - self.expansion_amount, tile[0] + self.expansion_amount + 1):
             for y in range(tile[1] - self.expansion_amount, tile[1] + self.expansion_amount + 1):
                 current_coord = (x, y, tile[2])
-                if self._verify_proper_tile(current_coord):
+                if self._verify_proper_tile(current_coord) or tile == current_coord:
                     tiles_to_prefetch.append(current_coord)
         return tiles_to_prefetch

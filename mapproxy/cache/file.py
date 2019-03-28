@@ -103,7 +103,6 @@ class FileCache(TileCacheBase):
         Fills the `Tile.source` of the `tile` if it is cached.
         If it is not cached or if the ``.coord`` is ``None``, nothing happens.
         """
-
         if not tile.is_missing():
             return True
 
