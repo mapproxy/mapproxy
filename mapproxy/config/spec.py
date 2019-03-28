@@ -431,7 +431,7 @@ mapproxy_yaml_spec = {
     },
     'prefetchers': {
         anything(): {
-            required('sources'): one_of([string_type], band_sources),
+            required('sources'): [string_type],
             'prefetcher': type_spec('type', prefetcher_types)
         }
     },

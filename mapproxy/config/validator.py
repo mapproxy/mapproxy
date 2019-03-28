@@ -63,6 +63,9 @@ class Validator(object):
         for layer in self.layers_conf:
             self._validate_layer(layer)
 
+        for prefetcher in self.prefetchers_conf:
+            self._validate_prefetcher(prefetcher)
+
         return self.errors
 
     def _validate_layer(self, layer):
@@ -105,6 +108,16 @@ class Validator(object):
                 )
             )
 
+    def _validate_prefetcher(self, prefetcher):
+        prefetcher_sources = self.prefetchers_conf[prefetcher]['sources']
+        for source in prefetcher_sources:
+            if source not in self.caches_conf:
+                self.errors.append(
+                    "Tile source '%s' for prefetcher '%s' not in cache section" % (
+                        source,
+                        prefetcher
+                    )
+                )
 
     def _split_tagged_source(self, source_name):
         layers = None
