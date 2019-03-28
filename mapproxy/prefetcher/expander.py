@@ -23,17 +23,15 @@ class ExpanderPrefetcher(TilePrefetcherBase):
     """
     This class is responsible to prefetch based on incoming requests.
     """
-    def __init__(self, prefetcher_values):
-        super(TilePrefetcherBase, self).__init__()
+    def __init__(self, prefetcher_values, tile_grid):
+        super(ExpanderPrefetcher, self).__init__(tile_grid)
         self.expansion_amount = prefetcher_values.get('expansion_amount', '1')
 
     def prefetch_for_tile(self, tile):
-        print ("pref_expander input: ", tile)
         tiles_to_prefetch = []
         for x in range(tile[0] - self.expansion_amount, tile[0] + self.expansion_amount + 1):
             for y in range(tile[1] - self.expansion_amount, tile[1] + self.expansion_amount + 1):
                 current_coord = (x, y, tile[2])
                 if self._verify_proper_tile(current_coord):
                     tiles_to_prefetch.append(current_coord)
-        print ("pref_expander output: ", tiles_to_prefetch)
         return tiles_to_prefetch

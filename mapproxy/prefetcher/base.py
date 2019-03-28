@@ -18,14 +18,14 @@ class TilePrefetcherBase(object):
     """
     Base implementation of a tile prefetcher.
     """
+    def __init__(self, tile_grid):
+        self.tile_grid = tile_grid
 
     def prefetch_for_tile(self, tile):
         raise NotImplementedError()
 
     def prefetch_for_tiles(self, tiles):
-        print ("pref_base input: ", tiles)
         all_prefetched = set()
-
         for tile in tiles:
             # Get the requested tile
             if tile not in all_prefetched:
@@ -35,8 +35,7 @@ class TilePrefetcherBase(object):
             for prefetch in single_prefetch_list:
                 if prefetch not in all_prefetched:
                     all_prefetched.add(prefetch)
-        print ("pref_base output: ", all_prefetched)
         return list(all_prefetched)
 
     def _verify_proper_tile(self, coord):
-        return True
+        return self.tile_grid.limit_tile(coord) is not None

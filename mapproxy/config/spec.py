@@ -176,7 +176,6 @@ cache_types = {
 prefetcher_types = {
     'expander': {
         'expansion_amount': int(),
-        'increase_percentage': int(),
     },
 }
 

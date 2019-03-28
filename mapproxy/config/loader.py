@@ -999,18 +999,18 @@ source_configuration_types = {
 
 class PrefetcherConfiguration(ConfigurationBase):
 
-    def _expander_prefetcher(self, prefetcher_values):
+    def _expander_prefetcher(self, prefetcher_values, tile_grid):
         from mapproxy.prefetcher.expander import ExpanderPrefetcher
-        return ExpanderPrefetcher(prefetcher_values)
+        return ExpanderPrefetcher(prefetcher_values, tile_grid)
 
-    def tile_prefetcher(self):
+    def tile_prefetcher(self, tile_grid):
         # Check if a prefetcher exists
         if self.conf.get('prefetcher', {}) == {}:
             return None
 
         prefetcher_type = self.conf.get('prefetcher', {}).get('type', 'expander')
         prefetcher_values = self.conf.get('prefetcher', {})
-        return getattr(self, '_%s_prefetcher' % prefetcher_type)(prefetcher_values)
+        return getattr(self, '_%s_prefetcher' % prefetcher_type)(prefetcher_values, tile_grid)
 
 class CacheConfiguration(ConfigurationBase):
     defaults = {'format': 'image/png'}
@@ -1500,7 +1500,7 @@ class CacheConfiguration(ConfigurationBase):
             prefetcher = None
             for prefetcher_name, prefetcher_conf in iteritems(self.context.prefetchers):
                 if cache_name in prefetcher_conf.conf['sources']:
-                    prefetcher = prefetcher_conf.tile_prefetcher()
+                    prefetcher = prefetcher_conf.tile_prefetcher(tile_grid)
 
             identifier = self.conf['name'] + '_' + tile_grid.name
 

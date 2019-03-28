@@ -105,67 +105,28 @@ class TileManager(object):
             self.cache.cleanup()
 
     def load_tile_coord(self, tile_coord, dimensions=None, with_metadata=False):
-        # print ("tile_coord: ", tile_coord)
         if self.prefetcher is None:
-            # Get the tile
-            tile = Tile(tile_coord)
-            self.cache.load_tile(tile, with_metadata)
-            # Check if it was cached
-            if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
-                # missing or staled
-                creator = self.creator(dimensions=dimensions)
-                created_tiles = creator.create_tiles([tile])
-                for created_tile in created_tiles:
-                    if created_tile.coord == tile_coord:
-                        return created_tile
-            return tile
+            tiles = TileCollection([tile_coord])
+        else:
+            tile_coords = self.prefetcher.prefetch_for_tile(tile_coord)
+            tiles = TileCollection(tile_coords)
 
-        # If a prefetcher exists
-        tile_coords = self.prefetcher.prefetch_for_tile(tile_coord)
-        tiles = TileCollection(tile_coords)
+        # Load tiles in bulk from cache and then create any that don't exist
         self.cache.load_tiles(tiles, with_metadata)
-
-        uncached_tiles = []
-
-        for tile in tiles:
-            if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
-                # missing or staled
-                uncached_tiles.append(tile)
-
-        if uncached_tiles:
-            creator = self.creator(dimensions=dimensions)
-            created_tiles = creator.create_tiles(uncached_tiles)
-            for created_tile in created_tiles:
-                if created_tile.coord in tiles:
-                    tiles[created_tile.coord].source = created_tile.source
+        self._create_uncached_tiles(tiles, dimensions)
 
         return tiles[tile_coord]  # Only return the 1 tile requested, the rest only cached
 
     def load_tile_coords(self, tile_coords, dimensions=None, with_metadata=False):
-        # print ("tile_coords: ", tile_coords)
         if self.prefetcher is None:
             tiles = TileCollection(tile_coords)
         else:
             pref_tile_coords = self.prefetcher.prefetch_for_tiles(tile_coords)
             tiles = TileCollection(pref_tile_coords)
 
-        # load all in batch
-        # self.cache.load_tiles(tiles, with_metadata)
-        # tiles = TileCollection(tile_coords)
+        # Load tiles in bulk from cache and then create any that don't exist
         self.cache.load_tiles(tiles, with_metadata)
-
-        uncached_tiles = []
-        for tile in tiles:
-            if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
-                # missing or staled
-                uncached_tiles.append(tile)
-
-        if uncached_tiles:
-            creator = self.creator(dimensions=dimensions)
-            created_tiles = creator.create_tiles(uncached_tiles)
-            for created_tile in created_tiles:
-                if created_tile.coord in tiles:
-                    tiles[created_tile.coord].source = created_tile.source
+        self._create_uncached_tiles(tiles, dimensions)
 
         # Only return the tiles requested
         if self.prefetcher is not None:
@@ -175,6 +136,20 @@ class TileManager(object):
                     tiles.tiles_dict.pop(tile.coord)
 
         return tiles
+
+    def _create_uncached_tiles(self, tiles, dimensions):
+        uncached_tiles = []
+        for tile in tiles:
+            if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
+                # missing or staled
+                uncached_tiles.append(tile)
+
+        if uncached_tiles:
+            creator = self.creator(dimensions=dimensions)
+            created_tiles = creator.create_tiles(uncached_tiles)
+            for created_tile in created_tiles:
+                if created_tile.coord in tiles:
+                    tiles[created_tile.coord].source = created_tile.source
 
     def remove_tile_coords(self, tile_coords, dimensions=None):
         tiles = TileCollection(tile_coords)
