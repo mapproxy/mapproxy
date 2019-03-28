@@ -81,9 +81,6 @@ class Validator(object):
             if source in self.caches_conf:
                 self._validate_cache(source, self.caches_conf[source])
                 continue
-            if source in self.prefetchers_conf:
-                self._validate_prefetcher(source, self.prefetchers_conf[source])
-                continue
             if source in self.sources_conf:
                 source, layers = self._split_tagged_source(source)
                 self._validate_source(source, self.sources_conf[source], layers)
@@ -203,9 +200,6 @@ class Validator(object):
                         name
                     )
                 )
-
-    def _validate_prefetcher(self, name, prefetcher):
-        pass
 
     def _validate_cache_source(self, cache_name, source_name):
         source_name, layers = self._split_tagged_source(source_name)
