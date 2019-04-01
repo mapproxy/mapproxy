@@ -1014,7 +1014,6 @@ class CacheConfiguration(ConfigurationBase):
 
     def _file_cache(self, grid_conf, file_ext):
         from mapproxy.cache.file import FileCache
-        from mapproxy.cache.file import FileCache
 
         cache_dir = self.cache_dir()
         directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tc')
