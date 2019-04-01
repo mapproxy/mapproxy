@@ -1014,6 +1014,7 @@ class CacheConfiguration(ConfigurationBase):
 
     def _file_cache(self, grid_conf, file_ext):
         from mapproxy.cache.file import FileCache
+        from mapproxy.cache.file import FileCache
 
         cache_dir = self.cache_dir()
         directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tc')
@@ -1063,6 +1064,14 @@ class CacheConfiguration(ConfigurationBase):
             timeout=sqlite_timeout,
             wal=wal,
         )
+
+    def _postgres_cache(self):
+        """
+        Create and return a Postgres database cache
+        :return: A new postgres based cache for  the tile set
+        """
+        from mapproxy.cache.postgres import TileCachePostgres
+        pass
 
     def _geopackage_cache(self, grid_conf, file_ext):
         from mapproxy.cache.geopackage import GeopackageCache, GeopackageLevelCache

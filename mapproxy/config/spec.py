@@ -129,6 +129,15 @@ cache_types = {
         'table_name': str(),
         'levels': bool(),
     },
+    'postgres':{
+        'url': str(),
+        'db_name': str(),
+        'tile_metadata': {
+            anything(): anything()
+        },
+        'tile_id': str(),
+        'tile_lock_dir': str(),
+    },
     'couchdb': {
         'url': str(),
         'db_name': str(),
