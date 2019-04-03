@@ -31,7 +31,6 @@ from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
 
 class TestCachePostgres(TileCacheTestBase):
-
     always_loads_metadata = True
 
     def setup(self):
@@ -40,6 +39,8 @@ class TestCachePostgres(TileCacheTestBase):
         """
         TileCacheTestBase.setup(self)
         self.table_name = 'test_tiles'
+        self.conn = psycopg2.connect('localhost://5432')
+        self.cursor = self.conn.cursor()
         self.cache = TileCachePostgres(
             tile_grid=tile_grid(3857, name='global-webmarcator'),
             table_name=self.table_name,
@@ -51,51 +52,61 @@ class TestCachePostgres(TileCacheTestBase):
         """
         if self.cache:
             self.cache.cleanup()
+        self.cursor.close()
+        self.conn.close()
         TileCacheTestBase.teardown(self)
-
-    def test_new_postgres(self):
-        """
-        Test a new Postgres Cache to check connection and see if iy id organized properly
-        """
-        return None
 
     def test_load_empty_tileset(self):
         """
-        load an empty set of tiles
+        Test insertion of empty tiles
         """
         assert self.cache.load_tiles([Tile(None)]) == True
         assert self.cache.load_tiles([Tile(None), Tile(None), Tile(None)]) == True
 
-    def test_load_more_than_2000_tiles(self):
+    def test_new_postgres(self):
         """
-        Test loading of a large number of tiles to make sure tiles are still loaded in properly
+        Test a newly created postgres connection
         """
-        return None
+        should_be_empty = self.conn.cursor.execute('''SELECT * FROM tiles''').fetchall()
+        assert len(should_be_empty) == 0
 
-    def test_timeouts(self):
+    def test_postgis(self):
         """
-        Test timing out
+        Assure that postgis extends postgres instance
         """
-        self.assertTrue(False)
+        extens = self.conn.cursor.execute('''SELECT extname FROM pg_extension''').fetchall()
+        assert extens.contains('postgis') == True
 
-
-class TestPostgresLevelCache(TileCacheTestBase):
-
-    always_loads_metadata = True
-
-    def setup(self):
+    def test_bulk_load(self):
         """
-        Setup for common requirements across all tests within the PostgresLevelCache
+        Test loading many tiles at once
         """
-        TileCacheTestBase.setup(self)
+        tiles = []
+        for i in range(1, 200):
+            tiles.append(self.create_tile(0, i, 0))
+        assert self.cache.store_tiles(tiles) == True
 
-
-    def teardown(self):
+    def test_store_bulk_with_overwrite(self):
         """
-        Cleanup following the completion of tests
+        Testing inserting many tiles and some with overwrites
         """
-        if self.cache:
-            self.cache.cleanup()
-        TileCacheTestBase.teardown(self)
+        tiles = []
+        for i in range(1, 200):
+            tiles.append(self.create_tile(0, i, 0))
+        tiles2 = []
+        for i in range(1, 100):
+            tiles2.append(self.create_tile((0, i, 0)))
+        assert self.cache.store_tiles(tiles) == True
+        assert self.cache.store_tiles(tiles2) == True
 
-
+    def test_config(self):
+        """
+        Test to see if database is configured properly
+        """
+        self.conn.cursor.execute('''SELECT table_name FROM pg_catalog.pg_tables WHERE schemaname = \'public\'''')
+        tables = self.conn.cursor.fetchall()
+        assert tables.contains('tiles')
+        self.conn.cursor.execute('''SELECT indexdef FROM pg_indexes WHERE tablename = \'tiles\' ''')
+        indexes = self.conn.cursor.fetchall()
+        assert indexes.contains("CREATE INDEX land_polygons_z1_geom_geom_idx ON public.land_polygons_z1 "
+                                "USING gist (geom)")

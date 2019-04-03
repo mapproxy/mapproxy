@@ -68,6 +68,7 @@ class TileCachePostgres(TileCacheBase):
         :param with_metadata: Boolean for whether metadata should be retrieved as well
         :return: True if the input succeeds and False if it fails
         """
+        # If over written use execute many
         return None
 
     def store_tile(self, tile):
@@ -84,6 +85,7 @@ class TileCachePostgres(TileCacheBase):
         :param tiles: tiles to be inserted into the Postgres database
         :return: True if all succeed else False
         """
+        # if overwritten use execute many
         return None
 
     def remove_tile(self, tile):
@@ -94,13 +96,13 @@ class TileCachePostgres(TileCacheBase):
         """
         return None
 
-    # probably remove
     def remove_tiles(self, tiles):
         """
         Likely to be removed but is the removal of multiple tiles from the cache
         :param tiles: the tiles to be removed from the cache
         :return: True if successful and False otherwise
         """
+        # if overwritten use execute many
         return None
 
     def remove_tiles_before(self, timestamp):
