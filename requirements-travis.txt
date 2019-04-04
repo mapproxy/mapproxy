@@ -6,5 +6,6 @@ nose==1.1.2
 Shapely==1.2.15
 PyYAML==3.10
 Pillow==1.7.7
+psycopg2==2.7.7
 eventlet==0.9.17
 riak==2.6.1
