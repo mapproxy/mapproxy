@@ -33,11 +33,10 @@ class TileCachePostgres(TileCacheBase):
 
     supports_timestamp = True
 
-    def __init__(self, url, db_name, tile_grid, tile_id_template, db_initialised, req_session):
+    def __init__(self, db_name, tile_grid,db_initialised, req_session, tile_id_template=None):
         """
         Initiate the database and the associated attributes for a Postgres database
         with postgis extension based cache.
-        :param url: url for the database
         :param db_name: name of database
         :param tile_grid: tile set for cache
         :param tile_id_template: template for tile ids contianing x, y, z, and grid_name

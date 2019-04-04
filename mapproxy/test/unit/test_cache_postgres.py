@@ -39,19 +39,19 @@ class TestCachePostgres(TileCacheTestBase):
         """
         TileCacheTestBase.setup(self)
         self.table_name = 'test_tiles'
-        self.conn = psycopg2.connect('postgresql://127.0.0.1:5432/postgres?autoReconnect=true') # WIP
+        self.conn = psycopg2.connect("dbname=postgres user=postgres password=postgres")  # WIP
         self.cursor = self.conn.cursor()
         self.cache = TileCachePostgres(
+            db_name='postgres',
             tile_grid=tile_grid(3857, name='global-webmarcator'),
-            table_name=self.table_name,
+            db_initialised=True,
+            req_session=self.conn
         )
 
     def teardown(self):
         """
         Cleanup following the completion of all tests
         """
-        if self.cache:
-            self.cache.cleanup()
         self.cursor.close()
         self.conn.close()
         TileCacheTestBase.teardown(self)
@@ -83,7 +83,7 @@ class TestCachePostgres(TileCacheTestBase):
         """
         tiles = []
         for i in range(1, 200):
-            tiles.append(self.create_tile(0, i, 0))
+            tiles.append(self.create_tile((0, i, 0)))
         assert self.cache.store_tiles(tiles) == True
 
     def test_store_bulk_with_overwrite(self):
@@ -92,7 +92,7 @@ class TestCachePostgres(TileCacheTestBase):
         """
         tiles = []
         for i in range(1, 200):
-            tiles.append(self.create_tile(0, i, 0))
+            tiles.append(self.create_tile((0, i, 0)))
         tiles2 = []
         for i in range(1, 100):
             tiles2.append(self.create_tile((0, i, 0)))
