@@ -47,7 +47,6 @@ olefile==0.45.1
 pbr==4.0.3
 pluggy==0.6.0
 protobuf==2.6.1
-psycopg2==2.7.7
 py==1.5.3
 pyOpenSSL==18.0.0
 pyaml==17.12.1
