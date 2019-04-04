@@ -486,6 +486,7 @@ mapproxy_yaml_spec = {
                 'supported_formats': [str()],
                 'supported_srs': [str()],
                 'http': http_opts,
+                'on_error': on_error,
                 'forward_req_params': [str()],
                 required('req'): {
                     required('url'): str(),
@@ -548,7 +549,8 @@ mapproxy_yaml_spec = {
                     'featureinfo_return_geometries': bool(),
                 },
                 'supported_srs': [str()],
-                'http': http_opts
+                'http': http_opts,
+                'on_error': on_error
             }),
             'debug': {
             },

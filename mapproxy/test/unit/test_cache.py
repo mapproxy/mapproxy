@@ -51,6 +51,7 @@ from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.source import InvalidSourceQuery, SourceError
 from mapproxy.source.tile import TiledSource
 from mapproxy.source.wms import WMSSource
+from mapproxy.source.error import HTTPSourceErrorHandler
 from mapproxy.srs import SRS
 from mapproxy.test.http import assert_query_eq, wms_query_eq, query_eq, mock_httpd
 from mapproxy.test.image import create_debug_img, is_png, tmp_image
@@ -851,6 +852,48 @@ class TestWMSSourceWithClient(object):
         with mock_httpd(TEST_SERVER_ADDRESS, [expected_req]):
             q = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
             source.get_map(q)
+
+    def test_http_error_handler(self, client):
+        error_handler = HTTPSourceErrorHandler()
+        error_handler.add_handler(500, (255, 0, 0), cacheable=True)
+        error_handler.add_handler(400, (0, 0, 0), cacheable=False)
+        source = WMSSource(client, error_handler=error_handler)
+        expected_req = [
+            (
+                {
+                    'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                                     '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
+                                     '&VERSION=1.1.1&BBOX=0.0,10.0,10.0,20.0&WIDTH=512&STYLES='
+                },
+                {
+                    'body': b'error',
+                    'status': 500,
+                    'headers': {'content-type': 'text/plain'},
+                },
+            ),
+            (
+                {
+                    'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                                     '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
+                                     '&VERSION=1.1.1&BBOX=0.0,10.0,10.0,20.0&WIDTH=512&STYLES='
+                },
+                {
+                    'body': b'error',
+                    'status': 400,
+                    'headers': {'content-type': 'text/plain'},
+                },
+            ),
+        ]
+        with mock_httpd(TEST_SERVER_ADDRESS, expected_req):
+            query = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
+            resp = source.get_map(query)
+            assert resp.cacheable
+            assert resp.as_image().getcolors() == [((512 * 512), (255, 0, 0))]
+
+            resp = source.get_map(query)
+            assert not resp.cacheable
+            assert resp.as_image().getcolors() == [((512 * 512), (0, 0, 0))]
+
 
 TESTSERVER_URL = 'http://%s:%d' % TEST_SERVER_ADDRESS
 

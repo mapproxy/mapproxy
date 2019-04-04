@@ -636,7 +636,8 @@ class ArcGISSourceConfiguration(SourceConfiguration):
         return ArcGISSource(client, image_opts=image_opts, coverage=coverage,
                             res_range=res_range,
                             supported_srs=supported_srs,
-                            supported_formats=supported_formats or None)
+                            supported_formats=supported_formats or None,
+                            error_handler=self.on_error_handler())
 
     @memoize
     def fi_source(self, params=None):
@@ -771,7 +772,8 @@ class WMSSourceConfiguration(SourceConfiguration):
                          transparent_color_tolerance=transparent_color_tolerance,
                          supported_srs=supported_srs,
                          supported_formats=supported_formats or None,
-                         fwd_req_params=fwd_req_params)
+                         fwd_req_params=fwd_req_params,
+                         error_handler=self.on_error_handler())
 
     def fi_source(self, params=None):
         from mapproxy.client.wms import WMSInfoClient
