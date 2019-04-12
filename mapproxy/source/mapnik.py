@@ -50,8 +50,7 @@ log = logging.getLogger(__name__)
 class MapnikSource(MapLayer):
     supports_meta_tiles = True
     def __init__(self, mapfile, layers=None, image_opts=None, coverage=None,
-                 res_range=None, lock=None, reuse_map_objects=False, scale_factor=None,
-                 concurrent_tile_creators=None):
+                 res_range=None, lock=None, reuse_map_objects=False, scale_factor=None):
         MapLayer.__init__(self, image_opts=image_opts)
         self.mapfile = mapfile
         self.coverage = coverage
