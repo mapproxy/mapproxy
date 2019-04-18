@@ -123,8 +123,7 @@ class WMTSServer(Server):
         
         bbox = tile_layer.grid.tile_bbox(request.tile)
         query = InfoQuery(bbox, tile_layer.grid.tile_size, tile_layer.grid.srs, request.pos,
-              request.infoformat, feature_count=feature_count
-        )
+                          request.infoformat, feature_count=feature_count)
         self.check_request_dimensions(tile_layer, request)
         coverage = self.authorize_tile_layer(tile_layer, request, featureinfo=True)
 
