@@ -115,14 +115,16 @@ class WMTSServer(Server):
         tile_layer = self.layers[request.layer][request.tilematrixset]
         if not request.format:
             request.format = tile_layer.format
-
+        
+        feature_count = None
+        # WMTS REST style request do not have request params
+        if hasattr(request, 'params'):
+            feature_count = request.params.get('feature_count', None)
+        
         bbox = tile_layer.grid.tile_bbox(request.tile)
         query = InfoQuery(bbox, tile_layer.grid.tile_size, tile_layer.grid.srs, request.pos,
-              request.infoformat,
-        )
-
+                          request.infoformat, feature_count=feature_count)
         self.check_request_dimensions(tile_layer, request)
-
         coverage = self.authorize_tile_layer(tile_layer, request, featureinfo=True)
 
         if not tile_layer.info_sources:
