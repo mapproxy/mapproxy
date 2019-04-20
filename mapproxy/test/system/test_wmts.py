@@ -92,7 +92,7 @@ def fi_req_with_featurecount():
             request="GetFeatureInfo",
             i="17",
             j="27",
-            feature_count = "5"
+            feature_count="5"
         ),
     )
 
