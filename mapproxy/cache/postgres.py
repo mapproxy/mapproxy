@@ -13,12 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import sys
 import psycopg2
 import datetime
-import time
-import sqlparse
 
 from mapproxy.cache.base import TileCacheBase
 from mapproxy.compat import BytesIO
