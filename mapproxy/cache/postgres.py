@@ -136,8 +136,8 @@ class TileCachePostgres(TileCacheBase):
                 '''SELECT time_stamp FROM postgres WHERE tile_row = ? AND tile_column = ? AND zoom_level = ?''', x, y, z
             )
             content = self.cursor.fetchone()
-
-            tile.timestamp = content[0]
+            if not content:
+                return False
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
             return False
@@ -151,9 +151,15 @@ class TileCachePostgres(TileCacheBase):
         :param tile: The tile who's metadata needs to be retrieved
         :return: True if successful False otherwise
         """
-        self.cursor.execute('''SELECT * FROM ? WHERE ? = ?''')
-        if self.cursor.fetchone():
-            return True
+        try:
+            self.cursor.execute('''SELECT time_stamp FROM ? WHERE ? = ?''')
+            content = self.cursor.fetchone()
+            if content:
+                tile.timestamp = content[0]
+                return True
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
         return False
 
 

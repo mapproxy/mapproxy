@@ -43,7 +43,6 @@ class TestCachePostgres(TileCacheTestBase):
         self.cursor = self.conn.cursor()
         self.cache = TileCachePostgres(
             db_name='postgres',
-            tile_grid=tile_grid(3857, name='global-webmarcator'),
             db_initialised=True,
             req_session=self.conn
         )
