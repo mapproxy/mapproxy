@@ -16,10 +16,13 @@
 import os
 import sys
 import psycopg2
+import datetime
 import time
 import sqlparse
 
 from mapproxy.cache.base import TileCacheBase
+from mapproxy.compat import BytesIO
+from mapproxy.image import ImageSource
 
 
 class CacheBackendError(Exception):
@@ -44,13 +47,12 @@ class TileCachePostgres(TileCacheBase):
         self.db_name = db_name
         self.db_initialised = db_initialised
         self.req_session = req_session
-        connect = psycopg2.connect(database=db_name, user="postgres", password="postgres") # need attributes
+        connect = psycopg2.connect(database=db_name, user="postgres", password="postgres")  # need attributes
         self.conn = connect
-        self.cursor = connect.cursor()
-        self.cursor.execute('''CREATE EXTENSION postgis''')
+        self.cursor = self.conn.cursor
         self.table_name = 'postgres'
         self.cursor.execute('''CREATE TABLE postgres (zoom_level INTEGER, tile_column INTEGER NOT NULL, 
-                            tile_row INTEGER NOT NULL, tile_data BLOB NOT NULL)''')
+                            tile_row INTEGER NOT NULL, tile_data BLOB NOT NULL, time_stamp TIMESTAMP )''')
         self.cursor.execute('''CREATE EXTENSION postgis''')
         self.cursor.execute('''CREATE INDEX zoom_index ON postgres''')
 
@@ -61,10 +63,22 @@ class TileCachePostgres(TileCacheBase):
         :param with_metadata: Boolean for whether metadata should be retrieved as well
         :return: True if load succeeds False if it does not
         """
-        self.cursor()
-        self.cursor.execute('''SELECT * FROM ? WHERE zoom_level = ? AND tile_row = ? AND tile_column = ?''',
-                            self.db_name)
-        return None
+        x, y, z = tile.coord
+        try:
+            self.cursor.execute('''SELECT tile_data FROM postgres WHERE zoom_level = ? 
+                                AND tile_row = ? 
+                                AND tile_column = ?
+                                ''',
+                                x, y, z)
+            content = self.cursor.fetchone()
+            if content:
+                tile.source = ImageSource(BytesIO(content[0]))
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+        if with_metadata:
+            self.load_tile_metadata(tile)
+        return True
 
     def store_tile(self, tile):
         """
@@ -72,10 +86,21 @@ class TileCachePostgres(TileCacheBase):
         :param tile: The tile that will be inserted into the Postgres database
         :return: True if the input succeeds and False if it fails
         """
-        self.cursor.execute('''
-                            INSERT INTO postgres (tile_data, tile_column, tile_row, zoom_level) VALUES (?, ?, ?, ?)
-                            ''', self.db_name)
-        return None
+        try:
+            if not tile.stored:
+                x, y, z = tile.coord
+                stamp = datetime.datetime.today()
+                self.cursor.execute('''
+                                    INSERT INTO postgres (tile_data, tile_column, tile_row, zoom_level, time_stamp)
+                                    VALUES (?, ?, ?, ?, ?)
+                                    ''', tile.source, x, y, z, stamp)
+                tile.timestap = stamp
+            tile.stored = True
+            self.cursor.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+        return True
 
     def remove_tile(self, tile):
         """
@@ -83,17 +108,25 @@ class TileCachePostgres(TileCacheBase):
         :param tile: The tile to be removed from the cache
         :return: True if the remove is successful and False if it fails for any reason
         """
-        self.cursor.execute('''DELETE ? FROM postgres''')
-        return None
+        try:
+            self.cursor.execute('''DELETE * FROM postgres WHERE ''')
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+        return True
 
     def remove_tiles_before(self, time_stamp):
         """
         Remove all tiles cached before a given time
-        :param timestamp: tiles before this timestamp are removed
+        :param time_stamp: tiles before this timestamp are removed
         :return: True if tiles were successfully removed False otherwise
         """
-        self.cursor.execute('''DELETE * FROM postgres WHERE timestamp < ?''')  # needs to add time stamp
-        return None
+        try:
+            self.cursor.execute('''DELETE * FROM postgres WHERE timestamp < ?''', time_stamp)
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+        return True
 
     def is_cached(self, tile):
         """
@@ -101,52 +134,31 @@ class TileCachePostgres(TileCacheBase):
         :param tile: the tile to be searched for in the cache
         :return: True if the tile is cached.
         """
-        self.cursor.execute(
-            '''SELECT * FROM postgres WHERE tile_row = ? AND tile_column = ? AND zoom_level = ?''')  # needs formatting
-        if self.cursor.fetchall():
-            return True
-        return False
+        try:
+            x, y, z = tile.coord
+            self.cursor.execute(
+                '''SELECT time_stamp FROM postgres WHERE tile_row = ? AND tile_column = ? AND zoom_level = ?''', x, y, z
+            )
+            content = self.cursor.fetchone()
+
+            tile.timestamp = content[0]
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+        return True
 
     def load_tile_metadata(self, tile):
         """
-        retrieve the metadata associated with a given tile from a Postgres database
-        Other implementations seem to just load teh tile??
+        Retrieve the metadata associated with a given tile from a Postgres database
+        and fills in attributes in the tile
 
         :param tile: The tile who's metadata needs to be retrieved
-        :return: The requested metadata
+        :return: True if successful False otherwise
         """
         self.cursor.execute('''SELECT * FROM ? WHERE ? = ?''')
-        if self.cursor.fetchall():
+        if self.cursor.fetchone():
             return True
         return False
-
-    def load_tiles(self, tiles, with_metadata=False):
-        """
-        Load a single tile in a Postgres database
-        :param tiles: The tiles that will be loaded from the Postgres database
-        :param with_metadata: Boolean for whether metadata should be retrieved as well
-        :return: True if the input succeeds and False if it fails
-        """
-        # If over written use execute many
-        return None
-
-    def store_tiles(self, tiles):
-        """
-        Likely to be removed but is the insertion of multiple tiles into the Postgres based cache
-        :param tiles: tiles to be inserted into the Postgres database
-        :return: True if all succeed else False
-        """
-        # if overwritten use execute many
-        return None
-
-    def remove_tiles(self, tiles):
-        """
-        Likely to be removed but is the removal of multiple tiles from the cache
-        :param tiles: the tiles to be removed from the cache
-        :return: True if successful and False otherwise
-        """
-        # if overwritten use execute many
-        return None
 
 
 class PostgresMDTemplate(object):
