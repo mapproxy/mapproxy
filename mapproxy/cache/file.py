@@ -168,15 +168,23 @@ class FileCache(TileCacheBase):
         if os.path.exists(tile_loc) or os.path.islink(tile_loc):
             os.unlink(tile_loc)
 
-        # Use relative path for the symlink
-        real_tile_loc = os.path.relpath(real_tile_loc, os.path.dirname(tile_loc))
+        if self.link_single_color_images == 'hardlink':
+            try:
+                os.link(real_tile_loc, tile_loc)
+            except OSError as e:
+                # ignore error if link was created by other process
+                if e.errno != errno.EEXIST:
+                    raise e
+        else:
+            # Use relative path for the symlink
+            real_tile_loc = os.path.relpath(real_tile_loc, os.path.dirname(tile_loc))
 
-        try:
-            os.symlink(real_tile_loc, tile_loc)
-        except OSError as e:
-            # ignore error if link was created by other process
-            if e.errno != errno.EEXIST:
-                raise e
+            try:
+                os.symlink(real_tile_loc, tile_loc)
+            except OSError as e:
+                # ignore error if link was created by other process
+                if e.errno != errno.EEXIST:
+                    raise e
 
         return
 
