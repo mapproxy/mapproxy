@@ -388,7 +388,7 @@ mapproxy_yaml_spec = {
             'max_tile_limit': number(),
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
-            'link_single_color_images': bool(),
+            'link_single_color_images': one_of(bool(), 'symlink', 'hardlink'),
             's3': {
                 'bucket_name': str(),
                 'profile_name': str(),
@@ -437,7 +437,7 @@ mapproxy_yaml_spec = {
             'request_format': str(),
             'use_direct_from_level': number(),
             'use_direct_from_res': number(),
-            'link_single_color_images': bool(),
+            'link_single_color_images': one_of(bool(), 'symlink', 'hardlink'),
             'cache_rescaled_tiles': bool(),
             'upscale_tiles': int(),
             'downscale_tiles': int(),
