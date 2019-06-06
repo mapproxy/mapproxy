@@ -20,7 +20,7 @@ import threading
 
 import pytest
 
-from mapproxy.util.async_ import imap_async_threaded, ThreadPool
+from mapproxy.util.async_ import imap, ThreadPool
 
 
 class TestThreaded(object):
@@ -29,7 +29,7 @@ class TestThreaded(object):
             time.sleep(0.05)
             return x
         start = time.time()
-        result = list(imap_async_threaded(func, list(range(40))))
+        result = list(imap(func, list(range(40))))
         stop = time.time()
 
         duration = stop - start
@@ -42,46 +42,11 @@ class TestThreaded(object):
             raise Exception()
 
         try:
-            list(imap_async_threaded(func, list(range(40))))
+            list(imap(func, list(range(40))))
         except Exception:
             pass
         else:
             assert False, 'exception expected'
-
-try:
-    import eventlet
-    from mapproxy.util.async_ import imap_async_eventlet, EventletPool
-    _has_eventlet = True
-except ImportError:
-    _has_eventlet = False
-
-@pytest.mark.skipif(not _has_eventlet, reason="eventlet required")
-class TestEventlet(object):
-
-    def test_map(self):
-        def func(x):
-            eventlet.sleep(0.05)
-            return x
-        start = time.time()
-        result = list(imap_async_eventlet(func, list(range(40))))
-        stop = time.time()
-
-        duration = stop - start
-        assert duration < 0.2, "took %s" % duration
-
-        assert len(result) == 40
-
-    def test_map_with_exception(self):
-        def func(x):
-            raise Exception()
-
-        try:
-            list(imap_async_eventlet(func, list(range(40))))
-        except Exception:
-            pass
-        else:
-            assert False, 'exception expected'
-
 
 
 class CommonPoolTests(object):
@@ -249,61 +214,6 @@ class TestThreadPool(CommonPoolTests):
         t2.start()
         t1.join()
         t2.join()
-        assert not error_occured
-        assert 'bar' in base_config()
-
-
-@pytest.mark.skipif(not _has_eventlet, reason="eventlet required")
-class TestEventletPool(CommonPoolTests):
-
-    def mk_pool(self):
-        return EventletPool()
-
-    def test_base_config(self):
-        # test that all concurrent have access to their
-        # local base_config
-        from mapproxy.config import base_config
-        from mapproxy.config import local_base_config
-        from copy import deepcopy
-
-        # make two separate base_configs
-        conf1 = deepcopy(base_config())
-        conf1.conf = 1
-        conf2 = deepcopy(base_config())
-        conf2.conf = 2
-        base_config().bar = 'baz'
-
-        # run test in parallel, check1 and check2 should interleave
-        # each with their local conf
-
-        error_occured = False
-
-        def check1(x):
-            global error_occured
-            if base_config().conf != 1 or 'bar' in base_config():
-                error_occured = True
-
-        def check2(x):
-            global error_occured
-            if base_config().conf != 2 or 'bar' in base_config():
-                error_occured = True
-
-        assert 'bar' in base_config()
-
-        def test1():
-            with local_base_config(conf1):
-                pool1 = EventletPool(5)
-                list(pool1.imap(check1, list(range(200))))
-
-        def test2():
-            with local_base_config(conf2):
-                pool2 = EventletPool(5)
-                list(pool2.imap(check2, list(range(200))))
-
-        t1 = eventlet.spawn(test1)
-        t2 = eventlet.spawn(test2)
-        t1.wait()
-        t2.wait()
         assert not error_occured
         assert 'bar' in base_config()
 
