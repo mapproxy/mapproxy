@@ -52,6 +52,9 @@ matrix:
     - python: "3.7"
       sudo: required
       dist: xenial
+      env:
+        - MAPPROXY_TEST_RIAK_HTTP=
+        - MAPPROXY_TEST_RIAK_PBC=
 
   allow_failures:
     - python: "3.7"
@@ -59,11 +62,6 @@ matrix:
 cache:
   directories:
     - $HOME/.cache/pip
-
-before_install:
-    # default open file limit is too low for riak
-    - echo -n "ulimit -n 4096" | sudo tee /etc/default/riak
-    - sudo service riak restart || sudo systemctl restart riak
 
 install:
     - "pip install -r requirements-tests.txt"
