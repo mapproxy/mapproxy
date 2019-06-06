@@ -27,7 +27,7 @@ The server automatically reloads if the configuration or any code of MapProxy ch
 
 .. cmdoption:: --debug
 
-  Start MapProxy in debug mode. If you have installed Werkzeug_ (recommended) or Paste_, you will get an interactive traceback in the web browser on any unhandled exception (internal error).
+  Start MapProxy in debug mode. If you have installed Werkzeug_, you will get an interactive traceback in the web browser on any unhandled exception (internal error).
 
 .. note:: This server is sufficient for local testing of the configuration, but it is `not` stable for production or load testing.
 
@@ -49,8 +49,6 @@ Behind an HTTP server or proxy
 
 Both approaches require a configuration that maps your MapProxy configuration with the MapProxy application. You can write a small script file for that.
 
-Running MapProxy as a FastCGI server behind HTTP server, a third option, is no longer advised for new setups since the FastCGI package (flup) is no longer maintained and the Python HTTP server improved significantly.
-
 .. _server_script:
 
 Server script
@@ -67,7 +65,7 @@ The script contains the following lines and makes the configured MapProxy availa
   from mapproxy.wsgiapp import make_wsgi_app
   application = make_wsgi_app('examples/minimal/etc/mapproxy.yaml')
 
-This is sufficient for embedding MapProxy with ``mod_wsgi`` or for starting it with Python HTTP servers like ``gunicorn`` (see further below). You can extend this script to setup logging or to set environment variables.
+This is sufficient for embedding MapProxy with ``mod_wsgi`` or for starting it with Python HTTP servers like ``waitress`` (see further below). You can extend this script to setup logging or to set environment variables.
 
 You can enable MapProxy to automatically reload the configuration if it changes::
 
@@ -133,49 +131,27 @@ There are Python HTTP servers available that can directly run MapProxy. Most of 
 Python HTTP Server
 ~~~~~~~~~~~~~~~~~~
 
-You need start these servers in the background on start up. It is recommended to create an init script for that or to use tools like upstart_ or supervisord_.
+You need start these servers in the background on start up. It is recommended to start it from systemd or upstart.
 
-Gunicorn
+Waitress
 """"""""
 
-Gunicorn_ is a Python WSGI HTTP server for UNIX. Gunicorn use multiple processes but the process number is fixed. The default worker is synchronous, meaning that a process is blocked while it requests data from another server for example. You need to choose an asynchronous worker like eventlet_.
+Waitress_ is a production-quality pure-Python WSGI server with very acceptable performance. It runs on Unix and Windows.
 
-You need a server script that creates the MapProxy application (see :ref:`above <server_script>`). The script needs to be in the directory from where you start ``gunicorn`` and it needs to end with ``.py``.
+You need a server script that creates the MapProxy application (see :ref:`above <server_script>`). The script needs to be in the directory from where you start ``waitress`` and it needs to end with ``.py``.
 
-To start MapProxy with the Gunicorn web server with four processes, the eventlet worker and our server script (without ``.py``)::
-
-  cd /path/of/config.py/
-  gunicorn -k eventlet -w 4 -b :8080 config:application --no-sendfile
-
-
-An example upstart script (``/etc/init/mapproxy.conf``) might look like::
-
-    start on runlevel [2345]
-    stop on runlevel [!2345]
-
-    respawn
-
-    setuid mapproxy
-    setgid mapproxy
-
-    chdir /etc/opt/mapproxy
-
-    exec /opt/mapproxy/bin/gunicorn -k eventlet -w 8 -b :8080 \
-        --no-sendfile \
-        application \
-        >>/var/log/mapproxy/gunicorn.log 2>&1
-
-
-Spawning
-""""""""
-
-Spawning_ is another Python WSGI HTTP server for UNIX that supports multiple processes and multiple threads.
-
-::
+To start MapProxy with Waitress and our server script (without ``.py``)::
 
   cd /path/of/config.py/
-  spawning config.application --threads=8 --processes=4 \
-    --port=8080
+  waitress --listen 127.0.0.1:8080 config:application
+
+
+uWSGI
+"""""
+
+uWSGI is another production-quality WSGI server. It is highly configurable and offers high performance (by running on multiple processors).
+
+The `uWSGI documentation provides a quickstart <https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html>`_.
 
 
 HTTP Proxy
@@ -224,16 +200,6 @@ Here is an example for the Apache_ webserver with the included ``mod_proxy`` and
 You need to make sure that both modules are loaded. The ``Host`` is already set to the right value by default.
 
 
-Other deployment options
-------------------------
-
-Refer to http://wsgi.readthedocs.org/en/latest/servers.html for a list of some available WSGI servers.
-
-FastCGI
-~~~~~~~
-
-.. note:: Running MapProxy as a FastCGI server behind HTTP server is no longer advised for new setups since the used Python package (flup) is no longer maintained. Please refer to the `MapProxy 1.5.0 deployment documentation for more information on FastCGI <http://mapproxy.org/docs/1.5.0/deployment.html>`_.
-
 
 Performance
 -----------
@@ -259,17 +225,10 @@ With this setup the locking will only be effective when parallel requests for ti
 .. _mod_proxy: http://httpd.apache.org/docs/current/mod/mod_proxy.html
 .. _Varnish: http://www.varnish-cache.org/
 .. _werkzeug: http://pypi.python.org/pypi/Werkzeug
-.. _paste: http://pypi.python.org/pypi/Paste
-.. _gunicorn: http://gunicorn.org/
-.. _Spawning: http://pypi.python.org/pypi/Spawning
+.. _uWSGI: https://uwsgi-docs.readthedocs.io/en/latest/
+.. _Waitress: https://docs.pylonsproject.org/projects/waitress/en/stable/
 .. _FastCGI: http://www.fastcgi.com/
-.. _flup: http://pypi.python.org/pypi/flup
-.. _mod_fastcgi: http://www.fastcgi.com/mod_fastcgi/docs/mod_fastcgi.html
-.. _mod_fcgid: http://httpd.apache.org/mod_fcgid/
-.. _eventlet: http://pypi.python.org/pypi/eventlet
 .. _Apache: http://httpd.apache.org/
-.. _upstart: http://upstart.ubuntu.com/
-.. _supervisord: http://supervisord.org/
 
 Logging
 -------
