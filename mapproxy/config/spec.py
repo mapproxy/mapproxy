@@ -587,13 +587,3 @@ mapproxy_yaml_spec = {
     'parts': anything(),
 }
 
-if __name__ == '__main__':
-    import sys
-    import yaml
-    for f in sys.argv[1:]:
-        data = yaml.load(open(f))
-        try:
-            validate(mapproxy_yaml_spec, data)
-        except ValidationError as ex:
-            for err in ex.errors:
-                print('%s: %s' % (f, err))

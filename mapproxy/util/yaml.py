@@ -35,12 +35,12 @@ def _load_yaml(doc):
     try:
         if getattr(yaml, '__with_libyaml__', False):
             try:
-                return yaml.load(doc, Loader=yaml.CLoader)
+                return yaml.load(doc, Loader=yaml.CSafeLoader)
             except AttributeError:
                 # handle cases where __with_libyaml__ is True but
                 # CLoader doesn't work (missing .dispose())
-                return yaml.load(doc)
-        return yaml.load(doc)
+                return yaml.safe_load(doc)
+        return yaml.safe_load(doc)
     except (yaml.scanner.ScannerError, yaml.parser.ParserError) as ex:
         raise YAMLError(str(ex))
 
