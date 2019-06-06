@@ -28,6 +28,10 @@ try:
     import riak
 except ImportError:
     riak = None
+except TypeError:
+    import warnings
+    warnings.warn("riak version not compatible with this Python version")
+    riak = None
 
 import logging
 log = logging.getLogger(__name__)
