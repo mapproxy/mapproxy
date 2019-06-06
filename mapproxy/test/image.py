@@ -106,7 +106,6 @@ def bgcolor_ratio(img_data):
 def create_tmp_image_file(size, two_colored=False):
     fd, out_file = tempfile.mkstemp(suffix='.png')
     os.close(fd)
-    print('creating temp image %s (%r)' % (out_file, size))
     img = Image.new('RGBA', size)
     if two_colored:
         draw = ImageDraw.Draw(img)

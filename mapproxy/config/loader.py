@@ -395,6 +395,11 @@ class ImageOptionsConfiguration(ConfigurationBase):
         jpeg_quality = options.pop('jpeg_quality', None)
         if jpeg_quality and not isinstance(jpeg_quality, int):
             raise ConfigurationError('jpeg_quality is not an integer')
+
+        tiff_compression = options.pop('tiff_compression', None)
+        if tiff_compression and tiff_compression not in ('raw', 'tiff_lzw', 'jpeg'):
+            raise ConfigurationError('unknown tiff_compression')
+
         quantizer = options.pop('quantizer', None)
         if quantizer and quantizer not in ('fastoctree', 'mediancut'):
             raise ConfigurationError('unknown quantizer')

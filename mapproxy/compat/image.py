@@ -21,8 +21,10 @@ __all__ = ['Image', 'ImageColor', 'ImageDraw', 'ImageFont', 'ImagePalette',
 try:
     import PIL
     from PIL import Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops, ImageMath
+    from PIL.TiffImagePlugin import ImageFileDirectory_v2, TiffTags
     # prevent pyflakes warnings
     Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops, ImageMath
+    ImageFileDirectory_v2, TiffTags
 except ImportError:
     # allow MapProxy to start without PIL (for tilecache only).
     # issue warning and raise ImportError on first use of
