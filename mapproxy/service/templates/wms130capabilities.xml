@@ -297,7 +297,7 @@
   </Layer>
 {{enddef}}
 
-{{def layer_meta_tag(tag, config)}}
+{{def layer_meta_tag(tag, config={})}}
   {{for data in config}}
   {{py: data=bunch(default='', **data)}}
     <{{tag}}{{if data.type}} type="{{data.type|escape}}"{{endif}}>
