@@ -23,7 +23,7 @@ from mapproxy.grid import NoTiles, GridError, merge_resolution_range, bbox_inter
 from mapproxy.image import SubImageSource, bbox_position_in_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.tile import TiledImage
-from mapproxy.srs import SRS, bbox_equals, merge_bbox, make_lin_transf
+from mapproxy.srs import SRS, bbox_equals, merge_bbox, make_lin_transf, SupportedSRS
 from mapproxy.proj import ProjError
 from mapproxy.compat import iteritems
 
@@ -328,18 +328,17 @@ class ResolutionConditional(MapLayer):
 
 class SRSConditional(MapLayer):
     supports_meta_tiles = True
-    PROJECTED = 'PROJECTED'
-    GEOGRAPHIC = 'GEOGRAPHIC'
 
-    def __init__(self, layers, extent, opacity=None):
+    def __init__(self, layers, extent, opacity=None, preferred_srs=None):
         MapLayer.__init__(self)
-        # TODO geographic/projected fallback
         self.srs_map = {}
         self.res_range = merge_layer_res_ranges([l[0] for l in layers])
-        for layer, srss in layers:
-            for srs in srss:
-                self.srs_map[srs] = layer
 
+        supported_srs = []
+        for layer, srs in layers:
+            supported_srs.append(srs)
+            self.srs_map[srs] = layer
+        self.supported_srs = SupportedSRS(supported_srs, preferred_srs)
         self.extent = extent
         self.opacity = opacity
 
@@ -349,24 +348,8 @@ class SRSConditional(MapLayer):
         return layer.get_map(query)
 
     def _select_layer(self, query_srs):
-        # srs exists
-        if query_srs in self.srs_map:
-            return self.srs_map[query_srs]
-
-        # srs_type exists
-        srs_type = self.GEOGRAPHIC if query_srs.is_latlong else self.PROJECTED
-        if srs_type in self.srs_map:
-            return self.srs_map[srs_type]
-
-        # first with same type
-        is_latlong = query_srs.is_latlong
-        for srs in self.srs_map:
-            if hasattr(srs, 'is_latlong') and srs.is_latlong == is_latlong:
-                return self.srs_map[srs]
-
-        # return first
-        return self.srs_map.itervalues().next()
-
+        srs = self.supported_srs.best_srs(query_srs)
+        return self.srs_map[srs]
 
 class DirectMapLayer(MapLayer):
     supports_meta_tiles = True

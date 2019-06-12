@@ -317,6 +317,21 @@ class GridConfiguration(ConfigurationBase):
 
         return grid
 
+def preferred_srs(conf):
+    from mapproxy.srs import SRS, PreferredSrcSRS
+
+    preferred_conf = conf.get('preferred_src_proj', {})
+
+    if not preferred_conf:
+        return
+
+    preferred = PreferredSrcSRS
+    for target, preferred_srcs in preferred_conf.items():
+        preferred.add(SRS(target), [SRS(s) for s in preferred_srs])
+
+    return preferred
+
+
 
 class GlobalConfiguration(ConfigurationBase):
     def __init__(self, conf_base_dir, conf, context):
@@ -327,6 +342,7 @@ class GlobalConfiguration(ConfigurationBase):
         finish_base_config(self.base_config)
 
         self.image_options = ImageOptionsConfiguration(self.conf.get('image', {}), context)
+        self.preferred_srs = preferred_srs(self.conf.get('srs', {}))
         self.renderd_address = self.get_value('renderd.address')
 
     def _copy_conf_values(self, d, target):
@@ -549,6 +565,14 @@ class SourceConfiguration(ConfigurationBase):
             self.conf.setdefault('image', {})['transparent'] = self.conf['transparent']
         return self.context.globals.image_options.image_opts(self.conf.get('image', {}), format)
 
+    def supported_srs(self):
+        from mapproxy.srs import SRS, SupportedSRS
+
+        supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
+        if not supported_srs:
+            return None
+        return SupportedSRS(supported_srs, self.context.globals.preferred_srs)
+
     def http_client(self, url):
         from mapproxy.client.http import auth_data_from_url, HTTPClient
 
@@ -614,8 +638,6 @@ class ArcGISSourceConfiguration(SourceConfiguration):
             from mapproxy.source import DummySource
             return DummySource(coverage=self.coverage())
 
-        # Get the supported SRS codes and formats from the configuration.
-        supported_srs = [SRS(code) for code in self.conf.get("supported_srs", [])]
         supported_formats = [file_ext(f) for f in self.conf.get("supported_formats", [])]
 
         # Construct the parameters
@@ -635,7 +657,7 @@ class ArcGISSourceConfiguration(SourceConfiguration):
         image_opts = self.image_opts(format=params.get('format'))
         return ArcGISSource(client, image_opts=image_opts, coverage=coverage,
                             res_range=res_range,
-                            supported_srs=supported_srs,
+                            supported_srs=self.supported_srs(),
                             supported_formats=supported_formats or None,
                             error_handler=self.on_error_handler())
 
@@ -650,7 +672,6 @@ class ArcGISSourceConfiguration(SourceConfiguration):
         request_format = self.conf['req'].get('format')
         if request_format:
             params['format'] = request_format
-        supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         fi_source = None
         if self.conf.get('opts', {}).get('featureinfo', False):
             opts = self.conf['opts']
@@ -662,7 +683,7 @@ class ArcGISSourceConfiguration(SourceConfiguration):
 
             http_client, fi_request.url = self.http_client(fi_request.url)
             fi_client = ArcGISInfoClient(fi_request,
-                supported_srs=supported_srs,
+                supported_srs=self.supported_srs(),
                 http_client=http_client,
                 tolerance=tolerance,
                 return_geometries=return_geometries,
@@ -715,7 +736,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         from mapproxy.client.wms import WMSClient
         from mapproxy.request.wms import create_request
         from mapproxy.source.wms import WMSSource
-        from mapproxy.srs import SRS
+        from mapproxy.srs import SRS, SupportedSRS
 
         if not self.conf.get('wms_opts', {}).get('map', True):
             return None
@@ -732,7 +753,6 @@ class WMSSourceConfiguration(SourceConfiguration):
 
         image_opts = self.image_opts(format=params.get('format'))
 
-        supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         supported_formats = [file_ext(f) for f in self.conf.get('supported_formats', [])]
         version = self.conf.get('wms_opts', {}).get('version', '1.1.1')
 
@@ -770,7 +790,7 @@ class WMSSourceConfiguration(SourceConfiguration):
         return WMSSource(client, image_opts=image_opts, coverage=coverage,
                          res_range=res_range, transparent_color=transparent_color,
                          transparent_color_tolerance=transparent_color_tolerance,
-                         supported_srs=supported_srs,
+                         supported_srs=self.supported_srs(),
                          supported_formats=supported_formats or None,
                          fwd_req_params=fwd_req_params,
                          error_handler=self.on_error_handler())
@@ -785,7 +805,6 @@ class WMSSourceConfiguration(SourceConfiguration):
         request_format = self.conf['req'].get('format')
         if request_format:
             params['format'] = request_format
-        supported_srs = [SRS(code) for code in self.conf.get('supported_srs', [])]
         fi_source = None
         if self.conf.get('wms_opts', {}).get('featureinfo', False):
             wms_opts = self.conf['wms_opts']
@@ -800,7 +819,7 @@ class WMSSourceConfiguration(SourceConfiguration):
                                                      self.context)
 
             http_client, fi_request.url = self.http_client(fi_request.url)
-            fi_client = WMSInfoClient(fi_request, supported_srs=supported_srs,
+            fi_client = WMSInfoClient(fi_request, supported_srs=self.supported_srs(),
                                       http_client=http_client)
             coverage = self.coverage()
             fi_source = WMSInfoSource(fi_client, fi_transformer=fi_transformer,
@@ -1557,12 +1576,13 @@ class CacheConfiguration(ConfigurationBase):
                 main_grid = grid
             caches.append((CacheMapLayer(tile_manager, extent=extent, image_opts=image_opts,
                                          max_tile_limit=max_tile_limit),
-                          (grid.srs,)))
+                          grid.srs))
 
         if len(caches) == 1:
             layer = caches[0][0]
         else:
-            layer = SRSConditional(caches, caches[0][0].extent, opacity=image_opts.opacity)
+            layer = SRSConditional(caches, caches[0][0].extent, opacity=image_opts.opacity,
+                                   preferred_srs=self.context.globals.preferred_srs)
 
         if 'use_direct_from_level' in self.conf:
             self.conf['use_direct_from_res'] = main_grid.resolution(self.conf['use_direct_from_level'])

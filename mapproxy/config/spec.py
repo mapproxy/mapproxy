@@ -383,6 +383,7 @@ mapproxy_yaml_spec = {
           'axis_order_ne': [str()],
           'axis_order_en': [str()],
           'proj_data_dir': str(),
+          'preferred_src_proj': {str(): [str()]},
         },
         'tiles': {
             'expires_hours': number(),

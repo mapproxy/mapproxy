@@ -858,6 +858,29 @@ The following options define how tiles are created and stored. Most options can 
 ``srs``
 """""""
 
+``preferred_src_proj``
+  This option allows you to control which source projection MapProxy should use
+  when it needs to reproject an image.
+
+  When you make a request for a projection that is not supported by your cache (tile grid) or by your source (``supported_srs``), then MapProxy will reproject the image from the `best` available projection. By default, the `best` available projection is the first supported projection by your cache or source that is also either projected or geographic.
+
+  You can change this behavior with ``preferred_src_proj``. For example, you can configure that MapProxy should prefer similar projections from neighboring zones over Webmercator.
+
+  ``preferred_src_proj`` is a dictionary with the target EPSG code (i.e. the SRS requested by the user) and a list of preferred source EPSG codes.
+
+  With the following configuration, WMS requests for EPSG:25831 are served from a cache with EPSG:25832, if there is no cache for EPSG:25831.
+  ::
+
+    srs:
+      preferred_src_proj:
+        'EPSG:25831': ['EPSG:25832', 'EPSG:3857']
+        'EPSG:25832': ['EPSG:25831', 'EPSG:25833', 'EPSG:3857']
+        'EPSG:25833': ['EPSG:25832'', 'EPSG:3857']
+        'EPSG:31466': ['EPSG:25831', 'EPSG:25832', 'EPSG:3857']
+        'EPSG:31467': ['EPSG:25832', 'EPSG:25833', 'EPSG:25831', 'EPSG:3857']
+
+  .. versionadded:: 1.12.0
+
 ``proj_data_dir``
   MapProxy uses Proj4 for all coordinate transformations. If you need custom projections
   or need to tweak existing definitions (e.g. add towgs parameter set) you can point
@@ -865,6 +888,7 @@ The following options define how tiles are created and stored. Most options can 
   with the EPSG definitions.
 
   The configured path can be absolute or relative to the mapproxy.yaml.
+
 
 .. _axis_order:
 

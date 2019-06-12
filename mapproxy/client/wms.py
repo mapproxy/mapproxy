@@ -21,7 +21,7 @@ from mapproxy.request.base import split_mime_type
 from mapproxy.layer import InfoQuery
 from mapproxy.source import SourceError
 from mapproxy.client.http import HTTPClient
-from mapproxy.srs import make_lin_transf, SRS
+from mapproxy.srs import make_lin_transf, SRS, SupportedSRS
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.featureinfo import create_featureinfo_doc
@@ -115,8 +115,8 @@ class WMSInfoClient(object):
         self.request_template = request_template
         self.http_client = http_client or HTTPClient()
         if not supported_srs and self.request_template.params.srs is not None:
-            supported_srs = [SRS(self.request_template.params.srs)]
-        self.supported_srs = supported_srs or []
+            supported_srs = SupportedSRS([SRS(self.request_template.params.srs)])
+        self.supported_srs = supported_srs
 
     def get_info(self, query):
         if self.supported_srs and query.srs not in self.supported_srs:
@@ -141,7 +141,7 @@ class WMSInfoClient(object):
         req_bbox = query.bbox
         req_coord = make_lin_transf((0, 0, query.size[0], query.size[1]), req_bbox)(query.pos)
 
-        info_srs = self._best_supported_srs(req_srs)
+        info_srs = self.supported_srs.best_srs(req_srs)
         info_bbox = req_srs.transform_bbox_to(info_srs, req_bbox)
         # calculate new info_size to keep square pixels after transform_bbox_to
         info_aratio = (info_bbox[3] - info_bbox[1])/(info_bbox[2] - info_bbox[0])
@@ -160,10 +160,6 @@ class WMSInfoClient(object):
             feature_count=query.feature_count,
         )
         return info_query
-
-    def _best_supported_srs(self, srs):
-        # always choose the first, distortion should not matter
-        return self.supported_srs[0]
 
     def _retrieve(self, query):
         url = self._query_url(query)
