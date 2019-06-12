@@ -254,24 +254,17 @@ class _SRS(object):
         True
         >>> SRS(4326) == SRS("4326")
         True
-        >>> SRS(4326) == SRS(900913)
+        >>> SRS(4326) == SRS(3857)
         False
-        >>> SRS(3857) == SRS(900913)
-        True
-        >>> SRS(900913) == SRS(3857)
-        True
-
         """
         if isinstance(other, _SRS):
-            if (self.srs_code in WEBMERCATOR_EPSG
-                and other.srs_code in WEBMERCATOR_EPSG):
-                return True
             return self.proj.srs == other.proj.srs
         else:
             return NotImplemented
+
     def __ne__(self, other):
         """
-        >>> SRS(900913) != SRS(900913)
+        >>> SRS(3857) != SRS(3857)
         False
         >>> SRS(4326) != SRS(900913)
         True
@@ -281,6 +274,7 @@ class _SRS(object):
             return NotImplemented
         else:
             return not equal_result
+
     def __str__(self):
         #pylint: disable-msg=E1101
         return "SRS %s ('%s')" % (self.srs_code, self.proj.srs)
