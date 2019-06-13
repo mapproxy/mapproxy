@@ -128,7 +128,7 @@ class MapnikSource(MapLayer):
         process_id = multiprocessing.current_process()._identity
         queue_cachekey = (process_id, mapfile)
         if not queue_cachekey in self._map_objs_queues:
-            self._map_objs_queues[queue_cachekey] = new Queue(MAX_UNUSED_MAPS)
+            self._map_objs_queues[queue_cachekey] = Queue(MAX_UNUSED_MAPS)
         try:
             self._map_objs_queues[queue_cachekey].put_nowait(m)
         except Full:
