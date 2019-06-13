@@ -42,8 +42,6 @@ except ImportError:
 
 try:
     import queue
-    import queue
-    import queue
     Queue = queue.Queue
     Empty = queue.Empty
     Full = queue.Full
