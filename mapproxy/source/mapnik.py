@@ -41,9 +41,12 @@ except ImportError:
         mapnik = None
 
 try:
-    import queue.Queue as Queue
-    import queue.Empty as Empty
-    import queue.Full as Full
+    import queue
+    import queue
+    import queue
+    Queue = queue.Queue
+    Empty = queue.Empty
+    Full = queue.Full
 except ImportError: # in python2 it is called Queue
     import Queue
     import Queue.Empty as Empty
