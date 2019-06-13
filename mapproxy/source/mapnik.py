@@ -73,7 +73,7 @@ class MapnikSource(MapLayer):
         _map_objs = {}
         global _map_objs_lock
         _map_objs_lock = threading.Lock()
-        global _map_objs_queues # queues of unused mapnik map objects by mapfile
+        global _map_objs_queues # queues of unused mapnik map objects by PID and mapfile
         _map_objs_queues = {}
         self._cache_map_obj = reuse_map_objects
         if self.coverage:
@@ -115,18 +115,22 @@ class MapnikSource(MapLayer):
         return m
 
     def _get_map_obj(self, mapfile):
-        if mapfile in self._map_objs_queues:
+        process_id = multiprocessing.current_process()._identity
+        queue_cachekey = (process_id, mapfile)
+        if queue_cachekey in self._map_objs_queues:
             try:
-                return self._map_objs_queues[mapfile].get_nowait()
+                return self._map_objs_queues[queue_cachekey].get_nowait()
             except Empty:
                 pass
         return _create_map_obj(self, mapfile)
 
     def _put_unused_map_obj(self, mapfile, m):
-        if not mapfile in self._map_objs_queues:
-            self._map_objs_queues[mapfile] = new Queue(MAX_UNUSED_MAPS)
+        process_id = multiprocessing.current_process()._identity
+        queue_cachekey = (process_id, mapfile)
+        if not queue_cachekey in self._map_objs_queues:
+            self._map_objs_queues[queue_cachekey] = new Queue(MAX_UNUSED_MAPS)
         try:
-            self._map_objs_queues[mapfile].put_nowait(m)
+            self._map_objs_queues[queue_cachekey].put_nowait(m)
         except Full:
             # cleanup the data and drop the map, so it can be garbage collected
             m.remove_all()
