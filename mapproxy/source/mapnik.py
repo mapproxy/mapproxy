@@ -40,6 +40,16 @@ except ImportError:
     except ImportError:
         mapnik = None
 
+try:
+    import queue.Queue as Queue
+    import queue.Empty as Empty
+    import queue.Full as Full
+except ImportError: # in python2 it is called Queue
+    import Queue
+    import Queue.Empty as Empty
+    import Queue.Full as Full
+MAX_UNUSED_MAPS=10
+
 # fake 2.0 API for older versions
 if mapnik and not hasattr(mapnik, 'Box2d'):
     mapnik.Box2d = mapnik.Envelope
@@ -59,10 +69,12 @@ class MapnikSource(MapLayer):
         self.scale_factor = scale_factor
         self.lock = lock
         # global objects allow caching over multiple instances within the same worker process
-        global _map_objs
+        global _map_objs # mapnik map objects by cachekey
         _map_objs = {}
         global _map_objs_lock
         _map_objs_lock = threading.Lock()
+        global _map_objs_queues # queues of unused mapnik map objects by mapfile
+        _map_objs_queues = {}
         self._cache_map_obj = reuse_map_objects
         if self.coverage:
             self.extent = MapExtent(self.coverage.bbox, self.coverage.srs)
@@ -102,6 +114,24 @@ class MapnikSource(MapLayer):
         mapnik.load_map(m, str(mapfile))
         return m
 
+    def _get_map_obj(self, mapfile):
+        if mapfile in self._map_objs_queues:
+            try:
+                return self._map_objs_queues[mapfile].get_nowait()
+            except Empty:
+                pass
+        return _create_map_obj(self, mapfile)
+
+    def _put_unused_map_obj(self, mapfile, m):
+        if not mapfile in self._map_objs_queues:
+            self._map_objs_queues[mapfile] = new Queue(MAX_UNUSED_MAPS)
+        try:
+            self._map_objs_queues[mapfile].put_nowait(m)
+        except Full:
+            # cleanup the data and drop the map, so it can be garbage collected
+            m.remove_all()
+            mapnik.clear_cache()
+
     def map_obj(self, mapfile):
         # cache loaded map objects
         # only works when a single proc/thread accesses the map
@@ -117,7 +147,7 @@ class MapnikSource(MapLayer):
             cachekey = (process_id, thread_id, mapfile)
         with _map_objs_lock:
             if cachekey not in _map_objs:
-                _map_objs[cachekey] = self._create_map_obj(mapfile)
+                _map_objs[cachekey] = self._get_map_obj(mapfile)
             mapnik_map = _map_objs[cachekey]
 
         # clean up no longer used cached maps
@@ -134,11 +164,12 @@ class MapnikSource(MapLayer):
                         try:
                             m = _map_objs[k]
                             del _map_objs[k]
+                            # put the map into the queue of unused
+                            # maps so it can be re-used from another
+                            # thread.
+                            self._put_unused_map_obj(mapfile, m)
                         except KeyError:
                             continue
-                        # cleanup
-                        m.remove_all()
-                        mapnik.clear_cache()
 
         return mapnik_map
 
