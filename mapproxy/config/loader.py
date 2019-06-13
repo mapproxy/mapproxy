@@ -1471,6 +1471,22 @@ class CacheConfiguration(ConfigurationBase):
         concurrent_tile_creators = self.context.globals.get_value('concurrent_tile_creators', self.conf,
             global_key='cache.concurrent_tile_creators')
 
+        cache_rescaled_tiles = self.conf.get('cache_rescaled_tiles')
+        upscale_tiles = self.conf.get('upscale_tiles', 0)
+        if upscale_tiles < 0:
+            raise ConfigurationError("upscale_tiles must be positive")
+        downscale_tiles = self.conf.get('downscale_tiles', 0)
+        if downscale_tiles < 0:
+            raise ConfigurationError("downscale_tiles must be positive")
+        if upscale_tiles and downscale_tiles:
+            raise ConfigurationError("cannot use both upscale_tiles and downscale_tiles")
+
+        rescale_tiles = 0
+        if upscale_tiles:
+            rescale_tiles = -upscale_tiles
+        if downscale_tiles:
+            rescale_tiles = downscale_tiles
+
         renderd_address = self.context.globals.get_value('renderd.address', self.conf)
 
         band_merger = None
@@ -1551,6 +1567,8 @@ class CacheConfiguration(ConfigurationBase):
                 pre_store_filter=tile_filter,
                 tile_creator_class=tile_creator_class,
                 bulk_meta_tiles=bulk_meta_tiles,
+                cache_rescaled_tiles=cache_rescaled_tiles,
+                rescale_tiles=rescale_tiles,
             )
             extent = merge_layer_extents(sources)
             if extent.is_default:

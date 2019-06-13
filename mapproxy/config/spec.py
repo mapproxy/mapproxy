@@ -414,6 +414,9 @@ mapproxy_yaml_spec = {
             'use_direct_from_level': number(),
             'use_direct_from_res': number(),
             'link_single_color_images': bool(),
+            'cache_rescaled_tiles': bool(),
+            'upscale_tiles': int(),
+            'downscale_tiles': int(),
             'watermark': {
                 'text': string_type,
                 'font_size': number(),

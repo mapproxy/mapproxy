@@ -34,7 +34,7 @@ from mapproxy.client.http import HTTPClient
 from mapproxy.client.wms import WMSClient
 from mapproxy.compat.image import Image
 from mapproxy.grid import TileGrid, resolution_range
-from mapproxy.image import ImageSource
+from mapproxy.image import ImageSource, BlankImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import (
     BlankImage,
@@ -54,7 +54,7 @@ from mapproxy.source.wms import WMSSource
 from mapproxy.source.error import HTTPSourceErrorHandler
 from mapproxy.srs import SRS, SupportedSRS, PreferredSrcSRS
 from mapproxy.test.http import assert_query_eq, wms_query_eq, query_eq, mock_httpd
-from mapproxy.test.image import create_debug_img, is_png, tmp_image
+from mapproxy.test.image import create_debug_img, is_png, tmp_image, create_tmp_image_buf
 from mapproxy.util.coverage import BBOXCoverage
 
 
@@ -107,9 +107,9 @@ class TestTiledSourceGlobalGeodetic(object):
         with pytest.raises(InvalidSourceQuery):
             self.source.get_map(MapQuery([-180, -90, 0, 90], (512, 256), SRS(4326)))
 
-class MockFileCache(FileCache):
+class RecordFileCache(FileCache):
     def __init__(self, *args, **kw):
-        super(MockFileCache, self).__init__(*args, **kw)
+        super(RecordFileCache, self).__init__(*args, **kw)
         self.stored_tiles = set()
         self.loaded_tiles = counting_set([])
 
@@ -120,6 +120,10 @@ class MockFileCache(FileCache):
             FileCache.store_tile(self, tile)
 
     def load_tile(self, tile, with_metadata=False):
+        if tile.source:
+            # Do not record tiles with source as "loaded" as FileCache will
+            # return tile without checking/loading from filesystem.
+            return True
         self.loaded_tiles.add(tile.coord)
         return FileCache.load_tile(self, tile, with_metadata)
 
@@ -150,7 +154,7 @@ def mock_tile_client():
 
 @pytest.fixture
 def mock_file_cache():
-    return MockFileCache('/dev/null', 'png')
+    return RecordFileCache('/dev/null', 'png')
 
 
 class TestTileManagerStaleTiles(object):
@@ -390,25 +394,25 @@ class TestTileManagerLocking(object):
     def slow_source(self):
         return SlowMockSource()
     @pytest.fixture
-    def mock_file_cache(self, tmpdir):
-        return MockFileCache(tmpdir.strpath, 'png')
+    def file_cache(self, tmpdir):
+        return RecordFileCache(tmpdir.strpath, 'png')
 
     @pytest.fixture
-    def tile_mgr(self, mock_file_cache, slow_source, tile_locker):
+    def tile_mgr(self, file_cache, slow_source, tile_locker):
         grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         image_opts = ImageOptions(format='image/png')
-        return TileManager(grid, mock_file_cache, [slow_source], 'png',
+        return TileManager(grid, file_cache, [slow_source], 'png',
             meta_size=[2, 2], meta_buffer=0, image_opts=image_opts,
             locker=tile_locker,
         )
 
-    def test_get_single(self, tile_mgr, mock_file_cache, slow_source):
+    def test_get_single(self, tile_mgr, file_cache, slow_source):
         tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
-        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
         assert slow_source.requested == \
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))]
 
-    def test_concurrent(self, tile_mgr, mock_file_cache, slow_source):
+    def test_concurrent(self, tile_mgr, file_cache, slow_source):
         def do_it():
             tile_mgr.creator().create_tiles([Tile((0, 0, 1)), Tile((1, 0, 1))])
 
@@ -416,12 +420,12 @@ class TestTileManagerLocking(object):
         [t.start() for t in threads]
         [t.join() for t in threads]
 
-        assert mock_file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
-        assert mock_file_cache.loaded_tiles == counting_set([(0, 0, 1), (1, 0, 1), (0, 0, 1), (1, 0, 1)])
+        assert file_cache.stored_tiles == set([(0, 0, 1), (1, 0, 1)])
+        assert file_cache.loaded_tiles == counting_set([(0, 0, 1), (1, 0, 1), (0, 0, 1), (1, 0, 1)])
         assert slow_source.requested == \
             [((-180.0, -90.0, 180.0, 90.0), (512, 256), SRS(4326))]
 
-        assert os.path.exists(mock_file_cache.tile_location(Tile((0, 0, 1))))
+        assert os.path.exists(file_cache.tile_location(Tile((0, 0, 1))))
 
 
 
@@ -1020,3 +1024,170 @@ def test_neasted_conditional_layers(case, map_query, is_direct, is_l3857, is_l43
     assert bool(direct.requested) == is_direct
     assert bool(l3857.requested) == is_l3857
     assert bool(l4326.requested) == is_l4326
+
+
+def is_blank(tiles):
+    return all([t.source is None or isinstance(t.source, BlankImageSource) for t in tiles.tiles])
+
+class TestTileManagerEmptySources(object):
+    def test_upscale(self, mock_file_cache, tile_locker):
+        grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
+        image_opts = ImageOptions(format='image/png')
+        tm = TileManager(
+            grid, mock_file_cache, [], 'png',
+            locker=tile_locker,
+            image_opts=image_opts,
+        )
+
+        assert is_blank(tm.load_tile_coords([(0, 0, 0)]))
+        assert is_blank(tm.load_tile_coords([(3, 2, 5)]))
+
+        assert mock_file_cache.stored_tiles == set()
+        assert mock_file_cache.loaded_tiles == counting_set([(0, 0, 0), (3, 2, 5)])
+
+class TestTileManagerRescaleTiles(object):
+    @pytest.fixture
+    def file_cache(self, tmpdir):
+        return RecordFileCache(tmpdir.strpath, 'png')
+
+    @pytest.mark.parametrize("name,rescale_tiles,tiles,store,expected_load,output", [
+        (
+            "no-scale: missing tile, no rescale",
+            0, [(0, 0, 0)], [], [(0, 0, 0)], "blank",
+        ),
+        (
+            "downscale: missing tile, 1 level rescale with None tiles",
+            1, [(0, 0, 0)], [], [(0, 0, 0), None, None, (0, 0, 1), (1, 0, 1)], "blank",
+        ),
+        (
+            "downscale: missing tile, 1 level rescale",
+            1, [(1, 2, 4)], [], [(1, 2, 4), (2, 4, 5), (3, 4, 5), (2, 5, 5), (3, 5, 5)], "blank",
+        ),
+        (
+            "downscale: missing tile, 2 level rescale",
+            2, [(1, 2, 4)], [], [
+                (1, 2, 4),
+                (2, 4, 5), (3, 4, 5), (2, 5, 5), (3, 5, 5),
+                (4, 8, 6), (5, 8, 6), (6, 8, 6), (7, 8, 6),
+                (4, 9, 6), (5, 9, 6), (6, 9, 6), (7, 9, 6),
+                (4, 10, 6), (5, 10, 6), (6, 10, 6), (7, 10, 6),
+                (4, 11, 6), (5, 11, 6), (6, 11, 6), (7, 11, 6),
+            ], "blank",
+        ),
+        (
+            "downscale: exact tile cached",
+            1, [(0, 0, 1)], [(0, 0, 1)], [(0, 0, 1)], "full",
+        ),
+        (
+            "downscale: next level tiles partially cached",
+            1, [(0, 0, 1)], [(0, 0, 2)], [(0, 0, 1), (0, 0, 2), (0, 1, 2), (1, 0, 2), (1, 1, 2)], "partial",
+        ),
+        (
+            "downscale: next level tiles fully cached",
+            1, [(0, 0, 1)], [(0, 0, 2), (0, 1, 2), (1, 0, 2), (1, 1, 2)], [(0, 0, 1), (0, 0, 2), (0, 1, 2), (1, 0, 2), (1, 1, 2)], "full",
+        ),
+        (
+            "upscale: missing tile level 1 rescale",
+            -1, [(16, 8, 5)], [], [(16, 8, 5), (8, 4, 4)], "blank",
+        ),
+        (
+            "upscale: missing tile level 1 rescale, odd coords",
+            -1, [(15, 7, 5)], [], [(15, 7, 5), (7, 3, 4)], "blank",
+        ),
+        (
+            "upscale: missing tile level 1 rescale, multiple tiles",
+            -1, [(15, 6, 5), (16, 6, 5), (15, 7, 5), (16, 7, 5)], [],
+            [(15, 6, 5), (16, 6, 5), (15, 7, 5), (16, 7, 5), (7, 3, 4), (8, 3, 4)], "blank",
+        ),
+        (
+            "upscale: tile in level 2",
+            -3, [(15, 7, 5)], [(3, 1, 3)], [(15, 7, 5), (7, 3, 4), (3, 1, 3)], "full",
+        ),
+        (
+            "upscale: missing tile level 99 rescale",
+            -99, [(16, 8, 5)], [], [(16, 8, 5), (8, 4, 4), (4, 2, 3), (2, 1, 2), (1, 0, 1), (0, 0, 0)], "blank",
+        ),
+        (
+            "upscale: unregular grid, partial match",
+            -2, [(201, 101, 10)], [(78, 40, 8), (79, 40, 8), (79, 39, 8)], [
+                (201, 101, 10), (100, 50, 9),
+                # check all four tiles above 100/50/9
+                (78, 40, 8), (79, 40, 8), (78, 39, 8), (79, 39, 8),
+            ], "partial",
+        ),
+        (
+            "upscale: unregular grid, multiple tiles, partial match",
+            -2, [(200, 100, 10), (201, 100, 10), (200, 101, 10), (201, 101, 10)],
+            [(78, 40, 8), (79, 40, 8), (79, 39, 8)], [
+                (200, 100, 10), (201, 100, 10), (200, 101, 10), (201, 101, 10),
+                (100, 50, 9),
+                (78, 40, 8), (79, 40, 8), (78, 39, 8), (79, 39, 8),
+            ], "partial",
+        ),
+        (
+            "upscale: unregular grid",
+            -3, [(200, 100, 10)], [], [
+                (200, 100, 10), (100, 50, 9),
+                # check all four tiles above 100/50/9
+                (78, 40, 8), (79, 40, 8), (78, 39, 8), (79, 39, 8),
+                # check tiles above level 8 for each tile individually.
+                # this is due to the recursive nature of our rescaling algorithm
+                (49, 24, 7),
+                (50, 24, 7),
+                (49, 25, 7),
+                (50, 25, 7),
+                (49, 26, 7),
+                (50, 26, 7),
+            ],
+            "blank",
+        ),
+    ])
+    def test_scaled_tiles(self, name, file_cache, tile_locker, rescale_tiles, tiles, store, expected_load, output):
+        res = [
+            1.40625,               # 0
+            0.703125,              # 1
+            0.3515625,             # 2
+            0.17578125,            # 3
+            0.087890625,           # 4
+            0.0439453125,          # 5
+            0.02197265625,         # 6
+            0.010986328125,        # 7
+            0.007,                 # 8 additional resolution to test unregular grids
+            0.0054931640625,       # 9
+            0.00274658203125,      # 10
+        ]
+        grid = TileGrid(SRS(4326), origin='sw', bbox=[-180, -90, 180, 90], res=res)
+        image_opts = ImageOptions(format='image/png', resampling='nearest')
+        tm = TileManager(
+            grid, file_cache, [], 'png',
+            locker=tile_locker,
+            image_opts=image_opts,
+            rescale_tiles=rescale_tiles,
+        )
+
+        if store:
+            colors = set()
+            if output == "partial":
+                colors.add((255, 255, 255))
+            for i, t in enumerate(store):
+                color = (150+i*35, 5+i*35, 5+i*35)
+                colors.add(color)
+                tile = Tile(t, ImageSource(create_tmp_image_buf((256, 256), color=color)))
+                file_cache.store_tile(tile)
+
+            loaded_tiles = tm.load_tile_coords(tiles)
+            assert not is_blank(loaded_tiles)
+            assert len(loaded_tiles) == len(tiles)
+            got_colors = set()
+            for t in loaded_tiles:
+                got_colors.update([c for _, c in t.source.as_image().getcolors()])
+            assert got_colors == colors
+        else:
+            loaded_tiles = tm.load_tile_coords(tiles)
+            assert is_blank(loaded_tiles) == (output == "blank")
+            assert len(loaded_tiles.tiles) == len(tiles)
+
+        assert file_cache.stored_tiles == set(store)
+        assert file_cache.loaded_tiles == counting_set(expected_load)
+
+
