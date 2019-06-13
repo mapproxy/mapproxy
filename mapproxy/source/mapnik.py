@@ -120,9 +120,9 @@ class MapnikSource(MapLayer):
     def _get_map_obj(self, mapfile):
         process_id = multiprocessing.current_process()._identity
         queue_cachekey = (process_id, mapfile)
-        if queue_cachekey in self._map_objs_queues:
+        if queue_cachekey in _map_objs_queues:
             try:
-                return self._map_objs_queues[queue_cachekey].get_nowait()
+                return _map_objs_queues[queue_cachekey].get_nowait()
             except Empty:
                 pass
         return _create_map_obj(self, mapfile)
@@ -130,10 +130,10 @@ class MapnikSource(MapLayer):
     def _put_unused_map_obj(self, mapfile, m):
         process_id = multiprocessing.current_process()._identity
         queue_cachekey = (process_id, mapfile)
-        if not queue_cachekey in self._map_objs_queues:
-            self._map_objs_queues[queue_cachekey] = Queue(MAX_UNUSED_MAPS)
+        if not queue_cachekey in _map_objs_queues:
+            _map_objs_queues[queue_cachekey] = Queue(MAX_UNUSED_MAPS)
         try:
-            self._map_objs_queues[queue_cachekey].put_nowait(m)
+            _map_objs_queues[queue_cachekey].put_nowait(m)
         except Full:
             # cleanup the data and drop the map, so it can be garbage collected
             m.remove_all()
