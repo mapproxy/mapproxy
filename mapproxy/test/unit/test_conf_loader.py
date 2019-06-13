@@ -40,7 +40,7 @@ from mapproxy.util.geom import EmptyGeometryError
 class TestLayerConfiguration(object):
     def _test_conf(self, yaml_part):
         base = {'sources': {'s': {'type': 'wms', 'req': {'url': ''}}}}
-        base.update(yaml.load(yaml_part))
+        base.update(yaml.safe_load(yaml_part))
         return base
 
     def test_legacy_ordered(self):

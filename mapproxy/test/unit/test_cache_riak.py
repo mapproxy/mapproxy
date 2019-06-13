@@ -62,13 +62,13 @@ class RiakCacheTestBase(TileCacheTestBase):
         assert self.cache.remove_tile(tile)
 
 
-@pytest.mark.skipif('MAPPROXY_TEST_RIAK_HTTP' not in os.environ,
+@pytest.mark.skipif(not os.environ.get('MAPPROXY_TEST_RIAK_HTTP'),
                     reason="MAPPROXY_TEST_RIAK_HTTP not set")
 class TestRiakCacheHTTP(RiakCacheTestBase):
     riak_url_env = 'MAPPROXY_TEST_RIAK_HTTP'
 
 
-@pytest.mark.skipif('MAPPROXY_TEST_RIAK_PBC' not in os.environ,
+@pytest.mark.skipif(not os.environ.get('MAPPROXY_TEST_RIAK_PBC'),
                     reason="MAPPROXY_TEST_RIAK_PBC not set")
 class TestRiakCachePBC(RiakCacheTestBase):
     riak_url_env = 'MAPPROXY_TEST_RIAK_PBC'

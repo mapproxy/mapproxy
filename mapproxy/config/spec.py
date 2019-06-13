@@ -383,6 +383,7 @@ mapproxy_yaml_spec = {
           'axis_order_ne': [str()],
           'axis_order_en': [str()],
           'proj_data_dir': str(),
+          'preferred_src_proj': {str(): [str()]},
         },
         'tiles': {
             'expires_hours': number(),
@@ -486,6 +487,7 @@ mapproxy_yaml_spec = {
                 'supported_formats': [str()],
                 'supported_srs': [str()],
                 'http': http_opts,
+                'on_error': on_error,
                 'forward_req_params': [str()],
                 required('req'): {
                     required('url'): str(),
@@ -548,7 +550,8 @@ mapproxy_yaml_spec = {
                     'featureinfo_return_geometries': bool(),
                 },
                 'supported_srs': [str()],
-                'http': http_opts
+                'http': http_opts,
+                'on_error': on_error
             }),
             'debug': {
             },
@@ -585,13 +588,3 @@ mapproxy_yaml_spec = {
     'parts': anything(),
 }
 
-if __name__ == '__main__':
-    import sys
-    import yaml
-    for f in sys.argv[1:]:
-        data = yaml.load(open(f))
-        try:
-            validate(mapproxy_yaml_spec, data)
-        except ValidationError as ex:
-            for err in ex.errors:
-                print('%s: %s' % (f, err))

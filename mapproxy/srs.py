@@ -254,24 +254,17 @@ class _SRS(object):
         True
         >>> SRS(4326) == SRS("4326")
         True
-        >>> SRS(4326) == SRS(900913)
+        >>> SRS(4326) == SRS(3857)
         False
-        >>> SRS(3857) == SRS(900913)
-        True
-        >>> SRS(900913) == SRS(3857)
-        True
-
         """
         if isinstance(other, _SRS):
-            if (self.srs_code in WEBMERCATOR_EPSG
-                and other.srs_code in WEBMERCATOR_EPSG):
-                return True
             return self.proj.srs == other.proj.srs
         else:
             return NotImplemented
+
     def __ne__(self, other):
         """
-        >>> SRS(900913) != SRS(900913)
+        >>> SRS(3857) != SRS(3857)
         False
         >>> SRS(4326) != SRS(900913)
         True
@@ -281,6 +274,7 @@ class _SRS(object):
             return NotImplemented
         else:
             return not equal_result
+
     def __str__(self):
         #pylint: disable-msg=E1101
         return "SRS %s ('%s')" % (self.srs_code, self.proj.srs)
@@ -421,3 +415,41 @@ def make_lin_transf(src_bbox, dst_bbox):
                            dst_bbox[1] + (src_bbox[3] - x_y[1]) *
                            (dst_bbox[3]-dst_bbox[1]) / (src_bbox[3] - src_bbox[1]))
     return func
+
+
+class PreferredSrcSRS(object):
+    def __init__(self):
+        self.target_proj = {}
+
+    def add(self, target, prefered_srs):
+        self.target_proj[target] = prefered_srs
+
+    def preferred_src(self, target, available_src):
+        if not available_src:
+            raise ValueError("no available src SRS")
+        if target in available_src:
+            return target
+        if target in self.target_proj:
+            for preferred in self.target_proj[target]:
+                if preferred in available_src:
+                    return preferred
+
+        for avail in available_src:
+            if avail.is_latlong == target.is_latlong:
+                return avail
+        return available_src[0]
+
+class SupportedSRS(object):
+    def __init__(self, supported_srs, preferred_srs=None):
+        self.supported_srs = supported_srs
+        self.preferred_srs = preferred_srs or PreferredSrcSRS()
+
+    def __contains__(self, srs):
+        return srs in self.supported_srs
+
+    def best_srs(self, target):
+        return self.preferred_srs.preferred_src(target, self.supported_srs)
+
+    def __eq__(self, other):
+        # .prefered_srs is set global, so we only compare .supported_srs
+        return self.supported_srs == other.supported_srs

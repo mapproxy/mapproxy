@@ -18,7 +18,7 @@ from io import BytesIO
 from mapproxy.client.arcgis import ArcGISInfoClient
 from mapproxy.layer import InfoQuery
 from mapproxy.request.arcgis import ArcGISIdentifyRequest
-from mapproxy.srs import SRS
+from mapproxy.srs import SRS, SupportedSRS
 from mapproxy.test.http import assert_query_eq
 
 
@@ -41,7 +41,7 @@ class TestArcGISInfoClient(object):
     def test_fi_request(self):
         req = ArcGISIdentifyRequest(url=TESTSERVER_URL + '/MapServer/export?map=foo', param={'layers':'foo'})
         http = MockHTTPClient()
-        wms = ArcGISInfoClient(req, http_client=http, supported_srs=[SRS(4326)])
+        wms = ArcGISInfoClient(req, http_client=http, supported_srs=SupportedSRS([SRS(4326)]))
         fi_req = InfoQuery((8, 50, 9, 51), (512, 512),
                            SRS(4326), (128, 64), 'text/plain')
 
@@ -58,7 +58,7 @@ class TestArcGISInfoClient(object):
     def test_transform_fi_request_supported_srs(self):
         req = ArcGISIdentifyRequest(url=TESTSERVER_URL + '/MapServer/export?map=foo', param={'layers':'foo'})
         http = MockHTTPClient()
-        wms = ArcGISInfoClient(req, http_client=http, supported_srs=[SRS(25832)])
+        wms = ArcGISInfoClient(req, http_client=http, supported_srs=SupportedSRS([SRS(25832)]))
         fi_req = InfoQuery((8, 50, 9, 51), (512, 512),
                            SRS(4326), (128, 64), 'text/plain')
 

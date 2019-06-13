@@ -70,7 +70,29 @@ def fi_req():
             style="",
             request="GetFeatureInfo",
             i="17",
+            j="27"
+        ),
+    )
+
+@pytest.fixture
+def fi_req_with_featurecount():
+    return WMTS100FeatureInfoRequest(
+        url="/service?",
+        param=dict(
+            service="WMTS",
+            version="1.0.0",
+            tilerow="0",
+            tilecol="0",
+            tilematrix="00",
+            tilematrixset="GLOBAL_MERCATOR",
+            layer="wms_cache",
+            format="image/png",
+            infoformat="application/json",
+            style="",
+            request="GetFeatureInfo",
+            i="17",
             j="27",
+            feature_count="5"
         ),
     )
 
@@ -284,6 +306,18 @@ class TestWMTS(SysTest):
             resp = app.get(str(fi_req), status=200)
             assert resp.content_type == "application/json"
 
+    def test_getfeatureinfo_featurecount(self, app, fi_req_with_featurecount):
+        serv = MockServ(port=42423)
+        serv.expects(
+            "/service?layers=foo,bar"
+            + "&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244"
+            + "&width=256&height=256&x=17&y=27&query_layers=foo,bar&format=image%2Fpng&srs=EPSG%3A900913"
+            + "&request=GetFeatureInfo&version=1.1.1&service=WMS&styles=&info_format=application/json&feature_count=5"
+        )
+        serv.returns(b'{"data": 43}')
+        with serv:
+            resp = app.get(str(fi_req_with_featurecount), status=200)
+            assert resp.content_type == "application/json"
 
     def test_getfeatureinfo_xml(self, app, fi_req):
         fi_req.params["infoformat"] = "application/gml+xml; version=3.1"

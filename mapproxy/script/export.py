@@ -65,7 +65,7 @@ def parse_grid_definition(definition):
     grid_conf = {}
     for arg in args:
         key, value = arg.split('=')
-        value = yaml.load(value)
+        value = yaml.safe_load(value)
         grid_conf[key] = value
 
     validate(conf_spec.grid_opts, grid_conf)

@@ -30,7 +30,7 @@ from mapproxy.request.wms import (
     WMS130MapRequest,
     WMS111FeatureInfoRequest,
 )
-from mapproxy.srs import SRS
+from mapproxy.srs import SRS, SupportedSRS
 from mapproxy.test.helper import assert_re, TempFile
 from mapproxy.test.http import mock_httpd, query_eq, assert_query_eq, wms_query_eq
 from mapproxy.test.unit.test_cache import MockHTTPClient
@@ -321,7 +321,7 @@ class TestWMSInfoClient(object):
     def test_transform_fi_request_supported_srs(self):
         req = WMS111FeatureInfoRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo'})
         http = MockHTTPClient()
-        wms = WMSInfoClient(req, http_client=http, supported_srs=[SRS(25832)])
+        wms = WMSInfoClient(req, http_client=http, supported_srs=SupportedSRS([SRS(25832)]))
         fi_req = InfoQuery((8, 50, 9, 51), (512, 512),
                            SRS(4326), (128, 64), 'text/plain')
 

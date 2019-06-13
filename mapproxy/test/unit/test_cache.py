@@ -51,7 +51,8 @@ from mapproxy.request.wms import WMS111MapRequest
 from mapproxy.source import InvalidSourceQuery, SourceError
 from mapproxy.source.tile import TiledSource
 from mapproxy.source.wms import WMSSource
-from mapproxy.srs import SRS
+from mapproxy.source.error import HTTPSourceErrorHandler
+from mapproxy.srs import SRS, SupportedSRS, PreferredSrcSRS
 from mapproxy.test.http import assert_query_eq, wms_query_eq, query_eq, mock_httpd
 from mapproxy.test.image import create_debug_img, is_png, tmp_image
 from mapproxy.util.coverage import BBOXCoverage
@@ -769,7 +770,7 @@ class TestWMSSourceTransform(object):
             'format': 'image/png', 'layers': 'foo'
         })
         client = WMSClient(req_template, http_client=mock_http_client)
-        return WMSSource(client, supported_srs=[SRS(4326)],
+        return WMSSource(client, supported_srs=SupportedSRS([SRS(4326)]),
             image_opts=ImageOptions(resampling='bilinear'))
 
     def test_get_map(self, source, mock_http_client):
@@ -852,6 +853,48 @@ class TestWMSSourceWithClient(object):
             q = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
             source.get_map(q)
 
+    def test_http_error_handler(self, client):
+        error_handler = HTTPSourceErrorHandler()
+        error_handler.add_handler(500, (255, 0, 0), cacheable=True)
+        error_handler.add_handler(400, (0, 0, 0), cacheable=False)
+        source = WMSSource(client, error_handler=error_handler)
+        expected_req = [
+            (
+                {
+                    'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                                     '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
+                                     '&VERSION=1.1.1&BBOX=0.0,10.0,10.0,20.0&WIDTH=512&STYLES='
+                },
+                {
+                    'body': b'error',
+                    'status': 500,
+                    'headers': {'content-type': 'text/plain'},
+                },
+            ),
+            (
+                {
+                    'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                                     '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A4326'
+                                     '&VERSION=1.1.1&BBOX=0.0,10.0,10.0,20.0&WIDTH=512&STYLES='
+                },
+                {
+                    'body': b'error',
+                    'status': 400,
+                    'headers': {'content-type': 'text/plain'},
+                },
+            ),
+        ]
+        with mock_httpd(TEST_SERVER_ADDRESS, expected_req):
+            query = MapQuery((0.0, 10.0, 10.0, 20.0), (512, 512), SRS(4326))
+            resp = source.get_map(query)
+            assert resp.cacheable
+            assert resp.as_image().getcolors() == [((512 * 512), (255, 0, 0))]
+
+            resp = source.get_map(query)
+            assert not resp.cacheable
+            assert resp.as_image().getcolors() == [((512 * 512), (0, 0, 0))]
+
+
 TESTSERVER_URL = 'http://%s:%d' % TEST_SERVER_ADDRESS
 
 class TestWMSSource(object):
@@ -860,7 +903,7 @@ class TestWMSSource(object):
     def source(self, mock_http_client):
         req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo'})
         wms = WMSClient(req, http_client=mock_http_client)
-        return WMSSource(wms, supported_srs=[SRS(4326)],
+        return WMSSource(wms, supported_srs=SupportedSRS([SRS(4326)]),
             image_opts=ImageOptions(resampling='bilinear'))
 
     def test_request(self, source, mock_http_client):
@@ -885,29 +928,11 @@ class TestWMSSource(object):
         img = resp.as_image()
         assert img.mode in ('P', 'RGB')
 
-    def test_similar_srs(self, mock_http_client):
-        # request in 3857 and source supports only 900913
-        # 3857 and 900913 are equal but the client requests must use 900913
-        req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
-                                    param={'layers':'foo', 'transparent': 'true'})
-        wms = WMSClient(req, http_client=mock_http_client)
-        source = WMSSource(wms, supported_srs=[SRS(900913)],
-            image_opts=ImageOptions(resampling='bilinear'))
-        req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(3857), 'png')
-        source.get_map(req)
-        assert len(mock_http_client.requested) == 1
-
-        assert_query_eq(mock_http_client.requested[0],
-            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                           '&REQUEST=GetMap&HEIGHT=512&SRS=EPSG%3A900913'
-                           '&VERSION=1.1.1&WIDTH=512&STYLES=&transparent=true'
-                           '&BBOX=-200000,-200000,200000,200000')
-
     def test_transformed_request_transparent(self, mock_http_client):
         req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
                                     param={'layers':'foo', 'transparent': 'true'})
         wms = WMSClient(req, http_client=mock_http_client)
-        source = WMSSource(wms, supported_srs=[SRS(4326)],
+        source = WMSSource(wms, supported_srs=SupportedSRS([SRS(4326)]),
             image_opts=ImageOptions(resampling='bilinear'))
 
         req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
@@ -951,23 +976,27 @@ def test_resolution_conditional_layers(case, map_query, low_requested):
 
 def test_srs_conditional_layers():
     l4326 = MockLayer()
-    l900913 = MockLayer()
-    l32632 = MockLayer()
+    l3857 = MockLayer()
+    l25832 = MockLayer()
+    preferred = PreferredSrcSRS()
+    preferred.add(SRS(31467), [SRS(25832), SRS(3857)])
     layer = SRSConditional([
-        (l4326, (SRS('EPSG:4326'),)),
-        (l900913, (SRS('EPSG:900913'), SRS('EPSG:31467'))),
-        (l32632, (SRSConditional.PROJECTED,)),
-    ], GLOBAL_GEOGRAPHIC_EXTENT)
+        (l4326, SRS(4326)),
+        (l3857, SRS(3857)),
+        (l25832, SRS(25832)),
+    ], GLOBAL_GEOGRAPHIC_EXTENT, preferred_srs=preferred,
+    )
 
     # srs match
     assert layer._select_layer(SRS(4326)) == l4326
-    assert layer._select_layer(SRS(900913)) == l900913
-    assert layer._select_layer(SRS(31467)) == l900913
+    assert layer._select_layer(SRS(3857)) == l3857
+    assert layer._select_layer(SRS(25832)) == l25832
     # type match (projected)
-    assert layer._select_layer(SRS(31466)) == l32632
-    assert layer._select_layer(SRS(32633)) == l32632
-    # fallback is first layer
+    assert layer._select_layer(SRS(31466)) == l3857
+    assert layer._select_layer(SRS(32633)) == l3857
     assert layer._select_layer(SRS(4258)) == l4326
+    # preferred
+    assert layer._select_layer(SRS(31467)) == l25832
 
 @pytest.mark.parametrize('case,map_query,is_direct,is_l3857,is_l4326', [
     ['high_3857', MapQuery((0, 0, 100, 100), (100, 100), SRS(900913)), True, False, False],
@@ -982,8 +1011,8 @@ def test_neasted_conditional_layers(case, map_query, is_direct, is_l3857, is_l43
     l4326 = MockLayer()
     layer = ResolutionConditional(
         SRSConditional([
-            (l3857, (SRS('EPSG:3857'),)),
-            (l4326, (SRS('EPSG:4326'),))
+            (l3857, SRS('EPSG:3857')),
+            (l4326, SRS('EPSG:4326'))
         ], GLOBAL_GEOGRAPHIC_EXTENT),
         direct, 10, SRS(3857), GLOBAL_GEOGRAPHIC_EXTENT
         )

@@ -34,7 +34,8 @@ class WMSSource(MapLayer):
     supports_meta_tiles = True
     def __init__(self, client, image_opts=None, coverage=None, res_range=None,
                  transparent_color=None, transparent_color_tolerance=None,
-                 supported_srs=None, supported_formats=None, fwd_req_params=None):
+                 supported_srs=None, supported_formats=None, fwd_req_params=None,
+                 error_handler=None):
         MapLayer.__init__(self, image_opts=image_opts)
         self.client = client
         self.supported_srs = supported_srs or []
@@ -51,6 +52,7 @@ class WMSSource(MapLayer):
             self.extent = MapExtent(self.coverage.bbox, self.coverage.srs)
         else:
             self.extent = DefaultMapExtent()
+        self.error_handler = error_handler
 
     def is_opaque(self, query):
         """
@@ -91,6 +93,10 @@ class WMSSource(MapLayer):
             return resp
 
         except HTTPClientError as e:
+            if self.error_handler:
+                resp = self.error_handler.handle(e.response_code, query)
+                if resp:
+                    return resp
             log.warn('could not retrieve WMS map: %s', e)
             reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
@@ -103,11 +109,6 @@ class WMSSource(MapLayer):
         if self.supported_srs:
             if query.srs not in self.supported_srs:
                 return self._get_transformed(query, format)
-            # some srs are equal but not the same (e.g. 900913/3857)
-            # use only supported srs so we use the right srs code.
-            idx = self.supported_srs.index(query.srs)
-            if self.supported_srs[idx] is not query.srs:
-                query.srs = self.supported_srs[idx]
         if self.extent and not self.extent.contains(MapExtent(query.bbox, query.srs)):
             return self._get_sub_query(query, format)
         resp = self.client.retrieve(query, format)
@@ -123,7 +124,7 @@ class WMSSource(MapLayer):
 
     def _get_transformed(self, query, format):
         dst_srs = query.srs
-        src_srs = self._best_supported_srs(dst_srs)
+        src_srs = self.supported_srs.best_srs(dst_srs)
         dst_bbox = query.bbox
         src_bbox = dst_srs.transform_bbox_to(src_srs, dst_bbox)
 
@@ -149,16 +150,6 @@ class WMSSource(MapLayer):
 
         img.format = format
         return img
-
-    def _best_supported_srs(self, srs):
-        latlong = srs.is_latlong
-
-        for srs in self.supported_srs:
-            if srs.is_latlong == latlong:
-                return srs
-
-        # else
-        return self.supported_srs[0]
 
     def _is_compatible(self, other, query):
         if not isinstance(other, WMSSource):

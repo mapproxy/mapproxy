@@ -24,19 +24,6 @@ except ImportError:
 import sys
 import threading
 
-try:
-    import eventlet
-    import eventlet.greenpool
-    import eventlet.tpool
-    import eventlet.patcher
-    _has_eventlet = True
-
-    import eventlet.debug
-    eventlet.debug.hub_exceptions(False)
-
-except ImportError:
-    _has_eventlet = False
-
 from mapproxy.config import base_config
 from mapproxy.config import local_base_config
 from mapproxy.compat import PY2
@@ -65,69 +52,6 @@ def _result_iter(results, use_result_objects=False):
             yield AsyncResult(result, exception)
         else:
             yield result
-
-class EventletPool(object):
-    def __init__(self, size=100):
-        self.size = size
-        self.base_config = base_config()
-
-    def shutdown(self, force=False):
-        # there is not way to stop a GreenPool
-        pass
-
-    def map(self, func, *args, **kw):
-        return list(self.imap(func, *args, **kw))
-
-    def imap(self, func, *args, **kw):
-        use_result_objects = kw.get('use_result_objects', False)
-        def call(*args):
-            with local_base_config(self.base_config):
-                try:
-                    return func(*args)
-                except Exception:
-                    if use_result_objects:
-                        return sys.exc_info()
-                    else:
-                        raise
-        if len(args[0]) == 1:
-            eventlet.sleep()
-            return _result_iter([call(*list(zip(*args))[0])], use_result_objects)
-        pool = eventlet.greenpool.GreenPool(self.size)
-        return _result_iter(pool.imap(call, *args), use_result_objects)
-
-    def starmap(self, func, args, **kw):
-        use_result_objects = kw.get('use_result_objects', False)
-        def call(*args):
-            with local_base_config(self.base_config):
-                try:
-                    return func(*args)
-                except Exception:
-                    if use_result_objects:
-                        return sys.exc_info()
-                    else:
-                        raise
-        if len(args) == 1:
-            eventlet.sleep()
-            return _result_iter([call(*args[0])], use_result_objects)
-        pool = eventlet.greenpool.GreenPool(self.size)
-        return _result_iter(pool.starmap(call, args), use_result_objects)
-
-    def starcall(self, args, **kw):
-        use_result_objects = kw.get('use_result_objects', False)
-        def call(func, *args):
-            with local_base_config(self.base_config):
-                try:
-                    return func(*args)
-                except Exception:
-                    if use_result_objects:
-                        return sys.exc_info()
-                    else:
-                        raise
-        if len(args) == 1:
-            eventlet.sleep()
-            return _result_iter([call(args[0][0], *args[0][1:])], use_result_objects)
-        pool = eventlet.greenpool.GreenPool(self.size)
-        return _result_iter(pool.starmap(call, args), use_result_objects)
 
 
 class ThreadWorker(threading.Thread):
@@ -265,6 +189,7 @@ class ThreadPool(object):
         Send shutdown sentinel to all executor threads. If `force` is True,
         clean task_queue and result_queue.
         """
+
         if force:
             _consume_queue(self.task_queue)
             _consume_queue(self.result_queue)
@@ -283,61 +208,20 @@ class ThreadPool(object):
         return pool
 
 
-def imap_async_eventlet(func, *args):
-    pool = EventletPool()
-    return pool.imap(func, *args)
-
-def imap_async_threaded(func, *args):
+def imap(func, *args):
     pool = ThreadPool(min(len(args[0]), MAX_MAP_ASYNC_THREADS))
     return pool.imap(func, *args)
 
-def starmap_async_eventlet(func, args):
-    pool = EventletPool()
-    return pool.starmap(func, args)
-
-def starmap_async_threaded(func, args):
+def starmap(func, args):
     pool = ThreadPool(min(len(args[0]), MAX_MAP_ASYNC_THREADS))
     return pool.starmap(func, args)
 
-def starcall_async_eventlet(args):
-    pool = EventletPool()
-    return pool.starcall(args)
-
-def starcall_async_threaded(args):
+def starcall(args):
     pool = ThreadPool(min(len(args[0]), MAX_MAP_ASYNC_THREADS))
     return pool.starcall(args)
 
-
-def run_non_blocking_eventlet(func, args, kw={}):
-    return eventlet.tpool.execute(func, *args, **kw)
-
-def run_non_blocking_threaded(func, args, kw={}):
+def run_non_blocking(func, args, kw={}):
     return func(*args, **kw)
 
 
-def import_module(module):
-    """
-    Import ``module``. Import patched version if eventlet is used.
-    """
-    if uses_eventlet:
-        return eventlet.import_patched(module)
-    else:
-        return __import__(module)
-
-uses_eventlet = False
-
-# socket should be monkey patched when MapProxy runs inside eventlet
-if _has_eventlet and eventlet.patcher.is_monkey_patched('socket'):
-    uses_eventlet = True
-    log_system.info('using eventlet for asynchronous operations')
-    imap = imap_async_eventlet
-    starmap = starmap_async_eventlet
-    starcall = starcall_async_eventlet
-    Pool = EventletPool
-    run_non_blocking = run_non_blocking_eventlet
-else:
-    imap = imap_async_threaded
-    starmap = starmap_async_threaded
-    starcall = starcall_async_threaded
-    Pool = ThreadPool
-    run_non_blocking = run_non_blocking_threaded
+Pool = ThreadPool

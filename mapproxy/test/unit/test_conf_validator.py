@@ -22,7 +22,7 @@ from mapproxy.config.validator import validate_references
 
 class TestValidator(object):
     def _test_conf(self, yaml_part=None):
-        base = yaml.load('''
+        base = yaml.safe_load('''
             services:
                 wms:
                     md:
@@ -43,7 +43,7 @@ class TestValidator(object):
                         layers: one
         ''')
         if yaml_part is not None:
-            base.update(yaml.load(yaml_part))
+            base.update(yaml.safe_load(yaml_part))
         return base
 
     def test_valid_config(self):

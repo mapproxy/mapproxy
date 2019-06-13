@@ -143,12 +143,12 @@ def config_command(args):
     overwrite = None
     if options.overwrite:
         with open(options.overwrite, 'rb') as f:
-            overwrite = yaml.load(f)
+            overwrite = yaml.safe_load(f)
 
     overwrite_seed = None
     if options.overwrite_seed:
         with open(options.overwrite_seed, 'rb') as f:
-            overwrite_seed = yaml.load(f)
+            overwrite_seed = yaml.safe_load(f)
 
     conf = {}
     if options.base:

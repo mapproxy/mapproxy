@@ -20,17 +20,16 @@ HTTP client that directly calls CGI executable.
 import errno
 import os
 import re
+import subprocess
 import time
 
 from mapproxy.source import SourceError
 from mapproxy.image import ImageSource
 from mapproxy.client.http import HTTPClientError
 from mapproxy.client.log import log_request
-from mapproxy.util.async_ import import_module
 from mapproxy.compat.modules import urlparse
 from mapproxy.compat import BytesIO
 
-subprocess = import_module('subprocess')
 
 def split_cgi_response(data):
     headers = []

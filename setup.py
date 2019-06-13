@@ -4,7 +4,7 @@ import pkg_resources
 
 
 install_requires = [
-    'PyYAML>=3.0,<3.99',
+    'PyYAML>=3.0',
 ]
 
 def package_installed(pkg):
@@ -67,16 +67,6 @@ setup(
         'console_scripts': [
             'mapproxy-seed = mapproxy.seed.script:main',
             'mapproxy-util = mapproxy.script.util:main',
-        ],
-        'paste.app_factory': [
-            'app = mapproxy.wsgiapp:app_factory',
-            'multiapp = mapproxy.multiapp:app_factory'
-        ],
-        'paste.paster_create_template': [
-            'mapproxy_conf=mapproxy.config_template:PasterConfigurationTemplate'
-        ],
-        'paste.filter_factory': [
-            'lighttpd_root_fix = mapproxy.util.wsgi:lighttpd_root_fix_filter_factory',
         ],
     },
     package_data = {'': ['*.xml', '*.yaml', '*.ttf', '*.wsgi', '*.ini']},
