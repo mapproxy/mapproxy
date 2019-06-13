@@ -49,8 +49,8 @@ try:
     Full = queue.Full
 except ImportError: # in python2 it is called Queue
     import Queue
-    import Queue.Empty as Empty
-    import Queue.Full as Full
+    Empty = Queue.Empty
+    Full = Queue.Full
 MAX_UNUSED_MAPS=10
 
 # fake 2.0 API for older versions
