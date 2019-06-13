@@ -97,7 +97,7 @@
   </Exception>
 {{if inspire_md}}
 
-{{def inspire_dates(config)}}
+{{def inspire_dates(config={})}}
   {{if 'date_of_publication' in config}}
 <inspire_common:DateOfPublication>{{config['date_of_publication']}}</inspire_common:DateOfPublication>
   {{endif}}
