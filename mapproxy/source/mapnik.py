@@ -125,7 +125,7 @@ class MapnikSource(MapLayer):
                 return _map_objs_queues[queue_cachekey].get_nowait()
             except Empty:
                 pass
-        return self._create_map_obj(self, mapfile)
+        return self._create_map_obj(mapfile)
 
     def _put_unused_map_obj(self, mapfile, m):
         process_id = multiprocessing.current_process()._identity
