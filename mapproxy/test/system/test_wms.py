@@ -23,6 +23,7 @@ from io import BytesIO
 
 import pytest
 
+from mapproxy.image import ImageSource
 from mapproxy.srs import SRS
 from mapproxy.compat.image import Image
 from mapproxy.request.wms import (
@@ -41,6 +42,7 @@ from mapproxy.request.wms import (
     wms_request,
 )
 from mapproxy.test.image import is_jpeg, is_png, tmp_image, create_tmp_image
+from mapproxy.test.unit.test_image import assert_geotiff_tags
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.helper import validate_with_dtd, validate_with_xsd
 from mapproxy.test.system import SysTest
@@ -358,6 +360,13 @@ class TestWMS111(SysTest):
         resp = app.get(self.common_map_req)
         assert resp.content_type == "image/jpeg"
         assert is_jpeg(BytesIO(resp.body))
+
+    def test_get_map_geotiff(self, app, fixture_cache_data):
+        self.common_map_req.params["format"] = "image/tiff"
+        resp = app.get(self.common_map_req)
+        assert resp.content_type == "image/tiff"
+        img = ImageSource(BytesIO(resp.body)).as_image()
+        assert_geotiff_tags(img, (-180, 80), (180/200.0, 80/200.0), 4326, False)
 
     def test_get_map_xml_exception(self, app):
         self.common_map_req.params["bbox"] = "0,0,90,90"

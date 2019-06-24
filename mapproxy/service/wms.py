@@ -29,7 +29,7 @@ from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.source import SourceError
 from mapproxy.exception import RequestError
-from mapproxy.image import bbox_position_in_image, SubImageSource, BlankImageSource
+from mapproxy.image import bbox_position_in_image, SubImageSource, BlankImageSource, GeoReference
 from mapproxy.image.merge import concat_legends, LayerMerger
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
@@ -152,6 +152,7 @@ class WMSServer(Server):
             map_request.http.environ, (query.srs.srs_code, query.bbox))
 
         try:
+            result.georef = GeoReference(bbox=query.bbox, srs=query.srs)
             result_buf = result.as_buffer(img_opts)
         except IOError as ex:
             raise RequestError('error while processing image file: %s' % ex,
