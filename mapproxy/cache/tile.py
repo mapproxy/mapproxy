@@ -39,11 +39,14 @@ Tile caching (creation, caching and retrieval of tiles).
 from functools import partial
 from contextlib import contextmanager
 from mapproxy.grid import MetaGrid
+from mapproxy.image import BlankImageSource
+from mapproxy.image.opts import ImageOptions
 from mapproxy.image.merge import merge_images
-from mapproxy.image.tile import TileSplitter
+from mapproxy.image.tile import TileSplitter, TiledImage
 from mapproxy.layer import MapQuery, BlankImage
 from mapproxy.util import async_
 from mapproxy.util.py import reraise
+
 
 class TileManager(object):
     """
@@ -56,9 +59,11 @@ class TileManager(object):
         return this or a new tile object.
     """
     def __init__(self, grid, cache, sources, format, locker, image_opts=None, request_format=None,
-        meta_buffer=None, meta_size=None, minimize_meta_requests=False, identifier=None,
-        pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None,
-        bulk_meta_tiles=False,
+            meta_buffer=None, meta_size=None, minimize_meta_requests=False, identifier=None,
+            pre_store_filter=None, concurrent_tile_creators=1, tile_creator_class=None,
+            bulk_meta_tiles=False,
+            rescale_tiles=0,
+            cache_rescaled_tiles=False,
         ):
         self.grid = grid
         self.cache = cache
@@ -74,6 +79,9 @@ class TileManager(object):
         self.pre_store_filter = pre_store_filter or []
         self.concurrent_tile_creators = concurrent_tile_creators
         self.tile_creator_class = tile_creator_class or TileCreator
+
+        self.rescale_tiles = rescale_tiles
+        self.cache_rescaled_tiles = cache_rescaled_tiles
 
         if meta_buffer or (meta_size and not meta_size == [1, 1]):
             if all(source.supports_meta_tiles for source in sources):
@@ -104,22 +112,43 @@ class TileManager(object):
             self.cache.cleanup()
 
     def load_tile_coord(self, tile_coord, dimensions=None, with_metadata=False):
-        tile = Tile(tile_coord)
-        self.cache.load_tile(tile, with_metadata)
+        return self.load_tile_coords(
+            [tile_coord], dimensions=dimensions, with_metadata=with_metadata,
+        )[0]
 
-        if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
-            # missing or staled
-            creator = self.creator(dimensions=dimensions)
-            created_tiles = creator.create_tiles([tile])
-            for created_tile in created_tiles:
-                if created_tile.coord == tile_coord:
-                    return created_tile
-
-        return tile
 
     def load_tile_coords(self, tile_coords, dimensions=None, with_metadata=False):
         tiles = TileCollection(tile_coords)
+        rescale_till_zoom = 0
+        if self.rescale_tiles:
+            rescaled_tiles = {}
+            rescale_till_zoom = tiles.tiles[0].coord[2] + self.rescale_tiles
+            if rescale_till_zoom < 0:
+                rescale_till_zoom = 0
+            if rescale_till_zoom > self.grid.levels:
+                rescale_till_zoom = self.grid.levels
+
+        tiles = self._load_tile_coords(
+            tiles, dimensions=dimensions, with_metadata=with_metadata,
+            rescale_till_zoom=rescale_till_zoom, rescaled_tiles={},
+        )
+
+        for t in tiles.tiles:
+            # Remove our internal marker source, for missing tiles.
+            if t.source is RESCALE_TILE_MISSING:
+                t.source = None
+
+        return tiles
+
+    def _load_tile_coords(self, tiles, dimensions=None, with_metadata=False,
+                          rescale_till_zoom=None, rescaled_tiles=None,
+        ):
         uncached_tiles = []
+
+        if rescaled_tiles:
+            for t in tiles:
+                if t.coord in rescaled_tiles:
+                    t.source = rescaled_tiles[t.coord].source
 
         # load all in batch
         self.cache.load_tiles(tiles, with_metadata)
@@ -132,6 +161,9 @@ class TileManager(object):
         if uncached_tiles:
             creator = self.creator(dimensions=dimensions)
             created_tiles = creator.create_tiles(uncached_tiles)
+            if not created_tiles and self.rescale_tiles:
+                created_tiles = [self._scaled_tile(t, rescale_till_zoom, rescaled_tiles) for t in uncached_tiles]
+
             for created_tile in created_tiles:
                 if created_tile.coord in tiles:
                     tiles[created_tile.coord].source = created_tile.source
@@ -202,6 +234,65 @@ class TileManager(object):
             tile = img_filter(tile)
         return tile
 
+    def _scaled_tile(self, tile, stop_zoom, rescaled_tiles):
+        """
+        Try to load tile by loading, scaling and clipping tiles from zoom levels above or
+        below. stop_zoom determines if tiles from above should be scaled up, or if tiles
+        from below should be scaled down.
+        Returns an empty Tile if tile zoom level is stop_zoom.
+        """
+        if tile.coord in rescaled_tiles:
+            return rescaled_tiles[tile.coord]
+
+        # Cache tile in rescaled_tiles. We initially set source to a fixed
+        # BlankImageSource and overwrite it if we actually rescaled the tile.
+        tile.source = RESCALE_TILE_MISSING
+        rescaled_tiles[tile.coord] = tile
+
+        tile_bbox = self.grid.tile_bbox(tile.coord)
+        current_zoom = tile.coord[2]
+        if stop_zoom == current_zoom:
+            return tile
+        if stop_zoom > current_zoom:
+            src_level = current_zoom + 1
+        else:
+            src_level = current_zoom - 1
+
+        src_bbox, src_tile_grid, affected_tile_coords = self.grid.get_affected_level_tiles(tile_bbox, src_level)
+
+        affected_tiles = TileCollection(affected_tile_coords)
+        for t in affected_tiles:
+            # Add sources of cached tiles, to avoid loading same tile multiple times
+            # loading recursive.
+            if t.coord in rescaled_tiles:
+                t.source = rescaled_tiles[t.coord].source
+
+        tile_collection = self._load_tile_coords(
+            affected_tiles,
+            rescale_till_zoom=stop_zoom,
+            rescaled_tiles=rescaled_tiles,
+        )
+
+        if tile_collection.blank:
+            return tile
+
+        tile_sources = []
+        for t in tile_collection:
+            # Replace RESCALE_TILE_MISSING with None, before transforming tiles.
+            tile_sources.append(t.source if t.source is not RESCALE_TILE_MISSING else None)
+
+        tiled_image = TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
+                            tile_grid=src_tile_grid, tile_size=self.grid.tile_size)
+        tile.source = tiled_image.transform(tile_bbox, self.grid.srs, self.grid.tile_size, self.image_opts)
+
+        if self.cache_rescaled_tiles:
+            self.cache.store_tile(tile)
+        return tile
+
+# RESCALE_TILE_MISSING is a dummy source to prevent a tile cache from loading
+# a tile that we already found out is missing.
+RESCALE_TILE_MISSING = BlankImageSource((256, 256), ImageOptions())
+
 class TileCreator(object):
     def __init__(self, tile_mgr, dimensions=None, image_merger=None, bulk_meta_tiles=False):
         self.cache = tile_mgr.cache
@@ -220,6 +311,8 @@ class TileCreator(object):
         return self.tile_mgr.is_cached(tile)
 
     def create_tiles(self, tiles):
+        if not self.sources:
+            return []
         if not self.meta_grid:
             created_tiles = self._create_single_tiles(tiles)
         elif self.tile_mgr.minimize_meta_requests and len(tiles) > 1:
@@ -537,6 +630,13 @@ class TileCollection(object):
         Returns True if no tile in this collection contains a source.
         """
         return all((t.source is None for t in self.tiles))
+
+    @property
+    def blank(self):
+        """
+        Returns True if all sources collection are BlankImageSources or have not source at all.
+        """
+        return all((t.source is None or isinstance(t.source, BlankImageSource) for t in self.tiles))
 
     def __repr__(self):
         return 'TileCollection(%r)' % self.tiles

@@ -384,7 +384,9 @@ class CacheMapLayer(MapLayer):
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
         self.extent = extent or map_extent_from_grid(self.grid)
-        self.res_range = merge_layer_res_ranges(self.tile_manager.sources)
+        self.res_range = []
+        if not self.tile_manager.rescale_tiles:
+            self.res_range = merge_layer_res_ranges(self.tile_manager.sources)
         self.max_tile_limit = max_tile_limit
 
     def get_map(self, query):
