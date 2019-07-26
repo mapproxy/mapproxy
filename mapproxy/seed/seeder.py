@@ -442,7 +442,7 @@ class SeedTask(object):
 
     @property
     def id(self):
-        return self.md['name'], self.md['cache_name'], self.md['grid_name']
+        return self.md['name'], self.md['cache_name'], self.md['grid_name'], tuple(self.levels)
 
     def intersects(self, bbox):
         if self.coverage.contains(bbox, self.grid.srs): return CONTAINS
@@ -507,11 +507,18 @@ def seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
     if task.refresh_timestamp is not None:
         task.tile_manager._expire_timestamp = task.refresh_timestamp
     task.tile_manager.minimize_meta_requests = False
+
+    work_on_metatiles = True
+    if task.tile_manager.rescale_tiles:
+        work_on_metatiles = False
+
     tile_worker_pool = TileWorkerPool(task, TileSeedWorker, dry_run=dry_run,
         size=concurrency, progress_logger=progress_logger)
     tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=True,
         skip_geoms_for_last_levels=skip_geoms_for_last_levels, progress_logger=progress_logger,
-        seed_progress=seed_progress)
+        seed_progress=seed_progress,
+        work_on_metatiles=work_on_metatiles,
+    )
     try:
         tile_walker.walk()
     except KeyboardInterrupt:

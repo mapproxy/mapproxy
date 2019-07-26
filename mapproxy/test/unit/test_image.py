@@ -19,18 +19,23 @@ import os
 
 from io import BytesIO
 
+import PIL
 import pytest
 
 from mapproxy.compat.image import Image, ImageDraw
 from mapproxy.image import (
-    ImageSource,
     BlankImageSource,
+    GeoReference,
+    ImageSource,
     ReadBufWrapper,
+    SubImageSource,
+    TIFF_GEOKEYDIRECTORYTAG,
+    TIFF_MODELPIXELSCALETAG,
+    TIFF_MODELTIEPOINTTAG,
+    _make_transparent as make_transparent,
+    img_has_transparency,
     is_single_color_image,
     peek_image_format,
-    _make_transparent as make_transparent,
-    SubImageSource,
-    img_has_transparency,
     quantize,
 )
 from mapproxy.image.merge import merge_images, BandMerger
@@ -107,6 +112,27 @@ class TestImageSource(object):
         assert is_jpeg(ir.as_buffer())
         assert is_tiff(ir.as_buffer(TIFF_FORMAT))
         assert is_tiff(ir.as_buffer())
+
+    @pytest.mark.skipif(PIL.PILLOW_VERSION < '6.1.0', reason="Pillow 6.1.0 required GeoTIFF")
+    def test_tiff_compression(self):
+        def encoded_size(encoding_options):
+            ir = ImageSource(create_debug_img((100, 100)), PNG_FORMAT)
+            buf = ir.as_buffer(ImageOptions(format="tiff", encoding_options=encoding_options))
+            return len(buf.read())
+
+        orig = encoded_size({})
+        q90 = encoded_size({'tiff_compression': 'jpeg', 'jpeg_quality': 90})
+        q75 = encoded_size({'tiff_compression': 'jpeg', 'jpeg_quality': 75})
+        qdf = encoded_size({'tiff_compression': 'jpeg'})
+        q50 = encoded_size({'tiff_compression': 'jpeg', 'jpeg_quality': 50})
+        lzw = encoded_size({'tiff_compression': 'tiff_lzw'})
+
+        # print(orig, q90, q75, qdf, q50, lzw)
+        assert orig > q90
+        assert q90 > q75
+        assert q75 == qdf
+        assert qdf > q50
+        assert q50 > lzw
 
     def test_output_formats_greyscale_png(self):
         img = Image.new("L", (100, 100))
@@ -542,6 +568,51 @@ class TestTransform(object):
                 image_opts=ImageOptions(resampling="nearest"),
             )
             result.as_image().save("/tmp/transform-%03d.png" % (err * 10,))
+
+
+def assert_geotiff_tags(img, expected_origin, expected_pixel_res, srs, projected):
+    tags = img.tag_v2
+    print(dict(tags))
+    print(dict(tags.tagtype))
+    assert tags[TIFF_MODELTIEPOINTTAG] == (
+        0.0, 0.0, 0.0, expected_origin[0], expected_origin[1], 0.0,
+    )
+    assert tags[TIFF_MODELPIXELSCALETAG] == pytest.approx((
+        expected_pixel_res[0], expected_pixel_res[1], 0.0,
+    ))
+    assert len(tags[TIFF_GEOKEYDIRECTORYTAG]) == 4*4
+    assert tags[TIFF_GEOKEYDIRECTORYTAG][0*4+3] == 4
+    assert tags[TIFF_GEOKEYDIRECTORYTAG][1*4+3] == (1 if projected else 2)
+    assert tags[TIFF_GEOKEYDIRECTORYTAG][3*4+3] == srs
+
+
+@pytest.mark.skipif(PIL.PILLOW_VERSION < '6.1.0', reason="Pillow 6.1.0 required GeoTIFF")
+@pytest.mark.parametrize("compression", ['jpeg', 'raw', 'tiff_lzw'])
+class TestGeoTIFF(object):
+
+    @pytest.mark.parametrize(
+        "srs,bbox,size,expected_pixel_res,expected_origin,projected",
+        [
+            (4326, (-180, -90, 180, 90), (360, 180), (1.0, 1.0), (-180, 90), False),
+            (4326, (-180, -90, 180, 90), (360, 360), (1.0, 0.5), (-180, 90), False),
+            (3857, (10000, 20000, 11000, 22000), (500, 1000), (2.0, 2.0), (10000, 22000), True),
+            (25832, (442691.10009850014,5889716.375224128,447502.95988220774,5894528.235007785),
+             (256, 256), (18.796327, 18.796327), (442691.10009850014, 5894528.235007785), True,
+            ),
+        ],
+    )
+    def test_geotiff_tags(
+        self, tmpdir, srs, bbox, size,
+        expected_pixel_res, expected_origin, projected,
+        compression,
+    ):
+        img = ImageSource(create_debug_img(size), georef=GeoReference(bbox=bbox, srs=SRS(srs)))
+        fname = os.path.join(tmpdir, 'geo.tiff')
+
+        img_opts = ImageOptions(format='tiff', encoding_options={'tiff_compression': compression})
+        img2 = ImageSource(img.as_buffer(img_opts)).as_image()
+
+        assert_geotiff_tags(img2, expected_origin, expected_pixel_res, srs, projected)
 
 
 class TestMesh(object):

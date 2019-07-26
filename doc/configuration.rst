@@ -487,6 +487,32 @@ Enables meta-tile handling for tiled sources. See :ref:`global cache options <me
 You can limit until which resolution MapProxy should cache data with these two options.
 Requests below the configured resolution or level will be passed to the underlying source and the results will not be stored. The resolution of ``use_direct_from_res`` should use the units of the first configured grid of this cache. This takes only effect when used in WMS services.
 
+``upscale_tiles`` and ``downscale_tiles``
+"""""""""""""""""""""""""""""""""""""""""
+
+MapProxy is able to create missing tiles by rescaling tiles from zoom levels below or above.
+
+MapProxy will scale up tiles from one or more zoom levels above (with lower resolutions) if you set ``upscale_tiles`` to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Higher values allow more blurry results.
+
+You can use ``upscale_tiles`` if you want to provide tiles or WMS responses in a higher resolution then your available cache. This also works with partially seeded caches, eg. where you have an arial image cache of 20cm, with some areas also in 10cm resolution. ``upscale_tiles`` allows you to provide responses for 10cm requests in all areas, allways returning the best available data.
+
+MapProxy will scale down tiles from one or more zoom levels below (with higher resolutions) if you set ``downscale_tiles`` to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Note that the number of tiles growth exponentialy. Typically, a single tile can be downscaled from four tiles of the next zoom level. Downscaling from two levels below requires 16 tiles, three levels below requires 64, etc.. A larger WMS request can quickly accumulate thousands of tiles required for downscaling. It is therefore `not` recommended to use ``downscale_tiles`` values larger then one.
+
+You can use ``downscale_tiles`` to fill a cache for a source that only provides data for higher resolutions.
+
+``mapproxy-seed`` will seed each level independently for caches with ``upscale_tiles`` or ``downscale_tiles``. It will start with the highest zoom level for ``downscale_tiles``, so that tiles in the next (lower) zoom levels can be created by downscaling the already created tiles. It will start in the lowest zoom level for ``upscale_tiles``, so that tiles in the next (higher) zoom levels can be created by upscaling the already creates tiles.
+
+A transparent tile is returned if no tile is found within the configured ``upscale_tiles`` or ``downscale_tiles`` range.
+
+
+To trigger the rescaling behaviour, a tile needs to be missing in the cache and MapProxy needs to be unable to fetch the tile from the source. MapProxy is unable to fetch the tile if the cache has no sources, or if all sources are either ``seed_only`` or limited to a different resolution (``min_res``/``max_res``).
+
+
+``cache_rescaled_tiles``
+""""""""""""""""""""""""
+
+Tiles created by the ``upscale_tiles`` or ``downscale_tiles`` option are only stored in the cache if this option is set to true.
+
 ``disable_storage``
 """"""""""""""""""""
 
@@ -1071,6 +1097,12 @@ The following encoding options are available:
 ``quantizer``
   The algorithm used to quantize (reduce) the image colors. Quantizing is used for GIF and paletted PNG images. Available quantizers are ``mediancut`` and ``fastoctree``. ``fastoctree`` is much faster and also supports 8bit PNG with full alpha support, but the image quality can be better with ``mediancut`` in some cases.
   The quantizing is done by the Python Image Library (PIL). ``fastoctree`` is a `new quantizer <http://mapproxy.org/blog/improving-the-performance-for-png-requests/>`_ that is only available in Pillow >=2.0. See :ref:`installation of PIL<dependencies_pil>`.
+
+``tiff_compression``
+  Enable compression for TIFF images. Available compression methods are `tiff_lzw` for lossless LZW compression, `jpeg` for JPEG compression and `raw` for no compression (default). You can use the ``jpeg_quality`` option to tune the image quality for JPEG compressed TIFFs. Requires Pillow >= 6.1.0.
+
+  .. versionadded:: 1.12.0
+
 
 Global
 """"""
