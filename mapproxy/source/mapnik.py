@@ -110,9 +110,10 @@ class MapnikSource(MapLayer):
         else:
             return self.render_mapfile(mapfile, query)
 
-    def _create_map_obj(self, mapfile):
+    def _create_map_obj(self, mapfile, process_id):
         m = mapnik.Map(0, 0)
         mapnik.load_map(m, str(mapfile))
+        m.map_obj_pid = process_id
         return m
 
     def _get_map_obj(self, mapfile):
@@ -120,10 +121,14 @@ class MapnikSource(MapLayer):
         queue_cachekey = (process_id, mapfile)
         if queue_cachekey in _map_objs_queues:
             try:
-                return _map_objs_queues[queue_cachekey].get_nowait()
+                m = _map_objs_queues[queue_cachekey].get_nowait()
+                # check explicitly for the process ID to ensure that
+                # map objects cannot move between processes
+                if m.map_object_pid == process_id:
+                    return m
             except Empty:
                 pass
-        return self._create_map_obj(mapfile)
+        return self._create_map_obj(mapfile, process_id)
 
     def _put_unused_map_obj(self, mapfile, m):
         process_id = multiprocessing.current_process()._identity
