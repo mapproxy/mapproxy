@@ -1,4 +1,16 @@
-1.11.0 2017-11-xx
+1.11.1 2019-08-06
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix Cross Site Scripting (XSS) issue in demo service. Fix for #322 did not
+  properly escaped input used in JavaScript examples.
+
+  A targeted attack could be used for information disclosure. For
+  example: Session cookies of a third party application running on
+  the same domain.
+
+1.11.0 2017-11-20
 ~~~~~~~~~~~~~~~~~
 
 Improvements:
