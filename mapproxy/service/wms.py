@@ -152,7 +152,7 @@ class WMSServer(Server):
             map_request.http.environ, (query.srs.srs_code, query.bbox))
 
         try:
-            result.georef = GeoReference(bbox=query.bbox, srs=query.srs)
+            result.georef = GeoReference(bbox=orig_query.bbox, srs=orig_query.srs)
             result_buf = result.as_buffer(img_opts)
         except IOError as ex:
             raise RequestError('error while processing image file: %s' % ex,
