@@ -5,6 +5,10 @@ globals:
     meta_buffer: 0
     tile_lock_dir: defaulttilelockdir
 
+  srs:
+    preferred_src_proj:
+      'EPSG:25831': ['EPSG:25832', 'EPSG:3857']
+
   image:
     # resampling: 'bicubic'
     paletted: False

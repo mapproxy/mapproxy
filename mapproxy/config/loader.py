@@ -317,6 +317,7 @@ class GridConfiguration(ConfigurationBase):
 
         return grid
 
+
 def preferred_srs(conf):
     from mapproxy.srs import SRS, PreferredSrcSRS
 
@@ -325,12 +326,12 @@ def preferred_srs(conf):
     if not preferred_conf:
         return
 
-    preferred = PreferredSrcSRS
+    preferred = PreferredSrcSRS()
+
     for target, preferred_srcs in preferred_conf.items():
-        preferred.add(SRS(target), [SRS(s) for s in preferred_srs])
+        preferred.add(SRS(target), [SRS(s) for s in preferred_srcs])
 
     return preferred
-
 
 
 class GlobalConfiguration(ConfigurationBase):
