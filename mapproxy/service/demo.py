@@ -22,7 +22,6 @@ import os
 import pkg_resources
 import mimetypes
 from collections import defaultdict
-from xml.sax.saxutils import escape
 
 from mapproxy.config.config import base_config
 from mapproxy.compat import PY2
@@ -258,3 +257,15 @@ class DemoServer(Server):
                 return True
             return False
         return True
+
+
+def escape(data):
+    """
+    Escape user-provided input data for safe inclusion in HTML _and_ JS to prevent XSS.
+    """
+    data = data.replace('&', '&amp;')
+    data = data.replace('>', '&gt;')
+    data = data.replace('<', '&lt;')
+    data = data.replace("'", '')
+    data = data.replace('"', '')
+    return data
