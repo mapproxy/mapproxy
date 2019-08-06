@@ -122,7 +122,15 @@ class TileManager(object):
         rescale_till_zoom = 0
         if self.rescale_tiles:
             rescaled_tiles = {}
-            rescale_till_zoom = tiles.tiles[0].coord[2] + self.rescale_tiles
+
+            for t in tiles.tiles:
+                # Use zoom level from first None tile.
+                if t.coord is not None:
+                    rescale_till_zoom = t.coord[2] + self.rescale_tiles
+                    break
+            else:
+                return tiles
+
             if rescale_till_zoom < 0:
                 rescale_till_zoom = 0
             if rescale_till_zoom > self.grid.levels:
