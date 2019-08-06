@@ -5,11 +5,10 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
-  # for 3.7 see at matrix.include
+  - "3.7"
 
 services:
   - couchdb
-  - riak
   - redis-server
 
 addons:
@@ -32,8 +31,10 @@ env:
   global:
     - MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984
     - MAPPROXY_TEST_REDIS=127.0.0.1:6379
-    - MAPPROXY_TEST_RIAK_HTTP=http://localhost:8098
-    - MAPPROXY_TEST_RIAK_PBC=pbc://localhost:8087
+
+    # Riak is not available with Xenial images. Disable tests for now.
+    # - MAPPROXY_TEST_RIAK_HTTP=http://localhost:8098
+    # - MAPPROXY_TEST_RIAK_PBC=pbc://localhost:8087
 
     # do not load /etc/boto.cfg with Python 3 incompatible plugin
     # https://github.com/travis-ci/travis-ci/issues/5246#issuecomment-166460882
@@ -41,23 +42,11 @@ env:
 
 matrix:
   include:
-    # Test 2.7 and 3.6 also with latest Pillow version
+    # Test 2.7 and 3.7 also with latest Pillow version
     - python: "2.7"
       env: USE_LATEST_PILLOW=1
-    - python: "3.6"
+    - python: "3.7"
       env: USE_LATEST_PILLOW=1
-
-    # Python 3.7 requires xenial and sudo
-    # https://github.com/travis-ci/travis-ci/issues/9069#issuecomment-425720905
-    - python: "3.7"
-      sudo: required
-      dist: xenial
-      env:
-        - MAPPROXY_TEST_RIAK_HTTP=
-        - MAPPROXY_TEST_RIAK_PBC=
-
-  allow_failures:
-    - python: "3.7"
 
 cache:
   directories:
