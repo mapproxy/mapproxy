@@ -607,7 +607,7 @@ class TestGeoTIFF(object):
         compression,
     ):
         img = ImageSource(create_debug_img(size), georef=GeoReference(bbox=bbox, srs=SRS(srs)))
-        fname = os.path.join(tmpdir, 'geo.tiff')
+        fname = os.path.join(str(tmpdir), 'geo.tiff')
 
         img_opts = ImageOptions(format='tiff', encoding_options={'tiff_compression': compression})
         img2 = ImageSource(img.as_buffer(img_opts)).as_image()

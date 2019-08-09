@@ -68,7 +68,7 @@ class GeoReference(object):
         width = self.bbox[2] - self.bbox[0]
         height = self.bbox[3] - self.bbox[1]
         return (
-            width/img_size[0], height/img_size[1], 0.0,
+            float(width)/img_size[0], float(height)/img_size[1], 0.0,
         )
 
     def tiff_tags(self, img_size):
