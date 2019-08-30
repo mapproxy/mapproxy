@@ -1,3 +1,46 @@
+1.12.0 2019-08-30
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Cache: Rescale tiles existing tiles with new upscale_tiles/downscale_tiles option.
+- Cache: Finer control for reprojection sources with preferred_src_proj option.
+- WMS: Add georeference to TIFF images (GeoTIFF).
+- WMS: Support for compressed TIFF images (LZW/JPEG).
+- WMS: Advertise MaxWidth/MaxHeight.
+- WMTS: Support for FeatureInfo requests.
+- WMS/ArcGIS: Add on_error handler (similar to on_error handling for tile sources).
+- WMS/WMTS: Add keyword_list to capabilities.
+- S3: Support for custom S3 server and ACL.
+- autoconfig: Support for username/password in URL.
+
+Fixes:
+
+- Various fixes for Python 3.6 and 3.7 compatibility.
+- Set explicit permissions for write_atomic on Windows.
+
+
+Other:
+
+- WMS: Respond with highest supported WMS version (1.3.0 by default).
+- Test: Now uses pytest instead of nosetest for all unit and system tests.
+- YAML: Always use load_safe to support PyYAML >3 without warnings.
+- Paster and eventlet specific code removed.
+
+
+1.11.1 2019-08-06
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix Cross Site Scripting (XSS) issue in demo service. Fix for #322 did not
+  properly escaped input used in JavaScript examples. Found by Janek Vind.
+
+  A targeted attack could be used for information disclosure. For
+  example: Session cookies of a third party application running on
+  the same domain.
+
+
 1.11.0 2017-11-20
 ~~~~~~~~~~~~~~~~~
 
