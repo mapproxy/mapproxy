@@ -154,6 +154,10 @@ class TestSupportedSRS(object):
         assert SRS(4258) not in supported
         assert SRS(25832) in supported
 
+    def test_iter(self, preferred):
+        supported = SupportedSRS([SRS(4326), SRS(25832)], preferred)
+        assert [SRS(4326), SRS(25832)] == [srs for srs in supported]
+
     def test_best_srs(self, preferred):
         supported = SupportedSRS([SRS(4326), SRS(25832)], preferred)
         assert supported.best_srs(SRS(4326)) == SRS(4326)
