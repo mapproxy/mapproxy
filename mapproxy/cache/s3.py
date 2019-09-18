@@ -18,13 +18,20 @@ import calendar
 import hashlib
 import sys
 import threading
-import urllib2
 
 from mapproxy.image import ImageSource
 from mapproxy.cache import path
 from mapproxy.cache.base import tile_buffer, TileCacheBase
+from mapproxy.compat import PY2
 from mapproxy.util import async_
 from mapproxy.util.py import reraise_exception
+
+if PY2:
+    import urllib2
+    from urllib2 import HTTPError
+else:
+    from urllib import request as urllib2
+    from urllib.error import HTTPError
 
 try:
     import boto3
