@@ -149,6 +149,7 @@ cache_types = {
         'endpoint_url': str(),
         'access_control_list': str(),
         'tile_lock_dir': str(),
+        'use_http_get': bool(),
      },
     'riak': {
         'nodes': [riak_node],
@@ -592,4 +593,3 @@ mapproxy_yaml_spec = {
      # from other sections (e.g. coverages, dimensions, etc.)
     'parts': anything(),
 }
-
