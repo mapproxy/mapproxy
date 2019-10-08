@@ -25,7 +25,10 @@ from mapproxy.test.image import (
     img_from_buf,
     assert_colors_equal,
 )
-from mapproxy.test.http import mock_httpd
+from mapproxy.test.http import (
+    assert_no_cache,
+    mock_httpd
+)
 from mapproxy.test.system import SysTest
 from mapproxy.test.system.test_wms import is_111_exception
 
@@ -266,7 +269,7 @@ class TestTileErrors(SysTest):
 
         with mock_httpd(("localhost", 42423), expected_req):
             resp = app.get(self.common_map_req)
-            assert "Cache-Control" not in resp.headers
+            assert_no_cache(resp)
             assert resp.content_type == "application/vnd.ogc.se_xml"
             assert b"500" in resp.body
 
@@ -348,8 +351,7 @@ class TestTileErrors(SysTest):
 
         with mock_httpd(("localhost", 42423), expected_req):
             resp = app.get(self.common_tile_req, status=500)
-            assert "Cache-Control" not in resp.headers
-            # no assert_no_cache(resp): returns XML exception that bypasses cache control setting
+            assert_no_cache(resp)
             assert resp.content_type == "text/plain"
             assert b"500" in resp.body
 
@@ -373,9 +375,3 @@ class TestTileErrors(SysTest):
             assert resp.content_type == "image/png"
             img = img_from_buf(resp.body)
             assert img.getcolors() == [(256 * 256, (100, 50, 50))]
-
-
-def assert_no_cache(resp):
-    assert resp.headers["Pragma"] == "no-cache"
-    assert resp.headers["Expires"] == "-1"
-    assert resp.cache_control.no_store == True

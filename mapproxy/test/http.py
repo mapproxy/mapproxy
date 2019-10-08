@@ -480,3 +480,8 @@ def make_wsgi_env(query_string, extra_environ={}):
 
 def basic_auth_value(username, password):
     return base64.b64encode(('%s:%s' % (username, password)).encode('utf-8'))
+
+def assert_no_cache(resp):
+    assert resp.headers["Pragma"] == "no-cache"
+    assert resp.headers["Expires"] == "-1"
+    assert resp.cache_control.no_store == True
