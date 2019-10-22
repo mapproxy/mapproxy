@@ -1,6 +1,6 @@
 Jinja2==2.10.1
 MarkupSafe==1.0
-Pillow==5.1.0
+Pillow==6.2.0
 PyYAML==5.1
 Shapely==1.6.4.post1
 WebOb==1.8.1
