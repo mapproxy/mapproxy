@@ -55,6 +55,7 @@ class S3Cache(TileCacheBase):
         super(S3Cache, self).__init__()
         self.lock_cache_id = hashlib.md5(base_path.encode('utf-8') + bucket_name.encode('utf-8')).hexdigest()
         self.bucket_name = bucket_name
+        self.profile_name = profile_name
         self.region_name = region_name
         self.endpoint_url = endpoint_url
         self.access_control_list = access_control_list
@@ -86,7 +87,7 @@ class S3Cache(TileCacheBase):
             raise ImportError("S3 Cache requires 'boto3' package.")
 
         try:
-            return s3_session().client("s3", region_name=self.region_name, endpoint_url=self.endpoint_url)
+            return s3_session(self.profile_name).client("s3", region_name=self.region_name, endpoint_url=self.endpoint_url)
         except Exception as e:
             raise S3ConnectionError('Error during connection %s' % e)
 
