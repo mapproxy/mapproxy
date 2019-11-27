@@ -26,6 +26,7 @@ from mapproxy.request.wms import (
 )
 from mapproxy.test.image import is_jpeg
 from mapproxy.test.helper import validate_with_dtd
+from mapproxy.test.http import assert_no_cache
 from mapproxy.test.system.test_wms import is_111_exception
 from mapproxy.test.system import SysTest
 
@@ -99,17 +100,17 @@ class TestWMSC(SysTest):
     def test_get_tile_wrong_bbox(self, app):
         self.common_map_req.params.bbox = "-20037508,0.0,200000.0,20037508"
         resp = app.get(str(self.common_map_req) + "&tiled=true")
-        assert "Cache-Control" not in resp.headers
+        assert_no_cache(resp)
         is_111_exception(resp.lxml, re_msg=".*invalid bbox")
 
     def test_get_tile_wrong_fromat(self, app):
         self.common_map_req.params.format = "image/png"
         resp = app.get(str(self.common_map_req) + "&tiled=true")
-        assert "Cache-Control" not in resp.headers
+        assert_no_cache(resp)
         is_111_exception(resp.lxml, re_msg="Invalid request: invalid.*format.*jpeg")
 
     def test_get_tile_wrong_size(self, app):
         self.common_map_req.params.size = (256, 255)
         resp = app.get(str(self.common_map_req) + "&tiled=true")
-        assert "Cache-Control" not in resp.headers
+        assert_no_cache(resp)
         is_111_exception(resp.lxml, re_msg="Invalid request: invalid.*size.*256x256")

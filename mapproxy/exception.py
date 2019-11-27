@@ -44,11 +44,13 @@ class RequestError(Exception):
         """
         if self.request is not None:
             handler = self.request.exception_handler
-            return handler.render(self)
+            resp = handler.render(self)
         elif self.status is not None:
-            return Response(self.msg, status=self.status)
+            resp = Response(self.msg, status=self.status)
         else:
-            return Response('internal error: %s' % self.msg, status=500)
+            resp = Response('internal error: %s' % self.msg, status=500)
+        resp.cache_headers(no_cache=True)
+        return resp
     
     def __str__(self):
         return 'RequestError("%s", code=%r, request=%r)' % (self.msg, self.code,
