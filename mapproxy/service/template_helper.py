@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from cgi import escape
 from mapproxy.template import bunch
+from mapproxy.compat.modules import escape
 
 __all__ = ['escape', 'indent', 'bunch', 'wms100format', 'wms100info_format',
     'wms111metadatatype']
