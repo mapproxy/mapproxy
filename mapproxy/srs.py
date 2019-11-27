@@ -444,6 +444,9 @@ class SupportedSRS(object):
         self.supported_srs = supported_srs
         self.preferred_srs = preferred_srs or PreferredSrcSRS()
 
+    def __iter__(self):
+        return iter(self.supported_srs)
+
     def __contains__(self, srs):
         return srs in self.supported_srs
 
