@@ -5,7 +5,7 @@ PyYAML==5.1
 Shapely==1.6.4.post1
 WebOb==1.8.1
 WebTest==2.0.29
-Werkzeug==0.14.1
+Werkzeug==0.15.3
 asn1crypto==0.24.0
 atomicwrites==1.1.5
 attrs==18.1.0
