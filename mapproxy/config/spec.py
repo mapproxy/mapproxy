@@ -71,7 +71,7 @@ http_opts = {
     'client_timeout': number(),
     'ssl_no_cert_checks': bool(),
     'ssl_ca_certs': str(),
-    'hide_exception_url': bool(),
+    'hide_error_details': bool(),
     'headers': {
         anything(): str()
     },

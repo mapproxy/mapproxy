@@ -90,13 +90,13 @@ class TestHTTPClient(object):
             assert_re(e.args[0], r'No response .* "http://localhost.*": Connection refused')
         else:
             assert False, 'expected HTTPClientError'
-    def test_internal_error_hide_exception_url(self):
+    def test_internal_error_hide_error_details(self):
         try:
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/'},
                                                   {'status': '500', 'body': b''})]):
-                HTTPClient(hide_exception_url=True).open(TESTSERVER_URL + '/')
+                HTTPClient(hide_error_details=True).open(TESTSERVER_URL + '/')
         except HTTPClientError as e:
-            assert_re(e.args[0], r'HTTP Error: 500')
+            assert_re(e.args[0], r'HTTP Error \(see logs for URL and reason\).')
         else:
             assert False, 'expected HTTPClientError'
 

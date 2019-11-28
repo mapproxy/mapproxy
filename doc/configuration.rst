@@ -1019,6 +1019,15 @@ Add additional HTTP headers to all requests to your sources.
 Sets the ``Access-control-allow-origin`` header to HTTP responses for `Cross-origin resource sharing <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_. This header is required for WebGL or Canvas web clients. Defaults to `*`. Leave empty to disable the header. This option is only available in `globals`.
 
 
+``hide_error_details``
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.13.0
+
+When enabled, MapProxy will only report generic error messages to the client in case of any errors while fetching source services.
+The full error message might contain confidential information like internal URLs. You will find the full error message in the logs, regardless of this option. The option is enabled by default, i.e. the details are hidden.
+
+
 ``tiles``
 """"""""""
 

@@ -1,4 +1,6 @@
 globals:
+  http:
+    hide_error_details: false
   cache:
     base_dir: cache_data/
     meta_size: [1, 1]
