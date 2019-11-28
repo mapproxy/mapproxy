@@ -72,10 +72,15 @@ class WMSClient(object):
                 log_size = 8000 # larger xml exception
             else:
                 log_size = 100 # image?
-            data = resp.read(log_size)
-            if len(data) == log_size:
-                data += '... truncated'
-            log.warn("no image returned from source WMS: %s, response was: %s" % (url, data))
+            data = resp.read(log_size+1)
+
+            truncated = ''
+            if len(data) == log_size+1:
+                data = data[:-1]
+                truncated = ' [output truncated]'
+
+            data = data.decode('utf-8', 'backslashreplace')
+            log.warn("no image returned from source WMS: {}, response was: '{}'{}".format(url, data, truncated))
             raise SourceError('no image returned from source WMS: %s' % (url, ))
 
     def _query_url(self, query, format):
