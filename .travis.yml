@@ -2,10 +2,10 @@ language: python
 
 python:
   - "2.7"
-  - "3.4"
   - "3.5"
   - "3.6"
   - "3.7"
+  - "3.8"
 
 services:
   - couchdb
@@ -45,10 +45,10 @@ env:
 
 matrix:
   include:
-    # Test 2.7 and 3.7 also with latest Pillow version
+    # Test 2.7 and 3.8 also with latest Pillow version
     - python: "2.7"
       env: USE_LATEST_PILLOW=1
-    - python: "3.7"
+    - python: "3.8"
       env: USE_LATEST_PILLOW=1
 
 cache:
