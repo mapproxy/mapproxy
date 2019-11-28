@@ -30,6 +30,7 @@ from mapproxy.request.wms import (
     WMS130MapRequest,
     WMS111FeatureInfoRequest,
 )
+from mapproxy.source import SourceError
 from mapproxy.srs import SRS, SupportedSRS
 from mapproxy.test.helper import assert_re, TempFile
 from mapproxy.test.http import mock_httpd, query_eq, assert_query_eq, wms_query_eq
@@ -302,16 +303,16 @@ class TestWMSClient(object):
     def test_no_image(self, caplog):
         try:
             with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?map=foo&layers=foo&transparent=true&bbox=-200000,-200000,200000,200000&width=512&height=512&srs=EPSG%3A900913&format=image%2Fpng&request=GetMap&version=1.1.1&service=WMS&styles='},
-                                                  {'status': '200', 'body': b'\x80foo' + b'x' * 1000,
+                                                  {'status': '200', 'body': b'x' * 1000,
                                                    'headers': {'content-type': 'application/foo'},
                                                   })]):
                 req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
                                         param={'layers':'foo', 'transparent': 'true'})
                 query = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
                 wms = WMSClient(req).retrieve(query, 'png')
-        except Exception:
+        except SourceError:
             assert len(caplog.record_tuples) == 1
-            assert ("'\\x80fooxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' [output truncated]"
+            assert ("'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' [output truncated]"
                 in caplog.record_tuples[0][2])
         else:
             assert False, 'expected no image returned error'
