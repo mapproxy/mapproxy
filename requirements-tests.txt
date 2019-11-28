@@ -19,7 +19,7 @@ boto==2.48.0
 boto3==1.7.27
 botocore==1.10.27
 certifi==2018.4.16
-cffi==1.11.5
+cffi==1.13.2
 chardet==3.0.4
 cookies==2.2.1
 coverage==4.5.1
