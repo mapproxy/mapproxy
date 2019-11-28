@@ -84,7 +84,7 @@ class WMSClient(object):
             if sys.version_info >= (3, 5, 0):
                 data = data.decode('utf-8', 'backslashreplace')
             else:
-                data = data.decode('utf-8', 'ignore')
+                data = data.decode('ascii', 'ignore')
 
             log.warn("no image returned from source WMS: {}, response was: '{}'{}".format(url, data, truncated))
             raise SourceError('no image returned from source WMS: %s' % (url, ))
