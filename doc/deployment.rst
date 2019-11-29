@@ -95,9 +95,9 @@ You need to modify your Apache ``httpd.conf`` as follows::
   </Directory>
 
 
-``mod_wsgi`` has a lot of options for more fine tuning. ``WSGIPythonHome`` or ``WSGIPythonPath`` lets you configure your ``virtualenv`` and  ``WSGIDaemonProcess``/``WSGIProcessGroup`` allows you to start multiple processes. See the `mod_wsgi configuration directives documentation <http://code.google.com/p/modwsgi/wiki/ConfigurationDirectives>`_. Using Mapnik also requires the ``WSGIApplicationGroup`` option.
+``mod_wsgi`` has a lot of options for more fine tuning. ``WSGIPythonHome`` or ``WSGIPythonPath`` lets you configure your ``virtualenv`` and  ``WSGIDaemonProcess``/``WSGIProcessGroup`` allows you to start multiple processes. See the `mod_wsgi configuration directives documentation <https://modwsgi.readthedocs.io/en/latest/user-guides/configuration-guidelines.html>`_. Using Mapnik also requires the ``WSGIApplicationGroup`` option.
 
-.. note:: On Windows only the ``WSGIPythonPath`` option is supported. Linux/Unix supports ``WSGIPythonPath`` and ``WSGIPythonHome``. See also the `mod_wsgi documentation for virtualenv <https://code.google.com/p/modwsgi/wiki/VirtualEnvironments>`_ for detailed information when using multiple virtualenvs.
+.. note:: On Windows only the ``WSGIPythonPath`` option is supported. Linux/Unix supports ``WSGIPythonPath`` and ``WSGIPythonHome``. See also the `mod_wsgi documentation for virtualenv <https://modwsgi.readthedocs.io/en/latest/user-guides/virtual-environments.html#virtual-environments>`_ for detailed information when using multiple virtualenvs.
 
 A more complete configuration might look like::
 
@@ -121,7 +121,7 @@ A more complete configuration might look like::
 
 
 .. _mod_wsgi: http://www.modwsgi.org/
-.. _mod_wsgi installation: http://code.google.com/p/modwsgi/wiki/InstallationInstructions
+.. _mod_wsgi installation: https://modwsgi.readthedocs.io/en/latest/installation.html
 
 Behind HTTP server or proxy
 ---------------------------
