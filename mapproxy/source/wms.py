@@ -107,8 +107,15 @@ class WMSSource(MapLayer):
         if self.supported_formats and format not in self.supported_formats:
             format = self.supported_formats[0]
         if self.supported_srs:
-            if query.srs not in self.supported_srs:
+            request_srs = None
+            for srs in self.supported_srs:
+                if query.srs == srs:
+                    request_srs = srs
+                    break
+            if request_srs is None:
                 return self._get_transformed(query, format)
+            if query.srs.srs_code != request_srs.srs_code:
+                query.srs = request_srs
         if self.extent and not self.extent.contains(MapExtent(query.bbox, query.srs)):
             return self._get_sub_query(query, format)
         resp = self.client.retrieve(query, format)
