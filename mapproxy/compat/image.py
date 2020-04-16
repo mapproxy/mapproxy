@@ -25,6 +25,7 @@ try:
     # prevent pyflakes warnings
     Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops, ImageMath
     ImageFileDirectory_v2, TiffTags
+    PIL_VERSION = getattr(PIL, '__version__') or getattr(PIL, 'PILLOW_VERSION')
 except ImportError:
     # allow MapProxy to start without PIL (for tilecache only).
     # issue warning and raise ImportError on first use of
@@ -42,17 +43,17 @@ except ImportError:
     Image.Image = NoPIL
     ImageColor = NoPIL()
     ImageColor.getrgb = lambda x: x
+    PIL_VERSION = None
 
 def has_alpha_composite_support():
     return hasattr(Image, 'alpha_composite')
 
 def transform_uses_center():
-    # transformation behavior changed with Pillow 3.4
+    # transformation behavior changed with Pillow 3.4 to use pixel centers
     # https://github.com/python-pillow/Pillow/commit/5232361718bae0f0ccda76bfd5b390ebf9179b18
-    if hasattr(PIL, 'PILLOW_VERSION'):
-        if not PIL.PILLOW_VERSION.startswith(('1.', '2.', '3.0', '3.1', '3.2', '3.3')):
-            return True
-    return False
+    if not PIL_VERSION or PIL_VERSION.startswith(('1.', '2.', '3.0', '3.1', '3.2', '3.3')):
+        return False
+    return True
 
 def quantize_pil(img, colors=256, alpha=False, defaults=None):
     if hasattr(Image, 'FASTOCTREE'):
