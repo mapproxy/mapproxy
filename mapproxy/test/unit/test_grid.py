@@ -907,8 +907,7 @@ class TestTileGrid(object):
 
     def test_broken_bbox(self):
         grid = TileGrid()
-        # broken request from "ArcGIS Client Using WinInet"
-        req_bbox = (-10000855.0573254,2847125.18913603,-9329367.42767611,4239924.78564583)
+        req_bbox = (-20000855.0573254,2847125.18913603,-19329367.42767611,4239924.78564583)
         try:
             grid.get_affected_tiles(req_bbox, (256, 256), req_srs=SRS(31467))
         except TransformationError:
