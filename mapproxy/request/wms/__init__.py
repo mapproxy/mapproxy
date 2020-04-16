@@ -331,7 +331,7 @@ def switch_bbox_epsg_axis_order(bbox, srs):
             if SRS(srs).is_axis_order_ne:
                 return bbox[1], bbox[0], bbox[3], bbox[2]
         except RuntimeError:
-            log.warn('unknown SRS %s' % srs)
+            log.warning('unknown SRS %s' % srs)
     return bbox
 
 def _switch_bbox(self):

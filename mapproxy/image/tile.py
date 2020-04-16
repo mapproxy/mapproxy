@@ -65,7 +65,7 @@ class TileMerger(object):
                 source.close_buffers()
             except IOError as e:
                 if e.errno is None: # PIL error
-                    log.warn('unable to load tile %s, removing it (reason was: %s)'
+                    log.warning('unable to load tile %s, removing it (reason was: %s)'
                              % (source, str(e)))
                     if getattr(source, 'filename'):
                         if os.path.exists(source.filename):

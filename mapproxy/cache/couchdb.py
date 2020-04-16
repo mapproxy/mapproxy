@@ -71,7 +71,7 @@ class CouchDBCache(TileCacheBase):
                 self.req_session.put(self.couch_url)
                 self.db_initialised = True
             except requests.exceptions.RequestException as ex:
-                log.warn('unable to initialize CouchDB: %s', ex)
+                log.warning('unable to initialize CouchDB: %s', ex)
 
     def tile_url(self, coord):
         return self.document_url(coord) + '/tile'
@@ -109,7 +109,7 @@ class CouchDBCache(TileCacheBase):
         except (requests.exceptions.RequestException, socket.error) as ex:
             # is_cached should not fail (would abort seeding for example),
             # so we catch these errors here and just return False
-            log.warn('error while requesting %s: %s', url, ex)
+            log.warning('error while requesting %s: %s', url, ex)
             return False
         if resp.status_code == 404:
             return False

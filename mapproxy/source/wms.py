@@ -97,7 +97,7 @@ class WMSSource(MapLayer):
                 resp = self.error_handler.handle(e.response_code, query)
                 if resp:
                     return resp
-            log.warn('could not retrieve WMS map: %s', e.full_msg or e)
+            log.warning('could not retrieve WMS map: %s', e.full_msg or e)
             reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
     def _get_map(self, query):

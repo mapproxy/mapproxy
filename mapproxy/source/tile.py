@@ -78,7 +78,7 @@ class TiledSource(MapLayer):
                 resp = self.error_handler.handle(e.response_code, query)
                 if resp:
                     return resp
-            log.warn('could not retrieve tile: %s', e)
+            log.warning('could not retrieve tile: %s', e)
             reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
 class CacheSource(CacheMapLayer):

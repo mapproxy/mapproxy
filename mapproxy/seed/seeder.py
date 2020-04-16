@@ -83,7 +83,7 @@ class TileWorkerPool(object):
                             alive = True
                             break
                     if not alive:
-                        log.warn('no workers left, stopping')
+                        log.warning('no workers left, stopping')
                         raise SeedInterrupted
                     continue
                 else:

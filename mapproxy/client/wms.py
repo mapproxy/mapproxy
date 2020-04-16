@@ -86,7 +86,7 @@ class WMSClient(object):
             else:
                 data = data.decode('ascii', 'ignore')
 
-            log.warn("no image returned from source WMS: {}, response was: '{}'{}".format(url, data, truncated))
+            log.warning("no image returned from source WMS: {}, response was: '{}'{}".format(url, data, truncated))
             raise SourceError('no image returned from source WMS: %s' % (url, ))
 
     def _query_url(self, query, format):

@@ -293,7 +293,7 @@ class GridConfiguration(ConfigurationBase):
             global_key='image.max_shrink_factor')
 
         if conf.get('origin') is None:
-            log.warn('grid %s does not have an origin. default origin will change from sw (south/west) to nw (north-west) with MapProxy 2.0',
+            log.warning('grid %s does not have an origin. default origin will change from sw (south/west) to nw (north-west) with MapProxy 2.0',
                 conf['name'],
             )
 
@@ -975,7 +975,7 @@ class TileSourceConfiguration(SourceConfiguration):
 
         grid_name = self.conf.get('grid')
         if grid_name is None:
-            log.warn("tile source for %s does not have a grid configured and defaults to GLOBAL_MERCATOR. default will change with MapProxy 2.0", url)
+            log.warning("tile source for %s does not have a grid configured and defaults to GLOBAL_MERCATOR. default will change with MapProxy 2.0", url)
             grid_name = "GLOBAL_MERCATOR"
 
         grid = self.context.grids[grid_name].tile_grid()
@@ -1023,7 +1023,7 @@ class CacheConfiguration(ConfigurationBase):
         cache_dir = self.conf.get('cache', {}).get('directory')
         if cache_dir:
             if self.conf.get('cache_dir'):
-                log.warn('found cache.directory and cache_dir option for %s, ignoring cache_dir',
+                log.warning('found cache.directory and cache_dir option for %s, ignoring cache_dir',
                 self.conf['name'])
             return self.context.globals.abspath(cache_dir)
 
@@ -1061,7 +1061,7 @@ class CacheConfiguration(ConfigurationBase):
             global_key='cache.link_single_color_images')
 
         if link_single_color_images and sys.platform == 'win32':
-            log.warn('link_single_color_images not supported on windows')
+            log.warning('link_single_color_images not supported on windows')
             link_single_color_images = False
 
         return FileCache(
@@ -1582,7 +1582,7 @@ class CacheConfiguration(ConfigurationBase):
     def grid_confs(self):
         grid_names = self.conf.get('grids')
         if grid_names is None:
-            log.warn('cache %s does not have any grids. default will change from [GLOBAL_MERCATOR] to [GLOBAL_WEBMERCATOR] with MapProxy 2.0',
+            log.warning('cache %s does not have any grids. default will change from [GLOBAL_MERCATOR] to [GLOBAL_WEBMERCATOR] with MapProxy 2.0',
                 self.conf['name'])
             grid_names = ['GLOBAL_MERCATOR']
         return [(g, self.context.grids[g]) for g in grid_names]
@@ -1937,7 +1937,7 @@ class ServiceConfiguration(ConfigurationBase):
             fi_template = conf.get('restful_featureinfo_template')
             if template and '{{' in template:
                 # TODO remove warning in 1.6
-                log.warn("double braces in WMTS restful_template are deprecated {{x}} -> {x}")
+                log.warning("double braces in WMTS restful_template are deprecated {{x}} -> {x}")
             services.append(
                 WMTSRestServer(
                     layers, md, template=template,
@@ -1975,7 +1975,7 @@ class ServiceConfiguration(ConfigurationBase):
         for format in image_formats_names:
             opts = self.context.globals.image_options.image_opts({}, format)
             if opts.format in image_formats:
-                log.warn('duplicate mime-type for WMS image_formats: "%s" already configured, will use last format',
+                log.warning('duplicate mime-type for WMS image_formats: "%s" already configured, will use last format',
                     opts.format)
             image_formats[opts.format] = opts
         info_types = conf.get('featureinfo_types')
@@ -2072,13 +2072,13 @@ def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=
 
     errors, informal_only = validate_options(conf_dict)
     for error in errors:
-        log.warn(error)
+        log.warning(error)
     if not informal_only or (errors and not ignore_warnings):
         raise ConfigurationError('invalid configuration')
 
     errors = validate_references(conf_dict)
     for error in errors:
-        log.warn(error)
+        log.warning(error)
 
     return ProxyConfiguration(conf_dict, conf_base_dir=conf_base_dir, seed=seed,
         renderd=renderd)

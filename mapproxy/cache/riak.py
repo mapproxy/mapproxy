@@ -72,7 +72,7 @@ class RiakCache(TileCacheBase):
         try:
             obj = self.bucket.get(key, r=1, timeout=self.request_timeout)
         except Exception as e:
-            log.warn('error while requesting %s: %s', key, e)
+            log.warning('error while requesting %s: %s', key, e)
 
         if not obj:
             obj = self.bucket.new(key=key, data=None, content_type='application/octet-stream')
@@ -107,7 +107,7 @@ class RiakCache(TileCacheBase):
             try:
                 res.store(w=1, dw=1, pw=1, return_body=False, timeout=self.request_timeout)
             except riak.RiakError as ex:
-                log.warn('unable to store tile: %s', ex)
+                log.warning('unable to store tile: %s', ex)
                 return False
 
         return True
@@ -158,7 +158,7 @@ class RiakCache(TileCacheBase):
         try:
             res.delete(w=1, r=1, dw=1, pw=1, timeout=self.request_timeout)
         except riak.RiakError as ex:
-            log.warn('unable to remove tile: %s', ex)
+            log.warning('unable to remove tile: %s', ex)
             return False
         return True
 

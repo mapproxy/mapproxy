@@ -58,7 +58,7 @@ def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf):
     else:
         errors, informal_only = validate_seed_conf(conf)
         for error in errors:
-            log.warn(error)
+            log.warning(error)
         if not informal_only:
             raise SeedConfigurationError('invalid configuration')
         seed_conf = SeedingConfiguration(conf, mapproxy_conf=mapproxy_conf)

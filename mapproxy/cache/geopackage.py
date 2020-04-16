@@ -395,7 +395,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
             cursor.executemany(stmt, records)
             self.db.commit()
         except sqlite3.OperationalError as ex:
-            log.warn('unable to store tile: %s', ex)
+            log.warning('unable to store tile: %s', ex)
             return False
         return True
 

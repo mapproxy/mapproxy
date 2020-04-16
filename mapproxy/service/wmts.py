@@ -62,7 +62,7 @@ class WMTSServer(Server):
         for layer in layers.values():
             grid = layer.grid
             if not grid.supports_access_with_origin('nw'):
-                log.warn("skipping layer '%s' for WMTS, grid '%s' of cache '%s' is not compatible with WMTS",
+                log.warning("skipping layer '%s' for WMTS, grid '%s' of cache '%s' is not compatible with WMTS",
                     layer.name, grid.name, layer.md['cache_name'])
                 continue
             if grid.name not in sets:
