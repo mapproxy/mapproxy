@@ -48,7 +48,7 @@ Installation
 
 On a Debian or Ubuntu system, you need to install the following packages::
 
-  sudo apt-get install python-pil python-yaml libproj12
+  sudo apt-get install python-pil python-yaml python-proj
 
 To get all optional packages::
 
@@ -59,9 +59,16 @@ To get all optional packages::
 Dependency details
 ^^^^^^^^^^^^^^^^^^
 
-libproj
-~~~~~~~
-MapProxy uses the Proj4 C Library for all coordinate transformation tasks. It is included in most distributions as ``libproj`` or ``libprojXX`` where ``XX`` is a number.
+pyproj or libproj
+~~~~~~~~~~~~~~~~~
+
+MapProxy uses the PROJ C library for all coordinate transformation tasks. MapProxy can directly use the C library or via the pyproj Python package.
+The internal API of PROJ was updated with PROJ >=5. The old PROJ 4 API is now deprecated and wil be removed from future PROJ releases. MapProxy only supports the new API via pyproj and it is therefore recommended to use a recent pyproj version.
+
+
+.. versionchanged:: 1.13
+  Support for new PROJ API via pyproj.
+
 
 .. _dependencies_pil:
 

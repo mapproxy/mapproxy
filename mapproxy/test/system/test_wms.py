@@ -560,7 +560,7 @@ class TestWMS111(SysTest):
 
     def test_get_map_broken_bbox(self, app):
         url = (
-            """/service?VERSION=1.1.11&REQUEST=GetMap&SRS=EPSG:31468&BBOX=-10000855.0573254,2847125.18913603,-9329367.42767611,4239924.78564583&WIDTH=130&HEIGHT=62&LAYERS=wms_cache&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""
+            """/service?VERSION=1.1.11&REQUEST=GetMap&SRS=EPSG:31468&BBOX=-20000855.0573254,2847125.18913603,-19329367.42767611,4239924.78564583&WIDTH=130&HEIGHT=62&LAYERS=wms_cache&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""
         )
         resp = app.get(url)
         is_111_exception(resp.lxml, "Could not transform BBOX: Invalid result.")

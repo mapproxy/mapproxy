@@ -908,10 +908,12 @@ The following options define how tiles are created and stored. Most options can 
   .. versionadded:: 1.12.0
 
 ``proj_data_dir``
-  MapProxy uses Proj4 for all coordinate transformations. If you need custom projections
-  or need to tweak existing definitions (e.g. add towgs parameter set) you can point
-  MapProxy to your own set of proj4 init files. The path should contain an ``epsg`` file
-  with the EPSG definitions.
+
+  MapProxy uses PROJ for all coordinate transformations. If you need custom projections
+  or need to tweak existing definitions. You can point MapProxy to your own set of PROJ data files.
+
+  This path should contain an ``epsg`` file with the EPSG definitions for installations with PROJ version 4.
+  PROJ>=5 uses a different configuration format. Please refer to the PROJ documentation.
 
   The configured path can be absolute or relative to the mapproxy.yaml.
 
@@ -942,6 +944,10 @@ The following options define how tiles are created and stored. Most options can 
 
   If you need to override one of the default values, then you need to define both axis
   order options, even if one is empty.
+
+  .. versionchanged:: 1.13.0
+  MapProxy can now determine the correct axis order for all coordinate systems when using pyproj>=2. The axis_order_ne/axis_order_en are ignored in this case.
+
 
 .. _http_ssl:
 

@@ -23,7 +23,11 @@ import math
 import threading
 from mapproxy.compat.itertools import izip
 from mapproxy.compat import string_type
+from mapproxy.proj import USE_PROJ4_API
+# Old Proj.4 API
 from mapproxy.proj import Proj, transform, set_datapath
+# New Proj API
+from mapproxy.proj import CRS, Transformer
 from mapproxy.config import base_config
 
 import logging
@@ -78,7 +82,7 @@ def _init_proj():
 _thread_local = threading.local()
 def SRS(srs_code):
     _init_proj()
-    if isinstance(srs_code, _SRS):
+    if isinstance(srs_code, _srs_impl):
         return srs_code
 
     srs_code = _clean_srs_code(srs_code)
@@ -89,14 +93,14 @@ def SRS(srs_code):
     if srs_code in _thread_local.srs_cache:
         return _thread_local.srs_cache[srs_code]
     else:
-        srs = _SRS(srs_code)
+        srs = _srs_impl(srs_code)
         _thread_local.srs_cache[srs_code] = srs
         return srs
 
 WEBMERCATOR_EPSG = set(('EPSG:900913', 'EPSG:3857',
     'EPSG:102100', 'EPSG:102113'))
 
-class _SRS(object):
+class _SRS_Proj4_API(object):
     # http://trac.openlayers.org/wiki/SphericalMercator
     proj_init = {
                  'EPSG:4326': lambda: Proj('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +over'),
@@ -110,6 +114,9 @@ class _SRS(object):
 
     """
     This class represents a Spatial Reference System.
+
+    Abstracts transformations between different projections.
+    Uses the old Proj.4 API, either via pyproj 1 or c-types.
     """
     def __init__(self, srs_code):
         """
@@ -117,7 +124,7 @@ class _SRS(object):
         """
         self.srs_code = srs_code
 
-        init = _SRS.proj_init.get(srs_code, None)
+        init = self.proj_init.get(srs_code, None)
         if init is not None:
             self.proj = init()
         else:
@@ -159,10 +166,10 @@ class _SRS(object):
             parts due to distortions.
 
         >>> ['%.3f' % x for x in
-        ...  SRS(4326).transform_bbox_to(SRS(900913), (-180.0, -90.0, 180.0, 90.0))]
-        ['-20037508.343', '-147730762.670', '20037508.343', '147730758.195']
+        ...  SRS(4326).transform_bbox_to(SRS(3857), (-180.0, -90.0, 180.0, 90.0))]
+        ['-20037508.343', '-20037508.343', '20037508.343', '20037508.343']
         >>> ['%.5f' % x for x in
-        ...  SRS(4326).transform_bbox_to(SRS(900913), (8.2, 53.1, 8.3, 53.2))]
+        ...  SRS(4326).transform_bbox_to(SRS(3857), (8.2, 53.1, 8.3, 53.2))]
         ['912819.82450', '7001516.67745', '923951.77358', '7020078.53264']
         >>> SRS(4326).transform_bbox_to(SRS(4326), (8.25, 53.0, 8.5, 53.75))
         (8.25, 53.0, 8.5, 53.75)
@@ -174,8 +181,8 @@ class _SRS(object):
         transf_pts = self.transform_to(other_srs, points)
         result = calculate_bbox(transf_pts)
 
-        log_proj.debug('transformed from %r to %r (%s -> %s)' %
-                  (self, other_srs, bbox, result))
+        log_proj.debug('transformed from %r to %r (%s -> %s)',
+                       self, other_srs, bbox, result)
 
         return result
 
@@ -257,6 +264,219 @@ class _SRS(object):
         >>> SRS(4326) == SRS(3857)
         False
         """
+        if isinstance(other, _SRS_Proj4_API):
+            return self.proj.srs == other.proj.srs
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        """
+        >>> SRS(3857) != SRS(3857)
+        False
+        >>> SRS(4326) != SRS(900913)
+        True
+        """
+        equal_result = self.__eq__(other)
+        if equal_result is NotImplemented:
+            return NotImplemented
+        else:
+            return not equal_result
+
+    def __str__(self):
+        #pylint: disable-msg=E1101
+        return "SRS %s ('%s')" % (self.srs_code, self.proj.srs)
+
+    def __repr__(self):
+        """
+        >>> repr(SRS(4326))
+        "SRS('EPSG:4326')"
+        """
+        return "SRS('%s')" % (self.srs_code,)
+
+    def __hash__(self):
+        return hash(self.srs_code)
+
+
+class _SRS(object):
+    """
+    This class represents a Spatial Reference System.
+
+    Abstracts transformations between different projections.
+    Uses the new Proj API via pyproj >=2.
+    """
+    def __init__(self, srs_code):
+        """
+        Create a new SRS with the given `srs_code` code.
+        """
+        self.srs_code = srs_code
+
+        if srs_code in WEBMERCATOR_EPSG:
+            epsg_num = 3857
+        elif srs_code == 'CRS:84':
+            epsg_num = 4326
+        else:
+            epsg_num = get_epsg_num(srs_code)
+
+        self.proj = CRS.from_epsg(epsg_num)
+
+        self._transformers = {}
+
+    def _transformer(self, other_srs):
+        if other_srs in self._transformers:
+            return self._transformers[other_srs]
+
+        t = Transformer.from_crs(self.proj, other_srs.proj, always_xy=True)
+        self._transformers[other_srs] = t
+        return t
+
+    def transform_to(self, other_srs, points):
+        """
+        :type points: ``(x, y)`` or ``[(x1, y1), (x2, y2), …]``
+
+        >>> srs1 = SRS(4326)
+        >>> srs2 = SRS(900913)
+        >>> [str(round(x, 5)) for x in srs1.transform_to(srs2, (8.22, 53.15))]
+        ['915046.21432', '7010792.20171']
+        >>> srs1.transform_to(srs1, (8.25, 53.5))
+        (8.25, 53.5)
+        >>> [(str(round(x, 5)), str(round(y, 5))) for x, y in
+        ...  srs1.transform_to(srs2, [(8.2, 53.1), (8.22, 53.15), (8.3, 53.2)])]
+        ... #doctest: +NORMALIZE_WHITESPACE
+        [('912819.8245', '7001516.67745'),
+         ('915046.21432', '7010792.20171'),
+         ('923951.77358', '7020078.53264')]
+        """
+        if self == other_srs:
+            return points
+
+
+        transformer = self._transformer(other_srs)
+        if isinstance(points[0], (int, float)) and 2 >= len(points) <= 3:
+            return transformer.transform(*points)
+
+        x = [p[0] for p in points]
+        y = [p[1] for p in points]
+        transf_pts = transformer.transform(x, y)
+        return izip(transf_pts[0], transf_pts[1])
+
+    def transform_bbox_to(self, other_srs, bbox, with_points=16):
+        """
+
+        :param with_points: the number of points to use for the transformation.
+            A bbox transformation with only two or four points may cut off some
+            parts due to distortions.
+
+        >>> ['%.3f' % x for x in
+        ...  SRS(4326).transform_bbox_to(SRS(3857), (-180.0, -90.0, 180.0, 90.0))]
+        ['-20037508.343', '-20037508.343', '20037508.343', '20037508.343']
+        >>> ['%.5f' % x for x in
+        ...  SRS(4326).transform_bbox_to(SRS(3857), (8.2, 53.1, 8.3, 53.2))]
+        ['912819.82450', '7001516.67745', '923951.77358', '7020078.53264']
+        >>> SRS(4326).transform_bbox_to(SRS(4326), (8.25, 53.0, 8.5, 53.75))
+        (8.25, 53.0, 8.5, 53.75)
+        """
+        if self == other_srs:
+            return bbox
+        bbox = bbox
+        points = generate_envelope_points(bbox, with_points)
+        transf_pts = list(self.transform_to(other_srs, points))
+        result = calculate_bbox(transf_pts)
+
+        log_proj.debug('transformed from %r to %r (%s -> %s)',
+                  self, other_srs, bbox, result)
+
+        # XXX: 3857 is only defined within 85.06 N/S, new Proj returns 'inf' for coords
+        # outside of these bounds. Adjust bbox for 4326->3857 transformations to the old
+        # behavior, as this is expected in a few places (WMS layer extents and quite a few
+        # tests).
+        if self.srs_code == 'EPSG:4326' and other_srs.srs_code in ('EPSG:3857', 'EPSG:900913'):
+            minx, miny, maxx, maxy = result
+            if bbox[0] <= -180.0:
+                minx = -20037508.342789244
+            if bbox[1] <= -85.06:
+                miny = -20037508.342789244
+            if bbox[2] >= 180.0:
+                maxx = 20037508.342789244
+            if bbox[3] >= 85.06:
+                maxy = 20037508.342789244
+            result = (minx, miny, maxx, maxy)
+        return result
+
+    @property
+    def is_latlong(self):
+        """
+        >>> SRS(4326).is_latlong
+        True
+        >>> SRS(31466).is_latlong
+        False
+        """
+        return self.proj.is_geographic
+
+    @property
+    def is_axis_order_ne(self):
+        """
+        Returns `True` if the axis order is North, then East
+        (i.e. y/x or lat/lon).
+
+        >>> SRS(4326).is_axis_order_ne
+        True
+        >>> SRS('CRS:84').is_axis_order_ne
+        False
+        >>> SRS(31468).is_axis_order_ne
+        True
+        >>> SRS(31463).is_axis_order_ne
+        False
+        >>> SRS(25831).is_axis_order_ne
+        False
+        """
+        if self.srs_code == 'CRS:84':
+            return False
+        return self.proj.axis_info[0].direction == 'north'
+
+    @property
+    def is_axis_order_en(self):
+        """
+        Returns `True` if the axis order is East then North
+        (i.e. x/y or lon/lat).
+        """
+        return not self.is_axis_order_ne
+
+
+    def align_bbox(self, bbox):
+        """
+        Align bbox to reasonable values to prevent errors in transformations.
+        E.g. transformations from EPSG:4326 with lat=90 or -90 will fail, so
+        we subtract a tiny delta.
+
+        At the moment only EPSG:4326 bbox will be modifyed.
+
+        >>> bbox = SRS(4326).align_bbox((-180, -90, 180, 90))
+        >>> -90 < bbox[1] < -89.99999998
+        True
+        >>> 90 > bbox[3] > 89.99999998
+        True
+        """
+        # TODO should not be needed anymore since we transform with +over
+        # still a few tests depend on the rounding behavior of this
+        if self.srs_code == 'EPSG:4326':
+            delta = 0.00000001
+            (minx, miny, maxx, maxy) = bbox
+            if abs(miny - -90.0) < 1e-6:
+                miny = -90.0 + delta
+            if abs(maxy - 90.0) < 1e-6:
+                maxy = 90.0 - delta
+            bbox = minx, miny, maxx, maxy
+        return bbox
+
+    def __eq__(self, other):
+        """
+        >>> SRS(4326) == SRS("EpsG:4326")
+        True
+        >>> SRS(4326) == SRS("4326")
+        True
+        >>> SRS(4326) == SRS(3857)
+        False
+        """
         if isinstance(other, _SRS):
             return self.proj.srs == other.proj.srs
         else:
@@ -288,6 +508,11 @@ class _SRS(object):
 
     def __hash__(self):
         return hash(self.srs_code)
+
+
+_srs_impl = _SRS
+if USE_PROJ4_API:
+    _srs_impl = _SRS_Proj4_API
 
 
 def generate_envelope_points(bbox, n):
@@ -364,6 +589,7 @@ def merge_bbox(bbox1, bbox2):
     maxx = max(bbox1[2], bbox2[2])
     maxy = max(bbox1[3], bbox2[3])
     return (minx, miny, maxx, maxy)
+
 
 def bbox_equals(src_bbox, dst_bbox, x_delta=None, y_delta=None):
     """

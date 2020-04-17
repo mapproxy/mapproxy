@@ -57,6 +57,10 @@ def init_libproj():
 
     if libproj is None: return
 
+    if hasattr(libproj, 'proj_create'):
+       log_system.warning('Found libproj >=5. Using this library without pyproj is '
+                          'deprecated and not fully supported. Please install pyproj >= 2.')
+
     libproj.pj_init_plus.argtypes = [c_char_p]
     libproj.pj_init_plus.restype = c_void_p
 
@@ -127,13 +131,23 @@ class ProjError(RuntimeError):
 class ProjInitError(ProjError):
     pass
 
-def try_pyproj_import():
+def try_pyproj4_import():
     try:
         from pyproj import Proj, transform, set_datapath
     except ImportError:
         return False
-    log_system.info('using pyproj for coordinate transformation')
+    log_system.info('using pyproj with old Proj4 API for coordinate transformation')
     return Proj, transform, set_datapath
+
+def try_pyproj_import():
+    try:
+        from pyproj import CRS
+        from pyproj.transformer import Transformer
+        from pyproj.datadir import set_data_dir
+    except ImportError:
+        return False
+    log_system.info('using pyproj for coordinate transformation')
+    return CRS, Transformer, set_data_dir
 
 def try_libproj_import():
     libproj = init_libproj()
@@ -244,22 +258,33 @@ if 'MAPPROXY_USE_LIBPROJ' in os.environ:
     proj_imports = [try_libproj_import]
 
 if 'MAPPROXY_USE_PYPROJ' in os.environ:
-    proj_imports = [try_pyproj_import]
+    proj_imports = [try_pyproj_import, try_pyproj4_import]
 
 if not proj_imports:
     if sys.platform == 'win32':
         # prefer pyproj on windows
-        proj_imports = [try_pyproj_import, try_libproj_import]
+        proj_imports = [try_pyproj_import, try_pyproj4_import, try_libproj_import]
     else:
-        proj_imports = [try_libproj_import, try_pyproj_import]
+        proj_imports = [try_pyproj_import, try_libproj_import, try_pyproj4_import]
 
+# try different imports in previously defined order
 for try_import in proj_imports:
-    res = try_import()
-    if res:
-        Proj, transform, set_datapath = res
-        break
+    if try_import == try_pyproj_import:
+        res = try_import()
+        if res:
+            CRS, Transformer, set_datapath = res
+            Proj, transform = None, None
+            USE_PROJ4_API = False
+            break
+    else:
+        res = try_import()
+        if res:
+            Proj, transform, set_datapath = res
+            CRS, Transformer = None, None
+            USE_PROJ4_API = True
+            break
 else:
-    raise ImportError('could not find libproj or pyproj')
+    raise ImportError('could not find pyproj (Python library) or libproj (C-library, deprecated)')
 
 if __name__ == '__main__':
 

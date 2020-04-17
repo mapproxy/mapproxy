@@ -677,7 +677,7 @@ class TestMesh(object):
         for e, a in zip(
             meshes[0][1], [0.0, 0.0, 0.0, 2000.0, 1000.0, 2000.0, 1000.0, 0.0]
         ):
-            assert e == pytest.approx(a)
+            assert e == pytest.approx(a, abs=1e-9)
 
 
 class TestSingleColorImage(object):
