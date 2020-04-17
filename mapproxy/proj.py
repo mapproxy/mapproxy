@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """
-ctypes based replacement of pyroj (with pyproj fallback).
+ctypes based replacement of pyroj (with pyproj fallback) of the old PROJ 4 API.
 
 This module implements the `Proj`, `transform` and `set_datapath` class/functions. This
 module is a drop-in replacement for pyproj. It does implement just enough to work for
@@ -23,6 +23,8 @@ MapProxy, i.e. there is no numpy support, etc.
 It uses the C libproj library. If the library could not be found/loaded it will fallback
 to pyroj. You can force the usage of either backend by setting the environment variables
 MAPPROXY_USE_LIBPROJ or MAPPROXY_USE_PYPROJ to any value.
+
+The new PROJ >=5 API is only supported via pyproj. See USE_PROJ4_API.
 
 """
 from __future__ import print_function
@@ -284,7 +286,7 @@ for try_import in proj_imports:
             USE_PROJ4_API = True
             break
 else:
-    raise ImportError('could not find pyproj (Python library) or libproj (C-library, deprecated)')
+    raise ImportError('could not find pyproj (Python library) or libproj (C library, deprecated)')
 
 if __name__ == '__main__':
 
