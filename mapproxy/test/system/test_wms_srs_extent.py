@@ -56,8 +56,10 @@ class TestWMSSRSExtentTest(SysTest):
             [0.0, 3500000.0, 1000000.0, 8500000.0]
         )
 
-        assert bbox_srs_from_boundingbox(bboxs["EPSG:3857"]) == pytest.approx(
-            [-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]
+        assert bbox_srs_from_boundingbox(bboxs["EPSG:3857"]) in (
+            # world BBOX is transformed differently depending on PROJ version
+            pytest.approx([-20037508.3428, -20037508.3428, 20037508.3428, 20037508.3428]),
+            pytest.approx([-20037508.3428, -147730762.67, 20037508.3428, 147730762.67]),
         )
         assert bbox_srs_from_boundingbox(bboxs["EPSG:4326"]) == pytest.approx(
             [-180.0, -90.0, 180.0, 90.0]
