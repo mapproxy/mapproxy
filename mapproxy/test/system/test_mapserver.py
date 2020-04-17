@@ -45,12 +45,12 @@ class TestMapServerCGI(SysTest):
     @pytest.fixture(scope="class")
     def additional_files(self, base_dir):
         shutil.copy(
-            os.path.join(os.path.dirname(__file__), "fixture", "cgi.py"),
+            os.path.join(os.path.dirname(__file__), "fixture", "minimal_cgi.py"),
             base_dir.strpath,
         )
 
         os.chmod(
-            base_dir.join("cgi.py").strpath, stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR
+            base_dir.join("minimal_cgi.py").strpath, stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR
         )
 
         base_dir.join("tmp").mkdir()

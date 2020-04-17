@@ -71,7 +71,7 @@ class TestCGIClient(object):
         shutil.rmtree(self.script_dir)
 
     def create_script(self, script=TEST_CGI_SCRIPT, executable=True):
-        script_file = os.path.join(self.script_dir, 'cgi.py')
+        script_file = os.path.join(self.script_dir, 'minimal_cgi.py')
         with open(script_file, 'wb') as f:
             f.write(script)
         if executable:
