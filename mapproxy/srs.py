@@ -167,7 +167,7 @@ class _SRS_Proj4_API(object):
 
         >>> ['%.3f' % x for x in
         ...  SRS(4326).transform_bbox_to(SRS(3857), (-180.0, -90.0, 180.0, 90.0))]
-        ['-20037508.343', '-20037508.343', '20037508.343', '20037508.343']
+        ['-20037508.343', '-147730762.670', '20037508.343', '147730758.195']
         >>> ['%.5f' % x for x in
         ...  SRS(4326).transform_bbox_to(SRS(3857), (8.2, 53.1, 8.3, 53.2))]
         ['912819.82450', '7001516.67745', '923951.77358', '7020078.53264']
@@ -510,9 +510,13 @@ class _SRS(object):
         return hash(self.srs_code)
 
 
-_srs_impl = _SRS
 if USE_PROJ4_API:
     _srs_impl = _SRS_Proj4_API
+    del _SRS
+else:
+    _srs_impl = _SRS
+    del _SRS_Proj4_API
+
 
 
 def generate_envelope_points(bbox, n):
