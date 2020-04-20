@@ -96,7 +96,7 @@ class SeedTestBase(SeedTestEnvironment):
         expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                               '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
                               '&width=256&height=128&srs=EPSG:4326'},
-                        {"body": b"", "status": 400})
+                        {"body": b"", "status": 500})
         with mock_httpd(('localhost', 42423), [expected_req] * (max_repeat + 1)):
             with local_base_config(self.mapproxy_conf.base_config):
                 seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
