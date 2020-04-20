@@ -140,6 +140,8 @@ def export_command(args=None):
         help="the SRS of the coverage")
     parser.add_option("--where",
         help="filter for OGR coverages")
+    parser.add_option("--max-repeat", type="int", dest="max_repeat",
+        help="maximum number of request attempts", default=100)
 
     from mapproxy.script.util import setup_logging
     import logging
@@ -285,7 +287,7 @@ def export_command(args=None):
 
     logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2)
     try:
-        seed_task(task, progress_logger=logger, dry_run=options.dry_run,
+        seed_task(task, progress_logger=logger, dry_run=options.dry_run, max_repeat=options.max_repeat,
              concurrency=options.concurrency)
     except KeyboardInterrupt:
         print('stopping...', file=sys.stderr)

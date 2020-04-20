@@ -59,7 +59,7 @@ class TileWorkerPool(object):
     """
     Manages multiple TileWorker.
     """
-    def __init__(self, task, worker_class, size=2, dry_run=False, progress_logger=None):
+    def __init__(self, task, worker_class, size=2, dry_run=False, max_repeat=100, progress_logger=None):
         self.tiles_queue = queue_class(size)
         self.task = task
         self.dry_run = dry_run
@@ -67,7 +67,7 @@ class TileWorkerPool(object):
         self.progress_logger = progress_logger
         conf = base_config()
         for _ in range(size):
-            worker = worker_class(self.task, self.tiles_queue, conf)
+            worker = worker_class(self.task, self.tiles_queue, conf, max_repeat)
             worker.start()
             self.procs.append(worker)
 
@@ -125,13 +125,14 @@ class TileWorkerPool(object):
 
 
 class TileWorker(proc_class):
-    def __init__(self, task, tiles_queue, conf):
+    def __init__(self, task, tiles_queue, conf, max_repeat=100):
         proc_class.__init__(self)
         proc_class.daemon = True
         self.task = task
         self.tile_mgr = task.tile_manager
         self.tiles_queue = tiles_queue
         self.conf = conf
+        self.max_repeat = max_repeat
 
     def run(self):
         with local_base_config(self.conf):
@@ -150,7 +151,7 @@ class TileSeedWorker(TileWorker):
                 return
             with self.tile_mgr.session():
                 exp_backoff(self.tile_mgr.load_tile_coords, args=(tiles,),
-                    max_repeat=100, max_backoff=600,
+                    max_repeat=self.max_repeat, max_backoff=600,
                     exceptions=(SourceError, IOError), ignore_exceptions=(LockTimeout, ))
 
 class TileCleanupWorker(TileWorker):
@@ -472,7 +473,7 @@ class CleanupTask(object):
         if self.coverage.intersects(bbox, self.grid.srs): return INTERSECTS
         return NONE
 
-def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
+def seed(tasks, concurrency=2, dry_run=False, max_repeat=100, skip_geoms_for_last_levels=0,
     progress_logger=None, cache_locker=None):
     if cache_locker is None:
         cache_locker = DummyCacheLocker()
@@ -491,7 +492,7 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
                 else:
                     start_progress = None
                 seed_progress = SeedProgress(old_progress_identifier=start_progress)
-                seed_task(task, concurrency, dry_run, skip_geoms_for_last_levels, progress_logger,
+                seed_task(task, concurrency, dry_run, max_repeat, skip_geoms_for_last_levels, progress_logger,
                     seed_progress=seed_progress)
         except CacheLockedError:
             print('    ...cache is locked, skipping')
@@ -500,7 +501,7 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
             active_tasks.pop()
 
 
-def seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
+def seed_task(task, concurrency=2, dry_run=False, max_repeat=100, skip_geoms_for_last_levels=0,
     progress_logger=None, seed_progress=None):
     if task.coverage is False:
         return
@@ -512,7 +513,7 @@ def seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
     if task.tile_manager.rescale_tiles:
         work_on_metatiles = False
 
-    tile_worker_pool = TileWorkerPool(task, TileSeedWorker, dry_run=dry_run,
+    tile_worker_pool = TileWorkerPool(task, TileSeedWorker, dry_run=dry_run, max_repeat=max_repeat,
         size=concurrency, progress_logger=progress_logger)
     tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=True,
         skip_geoms_for_last_levels=skip_geoms_for_last_levels, progress_logger=progress_logger,
