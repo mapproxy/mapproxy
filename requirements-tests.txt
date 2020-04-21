@@ -51,6 +51,7 @@ pyOpenSSL==18.0.0
 pyaml==17.12.1
 pycparser==2.18
 pytest==3.6.0
+pytest-timeout==1.3.4
 python-dateutil==2.6.1
 pytz==2018.4
 redis==2.10.6

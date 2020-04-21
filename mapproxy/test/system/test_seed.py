@@ -18,6 +18,8 @@ import time
 import shutil
 import tempfile
 
+import pytest
+
 from mapproxy.config.loader import load_configuration
 from mapproxy.cache.tile import Tile
 from mapproxy.image import ImageSource
@@ -91,7 +93,8 @@ class SeedTestBase(SeedTestEnvironment):
                     seed(tasks, dry_run=False)
                     cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
-    def test_seed_500(self):
+    @pytest.mark.timeout(10)
+    def test_seed_max_repeat(self):
         max_repeat = 2
         expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                               '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
@@ -101,7 +104,7 @@ class SeedTestBase(SeedTestEnvironment):
             with local_base_config(self.mapproxy_conf.base_config):
                 seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
                 tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
-                seed(tasks, dry_run=False, max_repeat=2)
+                seed(tasks, dry_run=False, max_repeat=max_repeat)
                 cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
     def test_reseed_uptodate(self):
