@@ -152,6 +152,9 @@ class SeedScript(object):
     parser.add_option("--log-config", dest='logging_conf', default=None,
                       help="logging configuration")
 
+    parser.add_option("--max-repeat", dest='max_repeat', default=100,
+                      help="maximum number of request attempts")
+
     def __call__(self):
         (options, args) = self.parser.parse_args()
 
@@ -241,7 +244,7 @@ class SeedScript(object):
                         len(seed_tasks), 's' if len(seed_tasks) > 1 else ''))
                     logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2,
                         progress_store=progress)
-                    seed(seed_tasks, progress_logger=logger, dry_run=options.dry_run,
+                    seed(seed_tasks, progress_logger=logger, dry_run=options.dry_run, max_repeat=options.max_repeat,
                          concurrency=options.concurrency, cache_locker=cache_locker,
                          skip_geoms_for_last_levels=options.geom_levels)
                 if cleanup_tasks:
