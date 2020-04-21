@@ -152,7 +152,7 @@ class SeedScript(object):
     parser.add_option("--log-config", dest='logging_conf', default=None,
                       help="logging configuration")
 
-    parser.add_option("--max-repeat", dest='max_repeat', default=100,
+    parser.add_option("--max-repeat", type=int, dest='max_repeat', default=100,
                       help="maximum number of request attempts")
 
     def __call__(self):
