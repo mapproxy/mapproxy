@@ -18,3 +18,4 @@ nosetests*.xml
 
 .idea/
 venv
+.pytest_cache
