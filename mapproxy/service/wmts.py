@@ -104,7 +104,7 @@ class WMTSServer(Server):
         # set the content_type to tile.format and not to request.format ( to support mixed_mode)
         resp = Response(tile.as_buffer(), content_type='image/' + tile.format)
         resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
-                           max_age=self.max_tile_age)
+                           max_age=self.max_tile_age, cache_hit=tile.cache_hit)
         resp.make_conditional(request.http)
         return resp
 
@@ -115,12 +115,12 @@ class WMTSServer(Server):
         tile_layer = self.layers[request.layer][request.tilematrixset]
         if not request.format:
             request.format = tile_layer.format
-        
+
         feature_count = None
         # WMTS REST style request do not have request params
         if hasattr(request, 'params'):
             feature_count = request.params.get('feature_count', None)
-        
+
         bbox = tile_layer.grid.tile_bbox(request.tile)
         query = InfoQuery(bbox, tile_layer.grid.tile_size, tile_layer.grid.srs, request.pos,
                           request.infoformat, feature_count=feature_count)

@@ -376,6 +376,7 @@ mapproxy_yaml_spec = {
                 'region_name': str(),
                 'endpoint_url': str(),
             },
+            'show_cache_status': bool(),
         },
         'grid': {
             'tile_size': [int()],
@@ -425,7 +426,8 @@ mapproxy_yaml_spec = {
                 'opacity': number(),
                 'spacing': str(),
             },
-            'cache': type_spec('type', cache_types)
+            'cache': type_spec('type', cache_types),
+            'show_cache_status': bool()
         }
     },
     'services': {
@@ -591,4 +593,3 @@ mapproxy_yaml_spec = {
      # from other sections (e.g. coverages, dimensions, etc.)
     'parts': anything(),
 }
-

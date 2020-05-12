@@ -36,6 +36,9 @@ Tile caching (creation, caching and retrieval of tiles).
 """
 
 
+import logging
+log = logging.getLogger('mapproxy.config')
+
 from functools import partial
 from contextlib import contextmanager
 from mapproxy.grid import MetaGrid
@@ -64,6 +67,7 @@ class TileManager(object):
             bulk_meta_tiles=False,
             rescale_tiles=0,
             cache_rescaled_tiles=False,
+            show_cache_status=False
         ):
         self.grid = grid
         self.cache = cache
@@ -79,6 +83,10 @@ class TileManager(object):
         self.pre_store_filter = pre_store_filter or []
         self.concurrent_tile_creators = concurrent_tile_creators
         self.tile_creator_class = tile_creator_class or TileCreator
+
+        self.show_cache_status = show_cache_status
+        self.cache_hits = 0
+        self.cache_misses = 0
 
         self.rescale_tiles = rescale_tiles
         self.cache_rescaled_tiles = cache_rescaled_tiles
@@ -162,10 +170,19 @@ class TileManager(object):
         self.cache.load_tiles(tiles, with_metadata)
 
         for tile in tiles:
-            if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
-                # missing or staled
-                uncached_tiles.append(tile)
-
+            if tile.coord is not None:
+                if not self.is_cached(tile, dimensions=dimensions):
+                    # missing or staled
+                    uncached_tiles.append(tile)
+                    tile.cache_hit = False if self.show_cache_status == True else None
+                    self.cache_misses = self.cache_misses + 1
+                else:
+                    tile.cache_hit = True if self.show_cache_status == True else None
+                    self.cache_hits = self.cache_hits + 1
+        cache_count = self.cache_hits + self.cache_misses
+        if (cache_count % 1000 == 0):
+            log.info("Tile caching statistics: HITS: %d (%0.1f%)\t MISSES: %d (%0.1f%)" %
+                (self.cache_hits, self.cache_hits * 100 / cache_count, self.cache_misses, self.cache_misses * 100 / cache_count))
         if uncached_tiles:
             creator = self.creator(dimensions=dimensions)
             created_tiles = creator.create_tiles(uncached_tiles)
@@ -518,6 +535,7 @@ class Tile(object):
         self._cacheable = cacheable
         self.size = None
         self.timestamp = None
+        self.cache_hit = None
 
     def _cacheable_get(self):
         return CacheInfo(cacheable=self._cacheable, timestamp=self.timestamp,

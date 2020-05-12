@@ -64,6 +64,7 @@ cache = dict(
     minimize_meta_requests = False,
     link_single_color_images = False,
     sqlite_timeout = 30,
+    show_cache_status = False
 )
 
 grid = dict(

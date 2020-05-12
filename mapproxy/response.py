@@ -69,7 +69,7 @@ class Response(object):
 
     etag = property(_etag_get, _etag_set)
 
-    def cache_headers(self, timestamp=None, etag_data=None, max_age=None, no_cache=False):
+    def cache_headers(self, timestamp=None, etag_data=None, max_age=None, no_cache=False, cache_hit=None):
         """
         Set cache-related headers.
 
@@ -92,6 +92,9 @@ class Response(object):
         self.last_modified = timestamp
         if (timestamp or etag_data) and max_age is not None:
             self.headers['Cache-control'] = 'public, max-age=%d, s-maxage=%d' % (max_age, max_age)
+
+        if cache_hit is not None:
+            self.headers['Cache-Status'] = 'HIT' if cache_hit == True else 'MISS'
 
     def make_conditional(self, req):
         """

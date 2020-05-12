@@ -1473,6 +1473,11 @@ class CacheConfiguration(ConfigurationBase):
         concurrent_tile_creators = self.context.globals.get_value('concurrent_tile_creators', self.conf,
             global_key='cache.concurrent_tile_creators')
 
+        show_cache_status = self.context.globals.get_value('show_cache_status', self.conf,
+            global_key='cache.show_cache_status')
+        show_cache_status = bool(str(show_cache_status).lower() == 'true') if show_cache_status is not None else False
+
+
         cache_rescaled_tiles = self.conf.get('cache_rescaled_tiles')
         upscale_tiles = self.conf.get('upscale_tiles', 0)
         if upscale_tiles < 0:
@@ -1559,6 +1564,7 @@ class CacheConfiguration(ConfigurationBase):
                         lock_timeout=self.context.globals.get_value('http.client_timeout', {}),
                         lock_cache_id=cache.lock_cache_id,
                 )
+
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
                 locker=locker,
                 image_opts=image_opts, identifier=identifier,
@@ -1571,6 +1577,7 @@ class CacheConfiguration(ConfigurationBase):
                 bulk_meta_tiles=bulk_meta_tiles,
                 cache_rescaled_tiles=cache_rescaled_tiles,
                 rescale_tiles=rescale_tiles,
+                show_cache_status=show_cache_status
             )
             extent = merge_layer_extents(sources)
             if extent.is_default:
@@ -2150,5 +2157,3 @@ def parse_color(color):
         return r, g, b, a
 
     return r, g, b
-
-

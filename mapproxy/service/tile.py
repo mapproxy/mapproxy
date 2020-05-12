@@ -399,6 +399,7 @@ class ImageResponse(object):
         self.format = format
         self.size = 0
         self.cacheable = True
+        self.cache_hit = False
 
     def as_buffer(self):
         return self.img
@@ -415,6 +416,7 @@ class TileResponse(object):
         self.cacheable = tile.cacheable
         self._buf = self.tile.source_buffer(format=format, image_opts=image_opts)
         self.format = format or self._format_from_magic_bytes()
+        self.cache_hit = tile.cache_hit
 
     def as_buffer(self):
         return self._buf
