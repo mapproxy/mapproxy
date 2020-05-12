@@ -1452,8 +1452,8 @@ class CacheConfiguration(ConfigurationBase):
         from mapproxy.layer import map_extent_from_grid, merge_layer_extents
 
         base_image_opts = self.image_opts()
-        if self.conf.get('format') == 'mixed' and not self.conf.get('request_format') == 'image/png':
-            raise ConfigurationError('request_format must be set to image/png if mixed mode is enabled')
+        if self.conf.get('format') == 'mixed' and not self.conf.get('request_format') in [ 'image/png', 'image/vnd.jpeg-png' ]:
+            raise ConfigurationError('request_format must be set to image/png or image/vnd.jpeg-png if mixed mode is enabled')
         request_format = self.conf.get('request_format') or self.conf.get('format')
         if '/' in request_format:
             request_format_ext = request_format.split('/', 1)[1]
@@ -2150,5 +2150,3 @@ def parse_color(color):
         return r, g, b, a
 
     return r, g, b
-
-
