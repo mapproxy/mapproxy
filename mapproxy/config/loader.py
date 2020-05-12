@@ -1477,7 +1477,6 @@ class CacheConfiguration(ConfigurationBase):
             global_key='cache.show_cache_status')
         show_cache_status = bool(str(show_cache_status).lower() == 'true') if show_cache_status is not None else False
 
-
         cache_rescaled_tiles = self.conf.get('cache_rescaled_tiles')
         upscale_tiles = self.conf.get('upscale_tiles', 0)
         if upscale_tiles < 0:
