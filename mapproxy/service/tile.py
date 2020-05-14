@@ -64,6 +64,7 @@ class TileServer(Server):
         self.max_tile_age = max_tile_age
         self.use_dimension_layers = use_dimension_layers
         self.origin = origin
+        self.capabilities_cache = None
 
     def map(self, tile_request):
         """
@@ -166,15 +167,22 @@ class TileServer(Server):
         :return: the rendered tms capabilities
         :rtype: Response
         """
-        service = self._service_md(tms_request)
-        if hasattr(tms_request, 'layer'):
-            layer, limit_to = self.layer(tms_request)
-            result = self._render_layer_template(layer, service)
+        if self.capabilities_cache is None:
+            cached = False
+            service = self._service_md(tms_request)
+            if hasattr(tms_request, 'layer'):
+                layer, limit_to = self.layer(tms_request)
+                result = self._render_layer_template(layer, service)
+            else:
+                layers = self.authorized_tile_layers(tms_request.http.environ)
+                result = self._render_template(layers, service)
+            self.capabilities_cache = result
         else:
-            layers = self.authorized_tile_layers(tms_request.http.environ)
-            result = self._render_template(layers, service)
-
-        return Response(result, mimetype='text/xml')
+            cached = True
+            result = self.capabilities_cache
+        response = Response(result, mimetype='text/xml')
+        response.headers['Cache-Status'] = 'HIT' if cached else 'MISS'
+        return response
 
     def tms_root_resource(self, tms_request):
         """

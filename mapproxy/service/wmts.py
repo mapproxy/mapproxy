@@ -55,6 +55,7 @@ class WMTSServer(Server):
         self.capabilities_class = Capabilities
         self.fi_transformers = None
         self.info_formats = info_formats
+        self.capabilities_cache = None
 
     def _matrix_sets(self, layers):
         sets = {}
@@ -77,12 +78,18 @@ class WMTSServer(Server):
         return wmts_layers, sets.values()
 
     def capabilities(self, request):
-        service = self._service_md(request)
-        layers = self.authorized_tile_layers(request.http.environ)
-
-
-        result = self.capabilities_class(service, layers, self.matrix_sets, info_formats=self.info_formats).render(request)
-        return Response(result, mimetype='application/xml')
+        if self.capabilities_cache is None:
+            cached = False
+            service = self._service_md(request)
+            layers = self.authorized_tile_layers(request.http.environ)
+            result = self.capabilities_class(service, layers, self.matrix_sets, info_formats=self.info_formats).render(request)
+            self.capabilities_cache = result
+        else:
+            cached = True
+            result = self.capabilities_cache
+        response = Response(result, mimetype='application/xml')
+        response.headers['Cache-Status'] = 'HIT' if cached else 'MISS'
+        return response
 
     def tile(self, request):
         self.check_request(request)
@@ -115,12 +122,12 @@ class WMTSServer(Server):
         tile_layer = self.layers[request.layer][request.tilematrixset]
         if not request.format:
             request.format = tile_layer.format
-        
+
         feature_count = None
         # WMTS REST style request do not have request params
         if hasattr(request, 'params'):
             feature_count = request.params.get('feature_count', None)
-        
+
         bbox = tile_layer.grid.tile_bbox(request.tile)
         query = InfoQuery(bbox, tile_layer.grid.tile_size, tile_layer.grid.srs, request.pos,
                           request.infoformat, feature_count=feature_count)
