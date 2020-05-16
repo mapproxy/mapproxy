@@ -81,11 +81,11 @@ class WMTSServer(Server):
         key = "{}{}{}{}{}{}{}".format(
                 request.mime_type,
                 request.version,
-                request.http.environ['mapproxy.authorize'],
-                request.http.environ['HTTP_X_FORWARDED_PROTO'],
-                request.http.environ['HTTP_X_FORWARDED_HOST'],
-                request.http.environ['HTTP_X_SCRIPT_NAME'],
-                request.http.environ['HTTP_HOST'])
+                request.http.environ.get('mapproxy.authorize', ''),
+                request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),
+                request.http.environ.get('HTTP_X_FORWARDED_HOST', ''),
+                request.http.environ.get('HTTP_X_SCRIPT_NAME', ''),
+                request.http.environ.get('HTTP_HOST', ''))
         if not key in self.capabilities_cache:
             cached = False
             service = self._service_md(request)
