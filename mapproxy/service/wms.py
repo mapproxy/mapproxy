@@ -181,8 +181,8 @@ class WMSServer(Server):
         #               if name != '__debug__']
 
         key = "{}{}{}{}{}{}{}".format(
-                map_request.mime_type,
-                map_request.version,
+                map_request.get('mime_type', ''),
+                map_request.get('version', ''),
                 map_request.http.environ.get('mapproxy.authorize', ''),
                 map_request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),
                 map_request.http.environ.get('HTTP_X_FORWARDED_HOST', ''),
