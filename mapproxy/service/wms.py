@@ -183,11 +183,11 @@ class WMSServer(Server):
         key = "{}{}{}{}{}{}{}".format(
                 map_request.mime_type,
                 map_request.version,
-                request.http.environ.get('mapproxy.authorize', ''),
-                request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),
-                request.http.environ.get('HTTP_X_FORWARDED_HOST', ''),
-                request.http.environ.get('HTTP_X_SCRIPT_NAME', ''),
-                request.http.environ.get('HTTP_HOST', ''))
+                map_request.http.environ.get('mapproxy.authorize', ''),
+                map_request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),
+                map_request.http.environ.get('HTTP_X_FORWARDED_HOST', ''),
+                map_request.http.environ.get('HTTP_X_SCRIPT_NAME', ''),
+                map_request.http.environ.get('HTTP_HOST', ''))
         if not key in self.capabilities_cache:
             cached = False
             if map_request.params.get('tiled', 'false').lower() == 'true':

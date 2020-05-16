@@ -79,7 +79,6 @@ class WMTSServer(Server):
 
     def capabilities(self, request):
         key = "{}{}{}{}{}{}{}".format(
-                request.mime_type,
                 request.version,
                 request.http.environ.get('mapproxy.authorize', ''),
                 request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),

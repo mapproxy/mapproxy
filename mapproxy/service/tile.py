@@ -168,13 +168,12 @@ class TileServer(Server):
         :rtype: Response
         """
         key = "{}{}{}{}{}{}{}".format(
-                tms_request.mime_type,
                 tms_request.version,
-                request.http.environ.get('mapproxy.authorize', ''),
-                request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),
-                request.http.environ.get('HTTP_X_FORWARDED_HOST', ''),
-                request.http.environ.get('HTTP_X_SCRIPT_NAME', ''),
-                request.http.environ.get('HTTP_HOST', ''))
+                tms_request.http.environ.get('mapproxy.authorize', ''),
+                tms_request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),
+                tms_request.http.environ.get('HTTP_X_FORWARDED_HOST', ''),
+                tms_request.http.environ.get('HTTP_X_SCRIPT_NAME', ''),
+                tms_request.http.environ.get('HTTP_HOST', ''))
 
         if not key in self.capabilities_cache:
             cached = False
