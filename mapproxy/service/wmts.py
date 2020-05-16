@@ -78,12 +78,13 @@ class WMTSServer(Server):
         return wmts_layers, sets.values()
 
     def capabilities(self, request):
-        if self.capabilities_cache is None:
+        if self.capabilities_cache is None or 'mapproxy.authorize' in request.http.environ:
             cached = False
             service = self._service_md(request)
             layers = self.authorized_tile_layers(request.http.environ)
             result = self.capabilities_class(service, layers, self.matrix_sets, info_formats=self.info_formats).render(request)
-            self.capabilities_cache = result
+            if (not 'mapproxy.authorize' in request.http.environ):
+                self.capabilities_cache = result
         else:
             cached = True
             result = self.capabilities_cache

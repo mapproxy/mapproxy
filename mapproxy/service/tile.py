@@ -167,7 +167,7 @@ class TileServer(Server):
         :return: the rendered tms capabilities
         :rtype: Response
         """
-        if self.capabilities_cache is None:
+        if self.capabilities_cache is None or 'mapproxy.authorize' in tms_request.http.environ:
             cached = False
             service = self._service_md(tms_request)
             if hasattr(tms_request, 'layer'):
@@ -176,7 +176,8 @@ class TileServer(Server):
             else:
                 layers = self.authorized_tile_layers(tms_request.http.environ)
                 result = self._render_template(layers, service)
-            self.capabilities_cache = result
+            if (not 'mapproxy.authorize' in tms_request.http.environ):
+                self.capabilities_cache = result
         else:
             cached = True
             result = self.capabilities_cache

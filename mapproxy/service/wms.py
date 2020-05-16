@@ -180,7 +180,7 @@ class WMSServer(Server):
         #     layers = [layer for name, layer in iteritems(self.layers)
         #               if name != '__debug__']
 
-        if not map_request.mime_type in self.capabilities_cache:
+        if not map_request.mime_type in self.capabilities_cache or 'mapproxy.authorize' in map_request.http.environ:
             cached = False
             if map_request.params.get('tiled', 'false').lower() == 'true':
                 tile_layers = self.tile_layers.values()
@@ -200,7 +200,8 @@ class WMSServer(Server):
                 self.image_formats, info_formats, srs=self.srs, srs_extents=self.srs_extents,
                 inspire_md=self.inspire_md, max_output_pixels=self.max_output_pixels
                 ).render(map_request)
-            self.capabilities_cache[map_request.mime_type] = result
+            if (not 'mapproxy.authorize' in map_request.http.environ):
+                self.capabilities_cache[map_request.mime_type] = result
         else:
             cached = True
             result = self.capabilities_cache[map_request.mime_type]
