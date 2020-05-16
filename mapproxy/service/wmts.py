@@ -94,7 +94,7 @@ class WMTSServer(Server):
                 self.capabilities_cache[key] = result
         else:
             cached = True
-            result = self.capabilities_cache
+            result = self.capabilities_cache[key]
         response = Response(result, mimetype='application/xml')
         response.headers['Cache-Status'] = 'HIT' if cached else 'MISS'
         return response

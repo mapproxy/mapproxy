@@ -212,7 +212,7 @@ class WMSServer(Server):
                 self.capabilities_cache[key] = result
         else:
             cached = True
-            result = self.capabilities_cache[map_request.mime_type]
+            result = self.capabilities_cache[key]
         response = Response(result, mimetype=map_request.mime_type)
         response.headers['Cache-Status'] = 'HIT' if cached else 'MISS'
         return response

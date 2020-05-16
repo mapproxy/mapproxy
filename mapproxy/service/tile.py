@@ -168,7 +168,6 @@ class TileServer(Server):
         :rtype: Response
         """
         key = "{}{}{}{}{}{}{}".format(
-                tms_request.version,
                 tms_request.http.environ.get('mapproxy.authorize', ''),
                 tms_request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),
                 tms_request.http.environ.get('HTTP_X_FORWARDED_HOST', ''),
@@ -188,7 +187,7 @@ class TileServer(Server):
                 self.capabilities_cache[key] = result
         else:
             cached = True
-            result = self.capabilities_cache
+            result = self.capabilities_cache[key]
         response = Response(result, mimetype='text/xml')
         response.headers['Cache-Status'] = 'HIT' if cached else 'MISS'
         return response
