@@ -167,7 +167,7 @@ class TileServer(Server):
         :return: the rendered tms capabilities
         :rtype: Response
         """
-        key = "{}{}{}{}{}{}{}".format(
+        key = "{}{}{}{}{}".format(
                 tms_request.http.environ.get('mapproxy.authorize', ''),
                 tms_request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),
                 tms_request.http.environ.get('HTTP_X_FORWARDED_HOST', ''),
