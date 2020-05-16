@@ -55,7 +55,7 @@ class WMTSServer(Server):
         self.capabilities_class = Capabilities
         self.fi_transformers = None
         self.info_formats = info_formats
-        self.capabilities_cache = None
+        self.capabilities_cache = {}
 
     def _matrix_sets(self, layers):
         sets = {}
@@ -78,13 +78,21 @@ class WMTSServer(Server):
         return wmts_layers, sets.values()
 
     def capabilities(self, request):
-        if self.capabilities_cache is None or 'mapproxy.authorize' in request.http.environ:
+        key = "{}{}{}{}{}{}{}".format(
+                request.mime_type,
+                request.version,
+                request.http.environ['mapproxy.authorize'],
+                request.http.environ['HTTP_X_FORWARDED_PROTO'],
+                request.http.environ['HTTP_X_FORWARDED_HOST'],
+                request.http.environ['HTTP_X_SCRIPT_NAME'],
+                request.http.environ['HTTP_HOST'])
+        if not key in self.capabilities_cache:
             cached = False
             service = self._service_md(request)
             layers = self.authorized_tile_layers(request.http.environ)
             result = self.capabilities_class(service, layers, self.matrix_sets, info_formats=self.info_formats).render(request)
             if (not 'mapproxy.authorize' in request.http.environ):
-                self.capabilities_cache = result
+                self.capabilities_cache[key] = result
         else:
             cached = True
             result = self.capabilities_cache

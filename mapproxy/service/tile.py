@@ -64,7 +64,7 @@ class TileServer(Server):
         self.max_tile_age = max_tile_age
         self.use_dimension_layers = use_dimension_layers
         self.origin = origin
-        self.capabilities_cache = None
+        self.capabilities_cache = {}
 
     def map(self, tile_request):
         """
@@ -167,7 +167,16 @@ class TileServer(Server):
         :return: the rendered tms capabilities
         :rtype: Response
         """
-        if self.capabilities_cache is None or 'mapproxy.authorize' in tms_request.http.environ:
+        key = "{}{}{}{}{}{}{}".format(
+                tms_request.mime_type,
+                tms_request.version,
+                tms_request.http.environ['mapproxy.authorize'],
+                tms_request.http.environ['HTTP_X_FORWARDED_PROTO'],
+                tms_request.http.environ['HTTP_X_FORWARDED_HOST'],
+                tms_request.http.environ['HTTP_X_SCRIPT_NAME'],
+                tms_request.http.environ['HTTP_HOST'])
+
+        if not key in self.capabilities_cache:
             cached = False
             service = self._service_md(tms_request)
             if hasattr(tms_request, 'layer'):
@@ -177,7 +186,7 @@ class TileServer(Server):
                 layers = self.authorized_tile_layers(tms_request.http.environ)
                 result = self._render_template(layers, service)
             if (not 'mapproxy.authorize' in tms_request.http.environ):
-                self.capabilities_cache = result
+                self.capabilities_cache[key] = result
         else:
             cached = True
             result = self.capabilities_cache
