@@ -182,7 +182,7 @@ class WMSServer(Server):
 
         key = "{}{}{}{}{}{}{}".format(
                 map_request.mime_type or '',
-                '' if not 'version' in map_request.request_params else map_request.request_params.version,
+                '' if not 'version' in map_request.params else map_request.params.version,
                 map_request.http.environ.get('mapproxy.authorize', ''),
                 map_request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),
                 map_request.http.environ.get('HTTP_X_FORWARDED_HOST', ''),

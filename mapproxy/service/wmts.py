@@ -79,7 +79,7 @@ class WMTSServer(Server):
 
     def capabilities(self, request):
         key = "{}{}{}{}{}{}".format(
-                request.mime_type,
+                '' if not 'mime_type' in request else request.mime_type,
                 request.http.environ.get('mapproxy.authorize', ''),
                 request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),
                 request.http.environ.get('HTTP_X_FORWARDED_HOST', ''),
