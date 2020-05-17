@@ -78,10 +78,12 @@ class WMTSServer(Server):
         return wmts_layers, sets.values()
 
     def capabilities(self, request):
-        key = "{}|{}|{}".format(
-                '' if not hasattr(request, 'mime_type') else request.mime_type,
+        key = "{}|{}|{}|{}|{}".format(
+                request.mime_type,
                 request.http.environ.get('mapproxy.authorize', ''),
-                request.script_url)
+                request.http.environ.get('HTTP_X_FORWARDED_HOST') or request.http.environ.get('HTTP_HOST') or (request.http.environ.get('SERVER_NAME') + ':' + request.http.environ.get('SERVER_PORT')),
+                request.http.environ.get('HTTP_X_FORWARDED_PROTO') or request.http.environ.get('wsgi.url_scheme'),
+                request.http.environ.get('HTTP_X_SCRIPT_NAME') or request.http.environ.get('SCRIPT_NAME'))
         if not key in self.capabilities_cache:
             cached = False
             service = self._service_md(request)

@@ -180,11 +180,13 @@ class WMSServer(Server):
         #     layers = [layer for name, layer in iteritems(self.layers)
         #               if name != '__debug__']
 
-        key = "{}|{}|{}|{}".format(
-                map_request.mime_type or '',
-                '' if not 'version' in map_request.params else map_request.params.version,
+        key = "{}|{}|{}|{}|{}|{}".format(
+                map_request.version,
+                map_request.mime_type,
                 map_request.http.environ.get('mapproxy.authorize', ''),
-                map_request.script_url)
+                map_request.http.environ.get('HTTP_X_FORWARDED_HOST') or map_request.http.environ.get('HTTP_HOST') or (map_request.http.environ.get('SERVER_NAME') + ':' + map_request.http.environ.get('SERVER_PORT')),
+                map_request.http.environ.get('HTTP_X_FORWARDED_PROTO') or map_request.http.environ.get('wsgi.url_scheme'),
+                map_request.http.environ.get('HTTP_X_SCRIPT_NAME') or map_request.http.environ.get('SCRIPT_NAME'))
         if not key in self.capabilities_cache:
             cached = False
             if map_request.params.get('tiled', 'false').lower() == 'true':
