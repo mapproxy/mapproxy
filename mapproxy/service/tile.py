@@ -167,13 +167,10 @@ class TileServer(Server):
         :return: the rendered tms capabilities
         :rtype: Response
         """
-        key = "{}{}{}{}{}".format(
+        key = "{}|{}|{}".format(
+                '' if not hasattr(tms_request, 'layer') else tms_request.layer,
                 tms_request.http.environ.get('mapproxy.authorize', ''),
-                tms_request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),
-                tms_request.http.environ.get('HTTP_X_FORWARDED_HOST', ''),
-                tms_request.http.environ.get('HTTP_X_SCRIPT_NAME', ''),
-                tms_request.http.environ.get('HTTP_HOST', ''))
-
+                tms_request.script_url)
         if not key in self.capabilities_cache:
             cached = False
             service = self._service_md(tms_request)
