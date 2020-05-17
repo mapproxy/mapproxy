@@ -64,6 +64,7 @@ class TileServer(Server):
         self.max_tile_age = max_tile_age
         self.use_dimension_layers = use_dimension_layers
         self.origin = origin
+        self.capabilities_cache = {}
 
     def map(self, tile_request):
         """
@@ -166,15 +167,30 @@ class TileServer(Server):
         :return: the rendered tms capabilities
         :rtype: Response
         """
-        service = self._service_md(tms_request)
-        if hasattr(tms_request, 'layer'):
-            layer, limit_to = self.layer(tms_request)
-            result = self._render_layer_template(layer, service)
-        else:
-            layers = self.authorized_tile_layers(tms_request.http.environ)
-            result = self._render_template(layers, service)
+        key = "{}{}{}{}{}".format(
+                tms_request.http.environ.get('mapproxy.authorize', ''),
+                tms_request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),
+                tms_request.http.environ.get('HTTP_X_FORWARDED_HOST', ''),
+                tms_request.http.environ.get('HTTP_X_SCRIPT_NAME', ''),
+                tms_request.http.environ.get('HTTP_HOST', ''))
 
-        return Response(result, mimetype='text/xml')
+        if not key in self.capabilities_cache:
+            cached = False
+            service = self._service_md(tms_request)
+            if hasattr(tms_request, 'layer'):
+                layer, limit_to = self.layer(tms_request)
+                result = self._render_layer_template(layer, service)
+            else:
+                layers = self.authorized_tile_layers(tms_request.http.environ)
+                result = self._render_template(layers, service)
+            if (not 'mapproxy.authorize' in tms_request.http.environ):
+                self.capabilities_cache[key] = result
+        else:
+            cached = True
+            result = self.capabilities_cache[key]
+        response = Response(result, mimetype='text/xml')
+        response.headers['Cache-Status'] = 'HIT' if cached else 'MISS'
+        return response
 
     def tms_root_resource(self, tms_request):
         """

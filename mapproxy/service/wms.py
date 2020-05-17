@@ -78,6 +78,7 @@ class WMSServer(Server):
         self.max_output_pixels = max_output_pixels
         self.max_tile_age = max_tile_age
         self.inspire_md = inspire_md
+        self.capabilities_cache = {}
 
     def map(self, map_request):
         self.check_map_request(map_request)
@@ -179,25 +180,42 @@ class WMSServer(Server):
         #     layers = [layer for name, layer in iteritems(self.layers)
         #               if name != '__debug__']
 
-        if map_request.params.get('tiled', 'false').lower() == 'true':
-            tile_layers = self.tile_layers.values()
+        key = "{}{}{}{}{}{}{}".format(
+                map_request.mime_type or '',
+                '' if not 'version' in map_request.params else map_request.params.version,
+                map_request.http.environ.get('mapproxy.authorize', ''),
+                map_request.http.environ.get('HTTP_X_FORWARDED_PROTO', ''),
+                map_request.http.environ.get('HTTP_X_FORWARDED_HOST', ''),
+                map_request.http.environ.get('HTTP_X_SCRIPT_NAME', ''),
+                map_request.http.environ.get('HTTP_HOST', ''))
+        if not key in self.capabilities_cache:
+            cached = False
+            if map_request.params.get('tiled', 'false').lower() == 'true':
+                tile_layers = self.tile_layers.values()
+            else:
+                tile_layers = []
+
+            service = self._service_md(map_request)
+            root_layer = self.authorized_capability_layers(map_request.http.environ)
+
+            info_types = ['text', 'html', 'xml'] # defaults
+            if self.info_types:
+                info_types = self.info_types
+            elif self.fi_transformers:
+                info_types = self.fi_transformers.keys()
+            info_formats = [mimetype_from_infotype(map_request.version, info_type) for info_type in info_types]
+            result = Capabilities(service, root_layer, tile_layers,
+                self.image_formats, info_formats, srs=self.srs, srs_extents=self.srs_extents,
+                inspire_md=self.inspire_md, max_output_pixels=self.max_output_pixels
+                ).render(map_request)
+            if (not 'mapproxy.authorize' in map_request.http.environ):
+                self.capabilities_cache[key] = result
         else:
-            tile_layers = []
-
-        service = self._service_md(map_request)
-        root_layer = self.authorized_capability_layers(map_request.http.environ)
-
-        info_types = ['text', 'html', 'xml'] # defaults
-        if self.info_types:
-            info_types = self.info_types
-        elif self.fi_transformers:
-            info_types = self.fi_transformers.keys()
-        info_formats = [mimetype_from_infotype(map_request.version, info_type) for info_type in info_types]
-        result = Capabilities(service, root_layer, tile_layers,
-            self.image_formats, info_formats, srs=self.srs, srs_extents=self.srs_extents,
-            inspire_md=self.inspire_md, max_output_pixels=self.max_output_pixels
-            ).render(map_request)
-        return Response(result, mimetype=map_request.mime_type)
+            cached = True
+            result = self.capabilities_cache[key]
+        response = Response(result, mimetype=map_request.mime_type)
+        response.headers['Cache-Status'] = 'HIT' if cached else 'MISS'
+        return response
 
     def featureinfo(self, request):
         infos = []
