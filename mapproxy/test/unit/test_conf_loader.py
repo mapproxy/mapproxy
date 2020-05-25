@@ -903,7 +903,7 @@ class TestImageOptions(object):
         except ConfigurationError:
             pass
         else:
-            raise False('expected ConfigurationError')
+            raise Exception('expected ConfigurationError')
 
 
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {
@@ -914,7 +914,7 @@ class TestImageOptions(object):
         except ConfigurationError:
             pass
         else:
-            raise False('expected ConfigurationError')
+            raise Exception('expected ConfigurationError')
 
 
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {}
@@ -924,7 +924,7 @@ class TestImageOptions(object):
         except ConfigurationError:
             pass
         else:
-            raise False('expected ConfigurationError')
+            raise Exception('expected ConfigurationError')
 
 
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {
