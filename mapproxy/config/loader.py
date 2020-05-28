@@ -1191,6 +1191,7 @@ class CacheConfiguration(ConfigurationBase):
             cache_dir,
             timeout=sqlite_timeout,
             wal=wal,
+            ttl=self.conf.get('cache', {}).get('ttl'),
         )
 
     def _couchdb_cache(self, grid_conf, file_ext):
