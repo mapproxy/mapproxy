@@ -115,7 +115,7 @@ cache_types = {
         'sqlite_timeout': number(),
         'sqlite_wal': bool(),
         'tile_lock_dir': str(),
-        'ttl': number(),
+        'ttl': int(),
     },
     'mbtiles': {
         'filename': str(),
