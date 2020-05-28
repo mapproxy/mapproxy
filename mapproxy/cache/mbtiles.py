@@ -42,11 +42,11 @@ def sqlite_datetime_to_timestamp(datetime):
 class MBTilesCache(TileCacheBase):
     supports_timestamp = False
 
-    def __init__(self, mbtile_file, with_timestamps=False, timeout=30, wal=False, ttl=None):
+    def __init__(self, mbtile_file, with_timestamps=False, timeout=30, wal=False, ttl=0):
         self.lock_cache_id = 'mbtiles-' + hashlib.md5(mbtile_file.encode('utf-8')).hexdigest()
         self.mbtile_file = mbtile_file
         self.supports_timestamp = with_timestamps
-        self.ttl = with_timestamps and ttl or None
+        self.ttl = with_timestamps and ttl or 0
         self.timeout = timeout
         self.wal = wal
         self.ensure_mbtile()
@@ -200,7 +200,7 @@ class MBTilesCache(TileCacheBase):
                       tile_row = ? AND
                       zoom_level = ?'''
 
-        if self.ttl is not None:
+        if self.ttl:
             stmt += " AND datetime('now', 'localtime', '%d seconds') < last_modified" % -self.ttl
 
         cur.execute(stmt, tile.coord)
@@ -233,7 +233,7 @@ class MBTilesCache(TileCacheBase):
 
         if self.supports_timestamp:
             stmt_base = "SELECT tile_column, tile_row, tile_data, last_modified FROM tiles WHERE "
-            if self.ttl is not None:
+            if self.ttl:
                 ttl_condition = "datetime('now', 'localtime', '%d seconds') < last_modified" % -self.ttl
                 stmt_base += ttl_condition + ' AND '
         else:
@@ -307,7 +307,7 @@ class MBTilesCache(TileCacheBase):
 class MBTilesLevelCache(TileCacheBase):
     supports_timestamp = True
 
-    def __init__(self, mbtiles_dir, timeout=30, wal=False, ttl=None):
+    def __init__(self, mbtiles_dir, timeout=30, wal=False, ttl=0):
         self.lock_cache_id = 'sqlite-' + hashlib.md5(mbtiles_dir.encode('utf-8')).hexdigest()
         self.cache_dir = mbtiles_dir
         self._mbtiles = {}
