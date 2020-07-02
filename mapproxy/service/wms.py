@@ -640,8 +640,8 @@ class LayerRenderer(object):
             return layer, layer_img
         except SourceError:
             raise
-        except MapBBOXError:
-            raise RequestError('Request too large or invalid BBOX.', request=self.request)
+        except MapBBOXError as e:
+            raise RequestError('Request too large or invalid BBOX. (%s)' % e, request=self.request)
         except MapError as e:
             raise RequestError('Invalid request: %s' % e.args[0], request=self.request)
         except TransformationError:
