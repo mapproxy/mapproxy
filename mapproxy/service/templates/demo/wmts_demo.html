@@ -1,5 +1,5 @@
 {{py:
-import cgi
+from mapproxy.compat.modules import escape
 import textwrap
 
 wrapper = textwrap.TextWrapper(replace_whitespace=False, width=90,
@@ -70,6 +70,6 @@ function init(){
             <h3>JavaScript code</h3>
             <pre>
 {{for line in jscript_openlayers().split('\n')}}
-{{cgi.escape(wrapper.fill(line))}}
+{{escape(wrapper.fill(line))}}
 {{endfor}}
             </pre>
