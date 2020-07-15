@@ -32,12 +32,11 @@ from __future__ import print_function
 
 import re
 import sys
-import cgi
-from mapproxy.compat.modules import escape
 import os
 import tokenize
 from io import StringIO, BytesIO
 from mapproxy.compat import iteritems, PY2, text_type
+from mapproxy.compat.modules import escape
 from mapproxy.util.py import reraise
 from mapproxy.util.ext.tempita._looper import looper
 from mapproxy.util.ext.tempita.compat3 import bytes, basestring_, next, is_unicode, coerce_text
