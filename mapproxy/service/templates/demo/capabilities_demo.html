@@ -1,5 +1,5 @@
 {{py:
-import cgi
+from mapproxy.compat.modules import escape
 import textwrap
 
 wrapper = textwrap.TextWrapper(replace_whitespace=False, width=90,
@@ -12,7 +12,7 @@ jscript_functions = None
             <a href="{{url}}">{{url}}</a>
             <pre>
 {{for line in capabilities}}
-{{cgi.escape(wrapper.fill(line.decode('utf8')))}}
+{{escape(wrapper.fill(line.decode('utf8')))}}
 {{endfor}}
             </pre>
 
