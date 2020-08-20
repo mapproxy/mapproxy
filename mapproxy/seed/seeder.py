@@ -43,9 +43,13 @@ NONE = 0
 CONTAINS = -1
 INTERSECTS = 1
 
-# do not use multiprocessing on windows, it blows
-# no lambdas, no anonymous functions/classes, no base_config(), etc.
-if sys.platform == 'win32':
+# Decide whether to use multiprocessing or threading. multiprocessing should be faster but
+# it is not well supported on all platforms. Especially regarding lambdas and anonymous
+# function/classes which are used in proj.py for example.
+#
+# Since Python 3.8, MacOS uses a non-forking start method for multiprocessing which
+# inhibits similar restrictions to Windows.
+if sys.platform == 'win32' or (sys.platform == 'darwin' and sys.version_info >= (3, 8)):
     import threading
     proc_class = threading.Thread
     queue_class = Queue.Queue
