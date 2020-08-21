@@ -63,7 +63,7 @@ pyproj or libproj
 ~~~~~~~~~~~~~~~~~
 
 MapProxy uses the PROJ C library for all coordinate transformation tasks. MapProxy can directly use the C library or via the pyproj Python package.
-The internal API of PROJ was updated with PROJ >=5. The old PROJ 4 API is now deprecated and wil be removed from future PROJ releases. MapProxy only supports the new API via pyproj and it is therefore recommended to use a recent pyproj version.
+The internal API of PROJ was updated with PROJ >=5. The old PROJ 4 API is now deprecated and will be removed from future PROJ releases. MapProxy only supports the new API via pyproj and it is therefore recommended to use a recent pyproj version.
 
 
 .. versionchanged:: 1.13
