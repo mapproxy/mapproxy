@@ -26,6 +26,7 @@ jscript_functions=None
         var layer = new OpenLayers.Layer.WMS( "WMS {{layer.name}}",
             "../service?",
             {layers: "{{layer.name}}", format: "{{format}}", srs:"{{srs}}",
+            {{if layer.dimensions}}{{for d in layer.dimensions.keys()}}"{{d}}": "{{layer.dimensions[d].default}}",{{endfor}}{{endif}}
              exceptions: "application/vnd.ogc.se_inimage"{{if format == 'image/png'}}, transparent: true{{endif}}},
             {singleTile: true, ratio: 1, isBaseLayer: true} );
 
@@ -40,6 +41,9 @@ jscript_functions=None
                     <tr>
                         <th>Coordinate System</th>
                         <th>Image format</th>
+                        {{for dim in layer.dimensions}}
+                        <th>{{str(dim)}}</th>
+                        {{endfor}}
                     </tr>
                     <tr>
                         <td>
@@ -64,6 +68,19 @@ jscript_functions=None
                             {{endfor}}
                             </select>
                         </td>
+                        {{for dim in layer.dimensions}}
+                            <td>
+                            <select name="{{str(dim)}}" size="1" onchange="setDimension(map.layers[0], &quot;{{str(dim)}}&quot;, this.value);">
+                            {{for value in layer.dimensions[dim]}}
+                                {{if value == layer.dimensions[dim].default}}
+                                    <option value="{{value}}" selected="selected">{{value}}</option>
+                                {{else}}
+                                    <option value="{{value}}">{{value}}</option>
+                                {{endif}}
+                            {{endfor}}
+                            </select>
+                      </td>
+                      {{endfor}}
                     </tr>
                 </table>
                 <input type="hidden" name="wms_layer" value="{{layer.name}}">

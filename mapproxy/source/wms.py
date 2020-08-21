@@ -111,6 +111,8 @@ class WMSSource(MapLayer):
                 return self._get_transformed(query, format)
         if self.extent and not self.extent.contains(MapExtent(query.bbox, query.srs)):
             return self._get_sub_query(query, format)
+        
+        log.debug(query)
         resp = self.client.retrieve(query, format)
         return ImageSource(resp, size=query.size, image_opts=self.image_opts)
 

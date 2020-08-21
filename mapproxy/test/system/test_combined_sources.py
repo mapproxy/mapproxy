@@ -332,4 +332,5 @@ class TestCoverageWMS(SysTest):
                 resp = app.get(self.common_map_req)
                 resp.content_type = "image/png"
                 data = BytesIO(resp.body)
+                print(resp.body)
                 assert is_png(data)
