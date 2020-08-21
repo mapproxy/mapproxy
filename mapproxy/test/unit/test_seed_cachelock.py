@@ -23,6 +23,7 @@ from mapproxy.seed.cachelock import CacheLocker, CacheLockedError
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="test not supported for Windows")
+@pytest.mark.skipif(sys.platform == "darwin" and sys.version_info >= (3, 8), reason="test not supported for MacOS with Python >=3.8")
 class TestCacheLock(object):
 
     @pytest.fixture

@@ -429,7 +429,7 @@ class CacheMapLayer(MapLayer):
         num_tiles = tile_grid[0] * tile_grid[1]
 
         if self.max_tile_limit and num_tiles >= self.max_tile_limit:
-            raise MapBBOXError("too many tiles")
+            raise MapBBOXError("too many tiles, max_tile_limit: %s, num_tiles: %s" % (self.max_tile_limit, num_tiles))
 
         if query.tiled_only:
             if num_tiles > 1:
