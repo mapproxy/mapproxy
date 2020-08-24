@@ -155,7 +155,7 @@ def parse_bind_address(address, default=('localhost', 8080)):
     if ':' in address:
         host, port = address.split(':', 1)
         port = int(port)
-    elif re.match('^\d+$', address):
+    elif re.match(r'^\d+$', address):
         host = default[0]
         port = int(address)
     else:

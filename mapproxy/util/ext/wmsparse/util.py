@@ -1,6 +1,6 @@
 import re
 
-xpath_elem = re.compile('(^|/)([^/]+:)?([^/]+)')
+xpath_elem = re.compile(r'(^|/)([^/]+:)?([^/]+)')
 
 
 def resolve_ns(xpath, namespaces, default=None):

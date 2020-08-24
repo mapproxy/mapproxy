@@ -313,7 +313,7 @@ def wms_query_eq(expected, actual):
 
     return True
 
-numbers_only = re.compile('^-?\d+\.\d+(,-?\d+\.\d+)*$')
+numbers_only = re.compile(r'^-?\d+\.\d+(,-?\d+\.\d+)*$')
 
 def query_eq(expected, actual):
     """

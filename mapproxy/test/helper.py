@@ -209,9 +209,9 @@ def strip_whitespace(data):
     '<foo>barzing1'
     """
     if isinstance(data, bytes):
-        return re.sub(b'\s+', b'', data)
+        return re.sub(br'\s+', b'', data)
     else:
-        return re.sub('\s+', '', data)
+        return re.sub(r'\s+', '', data)
 
 
 @contextmanager

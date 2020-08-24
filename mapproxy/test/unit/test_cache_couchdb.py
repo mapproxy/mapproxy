@@ -111,4 +111,4 @@ class TestCouchDBMDTemplate(object):
         assert doc['coord'][1] == pytest.approx(-79.17133464081945)
         assert doc['coord_webmerc'][0] == pytest.approx(-5009377.085697311)
         assert doc['coord_webmerc'][1] == pytest.approx(-15028131.25709193)
-        assert re.match('20\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ', doc['datetime']), doc['datetime']
+        assert re.match(r'20\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ', doc['datetime']), doc['datetime']
