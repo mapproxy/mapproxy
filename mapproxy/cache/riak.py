@@ -112,17 +112,17 @@ class RiakCache(TileCacheBase):
 
         return True
 
-    def store_tile(self, tile):
+    def store_tile(self, tile,dimensions=None):
         if tile.stored:
             return True
 
         return self._store_bulk([tile])
 
-    def store_tiles(self, tiles):
+    def store_tiles(self, tiles,dimensions=None):
         tiles = [t for t in tiles if not t.stored]
         return self._store_bulk(tiles)
 
-    def load_tile_metadata(self, tile):
+    def load_tile_metadata(self, tile,dimensions=None):
         if tile.timestamp:
             return
 

@@ -143,11 +143,11 @@ class S3Cache(TileCacheBase):
         log.debug('remove_tile, key: %s' % key)
         self.conn().delete_object(Bucket=self.bucket_name, Key=key)
 
-    def store_tiles(self, tiles):
+    def store_tiles(self, tiles,dimensions=None):
         p = async_.Pool(min(self._concurrent_writer, len(tiles)))
         p.map(self.store_tile, tiles)
 
-    def store_tile(self, tile):
+    def store_tile(self, tile,dimensions=None):
         if tile.stored:
             return
 
