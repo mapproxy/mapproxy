@@ -4,9 +4,8 @@ from six import string_types
 from mapproxy.util.ext.wmsparse.isoformat import fromisoformat
 from mapproxy.util.ext.wmsparse.duration import Duration,ISO8601Error
 from decimal import Decimal
-
 import calendar
-xpath_elem = re.compile('(^|/)([^/]+:)?([^/]+)')
+
 ISO8601_INTERVAL_REGEX = re.compile(
     r"^(?P<sign>[+-])?"
     r"P(?!\b)"
@@ -17,6 +16,9 @@ ISO8601_INTERVAL_REGEX = re.compile(
     r"((?P<separator>T)(?P<hours>[0-9]+([,.][0-9]+)?H)?"
     r"(?P<minutes>[0-9]+([,.][0-9]+)?M)?"
     r"(?P<seconds>[0-9]+([,.][0-9]+)?S)?)?$")
+
+
+xpath_elem = re.compile('(^|/)([^/]+:)?([^/]+)')
 
 
 def parse_duration(datestring):
