@@ -51,8 +51,9 @@ def level_location(level, cache_dir, dimensions=None):
 def dimensions_part(dimensions):
     """
     Return the subpath where all tiles for `dimensions` will be stored.
-    >>> dimensions_part(['reference-time', 'time'], {"time": "2016-11-24T18:00Z", "reference-time": "2016-11-24T00:00Z"})
-    '2016-11-24T00:00Z/2016-11-24T18:00Z'
+    >>> dimensions_part({'time': '2020-08-25T00:00:00Z', 'dim_reference_time': '2020-08-25T00:00:00Z'})
+    'time-2020-08-25T00:00:00Z/dim_reference_time-2020-08-25T00:00:00Z'
+    
     """
     if dimensions:
         dims = NoCaseMultiDict(dimensions)
