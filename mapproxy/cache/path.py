@@ -53,16 +53,18 @@ def dimensions_part(dimensions):
     Return the subpath where all tiles for `dimensions` will be stored.
     >>> dimensions_part({'time': '2020-08-25T00:00:00Z', 'dim_reference_time': '2020-08-25T00:00:00Z'})
     'time-2020-08-25T00:00:00Z/dim_reference_time-2020-08-25T00:00:00Z'
-    
+
     """
     if dimensions:
         dims = NoCaseMultiDict(dimensions)
-        dimensionlist = dims.keys()
+        dimensionlist = list(dims.keys())
+        val_dim = [item for item in dimensionlist if item.startswith('dim_')][0]
+        dimensionlist.remove(val_dim)
+        dimensionlist.append(val_dim) #dim_ last element 
         return os.path.join(*(map(lambda k: k + "-" + str(dims.get(k, 'default')),
                                       dimensionlist)))
     else:
         return ""
-
 
 def level_part(level):
     """
