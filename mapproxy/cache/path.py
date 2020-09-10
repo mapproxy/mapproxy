@@ -54,10 +54,13 @@ def dimensions_part(dimensions):
     >>> dimensions_part(['reference-time', 'time'], {"time": "2016-11-24T18:00Z", "reference-time": "2016-11-24T00:00Z"})
     '2016-11-24T00:00Z/2016-11-24T18:00Z'
     """
-    dims = NoCaseMultiDict(dimensions)
-    dimensionlist = dims.keys()
-    return os.path.join(*(map(lambda k: k + "-" + str(dims.get(k, 'default')),
-                                  dimensionlist)))
+    if dimensions:
+        dims = NoCaseMultiDict(dimensions)
+        dimensionlist = dims.keys()
+        return os.path.join(*(map(lambda k: k + "-" + str(dims.get(k, 'default')),
+                                      dimensionlist)))
+    else:
+        return ""
 
 
 def level_part(level):
