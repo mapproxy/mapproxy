@@ -1,8 +1,7 @@
 import re
 import datetime
 from six import string_types
-from mapproxy.util.ext.wmsparse.isoformat import fromisoformat
-from mapproxy.util.ext.wmsparse.duration import Duration,ISO8601Error
+from mapproxy.util.ext.wmsparse.duration import parse_datetime,Duration,ISO8601Error
 from decimal import Decimal
 import calendar
 
@@ -150,17 +149,17 @@ def parse_datetime_range(datetime_range_str):
 
     # missing end 
     if end_str is None:
-        init = fromisoformat(init_str)
+        init = parse_datetime(init_str)
         end = init + delta
 
     #missing init
     if init_str is None:
-        end = fromisoformat(end_str)
+        end = parse_datetime(end_str)
         init = end - delta
 
     if init_str and end_str: 
-        init = fromisoformat(init_str)
-        end = fromisoformat(end_str)
+        init = parse_datetime(init_str)
+        end = parse_datetime(end_str)
 
     values = []
     current = init

@@ -51,18 +51,20 @@ def level_location(level, cache_dir, dimensions=None):
 def dimensions_part(dimensions):
     """
     Return the subpath where all tiles for `dimensions` will be stored.
-    >>> dimensions_part({'time': '2020-08-25T00:00:00Z', 'dim_reference_time': '2020-08-25T00:00:00Z'})
-    'time-2020-08-25T00:00:00Z/dim_reference_time-2020-08-25T00:00:00Z'
+    Dimensions prefixed with "dim_" are sorted after the predefined elevation and time dimensions
+    >>> dimensions_part({'time': '2020-08-25T00:00:00Z'})
+    'time-2020-08-25T00:00:00Z'
+    >>> dimensions_part({'time': '2020-08-25T00:00:00Z', 'dim_reference_time': '2020-08-25T00:00:00Z', 'dim_level': '700'})
+    'time-2020-08-25T00:00:00Z/dim_level-700/dim_reference_time-2020-08-25T00:00:00Z'
 
     """
     if dimensions:
         dims = NoCaseMultiDict(dimensions)
-        dimensionlist = list(dims.keys())
-        val_dim = [item for item in dimensionlist if item.startswith('dim_')][0]
-        dimensionlist.remove(val_dim)
-        dimensionlist.append(val_dim) #dim_ last element 
-        return os.path.join(*(map(lambda k: k + "-" + str(dims.get(k, 'default')),
-                                      dimensionlist)))
+        predefined_dims, custom_dims = [], []
+        for dim in dims.keys():
+            (custom_dims if dim.startswith('dim_') else predefined_dims).append(dim)
+        dim_keys = sorted(predefined_dims) + sorted(custom_dims)
+        return os.path.join(*(map(lambda k: k + "-" + str(dims.get(k, 'default')), dim_keys)))
     else:
         return ""
 

@@ -32,6 +32,15 @@ jscript_functions=None
 
         map.addLayer(layer);
         map.zoomToMaxExtent();
+
+        
+    }
+
+    function setDimension (layer, dimension, value) {
+            console.log(layer);
+            console.log(dimension)
+            layer.params[dimension.toUpperCase()] = value;
+            layer.redraw();
     }
 </script>
 {{enddef}}
