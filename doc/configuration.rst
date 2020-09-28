@@ -1047,6 +1047,16 @@ Configuration options for the TMS/Tile service.
   was not changed.
 
 
+``prefix``
+"""""""""""""
+
+Prefix to root level of URLs. This allows the application to be hosted at a non root location, e.g. https://myapp.com/maps/
+::
+
+  http:
+    prefix: '/maps/'
+
+
 ``mapserver``
 """""""""""""
 
