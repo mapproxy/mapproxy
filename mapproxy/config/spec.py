@@ -75,6 +75,7 @@ http_opts = {
     'headers': {
         anything(): str()
     },
+    'prefix': str(),
 }
 
 mapserver_opts = {

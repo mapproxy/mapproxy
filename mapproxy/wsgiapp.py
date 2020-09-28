@@ -118,6 +118,8 @@ class MapProxyApp(object):
         self.handlers = {}
         self.base_config = base_config
         self.cors_origin = base_config.http.access_control_allow_origin
+        prefix = self.base_config.http.prefix
+        self.prefix_regex = re.compile('^/*{0}/*(.*)'.format(prefix))
         for service in services:
             for name in service.names:
                 self.handlers[name] = service
@@ -133,7 +135,13 @@ class MapProxyApp(object):
                 return orig_start_response(status, headers, exc_info)
 
         with local_base_config(self.base_config):
-            match = self.handler_path_re.match(req.path)
+            match = self.prefix_regex.match(req.path)
+            if match:
+                path = '/' + match.group(1)
+            else:
+                path = req.path
+
+            match = self.handler_path_re.match(path)
             if match:
                 handler_name = match.group(1)
                 if handler_name in self.handlers:
@@ -149,7 +157,7 @@ class MapProxyApp(object):
                             traceback.print_exc(file=environ['wsgi.errors'])
                             resp = Response('internal error', status=500)
             if resp is None:
-                if req.path in ('', '/'):
+                if path in ('', '/'):
                     resp = self.welcome_response(req.script_url)
                 else:
                     resp = Response('not found', mimetype='text/plain', status=404)
