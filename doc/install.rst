@@ -33,7 +33,7 @@ You need to either prefix all commands with ``mapproxy/bin``, set your ``PATH`` 
 
     source mapproxy/bin/activate
 
-This will change the ``PATH`` for you `current` session.
+This will change the ``PATH`` for your `current` session.
 
 
 Install Dependencies
@@ -108,7 +108,7 @@ lxml *(optional)*
 Install MapProxy
 ----------------
 
-Your virtual environment should contains `pip`_, a tool to install Python packages.
+Your virtual environment should contain `pip`_, a tool to install Python packages.
 
 To install you need to call::
 
@@ -186,6 +186,6 @@ To upgrade to the current development version::
 Changes
 ^^^^^^^
 
-New releases of MapProxy are backwards compatible with older configuration files. MapProxy will issue warnings on startup if a behavior will change in the next releases. You are advised to upgrade in single release steps (e.g. 1.9.0 to 1.10.0 to 1.11.0) and to check the output of ``mapproxy-util serve-develop`` for any warnings. You should also refer to the Changes Log of each release to see if there is anything to pay attention for.
+New releases of MapProxy are backwards compatible with older configuration files. MapProxy will issue warnings on start-up if a behavior will change in the next releases. You are advised to upgrade in single release steps (e.g. 1.9.0 to 1.10.0 to 1.11.0) and to check the output of ``mapproxy-util serve-develop`` for any warnings. You should also refer to the Changes Log of each release to see if there is anything to pay attention for.
 
-If you upgrade from 0.8, please read the `old mirgation documentation <http://mapproxy.org/docs/1.5.0/migrate.html>`_.
+If you upgrade from 0.8, please read the `old migration documentation <http://mapproxy.org/docs/1.5.0/migrate.html>`_.
