@@ -107,6 +107,7 @@ class WMSSource(MapLayer):
         if self.supported_formats and format not in self.supported_formats:
             format = self.supported_formats[0]
         if self.supported_srs:
+            # srs can be equal while still having a different srs_code (EPSG:3857/900913), make sure to use a supported srs_code
             request_srs = None
             for srs in self.supported_srs:
                 if query.srs == srs:
