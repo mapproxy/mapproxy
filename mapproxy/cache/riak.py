@@ -87,7 +87,7 @@ class RiakCache(TileCacheBase):
         obj.usermeta = {'timestamp': '0'}
         return 0.0
 
-    def is_cached(self, tile,dimensions=None):
+    def is_cached(self, tile, dimensions=None):
         return self.load_tile(tile, True)
 
     def _store_bulk(self, tiles):

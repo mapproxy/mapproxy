@@ -46,13 +46,11 @@ class FileCache(TileCacheBase):
             self.level_location = None # disable level based clean-ups
 
     def tile_location(self, tile, create_dir=False, dimensions=None):
-        log.debug("dimension {}".format(dimensions))
         if dimensions is not None and len(dimensions)>0:
             items = list(dimensions.keys())
             items.sort()
             dimensions_str = ['{key}-{value}'.format(key=i, value=dimensions[i].replace('/', '_')) for i in items]
             cache_dir = os.path.join(self.cache_dir, '_'.join(dimensions_str))
-            log.debug(dimensions_str)
         return self._tile_location(tile, self.cache_dir, self.file_ext, create_dir=create_dir, dimensions=dimensions)
 
     def level_location(self, level, dimensions=None):
@@ -122,7 +120,7 @@ class FileCache(TileCacheBase):
             return True
         return False
 
-    def remove_tile(self, tile,dimensions=None):
+    def remove_tile(self, tile, dimensions=None):
         location = self.tile_location(tile, dimensions=dimensions)
         try:
             os.remove(location)

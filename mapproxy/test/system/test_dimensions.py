@@ -61,19 +61,28 @@ class TestDimensions(SysTest):
             url="/service?", param=dict(service="WMS", version="1.0.0")
         )
 
+    @pytest.mark.parametrize("test_input,expected_value", [ 
 
-    def test_parsing_datetime(self):
-        
-        test = "2020-08-01T12:43:38Z"
-        
-        expected_year = 2020
-        expected_month = 8
-        expected_day = 1 
-        expected_hour = 12
-        expected_mins = 43
-        expected_secs = 38
+        # test_input should be string 
+        #expected array ==> [year,month,day,hour,mins,secs,tz]
 
-        result = parse_datetime(test)
+        ("2020-08-01T12:43:38Z", [2020, 8, 1, 12, 43, 38]),
+
+        ("1999-12-30T01:59:03Z", [1999, 12, 30, 1, 59, 3]),
+
+        ])
+    def test_parsing_datetime(self,test_input,expected_value):
+        
+        #test = "2020-08-01T12:43:38Z"
+        expected_year = expected_value[0]
+        expected_month =  expected_value[1]
+        expected_day =  expected_value[2]
+        expected_hour =  expected_value[3]
+        expected_mins = expected_value[4]
+        expected_secs =  expected_value[5]
+     
+
+        result = parse_datetime(test_input)
         test_tz = result.tzinfo
         test_tz = test_tz.tzname(test_tz)
 
@@ -84,73 +93,65 @@ class TestDimensions(SysTest):
         assert result.second == expected_secs
         assert test_tz == "UTC"
 
+    
+    @pytest.mark.parametrize("test_input,only_time,expected_values", [ 
 
-    def test_parse_duration(self):
+        # test_input should be string 
+        #only_time flag to indicate only time parsing 
+        #expected array ==> [year,month,day,secs]
 
-        test1 = "PT1H"
-        expected_1 = 3600 #seconds is 1 hour
-        result_1 = parse_duration(test1).seconds
+        ("PT1H", True, [0,0,0,3600]),
+        ("PT1H30M45S", True ,[0,0,0,5445]),
+        ("P6MT", False ,[0,6,0,0]),
+        ("P1MT", False ,[0,1,0,0]),
+        ("P1Y2M1W3DT", False ,[1,2,10,0]),
+        ])
 
-        assert expected_1 == result_1
+    def test_parse_duration(self,test_input,only_time,expected_values):
 
-        test2 = "PT1H30M45S"
-        expected_2 = 5445 #seconds 
-        result_2 = parse_duration(test2).seconds
+        if only_time: 
+            expect = expected_values[-1]
+            result = parse_duration(test_input).seconds
+            assert expect == result
 
-        assert expected_2 == result_2
+        else:
+            expected_years = expected_values[0]
+            expected_months = expected_values[1]
+            expected_days = expected_values[2]
+            expected_seconds = expected_values[3]
 
-        test3 = "P1MT"
-        expected_3 = 1 # months
-        result_3 = int(parse_duration(test3).months)
+            result = parse_duration(test_input)
 
-        assert expected_3 == result_3
+            result_years = int(result.years)
+            result_months = int(result.months)
+            result_days = int(result.days)
+            result_seconds = int(result.seconds)
 
-        test3 = "P1MT"
-        expected_3 = 1 # months
-        result_3 = int(parse_duration(test3).months)
-
-
-        test4 = "P1Y2M1W3DT"
-
-        expected_years = 1
-        expected_months = 2
-        expected_days = 10 # 1 week means 7 days + 3 days
-        result_4 = parse_duration(test4)
-
-        result_years = int(result_4.years)
-        result_months = int(result_4.months)
-        result_days = int(result_4.days)
-
-        assert expected_years == result_years
-        assert expected_months == result_months
-        assert expected_days == result_days
+            assert expected_years == result_years
+            assert expected_months == result_months
+            assert expected_days == result_days
+            assert expected_seconds == result_seconds
 
 
-    def test_parse_datetime_range(self):
-        
-        test1 = "2020-09-22T00:00:00Z/2020-09-23T00:00:00Z/PT12H"
-        
-        expected_1 = set(['2020-09-22T00:00:00Z', 
-                            '2020-09-22T12:00:00Z', '2020-09-23T00:00:00Z'])
-        result_1  = set(parse_datetime_range(test1))
+    @pytest.mark.parametrize("test_input,exp_values", [ 
 
-        assert expected_1 == result_1 
+        # test_input should be string 
+        #only_time flag to indicate only time parsing 
+        #exp_values array ==> [time range values]
+        ("2020-09-22T00:00:00Z/2020-09-23T00:00:00Z/PT12H",['2020-09-22T00:00:00Z', 
+                            '2020-09-22T12:00:00Z', '2020-09-23T00:00:00Z']),
+        ("2020-08-01T00:00:00Z/P1DT2H30M",['2020-08-01T00:00:00Z', 
+                                                '2020-08-02T02:30:00Z']),
+        ("P1DT2H30M/2020-08-30T00:00:00Z",['2020-08-28T21:30:00Z',
+                                             '2020-08-30T00:00:00Z'])
+        ])
+  
+    def test_parse_datetime_range(self,test_input,exp_values):
+               
+        exp_values = set(exp_values)
+        result  = set(parse_datetime_range(test_input))
 
-        test2 = "2020-08-01T00:00:00Z/P1DT2H30M"
-        expected_2 = set(['2020-08-01T00:00:00Z', 
-                                '2020-08-02T02:30:00Z'])
-        
-        result_2  = set(parse_datetime_range(test2))
-        
-        assert expected_2 == result_2
-
-
-        test3 = "P1DT2H30M/2020-08-30T00:00:00Z"
-        expected_3 = set(['2020-08-28T21:30:00Z',
-                                     '2020-08-30T00:00:00Z'])
-        result_3  = set(parse_datetime_range(test3))
-
-        assert expected_3 == result_3
+        assert exp_values == result
 
     def test_WMS130_dimension(self,app):
         req = WMS130CapabilitiesRequest(url="/service?").copy_with_request_params(

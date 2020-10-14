@@ -48,13 +48,13 @@ class RedisCache(TileCacheBase):
         x, y, z = tile.coord
         return self.prefix + '-%d-%d-%d' % (z, x, y)
 
-    def is_cached(self, tile,dimensions=None):
+    def is_cached(self, tile, dimensions=None):
         if tile.coord is None or tile.source:
             return True
 
         return self.r.exists(self._key(tile))
 
-    def store_tile(self, tile,dimensions=None):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
 
@@ -79,7 +79,7 @@ class RedisCache(TileCacheBase):
             return True
         return False
 
-    def remove_tile(self, tile,dimensions=None):
+    def remove_tile(self, tile, dimensions=None):
         if tile.coord is None:
             return True
 

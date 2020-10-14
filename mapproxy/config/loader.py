@@ -38,9 +38,6 @@ from mapproxy.util.fs import find_exec
 from mapproxy.compat.modules import urlparse
 from mapproxy.compat import string_type, iteritems
 
-#Keeping flag to store cache.
-disable_storage = False
-
 class ConfigurationError(Exception):
     pass
 
@@ -1581,9 +1578,6 @@ class CacheConfiguration(ConfigurationBase):
             if extent.is_default:
                 extent = map_extent_from_grid(tile_grid)
             caches.append((tile_grid, extent, mgr))
-
-        global disable_storage
-        disable_storage=self.conf.get('disable_storage', False)
         return caches
 
     @memoize
@@ -1788,8 +1782,9 @@ class LayerConfiguration(ConfigurationBase):
                 fi_source = self.context.sources[fi_source_name].fi_source()
                 if fi_source:
                     fi_sources.append(fi_source)
-
+                      
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
+                disable_storage = self.context.configuration['caches'][cache_name].get('disable_storage', False)
                 if disable_storage:
                     CACHE = DummyCache
                 else:
