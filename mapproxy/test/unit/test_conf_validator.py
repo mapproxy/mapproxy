@@ -205,6 +205,33 @@ class TestValidator(object):
             "requested layers 'foo, bar'"
         ]
 
+    def test_tagged_layer_sources_with_layers(self):
+        conf = self._test_conf('''
+            layers:
+                - name: one
+                  title: One
+                  sources: ['one_source:foo,bar']
+        ''')
+
+        errors = validate_references(conf)
+        assert errors == [
+            "Supported layers for source 'one_source' are 'one' but tagged source "
+            "requested layers 'foo, bar'"
+        ]
+
+    def test_tagged_layer_sources_without_layers(self):
+        conf = self._test_conf('''
+            layers:
+                - name: one
+                  title: One
+                  sources: ['one_source:foo,bar']
+        ''')
+
+        del conf['sources']['one_source']['req']['layers']
+
+        errors = validate_references(conf)
+        assert errors == []
+
     def test_tagged_source_without_layers(self):
         conf = self._test_conf('''
             caches:

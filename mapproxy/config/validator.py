@@ -80,8 +80,9 @@ class Validator(object):
             if source in self.caches_conf:
                 self._validate_cache(source, self.caches_conf[source])
                 continue
+
+            source, layers = self._split_tagged_source(source)
             if source in self.sources_conf:
-                source, layers = self._split_tagged_source(source)
                 self._validate_source(source, self.sources_conf[source], layers)
                 continue
 
@@ -103,7 +104,6 @@ class Validator(object):
                     layer['name']
                 )
             )
-
 
     def _split_tagged_source(self, source_name):
         layers = None
