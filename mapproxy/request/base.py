@@ -259,12 +259,27 @@ class Request(object):
     def host_url(self):
         return '%s://%s/' % (self.url_scheme, self.host)
 
+    @cached_property
+    def server_url(self):
+        return 'http://%s:%s/' % (
+            self.environ['SERVER_NAME'],
+            self.environ['SERVER_PORT']
+        )
+
     @property
     def script_url(self):
         "Full script URL without trailing /"
         return (self.host_url.rstrip('/') +
                 quote(self.environ.get('SCRIPT_NAME', '/').rstrip('/'))
                )
+    
+    @property
+    def server_script_url(self):
+        "Internal script URL"
+        return self.script_url.replace(
+            self.host_url.rstrip('/'),
+            self.server_url.rstrip('/')
+        )
 
     @property
     def base_url(self):
