@@ -253,16 +253,27 @@ def auth_data_from_url(url):
     ('http://localhost/bar', ('bar foo; foo@bar', 'b:az@'))
     >>> auth_data_from_url('https://bar:foo#;%$@localhost/bar')
     ('https://localhost/bar', ('bar', 'foo#;%$'))
+    >>> auth_data_from_url('http://localhost/bar@2x')
+    ('http://localhost/bar@2x', (None, None))
+    >>> auth_data_from_url('http://bar@localhost/bar@2x')
+    ('http://localhost/bar@2x', ('bar', None))
+    >>> auth_data_from_url('http://bar:baz@localhost/bar@2x')
+    ('http://localhost/bar@2x', ('bar', 'baz'))
+    >>> auth_data_from_url('https://bar@localhost/bar/0/0/0@2x.png')
+    ('https://localhost/bar/0/0/0@2x.png', ('bar', None))
+    >>> auth_data_from_url('http://bar:baz@localhost/bar@2x.png')
+    ('http://localhost/bar@2x.png', ('bar', 'baz'))
     """
+    schema, url = url.split('://', 1)
+    host, request = url.split('/', 1)
     username = password = None
-    if '@' in url:
-        head, url = url.rsplit('@', 1)
-        schema, auth_data = head.split('//', 1)
-        url = schema + '//' + url
+    if '@' in host:
+        auth_data, host = host.rsplit('@', 1)
         if ':' in auth_data:
             username, password = auth_data.split(':', 1)
         else:
             username = auth_data
+    url = schema + "://" + host + "/" + request
     return url, (username, password)
 
 
