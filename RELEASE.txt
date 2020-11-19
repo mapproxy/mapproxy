@@ -1,0 +1,45 @@
+Making a new MapProxy release
+=============================
+
+Preparation
+-----------
+
+You will need wheel and twine to build and upload a new release:
+
+    pip install wheel twine
+
+
+
+- Update CHANGES.txt with all important changes. Verify version and date in header line.
+- Update version in `setup.py` and `doc/conf.py`.
+- Commit updates changelog and version and tag the commit with (`git tag 1.12.0`).
+- Push the new tag (`git push origin --tags`).
+
+
+Build and upload
+----------------
+
+Build source tar.gz and wheel. (`egg_info -b "" -D` to remove date suffix from release version).
+
+    python setup.py egg_info -b "" -D sdist
+    python setup.py egg_info -b "" -D bdist_wheel
+
+
+The new release can be uploaded to https://pypi.org/project/MapProxy/ with twine. You need an account on https://pypi.org and you need to be a collaborator for the MapProxy project.
+
+    twine upload dist/MapProxy-1.12.0.tar.gz
+    twine upload dist/MapProxy-1.12.0-py2.py3-none-any.whl
+
+Be aware, you can only upload a file once. If you made a mistake (e.g. files are missing in the tar.gz) then you will need to make a new release with an updated minor version.
+
+
+
+
+Announce
+--------
+
+
+- Add a new blog article to mapproxy.org with the most important changes
+- MapProxy mailing list (copy from previous release mail as a template)
+- Twitter (with link to blog)
+
