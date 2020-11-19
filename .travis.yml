@@ -13,9 +13,6 @@ services:
 
 addons:
   apt:
-    sources:
-      - sourceline: 'deb https://packagecloud.io/basho/riak/ubuntu/ xenial main'
-        key_url: 'https://packagecloud.io/basho/riak/gpgkey'
     packages:
       - proj-bin
       - libgeos-dev
@@ -29,15 +26,11 @@ addons:
       - libfreetype6-dev
       - protobuf-compiler
       - libprotoc-dev
-      - riak
 
 env:
   global:
     - MAPPROXY_TEST_COUCHDB=http://127.0.0.1:5984
     - MAPPROXY_TEST_REDIS=127.0.0.1:6379
-
-    - MAPPROXY_TEST_RIAK_HTTP=http://localhost:8098
-    - MAPPROXY_TEST_RIAK_PBC=pbc://localhost:8087
 
     # do not load /etc/boto.cfg with Python 3 incompatible plugin
     # https://github.com/travis-ci/travis-ci/issues/5246#issuecomment-166460882
@@ -54,9 +47,6 @@ matrix:
 cache:
   directories:
     - $HOME/.cache/pip
-
-before_install:
-    - "sudo systemctl start riak"
 
 install:
     - "pip install -r requirements-tests.txt"
