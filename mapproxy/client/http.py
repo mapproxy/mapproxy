@@ -241,6 +241,8 @@ class HTTPClient(object):
 
 def auth_data_from_url(url):
     """
+    >>> auth_data_from_url('invalid_url')
+    ('invalid_url', (None, None))
     >>> auth_data_from_url('http://localhost/bar')
     ('http://localhost/bar', (None, None))
     >>> auth_data_from_url('http://bar@localhost/bar')
@@ -264,8 +266,16 @@ def auth_data_from_url(url):
     >>> auth_data_from_url('http://bar:baz@localhost/bar@2x.png')
     ('http://localhost/bar@2x.png', ('bar', 'baz'))
     """
+    if not url or '://' not in url:
+        # be silent for invalid URLs
+        return url, (None, None)
+
     schema, url = url.split('://', 1)
-    host, request = url.split('/', 1)
+    if '/' in url:
+        host, request = url.split('/', 1)
+    else:
+        host, request = url, ''
+
     username = password = None
     if '@' in host:
         auth_data, host = host.rsplit('@', 1)
