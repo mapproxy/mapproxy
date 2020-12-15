@@ -18,7 +18,7 @@
 #     first tile: http://localhost:8080/tiles/osm/webmercator/0/0/0.png
 # TMS:
 #     note: TMS is not compatible with OSM/Google Maps/etc.
-#     fist tile: http://localhost:8080/tms/1.0.0/osm/webmercator/0/0/0.png
+#     first tile: http://localhost:8080/tms/1.0.0/osm/webmercator/0/0/0.png
 # KML:
 #     initial doc: http://localhost:8080/kml/osm/webmercator
 
