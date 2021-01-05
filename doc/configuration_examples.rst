@@ -667,7 +667,7 @@ Then we can add a layer with all available dimensions::
               - 3000
             default: 0
 
-You can know access this layer with the elevation and time dimensions via the WMTS KVP service.
+You can now access this layer with the elevation and time dimensions via the WMTS KVP service.
 The RESTful service requires a custom URL template that contains the dimensions. For example::
 
     services:
