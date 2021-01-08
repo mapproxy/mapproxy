@@ -429,6 +429,21 @@ sources:
       transparent: true
       layers: securelayer
 
+  # WMS source that requires authentication and session management
+  # through HTTP cookies
+  session_source:
+    type: wms
+    http:
+      # Accept session cookies and forward on subsequent requests
+      manage_cookies: true
+      # Use basic auth header directly
+      headers:
+        Authorization: Basic YWRtaW46Z2Vvc2VydmVy
+    req:
+      url: https://my-service.com/service?
+      transparent: true
+      layers: securelayer
+
   feature_info_source:
     type: wms
     wms_opts:

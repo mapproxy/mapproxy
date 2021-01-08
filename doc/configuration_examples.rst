@@ -708,6 +708,8 @@ You can disable the certificate verification if you you don't need it.
       url: https://username:mypassword@example.org/service?
       layers: securelayer
 
+.. note:: If the source requires session handling through cookies, have a look at the ``manage_cookies`` configuration option.
+
 .. _http_proxy:
 
 Access sources through HTTP proxy
@@ -734,10 +736,27 @@ You can also set this in your :ref:`server script <server_script>`::
 
 Add a username and password to the URL if your HTTP proxy requires authentication. For example ``http://username:password@example.com:3128``.
 
+.. note:: If the source requires session handling through cookies, have a look at the ``manage_cookies`` configuration option.
+
 You can use the ``no_proxy`` environment variable if you need to bypass the proxy for some hosts::
 
   $ export no_proxy="localhost,127.0.0.1,196.168.1.99"
 
+
+Cookie Management
+=================
+
+MapProxy can handle server cookies of HTTP sources, like browsers do. That is, MapProxy accepts cookies and passes them back
+on subsequent calls. This is useful for sources that use cookie for session management or rate-limiting for example::
+
+  sources:
+    wms_with_session_management:
+      type: wms
+      http:
+        manage_cookies: True
+      req:
+        url: http://example.org/service?
+        layers: layer0
 
 .. _paster_urlmap:
 

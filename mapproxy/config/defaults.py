@@ -94,4 +94,5 @@ http = dict(
     method = 'AUTO',
     access_control_allow_origin = '*',
     hide_error_details = True,
+    manage_cookies = False,
 )
