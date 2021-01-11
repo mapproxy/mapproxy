@@ -60,4 +60,5 @@ install:
     - "pip freeze"
 
 script:
+    - flake8 mapproxy
     - pytest mapproxy
