@@ -196,7 +196,7 @@ class Request(object):
         if script_name:
             del environ['HTTP_X_SCRIPT_NAME']
             environ['SCRIPT_NAME'] = script_name
-            path_info = environ['PATH_INFO']
+            path_info = environ.get('PATH_INFO', '')
             if path_info.startswith(script_name):
                 environ['PATH_INFO'] = path_info[len(script_name):]
 
@@ -278,8 +278,13 @@ class Request(object):
         "Internal script URL"
         return self.script_url.replace(
             self.host_url.rstrip('/'),
+<<<<<<< 3a5d3844faa90065c50110edccaa53c34644c998
             self.server_url.rstrip('/')
         )
+=======
+            self.server_url
+        ).rstrip(self.environ.get('SCRIPT_NAME', ''))
+>>>>>>> fix bugs when using MapProxy behind a reverse proxy - revisited
 
     @property
     def base_url(self):
