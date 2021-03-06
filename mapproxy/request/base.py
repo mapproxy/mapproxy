@@ -196,7 +196,7 @@ class Request(object):
         if script_name:
             del environ['HTTP_X_SCRIPT_NAME']
             environ['SCRIPT_NAME'] = script_name
-            path_info = environ['PATH_INFO']
+            path_info = environ.get('PATH_INFO', '')
             if path_info.startswith(script_name):
                 environ['PATH_INFO'] = path_info[len(script_name):]
 
@@ -279,7 +279,7 @@ class Request(object):
         return self.script_url.replace(
             self.host_url.rstrip('/'),
             self.server_url.rstrip('/')
-        )
+        )[:-len(self.environ.get('SCRIPT_NAME', ''))]
 
     @property
     def base_url(self):

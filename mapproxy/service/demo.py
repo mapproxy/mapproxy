@@ -93,22 +93,22 @@ class DemoServer(Server):
         elif 'wms_capabilities' in req.args:
             internal_url = '%s/service?REQUEST=GetCapabilities'%(req.server_script_url)
             url = internal_url.replace(req.server_script_url, req.script_url)
-            capabilities = urllib2.urlopen(internal_url)
+            capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS', url)
         elif 'wmsc_capabilities' in req.args:
             internal_url = '%s/service?REQUEST=GetCapabilities&tiled=true'%(req.server_script_url)
             url = internal_url.replace(req.server_script_url, req.script_url)
-            capabilities = urllib2.urlopen(internal_url)
+            capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS-C', url)
         elif 'wmts_capabilities_kvp' in req.args:
-            internal_url = '%s/service?REQUEST=GetCapabilities&SERVICE=WMTS' % (req.server_script_url)
+            internal_url = '%s/service?REQUEST=GetCapabilities&SERVICE=WMTS'%(req.server_script_url)
             url = internal_url.replace(req.server_script_url, req.script_url)
-            capabilities = urllib2.urlopen(internal_url)
+            capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMTS', url)
         elif 'wmts_capabilities' in req.args:
-            internal_url = '%s/wmts/1.0.0/WMTSCapabilities.xml' % (req.server_script_url)
+            internal_url = '%s/wmts/1.0.0/WMTSCapabilities.xml'%(req.server_script_url)
             url = internal_url.replace(req.server_script_url, req.script_url)
-            capabilities = urllib2.urlopen(internal_url)
+            capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMTS', url)
         elif 'tms_capabilities' in req.args:
             if 'layer' in req.args and 'srs' in req.args:
@@ -118,8 +118,8 @@ class DemoServer(Server):
                 internal_url = '%s/tms/1.0.0/%s/%s'%(req.server_script_url, layer, srs)
             else:
                 internal_url = '%s/tms/1.0.0/'%(req.server_script_url)
-            capabilities = urllib2.urlopen(internal_url)
             url = internal_url.replace(req.server_script_url, req.script_url)
+            capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'TMS', url)
         elif req.path == '/demo/':
             demo = self._render_template('demo/demo.html')
