@@ -71,20 +71,18 @@ mapnik_transp_xml = (
 )
 
 
-@pytest.fixture(scope="module")
-def config_file():
-    return "mapnik_source.yaml"
-
-
-@pytest.fixture(scope="module")
-def additional_files(base_dir):
-    base_dir.join("test_point.geojson").write_binary(test_point_geojson)
-    base_dir.join("mapnik.xml").write_binary(mapnik_xml)
-    base_dir.join("mapnik-transparent.xml").write_binary(mapnik_transp_xml)
-
-
 @pytest.mark.skipif(not has_mapnik, reason="requires mapnik")
 class TestMapnikSource(SysTest):
+
+    @pytest.fixture(scope="class")
+    def config_file(self):
+        return "mapnik_source.yaml"
+
+    @pytest.fixture(scope="class")
+    def additional_files(self, base_dir):
+        base_dir.join("test_point.geojson").write_binary(test_point_geojson)
+        base_dir.join("mapnik.xml").write_binary(mapnik_xml)
+        base_dir.join("mapnik-transparent.xml").write_binary(mapnik_transp_xml)
 
     def test_get_map(self, app):
         req = (

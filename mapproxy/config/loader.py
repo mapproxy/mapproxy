@@ -919,7 +919,8 @@ class MapnikSourceConfiguration(SourceConfiguration):
         if concurrent_requests:
             from mapproxy.util.lock import SemLock
             lock_dir = self.context.globals.get_path('cache.lock_dir', self.conf)
-            md5 = hashlib.md5(self.conf['mapfile'])
+            mapfile = self.conf['mapfile']
+            md5 = hashlib.md5(mapfile.encode('utf-8'))
             lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
             lock = lambda: SemLock(lock_file, concurrent_requests)
 

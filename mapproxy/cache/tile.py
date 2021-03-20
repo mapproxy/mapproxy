@@ -376,6 +376,7 @@ class TileCreator(object):
                          self.tile_mgr.request_format, dimensions=self.dimensions)
         with self.tile_mgr.lock(tile):
             if not self.is_cached(tile):
+                source = None
                 try:
                     source = self._query_sources(query)
                 # if source is not available, try to serve tile in cache
