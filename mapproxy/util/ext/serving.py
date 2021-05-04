@@ -62,6 +62,8 @@ def _log(type, message, *args):
 class WSGIRequestHandler(BaseHTTPRequestHandler, object):
     """A request handler that implements WSGI dispatching."""
 
+    protocol_version = 'HTTP/1.1'
+
     @property
     def server_version(self):
         return 'MapProxy/' + mapproxy.version.__version__ + ' (Werkzeug based)'
