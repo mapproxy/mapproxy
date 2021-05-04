@@ -112,7 +112,7 @@ class Response(object):
         elif self._timestamp is not None:
             date = environ.get('HTTP_IF_MODIFIED_SINCE', None)
             timestamp = parse_httpdate(date)
-            if timestamp is not None and self._timestamp <= timestamp:
+            if timestamp is not None and int(self._timestamp) <= timestamp:
                 not_modified = True
 
         if not_modified:
