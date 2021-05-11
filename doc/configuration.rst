@@ -1063,6 +1063,18 @@ The complete path to the ``mapserv`` executable. Required if you use the ``mapse
 Path where the Mapserver should be executed from. It should be the directory where any relative paths in your mapfile are based on. Defaults to the directory of ``binary``.
 
 
+``mapnik``
+""""""""""
+
+Options for the :ref:`Mapnik source<mapnik_label>`.
+
+``reuse_map_objects``
+^^^^^^^^^^^^^^^^^^^^^
+
+Enable reuse of Mapnik map objects to avoid long startups for each tile to be rendered.
+If you enable this option, you cannot use multithreading (i.e. have to disable multithreading in your WSGI server).
+
+
 .. _image_options:
 
 Image Format Options

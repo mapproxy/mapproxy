@@ -392,7 +392,11 @@ mapproxy_yaml_spec = {
         'mapserver': mapserver_opts,
         'renderd': {
             'address': str(),
+        },
+        'mapnik': {
+            'reuse_map_objects': bool(),
         }
+
     },
     'grids': {
         anything(): grid_opts,

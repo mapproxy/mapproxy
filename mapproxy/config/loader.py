@@ -345,6 +345,7 @@ class GlobalConfiguration(ConfigurationBase):
         self.image_options = ImageOptionsConfiguration(self.conf.get('image', {}), context)
         self.preferred_srs = preferred_srs(self.conf.get('srs', {}))
         self.renderd_address = self.get_value('renderd.address')
+        self.mapnik_reuse_map_objects = self.get_value('mapnik.reuse_map_objects') or False
 
     def _copy_conf_values(self, d, target):
         for k, v in iteritems(d):
@@ -939,7 +940,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
         if mapnik_api is None:
             raise ConfigurationError('Could not import Mapnik, please verify it is installed!')
 
-        if self.context.renderd:
+        if self.context.renderd or self.context.globals.mapnik_reuse_map_objects:
             # only renderd guarantees that we have a single proc/thread
             # that accesses the same mapnik map object
             reuse_map_objects = True
