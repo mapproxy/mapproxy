@@ -176,7 +176,8 @@ class TestTileService(SysTest):
         assert is_jpeg(data)
 
     def _update_timestamp(self, cache_dir, base_config):
-        timestamp = 1234567890.0
+        # real files in the filesystem may have non integer timestamps
+        timestamp = 1234567890.2735
         size = 10214
         base_dir = base_config.cache.base_dir
         os.utime(
