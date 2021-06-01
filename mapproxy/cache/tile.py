@@ -203,7 +203,9 @@ class TileManager(object):
         max_mtime = self.expire_timestamp(tile)
         if cached and max_mtime is not None:
             self.cache.load_tile_metadata(tile)
-            stale = tile.timestamp < max_mtime
+            # file time stamp must be rounded to integer since time conversion functions
+            # mktime and timetuple strip decimals from seconds
+            stale = int(tile.timestamp) <= max_mtime
             if stale:
                 cached = False
         return cached
