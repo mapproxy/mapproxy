@@ -76,6 +76,7 @@ class TileManager(object):
         self.sources = sources
         self.minimize_meta_requests = minimize_meta_requests
         self._expire_timestamp = None
+        self._refresh_before = {}
         self.pre_store_filter = pre_store_filter or []
         self.concurrent_tile_creators = concurrent_tile_creators
         self.tile_creator_class = tile_creator_class or TileCreator
@@ -228,6 +229,9 @@ class TileManager(object):
 
         :note: Returns _expire_timestamp by default.
         """
+        if self._refresh_before:
+            from mapproxy.seed.config import before_timestamp_from_options
+            return before_timestamp_from_options(self._refresh_before)
         return self._expire_timestamp
 
     def apply_tile_filter(self, tile):

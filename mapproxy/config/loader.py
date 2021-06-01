@@ -1574,6 +1574,7 @@ class CacheConfiguration(ConfigurationBase):
                 cache_rescaled_tiles=cache_rescaled_tiles,
                 rescale_tiles=rescale_tiles,
             )
+            mgr._refresh_before = self.context.caches[self.conf['name']].conf.get('refresh_before', {})
             extent = merge_layer_extents(sources)
             if extent.is_default:
                 extent = map_extent_from_grid(tile_grid)

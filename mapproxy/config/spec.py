@@ -36,6 +36,16 @@ def validate_options(conf_dict):
     else:
         return [], True
 
+time_spec = {
+    'seconds': number(),
+    'minutes': number(),
+    'hours': number(),
+    'days': number(),
+    'weeks': number(),
+    'time': anything(),
+    'mtime': str(),
+}
+
 coverage = recursive({
     'polygons': str(),
     'polygons_srs': str(),
@@ -419,6 +429,7 @@ mapproxy_yaml_spec = {
             'cache_rescaled_tiles': bool(),
             'upscale_tiles': int(),
             'downscale_tiles': int(),
+            'refresh_before': time_spec,
             'watermark': {
                 'text': string_type,
                 'font_size': number(),
@@ -588,8 +599,7 @@ mapproxy_yaml_spec = {
             }
         })])
     ),
-     # `parts` can be used for partial configurations that are referenced
-     # from other sections (e.g. coverages, dimensions, etc.)
+    # `parts` can be used for partial configurations that are referenced
+    # from other sections (e.g. coverages, dimensions, etc.)
     'parts': anything(),
 }
-
