@@ -86,10 +86,41 @@ class SeedTestBase(SeedTestEnvironment):
                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 with local_base_config(self.mapproxy_conf.base_config):
-                    seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+                    seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
                     tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
                     seed(tasks, dry_run=False)
                     cleanup(cleanup_tasks, verbose=False, dry_run=False)
+
+    def test_seed_skip_uncached(self):
+        with tmp_image((256, 256), format='png') as img:
+            img_data = img.read()
+            with local_base_config(self.mapproxy_conf.base_config):
+                expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                                 '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                                 '&width=256&height=128&srs=EPSG:4326'},
+                                {'body': img_data, 'headers': {'content-type': 'image/png'}})
+                seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+                tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
+
+                # tile not in cache => skipped by seeder
+                seed(tasks, dry_run=False, skip_uncached=True)
+                assert not self.tile_exists((0, 0, 0))
+
+                with mock_httpd(('localhost', 42423), [expected_req]):
+                    # force tile generation in cache (via skip_uncached=False)
+                    seed(tasks, dry_run=False, skip_uncached=False)
+                assert self.tile_exists((0, 0, 0))
+
+                # no refresh since tile is not older than 1 day (cf. config seed.yaml)
+                seed(tasks, dry_run=False, skip_uncached=True)
+
+                # create stale tile (older than 1 day)
+                self.make_tile((0, 0, 0), timestamp=time.time() - (60*60*25))
+                with mock_httpd(('localhost', 42423), [expected_req]):
+                    # check that old tile in cache is refreshed
+                    seed(tasks, dry_run=False, skip_uncached=True)
+                assert self.tile_exists((0, 0, 0))
+                cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
     def test_reseed_uptodate(self):
         # tile already there.
