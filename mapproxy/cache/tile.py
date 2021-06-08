@@ -44,8 +44,10 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter, TiledImage
 from mapproxy.layer import MapQuery, BlankImage
+from mapproxy.source import SourceError
 from mapproxy.util import async_
-from mapproxy.util.py import reraise
+from mapproxy.util.py import reraise, reraise_exception
+import sys
 
 
 class TileManager(object):
@@ -324,6 +326,12 @@ class TileCreator(object):
         """
         return self.tile_mgr.is_cached(tile)
 
+    def is_stale(self, tile):
+        """
+        Return True if the tile is cached.
+        """
+        return self.tile_mgr.is_stale(tile)
+
     def create_tiles(self, tiles):
         if not self.sources:
             return []
@@ -368,17 +376,24 @@ class TileCreator(object):
                          self.tile_mgr.request_format, dimensions=self.dimensions)
         with self.tile_mgr.lock(tile):
             if not self.is_cached(tile):
-                source = self._query_sources(query)
-                if not source: return []
-                if self.tile_mgr.image_opts != source.image_opts:
-                    # call as_buffer to force conversion into cache format
-                    source.as_buffer(self.tile_mgr.image_opts)
-                source.image_opts = self.tile_mgr.image_opts
-                tile.source = source
-                tile.cacheable = source.cacheable
-                tile = self.tile_mgr.apply_tile_filter(tile)
-                if source.cacheable:
-                    self.cache.store_tile(tile)
+                try:
+                    source = self._query_sources(query)
+                    if not source: return []
+                    if self.tile_mgr.image_opts != source.image_opts:
+                        # call as_buffer to force conversion into cache format
+                        source.as_buffer(self.tile_mgr.image_opts)
+                    source.image_opts = self.tile_mgr.image_opts
+                    tile.source = source
+                    tile.cacheable = source.cacheable
+                    tile = self.tile_mgr.apply_tile_filter(tile)
+                    if source.cacheable:
+                        self.cache.store_tile(tile)
+                # if source is not available, try to serve tile in cache
+                except SourceError as e:
+                    if self.is_stale(tile):
+                        self.cache.load_tile(tile)
+                    else:
+                        reraise_exception(e, sys.exc_info())
             else:
                 self.cache.load_tile(tile)
         return [tile]
