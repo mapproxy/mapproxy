@@ -71,7 +71,7 @@ def write_header(f, capabilities):
 @contextmanager
 def file_or_stdout(name):
     if name == '-':
-        yield codecs.getwriter('utf-8')(sys.stdout)
+        yield codecs.getwriter('utf-8')(sys.stdout.buffer)
     else:
         with open(name, 'wb') as f:
             yield codecs.getwriter('utf-8')(f)
