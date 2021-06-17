@@ -37,8 +37,6 @@ jscript_functions=None
     }
 
     function setDimension (layer, dimension, value) {
-            console.log(layer);
-            console.log(dimension)
             layer.params[dimension.toUpperCase()] = value;
             layer.redraw();
     }
