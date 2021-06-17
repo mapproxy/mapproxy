@@ -17,6 +17,7 @@
 Service requests (parsing, handling, etc).
 """
 import codecs
+import re
 from mapproxy.request.wms import exception
 from mapproxy.exception import RequestError
 from mapproxy.srs import SRS, make_lin_transf
@@ -194,16 +195,15 @@ class WMSMapRequest(WMSRequest):
                             non_strict=non_strict, **kw)
     
     def _get_dimensions(self, param):
-        import re
-        if (param):
+        if param:
             regex = "(?i)%s%s" % (("^%s|" % self.dimension_prefix if self.dimension_prefix else ""),
                                   "^(%s)$" % "|".join(self.dimension_params))
             keys = []
-            if (isinstance(param, RequestParams)):
+            if isinstance(param, RequestParams):
                 keys = list(map (lambda k: k[0], param.iteritems()))
             else:
                 keys = list(param.keys())
-            if (len(keys) > 0):
+            if len(keys) > 0:
                 return dict(map(lambda k: (k, param.get(k)), filter (lambda k: re.search(regex, k), keys)))
             else:
                 return None
