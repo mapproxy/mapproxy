@@ -1786,10 +1786,10 @@ class LayerConfiguration(ConfigurationBase):
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
                 disable_storage = self.context.configuration['caches'][cache_name].get('disable_storage', False)
                 if disable_storage:
-                    CACHE = DummyCache
+                    supported_cache_class = DummyCache
                 else:
-                    CACHE = FileCache
-                if dimensions and not isinstance(cache_source.cache, CACHE):
+                    supported_cache_class = FileCache
+                if dimensions and not isinstance(cache_source.cache, supported_cache_class):
                     # caching of dimension layers is not supported yet
                     raise ConfigurationError(
                         "caching of dimension layer (%s) is not supported yet."
@@ -2115,7 +2115,7 @@ def load_configuration_file(files, working_dir):
             imported_dict = load_configuration_file(base_files, current_working_dir)
             current_dict = merge_dict(current_dict, imported_dict)
         conf_dict = merge_dict(conf_dict, current_dict)
-    log.info(conf_dict)
+    
     return conf_dict
 
 def merge_dict(conf, base):
