@@ -17,6 +17,10 @@ layers:
     title: Direct Layer
     sources: [wms_cache_isotime]
 
+  - name: wms_cache_png
+    title: Direct Layer
+    sources: [wms_cache_png]
+
 caches:
   wms_cache:
     format: image/jpeg
@@ -30,9 +34,26 @@ caches:
     refresh_before:
       time: "2009-02-15T23:31:30"
 
+  wms_cache_png:
+    format: image/png
+    sources: [wms_source]
+    refresh_before:
+      seconds: 1
+
 sources:
   wms_source:
     type: wms
     req:
       url: http://localhost:42423/service
       layers: bar
+    on_error:
+      404:
+        response: 'transparent'
+        cache: False
+      405:
+        response: '#ff0000'
+        cache: False
+      406:
+        response: 'transparent'
+        cache: False
+        authorize_stale: True
