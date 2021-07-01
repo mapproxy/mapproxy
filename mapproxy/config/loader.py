@@ -611,11 +611,12 @@ class SourceConfiguration(ConfigurationBase):
                 raise ConfigurationError("invalid error code %r in on_error", status_code)
             cacheable = response_conf.get('cache', False)
             color = response_conf.get('response', 'transparent')
+            authorize_stale = response_conf.get('authorize_stale', False)
             if color == 'transparent':
                 color = (255, 255, 255, 0)
             else:
                 color = parse_color(color)
-            error_handler.add_handler(status_code, color, cacheable)
+            error_handler.add_handler(status_code, color, cacheable, authorize_stale)
 
         return error_handler
 

@@ -89,7 +89,24 @@ class GeoReference(object):
         return tags
 
 
-class ImageSource(object):
+class BaseImageSource(object):
+    """
+    Virtual parent class for ImageSource and BlankImageSource
+    """
+    def __init__(self):
+        raise Exception("Virtual class BaseImageSource, cannot be instanciated.")
+
+    def as_image(self):
+        raise Exception("Virtual class BaseImageSource, method as_image cannot be called.")
+
+    def as_buffer(self, image_opts=None, format=None, seekable=False):
+        raise Exception("Virtual class BaseImageSource, method as_buffer cannot be called.")
+
+    def close_buffers(self):
+        pass
+
+
+class ImageSource(BaseImageSource):
     """
     This class wraps either a PIL image, a file-like object, or a file name.
     You can access the result as an image (`as_image` ) or a file-like buffer
@@ -111,6 +128,7 @@ class ImageSource(object):
         self._size = size
         self.cacheable = cacheable
         self.georef = georef
+        self.authorize_stale = False
 
     @property
     def source(self):
@@ -238,7 +256,7 @@ def SubImageSource(source, size, offset, image_opts, cacheable=True):
     img.paste(subimg, offset)
     return ImageSource(img, size=size, image_opts=new_image_opts, cacheable=cacheable)
 
-class BlankImageSource(object):
+class BlankImageSource(BaseImageSource):
     """
     ImageSource for transparent or solid-color images.
     Implements optimized as_buffer() method.
@@ -249,6 +267,7 @@ class BlankImageSource(object):
         self._buf = None
         self._img = None
         self.cacheable = cacheable
+        self.authorize_stale = False
 
     def as_image(self):
         if not self._img:
