@@ -145,9 +145,9 @@ class TestRefresh(SysTest):
                 assert resp.content_type == "image/png"
                 # error handler for 404 does not authorise stale tiles, so transparent tile will be rendered
                 resp_img = Image.open(BytesIO(resp.body))
-                assert 'A' in resp_img.getbands()
                 # check response transparency
-                assert max(resp_img.getchannel('A').tobytes()) == 0
+                assert resp_img.getbands() == ('R', 'G', 'B', 'A')
+                assert resp_img.getextrema()[3] == (0, 0)
 
             expected_req = (
                 source_request,
@@ -160,11 +160,9 @@ class TestRefresh(SysTest):
                 assert resp.content_type == "image/png"
                 # error handler for 405 does not authorise stale tiles, so red tile will be rendered
                 resp_img = Image.open(BytesIO(resp.body))
-                assert 'A' not in resp_img.getbands()
                 # check response red color
-                assert max(resp_img.getchannel('R').tobytes()) == 255
-                assert max(resp_img.getchannel('G').tobytes()) == 0
-                assert max(resp_img.getchannel('B').tobytes()) == 0
+                assert resp_img.getbands() == ('R', 'G', 'B')
+                assert resp_img.getextrema() == ((255, 255), (0, 0), (0, 0))
 
     def test_refresh_tile_source_error_stale(self, app, cache_dir):
         with tmp_image((256, 256), format="jpeg") as img:
