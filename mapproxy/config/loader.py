@@ -21,6 +21,7 @@ from __future__ import division
 import os
 import sys
 import hashlib
+import threading
 import warnings
 from copy import deepcopy, copy
 from functools import partial
@@ -346,6 +347,8 @@ class GlobalConfiguration(ConfigurationBase):
         self.preferred_srs = preferred_srs(self.conf.get('srs', {}))
         self.renderd_address = self.get_value('renderd.address')
         self.mapnik_reuse_map_objects = self.get_value('mapnik.reuse_map_objects') or False
+        if self.mapnik_reuse_map_objects and not (threading.current_thread() is threading.main_thread()):
+            raise ConfigurationError('mapnik.reuse_map_objects set to True althoug Mapproxy runs multi-threaded.')
 
     def _copy_conf_values(self, d, target):
         for k, v in iteritems(d):
