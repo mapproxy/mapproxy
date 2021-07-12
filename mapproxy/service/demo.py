@@ -68,6 +68,8 @@ class DemoServer(Server):
 
     def handle(self, req):
         if req.path.startswith('/demo/static/'):
+            if '..' in req:
+                return Response('file not found', content_type='text/plain', status=404)
             filename = req.path.lstrip('/')
             filename = static_filename(filename)
             if not os.path.isfile(filename):
