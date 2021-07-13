@@ -1,9 +1,17 @@
 Nightly
 ~~~~~~~~~~~~~~~~~
 
+
+1.13.1 2021-07-13
+~~~~~~~~~~~~~~~~~
+
 Improvements:
 
 - Support cookie management for HTTP sources.
+
+Fixes:
+
+- Security fix for local file disclosure (#526).
 
 1.13.0 2020-11-18
 ~~~~~~~~~~~~~~~~~
