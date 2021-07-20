@@ -378,22 +378,22 @@ class TileCreator(object):
             if not self.is_cached(tile):
                 try:
                     source = self._query_sources(query)
-                    if not source: return []
-                    if self.tile_mgr.image_opts != source.image_opts:
-                        # call as_buffer to force conversion into cache format
-                        source.as_buffer(self.tile_mgr.image_opts)
-                    source.image_opts = self.tile_mgr.image_opts
-                    tile.source = source
-                    tile.cacheable = source.cacheable
-                    tile = self.tile_mgr.apply_tile_filter(tile)
-                    if source.cacheable:
-                        self.cache.store_tile(tile)
                 # if source is not available, try to serve tile in cache
                 except SourceError as e:
                     if self.is_stale(tile):
                         self.cache.load_tile(tile)
                     else:
                         reraise_exception(e, sys.exc_info())
+                if not source: return []
+                if self.tile_mgr.image_opts != source.image_opts:
+                    # call as_buffer to force conversion into cache format
+                    source.as_buffer(self.tile_mgr.image_opts)
+                source.image_opts = self.tile_mgr.image_opts
+                tile.source = source
+                tile.cacheable = source.cacheable
+                tile = self.tile_mgr.apply_tile_filter(tile)
+                if source.cacheable:
+                    self.cache.store_tile(tile)
             else:
                 self.cache.load_tile(tile)
         return [tile]
