@@ -73,7 +73,7 @@ base-config:
 
 
 log-ini:
-  Creates an example logging configuration. You need to pass the target filename to the command.
+  Creates an example logging configuration. You need to pass the target filename to the command (i.e. `my-app/log.ini`).
 
 wsgi-app:
   Creates an example server script for the given MapProxy configuration (:option:`--f/--mapproxy-conf<mapproxy-util create -f>`) . You need to pass the target filename to the command.
