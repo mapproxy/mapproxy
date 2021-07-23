@@ -105,6 +105,10 @@ You need to pass the MapProxy configuration as an argument. The server will auto
 
   The server address where the HTTP server should listen for incomming connections. Can be a port (``:8080``), a host (``localhost``) or both (``localhost:8081``). The default is ``localhost:8080``. You need to use ``0.0.0.0`` to be able to connect to the server from external clients.
 
+.. cmdoption:: --debug
+
+  The server outputs debug logging information to the console.
+
 
 Example
 -------
