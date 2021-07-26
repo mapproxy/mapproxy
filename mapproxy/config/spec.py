@@ -189,6 +189,7 @@ on_error = {
     anything(): {
         required('response'): one_of([int], str),
         'cache': bool,
+        'authorize_stale': bool
     }
 }
 
