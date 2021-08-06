@@ -2,7 +2,7 @@ Jinja2==2.11.3
 MarkupSafe==1.1.1
 Pillow==6.2.2;python_version<"3.0"
 Pillow==7.2.0;python_version>="3.0"
-PyYAML==5.3.1
+PyYAML==5.4
 Shapely==1.7.0
 WebOb==1.8.6
 WebTest==2.0.35
