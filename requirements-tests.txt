@@ -61,7 +61,7 @@ requests==2.24.0
 responses==0.10.16
 riak==2.7.0
 rsa==4.5;python_version<"3.0"
-rsa==4.6;python_version>="3.0"
+rsa==4.7;python_version>="3.0"
 s3transfer==0.3.3
 six==1.15.0
 soupsieve==1.9.6;python_version<"3.0"
