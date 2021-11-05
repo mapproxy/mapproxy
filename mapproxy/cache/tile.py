@@ -328,7 +328,7 @@ class TileCreator(object):
 
     def is_stale(self, tile):
         """
-        Return True if the tile is cached.
+        Return True if the tile exists in cache and is expired.
         """
         return self.tile_mgr.is_stale(tile)
 
