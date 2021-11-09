@@ -611,11 +611,12 @@ class SourceConfiguration(ConfigurationBase):
                 raise ConfigurationError("invalid error code %r in on_error", status_code)
             cacheable = response_conf.get('cache', False)
             color = response_conf.get('response', 'transparent')
+            authorize_stale = response_conf.get('authorize_stale', False)
             if color == 'transparent':
                 color = (255, 255, 255, 0)
             else:
                 color = parse_color(color)
-            error_handler.add_handler(status_code, color, cacheable)
+            error_handler.add_handler(status_code, color, cacheable, authorize_stale)
 
         return error_handler
 
@@ -1574,6 +1575,8 @@ class CacheConfiguration(ConfigurationBase):
                 cache_rescaled_tiles=cache_rescaled_tiles,
                 rescale_tiles=rescale_tiles,
             )
+            if self.conf['name'] in self.context.caches:
+                mgr._refresh_before = self.context.caches[self.conf['name']].conf.get('refresh_before', {})
             extent = merge_layer_extents(sources)
             if extent.is_default:
                 extent = map_extent_from_grid(tile_grid)

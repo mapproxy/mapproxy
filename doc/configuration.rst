@@ -513,6 +513,43 @@ To trigger the rescaling behaviour, a tile needs to be missing in the cache and 
 
 Tiles created by the ``upscale_tiles`` or ``downscale_tiles`` option are only stored in the cache if this option is set to true.
 
+``refresh_before``
+"""""""""""""""""""
+
+Here you can force MapProxy to refresh tiles from the source while serving if they are found to be expired.
+The validity conditions are the same as for seeding:
+
+Explanation::
+
+  # absolute as ISO time
+  refresh_before:
+    time: 2010-10-21T12:35:00
+
+  # relative from the time of the tile request
+  refresh_before:
+    weeks: 1
+    days: 7
+    hours: 4
+    minutes: 15
+
+  # modification time of a given file
+  refresh_before:
+    mtime: path/to/file
+
+Example
+~~~~~~~~
+
+::
+
+   caches:
+     osm_cache:
+     grids: ['osm_grid']
+     sources: [OSM]
+     disable_storage: false
+     refresh_before:
+       days: 1
+
+
 ``disable_storage``
 """"""""""""""""""""
 
