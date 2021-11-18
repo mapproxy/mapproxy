@@ -127,15 +127,15 @@ class WSGIRequestHandler(BaseHTTPRequestHandler, object):
                 if self.request_version == "HTTP/1.0":
                     headers_sent[:] = headers_set
                     status = headers_set[0]
-                    # remove non-HTTP1.0 headers
+                    # only keep HTTP/1.0 headers
                     response_headers = (
                         header_tuple
                         for header_tuple in headers_set[1]
                         if header_tuple[0].lower() in [
-                                "date", "pragma",
-                                "location", "server", "www-authenticate",
-                                "allow", "content-Encoding", "content-length",
-                                "content-type", "expires", "last-modified"
+                            "date", "pragma",
+                            "location", "server", "www-authenticate",
+                            "allow", "content-encoding", "content-length",
+                            "content-type", "expires", "last-modified"
                         ]
                     )
                 else:
@@ -252,7 +252,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler, object):
         self.log_request(code)
         if message is None:
             message = code in self.responses and self.responses[code][0] or ''
-        if self.request_version == 'HTTP/0.9':
+        if self.request_version != 'HTTP/0.9':
             if self.request_version == 'HTTP/1.0':
                 hdr = "%s %d %s\r\n" % (self.request_version, code, message)
             else:
