@@ -22,9 +22,11 @@ except ImportError:
     import _thread as thread
 
 try:
+    # python 2
     from SocketServer import ThreadingMixIn
     from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 except ImportError:
+    # python 3
     from socketserver import ThreadingMixIn
     from http.server import HTTPServer, BaseHTTPRequestHandler
 
@@ -121,8 +123,24 @@ class WSGIRequestHandler(BaseHTTPRequestHandler, object):
 
         def write(data):
             assert headers_set, 'write() before start_response'
+            import pdb; pdb.set_trace()
             if not headers_sent:
-                status, response_headers = headers_sent[:] = headers_set
+                if self.request_version == "HTTP/1.0":
+                    headers_sent[:] = headers_set
+                    status = headers_set[0]
+                    # remove non-HTTP1.0 headers
+                    response_headers = (
+                        header_tuple
+                        for header_tuple in headers_set[1]
+                        if header_tuple[0].lower() in [
+                                "date", "pragma",
+                                "location", "server", "www-authenticate",
+                                "allow", "content-Encoding", "content-length",
+                                "content-type", "expires", "last-modified"
+                        ]
+                    )
+                else:
+                    status, response_headers = headers_sent[:] = headers_set
                 try:
                     code, msg = status.split(None, 1)
                 except ValueError:
@@ -235,8 +253,11 @@ class WSGIRequestHandler(BaseHTTPRequestHandler, object):
         self.log_request(code)
         if message is None:
             message = code in self.responses and self.responses[code][0] or ''
-        if self.request_version != 'HTTP/0.9':
-            hdr = "%s %d %s\r\n" % (self.protocol_version, code, message)
+        if self.request_version == 'HTTP/0.9':
+            if self.request_version == 'HTTP/1.0':
+                hdr = "%s %d %s\r\n" % (self.request_version, code, message)
+            else:
+                hdr = "%s %d %s\r\n" % (self.protocol_version, code, message)
             self.wfile.write(hdr.encode('ascii'))
 
     def version_string(self):
