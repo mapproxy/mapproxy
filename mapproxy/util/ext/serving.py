@@ -123,7 +123,6 @@ class WSGIRequestHandler(BaseHTTPRequestHandler, object):
 
         def write(data):
             assert headers_set, 'write() before start_response'
-            import pdb; pdb.set_trace()
             if not headers_sent:
                 if self.request_version == "HTTP/1.0":
                     headers_sent[:] = headers_set
