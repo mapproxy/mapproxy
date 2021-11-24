@@ -17,12 +17,15 @@ jobs:
     - name: Install dependencies ⏬
       run: pip install sphinx sphinx-bootstrap-theme
 
-    - name: Run documentation build 🏗️
-      run: sphinx-build doc/ docs
-
-    - name: Copy to gh-pages
+    - name: Run documentation build and publish 🏗️
       run: |
         git config --global user.name 'ghpages'
         git config --global user.email 'ghpages@users.noreply.github.com'
-        git commit -am "Automated documentation"  
-        git push origin gh-pages
+        git fetch --all
+        git checkout gh-pages
+        git pull origin gh-pages
+        git rebase origin/master
+        sphinx-build doc/ docs
+        git add docs
+        git commit -m "Automated documentation"
+        git push -f origin gh-pages
