@@ -1,6 +1,21 @@
 Nightly
 ~~~~~~~~~~~~~~~~~
 
+1.14.0 2021-11-24
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Refresh while serving (#518).
+- Enabled commandline option `skip uncached` (#515)
+- Several dependencies updated
+- Support for python 3.5 has been dropped because of its EOL, 3.9 has been added
+
+Fixes:
+
+- Several minor bugfixes
+- Security fix to avoid potential web cache poisoning.
+
 1.13.2 2021-07-14
 ~~~~~~~~~~~~~~~~~
 
