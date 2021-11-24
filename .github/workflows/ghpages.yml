@@ -1,6 +1,7 @@
 name: Build and deploy documentation on github pages
 
-on:  
+on:
+  workflow_dispatch:
   push:
     tags:
       - '*'
