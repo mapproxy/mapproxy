@@ -42,6 +42,12 @@ class Response(object):
             content_type = self.default_content_type
         self.headers['Content-type'] = content_type
 
+        if content_type.startswith(('text/', 'application/')):
+            # Capability documents can be dependent on the value of a few X-headers.
+            # Tell this caching proxies via the Vary HTTP header. This also prevents
+            # malicious cache poisoning.
+            self.headers['Vary'] = 'X-Script-Name, X-Forwarded-Host, X-Forwarded-Proto'
+
     def _status_set(self, status):
         if isinstance(status, int):
             status = status_code(status)
