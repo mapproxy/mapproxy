@@ -14,6 +14,8 @@ You will need wheel and twine to build and upload a new release:
 - Update version in `setup.py` and `doc/conf.py`.
 - Commit updates changelog and version and tag the commit with (`git tag 1.12.0`).
 - Push the new tag (`git push origin --tags`).
+- Documentation will be build and deployed to gh-pages automatically when a new tag has been pushed
+  This github action can also be triggered manually
 
 
 Build and upload
