@@ -11,7 +11,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     services:
       redis-server:
         image: redis
@@ -70,4 +70,6 @@ jobs:
         pip freeze
 
     - name: Run tests 🏗️
-      run: pytest mapproxy
+      run: |
+        export LD_PRELOAD=/lib/x86_64-linux-gnu/libstdc++.so.6:$LD_PRELOAD
+        pytest mapproxy
