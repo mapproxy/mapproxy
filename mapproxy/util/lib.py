@@ -90,9 +90,11 @@ def find_library(lib_name, paths=None, exts=None):
     If nothing is found None is returned.
     """
     if not paths or not exts:
-        lib = _find_library(lib_name)
-        if lib is None and lib_name.startswith('lib'):
-            lib = _find_library(lib_name[3:])
+        try:
+            lib = _find_library(lib_name)
+        except OSError:
+            if lib_name.startswith('lib'):
+                lib = _find_library(lib_name[3:])
         return lib
 
     for lib_name in [lib_name] + ([lib_name[3:]] if lib_name.startswith('lib') else []):
