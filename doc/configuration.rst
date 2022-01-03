@@ -136,7 +136,7 @@ should become
   layers:
     - name: mylayer
       title: My Layer
-      source: [mysource]
+      sources: [mysource]
 
 The mixed format where the layers are a list (``-``) but each layer is still a dictionary is no longer supported (e.g. ``- mylayer:`` becomes ``- name: mylayer``). Note that the deprecated format is still currently required if you are using the base: option due to  `issue #490 <https://github.com/mapproxy/mapproxy/issues/490>`.
 
