@@ -399,6 +399,7 @@ mapproxy_yaml_spec = {
                 'connection_string': str(),
                 'container_name': str(),
             },
+            'add_cache_status_header': bool(),
         },
         'grid': {
             'tile_size': [int()],
@@ -449,7 +450,8 @@ mapproxy_yaml_spec = {
                 'opacity': number(),
                 'spacing': str(),
             },
-            'cache': type_spec('type', cache_types)
+            'cache': type_spec('type', cache_types),
+            'add_cache_status_header': bool()
         }
     },
     'services': {
