@@ -388,6 +388,7 @@ mapproxy_yaml_spec = {
                 'region_name': str(),
                 'endpoint_url': str(),
             },
+            'add_cache_status_header': bool(),
         },
         'grid': {
             'tile_size': [int()],
@@ -438,7 +439,8 @@ mapproxy_yaml_spec = {
                 'opacity': number(),
                 'spacing': str(),
             },
-            'cache': type_spec('type', cache_types)
+            'cache': type_spec('type', cache_types),
+            'add_cache_status_header': bool()
         }
     },
     'services': {

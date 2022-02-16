@@ -66,6 +66,7 @@ class TileManager(object):
             bulk_meta_tiles=False,
             rescale_tiles=0,
             cache_rescaled_tiles=False,
+            add_cache_status_header = False
         ):
         self.grid = grid
         self.cache = cache
@@ -82,6 +83,7 @@ class TileManager(object):
         self.pre_store_filter = pre_store_filter or []
         self.concurrent_tile_creators = concurrent_tile_creators
         self.tile_creator_class = tile_creator_class or TileCreator
+        self.add_cache_status_header = add_cache_status_header
 
         self.rescale_tiles = rescale_tiles
         self.cache_rescaled_tiles = cache_rescaled_tiles
@@ -165,9 +167,13 @@ class TileManager(object):
         self.cache.load_tiles(tiles, with_metadata)
 
         for tile in tiles:
-            if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
-                # missing or staled
-                uncached_tiles.append(tile)
+            if tile.coord is not None:
+                if not self.is_cached(tile, dimensions=dimensions):
+                    # missing or stale
+                    uncached_tiles.append(tile)
+                    tile.cache_hit = False if self.add_cache_status_header else None
+                else:
+                    tile.cache_hit = True if self.add_cache_status_header else None
 
         if uncached_tiles:
             creator = self.creator(dimensions=dimensions)
