@@ -1641,6 +1641,7 @@ class CacheConfiguration(ConfigurationBase):
                 bulk_meta_tiles=bulk_meta_tiles,
                 cache_rescaled_tiles=cache_rescaled_tiles,
                 rescale_tiles=rescale_tiles,
+                add_cache_status_header=add_cache_status_header
             )
             if self.conf['name'] in self.context.caches:
                 mgr._refresh_before = self.context.caches[self.conf['name']].conf.get('refresh_before', {})

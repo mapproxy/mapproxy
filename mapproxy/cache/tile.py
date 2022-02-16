@@ -175,9 +175,9 @@ class TileManager(object):
                 if not self.is_cached(tile, dimensions=dimensions):
                     # missing or stale
                     uncached_tiles.append(tile)
-                    tile.cache_hit = False if self.add_cache_status_header == True else None
+                    tile.cache_hit = False if self.add_cache_status_header else None
                 else:
-                    tile.cache_hit = True if self.add_cache_status_header == True else None
+                    tile.cache_hit = True if self.add_cache_status_header else None
 
         if uncached_tiles:
             creator = self.creator(dimensions=dimensions)
