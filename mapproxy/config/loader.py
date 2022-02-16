@@ -1476,6 +1476,13 @@ class CacheConfiguration(ConfigurationBase):
         concurrent_tile_creators = self.context.globals.get_value('concurrent_tile_creators', self.conf,
             global_key='cache.concurrent_tile_creators')
 
+        add_cache_status_header = self.context.globals.get_value(
+            'add_cache_status_header',
+            self.conf,
+            global_key='cache.add_cache_status_header')
+        add_cache_status_header = bool(str(add_cache_status_header).lower() == 'true') \
+            if add_cache_status_header is not None else False
+
         cache_rescaled_tiles = self.conf.get('cache_rescaled_tiles')
         upscale_tiles = self.conf.get('upscale_tiles', 0)
         if upscale_tiles < 0:

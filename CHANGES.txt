@@ -1,6 +1,10 @@
 Nightly
 ~~~~~~~~~~~~~~~~~
 
+1.14.99 2022-02-16
+~~~~~~~~~~~~~~~~~~
+ - Added support for Cache-Status HTTP header (4M patch)
+
 1.14.0 2021-11-24
 ~~~~~~~~~~~~~~~~~
 
