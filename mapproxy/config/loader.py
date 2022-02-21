@@ -2123,10 +2123,15 @@ def merge_dict(conf, base):
             base[k] = v
         else:
             if isinstance(base[k], dict):
-                merge_dict(v, base[k])
+                if v != None:
+                    base[k] = merge_dict(v, base[k])
+            elif isinstance(base[k], list):
+                if v != None:
+                    base[k] = base[k] + v
             else:
                 base[k] = v
-    return base
+    return base     
+
 
 def parse_color(color):
     """
