@@ -142,8 +142,13 @@ def parse_datetime_range(datetime_range_str):
     datetime_range_str = datetime_range_str.strip() #delete blank spaces
     splitting = datetime_range_str.split('/')
 
+    values = [] #store final values
+
     if len(splitting) == 1:
-        raise ISO8601Error("Invalid ISO 8601 string to parse: %r" % datetime_range_str)
+        # sample: "2020-08-25T00:00:00Z"
+        datetime_val = parse_datetime(splitting[0])
+        values.append(datetime_val.isoformat().replace('+00:00', 'Z'))
+        return values
 
     if len(splitting) == 2 and splitting[1].startswith("P"): 
         # sample: "2007-03-01T13:00:00Z/P1Y2M10DT2H30M"
@@ -156,7 +161,7 @@ def parse_datetime_range(datetime_range_str):
     if len(splitting) == 3 and splitting[2].startswith("P"): 
         # sample: "2020-08-25T00:00:00Z/2020-08-26T00:00:00Z/PT2H30M"
         init_str, end_str, interval =  splitting
-    
+
     #period, time = interval.split('T')
     delta = parse_duration(interval)
 
@@ -174,7 +179,6 @@ def parse_datetime_range(datetime_range_str):
         init = parse_datetime(init_str)
         end = parse_datetime(end_str)
 
-    values = []
     current = init
     while current < (end + delta):
         values.append(current.isoformat().replace('+00:00', 'Z'))
