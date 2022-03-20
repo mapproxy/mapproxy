@@ -54,8 +54,15 @@ class TestSRS(object):
         assert srs.is_axis_order_en
         assert not srs.is_axis_order_ne
 
+    def test_non_epsg_auth(self):
+        srs = SRS("IGNF:ETRS89UTM28")
+
+        assert not srs.is_latlong
+        assert srs.is_axis_order_en
+        assert not srs.is_axis_order_ne
+
     def test_from_srs(self):
-        srs1 = SRS("epgs:4326")
+        srs1 = SRS("epsg:4326")
         srs2 = SRS(srs1)
         assert srs1 == srs2
 
