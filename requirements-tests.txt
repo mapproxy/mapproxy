@@ -69,7 +69,7 @@ soupsieve==2.0.1;python_version>="3.0"
 sshpubkeys==3.1.0
 toml==0.10.1
 urllib3==1.25.10
-waitress==1.4.4
+waitress==2.1.1
 websocket-client==0.57.0
 werkzeug==1.0.1
 wrapt==1.12.1
