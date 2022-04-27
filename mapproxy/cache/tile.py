@@ -42,8 +42,10 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter, TiledImage
 from mapproxy.layer import MapQuery, BlankImage
+from mapproxy.source import SourceError
 from mapproxy.util import async_
-from mapproxy.util.py import reraise
+from mapproxy.util.py import reraise, reraise_exception
+import sys
 import logging
 log = logging.getLogger('mapproxy.cache.tile')
 
@@ -364,7 +366,15 @@ class TileCreator(object):
                          self.tile_mgr.request_format, dimensions=self.dimensions)
         with self.tile_mgr.lock(tile):
             if not self.is_cached(tile, dimensions=dimensions):
-                source = self._query_sources(query)
+                source = None
+                try:
+                    source = self._query_sources(query)
+                # if source is not available, try to serve tile in cache
+                except SourceError as e:
+                    if self.is_stale(tile):
+                        self.cache.load_tile(tile)
+                    else:
+                        reraise_exception(e, sys.exc_info())
                 if not source: return []
                 if self.tile_mgr.image_opts != source.image_opts:
                     # call as_buffer to force conversion into cache format
