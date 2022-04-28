@@ -91,10 +91,10 @@ class S3Cache(TileCacheBase):
         except Exception as e:
             raise S3ConnectionError('Error during connection %s' % e)
 
-    def load_tile_metadata(self, tile):
+    def load_tile_metadata(self, tile, dimensions=None):
         if tile.timestamp:
             return
-        self.is_cached(tile)
+        self.is_cached(tile, dimensions=dimensions)
 
     def _set_metadata(self, response, tile):
         if 'LastModified' in response:
@@ -102,7 +102,7 @@ class S3Cache(TileCacheBase):
         if 'ContentLength' in response:
             tile.size = response['ContentLength']
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         if tile.is_missing():
             key = self.tile_key(tile)
             try:
@@ -115,11 +115,11 @@ class S3Cache(TileCacheBase):
 
         return True
 
-    def load_tiles(self, tiles, with_metadata=True):
+    def load_tiles(self, tiles, with_metadata=True, dimensions=None):
         p = async_.Pool(min(4, len(tiles)))
         return all(p.map(self.load_tile, tiles))
 
-    def load_tile(self, tile, with_metadata=True):
+    def load_tile(self, tile, with_metadata=True, dimensions=None):
         if not tile.is_missing():
             return True
 
@@ -143,11 +143,11 @@ class S3Cache(TileCacheBase):
         log.debug('remove_tile, key: %s' % key)
         self.conn().delete_object(Bucket=self.bucket_name, Key=key)
 
-    def store_tiles(self, tiles):
+    def store_tiles(self, tiles, dimensions=None):
         p = async_.Pool(min(self._concurrent_writer, len(tiles)))
         p.map(self.store_tile, tiles)
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return
 
