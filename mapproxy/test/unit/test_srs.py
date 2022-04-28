@@ -18,7 +18,7 @@ import os
 import pytest
 
 from mapproxy.config import base_config
-from mapproxy import srs
+from mapproxy import srs, proj
 from mapproxy.srs import SRS, PreferredSrcSRS, SupportedSRS
 
 
@@ -54,12 +54,20 @@ class TestSRS(object):
         assert srs.is_axis_order_en
         assert not srs.is_axis_order_ne
 
+    def test_non_epsg_auth(self):
+        srs = SRS("IGNF:ETRS89UTM28")
+
+        assert not srs.is_latlong
+        assert srs.is_axis_order_en
+        assert not srs.is_axis_order_ne
+
     def test_from_srs(self):
-        srs1 = SRS("epgs:4326")
+        srs1 = SRS("epsg:4326")
         srs2 = SRS(srs1)
         assert srs1 == srs2
 
-
+# proj_data_dir test relies on old Proj4 epsg files.
+@pytest.mark.skipif(not proj.USE_PROJ4_API, reason="only for old proj4 lib")
 class Test_0_ProjDefaultDataPath(object):
 
     def test_known_srs(self):
@@ -83,6 +91,7 @@ def custom_proj_data_dir():
     srs.set_datapath(None)
     base_config().srs.proj_data_dir = None
 
+@pytest.mark.skipif(not proj.USE_PROJ4_API, reason="only for old proj4 lib")
 @pytest.mark.usefixtures("custom_proj_data_dir")
 class Test_1_ProjDataPath(object):
 

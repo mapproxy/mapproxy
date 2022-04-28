@@ -30,7 +30,7 @@ ISO8601_INTERVAL_REGEX = re.compile(
     r"(?P<seconds>[0-9]+([,.][0-9]+)?S)?)?$")
 
 
-xpath_elem = re.compile('(^|/)([^/]+:)?([^/]+)')
+xpath_elem = re.compile(r'(^|/)([^/]+:)?([^/]+)')
 
 
 def parse_duration(datestring):

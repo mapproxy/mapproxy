@@ -48,7 +48,7 @@ def parse_levels(level_str):
     levels = set()
     for part in level_str.split(','):
         part = part.strip()
-        if re.match('\d+..\d+', part):
+        if re.match(r'\d+..\d+', part):
             from_level, to_level = part.split('..')
             levels.update(list(range(int(from_level), int(to_level) + 1)))
         else:

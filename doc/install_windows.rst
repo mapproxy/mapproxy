@@ -52,12 +52,13 @@ Pillow and PyYAML are installed automatically by ``pip``.
 PyProj
 ~~~~~~
 
-Since libproj4 is generally not available on a Windows system, you will also need to install the Python package ``pyproj``.
-You need to manually download the ``pyproj`` package for your system. See below for *Platform dependent packages*.
+Since PROJ is generally not available on a Windows system, you will also need to install the Python package ``pyproj``.
 
 ::
 
-  pip install path\to\pyproj-xxx.whl
+  pip install pyproj
+
+See *Platform dependent packages* below if this installation fails as Windows packages might not be available for pyproj.
 
 
 Shapely and GEOS *(optional)*

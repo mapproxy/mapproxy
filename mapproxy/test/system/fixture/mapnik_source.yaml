@@ -22,6 +22,7 @@ sources:
   mapnik:
     type: mapnik
     mapfile: ./mapnik.xml
+    concurrent_requests: 1
     coverage:
       bbox: [-170, -80, 180, 90]
       bbox_srs: 'EPSG:4326'

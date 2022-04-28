@@ -168,11 +168,11 @@ def type_str(spec):
     if not isinstance(spec, type):
         spec = type(spec)
 
-    match = re.match("<type '(\w+)'>", str(spec))
+    match = re.match(r"<type '(\w+)'>", str(spec))
     if match:
         return match.group(1)
 
-    match = re.match("<class '([\w._]+)'>", str(spec))
+    match = re.match(r"<class '([\w._]+)'>", str(spec))
     if match:
         return match.group(1).split('.')[-1]
 

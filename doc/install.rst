@@ -33,7 +33,7 @@ You need to either prefix all commands with ``mapproxy/bin``, set your ``PATH`` 
 
     source mapproxy/bin/activate
 
-This will change the ``PATH`` for you `current` session.
+This will change the ``PATH`` for your `current` session.
 
 
 Install Dependencies
@@ -48,7 +48,7 @@ Installation
 
 On a Debian or Ubuntu system, you need to install the following packages::
 
-  sudo apt-get install python-pil python-yaml libproj12
+  sudo apt-get install python-pil python-yaml python-proj
 
 To get all optional packages::
 
@@ -59,9 +59,16 @@ To get all optional packages::
 Dependency details
 ^^^^^^^^^^^^^^^^^^
 
-libproj
-~~~~~~~
-MapProxy uses the Proj4 C Library for all coordinate transformation tasks. It is included in most distributions as ``libproj`` or ``libprojXX`` where ``XX`` is a number.
+pyproj or libproj
+~~~~~~~~~~~~~~~~~
+
+MapProxy uses the PROJ C library for all coordinate transformation tasks. MapProxy can directly use the C library or via the pyproj Python package.
+The internal API of PROJ was updated with PROJ >=5. The old PROJ 4 API is now deprecated and will be removed from future PROJ releases. MapProxy only supports the new API via pyproj and it is therefore recommended to use a recent pyproj version.
+
+
+.. versionchanged:: 1.13
+  Support for new PROJ API via pyproj.
+
 
 .. _dependencies_pil:
 
@@ -101,7 +108,7 @@ lxml *(optional)*
 Install MapProxy
 ----------------
 
-Your virtual environment should contains `pip`_, a tool to install Python packages.
+Your virtual environment should contain `pip`_, a tool to install Python packages.
 
 To install you need to call::
 
@@ -179,6 +186,6 @@ To upgrade to the current development version::
 Changes
 ^^^^^^^
 
-New releases of MapProxy are backwards compatible with older configuration files. MapProxy will issue warnings on startup if a behavior will change in the next releases. You are advised to upgrade in single release steps (e.g. 1.9.0 to 1.10.0 to 1.11.0) and to check the output of ``mapproxy-util serve-develop`` for any warnings. You should also refer to the Changes Log of each release to see if there is anything to pay attention for.
+New releases of MapProxy are backwards compatible with older configuration files. MapProxy will issue warnings on start-up if a behavior will change in the next releases. You are advised to upgrade in single release steps (e.g. 1.9.0 to 1.10.0 to 1.11.0) and to check the output of ``mapproxy-util serve-develop`` for any warnings. You should also refer to the Changes Log of each release to see if there is anything to pay attention for.
 
-If you upgrade from 0.8, please read the `old mirgation documentation <http://mapproxy.org/docs/1.5.0/migrate.html>`_.
+If you upgrade from 0.8, please read the `old migration documentation <http://mapproxy.org/docs/1.5.0/migrate.html>`_.

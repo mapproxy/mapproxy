@@ -94,10 +94,10 @@ def load_ogr_datasource(datasource, where=None):
                 if geom.type == 'Polygon':
                     polygons.append(geom)
                 elif geom.type == 'MultiPolygon':
-                    for p in geom:
+                    for p in geom.geoms:
                         polygons.append(p)
                 else:
-                    log_config.warn('skipping %s geometry from %s: not a Polygon/MultiPolygon',
+                    log_config.warning('skipping %s geometry from %s: not a Polygon/MultiPolygon',
                         geom.type, datasource)
     except OGRShapeReaderError as ex:
         raise CoverageReadError(ex)
@@ -139,7 +139,7 @@ def load_geojson(datasource):
         elif t in ('Polygon', 'MultiPolygon'):
             geometries.append(geojson)
         else:
-            log_config.warn('skipping feature of type %s from %s: not a Polygon/MultiPolygon',
+            log_config.warning('skipping feature of type %s from %s: not a Polygon/MultiPolygon',
                         t, datasource)
 
     polygons = []
@@ -148,10 +148,10 @@ def load_geojson(datasource):
         if geom.type == 'Polygon':
             polygons.append(geom)
         elif geom.type == 'MultiPolygon':
-            for p in geom:
+            for p in geom.geoms:
                 polygons.append(p)
         else:
-            log_config.warn('ignoring non-polygon geometry (%s) from %s',
+            log_config.warning('ignoring non-polygon geometry (%s) from %s',
                 geom.type, datasource)
 
     return polygons
@@ -165,10 +165,10 @@ def load_polygon_lines(line_iter, source='<string>'):
         if geom.type == 'Polygon':
             polygons.append(geom)
         elif geom.type == 'MultiPolygon':
-            for p in geom:
+            for p in geom.geoms:
                 polygons.append(p)
         else:
-            log_config.warn('ignoring non-polygon geometry (%s) from %s',
+            log_config.warning('ignoring non-polygon geometry (%s) from %s',
                 geom.type, source)
 
     return polygons
@@ -187,7 +187,7 @@ def build_multipolygon(polygons, simplify=False):
         polygons = [simplify_geom(g) for g in polygons]
 
     # eliminate any self-overlaps
-    mp = shapely.ops.cascaded_union(polygons)
+    mp = shapely.ops.unary_union(polygons)
 
     return mp.bounds, mp
 
@@ -249,7 +249,7 @@ def flatten_to_polygons(geometry):
         return [geometry]
 
     if geometry.type == 'MultiPolygon':
-        return list(geometry)
+       return list(geometry.geoms)
 
     if hasattr(geometry, 'geoms'):
         # GeometryCollection or MultiLineString? return list of all polygons
@@ -277,7 +277,7 @@ def load_expire_tiles(expire_dir, grid=None):
                     tile = tuple(map(int, line.split('/')))
                     tiles.add(tile)
             except:
-                log_config.warn('found error in %s, skipping rest of file', filename)
+                log_config.warning('found error in %s, skipping rest of file', filename)
 
     if os.path.isdir(expire_dir):
         for root, dirs, files in os.walk(expire_dir):

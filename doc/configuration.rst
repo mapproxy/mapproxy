@@ -513,6 +513,43 @@ To trigger the rescaling behaviour, a tile needs to be missing in the cache and 
 
 Tiles created by the ``upscale_tiles`` or ``downscale_tiles`` option are only stored in the cache if this option is set to true.
 
+``refresh_before``
+"""""""""""""""""""
+
+Here you can force MapProxy to refresh tiles from the source while serving if they are found to be expired.
+The validity conditions are the same as for seeding:
+
+Explanation::
+
+  # absolute as ISO time
+  refresh_before:
+    time: 2010-10-21T12:35:00
+
+  # relative from the time of the tile request
+  refresh_before:
+    weeks: 1
+    days: 7
+    hours: 4
+    minutes: 15
+
+  # modification time of a given file
+  refresh_before:
+    mtime: path/to/file
+
+Example
+~~~~~~~~
+
+::
+
+   caches:
+     osm_cache:
+     grids: ['osm_grid']
+     sources: [OSM]
+     disable_storage: false
+     refresh_before:
+       days: 1
+
+
 ``disable_storage``
 """"""""""""""""""""
 
@@ -908,10 +945,12 @@ The following options define how tiles are created and stored. Most options can 
   .. versionadded:: 1.12.0
 
 ``proj_data_dir``
-  MapProxy uses Proj4 for all coordinate transformations. If you need custom projections
-  or need to tweak existing definitions (e.g. add towgs parameter set) you can point
-  MapProxy to your own set of proj4 init files. The path should contain an ``epsg`` file
-  with the EPSG definitions.
+
+  MapProxy uses PROJ for all coordinate transformations. If you need custom projections
+  or need to tweak existing definitions. You can point MapProxy to your own set of PROJ data files.
+
+  This path should contain an ``epsg`` file with the EPSG definitions for installations with PROJ version 4.
+  PROJ>=5 uses a different configuration format. Please refer to the PROJ documentation.
 
   The configured path can be absolute or relative to the mapproxy.yaml.
 
@@ -942,6 +981,10 @@ The following options define how tiles are created and stored. Most options can 
 
   If you need to override one of the default values, then you need to define both axis
   order options, even if one is empty.
+
+  .. versionchanged:: 1.13.0
+  MapProxy can now determine the correct axis order for all coordinate systems when using pyproj>=2. The axis_order_ne/axis_order_en are ignored in this case.
+
 
 .. _http_ssl:
 
@@ -1018,6 +1061,15 @@ Add additional HTTP headers to all requests to your sources.
 
 Sets the ``Access-control-allow-origin`` header to HTTP responses for `Cross-origin resource sharing <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_. This header is required for WebGL or Canvas web clients. Defaults to `*`. Leave empty to disable the header. This option is only available in `globals`.
 
+``manage_cookies``
+^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.14.0
+
+Enables MapProxy cookie management for HTTP sources. When enabled MapProxy will accept and store server cookies. Accepted cookies will be passed
+back to the source on subsequent requests. Usefull for sources which require to maintain an HTTP session to work efficiently, maybe in combination
+with basic authentication. Depending on your deployment MapProxy will still start multiple sessions (e.g. one per MapProxy process).
+Cookie handling is based on Python `CookieJar <https://docs.python.org/3/library/http.cookiejar.html>`_. Disabled by default.
 
 ``hide_error_details``
 ^^^^^^^^^^^^^^^^^^^^^^

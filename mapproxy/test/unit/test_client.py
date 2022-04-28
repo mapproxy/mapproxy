@@ -185,6 +185,60 @@ class TestHTTPClient(object):
         assert 0.1 <= duration1 < 0.5, duration1
         assert 0.5 <= duration2 < 0.9, duration2
 
+    def test_manage_cookies_off(self):
+        """
+        Test the behavior when manage_cookies is off (the default). Cookies shouldn't be sent
+        """
+        self.client = HTTPClient()
+
+        def assert_no_cookie(req_handler):
+            return 'Cookie' not in req_handler.headers
+
+        test_requests = [
+            (
+                {'path': '/', 'req_assert_function': assert_no_cookie},
+                {'body': b'nothing', 'headers': {'Set-Cookie': "testcookie=42"}}
+            ),
+            (
+                {'path': '/', 'req_assert_function': assert_no_cookie},
+                {'body': b'nothing'}
+            )
+        ]
+        with mock_httpd(TESTSERVER_ADDRESS, test_requests):
+            self.client.open(TESTSERVER_URL + '/')
+            self.client.open(TESTSERVER_URL + '/')
+
+    def test_manage_cookies_on(self):
+        """
+        Test behavior of manage_cookies=True. Once the remote server sends a cookie back, it should
+        be included in future requests
+        """
+        self.client = HTTPClient(manage_cookies=True)
+
+        def assert_no_cookie(req_handler):
+            return 'Cookie' not in req_handler.headers
+
+        def assert_cookie(req_handler):
+            assert 'Cookie' in req_handler.headers
+            cookie_name, cookie_val = req_handler.headers['Cookie'].split(';')[0].split('=')
+            assert cookie_name == 'testcookie'
+            assert cookie_val == '42'
+            return True
+
+        test_requests = [
+            (
+                {'path': '/', 'req_assert_function': assert_no_cookie},
+                {'body': b'nothing', 'headers': {'Set-Cookie': "testcookie=42"}}
+            ),
+            (
+                {'path': '/', 'req_assert_function': assert_cookie},
+                {'body': b'nothing'}
+            )
+        ]
+        with mock_httpd(TESTSERVER_ADDRESS, test_requests):
+            self.client.open(TESTSERVER_URL + '/')
+            self.client.open(TESTSERVER_URL + '/')
+
 
 # root certificates for google.com, if no ca-certificates.cert
 # file is found

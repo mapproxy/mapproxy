@@ -1,0 +1,31 @@
+name: Build and deploy documentation on github pages
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+
+jobs:  
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v2
+
+    - name: Install dependencies ⏬
+      run: pip install sphinx sphinx-bootstrap-theme
+
+    - name: Run documentation build and publish 🏗️
+      run: |
+        git config --global user.name 'ghpages'
+        git config --global user.email 'ghpages@users.noreply.github.com'
+        git fetch --all
+        git checkout gh-pages
+        git pull origin gh-pages
+        git rebase origin/master
+        sphinx-build doc/ docs
+        git add docs
+        git commit -m "Automated documentation"
+        git push -f origin gh-pages

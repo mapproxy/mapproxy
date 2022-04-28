@@ -1,3 +1,56 @@
+Nightly
+~~~~~~~~~~~~~~~~~
+
+1.14.0 2021-11-24
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Refresh while serving (#518).
+- Enabled commandline option `skip uncached` (#515)
+- Several dependencies updated
+- Support for python 3.5 has been dropped because of its EOL, 3.9 has been added
+
+Fixes:
+
+- Several minor bugfixes
+- Security fix to avoid potential web cache poisoning.
+
+1.13.2 2021-07-14
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Hotfix: Fixup demo service (#528).
+
+1.13.1 2021-07-13
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Support cookie management for HTTP sources.
+
+Fixes:
+
+- Security fix for local file disclosure (#526).
+
+1.13.0 2020-11-18
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Proj: Support for PROJ>=5 via pyproj.
+- Services: New hide_exception_url option to hide source URLs.
+- Tile sources: Support '@' in URL path (e.g. /0/0/0@2x.png)
+
+Fixes:
+
+- Various fixes for Python 3.8 compatibility.
+- WMS: Always query WMS server in supported SRS.
+- Fix warnings for tagged layer sources in layers.
+- Demo: Fix capabilites "as HTML" when running behind a proxy
+
+
 1.12.0 2019-08-30
 ~~~~~~~~~~~~~~~~~
 

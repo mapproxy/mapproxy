@@ -184,6 +184,7 @@ You can configure the following HTTP related options for this source:
 - ``client_timeout``
 - ``ssl_ca_certs``
 - ``ssl_no_cert_checks``
+- ``manage_cookies``
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 
@@ -241,6 +242,12 @@ Each status code takes the following options:
 
 You need to enable ``transparent`` for your source, if you use ``on_error`` responses with transparency.
 
+``authorize_stale``
+
+  Set this to ``True`` if MapProxy should serve in priority stale tiles present in cache. If the specified source error occurs, MapProxy will serve a stale tile which is still in cache instead of the error reponse, even if the tile in cache should be refreshed according to refresh_before date. Otherwise (``False``) MapProxy will serve the unicolor error response defined by the error handler if the source is faulty and the tile is not in cache, or is stale.
+
+You need to enable ``transparent`` for your source, if you use ``on_error`` responses with transparency.
+
 ::
 
   my_tile_source:
@@ -249,6 +256,10 @@ You need to enable ``transparent`` for your source, if you use ``on_error`` resp
       url: http://localhost:8080/service?
       layers: base
     on_error:
+      404:
+        response: 'transparent'
+        cache: False
+        authorize_stale: True
       500:
         response: '#ede9e3'
         cache: False
@@ -432,6 +443,7 @@ You can configure the following HTTP related options for this source:
 - ``client_timeout``
 - ``ssl_ca_certs``
 - ``ssl_no_cert_checks``
+- ``manage_cookies``
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 

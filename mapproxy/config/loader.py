@@ -592,10 +592,12 @@ class SourceConfiguration(ConfigurationBase):
         timeout = self.context.globals.get_value('http.client_timeout', self.conf)
         headers = self.context.globals.get_value('http.headers', self.conf)
         hide_error_details = self.context.globals.get_value('http.hide_error_details', self.conf)
+        manage_cookies = self.context.globals.get_value('http.manage_cookies', self.conf)
 
         http_client = HTTPClient(url, username, password, insecure=insecure,
                                  ssl_ca_certs=ssl_ca_certs, timeout=timeout,
-                                 headers=headers, hide_error_details=hide_error_details)
+                                 headers=headers, hide_error_details=hide_error_details,
+                                 manage_cookies=manage_cookies)
         return http_client, url
 
     @memoize
@@ -609,11 +611,12 @@ class SourceConfiguration(ConfigurationBase):
                 raise ConfigurationError("invalid error code %r in on_error", status_code)
             cacheable = response_conf.get('cache', False)
             color = response_conf.get('response', 'transparent')
+            authorize_stale = response_conf.get('authorize_stale', False)
             if color == 'transparent':
                 color = (255, 255, 255, 0)
             else:
                 color = parse_color(color)
-            error_handler.add_handler(status_code, color, cacheable)
+            error_handler.add_handler(status_code, color, cacheable, authorize_stale)
 
         return error_handler
 
@@ -916,7 +919,8 @@ class MapnikSourceConfiguration(SourceConfiguration):
         if concurrent_requests:
             from mapproxy.util.lock import SemLock
             lock_dir = self.context.globals.get_path('cache.lock_dir', self.conf)
-            md5 = hashlib.md5(self.conf['mapfile'])
+            mapfile = self.conf['mapfile']
+            md5 = hashlib.md5(mapfile.encode('utf-8'))
             lock_file = os.path.join(lock_dir, md5.hexdigest() + '.lck')
             lock = lambda: SemLock(lock_file, concurrent_requests)
 
@@ -1453,8 +1457,8 @@ class CacheConfiguration(ConfigurationBase):
         from mapproxy.layer import map_extent_from_grid, merge_layer_extents
 
         base_image_opts = self.image_opts()
-        if self.conf.get('format') == 'mixed' and not self.conf.get('request_format') == 'image/png':
-            raise ConfigurationError('request_format must be set to image/png if mixed mode is enabled')
+        if self.conf.get('format') == 'mixed' and not self.conf.get('request_format') in [ 'image/png', 'image/vnd.jpeg-png' ]:
+            raise ConfigurationError('request_format must be set to image/png or image/vnd.jpeg-png if mixed mode is enabled')
         request_format = self.conf.get('request_format') or self.conf.get('format')
         if '/' in request_format:
             request_format_ext = request_format.split('/', 1)[1]
@@ -1574,6 +1578,8 @@ class CacheConfiguration(ConfigurationBase):
                 cache_rescaled_tiles=cache_rescaled_tiles,
                 rescale_tiles=rescale_tiles,
             )
+            if self.conf['name'] in self.context.caches:
+                mgr._refresh_before = self.context.caches[self.conf['name']].conf.get('refresh_before', {})
             extent = merge_layer_extents(sources)
             if extent.is_default:
                 extent = map_extent_from_grid(tile_grid)
@@ -2160,5 +2166,3 @@ def parse_color(color):
         return r, g, b, a
 
     return r, g, b
-
-
