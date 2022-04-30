@@ -1736,7 +1736,13 @@ class LayerConfiguration(ConfigurationBase):
         for dimension, conf in iteritems(self.conf.get('dimensions', {})):
             raw_values = conf.get('values')
             if len(raw_values) == 1:
-                values = parse_datetime_range(raw_values[0])
+                # look for time or dim_reference_time
+                if 'time' in dimension.lower():
+                    log.debug('Determining values as datetime strings')
+                    values = parse_datetime_range(raw_values[0])
+                else:
+                    log.debug('Determining values as plain strings')
+                    values = raw_values[0].strip().split('/')
             else:
                 values = [str(val) for val in  conf.get('values', ['default'])]
             
