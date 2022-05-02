@@ -180,6 +180,8 @@ Known limitations
   is `geomet-mapproxy`_
 - caches of layers with dimensions need to be cleaned/deleted by the MapProxy
   administrator.  This can typically be done via cron/schedule accordingly
+- dimemsion support is only implemented in the default file cache backend
+  at this time
 
 
 Tests
