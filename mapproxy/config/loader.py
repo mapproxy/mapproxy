@@ -30,7 +30,7 @@ log = logging.getLogger('mapproxy.config')
 
 from mapproxy.config import load_default_config, finish_base_config, defaults
 from mapproxy.config.validator import validate_references
-from mapproxy.config.spec import validate_options
+from mapproxy.config.spec import validate_options, add_source_to_mapproxy_yaml_spec, add_service_to_mapproxy_yaml_spec
 from mapproxy.util.py import memoize
 from mapproxy.util.ext.odict import odict
 from mapproxy.util.yaml import load_yaml_file, YAMLError
@@ -84,6 +84,7 @@ class ProxyConfiguration(object):
     def load_sources(self):
         self.sources = SourcesCollection()
         for source_name, source_conf in iteritems((self.configuration.get('sources') or {})):
+            source_conf['name'] = source_name
             self.sources[source_name] = SourceConfiguration.load(conf=source_conf, context=self)
 
     def load_tile_layers(self):
@@ -1019,6 +1020,31 @@ source_configuration_types = {
 }
 
 
+def register_source_configuration(config_name, config_class,
+                                  yaml_spec_source_name = None, yaml_spec_source_def = None):
+    """ Method used by plugins to register a new source configuration.
+
+        :param config_name: Name of the source configuration
+        :type config_name: str
+        :param config_class: Class of the source configuration
+        :type config_name: SourceConfiguration
+        :param yaml_spec_source_name: Name of the source in the YAML configuration file
+        :type yaml_spec_source_name: str
+        :param yaml_spec_source_def: Definition of the source in the YAML configuration file
+        :type yaml_spec_source_def: dict
+
+        Example:
+            register_source_configuration('hips', HIPSSourceConfiguration,
+                                          'hips', { required('url'): str(),
+                                                    'resampling_method': str(),
+                                                    'image': image_opts,
+                                                  })
+    """
+    source_configuration_types[config_name] = config_class
+    if yaml_spec_source_name is not None and yaml_spec_source_def is not None:
+        add_source_to_mapproxy_yaml_spec(yaml_spec_source_name, yaml_spec_source_def)
+
+
 class CacheConfiguration(ConfigurationBase):
     defaults = {'format': 'image/png'}
 
@@ -1840,6 +1866,27 @@ def extents_for_srs(bbox_srs):
     return extents
 
 
+plugin_services = {}
+
+def register_service_configuration(service_name, service_creator,
+                                   yaml_spec_service_name = None, yaml_spec_service_def = None):
+    """ Method used by plugins to register a new service.
+
+        :param config_name: Name of the service
+        :type config_name: str
+        :param service_creator: Creator method of the service
+        :type service_creator: method of type (serviceConfiguration: ServiceConfiguration, conf: dict) -> Server
+        :param yaml_spec_service_name: Name of the service in the YAML configuration file
+        :type yaml_spec_service_name: str
+        :param yaml_spec_service_def: Definition of the service in the YAML configuration file
+        :type yaml_spec_service_def: dict
+    """
+
+    plugin_services[service_name] = service_creator
+    if yaml_spec_service_name is not None and yaml_spec_service_def is not None:
+        add_service_to_mapproxy_yaml_spec(yaml_spec_service_name, yaml_spec_service_def)
+
+
 class ServiceConfiguration(ConfigurationBase):
     def __init__(self, conf, context):
         if 'wms' in conf:
@@ -1856,9 +1903,15 @@ class ServiceConfiguration(ConfigurationBase):
         for service_name, service_conf in iteritems(self.conf):
             creator = getattr(self, service_name + '_service', None)
             if not creator:
-                raise ValueError('unknown service: %s' % service_name)
+                # If not a known service, try to use the plugin mechanism
+                global plugin_services
+                creator = plugin_services.get(service_name, None)
+                if not creator:
+                    raise ValueError('unknown service: %s' % service_name)
+                new_services = creator(self, service_conf or {})
+            else:
+                new_services = creator(service_conf or {})
 
-            new_services = creator(service_conf or {})
             # a creator can return a list of services...
             if not isinstance(new_services, (list, tuple)):
                 new_services = [new_services]
@@ -2060,7 +2113,26 @@ class ServiceConfiguration(ConfigurationBase):
             image_formats=image_formats, srs=srs, services=services, restful_template=restful_template)
 
 
+def load_plugins():
+    """ Locate plugins that belong to the 'mapproxy' group and load them """
+    if sys.version_info >= (3, 8):
+        from importlib import metadata as importlib_metadata
+    else:
+        try:
+            import importlib_metadata
+        except ImportError:
+            return
+
+    for dist in importlib_metadata.distributions():
+        for ep in dist.entry_points:
+            if ep.group == 'mapproxy':
+                ep.load().plugin_entrypoint()
+
+
 def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=False):
+
+    load_plugins()
+
     conf_base_dir = os.path.abspath(os.path.dirname(mapproxy_conf))
 
     # A configuration is checked/validated four times, each step has a different
