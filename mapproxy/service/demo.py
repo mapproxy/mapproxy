@@ -157,8 +157,12 @@ class DemoServer(Server):
             if srs_code not in cached_srs:
                 uncached_srs.append(srs_code)
 
-        sorted_cached_srs = sorted(cached_srs, key=lambda srs: get_epsg_num(srs))
-        sorted_uncached_srs = sorted(uncached_srs, key=lambda srs: get_epsg_num(srs))
+        def get_srs_key(srs):
+            epsg_num = get_epsg_num(srs)
+            return str(epsg_num if epsg_num else srs)
+
+        sorted_cached_srs = sorted(cached_srs, key=lambda srs: get_srs_key(srs))
+        sorted_uncached_srs = sorted(uncached_srs, key=lambda srs: get_srs_key(srs))
         sorted_cached_srs = [(s + '*', s) for s in sorted_cached_srs]
         sorted_uncached_srs = [(s, s) for s in sorted_uncached_srs]
         return sorted_cached_srs + sorted_uncached_srs
