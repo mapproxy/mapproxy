@@ -1,0 +1,135 @@
+globals:
+  cache:
+    base_dir: cache_data/
+    meta_size: [1, 1]
+    meta_buffer: 0
+  image:
+    # resampling: 'bicubic'
+    paletted: False
+services:
+  demo:
+  tms:
+  kml:
+  wmts:
+    md:
+      keyword_list:
+        - keywords: [wmtskey1, wmtskey2, wmtskey3]
+    featureinfo_formats:
+      - mimetype: application/gml+xml; version=3.1
+        suffix: gml
+      - mimetype: application/json
+        suffix: geojson
+
+    restful_template: '/myrest/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}'
+    restful_featureinfo_template: '/myrest/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.{InfoFormat}'
+  wms:
+    md:
+      title: MapProxy test fixture
+      abstract: This is MapProxy.
+      keyword_list:
+        - keywords: [wmskey1,wmskey2,wmskey3]
+      online_resource: http://mapproxy.org/
+      contact:
+        person: Oliver Tonnhofer
+        position: Technical Director
+        organization: Omniscale
+        address: Nadorster Str. 60
+        city: Oldenburg
+        postcode: 26123
+        country: Germany
+        phone: +49(0)441-9392774-0
+        fax: +49(0)441-9392774-9
+        email: info@omniscale.de
+      access_constraints:
+        Here be dragons.
+
+layers:
+  - name: wms_cache
+    title: WMS Cache Layer
+    sources: [wms_cache]
+  - name: wms_cache_multi
+    title: WMS Cache Multi Layer
+    sources: [wms_cache_multi]
+  - name: tms_cache
+    title: TMS Cache Layer
+    sources: [tms_cache, wms_fi_only]
+  - name: tms_cache_ul
+    title: TMS Cache Layer
+    sources: [tms_cache_ul]
+  - name: gk3_cache
+    title: GK3 Cache Layer
+    sources: [gk3_cache]
+caches:
+  wms_cache:
+    format: image/jpeg
+    grids: [GLOBAL_MERCATOR]
+    sources: [wms_cache]
+  wms_cache_multi:
+    format: image/jpeg
+    grids: [CustomGridSet, GoogleMapsCompatible]
+    sources: [wms_cache_130]
+  tms_cache:
+    grids: [GLOBAL_MERCATOR]
+    sources: [tms_cache]
+  tms_cache_ul:
+    grids: [ulgrid]
+    sources: [tms_cache]
+  gk3_cache:
+    grids: [gk3]
+    sources: [wms_cache]
+
+sources:
+  wms_cache:
+    type: wms
+    supported_srs: ['EPSG:3857', 'EPSG:4326']
+    wms_opts:
+      featureinfo: True
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar
+  wms_cache_100:
+    type: wms
+    wms_opts:
+      version: '1.0.0'
+      featureinfo: True
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar
+  wms_cache_130:
+    type: wms
+    min_res: 250000000
+    max_res: 1
+    wms_opts:
+      version: '1.3.0'
+      featureinfo: True
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar
+  tms_cache:
+    type: tile
+    url: http://localhost:42423/tiles/%(tc_path)s.png
+  wms_fi_only:
+    type: wms
+    wms_opts:
+      featureinfo: True
+      map: False
+    req:
+      url: http://localhost:42423/service
+      layers: fi
+    coverage:
+      bbox: [-180,-90,170,80]
+      srs: 'EPSG:4326'
+
+grids:
+  gk3:
+    srs: 'EPSG:31467'
+    bbox: [3000000, 5000000, 4000000, 6000000]
+    origin: 'ul'
+  GoogleMapsCompatible:
+    base: GLOBAL_MERCATOR
+  CustomGridSet:
+    base: GLOBAL_GEODETIC
+    min_res: 0.703125
+  ulgrid:
+    base: GLOBAL_MERCATOR
+    origin: ul
