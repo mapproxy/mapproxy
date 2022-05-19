@@ -1068,6 +1068,7 @@ class CacheConfiguration(ConfigurationBase):
             log.warning('link_single_color_images not supported on windows')
             link_single_color_images = False
 
+
         return FileCache(
             cache_dir,
             file_ext=file_ext,
@@ -1563,6 +1564,7 @@ class CacheConfiguration(ConfigurationBase):
                         lock_timeout=self.context.globals.get_value('http.client_timeout', {}),
                         lock_cache_id=cache.lock_cache_id,
                 )
+
             mgr = TileManager(tile_grid, cache, sources, image_opts.format.ext,
                 locker=locker,
                 image_opts=image_opts, identifier=identifier,
@@ -1718,18 +1720,32 @@ class LayerConfiguration(ConfigurationBase):
                         lg_sources.append(lg_source)
 
         res_range = resolution_range(self.conf)
+        dimensions = None
+        if 'dimensions' in self.conf.keys():
+            dimensions = self.dimensions()
 
         layer = WMSLayer(self.conf.get('name'), self.conf.get('title'),
-                         sources, fi_sources, lg_sources, res_range=res_range, md=self.conf.get('md'))
+                         sources, fi_sources, lg_sources, res_range=res_range, md=self.conf.get('md'),dimensions=dimensions)
         return layer
 
     @memoize
     def dimensions(self):
         from mapproxy.layer import Dimension
+        from mapproxy.util.ext.wmsparse.util import parse_datetime_range
         dimensions = {}
-
         for dimension, conf in iteritems(self.conf.get('dimensions', {})):
-            values = [str(val) for val in  conf.get('values', ['default'])]
+            raw_values = conf.get('values')
+            if len(raw_values) == 1:
+                # look for time or dim_reference_time
+                if 'time' in dimension.lower():
+                    log.debug('Determining values as datetime strings')
+                    values = parse_datetime_range(raw_values[0])
+                else:
+                    log.debug('Determining values as plain strings')
+                    values = raw_values[0].strip().split('/')
+            else:
+                values = [str(val) for val in  conf.get('values', ['default'])]
+            
             default = conf.get('default', values[-1])
             dimensions[dimension.lower()] = Dimension(dimension, values, default=default)
         return dimensions
@@ -1738,7 +1754,7 @@ class LayerConfiguration(ConfigurationBase):
     def tile_layers(self, grid_name_as_path=False):
         from mapproxy.service.tile import TileLayer
         from mapproxy.cache.dummy import DummyCache
-
+        from mapproxy.cache.file import FileCache
         sources = []
         fi_only_sources = []
         if 'tile_sources' in self.conf:
@@ -1778,9 +1794,14 @@ class LayerConfiguration(ConfigurationBase):
                 fi_source = self.context.sources[fi_source_name].fi_source()
                 if fi_source:
                     fi_sources.append(fi_source)
-
+                      
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
-                if dimensions and not isinstance(cache_source.cache, DummyCache):
+                disable_storage = self.context.configuration['caches'][cache_name].get('disable_storage', False)
+                if disable_storage:
+                    supported_cache_class = DummyCache
+                else:
+                    supported_cache_class = FileCache
+                if dimensions and not isinstance(cache_source.cache, supported_cache_class):
                     # caching of dimension layers is not supported yet
                     raise ConfigurationError(
                         "caching of dimension layer (%s) is not supported yet."
@@ -2075,13 +2096,11 @@ def load_configuration(mapproxy_conf, seed=False, ignore_warnings=True, renderd=
         conf_dict = load_configuration_file([os.path.basename(mapproxy_conf)], conf_base_dir)
     except YAMLError as ex:
         raise ConfigurationError(ex)
-
     errors, informal_only = validate_options(conf_dict)
     for error in errors:
         log.warning(error)
     if not informal_only or (errors and not ignore_warnings):
         raise ConfigurationError('invalid configuration')
-
     errors = validate_references(conf_dict)
     for error in errors:
         log.warning(error)
@@ -2099,9 +2118,7 @@ def load_configuration_file(files, working_dir):
         conf_file = os.path.normpath(os.path.join(working_dir, conf_file))
         log.info('reading: %s' % conf_file)
         current_dict = load_yaml_file(conf_file)
-
         conf_dict['__config_files__'][os.path.abspath(conf_file)] = os.path.getmtime(conf_file)
-
         if 'base' in current_dict:
             current_working_dir = os.path.dirname(conf_file)
             base_files = current_dict.pop('base')
@@ -2109,9 +2126,8 @@ def load_configuration_file(files, working_dir):
                 base_files = [base_files]
             imported_dict = load_configuration_file(base_files, current_working_dir)
             current_dict = merge_dict(current_dict, imported_dict)
-
         conf_dict = merge_dict(conf_dict, current_dict)
-
+    
     return conf_dict
 
 def merge_dict(conf, base):

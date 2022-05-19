@@ -273,6 +273,17 @@
     <Identifier authority="{{idf.name}}">{{idf.value}}</Identifier>
     {{endfor}}
     {{endif}}
+    {{if hasattr(layer, 'dimensions')}}
+    {{if layer.dimensions}}
+    {{for d in layer.dimensions}}
+    {{if "time" in d }}
+    <Dimension name="{{d}}" default="{{layer.dimensions[d].default}}" nearestValue="0" units="ISO8601" >{{','.join(layer.dimensions[d])}}</Dimension>
+    {{else}}
+    <Dimension name="{{d}}" default="{{layer.dimensions[d].default}}" nearestValue="0" >{{','.join(layer.dimensions[d])}}</Dimension>
+    {{endif}}
+    {{endfor}}
+    {{endif}}
+    {{endif}}
 {{if md.metadata}}{{ layer_meta_tag('MetadataURL', md.metadata) }}{{endif}}
 {{if md.data}}{{layer_meta_tag('DataURL', md.data)}}{{endif}}
 {{if md.feature_list}}{{layer_meta_tag('FeatureListURL', md.feature_list)}}{{endif}}

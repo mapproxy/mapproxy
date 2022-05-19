@@ -97,7 +97,7 @@ class TileCacheTestBase(object):
     def test_store_tiles(self):
         tiles = [self.create_tile((x, 589, 12)) for x in range(4)]
         tiles[0].stored = True
-        self.cache.store_tiles(tiles)
+        self.cache.store_tiles(tiles,dimensions=None)
 
         tiles = [Tile((x, 589, 12)) for x in range(4)]
         assert tiles[0].is_missing()
@@ -418,7 +418,7 @@ class TestMBTileLevelCache(TileCacheTestBase):
             self.create_tile((0, 0, 2)),
             self.create_tile((1, 0, 2)),
             self.create_tile((1, 0, 1)),
-        ])
+        ],dimensions=None)
 
         assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
         assert self.cache.is_cached(Tile((0, 0, 1)))
