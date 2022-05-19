@@ -32,3 +32,8 @@ class TestDemo(SysTest):
         assert 'href="../service?REQUEST=GetCapabilities&tiled=true"' in resp
         assert 'href="../demo/?wmts_layer=wms_cache&format=jpeg&srs=EPSG%3A900913"' in resp
         assert 'href="../demo/?tms_layer=wms_cache&format=jpeg&srs=EPSG%3A900913"' in resp
+
+    def test_previewmap(self, app):
+        resp = app.get("/demo/?srs=EPSG%3A3857&format=image%2Fpng&wms_layer=wms_cache", status=200)
+        assert resp.content_type == "text/html"
+        assert '<h2>Openlayers Client - Layer wms_cache</h2>' in resp
