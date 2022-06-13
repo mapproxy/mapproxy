@@ -112,7 +112,7 @@ can be used to do that.
             Used by plugins
         """
 
-This can for example by used like the following snippet:
+This can for example be used like in the following snippet:
 
 .. code-block:: python
 
