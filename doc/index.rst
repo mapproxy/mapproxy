@@ -23,6 +23,7 @@ MapProxy Documentation
    auth
    decorate_img
    development
+   plugins
    mapproxy_2
 
 .. todolist::

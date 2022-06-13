@@ -16,6 +16,7 @@
 
 from __future__ import division
 
+import copy
 import time
 
 import yaml
@@ -595,6 +596,95 @@ sources:
             else:
                 assert False, 'expected configuration error'
 
+    def test_loading_extra_service(self):
+        """ Test registration of extra service """
+
+        my_yaml_string = b"""
+services:
+  my_extra_service:
+      foo: bar
+
+layers:
+  - name: osm
+    title: OSM
+    sources: [osm]
+
+sources:
+  osm:
+    type: wms
+    supported_srs: ['EPSG:31467']
+    req:
+        url: http://foo
+        layers: base
+"""
+        from mapproxy.config.loader import plugin_services, register_service_configuration
+        from mapproxy.service.base import Server
+
+        class MyExtraServiceServer(Server):
+            names = ('my_extra_service',)
+            def __init__(self):
+                pass
+
+        def my_extra_service_method(serviceConfiguration, conf):
+            return MyExtraServiceServer()
+
+        try:
+            with TempFile() as tf:
+                with open(tf, 'wb') as f:
+                    f.write(my_yaml_string)
+
+                register_service_configuration('my_extra_service', my_extra_service_method,
+                                               'my_extra_service', {'foo': str()})
+                conf = load_configuration(tf, ignore_warnings=False)
+                services = conf.configured_services()
+            assert 'my_extra_service' in services[0].names
+
+        finally:
+            plugin_services.clear()
+
+    def test_loading_extra_source(self):
+        """ Test registration of extra source """
+
+        my_yaml_string = b"""
+services:
+  wms:
+
+layers:
+  - name: osm
+    title: OSM
+    sources: [osm]
+
+sources:
+  osm:
+    type: my_extra_source
+    foo: bar
+"""
+        from mapproxy.config.loader import source_configuration_types, register_source_configuration
+        from mapproxy.config.loader import SourceConfiguration
+
+        class my_source_configuration(SourceConfiguration):
+            source_type = ('my_extra_source',)
+
+            def source(self, params=None):
+                class MySource(object):
+                    def __init__(self):
+                        self.extent = None
+                return MySource()
+
+        source_configuration_types_before = copy.copy(source_configuration_types)
+        try:
+            with TempFile() as tf:
+                with open(tf, 'wb') as f:
+                    f.write(my_yaml_string)
+
+                register_source_configuration('my_extra_source', my_source_configuration,
+                                              'my_extra_source', {'foo': str()})
+                conf = load_configuration(tf, ignore_warnings=False)
+
+            assert conf.sources['osm'].source_type == ('my_extra_source',)
+
+        finally:
+            source_configuration_types = source_configuration_types_before
 
 class TestConfImport(object):
 
