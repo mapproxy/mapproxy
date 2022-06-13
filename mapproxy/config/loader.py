@@ -1040,6 +1040,7 @@ def register_source_configuration(config_name, config_class,
                                                     'image': image_opts,
                                                   })
     """
+    log.info('Registering configuration for plugin source %s' % config_name)
     source_configuration_types[config_name] = config_class
     if yaml_spec_source_name is not None and yaml_spec_source_def is not None:
         add_source_to_mapproxy_yaml_spec(yaml_spec_source_name, yaml_spec_source_def)
@@ -1882,6 +1883,7 @@ def register_service_configuration(service_name, service_creator,
         :type yaml_spec_service_def: dict
     """
 
+    log.info('Registering configuration for plugin service %s' % service_name)
     plugin_services[service_name] = service_creator
     if yaml_spec_service_name is not None and yaml_spec_service_def is not None:
         add_service_to_mapproxy_yaml_spec(yaml_spec_service_name, yaml_spec_service_def)
@@ -2126,6 +2128,7 @@ def load_plugins():
     for dist in importlib_metadata.distributions():
         for ep in dist.entry_points:
             if ep.group == 'mapproxy':
+                log.info('Loading plugin from package %s' % dist.metadata['name'])
                 ep.load().plugin_entrypoint()
 
 
