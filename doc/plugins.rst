@@ -222,7 +222,7 @@ The :ref:`demo_service_label` can be customized in two ways:
                                returns a string with HTML content or None
             """
 
-This can for example by used like the following snippet:
+This can for example be used like in the following snippet:
 
 .. code-block:: python
 
@@ -256,13 +256,13 @@ New commands can be added to :ref:`mapproxy-util` by using the
     def register_command(command_name, command_spec):
         """ Method used by plugins to register a command.
 
-            :param command_name: Name of the service
+            :param command_name: Name of the command
             :type command_name: str
             :param command_spec: Definition of the command. Dictionary with a 'func' and 'help' member
             :type command_spec: dict
         """
 
-This can for example by used like the following snippet:
+This can for example be used like in the following snippet:
 
 .. code-block:: python
 
