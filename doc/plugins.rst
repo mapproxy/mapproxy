@@ -8,14 +8,14 @@ Example
 -------
 
 The mapproxy_hips plugin at https://github.com/rouault/mapproxy_hips is an
-example of a plugin, which adds a new source, service and customize the demo
+example of a plugin, which adds a new source, service and customizes the demo
 service, demonstrating all the below points.
 
 How to add a plugin ?
 ---------------------
 
-A plugin should be written as a Python package whose setuptools setup()
-method has a entry_points keywords with a group ``mapproxy`` pointing to
+A plugin should be written as a Python package whose setuptools ``setup()``
+method has a ``entry_points`` keyword with a group ``mapproxy`` pointing to
 a module with a ``plugin_entrypoint`` method.
 
 .. code-block:: python
@@ -23,7 +23,7 @@ a module with a ``plugin_entrypoint`` method.
     entry_points={"mapproxy": ["hips = mapproxy_hips.pluginmodule"]},
 
 
-In this example, the mapproxy_hips/pluginmodule.py file should have
+In this example, the ``mapproxy_hips/pluginmodule.py`` file should have
 a ``plugin_entrypoint`` method taking no argument and returning nothing.
 
 .. code-block:: python
@@ -186,7 +186,7 @@ Customizing the demo service
 
 The :ref:`demo_service_label` can be customized in two ways:
 
-- Customizing the output of the /demo HTML output, by typically adding entries
+- Customizing the output of the ``/demo`` HTML output, typically by adding entries
   for new services. This is done with the ``register_extra_demo_substitution_handler()``
   method of the ``mapproxy.service.demo`` module.
 
@@ -205,7 +205,7 @@ The :ref:`demo_service_label` can be customized in two ways:
                 :type handler: function that takes 3 arguments(DemoServer instance, req and a substitutions dictionary argument).
             """
 
-- Handling new request paths under the /demo/ hierarchy, typically to implement a new
+- Handling new request paths under the ``/demo/`` hierarchy, typically to implement a new
   service. This is done with the ``register_extra_demo_server_handler()``
   method of the ``mapproxy.service.demo`` module.
 
@@ -214,8 +214,8 @@ The :ref:`demo_service_label` can be customized in two ways:
         def register_extra_demo_server_handler(handler):
             """ Method used by plugins to register a new handler for the demo service.
                 The handler passed to this method is invoked by the DemoServer.handle()
-                method when receiving an incoming request, and let a chance to the
-                handler to process it, if it is relevant to it.
+                method when receiving an incoming request. This enables handlers to
+                process it, in case it is relevant to it.
 
                 :param handler: New handler for incoming requests
                 :type handler: function that takes 2 arguments (DemoServer instance and req) and
