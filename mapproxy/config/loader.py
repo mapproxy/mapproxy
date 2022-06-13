@@ -1873,8 +1873,8 @@ def register_service_configuration(service_name, service_creator,
                                    yaml_spec_service_name = None, yaml_spec_service_def = None):
     """ Method used by plugins to register a new service.
 
-        :param config_name: Name of the service
-        :type config_name: str
+        :param service_name: Name of the service
+        :type service_name: str
         :param service_creator: Creator method of the service
         :type service_creator: method of type (serviceConfiguration: ServiceConfiguration, conf: dict) -> Server
         :param yaml_spec_service_name: Name of the service in the YAML configuration file
