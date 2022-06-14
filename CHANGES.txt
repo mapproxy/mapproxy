@@ -1,6 +1,20 @@
 Nightly
 ~~~~~~~~~~~~~~~~~
 
+1.15.0 2022-06-14
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- WMS Dimension caching (#449)
+- Add a mechanism to define plugins (#578)
+- Support of non-EPSG SRS authorities (#572)
+- Support for python 3.10 (#582)
+
+Fixes:
+
+- Several minor bugfixes
+
 1.14.0 2021-11-24
 ~~~~~~~~~~~~~~~~~
 
