@@ -14,12 +14,14 @@
 # limitations under the License.
 
 
+import datetime
 import hashlib
 import logging
 import os
 import re
 import sqlite3
 import threading
+import time
 
 from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
 from mapproxy.compat import BytesIO, PY2, itertools
@@ -305,6 +307,10 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
                 log.info("srs_id already exists.".format(wkt_entry[0]))
         db.commit()
 
+        last_change = datetime.datetime.utcfromtimestamp(
+            int(os.environ.get('SOURCE_DATE_EPOCH', time.time()))
+        )
+
         # Ensure that tile table exists here, don't overwrite a valid entry.
         try:
             db.execute("""
@@ -313,6 +319,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
                             data_type,
                             identifier,
                             description,
+                            last_change,
                             min_x,
                             max_x,
                             min_y,
@@ -323,6 +330,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
                               "tiles",
                               self.table_name,
                               "Created with Mapproxy.",
+                              last_change,
                               self.tile_grid.bbox[0],
                               self.tile_grid.bbox[2],
                               self.tile_grid.bbox[1],
