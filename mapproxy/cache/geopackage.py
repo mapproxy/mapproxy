@@ -325,7 +325,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
                             min_y,
                             max_y,
                             srs_id)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                         """, (self.table_name,
                               "tiles",
                               self.table_name,
