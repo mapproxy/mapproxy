@@ -461,6 +461,9 @@ class ImageOptionsConfiguration(ConfigurationBase):
         # caches shall be able to store png and jpeg tiles with mixed format
         if format == 'mixed':
             conf['format'] = format
+            
+        if format == 'application/json':
+            conf['format'] = format
 
         # force 256 colors for image.paletted for backwards compat
         paletted = self.context.globals.get_value('image.paletted', self.conf)
