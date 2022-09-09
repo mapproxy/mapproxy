@@ -351,7 +351,7 @@ class TileWalker(object):
             self.tile_mgr.cleanup()
             raise StopProcess()
 
-        process = False;
+        process = False
         if current_level in levels:
             levels = levels[1:]
             process = True
