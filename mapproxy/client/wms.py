@@ -199,22 +199,31 @@ class WMSLegendClient(object):
 
     def get_legend(self, query):
         resp = self._retrieve(query)
-        format = split_mime_type(query.format)[1]
-        self._check_resp(resp)
-        return ImageSource(resp, image_opts=ImageOptions(format=format))
+        self._check_resp(resp, query.format)
+        if query.format == 'json':
+            return resp
+        else:
+            return ImageSource(resp, image_opts=ImageOptions(format=query.format))
 
     def _retrieve(self, query):
         url = self._query_url(query)
         return self.http_client.open(url)
 
-    def _check_resp(self, resp):
-        if not resp.headers.get('Content-type', 'image/').startswith('image/'):
-            raise SourceError('no image returned from source WMS')
+    def _check_resp(self, resp, request_format):
+        if request_format == 'json':
+            if not resp.headers.get('Content-type') == 'application/json':
+                raise SourceError('no json returned from source WMS')
+        else:
+            if not resp.headers.get('Content-type', 'image/').startswith('image/'):
+                raise SourceError('no image returned from source WMS')
 
     def _query_url(self, query):
         req = self.request_template.copy()
         if not req.params.format:
-            req.params.format = query.format or 'image/png'
+            if query.format == 'json':
+                req.params.format = 'application/json'
+            else:
+                req.params.format = query.format or 'image/png'
         if query.scale:
             req.params['scale'] = query.scale
         return req.complete_url
