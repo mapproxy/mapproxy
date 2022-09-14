@@ -58,7 +58,7 @@ def parse_levels(level_str):
     return sorted(levels)
 
 
-def resolve_source(source_name, conf) -> (dict, bool):
+def resolve_source(source_name, conf):
     """
     Resolves the source with the given name.
 
