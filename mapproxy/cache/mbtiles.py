@@ -344,7 +344,7 @@ class MBTilesLevelCache(TileCacheBase):
 
         return self._get_level(tile.coord[2]).store_tile(tile, dimensions=dimensions)
 
-    def store_tiles(self, tiles, dimensions):
+    def store_tiles(self, tiles, dimensions=None):
         failed = False
         for level, tiles in itertools.groupby(tiles, key=lambda t: t.coord[2]):
             tiles = [t for t in tiles if not t.stored]
@@ -352,11 +352,11 @@ class MBTilesLevelCache(TileCacheBase):
             if not res: failed = True
         return failed
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.source or tile.coord is None:
             return True
 
-        return self._get_level(tile.coord[2]).load_tile(tile, with_metadata=with_metadata)
+        return self._get_level(tile.coord[2]).load_tile(tile, with_metadata=with_metadata, dimensions=dimensions)
 
     def load_tiles(self, tiles, with_metadata=False, dimensions=None):
         level = None
@@ -377,7 +377,7 @@ class MBTilesLevelCache(TileCacheBase):
 
         return self._get_level(tile.coord[2]).remove_tile(tile)
 
-    def load_tile_metadata(self, tile, dimensions):
+    def load_tile_metadata(self, tile, dimensions=None):
         self.load_tile(tile, dimensions=dimensions)
 
     def remove_level_tiles_before(self, level, timestamp):
