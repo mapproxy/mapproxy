@@ -242,7 +242,8 @@ class WMSLegendSource(LegendSource):
             legend = Legend(id=self.identifier, scale=None)
         else:
             legend = Legend(id=self.identifier, scale=query.scale)
-        if not self._cache.load(legend):
+
+        if not self._cache.load(legend) or (self._cache.load(legend) and query.format == 'json'):
             legends = []
             error_occured = False
             for client in self.clients:
