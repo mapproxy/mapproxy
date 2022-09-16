@@ -271,18 +271,18 @@ class TestWMSLegendgraphic(SysTest):
         assert validate_with_xsd(xml, xsd_name="wms/1.3.0/exceptions_1_3_0.xsd")
 
     def test_get_legendgraphic_json(self, app):
-        self.common_lg_req_111.params["format"] = "application/json"
+        self.common_lg_req_130.params["format"] = "application/json"
         json_data = "{\"Legend\": [{\"title\": \"Give me a json legend!\"}]}"
         expected_req1 = (
             {
                 "path": r"/service?LAYER=foo&SERVICE=WMS&FORMAT=application%2Fjson"
                     "&REQUEST=GetLegendGraphic&"
                     "&VERSION=1.1.1&SLD_VERSION=1.1.0"
-             },
+            },
             {"body": json_data.encode(), "headers": {"content-type": "application/json"}},
         )
         with mock_httpd(("localhost", 42423), [expected_req1]):
-            resp = app.get(self.common_lg_req_111)
+            resp = app.get(self.common_lg_req_130)
             assert resp.content_type == "application/json"
             json_str = resp.body.decode("utf-8")
             json_data = json.loads(json_str)
