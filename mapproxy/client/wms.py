@@ -199,11 +199,12 @@ class WMSLegendClient(object):
 
     def get_legend(self, query):
         resp = self._retrieve(query)
-        self._check_resp(resp, query.format)
-        if query.format == 'json':
+        format = split_mime_type(query.format)[1]
+        self._check_resp(resp, format)
+        if format == 'json':
             return resp
         else:
-            return ImageSource(resp, image_opts=ImageOptions(format=query.format))
+            return ImageSource(resp, image_opts=ImageOptions(format=format))
 
     def _retrieve(self, query):
         url = self._query_url(query)
