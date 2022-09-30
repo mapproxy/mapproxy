@@ -13,7 +13,7 @@
 
 import re
 import datetime
-from six import string_types
+from mapproxy.compat import string_type
 from mapproxy.util.ext.wmsparse.duration import parse_datetime,Duration,ISO8601Error
 from decimal import Decimal
 import calendar
@@ -47,7 +47,7 @@ def parse_duration(datestring):
       -PYYYY-DDDThh:mm:ss    extended alternative ordinal date format
 
     """
-    if not isinstance(datestring, string_types):
+    if not isinstance(datestring, string_type):
         raise TypeError("Expecting a string %r" % datestring)
     match = ISO8601_INTERVAL_REGEX.match(datestring)
     if not match:
