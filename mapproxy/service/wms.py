@@ -45,7 +45,6 @@ from mapproxy.layer import DefaultMapExtent, MapExtent
 
 get_template = template_loader(__name__, 'templates', namespace=template_helper.__dict__)
 
-
 class PERMIT_ALL_LAYERS(object):
     pass
 
@@ -312,6 +311,10 @@ class WMSServer(Server):
             mimetype = request.params.format_mime_type
         else:
             mimetype = 'image/png'
+
+        if mimetype == 'application/json':
+            return Response(legends[0].read(), mimetype='application/json')
+
         img_opts = self.image_formats[request.params.format_mime_type]
         return Response(result.as_buffer(img_opts), mimetype=mimetype)
 

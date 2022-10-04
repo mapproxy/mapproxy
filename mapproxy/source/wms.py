@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Retrieve maps/information from WMS servers.
 """
@@ -243,11 +242,14 @@ class WMSLegendSource(LegendSource):
             legend = Legend(id=self.identifier, scale=None)
         else:
             legend = Legend(id=self.identifier, scale=query.scale)
-        if not self._cache.load(legend):
+
+        if not self._cache.load(legend) or query.format == 'json':
             legends = []
             error_occured = False
             for client in self.clients:
                 try:
+                    if query.format == 'json':
+                        return client.get_legend(query)
                     legends.append(client.get_legend(query))
                 except HTTPClientError as e:
                     error_occured = True
@@ -261,5 +263,6 @@ class WMSLegendSource(LegendSource):
                             id=self.identifier, scale=query.scale)
             if not error_occured:
                 self._cache.store(legend)
-        return legend.source
 
+        # returns ImageSource
+        return legend.source
