@@ -37,7 +37,7 @@ class FileCache(TileCacheBase):
             each tile (e.g. 'png')
         """
         super(FileCache, self).__init__(coverage)
-        self.lock_cache_id = hashlib.md5(cache_dir.encode('utf-8')).hexdigest()
+        self.lock_cache_id = hashlib.md5(cache_dir.encode('utf-8'), usedforsecurity=False).hexdigest()
         self.cache_dir = cache_dir
         self.file_ext = file_ext
         self.link_single_color_images = link_single_color_images
