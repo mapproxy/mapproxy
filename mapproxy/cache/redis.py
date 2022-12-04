@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 
 
 class RedisCache(TileCacheBase):
-    def __init__(self, host, port, username, password, prefix, ttl=0, db=0, coverage=None):
+    def __init__(self, host, port, prefix, ttl=0, db=0, coverage=None, username=None, password=None):
         super(RedisCache, self).__init__(coverage)
 
         if redis is None:
