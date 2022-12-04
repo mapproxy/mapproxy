@@ -174,6 +174,8 @@ cache_types = {
     'redis': {
         'host': str(),
         'port': int(),
+        'password': str(),
+        'username': str(),
         'db': int(),
         'prefix': str(),
         'default_ttl': int(),

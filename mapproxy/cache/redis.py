@@ -35,14 +35,14 @@ log = logging.getLogger(__name__)
 
 
 class RedisCache(TileCacheBase):
-    def __init__(self, host, port, prefix, ttl=0, db=0):
+    def __init__(self, host, port, username, password, prefix, ttl=0, db=0):
         if redis is None:
             raise ImportError("Redis backend requires 'redis' package.")
 
         self.prefix = prefix
         self.lock_cache_id = 'redis-' + hashlib.md5((host + str(port) + prefix + str(db)).encode('utf-8')).hexdigest()
         self.ttl = ttl
-        self.r = redis.StrictRedis(host=host, port=port, db=db)
+        self.r = redis.StrictRedis(host=host, port=port, username=username, password=password, db=db)
 
     def _key(self, tile):
         x, y, z = tile.coord
