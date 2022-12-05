@@ -42,7 +42,8 @@ class RedisCache(TileCacheBase):
             raise ImportError("Redis backend requires 'redis' package.")
 
         self.prefix = prefix
-        self.lock_cache_id = 'redis-' + hashlib.md5((host + str(port) + prefix + str(db)).encode('utf-8')).hexdigest()
+        # str(username) => if not set defaults to None
+        self.lock_cache_id = 'redis-' + hashlib.md5((host + str(port) + prefix + str(db) + str(username)).encode('utf-8')).hexdigest()
         self.ttl = ttl
         self.r = redis.StrictRedis(host=host, port=port, username=username, password=password, db=db)
 
