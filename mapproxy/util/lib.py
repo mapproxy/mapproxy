@@ -90,6 +90,7 @@ def find_library(lib_name, paths=None, exts=None):
     If nothing is found None is returned.
     """
     if not paths or not exts:
+        lib = None
         try:
             lib = _find_library(lib_name)
         except FileNotFoundError:
