@@ -95,6 +95,14 @@ class TestXMLFeatureInfoDocs(object):
         doc = XMLFeatureInfoDoc("<root>hello</root>")
         assert doc.as_etree().getroot().text == "hello"
 
+    def test_umlauts(self):
+        doc = XMLFeatureInfoDoc('<root>öäüß</root>')
+        assert doc.as_etree().getroot().text == 'öäüß'
+
+        input_tree = etree.fromstring('<root>öäüß</root>'.encode('utf-8'))
+        doc = XMLFeatureInfoDoc(input_tree)
+        assert doc.as_string().decode("utf-8") == '<root>öäüß</root>'
+
     def test_combine(self):
         docs = [
             XMLFeatureInfoDoc("<root><a>foo</a></root>"),
