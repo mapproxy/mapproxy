@@ -181,7 +181,7 @@ class HTTPClient(object):
         self.header_list = headers.items() if headers else []
         self.hide_error_details = hide_error_details
 
-    def open(self, url, data=None):
+    def open(self, url, data=None, method=None):
         code = None
         result = None
         try:
@@ -191,6 +191,8 @@ class HTTPClient(object):
             reraise_exception(err, sys.exc_info())
         for key, value in self.header_list:
             req.add_header(key, value)
+        if method:
+            req.method=method
         try:
             start_time = time.time()
             if self._timeout is not None:

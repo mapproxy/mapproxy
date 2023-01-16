@@ -42,40 +42,40 @@ class TileCacheBase(object):
 
     supports_timestamp = True
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         raise NotImplementedError()
 
-    def load_tiles(self, tiles, with_metadata=False):
+    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
         all_succeed = True
         for tile in tiles:
-            if not self.load_tile(tile, with_metadata=with_metadata):
+             if not self.load_tile(tile, with_metadata=with_metadata, dimensions=dimensions):
                 all_succeed = False
         return all_succeed
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         raise NotImplementedError()
 
-    def store_tiles(self, tiles):
+    def store_tiles(self, tiles, dimensions=None):
         all_succeed = True
         for tile in tiles:
-            if not self.store_tile(tile):
+            if not self.store_tile(tile, dimensions=dimensions):
                 all_succeed = False
         return all_succeed
 
-    def remove_tile(self, tile):
+    def remove_tile(self, tile, dimensions=None):
         raise NotImplementedError()
 
-    def remove_tiles(self, tiles):
+    def remove_tiles(self, tiles, dimensions=None):
         for tile in tiles:
-            self.remove_tile(tile)
+            self.remove_tile(tile, dimensions=dimensions)
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         """
         Return ``True`` if the tile is cached.
         """
         raise NotImplementedError()
 
-    def load_tile_metadata(self, tile):
+    def load_tile_metadata(self, tile, dimensions=None):
         """
         Fill the metadata attributes of `tile`.
         Sets ``.timestamp`` and ``.size``.

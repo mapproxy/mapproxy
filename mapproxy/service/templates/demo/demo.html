@@ -35,6 +35,7 @@ jscript_openlayers=None
 {{enddef}}
             <h2>About</h2>
             <p>MapProxy Version {{version}}</p>
+            {{ extra_services_html_beginning }}
             <h2>WMS</h2>
             {{if 'wms' in services}}
             <div class="capabilities">
@@ -177,3 +178,4 @@ jscript_openlayers=None
                 <span>This service is not available with the current configuration.</span>
             </div>
             {{endif}}
+            {{ extra_services_html_end }}

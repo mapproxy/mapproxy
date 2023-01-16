@@ -20,28 +20,31 @@ import pytest
 from mapproxy.util.ogr import OGRShapeReader, libgdal
 
 
-polygon_file = os.path.join(os.path.dirname(__file__), "polygons", "polygons.shp")
-
+polygon_shapefile = os.path.join(os.path.dirname(__file__), "polygons", "polygons.shp")
+polygon_geojson = os.path.join(os.path.dirname(__file__), "polygons", "polygons.geojson")
 
 @pytest.mark.skipif(not libgdal, reason="libgdal not found")
 class TestOGRShapeReader(object):
 
     @pytest.fixture
-    def reader(self):
-        return OGRShapeReader(polygon_file)
+    def readers(self):
+        return [OGRShapeReader(polygon_shapefile), OGRShapeReader(polygon_geojson)]
 
-    def test_read_all(self, reader):
-        wkts = list(reader.wkts())
-        assert len(wkts) == 3
-        for wkt in wkts:
-            assert wkt.startswith(b"POLYGON ("), "unexpected WKT: %s" % wkt
+    def test_read_all(self, readers):
+        for reader in readers:
+            wkts = list(reader.wkts())
+            assert len(wkts) == 3
+            for wkt in wkts:
+                assert wkt.startswith(b"POLYGON ("), "unexpected WKT: %s" % wkt
 
-    def test_read_filter(self, reader):
-        wkts = list(reader.wkts(where="name = 'germany'"))
-        assert len(wkts) == 2
-        for wkt in wkts:
-            assert wkt.startswith(b"POLYGON ("), "unexpected WKT: %s" % wkt
+    def test_read_filter(self, readers):
+        for reader in readers:
+            wkts = list(reader.wkts(where="name = 'germany'"))
+            assert len(wkts) == 2
+            for wkt in wkts:
+                assert wkt.startswith(b"POLYGON ("), "unexpected WKT: %s" % wkt
 
-    def test_read_filter_no_match(self, reader):
-        wkts = list(reader.wkts(where="name = 'foo'"))
-        assert len(wkts) == 0
+    def test_read_filter_no_match(self, readers):
+        for reader in readers:
+            wkts = list(reader.wkts(where="name = 'foo'"))
+            assert len(wkts) == 0

@@ -29,7 +29,7 @@ jobs:
       
     strategy:
       matrix:
-        python-version: [2.7, 3.6, 3.7, 3.8, 3.9]
+        python-version: [2.7, 3.7, 3.8, 3.9, "3.10"]
 
     env:
       MAPPROXY_TEST_COUCHDB: 'http://localhost:5984'
@@ -44,7 +44,8 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update
-        sudo apt install proj-bin libgeos-dev libgdal-dev libxslt1-dev libxml2-dev build-essential python-dev libjpeg-dev zlib1g-dev libfreetype6-dev protobuf-compiler libprotoc-dev -y
+        if [[ ${{ matrix.python-version }} = 2.7 ]]; then sudo apt install python2-dev; else sudo apt install python3-dev; fi
+        sudo apt install proj-bin libgeos-dev libgdal-dev libxslt1-dev libxml2-dev build-essential libjpeg-dev zlib1g-dev libfreetype6-dev protobuf-compiler libprotoc-dev -y
 
     - name: Checkout sources
       uses: actions/checkout@v2
@@ -70,4 +71,6 @@ jobs:
         pip freeze
 
     - name: Run tests 🏗️
-      run: pytest mapproxy
+      run: |
+        export LD_PRELOAD=/lib/x86_64-linux-gnu/libstdc++.so.6:$LD_PRELOAD
+        pytest mapproxy

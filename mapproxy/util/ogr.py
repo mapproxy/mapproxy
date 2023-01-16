@@ -102,7 +102,7 @@ class CtypesOGRShapeReader(object):
                 layer = libgdal.OGR_DS_GetLayer(self._ds, 0)
                 layer_def = libgdal.OGR_L_GetLayerDefn(layer)
                 name = libgdal.OGR_FD_GetName(layer_def)
-                where = 'select * from %s where %s' % (name.decode('utf-8'), where)
+                where = 'select * from "%s" where %s' % (name.decode('utf-8'), where)
             layer = libgdal.OGR_DS_ExecuteSQL(self._ds, where.encode('utf-8'), None, None)
         else:
             layer = libgdal.OGR_DS_GetLayer(self._ds, 0)
@@ -160,7 +160,7 @@ class OSGeoOGRShapeReader(object):
             if not where.lower().startswith('select'):
                 layer = self._ds.GetLayerByIndex(0)
                 name = layer.GetName()
-                where = 'select * from %s where %s' % (name, where)
+                where = 'select * from "%s" where %s' % (name, where)
             layer = self._ds.ExecuteSQL(where)
         else:
             layer = self._ds.GetLayerByIndex(0)

@@ -17,7 +17,7 @@ from mapproxy.util.ext.dictspec.validator import validate, ValidationError
 from mapproxy.util.ext.dictspec.spec import one_off, anything, number
 from mapproxy.util.ext.dictspec.spec import required
 
-from mapproxy.config.spec import coverage
+from mapproxy.config.spec import coverage, time_spec
 
 def validate_seed_conf(conf_dict):
     """
@@ -30,16 +30,6 @@ def validate_seed_conf(conf_dict):
         return ex.errors, ex.informal_only
     else:
         return [], True
-
-time_spec = {
-    'seconds': number(),
-    'minutes': number(),
-    'hours': number(),
-    'days': number(),
-    'weeks': number(),
-    'time': anything(),
-    'mtime': str(),
-}
 
 from_to_spec = {
     'from': number(),

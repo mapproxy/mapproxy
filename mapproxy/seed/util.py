@@ -191,7 +191,7 @@ def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
             time.sleep(0.01)
         except exceptions as ex:
             if n >= max_repeat:
-                print("An error occured. Giving up", file=sys.strerr)
+                print("An error occured. Giving up", file=sys.stderr)
                 raise BackoffError
             wait_for = start_backoff_sec * 2**n
             if wait_for > max_backoff:

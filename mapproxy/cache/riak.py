@@ -87,7 +87,7 @@ class RiakCache(TileCacheBase):
         obj.usermeta = {'timestamp': '0'}
         return 0.0
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         return self.load_tile(tile, True)
 
     def _store_bulk(self, tiles):
@@ -112,24 +112,24 @@ class RiakCache(TileCacheBase):
 
         return True
 
-    def store_tile(self, tile):
+    def store_tile(self, tile,dimensions=None):
         if tile.stored:
             return True
 
         return self._store_bulk([tile])
 
-    def store_tiles(self, tiles):
+    def store_tiles(self, tiles,dimensions=None):
         tiles = [t for t in tiles if not t.stored]
         return self._store_bulk(tiles)
 
-    def load_tile_metadata(self, tile):
+    def load_tile_metadata(self, tile,dimensions=None):
         if tile.timestamp:
             return
 
         # is_cached loads metadata
         self.load_tile(tile, True)
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.timestamp is None:
             tile.timestamp = 0
         if tile.source or tile.coord is None:

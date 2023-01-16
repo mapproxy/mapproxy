@@ -69,6 +69,16 @@ Options
 
   This will simulate the seed/cleanup process without requesting, creating or removing any tiles.
 
+.. option:: -l N, --skip-geoms-for-last-levels N
+
+  This will skip checking the intersections between tiles and seed geometries on the last N levels.
+
+.. option:: --skip-uncached
+
+  This will seed only tiles which are already in the cache. This option is interesting in combination with
+  the configuration entry `refresh_before`_ to refresh regularly the existing tiles and to avoid loading
+  all available tiles.
+
 .. option:: --summary
 
   Print a summary of all seeding and cleanup tasks and exit.
@@ -185,7 +195,7 @@ Example
   seeds:
     myseed1:
       [...]
-    myseed2
+    myseed2:
       [...]
 
   cleanups:
@@ -290,7 +300,7 @@ Example
       levels:
         to: 10
 
-    myseed2
+    myseed2:
       caches: [osm_cache]
       coverages: [niedersachsen, bremen, hamburg]
       grids: [GLOBAL_MERCATOR]

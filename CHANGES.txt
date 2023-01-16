@@ -1,5 +1,40 @@
 Nightly
 ~~~~~~~~~~~~~~~~~
+1.15.1 2022-06-14
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fixup release on PyPI
+
+1.15.0 2022-06-14
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- WMS Dimension caching (#449)
+- Add a mechanism to define plugins (#578)
+- Support of non-EPSG SRS authorities (#572)
+- Support for python 3.10 (#582)
+
+Fixes:
+
+- Several minor bugfixes
+
+1.14.0 2021-11-24
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Refresh while serving (#518).
+- Enabled commandline option `skip uncached` (#515)
+- Several dependencies updated
+- Support for python 3.5 has been dropped because of its EOL, 3.9 has been added
+
+Fixes:
+
+- Several minor bugfixes
+- Security fix to avoid potential web cache poisoning.
 
 1.13.2 2021-07-14
 ~~~~~~~~~~~~~~~~~

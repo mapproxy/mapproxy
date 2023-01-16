@@ -127,7 +127,7 @@ The old syntax to configure each layer as a dictionary with the key as the name 
   layers:
     mylayer:
       title: My Layer
-      source: [mysource]
+      sources: [mysource]
 
 should become
 
@@ -136,9 +136,9 @@ should become
   layers:
     - name: mylayer
       title: My Layer
-      source: [mysource]
+      sources: [mysource]
 
-The mixed format where the layers are a list (``-``) but each layer is still a dictionary is no longer supported (e.g. ``- mylayer:`` becomes ``- name: mylayer``).
+The mixed format where the layers are a list (``-``) but each layer is still a dictionary is no longer supported (e.g. ``- mylayer:`` becomes ``- name: mylayer``). Note that the deprecated format is still currently required if you are using the base: option due to  `issue #490 <https://github.com/mapproxy/mapproxy/issues/490>`.
 
 .. _layers_name:
 
@@ -208,7 +208,7 @@ Limit the layer to the given min and max resolution or scale. MapProxy will retu
 
 The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).
 
-Pleas read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
+Please read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
 
 ``legendurl``
 """""""""""""
@@ -494,7 +494,7 @@ MapProxy is able to create missing tiles by rescaling tiles from zoom levels bel
 
 MapProxy will scale up tiles from one or more zoom levels above (with lower resolutions) if you set ``upscale_tiles`` to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Higher values allow more blurry results.
 
-You can use ``upscale_tiles`` if you want to provide tiles or WMS responses in a higher resolution then your available cache. This also works with partially seeded caches, eg. where you have an arial image cache of 20cm, with some areas also in 10cm resolution. ``upscale_tiles`` allows you to provide responses for 10cm requests in all areas, allways returning the best available data.
+You can use ``upscale_tiles`` if you want to provide tiles or WMS responses in a higher resolution then your available cache. This also works with partially seeded caches, eg. where you have an aerial image cache of 20cm, with some areas also in 10cm resolution. ``upscale_tiles`` allows you to provide responses for 10cm requests in all areas, always returning the best available data.
 
 MapProxy will scale down tiles from one or more zoom levels below (with higher resolutions) if you set ``downscale_tiles`` to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Note that the number of tiles growth exponentialy. Typically, a single tile can be downscaled from four tiles of the next zoom level. Downscaling from two levels below requires 16 tiles, three levels below requires 64, etc.. A larger WMS request can quickly accumulate thousands of tiles required for downscaling. It is therefore `not` recommended to use ``downscale_tiles`` values larger then one.
 
@@ -512,6 +512,43 @@ To trigger the rescaling behaviour, a tile needs to be missing in the cache and 
 """"""""""""""""""""""""
 
 Tiles created by the ``upscale_tiles`` or ``downscale_tiles`` option are only stored in the cache if this option is set to true.
+
+``refresh_before``
+"""""""""""""""""""
+
+Here you can force MapProxy to refresh tiles from the source while serving if they are found to be expired.
+The validity conditions are the same as for seeding:
+
+Explanation::
+
+  # absolute as ISO time
+  refresh_before:
+    time: 2010-10-21T12:35:00
+
+  # relative from the time of the tile request
+  refresh_before:
+    weeks: 1
+    days: 7
+    hours: 4
+    minutes: 15
+
+  # modification time of a given file
+  refresh_before:
+    mtime: path/to/file
+
+Example
+~~~~~~~~
+
+::
+
+   caches:
+     osm_cache:
+     grids: ['osm_grid']
+     sources: [OSM]
+     disable_storage: false
+     refresh_before:
+       days: 1
+
 
 ``disable_storage``
 """"""""""""""""""""

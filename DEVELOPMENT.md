@@ -26,10 +26,35 @@ PEP8: https://www.python.org/dev/peps/pep-0008/
 Debugging
 ---------
 
-With PyCharm: Attach to dev server with https://www.jetbrains.com/help/pycharm/attaching-to-local-process.html
+  - With PyCharm:
+    * Attach to dev server with https://www.jetbrains.com/help/pycharm/attaching-to-local-process.html
 
-With ipython:
-* `pip install ipython ipdb`
+  - With ipython:
+    * `pip install ipython ipdb`
+
+  - With Visual Studio Code:
+    * After creating a virtual env and mapproxy configuration:
+    * Create a `launch.json` file in the project-root/.vscode directory with the following content:
+    ```
+    {
+      "version": "0.2.0",
+      "configurations": [
+        {
+          "name": "Debug local mapproxy",
+          "type": "python",
+          "request": "launch",
+          "program": ".venv/bin/mapproxy-util",
+          "args": ["serve-develop", "-b", ":1234", "config/mapproxy.yaml"],
+          "console": "integratedTerminal",
+          "autoReload": {
+            "enable": true
+          }
+        }
+      ]
+    }
+    ```
+
+    * Then start debugging by hitting `F5`.
 
 
 Some more details in the documentation

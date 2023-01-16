@@ -136,7 +136,11 @@ class MapQuery(object):
         return dict((k, v) for k, v in iteritems(self.dimensions) if k.lower() in params)
 
     def __repr__(self):
-        return "MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s)" % self.__dict__
+        info = self.__dict__
+        serialized_dimensions = ", ".join(["'%s': '%s'" % (key, value) for (key, value) in self.dimensions.items()])
+        info["serialized_dimensions"] = serialized_dimensions
+        return "MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s, dimensions={%(serialized_dimensions)s)}" % info
+
 
 class InfoQuery(object):
     def __init__(self, bbox, size, srs, pos, info_format, format=None,
@@ -196,7 +200,7 @@ class MapExtent(object):
     @property
     def llbbox(self):
         if not self._llbbox:
-            self._llbbox = self.srs.transform_bbox_to(SRS(4326), self.bbox)
+            self._llbbox = self.srs.transform_bbox_to(self.srs.get_geographic_srs(), self.bbox)
         return self._llbbox
 
     def bbox_for(self, srs):
@@ -232,7 +236,7 @@ class MapExtent(object):
             return self
         if self.is_default:
             return other
-        return MapExtent(merge_bbox(self.llbbox, other.llbbox), SRS(4326))
+        return MapExtent(merge_bbox(self.llbbox, other.llbbox), self.srs.get_geographic_srs())
 
     def contains(self, other):
         if not isinstance(other, MapExtent):
@@ -402,7 +406,7 @@ class CacheMapLayer(MapLayer):
             size, offset, bbox = bbox_position_in_image(query.bbox, query.size, self.extent.bbox_for(query.srs))
             if size[0] == 0 or size[1] == 0:
                 raise BlankImage()
-            src_query = MapQuery(bbox, size, query.srs, query.format)
+            src_query = MapQuery(bbox, size, query.srs, query.format, dimensions=query.dimensions)
             resp = self._image(src_query)
             result = SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts,
                 cacheable=resp.cacheable)
@@ -440,7 +444,7 @@ class CacheMapLayer(MapLayer):
                 raise MapBBOXError("query does not align to tile boundaries")
 
         with self.tile_manager.session():
-            tile_collection = self.tile_manager.load_tile_coords(affected_tile_coords, with_metadata=query.tiled_only)
+            tile_collection = self.tile_manager.load_tile_coords(affected_tile_coords, with_metadata=query.tiled_only, dimensions=query.dimensions)
 
         if tile_collection.empty:
             raise BlankImage()

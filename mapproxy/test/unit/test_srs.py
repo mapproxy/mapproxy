@@ -31,6 +31,8 @@ class TestSRS(object):
         assert not srs.is_axis_order_en
         assert srs.is_axis_order_ne
 
+        assert srs.get_geographic_srs() == srs
+
     def test_crs84(self):
         srs = SRS("CRS:84")
 
@@ -47,6 +49,8 @@ class TestSRS(object):
         assert not srs.is_axis_order_en
         assert srs.is_axis_order_ne
 
+        assert srs.get_geographic_srs() == SRS(4326)
+
     def test_epsg900913(self):
         srs = SRS("epsg:900913")
 
@@ -54,8 +58,38 @@ class TestSRS(object):
         assert srs.is_axis_order_en
         assert not srs.is_axis_order_ne
 
+    def test_non_epsg_auth(self):
+        srs = SRS("IGNF:ETRS89UTM28")
+
+        assert not srs.is_latlong
+        assert srs.is_axis_order_en
+        assert not srs.is_axis_order_ne
+
+        assert srs.get_geographic_srs() == SRS(4326)
+
+
+    def test_iau_crs(self):
+        try:
+            srs = SRS("IAU:49900") # "Mars (2015) - Sphere / Ocentric"
+        except:
+            pytest.skip('Requires recent pyproj version')
+
+        assert srs.is_latlong
+        assert '49900' in str(srs.get_geographic_srs())
+
+
+    def test_iau_crs_projected(self):
+        try:
+            srs = SRS("IAU:49910") # "Mars (2015) - Sphere / Ocentric / Equirectangular, clon = 0"
+        except:
+            pytest.skip('Requires recent pyproj version')
+
+        assert not srs.is_latlong
+        assert '49900' in str(srs.get_geographic_srs())
+
+
     def test_from_srs(self):
-        srs1 = SRS("epgs:4326")
+        srs1 = SRS("epsg:4326")
         srs2 = SRS(srs1)
         assert srs1 == srs2
 

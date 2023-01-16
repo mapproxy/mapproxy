@@ -250,6 +250,8 @@ class Template(object):
 
     def _interpret_for(self, vars, expr, content, ns, out, defs):
         __traceback_hide__ = True
+        if expr is None:
+            return
         for item in expr:
             if len(vars) == 1:
                 ns[vars[0]] = item
