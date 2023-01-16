@@ -272,7 +272,7 @@ class TestWMSLegendgraphic(SysTest):
 
     def test_get_legendgraphic_json_single_source_multiple_sub_layers(self, app):
         """
-            this.common_lg_req_130 request fetches layer 'wms_legend'
+            this.common_lg_req_130 request fetches layer 'wms_legend' 
             layer 'wms_legend' contains:
             - single source 'legend_cache'
             - multiple sub layers: 'foo' and 'bar'
