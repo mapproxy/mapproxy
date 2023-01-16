@@ -8,7 +8,5 @@ MapProxy is released under the Apache Software License 2.0, runs on Unix/Linux a
 
 Go to https://mapproxy.org/ for more information.
 
-The latest documentation is available at: http://mapproxy.github.io/mapproxy/
-
-Older documentation is available at: https://mapproxy.org/documentation
+The documentation is available at: https://mapproxy.org/docs/latest/
 

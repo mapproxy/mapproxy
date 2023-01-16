@@ -351,7 +351,7 @@ class TileWalker(object):
             self.tile_mgr.cleanup()
             raise StopProcess()
 
-        process = False
+        process = False;
         if current_level in levels:
             levels = levels[1:]
             process = True
@@ -477,7 +477,7 @@ class CleanupTask(object):
         return NONE
 
 def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
-    progress_logger=None, cache_locker=None, skip_uncached=False):
+    progress_logger=None, cache_locker=None):
     if cache_locker is None:
         cache_locker = DummyCacheLocker()
 
@@ -496,7 +496,7 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
                     start_progress = None
                 seed_progress = SeedProgress(old_progress_identifier=start_progress)
                 seed_task(task, concurrency, dry_run, skip_geoms_for_last_levels, progress_logger,
-                    seed_progress=seed_progress, skip_uncached=skip_uncached)
+                    seed_progress=seed_progress)
         except CacheLockedError:
             print('    ...cache is locked, skipping')
             active_tasks = [task] + active_tasks[:-1]
@@ -505,7 +505,7 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
 
 
 def seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
-    progress_logger=None, seed_progress=None, skip_uncached=False):
+    progress_logger=None, seed_progress=None):
     if task.coverage is False:
         return
     if task.refresh_timestamp is not None:
@@ -518,11 +518,7 @@ def seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
 
     tile_worker_pool = TileWorkerPool(task, TileSeedWorker, dry_run=dry_run,
         size=concurrency, progress_logger=progress_logger)
-    # If the configuration requests to only refresh tiles which are already in cache,
-    # tile walker parameters shall be adapted
-    handle_stale = skip_uncached
-    handle_uncached = not skip_uncached
-    tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=handle_uncached, handle_stale=handle_stale,
+    tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=True,
         skip_geoms_for_last_levels=skip_geoms_for_last_levels, progress_logger=progress_logger,
         seed_progress=seed_progress,
         work_on_metatiles=work_on_metatiles,

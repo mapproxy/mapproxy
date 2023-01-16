@@ -131,10 +131,6 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
     if query_comparator is None:
         query_comparator = query_eq
     class MockHTTPHandler(BaseHTTPRequestHandler):
-        def do_HEAD(self):
-            self.query_data = self.path
-            return self.do_mock_request('HEAD')
-
         def do_GET(self):
             self.query_data = self.path
             return self.do_mock_request('GET')
@@ -211,10 +207,7 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
                 with open(resp['body_file'], 'rb') as f:
                     self.wfile.write(f.read())
             else:
-                if 'body' in resp:
-                    self.wfile.write(resp['body'])
-                else:
-                    self.wfile.write(b'')
+                self.wfile.write(resp['body'])
             if not requests_responses:
                 self.server.shutdown = True
             return

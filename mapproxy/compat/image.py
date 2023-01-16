@@ -42,9 +42,6 @@ except ImportError:
     Image.NEAREST = Image.BILINEAR = Image.BICUBIC = 1
     Image.Image = NoPIL
     ImageColor = NoPIL()
-    ImageFileDirectory_v2 = NoPIL()
-    TiffTags = NoPIL()
-    ImageMath = NoPIL()
     ImageColor.getrgb = lambda x: x
     PIL_VERSION = None
 

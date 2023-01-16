@@ -34,9 +34,6 @@ class WSGITestApp(_TestApp):
     def get(self, url, *args, **kw):
         return _TestApp.get(self, str(url), *args, **kw)
 
-    def head(self, url, *args, **kw):
-        return _TestApp.head(self, str(url), *args, **kw)
-
 
 @pytest.mark.usefixtures("cache_dir")
 class SysTest(object):

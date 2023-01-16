@@ -105,11 +105,6 @@ class SeedScript(object):
                       metavar="N",
                       help="do not check for intersections between tiles"
                            " and seed geometries on the last N levels")
-    parser.add_option("--skip-uncached",
-                      action="store_true", dest="skip_uncached", default=False,
-                      help="only treat tiles which are already present in the cache."
-                           " This can be used with the configuration entry `refresh_before`"
-                           " to refresh only the existing cache.")
     parser.add_option("--summary",
                       action="store_true", dest="summary", default=False,
                       help="print summary with all seeding tasks and exit."
@@ -248,8 +243,7 @@ class SeedScript(object):
                         progress_store=progress)
                     seed(seed_tasks, progress_logger=logger, dry_run=options.dry_run,
                          concurrency=options.concurrency, cache_locker=cache_locker,
-                         skip_geoms_for_last_levels=options.geom_levels,
-                         skip_uncached=options.skip_uncached)
+                         skip_geoms_for_last_levels=options.geom_levels)
                 if cleanup_tasks:
                     print('========== Cleanup tasks ==========')
                     print('Start cleanup process (%d task%s)' % (

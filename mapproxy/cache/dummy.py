@@ -17,16 +17,16 @@ from mapproxy.cache.base import TileCacheBase
 from mapproxy.util.lock import DummyLock
 
 class DummyCache(TileCacheBase):
-    def is_cached(self, tile, dimensions=None):
+    def is_cached(self, tile):
         return False
 
     def lock(self, tile):
         return DummyLock()
 
-    def load_tile(self, tile, with_metadata=False, dimensions=None):
+    def load_tile(self, tile, with_metadata=False):
         pass
 
-    def store_tile(self, tile, dimensions=None):
+    def store_tile(self, tile):
         pass
 
 class DummyLocker(object):
