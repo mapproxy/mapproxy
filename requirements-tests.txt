@@ -4,6 +4,7 @@ Pillow==6.2.2;python_version<"3.0"
 Pillow==8.2.0;python_version in "3.6 3.7 3.8 3.9"
 Pillow==8.4.0;python_version>="3.10"
 PyYAML==5.4
+Shapely==1.7.0
 WebOb==1.8.6
 WebTest==2.0.35
 attrs==19.3.0;python_version<"3.10"
