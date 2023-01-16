@@ -96,7 +96,7 @@ def find_library(lib_name, paths=None, exts=None):
                 lib = _find_library(lib_name[3:])
             return lib
         except FileNotFoundError:
-            pass
+            return None
 
     for lib_name in [lib_name] + ([lib_name[3:]] if lib_name.startswith('lib') else []):
         for path in paths:
