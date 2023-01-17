@@ -25,7 +25,7 @@ Create a directory (e.g. `mapproxy`) for your configuration files and mount it a
 
 Afterwards, the `MapProxy` instance is running on `localhost:8080`.
 
-I a production environment you might want to put a `nginx`_ in front of the MapProxy container, that serves as a reverse proxy.
+In a production environment you might want to put a `nginx`_ in front of the MapProxy container, that serves as a reverse proxy.
 See the `Kartoza GitHub Repository`_ for detailed documentation and example docker-compose files. 
 
 .. _`kartoza/mapproxy`: https://hub.docker.com/r/kartoza/mapproxy
