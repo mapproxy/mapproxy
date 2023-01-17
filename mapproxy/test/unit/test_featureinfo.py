@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
 #
