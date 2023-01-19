@@ -15,7 +15,9 @@
 # limitations under the License.
 
 import os
+import sys
 import tempfile
+import pytest
 
 from lxml import etree, html
 
@@ -96,6 +98,7 @@ class TestXMLFeatureInfoDocs(object):
         doc = XMLFeatureInfoDoc("<root>hello</root>")
         assert doc.as_etree().getroot().text == "hello"
 
+    @pytest.mark.skipif(sys.version_info < (3, 0), reason="test skipped for python 2")
     def test_umlauts(self):
         doc = XMLFeatureInfoDoc('<root>öäüß</root>')
         assert doc.as_etree().getroot().text == 'öäüß'
