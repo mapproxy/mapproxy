@@ -306,14 +306,15 @@ class WMSServer(Server):
         legend = self.layers[layer].legend(request)
 
         [legends.append(i) for i in legend if i is not None]
-        result = concat_legends(legends)
         if 'format' in request.params:
             mimetype = request.params.format_mime_type
         else:
             mimetype = 'image/png'
 
         if mimetype == 'application/json':
-            return Response(legends[0].read(), mimetype='application/json')
+            return Response(legends[0].encode(), mimetype='application/json')
+
+        result = concat_legends(legends)
 
         img_opts = self.image_formats[request.params.format_mime_type]
         return Response(result.as_buffer(img_opts), mimetype=mimetype)
