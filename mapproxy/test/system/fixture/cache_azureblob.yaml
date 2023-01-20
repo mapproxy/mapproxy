@@ -1,0 +1,59 @@
+globals:
+  cache:
+    azureblob:
+      connection_string: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:10000/devstoreaccount1"
+      container_name: default-container
+
+services:
+  tms:
+  wms:
+    md:
+      title: MapProxy Azure Blob
+
+layers:
+  - name: default
+    title: Default
+    sources: [default_cache]
+  - name: quadkey
+    title: Quadkey
+    sources: [quadkey_cache]
+  - name: reverse
+    title: Reverse
+    sources: [reverse_cache]
+
+caches:
+  default_cache:
+    grids: [webmercator]
+    cache:
+      type: azureblob
+    sources: [tms]
+
+  quadkey_cache:
+    grids: [webmercator]
+    cache:
+      type: azureblob
+      container_name: tiles
+      directory_layout: quadkey
+      directory: quadkeytiles
+    sources: [tms]
+
+  reverse_cache:
+    grids: [webmercator]
+    cache:
+      type: azureblob
+      container_name: tiles
+      directory_layout: reverse_tms
+      directory: reversetiles
+    sources: [tms]
+
+grids:
+  webmercator:
+    name: WebMerc
+    base: GLOBAL_WEBMERCATOR
+
+
+sources:
+  tms:
+    type: tile
+    url: http://localhost:42423/tiles/%(tc_path)s.png
+

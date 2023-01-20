@@ -173,6 +173,13 @@ cache_types = {
         required('version'): number(),
         'tile_lock_dir': str(),
     },
+    'azureblob': {
+        'connection_string': str(),
+        'container_name': str(),
+        'directory_layout': str(),
+        'directory': str(),
+        'tile_lock_dir': str(),
+    },
 }
 
 on_error = {
@@ -376,6 +383,10 @@ mapproxy_yaml_spec = {
                 'profile_name': str(),
                 'region_name': str(),
                 'endpoint_url': str(),
+            },
+            'azureblob': {
+                'connection_string': str(),
+                'container_name': str(),
             },
         },
         'grid': {

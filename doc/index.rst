@@ -7,6 +7,7 @@ MapProxy Documentation
    install
    install_windows
    install_osgeo4w
+   install_docker
    tutorial
    configuration
    services
