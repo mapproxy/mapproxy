@@ -14,37 +14,76 @@ menu_title= "WMTS %s %s"%(layer.name, srs)
 jscript_functions=None
 }}
 {{def jscript_openlayers}}
-<script src="static/OpenLayers.js"></script>
+<script src="static/ol.js"></script>
+<script src="static/proj4.min.js"></script>
+<link rel="stylesheet" href="static/ol.css">
 <script type="text/javascript">
-var map;
-function init(){
-    var mapOptions = {
-    projection: new OpenLayers.Projection('{{srs}}'),
-    resolutions: [{{', '.join(str(r) for r in resolutions)}}],
-    units: '{{units}}',
-    maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}}),
-    tileSize: new OpenLayers.Size({{', '.join(str(s) for s in layer.grid.tile_size)}})
-    };
+    async function init() {
 
-    map = new OpenLayers.Map('map', mapOptions);
+        const transparent = "{{if format == 'image/png'}}true{{endif}}";
+        const srs = "{{srs}}";
+        const extent = [{{', '.join(str(r) for r in layer.grid.bbox)}}];
+        const resolutions = [{{', '.join(str(r) for r in resolutions)}}];
+        const matrixIds = [];
+        for (let z = 0; z < resolutions.length; ++z) {
+            matrixIds[z] = z;
+        }
 
-    var layer = new OpenLayers.Layer.WMTS({
-     name: "WMTS {{layer.name}}",
-     url: '../wmts{{restful_url}}',
-     layer: '{{layer.name}}',
-     matrixSet: '{{matrix_set}}',
-     format: '{{format}}',
-     isBaseLayer: true,
-     style: 'default',
-     requestEncoding: 'REST'
-    });
+        if (!ol.proj.get(srs)) {
+            const allDefs = await import('./static/proj4defs.js');
+            const srsNum = srs.indexOf(':') > -1 ? parseInt(srs.split(':')[1]) : parseInt(srs);
+            if (!allDefs.defs[srsNum]) {
+                alert("The preview map does not support this coordinate system");
+                return;
+            }
+            proj4.defs(srs, allDefs.defs[srsNum]);
+            ol.proj.proj4.register(proj4);
+        }
 
-    map.addLayer(layer)
-    map.zoomToExtent(new OpenLayers.Bounds({{approx_bbox(layer, srs)}}));
-}
+        const projection = ol.proj.get(srs);
+
+        const source = new ol.source.WMTS({
+            url: '../service?',
+            layer: "{{layer.name}}",
+            matrixSet: '{{matrix_set}}',
+            format: "{{format}}",
+            projection: "{{srs}}",
+            transparent: transparent === "true" ? true: false,
+            style: '',
+            tileGrid: new ol.tilegrid.WMTS({
+                origin: ol.extent.getTopLeft(extent),
+                resolutions: resolutions,
+                matrixIds
+            })
+        });
+
+        const layers = [
+            new ol.layer.Tile({
+                source: new ol.source.OSM()
+            }),
+            new ol.layer.Tile({source})
+        ];
+        const map = new ol.Map({
+            layers: layers,
+            target: 'map',
+            view: new ol.View({
+                projection: "{{srs}}",
+                resolutions
+            })
+        });
+        map.getView().fit(extent);
+
+        zoomToFullExtent = () => {
+            map.getView().fit(extent);
+        }
+
+        toogleBackgroundMap = () => {
+            layers[0].setVisible(!layers[0].getVisible());
+        }
+    }
 </script>
 {{enddef}}
-            <h2>Openlayers Client - Layer {{layer.name}}</h2>
+            <h2>Layer Preview - {{layer.name}}</h2>
             <table>
                 <tr><th>Coordinate System</th><th>Image format</th></tr>
                 <tr><td>
@@ -65,11 +104,7 @@ function init(){
                     <td>{{layer.format}}</td></tr>
             </table>
             <div id='map'></div>
+            <button class="mapBtn" onclick="zoomToFullExtent()">Zoom to full extent</button>
+            <button class="mapBtn" onclick="toogleBackgroundMap()">Toggle background map</button>
             <h3>Bounding Box</h3>
             <p class="code">{{', '.join(str(s) for s in layer.grid.bbox)}}</p>
-            <h3>JavaScript code</h3>
-            <pre>
-{{for line in jscript_openlayers().split('\n')}}
-{{escape(wrapper.fill(line))}}
-{{endfor}}
-            </pre>
