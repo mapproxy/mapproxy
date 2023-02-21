@@ -25,10 +25,9 @@ from mapproxy.test.image import is_png, create_tmp_image
 from mapproxy.test.system import SysTest
 
 try:
-    from mapproxy.cache.azureblob import AzureBlobCache, azure_container_client
+    from mapproxy.cache.azureblob import AzureBlobCache
 except ImportError:
     AzureBlobCache = None
-    azure_container_client = None
 
 
 def azureblob_connection():
@@ -37,6 +36,14 @@ def azureblob_connection():
     return 'DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=' \
            'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr' \
            '/KBHBeksoGMGw==;BlobEndpoint=' + host + '/devstoreaccount1;'
+
+
+def azure_container_client(connection_string, container_name):
+    return AzureBlobCache(
+        base_path="",
+        file_ext="",
+        connection_string=connection_string,
+        container_name=container_name).container_client
 
 
 @pytest.fixture(scope="module")

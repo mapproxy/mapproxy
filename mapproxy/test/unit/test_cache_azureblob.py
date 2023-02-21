@@ -18,10 +18,9 @@ import os
 import pytest
 
 try:
-    from mapproxy.cache.azureblob import AzureBlobCache, azure_container_client
+    from mapproxy.cache.azureblob import AzureBlobCache
 except ImportError:
     AzureBlobCache = None
-    azure_container_client = None
 
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
@@ -45,15 +44,15 @@ class TestAzureBlobCache(TileCacheTestBase):
                                  'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr' \
                                  '/KBHBeksoGMGw==;BlobEndpoint=' + self.host + '/devstoreaccount1;'
 
-        self.container_client = azure_container_client(self.connection_string, self.container)
-        self.container_client.create_container()
-
         self.cache = AzureBlobCache(
             base_path=self.base_path,
             file_ext=self.file_ext,
             container_name=self.container,
             connection_string=self.connection_string,
         )
+
+        self.container_client = self.cache.container_client
+        self.container_client.create_container()
 
     def teardown(self):
         TileCacheTestBase.teardown(self)
