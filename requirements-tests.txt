@@ -1,6 +1,6 @@
 azure-storage-blob>=12.9.0
 Jinja2==2.11.3
-MarkupSafe==1.1.1
+MarkupSafe==2.1.2
 Pillow==6.2.2;python_version<"3.0"
 Pillow==8.2.0;python_version in "3.6 3.7 3.8 3.9"
 Pillow==8.4.0;python_version>="3.10"
@@ -81,7 +81,7 @@ toml==0.10.1
 urllib3==1.25.10
 waitress==1.4.4
 websocket-client==0.57.0
-werkzeug==1.0.1
+werkzeug==2.2.3
 wrapt==1.12.1
 xmltodict==0.12.0
 zipp==1.2.0;python_version<"3.6"
