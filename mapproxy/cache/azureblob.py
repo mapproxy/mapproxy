@@ -16,6 +16,7 @@
 
 import calendar
 import hashlib
+import threading
 from io import BytesIO
 
 from mapproxy.cache import path
@@ -35,11 +36,6 @@ import logging
 log = logging.getLogger('mapproxy.cache.azureblob')
 
 
-def azure_container_client(connection_string, container_name):
-    client = BlobServiceClient.from_connection_string(connection_string)
-    return client.get_container_client(container_name)
-
-
 class AzureBlobConnectionError(Exception):
     pass
 
@@ -55,15 +51,23 @@ class AzureBlobCache(TileCacheBase):
         self.lock_cache_id = 'azureblob-' + hashlib.md5(base_path.encode('utf-8')
                                                         + container_name.encode('utf-8')).hexdigest()
 
-        self.container_client = azure_container_client(connection_string, container_name)
-        if not self.container_client.exists():
-            raise AzureBlobConnectionError('Blob container %s does not exist' % container_name)
+        self.connection_string = connection_string
+        self.container_name = container_name
+        self._container_client_cache = threading.local()
 
         self.base_path = base_path
         self.file_ext = file_ext
         self._concurrent_writer = _concurrent_writer
         self._concurrent_reader = _concurrent_reader
         self._tile_location, _ = path.location_funcs(layout=directory_layout)
+
+    @property
+    def container_client(self):
+        if not getattr(self._container_client_cache, 'client', None):
+            container_client = BlobServiceClient.from_connection_string(self.connection_string) \
+                .get_container_client(self.container_name)
+            self._container_client_cache.client = container_client
+        return self._container_client_cache.client
 
     def tile_key(self, tile):
         return self._tile_location(tile, self.base_path, self.file_ext).lstrip('/')
@@ -131,9 +135,10 @@ class AzureBlobCache(TileCacheBase):
         key = self.tile_key(tile)
         log.debug('AzureBlob: store_tile, key: %s' % key)
 
+        container_client = self.container_client
         with tile_buffer(tile) as buf:
             content_settings = ContentSettings(content_type='image/' + self.file_ext)
-            self.container_client.upload_blob(
+            container_client.upload_blob(
                 name=key,
                 data=buf,
                 overwrite=True,
