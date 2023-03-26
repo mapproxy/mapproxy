@@ -183,6 +183,13 @@ cache_types = {
         required('version'): number(),
         'tile_lock_dir': str(),
     },
+    'azureblob': {
+        'connection_string': str(),
+        'container_name': str(),
+        'directory_layout': str(),
+        'directory': str(),
+        'tile_lock_dir': str(),
+    },
 }
 
 on_error = {
@@ -387,6 +394,10 @@ mapproxy_yaml_spec = {
                 'profile_name': str(),
                 'region_name': str(),
                 'endpoint_url': str(),
+            },
+            'azureblob': {
+                'connection_string': str(),
+                'container_name': str(),
             },
             'add_cache_status_header': bool(),
         },
@@ -606,3 +617,29 @@ mapproxy_yaml_spec = {
     # from other sections (e.g. coverages, dimensions, etc.)
     'parts': anything(),
 }
+
+
+def add_source_to_mapproxy_yaml_spec(source_name, source_spec):
+    """ Add a new source type to mapproxy_yaml_spec.
+        Used by plugins.
+    """
+
+    # sources has a single anything() : {} member
+    values = list(mapproxy_yaml_spec['sources'].values())
+    assert len(values) == 1
+    values[0].add_subspec(source_name, source_spec)
+
+
+def add_service_to_mapproxy_yaml_spec(service_name, service_spec):
+    """ Add a new service type to mapproxy_yaml_spec.
+        Used by plugins.
+    """
+
+    mapproxy_yaml_spec['services'][service_name] = service_spec
+
+
+def add_subcategory_to_layer_md(category_name, category_def):
+    """ Add a new category to wms_130_layer_md.
+        Used by plugins
+    """
+    wms_130_layer_md[category_name] = category_def

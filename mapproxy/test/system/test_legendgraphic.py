@@ -18,6 +18,7 @@ from __future__ import division
 from io import BytesIO
 
 import pytest
+import json
 
 from mapproxy.compat.image import Image
 from mapproxy.request.wms import (
@@ -268,3 +269,40 @@ class TestWMSLegendgraphic(SysTest):
             xml, "//ogc:ServiceException/text()", "invalid sld_version 1.0.0"
         )
         assert validate_with_xsd(xml, xsd_name="wms/1.3.0/exceptions_1_3_0.xsd")
+
+    def test_get_legendgraphic_json_single_source_multiple_sub_layers(self, app):
+        """
+            this.common_lg_req_130 request fetches layer 'wms_legend'
+            layer 'wms_legend' contains:
+            - single source 'legend_cache'
+            - multiple sub layers: 'foo' and 'bar'
+            - see also 'test/system/fixture/legendgraphic.yaml'
+        """
+        self.common_lg_req_130.params["format"] = "application/json"
+        json_data_foo = "{\"Legend\": [{\"layerName\": \"foo\"}]}"
+        json_data_bar = "{\"Legend\": [{\"layerName\": \"bar\"}]}"
+        expected_req1 = (
+            {
+                "path": r"/service?LAYER=foo&SERVICE=WMS&FORMAT=application%2Fjson"
+                        "&REQUEST=GetLegendGraphic&"
+                        "&VERSION=1.1.1&SLD_VERSION=1.1.0"
+            },
+            {"body": json_data_foo.encode(), "headers": {"content-type": "application/json"}},
+        )
+        expected_req2 = (
+            {
+                "path": r"/service?LAYER=bar&SERVICE=WMS&FORMAT=application%2Fjson"
+                        "&REQUEST=GetLegendGraphic&"
+                        "&VERSION=1.1.1&SLD_VERSION=1.1.0"
+            },
+            {"body": json_data_bar.encode(), "headers": {"content-type": "application/json"}},
+        )
+        with mock_httpd(
+            ("localhost", 42423), [expected_req1, expected_req2]
+        ):
+            resp = app.get(self.common_lg_req_130)
+            assert resp.content_type == "application/json"
+            json_str = resp.body.decode("utf-8")
+            json_data = json.loads(json_str)
+            assert json_data['Legend'][0]['layerName'] == 'foo'
+            assert json_data['Legend'][1]['layerName'] == 'bar'

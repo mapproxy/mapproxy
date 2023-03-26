@@ -49,7 +49,7 @@ Options
 .. cmdoption:: --overwrite <filename>
 .. cmdoption:: --overwrite-seed <filename>
 
-  YAML configuration that overwrites configuration optoins before the generated configuration is written to ``--output``/``--output-seed``.
+  YAML configuration that overwrites configuration options before the generated configuration is written to ``--output``/``--output-seed``.
 
 Example
 ~~~~~~~

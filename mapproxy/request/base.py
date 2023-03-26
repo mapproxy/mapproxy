@@ -402,7 +402,7 @@ class BaseRequest(object):
     """
     request_params = RequestParams
 
-    def __init__(self, param=None, url='', validate=False, http=None):
+    def __init__(self, param=None, url='', validate=False, http=None, dimensions=None):
         self.delimiter = ','
         self.http = http
 

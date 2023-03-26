@@ -115,6 +115,17 @@
     {{for srs_code, bbox in layer_srs_bbox(layer)}}
     <BoundingBox SRS="{{srs_code}}" minx="{{ bbox[0] }}" miny="{{ bbox[1] }}" maxx="{{ bbox[2] }}" maxy="{{ bbox[3] }}" />
     {{endfor}}
+    {{if hasattr(layer, 'dimensions')}}
+    {{if layer.dimensions}}
+    {{for d in layer.dimensions}}
+    {{if "time" in d }}
+    <Dimension name="{{d}}" default="{{layer.dimensions[d].default}}" nearestValue="0" units="ISO8601" >{{','.join(layer.dimensions[d])}}</Dimension>
+    {{else}}
+    <Dimension name="{{d}}" default="{{layer.dimensions[d].default}}" nearestValue="0" >{{','.join(layer.dimensions[d])}}</Dimension>
+    {{endif}}
+    {{endfor}}
+    {{endif}}
+    {{endif}}
     {{if layer.is_active and layer.has_legend and layer.legend_url}}
     <Style>
         <Name>default</Name>

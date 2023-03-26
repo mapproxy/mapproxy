@@ -65,7 +65,7 @@ class MockSeedPool(object):
 
 class MockCache(object):
 
-    def is_cached(self, tile):
+    def is_cached(self, tile,dimensions=None):
         return False
 
 

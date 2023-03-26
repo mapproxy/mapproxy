@@ -25,6 +25,7 @@ import textwrap
 import logging
 
 from mapproxy.compat import iteritems
+from mapproxy.config.loader import load_plugins
 from mapproxy.script.conf.app import config_command
 from mapproxy.script.defrag import defrag_command
 from mapproxy.script.export import export_command
@@ -321,6 +322,18 @@ commands = {
 }
 
 
+def register_command(command_name, command_spec):
+    """ Method used by plugins to register a command.
+
+        :param command_name: Name of the service
+        :type command_name: str
+        :param command_spec: Definition of the command. Dictionary with a 'func' and 'help' member
+        :type command_spec: dict
+    """
+
+    commands[command_name] = command_spec
+
+
 class NonStrictOptionParser(optparse.OptionParser):
     def _process_args(self, largs, rargs, values):
         while rargs:
@@ -361,6 +374,9 @@ def print_items(data, title='Commands'):
         print('  %s%s' % (name, help), file=sys.stdout)
 
 def main():
+
+    load_plugins()
+
     parser = NonStrictOptionParser("usage: %prog COMMAND [options]",
         add_help_option=False)
     options, args = parser.parse_args()

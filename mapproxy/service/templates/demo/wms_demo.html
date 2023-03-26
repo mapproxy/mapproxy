@@ -11,35 +11,89 @@ menu_title = "WMS %s %s" % (layer.name,srs)
 jscript_functions=None
 }}
 {{def jscript_openlayers}}
-<script src="static/OpenLayers.js"></script>
+<script src="static/ol.js"></script>
+<script src="static/proj4.min.js"></script>
+<link rel="stylesheet" href="static/ol.css">
 <script type="text/javascript">
-    var map;
-    function init(){
-        OpenLayers.Util.onImageLoadErrorColor = "transparent";
+    async function init() {
 
-        map = new OpenLayers.Map('map', {
-          maxResolution: {{res}},
-          maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in bbox)}}),
-          projection: new OpenLayers.Projection("{{srs}}"),
-          numZoomLevels: 22
+        const transparent = "{{if format == 'image/png'}}true{{endif}}";
+        const srs = "{{srs}}";
+        const extent = [{{', '.join(str(r) for r in bbox)}}];
+
+        if (!ol.proj.get(srs)) {
+            const allDefs = await import('./static/proj4defs.js');
+            const srsNum = srs.indexOf(':') > -1 ? parseInt(srs.split(':')[1]) : parseInt(srs);
+            if (!allDefs.defs[srsNum]) {
+                alert("The preview map does not support this coordinate system");
+                return;
+            }
+            proj4.defs(srs, allDefs.defs[srsNum]);
+            ol.proj.proj4.register(proj4);
+        }
+
+        const source = new ol.source.ImageWMS({
+            url: '../service?',
+            params: {
+                'LAYERS': "{{layer.name}}",
+                'FORMAT': "{{format}}",
+                'TRANSPARENT': transparent === "true" ? true: false,
+                'CRS': "{{srs}}"
+            }
         });
-        var layer = new OpenLayers.Layer.WMS( "WMS {{layer.name}}",
-            "../service?",
-            {layers: "{{layer.name}}", format: "{{format}}", srs:"{{srs}}",
-             exceptions: "application/vnd.ogc.se_inimage"{{if format == 'image/png'}}, transparent: true{{endif}}},
-            {singleTile: true, ratio: 1, isBaseLayer: true} );
 
-        map.addLayer(layer);
-        map.zoomToMaxExtent();
+        const layers = [
+            new ol.layer.Tile({
+                source: new ol.source.OSM()
+            }),
+            new ol.layer.Image({source})
+        ];
+        const map = new ol.Map({
+            layers: layers,
+            target: 'map',
+            view: new ol.View({
+                projection: "{{srs}}"
+            })
+        });
+        map.getView().fit(extent);
+
+        const dimensions = {};
+        {{if layer.dimensions}}
+            {{for d in layer.dimensions.keys()}}
+                dimensions["{{d.upper()}}"] = "{{layer.dimensions[d].default}}";
+            {{endfor}}
+        {{endif}}
+        if (Object.keys(dimensions).length > 0) {
+            source.updateParams(dimensions);
+        }
+
+        setDimension = (dimension, value) => {
+            const update = {};
+            const key = dimension.toUpperCase();
+            update[key] = value;
+            source.updateParams(update);
+        }
+
+        zoomToFullExtent = () => {
+            map.getView().fit(extent);
+        }
+
+        toogleBackgroundMap = () => {
+            layers[0].setVisible(!layers[0].getVisible());
+        }
     }
+
 </script>
 {{enddef}}
-            <h2>Openlayers Client - Layer {{layer.name}}</h2>
+            <h2>Layer Preview - {{layer.name}}</h2>
             <form action="" method="GET">
                 <table>
                     <tr>
                         <th>Coordinate System</th>
                         <th>Image format</th>
+                        {{for dim in layer.dimensions}}
+                        <th>{{str(dim)}}</th>
+                        {{endfor}}
                     </tr>
                     <tr>
                         <td>
@@ -64,14 +118,23 @@ jscript_functions=None
                             {{endfor}}
                             </select>
                         </td>
+                        {{for dim in layer.dimensions}}
+                            <td>
+                            <select name="{{str(dim)}}" size="1" onchange="setDimension(&quot;{{str(dim)}}&quot;, this.value);">
+                            {{for value in layer.dimensions[dim]}}
+                                {{if value == layer.dimensions[dim].default}}
+                                    <option value="{{value}}" selected="selected">{{value}}</option>
+                                {{else}}
+                                    <option value="{{value}}">{{value}}</option>
+                                {{endif}}
+                            {{endfor}}
+                            </select>
+                    </td>
+                    {{endfor}}
                     </tr>
                 </table>
                 <input type="hidden" name="wms_layer" value="{{layer.name}}">
-              </form>
+            </form>
             <div id='map'></div>
-            <h3>JavaScript code</h3>
-            <pre>
-{{for line in jscript_openlayers().split('\n')}}
-{{escape(wrapper.fill(line))}}
-{{endfor}}
-            </pre>
+            <button class="mapBtn" onclick="zoomToFullExtent()">Zoom to full extent</button>
+            <button class="mapBtn" onclick="toogleBackgroundMap()">Toggle background map</button>

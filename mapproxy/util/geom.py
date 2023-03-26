@@ -144,7 +144,7 @@ def load_geojson(datasource):
 
     polygons = []
     for geom in geometries:
-        geom = shapely.geometry.asShape(geom)
+        geom = shapely.geometry.shape(geom)
         if geom.type == 'Polygon':
             polygons.append(geom)
         elif geom.type == 'MultiPolygon':
