@@ -7,7 +7,7 @@ PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/mapproxy
 PROJECT=MapProxy
-VERSION=1.14.99
+VERSION=1.1.0
 
 all:
 	@echo "make source - Create source package"
