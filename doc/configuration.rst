@@ -415,6 +415,18 @@ with no data (e.g. water areas, areas with no roads, etc.).
 
 .. note:: This feature is only available on Unix, since Windows has no support for symbolic links.
 
+
+.. _add_cache_status_header:
+
+``add_cache_status_header``
+""""""""""""""""""""""""""""
+
+If set to ``true``, MapProxy add a ``Cache-Status`` HTTP header to the response, indicating if
+the response originated from the mapproxy response cache or from the backing source. Possible header values
+are ``HIT`` if the defined cache could provide the result, otherwise ``MISS``
+
+.. versionadded:: 1.15.2
+
 ``minimize_meta_requests``
 """"""""""""""""""""""""""
 If set to ``true``, MapProxy will only issue a single request to the source. This option can reduce the request latency for uncached areas (on demand caching).
