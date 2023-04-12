@@ -421,8 +421,8 @@ with no data (e.g. water areas, areas with no roads, etc.).
 ``add_cache_status_header``
 """"""""""""""""""""""""""""
 
-If set to ``true``, MapProxy add a ``Cache-Status`` HTTP header to the response, indicating if
-the response originated from the mapproxy response cache or from the backing source. Possible header values
+If set to ``true``, MapProxy will add a ``Cache-Status`` HTTP header to the response, indicating if
+it originated from the mapproxy layer cache or from its backing source. Possible header values
 are ``HIT`` if the defined cache could provide the result, otherwise ``MISS``
 
 .. versionadded:: 1.15.2
