@@ -127,7 +127,7 @@ class TiledImage(object):
     """
     An image built-up from multiple tiles.
     """
-    def __init__(self, tiles, tile_grid, tile_size, src_bbox, src_srs):
+    def __init__(self, tiles, tile_grid, tile_size, src_bbox, src_srs,cache_hit):
         """
         :param tiles: all tiles (sorted row-wise, top to bottom)
         :param tile_grid: the tile grid size
@@ -135,13 +135,14 @@ class TiledImage(object):
         :param tile_size: the size of each tile
         :param src_bbox: the bbox of all tiles
         :param src_srs: the srs of the bbox
-        :param transparent: if the sources are transparent
+        :param cache_hit: whether all the tiles this images is composed of returned from cache or not
         """
         self.tiles = tiles
         self.tile_grid = tile_grid
         self.tile_size = tile_size
         self.src_bbox = src_bbox
         self.src_srs = src_srs
+        self.cache_hit = cache_hit
 
     def image(self, image_opts):
         """
@@ -163,5 +164,7 @@ class TiledImage(object):
         """
         transformer = ImageTransformer(self.src_srs, req_srs)
         src_img = self.image(image_opts)
-        return transformer.transform(src_img, self.src_bbox, out_size, req_bbox,
+        trn_img = transformer.transform(src_img, self.src_bbox, out_size, req_bbox,
             image_opts)
+        trn_img.cache_hit = self.cache_hit
+        return trn_img

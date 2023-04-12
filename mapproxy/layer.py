@@ -453,11 +453,17 @@ class CacheMapLayer(MapLayer):
             tile = tile_collection[0].source
             tile.image_opts = self.tile_manager.image_opts
             tile.cacheable = tile_collection[0].cacheable
+            tile.cache_hit = tile_collection[0].cache_hit
             return tile
+
+        cache_hit = None
+        cache_hits = set([t.cache_hit for t in tile_collection.tiles if t.cache_hit is not None])
+        if cache_hits:
+            cache_hit = not (False in cache_hits)
 
         tile_sources = [tile.source for tile in tile_collection]
         tiled_image = TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
-                          tile_grid=tile_grid, tile_size=self.grid.tile_size)
+                           tile_grid=tile_grid, tile_size=self.grid.tile_size, cache_hit=cache_hit)
         try:
             return tiled_image.transform(query.bbox, query.srs, query.size,
                 self.tile_manager.image_opts)
@@ -466,5 +472,3 @@ class CacheMapLayer(MapLayer):
         except IOError as ex:
             from mapproxy.source import SourceError
             raise SourceError("unable to transform image: %s" % ex)
-
-

@@ -123,7 +123,6 @@ class TileManager(object):
             [tile_coord], dimensions=dimensions, with_metadata=with_metadata,
         )[0]
 
-
     def load_tile_coords(self, tile_coords, dimensions=None, with_metadata=False):
         tiles = TileCollection(tile_coords)
         rescale_till_zoom = 0
@@ -306,7 +305,7 @@ class TileManager(object):
             tile_sources.append(t.source if t.source is not RESCALE_TILE_MISSING else None)
 
         tiled_image = TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
-                            tile_grid=src_tile_grid, tile_size=self.grid.tile_size)
+                            tile_grid=src_tile_grid, tile_size=self.grid.tile_size, cache_hit=False)
         tile.source = tiled_image.transform(tile_bbox, self.grid.srs, self.grid.tile_size, self.image_opts)
 
         if self.cache_rescaled_tiles:

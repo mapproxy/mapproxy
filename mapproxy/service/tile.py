@@ -85,7 +85,7 @@ class TileServer(Server):
         resp = Response(tile.as_buffer(), content_type='image/' + tile_format)
         if tile.cacheable:
             resp.cache_headers(tile.timestamp, etag_data=(tile.timestamp, tile.size),
-                               max_age=self.max_tile_age)
+                               max_age=self.max_tile_age, cache_hit=tile.cache_hit)
         else:
             resp.cache_headers(no_cache=True)
         resp.make_conditional(tile_request.http)
@@ -283,8 +283,8 @@ class TileLayer(object):
                 dimensions[dimension] = values.default
             else:
                 raise RequestError('invalid dimension value (%s=%s).'
-                    % (dimension, value), request=tile_request,
-                       code='InvalidParameterValue')
+                                   % (dimension, value), request=tile_request,
+                                   code='InvalidParameterValue')
         return dimensions
 
     def render(self, tile_request, use_profiles=False, coverage=None, decorate_img=None):
@@ -360,7 +360,7 @@ class TileLayer(object):
         try:
             with self.tile_manager.session():
                 tile = self.tile_manager.load_tile_coord(tile_coord,
-                    dimensions=dimensions, with_metadata=True)
+                                                         dimensions=dimensions, with_metadata=True)
             if tile.source is None:
                 return self.empty_response()
 

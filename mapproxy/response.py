@@ -84,6 +84,7 @@ class Response(object):
         :param etag_data: list that will be used to build an ETag hash.
             calls the str function on each item.
         :param max_age: the maximum cache age in seconds
+        :param cache_hit: whether the response was satisfied by the cache or not
         """
         if etag_data:
             hash_src = ''.join((str(x) for x in etag_data)).encode('ascii')
@@ -100,7 +101,7 @@ class Response(object):
             self.headers['Cache-control'] = 'public, max-age=%d, s-maxage=%d' % (max_age, max_age)
 
         if cache_hit is not None:
-            self.headers['Cache-Status'] = 'HIT' if cache_hit == True else 'MISS'
+            self.headers['Cache-Status'] = 'HIT' if cache_hit else 'MISS'
 
     def make_conditional(self, req):
         """

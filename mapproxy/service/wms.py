@@ -162,7 +162,7 @@ class WMSServer(Server):
         if query.tiled_only and isinstance(result.cacheable, CacheInfo):
             cache_info = result.cacheable
             resp.cache_headers(cache_info.timestamp, etag_data=(cache_info.timestamp, cache_info.size),
-                               max_age=self.max_tile_age)
+                               max_age=self.max_tile_age,cache_hit= result.cache_hit)
             resp.make_conditional(map_request.http)
 
         if not result.cacheable:
