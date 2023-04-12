@@ -283,8 +283,8 @@ class TileLayer(object):
                 dimensions[dimension] = values.default
             else:
                 raise RequestError('invalid dimension value (%s=%s).'
-                                   % (dimension, value), request=tile_request,
-                                   code='InvalidParameterValue')
+                    % (dimension, value), request=tile_request,
+                        code='InvalidParameterValue')
         return dimensions
 
     def render(self, tile_request, use_profiles=False, coverage=None, decorate_img=None):

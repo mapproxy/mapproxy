@@ -1,0 +1,29 @@
+globals:
+  cache:
+    base_dir: cache_data/
+
+services:
+  tms:
+  wms:
+    md:
+      title: MapProxy Cache-Status Header Test Fixture
+
+layers:
+  - name: mb_status_header
+    title: TMS Cache Layer
+    sources: [mb_cache_status_header]
+
+caches:
+  mb_cache_status_header:
+    cache:
+      add_cache_status_header: true
+      type: mbtiles
+      filename: ./cache.status-header.mbtiles
+      tile_lock_dir: ./status-header-testlockdir
+    sources: [tms_status_header]
+
+sources:
+  tms_status_header:
+    type: tile
+    url: http://localhost:42423/tiles/%(tc_path)s.png
+
