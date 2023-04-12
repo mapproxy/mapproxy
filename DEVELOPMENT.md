@@ -2,40 +2,39 @@ Dev Setup
 =========
 
 * Create parent directory for source, applications and the virtual env
-* Clone source into directory mapproxy: `git clone `
-* Install dependencies: https://mapproxy.org/docs/latest/install.html#install-dependencies
+* Clone source into directory mapproxy: `git clone`
+* Install dependencies: <https://mapproxy.org/docs/latest/install.html#install-dependencies>
 * Create virtualenv: `python3.6 -m venv ./venv`
 * Activate virtualenv: `source venv/bin/activate`
 * Install mapproxy: `pip install -e mapproxy/`
 * Install dev dependencies: `pip install -r mapproxy/requirements-tests.txt`
 * Run tests:
-    * `cd mapproxy`
-    * `pytest mapproxy`
-    * Run single test: `pytest mapproxy/test/unit/test_grid.py -v`
+  * `cd mapproxy`
+  * `pytest mapproxy`
+  * Run single test: `pytest mapproxy/test/unit/test_grid.py -v`
 * Create an application: `mapproxy-util create -t base-config apps/base`
 
 * Start a dev server in debug mode: `mapproxy-util serve-develop apps/base/mapproxy.yaml --debug`
 
-
 Coding Style
 ------------
 
-PEP8: https://www.python.org/dev/peps/pep-0008/
-
+PEP8: <https://www.python.org/dev/peps/pep-0008/>
 
 Debugging
 ---------
 
-  - With PyCharm:
-    * Attach to dev server with https://www.jetbrains.com/help/pycharm/attaching-to-local-process.html
+* With PyCharm:
+  * Attach to dev server with <https://www.jetbrains.com/help/pycharm/attaching-to-local-process.html>
 
-  - With ipython:
-    * `pip install ipython ipdb`
+* With ipython:
+  * `pip install ipython ipdb`
 
-  - With Visual Studio Code:
-    * After creating a virtual env and mapproxy configuration:
-    * Create a `launch.json` file in the project-root/.vscode directory with the following content:
-    ```
+* With Visual Studio Code:
+  * After creating a virtual env and mapproxy configuration:
+  * Create a `launch.json` file in the project-root/.vscode directory with the following content:
+
+    ```json
     {
       "version": "0.2.0",
       "configurations": [
@@ -54,14 +53,12 @@ Debugging
     }
     ```
 
-    * Then start debugging by hitting `F5`.
-
+  * Then start debugging by hitting `F5`.
 
 Some more details in the documentation
 --------------------------------------
 
-See https://mapproxy.org/docs/latest/development.html
-
+See <https://mapproxy.org/docs/latest/development.html>
 
 Some incomplete notes about the structure of the software
 ---------------------------------------------------------
@@ -80,4 +77,4 @@ The sources live in `source/` which in turn use low-level functions from `client
 
 The file `layer.py` merges/clips/transforms tiles.
 
-The whole of MapProxy is stateless apart from the chache which uses locks on file system level.
+The whole of MapProxy is stateless apart from the cache which uses locks on file system level.

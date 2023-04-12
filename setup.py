@@ -17,7 +17,7 @@ def package_installed(pkg):
     else:
         return True
 
-# depend in Pillow if it is installed, otherwise
+# depend on Pillow if it is installed, otherwise
 # depend on PIL if it is installed, otherwise
 # require Pillow
 if package_installed('Pillow'):

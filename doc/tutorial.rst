@@ -77,7 +77,7 @@ There are two formats. The condensed form uses braces::
 
   {foo: 3, bar: baz}
 
-The block form requires every key value pair on a seperate line::
+The block form requires every key value pair on a separate line::
 
     foo: 3
     bar: baz
@@ -262,7 +262,7 @@ Defining Resolutions
 By default MapProxy caches traditional power-of-two image pyramids with a default
 number of cached resolutions of 20. The resolutions
 between each pyramid level doubles. If you want to change this, you can do so by
-:ref:`defining your own grid <grids>`. Fortunately MapProxy grids provied the
+:ref:`defining your own grid <grids>`. Fortunately MapProxy grids provide the
 ability to inherit from an other grid. We let our grid inherit from the previously
 used `GLOBAL_GEODETIC` grid and add five fixed resolutions to it.
 
@@ -345,7 +345,7 @@ Sometimes you don't want to provide the full data of a WMS in a layer. With
 MapProxy you can define areas where data is available or where data you are
 interested in is. MapProxy provides three ways to restrict the area of available
 data: Bounding boxes, polygons and OGR datasource. To keep it simple, we only
-discuss bounding boxes. For more informations about the other methods take
+discuss bounding boxes. For more information about the other methods take
 a look at :ref:`the coverages documentation <coverages>`.
 To restrict the area with a bounding box, we have to define it in the coverage
 option of the data source. The listing below restricts the requestable area to
