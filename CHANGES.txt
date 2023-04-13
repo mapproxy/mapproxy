@@ -1,5 +1,31 @@
 Nightly
 ~~~~~~~~~~~~~~~~~
+
+1.16.0 2023-04-13
+~~~~~~~~~~~~~~~~~
+Breaking:
+
+- Removal of old unsupported python versions 2.7 and 3.6
+- Tested python version range is now 3.7 to 3.11
+- Lots of dependency updates
+
+Improvements:
+
+- New cache: Azure Blob storage
+- Lots of dependency updates
+- Support for JSON legends
+- Updated layer preview to use latest openlayers
+- Official docker images released, documentation updated
+
+Fixes:
+
+- Fixed issues with sqlite cache (#629 and #625)
+- Dependency correction
+- library detection difficulties on some operating systems
+- encoding issues with umlauts in featureinfo
+- Several minor bugfixes
+- mapproxy-util export - derive image format from cache config
+
 1.15.1 2022-06-14
 ~~~~~~~~~~~~~~~~~
 
