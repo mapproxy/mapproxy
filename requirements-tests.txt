@@ -21,7 +21,7 @@ chardet==3.0.4
 cryptography==3.3.2
 decorator==4.4.2
 docker==4.3.0
-docutils==0.15.2
+docutils==0.19
 ecdsa==0.14.1
 future==0.18.3
 idna==2.8
