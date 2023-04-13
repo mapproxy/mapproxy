@@ -998,7 +998,7 @@ class TestWMS110(SysTest):
                 {"body": img.read(), "headers": {"content-type": "image/jpeg"}},
             )
             with mock_httpd(
-                ("localhost", 42423), [expected_req], bbox_aware_query_comparator=True
+                ("localhost", 42423), [expected_req], bbox_aware_query_comparator=False
             ):
                 self.common_map_req.params["bbox"] = "0,0,180,90"
                 resp = app.get(self.common_map_req)
