@@ -28,7 +28,7 @@ idna==2.8
 importlib-metadata==1.7.0
 iniconfig==1.0.1
 jmespath==0.10.0
-jsondiff==1.1.2
+jsondiff==2.0.0
 jsonpatch==1.26
 jsonpickle==1.4.1
 jsonpointer==2.0
