@@ -12,7 +12,7 @@ jobs:
 
     steps:
     - name: Checkout sources
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install dependencies ⏬
       run: pip install sphinx sphinx-bootstrap-theme
@@ -24,8 +24,6 @@ jobs:
         git fetch --all
         git reset --hard HEAD
         git checkout gh-pages
-        git reset --hard HEAD
-        git pull origin gh-pages
         git rebase origin/master
         sphinx-build doc/ docs
         git add docs
