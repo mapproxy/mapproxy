@@ -22,7 +22,9 @@ jobs:
         git config --global user.name 'ghpages'
         git config --global user.email 'ghpages@users.noreply.github.com'
         git fetch --all
+        git reset --hard HEAD
         git checkout gh-pages
+        git reset --hard HEAD
         git pull origin gh-pages
         git rebase origin/master
         sphinx-build doc/ docs
