@@ -59,7 +59,7 @@ redis==4.5.4
 requests==2.28.2
 responses==0.10.16
 riak==2.7.0
-rsa==4.7
+rsa==4.9
 s3transfer==0.6.0
 six==1.15.0
 soupsieve==2.0.1
