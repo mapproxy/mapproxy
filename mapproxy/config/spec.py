@@ -563,6 +563,7 @@ mapproxy_yaml_spec = {
                 'layers': one_of(str(), [str()]),
                 'use_mapnik2': bool(),
                 'scale_factor': number(),
+                'multithreaded': bool(),
             }),
             'arcgis': combined(source_commons, {
                required('req'): {

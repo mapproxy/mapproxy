@@ -930,6 +930,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
         res_range = resolution_range(self.conf)
 
         scale_factor = self.conf.get('scale_factor', None)
+        multithreaded = self.conf.get('multithreaded', False)
 
         layers = self.conf.get('layers', None)
         if isinstance(layers, string_type):
@@ -953,8 +954,9 @@ class MapnikSourceConfiguration(SourceConfiguration):
             reuse_map_objects = False
 
         return MapnikSource(mapfile, layers=layers, image_opts=image_opts,
-            coverage=coverage, res_range=res_range, lock=lock,
-            reuse_map_objects=reuse_map_objects, scale_factor=scale_factor)
+                            coverage=coverage, res_range=res_range, lock=lock,
+                            reuse_map_objects=reuse_map_objects, scale_factor=scale_factor,
+                            multithreaded=multithreaded)
 
 class TileSourceConfiguration(SourceConfiguration):
     supports_meta_tiles = False
