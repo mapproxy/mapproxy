@@ -4,13 +4,13 @@
 MapProxy does have its own official docker images.
 These are currently hosted on the GitHub container registry and can be found here:
 
-  -  https://github.com/orgs/mapproxy/packages/container/package/mapproxy
+  -  https://github.com/mapproxy/mapproxy/pkgs/container/mapproxy%2Fmapproxy
 
 Currently we have 3 different images for every release, named e.g.
 
-  - ghcr.io/mapproxy/mapproxy/mapproxy:1.15.1
-  - ghcr.io/mapproxy/mapproxy/mapproxy:1.15.1-dev
-  - ghcr.io/mapproxy/mapproxy/mapproxy:1.15.1-nginx
+  - ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0
+  - ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-dev
+  - ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx
 
 The first one comes with everything installed, but no HTTP WebServer running. You can use it to implement your custom setup.
 
@@ -40,15 +40,15 @@ Quickstart
 
 Depending on your needs, pull the desired image (see description above):
 
- docker pull ghcr.io/mapproxy/mapproxy/mapproxy:1.15.1
+ docker pull ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0
 
 or:
 
-  docker pull ghcr.io/mapproxy/mapproxy/mapproxy:1.15.1-dev
+  docker pull ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-dev
 
 or:
 
-  docker pull ghcr.io/mapproxy/mapproxy/mapproxy:1.15.1-nginx
+  docker pull ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx
 
 Create a directory (e.g. `mapproxyconfig`) for your configuration files. Put your configs into that folder.
 If you do not supply config files (seed.yaml and mapproxy.yaml) the image will create them for you.
@@ -60,7 +60,7 @@ Running the `plain` image without starting a webserver
 
 .. code-block:: sh
 
-  docker run --rm --name "mapproxy" -d -t -v `pwd`/mapproxyconfig:/mapproxy/config ghcr.io/mapproxy/mapproxy/mapproxy:1.15.1
+  docker run --rm --name "mapproxy" -d -t -v `pwd`/mapproxyconfig:/mapproxy/config ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0
 
 Afterwards, the `MapProxy` instance is idling and you can connect with the container via e.g.
 
@@ -71,7 +71,7 @@ Running the `dev` image
 
 .. code-block:: sh
 
-  docker run --rm --name "mapproxy" -p 8080:8080 -d -t -v `pwd`/mapproxyconfig:/mapproxy/config ghcr.io/mapproxy/mapproxy/mapproxy:1.15.1-dev
+  docker run --rm --name "mapproxy" -p 8080:8080 -d -t -v `pwd`/mapproxyconfig:/mapproxy/config ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-dev
 
 Afterwards, the `MapProxy` instance is running on http://localhost:8080/demo/
 
@@ -81,7 +81,7 @@ Running the `nginx` image
 
 .. code-block:: sh
 
-  docker run --rm --name "mapproxy" -p 80:80 -d -t -v `pwd`/mapproxyconfig:/mapproxy/config ghcr.io/mapproxy/mapproxy/mapproxy:1.15.1-nginx
+  docker run --rm --name "mapproxy" -p 80:80 -d -t -v `pwd`/mapproxyconfig:/mapproxy/config ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx
 
 Afterwards, the `MapProxy` instance is running on http://localhost/mapproxy/demo/
 
@@ -101,18 +101,18 @@ For the `plain` image without starting a webserver
 
 .. code-block:: sh
 
-  docker build --build-arg MAPPROXY_VERSION=1.15.1 --target base -t ghcr.io/mapproxy/mapproxy/mapproxy:1.15.1 .
+  docker build --build-arg MAPPROXY_VERSION=1.16.0 --target base -t ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0 .
 
 For the `dev` image
 ~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: sh
 
-  docker build --build-arg MAPPROXY_VERSION=1.15.1 --target development -t ghcr.io/mapproxy/mapproxy/mapproxy:1.15.1-dev .
+  docker build --build-arg MAPPROXY_VERSION=1.16.0 --target development -t ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-dev .
 
 For the `nginx` image
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: sh
 
-  docker build --build-arg MAPPROXY_VERSION=1.15.1 --target nginx -t ghcr.io/mapproxy/mapproxy/mapproxy:1.15.1-nginx .
+  docker build --build-arg MAPPROXY_VERSION=1.16.0 --target nginx -t ghcr.io/mapproxy/mapproxy/mapproxy:1.16.0-nginx .
