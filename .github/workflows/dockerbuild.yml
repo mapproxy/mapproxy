@@ -2,6 +2,11 @@ name: Docker Build and Publish
 
 on:
   workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Manual supplied image tag like 1.16.0'
+        required: true
+        type: string
   push:
     tags:
       - "*.*.*"
@@ -33,6 +38,20 @@ jobs:
 
       - name: Build and push base image
         uses: docker/build-push-action@v4
+        if: ${{ inputs.tags }}
+        with:
+          context: docker/
+          file: ./docker/Dockerfile
+          push: true
+          build-args: |
+            MAPPROXY_VERSION=${{ inputs.tags }}
+          target: base
+          tags: |
+            ghcr.io/mapproxy/mapproxy/mapproxy:${{ inputs.tags }}
+
+      - name: Build and push base image
+        uses: docker/build-push-action@v4
+        if: ${{ !inputs.tags }}
         with:
           context: docker/
           file: ./docker/Dockerfile
@@ -41,10 +60,24 @@ jobs:
             MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
           target: base
           tags: |
-            ${{ steps.meta.outputs.tags }}
+            ghcr.io/mapproxy/mapproxy/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
 
       - name: Build and push development image
         uses: docker/build-push-action@v4
+        if: ${{ inputs.tags }}
+        with:
+          context: docker/
+          file: ./docker/Dockerfile
+          push: true
+          build-args: |
+            MAPPROXY_VERSION=${{ inputs.tags }}
+          target: development
+          tags: |
+            ghcr.io/mapproxy/mapproxy/mapproxy:${{ inputs.tags }}-dev
+
+      - name: Build and push development image
+        uses: docker/build-push-action@v4
+        if: ${{ !inputs.tags }}
         with:
           context: docker/
           file: ./docker/Dockerfile
@@ -53,10 +86,23 @@ jobs:
             MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
           target: development
           tags: |
-            ${{ steps.meta.outputs.tags }}-dev
+            ghcr.io/mapproxy/mapproxy/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-dev
 
       - name: Build and push nginx image
         uses: docker/build-push-action@v4
+        if: ${{ inputs.tags }}
+        with:
+          context: docker/
+          file: ./docker/Dockerfile
+          push: true
+          build-args: |
+            MAPPROXY_VERSION=${{ inputs.tags }}
+          target: nginx
+          tags: |
+            ghcr.io/mapproxy/mapproxy/mapproxy:${{ inputs.tags }}-nginx
+      - name: Build and push nginx image
+        uses: docker/build-push-action@v4
+        if: ${{ !inputs.tags }}
         with:
           context: docker/
           file: ./docker/Dockerfile
@@ -65,4 +111,4 @@ jobs:
             MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
           target: nginx
           tags: |
-            ${{ steps.meta.outputs.tags }}-nginx
+            ghcr.io/mapproxy/mapproxy/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-nginx
