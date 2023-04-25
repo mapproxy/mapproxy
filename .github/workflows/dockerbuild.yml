@@ -1,5 +1,8 @@
 name: Docker Build and Publish
 
+permissions:
+  packages: write
+
 on:
   workflow_dispatch:
     inputs:
