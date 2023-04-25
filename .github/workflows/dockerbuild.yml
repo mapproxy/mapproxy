@@ -22,7 +22,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ghcr.io/mapproxy/mapproxy/mapproxy
+            ghcr.io/${{ github.repository }}/mapproxy
           tags: |
             type=semver,pattern={{version}}
 
@@ -50,7 +50,7 @@ jobs:
             MAPPROXY_VERSION=${{ inputs.tags }}
           target: base
           tags: |
-            ghcr.io/mapproxy/mapproxy/mapproxy:${{ inputs.tags }}
+            ghcr.io/${{ github.repository }}/mapproxy:${{ inputs.tags }}
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push base image
@@ -64,7 +64,7 @@ jobs:
             MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
           target: base
           tags: |
-            ghcr.io/mapproxy/mapproxy/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+            ghcr.io/${{ github.repository }}/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push development image
@@ -78,7 +78,7 @@ jobs:
             MAPPROXY_VERSION=${{ inputs.tags }}
           target: development
           tags: |
-            ghcr.io/mapproxy/mapproxy/mapproxy:${{ inputs.tags }}-dev
+            ghcr.io/${{ github.repository }}/mapproxy:${{ inputs.tags }}-dev
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push development image
@@ -92,7 +92,7 @@ jobs:
             MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
           target: development
           tags: |
-            ghcr.io/mapproxy/mapproxy/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-dev
+            ghcr.io/${{ github.repository }}/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-dev
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push nginx image
@@ -106,7 +106,7 @@ jobs:
             MAPPROXY_VERSION=${{ inputs.tags }}
           target: nginx
           tags: |
-            ghcr.io/mapproxy/mapproxy/mapproxy:${{ inputs.tags }}-nginx
+            ghcr.io/${{ github.repository }}/mapproxy:${{ inputs.tags }}-nginx
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push nginx image
@@ -120,5 +120,5 @@ jobs:
             MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
           target: nginx
           tags: |
-            ghcr.io/mapproxy/mapproxy/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-nginx
+            ghcr.io/${{ github.repository }}/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-nginx
           platforms: linux/amd64,linux/arm64

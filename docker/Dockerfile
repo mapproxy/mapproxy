@@ -22,7 +22,7 @@ RUN mkdir /mapproxy
 WORKDIR /mapproxy
 
 # fix potential issue finding correct shared library libproj (fixed in newer releases)
-RUN ln -s /usr/lib/x86_64-linux-gnu/libproj.so /usr/lib/x86_64-linux-gnu/liblibproj.so
+RUN ln -s /usr/lib/`uname -m`-linux-gnu/libproj.so /usr/lib/`uname -m`-linux-gnu/liblibproj.so
 
 RUN pip install MapProxy==$MAPPROXY_VERSION && \
     # temporary fix for v1.15.1
