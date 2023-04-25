@@ -26,6 +26,9 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -48,6 +51,7 @@ jobs:
           target: base
           tags: |
             ghcr.io/mapproxy/mapproxy/mapproxy:${{ inputs.tags }}
+          platforms: linux/amd64,linux/arm64
 
       - name: Build and push base image
         uses: docker/build-push-action@v4
@@ -61,6 +65,7 @@ jobs:
           target: base
           tags: |
             ghcr.io/mapproxy/mapproxy/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          platforms: linux/amd64,linux/arm64
 
       - name: Build and push development image
         uses: docker/build-push-action@v4
@@ -74,6 +79,7 @@ jobs:
           target: development
           tags: |
             ghcr.io/mapproxy/mapproxy/mapproxy:${{ inputs.tags }}-dev
+          platforms: linux/amd64,linux/arm64
 
       - name: Build and push development image
         uses: docker/build-push-action@v4
@@ -87,6 +93,7 @@ jobs:
           target: development
           tags: |
             ghcr.io/mapproxy/mapproxy/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-dev
+          platforms: linux/amd64,linux/arm64
 
       - name: Build and push nginx image
         uses: docker/build-push-action@v4
@@ -100,6 +107,8 @@ jobs:
           target: nginx
           tags: |
             ghcr.io/mapproxy/mapproxy/mapproxy:${{ inputs.tags }}-nginx
+          platforms: linux/amd64,linux/arm64
+
       - name: Build and push nginx image
         uses: docker/build-push-action@v4
         if: ${{ !inputs.tags }}
@@ -112,3 +121,4 @@ jobs:
           target: nginx
           tags: |
             ghcr.io/mapproxy/mapproxy/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-nginx
+          platforms: linux/amd64,linux/arm64
