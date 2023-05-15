@@ -153,7 +153,7 @@ class MapnikSource(MapLayer):
                 m = _map_objs_queues[queue_cachekey].get_nowait()
                 # check explicitly for the process ID to ensure that
                 # map objects cannot move between processes
-                if m.map_object_pid == process_id:
+                if m.map_obj_pid == process_id:
                     return m
             except Empty:
                 pass
