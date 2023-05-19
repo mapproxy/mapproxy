@@ -36,4 +36,4 @@ class TestDemo(SysTest):
     def test_previewmap(self, app):
         resp = app.get("/demo/?srs=EPSG%3A3857&format=image%2Fpng&wms_layer=wms_cache", status=200)
         assert resp.content_type == "text/html"
-        assert '<h2>Openlayers Client - Layer wms_cache</h2>' in resp
+        assert '<h2>Layer Preview - wms_cache</h2>' in resp

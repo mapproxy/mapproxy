@@ -5,6 +5,9 @@ layers:
   - name: mapnik
     title: Mapnik Source
     sources: [mapnik]
+  - name: mapnik_seed
+    title: Mapnik Seed
+    sources: [mapnik_seed]
   - name: mapnik_hq
     title: Mapnik Source with scale-factor 2
     sources: [mapnik_hq]
@@ -26,6 +29,14 @@ sources:
     coverage:
       bbox: [-170, -80, 180, 90]
       bbox_srs: 'EPSG:4326'
+
+  mapnik_seed:
+    type: mapnik
+    mapfile: ./mapnik.xml
+    coverage:
+      bbox: [-170, -80, 180, 90]
+      bbox_srs: 'EPSG:4326'
+    multithreaded: True
 
   mapnik_hq:
     type: mapnik

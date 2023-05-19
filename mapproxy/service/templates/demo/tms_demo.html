@@ -14,34 +14,60 @@ menu_title= "TMS %s %s"%(layer.name, srs)
 jscript_functions=None
 }}
 {{def jscript_openlayers}}
-<script src="static/OpenLayers.js"></script>
+<script src="static/ol.js"></script>
+<script src="static/proj4.min.js"></script>
+<link rel="stylesheet" href="static/ol.css">
 <script type="text/javascript">
-var map;
-function init(){
-    var mapOptions = {
-    projection: new OpenLayers.Projection('{{srs}}'),
-    maxResolution: {{resolutions[0]}},
-    {{if add_res_to_options}}
-    resolutions: [{{', '.join(str(r) for r in resolutions)}}],
-    {{endif}}
-    units: '{{units}}',
-    numZoomLevels: {{len(resolutions)}},
-    maxExtent: new OpenLayers.Bounds({{', '.join(str(s) for s in layer.grid.bbox)}})
-    };
+    async function init() {
 
-    map = new OpenLayers.Map('map', mapOptions);
+        const transparent = "{{if format == 'png'}}true{{endif}}";
+        const srs = "{{srs}}";
+        const extent = [{{', '.join(str(r) for r in layer.grid.bbox)}}];
 
-    var layer = new OpenLayers.Layer.TMS('TMS {{layer.name}}', '../tms/',
-        {layername: '{{"/".join(layer.md["name_path"])}}', type: '{{format}}',
-         tileSize: new OpenLayers.Size{{layer.grid.tile_size}}
-    });
+        if (!ol.proj.get(srs)) {
+            const allDefs = await import('./static/proj4defs.js');
+            const srsNum = srs.indexOf(':') > -1 ? parseInt(srs.split(':')[1]) : parseInt(srs);
+            if (!allDefs.defs[srsNum]) {
+                alert("The preview map does not support this coordinate system");
+                return;
+            }
+            proj4.defs(srs, allDefs.defs[srsNum]);
+            ol.proj.proj4.register(proj4);
+        }
 
-    map.addLayer(layer)
-    map.zoomToExtent(new OpenLayers.Bounds({{approx_bbox(layer, srs)}}));
+        const source = new ol.source.XYZ({
+            url: '../tms/{{"/".join(layer.md["name_path"])}}/{z}/{x}/{-y}.png',
+            opaque: transparent === "true" ? false : true,
+            projection: "{{srs}}",
+            maxResolution: {{resolutions[0]}}
+        });
+
+        const layers = [
+            new ol.layer.Tile({
+                source: new ol.source.OSM()
+            }),
+            new ol.layer.Tile({source})
+        ];
+        const map = new ol.Map({
+            layers: layers,
+            target: 'map',
+            view: new ol.View({
+                projection: "{{srs}}"
+            })
+        });
+        map.getView().fit(extent);
+
+        zoomToFullExtent = () => {
+            map.getView().fit(extent);
+        }
+
+        toogleBackgroundMap = () => {
+            layers[0].setVisible(!layers[0].getVisible());
+        }
 }
 </script>
 {{enddef}}
-            <h2>Openlayers Client - Layer {{layer.name}}</h2>
+            <h2>Layer Preview - {{layer.name}}</h2>
             <form action="" method="GET">
                 <table>
                     <tr><th>Coordinate System</th><th>Image format</th></tr>
@@ -64,6 +90,8 @@ function init(){
                 </table>
               </form>
             <div id='map'></div>
+            <button class="mapBtn" onclick="zoomToFullExtent()">Zoom to full extent</button>
+            <button class="mapBtn" onclick="toogleBackgroundMap()">Toggle background map</button>
             <h3>Bounding Box</h3>
             <p class="code">{{', '.join(str(s) for s in layer.grid.bbox)}}</p>
             <h3>Level and Resolutions</h3>
@@ -73,9 +101,3 @@ function init(){
                 <tr><td>{{level}}</td><td>{{res}}</td></tr>
                 {{endfor}}
             </table>
-            <h3>JavaScript code</h3>
-            <pre>
-{{for line in jscript_openlayers().split('\n')}}
-{{escape(wrapper.fill(line))}}
-{{endfor}}
-            </pre>

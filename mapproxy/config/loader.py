@@ -930,6 +930,7 @@ class MapnikSourceConfiguration(SourceConfiguration):
         res_range = resolution_range(self.conf)
 
         scale_factor = self.conf.get('scale_factor', None)
+        multithreaded = self.conf.get('multithreaded', False)
 
         layers = self.conf.get('layers', None)
         if isinstance(layers, string_type):
@@ -953,8 +954,9 @@ class MapnikSourceConfiguration(SourceConfiguration):
             reuse_map_objects = False
 
         return MapnikSource(mapfile, layers=layers, image_opts=image_opts,
-            coverage=coverage, res_range=res_range, lock=lock,
-            reuse_map_objects=reuse_map_objects, scale_factor=scale_factor)
+                            coverage=coverage, res_range=res_range, lock=lock,
+                            reuse_map_objects=reuse_map_objects, scale_factor=scale_factor,
+                            multithreaded=multithreaded)
 
 class TileSourceConfiguration(SourceConfiguration):
     supports_meta_tiles = False
@@ -1162,6 +1164,35 @@ class CacheConfiguration(ConfigurationBase):
             return GeopackageCache(
                 gpkg_file_path, grid_conf.tile_grid(), table_name
             )
+
+    def _azureblob_cache(self, grid_conf, file_ext):
+        from mapproxy.cache.azureblob import AzureBlobCache
+
+        container_name = self.context.globals.get_value('cache.container_name', self.conf,
+                                                        global_key='cache.azureblob.container_name')
+
+        if not container_name:
+            raise ConfigurationError("no container_name configured for Azure Blob cache %s" % self.conf['name'])
+
+        connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING", self.context.globals.get_value(
+            'cache.connection_string', self.conf, global_key='cache.azureblob.connection_string'))
+
+        if not connection_string:
+            raise ConfigurationError("no connection_string configured for Azure Blob cache %s" % self.conf['name'])
+
+        directory_layout = self.conf['cache'].get('directory_layout', 'tms')
+
+        base_path = self.conf['cache'].get('directory', None)
+        if base_path is None:
+            base_path = os.path.join(self.conf['name'], grid_conf.tile_grid().name)
+
+        return AzureBlobCache(
+            base_path=base_path,
+            file_ext=file_ext,
+            directory_layout=directory_layout,
+            container_name=container_name,
+            connection_string=connection_string
+        )
 
     def _s3_cache(self, grid_conf, file_ext):
         from mapproxy.cache.s3 import S3Cache
@@ -1777,7 +1808,7 @@ class LayerConfiguration(ConfigurationBase):
                     values = raw_values[0].strip().split('/')
             else:
                 values = [str(val) for val in  conf.get('values', ['default'])]
-            
+
             default = conf.get('default', values[-1])
             dimensions[dimension.lower()] = Dimension(dimension, values, default=default)
         return dimensions
@@ -1826,7 +1857,7 @@ class LayerConfiguration(ConfigurationBase):
                 fi_source = self.context.sources[fi_source_name].fi_source()
                 if fi_source:
                     fi_sources.append(fi_source)
-                      
+
             for grid, extent, cache_source in self.context.caches[cache_name].caches():
                 disable_storage = self.context.configuration['caches'][cache_name].get('disable_storage', False)
                 if disable_storage:
@@ -2207,7 +2238,7 @@ def load_configuration_file(files, working_dir):
             imported_dict = load_configuration_file(base_files, current_working_dir)
             current_dict = merge_dict(current_dict, imported_dict)
         conf_dict = merge_dict(conf_dict, current_dict)
-    
+
     return conf_dict
 
 def merge_dict(conf, base):

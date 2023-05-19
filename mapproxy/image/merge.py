@@ -16,7 +16,7 @@
 """
 Image and tile manipulation (transforming, merging, etc).
 """
-
+import json
 from collections import namedtuple
 from mapproxy.compat.image import Image, ImageColor, ImageChops, ImageMath
 from mapproxy.compat.image import has_alpha_composite_support
@@ -300,3 +300,17 @@ def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transpar
         else:
             img.paste(legend_img, (0, legend_position_y[i]))
     return ImageSource(img, image_opts=ImageOptions(format=format))
+
+def concat_json_legends(legends):
+    """
+    Merge multiple json legends into one
+    :param legends: list of HttpResponse objects
+    :rtype json formatted string
+    """
+    legends_dict = {'Legend': []}
+    legends = legends[:]
+    for legend in legends:
+        legend_str = legend.read().decode('utf-8')
+        legend_dict = json.loads(legend_str)
+        legends_dict['Legend'].append(legend_dict['Legend'][0])
+    return json.dumps(legends_dict)

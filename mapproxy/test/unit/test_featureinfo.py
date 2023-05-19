@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # This file is part of the MapProxy project.
 # Copyright (C) 2011 Omniscale <http://omniscale.de>
 #
@@ -14,7 +15,9 @@
 # limitations under the License.
 
 import os
+import sys
 import tempfile
+import pytest
 
 from lxml import etree, html
 
@@ -94,6 +97,15 @@ class TestXMLFeatureInfoDocs(object):
     def test_as_etree(self):
         doc = XMLFeatureInfoDoc("<root>hello</root>")
         assert doc.as_etree().getroot().text == "hello"
+
+    @pytest.mark.skipif(sys.version_info < (3, 0), reason="test skipped for python 2")
+    def test_umlauts(self):
+        doc = XMLFeatureInfoDoc('<root>öäüß</root>')
+        assert doc.as_etree().getroot().text == 'öäüß'
+
+        input_tree = etree.fromstring('<root>öäüß</root>'.encode('utf-8'))
+        doc = XMLFeatureInfoDoc(input_tree)
+        assert doc.as_string().decode("utf-8") == '<root>öäüß</root>'
 
     def test_combine(self):
         docs = [

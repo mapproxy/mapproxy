@@ -17,7 +17,7 @@ def package_installed(pkg):
     else:
         return True
 
-# depend in Pillow if it is installed, otherwise
+# depend on Pillow if it is installed, otherwise
 # depend on PIL if it is installed, otherwise
 # require Pillow
 if package_installed('Pillow'):
@@ -54,7 +54,7 @@ def long_description(changelog_releases=10):
 
 setup(
     name='MapProxy',
-    version="1.15.1",
+    version="1.16.0",
     description='An accelerating proxy for tile and web map services',
     long_description=long_description(7),
     author='Oliver Tonnhofer',
@@ -75,12 +75,11 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Internet :: Proxy Servers",
         "Topic :: Internet :: WWW/HTTP :: WSGI",
         "Topic :: Scientific/Engineering :: GIS",
