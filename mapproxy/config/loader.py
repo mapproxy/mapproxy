@@ -2164,6 +2164,8 @@ class ServiceConfiguration(ConfigurationBase):
                 # demo service only supports 1.1.1, use wms_111 as an indicator
                 services.append('wms_111')
 
+        layers = odict(sorted(layers.items(), key=lambda x: x[1].name))
+
         return DemoServer(layers, md, tile_layers=tile_layers,
             image_formats=image_formats, srs=srs, services=services, restful_template=restful_template)
 

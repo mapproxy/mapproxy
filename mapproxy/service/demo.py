@@ -24,6 +24,7 @@ import mimetypes
 from collections import defaultdict
 
 from mapproxy.config.config import base_config
+from mapproxy.util.ext.odict import odict
 from mapproxy.compat import PY2
 from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
@@ -228,6 +229,9 @@ class DemoServer(Server):
 
         for add_substitution in extra_substitution_handlers:
             add_substitution(self, req, substitutions)
+
+        wmts_layers = odict(sorted(wmts_layers.items(), key=lambda x: x[0]))
+        tms_tile_layers = odict(sorted(tms_tile_layers.items(), key=lambda x: x[0]))
 
         return template.substitute(substitutions)
 
