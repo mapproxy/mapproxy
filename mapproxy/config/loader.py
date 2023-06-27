@@ -1053,6 +1053,12 @@ class CacheConfiguration(ConfigurationBase):
     defaults = {'format': 'image/png'}
 
     @memoize
+    def coverage(self):
+        if not 'cache' in self.conf or not 'coverage' in self.conf['cache']: return None
+        from mapproxy.config.coverage import load_coverage
+        return load_coverage(self.conf['cache']['coverage'])
+
+    @memoize
     def cache_dir(self):
         cache_dir = self.conf.get('cache', {}).get('directory')
         if cache_dir:
@@ -1079,6 +1085,8 @@ class CacheConfiguration(ConfigurationBase):
 
         cache_dir = self.cache_dir()
         directory_layout = self.conf.get('cache', {}).get('directory_layout', 'tc')
+        coverage = self.coverage()
+
         if self.conf.get('cache', {}).get('directory'):
             if self.has_multiple_grids():
                 raise ConfigurationError(
@@ -1104,6 +1112,7 @@ class CacheConfiguration(ConfigurationBase):
             file_ext=file_ext,
             directory_layout=directory_layout,
             link_single_color_images=link_single_color_images,
+            coverage=coverage
         )
 
     def _mbtiles_cache(self, grid_conf, file_ext):
@@ -1120,11 +1129,13 @@ class CacheConfiguration(ConfigurationBase):
 
         sqlite_timeout = self.context.globals.get_value('cache.sqlite_timeout', self.conf)
         wal = self.context.globals.get_value('cache.sqlite_wal', self.conf)
+        coverage = self.coverage()
 
         return MBTilesCache(
             mbfile_path,
             timeout=sqlite_timeout,
             wal=wal,
+            coverage=coverage
         )
 
     def _geopackage_cache(self, grid_conf, file_ext):
@@ -1134,6 +1145,7 @@ class CacheConfiguration(ConfigurationBase):
         table_name = self.conf['cache'].get('table_name') or \
                      "{}_{}".format(self.conf['name'], grid_conf.tile_grid().name)
         levels = self.conf['cache'].get('levels')
+        coverage = self.coverage()
 
         if not filename:
             filename = self.conf['name'] + '.gpkg'
@@ -1158,11 +1170,11 @@ class CacheConfiguration(ConfigurationBase):
 
         if levels:
             return GeopackageLevelCache(
-                cache_dir, grid_conf.tile_grid(), table_name
+                cache_dir, grid_conf.tile_grid(), table_name, coverage=coverage
             )
         else:
             return GeopackageCache(
-                gpkg_file_path, grid_conf.tile_grid(), table_name
+                gpkg_file_path, grid_conf.tile_grid(), table_name, coverage=coverage
             )
 
     def _azureblob_cache(self, grid_conf, file_ext):
@@ -1170,6 +1182,7 @@ class CacheConfiguration(ConfigurationBase):
 
         container_name = self.context.globals.get_value('cache.container_name', self.conf,
                                                         global_key='cache.azureblob.container_name')
+        coverage = self.coverage()
 
         if not container_name:
             raise ConfigurationError("no container_name configured for Azure Blob cache %s" % self.conf['name'])
@@ -1191,7 +1204,8 @@ class CacheConfiguration(ConfigurationBase):
             file_ext=file_ext,
             directory_layout=directory_layout,
             container_name=container_name,
-            connection_string=connection_string
+            connection_string=connection_string,
+            coverage=coverage
         )
 
     def _s3_cache(self, grid_conf, file_ext):
@@ -1199,6 +1213,7 @@ class CacheConfiguration(ConfigurationBase):
 
         bucket_name = self.context.globals.get_value('cache.bucket_name', self.conf,
             global_key='cache.s3.bucket_name')
+        coverage = self.coverage()
 
         if not bucket_name:
             raise ConfigurationError("no bucket_name configured for s3 cache %s" % self.conf['name'])
@@ -1229,7 +1244,8 @@ class CacheConfiguration(ConfigurationBase):
             profile_name=profile_name,
             region_name=region_name,
             endpoint_url=endpoint_url,
-            access_control_list=access_control_list
+            access_control_list=access_control_list,
+            coverage=coverage
         )
 
     def _sqlite_cache(self, grid_conf, file_ext):
@@ -1251,11 +1267,13 @@ class CacheConfiguration(ConfigurationBase):
 
         sqlite_timeout = self.context.globals.get_value('cache.sqlite_timeout', self.conf)
         wal = self.context.globals.get_value('cache.sqlite_wal', self.conf)
+        coverage = self.coverage()
 
         return MBTilesLevelCache(
             cache_dir,
             timeout=sqlite_timeout,
             wal=wal,
+            coverage=coverage
         )
 
     def _couchdb_cache(self, grid_conf, file_ext):
@@ -1272,10 +1290,11 @@ class CacheConfiguration(ConfigurationBase):
 
         md_template = CouchDBMDTemplate(self.conf['cache'].get('tile_metadata', {}))
         tile_id = self.conf['cache'].get('tile_id')
+        coverage = self.coverage()
 
         return CouchDBCache(url=url, db_name=db_name,
             file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
-            md_template=md_template, tile_id_template=tile_id)
+            md_template=md_template, tile_id_template=tile_id, coverage=coverage)
 
     def _riak_cache(self, grid_conf, file_ext):
         from mapproxy.cache.riak import RiakCache
@@ -1283,6 +1302,7 @@ class CacheConfiguration(ConfigurationBase):
         default_ports = self.conf['cache'].get('default_ports', {})
         default_pb_port = default_ports.get('pb', 8087)
         default_http_port = default_ports.get('http', 8098)
+        coverage = self.coverage()
 
         nodes = self.conf['cache'].get('nodes')
         if not nodes:
@@ -1306,7 +1326,8 @@ class CacheConfiguration(ConfigurationBase):
         return RiakCache(nodes=nodes, protocol=protocol, bucket=bucket,
             tile_grid=grid_conf.tile_grid(),
             use_secondary_index=use_secondary_index,
-            timeout=timeout
+            timeout=timeout,
+            coverage=coverage
         )
 
     def _redis_cache(self, grid_conf, file_ext):
@@ -1316,6 +1337,7 @@ class CacheConfiguration(ConfigurationBase):
         port = self.conf['cache'].get('port', 6379)
         db = self.conf['cache'].get('db', 0)
         ttl = self.conf['cache'].get('default_ttl', 3600)
+        coverage = self.coverage()
 
         prefix = self.conf['cache'].get('prefix')
         if not prefix:
@@ -1327,11 +1349,13 @@ class CacheConfiguration(ConfigurationBase):
             db=db,
             prefix=prefix,
             ttl=ttl,
+            coverage=coverage
         )
 
     def _compact_cache(self, grid_conf, file_ext):
         from mapproxy.cache.compact import CompactCacheV1, CompactCacheV2
 
+        coverage = self.coverage()
         cache_dir = self.cache_dir()
         if self.conf.get('cache', {}).get('directory'):
             if self.has_multiple_grids():
@@ -1345,9 +1369,9 @@ class CacheConfiguration(ConfigurationBase):
 
         version = self.conf['cache']['version']
         if version == 1:
-            return CompactCacheV1(cache_dir=cache_dir)
+            return CompactCacheV1(cache_dir=cache_dir, coverage=coverage)
         elif version == 2:
-            return CompactCacheV2(cache_dir=cache_dir)
+            return CompactCacheV2(cache_dir=cache_dir, coverage=coverage)
 
         raise ConfigurationError("compact cache only supports version 1 or 2")
 
