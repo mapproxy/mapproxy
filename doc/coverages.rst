@@ -4,7 +4,7 @@ Coverages
 =========
 
 With coverages you can define areas where data is available or where data you are interested in is.
-MapProxy supports coverages for :doc:`sources <sources>` and in the :doc:`mapproxy-seed tool <seed>`. Refer to the corresponding section in the documentation.
+MapProxy supports coverages for :doc:`sources <sources>`, :doc:`caches <caches>` and in the :doc:`mapproxy-seed tool <seed>`. Refer to the corresponding section in the documentation.
 
 
 There are five different ways to describe a coverage:
@@ -181,6 +181,26 @@ Example of an intersection coverage with clipping::
             srs: 'EPSG:4326'
           - datasource: coverage.geojson
             srs: 'EPSG:4326'
+
+
+caches
+"""""""
+
+Use the ``coverage`` option to define a coverage for any cache.
+
+::
+
+  caches:
+    mycache:
+      grids: [GLOBAL_GEODETIC]
+      sources: []
+      cache:
+        type: geopackage
+        filename: file.gpkg
+        table_name: mygeopackage
+        coverage:
+          bbox: [5, 50, 10, 55]
+          srs: 'EPSG:4326'
 
 
 mapproxy-seed
