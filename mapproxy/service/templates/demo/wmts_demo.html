@@ -23,7 +23,7 @@ jscript_functions=None
         const transparent = "{{if format == 'image/png'}}true{{endif}}";
         const srs = "{{srs}}";
         const grid_extent = [{{', '.join(str(r) for r in layer.grid.bbox)}}];
-        const extent = [{{', '.join(str(r) for r in layer.extent.bbox)}}];
+        const extent = [{{', '.join(str(r) for r in layer.bbox)}}];
         const resolutions = [{{', '.join(str(r) for r in resolutions)}}];
         const matrixIds = [];
         for (let z = 0; z < resolutions.length; ++z) {
