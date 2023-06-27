@@ -222,7 +222,7 @@ class TileLayer(object):
 
     @property
     def bbox(self):
-        return self.grid.bbox
+        return self.extent.bbox
 
     @property
     def srs(self):
