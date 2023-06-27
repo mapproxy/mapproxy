@@ -1665,7 +1665,7 @@ class CacheConfiguration(ConfigurationBase):
                 mgr._refresh_before = self.context.caches[self.conf['name']].conf.get('refresh_before', {})
             extent = merge_layer_extents(sources)
             if extent.is_default:
-                extent = map_extent_from_grid(tile_grid)
+                extent = cache.coverage.extent if cache.coverage else map_extent_from_grid(tile_grid)
             caches.append((tile_grid, extent, mgr))
         return caches
 
