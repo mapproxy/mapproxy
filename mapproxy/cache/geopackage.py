@@ -583,6 +583,9 @@ class GeopackageLevelCache(TileCacheBase):
         else:
             return level_cache.remove_level_tiles_before(level, timestamp)
 
+    def load_tile_metadata(self, tile, dimensions=None):
+        return self._get_level(tile.coord[2]).load_tile_metadata(tile, dimensions=dimensions)
+
 
 def is_close(a, b, rel_tol=1e-09, abs_tol=0.0):
     """
