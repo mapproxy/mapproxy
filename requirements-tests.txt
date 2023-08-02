@@ -67,7 +67,7 @@ sshpubkeys==3.1.0
 toml==0.10.2
 urllib3==1.26.15
 waitress==2.1.2
-websocket-client==0.57.0
+websocket-client==1.6.1
 werkzeug==1.0.1
 wrapt==1.12.1
 xmltodict==0.12.0
