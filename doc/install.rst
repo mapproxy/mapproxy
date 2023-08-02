@@ -19,7 +19,7 @@ This is really, easy `but` we recommend to install MapProxy into a `virtual Pyth
 Create a new virtual environment
 --------------------------------
 
-``virtualenv`` is available as ``python-virtualenv`` on most Linux systems. You can also `install Virtualenv from source <https://virtualenv.pypa.io/en/latest/installation/>`_.
+``virtualenv`` is available as ``python-virtualenv`` on most Linux systems. You can also `install Virtualenv from source <https://virtualenv.pypa.io/en/latest/installation.html>`_.
 
 To create a new environment with the name ``mapproxy`` call::
 

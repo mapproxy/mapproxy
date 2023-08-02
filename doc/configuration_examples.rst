@@ -800,6 +800,21 @@ Example part of ``mapproxy.yaml`` to generate a quadkey cache::
         directory_layout: quadkey
 
 
+.. _static_tile_source:
+
+Generate a static image for every tile
+======================================
+
+In order to display a static message on every tile, you can configure a tile source URL that is a local file.
+
+Example part of ``mapproxy.yaml`` to generate a static tile source:: 
+
+  sources:
+    tile_source:
+      type: tile
+      url: file:///path/service-suspended.png
+
+
 .. _hq_tiles:
 
 HQ/Retina tiles
