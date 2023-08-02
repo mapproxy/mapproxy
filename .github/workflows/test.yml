@@ -71,7 +71,6 @@ jobs:
     - name: Install dependencies ⏬
       run: |
         pip install -r requirements-tests.txt
-        if [[ ${{ matrix.python-version }} = 2.7 || ${{ matrix.python-version }} = 3.8 ]]; then pip install -U "Pillow!=8.3.0,!=8.3.1"; fi
         pip freeze
 
     - name: Run tests 🏗️

@@ -21,11 +21,11 @@ def package_installed(pkg):
 # depend on PIL if it is installed, otherwise
 # require Pillow
 if package_installed('Pillow'):
-    install_requires.append('Pillow !=2.4.0,!=8.3.0,!=8.3.1')
+    install_requires.append('Pillow !=2.4.0,!=8.3.0,!=8.3.1,<10.0.0')
 elif package_installed('PIL'):
     install_requires.append('PIL>=1.1.6,<1.2.99')
 else:
-    install_requires.append('Pillow !=2.4.0,!=8.3.0,!=8.3.1')
+    install_requires.append('Pillow !=2.4.0,!=8.3.0,!=8.3.1,<10.0.0')
 
 if platform.python_version_tuple() < ('2', '6'):
     # for mapproxy-seed
