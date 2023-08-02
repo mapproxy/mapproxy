@@ -408,10 +408,18 @@ MapProxy will try to use this format to request new tiles, if it is not set ``fo
 ``link_single_color_images``
 """"""""""""""""""""""""""""
 
-If set to ``true``, MapProxy will not store tiles that only contain a single color as a
+If set to ``true`` or ``symlink``, MapProxy will not store tiles that only contain a single color as a
 separate file. MapProxy stores these tiles only once and uses symbolic links to this file
 for every occurrence. This can reduce the size of your tile cache if you have larger areas
 with no data (e.g. water areas, areas with no roads, etc.).
+
+If set to ``hardlink``, MapProxy will store the duplicate tiles as hard links.
+
+This avoids using up inodes for symlinks, which is especially useful if single color images outnumber others (as might be the case in world maps or low-detail maps for example). Directory entries for the hardlinks will still be created of course.
+
+The usual limitation applies: files can only be linked on the same filesystem, assuming it has support for hardlinks in the first place. Furthermore, all the linked files will have the same metadata, in particular the modification time (``mtime``), which is used in seeding or cleanups with the ``refresh_before`` or ``remove_before`` directives.
+
+In practice this means that all the linked images will have the first such tile's modification date and therefore will appear older to the seeding or cleanup process than when they were actually linked. This means that they are *more likely* to be included in the ``refresh_before`` or ``remove_before`` filters, which may or may not be an issue depending on your seeding or cleanup use-cases.
 
 .. note:: This feature is only available on Unix, since Windows has no support for symbolic links.
 
@@ -910,7 +918,7 @@ The following options define how tiles are created and stored. Most options can 
 
 
 ``link_single_color_images``
-  Enables the ``link_single_color_images`` option for all caches if set to ``true``. See :ref:`link_single_color_images`.
+  Enables the ``link_single_color_images`` option for all caches if set to ``true``, ``symlink`` or ``hardlink``. See :ref:`link_single_color_images`.
 
 .. _max_tile_limit:
 

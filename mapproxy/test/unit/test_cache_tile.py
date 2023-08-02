@@ -241,6 +241,30 @@ class TestFileTileCache(TileCacheTestBase):
         assert loc != loc2
         assert os.path.samefile(loc, loc2)
 
+        tile3 = Tile((0,0,2), ImageSource(img))
+        self.cache.link_single_color_images = 'hardlink'
+        self.cache.store_tile(tile3)
+        assert self.cache.is_cached(tile3)
+        loc3 = self.cache.tile_location(tile3)
+        assert is_png(open(loc3, 'rb'))
+
+        assert loc != loc3
+        assert os.path.samefile(loc, loc3)
+        loc3stat = os.stat(loc3)
+        assert loc3stat.st_nlink == 2
+
+        tile4 = Tile((0, 0, 1), ImageSource(img))
+        self.cache.link_single_color_images = 'symlink'
+        self.cache.store_tile(tile4)
+        assert self.cache.is_cached(tile4)
+        loc4 = self.cache.tile_location(tile4)
+        assert os.path.islink(loc4)
+        assert os.path.realpath(loc4).endswith('ff0105.png')
+        assert is_png(open(loc4, 'rb'))
+
+        assert loc != loc4
+        assert os.path.samefile(loc, loc4)
+
     @pytest.mark.skipif(sys.platform == 'win32',
                         reason='link_single_color_tiles not supported on windows')
     def test_single_color_tile_store_w_alpha(self):
@@ -253,6 +277,18 @@ class TestFileTileCache(TileCacheTestBase):
         assert os.path.islink(loc)
         assert os.path.realpath(loc).endswith('ff0105ff.png')
         assert is_png(open(loc, 'rb'))
+
+        tile2 = Tile((0,0,2), ImageSource(img))
+        self.cache.link_single_color_images = 'hardlink'
+        self.cache.store_tile(tile2)
+        assert self.cache.is_cached(tile2)
+        loc2 = self.cache.tile_location(tile2)
+        assert is_png(open(loc2, 'rb'))
+
+        assert loc != loc2
+        assert os.path.samefile(loc, loc2)
+        loc2stat = os.stat(loc2)
+        assert loc2stat.st_nlink == 2
 
     def test_load_metadata_missing_tile(self):
         tile = Tile((0, 0, 0))
