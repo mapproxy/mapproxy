@@ -29,7 +29,7 @@ importlib-metadata==1.7.0
 iniconfig==2.0.0
 jmespath==0.10.0
 jsondiff==1.1.2
-jsonpatch==1.26
+jsonpatch==1.33
 jsonpickle==1.4.1
 jsonpointer==2.0
 jsonschema==3.2.0
