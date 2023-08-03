@@ -24,7 +24,7 @@ docker==4.3.0
 docutils==0.19
 ecdsa==0.14.1
 future==0.18.3
-idna==2.8
+idna==3.4
 importlib-metadata==1.7.0
 iniconfig==2.0.0
 jmespath==0.10.0
