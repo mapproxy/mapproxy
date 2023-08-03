@@ -3,7 +3,7 @@ Jinja2==2.11.3
 MarkupSafe==1.1.1
 Pillow==9.5.0
 PyYAML==6.0.1
-Shapely==1.7.0
+Shapely==2.0.1
 WebOb==1.8.6
 WebTest==2.0.35
 attrs==19.3.0;python_version<"3.10"
