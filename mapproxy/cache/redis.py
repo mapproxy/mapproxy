@@ -51,10 +51,11 @@ class RedisCache(TileCacheBase):
     def is_cached(self, tile, dimensions=None):
         if tile.coord is None or tile.source:
             return True
+        key = self._key(tile)
 
         try:
             log.debug('exists_key, key: %s' % key)
-            return self.r.exists(self._key(tile))
+            return self.r.exists(key)
         except redis.exceptions.ConnectionError as e:
             log.error('Error during connection %s' % e)
             return False  
@@ -65,7 +66,6 @@ class RedisCache(TileCacheBase):
     def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
-
         key = self._key(tile)
 
         with tile_buffer(tile) as buf:
