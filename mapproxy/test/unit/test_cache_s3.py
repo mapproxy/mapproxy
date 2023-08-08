@@ -15,6 +15,10 @@
 
 import pytest
 
+from mapproxy.layer import MapExtent
+from mapproxy.srs import SRS
+from mapproxy.util.coverage import coverage
+
 try:
     import boto3
     from moto import mock_s3
@@ -24,6 +28,9 @@ except ImportError:
 
 from mapproxy.cache.s3 import S3Cache
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
+
+
+GLOBAL_WEBMERCATOR_EXTENT = MapExtent((-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244), SRS(3857))
 
 
 @pytest.mark.skipif(not mock_s3 or not boto3,
@@ -50,6 +57,9 @@ class TestS3Cache(TileCacheTestBase):
             profile_name=None,
             _concurrent_writer=1, # moto is not thread safe
         )
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def teardown(self):
         self.mock.stop()
@@ -82,3 +92,32 @@ class TestS3Cache(TileCacheTestBase):
         # raises, if key is missing
         boto3.client("s3").head_object(Bucket=self.bucket_name, Key=key)
 
+
+@pytest.mark.skipif(not mock_s3 or not boto3,
+                    reason="boto3 and moto required for S3 tests")
+class TestS3CacheCoverage(TileCacheTestBase):
+    always_loads_metadata = True
+    uses_utc = True
+    
+    def setup(self):
+        TileCacheTestBase.setup(self)
+        
+        self.mock = mock_s3()
+        self.mock.start()
+
+        self.bucket_name = "test"
+        dir_name = 'mapproxy'
+        
+        boto3.client("s3").create_bucket(Bucket=self.bucket_name)
+
+        self.cache = S3Cache(dir_name,
+            file_ext='png',
+            directory_layout='tms',
+            bucket_name=self.bucket_name,
+            profile_name=None,
+            _concurrent_writer=1, # moto is not thread safe
+            coverage=coverage([20, 20, 30, 30], SRS(4326))
+        )
+    
+    def test_correct_coverage(self):
+        assert self.cache.coverage.bbox == [20, 20, 30, 30]
