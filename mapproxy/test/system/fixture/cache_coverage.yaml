@@ -1,0 +1,48 @@
+globals:
+
+services:
+  demo:
+  tms:
+  kml:
+  wmts:
+    restful_template: '/myrest/{{Layer}}/{{TileMatrixSet}}/{{TileMatrix}}/{{TileCol}}/{{TileRow}}.{{Format}}'
+  wms:
+    md:
+      title: MapProxy test fixture
+      abstract: This is MapProxy.
+
+layers:
+  - name: coverage_cache
+    title: coverage_cache
+    sources: [coverage_cache]
+
+parts:
+  coverages:
+    4326coverage: &4326coverage
+      bbox: [-50, -50, 50, 50]
+      srs: EPSG:4326
+
+caches:
+  coverage_cache:
+    grids: [crs84quad]
+    sources: [wms_source]
+    cache:
+      type: geopackage
+      filename: test.gpkg
+      table_name: test
+      coverage: *4326coverage
+
+sources:
+  wms_source:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar
+
+grids:
+  crs84quad:
+    name: InspireCrs84Quad
+    srs: 'EPSG:4326'
+    bbox: [-180, -90, 180, 90]
+    origin: 'ul'
+    min_res: 0.703125
