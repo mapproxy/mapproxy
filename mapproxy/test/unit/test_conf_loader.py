@@ -31,10 +31,12 @@ from mapproxy.config.loader import (
 )
 from mapproxy.cache.tile import TileManager
 from mapproxy.config.spec import validate_options
+from mapproxy.layer import MapExtent
 from mapproxy.seed.spec import validate_seed_conf
 from mapproxy.srs import SRS
 from mapproxy.test.helper import TempFile
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
+from mapproxy.util.coverage import coverage
 from mapproxy.util.geom import EmptyGeometryError
 
 
@@ -788,6 +790,63 @@ services:
 
             with pytest.raises(ConfigurationError):
                 load_configuration(f, ignore_warnings=False)
+    
+    def test_load_default_cache_coverage(object):
+        with TempFile() as f:
+            open(f, 'wb').write(b"""
+                services:
+                  my_extra_service:
+                      foo: bar
+
+                layers:
+                  - name: temp
+                    title: temp
+                    sources: [temp]
+
+                caches:
+                  temp:
+                    grids: [grid]
+                    sources: []
+                    cache:
+                      type: geopackage
+
+                grids:
+                  grid:
+                    srs: 'EPSG:4326'
+                    bbox: [-180, -90, 180, 90]
+                """)
+            config = load_configuration(f) # defaults to ignore_warnings=True
+            cache = config.caches['temp']
+            assert cache.coverage() is None
+            assert cache.caches()[0][1] == MapExtent((-180, -90, 180, 90), SRS(4326))
+    
+    def test_load_cache_coverage(object):
+        with TempFile() as f:
+            open(f, 'wb').write(b"""
+                services:
+                  my_extra_service:
+                      foo: bar
+
+                layers:
+                  - name: temp
+                    title: temp
+                    sources: [temp]
+                
+                parts:
+                  coverages:
+                    test_coverage: &test_coverage
+                        bbox: [-50, -50, 50, 50]
+                        srs: EPSG:4326
+                
+                caches:
+                  temp:
+                    sources: []
+                    cache:
+                      type: geopackage
+                      coverage: *test_coverage
+                """)
+            config = load_configuration(f) # defaults to ignore_warnings=True
+            assert config.caches['temp'].coverage() == coverage([-50, -50, 50, 50], SRS(4326))
 
 
 class TestImageOptions(object):
