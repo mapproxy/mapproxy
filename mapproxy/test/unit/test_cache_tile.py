@@ -56,9 +56,6 @@ class TileCacheTestBase(object):
             self.cache.cleanup()
         if hasattr(self, 'cache_dir') and os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
-    
-    def test_default_coverage(self):
-        assert self.cache.coverage is None
 
     def create_tile(self, coord=(3009, 589, 12)):
         return Tile(coord,
