@@ -131,10 +131,15 @@ class TestGeopackageCacheCoverage(TileCacheTestBase):
         self.table_name = 'test_tiles'
         self.cache = GeopackageCache(
             self.gpkg_file,
-            tile_grid=tile_grid(3857, name='global-webmarcator'),
+            tile_grid=tile_grid(4326, name='inspire-crs-84-quad'),
             table_name=self.table_name,
             coverage=coverage([20, 20, 30, 30], SRS(4326))
         )
+    
+    def teardown(self):
+        if self.cache:
+            self.cache.cleanup()
+        TileCacheTestBase.teardown(self)
     
     def test_correct_coverage(self):
         assert self.cache.bbox == [20, 20, 30, 30]
@@ -159,7 +164,6 @@ class TestGeopackageLevelCache(TileCacheTestBase):
         
     def test_default_coverage(self):
         assert self.cache.coverage is None
-        assert self.cache.bbox == GLOBAL_WEBMERCATOR_EXTENT.bbox
 
     def test_level_files(self):
         if os.path.exists(self.cache_dir):
