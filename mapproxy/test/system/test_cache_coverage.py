@@ -37,9 +37,6 @@ ns_wmts = {
 }
 
 
-TEST_TILE = create_tmp_image((256, 256))
-
-
 class TestCacheCoverage(SysTest):
 
     def setup(self):
@@ -53,7 +50,14 @@ class TestCacheCoverage(SysTest):
         assert "http://localhost/tms/1.0.0/coverage_cache/EPSG4326" in resp
         xml = resp.lxml
         assert xml.xpath("count(//TileMap)") == 1
-        # assert xml.xpath("//TileMap/BoundingBox/@minx") == "minx=-50"
+        
+        resp = app.get("/tms/1.0.0/coverage_cache/EPSG4326")
+        xml = resp.lxml
+        
+        assert xml.xpath("//TileMap/BoundingBox/@minx") == ["-50"]
+        assert xml.xpath("//TileMap/BoundingBox/@miny") == ["-50"]
+        assert xml.xpath("//TileMap/BoundingBox/@maxx") == ["50"]
+        assert xml.xpath("//TileMap/BoundingBox/@maxy") == ["50"]
 
     def test_wmts_capabilities_coverage(self, app):
         req = str(self.common_cap_req)
@@ -85,4 +89,7 @@ class TestCacheCoverage(SysTest):
         assert resp.content_type == "application/vnd.ogc.wms_xml"
         xml = resp.lxml
 
-        # assert xml.xpath("//Layer/BoundingBox") == "-50"
+        assert xml.xpath("//Layer/LatLonBoundingBox/@minx") == ["-50"]
+        assert xml.xpath("//Layer/LatLonBoundingBox/@miny") == ["-50"]
+        assert xml.xpath("//Layer/LatLonBoundingBox/@maxx") == ["50"]
+        assert xml.xpath("//Layer/LatLonBoundingBox/@maxy") == ["50"]
