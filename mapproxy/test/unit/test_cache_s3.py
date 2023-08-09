@@ -57,13 +57,13 @@ class TestS3Cache(TileCacheTestBase):
             profile_name=None,
             _concurrent_writer=1, # moto is not thread safe
         )
-    
-    def test_default_coverage(self):
-        assert self.cache.coverage is None
-
+        
     def teardown(self):
         self.mock.stop()
         TileCacheTestBase.teardown(self)
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     @pytest.mark.parametrize('layout,tile_coord,key', [
         ['mp', (12345, 67890,  2), 'mycache/webmercator/02/0001/2345/0006/7890.png'],
@@ -91,33 +91,3 @@ class TestS3Cache(TileCacheTestBase):
 
         # raises, if key is missing
         boto3.client("s3").head_object(Bucket=self.bucket_name, Key=key)
-
-
-@pytest.mark.skipif(not mock_s3 or not boto3,
-                    reason="boto3 and moto required for S3 tests")
-class TestS3CacheCoverage(TileCacheTestBase):
-    always_loads_metadata = True
-    uses_utc = True
-    
-    def setup(self):
-        TileCacheTestBase.setup(self)
-        
-        self.mock = mock_s3()
-        self.mock.start()
-
-        self.bucket_name = "test"
-        dir_name = 'mapproxy'
-        
-        boto3.client("s3").create_bucket(Bucket=self.bucket_name)
-
-        self.cache = S3Cache(dir_name,
-            file_ext='png',
-            directory_layout='tms',
-            bucket_name=self.bucket_name,
-            profile_name=None,
-            _concurrent_writer=1, # moto is not thread safe
-            coverage=coverage([20, 20, 30, 30], SRS(4326))
-        )
-    
-    def test_correct_coverage(self):
-        assert self.cache.coverage.bbox == [20, 20, 30, 30]

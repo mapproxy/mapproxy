@@ -52,6 +52,9 @@ class TestCouchDBCache(TileCacheTestBase):
         import requests
         requests.delete(self.cache.couch_url)
         TileCacheTestBase.teardown(self)
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_store_bulk_with_overwrite(self):
         tile = self.create_tile((0, 0, 4))

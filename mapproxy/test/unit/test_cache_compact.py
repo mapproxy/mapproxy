@@ -40,6 +40,9 @@ class TestCompactCacheV1(TileCacheTestBase):
         self.cache = CompactCacheV1(
             cache_dir=self.cache_dir,
         )
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_bundle_files(self):
         assert not os.path.exists(os.path.join(self.cache_dir, 'L00', 'R0000C0000.bundle'))
@@ -138,6 +141,9 @@ class TestCompactCacheV2(TileCacheTestBase):
         self.cache = CompactCacheV2(
             cache_dir=self.cache_dir,
         )
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_bundle_files(self):
         assert not os.path.exists(os.path.join(self.cache_dir, 'L00', 'R0000C0000.bundle'))

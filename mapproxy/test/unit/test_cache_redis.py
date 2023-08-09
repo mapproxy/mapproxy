@@ -44,6 +44,9 @@ class TestRedisCache(TileCacheTestBase):
     def teardown(self):
         for k in self.cache.r.keys('mapproxy-test-*'):
             self.cache.r.delete(k)
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_expire(self):
         cache = RedisCache(self.host, int(self.port), prefix='mapproxy-test', db=1, ttl=0)

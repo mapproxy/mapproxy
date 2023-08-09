@@ -20,7 +20,6 @@ import pytest
 
 from mapproxy.request.wmts import WMTS100CapabilitiesRequest
 from mapproxy.request.wms import WMS111CapabilitiesRequest
-from mapproxy.test.image import create_tmp_image
 from mapproxy.test.helper import validate_with_xsd
 from mapproxy.test.system import SysTest
 
