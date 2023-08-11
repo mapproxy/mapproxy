@@ -215,6 +215,9 @@ class DemoServer(Server):
             tms_tile_layers[name].append(self.tile_layers[layer])
         wmts_layers = tms_tile_layers.copy()
 
+        wmts_layers = odict(sorted(wmts_layers.items(), key=lambda x: x[0]))
+        tms_tile_layers = odict(sorted(tms_tile_layers.items(), key=lambda x: x[0]))
+
         substitutions = dict(
             extra_services_html_beginning='',
             extra_services_html_end='',
@@ -229,9 +232,6 @@ class DemoServer(Server):
 
         for add_substitution in extra_substitution_handlers:
             add_substitution(self, req, substitutions)
-
-        wmts_layers = odict(sorted(wmts_layers.items(), key=lambda x: x[0]))
-        tms_tile_layers = odict(sorted(tms_tile_layers.items(), key=lambda x: x[0]))
 
         return template.substitute(substitutions)
 
