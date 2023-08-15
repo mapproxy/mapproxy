@@ -12,25 +12,61 @@ services:
       abstract: This is MapProxy.
 
 layers:
-  - name: coverage_cache
-    title: coverage_cache
-    sources: [coverage_cache]
+  - name: bbox_coverage_cache
+    title: bbox_coverage_cache
+    sources: [bbox_coverage_cache]
+  - name: intersection_coverage_cache
+    title: intersection_coverage_cache
+    sources: [intersection_coverage_cache]
+  - name: datasource_coverage_cache
+    title: datasource_coverage_cache
+    sources: [datasource_coverage_cache]
 
 parts:
   coverages:
-    4326coverage: &4326coverage
+    bbox_coverage: &bbox_coverage
       bbox: [-50, -50, 50, 50]
       srs: EPSG:4326
+    intersection_coverage: &intersection_coverage
+      intersection:
+        - bbox: [-50, -57, 53, 59]
+          srs: 'EPSG:4326'
+        - bbox: [-48, -56, 51, 58]
+          srs: 'EPSG:4326'
+    datasource_coverage: &datasource_coverage
+      intersection:
+        - datasource: 'boundary.geojson'
+          srs: 'EPSG:4326'
+        - datasource: 'bbox.geojson'
+          srs: 'EPSG:4326'
 
 caches:
-  coverage_cache:
+  bbox_coverage_cache:
     grids: [crs84quad]
     sources: [wms_source]
     cache:
       type: geopackage
       filename: test.gpkg
       table_name: test
-      coverage: *4326coverage
+      coverage: *bbox_coverage
+  
+  intersection_coverage_cache:
+    grids: [crs84quad]
+    sources: [wms_source]
+    cache:
+      type: geopackage
+      filename: test.gpkg
+      table_name: test
+      coverage: *intersection_coverage
+  
+  datasource_coverage_cache:
+    grids: [crs84quad]
+    sources: [wms_source]
+    cache:
+      type: geopackage
+      filename: test.gpkg
+      table_name: test
+      coverage: *datasource_coverage
 
 sources:
   wms_source:
