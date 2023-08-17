@@ -150,6 +150,11 @@ class TileManager(object):
             # Remove our internal marker source, for missing tiles.
             if t.source is RESCALE_TILE_MISSING:
                 t.source = None
+            
+            # Remove tiles that are not in the cache coverage
+            tile_bbox = self.grid.tile_bbox(t.coord)
+            if self.cache.coverage and not self.cache.coverage.intersects(tile_bbox, self.grid.srs):
+                t.source = None
 
         return tiles
 
