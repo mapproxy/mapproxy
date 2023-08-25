@@ -174,7 +174,13 @@ class TileManager(object):
         if uncached_tiles:
             creator = self.creator(dimensions=dimensions)
             created_tiles = creator.create_tiles(uncached_tiles)
-            if not created_tiles and self.rescale_tiles:
+            blank_created_tiles = False
+            for tile in created_tiles:
+                 if tile.source_image().mode == 'RGBA':
+                    if all(tile.source_image().load()[x, y][3] == 0 for x in range(tile.source_image().width) for y in range(tile.source_image().height)) :
+                        blank_created_tiles = True
+
+            if blank_created_tiles and self.rescale_tiles:
                 created_tiles = [self._scaled_tile(t, rescale_till_zoom, rescaled_tiles) for t in uncached_tiles]
 
             for created_tile in created_tiles:
