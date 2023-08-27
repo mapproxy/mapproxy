@@ -42,7 +42,7 @@ class GeopackageCache(TileCacheBase):
         self.geopackage_file = geopackage_file
         
         if coverage:
-            self.bbox = coverage.bbox
+            self.bbox = coverage.transform_to(self.tile_grid.srs).bbox
         else:
             self.bbox = self.tile_grid.bbox
         # XXX timestamps not implemented
