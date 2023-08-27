@@ -25,7 +25,6 @@ from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
 from mapproxy.request.tile import tile_request
 from mapproxy.request.base import split_mime_type
-from mapproxy.layer import map_extent_from_grid
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
 from mapproxy.grid import default_bboxs
