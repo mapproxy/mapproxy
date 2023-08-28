@@ -202,6 +202,35 @@ Use the ``coverage`` option to define a coverage for any cache.
           bbox: [5, 50, 10, 55]
           srs: 'EPSG:4326'
 
+.. note::
+
+  You may define a ``coverage`` for both a ``source`` and the ``cache`` defined on that source, in this case the ``intersection`` of both ``coverages`` will be used.
+  The ``coverage`` of a ``cache`` is meant to be contained in the ``coverage`` of it's ``source``, in other cases where it either intersects or has no intersection, there may be unexpected bahaviour.
+
+  ::
+
+    Example for defining coverages for source and corresponding cache::
+      caches:
+        mycache:
+          grids: [GLOBAL_GEODETIC]
+          sources: [mywms]
+          cache:
+            type: geopackage
+            filename: file.gpkg
+            table_name: mygeopackage
+            coverage:
+              bbox: [-10, -10, 10, 10]
+              srs: 'EPSG:4326'
+      
+      sources:
+        mywms:
+          type: wms
+          req:
+            url: http://example.com/service?
+            layers: base
+          coverage:
+            bbox: [-50, -50, 50, 50]
+            srs: 'EPSG:4326'
 
 mapproxy-seed
 """""""""""""
