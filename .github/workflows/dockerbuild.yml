@@ -43,7 +43,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push base image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         if: ${{ inputs.tags }}
         with:
           context: docker/
@@ -57,7 +57,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push base image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         if: ${{ !inputs.tags }}
         with:
           context: docker/
@@ -71,7 +71,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push development image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         if: ${{ inputs.tags }}
         with:
           context: docker/
@@ -85,7 +85,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push development image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         if: ${{ !inputs.tags }}
         with:
           context: docker/
@@ -99,7 +99,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push nginx image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         if: ${{ inputs.tags }}
         with:
           context: docker/
@@ -113,7 +113,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Build and push nginx image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         if: ${{ !inputs.tags }}
         with:
           context: docker/
