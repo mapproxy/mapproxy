@@ -131,7 +131,7 @@ Example configuration for an OpenStreetMap tile service::
     my_tile_source:
       type: tile
       grid: GLOBAL_WEBMERCATOR
-      url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
+      url: https://tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
  grids:
   webmercator:
@@ -277,7 +277,7 @@ Here is an example that makes OSM tiles available as tiles in UTM. Note that rep
       osm_source:
         type: tile
         grid: GLOBAL_WEBMERCATOR
-        url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
+        url: https://tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
     grids:
       utm32n:
