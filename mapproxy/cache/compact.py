@@ -34,7 +34,8 @@ class CompactCacheBase(TileCacheBase):
     supports_timestamp = False
     bundle_class = None
 
-    def __init__(self, cache_dir):
+    def __init__(self, cache_dir, coverage=None):
+        super(CompactCacheBase, self).__init__(coverage)
         self.lock_cache_id = 'compactcache-' + hashlib.md5(cache_dir.encode('utf-8')).hexdigest()
         self.cache_dir = cache_dir
 

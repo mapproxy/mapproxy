@@ -4,7 +4,7 @@ Coverages
 =========
 
 With coverages you can define areas where data is available or where data you are interested in is.
-MapProxy supports coverages for :doc:`sources <sources>` and in the :doc:`mapproxy-seed tool <seed>`. Refer to the corresponding section in the documentation.
+MapProxy supports coverages for :doc:`sources <sources>`, :doc:`caches <caches>` and in the :doc:`mapproxy-seed tool <seed>`. Refer to the corresponding section in the documentation.
 
 
 There are five different ways to describe a coverage:
@@ -182,6 +182,55 @@ Example of an intersection coverage with clipping::
           - datasource: coverage.geojson
             srs: 'EPSG:4326'
 
+
+caches
+"""""""
+
+Use the ``coverage`` option to define a coverage for any cache.
+
+::
+
+  caches:
+    mycache:
+      grids: [GLOBAL_GEODETIC]
+      sources: []
+      cache:
+        type: geopackage
+        filename: file.gpkg
+        table_name: mygeopackage
+        coverage:
+          bbox: [5, 50, 10, 55]
+          srs: 'EPSG:4326'
+
+.. note::
+
+  You may define a ``coverage`` for both a ``source`` and the ``cache`` defined on that source, in this case the ``intersection`` of both ``coverages`` will be used.
+  The ``coverage`` of a ``cache`` is meant to be contained in the ``coverage`` of it's ``source``, in other cases where it either intersects or has no intersection, there may be unexpected bahaviour.
+
+  ::
+
+    Example for defining coverages for source and corresponding cache::
+      caches:
+        mycache:
+          grids: [GLOBAL_GEODETIC]
+          sources: [mywms]
+          cache:
+            type: geopackage
+            filename: file.gpkg
+            table_name: mygeopackage
+            coverage:
+              bbox: [-10, -10, 10, 10]
+              srs: 'EPSG:4326'
+      
+      sources:
+        mywms:
+          type: wms
+          req:
+            url: http://example.com/service?
+            layers: base
+          coverage:
+            bbox: [-50, -50, 50, 50]
+            srs: 'EPSG:4326'
 
 mapproxy-seed
 """""""""""""

@@ -34,11 +34,17 @@ log = logging.getLogger(__name__)
 class GeopackageCache(TileCacheBase):
     supports_timestamp = False
 
-    def __init__(self, geopackage_file, tile_grid, table_name, with_timestamps=False, timeout=30, wal=False):
+    def __init__(self, geopackage_file, tile_grid, table_name, with_timestamps=False, timeout=30, wal=False, coverage=None):
+        super(GeopackageCache, self).__init__(coverage)
         self.tile_grid = tile_grid
         self.table_name = self._check_table_name(table_name)
         self.lock_cache_id = 'gpkg' + hashlib.md5(geopackage_file.encode('utf-8')).hexdigest()
         self.geopackage_file = geopackage_file
+        
+        if coverage:
+            self.bbox = coverage.transform_to(self.tile_grid.srs).bbox
+        else:
+            self.bbox = self.tile_grid.bbox
         # XXX timestamps not implemented
         self.supports_timestamp = with_timestamps
         self.timeout = timeout
@@ -323,10 +329,10 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
                               "tiles",
                               self.table_name,
                               "Created with Mapproxy.",
-                              self.tile_grid.bbox[0],
-                              self.tile_grid.bbox[2],
-                              self.tile_grid.bbox[1],
-                              self.tile_grid.bbox[3],
+                              self.bbox[0],
+                              self.bbox[2],
+                              self.bbox[1],
+                              self.bbox[3],
                               proj))
         except sqlite3.IntegrityError:
             pass
@@ -338,8 +344,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
                 INSERT INTO gpkg_tile_matrix_set (table_name, srs_id, min_x, max_x, min_y, max_y)
                 VALUES (?, ?, ?, ?, ?, ?);
             """, (
-                self.table_name, proj, self.tile_grid.bbox[0], self.tile_grid.bbox[2], self.tile_grid.bbox[1],
-                self.tile_grid.bbox[3]))
+                self.table_name, proj, self.bbox[0], self.bbox[2], self.bbox[1], self.bbox[3]))
         except sqlite3.IntegrityError:
             pass
         db.commit()
@@ -491,7 +496,8 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
 
 class GeopackageLevelCache(TileCacheBase):
 
-    def __init__(self, geopackage_dir, tile_grid, table_name, timeout=30, wal=False):
+    def __init__(self, geopackage_dir, tile_grid, table_name, timeout=30, wal=False, coverage=None):
+        super(GeopackageLevelCache, self).__init__(coverage)
         self.lock_cache_id = 'gpkg-' + hashlib.md5(geopackage_dir.encode('utf-8')).hexdigest()
         self.cache_dir = geopackage_dir
         self.tile_grid = tile_grid
@@ -515,6 +521,7 @@ class GeopackageLevelCache(TileCacheBase):
                     with_timestamps=False,
                     timeout=self.timeout,
                     wal=self.wal,
+                    coverage=self.coverage
                 )
 
         return self._geopackage[level]

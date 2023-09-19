@@ -57,6 +57,9 @@ class TestAzureBlobCache(TileCacheTestBase):
     def teardown(self):
         TileCacheTestBase.teardown(self)
         self.container_client.delete_container()
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     @pytest.mark.parametrize('layout,tile_coord,key', [
         ['mp', (12345, 67890, 2), 'mycache/webmercator/02/0001/2345/0006/7890.png'],

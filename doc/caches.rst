@@ -23,6 +23,22 @@ Each backend has a ``type`` and one or more options.
         backendoption1: value
         backendoption2: value
 
+You may add a coverage definition to any cache with the ``coverage`` option under ``cache``.
+
+::
+
+  caches:
+    mycache:
+      sources: [...]
+      grids: [...]
+      cache:
+        type: backendtype
+        backendoption1: value
+        backendoption2: value
+        coverage:
+          bbox: [5, 50, 10, 55]
+          srs: 'EPSG:4326'
+
 
 The following backend types are available.
 

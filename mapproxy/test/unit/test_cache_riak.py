@@ -56,6 +56,9 @@ class RiakCacheTestBase(TileCacheTestBase):
         for k in bucket.get_keys():
             riak.RiakObject(self.cache.connection, bucket, k).delete()
         TileCacheTestBase.teardown(self)
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_double_remove(self):
         tile = self.create_tile()
