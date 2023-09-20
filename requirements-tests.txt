@@ -8,7 +8,7 @@ WebOb==1.8.6
 WebTest==3.0.0
 attrs==19.3.0;python_version<"3.10"
 attrs==21.4.0;python_version>="3.10"
-aws-sam-translator==1.26.0
+aws-sam-translator==1.74.0
 aws-xray-sdk==2.6.0
 beautifulsoup4==4.12.2
 boto3==1.26.112
