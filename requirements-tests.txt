@@ -1,7 +1,7 @@
 azure-storage-blob>=12.9.0
 Jinja2==2.11.3
 MarkupSafe==1.1.1
-Pillow==9.5.0
+Pillow==10.0.1
 PyYAML==6.0.1
 Shapely==1.7.0
 WebOb==1.8.6
