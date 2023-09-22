@@ -52,7 +52,7 @@ pyproj==3.5.0;python_version>"3.10"
 pyrsistent==0.19.3
 pytest==7.4.2
 pytest-rerunfailures==12.0
-python-dateutil==2.8.1
+python-dateutil==2.8.2
 python-jose==3.3.0
 pytz==2020.1
 redis==4.5.4
