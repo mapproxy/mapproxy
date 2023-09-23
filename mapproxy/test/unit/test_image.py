@@ -21,7 +21,7 @@ from io import BytesIO
 
 import pytest
 
-from mapproxy.compat.image import Image, ImageDraw, PIL_VERSION
+from mapproxy.compat.image import Image, ImageDraw, PIL_VERSION_TUPLE
 from mapproxy.image import (
     BlankImageSource,
     GeoReference,
@@ -112,7 +112,7 @@ class TestImageSource(object):
         assert is_tiff(ir.as_buffer(TIFF_FORMAT))
         assert is_tiff(ir.as_buffer())
 
-    @pytest.mark.skipif(PIL_VERSION < '6.1.0', reason="Pillow 6.1.0 required GeoTIFF")
+    @pytest.mark.skipif(PIL_VERSION_TUPLE < (6, 1, 0), reason="Pillow 6.1.0 required GeoTIFF")
     def test_tiff_compression(self):
         def encoded_size(encoding_options):
             ir = ImageSource(create_debug_img((100, 100)), PNG_FORMAT)
@@ -134,7 +134,7 @@ class TestImageSource(object):
         assert q50 > lzw
 
     @pytest.mark.xfail(
-        PIL_VERSION >= '9.0.0',
+        PIL_VERSION_TUPLE >= (9, 0, 0),
         reason="The palette colors order has been changed in Pillow 9.0.0"
     )
     def test_output_formats_greyscale_png(self):
@@ -156,7 +156,7 @@ class TestImageSource(object):
         assert img.getpixel((0, 0)) == (0, 0)
 
     @pytest.mark.xfail(
-        PIL_VERSION >= '9.0.0',
+        PIL_VERSION_TUPLE >= (9, 0, 0),
         reason="The palette colors order has been changed in Pillow 9.0.0"
     )
     def test_output_formats_png8(self):
@@ -593,7 +593,7 @@ def assert_geotiff_tags(img, expected_origin, expected_pixel_res, srs, projected
     assert tags[TIFF_GEOKEYDIRECTORYTAG][3*4+3] == srs
 
 
-@pytest.mark.skipif(PIL_VERSION < '6.1.0', reason="Pillow 6.1.0 required GeoTIFF")
+@pytest.mark.skipif(PIL_VERSION_TUPLE < (6, 1, 0), reason="Pillow 6.1.0 required GeoTIFF")
 @pytest.mark.parametrize("compression", ['jpeg', 'raw', 'tiff_lzw'])
 class TestGeoTIFF(object):
 
