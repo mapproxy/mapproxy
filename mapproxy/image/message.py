@@ -281,8 +281,7 @@ class TextDraw(object):
         boxes = []
         y_offset = 0
         for i, line in enumerate(self.text):
-            text_size = draw.textsize(line, font=self.font)
-            text_box = (0, y_offset, text_size[0], text_size[1]+y_offset)
+            text_box = draw.textbbox((0, y_offset), line, font=self.font)
             boxes.append(text_box)
             total_bbox = (min(total_bbox[0], text_box[0]),
                           min(total_bbox[1], text_box[1]),
@@ -290,7 +289,7 @@ class TextDraw(object):
                           max(total_bbox[3], text_box[3]),
                          )
 
-            y_offset += text_size[1] + self.linespacing
+            y_offset = text_box[3] + self.linespacing
         return total_bbox, boxes
 
     def _move_bboxes(self, boxes, offsets):
