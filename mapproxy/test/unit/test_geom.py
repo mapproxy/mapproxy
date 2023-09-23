@@ -22,11 +22,7 @@ import shutil
 import pytest
 import shapely
 import shapely.prepared
-try:
-    # shapely >=1.6
-    from shapely.errors import ReadingError
-except ImportError:
-    from shapely.geos import ReadingError
+from shapely.errors import ReadingError
 
 from mapproxy.srs import SRS, bbox_equals
 from mapproxy.util.geom import (
