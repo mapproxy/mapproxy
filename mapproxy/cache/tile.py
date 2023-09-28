@@ -140,6 +140,12 @@ class TileManager(object):
                 rescale_till_zoom = 0
             if rescale_till_zoom > self.grid.levels:
                 rescale_till_zoom = self.grid.levels
+        
+        # Remove tiles that are not in the cache coverage
+        for t in tiles.tiles:
+            tile_bbox = self.grid.tile_bbox(t.coord)
+            if self.cache.coverage and not self.cache.coverage.intersects(tile_bbox, self.grid.srs):
+                t.coord = None
 
         tiles = self._load_tile_coords(
             tiles, dimensions=dimensions, with_metadata=with_metadata,
@@ -150,7 +156,6 @@ class TileManager(object):
             # Remove our internal marker source, for missing tiles.
             if t.source is RESCALE_TILE_MISSING:
                 t.source = None
-
         return tiles
 
     def _load_tile_coords(self, tiles, dimensions=None, with_metadata=False,

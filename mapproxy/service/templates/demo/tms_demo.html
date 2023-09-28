@@ -22,7 +22,7 @@ jscript_functions=None
 
         const transparent = "{{if format == 'png'}}true{{endif}}";
         const srs = "{{srs}}";
-        const extent = [{{', '.join(str(r) for r in layer.grid.bbox)}}];
+        const extent = [{{', '.join(str(r) for r in layer.bbox)}}];
 
         if (!ol.proj.get(srs)) {
             const allDefs = await import('./static/proj4defs.js');

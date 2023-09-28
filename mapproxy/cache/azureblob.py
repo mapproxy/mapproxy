@@ -43,8 +43,8 @@ class AzureBlobConnectionError(Exception):
 class AzureBlobCache(TileCacheBase):
 
     def __init__(self, base_path, file_ext, directory_layout='tms', container_name='mapproxy',
-                 _concurrent_writer=4, _concurrent_reader=4, connection_string=None):
-        super(AzureBlobCache, self).__init__()
+                 _concurrent_writer=4, _concurrent_reader=4, connection_string=None, coverage=None):
+        super(AzureBlobCache, self).__init__(coverage)
         if BlobServiceClient is None:
             raise ImportError("Azure Blob Cache requires 'azure-storage-blob' package")
 

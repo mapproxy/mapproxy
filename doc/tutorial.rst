@@ -286,7 +286,7 @@ preferred factor after it.
 A magical value of `res_factor` is **sqrt2**, the square root of two. It doubles
 the number of cached resolutions, so you have 40 instead of 20 available resolutions.
 Every second resolution is identical to the power-of-two resolutions, so you can
-use this layer not only in classic WMS clients with free zomming, but also in tile-based clients
+use this layer not only in classic WMS clients with free zooming, but also in tile-based clients
 like OpenLayers which only request in these resolutions. Look at the :ref:`configuration
 examples for vector data for more information <cache_resolutions>`.
 
