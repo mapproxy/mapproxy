@@ -374,7 +374,7 @@ class MBTilesLevelCache(TileCacheBase):
 
         return self._get_level(level).load_tiles(tiles, with_metadata=with_metadata, dimensions=dimensions)
 
-    def remove_tile(self, tile):
+    def remove_tile(self, tile, dimensions=None):
         if tile.coord is None:
             return True
 
