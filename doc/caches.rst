@@ -380,6 +380,12 @@ Available options:
 ``db``:
     Number of the Redis database. Please refer to the Redis documentation. Defaults to `0`.
 
+``username``:
+  Optional authentication username. No defaults.
+
+``password``:
+  Optional authentication password. No defaults.
+
 ``prefix``:
     The prefix added to each tile-key in the Redis cache. Used to distinguish tiles from different caches and grids.  Defaults to ``cache-name_grid-name``.
 
@@ -398,6 +404,8 @@ Example
         grids: [mygrid]
         cache:
           type: redis
+          username: mapproxy
+          password: iamgreatpassword
           default_ttl: 600
 
 
