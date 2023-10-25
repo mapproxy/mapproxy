@@ -68,7 +68,7 @@ toml==0.10.2
 urllib3==1.26.18
 waitress==2.1.2
 websocket-client==1.6.1
-werkzeug==1.0.1
+werkzeug==3.0.0
 wrapt==1.12.1
 xmltodict==0.13.0
 zipp==3.15.0
