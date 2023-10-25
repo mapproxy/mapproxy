@@ -30,7 +30,7 @@ iniconfig==2.0.0
 jmespath==0.10.0
 jsondiff==1.1.2
 jsonpatch==1.33
-jsonpickle==1.4.1
+jsonpickle==3.0.2
 jsonpointer==2.4
 jsonschema==3.2.0
 junit-xml==1.9
