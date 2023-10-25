@@ -180,6 +180,8 @@ cache_types = {
     'redis': combined(cache_commons, {
         'host': str(),
         'port': int(),
+        'password': str(),
+        'username': str(),
         'db': int(),
         'prefix': str(),
         'default_ttl': int(),

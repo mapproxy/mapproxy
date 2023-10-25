@@ -1337,6 +1337,8 @@ class CacheConfiguration(ConfigurationBase):
         port = self.conf['cache'].get('port', 6379)
         db = self.conf['cache'].get('db', 0)
         ttl = self.conf['cache'].get('default_ttl', 3600)
+        username = self.conf['cache'].get('username',None)
+        password = self.conf['cache'].get('password', None)
         coverage = self.coverage()
 
         prefix = self.conf['cache'].get('prefix')
@@ -1347,6 +1349,8 @@ class CacheConfiguration(ConfigurationBase):
             host=host,
             port=port,
             db=db,
+            username=username,
+            password=password,
             prefix=prefix,
             ttl=ttl,
             coverage=coverage
