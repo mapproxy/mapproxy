@@ -32,7 +32,7 @@ def config_file():
 
 class TestSeedOnlyWMS(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_map_req = WMS111MapRequest(
             url="/service?",
             param=dict(

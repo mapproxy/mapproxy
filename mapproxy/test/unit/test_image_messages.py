@@ -156,7 +156,7 @@ class TestMessageImage(object):
 
 class TestWatermarkTileFilter(object):
 
-    def setup(self):
+    def setup_method(self):
         self.tile = Tile((0, 0, 0))
         self.filter = watermark_filter("Test")
 

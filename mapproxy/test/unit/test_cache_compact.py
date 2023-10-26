@@ -35,8 +35,8 @@ class TestCompactCacheV1(TileCacheTestBase):
 
     always_loads_metadata = True
 
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.cache = CompactCacheV1(
             cache_dir=self.cache_dir,
         )
@@ -136,8 +136,8 @@ class TestCompactCacheV2(TileCacheTestBase):
 
     always_loads_metadata = True
 
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.cache = CompactCacheV2(
             cache_dir=self.cache_dir,
         )
@@ -233,10 +233,10 @@ class mockProgressLog(object):
         self.logs.sort(key=lambda x: (x['fname'], 'num'))
 
 class DefragmentationTestBase(object):
-    def setup(self):
+    def setup_method(self):
         self.cache_dir = tempfile.mkdtemp()
 
-    def teardown(self):
+    def teardown_method(self):
         if os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
 

@@ -94,7 +94,7 @@ class MockTileClient(object):
         return ImageSource(create_debug_img((256, 256)))
 
 class TestTiledSourceGlobalGeodetic(object):
-    def setup(self):
+    def setup_method(self):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = MockTileClient()
         self.source = TiledSource(self.grid, self.client)
@@ -1195,18 +1195,18 @@ class TestTileManagerRescaleTiles(object):
 class TileCacheTestBase(object):
     cache = None # set by subclasses
 
-    def setup(self):
+    def setup_method(self):
         self.cache_dir = tempfile.mkdtemp()
 
-    def teardown(self):
+    def teardown_method(self):
         if hasattr(self.cache, 'cleanup'):
             self.cache.cleanup()
         if hasattr(self, 'cache_dir') and os.path.exists(self.cache_dir):
             shutil.rmtree(self.cache_dir)
 
 class TestTileManagerCacheBboxCoverage(TileCacheTestBase):
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.cache = RecordFileCache(self.cache_dir, 'png', coverage=coverage([-50, -50, 50, 50], SRS(4326)))
     
     def test_load_tiles_in_coverage(self, tile_locker):
@@ -1257,8 +1257,8 @@ boundary_geojson = (
 )
 
 class TestTileManagerCacheGeojsonCoverage(TileCacheTestBase):
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         
         with TempFile() as tf:
             with open(tf, 'wb') as f:

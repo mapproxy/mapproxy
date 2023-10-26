@@ -57,7 +57,7 @@ def s3_buckets():
 @pytest.mark.usefixtures("s3_buckets")
 class TestS3Cache(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_map_req = WMS111MapRequest(
             url="/service?",
             param=dict(

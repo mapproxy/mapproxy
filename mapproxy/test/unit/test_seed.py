@@ -71,7 +71,7 @@ class MockCache(object):
 
 class TestSeeder(object):
 
-    def setup(self):
+    def setup_method(self):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.source = TiledSource(self.grid, None)
         self.tile_mgr = TileManager(

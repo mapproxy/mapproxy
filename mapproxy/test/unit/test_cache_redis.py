@@ -33,15 +33,15 @@ from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 class TestRedisCache(TileCacheTestBase):
     always_loads_metadata = False
 
-    def setup(self):
+    def setup_method(self):
         redis_host = os.environ['MAPPROXY_TEST_REDIS']
         self.host, self.port = redis_host.split(':')
 
-        TileCacheTestBase.setup(self)
+        TileCacheTestBase.setup_method(self)
 
         self.cache = RedisCache(self.host, int(self.port), prefix='mapproxy-test', db=1)
 
-    def teardown(self):
+    def teardown_method(self):
         for k in self.cache.r.keys('mapproxy-test-*'):
             self.cache.r.delete(k)
     

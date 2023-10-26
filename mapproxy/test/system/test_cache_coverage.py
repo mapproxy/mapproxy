@@ -91,7 +91,7 @@ class TestCacheCoverage(SysTest):
         base_dir.join("boundary.geojson").write_binary(boundary_geojson)
         base_dir.join("bbox.geojson").write_binary(bbox_geojson)
 
-    def setup(self):
+    def setup_method(self):
         self.common_cap_req = WMTS100CapabilitiesRequest(
             url="/service?",
             param=dict(service="WMTS", version="1.0.0", request="GetCapabilities"),

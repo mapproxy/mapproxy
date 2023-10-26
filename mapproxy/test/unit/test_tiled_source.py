@@ -29,7 +29,7 @@ TESTSERVER_URL = ("http://%s:%d" % TEST_SERVER_ADDRESS) + "/%(tms_path)s.png"
 
 class TestTileClientOnError(object):
 
-    def setup(self):
+    def setup_method(self):
         self.grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90])
         self.client = TileClient(TileURLTemplate(TESTSERVER_URL))
 

@@ -99,7 +99,7 @@ def fi_req_with_featurecount():
 
 class TestWMTS(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_cap_req = WMTS100CapabilitiesRequest(
             url="/service?",
             param=dict(service="WMTS", version="1.0.0", request="GetCapabilities"),

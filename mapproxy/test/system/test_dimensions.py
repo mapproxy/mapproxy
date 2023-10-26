@@ -44,7 +44,7 @@ def config_file():
 
 class TestDimensionsWMS130(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_req = WMS130MapRequest(
             url="/service?", param=dict(service="WMS", version="1.3.0")
         )
@@ -114,7 +114,7 @@ class TestDimensionsWMS130(SysTest):
 
 class TestDimensionsWMS111(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_req = WMS111MapRequest(
             url="/service?", param=dict(service="WMS", version="1.1.1")
         )
@@ -180,7 +180,7 @@ class TestDimensionsWMS111(SysTest):
 
 class TestDimensionsWMS110(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_req = WMS110MapRequest(
             url="/service?", param=dict(service="WMS", version="1.1.0")
         )
@@ -249,7 +249,7 @@ class TestDimensionsWMS110(SysTest):
 
 class TestDimensionsWMS100(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_req = WMS100MapRequest(
             url="/service?", param=dict(service="WMS", wmtver="1.0.0")
         )
