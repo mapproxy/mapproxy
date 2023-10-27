@@ -74,6 +74,6 @@ urllib3==1.26.18
 waitress==2.1.2
 websocket-client==1.6.1
 werkzeug==1.0.1
-wrapt==1.12.1
+wrapt==1.15.0
 xmltodict==0.13.0
 zipp==3.15.0
