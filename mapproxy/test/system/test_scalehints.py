@@ -45,7 +45,7 @@ def diagonal_res_to_pixel_res(res):
 
 class TestWMS(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_req = WMS111MapRequest(
             url="/service?", param=dict(service="WMS", version="1.1.1")
         )

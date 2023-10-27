@@ -36,7 +36,7 @@ from mapproxy.test.image import tmp_image, create_tmp_image_buf, create_tmp_imag
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 
 class SeedTestEnvironment(object):
-    def setup(self):
+    def setup_method(self):
         self.dir = tempfile.mkdtemp()
         shutil.copy(os.path.join(FIXTURE_DIR, self.seed_conf_name), self.dir)
         shutil.copy(os.path.join(FIXTURE_DIR, self.mapproxy_conf_name), self.dir)
@@ -45,7 +45,7 @@ class SeedTestEnvironment(object):
         self.mapproxy_conf_file = os.path.join(self.dir, self.mapproxy_conf_name)
         self.mapproxy_conf = load_configuration(self.mapproxy_conf_file, seed=True)
 
-    def teardown(self):
+    def teardown_method(self):
         shutil.rmtree(self.dir)
 
     def make_tile(self, coord=(0, 0, 0), timestamp=None):

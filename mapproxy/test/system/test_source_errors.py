@@ -42,7 +42,7 @@ class TestWMS(SysTest):
     def config_file(self):
         return "source_errors.yaml"
 
-    def setup(self):
+    def setup_method(self):
         self.common_map_req = WMS111MapRequest(
             url="/service?",
             param=dict(
@@ -140,7 +140,7 @@ class TestWMSRaise(SysTest):
     def config_file(self):
         return "source_errors_raise.yaml"
 
-    def setup(self):
+    def setup_method(self):
         self.common_map_req = WMS111MapRequest(
             url="/service?",
             param=dict(
@@ -191,7 +191,7 @@ class TestTileErrors(SysTest):
     def config_file(self):
         return "source_errors.yaml"
 
-    def setup(self):
+    def setup_method(self):
         self.common_map_req = WMS111MapRequest(
             url="/service?",
             param=dict(

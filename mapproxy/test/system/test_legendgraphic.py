@@ -52,7 +52,7 @@ class TestWMSLegendgraphic(SysTest):
     def cache_dir(self, base_dir):
         return base_dir.join("cache_data")
 
-    def setup(self):
+    def setup_method(self):
         self.common_req = WMS111MapRequest(
             url="/service?", param=dict(service="WMS", version="1.1.1")
         )

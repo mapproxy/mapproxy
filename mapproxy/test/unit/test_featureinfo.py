@@ -34,7 +34,7 @@ from mapproxy.test.helper import strip_whitespace
 
 class TestXSLTransformer(object):
 
-    def setup(self):
+    def setup_method(self):
         fd, self.xsl_script = tempfile.mkstemp(".xsl")
         os.close(fd)
         xsl = (
@@ -54,7 +54,7 @@ class TestXSLTransformer(object):
         with open(self.xsl_script, "wb") as f:
             f.write(xsl)
 
-    def teardown(self):
+    def teardown_method(self):
         os.remove(self.xsl_script)
 
     def test_transformer(self):
@@ -123,13 +123,13 @@ class TestXMLFeatureInfoDocs(object):
 
 class TestXMLFeatureInfoDocsNoLXML(object):
 
-    def setup(self):
+    def setup_method(self):
         from mapproxy import featureinfo
 
         self.old_etree = featureinfo.etree
         featureinfo.etree = None
 
-    def teardown(self):
+    def teardown_method(self):
         from mapproxy import featureinfo
 
         featureinfo.etree = self.old_etree
@@ -191,13 +191,13 @@ class TestHTMLFeatureInfoDocs(object):
 
 class TestHTMLFeatureInfoDocsNoLXML(object):
 
-    def setup(self):
+    def setup_method(self):
         from mapproxy import featureinfo
 
         self.old_etree = featureinfo.etree
         featureinfo.etree = None
 
-    def teardown(self):
+    def teardown_method(self):
         from mapproxy import featureinfo
 
         featureinfo.etree = self.old_etree

@@ -40,8 +40,8 @@ class TestGeopackageCache(TileCacheTestBase):
 
     always_loads_metadata = True
 
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.gpkg_file = os.path.join(self.cache_dir, 'tmp.gpkg')
         self.table_name = 'test_tiles'
         self.cache = GeopackageCache(
@@ -50,10 +50,10 @@ class TestGeopackageCache(TileCacheTestBase):
             table_name=self.table_name,
         )
 
-    def teardown(self):
+    def teardown_method(self):
         if self.cache:
             self.cache.cleanup()
-        TileCacheTestBase.teardown(self)
+        TileCacheTestBase.teardown_method(self)
 
     def test_new_geopackage(self):
         assert os.path.exists(self.gpkg_file)
@@ -125,8 +125,8 @@ class TestGeopackageCache(TileCacheTestBase):
 
 
 class TestGeopackageCacheCoverage(TileCacheTestBase):
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.gpkg_file = os.path.join(self.cache_dir, 'tmp.gpkg')
         self.table_name = 'test_tiles'
         self.cache = GeopackageCache(
@@ -136,10 +136,10 @@ class TestGeopackageCacheCoverage(TileCacheTestBase):
             coverage=coverage([20, 20, 30, 30], SRS(4326))
         )
     
-    def teardown(self):
+    def teardown_method(self):
         if self.cache:
             self.cache.cleanup()
-        TileCacheTestBase.teardown(self)
+        TileCacheTestBase.teardown_method(self)
     
     def test_correct_coverage(self):
         assert self.cache.bbox == [20, 20, 30, 30]
@@ -149,18 +149,18 @@ class TestGeopackageLevelCache(TileCacheTestBase):
 
     always_loads_metadata = True
 
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.cache = GeopackageLevelCache(
             self.cache_dir,
             tile_grid=tile_grid(3857, name='global-webmarcator'),
             table_name='test_tiles',
         )
 
-    def teardown(self):
+    def teardown_method(self):
         if self.cache:
             self.cache.cleanup()
-        TileCacheTestBase.teardown(self)
+        TileCacheTestBase.teardown_method(self)
         
     def test_default_coverage(self):
         assert self.cache.coverage is None

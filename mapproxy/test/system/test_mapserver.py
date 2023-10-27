@@ -54,7 +54,7 @@ class TestMapServerCGI(SysTest):
 
         base_dir.join("tmp").mkdir()
 
-    def setup(self):
+    def setup_method(self):
         self.common_map_req = WMS111MapRequest(
             url="/service?",
             param=dict(

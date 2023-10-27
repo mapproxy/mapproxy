@@ -71,7 +71,7 @@ class DummyTileLayer(object):
 
 class TestDecorateImg(object):
 
-    def setup(self):
+    def setup_method(self):
         # Base server
         self.server = Server()
         # WMS Server

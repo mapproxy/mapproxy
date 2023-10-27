@@ -104,7 +104,7 @@ class TestWMSXSLTFeatureInfo(SysTest):
     def config_file(self):
         return "xslt_featureinfo.yaml"
 
-    def setup(self):
+    def setup_method(self):
         self.common_fi_req = WMS111FeatureInfoRequest(
             url="/service?",
             param=dict(
@@ -282,7 +282,7 @@ class TestWMSXSLTFeatureInfoInput(SysTest):
     def config_file(self):
         return "xslt_featureinfo_input.yaml"
 
-    def setup(self):
+    def setup_method(self):
         self.common_fi_req = WMS111FeatureInfoRequest(
             url="/service?",
             param=dict(

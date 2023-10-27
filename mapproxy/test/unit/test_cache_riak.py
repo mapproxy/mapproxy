@@ -33,7 +33,7 @@ tile_image2 = create_tmp_image_buf((256, 256), color='red')
 @pytest.mark.skipif(sys.version_info > (3, 7), reason="riak is not compatible with this Python version")
 class RiakCacheTestBase(TileCacheTestBase):
     always_loads_metadata = True
-    def setup(self):
+    def setup_method(self):
         url = os.environ[self.riak_url_env]
         urlparts = urlparse.urlparse(url)
         protocol = urlparts.scheme.lower()
@@ -46,16 +46,16 @@ class RiakCacheTestBase(TileCacheTestBase):
 
         db_name = 'mapproxy_test_%d' % random.randint(0, 100000)
 
-        TileCacheTestBase.setup(self)
+        TileCacheTestBase.setup_method(self)
 
         self.cache = RiakCache([node], protocol, db_name, tile_grid=tile_grid(3857, name='global-webmarcator'))
 
-    def teardown(self):
+    def teardown_method(self):
         import riak
         bucket = self.cache.bucket
         for k in bucket.get_keys():
             riak.RiakObject(self.cache.connection, bucket, k).delete()
-        TileCacheTestBase.teardown(self)
+        TileCacheTestBase.teardown_method(self)
     
     def test_default_coverage(self):
         assert self.cache.coverage is None

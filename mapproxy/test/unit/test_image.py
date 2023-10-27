@@ -61,10 +61,10 @@ TIFF_FORMAT = ImageOptions(format="image/tiff")
 
 class TestImageSource(object):
 
-    def setup(self):
+    def setup_method(self):
         self.tmp_filename = create_tmp_image_file((100, 100))
 
-    def teardown(self):
+    def teardown_method(self):
         os.remove(self.tmp_filename)
 
     def test_from_filename(self):
@@ -254,7 +254,7 @@ class ROnly(object):
 
 class TestReadBufWrapper(object):
 
-    def setup(self):
+    def setup_method(self):
         rbuf = ROnly()
         self.rbuf_wrapper = ReadBufWrapper(rbuf)
 
@@ -291,7 +291,7 @@ class TestReadBufWrapper(object):
 
 class TestMergeAll(object):
 
-    def setup(self):
+    def setup_method(self):
         self.cleanup_tiles = []
 
     def test_full_merge(self):
@@ -347,7 +347,7 @@ class TestMergeAll(object):
         assert img.size == (100, 100)
         assert img.getcolors() == [(100 * 100, (200, 100, 30, 40))]
 
-    def teardown(self):
+    def teardown_method(self):
         for tile_fname in self.cleanup_tiles:
             if tile_fname and os.path.isfile(tile_fname):
                 os.remove(tile_fname)
@@ -355,13 +355,13 @@ class TestMergeAll(object):
 
 class TestGetCrop(object):
 
-    def setup(self):
+    def setup_method(self):
         self.tmp_file = create_tmp_image_file((100, 100), two_colored=True)
         self.img = ImageSource(
             self.tmp_file, image_opts=ImageOptions(format="image/png"), size=(100, 100)
         )
 
-    def teardown(self):
+    def teardown_method(self):
         if os.path.exists(self.tmp_file):
             os.remove(self.tmp_file)
 
@@ -540,7 +540,7 @@ class TestLayerCompositeMerge(object):
 
 class TestTransform(object):
 
-    def setup(self):
+    def setup_method(self):
         self.src_img = ImageSource(create_debug_img((200, 200), transparent=False))
         self.src_srs = SRS(31467)
         self.dst_size = (100, 150)
@@ -861,7 +861,7 @@ class TestPeekImageFormat(object):
 
 class TestBandMerge(object):
 
-    def setup(self):
+    def setup_method(self):
         self.img0 = ImageSource(Image.new("RGB", (10, 10), (0, 10, 20)))
         self.img1 = ImageSource(Image.new("RGB", (10, 10), (100, 110, 120)))
         self.img2 = ImageSource(Image.new("RGB", (10, 10), (200, 210, 220)))

@@ -92,7 +92,7 @@ class TestDefaultsLoading(object):
 
 
 class TestSRSConfig(object):
-    def setup(self):
+    def setup_method(self):
         import mapproxy.config.config
         mapproxy.config.config._config.pop()
 
