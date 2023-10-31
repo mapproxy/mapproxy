@@ -19,7 +19,7 @@ certifi==2023.7.22
 cffi==1.15.1;
 cfn-lint==0.80.3
 chardet==5.2.0
-cryptography==41.0.4
+cryptography==41.0.5
 decorator==4.4.2
 docker==6.1.3
 docutils==0.20.1
