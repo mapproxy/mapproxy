@@ -35,17 +35,23 @@ log = logging.getLogger(__name__)
 
 
 class RedisCache(TileCacheBase):
-    def __init__(self, host, port, prefix, ttl=0, db=0, username=None, password=None, coverage=None):
+    def __init__(self, host, port, prefix, ttl=0, db=0, username=None, password=None, coverage=None, ssl_certfile=None, ssl_keyfile=None, ssl_ca_certs=None):
         super(RedisCache, self).__init__(coverage)
         
         if redis is None:
             raise ImportError("Redis backend requires 'redis' package.")
 
+        self.ssl_certfile = ssl_certfile
+        self.ssl_keyfile = ssl_keyfile
+        self.ssl_ca_certs = ssl_ca_certs
+
         self.prefix = prefix
         # str(username) => if not set defaults to None
         self.lock_cache_id = 'redis-' + hashlib.md5((host + str(port) + prefix + str(db) + str(username)).encode('utf-8')).hexdigest()
         self.ttl = ttl
-        self.r = redis.StrictRedis(host=host, port=port, username=username, password=password, db=db)
+        # Enable SSL only if certificate, key, and CA files are provided
+        ssl_enabled = all([self.ssl_certfile, self.ssl_keyfile, self.ssl_ca_certs])
+        self.r = redis.StrictRedis(host=host, port=port, username=username, password=password, db=db, ssl_certfile=self.ssl_certfile if ssl_enabled else None, ssl_keyfile=self.ssl_keyfile if ssl_enabled else None, ssl_ca_certs=self.ssl_ca_certs if ssl_enabled else None, ssl=ssl_enabled)
 
     def _key(self, tile):
         x, y, z = tile.coord
