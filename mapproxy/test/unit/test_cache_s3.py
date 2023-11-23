@@ -39,8 +39,8 @@ class TestS3Cache(TileCacheTestBase):
     always_loads_metadata = True
     uses_utc = True
 
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
 
         self.mock = mock_s3()
         self.mock.start()
@@ -58,9 +58,9 @@ class TestS3Cache(TileCacheTestBase):
             _concurrent_writer=1, # moto is not thread safe
         )
         
-    def teardown(self):
+    def teardown_method(self):
         self.mock.stop()
-        TileCacheTestBase.teardown(self)
+        TileCacheTestBase.teardown_method(self)
     
     def test_default_coverage(self):
         assert self.cache.coverage is None

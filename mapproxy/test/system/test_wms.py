@@ -103,8 +103,8 @@ def bbox_srs_from_boundingbox(bbox_elem):
 class TestWMS111(SysTest):
     config_file = "layer.yaml"
 
-    def setup(self):
-        # WMSTest.setup(self)
+    def setup_method(self):
+        # WMSTest.setup_method(self)
         self.common_req = WMS111MapRequest(
             url="/service?", param=dict(service="WMS", version="1.1.1")
         )
@@ -830,8 +830,8 @@ class TestWMS111(SysTest):
 class TestWMS110(SysTest):
     config_file = "layer.yaml"
 
-    def setup(self):
-        # WMSTest.setup(self)
+    def setup_method(self):
+        # WMSTest.setup_method(self)
         self.common_req = WMS110MapRequest(
             url="/service?", param=dict(service="WMS", version="1.1.0")
         )
@@ -1099,7 +1099,7 @@ class TestWMS110(SysTest):
 class TestWMS100(SysTest):
     config_file = "layer.yaml"
 
-    def setup(self):
+    def setup_method(self):
         self.common_req = WMS100MapRequest(url="/service?", param=dict(wmtver="1.0.0"))
         self.common_map_req = WMS100MapRequest(
             url="/service?",
@@ -1302,7 +1302,7 @@ assert_xpath_wms130 = functools.partial(assert_xpath, namespaces=ns130)
 class TestWMS130(SysTest):
     config_file = "layer.yaml"
 
-    def setup(self):
+    def setup_method(self):
         self.common_req = WMS130MapRequest(
             url="/service?", param=dict(service="WMS", version="1.3.0")
         )
@@ -1533,7 +1533,7 @@ class TestWMS130(SysTest):
 class TestWMSLinkSingleColorImages(SysTest):
     config_file = "layer.yaml"
 
-    def setup(self):
+    def setup_method(self):
         self.common_map_req = WMS111MapRequest(
             url="/service?",
             param=dict(

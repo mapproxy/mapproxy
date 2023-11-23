@@ -205,7 +205,7 @@ class TestBBOXPolygon(object):
 
 
 class TestGeomCoverage(object):
-    def setup(self):
+    def setup_method(self):
         # box from 10 10 to 80 80 with small spike/corner to -10 60 (upper left)
         self.geom = shapely.wkt.loads(
             "POLYGON((10 10, 10 50, -10 60, 10 80, 80 80, 80 10, 10 10))")
@@ -249,7 +249,7 @@ class TestGeomCoverage(object):
         assert coverage(g1, SRS(4326)) != coverage(g4, SRS(4326))
 
 class TestBBOXCoverage(object):
-    def setup(self):
+    def setup_method(self):
         self.coverage = coverage([-10, 10, 80, 80], SRS(4326))
 
     def test_bbox(self):
@@ -300,7 +300,7 @@ class TestBBOXCoverage(object):
 
 
 class TestUnionCoverage(object):
-    def setup(self):
+    def setup_method(self):
         self.coverage = union_coverage([
             coverage([0, 0, 10, 10], SRS(4326)),
             coverage(shapely.wkt.loads("POLYGON((10 0, 20 0, 20 10, 10 10, 10 0))"), SRS(4326)),
@@ -323,7 +323,7 @@ class TestUnionCoverage(object):
 
 
 class TestDiffCoverage(object):
-    def setup(self):
+    def setup_method(self):
         g1 = coverage(shapely.wkt.loads("POLYGON((-10 0, 20 0, 20 10, -10 10, -10 0))"), SRS(4326))
         g2 = coverage([0, 2, 8, 8], SRS(4326))
         g3 = coverage(shapely.wkt.loads("POLYGON((-1000000 500000, 0 500000, 0 1000000, -1000000 1000000, -1000000 500000))"), SRS(3857))
@@ -346,7 +346,7 @@ class TestDiffCoverage(object):
 
 
 class TestIntersectionCoverage(object):
-    def setup(self):
+    def setup_method(self):
         g1 = coverage(shapely.wkt.loads("POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))"), SRS(4326))
         g2 = coverage([5, 5, 15, 15], SRS(4326))
         self.coverage = intersection_coverage([g1, g2])
@@ -365,7 +365,7 @@ class TestIntersectionCoverage(object):
 
 
 class TestMultiCoverage(object):
-    def setup(self):
+    def setup_method(self):
         # box from 10 10 to 80 80 with small spike/corner to -10 60 (upper left)
         self.geom = shapely.wkt.loads(
             "POLYGON((10 10, 10 50, -10 60, 10 80, 80 80, 80 10, 10 10))")
@@ -405,7 +405,7 @@ class TestMultiCoverage(object):
 
 
 class TestMapExtent(object):
-    def setup(self):
+    def setup_method(self):
         self.extent = MapExtent([-10, 10, 80, 80], SRS(4326))
 
     def test_bbox(self):

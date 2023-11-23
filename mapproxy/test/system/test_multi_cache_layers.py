@@ -47,7 +47,7 @@ TEST_TILE = create_tmp_image((256, 256))
 
 class TestMultiCacheLayer(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_cap_req = WMTS100CapabilitiesRequest(
             url="/service?",
             param=dict(service="WMTS", version="1.0.0", request="GetCapabilities"),

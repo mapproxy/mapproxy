@@ -53,7 +53,7 @@ FI_REQ = "FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&ST
 
 
 class TestWMSAuth(object):
-    def setup(self):
+    def setup_method(self):
         layers = {}
         wms_layers = {}
 
@@ -337,7 +337,7 @@ class DummyTileLayer(object):
 
 class TestTMSAuth(object):
     service = 'tms'
-    def setup(self):
+    def setup_method(self):
         self.layers = {}
 
         self.layers['layer1'] = DummyTileLayer('layer1')
@@ -408,8 +408,8 @@ class TestTileAuth(TestTMSAuth):
 
 class TestKMLAuth(TestTMSAuth):
     service = 'kml'
-    def setup(self):
-        TestTMSAuth.setup(self)
+    def setup_method(self):
+        TestTMSAuth.setup_method(self)
         self.server = KMLServer(self.layers, {})
 
     def tile_request(self, tile, auth):

@@ -68,7 +68,7 @@ def azureblob_containers():
 @pytest.mark.usefixtures("azureblob_containers")
 class TestAzureBlobCache(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_map_req = WMS111MapRequest(
             url="/service?",
             param=dict(

@@ -30,8 +30,8 @@ from mapproxy.test.image import is_png
 
 
 class ExceptionHandlerTest(Mocker):
-    def setup(self):
-        Mocker.setup(self)
+    def setup_method(self):
+        Mocker.setup_method(self)
         req = url_decode("""LAYERS=foo&FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&
 REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A900913&
 BBOX=8,4,9,5&WIDTH=150&HEIGHT=100""".replace('\n', ''))

@@ -28,7 +28,7 @@ UNUSED_GRID_NAMES = ["GLOBAL_GEODETIC", "GLOBAL_MERCATOR", "GLOBAL_WEBMERCATOR"]
 
 class TestUtilGrids(object):
 
-    def setup(self):
+    def setup_method(self):
         self.mapproxy_config_file = os.path.join(FIXTURE_DIR, "util_grids.yaml")
         self.args = ["command_dummy", "-f", self.mapproxy_config_file]
 
