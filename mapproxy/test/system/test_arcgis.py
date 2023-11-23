@@ -35,7 +35,7 @@ transp = create_tmp_image((512, 512), mode="RGBA", color=(0, 0, 0, 0))
 
 class TestArcgisSource(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_fi_req = WMS111FeatureInfoRequest(
             url="/service?",
             param=dict(

@@ -149,7 +149,7 @@ class DummyRequest(object):
 
 class TestWMSMapRequest(object):
 
-    def setup(self):
+    def setup_method(self):
         self.base_req = url_decode(
             """SERVICE=WMS&format=image%2Fpng&layers=foo&styles=&
 REQUEST=GetMap&height=300&srs=EPSG%3A4326&VERSION=1.1.1&
@@ -161,8 +161,8 @@ bbox=7,50,8,51&width=400""".replace(
 
 class TestWMS100MapRequest(TestWMSMapRequest):
 
-    def setup(self):
-        TestWMSMapRequest.setup(self)
+    def setup_method(self):
+        TestWMSMapRequest.setup_method(self)
         del self.base_req["service"]
         del self.base_req["version"]
         self.base_req["wmtver"] = "1.0.0"
@@ -184,8 +184,8 @@ class TestWMS111MapRequest(TestWMSMapRequest):
 
 class TestWMS130MapRequest(TestWMSMapRequest):
 
-    def setup(self):
-        TestWMSMapRequest.setup(self)
+    def setup_method(self):
+        TestWMSMapRequest.setup_method(self)
         self.base_req["version"] = "1.3.0"
         self.base_req["crs"] = self.base_req["srs"]
         del self.base_req["srs"]
@@ -221,8 +221,8 @@ class TestWMS130MapRequest(TestWMSMapRequest):
 
 class TestWMS111FeatureInfoRequest(TestWMSMapRequest):
 
-    def setup(self):
-        TestWMSMapRequest.setup(self)
+    def setup_method(self):
+        TestWMSMapRequest.setup_method(self)
         self.base_req["request"] = "GetFeatureInfo"
         self.base_req["x"] = "100"
         self.base_req["y"] = "150"
@@ -368,7 +368,7 @@ class TestArcGISIndentifyRequest(object):
 
 class TestRequest(object):
 
-    def setup(self):
+    def setup_method(self):
         self.env = {
             "HTTP_HOST": "localhost:5050",
             "PATH_INFO": "/service",
@@ -461,7 +461,7 @@ def test_maprequest_from_request():
 
 class TestWMSMapRequestParams(object):
 
-    def setup(self):
+    def setup_method(self):
         self.m = WMSMapRequestParams(
             url_decode(
                 "layers=bar&bBOx=-90,-80,70.0, 80&format=image/png"
@@ -620,7 +620,7 @@ BBOX=8,4,9,5&WIDTH=984&HEIGHT=708""".replace(
         )
     )
 
-    def setup(self):
+    def setup_method(self):
         self.req = Request(self.env)
 
     def test_valid_request(self):
@@ -654,7 +654,7 @@ BBOX=8,4,9,5&WIDTH=984&HEIGHT=708""".replace(
 
 class TestSRSAxisOrder(object):
 
-    def setup(self):
+    def setup_method(self):
         params111 = url_decode(
             """LAYERS=foo&FORMAT=image%2Fjpeg&SERVICE=WMS&
 VERSION=1.1.1&REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_xml&

@@ -42,7 +42,7 @@ class TestWMS(SysTest):
     def additional_files(self, base_dir):
         base_dir.join("mysld.xml").write("<sld>")
 
-    def setup(self):
+    def setup_method(self):
         self.common_map_req = WMS111MapRequest(
             url="/service?",
             param=dict(

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 import pytest
 
 from mapproxy.test.system import SysTest
@@ -36,4 +37,20 @@ class TestDemo(SysTest):
     def test_previewmap(self, app):
         resp = app.get("/demo/?srs=EPSG%3A3857&format=image%2Fpng&wms_layer=wms_cache", status=200)
         assert resp.content_type == "text/html"
-        assert '<h2>Openlayers Client - Layer wms_cache</h2>' in resp
+        assert '<h2>Layer Preview - wms_cache</h2>' in resp
+
+    def test_layers_sorted_by_name(self, app):
+        resp = app.get("/demo/", status=200)
+
+        patternTable = re.compile(r'<table class="code">.*?</table>', re.DOTALL)
+        patternWMS = r'<td\s+rowspan="2">([\w\d-]+)</td>'
+        patternWMTS_TBS = r'<td\s+rowspan="1">([\w\d-]+)</td>'
+        tables = patternTable.findall(resp.text)
+
+        layersWMS = re.findall(patternWMS, resp.text, re.IGNORECASE)
+        layersWMTS = re.findall(patternWMTS_TBS, tables[1], re.IGNORECASE)
+        layersTBS = re.findall(patternWMTS_TBS, tables[2], re.IGNORECASE)
+
+        assert layersWMS == sorted(layersWMS)
+        assert layersWMTS == sorted(layersWMTS)
+        assert layersTBS == sorted(layersTBS)

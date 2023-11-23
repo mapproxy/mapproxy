@@ -131,7 +131,7 @@ Example configuration for an OpenStreetMap tile service::
     my_tile_source:
       type: tile
       grid: GLOBAL_WEBMERCATOR
-      url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
+      url: https://tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
  grids:
   webmercator:
@@ -277,7 +277,7 @@ Here is an example that makes OSM tiles available as tiles in UTM. Note that rep
       osm_source:
         type: tile
         grid: GLOBAL_WEBMERCATOR
-        url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
+        url: https://tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
     grids:
       utm32n:
@@ -798,6 +798,21 @@ Example part of ``mapproxy.yaml`` to generate a quadkey cache::
       cache:
         type: file
         directory_layout: quadkey
+
+
+.. _static_tile_source:
+
+Generate a static image for every tile
+======================================
+
+In order to display a static message on every tile, you can configure a tile source URL that is a local file.
+
+Example part of ``mapproxy.yaml`` to generate a static tile source:: 
+
+  sources:
+    tile_source:
+      type: tile
+      url: file:///path/service-suspended.png
 
 
 .. _hq_tiles:

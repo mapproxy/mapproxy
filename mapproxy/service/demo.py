@@ -24,6 +24,7 @@ import mimetypes
 from collections import defaultdict
 
 from mapproxy.config.config import base_config
+from mapproxy.util.ext.odict import odict
 from mapproxy.compat import PY2
 from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
@@ -213,6 +214,9 @@ class DemoServer(Server):
             name = self.tile_layers[layer].md.get('name')
             tms_tile_layers[name].append(self.tile_layers[layer])
         wmts_layers = tms_tile_layers.copy()
+
+        wmts_layers = odict(sorted(wmts_layers.items(), key=lambda x: x[0]))
+        tms_tile_layers = odict(sorted(tms_tile_layers.items(), key=lambda x: x[0]))
 
         substitutions = dict(
             extra_services_html_beginning='',

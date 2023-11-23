@@ -35,7 +35,7 @@ def config_file():
 
 class TestWMS(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_map_req = WMS111MapRequest(
             url="/service?",
             param=dict(
@@ -94,7 +94,7 @@ class TestWMS(SysTest):
 
 class TestTMS(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.expected_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256" "&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=512" "&BBOX=-20037508.3428,-20037508.3428,20037508.3428,0.0"
 
     def test_mixed_mode(self, app, cache_dir):
@@ -128,7 +128,7 @@ class TestTMS(SysTest):
 
 class TestWMTS(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_tile_req = WMTS100TileRequest(
             url="/service?",
             param=dict(

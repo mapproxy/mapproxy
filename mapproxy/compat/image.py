@@ -26,6 +26,7 @@ try:
     Image, ImageColor, ImageDraw, ImageFont, ImagePalette, ImageChops, ImageMath
     ImageFileDirectory_v2, TiffTags
     PIL_VERSION = getattr(PIL, '__version__') or getattr(PIL, 'PILLOW_VERSION')
+    PIL_VERSION_TUPLE = tuple(int(i) for i in PIL_VERSION.split("."))
 except ImportError:
     # allow MapProxy to start without PIL (for tilecache only).
     # issue warning and raise ImportError on first use of

@@ -161,7 +161,7 @@ You can either use a dedicated HTTP proxy like Varnish_ or a general HTTP web se
 
 You need to set some HTTP headers so that MapProxy can generate capability documents with the URL of the proxy, instead of the local URL of the MapProxy application.
 
-* ``Host`` – is the hostname that clients use to acces MapProxy (i.e. the proxy)
+* ``Host`` – is the hostname that clients use to access MapProxy (i.e. the proxy)
 * ``X-Script-Name`` – path of MapProxy when the URL is not ``/`` (e.g. ``/mapproxy``)
 * ``X-Forwarded-Host`` – alternative to ``HOST``
 * ``X-Forwarded-Proto`` – should be ``https`` when the client connects with HTTPS
@@ -209,7 +209,7 @@ Because of the way Python handles threads in computing heavy applications (like 
 The examples above are all minimal and you should read the documentation of your components to get the best performance with your setup.
 
 
-Load Balancing and High Availablity
+Load Balancing and High Availability
 -----------------------------------
 
 You can easily run multiple MapProxy instances in parallel and use a load balancer to distribute requests across all instances, but there are a few things to consider when the instances share the same tile cache with NFS or other network filesystems.
@@ -253,7 +253,7 @@ Here are the most important loggers:
   Logs errors and warnings for service ``XXX``.
 
 ``mapproxy.source.request``
-  Logs all requests to sources with URL, size in kB and duration in milliseconds. The duration is the time it took to receive the header of the response. The actual request duration might be longer, especially for larger images or when the network bandwith is limited.
+  Logs all requests to sources with URL, size in kB and duration in milliseconds. The duration is the time it took to receive the header of the response. The actual request duration might be longer, especially for larger images or when the network bandwidth is limited.
 
 
 Enabling logging

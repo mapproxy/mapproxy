@@ -42,6 +42,9 @@ class TileCacheBase(object):
 
     supports_timestamp = True
 
+    def __init__(self, coverage=None) -> None:
+        self.coverage = coverage
+
     def load_tile(self, tile, with_metadata=False, dimensions=None):
         raise NotImplementedError()
 

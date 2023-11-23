@@ -22,10 +22,10 @@ from mapproxy.compat import string_type
 
 class TestLoadYAMLFile(object):
 
-    def setup(self):
+    def setup_method(self):
         self.tmp_files = []
 
-    def teardown(self):
+    def teardown_method(self):
         for f in self.tmp_files:
             os.unlink(f)
 

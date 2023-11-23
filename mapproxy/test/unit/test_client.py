@@ -43,7 +43,7 @@ TESTSERVER_URL = 'http://%s:%s' % TESTSERVER_ADDRESS
 
 
 class TestHTTPClient(object):
-    def setup(self):
+    def setup_method(self):
         self.client = HTTPClient()
 
     def test_post(self):
@@ -380,7 +380,7 @@ class TestWMSClient(object):
 
 
 class TestCombinedWMSClient(object):
-    def setup(self):
+    def setup_method(self):
         self.http = MockHTTPClient()
     def test_combine(self):
         req1 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
@@ -443,7 +443,7 @@ class TestWMSInfoClient(object):
                            '&BBOX=428333.552496,5538630.70275,500000.0,5650300.78652'), http.requested[0]
 
 class TestWMSMapRequest100(object):
-    def setup(self):
+    def setup_method(self):
         self.r = WMS100MapRequest(param=dict(layers='foo', version='1.1.1', request='GetMap'))
         self.r.params = self.r.adapt_params_to_version()
     def test_version(self):
@@ -457,7 +457,7 @@ class TestWMSMapRequest100(object):
         assert_query_eq(str(self.r.params), 'layers=foo&styles=&request=map&wmtver=1.0.0')
 
 class TestWMSMapRequest130(object):
-    def setup(self):
+    def setup_method(self):
         self.r = WMS130MapRequest(param=dict(layers='foo', WMTVER='1.0.0'))
         self.r.params = self.r.adapt_params_to_version()
     def test_version(self):
@@ -471,7 +471,7 @@ class TestWMSMapRequest130(object):
         query_eq(str(self.r.params), 'layers=foo&styles=&service=WMS&request=GetMap&version=1.3.0')
 
 class TestWMSMapRequest111(object):
-    def setup(self):
+    def setup_method(self):
         self.r = WMS111MapRequest(param=dict(layers='foo', WMTVER='1.0.0'))
         self.r.params = self.r.adapt_params_to_version()
     def test_version(self):
