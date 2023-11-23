@@ -39,7 +39,7 @@ This will change the ``PATH`` for your `current` session.
 Install Dependencies
 --------------------
 
-MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 3.7 or higher, which should already be installed with most Linux distributions.
+MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 3.8 or higher, which should already be installed with most Linux distributions.
 
 MapProxy requires a few third-party libraries that are required to run. There are different ways to install each dependency. Read :ref:`dependency_details` for a list of all required and optional dependencies.
 
