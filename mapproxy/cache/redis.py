@@ -16,6 +16,8 @@
 from __future__ import absolute_import
 
 import hashlib
+import datetime
+import time
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import (
@@ -89,6 +91,16 @@ class RedisCache(TileCacheBase):
             # use ms expire times for unit-tests
             self.r.pexpire(key, int(self.ttl * 1000))
         return r
+
+    def load_tile_metadata(self, tile, dimensions=None):
+        if tile.timestamp:
+            return
+        pipe = self.r.pipeline()
+        pipe.ttl(self._key(tile))
+        pipe.memory_usage(self._key(tile))
+        pipe_res = pipe.execute()
+        tile.timestamp = time.mktime(datetime.datetime.now().timetuple()) - self.ttl - int(pipe_res[0])
+        tile.size = pipe_res[1]
 
     def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.source or tile.coord is None:
