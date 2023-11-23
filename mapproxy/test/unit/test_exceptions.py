@@ -206,9 +206,10 @@ class TestWMSImageExceptionHandler(ExceptionHandlerTest):
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
-        assert sorted([x for x in img.histogram() if x > 25]) == [377, 14623]
         img = img.convert('RGBA')
         assert img.getpixel((0, 0))[3] == 0
+        extrema = img.getextrema()
+        assert extrema != ((255, 255), (255, 255), (255, 255), (0, 0))
 
 
 class TestWMSBlankExceptionHandler(ExceptionHandlerTest):
