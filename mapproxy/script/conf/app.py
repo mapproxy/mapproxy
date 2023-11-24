@@ -34,6 +34,7 @@ from .layers import layers
 from .caches import caches
 from .seeds import seeds
 from .utils import update_config, MapProxyYAMLDumper, download_capabilities
+from .geopackage import get_geopackage_configuration_dict
 
 from mapproxy.compat import iteritems
 from mapproxy.config.loader import load_configuration
@@ -84,6 +85,8 @@ def config_command(args):
 
     parser.add_option('--capabilities',
         help="URL or filename of WMS 1.1.1/1.3.0 capabilities document")
+    parser.add_option('--geopackage',
+                      help="Filename of a geopackage file")
     parser.add_option('--output', help="filename for created MapProxy config [default: -]", default="-")
     parser.add_option('--output-seed', help="filename for created seeding config")
 
@@ -99,9 +102,9 @@ def config_command(args):
 
     options, args = parser.parse_args(args)
 
-    if not options.capabilities:
+    if not (bool(options.capabilities) ^ bool(options.geopackage)):
         parser.print_help()
-        print("\nERROR: --capabilities required", file=sys.stderr)
+        print("\nERROR: --capabilities required or --geopackage required", file=sys.stderr)
         return 2
 
     if not options.output and not options.output_seed:
@@ -131,17 +134,25 @@ def config_command(args):
             srs_grids[grid_conf.tile_grid().srs.srs_code] = name
 
     cap_doc = options.capabilities
-    if cap_doc.startswith(('http://', 'https://')):
-        cap_doc = download_capabilities(options.capabilities).read()
-    else:
-        cap_doc = open(cap_doc, 'rb').read()
+    gpkg = options.geopackage
+    if cap_doc:
+        if cap_doc.startswith(('http://', 'https://')):
+            cap_doc = download_capabilities(options.capabilities).read()
+        else:
+            cap_doc = open(cap_doc, 'rb').read()
 
-    try:
-        cap = parse_capabilities(BytesIO(cap_doc))
-    except (xml.etree.ElementTree.ParseError, ValueError) as ex:
-        print(ex, file=sys.stderr)
-        print(cap_doc[:1000] + ('...' if len(cap_doc) > 1000 else ''), file=sys.stderr)
-        return 3
+        try:
+            cap = parse_capabilities(BytesIO(cap_doc))
+        except (xml.etree.ElementTree.ParseError, ValueError) as ex:
+            print(ex, file=sys.stderr)
+            print(cap_doc[:1000] + ('...' if len(cap_doc) > 1000 else ''), file=sys.stderr)
+            return 3
+    elif gpkg:
+        if os.path.isfile(gpkg):
+            gpkg_dict = get_geopackage_configuration_dict(gpkg)
+        else:
+            print("ERROR: No file {} exists.".format(gpkg))
+            return 2
 
     overwrite = None
     if options.overwrite:
@@ -154,42 +165,57 @@ def config_command(args):
             overwrite_seed = yaml.safe_load(f)
 
     conf = {}
+
     if options.base:
         conf['base'] = os.path.abspath(options.base)
-
-    conf['services'] = {'wms': {'md': {'title': cap.metadata()['title']}}}
+    if cap_doc:
+        conf['services'] = {'wms': {'md': {'title': cap.metadata()['title']}}}
+    if gpkg:
+        conf['services'] = gpkg_dict['services']
     if overwrite:
         conf['services'] = update_config(conf['services'], overwrite.pop('service', {}))
 
-    conf['sources'] = sources(cap)
+    if cap_doc:
+        conf['sources'] = sources(cap)
     if overwrite:
         conf['sources'] = update_config(conf['sources'], overwrite.pop('sources', {}))
 
-    conf['caches'] = caches(cap, conf['sources'], srs_grids=srs_grids)
+    if cap_doc:
+        conf['caches'] = caches(cap, conf['sources'], srs_grids=srs_grids)
+    if gpkg:
+        conf['caches'] = gpkg_dict['caches']
     if overwrite:
         conf['caches'] = update_config(conf['caches'], overwrite.pop('caches', {}))
 
-    conf['layers'] = layers(cap, conf['caches'])
+    if cap_doc:
+        conf['layers'] = layers(cap, conf['caches'])
+    if gpkg:
+        conf['layers'] = gpkg_dict['layers']
     if overwrite:
         conf['layers'] = update_config(conf['layers'], overwrite.pop('layers', {}))
 
+    if gpkg:
+        conf['grids'] = gpkg_dict['grids']
     if overwrite:
         conf = update_config(conf, overwrite)
 
-
     seed_conf = {}
-    seed_conf['seeds'], seed_conf['cleanups'] = seeds(cap, conf['caches'])
+    if cap_doc:
+        seed_conf['seeds'], seed_conf['cleanups'] = seeds(cap, conf['caches'])
+    if gpkg:
+        cap = None
+        seed_conf['seeds'], seed_conf['cleanups'] = seeds(cap, conf['caches'])
     if overwrite_seed:
         seed_conf = update_config(seed_conf, overwrite_seed)
 
 
     if options.output:
         with file_or_stdout(options.output) as f:
-            write_header(f, options.capabilities)
+            write_header(f, options.capabilities or options.geopackage)
             yaml.dump(conf, f, default_flow_style=False, Dumper=MapProxyYAMLDumper)
     if options.output_seed:
         with file_or_stdout(options.output_seed) as f:
-            write_header(f, options.capabilities)
+            write_header(f, options.capabilities or options.geopackage)
             yaml.dump(seed_conf, f, default_flow_style=False, Dumper=MapProxyYAMLDumper)
 
     return 0
