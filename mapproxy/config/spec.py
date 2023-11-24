@@ -133,6 +133,7 @@ cache_types = {
         'sqlite_timeout': number(),
         'sqlite_wal': bool(),
         'tile_lock_dir': str(),
+        'ttl': int(),
     }),
     'mbtiles': combined(cache_commons, {
         'filename': str(),

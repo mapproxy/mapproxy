@@ -1273,6 +1273,7 @@ class CacheConfiguration(ConfigurationBase):
             cache_dir,
             timeout=sqlite_timeout,
             wal=wal,
+            ttl=self.conf.get('cache', {}).get('ttl', 0),
             coverage=coverage
         )
 

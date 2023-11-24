@@ -140,6 +140,9 @@ Available options:
 
   .. versionadded:: 1.6.0
 
+``ttl``:
+  The time-to-live of each tile in the cache in seconds. Use 0 (default) to allow unlimited tile reuse.
+
 ::
 
   caches:
