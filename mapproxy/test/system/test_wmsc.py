@@ -38,7 +38,7 @@ def config_file():
 
 class TestWMSC(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_cap_req = WMS111CapabilitiesRequest(
             url="/service?", param=dict(service="WMS", version="1.1.1")
         )

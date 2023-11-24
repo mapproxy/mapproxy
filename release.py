@@ -76,7 +76,7 @@ def upload_test_sdist_command():
 
 def check_uncommited():
     if sh('git diff-index --quiet HEAD --') != 0:
-        print('ABORT: uncommited changes. please commit (and tag) release version number')
+        print('ABORT: uncommitted changes. please commit (and tag) release version number')
         sys.exit(1)
 
 def upload_final_sdist_command():

@@ -58,6 +58,7 @@ class TextFeatureInfoDoc(FeatureInfoDoc):
 
 class XMLFeatureInfoDoc(FeatureInfoDoc):
     info_type = "xml"
+    defaultEncoding = "UTF-8"
 
     def __init__(self, content):
         if isinstance(content, (string_type, bytes)):
@@ -81,7 +82,9 @@ class XMLFeatureInfoDoc(FeatureInfoDoc):
         return self._etree
 
     def _serialize_etree(self):
-        return etree.tostring(self._etree)
+        encoding = self._etree.docinfo.encoding if \
+            self._etree.docinfo.encoding else self.defaultEncoding
+        return etree.tostring(self._etree, encoding=encoding, xml_declaration=False)
 
     def _parse_content(self):
         doc = as_io(self._str_content)

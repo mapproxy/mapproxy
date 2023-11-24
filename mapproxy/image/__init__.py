@@ -346,6 +346,7 @@ def img_to_buf(img, image_opts, georef=None):
     if format == 'mixed':
         if img_has_transparency(img):
             format = 'png'
+            image_opts.transparent = True
         else:
             format = 'jpeg'
             image_opts.colors = None

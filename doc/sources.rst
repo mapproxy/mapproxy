@@ -602,6 +602,8 @@ Other options
 
 The Mapnik source also supports the ``min_res``/``max_res``/``min_scale``/``max_scale``, ``concurrent_requests``, ``seed_only`` and ``coverage`` options. See :ref:`wms_label`.
 
+Mapnik can be used in multithreading and multiprocessing operation by setting ``multithreaded: True``. This is only tested and safe *for seeding*.
+
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^

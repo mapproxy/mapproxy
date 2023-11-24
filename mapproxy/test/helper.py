@@ -35,7 +35,7 @@ class Mocker(object):
     `setup` will initialize a `mocker.Mocker`. The `teardown` method
     will run ``mocker.verify()``.
     """
-    def setup(self):
+    def setup_method(self):
         self.mocker = mocker.Mocker()
     def expect_and_return(self, mock_call, return_val):
         """
@@ -59,7 +59,7 @@ class Mocker(object):
         if base_cls:
             return self.mocker.mock(base_cls)
         return self.mocker.mock()
-    def teardown(self):
+    def teardown_method(self):
         self.mocker.verify()
 
 class TempFiles(object):

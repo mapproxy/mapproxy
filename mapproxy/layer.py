@@ -200,7 +200,7 @@ class MapExtent(object):
     @property
     def llbbox(self):
         if not self._llbbox:
-            self._llbbox = self.srs.transform_bbox_to(SRS(4326), self.bbox)
+            self._llbbox = self.srs.transform_bbox_to(self.srs.get_geographic_srs(), self.bbox)
         return self._llbbox
 
     def bbox_for(self, srs):
@@ -236,7 +236,7 @@ class MapExtent(object):
             return self
         if self.is_default:
             return other
-        return MapExtent(merge_bbox(self.llbbox, other.llbbox), SRS(4326))
+        return MapExtent(merge_bbox(self.llbbox, other.llbbox), self.srs.get_geographic_srs())
 
     def contains(self, other):
         if not isinstance(other, MapExtent):

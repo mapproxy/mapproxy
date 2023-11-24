@@ -28,6 +28,7 @@ from mapproxy.config.coverage import load_coverage
 from mapproxy.config.loader import (
     load_configuration, ConfigurationError,
     CacheConfiguration, GridConfiguration,
+    ProxyConfiguration,
 )
 from mapproxy.util.coverage import  BBOXCoverage
 from mapproxy.seed.util import ProgressLog, format_bbox
@@ -55,6 +56,37 @@ def parse_levels(level_str):
             levels.add(int(part))
 
     return sorted(levels)
+
+
+def resolve_source(source_name, conf):
+    """
+    Resolves the source with the given name.
+
+    >>> config = ProxyConfiguration({'sources': {'mysource': {'type': 'wms'}}})
+    >>> resolve_source('mysource', config)
+    (<mapproxy.config.loader.WMSSourceConfiguration object at 0x...>, False)
+
+    >>> config = ProxyConfiguration({'caches': {'mysource': {}}})
+    >>> resolve_source('mysource', config)
+    (<mapproxy.config.loader.CacheConfiguration object at 0x...>, True)
+
+    >>> config = ProxyConfiguration({'caches': {'mysource': {'type': 'foo'}}})
+    >>> resolve_source('nonexistingsource', config)
+    (None, None)
+
+    :param source_name: The name of the source to resolve.
+    :param conf: The mapproxy config to resolve from.
+    :rtype: (dict, bool) A tuple containing the resolved source and a boolean
+        indicating if the resolved source is a cache (True), or a source (False).
+    """
+    resolved_source = conf.sources.get(source_name)
+    if resolved_source is not None:
+        return resolved_source, False
+    resolved_source = conf.caches.get(source_name)
+    if resolved_source is not None:
+        return resolved_source, True
+    return None, None
+
 
 def parse_grid_definition(definition):
     """
@@ -197,12 +229,21 @@ def export_command(args=None):
         print('ERROR: destination exists, remove first or use --force', file=sys.stderr)
         sys.exit(2)
 
-
     cache_conf = {
         'name': 'export',
         'grids': [options.grid],
         'sources': [options.source],
     }
+
+    resolved_source, source_is_cache = resolve_source(options.source, conf)
+    if source_is_cache:
+        image_format = resolved_source.conf.get('format') or resolved_source.defaults.get('format')
+        if image_format is not None:
+            cache_conf['format'] = image_format
+        if image_format == 'mixed':
+            request_format = resolved_source.conf.get('request_format') or 'image/png'
+            cache_conf['request_format'] = request_format
+
     if options.type == 'mbtile':
         cache_conf['cache'] = {
             'type': 'mbtiles',
@@ -256,7 +297,6 @@ def export_command(args=None):
             source.conf['seed_only'] = True
 
     tile_grid, extent, mgr = CacheConfiguration(cache_conf, conf).caches()[0]
-
 
     levels = parse_levels(options.levels)
     if levels[-1] >= tile_grid.levels:

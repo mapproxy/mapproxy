@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Retrieve maps/information from WMS servers.
 """
@@ -20,7 +19,7 @@ import sys
 from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
 from mapproxy.image import make_transparent, ImageSource, SubImageSource, bbox_position_in_image
-from mapproxy.image.merge import concat_legends
+from mapproxy.image.merge import concat_legends, concat_json_legends
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, LegendQuery, MapQuery, MapLayer
 from mapproxy.source import InfoSource, SourceError, LegendSource
@@ -243,7 +242,8 @@ class WMSLegendSource(LegendSource):
             legend = Legend(id=self.identifier, scale=None)
         else:
             legend = Legend(id=self.identifier, scale=query.scale)
-        if not self._cache.load(legend):
+
+        if not self._cache.load(legend) or query.format == 'json':
             legends = []
             error_occured = False
             for client in self.clients:
@@ -257,9 +257,14 @@ class WMSLegendSource(LegendSource):
                     # TODO errors?
                     log.error(e.args[0])
             format = split_mime_type(query.format)[1]
+
+            if format == 'json':
+                return concat_json_legends(legends)
+
             legend = Legend(source=concat_legends(legends, format=format),
                             id=self.identifier, scale=query.scale)
             if not error_occured:
                 self._cache.store(legend)
-        return legend.source
 
+        # returns ImageSource
+        return legend.source

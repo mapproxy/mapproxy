@@ -38,7 +38,7 @@ SERVICE_EXCEPTION_FILE = os.path.join(
 
 class TestUtilWMSCapabilities(object):
 
-    def setup(self):
+    def setup_method(self):
         self.client = HTTPClient()
         self.args = ["command_dummy", "--host", TESTSERVER_URL + "/service"]
 

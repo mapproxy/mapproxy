@@ -32,11 +32,7 @@ try:
     import shapely.geometry
     import shapely.ops
     import shapely.prepared
-    try:
-        # shapely >=1.6
-        from shapely.errors import ReadingError
-    except ImportError:
-        from shapely.geos import ReadingError
+    from shapely.errors import ReadingError
     geom_support = True
 except ImportError:
     geom_support = False
@@ -144,7 +140,7 @@ def load_geojson(datasource):
 
     polygons = []
     for geom in geometries:
-        geom = shapely.geometry.asShape(geom)
+        geom = shapely.geometry.shape(geom)
         if geom.type == 'Polygon':
             polygons.append(geom)
         elif geom.type == 'MultiPolygon':
@@ -234,7 +230,7 @@ def transform_polygon(transf, polygon):
 
 def transform_multipolygon(transf, multipolygon):
     transformed_polygons = []
-    for polygon in multipolygon:
+    for polygon in multipolygon.geoms:
         transformed_polygons.append(transform_polygon(transf, polygon))
     return shapely.geometry.MultiPolygon(transformed_polygons)
 

@@ -36,11 +36,11 @@ tile_image2 = create_tmp_image_buf((256, 256), color='red')
 class TestCouchDBCache(TileCacheTestBase):
     always_loads_metadata = True
 
-    def setup(self):
+    def setup_method(self):
         couch_address = os.environ['MAPPROXY_TEST_COUCHDB']
         db_name = 'mapproxy_test_%d' % random.randint(0, 100000)
 
-        TileCacheTestBase.setup(self)
+        TileCacheTestBase.setup_method(self)
 
         md_template = CouchDBMDTemplate({'row': '{{y}}', 'tile_column': '{{x}}',
             'zoom': '{{level}}', 'time': '{{timestamp}}', 'coord': '{{wgs_tile_centroid}}'})
@@ -48,10 +48,13 @@ class TestCouchDBCache(TileCacheTestBase):
             file_ext='png', tile_grid=tile_grid(3857, name='global-webmarcator'),
             md_template=md_template)
 
-    def teardown(self):
+    def teardown_method(self):
         import requests
         requests.delete(self.cache.couch_url)
-        TileCacheTestBase.teardown(self)
+        TileCacheTestBase.teardown_method(self)
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_store_bulk_with_overwrite(self):
         tile = self.create_tile((0, 0, 4))

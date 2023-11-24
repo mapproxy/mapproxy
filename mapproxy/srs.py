@@ -238,6 +238,13 @@ class _SRS_Proj4_API(object):
         """
         return self.proj.is_latlong()
 
+
+    def get_geographic_srs(self):
+        """ Return the "canonical" geographic CRS corresponding to this CRS.
+            Always EPSG:4326 for Proj4 implementation """
+        return SRS(4326)
+
+
     @property
     def is_axis_order_ne(self):
         """
@@ -431,6 +438,17 @@ class _SRS(object):
         False
         """
         return self.proj.is_geographic
+
+
+    def get_geographic_srs(self):
+        """ Return the "canonical" geographic CRS corresponding to this CRS.
+            EPSG:4326 for Earth CRS, or another one from other celestial bodies """
+        auth = self.proj.to_authority()
+        if auth is None or not auth[0].startswith('IAU'):
+            ret = SRS(4326)
+        else:
+            return _SRS(':'.join(self.proj.geodetic_crs.to_authority()))
+        return ret
 
     @property
     def is_axis_order_ne(self):

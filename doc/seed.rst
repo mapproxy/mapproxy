@@ -195,7 +195,7 @@ Example
   seeds:
     myseed1:
       [...]
-    myseed2
+    myseed2:
       [...]
 
   cleanups:
@@ -300,7 +300,7 @@ Example
       levels:
         to: 10
 
-    myseed2
+    myseed2:
       caches: [osm_cache]
       coverages: [niedersachsen, bremen, hamburg]
       grids: [GLOBAL_MERCATOR]

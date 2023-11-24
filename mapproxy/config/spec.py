@@ -115,33 +115,39 @@ riak_node = {
     'http_port': number(),
 }
 
+cache_commons = combined(
+    {
+        'coverage': coverage,
+    }
+)
+
 cache_types = {
-    'file': {
+    'file': combined(cache_commons, {
         'directory_layout': str(),
         'use_grid_names': bool(),
         'directory': str(),
         'tile_lock_dir': str(),
-    },
-    'sqlite': {
+    }),
+    'sqlite': combined(cache_commons, {
         'directory': str(),
         'sqlite_timeout': number(),
         'sqlite_wal': bool(),
         'tile_lock_dir': str(),
-    },
-    'mbtiles': {
+    }),
+    'mbtiles': combined(cache_commons, {
         'filename': str(),
         'sqlite_timeout': number(),
         'sqlite_wal': bool(),
         'tile_lock_dir': str(),
-    },
-    'geopackage': {
+    }),
+    'geopackage': combined(cache_commons, {
         'filename': str(),
         'directory': str(),
         'tile_lock_dir': str(),
         'table_name': str(),
         'levels': bool(),
-    },
-    'couchdb': {
+    }),
+    'couchdb': combined(cache_commons, {
         'url': str(),
         'db_name': str(),
         'tile_metadata': {
@@ -149,8 +155,8 @@ cache_types = {
         },
         'tile_id': str(),
         'tile_lock_dir': str(),
-    },
-    's3': {
+    }),
+    's3': combined(cache_commons, {
         'bucket_name': str(),
         'directory_layout': str(),
         'directory': str(),
@@ -159,8 +165,8 @@ cache_types = {
         'endpoint_url': str(),
         'access_control_list': str(),
         'tile_lock_dir': str(),
-     },
-    'riak': {
+     }),
+    'riak': combined(cache_commons, {
         'nodes': [riak_node],
         'protocol': one_of('pbc', 'http', 'https'),
         'bucket': str(),
@@ -170,19 +176,28 @@ cache_types = {
         },
         'secondary_index': bool(),
         'tile_lock_dir': str(),
-    },
-    'redis': {
+    }),
+    'redis': combined(cache_commons, {
         'host': str(),
         'port': int(),
+        'password': str(),
+        'username': str(),
         'db': int(),
         'prefix': str(),
         'default_ttl': int(),
-    },
-    'compact': {
+    }),
+    'compact': combined(cache_commons, {
         'directory': str(),
         required('version'): number(),
         'tile_lock_dir': str(),
-    },
+    }),
+    'azureblob': combined(cache_commons, {
+        'connection_string': str(),
+        'container_name': str(),
+        'directory_layout': str(),
+        'directory': str(),
+        'tile_lock_dir': str(),
+    }),
 }
 
 on_error = {
@@ -381,12 +396,16 @@ mapproxy_yaml_spec = {
             'max_tile_limit': number(),
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
-            'link_single_color_images': bool(),
+            'link_single_color_images': one_of(bool(), 'symlink', 'hardlink'),
             's3': {
                 'bucket_name': str(),
                 'profile_name': str(),
                 'region_name': str(),
                 'endpoint_url': str(),
+            },
+            'azureblob': {
+                'connection_string': str(),
+                'container_name': str(),
             },
         },
         'grid': {
@@ -426,7 +445,7 @@ mapproxy_yaml_spec = {
             'request_format': str(),
             'use_direct_from_level': number(),
             'use_direct_from_res': number(),
-            'link_single_color_images': bool(),
+            'link_single_color_images': one_of(bool(), 'symlink', 'hardlink'),
             'cache_rescaled_tiles': bool(),
             'upscale_tiles': int(),
             'downscale_tiles': int(),
@@ -552,6 +571,7 @@ mapproxy_yaml_spec = {
                 'layers': one_of(str(), [str()]),
                 'use_mapnik2': bool(),
                 'scale_factor': number(),
+                'multithreaded': bool(),
             }),
             'arcgis': combined(source_commons, {
                required('req'): {

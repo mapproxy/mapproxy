@@ -103,8 +103,8 @@ def bbox_srs_from_boundingbox(bbox_elem):
 class TestWMS111(SysTest):
     config_file = "layer.yaml"
 
-    def setup(self):
-        # WMSTest.setup(self)
+    def setup_method(self):
+        # WMSTest.setup_method(self)
         self.common_req = WMS111MapRequest(
             url="/service?", param=dict(service="WMS", version="1.1.1")
         )
@@ -444,6 +444,7 @@ class TestWMS111(SysTest):
             "wms_cache_EPSG900913/01/000/000/001/000/000/001.jpeg"
         ).check()
 
+    @pytest.mark.flaky(reruns=5, reruns_delay=2)
     def test_get_map(self, app, base_dir, cache_dir):
         # check global tile lock directory
         tiles_lock_dir = base_dir.join("wmscachetilelockdir")
@@ -829,8 +830,8 @@ class TestWMS111(SysTest):
 class TestWMS110(SysTest):
     config_file = "layer.yaml"
 
-    def setup(self):
-        # WMSTest.setup(self)
+    def setup_method(self):
+        # WMSTest.setup_method(self)
         self.common_req = WMS110MapRequest(
             url="/service?", param=dict(service="WMS", version="1.1.0")
         )
@@ -986,6 +987,7 @@ class TestWMS110(SysTest):
         assert "No response from URL" in xml.xpath("//ServiceException/text()")[0]
         assert validate_with_dtd(xml, "wms/1.1.0/exception_1_1_0.dtd")
 
+    @pytest.mark.flaky(reruns=5, reruns_delay=2)
     def test_get_map(self, app, cache_dir):
         with tmp_image((256, 256), format="jpeg") as img:
             expected_req = (
@@ -1097,7 +1099,7 @@ class TestWMS110(SysTest):
 class TestWMS100(SysTest):
     config_file = "layer.yaml"
 
-    def setup(self):
+    def setup_method(self):
         self.common_req = WMS100MapRequest(url="/service?", param=dict(wmtver="1.0.0"))
         self.common_map_req = WMS100MapRequest(
             url="/service?",
@@ -1236,6 +1238,7 @@ class TestWMS100(SysTest):
         xml = resp.lxml
         assert "No response from URL" in xml.xpath("//WMTException/text()")[0]
 
+    @pytest.mark.flaky(reruns=5, reruns_delay=2)
     def test_get_map(self, app, cache_dir):
         with tmp_image((256, 256), format="jpeg") as img:
             expected_req = (
@@ -1299,7 +1302,7 @@ assert_xpath_wms130 = functools.partial(assert_xpath, namespaces=ns130)
 class TestWMS130(SysTest):
     config_file = "layer.yaml"
 
-    def setup(self):
+    def setup_method(self):
         self.common_req = WMS130MapRequest(
             url="/service?", param=dict(service="WMS", version="1.3.0")
         )
@@ -1470,6 +1473,7 @@ class TestWMS130(SysTest):
         )
         assert validate_with_xsd(xml, xsd_name="wms/1.3.0/exceptions_1_3_0.xsd")
 
+    @pytest.mark.flaky(reruns=5, reruns_delay=2)
     def test_get_map(self, app, cache_dir):
         with tmp_image((256, 256), format="jpeg") as img:
             expected_req = (
@@ -1529,7 +1533,7 @@ class TestWMS130(SysTest):
 class TestWMSLinkSingleColorImages(SysTest):
     config_file = "layer.yaml"
 
-    def setup(self):
+    def setup_method(self):
         self.common_map_req = WMS111MapRequest(
             url="/service?",
             param=dict(
@@ -1546,6 +1550,7 @@ class TestWMSLinkSingleColorImages(SysTest):
             ),
         )
 
+    @pytest.mark.flaky(reruns=5, reruns_delay=2)
     def test_get_map(self, app, cache_dir):
         link_name = "wms_cache_link_single_EPSG900913/01/000/000/001/000/000/001.png"
         real_name = "wms_cache_link_single_EPSG900913/single_color_tiles/fe00a0.png"

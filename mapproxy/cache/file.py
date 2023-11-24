@@ -30,13 +30,13 @@ class FileCache(TileCacheBase):
     This class is responsible to store and load the actual tile data.
     """
     def __init__(self, cache_dir, file_ext, directory_layout='tc',
-                 link_single_color_images=False):
+                 link_single_color_images=False, coverage=None):
         """
         :param cache_dir: the path where the tile will be stored
         :param file_ext: the file extension that will be appended to
             each tile (e.g. 'png')
         """
-        super(FileCache, self).__init__()
+        super(FileCache, self).__init__(coverage)
         self.lock_cache_id = hashlib.md5(cache_dir.encode('utf-8')).hexdigest()
         self.cache_dir = cache_dir
         self.file_ext = file_ext
@@ -168,15 +168,23 @@ class FileCache(TileCacheBase):
         if os.path.exists(tile_loc) or os.path.islink(tile_loc):
             os.unlink(tile_loc)
 
-        # Use relative path for the symlink
-        real_tile_loc = os.path.relpath(real_tile_loc, os.path.dirname(tile_loc))
+        if self.link_single_color_images == 'hardlink':
+            try:
+                os.link(real_tile_loc, tile_loc)
+            except OSError as e:
+                # ignore error if link was created by other process
+                if e.errno != errno.EEXIST:
+                    raise e
+        else:
+            # Use relative path for the symlink
+            real_tile_loc = os.path.relpath(real_tile_loc, os.path.dirname(tile_loc))
 
-        try:
-            os.symlink(real_tile_loc, tile_loc)
-        except OSError as e:
-            # ignore error if link was created by other process
-            if e.errno != errno.EEXIST:
-                raise e
+            try:
+                os.symlink(real_tile_loc, tile_loc)
+            except OSError as e:
+                # ignore error if link was created by other process
+                if e.errno != errno.EEXIST:
+                    raise e
 
         return
 
