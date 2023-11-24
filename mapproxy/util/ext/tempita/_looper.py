@@ -6,10 +6,10 @@ previously up, if this is the first or last item in the sequence, etc.
 These can be awkward to manage in a normal Python loop, but using the
 looper you can get a better sense of the context.  Use like::
 
-    >>> for loop, item in looper(['a', 'b', 'c']):
-    ...     print loop.number, item
-    ...     if not loop.last:
-    ...         print '---'
+    >> for loop, item in looper(['a', 'b', 'c']):
+    ..     print loop.number, item
+    ..     if not loop.last:
+    ..         print '---'
     1 a
     ---
     2 b

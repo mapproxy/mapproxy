@@ -19,22 +19,23 @@ import tempfile
 import os
 import re
 import sys
+from glob import glob as globfunc
 from contextlib import contextmanager
 from lxml import etree
 
 from mapproxy.test import mocker
 from mapproxy.compat import string_type, PY2
-from nose.tools import eq_
+
 
 class Mocker(object):
     """
     This is a base class for unit-tests that use ``mocker``. This class follows
-    the nosetest naming conventions for setup and teardown methods.
+    the xUnit naming conventions for setup and teardown methods.
 
     `setup` will initialize a `mocker.Mocker`. The `teardown` method
     will run ``mocker.verify()``.
     """
-    def setup(self):
+    def setup_method(self):
         self.mocker = mocker.Mocker()
     def expect_and_return(self, mock_call, return_val):
         """
@@ -58,7 +59,7 @@ class Mocker(object):
         if base_cls:
             return self.mocker.mock(base_cls)
         return self.mocker.mock()
-    def teardown(self):
+    def teardown_method(self):
         self.mocker.verify()
 
 class TempFiles(object):
@@ -140,6 +141,21 @@ def assert_re(value, regex):
     match = re.search(regex, value)
     assert match is not None, '%s ~= %s' % (value, regex)
 
+
+def assert_files_in_dir(dir, expected, glob=None):
+    """
+    assert that (only) ``expected`` files are in ``dir``.
+    ``filter`` can be a globbing patter, other files are ignored if it is set.
+    """
+    if glob is not None:
+        files = globfunc(os.path.join(dir, glob))
+        files = [os.path.basename(f) for f in files]
+    else:
+        files = os.listdir(dir)
+    files.sort()
+    assert sorted(expected) == files
+
+
 def validate_with_dtd(doc, dtd_name, dtd_basedir=None):
     if dtd_basedir is None:
         dtd_basedir = os.path.join(os.path.dirname(__file__), 'schemas')
@@ -182,7 +198,7 @@ class XPathValidator(object):
             if callable(expected):
                 assert expected(self.xml.xpath(xpath)[0])
             else:
-                eq_(self.xml.xpath(xpath)[0], expected)
+                assert self.xml.xpath(xpath)[0] == expected
     def xpath(self, xpath):
         return self.xml.xpath(xpath)
 
@@ -193,9 +209,9 @@ def strip_whitespace(data):
     '<foo>barzing1'
     """
     if isinstance(data, bytes):
-        return re.sub(b'\s+', b'', data)
+        return re.sub(br'\s+', b'', data)
     else:
-        return re.sub('\s+', '', data)
+        return re.sub(r'\s+', '', data)
 
 
 @contextmanager
@@ -228,3 +244,4 @@ def capture(bytes=False):
     finally:
         sys.stdout = backup_stdout
         sys.stderr = backup_stderr
+

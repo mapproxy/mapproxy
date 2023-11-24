@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement, absolute_import
+from __future__ import absolute_import
 
 from mapproxy.compat import string_type
 import yaml
@@ -30,19 +30,27 @@ def load_yaml_file(file_or_filename):
             return load_yaml(f)
     return load_yaml(file_or_filename)
 
+def _load_yaml(doc):
+    # try different methods to load yaml
+    try:
+        if getattr(yaml, '__with_libyaml__', False):
+            try:
+                return yaml.load(doc, Loader=yaml.CSafeLoader)
+            except AttributeError:
+                # handle cases where __with_libyaml__ is True but
+                # CLoader doesn't work (missing .dispose())
+                return yaml.safe_load(doc)
+        return yaml.safe_load(doc)
+    except (yaml.scanner.ScannerError, yaml.parser.ParserError) as ex:
+        raise YAMLError(str(ex))
+
 def load_yaml(doc):
     """
     Load yaml from file object or string.
     """
-    try:
-        if getattr(yaml, '__with_libyaml__', False):
-            try:
-                return yaml.load(doc, Loader=yaml.CLoader)
-            except AttributeError:
-                # handle cases where __with_libyaml__ is True but
-                # CLoader doesn't work (missing .dispose())
-                return yaml.load(doc)
-        return yaml.load(doc)
-    except (yaml.scanner.ScannerError, yaml.parser.ParserError) as ex:
-        raise YAMLError(str(ex))
+    data = _load_yaml(doc)
+    if type(data) is not dict:
+        # all configs are dicts, raise YAMLError to prevent later AttributeErrors (#352)
+        raise YAMLError("configuration not a YAML dictionary")
+    return data
 

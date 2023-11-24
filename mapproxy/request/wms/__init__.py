@@ -16,8 +16,8 @@
 """
 Service requests (parsing, handling, etc).
 """
-from __future__ import with_statement
 import codecs
+import re
 from mapproxy.request.wms import exception
 from mapproxy.exception import RequestError
 from mapproxy.srs import SRS, make_lin_transf
@@ -73,8 +73,8 @@ class WMSMapRequestParams(RequestParams):
         """
         if 'height' not in self or 'width' not in self:
             return None
-        width = int(self.params['width'])
-        height = int(self.params['height'])
+        width = int(float(self.params['width'])) # allow float sizes (100.0), but truncate decimals
+        height = int(float(self.params['height']))
         return (width, height)
     def _set_size(self, value):
         self['width'] = str(value[0])
@@ -186,10 +186,29 @@ class WMSMapRequest(WMSRequest):
     #pylint: disable-msg=E1102
     xml_exception_handler = None
     prevent_image_exception = False
+    dimension_params = ['time', 'elevation']
+    dimension_prefix = 'dim_'
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
+        self.dimensions = self._get_dimensions(param)
         WMSRequest.__init__(self, param=param, url=url, validate=validate,
                             non_strict=non_strict, **kw)
+    
+    def _get_dimensions(self, param):
+        if param:
+            regex = "(?i)%s%s" % (("^%s|" % self.dimension_prefix if self.dimension_prefix else ""),
+                                  "^(%s)$" % "|".join(self.dimension_params))
+            keys = []
+            if isinstance(param, RequestParams):
+                keys = list(map (lambda k: k[0], param.iteritems()))
+            else:
+                keys = list(param.keys())
+            if len(keys) > 0:
+                return dict(map(lambda k: (k, param.get(k)), filter (lambda k: re.search(regex, k), keys)))
+            else:
+                return None
+        else:
+            return None
 
     def validate(self):
         self.validate_param()
@@ -281,6 +300,8 @@ class WMS100MapRequest(WMSMapRequest):
     fixed_params = {'request': 'map', 'wmtver': '1.0.0'}
     expected_param = ['wmtver', 'request', 'layers', 'styles', 'srs', 'bbox',
                       'width', 'height', 'format']
+    dimension_params = []
+    dimension_prefix = ''
     def adapt_to_111(self):
         del self.params['wmtver']
         self.params['version'] = '1.0.0'
@@ -332,7 +353,7 @@ def switch_bbox_epsg_axis_order(bbox, srs):
             if SRS(srs).is_axis_order_ne:
                 return bbox[1], bbox[0], bbox[3], bbox[2]
         except RuntimeError:
-            log.warn('unknown SRS %s' % srs)
+            log.warning('unknown SRS %s' % srs)
     return bbox
 
 def _switch_bbox(self):
@@ -633,7 +654,7 @@ def _parse_version(req):
     if 'wmtver' in req.args:
         return Version(req.args['wmtver'])
 
-    return Version('1.1.1') # default
+    return None
 
 def _parse_request_type(req):
     if 'request' in req.args:
@@ -685,7 +706,16 @@ def wms_request(req, validate=True, strict=True, versions=None):
     version = _parse_version(req)
     req_type = _parse_request_type(req)
 
-    if versions and version not in versions:
+    if versions is None:
+        versions = sorted([
+            Version(v) for v in ('1.0.0', '1.1.0', '1.1.1', '1.3.0')])
+
+    if version is None:
+        # If no version number is specified in the request,
+        # the server shall respond with the highest version.
+        version = max(versions)
+
+    if version not in versions:
         version_requests = None
     else:
         version_requests = request_mapping.get(version, None)

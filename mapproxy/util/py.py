@@ -16,7 +16,6 @@
 """
 Python related helper functions.
 """
-from __future__ import with_statement
 from functools import wraps
 from mapproxy.compat import PY2
 

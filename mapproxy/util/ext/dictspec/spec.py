@@ -99,13 +99,10 @@ class number(object):
 class type_spec(object):
     def __init__(self, type_key, specs):
         self.type_key = type_key
-        self.specs = specs
+        self.specs = {}
 
-        for v in itervalues(specs):
-            if not isinstance(v, dict):
-                raise ValueError('%s requires dict subspecs', self.__class__)
-            if self.type_key not in v:
-                v[self.type_key] = str()
+        for key in specs:
+            self.add_subspec(key, specs[key])
 
     def subspec(self, data, context):
         if not data:
@@ -118,3 +115,10 @@ class type_spec(object):
         if key not in self.specs:
             raise ValueError("unknown %s value '%s' in %s" % (self.type_key, key, context.current_pos))
         return self.specs[key]
+
+    def add_subspec(self, key, subspec):
+        if not isinstance(subspec, dict):
+            raise ValueError('%s requires dict subspecs', self.__class__)
+        if self.type_key not in subspec:
+            subspec[self.type_key] = str()
+        self.specs[key] = subspec

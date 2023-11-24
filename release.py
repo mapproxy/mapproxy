@@ -1,11 +1,3 @@
-try:
-    from nose.plugins.skip import SkipTest
-    import sys
-    if 'nosetest' in ''.join(sys.argv):
-        raise SkipTest()
-except ImportError:
-    pass
-
 import scriptine
 from scriptine import path
 from scriptine.shell import backtick_, sh
@@ -82,14 +74,22 @@ def upload_test_sdist_command():
     date = backtick_('date +%Y%m%d').strip()
     print('python setup.py egg_info -R -D -b ".dev%s" register -r testpypi sdist upload -r testpypi' % (date, ))
 
+def check_uncommited():
+    if sh('git diff-index --quiet HEAD --') != 0:
+        print('ABORT: uncommitted changes. please commit (and tag) release version number')
+        sys.exit(1)
+
 def upload_final_sdist_command():
-    sh('python setup.py egg_info -b "" -D sdist upload')
+    check_uncommited()
+    build_sdist_command()
+    ver = version()
+    sh('twine upload dist/MapProxy-%(ver)s.tar.gz' % locals())
 
 def upload_final_wheel_command():
-    sh('python setup.py egg_info -b "" -D bdist_wheel upload')
-
-def register_command():
-    sh('python setup.py egg_info -b "" -D register')
+    check_uncommited()
+    build_wheel_command()
+    ver = version()
+    sh('twine upload dist/MapProxy-%(ver)s-py2.py3-none-any.whl' % locals())
 
 def link_latest_command(ver=None):
     if ver is None:

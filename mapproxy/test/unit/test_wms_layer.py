@@ -13,12 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement, division
+from __future__ import division
 
 from mapproxy.layer import MapQuery, InfoQuery
 from mapproxy.srs import SRS
 from mapproxy.service.wms import combined_layers
-from nose.tools import eq_
 from mapproxy.source.wms import WMSSource
 from mapproxy.client.wms import WMSClient
 from mapproxy.request.wms import create_request
@@ -28,40 +27,68 @@ class TestCombinedLayers(object):
     q = MapQuery((0, 0, 10000, 10000), (100, 100), SRS(3857))
 
     def test_empty(self):
-        eq_(combined_layers([], self.q), [])
+        assert combined_layers([], self.q) == []
 
     def test_same_source(self):
         layers = [
-            WMSSource(WMSClient(create_request({'url': 'http://foo/', 'layers': 'a'}, {}))),
-            WMSSource(WMSClient(create_request({'url': 'http://foo/', 'layers': 'b'}, {}))),
+            WMSSource(
+                WMSClient(create_request({"url": "http://foo/", "layers": "a"}, {}))
+            ),
+            WMSSource(
+                WMSClient(create_request({"url": "http://foo/", "layers": "b"}, {}))
+            ),
         ]
         combined = combined_layers(layers, self.q)
-        eq_(len(combined), 1)
-        eq_(combined[0].client.request_template.params.layers, ['a', 'b'])
+        assert len(combined) == 1
+        assert combined[0].client.request_template.params.layers == ["a", "b"]
 
     def test_mixed_hosts(self):
         layers = [
-            WMSSource(WMSClient(create_request({'url': 'http://foo/', 'layers': 'a'}, {}))),
-            WMSSource(WMSClient(create_request({'url': 'http://foo/', 'layers': 'b'}, {}))),
-            WMSSource(WMSClient(create_request({'url': 'http://bar/', 'layers': 'c'}, {}))),
-            WMSSource(WMSClient(create_request({'url': 'http://bar/', 'layers': 'd'}, {}))),
-            WMSSource(WMSClient(create_request({'url': 'http://foo/', 'layers': 'e'}, {}))),
-            WMSSource(WMSClient(create_request({'url': 'http://foo/', 'layers': 'f'}, {}))),
+            WMSSource(
+                WMSClient(create_request({"url": "http://foo/", "layers": "a"}, {}))
+            ),
+            WMSSource(
+                WMSClient(create_request({"url": "http://foo/", "layers": "b"}, {}))
+            ),
+            WMSSource(
+                WMSClient(create_request({"url": "http://bar/", "layers": "c"}, {}))
+            ),
+            WMSSource(
+                WMSClient(create_request({"url": "http://bar/", "layers": "d"}, {}))
+            ),
+            WMSSource(
+                WMSClient(create_request({"url": "http://foo/", "layers": "e"}, {}))
+            ),
+            WMSSource(
+                WMSClient(create_request({"url": "http://foo/", "layers": "f"}, {}))
+            ),
         ]
         combined = combined_layers(layers, self.q)
-        eq_(len(combined), 3)
-        eq_(combined[0].client.request_template.params.layers, ['a', 'b'])
-        eq_(combined[1].client.request_template.params.layers, ['c', 'd'])
-        eq_(combined[2].client.request_template.params.layers, ['e', 'f'])
+        assert len(combined) == 3
+        assert combined[0].client.request_template.params.layers == ["a", "b"]
+        assert combined[1].client.request_template.params.layers == ["c", "d"]
+        assert combined[2].client.request_template.params.layers == ["e", "f"]
 
     def test_mixed_params(self):
         layers = [
-            WMSSource(WMSClient(create_request({'url': 'http://foo/', 'layers': 'a'}, {}))),
-            WMSSource(WMSClient(create_request({'url': 'http://foo/', 'layers': 'b'}, {}))),
-            WMSSource(WMSClient(create_request({'url': 'http://foo/', 'layers': 'c'}, {}))),
-            WMSSource(WMSClient(create_request({'url': 'http://foo/', 'layers': 'd'}, {}))),
-            WMSSource(WMSClient(create_request({'url': 'http://foo/', 'layers': 'e'}, {}))),
-            WMSSource(WMSClient(create_request({'url': 'http://foo/', 'layers': 'f'}, {}))),
+            WMSSource(
+                WMSClient(create_request({"url": "http://foo/", "layers": "a"}, {}))
+            ),
+            WMSSource(
+                WMSClient(create_request({"url": "http://foo/", "layers": "b"}, {}))
+            ),
+            WMSSource(
+                WMSClient(create_request({"url": "http://foo/", "layers": "c"}, {}))
+            ),
+            WMSSource(
+                WMSClient(create_request({"url": "http://foo/", "layers": "d"}, {}))
+            ),
+            WMSSource(
+                WMSClient(create_request({"url": "http://foo/", "layers": "e"}, {}))
+            ),
+            WMSSource(
+                WMSClient(create_request({"url": "http://foo/", "layers": "f"}, {}))
+            ),
         ]
 
         layers[0].supported_srs = ["EPSG:4326"]
@@ -71,14 +98,16 @@ class TestCombinedLayers(object):
         layers[3].supported_formats = ["image/png"]
 
         combined = combined_layers(layers, self.q)
-        eq_(len(combined), 3)
-        eq_(combined[0].client.request_template.params.layers, ['a', 'b'])
-        eq_(combined[1].client.request_template.params.layers, ['c', 'd'])
-        eq_(combined[2].client.request_template.params.layers, ['e', 'f'])
+        assert len(combined) == 3
+        assert combined[0].client.request_template.params.layers == ["a", "b"]
+        assert combined[1].client.request_template.params.layers == ["c", "d"]
+        assert combined[2].client.request_template.params.layers == ["e", "f"]
 
 
 class TestInfoQuery(object):
+
     def test_coord(self):
-        query = InfoQuery((8, 50, 9, 51), (400, 1000),
-                           SRS(4326), (100, 600), 'text/plain')
-        eq_(query.coord, (8.25, 50.4))
+        query = InfoQuery(
+            (8, 50, 9, 51), (400, 1000), SRS(4326), (100, 600), "text/plain"
+        )
+        assert query.coord == (8.25, 50.4)

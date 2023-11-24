@@ -14,28 +14,37 @@
 # limitations under the License.
 
 import os
+
+import pytest
+
 from mapproxy.util.ogr import OGRShapeReader, libgdal
-from nose.tools import eq_
-from nose.plugins.skip import SkipTest
 
-if not libgdal:
-    raise SkipTest('libgdal not found')
 
-polygon_file = os.path.join(os.path.dirname(__file__), 'polygons', 'polygons.shp')
+polygon_shapefile = os.path.join(os.path.dirname(__file__), "polygons", "polygons.shp")
+polygon_geojson = os.path.join(os.path.dirname(__file__), "polygons", "polygons.geojson")
 
+@pytest.mark.skipif(not libgdal, reason="libgdal not found")
 class TestOGRShapeReader(object):
-    def setup(self):
-        self.reader = OGRShapeReader(polygon_file)
-    def test_read_all(self):
-        wkts = list(self.reader.wkts())
-        eq_(len(wkts), 3)
-        for wkt in wkts:
-            assert wkt.startswith(b'POLYGON ('), 'unexpected WKT: %s' % wkt
-    def test_read_filter(self):
-        wkts = list(self.reader.wkts(where='name = "germany"'))
-        eq_(len(wkts), 2)
-        for wkt in wkts:
-            assert wkt.startswith(b'POLYGON ('), 'unexpected WKT: %s' % wkt
-    def test_read_filter_no_match(self):
-        wkts = list(self.reader.wkts(where='name = "foo"'))
-        eq_(len(wkts), 0)
+
+    @pytest.fixture
+    def readers(self):
+        return [OGRShapeReader(polygon_shapefile), OGRShapeReader(polygon_geojson)]
+
+    def test_read_all(self, readers):
+        for reader in readers:
+            wkts = list(reader.wkts())
+            assert len(wkts) == 3
+            for wkt in wkts:
+                assert wkt.startswith(b"POLYGON ("), "unexpected WKT: %s" % wkt
+
+    def test_read_filter(self, readers):
+        for reader in readers:
+            wkts = list(reader.wkts(where="name = 'germany'"))
+            assert len(wkts) == 2
+            for wkt in wkts:
+                assert wkt.startswith(b"POLYGON ("), "unexpected WKT: %s" % wkt
+
+    def test_read_filter_no_match(self, readers):
+        for reader in readers:
+            wkts = list(reader.wkts(where="name = 'foo'"))
+            assert len(wkts) == 0

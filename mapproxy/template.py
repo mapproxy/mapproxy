@@ -28,7 +28,9 @@ def template_loader(module_name, location='templates', namespace={}):
 
     class loader(object):
         def __call__(self, name, from_template=None, default_inherit=None):
-            if base_config().template_dir:
+            if os.path.isabs(name):
+                template_file = name
+            elif base_config().template_dir:
                 template_file = os.path.join(base_config().template_dir, name)
             else:
                 template_file = pkg_resources.resource_filename(module_name, location + '/' + name)

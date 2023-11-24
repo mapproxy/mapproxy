@@ -1,0 +1,24 @@
+services:
+  tms:
+  wms:
+    srs: ['EPSG:4326', 'EPSG:4258', 'CRS:84', 'EPSG:900913', 'EPSG:3857', 'EPSG:31466', 'EPSG:31467', 'EPSG:31468', 'EPSG:25831', 'EPSG:25832', 'EPSG:25833']
+    md:
+        title: test
+
+layers:
+  - name: bulk
+    title: bulk
+    sources: [bulk_cache]
+
+caches:
+  bulk_cache:
+    grids: [GLOBAL_MERCATOR]
+    meta_size: [2, 2]
+    bulk_meta_tiles: true
+    sources: [tms_source]
+
+sources:
+  tms_source:
+    type: tile
+    url: http://localhost:42423/tiles/%(tc_path)s.png
+

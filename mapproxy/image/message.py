@@ -99,11 +99,11 @@ class MessageImage(object):
                         self.font_size)
                 except ImportError:
                     _pil_ttf_support = False
-                    log_system.warn("Couldn't load TrueType fonts, "
+                    log_system.warning("Couldn't load TrueType fonts, "
                         "PIL needs to be build with freetype support.")
                 except IOError:
                     _pil_ttf_support = False
-                    log_system.warn("Couldn't load find TrueType font ", self.font_name)
+                    log_system.warning("Couldn't load find TrueType font ", self.font_name)
             if self._font is None:
                 self._font = ImageFont.load_default()
         return self._font
@@ -281,8 +281,14 @@ class TextDraw(object):
         boxes = []
         y_offset = 0
         for i, line in enumerate(self.text):
-            text_size = draw.textsize(line, font=self.font)
-            text_box = (0, y_offset, text_size[0], text_size[1]+y_offset)
+            try:
+                text_box = draw.textbbox((0, y_offset), line, font=self.font)
+                y_offset = text_box[3] + self.linespacing
+            except AttributeError:
+                # Pillow < 8
+                text_size = draw.textsize(line, font=self.font)
+                text_box = (0, y_offset, text_size[0], text_size[1]+y_offset)
+                y_offset += text_size[1] + self.linespacing
             boxes.append(text_box)
             total_bbox = (min(total_bbox[0], text_box[0]),
                           min(total_bbox[1], text_box[1]),
@@ -290,7 +296,7 @@ class TextDraw(object):
                           max(total_bbox[3], text_box[3]),
                          )
 
-            y_offset += text_size[1] + self.linespacing
+            
         return total_bbox, boxes
 
     def _move_bboxes(self, boxes, offsets):

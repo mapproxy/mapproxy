@@ -23,6 +23,22 @@ Each backend has a ``type`` and one or more options.
         backendoption1: value
         backendoption2: value
 
+You may add a coverage definition to any cache with the ``coverage`` option under ``cache``.
+
+::
+
+  caches:
+    mycache:
+      sources: [...]
+      grids: [...]
+      cache:
+        type: backendtype
+        backendoption1: value
+        backendoption2: value
+        coverage:
+          bbox: [5, 50, 10, 55]
+          srs: 'EPSG:4326'
+
 
 The following backend types are available.
 
@@ -33,7 +49,9 @@ The following backend types are available.
 - :ref:`cache_geopackage`
 - :ref:`cache_couchdb`
 - :ref:`cache_riak`
+- :ref:`cache_redis`
 - :ref:`cache_s3`
+- :ref:`cache_azureblob`
 - :ref:`cache_compact`
 
 .. _cache_file:
@@ -285,7 +303,7 @@ This backend is good for very large caches which can be distributed over many no
 Requirements
 ------------
 
-You will need the `Python Riak client <https://pypi.python.org/pypi/riak>`_ version 2.0 or newer. You can install it in the usual way, for example with ``pip install riak``. Environments with older version must be upgraded with ``pip install -U riak``.
+You will need the `Python Riak client <https://pypi.org/project/riak>`_ version 2.4.2 or older. You can install it in the usual way, for example with ``pip install riak==2.4.2``. Environments with older version must be upgraded with ``pip install -U riak==2.4.2``. Python library depends on packages `python-dev`, `libffi-dev` and `libssl-dev`.
 
 Configuration
 -------------
@@ -293,13 +311,13 @@ Configuration
 Available options:
 
 ``nodes``:
-    A list of riak nodes. Each node needs a ``host`` and optionally a ``pb_port`` and an ``http_port`` if the ports differ from the default. A single localhost node is used if you don't configure any nodes.
+    A list of riak nodes. Each node needs a ``host`` and optionally a ``pb_port`` and an ``http_port`` if the ports differ from the default. Defaults to single localhost node.
 
 ``protocol``:
     Communication protocol. Allowed options is ``http``, ``https`` and ``pbc``. Defaults to ``pbc``.
 
 ``bucket``:
-    The name of the bucket MapProxy uses for this cache. The bucket is the namespace for the tiles and needs to be unique for each cache. Defaults to cache name suffixed with grid name (e.g. ``mycache_webmercator``).
+    The name of the bucket MapProxy uses for this cache. The bucket is the namespace for the tiles and must be unique for each cache. Defaults to cache name suffixed with grid name (e.g. ``mycache_webmercator``).
 
 ``default_ports``:
     Default ``pb`` and ``http`` ports for ``pbc`` and ``http`` protocols. Will be used as the default for each defined node.
@@ -312,20 +330,83 @@ Example
 
 ::
 
-    myriakcache:
+  myriakcache:
+    sources: [mywms]
+    grids: [mygrid]
+    cache:
+      type: riak
+      nodes:
+        - host: 1.example.org
+          pb_port: 9999
+        - host: 1.example.org
+        - host: 1.example.org
+      protocol: pbc
+      bucket: myriakcachetiles
+      default_ports:
+        pb: 8087
+        http: 8098
+
+.. _cache_redis:
+
+``redis``
+=========
+
+.. versionadded:: 1.10.0
+
+Store tiles in a `Redis <https://redis.io/>`_ in-memory database. This backend is useful for short-term caching. Typical use-case is a small Redis cache that allows you to benefit from meta-tiling.
+
+Your Redis database should be configured with ``maxmemory`` and ``maxmemory-policy`` options to limit the memory usage. For example::
+
+  maxmemory 256mb
+  maxmemory-policy volatile-ttl
+
+
+Requirements
+------------
+
+You will need the `Python Redis client <https://pypi.org/project/redis>`_. You can install it in the usual way, for example with ``pip install redis``.
+
+Configuration
+-------------
+
+Available options:
+
+``host``:
+    Host name of the Redis server. Defaults to ``127.0.0.1``.
+
+``port``:
+    Port of the Redis server. Defaults to ``6379``.
+
+``db``:
+    Number of the Redis database. Please refer to the Redis documentation. Defaults to `0`.
+
+``username``:
+  Optional authentication username. No defaults.
+
+``password``:
+  Optional authentication password. No defaults.
+
+``prefix``:
+    The prefix added to each tile-key in the Redis cache. Used to distinguish tiles from different caches and grids.  Defaults to ``cache-name_grid-name``.
+
+``default_ttl``:
+    The default Time-To-Live of each tile in the Redis cache in seconds. Defaults to 3600 seconds (1 hour).
+
+
+
+Example
+-------
+
+::
+
+    redis_cache:
         sources: [mywms]
         grids: [mygrid]
-        type: riak
-        nodes:
-            - host: 1.example.org
-              pb_port: 9999
-            - host: 1.example.org
-            - host: 1.example.org
-        protocol: pbc
-        bucket: myriakcachetiles
-        default_ports:
-            pb: 8087
-            http: 8098
+        cache:
+          type: redis
+          username: mapproxy
+          password: iamgreatpassword
+          default_ttl: 600
 
 
 .. _cache_geopackage:
@@ -378,13 +459,16 @@ You can set the ``sources`` to an empty list, if you use an existing geopackage 
 
 .. versionadded:: 1.10.0
 
-Store tiles in a `Amazon Simple Storage Service (S3) <https://aws.amazon.com/s3/>`_.
+.. versionadded:: 1.11.0
+  ``region_name``, ``endpoint_url`` and ``access_control_list``
+
+Store tiles in a `Amazon Simple Storage Service (S3) <https://aws.amazon.com/s3/>`_ or any other S3 compatible object storage.
 
 
 Requirements
 ------------
 
-You will need the Python `boto3 <https://github.com/boto/boto3>`_ package. You can install it in the usual way, for example with ``pip install boto3``.
+You will need the Python `boto3 <https://pypi.org/project/boto3>`_ package. You can install it in the usual way, for example with ``pip install boto3``.
 
 Configuration
 -------------
@@ -397,6 +481,15 @@ Available options:
 ``profile_name``:
   Optional profile name for `shared credentials <http://boto3.readthedocs.io/en/latest/guide/configuration.html>`_ for this cache. Alternative methods of authentification are using the  ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY`` environmental variables, or by using an `IAM role <http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html>`_ when using an Amazon EC2 instance.
   You can set the default profile with ``globals.cache.s3.profile_name``.
+
+``region_name``:
+  Optional name of the region. You can set the default region_name with ``globals.cache.s3.region_name``
+
+``endpoint_url``:
+  Optional endpoint_url for the S3. You can set the default endpoint_url with ``globals.cache.s3.endpoint_url``.
+
+``access_control_list``:
+  Optional access control list for the S3. You can set the default access_control_list with ``globals.cache.s3.access_control_list``.
 
 ``directory``:
   Base directory (path) where all tiles are stored.
@@ -426,6 +519,97 @@ Example
         profile_name: default
 
 
+Example usage with DigitalOcean Spaces
+--------------------------------------
+
+::
+
+  cache:
+    my_layer_20110501_epsg_4326_cache_out:
+      sources: [my_layer_20110501_cache]
+      cache:
+        type: s3
+        directory: /1.0.0/my_layer/default/20110501/4326/
+        bucket_name: my-s3-tiles-cache
+
+  globals:
+    cache:
+      s3:
+        profile_name: default
+        region_name: nyc3
+        endpoint_url: https://nyc3.digitaloceanspaces.com
+        access_control_list: public-read
+
+.. _cache_azureblob:
+
+``azureblob``
+======
+
+.. versionadded:: to be released
+
+Store tiles in `Azure Blob Storage <https://azure.microsoft.com/en-us/products/storage/blobs/>`_, Microsoft's object storage solution for the cloud.
+
+
+Requirements
+------------
+
+You will need the `azure-storage-blob <https://pypi.org/project/azure-storage-blob/>`_ package. You can install it in the usual way, for example with ``pip install azure-storage-blob``.
+
+Configuration
+-------------
+
+Available options:
+
+``container_name``:
+  The blob container used for this cache. You can set the default container with ``globals.cache.azureblob.container_name``.
+
+``connection_string``:
+  Credentials/url to connect and authenticate against Azure Blob storage. You can set the default connection_string with ``globals.cache.azureblob.connection_string`` or
+  using the ``AZURE_STORAGE_CONNECTION_STRING`` environment variable. There are several ways to
+  `authenticate against Azure Blob storage <https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string>`_:
+
+- Using the storage account key. This connection string can also found in the Azure Portal under the "Access Keys" section. For example:
+
+::
+
+    "DefaultEndpointsProtocol=https;AccountName=my-storage-account;AccountKey=my-key"
+
+- Using a SAS token. For example:
+
+::
+
+    "BlobEndpoint=https://my-storage-account.blob.core.windows.net;SharedAccessSignature=sv=2015-04-05&sr=b&si=tutorial-policy-635959936145100803&sig=9aCzs76n0E7y5BpEi2GvsSv433BZa22leDOZXX%2BXXIU%3D"
+
+- Using a local Azurite emulator, this is for TESTING purposes only. For example, using the default Azurite account:
+
+::
+
+    "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:10000/devstoreaccount1"
+
+``directory``:
+  Base directory (path) where all tiles are stored.
+
+``directory_layout``:
+  Defines the directory layout for the tiles (``12/12345/67890.png``, ``L12/R00010932/C00003039.png``, etc.).  See :ref:`cache_file` for available options. Defaults to ``tms`` (e.g. ``12/12345/67890.png``). This cache cache also supports ``reverse_tms`` where tiles are stored as ``y/x/z.format``.
+
+Example
+-------
+
+::
+
+  cache:
+    my_layer_20110501_epsg_4326_cache_out:
+      sources: [my_layer_20110501_cache]
+      cache:
+        type: azureblob
+        directory: /1.0.0/my_layer/default/20110501/4326/
+        container_name: my-azureblob-tiles-cache
+
+  globals:
+    cache:
+      azureblob:
+        connection_string: "DefaultEndpointsProtocol=https;AccountName=xxxx;AccountKey=xxxx"
+
 .. _cache_compact:
 
 
@@ -433,10 +617,16 @@ Example
 ===========
 
 .. versionadded:: 1.10.0
+  Support for format version 1
 
-Store tiles in ArcGIS compatible compact cache files. A single compact cache ``.bundle`` file stores up to about 16,000 tiles. There is one additional ``.bundlx`` index file for each ``.bundle`` data file.
+.. versionadded:: 1.11.0
+  Support for format version 2
 
-Only version 1 of the compact cache format (ArcGIS 10.0-10.2) is supported. Version 2 (ArcGIS 10.3 or higher) is not supported at the moment.
+Store tiles in ArcGIS compatible compact cache files. A single compact cache ``.bundle`` file stores up to about 16,000 tiles.
+
+Version 1 of the compact cache format is compatible with ArcGIS 10.0 and the default version of ArcGIS 10.0-10.2. Version 2 is supported by ArcGIS 10.3 or higher.
+Version 1 stores is one additional ``.bundlx`` index file for each ``.bundle`` data file.
+
 
 Available options:
 
@@ -444,7 +634,7 @@ Available options:
   Directory where MapProxy should store the level directories. This will not add the cache name or grid name to the path. You can use this option to point MapProxy to an existing compact cache.
 
 ``version``:
-  The version of the ArcGIS compact cache format. This option is required.
+  The version of the ArcGIS compact cache format. This option is required. Either ``1`` or ``2``.
 
 
 You can set the ``sources`` to an empty list, if you use an existing compact cache files and do not have a source.
@@ -460,8 +650,13 @@ The following configuration will load tiles from ``/path/to/cache/L00/R0000C0000
       grids: [webmercator]
       cache:
         type: compact
-        version: 1
+        version: 2
         directory: /path/to/cache
+
+.. note::
+
+  MapProxy does not support reading and writiting of the ``conf.cdi`` and ``conf.xml`` files. You need to configure a compatible MapProxy grid when you want to reuse exsting ArcGIS compact caches in MapProxy. You need to create or modify existing ``conf.cdi`` and ``conf.xml`` files when you want to use compact caches created with MapProxy in ArcGIS.
+
 
 .. note::
 
@@ -471,5 +666,6 @@ The following configuration will load tiles from ``/path/to/cache/L00/R0000C0000
 
 .. note::
 
-  The compact cache format is append-only to allow parallel read and write operations. Removing or refreshing tiles with ``mapproxy-seed`` does not reduce the size of the cache files. Therefore, this format is not suitable for caches that require frequent updates.
-
+  The compact cache format is append-only to allow parallel read and write operations.
+  Removing or refreshing tiles with ``mapproxy-seed`` does not reduce the size of the cache files.
+  You can use the :ref:`defrag-compact-cache <mapproxy_defrag_compact_cache>` util to reduce the file size of existing bundle files.

@@ -11,11 +11,11 @@ services:
   tms:
 
 layers:
-  watermark:
+  - name: watermark
     title: Layer with watermark
     sources: [wms_cache]
 
-  watermark_transp:
+  - name: watermark_transp
     title: Layer with watermark
     sources: [wms_transp_cache]
 

@@ -127,7 +127,7 @@ The old syntax to configure each layer as a dictionary with the key as the name 
   layers:
     mylayer:
       title: My Layer
-      source: [mysoruce]
+      sources: [mysource]
 
 should become
 
@@ -136,9 +136,9 @@ should become
   layers:
     - name: mylayer
       title: My Layer
-      source: [mysoruce]
+      sources: [mysource]
 
-The mixed format where the layers are a list (``-``) but each layer is still a dictionary is no longer supported (e.g. ``- mylayer:`` becomes ``- name: mylayer``).
+The mixed format where the layers are a list (``-``) but each layer is still a dictionary is no longer supported (e.g. ``- mylayer:`` becomes ``- name: mylayer``). Note that the deprecated format is still currently required if you are using the base: option due to  `issue #490 <https://github.com/mapproxy/mapproxy/issues/490>`.
 
 .. _layers_name:
 
@@ -208,7 +208,7 @@ Limit the layer to the given min and max resolution or scale. MapProxy will retu
 
 The values will also apear in the capabilities documents (i.e. WMS ScaleHint and Min/MaxScaleDenominator).
 
-Pleas read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
+Please read :ref:`scale vs. resolution <scale_resolution>` for some notes on `scale`.
 
 ``legendurl``
 """""""""""""
@@ -408,10 +408,18 @@ MapProxy will try to use this format to request new tiles, if it is not set ``fo
 ``link_single_color_images``
 """"""""""""""""""""""""""""
 
-If set to ``true``, MapProxy will not store tiles that only contain a single color as a
+If set to ``true`` or ``symlink``, MapProxy will not store tiles that only contain a single color as a
 separate file. MapProxy stores these tiles only once and uses symbolic links to this file
 for every occurrence. This can reduce the size of your tile cache if you have larger areas
 with no data (e.g. water areas, areas with no roads, etc.).
+
+If set to ``hardlink``, MapProxy will store the duplicate tiles as hard links.
+
+This avoids using up inodes for symlinks, which is especially useful if single color images outnumber others (as might be the case in world maps or low-detail maps for example). Directory entries for the hardlinks will still be created of course.
+
+The usual limitation applies: files can only be linked on the same filesystem, assuming it has support for hardlinks in the first place. Furthermore, all the linked files will have the same metadata, in particular the modification time (``mtime``), which is used in seeding or cleanups with the ``refresh_before`` or ``remove_before`` directives.
+
+In practice this means that all the linked images will have the first such tile's modification date and therefore will appear older to the seeding or cleanup process than when they were actually linked. This means that they are *more likely* to be included in the ``refresh_before`` or ``remove_before`` filters, which may or may not be an issue depending on your seeding or cleanup use-cases.
 
 .. note:: This feature is only available on Unix, since Windows has no support for symbolic links.
 
@@ -486,6 +494,69 @@ Enables meta-tile handling for tiled sources. See :ref:`global cache options <me
 
 You can limit until which resolution MapProxy should cache data with these two options.
 Requests below the configured resolution or level will be passed to the underlying source and the results will not be stored. The resolution of ``use_direct_from_res`` should use the units of the first configured grid of this cache. This takes only effect when used in WMS services.
+
+``upscale_tiles`` and ``downscale_tiles``
+"""""""""""""""""""""""""""""""""""""""""
+
+MapProxy is able to create missing tiles by rescaling tiles from zoom levels below or above.
+
+MapProxy will scale up tiles from one or more zoom levels above (with lower resolutions) if you set ``upscale_tiles`` to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Higher values allow more blurry results.
+
+You can use ``upscale_tiles`` if you want to provide tiles or WMS responses in a higher resolution then your available cache. This also works with partially seeded caches, eg. where you have an aerial image cache of 20cm, with some areas also in 10cm resolution. ``upscale_tiles`` allows you to provide responses for 10cm requests in all areas, always returning the best available data.
+
+MapProxy will scale down tiles from one or more zoom levels below (with higher resolutions) if you set ``downscale_tiles`` to 1 or higher. The value configures by how many zoom levels MapProxy can search for a proper tile. Note that the number of tiles growth exponentialy. Typically, a single tile can be downscaled from four tiles of the next zoom level. Downscaling from two levels below requires 16 tiles, three levels below requires 64, etc.. A larger WMS request can quickly accumulate thousands of tiles required for downscaling. It is therefore `not` recommended to use ``downscale_tiles`` values larger then one.
+
+You can use ``downscale_tiles`` to fill a cache for a source that only provides data for higher resolutions.
+
+``mapproxy-seed`` will seed each level independently for caches with ``upscale_tiles`` or ``downscale_tiles``. It will start with the highest zoom level for ``downscale_tiles``, so that tiles in the next (lower) zoom levels can be created by downscaling the already created tiles. It will start in the lowest zoom level for ``upscale_tiles``, so that tiles in the next (higher) zoom levels can be created by upscaling the already creates tiles.
+
+A transparent tile is returned if no tile is found within the configured ``upscale_tiles`` or ``downscale_tiles`` range.
+
+
+To trigger the rescaling behaviour, a tile needs to be missing in the cache and MapProxy needs to be unable to fetch the tile from the source. MapProxy is unable to fetch the tile if the cache has no sources, or if all sources are either ``seed_only`` or limited to a different resolution (``min_res``/``max_res``).
+
+
+``cache_rescaled_tiles``
+""""""""""""""""""""""""
+
+Tiles created by the ``upscale_tiles`` or ``downscale_tiles`` option are only stored in the cache if this option is set to true.
+
+``refresh_before``
+"""""""""""""""""""
+
+Here you can force MapProxy to refresh tiles from the source while serving if they are found to be expired.
+The validity conditions are the same as for seeding:
+
+Explanation::
+
+  # absolute as ISO time
+  refresh_before:
+    time: 2010-10-21T12:35:00
+
+  # relative from the time of the tile request
+  refresh_before:
+    weeks: 1
+    days: 7
+    hours: 4
+    minutes: 15
+
+  # modification time of a given file
+  refresh_before:
+    mtime: path/to/file
+
+Example
+~~~~~~~~
+
+::
+
+   caches:
+     osm_cache:
+     grids: ['osm_grid']
+     sources: [OSM]
+     disable_storage: false
+     refresh_before:
+       days: 1
+
 
 ``disable_storage``
 """"""""""""""""""""
@@ -614,7 +685,7 @@ Requests with 1500, 1000 or 701m/px resolution will use the first level, request
 
 The extent of your grid. You can use either a list or a string with the lower left and upper right coordinates. You can set the SRS of the coordinates with the ``bbox_srs`` option. If that option is not set the ``srs`` of the grid will be used.
 
-MapProxy always expects your BBOX coordinates order to be east, south, west, north, regardless of your SRS :ref:`axis order <axis_order>`.
+MapProxy always expects your BBOX coordinates order to be west, south, east, north regardless of your SRS :ref:`axis order <axis_order>`.
 
 ::
 
@@ -847,7 +918,7 @@ The following options define how tiles are created and stored. Most options can 
 
 
 ``link_single_color_images``
-  Enables the ``link_single_color_images`` option for all caches if set to ``true``. See :ref:`link_single_color_images`.
+  Enables the ``link_single_color_images`` option for all caches if set to ``true``, ``symlink`` or ``hardlink``. See :ref:`link_single_color_images`.
 
 .. _max_tile_limit:
 
@@ -858,13 +929,39 @@ The following options define how tiles are created and stored. Most options can 
 ``srs``
 """""""
 
+``preferred_src_proj``
+  This option allows you to control which source projection MapProxy should use
+  when it needs to reproject an image.
+
+  When you make a request for a projection that is not supported by your cache (tile grid) or by your source (``supported_srs``), then MapProxy will reproject the image from the `best` available projection. By default, the `best` available projection is the first supported projection by your cache or source that is also either projected or geographic.
+
+  You can change this behavior with ``preferred_src_proj``. For example, you can configure that MapProxy should prefer similar projections from neighboring zones over Webmercator.
+
+  ``preferred_src_proj`` is a dictionary with the target EPSG code (i.e. the SRS requested by the user) and a list of preferred source EPSG codes.
+
+  With the following configuration, WMS requests for EPSG:25831 are served from a cache with EPSG:25832, if there is no cache for EPSG:25831.
+  ::
+
+    srs:
+      preferred_src_proj:
+        'EPSG:25831': ['EPSG:25832', 'EPSG:3857']
+        'EPSG:25832': ['EPSG:25831', 'EPSG:25833', 'EPSG:3857']
+        'EPSG:25833': ['EPSG:25832'', 'EPSG:3857']
+        'EPSG:31466': ['EPSG:25831', 'EPSG:25832', 'EPSG:3857']
+        'EPSG:31467': ['EPSG:25832', 'EPSG:25833', 'EPSG:25831', 'EPSG:3857']
+
+  .. versionadded:: 1.12.0
+
 ``proj_data_dir``
-  MapProxy uses Proj4 for all coordinate transformations. If you need custom projections
-  or need to tweak existing definitions (e.g. add towgs parameter set) you can point
-  MapProxy to your own set of proj4 init files. The path should contain an ``epsg`` file
-  with the EPSG definitions.
+
+  MapProxy uses PROJ for all coordinate transformations. If you need custom projections
+  or need to tweak existing definitions. You can point MapProxy to your own set of PROJ data files.
+
+  This path should contain an ``epsg`` file with the EPSG definitions for installations with PROJ version 4.
+  PROJ>=5 uses a different configuration format. Please refer to the PROJ documentation.
 
   The configured path can be absolute or relative to the mapproxy.yaml.
+
 
 .. _axis_order:
 
@@ -893,6 +990,10 @@ The following options define how tiles are created and stored. Most options can 
   If you need to override one of the default values, then you need to define both axis
   order options, even if one is empty.
 
+  .. versionchanged:: 1.13.0
+  MapProxy can now determine the correct axis order for all coordinate systems when using pyproj>=2. The axis_order_ne/axis_order_en are ignored in this case.
+
+
 .. _http_ssl:
 
 ``http``
@@ -900,14 +1001,13 @@ The following options define how tiles are created and stored. Most options can 
 
 HTTP related options.
 
-Secure HTTPS Connections (HTTPS)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. note:: You need Python 2.6 or the `SSL module <http://pypi.python.org/pypi/ssl>`_ for this feature.
+Secure HTTP Connections (HTTPS)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 MapProxy supports access to HTTPS servers. Just use ``https`` instead of ``http`` when
-defining the URL of a source. MapProxy needs a file that contains the root and CA
-certificates. If the server certificate is signed by a "standard" root certificate (i.e. your browser does not warn you), then you can use a cert file that is distributed with your system. On Debian based systems you can use ``/etc/ssl/certs/ca-certificates.crt``.
+defining the URL of a source.
+
+MapProxy verifies the SSL/TLS connections against your systems "certification authority" (CA) certificates. You can provide your own set of root certificates with the ``ssl_ca_certs`` option.
 See the `Python SSL documentation <http://docs.python.org/dev/library/ssl.html#ssl-certificates>`_ for more information about the format.
 
 ::
@@ -915,11 +1015,26 @@ See the `Python SSL documentation <http://docs.python.org/dev/library/ssl.html#s
   http:
     ssl_ca_certs: /etc/ssl/certs/ca-certificates.crt
 
-If you want to use SSL but do not need certificate verification, then you can disable it with the ``ssl_no_cert_checks`` option. You can also disable this check on a source level, see :ref:`WMS source options <wms_source_ssl_no_cert_checks>`.
+
+.. versionadded:: 1.11.0
+
+  MapProxy uses the systems CA files by default, if you use Python >=2.7.9 or >=3.4.
+
+
+.. note::
+
+  You need to supply a CA file that includes the root certificates if you use older MapProxy or older Python versions. Otherwise MapProxy will fail to establish the connection. You can set the ``http.ssl_no_cert_checks`` options to ``true`` to disable this verification.
+
+
+``ssl_no_cert_checks``
+
+If you want to use SSL/TLS but do not need certificate verification, then you can disable it with the ``ssl_no_cert_checks`` option. You can also disable this check on a source level.
+
 ::
 
   http:
-    ssl_no_cert_checks: True
+    ssl_no_cert_checks: true
+
 
 ``client_timeout``
 ^^^^^^^^^^^^^^^^^^
@@ -953,6 +1068,24 @@ Add additional HTTP headers to all requests to your sources.
 .. versionadded:: 1.8.0
 
 Sets the ``Access-control-allow-origin`` header to HTTP responses for `Cross-origin resource sharing <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`_. This header is required for WebGL or Canvas web clients. Defaults to `*`. Leave empty to disable the header. This option is only available in `globals`.
+
+``manage_cookies``
+^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.14.0
+
+Enables MapProxy cookie management for HTTP sources. When enabled MapProxy will accept and store server cookies. Accepted cookies will be passed
+back to the source on subsequent requests. Usefull for sources which require to maintain an HTTP session to work efficiently, maybe in combination
+with basic authentication. Depending on your deployment MapProxy will still start multiple sessions (e.g. one per MapProxy process).
+Cookie handling is based on Python `CookieJar <https://docs.python.org/3/library/http.cookiejar.html>`_. Disabled by default.
+
+``hide_error_details``
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 1.13.0
+
+When enabled, MapProxy will only report generic error messages to the client in case of any errors while fetching source services.
+The full error message might contain confidential information like internal URLs. You will find the full error message in the logs, regardless of this option. The option is enabled by default, i.e. the details are hidden.
 
 
 ``tiles``
@@ -1033,6 +1166,12 @@ The following encoding options are available:
 ``quantizer``
   The algorithm used to quantize (reduce) the image colors. Quantizing is used for GIF and paletted PNG images. Available quantizers are ``mediancut`` and ``fastoctree``. ``fastoctree`` is much faster and also supports 8bit PNG with full alpha support, but the image quality can be better with ``mediancut`` in some cases.
   The quantizing is done by the Python Image Library (PIL). ``fastoctree`` is a `new quantizer <http://mapproxy.org/blog/improving-the-performance-for-png-requests/>`_ that is only available in Pillow >=2.0. See :ref:`installation of PIL<dependencies_pil>`.
+
+``tiff_compression``
+  Enable compression for TIFF images. Available compression methods are `tiff_lzw` for lossless LZW compression, `jpeg` for JPEG compression and `raw` for no compression (default). You can use the ``jpeg_quality`` option to tune the image quality for JPEG compressed TIFFs. Requires Pillow >= 6.1.0.
+
+  .. versionadded:: 1.12.0
+
 
 Global
 """"""

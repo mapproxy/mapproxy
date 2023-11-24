@@ -1,0 +1,128 @@
+environment:
+  matrix:
+
+
+    # Pre-installed Python versions, which Appveyor may upgrade to
+    # a later point release.
+    # See: http://www.appveyor.com/docs/installed-software#python
+
+    - PYTHON_VERSION: 2.7
+      MINICONDA: C:\Miniconda
+      PYTHON_ARCH: "32"
+
+    # - PYTHON_VERSION: 3.4
+    #   MINICONDA: C:\Miniconda3
+    #   PYTHON_ARCH: "32"
+
+    # - PYTHON_VERSION: 3.5
+    #   MINICONDA: C:\Miniconda35
+    #   PYTHON_ARCH: "32"
+
+    # - PYTHON_VERSION: 3.6
+    #   MINICONDA: C:\Miniconda36
+    #   PYTHON_ARCH: "32"
+
+    # - PYTHON_VERSION: 2.7
+    #   MINICONDA: C:\Miniconda-x64
+    #   PYTHON_ARCH: "64"
+
+    # - PYTHON_VERSION: 3.4
+    #   MINICONDA: C:\Miniconda3-x64
+    #   PYTHON_ARCH: "64"
+
+    # - PYTHON_VERSION: 3.5
+    #   MINICONDA: C:\Miniconda35-x64
+    #   PYTHON_ARCH: "64"
+
+    - PYTHON_VERSION: 3.6
+      MINICONDA: C:\Miniconda36-x64
+      PYTHON_ARCH: "64"
+
+
+    # - PYTHON: "C:\\Python27"
+    #   PYTHON_VERSION: "2.7.x"
+    #   PYTHON_ARCH: "32"
+
+
+    # - PYTHON: "C:\\Python27-x64"
+    #   PYTHON_VERSION: "2.7.x"
+    #   PYTHON_ARCH: "64"
+
+    # - PYTHON: "C:\\Python34"
+    #   PYTHON_VERSION: "3.4.x"
+    #   PYTHON_ARCH: "32"
+
+    # - PYTHON: "C:\\Python34-x64"
+    #   PYTHON_VERSION: "3.4.x"
+    #   PYTHON_ARCH: "64"
+
+    # - PYTHON: "C:\\Python35"
+    #   PYTHON_VERSION: "3.5.x"
+    #   PYTHON_ARCH: "32"
+
+    # - PYTHON: "C:\\Python35-x64"
+    #   PYTHON_VERSION: "3.5.x"
+    #   PYTHON_ARCH: "64"
+
+    # - PYTHON: "C:\\Python36"
+    #   PYTHON_VERSION: "3.6.x"
+    #   PYTHON_ARCH: "32"
+
+    # - PYTHON: "C:\\Python36-x64"
+    #   PYTHON_VERSION: "3.6.x"
+    #   PYTHON_ARCH: "64"
+
+install:
+
+  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a
+  - conda config --add channels conda-forge
+
+  # If there is a newer build queued for the same PR, cancel this one.
+  # The AppVeyor 'rollout builds' option is supposed to serve the same
+  # purpose but it is problematic because it tends to cancel builds pushed
+  # directly to master instead of just PR builds (or the converse).
+  # credits: JuliaLang developers.
+  - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
+        https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
+        Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
+          throw "There are newer queued builds for this pull request, failing early." }
+  - ECHO "Filesystem root:"
+  - ps: "ls \"C:/\""
+
+  - ECHO "Installed SDKs:"
+  - ps: "ls \"C:/Program Files/Microsoft SDKs/Windows\""
+
+  # Check that we have the expected version and architecture for Python
+  - "python --version"
+  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
+
+  - "conda create -q -n test-environment python=%PYTHON_VERSION%"
+  - activate test-environment
+  - conda install Shapely Pillow pyproj lxml fiona pyyaml
+  - pip install -r requirements-appveyor.txt"
+
+build_script:
+  # Build the compiled extension
+  - python setup.py build"
+
+test_script:
+  # Run the project tests
+  - pytest mapproxy"
+
+after_test:
+  # If tests are successful, create binary packages for the project.
+  - python setup.py bdist_wheel"
+  - python setup.py bdist_wininst"
+  - python setup.py bdist_msi"
+  - ps: "ls dist"
+
+artifacts:
+  # Archive the generated packages in the ci.appveyor.com build report.
+  - path: dist\*
+
+#on_success:
+#  - TODO: upload the content of dist/*.whl to a public wheelhouse
+#

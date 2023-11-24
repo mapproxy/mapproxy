@@ -1,3 +1,263 @@
+Nightly
+~~~~~~~~~~~~~~~~~
+
+1.16.0 2023-04-13
+~~~~~~~~~~~~~~~~~
+Breaking:
+
+- Removal of old unsupported python versions 2.7 and 3.6
+- Tested python version range is now 3.7 to 3.11
+- Lots of dependency updates
+
+Improvements:
+
+- New cache: Azure Blob storage
+- Lots of dependency updates
+- Support for JSON legends
+- Updated layer preview to use latest openlayers
+- Official docker images released, documentation updated
+
+Fixes:
+
+- Fixed issues with sqlite cache (#629 and #625)
+- Dependency correction
+- library detection difficulties on some operating systems
+- encoding issues with umlauts in featureinfo
+- Several minor bugfixes
+- mapproxy-util export - derive image format from cache config
+
+1.15.1 2022-06-14
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fixup release on PyPI
+
+1.15.0 2022-06-14
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- WMS Dimension caching (#449)
+- Add a mechanism to define plugins (#578)
+- Support of non-EPSG SRS authorities (#572)
+- Support for python 3.10 (#582)
+
+Fixes:
+
+- Several minor bugfixes
+
+1.14.0 2021-11-24
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Refresh while serving (#518).
+- Enabled commandline option `skip uncached` (#515)
+- Several dependencies updated
+- Support for python 3.5 has been dropped because of its EOL, 3.9 has been added
+
+Fixes:
+
+- Several minor bugfixes
+- Security fix to avoid potential web cache poisoning.
+
+1.13.2 2021-07-14
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Hotfix: Fixup demo service (#528).
+
+1.13.1 2021-07-13
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Support cookie management for HTTP sources.
+
+Fixes:
+
+- Security fix for local file disclosure (#526).
+
+1.13.0 2020-11-18
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Proj: Support for PROJ>=5 via pyproj.
+- Services: New hide_exception_url option to hide source URLs.
+- Tile sources: Support '@' in URL path (e.g. /0/0/0@2x.png)
+
+Fixes:
+
+- Various fixes for Python 3.8 compatibility.
+- WMS: Always query WMS server in supported SRS.
+- Fix warnings for tagged layer sources in layers.
+- Demo: Fix capabilites "as HTML" when running behind a proxy
+
+
+1.12.0 2019-08-30
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Cache: Rescale tiles existing tiles with new upscale_tiles/downscale_tiles option.
+- Cache: Finer control for reprojection sources with preferred_src_proj option.
+- WMS: Add georeference to TIFF images (GeoTIFF).
+- WMS: Support for compressed TIFF images (LZW/JPEG).
+- WMS: Advertise MaxWidth/MaxHeight.
+- WMTS: Support for FeatureInfo requests.
+- WMS/ArcGIS: Add on_error handler (similar to on_error handling for tile sources).
+- WMS/WMTS: Add keyword_list to capabilities.
+- S3: Support for custom S3 server and ACL.
+- autoconfig: Support for username/password in URL.
+
+Fixes:
+
+- Various fixes for Python 3.6 and 3.7 compatibility.
+- Set explicit permissions for write_atomic on Windows.
+
+
+Other:
+
+- WMS: Respond with highest supported WMS version (1.3.0 by default).
+- Test: Now uses pytest instead of nosetest for all unit and system tests.
+- YAML: Always use load_safe to support PyYAML >3 without warnings.
+- Paster and eventlet specific code removed.
+
+
+1.11.1 2019-08-06
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix Cross Site Scripting (XSS) issue in demo service. Fix for #322 did not
+  properly escaped input used in JavaScript examples. Found by Janek Vind.
+
+  A targeted attack could be used for information disclosure. For
+  example: Session cookies of a third party application running on
+  the same domain.
+
+
+1.11.0 2017-11-20
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Improve reprojection performance and accuracy.
+- ArcGIS compact cache: Support for version 2.
+- ArcGIS compact cache: Improve performance for version 1.
+- ArcGIS compact cache: Add ``mapproxy-util defrag`` to reduce bundle size
+  after tiles were removed/updated.
+- ArcGIS REST source: Support opts.map and seed_only.
+- Use systems CA certs by default and fix ssl_no_cert_checks
+  for Python >=2.7.9 and >=3.4
+- WMS: Improve Bounding Boxes in Capabilities.
+- Mapserver: Find mapserv binary in PATH environment.
+
+Fixes:
+
+- Seed: Always show last log line (100%).
+- Fix saving transparent PNGs for some versions of Pillow
+  (workaround for Pillow bug #2633)
+- SQLite: Fix possible errors on first request after start.
+- Demo: Fix demo client with `use_grid_names`.
+- serve-develop: Fix header encoding for Python 3.
+- Seed: Fix --interactive for Python 3.
+- Support tagged layers for sources with colons in name.
+- Support # character in Basis Authentication password.
+- Fix import error with shapely>=1.6
+- Fix duplicate level caches when using WMTS KVP with MBtile/SQLite/CouchDB.
+
+Other:
+
+- Remove support for Python 2.6
+
+1.10.4 2017-08-17
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix Cross Site Scripting (XSS) issue in demo service (#322).
+  A targeted attack could be used for information disclosure. For
+  example: Session cookies of a third party application running on
+  the same domain.
+
+
+1.10.3 2017-07-07
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix crash during clipping
+- Fix bilinear/bicubic resampling from cropped source
+- Fix loading empty coverages
+
+1.10.2 2017-06-21
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix coverage clipping for caches with a single source
+
+1.10.1 2017-06-06
+~~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Fix mapproxy-util serve-develop for Python 3.6 on Windows
+- Fix OGR coverages on Windows with Python 3 and official OGR Python bindings
+- Fix --repeat option of mapproxy-util scales
+
+1.10.0 2017-05-18
+~~~~~~~~~~~~~~~~~
+
+Improvements:
+
+- Support for S3 cache.
+- Support for the ArcGIS Compact Cache format version 1.
+- Support for GeoPackage files.
+- Support for Redis cache.
+- Support meta_tiles for tiles sources with bulk_meta_tiles option.
+- mbtiles/sqlite cache: Store multiple tiles in one transaction.
+- mbtiles/sqlite cache: Make timeout and WAL configurable.
+- ArcGIS REST source: Improve handling for ImageServer endpoints.
+- ArcGIS REST source: Support FeatureInfo requests.
+- ArcGIS REST source: Support min_res and max_res.
+- Support merging of RGB images with fixed transparency.
+- Coverages: Clip source requests at coverage boundaries.
+- Coverages: Build the difference, union or intersection of multiple coverages.
+- Coverages: Create coverages from webmercator tile coordinates like 05/182/123
+  with expire tiles files.
+- Coverages: Add native support for GeoJSON (no OGR/GDAL required).
+- mapproxy-seed: Add --duration, -reseed-file and -reseed-interval options.
+
+Fixes:
+
+- Fix level selection for grids with small res_factor.
+- mapproxy-util scales: Fix for Python 3.
+- WMS: Fix FeatureInfo precision for transformed requests.
+- Auth-API: Fix FeatureInfo for layers with limitto.
+- Fixes subpixel transformation deviations with Pillow 3.4 or higher.
+- mapproxy-seed: Reduce log output, especially in --quiet mode.
+- mapproxy-seed: Improve tile counter for tile grids with custom resolutions.
+- mapproxy-seed: Improve saving of the seed progress for --continue.
+- Fix band-merging when not all sources return an image.
+
+Other:
+
+- Python 2.6 is no longer supported.
+
+
+1.9.1 2017-01-18
+~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- serve-develop: fixed reloader for Windows installations made
+  with recent pip version (#279)
+
 1.9.0 2016-07-22
 ~~~~~~~~~~~~~~~~
 

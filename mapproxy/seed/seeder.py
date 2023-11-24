@@ -16,6 +16,7 @@
 from __future__ import print_function, division
 
 import sys
+from collections import deque
 from contextlib import contextmanager
 import time
 try:
@@ -32,7 +33,7 @@ from mapproxy.util.lock import LockTimeout
 from mapproxy.seed.util import format_seed_task, timestamp
 from mapproxy.seed.cachelock import DummyCacheLocker, CacheLockedError
 
-from mapproxy.seed.util import (exp_backoff, ETA, limit_sub_bbox,
+from mapproxy.seed.util import (exp_backoff, limit_sub_bbox,
     status_symbol, BackoffError)
 
 import logging
@@ -42,9 +43,13 @@ NONE = 0
 CONTAINS = -1
 INTERSECTS = 1
 
-# do not use multiprocessing on windows, it blows
-# no lambdas, no anonymous functions/classes, no base_config(), etc.
-if sys.platform == 'win32':
+# Decide whether to use multiprocessing or threading. multiprocessing should be faster but
+# it is not well supported on all platforms. Especially regarding lambdas and anonymous
+# function/classes which are used in proj.py for example.
+#
+# Since Python 3.8, MacOS uses a non-forking start method for multiprocessing which
+# inhibits similar restrictions to Windows.
+if sys.platform == 'win32' or (sys.platform == 'darwin' and sys.version_info >= (3, 8)):
     import threading
     proc_class = threading.Thread
     queue_class = Queue.Queue
@@ -54,40 +59,11 @@ else:
     queue_class = multiprocessing.Queue
 
 
-class TileProcessor(object):
-    def __init__(self, dry_run=False):
-        self._lastlog = time.time()
-        self.dry_run = dry_run
-
-    def log_progress(self, progress):
-        if (self._lastlog + .1) < time.time():
-            # log progress at most every 100ms
-            print('[%s] %6.2f%% %s \tETA: %s\r' % (
-                timestamp(), progress[1]*100, progress[0],
-                progress[2]
-            ), end=' ')
-            sys.stdout.flush()
-            self._lastlog = time.time()
-
-    def process(self, tiles, progress):
-        if not self.dry_run:
-            self.process_tiles(tiles)
-
-        self.log_progress(progress)
-
-    def stop(self):
-        raise NotImplementedError()
-
-    def process_tiles(self, tiles):
-        raise NotImplementedError()
-
-
-class TileWorkerPool(TileProcessor):
+class TileWorkerPool(object):
     """
     Manages multiple TileWorker.
     """
     def __init__(self, task, worker_class, size=2, dry_run=False, progress_logger=None):
-        TileProcessor.__init__(self, dry_run=dry_run)
         self.tiles_queue = queue_class(size)
         self.task = task
         self.dry_run = dry_run
@@ -111,7 +87,7 @@ class TileWorkerPool(TileProcessor):
                             alive = True
                             break
                     if not alive:
-                        log.warn('no workers left, stopping')
+                        log.warning('no workers left, stopping')
                         raise SeedInterrupted
                     continue
                 else:
@@ -193,17 +169,14 @@ class TileCleanupWorker(TileWorker):
 class SeedProgress(object):
     def __init__(self, old_progress_identifier=None):
         self.progress = 0.0
-        self.eta = ETA()
         self.level_progress_percentages = [1.0]
-        self.level_progresses = []
+        self.level_progresses = None
+        self.level_progresses_level = 0
         self.progress_str_parts = []
-        self.old_level_progresses = None
-        if old_progress_identifier is not None:
-            self.old_level_progresses = old_progress_identifier
+        self.old_level_progresses = old_progress_identifier
 
     def step_forward(self, subtiles=1):
         self.progress += self.level_progress_percentages[-1] / subtiles
-        self.eta.update(self.progress)
 
     @property
     def progress_str(self):
@@ -211,53 +184,79 @@ class SeedProgress(object):
 
     @contextmanager
     def step_down(self, i, subtiles):
+        if self.level_progresses is None:
+            self.level_progresses = []
+        self.level_progresses = self.level_progresses[:self.level_progresses_level]
         self.level_progresses.append((i, subtiles))
+        self.level_progresses_level += 1
         self.progress_str_parts.append(status_symbol(i, subtiles))
         self.level_progress_percentages.append(self.level_progress_percentages[-1] / subtiles)
+
         yield
+
         self.level_progress_percentages.pop()
         self.progress_str_parts.pop()
-        self.level_progresses.pop()
+
+        self.level_progresses_level -= 1
+        if self.level_progresses_level == 0:
+            self.level_progresses = []
 
     def already_processed(self):
-        if self.old_level_progresses == []:
-            return True
-
-        if self.old_level_progresses is None:
-            return False
-
-        if self.progress_is_behind(self.old_level_progresses, self.level_progresses):
-            return True
-        else:
-            return False
+        return self.can_skip(self.old_level_progresses, self.level_progresses)
 
     def current_progress_identifier(self):
-        return self.level_progresses
+        if self.already_processed() or self.level_progresses is None:
+            return self.old_level_progresses
+        return self.level_progresses[:]
 
     @staticmethod
-    def progress_is_behind(old_progress, current_progress):
+    def can_skip(old_progress, current_progress):
         """
         Return True if the `current_progress` is behind the `old_progress` -
         when it isn't as far as the old progress.
 
-        >>> SeedProgress.progress_is_behind([], [(0, 1)])
-        True
-        >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1)])
+        >>> SeedProgress.can_skip(None, [(0, 4)])
         False
-        >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1), (0, 4)])
+        >>> SeedProgress.can_skip([], [(0, 4)])
         True
-        >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1), (1, 4)])
+        >>> SeedProgress.can_skip([(0, 4)], None)
+        False
+        >>> SeedProgress.can_skip([(0, 4)], [(0, 4)])
+        False
+        >>> SeedProgress.can_skip([(1, 4)], [(0, 4)])
         True
-        >>> SeedProgress.progress_is_behind([(0, 1), (1, 4)], [(0, 1), (3, 4)])
+        >>> SeedProgress.can_skip([(0, 4)], [(0, 4), (0, 4)])
         False
 
+        >>> SeedProgress.can_skip([(0, 4), (0, 4), (2, 4)], [(0, 4), (0, 4)])
+        False
+        >>> SeedProgress.can_skip([(0, 4), (0, 4), (2, 4)], [(0, 4), (0, 4), (1, 4)])
+        True
+        >>> SeedProgress.can_skip([(0, 4), (0, 4), (2, 4)], [(0, 4), (0, 4), (2, 4)])
+        False
+        >>> SeedProgress.can_skip([(0, 4), (0, 4), (2, 4)], [(0, 4), (0, 4), (3, 4)])
+        False
+        >>> SeedProgress.can_skip([(0, 4), (0, 4), (2, 4)], [(0, 4), (1, 4)])
+        False
+        >>> SeedProgress.can_skip([(0, 4), (0, 4), (2, 4)], [(0, 4), (1, 4), (0, 4)])
+        False
         """
-        for old, current in izip_longest(old_progress, current_progress, fillvalue=(9e15, 9e15)):
+        if current_progress is None:
+            return False
+        if old_progress is None:
+            return False
+        if old_progress == []:
+            return True
+        for old, current in izip_longest(old_progress, current_progress, fillvalue=None):
+            if old is None:
+                return False
+            if current is None:
+                return False
             if old < current:
                 return False
             if old > current:
                 return True
-        return True
+        return False
 
     def running(self):
         return True
@@ -270,6 +269,12 @@ class SeedInterrupted(Exception):
 
 
 class TileWalker(object):
+    """
+    TileWalker traverses through all tiles in a tile grid and calls worker_pool.process
+    for each (meta) tile. It traverses the tile grid (pyramid) depth-first.
+    Intersection with coverages are checked before handling subtiles in the next level,
+    allowing to determine if all subtiles should be seeded or skipped.
+    """
     def __init__(self, task, worker_pool, handle_stale=False, handle_uncached=False,
                  work_on_metatiles=True, skip_geoms_for_last_levels=0, progress_logger=None,
                  seed_progress=None):
@@ -283,12 +288,32 @@ class TileWalker(object):
         self.progress_logger = progress_logger
 
         num_seed_levels = len(task.levels)
-        self.report_till_level = task.levels[int(num_seed_levels * 0.8)]
+        if num_seed_levels >= 4:
+            self.report_till_level = task.levels[num_seed_levels-2]
+        else:
+            self.report_till_level = task.levels[num_seed_levels-1]
         meta_size = self.tile_mgr.meta_grid.meta_size if self.tile_mgr.meta_grid else (1, 1)
         self.tiles_per_metatile = meta_size[0] * meta_size[1]
         self.grid = MetaGrid(self.tile_mgr.grid, meta_size=meta_size, meta_buffer=0)
         self.count = 0
         self.seed_progress = seed_progress or SeedProgress()
+
+        # It is possible that we 'walk' through the same tile multiple times
+        # when seeding irregular tile grids[0]. limit_sub_bbox prevents that we
+        # recurse into the same area multiple times, but it is still possible
+        # that a tile is processed multiple times. Locking prevents that a tile
+        # is seeded multiple times, but it is possible that we count the same tile
+        # multiple times (in dry-mode, or while the tile is in the process queue).
+
+        # Tile counts can be off by 280% with sqrt2 grids.
+        # We keep a small cache of already processed tiles to skip most duplicates.
+        # A simple cache of 64 tile coordinates for each level already brings the
+        # difference down to ~8%, which is good enough and faster than a more
+        # sophisticated FIFO cache with O(1) lookup, or even caching all tiles.
+
+        # [0] irregular tile grids: where one tile does not have exactly 4 subtiles
+        # Typically when you use res_factor, or a custom res list.
+        self.seeded_tiles = {l: deque(maxlen=64) for l in task.levels}
 
     def walk(self):
         assert self.handle_stale or self.handle_uncached
@@ -326,11 +351,10 @@ class TileWalker(object):
             self.tile_mgr.cleanup()
             raise StopProcess()
 
-        process = False;
+        process = False
         if current_level in levels:
             levels = levels[1:]
             process = True
-        current_level += 1
 
         for i, (subtile, sub_bbox, intersection) in enumerate(subtiles):
             if subtile is None: # no intersection
@@ -347,11 +371,18 @@ class TileWalker(object):
                     if self.seed_progress.already_processed():
                         self.seed_progress.step_forward()
                     else:
-                        self._walk(sub_bbox, levels, current_level=current_level,
+                        self._walk(sub_bbox, levels, current_level=current_level+1,
                             all_subtiles=all_subtiles)
 
             if not process:
                 continue
+
+            # check if subtile was already processed. see comment in __init__
+            if subtile in self.seeded_tiles[current_level]:
+                if not levels:
+                    self.seed_progress.step_forward(total_subtiles)
+                continue
+            self.seeded_tiles[current_level].appendleft(subtile)
 
             if not self.work_on_metatiles:
                 # collect actual tiles
@@ -415,7 +446,7 @@ class SeedTask(object):
 
     @property
     def id(self):
-        return self.md['name'], self.md['cache_name'], self.md['grid_name']
+        return self.md['name'], self.md['cache_name'], self.md['grid_name'], tuple(self.levels)
 
     def intersects(self, bbox):
         if self.coverage.contains(bbox, self.grid.srs): return CONTAINS
@@ -436,13 +467,17 @@ class CleanupTask(object):
         self.coverage = coverage
         self.complete_extent = complete_extent
 
+    @property
+    def id(self):
+        return 'cleanup', self.md['name'], self.md['cache_name'], self.md['grid_name']
+
     def intersects(self, bbox):
         if self.coverage.contains(bbox, self.grid.srs): return CONTAINS
         if self.coverage.intersects(bbox, self.grid.srs): return INTERSECTS
         return NONE
 
 def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
-    progress_logger=None, cache_locker=None):
+    progress_logger=None, cache_locker=None, skip_uncached=False):
     if cache_locker is None:
         cache_locker = DummyCacheLocker()
 
@@ -461,7 +496,7 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
                     start_progress = None
                 seed_progress = SeedProgress(old_progress_identifier=start_progress)
                 seed_task(task, concurrency, dry_run, skip_geoms_for_last_levels, progress_logger,
-                    seed_progress=seed_progress)
+                    seed_progress=seed_progress, skip_uncached=skip_uncached)
         except CacheLockedError:
             print('    ...cache is locked, skipping')
             active_tasks = [task] + active_tasks[:-1]
@@ -470,17 +505,28 @@ def seed(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
 
 
 def seed_task(task, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
-    progress_logger=None, seed_progress=None):
+    progress_logger=None, seed_progress=None, skip_uncached=False):
     if task.coverage is False:
         return
     if task.refresh_timestamp is not None:
         task.tile_manager._expire_timestamp = task.refresh_timestamp
     task.tile_manager.minimize_meta_requests = False
+
+    work_on_metatiles = True
+    if task.tile_manager.rescale_tiles:
+        work_on_metatiles = False
+
     tile_worker_pool = TileWorkerPool(task, TileSeedWorker, dry_run=dry_run,
         size=concurrency, progress_logger=progress_logger)
-    tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=True,
+    # If the configuration requests to only refresh tiles which are already in cache,
+    # tile walker parameters shall be adapted
+    handle_stale = skip_uncached
+    handle_uncached = not skip_uncached
+    tile_walker = TileWalker(task, tile_worker_pool, handle_uncached=handle_uncached, handle_stale=handle_stale,
         skip_geoms_for_last_levels=skip_geoms_for_last_levels, progress_logger=progress_logger,
-        seed_progress=seed_progress)
+        seed_progress=seed_progress,
+        work_on_metatiles=work_on_metatiles,
+    )
     try:
         tile_walker.walk()
     except KeyboardInterrupt:

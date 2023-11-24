@@ -42,6 +42,12 @@ class Response(object):
             content_type = self.default_content_type
         self.headers['Content-type'] = content_type
 
+        if content_type.startswith(('text/', 'application/')):
+            # Capability documents can be dependent on the value of a few X-headers.
+            # Tell this caching proxies via the Vary HTTP header. This also prevents
+            # malicious cache poisoning.
+            self.headers['Vary'] = 'X-Script-Name, X-Forwarded-Host, X-Forwarded-Proto'
+
     def _status_set(self, status):
         if isinstance(status, int):
             status = status_code(status)
@@ -91,7 +97,7 @@ class Response(object):
 
         self.last_modified = timestamp
         if (timestamp or etag_data) and max_age is not None:
-            self.headers['Cache-control'] = 'max-age=%d public' % max_age
+            self.headers['Cache-control'] = 'public, max-age=%d, s-maxage=%d' % (max_age, max_age)
 
     def make_conditional(self, req):
         """
@@ -140,6 +146,9 @@ class Response(object):
     def fixed_headers(self):
         headers = []
         for key, value in iteritems(self.headers):
+            if type(value) != text_type:
+                # for str subclasses like ImageFormat
+                value = str(value)
             if PY2 and isinstance(value, unicode):
                 value = value.encode('utf-8')
             headers.append((key, value))

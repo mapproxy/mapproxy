@@ -18,7 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import with_statement
 
 import re
 from contextlib import contextmanager
@@ -169,11 +168,11 @@ def type_str(spec):
     if not isinstance(spec, type):
         spec = type(spec)
 
-    match = re.match("<type '(\w+)'>", str(spec))
+    match = re.match(r"<type '(\w+)'>", str(spec))
     if match:
         return match.group(1)
 
-    match = re.match("<class '([\w._]+)'>", str(spec))
+    match = re.match(r"<class '([\w._]+)'>", str(spec))
     if match:
         return match.group(1).split('.')[-1]
 

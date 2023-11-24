@@ -27,7 +27,7 @@ The server automatically reloads if the configuration or any code of MapProxy ch
 
 .. cmdoption:: --debug
 
-  Start MapProxy in debug mode. If you have installed Werkzeug_ (recommended) or Paste_, you will get an interactive traceback in the web browser on any unhandled exception (internal error).
+  Start MapProxy in debug mode. If you have installed Werkzeug_, you will get an interactive traceback in the web browser on any unhandled exception (internal error).
 
 .. note:: This server is sufficient for local testing of the configuration, but it is `not` stable for production or load testing.
 
@@ -49,8 +49,6 @@ Behind an HTTP server or proxy
 
 Both approaches require a configuration that maps your MapProxy configuration with the MapProxy application. You can write a small script file for that.
 
-Running MapProxy as a FastCGI server behind HTTP server, a third option, is no longer advised for new setups since the FastCGI package (flup) is no longer maintained and the Python HTTP server improved significantly.
-
 .. _server_script:
 
 Server script
@@ -67,7 +65,7 @@ The script contains the following lines and makes the configured MapProxy availa
   from mapproxy.wsgiapp import make_wsgi_app
   application = make_wsgi_app('examples/minimal/etc/mapproxy.yaml')
 
-This is sufficient for embedding MapProxy with ``mod_wsgi`` or for starting it with Python HTTP servers like ``gunicorn`` (see further below). You can extend this script to setup logging or to set environment variables.
+This is sufficient for embedding MapProxy with ``mod_wsgi`` or for starting it with Python HTTP servers like ``waitress`` (see further below). You can extend this script to setup logging or to set environment variables.
 
 You can enable MapProxy to automatically reload the configuration if it changes::
 
@@ -97,9 +95,9 @@ You need to modify your Apache ``httpd.conf`` as follows::
   </Directory>
 
 
-``mod_wsgi`` has a lot of options for more fine tuning. ``WSGIPythonHome`` or ``WSGIPythonPath`` lets you configure your ``virtualenv`` and  ``WSGIDaemonProcess``/``WSGIProcessGroup`` allows you to start multiple processes. See the `mod_wsgi configuration directives documentation <http://code.google.com/p/modwsgi/wiki/ConfigurationDirectives>`_. Using Mapnik also requires the ``WSGIApplicationGroup`` option.
+``mod_wsgi`` has a lot of options for more fine tuning. ``WSGIPythonHome`` or ``WSGIPythonPath`` lets you configure your ``virtualenv`` and  ``WSGIDaemonProcess``/``WSGIProcessGroup`` allows you to start multiple processes. See the `mod_wsgi configuration directives documentation <https://modwsgi.readthedocs.io/en/latest/user-guides/configuration-guidelines.html>`_. Using Mapnik also requires the ``WSGIApplicationGroup`` option.
 
-.. note:: On Windows only the ``WSGIPythonPath`` option is supported. Linux/Unix supports ``WSGIPythonPath`` and ``WSGIPythonHome``. See also the `mod_wsgi documentation for virtualenv <https://code.google.com/p/modwsgi/wiki/VirtualEnvironments>`_ for detailed information when using multiple virtualenvs.
+.. note:: On Windows only the ``WSGIPythonPath`` option is supported. Linux/Unix supports ``WSGIPythonPath`` and ``WSGIPythonHome``. See also the `mod_wsgi documentation for virtualenv <https://modwsgi.readthedocs.io/en/latest/user-guides/virtual-environments.html#virtual-environments>`_ for detailed information when using multiple virtualenvs.
 
 A more complete configuration might look like::
 
@@ -115,13 +113,15 @@ A more complete configuration might look like::
 
   <Directory /path/to/mapproxy/>
     Order deny,allow
-    Require all granted  # for Apache 2.4
-    # Allow from all     # for Apache 2.2
+    # For Apache 2.4:
+    Require all granted
+    # For Apache 2.2:
+    # Allow from all
   </Directory>
 
 
 .. _mod_wsgi: http://www.modwsgi.org/
-.. _mod_wsgi installation: http://code.google.com/p/modwsgi/wiki/InstallationInstructions
+.. _mod_wsgi installation: https://modwsgi.readthedocs.io/en/latest/installation.html
 
 Behind HTTP server or proxy
 ---------------------------
@@ -131,47 +131,27 @@ There are Python HTTP servers available that can directly run MapProxy. Most of 
 Python HTTP Server
 ~~~~~~~~~~~~~~~~~~
 
-You need start these servers in the background on start up. It is recommended to create an init script for that or to use tools like upstart_ or supervisord_.
+You need start these servers in the background on start up. It is recommended to start it from systemd or upstart.
 
-Gunicorn
+Waitress
 """"""""
 
-Gunicorn_ is a Python WSGI HTTP server for UNIX. Gunicorn use multiple processes but the process number is fixed. The default worker is synchronous, meaning that a process is blocked while it requests data from another server for example. You need to choose an asynchronous worker like eventlet_.
+Waitress_ is a production-quality pure-Python WSGI server with very acceptable performance. It runs on Unix and Windows.
 
-You need a server script that creates the MapProxy application (see :ref:`above <server_script>`). The script needs to be in the directory from where you start ``gunicorn`` and it needs to end with ``.py``.
+You need a server script that creates the MapProxy application (see :ref:`above <server_script>`). The script needs to be in the directory from where you start ``waitress`` and it needs to end with ``.py``.
 
-To start MapProxy with the Gunicorn web server with four processes, the eventlet worker and our server script (without ``.py``)::
-
-  cd /path/of/config.py/
-  gunicorn -k eventlet -w 4 -b :8080 config:application
-
-
-An example upstart script (``/etc/init/mapproxy.conf``) might look like::
-
-    start on runlevel [2345]
-    stop on runlevel [!2345]
-
-    respawn
-
-    setuid mapproxy
-    setgid mapproxy
-
-    chdir /etc/opt/mapproxy
-
-    exec /opt/mapproxy/bin/gunicorn -k eventlet -w 8 -b :8080 application \
-        >>/var/log/mapproxy/gunicorn.log 2>&1
-
-
-Spawning
-""""""""
-
-Spawning_ is another Python WSGI HTTP server for UNIX that supports multiple processes and multiple threads.
-
-::
+To start MapProxy with Waitress and our server script (without ``.py``)::
 
   cd /path/of/config.py/
-  spawning config.application --threads=8 --processes=4 \
-    --port=8080
+  waitress --listen 127.0.0.1:8080 config:application
+
+
+uWSGI
+"""""
+
+uWSGI is another production-quality WSGI server. It is highly configurable and offers high performance (by running on multiple processors).
+
+The `uWSGI documentation provides a quickstart <https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html>`_.
 
 
 HTTP Proxy
@@ -181,7 +161,7 @@ You can either use a dedicated HTTP proxy like Varnish_ or a general HTTP web se
 
 You need to set some HTTP headers so that MapProxy can generate capability documents with the URL of the proxy, instead of the local URL of the MapProxy application.
 
-* ``Host`` – is the hostname that clients use to acces MapProxy (i.e. the proxy)
+* ``Host`` – is the hostname that clients use to access MapProxy (i.e. the proxy)
 * ``X-Script-Name`` – path of MapProxy when the URL is not ``/`` (e.g. ``/mapproxy``)
 * ``X-Forwarded-Host`` – alternative to ``HOST``
 * ``X-Forwarded-Proto`` – should be ``https`` when the client connects with HTTPS
@@ -220,16 +200,6 @@ Here is an example for the Apache_ webserver with the included ``mod_proxy`` and
 You need to make sure that both modules are loaded. The ``Host`` is already set to the right value by default.
 
 
-Other deployment options
-------------------------
-
-Refer to http://wsgi.readthedocs.org/en/latest/servers.html for a list of some available WSGI servers.
-
-FastCGI
-~~~~~~~
-
-.. note:: Running MapProxy as a FastCGI server behind HTTP server is no longer advised for new setups since the used Python package (flup) is no longer maintained. Please refer to the `MapProxy 1.5.0 deployment documentation for more information on FastCGI <http://mapproxy.org/docs/1.5.0/deployment.html>`_.
-
 
 Performance
 -----------
@@ -239,7 +209,7 @@ Because of the way Python handles threads in computing heavy applications (like 
 The examples above are all minimal and you should read the documentation of your components to get the best performance with your setup.
 
 
-Load Balancing and High Availablity
+Load Balancing and High Availability
 -----------------------------------
 
 You can easily run multiple MapProxy instances in parallel and use a load balancer to distribute requests across all instances, but there are a few things to consider when the instances share the same tile cache with NFS or other network filesystems.
@@ -255,17 +225,10 @@ With this setup the locking will only be effective when parallel requests for ti
 .. _mod_proxy: http://httpd.apache.org/docs/current/mod/mod_proxy.html
 .. _Varnish: http://www.varnish-cache.org/
 .. _werkzeug: http://pypi.python.org/pypi/Werkzeug
-.. _paste: http://pypi.python.org/pypi/Paste
-.. _gunicorn: http://gunicorn.org/
-.. _Spawning: http://pypi.python.org/pypi/Spawning
+.. _uWSGI: https://uwsgi-docs.readthedocs.io/en/latest/
+.. _Waitress: https://docs.pylonsproject.org/projects/waitress/en/stable/
 .. _FastCGI: http://www.fastcgi.com/
-.. _flup: http://pypi.python.org/pypi/flup
-.. _mod_fastcgi: http://www.fastcgi.com/mod_fastcgi/docs/mod_fastcgi.html
-.. _mod_fcgid: http://httpd.apache.org/mod_fcgid/
-.. _eventlet: http://pypi.python.org/pypi/eventlet
 .. _Apache: http://httpd.apache.org/
-.. _upstart: http://upstart.ubuntu.com/
-.. _supervisord: http://supervisord.org/
 
 Logging
 -------
@@ -290,7 +253,7 @@ Here are the most important loggers:
   Logs errors and warnings for service ``XXX``.
 
 ``mapproxy.source.request``
-  Logs all requests to sources with URL, size in kB and duration in milliseconds. The duration is the time it took to receive the header of the response. The actual request duration might be longer, especially for larger images or when the network bandwith is limited.
+  Logs all requests to sources with URL, size in kB and duration in milliseconds. The duration is the time it took to receive the header of the response. The actual request duration might be longer, especially for larger images or when the network bandwidth is limited.
 
 
 Enabling logging

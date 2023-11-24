@@ -35,12 +35,14 @@ jscript_openlayers=None
 {{enddef}}
             <h2>About</h2>
             <p>MapProxy Version {{version}}</p>
+            {{ extra_services_html_beginning }}
             <h2>WMS</h2>
             {{if 'wms' in services}}
             <div class="capabilities">
                 <span>Capabilities document</span>
                 <span><a href="../service?REQUEST=GetCapabilities">(download as xml)</a></span>
-                <span><a href="../demo/?wms_capabilities">(view as html)</a></span>
+                <span><a href="../demo/?wms_capabilities">(view as html, internal)</a></span>
+                <span><a href="../demo/?wms_capabilities&type=external">(view as html, external)</a></span>
             </div>
             {{if 'wms_111' in services }}
                 <table class="code">
@@ -87,7 +89,8 @@ jscript_openlayers=None
             <div class="capabilities">
                 <span>Capabilities document</span>
                 <span><a href="../service?REQUEST=GetCapabilities&tiled=true">(download as xml)</a></span>
-                <span><a href="../demo/?wmsc_capabilities">(view as html)</a></span>
+                <span><a href="../demo/?wmsc_capabilities">(view as html, internal)</a></span>
+                <span><a href="../demo/?wmsc_capabilities&type=external">(view as html, external)</a></span>
             </div>
             {{else}}
             <div class="capabilities">
@@ -100,14 +103,16 @@ jscript_openlayers=None
                 <div class="capabilities">
                     <span>KVP capabilities document</span>
                     <span><a href="../service?REQUEST=GetCapabilities&SERVICE=WMTS">(download as xml)</a></span>
-                    <span><a href="../demo/?wmts_capabilities_kvp">(view as html)</a></span>
+                    <span><a href="../demo/?wmts_capabilities_kvp">(view as html, internal)</a></span>
+                    <span><a href="../demo/?wmts_capabilities_kvp&type=external">(view as html, external)</a></span>
                 </div>
                 {{endif}}
                 {{if 'wmts_restful' in services}}
                 <div class="capabilities">
                     <span>RESTFul capabilities document</span>
                     <span><a href="../wmts/1.0.0/WMTSCapabilities.xml">(download as xml)</a></span>
-                    <span><a href="../demo/?wmts_capabilities">(view as html)</a></span>
+                    <span><a href="../demo/?wmts_capabilities">(view as html, internal)</a></span>
+                    <span><a href="../demo/?wmts_capabilities&type=external">(view as html, external)</a></span>
                 </div>
                 {{endif}}
             <table class="code">
@@ -144,7 +149,8 @@ jscript_openlayers=None
             <div class="capabilities">
                 <span>Capabilities document</span>
                 <span><a href="../tms/1.0.0/">(download as xml)</a></span>
-                <span><a href="../demo/?tms_capabilities">(view as html)</a></span>
+                <span><a href="../demo/?tms_capabilities">(view as html, internal)</a></span>
+                <span><a href="../demo/?tms_capabilities&type=external">(view as html, external)</a></span>
             </div>
             <table class="code">
                 <tr>
@@ -177,3 +183,4 @@ jscript_openlayers=None
                 <span>This service is not available with the current configuration.</span>
             </div>
             {{endif}}
+            {{ extra_services_html_end }}

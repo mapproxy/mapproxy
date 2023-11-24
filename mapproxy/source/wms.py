@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Retrieve maps/information from WMS servers.
 """
@@ -20,7 +19,7 @@ import sys
 from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
 from mapproxy.image import make_transparent, ImageSource, SubImageSource, bbox_position_in_image
-from mapproxy.image.merge import concat_legends
+from mapproxy.image.merge import concat_legends, concat_json_legends
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, LegendQuery, MapQuery, MapLayer
 from mapproxy.source import InfoSource, SourceError, LegendSource
@@ -34,7 +33,8 @@ class WMSSource(MapLayer):
     supports_meta_tiles = True
     def __init__(self, client, image_opts=None, coverage=None, res_range=None,
                  transparent_color=None, transparent_color_tolerance=None,
-                 supported_srs=None, supported_formats=None, fwd_req_params=None):
+                 supported_srs=None, supported_formats=None, fwd_req_params=None,
+                 error_handler=None):
         MapLayer.__init__(self, image_opts=image_opts)
         self.client = client
         self.supported_srs = supported_srs or []
@@ -44,13 +44,38 @@ class WMSSource(MapLayer):
         self.transparent_color = transparent_color
         self.transparent_color_tolerance = transparent_color_tolerance
         if self.transparent_color:
-            self.transparent = True
+            self.image_opts.transparent = True
         self.coverage = coverage
         self.res_range = res_range
         if self.coverage:
             self.extent = MapExtent(self.coverage.bbox, self.coverage.srs)
         else:
             self.extent = DefaultMapExtent()
+        self.error_handler = error_handler
+
+    def is_opaque(self, query):
+        """
+        Returns true if we are sure that the image is not transparent.
+        """
+        if self.res_range and not self.res_range.contains(query.bbox, query.size,
+                                                          query.srs):
+            return False
+
+        if self.image_opts.transparent:
+            return False
+
+        if self.opacity is not None and (0.0 < self.opacity < 0.99):
+            return False
+
+        if not self.coverage:
+            # not transparent and no coverage
+            return True
+
+        if self.coverage.contains(query.bbox, query.srs):
+            # not transparent and completely inside coverage
+            return True
+
+        return False
 
     def get_map(self, query):
         if self.res_range and not self.res_range.contains(query.bbox, query.size,
@@ -67,7 +92,11 @@ class WMSSource(MapLayer):
             return resp
 
         except HTTPClientError as e:
-            log.warn('could not retrieve WMS map: %s', e)
+            if self.error_handler:
+                resp = self.error_handler.handle(e.response_code, query)
+                if resp:
+                    return resp
+            log.warning('could not retrieve WMS map: %s', e.full_msg or e)
             reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
     def _get_map(self, query):
@@ -77,13 +106,16 @@ class WMSSource(MapLayer):
         if self.supported_formats and format not in self.supported_formats:
             format = self.supported_formats[0]
         if self.supported_srs:
-            if query.srs not in self.supported_srs:
+            # srs can be equal while still having a different srs_code (EPSG:3857/900913), make sure to use a supported srs_code
+            request_srs = None
+            for srs in self.supported_srs:
+                if query.srs == srs:
+                    request_srs = srs
+                    break
+            if request_srs is None:
                 return self._get_transformed(query, format)
-            # some srs are equal but not the same (e.g. 900913/3857)
-            # use only supported srs so we use the right srs code.
-            idx = self.supported_srs.index(query.srs)
-            if self.supported_srs[idx] is not query.srs:
-                query.srs = self.supported_srs[idx]
+            if query.srs.srs_code != request_srs.srs_code:
+                query.srs = request_srs
         if self.extent and not self.extent.contains(MapExtent(query.bbox, query.srs)):
             return self._get_sub_query(query, format)
         resp = self.client.retrieve(query, format)
@@ -99,7 +131,7 @@ class WMSSource(MapLayer):
 
     def _get_transformed(self, query, format):
         dst_srs = query.srs
-        src_srs = self._best_supported_srs(dst_srs)
+        src_srs = self.supported_srs.best_srs(dst_srs)
         dst_bbox = query.bbox
         src_bbox = dst_srs.transform_bbox_to(src_srs, dst_bbox)
 
@@ -125,16 +157,6 @@ class WMSSource(MapLayer):
 
         img.format = format
         return img
-
-    def _best_supported_srs(self, srs):
-        latlong = srs.is_latlong
-
-        for srs in self.supported_srs:
-            if srs.is_latlong == latlong:
-                return srs
-
-        # else
-        return self.supported_srs[0]
 
     def _is_compatible(self, other, query):
         if not isinstance(other, WMSSource):
@@ -184,11 +206,14 @@ class WMSSource(MapLayer):
         )
 
 class WMSInfoSource(InfoSource):
-    def __init__(self, client, fi_transformer=None):
+    def __init__(self, client, fi_transformer=None, coverage=None):
         self.client = client
         self.fi_transformer = fi_transformer
+        self.coverage = coverage
 
     def get_info(self, query):
+        if self.coverage and not self.coverage.contains(query.coord, query.srs):
+            return None
         doc = self.client.get_info(query)
         if self.fi_transformer:
             doc = self.fi_transformer(doc)
@@ -217,7 +242,8 @@ class WMSLegendSource(LegendSource):
             legend = Legend(id=self.identifier, scale=None)
         else:
             legend = Legend(id=self.identifier, scale=query.scale)
-        if not self._cache.load(legend):
+
+        if not self._cache.load(legend) or query.format == 'json':
             legends = []
             error_occured = False
             for client in self.clients:
@@ -231,9 +257,14 @@ class WMSLegendSource(LegendSource):
                     # TODO errors?
                     log.error(e.args[0])
             format = split_mime_type(query.format)[1]
+
+            if format == 'json':
+                return concat_json_legends(legends)
+
             legend = Legend(source=concat_legends(legends, format=format),
                             id=self.identifier, scale=query.scale)
             if not error_occured:
                 self._cache.store(legend)
-        return legend.source
 
+        # returns ImageSource
+        return legend.source

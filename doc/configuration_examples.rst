@@ -131,7 +131,7 @@ Example configuration for an OpenStreetMap tile service::
     my_tile_source:
       type: tile
       grid: GLOBAL_WEBMERCATOR
-      url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
+      url: https://tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
  grids:
   webmercator:
@@ -277,7 +277,7 @@ Here is an example that makes OSM tiles available as tiles in UTM. Note that rep
       osm_source:
         type: tile
         grid: GLOBAL_WEBMERCATOR
-        url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
+        url: https://tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
     grids:
       utm32n:
@@ -393,6 +393,7 @@ You can specify a different factor that is used to calculate the resolutions. By
       res_factor: 1.6
 
 The third options is a convenient variation of the previous option. A factor of 1.41421, the square root of two, would get resolutions of 10, 7.07, 5, 3.54, 2.5,…. Notice that every second resolution is identical to the power-of-two resolutions. This comes in handy if you use the layer not only in classic WMS clients but also want to use it in tile-based clients like OpenLayers, which only request in these resolutions.
+
 ::
 
   grids:
@@ -469,6 +470,7 @@ Reproject WMS layers
 If you do not want to cache data but still want to use MapProxy's ability to reproject WMS layers on the fly, you can use a direct layer. Add your source directly to your layer instead of a cache.
 
 You should explicitly define the SRS the source WMS supports. Requests in other SRS will be reprojected. You should specify at least one geographic and one projected SRS to limit the distortions from reprojection.
+
 ::
 
   layers:
@@ -503,6 +505,9 @@ MapProxy can pass-through FeatureInformation requests to your WMS sources. You n
 
 
 MapProxy will mark all layers that use this source as ``queryable``. It also works for sources that are used with caching.
+
+FeatureInfo support is enabled by default for WMS. For :ref:`WMTS you need to enable FeatureInfo queries by configuring the supported formats <wmts_feature_info>`.
+
 
 .. note:: The more advanced features :ref:`require the lxml library <lxml_install>`.
 
@@ -572,7 +577,7 @@ Example
 
 Lets assume we have two WMS sources where we have no control over the format of the feature info responses.
 
-One source only offers HTML feature information. The XSLT script extracts data from a table. We force the ``INFO_FORMAT`` to HTML, so that MapProxy will not query another format.
+One source only offers HTML feature information. The XSLT script extracts data from a table. We force the WMS ``INFO_FORMAT`` to HTML with the ``featureinfo_format`` option, so that MapProxy will not query another format. The XSLT script returns XML and not HTML. We configure this with the ``featureinfo_out_format`` option.
 
 ::
 
@@ -582,10 +587,12 @@ One source only offers HTML feature information. The XSLT script extracts data f
         featureinfo: true
         featureinfo_xslt: ./html_in.xslt
         featureinfo_format: text/html
+        featureinfo_out_format: text/xml
       req: [...]
 
 
 The second source supports XML feature information. The script converts the XML data to the same format as the HTML script. This service uses WMS 1.3.0 and the format is ``text/xml``.
+
 ::
 
     fi_source:
@@ -660,7 +667,7 @@ Then we can add a layer with all available dimensions::
               - 3000
             default: 0
 
-You can know access this layer with the elevation and time dimensions via the WMTS KVP service.
+You can now access this layer with the elevation and time dimensions via the WMTS KVP service.
 The RESTful service requires a custom URL template that contains the dimensions. For example::
 
     services:
@@ -701,21 +708,23 @@ You can disable the certificate verification if you you don't need it.
       url: https://username:mypassword@example.org/service?
       layers: securelayer
 
+.. note:: If the source requires session handling through cookies, have a look at the ``manage_cookies`` configuration option.
+
 .. _http_proxy:
 
 Access sources through HTTP proxy
 =================================
 
-MapProxy can use an HTTP proxy to make requests to your sources, if your system does not allow direct access to the source. You need to set the ``http_proxy`` environment variable to the proxy URL. This also applies if you install MapProxy with ``pip`` or ``easy_install``.
+MapProxy can use an HTTP proxy to make requests to your sources, if your system does not allow direct access to the source. You need to set the ``http_proxy`` and ``https_proxy`` environment variable to the proxy URL. This also applies if you install MapProxy with ``pip``.
 
 On Linux/Unix::
 
-  $ export http_proxy="http://example.com:3128"
+  $ export http_proxy="http://example.com:3128" https_proxy="http://example.com:3128"
   $ mapproxy-util serve-develop mapproxy.yaml
 
 On Windows::
 
-  c:\> set http_proxy="http://example.com:3128"
+  c:\> set http_proxy="http://example.com:3128" https_proxy="http://example.com:3128"
   c:\> mapproxy-util serve-develop mapproxy.yaml
 
 
@@ -723,14 +732,31 @@ You can also set this in your :ref:`server script <server_script>`::
 
   import os
   os.environ["http_proxy"] = "http://example.com:3128"
+  os.environ["https_proxy"] = "http://example.com:3128"
 
 Add a username and password to the URL if your HTTP proxy requires authentication. For example ``http://username:password@example.com:3128``.
+
+.. note:: If the source requires session handling through cookies, have a look at the ``manage_cookies`` configuration option.
 
 You can use the ``no_proxy`` environment variable if you need to bypass the proxy for some hosts::
 
   $ export no_proxy="localhost,127.0.0.1,196.168.1.99"
 
-``no_proxy`` is available since Python 2.6.3.
+
+Cookie Management
+=================
+
+MapProxy can handle server cookies of HTTP sources, like browsers do. That is, MapProxy accepts cookies and passes them back
+on subsequent calls. This is useful for sources that use cookie for session management or rate-limiting for example::
+
+  sources:
+    wms_with_session_management:
+      type: wms
+      http:
+        manage_cookies: True
+      req:
+        url: http://example.org/service?
+        layers: layer0
 
 .. _paster_urlmap:
 
@@ -772,6 +798,21 @@ Example part of ``mapproxy.yaml`` to generate a quadkey cache::
       cache:
         type: file
         directory_layout: quadkey
+
+
+.. _static_tile_source:
+
+Generate a static image for every tile
+======================================
+
+In order to display a static message on every tile, you can configure a tile source URL that is a local file.
+
+Example part of ``mapproxy.yaml`` to generate a static tile source:: 
+
+  sources:
+    tile_source:
+      type: tile
+      url: file:///path/service-suspended.png
 
 
 .. _hq_tiles:

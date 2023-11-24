@@ -13,38 +13,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
+import sys
 import os
 import shutil
 import stat
 import tempfile
 
-from mapproxy.client.http import HTTPClientError
+import pytest
+
 from mapproxy.client.cgi import CGIClient, split_cgi_response
+from mapproxy.client.http import HTTPClientError
 from mapproxy.source import SourceError
 
-from nose.tools import eq_
-
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="tests skipped for python 2")
 class TestSplitHTTPResponse(object):
     def test_n(self):
-        eq_(split_cgi_response(b'header1: foo\nheader2: bar\n\ncontent\n\ncontent'),
-            ({'Header1': 'foo', 'Header2': 'bar'}, b'content\n\ncontent'))
+        assert split_cgi_response(b'header1: foo\nheader2: bar\n\ncontent\n\ncontent')  == \
+            ({'Header1': 'foo', 'Header2': 'bar'}, b'content\n\ncontent')
     def test_rn(self):
-        eq_(split_cgi_response(b'header1\r\nheader2\r\n\r\ncontent\r\n\r\ncontent'),
-            ({'Header1': None, 'Header2': None}, b'content\r\n\r\ncontent'))
+        assert split_cgi_response(b'header1\r\nheader2\r\n\r\ncontent\r\n\r\ncontent')  == \
+            ({'Header1': None, 'Header2': None}, b'content\r\n\r\ncontent')
     def test_mixed(self):
-        eq_(split_cgi_response(b'header1: bar:foo\r\nheader2\n\r\ncontent\r\n\r\ncontent'),
-            ({'Header1': 'bar:foo', 'Header2': None}, b'content\r\n\r\ncontent'))
-        eq_(split_cgi_response(b'header1\r\nheader2\n\ncontent\r\n\r\ncontent'),
-            ({'Header1': None, 'Header2': None}, b'content\r\n\r\ncontent'))
-        eq_(split_cgi_response(b'header1\nheader2\r\n\r\ncontent\r\n\r\ncontent'),
-            ({'Header1': None, 'Header2': None}, b'content\r\n\r\ncontent'))
+        assert split_cgi_response(b'header1: bar:foo\r\nheader2\n\r\ncontent\r\n\r\ncontent')  == \
+            ({'Header1': 'bar:foo', 'Header2': None}, b'content\r\n\r\ncontent')
+        assert split_cgi_response(b'header1\r\nheader2\n\ncontent\r\n\r\ncontent')  == \
+            ({'Header1': None, 'Header2': None}, b'content\r\n\r\ncontent')
+        assert split_cgi_response(b'header1\nheader2\r\n\r\ncontent\r\n\r\ncontent')  == \
+            ({'Header1': None, 'Header2': None}, b'content\r\n\r\ncontent')
     def test_no_header(self):
-        eq_(split_cgi_response(b'content\r\ncontent'),
-            ({}, b'content\r\ncontent'))
+        assert split_cgi_response(b'content\r\ncontent')  == \
+            ({}, b'content\r\ncontent')
 
 
-TEST_CGI_SCRIPT = br"""#! /usr/bin/env python
+TEST_CGI_SCRIPT = br"""#! /usr/bin/env python3
 import sys
 import os
 w = sys.stdout.write
@@ -60,15 +61,17 @@ if not os.path.exists('testfile'):
     exit(2)
 """
 
+@pytest.mark.skipif(sys.platform == 'win32', reason="tests not ported to windows")
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="tests skipped for python 2")
 class TestCGIClient(object):
-    def setup(self):
+    def setup_method(self):
         self.script_dir = tempfile.mkdtemp()
 
-    def teardown(self):
+    def teardown_method(self):
         shutil.rmtree(self.script_dir)
 
     def create_script(self, script=TEST_CGI_SCRIPT, executable=True):
-        script_file = os.path.join(self.script_dir, 'cgi.py')
+        script_file = os.path.join(self.script_dir, 'minimal_cgi.py')
         with open(script_file, 'wb') as f:
             f.write(script)
         if executable:
@@ -98,8 +101,8 @@ class TestCGIClient(object):
         script = self.create_script()
         client = CGIClient(script)
         resp = client.open('http://example.org/service?hello=bar')
-        eq_(resp.headers['Content-type'], 'text/plain')
-        eq_(resp.read(), b'hello=bar')
+        assert resp.headers['Content-type'] == 'text/plain'
+        assert resp.read() == b'hello=bar'
 
     def test_failed_call(self):
         script = self.create_script(TEST_CGI_SCRIPT_FAIL)

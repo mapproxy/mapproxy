@@ -18,20 +18,20 @@ import tempfile
 
 from mapproxy.util.yaml import load_yaml, load_yaml_file, YAMLError
 from mapproxy.compat import string_type
-from nose.tools import eq_
 
 
 class TestLoadYAMLFile(object):
-    def setup(self):
+
+    def setup_method(self):
         self.tmp_files = []
 
-    def teardown(self):
+    def teardown_method(self):
         for f in self.tmp_files:
             os.unlink(f)
 
     def yaml_file(self, content):
         fd, fname = tempfile.mkstemp()
-        f = os.fdopen(fd, 'w')
+        f = os.fdopen(fd, "w")
         f.write(content)
         self.tmp_files.append(fname)
         return fname
@@ -39,23 +39,31 @@ class TestLoadYAMLFile(object):
     def test_load_yaml_file(self):
         f = self.yaml_file("hello:\n - 1\n - 2")
         doc = load_yaml_file(open(f))
-        eq_(doc, {'hello': [1, 2]})
+        assert doc == {"hello": [1, 2]}
 
     def test_load_yaml_file_filename(self):
         f = self.yaml_file("hello:\n - 1\n - 2")
         assert isinstance(f, string_type)
         doc = load_yaml_file(f)
-        eq_(doc, {'hello': [1, 2]})
+        assert doc == {"hello": [1, 2]}
 
     def test_load_yaml(self):
         doc = load_yaml("hello:\n - 1\n - 2")
-        eq_(doc, {'hello': [1, 2]})
+        assert doc == {"hello": [1, 2]}
 
     def test_load_yaml_with_tabs(self):
         try:
             f = self.yaml_file("hello:\n\t- world")
             load_yaml_file(f)
         except YAMLError as ex:
-            assert 'line 2' in str(ex)
+            assert "line 2" in str(ex)
         else:
-            assert False, 'expected YAMLError'
+            assert False, "expected YAMLError"
+
+    def test_load_yaml_string_error(self):
+        try:
+            load_yaml('only a string')
+        except YAMLError as ex:
+            assert "not a YAML dict" in str(ex)
+        else:
+            assert False, "expected YAMLError"

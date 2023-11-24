@@ -13,28 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
-
 import os
+import sys
 import random
 
-from nose.plugins.skip import SkipTest
+import pytest
 
 from mapproxy.cache.riak import RiakCache
-from mapproxy.grid import tile_grid
 from mapproxy.compat.modules import urlparse
+from mapproxy.grid import tile_grid
 from mapproxy.test.image import create_tmp_image_buf
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
+
 
 tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
 
+
+@pytest.mark.skipif(sys.version_info > (3, 7), reason="riak is not compatible with this Python version")
 class RiakCacheTestBase(TileCacheTestBase):
     always_loads_metadata = True
-    def setup(self):
-        if not os.environ.get(self.riak_url_env):
-            raise SkipTest()
-
+    def setup_method(self):
         url = os.environ[self.riak_url_env]
         urlparts = urlparse.urlparse(url)
         protocol = urlparts.scheme.lower()
@@ -47,16 +46,19 @@ class RiakCacheTestBase(TileCacheTestBase):
 
         db_name = 'mapproxy_test_%d' % random.randint(0, 100000)
 
-        TileCacheTestBase.setup(self)
+        TileCacheTestBase.setup_method(self)
 
         self.cache = RiakCache([node], protocol, db_name, tile_grid=tile_grid(3857, name='global-webmarcator'))
 
-    def teardown(self):
+    def teardown_method(self):
         import riak
         bucket = self.cache.bucket
         for k in bucket.get_keys():
             riak.RiakObject(self.cache.connection, bucket, k).delete()
-        TileCacheTestBase.teardown(self)
+        TileCacheTestBase.teardown_method(self)
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_double_remove(self):
         tile = self.create_tile()
@@ -64,8 +66,14 @@ class RiakCacheTestBase(TileCacheTestBase):
         assert self.cache.remove_tile(tile)
         assert self.cache.remove_tile(tile)
 
+
+@pytest.mark.skipif(not os.environ.get('MAPPROXY_TEST_RIAK_HTTP'),
+                    reason="MAPPROXY_TEST_RIAK_HTTP not set")
 class TestRiakCacheHTTP(RiakCacheTestBase):
     riak_url_env = 'MAPPROXY_TEST_RIAK_HTTP'
 
+
+@pytest.mark.skipif(not os.environ.get('MAPPROXY_TEST_RIAK_PBC'),
+                    reason="MAPPROXY_TEST_RIAK_PBC not set")
 class TestRiakCachePBC(RiakCacheTestBase):
     riak_url_env = 'MAPPROXY_TEST_RIAK_PBC'

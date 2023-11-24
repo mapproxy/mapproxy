@@ -17,26 +17,28 @@ from mapproxy.service.wms import limit_srs_extents
 from mapproxy.layer import DefaultMapExtent, MapExtent
 from mapproxy.srs import SRS
 
-from nose.tools import eq_
 
 class TestLimitSRSExtents(object):
+
     def test_defaults(self):
-        eq_(
-            limit_srs_extents({}, ['EPSG:4326', 'EPSG:3857']),
-            {
-                'EPSG:4326': DefaultMapExtent(),
-                'EPSG:3857': DefaultMapExtent(),
-            }
-        )
+        assert limit_srs_extents({}, ["EPSG:4326", "EPSG:3857"]) == {
+            "EPSG:4326": DefaultMapExtent(),
+            "EPSG:3857": DefaultMapExtent(),
+        }
+
     def test_unsupported(self):
-        eq_(
-            limit_srs_extents({'EPSG:9999': DefaultMapExtent()},
-                ['EPSG:4326', 'EPSG:3857']),
-            {}
+        assert (
+            limit_srs_extents(
+                {"EPSG:9999": DefaultMapExtent()}, ["EPSG:4326", "EPSG:3857"]
+            )
+            == {}
         )
+
     def test_limited_unsupported(self):
-        eq_(
-            limit_srs_extents({'EPSG:9999': DefaultMapExtent(), 'EPSG:4326': MapExtent([0, 0, 10, 10], SRS(4326))},
-                ['EPSG:4326', 'EPSG:3857']),
-            {'EPSG:4326': MapExtent([0, 0, 10, 10], SRS(4326)),}
-        )
+        assert limit_srs_extents(
+            {
+                "EPSG:9999": DefaultMapExtent(),
+                "EPSG:4326": MapExtent([0, 0, 10, 10], SRS(4326)),
+            },
+            ["EPSG:4326", "EPSG:3857"],
+        ) == {"EPSG:4326": MapExtent([0, 0, 10, 10], SRS(4326))}

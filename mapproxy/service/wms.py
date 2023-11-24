@@ -19,7 +19,9 @@ WMS service handler
 from mapproxy.compat import iteritems
 from mapproxy.compat.itertools import chain
 from functools import partial
+from math import sqrt
 from mapproxy.cache.tile import CacheInfo
+from mapproxy.featureinfo import combine_docs
 from mapproxy.request.wms import (wms_request, WMS111LegendGraphicRequest,
     mimetype_from_infotype, infotype_from_mimetype, switch_bbox_epsg_axis_order)
 from mapproxy.srs import SRS, TransformationError
@@ -27,13 +29,13 @@ from mapproxy.service.base import Server
 from mapproxy.response import Response
 from mapproxy.source import SourceError
 from mapproxy.exception import RequestError
-from mapproxy.image import bbox_position_in_image, SubImageSource, BlankImageSource
+from mapproxy.image import bbox_position_in_image, SubImageSource, BlankImageSource, GeoReference
 from mapproxy.image.merge import concat_legends, LayerMerger
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.message import attribution_image, message_image
 from mapproxy.layer import BlankImage, MapQuery, InfoQuery, LegendQuery, MapError, LimitedLayer
 from mapproxy.layer import MapBBOXError, merge_layer_extents, merge_layer_res_ranges
-from mapproxy.util import async
+from mapproxy.util import async_
 from mapproxy.util.py import cached_property, reraise
 from mapproxy.util.coverage import load_limited_to
 from mapproxy.util.ext.odict import odict
@@ -42,7 +44,6 @@ from mapproxy.service import template_helper
 from mapproxy.layer import DefaultMapExtent, MapExtent
 
 get_template = template_loader(__name__, 'templates', namespace=template_helper.__dict__)
-
 
 class PERMIT_ALL_LAYERS(object):
     pass
@@ -81,7 +82,7 @@ class WMSServer(Server):
         self.check_map_request(map_request)
 
         params = map_request.params
-        query = MapQuery(params.bbox, params.size, SRS(params.srs), params.format)
+        query = MapQuery(params.bbox, params.size, SRS(params.srs), params.format, dimensions=map_request.dimensions)
 
         if map_request.params.get('tiled', 'false').lower() == 'true':
             query.tiled_only = True
@@ -108,7 +109,7 @@ class WMSServer(Server):
             if layer.renders_query(query):
                 # if layer is not transparent and will be rendered,
                 # remove already added (then hidden) layers
-                if not layer.transparent:
+                if layer.is_opaque(query):
                     actual_layers = odict()
                 for layer_name, map_layers in layer.map_layers_for_query(query):
                     actual_layers[layer_name] = map_layers
@@ -150,6 +151,7 @@ class WMSServer(Server):
             map_request.http.environ, (query.srs.srs_code, query.bbox))
 
         try:
+            result.georef = GeoReference(bbox=orig_query.bbox, srs=orig_query.srs)
             result_buf = result.as_buffer(img_opts)
         except IOError as ex:
             raise RequestError('error while processing image file: %s' % ex,
@@ -192,7 +194,7 @@ class WMSServer(Server):
         info_formats = [mimetype_from_infotype(map_request.version, info_type) for info_type in info_types]
         result = Capabilities(service, root_layer, tile_layers,
             self.image_formats, info_formats, srs=self.srs, srs_extents=self.srs_extents,
-            inspire_md=self.inspire_md,
+            inspire_md=self.inspire_md, max_output_pixels=self.max_output_pixels
             ).render(map_request)
         return Response(result, mimetype=map_request.mime_type)
 
@@ -240,28 +242,22 @@ class WMSServer(Server):
             return Response('', mimetype=mimetype)
 
         if self.fi_transformers:
-            doc = infos[0].combine(infos)
-            if doc.info_type == 'text':
-                resp = doc.as_string()
-                mimetype = 'text/plain'
-            else:
-                if not mimetype:
-                    if 'xml' in self.fi_transformers:
-                        info_type = 'xml'
-                    elif 'html' in self.fi_transformers:
-                        info_type = 'html'
-                    else:
-                        info_type = 'text'
-                    mimetype = mimetype_from_infotype(request.version, info_type)
+            if not mimetype:
+                if 'xml' in self.fi_transformers:
+                    info_type = 'xml'
+                elif 'html' in self.fi_transformers:
+                    info_type = 'html'
                 else:
-                    info_type = infotype_from_mimetype(request.version, mimetype)
-                resp = self.fi_transformers[info_type](doc).as_string()
-        else:
-            mimetype = mimetype_from_infotype(request.version, infos[0].info_type)
-            if len(infos) > 1:
-                resp = infos[0].combine(infos).as_string()
+                    info_type = 'text'
+                mimetype = mimetype_from_infotype(request.version, info_type)
             else:
-                resp = infos[0].as_string()
+                info_type = infotype_from_mimetype(request.version, mimetype)
+            resp, actual_info_type = combine_docs(infos, self.fi_transformers[info_type])
+            if actual_info_type is not None and info_type != actual_info_type:
+                mimetype = mimetype_from_infotype(request.version, actual_info_type)
+        else:
+            resp, info_type = combine_docs(infos)
+            mimetype = mimetype_from_infotype(request.version, info_type)
 
         return Response(resp, mimetype=mimetype)
 
@@ -310,11 +306,16 @@ class WMSServer(Server):
         legend = self.layers[layer].legend(request)
 
         [legends.append(i) for i in legend if i is not None]
-        result = concat_legends(legends)
         if 'format' in request.params:
             mimetype = request.params.format_mime_type
         else:
             mimetype = 'image/png'
+
+        if mimetype == 'application/json':
+            return Response(legends[0].encode(), mimetype='application/json')
+
+        result = concat_legends(legends)
+
         img_opts = self.image_formats[request.params.format_mime_type]
         return Response(result.as_buffer(img_opts), mimetype=mimetype)
 
@@ -468,7 +469,7 @@ class Capabilities(object):
     """
     def __init__(self, server_md, layers, tile_layers, image_formats, info_formats,
         srs, srs_extents=None, epsg_axis_order=False,
-        inspire_md=None,
+        inspire_md=None, max_output_pixels=None
         ):
         self.service = server_md
         self.layers = layers
@@ -478,25 +479,47 @@ class Capabilities(object):
         self.srs = srs
         self.srs_extents = limit_srs_extents(srs_extents, srs)
         self.inspire_md = inspire_md
+        self.max_output_pixels = max_output_pixels
 
     def layer_srs_bbox(self, layer, epsg_axis_order=False):
-        layer_srs_code = layer.extent.srs.srs_code
         for srs, extent in iteritems(self.srs_extents):
+            if srs not in self.srs:
+                continue
+
+            # is_default is True when no explicit bbox is defined for this srs
+            # use layer extent
             if extent.is_default:
                 bbox = layer.extent.bbox_for(SRS(srs))
-            else:
+            elif layer.extent.is_default:
                 bbox = extent.bbox_for(SRS(srs))
+            else:
+                # Use intersection of srs_extent and layer.extent.
+                # Use 4326 extents to avoid transformation errors.
+                a = extent.transform(SRS(4326))
+                b = layer.extent.transform(SRS(4326))
+                bbox = a.intersection(b).bbox_for(SRS(srs))
 
             if epsg_axis_order:
                 bbox = switch_bbox_epsg_axis_order(bbox, srs)
+
             yield srs, bbox
 
         # add native srs
+        layer_srs_code = layer.extent.srs.srs_code
         if layer_srs_code not in self.srs_extents:
             bbox = layer.extent.bbox
             if epsg_axis_order:
                 bbox = switch_bbox_epsg_axis_order(bbox, layer_srs_code)
-            yield layer_srs_code, bbox
+            if layer_srs_code in self.srs:
+                yield layer_srs_code, bbox
+
+    def layer_llbbox(self, layer):
+        if 'EPSG:4326' in self.srs_extents:
+            intersection = self.srs_extents['EPSG:4326'].intersection(layer.extent)
+            if intersection is not None:
+                llbbox = intersection.llbbox
+                return limit_llbbox(llbbox)
+        return limit_llbbox(layer.extent.llbbox)
 
     def render(self, _map_request):
         return self._render_template(_map_request.capabilities_template)
@@ -506,6 +529,12 @@ class Capabilities(object):
         inspire_md = None
         if self.inspire_md:
             inspire_md = recursive_bunch(default='', **self.inspire_md)
+
+        max_output_size = None
+        if self.max_output_pixels:
+            output_width = output_height = int(sqrt(self.max_output_pixels))
+            max_output_size = (output_width, output_height)
+
         doc = template.substitute(service=bunch(default='', **self.service),
                                    layers=self.layers,
                                    formats=self.image_formats,
@@ -513,11 +542,34 @@ class Capabilities(object):
                                    srs=self.srs,
                                    tile_layers=self.tile_layers,
                                    layer_srs_bbox=self.layer_srs_bbox,
+                                   layer_llbbox=self.layer_llbbox,
                                    inspire_md=inspire_md,
+                                   max_output_size=max_output_size,
         )
         # strip blank lines
         doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())
         return doc
+
+
+def limit_llbbox(bbox):
+    """
+    Limit the long/lat bounding box to +-180/89.99999999 degrees.
+
+    Some clients can't handle +-90 north/south, so we subtract a tiny bit.
+
+    >>> ', '.join('%.6f' % x for x in limit_llbbox((-200,-90.0, 180, 90)))
+    '-180.000000, -89.999999, 180.000000, 89.999999'
+    >>> ', '.join('%.6f' % x for x in limit_llbbox((-20,-9.0, 10, 10)))
+    '-20.000000, -9.000000, 10.000000, 10.000000'
+    """
+    minx, miny, maxx, maxy = bbox
+
+    minx = max(-180, minx)
+    miny = max(-89.999999, miny)
+    maxx = min(180, maxx)
+    maxy = min(89.999999, maxy)
+
+    return minx, miny, maxx, maxy
 
 class LayerRenderer(object):
     def __init__(self, layers, query, request, raise_source_errors=True,
@@ -532,7 +584,7 @@ class LayerRenderer(object):
         render_layers = combined_layers(self.layers, self.query)
         if not render_layers: return
 
-        async_pool = async.Pool(size=min(len(render_layers), self.concurrent_rendering))
+        async_pool = async_.Pool(size=min(len(render_layers), self.concurrent_rendering))
 
         if self.raise_source_errors:
             return self._render_raise_exceptions(async_pool, render_layers, layer_merger)
@@ -548,7 +600,7 @@ class LayerRenderer(object):
                 if layer_task.exception is None:
                     layer, layer_img = layer_task.result
                     if layer_img is not None:
-                        layer_merger.add(layer_img, layer=layer)
+                        layer_merger.add(layer_img, layer.coverage)
                 else:
                     ex = layer_task.exception
                     async_pool.shutdown(True)
@@ -566,7 +618,7 @@ class LayerRenderer(object):
             if layer_task.exception is None:
                 layer, layer_img = layer_task.result
                 if layer_img is not None:
-                    layer_merger.add(layer_img, layer=layer)
+                    layer_merger.add(layer_img, layer.coverage)
                 rendered += 1
             else:
                 layer_merger.cacheable = False
@@ -594,8 +646,8 @@ class LayerRenderer(object):
             return layer, layer_img
         except SourceError:
             raise
-        except MapBBOXError:
-            raise RequestError('Request too large or invalid BBOX.', request=self.request)
+        except MapBBOXError as e:
+            raise RequestError('Request too large or invalid BBOX. (%s)' % e, request=self.request)
         except MapError as e:
             raise RequestError('Invalid request: %s' % e.args[0], request=self.request)
         except TransformationError:
@@ -621,8 +673,6 @@ class WMSLayerBase(object):
     "True if .info() is supported"
     queryable = False
 
-    transparent = False
-
     "True is .legend() is supported"
     has_legend = False
     legend_url = None
@@ -632,9 +682,6 @@ class WMSLayerBase(object):
     res_range = None
     "MapExtend of the layer"
     extent = None
-
-    def is_opaque(self):
-        return not self.transparent
 
     def map_layers_for_query(self, query):
         raise NotImplementedError()
@@ -654,7 +701,7 @@ class WMSLayer(WMSLayerBase):
     is_active = True
     layers = []
     def __init__(self, name, title, map_layers, info_layers=[], legend_layers=[],
-                 res_range=None, md=None):
+                 res_range=None, md=None,dimensions=None):
         self.name = name
         self.title = title
         self.md = md or {}
@@ -662,12 +709,17 @@ class WMSLayer(WMSLayerBase):
         self.info_layers = info_layers
         self.legend_layers = legend_layers
         self.extent = merge_layer_extents(map_layers)
+        self.dimensions = dimensions
+
         if res_range is None:
             res_range = merge_layer_res_ranges(map_layers)
         self.res_range = res_range
         self.queryable = True if info_layers else False
-        self.transparent = all(not map_lyr.is_opaque() for map_lyr in self.map_layers)
         self.has_legend = True if legend_layers else False
+        self.dimensions = dimensions
+
+    def is_opaque(self, query):
+        return any(l.is_opaque(query) for l in self.map_layers)
 
     def renders_query(self, query):
         if self.res_range and not self.res_range.contains(query.bbox, query.size, query.srs):
@@ -727,12 +779,14 @@ class WMSGroupLayer(WMSLayerBase):
         self.md = md or {}
         self.is_active = True if this is not None else False
         self.layers = layers
-        self.transparent = True if this and not this.is_opaque() or all(not l.is_opaque() for l in layers) else False
         self.has_legend = True if this and this.has_legend or any(l.has_legend for l in layers) else False
         self.queryable = True if this and this.queryable or any(l.queryable for l in layers) else False
         all_layers = layers + ([self.this] if self.this else [])
         self.extent = merge_layer_extents(all_layers)
         self.res_range = merge_layer_res_ranges(all_layers)
+
+    def is_opaque(self, query):
+        return any(l.is_opaque(query) for l in self.layers)
 
     @property
     def legend_size(self):

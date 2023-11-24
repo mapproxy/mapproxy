@@ -36,7 +36,17 @@ def validate_options(conf_dict):
     else:
         return [], True
 
-coverage = {
+time_spec = {
+    'seconds': number(),
+    'minutes': number(),
+    'hours': number(),
+    'days': number(),
+    'weeks': number(),
+    'time': anything(),
+    'mtime': str(),
+}
+
+coverage = recursive({
     'polygons': str(),
     'polygons_srs': str(),
     'bbox': one_of(str(), [number()]),
@@ -47,7 +57,13 @@ coverage = {
     'datasource': one_of(str(), [number()]),
     'where': str(),
     'srs': str(),
-}
+    'expire_tiles': str(),
+    'union': [recursive()],
+    'difference': [recursive()],
+    'intersection': [recursive()],
+    'clip': bool(),
+})
+
 image_opts = {
     'mode': str(),
     'colors': number(),
@@ -65,9 +81,11 @@ http_opts = {
     'client_timeout': number(),
     'ssl_no_cert_checks': bool(),
     'ssl_ca_certs': str(),
+    'hide_error_details': bool(),
     'headers': {
         anything(): str()
     },
+    'manage_cookies': bool(),
 }
 
 mapserver_opts = {
@@ -97,33 +115,39 @@ riak_node = {
     'http_port': number(),
 }
 
+cache_commons = combined(
+    {
+        'coverage': coverage,
+    }
+)
+
 cache_types = {
-    'file': {
+    'file': combined(cache_commons, {
         'directory_layout': str(),
         'use_grid_names': bool(),
         'directory': str(),
         'tile_lock_dir': str(),
-    },
-    'sqlite': {
+    }),
+    'sqlite': combined(cache_commons, {
         'directory': str(),
         'sqlite_timeout': number(),
         'sqlite_wal': bool(),
         'tile_lock_dir': str(),
-    },
-    'mbtiles': {
+    }),
+    'mbtiles': combined(cache_commons, {
         'filename': str(),
         'sqlite_timeout': number(),
         'sqlite_wal': bool(),
         'tile_lock_dir': str(),
-    },
-    'geopackage': {
+    }),
+    'geopackage': combined(cache_commons, {
         'filename': str(),
         'directory': str(),
         'tile_lock_dir': str(),
         'table_name': str(),
         'levels': bool(),
-    },
-    'couchdb': {
+    }),
+    'couchdb': combined(cache_commons, {
         'url': str(),
         'db_name': str(),
         'tile_metadata': {
@@ -131,15 +155,18 @@ cache_types = {
         },
         'tile_id': str(),
         'tile_lock_dir': str(),
-    },
-    's3': {
+    }),
+    's3': combined(cache_commons, {
         'bucket_name': str(),
         'directory_layout': str(),
         'directory': str(),
         'profile_name': str(),
+        'region_name': str(),
+        'endpoint_url': str(),
+        'access_control_list': str(),
         'tile_lock_dir': str(),
-     },
-    'riak': {
+     }),
+    'riak': combined(cache_commons, {
         'nodes': [riak_node],
         'protocol': one_of('pbc', 'http', 'https'),
         'bucket': str(),
@@ -149,18 +176,35 @@ cache_types = {
         },
         'secondary_index': bool(),
         'tile_lock_dir': str(),
-    },
-    'compact': {
+    }),
+    'redis': combined(cache_commons, {
+        'host': str(),
+        'port': int(),
+        'password': str(),
+        'username': str(),
+        'db': int(),
+        'prefix': str(),
+        'default_ttl': int(),
+    }),
+    'compact': combined(cache_commons, {
         'directory': str(),
         required('version'): number(),
         'tile_lock_dir': str(),
-    },
+    }),
+    'azureblob': combined(cache_commons, {
+        'connection_string': str(),
+        'container_name': str(),
+        'directory_layout': str(),
+        'directory': str(),
+        'tile_lock_dir': str(),
+    }),
 }
 
 on_error = {
     anything(): {
         required('response'): one_of([int], str),
         'cache': bool,
+        'authorize_stale': bool
     }
 }
 
@@ -352,10 +396,16 @@ mapproxy_yaml_spec = {
             'max_tile_limit': number(),
             'minimize_meta_requests': bool(),
             'concurrent_tile_creators': int(),
-            'link_single_color_images': bool(),
+            'link_single_color_images': one_of(bool(), 'symlink', 'hardlink'),
             's3': {
                 'bucket_name': str(),
                 'profile_name': str(),
+                'region_name': str(),
+                'endpoint_url': str(),
+            },
+            'azureblob': {
+                'connection_string': str(),
+                'container_name': str(),
             },
         },
         'grid': {
@@ -365,6 +415,7 @@ mapproxy_yaml_spec = {
           'axis_order_ne': [str()],
           'axis_order_en': [str()],
           'proj_data_dir': str(),
+          'preferred_src_proj': {anything(): [str()]},
         },
         'tiles': {
             'expires_hours': number(),
@@ -394,7 +445,11 @@ mapproxy_yaml_spec = {
             'request_format': str(),
             'use_direct_from_level': number(),
             'use_direct_from_res': number(),
-            'link_single_color_images': bool(),
+            'link_single_color_images': one_of(bool(), 'symlink', 'hardlink'),
+            'cache_rescaled_tiles': bool(),
+            'upscale_tiles': int(),
+            'downscale_tiles': int(),
+            'refresh_before': time_spec,
             'watermark': {
                 'text': string_type,
                 'font_size': number(),
@@ -418,7 +473,14 @@ mapproxy_yaml_spec = {
             'kvp': bool(),
             'restful': bool(),
             'restful_template': str(),
+            'restful_featureinfo_template': str(),
             'md': ogc_service_md,
+            'featureinfo_formats': [
+                {
+                    required('mimetype'): str(),
+                    'suffix': str(),
+                },
+            ],
         },
         'wms': {
             'srs': [str()],
@@ -451,6 +513,7 @@ mapproxy_yaml_spec = {
                     'legendurl': str(),
                     'featureinfo_format': str(),
                     'featureinfo_xslt': str(),
+                    'featureinfo_out_format': str(),
                 },
                 'image': combined(image_opts, {
                     'opacity':number(),
@@ -460,6 +523,7 @@ mapproxy_yaml_spec = {
                 'supported_formats': [str()],
                 'supported_srs': [str()],
                 'http': http_opts,
+                'on_error': on_error,
                 'forward_req_params': [str()],
                 required('req'): {
                     required('url'): str(),
@@ -507,6 +571,7 @@ mapproxy_yaml_spec = {
                 'layers': one_of(str(), [str()]),
                 'use_mapnik2': bool(),
                 'scale_factor': number(),
+                'multithreaded': bool(),
             }),
             'arcgis': combined(source_commons, {
                required('req'): {
@@ -522,7 +587,8 @@ mapproxy_yaml_spec = {
                     'featureinfo_return_geometries': bool(),
                 },
                 'supported_srs': [str()],
-                'http': http_opts
+                'http': http_opts,
+                'on_error': on_error
             }),
             'debug': {
             },
@@ -554,18 +620,33 @@ mapproxy_yaml_spec = {
             }
         })])
     ),
-     # `parts` can be used for partial configurations that are referenced
-     # from other sections (e.g. coverages, dimensions, etc.)
+    # `parts` can be used for partial configurations that are referenced
+    # from other sections (e.g. coverages, dimensions, etc.)
     'parts': anything(),
 }
 
-if __name__ == '__main__':
-    import sys
-    import yaml
-    for f in sys.argv[1:]:
-        data = yaml.load(open(f))
-        try:
-            validate(mapproxy_yaml_spec, data)
-        except ValidationError as ex:
-            for err in ex.errors:
-                print('%s: %s' % (f, err))
+
+def add_source_to_mapproxy_yaml_spec(source_name, source_spec):
+    """ Add a new source type to mapproxy_yaml_spec.
+        Used by plugins.
+    """
+
+    # sources has a single anything() : {} member
+    values = list(mapproxy_yaml_spec['sources'].values())
+    assert len(values) == 1
+    values[0].add_subspec(source_name, source_spec)
+
+
+def add_service_to_mapproxy_yaml_spec(service_name, service_spec):
+    """ Add a new service type to mapproxy_yaml_spec.
+        Used by plugins.
+    """
+
+    mapproxy_yaml_spec['services'][service_name] = service_spec
+
+
+def add_subcategory_to_layer_md(category_name, category_def):
+    """ Add a new category to wms_130_layer_md.
+        Used by plugins
+    """
+    wms_130_layer_md[category_name] = category_def

@@ -1,9 +1,15 @@
 globals:
+  http:
+    hide_error_details: false
   cache:
     base_dir: cache_data/
     meta_size: [1, 1]
     meta_buffer: 0
     tile_lock_dir: defaulttilelockdir
+
+  srs:
+    preferred_src_proj:
+      'EPSG:25831': ['EPSG:25832', 'EPSG:3857']
 
   image:
     # resampling: 'bicubic'
@@ -19,12 +25,12 @@ services:
   kml:
   wmts:
   wms:
-    image_formats: ['image/png', 'image/jpeg', 'png8']
-    srs: ['EPSG:4326', 'EPSG:4258', 'CRS:84', 'EPSG:900913', 'EPSG:3857', 'EPSG:31466', 'EPSG:31467', 'EPSG:31468', 'EPSG:25831', 'EPSG:25832', 'EPSG:25833']
+    image_formats: ['image/png', 'image/jpeg', 'png8', 'image/tiff']
+    srs: ['EPSG:4326', 'CRS:84', 'EPSG:900913', 'EPSG:3857', 'EPSG:31466', 'EPSG:31467', 'EPSG:31468', 'EPSG:25831', 'EPSG:25832', 'EPSG:25833']
     bbox_srs:
-        - bbox: [2750000, 5000000, 4250000, 6500000]
-          srs: 'EPSG:31467'
         - 'EPSG:3857'
+        - bbox: [-180, -70, 180, 90]
+          srs: 'EPSG:4326'
     md:
       title: MapProxy test fixture ☃
       abstract: This is MapProxy.
@@ -120,6 +126,9 @@ layers:
   - name: watermark_cache
     title: TMS Cache + watermark
     sources: [watermark_cache]
+  - name: wms_managed_cookies_cache
+    title: WMS with cookies management
+    sources: [wms_managed_cookies]
 
 caches:
   wms_cache:
@@ -158,6 +167,8 @@ caches:
     disable_storage: true
     watermark:
       text: '@ Omniscale'
+  wms_managed_cookies_cache:
+    sources: [wms_managed_cookies]
 
 sources:
   direct:
@@ -165,6 +176,8 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: bar
+    wms_opts:
+      featureinfo: True
     coverage:
       bbox: [-180, -80, 170, 80]
       srs: 'EPSG:4326'
@@ -174,6 +187,11 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: bar
+    coverage:
+      # coverage in projection not in wms.srs,
+      # should not be advertised in capabilities #288
+      bbox: [-180, -80, 170, 80]
+      srs: 'EPSG:4258'
   wms_cache:
     type: wms
     supported_srs: ['EPSG:900913', 'EPSG:4326']
@@ -228,3 +246,15 @@ sources:
     req:
       url: http://localhost:42423/service
       layers: fi
+    coverage:
+      bbox: [-180,-90,170,80]
+      srs: 'EPSG:4326'
+  wms_managed_cookies:
+    type: wms
+    wms_opts:
+      featureinfo: True
+    req:
+      url: http://localhost:42423/service
+      layers: layer1
+    http:
+      manage_cookies: True

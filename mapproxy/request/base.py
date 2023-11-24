@@ -16,15 +16,9 @@
 """
 Service requests (parsing, handling, etc).
 """
-import cgi
-
+from mapproxy.compat import PY2, iteritems, text_type
+from mapproxy.compat.modules import parse_qsl, urlparse, quote
 from mapproxy.util.py import cached_property
-from mapproxy.compat import iteritems, PY2, text_type
-
-if PY2:
-    from urllib import quote
-else:
-    from urllib.parse import quote
 
 class NoCaseMultiDict(dict):
     """
@@ -178,7 +172,7 @@ def url_decode(qs, charset='utf-8', decode_keys=False, include_empty=True,
     Parse query string `qs` and return a `NoCaseMultiDict`.
     """
     tmp = []
-    for key, value in cgi.parse_qsl(qs, include_empty):
+    for key, value in parse_qsl(qs, include_empty):
         if PY2:
             if decode_keys:
                 key = key.decode(charset, errors)
@@ -202,7 +196,7 @@ class Request(object):
         if script_name:
             del environ['HTTP_X_SCRIPT_NAME']
             environ['SCRIPT_NAME'] = script_name
-            path_info = environ['PATH_INFO']
+            path_info = environ.get('PATH_INFO', '')
             if path_info.startswith(script_name):
                 environ['PATH_INFO'] = path_info[len(script_name):]
 
@@ -265,12 +259,24 @@ class Request(object):
     def host_url(self):
         return '%s://%s/' % (self.url_scheme, self.host)
 
+    @cached_property
+    def server_url(self):
+        return 'http://%s:%s/' % (
+            self.environ['SERVER_NAME'],
+            self.environ['SERVER_PORT']
+        )
+
     @property
     def script_url(self):
         "Full script URL without trailing /"
         return (self.host_url.rstrip('/') +
                 quote(self.environ.get('SCRIPT_NAME', '/').rstrip('/'))
                )
+
+    @property
+    def server_script_url(self):
+        "Internal script URL"
+        return self.server_url.rstrip('/')
 
     @property
     def base_url(self):
@@ -393,7 +399,7 @@ class BaseRequest(object):
     """
     request_params = RequestParams
 
-    def __init__(self, param=None, url='', validate=False, http=None):
+    def __init__(self, param=None, url='', validate=False, http=None, dimensions=None):
         self.delimiter = ','
         self.http = http
 

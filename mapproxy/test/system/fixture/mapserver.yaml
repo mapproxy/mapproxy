@@ -19,5 +19,5 @@ sources:
     req:
       map: ./foo.map
     mapserver:
-      binary: ./cgi.py
+      binary: ./minimal_cgi.py
       working_dir: ./tmp

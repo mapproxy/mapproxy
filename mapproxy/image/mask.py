@@ -31,7 +31,7 @@ def mask_image_source_from_coverage(img_source, bbox, bbox_srs, coverage,
 
 def mask_image(img, bbox, bbox_srs, coverage):
     geom = mask_polygons(bbox, SRS(bbox_srs), coverage)
-    mask = image_mask_from_geom(img, bbox, geom)
+    mask = image_mask_from_geom(img.size, bbox, geom)
     img = img.convert('RGBA')
     img.paste((255, 255, 255, 0), (0, 0), mask)
     return img
@@ -41,15 +41,35 @@ def mask_polygons(bbox, bbox_srs, coverage):
     coverage = coverage.intersection(bbox, bbox_srs)
     return flatten_to_polygons(coverage.geom)
 
-def image_mask_from_geom(img, bbox, polygons):
-    transf = make_lin_transf(bbox, (0, 0) + img.size)
+def image_mask_from_geom(size, bbox, polygons):
+    mask = Image.new('L', size, 255)
+    if len(polygons) == 0:
+        return mask
 
-    mask = Image.new('L', img.size, 255)
+    transf = make_lin_transf(bbox, (0, 0) + size)
+
+    # use negative ~.1 pixel buffer
+    buffer = -0.1 * min((bbox[2] - bbox[0]) / size[0], (bbox[3] - bbox[1]) / size[1])
+
     draw = ImageDraw.Draw(mask)
 
-    for p in polygons:
+    def draw_polygon(p):
         draw.polygon([transf(coord) for coord in p.exterior.coords], fill=0)
         for ring in p.interiors:
             draw.polygon([transf(coord) for coord in ring.coords], fill=255)
+
+    for p in polygons:
+        # little bit smaller polygon does not include touched pixels outside coverage
+        buffered = p.buffer(buffer, resolution=1, join_style=2)
+
+        if buffered.is_empty: # can be empty after negative buffer
+            continue
+
+        if buffered.type == 'MultiPolygon':
+            # negative buffer can turn polygon into multipolygon
+            for p in buffered:
+                draw_polygon(p)
+        else:
+            draw_polygon(buffered)
 
     return mask

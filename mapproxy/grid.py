@@ -1067,12 +1067,12 @@ def bbox_contains(one, two):
 def deg_to_m(deg):
     return deg * (6378137 * 2 * math.pi) / 360
 
-OGC_PIXLE_SIZE = 0.00028 #m/px
+OGC_PIXEL_SIZE = 0.00028 #m/px
 
 def ogc_scale_to_res(scale):
-    return scale * OGC_PIXLE_SIZE
+    return scale * OGC_PIXEL_SIZE
 def res_to_ogc_scale(res):
-    return res / OGC_PIXLE_SIZE
+    return res / OGC_PIXEL_SIZE
 
 def resolution_range(min_res=None, max_res=None, max_scale=None, min_scale=None):
     if min_scale == max_scale == min_res == max_res == None:

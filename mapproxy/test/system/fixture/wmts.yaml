@@ -10,11 +10,23 @@ services:
   tms:
   kml:
   wmts:
-    restful_template: '/myrest/{{Layer}}/{{TileMatrixSet}}/{{TileMatrix}}/{{TileCol}}/{{TileRow}}.{{Format}}'
+    md:
+      keyword_list:
+        - keywords: [wmtskey1, wmtskey2, wmtskey3]
+    featureinfo_formats:
+      - mimetype: application/gml+xml; version=3.1
+        suffix: gml
+      - mimetype: application/json
+        suffix: geojson
+
+    restful_template: '/myrest/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}'
+    restful_featureinfo_template: '/myrest/{Layer}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.{InfoFormat}'
   wms:
     md:
       title: MapProxy test fixture
       abstract: This is MapProxy.
+      keyword_list:
+        - keywords: [wmskey1,wmskey2,wmskey3]
       online_resource: http://mapproxy.org/
       contact:
         person: Oliver Tonnhofer
@@ -39,7 +51,7 @@ layers:
     sources: [wms_cache_multi]
   - name: tms_cache
     title: TMS Cache Layer
-    sources: [tms_cache]
+    sources: [tms_cache, wms_fi_only]
   - name: tms_cache_ul
     title: TMS Cache Layer
     sources: [tms_cache_ul]
@@ -49,12 +61,14 @@ layers:
 caches:
   wms_cache:
     format: image/jpeg
+    grids: [GLOBAL_MERCATOR]
     sources: [wms_cache]
   wms_cache_multi:
     format: image/jpeg
     grids: [CustomGridSet, GoogleMapsCompatible]
     sources: [wms_cache_130]
   tms_cache:
+    grids: [GLOBAL_MERCATOR]
     sources: [tms_cache]
   tms_cache_ul:
     grids: [ulgrid]
@@ -66,7 +80,7 @@ caches:
 sources:
   wms_cache:
     type: wms
-    supported_srs: ['EPSG:900913', 'EPSG:4326']
+    supported_srs: ['EPSG:3857', 'EPSG:4326']
     wms_opts:
       featureinfo: True
     req:
@@ -93,6 +107,17 @@ sources:
   tms_cache:
     type: tile
     url: http://localhost:42423/tiles/%(tc_path)s.png
+  wms_fi_only:
+    type: wms
+    wms_opts:
+      featureinfo: True
+      map: False
+    req:
+      url: http://localhost:42423/service
+      layers: fi
+    coverage:
+      bbox: [-180,-90,170,80]
+      srs: 'EPSG:4326'
 
 grids:
   gk3:

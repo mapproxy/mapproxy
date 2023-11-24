@@ -72,7 +72,10 @@ def write_header(f, capabilities):
 @contextmanager
 def file_or_stdout(name):
     if name == '-':
-        yield codecs.getwriter('utf-8')(sys.stdout)
+        if hasattr(sys.stdout, 'buffer'):
+            yield codecs.getwriter('utf-8')(sys.stdout.buffer)
+        else:
+            yield codecs.getwriter('utf-8')(sys.stdout)
     else:
         with open(name, 'wb') as f:
             yield codecs.getwriter('utf-8')(f)
@@ -154,12 +157,12 @@ def config_command(args):
     overwrite = None
     if options.overwrite:
         with open(options.overwrite, 'rb') as f:
-            overwrite = yaml.load(f)
+            overwrite = yaml.safe_load(f)
 
     overwrite_seed = None
     if options.overwrite_seed:
         with open(options.overwrite_seed, 'rb') as f:
-            overwrite_seed = yaml.load(f)
+            overwrite_seed = yaml.safe_load(f)
 
     conf = {}
 

@@ -16,7 +16,6 @@
 """
 Utility methods and classes (file locking, asynchronous execution pools, etc.).
 """
-from __future__ import with_statement
 
 import random
 import time
@@ -112,7 +111,7 @@ def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300, force=True):
     if not os.path.exists(lockdir):
         return
     if not os.path.isdir(lockdir):
-        log.warn('lock dir not a directory: %s', lockdir)
+        log.warning('lock dir not a directory: %s', lockdir)
         return
     for entry in os.listdir(lockdir):
         name = os.path.join(lockdir, entry)
@@ -122,7 +121,7 @@ def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300, force=True):
                     try:
                         os.unlink(name)
                     except IOError as ex:
-                        log.warn('could not remove old lock file %s: %s', name, ex)
+                        log.warning('could not remove old lock file %s: %s', name, ex)
         except OSError as e:
             # some one might have removed the file (ENOENT)
             # or we don't have permissions to remove it (EACCES)

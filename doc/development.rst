@@ -44,16 +44,16 @@ Tests
 
 MapProxy contains lots of automatic tests. If you don't count in the ``mapproxy-seed``-tool and the WSGI application, the test coverage is around 95%. We want to keep this number high, so all new developments should include some tests.
 
-MapProxy uses `Nose`_ as a test loader and runner. To install Nose and all further test dependencies call::
+MapProxy uses `pytest`_ as a test loader and runner.
 
-  pip install -r requirements-tests.txt
+  pip install pytest
 
 
 To run the actual tests call::
 
-  nosetests
+  pytest
 
-.. _`Nose`: http://somethingaboutorange.com/mrl/projects/nose/
+.. _`pytest`: https://pytest.org/
 
 Available tests
 """""""""""""""
@@ -80,9 +80,6 @@ Mailing list
 
 The preferred medium for all MapProxy related discussions is our mailing list mapproxy@lists.osgeo.org You must `subscribe <http://lists.osgeo.org/mailman/listinfo/mapproxy>`_ to the list before you can write. The archive is `available here <http://lists.osgeo.org/pipermail/mapproxy/>`_.
 
-IRC
-"""
-There is also a channel on `Freenode <http://freenode.net/>`_: ``#mapproxy``. It is a quiet place but you might find someone during business hours (central european time).
 
 Tips on development
 -------------------
@@ -91,14 +88,13 @@ You are using `virtualenv` as described in :doc:`install`, right?
 
 Before you start hacking on MapProxy you should install it in development-mode. In the root directory of MapProxy call ``pip install -e ./``. Instead of installing and thus copying MapProxy into your `virtualenv`, this will just link to your source directory. If you now start MapProxy, the source from your MapProxy directory will be used. Any change you do in the code will be available if you restart MapProxy. If you use the  ``mapproxy-util serve-develop`` command, any change in the source will issue a reload of the MapProxy server.
 
-.. todo::
-
-  Describe egg:Paste#evalerror
+In order to debug MapProxy in an IDE of your choice, set your working directory to one containing your ``mapproxy.yaml`` configuration file and debug the ``mapproxy\script\util.py`` file with the command line parameters ``serve-develop mapproxy.yaml``.  Around line 107 of util.py, you may need to temporarily change ``use_reloader`` from True to False.  Then browse to http://localhost:8080/ to trigger a request to debug.
 
 
 Coding Style Guide
 ------------------
 
 MapProxy generally follows the `Style Guide for Python Code`_. With the only exception that we permit a line width of about 90 characters.
+New files should be auto-formatted with `black <https://github.com/ambv/black>`_.
 
 .. _`Style Guide for Python Code`: http://www.python.org/dev/peps/pep-0008/

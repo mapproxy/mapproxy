@@ -16,8 +16,8 @@
 """
 Service exception handling (WMS exceptions, XML, in_image, etc.).
 """
-import cgi
 from mapproxy.response import Response
+from mapproxy.compat.modules import escape
 
 class RequestError(Exception):
     """
@@ -44,11 +44,13 @@ class RequestError(Exception):
         """
         if self.request is not None:
             handler = self.request.exception_handler
-            return handler.render(self)
+            resp = handler.render(self)
         elif self.status is not None:
-            return Response(self.msg, status=self.status)
+            resp = Response(self.msg, status=self.status)
         else:
-            return Response('internal error: %s' % self.msg, status=500)
+            resp = Response('internal error: %s' % self.msg, status=500)
+        resp.cache_headers(no_cache=True)
+        return resp
     
     def __str__(self):
         return 'RequestError("%s", code=%r, request=%r)' % (self.msg, self.code,
@@ -116,7 +118,7 @@ class XMLExceptionHandler(ExceptionHandler):
         """
         status_code = self.status_codes.get(request_error.code, self.status_code)
         # escape &<> in error message (e.g. URL params)
-        msg = cgi.escape(request_error.msg)
+        msg = escape(request_error.msg)
         result = self.template.substitute(exception=msg,
                                           code=request_error.code)
         return Response(result, mimetype=self.mimetype, content_type=self.content_type,

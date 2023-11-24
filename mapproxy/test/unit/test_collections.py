@@ -13,15 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+
 from mapproxy.util.collections import LRU, ImmutableDictList
 
-from nose.tools import eq_, raises
 
 class TestLRU(object):
-    @raises(KeyError)
     def test_missing_key(self):
         lru = LRU(10)
-        lru['foo']
+        with pytest.raises(KeyError):
+            lru['foo']
 
     def test_contains(self):
         lru = LRU(10)
@@ -40,20 +41,20 @@ class TestLRU(object):
         lru = LRU(10)
         lru['foo1'] = 1
         lru['foo2'] = 2
-        eq_(lru['foo1'], 1)
-        eq_(lru['foo2'], 2)
+        assert lru['foo1'] == 1
+        assert lru['foo2'] == 2
 
     def test_get(self):
         lru = LRU(10)
         lru['foo1'] = 1
-        eq_(lru.get('foo1'), 1)
-        eq_(lru.get('foo1', 2), 1)
+        assert lru.get('foo1') == 1
+        assert lru.get('foo1', 2) == 1
 
     def test_get_default(self):
         lru = LRU(10)
         lru['foo1'] = 1
-        eq_(lru.get('foo2'), None)
-        eq_(lru.get('foo2', 2), 2)
+        assert lru.get('foo2') == None
+        assert lru.get('foo2', 2) == 2
 
     def test_delitem(self):
         lru = LRU(10)
@@ -80,16 +81,16 @@ class TestLRU(object):
 
     def test_length(self):
         lru = LRU(2)
-        eq_(len(lru), 0)
+        assert len(lru) == 0
         lru['foo1'] = 1
-        eq_(len(lru), 1)
+        assert len(lru) == 1
         lru['foo2'] = 2
-        eq_(len(lru), 2)
+        assert len(lru) == 2
         lru['foo3'] = 3
-        eq_(len(lru), 2)
+        assert len(lru) == 2
 
         del lru['foo3']
-        eq_(len(lru), 1)
+        assert len(lru) == 1
 
 
 class TestImmutableDictList(object):
@@ -104,9 +105,9 @@ class TestImmutableDictList(object):
     def test_named_iteritems(self):
         res = ImmutableDictList([('one', 10), ('two', 5), ('three', 3)])
         itr = res.iteritems()
-        eq_(next(itr), ('one', 10))
-        eq_(next(itr), ('two', 5))
-        eq_(next(itr), ('three', 3))
+        assert next(itr) == ('one', 10)
+        assert next(itr) == ('two', 5)
+        assert next(itr) == ('three', 3)
         try:
             next(itr)
         except StopIteration:

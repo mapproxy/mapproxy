@@ -80,16 +80,21 @@ This option affects what request MapProxy sends to the source WMS server.
 ``featureinfo``
   If this is set to ``true``, MapProxy will mark the layer as queryable and incoming `GetFeatureInfo` requests will be forwarded to the source server.
 
-``featureinfo_xslt``
-  Path to an XSLT script that should be used to transform incoming feature information.
-
 ``featureinfo_format``
   The ``INFO_FORMAT`` for FeatureInfo requests. By default MapProxy will use the same format as requested by the client.
 
-  ``featureinfo_xslt`` and ``featureinfo_format``
+``featureinfo_xslt``
+  Path to an XSLT script that should be used to transform incoming feature information.
+
+``featureinfo_out_format``
+  Output format returned by the XSLT script. By default MapProxy will use ``featureinfo_format``.
+
+.. versionadded:: 1.12.0
+  ``featureinfo_out_format``
 
 
 See :ref:`FeatureInformation for more information <fi_xslt>`.
+
 
 ``coverage``
 ^^^^^^^^^^^^
@@ -178,15 +183,10 @@ You can configure the following HTTP related options for this source:
 - ``headers``
 - ``client_timeout``
 - ``ssl_ca_certs``
-- ``ssl_no_cert_checks`` (see below)
+- ``ssl_no_cert_checks``
+- ``manage_cookies``
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
-
-.. _wms_source_ssl_no_cert_checks:
-
-``ssl_no_cert_checks``
-
-  MapProxy checks the SSL server certificates for any ``req.url`` that use HTTPS. You need to supply a file (see) that includes that certificate, otherwise MapProxy will fail to establish the connection. You can set the ``http.ssl_no_cert_checks`` options to ``true`` to disable this verification.
 
 .. _tagged_source_names:
 
@@ -219,6 +219,53 @@ This works for layers and caches::
 
 
 You can either omit the ``layers`` in the ``req`` parameter, or you can use them to limit the tagged layers. In this case MapProxy will raise an error if you configure ``layers: lyr1,lyr2`` and then try to access ``wms:lyr2,lyr3`` for example.
+
+
+``on_error``
+^^^^^^^^^^^^
+
+.. versionadded:: 1.12.0
+
+You can configure what MapProxy should do when the tile service returns an error. Instead of raising an error, MapProxy can generate a single color tile. You can configure if MapProxy should cache this tile, or if it should use it only to generate a tile or WMS response.
+
+You can configure multiple status codes within the ``on_error`` option. You can also use the catch-all value ``other``. This will not only catch all other HTTP status codes, but also source errors like HTTP timeouts or non-image responses.
+
+Each status code takes the following options:
+
+``response``
+
+  Specify the color of the tile that should be returned in case of this error. Can be either a list of color values (``[255, 255, 255]``, ``[255, 255, 255, 0]``)) or a hex string (``'#ffffff'``, ``'#fa1fbb00'``) with RGBA values, or the string ``transparent``.
+
+``cache``
+
+  Set this to ``True`` if MapProxy should cache the single color tile. Otherwise (``False``) MapProxy will use this generated tile only for this request. This is the default.
+
+You need to enable ``transparent`` for your source, if you use ``on_error`` responses with transparency.
+
+``authorize_stale``
+
+  Set this to ``True`` if MapProxy should serve in priority stale tiles present in cache. If the specified source error occurs, MapProxy will serve a stale tile which is still in cache instead of the error reponse, even if the tile in cache should be refreshed according to refresh_before date. Otherwise (``False``) MapProxy will serve the unicolor error response defined by the error handler if the source is faulty and the tile is not in cache, or is stale.
+
+You need to enable ``transparent`` for your source, if you use ``on_error`` responses with transparency.
+
+::
+
+  my_tile_source:
+    type: wms
+    req:
+      url: http://localhost:8080/service?
+      layers: base
+    on_error:
+      404:
+        response: 'transparent'
+        cache: False
+        authorize_stale: True
+      500:
+        response: '#ede9e3'
+        cache: False
+      other:
+        response: '#ff0000'
+        cache: False
 
 
 Example configuration
@@ -274,7 +321,10 @@ This describes the ArcGIS source. The only required option is ``url``. You need 
 ``opts``
 ^^^^^^^^
 
-.. versionadded: 1.10.0
+.. versionadded:: 1.10.0
+.. versionadded:: 1.11.0
+  ``map`` option
+
 
 This option affects what request MapProxy sends to the source ArcGIS server.
 
@@ -287,6 +337,19 @@ This option affects what request MapProxy sends to the source ArcGIS server.
 ``featureinfo_tolerance``
   Tolerance in pixel within the ArcGIS server should identify features.
 
+
+``map``
+  If this is set to ``false``, MapProxy will not request images from this source. You can use this option in combination with ``featureinfo: true`` to create a source that is only used for feature info requests.
+
+
+
+``seed_only``
+^^^^^^^^^^^^^
+
+.. versionadded:: 1.11.0
+
+See :ref:`seed_only <wms_seed_only>`
+
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -298,6 +361,10 @@ MapServer example::
       layers: show: 0,1
       url: http://example.org/ArcGIS/rest/services/Imagery/MapService
       transparent: true
+    on_error:
+      500:
+        response: transparent
+        cache: True
 
 ImageServer example::
 
@@ -375,7 +442,8 @@ You can configure the following HTTP related options for this source:
 - ``headers``
 - ``client_timeout``
 - ``ssl_ca_certs``
-- ``ssl_no_cert_checks`` (:ref:`see above <wms_source_ssl_no_cert_checks>`)
+- ``ssl_no_cert_checks``
+- ``manage_cookies``
 
 See :ref:`HTTP Options <http_ssl>` for detailed documentation.
 
@@ -469,6 +537,9 @@ You can also set these options in the :ref:`globals-conf-label` section.
   Path where the Mapserver should be executed from. It should be the directory where any relative paths in your mapfile are based on.
 
 
+.. versionadded:: 1.11.0
+  The ``mapserv`` binary is searched in all directories of the ``PATH`` environment, if ``binary`` is not set.
+
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -530,6 +601,8 @@ Other options
 ^^^^^^^^^^^^^
 
 The Mapnik source also supports the ``min_res``/``max_res``/``min_scale``/``max_scale``, ``concurrent_requests``, ``seed_only`` and ``coverage`` options. See :ref:`wms_label`.
+
+Mapnik can be used in multithreading and multiprocessing operation by setting ``multithreaded: True``. This is only tested and safe *for seeding*.
 
 
 Example configuration

@@ -58,7 +58,7 @@ def load_seed_tasks_conf(seed_conf_filename, mapproxy_conf):
     else:
         errors, informal_only = validate_seed_conf(conf)
         for error in errors:
-            log.warn(error)
+            log.warning(error)
         if not informal_only:
             raise SeedConfigurationError('invalid configuration')
         seed_conf = SeedingConfiguration(conf, mapproxy_conf=mapproxy_conf)
@@ -314,7 +314,14 @@ class SeedConfiguration(ConfigurationBase):
                         self.refresh_timestamp = 0
 
                 md = dict(name=self.name, cache_name=cache_name, grid_name=grid_name)
-                yield SeedTask(md, tile_manager, levels, self.refresh_timestamp, coverage)
+
+                if tile_manager.rescale_tiles:
+                    if tile_manager.rescale_tiles > 0:
+                        levels = levels[::-1]
+                    for l in levels:
+                        yield SeedTask(md, tile_manager, [l], self.refresh_timestamp, coverage)
+                else:
+                    yield SeedTask(md, tile_manager, levels, self.refresh_timestamp, coverage)
 
 class CleanupConfiguration(ConfigurationBase):
     def __init__(self, name, conf, seeding_conf):

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement, absolute_import
+from __future__ import absolute_import
 
 import threading
 import hashlib
@@ -28,6 +28,10 @@ try:
     import riak
 except ImportError:
     riak = None
+except TypeError:
+    import warnings
+    warnings.warn("riak version not compatible with this Python version")
+    riak = None
 
 import logging
 log = logging.getLogger(__name__)
@@ -36,14 +40,16 @@ class UnexpectedResponse(CacheBackendError):
     pass
 
 class RiakCache(TileCacheBase):
-    def __init__(self, nodes, protocol, bucket, tile_grid, use_secondary_index=False):
+    def __init__(self, nodes, protocol, bucket, tile_grid, use_secondary_index=False, timeout=60, coverage=None):
+        super(RiakCache, self).__init__(coverage)
+        
         if riak is None:
             raise ImportError("Riak backend requires 'riak' package.")
 
         self.nodes = nodes
         self.protocol = protocol
-        self.lock_cache_id = 'riak-' + hashlib.md5(nodes[0]['host'] + bucket).hexdigest()
-        self.request_timeout = 10000 # 10s, TODO make configurable
+        self.lock_cache_id = 'riak-' + hashlib.md5(bucket.encode('utf-8')).hexdigest()
+        self.request_timeout = timeout * 1000
         self.bucket_name = bucket
         self.tile_grid = tile_grid
         self.use_secondary_index = use_secondary_index
@@ -57,7 +63,9 @@ class RiakCache(TileCacheBase):
 
     @property
     def bucket(self):
-        return self.connection.bucket(self.bucket_name)
+        if not getattr(self._db_conn_cache, 'bucket', None):
+            self._db_conn_cache.bucket = self.connection.bucket(self.bucket_name)
+        return self._db_conn_cache.bucket
 
     def _get_object(self, coord):
         (x, y, z) = coord
@@ -66,7 +74,7 @@ class RiakCache(TileCacheBase):
         try:
             obj = self.bucket.get(key, r=1, timeout=self.request_timeout)
         except Exception as e:
-            log.warn('error while requesting %s: %s', key, e)
+            log.warning('error while requesting %s: %s', key, e)
 
         if not obj:
             obj = self.bucket.new(key=key, data=None, content_type='application/octet-stream')
@@ -81,10 +89,8 @@ class RiakCache(TileCacheBase):
         obj.usermeta = {'timestamp': '0'}
         return 0.0
 
-    def is_cached(self, tile):
-        if tile.source:
-            return True
-        return self.load_tile(tile)
+    def is_cached(self, tile, dimensions=None):
+        return self.load_tile(tile, True)
 
     def _store_bulk(self, tiles):
         for tile in tiles:
@@ -101,31 +107,33 @@ class RiakCache(TileCacheBase):
                 res.add_index('tile_coord_bin', '%02d-%07d-%07d' % (z, x, y))
 
             try:
-                res.store(return_body=False, timeout=self.request_timeout)
+                res.store(w=1, dw=1, pw=1, return_body=False, timeout=self.request_timeout)
             except riak.RiakError as ex:
-                log.warn('unable to store tile: %s', ex)
+                log.warning('unable to store tile: %s', ex)
                 return False
 
         return True
 
-    def store_tile(self, tile):
+    def store_tile(self, tile,dimensions=None):
         if tile.stored:
             return True
 
         return self._store_bulk([tile])
 
-    def store_tiles(self, tiles):
+    def store_tiles(self, tiles,dimensions=None):
         tiles = [t for t in tiles if not t.stored]
         return self._store_bulk(tiles)
 
-    def load_tile_metadata(self, tile):
+    def load_tile_metadata(self, tile,dimensions=None):
         if tile.timestamp:
             return
 
         # is_cached loads metadata
         self.load_tile(tile, True)
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
+        if tile.timestamp is None:
+            tile.timestamp = 0
         if tile.source or tile.coord is None:
             return True
 
@@ -152,7 +160,7 @@ class RiakCache(TileCacheBase):
         try:
             res.delete(w=1, r=1, dw=1, pw=1, timeout=self.request_timeout)
         except riak.RiakError as ex:
-            log.warn('unable to remove tile: %s', ex)
+            log.warning('unable to remove tile: %s', ex)
             return False
         return True
 

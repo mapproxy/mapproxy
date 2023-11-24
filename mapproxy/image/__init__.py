@@ -16,19 +16,20 @@
 """
 Image and tile manipulation (transforming, merging, etc).
 """
-from __future__ import with_statement
 import io
 from io import BytesIO
 
-from mapproxy.compat.image import Image, ImageChops
+
+from mapproxy.compat.image import Image, ImageChops, ImageFileDirectory_v2, TiffTags
 from mapproxy.image.opts import create_image, ImageFormat
 from mapproxy.config import base_config
-from mapproxy.srs import make_lin_transf
+from mapproxy.srs import make_lin_transf, get_epsg_num
 from mapproxy.compat import string_type
 
 import logging
 from functools import reduce
 log = logging.getLogger('mapproxy.image')
+
 
 
 magic_bytes = [
@@ -47,14 +48,72 @@ def peek_image_format(buf):
             return format
     return None
 
-class ImageSource(object):
+TIFF_MODELPIXELSCALETAG = 33550
+TIFF_MODELTIEPOINTTAG = 33922
+TIFF_GEOKEYDIRECTORYTAG = 34735
+
+class GeoReference(object):
+    def __init__(self, bbox, srs):
+        self.bbox = bbox
+        self.srs = srs
+
+
+    def tiepoints(self):
+        return (
+            0.0, 0.0, 0.0,
+            self.bbox[0], self.bbox[3], 0.0,
+        )
+
+    def pixelscale(self, img_size):
+        width = self.bbox[2] - self.bbox[0]
+        height = self.bbox[3] - self.bbox[1]
+        return (
+            float(width)/img_size[0], float(height)/img_size[1], 0.0,
+        )
+
+    def tiff_tags(self, img_size):
+        tags = ImageFileDirectory_v2()
+        tags[TIFF_MODELPIXELSCALETAG] = self.pixelscale(img_size)
+        tags.tagtype[TIFF_MODELPIXELSCALETAG] = TiffTags.DOUBLE
+        tags[TIFF_MODELTIEPOINTTAG] = self.tiepoints()
+        tags.tagtype[TIFF_MODELTIEPOINTTAG] = TiffTags.DOUBLE
+
+        model_type = 2 if self.srs.is_latlong else 1
+        tags[TIFF_GEOKEYDIRECTORYTAG] = (
+            1, 1, 0, 4, # {KeyDirectoryVersion, KeyRevision, MinorRevision, NumberOfKeys}
+            1024, 0, 1, model_type, # 1 projected, 2 geographic (lat/long)
+            1025, 0, 1, 1, # 1 RasterIsArea, 2 RasterIsPoint
+            3072, 0, 1, get_epsg_num(self.srs.srs_code),
+        )
+        tags.tagtype[TIFF_GEOKEYDIRECTORYTAG] = TiffTags.SHORT
+        return tags
+
+
+class BaseImageSource(object):
+    """
+    Virtual parent class for ImageSource and BlankImageSource
+    """
+    def __init__(self):
+        raise Exception("Virtual class BaseImageSource, cannot be instanciated.")
+
+    def as_image(self):
+        raise Exception("Virtual class BaseImageSource, method as_image cannot be called.")
+
+    def as_buffer(self, image_opts=None, format=None, seekable=False):
+        raise Exception("Virtual class BaseImageSource, method as_buffer cannot be called.")
+
+    def close_buffers(self):
+        pass
+
+
+class ImageSource(BaseImageSource):
     """
     This class wraps either a PIL image, a file-like object, or a file name.
     You can access the result as an image (`as_image` ) or a file-like buffer
     object (`as_buffer`).
     """
 
-    def __init__(self, source, size=None, image_opts=None, cacheable=True):
+    def __init__(self, source, size=None, image_opts=None, cacheable=True, georef=None):
         """
         :param source: the image
         :type source: PIL `Image`, image file object, or filename
@@ -68,8 +127,15 @@ class ImageSource(object):
         self.image_opts = image_opts
         self._size = size
         self.cacheable = cacheable
+        self.georef = georef
+        self.authorize_stale = False
 
-    def _set_source(self, source):
+    @property
+    def source(self):
+        return self._img or self._buf or self._fname
+
+    @source.setter
+    def source(self, source):
         self._img = None
         self._buf = None
         if isinstance(source, string_type):
@@ -79,20 +145,12 @@ class ImageSource(object):
         else:
             self._buf = source
 
-    def _get_source(self):
-        return self._img or self._buf or self._fname
-
-    source = property(_get_source, _set_source)
-
     def close_buffers(self):
         if self._buf:
             try:
                 self._buf.close()
             except IOError:
                 pass
-
-        if self._img:
-            self._img = None
 
     @property
     def filename(self):
@@ -157,7 +215,7 @@ class ImageSource(object):
             if image_opts is None:
                 image_opts = self.image_opts
             log.debug('image -> buf(%s)' % (image_opts.format,))
-            self._buf = img_to_buf(self._img, image_opts=image_opts)
+            self._buf = img_to_buf(self._img, image_opts=image_opts, georef=self.georef)
         else:
             self._make_seekable_buf() if seekable else self._make_readable_buf()
             if self.image_opts and image_opts and not self.image_opts.format and image_opts.format:
@@ -196,9 +254,9 @@ def SubImageSource(source, size, offset, image_opts, cacheable=True):
         source = ImageSource(source)
     subimg = source.as_image()
     img.paste(subimg, offset)
-    return ImageSource(img, size=size, image_opts=image_opts, cacheable=cacheable)
+    return ImageSource(img, size=size, image_opts=new_image_opts, cacheable=cacheable)
 
-class BlankImageSource(object):
+class BlankImageSource(BaseImageSource):
     """
     ImageSource for transparent or solid-color images.
     Implements optimized as_buffer() method.
@@ -209,6 +267,7 @@ class BlankImageSource(object):
         self._buf = None
         self._img = None
         self.cacheable = cacheable
+        self.authorize_stale = False
 
     def as_image(self):
         if not self._img:
@@ -270,7 +329,7 @@ def img_has_transparency(img):
         return any(img.histogram()[-256:-1])
     return False
 
-def img_to_buf(img, image_opts):
+def img_to_buf(img, image_opts, georef=None):
     defaults = {}
     image_opts = image_opts.copy()
 
@@ -287,6 +346,7 @@ def img_to_buf(img, image_opts):
     if format == 'mixed':
         if img_has_transparency(img):
             format = 'png'
+            image_opts.transparent = True
         else:
             format = 'jpeg'
             image_opts.colors = None
@@ -313,6 +373,22 @@ def img_to_buf(img, image_opts):
             defaults['quality'] = image_opts.encoding_options['jpeg_quality']
         else:
             defaults['quality'] = base_config().image.jpeg_quality
+
+    elif format == 'tiff':
+        if georef:
+            tags = georef.tiff_tags(img.size)
+            defaults['tiffinfo'] = tags
+        if 'tiff_compression' in image_opts.encoding_options:
+            defaults['compression'] = image_opts.encoding_options['tiff_compression']
+            if defaults['compression'] == 'jpeg':
+                if 'jpeg_quality' in image_opts.encoding_options:
+                    defaults['quality'] = image_opts.encoding_options['jpeg_quality']
+
+    # unsupported transparency tuple can still be in non-RGB img.infos
+    # see: https://github.com/python-pillow/Pillow/pull/2633
+    if format == 'png' and img.mode != 'RGB' and 'transparency' in img.info and isinstance(img.info['transparency'], tuple):
+        del img.info['transparency']
+
     img.save(buf, format, **defaults)
     buf.seek(0)
     return buf

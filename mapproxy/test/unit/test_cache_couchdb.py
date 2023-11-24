@@ -13,37 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import with_statement
-
-import re
 import os
-import time
 import random
+import re
+import time
 
-from nose.plugins.skip import SkipTest
+import pytest
 
 from mapproxy.cache.couchdb import CouchDBCache, CouchDBMDTemplate
 from mapproxy.cache.tile import Tile
 from mapproxy.grid import tile_grid
 from mapproxy.test.image import create_tmp_image_buf
-
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
-from nose.tools import assert_almost_equal, eq_
 
 tile_image = create_tmp_image_buf((256, 256), color='blue')
 tile_image2 = create_tmp_image_buf((256, 256), color='red')
 
+
+@pytest.mark.skipif('MAPPROXY_TEST_COUCHDB' not in os.environ,
+                    reason="MAPPROXY_TEST_COUCHDB not set")
 class TestCouchDBCache(TileCacheTestBase):
     always_loads_metadata = True
-    def setup(self):
-        if not os.environ.get('MAPPROXY_TEST_COUCHDB'):
-            raise SkipTest()
 
+    def setup_method(self):
         couch_address = os.environ['MAPPROXY_TEST_COUCHDB']
         db_name = 'mapproxy_test_%d' % random.randint(0, 100000)
 
-        TileCacheTestBase.setup(self)
+        TileCacheTestBase.setup_method(self)
 
         md_template = CouchDBMDTemplate({'row': '{{y}}', 'tile_column': '{{x}}',
             'zoom': '{{level}}', 'time': '{{timestamp}}', 'coord': '{{wgs_tile_centroid}}'})
@@ -51,10 +48,13 @@ class TestCouchDBCache(TileCacheTestBase):
             file_ext='png', tile_grid=tile_grid(3857, name='global-webmarcator'),
             md_template=md_template)
 
-    def teardown(self):
+    def teardown_method(self):
         import requests
         requests.delete(self.cache.couch_url)
-        TileCacheTestBase.teardown(self)
+        TileCacheTestBase.teardown_method(self)
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_store_bulk_with_overwrite(self):
         tile = self.create_tile((0, 0, 4))
@@ -89,15 +89,15 @@ class TestCouchDBMDTemplate(object):
         template = CouchDBMDTemplate({})
         doc = template.doc(Tile((0, 0, 1)), tile_grid(4326))
 
-        assert_almost_equal(doc['timestamp'], time.time(), 2)
+        assert doc['timestamp'] == pytest.approx(time.time(), 0.1)
 
     def test_fixed_values(self):
         template = CouchDBMDTemplate({'hello': 'world', 'foo': 123})
         doc = template.doc(Tile((0, 0, 1)), tile_grid(4326))
 
-        assert_almost_equal(doc['timestamp'], time.time(), 2)
-        eq_(doc['hello'], 'world')
-        eq_(doc['foo'], 123)
+        assert doc['timestamp'] == pytest.approx(time.time(), 0.1)
+        assert doc['hello'] == 'world'
+        assert doc['foo'] == 123
 
     def test_template_values(self):
         template = CouchDBMDTemplate({'row': '{{y}}', 'tile_column': '{{x}}',
@@ -105,13 +105,13 @@ class TestCouchDBMDTemplate(object):
             'datetime': '{{utc_iso}}', 'coord_webmerc': '{{tile_centroid}}'})
         doc = template.doc(Tile((1, 0, 2)), tile_grid(3857))
 
-        assert_almost_equal(doc['time'], time.time(), 2)
+        assert doc['time'] == pytest.approx(time.time(), 0.1)
         assert 'timestamp' not in doc
-        eq_(doc['row'], 0)
-        eq_(doc['tile_column'], 1)
-        eq_(doc['zoom'], 2)
-        assert_almost_equal(doc['coord'][0], -45.0)
-        assert_almost_equal(doc['coord'][1], -79.17133464081945)
-        assert_almost_equal(doc['coord_webmerc'][0], -5009377.085697311)
-        assert_almost_equal(doc['coord_webmerc'][1], -15028131.257091932)
-        assert re.match('20\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ', doc['datetime']), doc['datetime']
+        assert doc['row'] == 0
+        assert doc['tile_column'] == 1
+        assert doc['zoom'] == 2
+        assert doc['coord'][0] == pytest.approx(-45.0)
+        assert doc['coord'][1] == pytest.approx(-79.17133464081945)
+        assert doc['coord_webmerc'][0] == pytest.approx(-5009377.085697311)
+        assert doc['coord_webmerc'][1] == pytest.approx(-15028131.25709193)
+        assert re.match(r'20\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ', doc['datetime']), doc['datetime']

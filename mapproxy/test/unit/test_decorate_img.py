@@ -1,16 +1,30 @@
+# This file is part of the MapProxy project.
+# Copyright (C) 2010 Omniscale <http://omniscale.de>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from mapproxy.compat.image import Image
 from mapproxy.grid import tile_grid
 from mapproxy.image import BlankImageSource
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import MapLayer, DefaultMapExtent
-from mapproxy.compat.image import Image
 from mapproxy.service.base import Server
 from mapproxy.service.tile import TileServer
 from mapproxy.service.wms import WMSGroupLayer, WMSServer
 from mapproxy.service.wmts import WMTSServer
 from mapproxy.test.http import make_wsgi_env
 from mapproxy.util.ext.odict import odict
-from nose.tools import eq_
 
 
 class DummyLayer(MapLayer):
@@ -57,7 +71,7 @@ class DummyTileLayer(object):
 
 class TestDecorateImg(object):
 
-    def setup(self):
+    def setup_method(self):
         # Base server
         self.server = Server()
         # WMS Server
@@ -81,7 +95,7 @@ class TestDecorateImg(object):
             img_src1, 'wms.map', ['layer1'],
             env, self.query_extent
         )
-        eq_(img_src1, img_src2)
+        assert img_src1 == img_src2
 
     def test_returns_imagesource(self):
         img_src1 = ImageSource(Image.new('RGBA', (100, 100)))
@@ -104,7 +118,7 @@ class TestDecorateImg(object):
             img_src1, 'wms.map', ['layer1'],
             env, self.query_extent
         )
-        eq_(self.called, True)
+        assert self.called == True
 
     def return_new_imagesource_callback(self, img_src, service, layers, **kw):
         new_img_src = ImageSource(Image.new('RGBA', (100, 100)))
@@ -119,7 +133,7 @@ class TestDecorateImg(object):
             img_src1, 'wms.map', ['layer1'],
             env, self.query_extent
         )
-        eq_(img_src2, self.new_img_src)
+        assert img_src2 == self.new_img_src
 
     def test_wms_server(self):
         ''' Test that the decorate_img method is available on a WMSServer instance '''
@@ -130,7 +144,7 @@ class TestDecorateImg(object):
             img_src1, 'wms.map', ['layer1'],
             env, self.query_extent
         )
-        eq_(self.called, True)
+        assert self.called == True
 
     def test_tile_server(self):
         ''' Test that the decorate_img method is available on a TileServer instance '''
@@ -141,7 +155,7 @@ class TestDecorateImg(object):
             img_src1, 'tms', ['layer1'],
             env, self.query_extent
         )
-        eq_(self.called, True)
+        assert self.called == True
 
     def test_wmts_server(self):
         ''' Test that the decorate_img method is available on a WMTSServer instance '''
@@ -152,12 +166,12 @@ class TestDecorateImg(object):
             img_src1, 'wmts', ['layer1'],
             env, self.query_extent
         )
-        eq_(self.called, True)
+        assert self.called == True
 
     def test_args(self):
         def callback(img_src, service, layers, environ, query_extent, **kw):
             assert isinstance(img_src, ImageSource)
-            eq_('wms.map', service)
+            assert 'wms.map' == service
             assert isinstance(layers, list)
             assert isinstance(environ, dict)
             assert len(query_extent) == 2

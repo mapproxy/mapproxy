@@ -17,12 +17,18 @@
 The WSGI application.
 """
 from __future__ import print_function
-import re
+import logging
 import os
-import sys
-import time
+import re
 import threading
-import warnings
+import time
+
+try:
+    # time.strptime is thread-safe, but not the first call.
+    # Import _strptime as a workaround. See: http://bugs.python.org/issue7980
+    import _strptime
+except ImportError:
+    pass
 
 from mapproxy.compat import iteritems
 from mapproxy.request import Request
@@ -30,60 +36,9 @@ from mapproxy.response import Response
 from mapproxy.config import local_base_config
 from mapproxy.config.loader import load_configuration, ConfigurationError
 
-import logging
 log = logging.getLogger('mapproxy.config')
 log_wsgiapp = logging.getLogger('mapproxy.wsgiapp')
 
-def app_factory(global_options, mapproxy_conf, **local_options):
-    """
-    Paster app_factory.
-    """
-    conf = global_options.copy()
-    conf.update(local_options)
-    log_conf = conf.get('log_conf', None)
-    reload_files = conf.get('reload_files', None)
-    if reload_files is not None:
-        init_paster_reload_files(reload_files)
-
-    init_logging_system(log_conf, os.path.dirname(mapproxy_conf))
-
-    return make_wsgi_app(mapproxy_conf)
-
-def init_paster_reload_files(reload_files):
-    file_patterns = reload_files.split('\n')
-    file_patterns.append(os.path.join(os.path.dirname(__file__), 'defaults.yaml'))
-    init_paster_file_watcher(file_patterns)
-
-def init_paster_file_watcher(file_patterns):
-    from glob import glob
-    for pattern in file_patterns:
-        files = glob(pattern)
-        _add_files_to_paster_file_watcher(files)
-
-def _add_files_to_paster_file_watcher(files):
-    import paste.reloader
-    for file in files:
-        paste.reloader.watch_file(file)
-
-def init_logging_system(log_conf, base_dir):
-    import logging.config
-    try:
-        import cloghandler # adds CRFHandler to log handlers
-        cloghandler.ConcurrentRotatingFileHandler #disable pyflakes warning
-    except ImportError:
-        pass
-    if log_conf:
-        if not os.path.exists(log_conf):
-            print('ERROR: log configuration %s not found.' % log_conf, file=sys.stderr)
-            return
-        logging.config.fileConfig(log_conf, dict(here=base_dir))
-
-def init_null_logging():
-    import logging
-    class NullHandler(logging.Handler):
-        def emit(self, record):
-            pass
-    logging.getLogger().addHandler(NullHandler())
 
 def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True, reloader=False):
     """
@@ -92,9 +47,6 @@ def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True, 
     :param services_conf: the file name of the mapproxy.yaml configuration
     :param reloader: reload mapproxy.yaml when it changed
     """
-
-    if sys.version_info[0] == 2 and sys.version_info[1] == 5:
-        warnings.warn('Support for Python 2.5 is deprecated since 1.7.0 and will be dropped with 1.8.0', FutureWarning)
 
     if reloader:
         make_app = lambda: make_wsgi_app(services_conf=services_conf, debug=debug,
@@ -161,7 +113,7 @@ class MapProxyApp(object):
     """
     The MapProxy WSGI application.
     """
-    handler_path_re = re.compile('^/(\w+)')
+    handler_path_re = re.compile(r'^/(\w+)')
     def __init__(self, services, base_config):
         self.handlers = {}
         self.base_config = base_config

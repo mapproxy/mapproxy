@@ -53,7 +53,7 @@ Options
 .. cmdoption:: --overwrite <filename>
 .. cmdoption:: --overwrite-seed <filename>
 
-  YAML configuration that overwrites configuration optoins before the generated configuration is written to ``--output``/``--output-seed``.
+  YAML configuration that overwrites configuration options before the generated configuration is written to ``--output``/``--output-seed``.
 
 Example
 ~~~~~~~
@@ -87,7 +87,7 @@ Write MapProxy configuration with caches based on a geopackage file::
 Overwrites
 ==========
 
-It's likely that you need to tweak the created configuration – e.g. to define another coverage, disable featureinfo, etc. You can do this by editing the output file of course, or you can modify the output by defining all changes to an overwrite file. Overwrite files are applied everytime you call ``mapproxy-util autoconfig``.
+It's likely that you need to tweak the created configuration – e.g. to define another coverage, disable featureinfo, etc. You can do this by editing the output file of course, or you can modify the output by defining all changes to an overwrite file. Overwrite files are applied every time you call ``mapproxy-util autoconfig``.
 
 Overwrites are YAML files that will be merged with the created configuration file.
 
