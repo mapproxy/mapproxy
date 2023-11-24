@@ -25,7 +25,6 @@ from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
 from mapproxy.request.tile import tile_request
 from mapproxy.request.base import split_mime_type
-from mapproxy.layer import map_extent_from_grid
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
 from mapproxy.grid import default_bboxs
@@ -215,14 +214,14 @@ class TileLayer(object):
         self.info_sources = info_sources
         self.dimensions = dimensions
         self.grid = TileServiceGrid(tile_manager.grid)
-        self.extent = map_extent_from_grid(self.grid)
+        self.extent = self.md.get('extent').transform(tile_manager.grid.srs)
         self._empty_tile = None
         self._mixed_format = True if self.md.get('format', False) == 'mixed' else False
         self.empty_response_as_png = True
 
     @property
     def bbox(self):
-        return self.grid.bbox
+        return self.extent.bbox
 
     @property
     def srs(self):

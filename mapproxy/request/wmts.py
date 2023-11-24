@@ -318,7 +318,7 @@ class URLTemplateConverter(object):
         if self._regexp:
             return self._regexp
         converted_re = self.var_re.sub(self.substitute_var, re.escape(self.template))
-        wmts_re = re.compile('/wmts' + converted_re)
+        wmts_re = re.compile(r'/wmts' + converted_re)
         if not self.found.issuperset(self.required):
             raise InvalidWMTSTemplate('missing required variables in WMTS restful template: %s' %
                 self.required.difference(self.found))

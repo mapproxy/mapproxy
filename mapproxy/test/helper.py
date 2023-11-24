@@ -35,7 +35,7 @@ class Mocker(object):
     `setup` will initialize a `mocker.Mocker`. The `teardown` method
     will run ``mocker.verify()``.
     """
-    def setup(self):
+    def setup_method(self):
         self.mocker = mocker.Mocker()
     def expect_and_return(self, mock_call, return_val):
         """
@@ -59,7 +59,7 @@ class Mocker(object):
         if base_cls:
             return self.mocker.mock(base_cls)
         return self.mocker.mock()
-    def teardown(self):
+    def teardown_method(self):
         self.mocker.verify()
 
 class TempFiles(object):
@@ -209,9 +209,9 @@ def strip_whitespace(data):
     '<foo>barzing1'
     """
     if isinstance(data, bytes):
-        return re.sub(b'\s+', b'', data)
+        return re.sub(br'\s+', b'', data)
     else:
-        return re.sub('\s+', '', data)
+        return re.sub(r'\s+', '', data)
 
 
 @contextmanager

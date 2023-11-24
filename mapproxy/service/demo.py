@@ -24,6 +24,7 @@ import mimetypes
 from collections import defaultdict
 
 from mapproxy.config.config import base_config
+from mapproxy.util.ext.odict import odict
 from mapproxy.compat import PY2
 from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
@@ -40,6 +41,40 @@ else:
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
 get_template = template_loader(__name__, 'templates', namespace=env)
+
+# Used by plugins
+extra_demo_server_handlers = set()
+
+def register_extra_demo_server_handler(handler):
+    """ Method used by plugins to register a new handler for the demo service.
+        The handler passed to this method is invoked by the DemoServer.handle()
+        method when receiving an incoming request, and let a chance to the
+        handler to process it, if it is relevant to it.
+
+        :param handler: New handler for incoming requests
+        :type handler: function that takes 2 arguments (DemoServer instance and req) and
+                       returns a string with HTML content or None
+    """
+
+    extra_demo_server_handlers.add(handler)
+
+
+extra_substitution_handlers = set()
+
+def register_extra_demo_substitution_handler(handler):
+    """ Method used by plugins to register a new handler for doing substitutions
+        to the HTML template used by the demo service.
+        The handler passed to this method is invoked by the DemoServer._render_template()
+        method. The handler may modify the passed substitutions dictionary
+        argument. Keys of particular interest are 'extra_services_html_beginning'
+        and 'extra_services_html_end' to add HTML content before/after built-in
+        services.
+
+        :param handler: New handler for incoming requests
+        :type handler: function that takes 3 arguments(DemoServer instance, req and a substitutions dictionary argument).
+    """
+
+    extra_substitution_handlers.add(handler)
 
 
 def static_filename(name):
@@ -68,6 +103,8 @@ class DemoServer(Server):
 
     def handle(self, req):
         if req.path.startswith('/demo/static/'):
+            if '..' in req.path:
+                return Response('file not found', content_type='text/plain', status=404)
             filename = req.path.lstrip('/')
             filename = static_filename(filename)
             if not os.path.isfile(filename):
@@ -84,6 +121,11 @@ class DemoServer(Server):
         if not authorized:
             return Response('forbidden', content_type='text/plain', status=403)
 
+        for handler in extra_demo_server_handlers:
+            demo = handler(self, req)
+            if demo is not None:
+                return Response(demo, content_type='text/html')
+
         if 'wms_layer' in req.args:
             demo = self._render_wms_template('demo/wms_demo.html', req)
         elif 'tms_layer' in req.args:
@@ -91,19 +133,35 @@ class DemoServer(Server):
         elif 'wmts_layer' in req.args:
             demo = self._render_wmts_template('demo/wmts_demo.html', req)
         elif 'wms_capabilities' in req.args:
-            url = '%s/service?REQUEST=GetCapabilities'%(req.script_url)
+            internal_url = '%s/service?REQUEST=GetCapabilities' % (req.server_script_url)
+            if 'type' in req.args and req.args['type'] == 'external':
+                url = internal_url.replace(req.server_script_url, req.script_url)
+            else:
+                url = internal_url
             capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS', url)
         elif 'wmsc_capabilities' in req.args:
-            url = '%s/service?REQUEST=GetCapabilities&tiled=true'%(req.script_url)
+            internal_url = '%s/service?REQUEST=GetCapabilities&tiled=true' % (req.server_script_url)
+            if 'type' in req.args and req.args['type'] == 'external':
+                url = internal_url.replace(req.server_script_url, req.script_url)
+            else:
+                url = internal_url
             capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMS-C', url)
         elif 'wmts_capabilities_kvp' in req.args:
-            url = '%s/service?REQUEST=GetCapabilities&SERVICE=WMTS' % (req.script_url)
+            internal_url = '%s/service?REQUEST=GetCapabilities&SERVICE=WMTS' % (req.server_script_url)
+            if 'type' in req.args and req.args['type'] == 'external':
+                url = internal_url.replace(req.server_script_url, req.script_url)
+            else:
+                url = internal_url
             capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMTS', url)
         elif 'wmts_capabilities' in req.args:
-            url = '%s/wmts/1.0.0/WMTSCapabilities.xml' % (req.script_url)
+            internal_url = '%s/wmts/1.0.0/WMTSCapabilities.xml' % (req.server_script_url)
+            if 'type' in req.args and req.args['type'] == 'external':
+                url = internal_url.replace(req.server_script_url, req.script_url)
+            else:
+                url = internal_url
             capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'WMTS', url)
         elif 'tms_capabilities' in req.args:
@@ -111,13 +169,17 @@ class DemoServer(Server):
                 # prevent dir traversal (seems it's not possible with urllib2, but better safe then sorry)
                 layer = req.args['layer'].replace('..', '')
                 srs = req.args['srs'].replace('..', '')
-                url = '%s/tms/1.0.0/%s/%s'%(req.script_url, layer, srs)
+                internal_url = '%s/tms/1.0.0/%s/%s' % (req.server_script_url, layer, srs)
             else:
-                url = '%s/tms/1.0.0/'%(req.script_url)
+                internal_url = '%s/tms/1.0.0/' % (req.server_script_url)
+            if 'type' in req.args and req.args['type'] == 'external':
+                url = internal_url.replace(req.server_script_url, req.script_url)
+            else:
+                url = internal_url
             capabilities = urllib2.urlopen(url)
             demo = self._render_capabilities_template('demo/capabilities_demo.html', capabilities, 'TMS', url)
         elif req.path == '/demo/':
-            demo = self._render_template('demo/demo.html')
+            demo = self._render_template(req, 'demo/demo.html')
         else:
             resp = Response('', status=301)
             resp.headers['Location'] = req.script_url.rstrip('/') + '/demo/'
@@ -150,26 +212,43 @@ class DemoServer(Server):
             if srs_code not in cached_srs:
                 uncached_srs.append(srs_code)
 
-        sorted_cached_srs = sorted(cached_srs, key=lambda srs: get_epsg_num(srs))
-        sorted_uncached_srs = sorted(uncached_srs, key=lambda srs: get_epsg_num(srs))
+        def get_srs_key(srs):
+            epsg_num = get_epsg_num(srs)
+            return str(epsg_num if epsg_num else srs)
+
+        sorted_cached_srs = sorted(cached_srs, key=lambda srs: get_srs_key(srs))
+        sorted_uncached_srs = sorted(uncached_srs, key=lambda srs: get_srs_key(srs))
         sorted_cached_srs = [(s + '*', s) for s in sorted_cached_srs]
         sorted_uncached_srs = [(s, s) for s in sorted_uncached_srs]
         return sorted_cached_srs + sorted_uncached_srs
 
-    def _render_template(self, template):
+    def _render_template(self, req, template):
         template = get_template(template, default_inherit="demo/static.html")
         tms_tile_layers = defaultdict(list)
         for layer in self.tile_layers:
             name = self.tile_layers[layer].md.get('name')
             tms_tile_layers[name].append(self.tile_layers[layer])
         wmts_layers = tms_tile_layers.copy()
-        return template.substitute(layers=self.layers,
-                                   formats=self.image_formats,
-                                   srs=self.srs,
-                                   layer_srs=self.layer_srs,
-                                   tms_layers=tms_tile_layers,
-                                   wmts_layers=wmts_layers,
-                                   services=self.services)
+
+        wmts_layers = odict(sorted(wmts_layers.items(), key=lambda x: x[0]))
+        tms_tile_layers = odict(sorted(tms_tile_layers.items(), key=lambda x: x[0]))
+
+        substitutions = dict(
+            extra_services_html_beginning='',
+            extra_services_html_end='',
+            layers=self.layers,
+            formats=self.image_formats,
+            srs=self.srs,
+            layer_srs=self.layer_srs,
+            tms_layers=tms_tile_layers,
+            wmts_layers=wmts_layers,
+            services=self.services
+        )
+
+        for add_substitution in extra_substitution_handlers:
+            add_substitution(self, req, substitutions)
+
+        return template.substitute(substitutions)
 
     def _render_wms_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")

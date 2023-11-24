@@ -47,7 +47,7 @@ def tile_server(tile_coords):
 
 class TestUtilExport(object):
 
-    def setup(self):
+    def setup_method(self):
         self.dir = tempfile.mkdtemp()
         self.dest = os.path.join(self.dir, "dest")
         self.mapproxy_conf_name = "mapproxy_export.yaml"
@@ -55,7 +55,7 @@ class TestUtilExport(object):
         self.mapproxy_conf_file = os.path.join(self.dir, self.mapproxy_conf_name)
         self.args = ["command_dummy", "-f", self.mapproxy_conf_file]
 
-    def teardown(self):
+    def teardown_method(self):
         shutil.rmtree(self.dir)
 
     def test_config_not_found(self):

@@ -15,6 +15,7 @@
 
 
 import os
+import sys
 import time
 
 import pytest
@@ -30,6 +31,7 @@ from mapproxy.request.wms import (
     WMS130MapRequest,
     WMS111FeatureInfoRequest,
 )
+from mapproxy.source import SourceError
 from mapproxy.srs import SRS, SupportedSRS
 from mapproxy.test.helper import assert_re, TempFile
 from mapproxy.test.http import mock_httpd, query_eq, assert_query_eq, wms_query_eq
@@ -41,13 +43,19 @@ TESTSERVER_URL = 'http://%s:%s' % TESTSERVER_ADDRESS
 
 
 class TestHTTPClient(object):
-    def setup(self):
+    def setup_method(self):
         self.client = HTTPClient()
 
     def test_post(self):
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?foo=bar', 'method': 'POST'},
                                               {'status': '200', 'body': b''})]):
             self.client.open(TESTSERVER_URL + '/service', data=b"foo=bar")
+
+    @pytest.mark.skipif(sys.version_info < (3,), reason='HEAD request not supported by BaseHTTPRequestHandler in Py 2')
+    def test_head(self):
+        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service', 'method': 'HEAD'},
+                                              {'status': '200'})]):
+            self.client.open(TESTSERVER_URL + '/service', method = 'HEAD')
 
     def test_internal_error_response(self):
         try:
@@ -88,6 +96,16 @@ class TestHTTPClient(object):
             self.client.open('http://localhost:53871')
         except HTTPClientError as e:
             assert_re(e.args[0], r'No response .* "http://localhost.*": Connection refused')
+        else:
+            assert False, 'expected HTTPClientError'
+
+    def test_internal_error_hide_error_details(self):
+        try:
+            with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/'},
+                                                  {'status': '500', 'body': b''})]):
+                HTTPClient(hide_error_details=True).open(TESTSERVER_URL + '/')
+        except HTTPClientError as e:
+            assert_re(e.args[0], r'HTTP Error \(see logs for URL and reason\).')
         else:
             assert False, 'expected HTTPClientError'
 
@@ -173,6 +191,60 @@ class TestHTTPClient(object):
         # check individual timeouts
         assert 0.1 <= duration1 < 0.5, duration1
         assert 0.5 <= duration2 < 0.9, duration2
+
+    def test_manage_cookies_off(self):
+        """
+        Test the behavior when manage_cookies is off (the default). Cookies shouldn't be sent
+        """
+        self.client = HTTPClient()
+
+        def assert_no_cookie(req_handler):
+            return 'Cookie' not in req_handler.headers
+
+        test_requests = [
+            (
+                {'path': '/', 'req_assert_function': assert_no_cookie},
+                {'body': b'nothing', 'headers': {'Set-Cookie': "testcookie=42"}}
+            ),
+            (
+                {'path': '/', 'req_assert_function': assert_no_cookie},
+                {'body': b'nothing'}
+            )
+        ]
+        with mock_httpd(TESTSERVER_ADDRESS, test_requests):
+            self.client.open(TESTSERVER_URL + '/')
+            self.client.open(TESTSERVER_URL + '/')
+
+    def test_manage_cookies_on(self):
+        """
+        Test behavior of manage_cookies=True. Once the remote server sends a cookie back, it should
+        be included in future requests
+        """
+        self.client = HTTPClient(manage_cookies=True)
+
+        def assert_no_cookie(req_handler):
+            return 'Cookie' not in req_handler.headers
+
+        def assert_cookie(req_handler):
+            assert 'Cookie' in req_handler.headers
+            cookie_name, cookie_val = req_handler.headers['Cookie'].split(';')[0].split('=')
+            assert cookie_name == 'testcookie'
+            assert cookie_val == '42'
+            return True
+
+        test_requests = [
+            (
+                {'path': '/', 'req_assert_function': assert_no_cookie},
+                {'body': b'nothing', 'headers': {'Set-Cookie': "testcookie=42"}}
+            ),
+            (
+                {'path': '/', 'req_assert_function': assert_cookie},
+                {'body': b'nothing'}
+            )
+        ]
+        with mock_httpd(TESTSERVER_ADDRESS, test_requests):
+            self.client.open(TESTSERVER_URL + '/')
+            self.client.open(TESTSERVER_URL + '/')
 
 
 # root certificates for google.com, if no ca-certificates.cert
@@ -287,8 +359,28 @@ class TestTileClient(object):
             resp = client.get_tile((0, 1, 2)).source.read()
             assert resp == b'tile'
 
+
+class TestWMSClient(object):
+    def test_no_image(self, caplog):
+        try:
+            with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?map=foo&layers=foo&transparent=true&bbox=-200000,-200000,200000,200000&width=512&height=512&srs=EPSG%3A900913&format=image%2Fpng&request=GetMap&version=1.1.1&service=WMS&styles='},
+                                                  {'status': '200', 'body': b'x' * 1000,
+                                                   'headers': {'content-type': 'application/foo'},
+                                                  })]):
+                req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
+                                        param={'layers':'foo', 'transparent': 'true'})
+                query = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
+                wms = WMSClient(req).retrieve(query, 'png')
+        except SourceError:
+            assert len(caplog.record_tuples) == 1
+            assert ("'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' [output truncated]"
+                in caplog.record_tuples[0][2])
+        else:
+            assert False, 'expected no image returned error'
+
+
 class TestCombinedWMSClient(object):
-    def setup(self):
+    def setup_method(self):
         self.http = MockHTTPClient()
     def test_combine(self):
         req1 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
@@ -351,7 +443,7 @@ class TestWMSInfoClient(object):
                            '&BBOX=428333.552496,5538630.70275,500000.0,5650300.78652'), http.requested[0]
 
 class TestWMSMapRequest100(object):
-    def setup(self):
+    def setup_method(self):
         self.r = WMS100MapRequest(param=dict(layers='foo', version='1.1.1', request='GetMap'))
         self.r.params = self.r.adapt_params_to_version()
     def test_version(self):
@@ -365,7 +457,7 @@ class TestWMSMapRequest100(object):
         assert_query_eq(str(self.r.params), 'layers=foo&styles=&request=map&wmtver=1.0.0')
 
 class TestWMSMapRequest130(object):
-    def setup(self):
+    def setup_method(self):
         self.r = WMS130MapRequest(param=dict(layers='foo', WMTVER='1.0.0'))
         self.r.params = self.r.adapt_params_to_version()
     def test_version(self):
@@ -379,7 +471,7 @@ class TestWMSMapRequest130(object):
         query_eq(str(self.r.params), 'layers=foo&styles=&service=WMS&request=GetMap&version=1.3.0')
 
 class TestWMSMapRequest111(object):
-    def setup(self):
+    def setup_method(self):
         self.r = WMS111MapRequest(param=dict(layers='foo', WMTVER='1.0.0'))
         self.r.params = self.r.adapt_params_to_version()
     def test_version(self):

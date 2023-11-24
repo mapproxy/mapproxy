@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Retrieve maps/information from WMS servers.
 """
@@ -20,7 +19,7 @@ import sys
 from mapproxy.request.base import split_mime_type
 from mapproxy.cache.legend import Legend, legend_identifier
 from mapproxy.image import make_transparent, ImageSource, SubImageSource, bbox_position_in_image
-from mapproxy.image.merge import concat_legends
+from mapproxy.image.merge import concat_legends, concat_json_legends
 from mapproxy.image.transform import ImageTransformer
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, LegendQuery, MapQuery, MapLayer
 from mapproxy.source import InfoSource, SourceError, LegendSource
@@ -97,7 +96,7 @@ class WMSSource(MapLayer):
                 resp = self.error_handler.handle(e.response_code, query)
                 if resp:
                     return resp
-            log.warn('could not retrieve WMS map: %s', e)
+            log.warning('could not retrieve WMS map: %s', e.full_msg or e)
             reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
     def _get_map(self, query):
@@ -107,8 +106,16 @@ class WMSSource(MapLayer):
         if self.supported_formats and format not in self.supported_formats:
             format = self.supported_formats[0]
         if self.supported_srs:
-            if query.srs not in self.supported_srs:
+            # srs can be equal while still having a different srs_code (EPSG:3857/900913), make sure to use a supported srs_code
+            request_srs = None
+            for srs in self.supported_srs:
+                if query.srs == srs:
+                    request_srs = srs
+                    break
+            if request_srs is None:
                 return self._get_transformed(query, format)
+            if query.srs.srs_code != request_srs.srs_code:
+                query.srs = request_srs
         if self.extent and not self.extent.contains(MapExtent(query.bbox, query.srs)):
             return self._get_sub_query(query, format)
         resp = self.client.retrieve(query, format)
@@ -235,7 +242,8 @@ class WMSLegendSource(LegendSource):
             legend = Legend(id=self.identifier, scale=None)
         else:
             legend = Legend(id=self.identifier, scale=query.scale)
-        if not self._cache.load(legend):
+
+        if not self._cache.load(legend) or query.format == 'json':
             legends = []
             error_occured = False
             for client in self.clients:
@@ -249,9 +257,14 @@ class WMSLegendSource(LegendSource):
                     # TODO errors?
                     log.error(e.args[0])
             format = split_mime_type(query.format)[1]
+
+            if format == 'json':
+                return concat_json_legends(legends)
+
             legend = Legend(source=concat_legends(legends, format=format),
                             id=self.identifier, scale=query.scale)
             if not error_occured:
                 self._cache.store(legend)
-        return legend.source
 
+        # returns ImageSource
+        return legend.source

@@ -222,7 +222,7 @@ class DummyException(Exception):
     pass
 
 class TestThreadedExecutorException(object):
-    def setup(self):
+    def setup_method(self):
         self.lock = threading.Lock()
         self.exec_count = 0
         self.te = ThreadPool(size=2)

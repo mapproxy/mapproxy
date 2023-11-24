@@ -1,4 +1,6 @@
 globals:
+  http:
+    hide_error_details: false
   cache:
     base_dir: cache_data/
     meta_size: [1, 1]
@@ -124,6 +126,9 @@ layers:
   - name: watermark_cache
     title: TMS Cache + watermark
     sources: [watermark_cache]
+  - name: wms_managed_cookies_cache
+    title: WMS with cookies management
+    sources: [wms_managed_cookies]
 
 caches:
   wms_cache:
@@ -162,6 +167,8 @@ caches:
     disable_storage: true
     watermark:
       text: '@ Omniscale'
+  wms_managed_cookies_cache:
+    sources: [wms_managed_cookies]
 
 sources:
   direct:
@@ -242,3 +249,12 @@ sources:
     coverage:
       bbox: [-180,-90,170,80]
       srs: 'EPSG:4326'
+  wms_managed_cookies:
+    type: wms
+    wms_opts:
+      featureinfo: True
+    req:
+      url: http://localhost:42423/service
+      layers: layer1
+    http:
+      manage_cookies: True

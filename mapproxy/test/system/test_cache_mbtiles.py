@@ -44,7 +44,7 @@ def fixture_gpkg(base_dir):
 @pytest.mark.usefixtures("fixture_gpkg")
 class TestMBTilesCache(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_map_req = WMS111MapRequest(
             url="/service?",
             param=dict(

@@ -7,7 +7,7 @@ This tutorial was created and tested with Debian and Ubuntu, if you're installin
 
 MapProxy is `registered at the Python Package Index <https://pypi.org/project/MapProxy/>`_ (PyPI). If you have Python 2.7.9 or higher, you can install MapProxy with::
 
-  sudo python -m pip MapProxy
+  sudo python -m pip install MapProxy
 
 This is really, easy `but` we recommend to install MapProxy into a `virtual Python environment`_. A ``virtualenv`` is a self-contained Python installation where you can install arbitrary Python packages without affecting the system installation. You also don't need root permissions for the installation.
 
@@ -19,7 +19,7 @@ This is really, easy `but` we recommend to install MapProxy into a `virtual Pyth
 Create a new virtual environment
 --------------------------------
 
-``virtualenv`` is available as ``python-virtualenv`` on most Linux systems. You can also `install Virtualenv from source <https://virtualenv.pypa.io/en/latest/installation/>`_.
+``virtualenv`` is available as ``python-virtualenv`` on most Linux systems. You can also `install Virtualenv from source <https://virtualenv.pypa.io/en/latest/installation.html>`_.
 
 To create a new environment with the name ``mapproxy`` call::
 
@@ -33,13 +33,13 @@ You need to either prefix all commands with ``mapproxy/bin``, set your ``PATH`` 
 
     source mapproxy/bin/activate
 
-This will change the ``PATH`` for you `current` session.
+This will change the ``PATH`` for your `current` session.
 
 
 Install Dependencies
 --------------------
 
-MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 2.7 and 3.4 or higher, which should already be installed with most Linux distributions.
+MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 3.8 or higher, which should already be installed with most Linux distributions.
 
 MapProxy requires a few third-party libraries that are required to run. There are different ways to install each dependency. Read :ref:`dependency_details` for a list of all required and optional dependencies.
 
@@ -48,26 +48,33 @@ Installation
 
 On a Debian or Ubuntu system, you need to install the following packages::
 
-  sudo apt-get install python-pil python-yaml libproj12
+  sudo apt-get install python3-pil python3-yaml python3-pyproj
 
 To get all optional packages::
 
-  sudo apt-get install libgeos-dev python-lxml libgdal-dev python-shapely
+  sudo apt-get install libgeos-dev python3-lxml libgdal-dev python3-shapely
 
 .. _dependency_details:
 
 Dependency details
 ^^^^^^^^^^^^^^^^^^
 
-libproj
-~~~~~~~
-MapProxy uses the Proj4 C Library for all coordinate transformation tasks. It is included in most distributions as ``libproj`` or ``libprojXX`` where ``XX`` is a number.
+pyproj or libproj
+~~~~~~~~~~~~~~~~~
+
+MapProxy uses the PROJ C library for all coordinate transformation tasks. MapProxy can directly use the C library or via the pyproj Python package.
+The internal API of PROJ was updated with PROJ >=5. The old PROJ 4 API is now deprecated and will be removed from future PROJ releases. MapProxy only supports the new API via pyproj and it is therefore recommended to use a recent pyproj version.
+
+
+.. versionchanged:: 1.13
+  Support for new PROJ API via pyproj.
+
 
 .. _dependencies_pil:
 
 Pillow
 ~~~~~~
-Pillow, the successor of the Python Image Library (PIL), is used for the image processing and it is included in most distributions as ``python-pil`` or ``python-imaging``. Please make sure that you have Pillow installed as MapProxy is no longer compatible with the original PIL. The version of ``python-imaging`` should be >=2.
+Pillow, the successor of the Python Image Library (PIL), is used for the image processing and it is included in most distributions as ``python-pil`` or ``python-imaging``. Please make sure that you have Pillow installed as MapProxy is no longer compatible with the original PIL. The version of ``python-imaging`` should be >=3.1.
 
 You can install a new version of Pillow from source with::
 
@@ -83,7 +90,7 @@ MapProxy uses YAML for the configuration parsing. It is available as ``python-ya
 
 Shapely and GEOS *(optional)*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-You will need Shapely to use the :doc:`coverage feature <coverages>` of MapProxy. Shapely offers Python bindings for the GEOS library. You need Shapely (``python-shapely``) and GEOS (``libgeos-dev``). You can install Shapely as a Python package with ``pip install Shapely`` if you system does not provide a recent (>= 1.2.0) version of Shapely.
+You will need Shapely to use the :doc:`coverage feature <coverages>` of MapProxy. Shapely offers Python bindings for the GEOS library. You need Shapely (``python-shapely``) and GEOS (``libgeos-dev``). You can install Shapely as a Python package with ``pip install Shapely`` if you system does not provide a recent (>= 1.8) version of Shapely.
 
 GDAL *(optional)*
 ~~~~~~~~~~~~~~~~~
@@ -101,7 +108,7 @@ lxml *(optional)*
 Install MapProxy
 ----------------
 
-Your virtual environment should contains `pip`_, a tool to install Python packages.
+Your virtual environment should contain `pip`_, a tool to install Python packages.
 
 To install you need to call::
 
@@ -179,6 +186,6 @@ To upgrade to the current development version::
 Changes
 ^^^^^^^
 
-New releases of MapProxy are backwards compatible with older configuration files. MapProxy will issue warnings on startup if a behavior will change in the next releases. You are advised to upgrade in single release steps (e.g. 1.9.0 to 1.10.0 to 1.11.0) and to check the output of ``mapproxy-util serve-develop`` for any warnings. You should also refer to the Changes Log of each release to see if there is anything to pay attention for.
+New releases of MapProxy are backwards compatible with older configuration files. MapProxy will issue warnings on start-up if a behavior will change in the next releases. You are advised to upgrade in single release steps (e.g. 1.9.0 to 1.10.0 to 1.11.0) and to check the output of ``mapproxy-util serve-develop`` for any warnings. You should also refer to the Changes Log of each release to see if there is anything to pay attention for.
 
-If you upgrade from 0.8, please read the `old mirgation documentation <http://mapproxy.org/docs/1.5.0/migrate.html>`_.
+If you upgrade from 0.8, please read the `old migration documentation <http://mapproxy.org/docs/1.5.0/migrate.html>`_.

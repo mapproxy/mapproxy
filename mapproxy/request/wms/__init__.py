@@ -17,6 +17,7 @@
 Service requests (parsing, handling, etc).
 """
 import codecs
+import re
 from mapproxy.request.wms import exception
 from mapproxy.exception import RequestError
 from mapproxy.srs import SRS, make_lin_transf
@@ -185,10 +186,29 @@ class WMSMapRequest(WMSRequest):
     #pylint: disable-msg=E1102
     xml_exception_handler = None
     prevent_image_exception = False
+    dimension_params = ['time', 'elevation']
+    dimension_prefix = 'dim_'
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
+        self.dimensions = self._get_dimensions(param)
         WMSRequest.__init__(self, param=param, url=url, validate=validate,
                             non_strict=non_strict, **kw)
+    
+    def _get_dimensions(self, param):
+        if param:
+            regex = "(?i)%s%s" % (("^%s|" % self.dimension_prefix if self.dimension_prefix else ""),
+                                  "^(%s)$" % "|".join(self.dimension_params))
+            keys = []
+            if isinstance(param, RequestParams):
+                keys = list(map (lambda k: k[0], param.iteritems()))
+            else:
+                keys = list(param.keys())
+            if len(keys) > 0:
+                return dict(map(lambda k: (k, param.get(k)), filter (lambda k: re.search(regex, k), keys)))
+            else:
+                return None
+        else:
+            return None
 
     def validate(self):
         self.validate_param()
@@ -280,6 +300,8 @@ class WMS100MapRequest(WMSMapRequest):
     fixed_params = {'request': 'map', 'wmtver': '1.0.0'}
     expected_param = ['wmtver', 'request', 'layers', 'styles', 'srs', 'bbox',
                       'width', 'height', 'format']
+    dimension_params = []
+    dimension_prefix = ''
     def adapt_to_111(self):
         del self.params['wmtver']
         self.params['version'] = '1.0.0'
@@ -331,7 +353,7 @@ def switch_bbox_epsg_axis_order(bbox, srs):
             if SRS(srs).is_axis_order_ne:
                 return bbox[1], bbox[0], bbox[3], bbox[2]
         except RuntimeError:
-            log.warn('unknown SRS %s' % srs)
+            log.warning('unknown SRS %s' % srs)
     return bbox
 
 def _switch_bbox(self):

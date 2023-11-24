@@ -23,6 +23,22 @@ Each backend has a ``type`` and one or more options.
         backendoption1: value
         backendoption2: value
 
+You may add a coverage definition to any cache with the ``coverage`` option under ``cache``.
+
+::
+
+  caches:
+    mycache:
+      sources: [...]
+      grids: [...]
+      cache:
+        type: backendtype
+        backendoption1: value
+        backendoption2: value
+        coverage:
+          bbox: [5, 50, 10, 55]
+          srs: 'EPSG:4326'
+
 
 The following backend types are available.
 
@@ -35,6 +51,7 @@ The following backend types are available.
 - :ref:`cache_riak`
 - :ref:`cache_redis`
 - :ref:`cache_s3`
+- :ref:`cache_azureblob`
 - :ref:`cache_compact`
 
 .. _cache_file:
@@ -366,6 +383,12 @@ Available options:
 ``db``:
     Number of the Redis database. Please refer to the Redis documentation. Defaults to `0`.
 
+``username``:
+  Optional authentication username. No defaults.
+
+``password``:
+  Optional authentication password. No defaults.
+
 ``prefix``:
     The prefix added to each tile-key in the Redis cache. Used to distinguish tiles from different caches and grids.  Defaults to ``cache-name_grid-name``.
 
@@ -384,6 +407,8 @@ Example
         grids: [mygrid]
         cache:
           type: redis
+          username: mapproxy
+          password: iamgreatpassword
           default_ttl: 600
 
 
@@ -497,7 +522,7 @@ Example
         profile_name: default
 
 
-Example usage with DigitalOcean Spaces 
+Example usage with DigitalOcean Spaces
 --------------------------------------
 
 ::
@@ -518,6 +543,75 @@ Example usage with DigitalOcean Spaces
         endpoint_url: https://nyc3.digitaloceanspaces.com
         access_control_list: public-read
 
+.. _cache_azureblob:
+
+``azureblob``
+======
+
+.. versionadded:: to be released
+
+Store tiles in `Azure Blob Storage <https://azure.microsoft.com/en-us/products/storage/blobs/>`_, Microsoft's object storage solution for the cloud.
+
+
+Requirements
+------------
+
+You will need the `azure-storage-blob <https://pypi.org/project/azure-storage-blob/>`_ package. You can install it in the usual way, for example with ``pip install azure-storage-blob``.
+
+Configuration
+-------------
+
+Available options:
+
+``container_name``:
+  The blob container used for this cache. You can set the default container with ``globals.cache.azureblob.container_name``.
+
+``connection_string``:
+  Credentials/url to connect and authenticate against Azure Blob storage. You can set the default connection_string with ``globals.cache.azureblob.connection_string`` or
+  using the ``AZURE_STORAGE_CONNECTION_STRING`` environment variable. There are several ways to
+  `authenticate against Azure Blob storage <https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string>`_:
+
+- Using the storage account key. This connection string can also found in the Azure Portal under the "Access Keys" section. For example:
+
+::
+
+    "DefaultEndpointsProtocol=https;AccountName=my-storage-account;AccountKey=my-key"
+
+- Using a SAS token. For example:
+
+::
+
+    "BlobEndpoint=https://my-storage-account.blob.core.windows.net;SharedAccessSignature=sv=2015-04-05&sr=b&si=tutorial-policy-635959936145100803&sig=9aCzs76n0E7y5BpEi2GvsSv433BZa22leDOZXX%2BXXIU%3D"
+
+- Using a local Azurite emulator, this is for TESTING purposes only. For example, using the default Azurite account:
+
+::
+
+    "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:10000/devstoreaccount1"
+
+``directory``:
+  Base directory (path) where all tiles are stored.
+
+``directory_layout``:
+  Defines the directory layout for the tiles (``12/12345/67890.png``, ``L12/R00010932/C00003039.png``, etc.).  See :ref:`cache_file` for available options. Defaults to ``tms`` (e.g. ``12/12345/67890.png``). This cache cache also supports ``reverse_tms`` where tiles are stored as ``y/x/z.format``.
+
+Example
+-------
+
+::
+
+  cache:
+    my_layer_20110501_epsg_4326_cache_out:
+      sources: [my_layer_20110501_cache]
+      cache:
+        type: azureblob
+        directory: /1.0.0/my_layer/default/20110501/4326/
+        container_name: my-azureblob-tiles-cache
+
+  globals:
+    cache:
+      azureblob:
+        connection_string: "DefaultEndpointsProtocol=https;AccountName=xxxx;AccountKey=xxxx"
 
 .. _cache_compact:
 

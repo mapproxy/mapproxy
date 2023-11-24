@@ -100,8 +100,8 @@ else:
     def _lock_file(file):
         try:
             fcntl.flock(file.fileno(), _flags)
-        except IOError:
-            raise LockError("Couldn't lock %r" % file.name)
+        except (IOError, OSError) as err:
+            raise LockError("Couldn't lock {0}, error: {1}".format(file.name, err))
 
 
     def _unlock_file(file):

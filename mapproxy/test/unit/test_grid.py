@@ -137,7 +137,7 @@ def test_metagrid_tiles_w_meta_size():
          ((2, 2, 2), (512, 256)), ((3, 2, 2), (768, 256))]
 
 class TestMetaGridGeodetic(object):
-    def setup(self):
+    def setup_method(self):
         self.mgrid = MetaGrid(grid=tile_grid('EPSG:4326'), meta_size=(2, 2), meta_buffer=10)
 
     def test_meta_bbox_level_0(self):
@@ -219,7 +219,7 @@ class TestMetaGridGeodetic(object):
             ])
 
 class TestMetaGridGeodeticUL(object):
-    def setup(self):
+    def setup_method(self):
         self.tile_grid = tile_grid('EPSG:4326', origin='ul')
         self.mgrid = MetaGrid(grid=self.tile_grid, meta_size=(2, 2), meta_buffer=10)
 
@@ -294,7 +294,7 @@ class TestMetaGridGeodeticUL(object):
 
 
 class TestMetaTile(object):
-    def setup(self):
+    def setup_method(self):
         self.mgrid = MetaGrid(grid=tile_grid('EPSG:4326'), meta_size=(2, 2), meta_buffer=10)
     def test_meta_tile(self):
         meta_tile = self.mgrid.meta_tile((2, 0, 2))
@@ -317,7 +317,7 @@ class TestMetaTile(object):
         assert meta_tile.grid_size == (4, 2)
 
 class TestMetaTileSQRT2(object):
-    def setup(self):
+    def setup_method(self):
         self.grid = tile_grid('EPSG:4326', res_factor='sqrt2')
         self.mgrid = MetaGrid(grid=self.grid, meta_size=(4, 4), meta_buffer=10)
     def test_meta_tile(self):
@@ -357,7 +357,7 @@ class TestMetaTileSQRT2(object):
 
 
 class TestMinimalMetaTile(object):
-    def setup(self):
+    def setup_method(self):
         self.mgrid = MetaGrid(grid=tile_grid('EPSG:4326'), meta_size=(2, 2), meta_buffer=10)
 
     def test_minimal_tiles(self):
@@ -411,7 +411,7 @@ class TestMinimalMetaTile(object):
 
 
 class TestMetaGridLevelMetaTiles(object):
-    def setup(self):
+    def setup_method(self):
         self.meta_grid = MetaGrid(TileGrid(), meta_size=(2, 2))
 
     def test_full_grid_0(self):
@@ -439,7 +439,7 @@ class TestMetaGridLevelMetaTiles(object):
         assert meta_tiles[3] == (2, 0, 2)
 
 class TestMetaGridLevelMetaTilesGeodetic(object):
-    def setup(self):
+    def setup_method(self):
         self.meta_grid = MetaGrid(TileGrid(is_geodetic=True), meta_size=(2, 2))
 
     def test_full_grid_2(self):
@@ -502,7 +502,7 @@ class TestTileGridResolutions(object):
 
 
 class TestWGS84TileGrid(object):
-    def setup(self):
+    def setup_method(self):
         self.grid = TileGrid(is_geodetic=True)
 
     def test_resolution(self):
@@ -534,7 +534,7 @@ class TestWGS84TileGrid(object):
         assert list(tiles) == [(2, 1, 2), (3, 1, 2)]
 
 class TestWGS83TileGridUL(object):
-    def setup(self):
+    def setup_method(self):
         self.grid = TileGrid(4326, bbox=(-180, -90, 180, 90), origin='ul')
 
     def test_resolution(self):
@@ -585,7 +585,7 @@ class TestWGS83TileGridUL(object):
         assert bbox == (0.0, -90.0, 180.0, 90.0)
 
 class TestGKTileGrid(TileGridTest):
-    def setup(self):
+    def setup_method(self):
         self.grid = TileGrid(SRS(31467), bbox=(3250000, 5230000, 3930000, 6110000))
 
     def test_bbox(self):
@@ -638,7 +638,7 @@ class TestGKTileGridUL(TileGridTest):
     """
     Custom grid with ul origin.
     """
-    def setup(self):
+    def setup_method(self):
         self.grid = TileGrid(SRS(31467),
             bbox=(3300000, 5300000, 3900000, 6000000), origin='ul',
             res=[1500, 1000, 500, 300, 150, 100])
@@ -688,7 +688,7 @@ class TestGKTileGridUL(TileGridTest):
 
 
 class TestClosestLevelTinyResFactor(object):
-    def setup(self):
+    def setup_method(self):
         self.grid = TileGrid(SRS(31467),
             bbox=[420000,30000,900000,350000], origin='ul',
             res=[4000,3750,3500,3250,3000,2750,2500,2250,2000,1750,1500,1250,1000,750,650,500,250,100,50,20,10,5,2.5,2,1.5,1,0.5],
@@ -780,7 +780,7 @@ class TestOrigins(object):
         assert grid.supports_access_with_origin('ul')
 
 class TestFixedResolutionsTileGrid(TileGridTest):
-    def setup(self):
+    def setup_method(self):
         self.res = [1000.0, 500.0, 200.0, 100.0, 50.0, 20.0, 5.0]
         bbox = (3250000, 5230000, 3930000, 6110000)
         self.grid = TileGrid(SRS(31467), bbox=bbox, res=self.res)
@@ -838,7 +838,7 @@ class TestFixedResolutionsTileGrid(TileGridTest):
         assert tile_bbox == (3250000.0, 5230000.0, 3301200.0, 5281200.0)
 
 class TestGeodeticTileGrid(TileGridTest):
-    def setup(self):
+    def setup_method(self):
         self.grid = TileGrid(is_geodetic=True, )
     def test_auto_resolution(self):
         grid = TileGrid(is_geodetic=True, bbox=(-10, 30, 10, 40), tile_size=(20, 20))
@@ -907,8 +907,7 @@ class TestTileGrid(object):
 
     def test_broken_bbox(self):
         grid = TileGrid()
-        # broken request from "ArcGIS Client Using WinInet"
-        req_bbox = (-10000855.0573254,2847125.18913603,-9329367.42767611,4239924.78564583)
+        req_bbox = (-20000855.0573254,2847125.18913603,-19329367.42767611,4239924.78564583)
         try:
             grid.get_affected_tiles(req_bbox, (256, 256), req_srs=SRS(31467))
         except TransformationError:

@@ -44,8 +44,8 @@ class TestTextDraw(object):
         img = Image.new("RGB", (100, 100))
         draw = ImageDraw.Draw(img)
         total_box, boxes = td.text_boxes(draw, (100, 100))
-        assert total_box == (5, 5, 35, 30)
-        assert boxes == [(5, 5, 35, 16), (5, 19, 35, 30)]
+        assert total_box == (5, 7, 33, 28)
+        assert boxes == [(5, 7, 30, 15), (5, 20, 33, 28)]
 
     def test_multiline_lr(self):
         font = ImageFont.load_default()
@@ -53,8 +53,8 @@ class TestTextDraw(object):
         img = Image.new("RGB", (100, 100))
         draw = ImageDraw.Draw(img)
         total_box, boxes = td.text_boxes(draw, (100, 100))
-        assert total_box == (65, 70, 95, 95)
-        assert boxes == [(65, 70, 95, 81), (65, 84, 95, 95)]
+        assert total_box == (67, 76, 95, 97)
+        assert boxes == [(67, 76, 92, 84), (67, 89, 95, 97)]
 
     def test_multiline_center(self):
         font = ImageFont.load_default()
@@ -62,8 +62,8 @@ class TestTextDraw(object):
         img = Image.new("RGB", (100, 100))
         draw = ImageDraw.Draw(img)
         total_box, boxes = td.text_boxes(draw, (100, 100))
-        assert total_box == (35, 38, 65, 63)
-        assert boxes == [(35, 38, 65, 49), (35, 52, 65, 63)]
+        assert total_box == (36, 42, 64, 63)
+        assert boxes == [(36, 42, 61, 50), (36, 55, 64, 63)]
 
     def test_unicode(self):
         font = ImageFont.load_default()
@@ -71,8 +71,8 @@ class TestTextDraw(object):
         img = Image.new("RGB", (100, 100))
         draw = ImageDraw.Draw(img)
         total_box, boxes = td.text_boxes(draw, (100, 100))
-        assert total_box == (35, 38, 65, 63)
-        assert boxes == [(35, 38, 65, 49), (35, 52, 65, 63)]
+        assert total_box == (36, 42, 64, 63)
+        assert boxes == [(36, 42, 60, 50), (36, 55, 64, 63)]
 
     def _test_all(self):
         for x in "c":
@@ -99,9 +99,12 @@ class TestTextDraw(object):
         img = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
         td.draw(draw, img.size)
+        # override the alpha value as pillow >= 10.1.0 uses a new default font with transparency
+        img.putalpha(255)
+
         assert len(img.getcolors()) == 2
         # top color (bg) is transparent
-        assert sorted(img.getcolors())[1][1] == (0, 0, 0, 0)
+        assert sorted(img.getcolors())[1][1] == (0, 0, 0, 255)
 
 
 class TestMessageImage(object):
@@ -125,16 +128,15 @@ class TestMessageImage(object):
         image_opts = PNG_FORMAT.copy()
         image_opts.bgcolor = "#113399"
         img = message_image("test", size=(100, 150), image_opts=image_opts)
+        text_pixels = 75
+        image_pixels = 100 * 150
         assert isinstance(img, ImageSource)
         assert img.size == (100, 150)
-        # 6 values in histogram (3xRGB for background, 3xRGB for text message)
+        # expect the large histogram count values to be the amount of background pixels
         assert [x for x in img.as_image().histogram() if x > 10] == [
-            14923,
-            77,
-            14923,
-            77,
-            14923,
-            77,
+            image_pixels - text_pixels,
+            image_pixels - text_pixels,
+            image_pixels - text_pixels,
         ]
 
     def test_transparent(self):
@@ -156,7 +158,7 @@ class TestMessageImage(object):
 
 class TestWatermarkTileFilter(object):
 
-    def setup(self):
+    def setup_method(self):
         self.tile = Tile((0, 0, 0))
         self.filter = watermark_filter("Test")
 

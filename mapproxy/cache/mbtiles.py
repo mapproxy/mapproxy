@@ -42,7 +42,8 @@ def sqlite_datetime_to_timestamp(datetime):
 class MBTilesCache(TileCacheBase):
     supports_timestamp = False
 
-    def __init__(self, mbtile_file, with_timestamps=False, timeout=30, wal=False, ttl=0):
+    def __init__(self, mbtile_file, with_timestamps=False, timeout=30, wal=False, ttl=0, coverage=None):
+        super(MBTilesCache, self).__init__(coverage)
         self.lock_cache_id = 'mbtiles-' + hashlib.md5(mbtile_file.encode('utf-8')).hexdigest()
         self.mbtile_file = mbtile_file
         self.supports_timestamp = with_timestamps
@@ -135,20 +136,20 @@ class MBTilesCache(TileCacheBase):
         db.commit()
         db.close()
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
             return True
         if tile.source:
             return True
 
-        return self.load_tile(tile)
+        return self.load_tile(tile, dimensions=dimensions)
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
         return self._store_bulk([tile])
 
-    def store_tiles(self, tiles):
+    def store_tiles(self, tiles, dimensions=None):
         tiles = [t for t in tiles if not t.stored]
         return self._store_bulk(tiles)
 
@@ -179,11 +180,11 @@ class MBTilesCache(TileCacheBase):
                 cursor.executemany(stmt, records)
             self.db.commit()
         except sqlite3.OperationalError as ex:
-            log.warn('unable to store tile: %s', ex)
+            log.warning('unable to store tile: %s', ex)
             return False
         return True
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.source or tile.coord is None:
             return True
 
@@ -214,7 +215,7 @@ class MBTilesCache(TileCacheBase):
         else:
             return False
 
-    def load_tiles(self, tiles, with_metadata=False):
+    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
         #associate the right tiles with the cursor
         tile_dict = {}
         coords = []
@@ -296,18 +297,19 @@ class MBTilesCache(TileCacheBase):
                 return True
             return False
 
-    def load_tile_metadata(self, tile):
+    def load_tile_metadata(self, tile, dimensions=None):
         if not self.supports_timestamp:
             # MBTiles specification does not include timestamps.
             # This sets the timestamp of the tile to epoch (1970s)
             tile.timestamp = -1
         else:
-            self.load_tile(tile)
+            self.load_tile(tile, dimensions=dimensions)
 
 class MBTilesLevelCache(TileCacheBase):
     supports_timestamp = True
 
-    def __init__(self, mbtiles_dir, timeout=30, wal=False, ttl=0):
+    def __init__(self, mbtiles_dir, timeout=30, wal=False, ttl=0, coverage=None):
+        super(MBTilesLevelCache, self).__init__(coverage)
         self.lock_cache_id = 'sqlite-' + hashlib.md5(mbtiles_dir.encode('utf-8')).hexdigest()
         self.cache_dir = mbtiles_dir
         self._mbtiles = {}
@@ -329,6 +331,7 @@ class MBTilesLevelCache(TileCacheBase):
                     timeout=self.timeout,
                     wal=self.wal,
                     ttl=self.ttl,
+                    coverage=self.coverage
                 )
 
         return self._mbtiles[level]
@@ -341,35 +344,35 @@ class MBTilesLevelCache(TileCacheBase):
             for mbtile in self._mbtiles.values():
                 mbtile.cleanup()
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
             return True
         if tile.source:
             return True
 
-        return self._get_level(tile.coord[2]).is_cached(tile)
+        return self._get_level(tile.coord[2]).is_cached(tile, dimensions=dimensions)
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
 
-        return self._get_level(tile.coord[2]).store_tile(tile)
+        return self._get_level(tile.coord[2]).store_tile(tile, dimensions=dimensions)
 
-    def store_tiles(self, tiles):
+    def store_tiles(self, tiles, dimensions=None):
         failed = False
         for level, tiles in itertools.groupby(tiles, key=lambda t: t.coord[2]):
             tiles = [t for t in tiles if not t.stored]
-            res = self._get_level(level).store_tiles(tiles)
+            res = self._get_level(level).store_tiles(tiles, dimensions=dimensions)
             if not res: failed = True
         return failed
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.source or tile.coord is None:
             return True
 
-        return self._get_level(tile.coord[2]).load_tile(tile, with_metadata=with_metadata)
+        return self._get_level(tile.coord[2]).load_tile(tile, with_metadata=with_metadata, dimensions=dimensions)
 
-    def load_tiles(self, tiles, with_metadata=False):
+    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
         level = None
         for tile in tiles:
             if tile.source or tile.coord is None:
@@ -380,16 +383,16 @@ class MBTilesLevelCache(TileCacheBase):
         if not level:
             return True
 
-        return self._get_level(level).load_tiles(tiles, with_metadata=with_metadata)
+        return self._get_level(level).load_tiles(tiles, with_metadata=with_metadata, dimensions=dimensions)
 
-    def remove_tile(self, tile):
+    def remove_tile(self, tile, dimensions=None):
         if tile.coord is None:
             return True
 
         return self._get_level(tile.coord[2]).remove_tile(tile)
 
-    def load_tile_metadata(self, tile):
-        self.load_tile(tile)
+    def load_tile_metadata(self, tile, dimensions=None):
+        self.load_tile(tile, dimensions=dimensions)
 
     def remove_level_tiles_before(self, level, timestamp):
         level_cache = self._get_level(level)

@@ -16,6 +16,7 @@
 
 from __future__ import division
 
+import copy
 import time
 
 import yaml
@@ -30,10 +31,12 @@ from mapproxy.config.loader import (
 )
 from mapproxy.cache.tile import TileManager
 from mapproxy.config.spec import validate_options
+from mapproxy.layer import MapExtent
 from mapproxy.seed.spec import validate_seed_conf
 from mapproxy.srs import SRS
 from mapproxy.test.helper import TempFile
 from mapproxy.test.unit.test_grid import assert_almost_equal_bbox
+from mapproxy.util.coverage import coverage
 from mapproxy.util.geom import EmptyGeometryError
 
 
@@ -595,6 +598,95 @@ sources:
             else:
                 assert False, 'expected configuration error'
 
+    def test_loading_extra_service(self):
+        """ Test registration of extra service """
+
+        my_yaml_string = b"""
+services:
+  my_extra_service:
+      foo: bar
+
+layers:
+  - name: osm
+    title: OSM
+    sources: [osm]
+
+sources:
+  osm:
+    type: wms
+    supported_srs: ['EPSG:31467']
+    req:
+        url: http://foo
+        layers: base
+"""
+        from mapproxy.config.loader import plugin_services, register_service_configuration
+        from mapproxy.service.base import Server
+
+        class MyExtraServiceServer(Server):
+            names = ('my_extra_service',)
+            def __init__(self):
+                pass
+
+        def my_extra_service_method(serviceConfiguration, conf):
+            return MyExtraServiceServer()
+
+        try:
+            with TempFile() as tf:
+                with open(tf, 'wb') as f:
+                    f.write(my_yaml_string)
+
+                register_service_configuration('my_extra_service', my_extra_service_method,
+                                               'my_extra_service', {'foo': str()})
+                conf = load_configuration(tf, ignore_warnings=False)
+                services = conf.configured_services()
+            assert 'my_extra_service' in services[0].names
+
+        finally:
+            plugin_services.clear()
+
+    def test_loading_extra_source(self):
+        """ Test registration of extra source """
+
+        my_yaml_string = b"""
+services:
+  wms:
+
+layers:
+  - name: osm
+    title: OSM
+    sources: [osm]
+
+sources:
+  osm:
+    type: my_extra_source
+    foo: bar
+"""
+        from mapproxy.config.loader import source_configuration_types, register_source_configuration
+        from mapproxy.config.loader import SourceConfiguration
+
+        class my_source_configuration(SourceConfiguration):
+            source_type = ('my_extra_source',)
+
+            def source(self, params=None):
+                class MySource(object):
+                    def __init__(self):
+                        self.extent = None
+                return MySource()
+
+        source_configuration_types_before = copy.copy(source_configuration_types)
+        try:
+            with TempFile() as tf:
+                with open(tf, 'wb') as f:
+                    f.write(my_yaml_string)
+
+                register_source_configuration('my_extra_source', my_source_configuration,
+                                              'my_extra_source', {'foo': str()})
+                conf = load_configuration(tf, ignore_warnings=False)
+
+            assert conf.sources['osm'].source_type == ('my_extra_source',)
+
+        finally:
+            source_configuration_types = source_configuration_types_before
 
 class TestConfImport(object):
 
@@ -698,6 +790,63 @@ services:
 
             with pytest.raises(ConfigurationError):
                 load_configuration(f, ignore_warnings=False)
+    
+    def test_load_default_cache_coverage(object):
+        with TempFile() as f:
+            open(f, 'wb').write(b"""
+                services:
+                  my_extra_service:
+                      foo: bar
+
+                layers:
+                  - name: temp
+                    title: temp
+                    sources: [temp]
+
+                caches:
+                  temp:
+                    grids: [grid]
+                    sources: []
+                    cache:
+                      type: geopackage
+
+                grids:
+                  grid:
+                    srs: 'EPSG:4326'
+                    bbox: [-180, -90, 180, 90]
+                """)
+            config = load_configuration(f) # defaults to ignore_warnings=True
+            cache = config.caches['temp']
+            assert cache.coverage() is None
+            assert cache.caches()[0][1] == MapExtent((-180, -90, 180, 90), SRS(4326))
+    
+    def test_load_cache_coverage(object):
+        with TempFile() as f:
+            open(f, 'wb').write(b"""
+                services:
+                  my_extra_service:
+                      foo: bar
+
+                layers:
+                  - name: temp
+                    title: temp
+                    sources: [temp]
+                
+                parts:
+                  coverages:
+                    test_coverage: &test_coverage
+                        bbox: [-50, -50, 50, 50]
+                        srs: EPSG:4326
+                
+                caches:
+                  temp:
+                    sources: []
+                    cache:
+                      type: geopackage
+                      coverage: *test_coverage
+                """)
+            config = load_configuration(f) # defaults to ignore_warnings=True
+            assert config.caches['temp'].coverage() == coverage([-50, -50, 50, 50], SRS(4326))
 
 
 class TestImageOptions(object):
@@ -903,7 +1052,7 @@ class TestImageOptions(object):
         except ConfigurationError:
             pass
         else:
-            raise False('expected ConfigurationError')
+            raise Exception('expected ConfigurationError')
 
 
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {
@@ -914,7 +1063,7 @@ class TestImageOptions(object):
         except ConfigurationError:
             pass
         else:
-            raise False('expected ConfigurationError')
+            raise Exception('expected ConfigurationError')
 
 
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {}
@@ -924,7 +1073,7 @@ class TestImageOptions(object):
         except ConfigurationError:
             pass
         else:
-            raise False('expected ConfigurationError')
+            raise Exception('expected ConfigurationError')
 
 
         conf_dict['globals']['image']['formats']['image/jpeg']['encoding_options'] = {

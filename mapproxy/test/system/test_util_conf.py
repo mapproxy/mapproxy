@@ -31,10 +31,10 @@ def filename(name):
 
 class TestMapProxyConfCmd(object):
 
-    def setup(self):
+    def setup_method(self):
         self.dir = tempfile.mkdtemp()
 
-    def teardown(self):
+    def teardown_method(self):
         if os.path.exists(self.dir):
             shutil.rmtree(self.dir)
 

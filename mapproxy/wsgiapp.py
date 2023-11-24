@@ -113,7 +113,7 @@ class MapProxyApp(object):
     """
     The MapProxy WSGI application.
     """
-    handler_path_re = re.compile('^/(\w+)')
+    handler_path_re = re.compile(r'^/(\w+)')
     def __init__(self, services, base_config):
         self.handlers = {}
         self.base_config = base_config

@@ -384,7 +384,7 @@ sources:
   osm_source:
     type: tile
     grid: osm_grid
-    url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
+    url: https://tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
   # limit the source to the given min and max resolution or scale.
   # MapProxy will return a blank image for requests outside of these boundaries
@@ -426,6 +426,21 @@ sources:
       # username and password are extracted from the URL and do not show
       # up in log files
       url: https://username:mypassword@example.org/service?
+      transparent: true
+      layers: securelayer
+
+  # WMS source that requires authentication and session management
+  # through HTTP cookies
+  session_source:
+    type: wms
+    http:
+      # Accept session cookies and forward on subsequent requests
+      manage_cookies: true
+      # Use basic auth header directly
+      headers:
+        Authorization: Basic YWRtaW46Z2Vvc2VydmVy
+    req:
+      url: https://my-service.com/service?
       transparent: true
       layers: securelayer
 

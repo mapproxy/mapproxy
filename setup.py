@@ -17,15 +17,15 @@ def package_installed(pkg):
     else:
         return True
 
-# depend in Pillow if it is installed, otherwise
+# depend on Pillow if it is installed, otherwise
 # depend on PIL if it is installed, otherwise
 # require Pillow
 if package_installed('Pillow'):
-    install_requires.append('Pillow !=2.4.0')
+    install_requires.append('Pillow !=2.4.0,!=8.3.0,!=8.3.1')
 elif package_installed('PIL'):
     install_requires.append('PIL>=1.1.6,<1.2.99')
 else:
-    install_requires.append('Pillow !=2.4.0')
+    install_requires.append('Pillow !=2.4.0,!=8.3.0,!=8.3.1')
 
 if platform.python_version_tuple() < ('2', '6'):
     # for mapproxy-seed
@@ -37,7 +37,7 @@ def long_description(changelog_releases=10):
 
     readme = open('README.rst').read()
     changes = ['Changes\n-------\n']
-    version_line_re = re.compile('^\d\.\d+\.\d+\S*\s20\d\d-\d\d-\d\d')
+    version_line_re = re.compile(r'^\d\.\d+\.\d+\S*\s20\d\d-\d\d-\d\d')
     for line in open('CHANGES.txt'):
         if version_line_re.match(line):
             if changelog_releases == 0:
@@ -54,7 +54,7 @@ def long_description(changelog_releases=10):
 
 setup(
     name='MapProxy',
-    version="1.12.0",
+    version="1.16.0",
     description='An accelerating proxy for tile and web map services',
     long_description=long_description(7),
     author='Oliver Tonnhofer',
@@ -75,11 +75,10 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Internet :: Proxy Servers",
         "Topic :: Internet :: WWW/HTTP :: WSGI",
         "Topic :: Scientific/Engineering :: GIS",

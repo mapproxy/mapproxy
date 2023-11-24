@@ -18,7 +18,7 @@ import os
 import pytest
 
 from mapproxy.config import base_config
-from mapproxy import srs
+from mapproxy import srs, proj
 from mapproxy.srs import SRS, PreferredSrcSRS, SupportedSRS
 
 
@@ -30,6 +30,8 @@ class TestSRS(object):
         assert srs.is_latlong
         assert not srs.is_axis_order_en
         assert srs.is_axis_order_ne
+
+        assert srs.get_geographic_srs() == srs
 
     def test_crs84(self):
         srs = SRS("CRS:84")
@@ -47,6 +49,8 @@ class TestSRS(object):
         assert not srs.is_axis_order_en
         assert srs.is_axis_order_ne
 
+        assert srs.get_geographic_srs() == SRS(4326)
+
     def test_epsg900913(self):
         srs = SRS("epsg:900913")
 
@@ -54,12 +58,43 @@ class TestSRS(object):
         assert srs.is_axis_order_en
         assert not srs.is_axis_order_ne
 
+    def test_non_epsg_auth(self):
+        srs = SRS("IGNF:ETRS89UTM28")
+
+        assert not srs.is_latlong
+        assert srs.is_axis_order_en
+        assert not srs.is_axis_order_ne
+
+        assert srs.get_geographic_srs() == SRS(4326)
+
+
+    def test_iau_crs(self):
+        try:
+            srs = SRS("IAU:49900") # "Mars (2015) - Sphere / Ocentric"
+        except:
+            pytest.skip('Requires recent pyproj version')
+
+        assert srs.is_latlong
+        assert '49900' in str(srs.get_geographic_srs())
+
+
+    def test_iau_crs_projected(self):
+        try:
+            srs = SRS("IAU:49910") # "Mars (2015) - Sphere / Ocentric / Equirectangular, clon = 0"
+        except:
+            pytest.skip('Requires recent pyproj version')
+
+        assert not srs.is_latlong
+        assert '49900' in str(srs.get_geographic_srs())
+
+
     def test_from_srs(self):
-        srs1 = SRS("epgs:4326")
+        srs1 = SRS("epsg:4326")
         srs2 = SRS(srs1)
         assert srs1 == srs2
 
-
+# proj_data_dir test relies on old Proj4 epsg files.
+@pytest.mark.skipif(not proj.USE_PROJ4_API, reason="only for old proj4 lib")
 class Test_0_ProjDefaultDataPath(object):
 
     def test_known_srs(self):
@@ -83,6 +118,7 @@ def custom_proj_data_dir():
     srs.set_datapath(None)
     base_config().srs.proj_data_dir = None
 
+@pytest.mark.skipif(not proj.USE_PROJ4_API, reason="only for old proj4 lib")
 @pytest.mark.usefixtures("custom_proj_data_dir")
 class Test_1_ProjDataPath(object):
 
@@ -153,6 +189,10 @@ class TestSupportedSRS(object):
         assert SRS(4326) in supported
         assert SRS(4258) not in supported
         assert SRS(25832) in supported
+
+    def test_iter(self, preferred):
+        supported = SupportedSRS([SRS(4326), SRS(25832)], preferred)
+        assert [SRS(4326), SRS(25832)] == [srs for srs in supported]
 
     def test_best_srs(self, preferred):
         supported = SupportedSRS([SRS(4326), SRS(25832)], preferred)

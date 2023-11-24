@@ -130,3 +130,8 @@ td.value{
 div.capabilities span{
     padding-right:1.5em;
 }
+
+.mapBtn {
+    margin-right: 10px;
+    margin-top: 5px;
+}

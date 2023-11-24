@@ -42,7 +42,7 @@ def to_greyscale(image, service, layers, **kw):
 @pytest.mark.usefixtures("fixture_cache_data")
 class TestDecorateImg(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_tile_req = WMTS100TileRequest(
             url="/service?",
             param=dict(

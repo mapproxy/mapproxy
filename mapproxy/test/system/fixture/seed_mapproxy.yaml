@@ -1,4 +1,7 @@
 globals:
+  http:
+    hide_error_details: false
+
   cache:
     base_dir: './cache'
 caches:

@@ -47,7 +47,7 @@ except ImportError:
 
 class TestWMS111(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_req = WMS111MapRequest(
             url="/service?", param=dict(service="WMS", version="1.1.1")
         )

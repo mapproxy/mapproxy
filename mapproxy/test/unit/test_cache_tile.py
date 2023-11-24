@@ -48,10 +48,10 @@ class TileCacheTestBase(object):
 
     cache = None # set by subclasses
 
-    def setup(self):
+    def setup_method(self):
         self.cache_dir = tempfile.mkdtemp()
 
-    def teardown(self):
+    def teardown_method(self):
         if hasattr(self.cache, 'cleanup'):
             self.cache.cleanup()
         if hasattr(self, 'cache_dir') and os.path.exists(self.cache_dir):
@@ -97,7 +97,7 @@ class TileCacheTestBase(object):
     def test_store_tiles(self):
         tiles = [self.create_tile((x, 589, 12)) for x in range(4)]
         tiles[0].stored = True
-        self.cache.store_tiles(tiles)
+        self.cache.store_tiles(tiles,dimensions=None)
 
         tiles = [Tile((x, 589, 12)) for x in range(4)]
         assert tiles[0].is_missing()
@@ -206,9 +206,12 @@ class TileCacheTestBase(object):
         self.cache.store_tile(tile)
 
 class TestFileTileCache(TileCacheTestBase):
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.cache = FileCache(self.cache_dir, 'png')
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_store_tile(self):
         tile = self.create_tile((5, 12, 4))
@@ -241,6 +244,30 @@ class TestFileTileCache(TileCacheTestBase):
         assert loc != loc2
         assert os.path.samefile(loc, loc2)
 
+        tile3 = Tile((0,0,2), ImageSource(img))
+        self.cache.link_single_color_images = 'hardlink'
+        self.cache.store_tile(tile3)
+        assert self.cache.is_cached(tile3)
+        loc3 = self.cache.tile_location(tile3)
+        assert is_png(open(loc3, 'rb'))
+
+        assert loc != loc3
+        assert os.path.samefile(loc, loc3)
+        loc3stat = os.stat(loc3)
+        assert loc3stat.st_nlink == 2
+
+        tile4 = Tile((0, 0, 1), ImageSource(img))
+        self.cache.link_single_color_images = 'symlink'
+        self.cache.store_tile(tile4)
+        assert self.cache.is_cached(tile4)
+        loc4 = self.cache.tile_location(tile4)
+        assert os.path.islink(loc4)
+        assert os.path.realpath(loc4).endswith('ff0105.png')
+        assert is_png(open(loc4, 'rb'))
+
+        assert loc != loc4
+        assert os.path.samefile(loc, loc4)
+
     @pytest.mark.skipif(sys.platform == 'win32',
                         reason='link_single_color_tiles not supported on windows')
     def test_single_color_tile_store_w_alpha(self):
@@ -253,6 +280,18 @@ class TestFileTileCache(TileCacheTestBase):
         assert os.path.islink(loc)
         assert os.path.realpath(loc).endswith('ff0105ff.png')
         assert is_png(open(loc, 'rb'))
+
+        tile2 = Tile((0,0,2), ImageSource(img))
+        self.cache.link_single_color_images = 'hardlink'
+        self.cache.store_tile(tile2)
+        assert self.cache.is_cached(tile2)
+        loc2 = self.cache.tile_location(tile2)
+        assert is_png(open(loc2, 'rb'))
+
+        assert loc != loc2
+        assert os.path.samefile(loc, loc2)
+        loc2stat = os.stat(loc2)
+        assert loc2stat.st_nlink == 2
 
     def test_load_metadata_missing_tile(self):
         tile = Tile((0, 0, 0))
@@ -314,14 +353,17 @@ class TestFileTileCache(TileCacheTestBase):
             cache.level_location(0)
 
 class TestMBTileCache(TileCacheTestBase):
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'))
 
-    def teardown(self):
+    def teardown_method(self):
         if self.cache:
             self.cache.cleanup()
-        TileCacheTestBase.teardown(self)
+        TileCacheTestBase.teardown_method(self)
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_load_empty_tileset(self):
         assert self.cache.load_tiles([Tile(None)]) == True
@@ -361,9 +403,12 @@ class TestMBTileCache(TileCacheTestBase):
 
 
 class TestQuadkeyFileTileCache(TileCacheTestBase):
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.cache = FileCache(self.cache_dir, 'png', directory_layout='quadkey')
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_store_tile(self):
         tile = self.create_tile((3, 4, 2))
@@ -375,9 +420,12 @@ class TestQuadkeyFileTileCache(TileCacheTestBase):
 class TestMBTileLevelCache(TileCacheTestBase):
     always_loads_metadata = True
 
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.cache = MBTilesLevelCache(self.cache_dir)
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_level_files(self):
         assert_files_in_dir(self.cache_dir, [])
@@ -418,7 +466,7 @@ class TestMBTileLevelCache(TileCacheTestBase):
             self.create_tile((0, 0, 2)),
             self.create_tile((1, 0, 2)),
             self.create_tile((1, 0, 1)),
-        ])
+        ],dimensions=None)
 
         assert_files_in_dir(self.cache_dir, ['1.mbtile', '2.mbtile'], glob='*.mbtile')
         assert self.cache.is_cached(Tile((0, 0, 1)))

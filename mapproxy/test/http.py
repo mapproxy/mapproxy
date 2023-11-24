@@ -15,10 +15,10 @@
 
 from __future__ import print_function
 
+
 import re
 import threading
 import sys
-import cgi
 import socket
 import errno
 import time
@@ -26,7 +26,7 @@ import base64
 from contextlib import contextmanager
 from mapproxy.util.py import reraise
 from mapproxy.compat import iteritems, PY2
-from mapproxy.compat.modules import urlparse
+from mapproxy.compat.modules import urlparse, parse_qsl
 if PY2:
     from cStringIO import StringIO
 else:
@@ -131,6 +131,10 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
     if query_comparator is None:
         query_comparator = query_eq
     class MockHTTPHandler(BaseHTTPRequestHandler):
+        def do_HEAD(self):
+            self.query_data = self.path
+            return self.do_mock_request('HEAD')
+
         def do_GET(self):
             self.query_data = self.path
             return self.do_mock_request('GET')
@@ -207,7 +211,10 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
                 with open(resp['body_file'], 'rb') as f:
                     self.wfile.write(f.read())
             else:
-                self.wfile.write(resp['body'])
+                if 'body' in resp:
+                    self.wfile.write(resp['body'])
+                else:
+                    self.wfile.write(b'')
             if not requests_responses:
                 self.server.shutdown = True
             return
@@ -313,7 +320,7 @@ def wms_query_eq(expected, actual):
 
     return True
 
-numbers_only = re.compile('^-?\d+\.\d+(,-?\d+\.\d+)*$')
+numbers_only = re.compile(r'^-?\d+\.\d+(,-?\d+\.\d+)*$')
 
 def query_eq(expected, actual):
     """
@@ -418,7 +425,7 @@ def query_to_dict(query):
     d = {}
     if '?' in query:
         query = query.split('?', 1)[-1]
-    for key, value in cgi.parse_qsl(query):
+    for key, value in parse_qsl(query):
         d[key.lower()] = value
     return d
 
@@ -480,3 +487,8 @@ def make_wsgi_env(query_string, extra_environ={}):
 
 def basic_auth_value(username, password):
     return base64.b64encode(('%s:%s' % (username, password)).encode('utf-8'))
+
+def assert_no_cache(resp):
+    assert resp.headers["Pragma"] == "no-cache"
+    assert resp.headers["Expires"] == "-1"
+    assert resp.cache_control.no_store == True

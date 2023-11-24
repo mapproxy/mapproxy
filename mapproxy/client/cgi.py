@@ -118,7 +118,7 @@ class CGIClient(object):
         else:
             headers, content = split_cgi_response(stdout)
 
-        status_match = re.match('(\d\d\d) ', headers.get('Status', ''))
+        status_match = re.match(r'(\d\d\d) ', headers.get('Status', ''))
         if status_match:
             status_code = status_match.group(1)
         else:

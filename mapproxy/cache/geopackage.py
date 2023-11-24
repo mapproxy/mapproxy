@@ -14,12 +14,14 @@
 # limitations under the License.
 
 
+import datetime
 import hashlib
 import logging
 import os
 import re
 import sqlite3
 import threading
+import time
 
 from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
 from mapproxy.compat import BytesIO, PY2, itertools
@@ -34,11 +36,17 @@ log = logging.getLogger(__name__)
 class GeopackageCache(TileCacheBase):
     supports_timestamp = False
 
-    def __init__(self, geopackage_file, tile_grid, table_name, with_timestamps=False, timeout=30, wal=False):
+    def __init__(self, geopackage_file, tile_grid, table_name, with_timestamps=False, timeout=30, wal=False, coverage=None):
+        super(GeopackageCache, self).__init__(coverage)
         self.tile_grid = tile_grid
         self.table_name = self._check_table_name(table_name)
         self.lock_cache_id = 'gpkg' + hashlib.md5(geopackage_file.encode('utf-8')).hexdigest()
         self.geopackage_file = geopackage_file
+        
+        if coverage:
+            self.bbox = coverage.transform_to(self.tile_grid.srs).bbox
+        else:
+            self.bbox = self.tile_grid.bbox
         # XXX timestamps not implemented
         self.supports_timestamp = with_timestamps
         self.timeout = timeout
@@ -305,6 +313,10 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
                 log.info("srs_id already exists.".format(wkt_entry[0]))
         db.commit()
 
+        last_change = datetime.datetime.utcfromtimestamp(
+            int(os.environ.get('SOURCE_DATE_EPOCH', time.time()))
+        )
+
         # Ensure that tile table exists here, don't overwrite a valid entry.
         try:
             db.execute("""
@@ -313,20 +325,22 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
                             data_type,
                             identifier,
                             description,
+                            last_change,
                             min_x,
                             max_x,
                             min_y,
                             max_y,
                             srs_id)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                         """, (self.table_name,
                               "tiles",
                               self.table_name,
                               "Created with Mapproxy.",
-                              self.tile_grid.bbox[0],
-                              self.tile_grid.bbox[2],
-                              self.tile_grid.bbox[1],
-                              self.tile_grid.bbox[3],
+                              last_change,
+                              self.bbox[0],
+                              self.bbox[2],
+                              self.bbox[1],
+                              self.bbox[3],
                               proj))
         except sqlite3.IntegrityError:
             pass
@@ -338,8 +352,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
                 INSERT INTO gpkg_tile_matrix_set (table_name, srs_id, min_x, max_x, min_y, max_y)
                 VALUES (?, ?, ?, ?, ?, ?);
             """, (
-                self.table_name, proj, self.tile_grid.bbox[0], self.tile_grid.bbox[2], self.tile_grid.bbox[1],
-                self.tile_grid.bbox[3]))
+                self.table_name, proj, self.bbox[0], self.bbox[2], self.bbox[1], self.bbox[3]))
         except sqlite3.IntegrityError:
             pass
         db.commit()
@@ -355,21 +368,21 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
         db.commit()
         db.close()
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
             return True
         if tile.source:
             return True
 
-        return self.load_tile(tile)
+        return self.load_tile(tile, dimensions=dimensions)
 
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
         return self._store_bulk([tile])
 
-    def store_tiles(self, tiles):
+    def store_tiles(self, tiles, dimensions=None):
         tiles = [t for t in tiles if not t.stored]
         return self._store_bulk(tiles)
 
@@ -395,11 +408,11 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
             cursor.executemany(stmt, records)
             self.db.commit()
         except sqlite3.OperationalError as ex:
-            log.warn('unable to store tile: %s', ex)
+            log.warning('unable to store tile: %s', ex)
             return False
         return True
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.source or tile.coord is None:
             return True
 
@@ -416,7 +429,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
         else:
             return False
 
-    def load_tiles(self, tiles, with_metadata=False):
+    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
         # associate the right tiles with the cursor
         tile_dict = {}
         coords = []
@@ -459,7 +472,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
 
         return loaded_tiles == len(tile_dict)
 
-    def remove_tile(self, tile):
+    def remove_tile(self, tile, dimensions=None):
         cursor = self.db.cursor()
         cursor.execute(
             "DELETE FROM [{0}] WHERE (tile_column = ? AND tile_row = ? AND zoom_level = ?)".format(self.table_name),
@@ -480,18 +493,19 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
                 return True
             return False
 
-    def load_tile_metadata(self, tile):
+    def load_tile_metadata(self, tile, dimensions=None):
         if not self.supports_timestamp:
             # GPKG specification does not include tile timestamps.
             # This sets the timestamp of the tile to epoch (1970s)
             tile.timestamp = -1
         else:
-            self.load_tile(tile)
+            self.load_tile(tile, dimensions=dimensions)
 
 
 class GeopackageLevelCache(TileCacheBase):
 
-    def __init__(self, geopackage_dir, tile_grid, table_name, timeout=30, wal=False):
+    def __init__(self, geopackage_dir, tile_grid, table_name, timeout=30, wal=False, coverage=None):
+        super(GeopackageLevelCache, self).__init__(coverage)
         self.lock_cache_id = 'gpkg-' + hashlib.md5(geopackage_dir.encode('utf-8')).hexdigest()
         self.cache_dir = geopackage_dir
         self.tile_grid = tile_grid
@@ -515,6 +529,7 @@ class GeopackageLevelCache(TileCacheBase):
                     with_timestamps=False,
                     timeout=self.timeout,
                     wal=self.wal,
+                    coverage=self.coverage
                 )
 
         return self._geopackage[level]
@@ -527,35 +542,35 @@ class GeopackageLevelCache(TileCacheBase):
             for gp in self._geopackage.values():
                 gp.cleanup()
 
-    def is_cached(self, tile):
+    def is_cached(self, tile, dimensions=None):
         if tile.coord is None:
             return True
         if tile.source:
             return True
 
-        return self._get_level(tile.coord[2]).is_cached(tile)
+        return self._get_level(tile.coord[2]).is_cached(tile, dimensions=dimensions)
 
-    def store_tile(self, tile):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
 
-        return self._get_level(tile.coord[2]).store_tile(tile)
+        return self._get_level(tile.coord[2]).store_tile(tile, dimensions=dimensions)
 
-    def store_tiles(self, tiles):
+    def store_tiles(self, tiles, dimensions=None):
         failed = False
         for level, tiles in itertools.groupby(tiles, key=lambda t: t.coord[2]):
             tiles = [t for t in tiles if not t.stored]
-            res = self._get_level(level).store_tiles(tiles)
+            res = self._get_level(level).store_tiles(tiles, dimensions=dimensions)
             if not res: failed = True
         return failed
 
-    def load_tile(self, tile, with_metadata=False):
+    def load_tile(self, tile, with_metadata=False,dimensions=None):
         if tile.source or tile.coord is None:
             return True
 
-        return self._get_level(tile.coord[2]).load_tile(tile, with_metadata=with_metadata)
+        return self._get_level(tile.coord[2]).load_tile(tile, with_metadata=with_metadata, dimensions=dimensions)
 
-    def load_tiles(self, tiles, with_metadata=False):
+    def load_tiles(self, tiles, with_metadata=False, dimensions=None):
         level = None
         for tile in tiles:
             if tile.source or tile.coord is None:
@@ -566,13 +581,13 @@ class GeopackageLevelCache(TileCacheBase):
         if not level:
             return True
 
-        return self._get_level(level).load_tiles(tiles, with_metadata=with_metadata)
+        return self._get_level(level).load_tiles(tiles, with_metadata=with_metadata, dimensions=dimensions)
 
-    def remove_tile(self, tile):
+    def remove_tile(self, tile, dimensions=None):
         if tile.coord is None:
             return True
 
-        return self._get_level(tile.coord[2]).remove_tile(tile)
+        return self._get_level(tile.coord[2]).remove_tile(tile, dimensions=dimensions)
 
     def remove_level_tiles_before(self, level, timestamp):
         level_cache = self._get_level(level)
@@ -582,6 +597,9 @@ class GeopackageLevelCache(TileCacheBase):
             return True
         else:
             return level_cache.remove_level_tiles_before(level, timestamp)
+
+    def load_tile_metadata(self, tile, dimensions=None):
+        return self._get_level(tile.coord[2]).load_tile_metadata(tile, dimensions=dimensions)
 
 
 def is_close(a, b, rel_tol=1e-09, abs_tol=0.0):

@@ -108,7 +108,7 @@ def bundle_offset(fname):
     >>> bundle_offset("path/to/R0380C1380.bundle")
     (4992, 896)
     """
-    match = re.search('R([A-F0-9]{4,})C([A-F0-9]{4,}).bundle$', fname, re.IGNORECASE)
+    match = re.search(r'R([A-F0-9]{4,})C([A-F0-9]{4,}).bundle$', fname, re.IGNORECASE)
     if match:
         r = int(match.group(1), 16)
         c = int(match.group(2), 16)
