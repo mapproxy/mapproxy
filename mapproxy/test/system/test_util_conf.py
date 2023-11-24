@@ -24,8 +24,8 @@ import yaml
 from mapproxy.script.conf.app import config_command
 from mapproxy.test.helper import capture
 from mapproxy.script.conf.geopackage import get_gpkg_contents, get_table_organization_coordsys_id, \
-    get_table_tile_matrix, get_estimated_tile_res_ratio, get_res_table, get_geopackage_configuration_dict, \
-    conf_from_geopackage
+    get_table_tile_matrix, get_estimated_tile_res_ratio, get_res_table, get_geopackage_configuration_dict
+from mapproxy.util.yaml import load_yaml
 
 
 def filename(name):
@@ -221,27 +221,27 @@ class TestMapProxyConfCmd(object):
                                    ]) == 0
 
         with open(self.tmp_filename('mapproxy.yaml'), 'rb') as f:
-            conf = yaml.load(f)
+            conf = load_yaml(f)
 
-            eq_(conf['grids'], {'cache_900913': {'origin': 'nw', 'srs': 'EPSG:900913',
+            assert conf['grids'] == {'cache_900913': {'origin': 'nw', 'srs': 'EPSG:900913',
                                  'res': [156543.03392804097, 78271.51696402048, 39135.75848201024, 19567.87924100512,
                                          9783.93962050256, 4891.96981025128, 2445.98490512564, 1222.99245256282,
                                          611.49622628141, 305.748113140705, 152.8740565703525, 76.43702828517625,
                                          38.21851414258813, 19.109257071294063, 9.554628535647032, 4.777314267823516,
                                          2.388657133911758, 1.194328566955879, 0.5971642834779395],
                                  'bbox': [-20037508.342789244, -20037508.342789244, 20037508.342789244,
-                                          20037508.342789244], 'tile_size': [256, 256]}})
+                                          20037508.342789244], 'tile_size': [256, 256]}}
 
             conf['caches']['cache_cache']['cache']['filename'] = None
-            eq_(conf['caches'], {'cache_cache': {'sources': [], 'cache': {'table_name': 'cache', 'type': 'geopackage',
+            assert conf['caches'] == {'cache_cache': {'sources': [], 'cache': {'table_name': 'cache', 'type': 'geopackage',
                                                          'filename': None},
                                 'grids': ['cache_900913']}
-            })
+            }
 
-            eq_(conf['layers'], [{'sources': ['cache_cache'], 'name': 'cache', 'title': 'cache'}])
+            assert conf['layers'] == [{'sources': ['cache_cache'], 'name': 'cache', 'title': 'cache'}]
 
-            eq_(conf['services'], {'wms': None, 'demo': None, 'tms': {'origin': 'nw', 'use_grid_names': True},
-                          'kml': {'use_grid_names': True}, 'wmts': None})
+            assert conf['services'] == {'wms': None, 'demo': None, 'tms': {'origin': 'nw', 'use_grid_names': True},
+                          'kml': {'use_grid_names': True}, 'wmts': None}
 
     def test_overwrites(self):
         with capture(bytes=True) as (stdout, stderr):
@@ -347,12 +347,12 @@ class TestMapProxyConfCmd(object):
                             ('no_spatial_ref_sys', 'tiles', 'test_case', '', '2016-06-13T16:24:03.423Z',
                              -20037508.3427892, -20037508.3427892, 20037508.3427892, 20037508.3427892,
                              20037508.3427892)]
-        eq_(expected_results, returned_contents)
+        assert expected_results == returned_contents
 
     def test_get_layer_organization_coordsys_id(self):
         returned_contents = get_table_organization_coordsys_id(self.get_test_gpkg(), 900913)
         expected_results = 900913
-        eq_(expected_results, returned_contents)
+        assert expected_results == returned_contents
 
     def test_get_layer_organization_coordsys_id(self):
         returned_contents = get_table_tile_matrix(self.get_test_gpkg(), 'cache')
@@ -375,25 +375,25 @@ class TestMapProxyConfCmd(object):
                             (16, 65536, 65536, 256, 256, 2.388657133911758, 2.388657133911758),
                             (17, 131072, 131072, 256, 256, 1.194328566955879, 1.194328566955879),
                             (18, 262144, 262144, 256, 256, 0.5971642834779395, 0.5971642834779395)]
-        eq_(expected_results, returned_contents)
+        assert expected_results == returned_contents
 
     def test_get_estimated_tile_res_ratio(self):
         # Test one level
         returned_contents = get_estimated_tile_res_ratio(((0, 1, 1, 256, 256, 156543.03392804097, 156543.03392804097),))
         expected_results = 2
-        eq_(expected_results, returned_contents)
+        assert expected_results == returned_contents
 
         # Test two not contiguous levels
         returned_contents = get_estimated_tile_res_ratio(((0, 1, 1, 256, 256, 156543.03392804097, 156543.03392804097),
                                                           (2, 4, 4, 256, 256, 39135.75848201024, 39135.75848201024)))
         expected_results = 2
-        eq_(expected_results, returned_contents)
+        assert expected_results == returned_contents
 
         # Test two contiguous levels
         returned_contents = get_estimated_tile_res_ratio(((0, 1, 1, 256, 256, 156543.03392804097, 156543.03392804097),
                                                           (1, 2, 2, 256, 256, 39135.75848201024, 39135.75848201024)))
         expected_results = 4
-        eq_(expected_results, returned_contents)
+        assert expected_results == returned_contents
 
     def test_get_res_table(self):
         returned_contents = get_res_table([(5, 32, 32, 256, 256, 4891.96981025128, 4891.96981025128),
@@ -403,7 +403,7 @@ class TestMapProxyConfCmd(object):
                             305.748113140705, 152.8740565703525, 76.43702828517625, 38.21851414258813,
                             19.109257071294063, 9.554628535647032, 4.777314267823516, 2.388657133911758,
                             1.194328566955879, 0.5971642834779395]
-        eq_(expected_results, returned_contents)
+        assert expected_results == returned_contents
 
     def test_get_geopackage_configuration_dict(self):
         returned_contents = get_geopackage_configuration_dict(self.get_test_gpkg())
@@ -424,4 +424,4 @@ class TestMapProxyConfCmd(object):
                 'cache_cache': {'sources': [], 'cache': {'table_name': 'cache', 'type': 'geopackage',
                                                          'filename': None},
                                 'grids': ['cache_900913']}}}
-        eq_(expected_results, returned_contents)
+        assert expected_results == returned_contents
