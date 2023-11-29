@@ -1341,7 +1341,9 @@ class CacheConfiguration(ConfigurationBase):
         username = self.conf['cache'].get('username',None)
         password = self.conf['cache'].get('password', None)
         coverage = self.coverage()
-
+        ssl_certfile = self.conf['cache'].get('ssl_certfile',None)
+        ssl_keyfile = self.conf['cache'].get('ssl_keyfile', None)
+        ssl_ca_certs = self.conf['cache'].get('ssl_ca_certs', None)
         prefix = self.conf['cache'].get('prefix')
         if not prefix:
             prefix = self.conf['name'] + '_' + grid_conf.tile_grid().name
@@ -1354,7 +1356,10 @@ class CacheConfiguration(ConfigurationBase):
             password=password,
             prefix=prefix,
             ttl=ttl,
-            coverage=coverage
+            coverage=coverage,
+            ssl_certfile=ssl_certfile,
+            ssl_keyfile=ssl_keyfile,
+            ssl_ca_certs=ssl_ca_certs
         )
 
     def _compact_cache(self, grid_conf, file_ext):

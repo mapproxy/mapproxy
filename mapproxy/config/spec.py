@@ -186,6 +186,9 @@ cache_types = {
         'db': int(),
         'prefix': str(),
         'default_ttl': int(),
+        'ssl_certfile': str(),
+        'ssl_keyfile': str(),
+        'ssl_ca_certs': str(),
     }),
     'compact': combined(cache_commons, {
         'directory': str(),
