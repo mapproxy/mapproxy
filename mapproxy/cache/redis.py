@@ -49,9 +49,23 @@ class RedisCache(TileCacheBase):
         # str(username) => if not set defaults to None
         self.lock_cache_id = 'redis-' + hashlib.md5((host + str(port) + prefix + str(db) + str(username)).encode('utf-8')).hexdigest()
         self.ttl = ttl
-        # Enable SSL only if certificate, key, and CA files are provided
-        ssl_enabled = all([self.ssl_certfile, self.ssl_keyfile, self.ssl_ca_certs])
-        self.r = redis.StrictRedis(host=host, port=port, username=username, password=password, db=db, ssl_certfile=self.ssl_certfile if ssl_enabled else None, ssl_keyfile=self.ssl_keyfile if ssl_enabled else None, ssl_ca_certs=self.ssl_ca_certs if ssl_enabled else None, ssl=ssl_enabled)
+        # Enable SSL only if certificate and key are provided (CA certificates are not mandatory, but if provided use them)
+        ssl_enabled = all([self.ssl_certfile, self.ssl_keyfile])
+        ssl_certfile = self.ssl_certfile if ssl_enabled else None
+        ssl_keyfile = self.ssl_keyfile if ssl_enabled else None
+        ssl_ca_certs = self.ssl_ca_certs if ssl_enabled and self.ssl_ca_certs else None
+        self.r = redis.StrictRedis(
+            host=host,
+            port=port,
+            username=username,
+            password=password,
+            db=db,
+            ssl_certfile=ssl_certfile,
+            ssl_keyfile=ssl_keyfile,
+            ssl_ca_certs=ssl_ca_certs,
+            ssl=ssl_enabled
+        )
+
 
     def _key(self, tile):
         x, y, z = tile.coord
