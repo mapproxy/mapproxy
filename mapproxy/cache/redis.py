@@ -49,7 +49,8 @@ class RedisCache(TileCacheBase):
 
         self.prefix = prefix
         # str(username) => if not set defaults to None
-        self.lock_cache_id = 'redis-' + hashlib.md5((host + str(port) + prefix + str(db) + str(username)).encode('utf-8')).hexdigest()
+        md5 = hashlib.new('md5', (host + str(port) + prefix + str(db)).encode('utf-8'), usedforsecurity=False)
+        self.lock_cache_id = 'redis-' + md5.hexdigest()
         self.ttl = ttl
         # Enable SSL only if certificate and key are provided (CA certificates are not mandatory, but if provided use them)
         ssl_enabled = all([self.ssl_certfile, self.ssl_keyfile])
