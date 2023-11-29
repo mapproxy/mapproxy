@@ -40,6 +40,7 @@ class FileCache(TileCacheBase):
         self.lock_cache_id = hashlib.md5(cache_dir.encode('utf-8')).hexdigest()
         self.cache_dir = cache_dir
         self.file_ext = file_ext
+        self.is_mixed = self.file_ext == 'mixed'
         self.link_single_color_images = link_single_color_images
         self._tile_location, self._level_location = path.location_funcs(layout=directory_layout)
         if self._level_location is None:
@@ -51,7 +52,16 @@ class FileCache(TileCacheBase):
             items.sort()
             dimensions_str = ['{key}-{value}'.format(key=i, value=dimensions[i].replace('/', '_')) for i in items]
             cache_dir = os.path.join(self.cache_dir, '_'.join(dimensions_str))
-        return self._tile_location(tile, self.cache_dir, self.file_ext, create_dir=create_dir, dimensions=dimensions)
+        
+        if self.is_mixed:
+            location = self._tile_location(tile, self.cache_dir, 'jpeg', create_dir=create_dir, dimensions=dimensions)
+            if not os.path.exists(location):
+                tile.location = None
+                location = self._tile_location(tile, self.cache_dir, 'png', create_dir=create_dir, dimensions=dimensions)
+        else:
+            location = self._tile_location(tile, self.cache_dir, self.file_ext, create_dir=create_dir, dimensions=dimensions)
+        tile.location = location
+        return location
 
     def level_location(self, level, dimensions=None):
         """
