@@ -96,18 +96,20 @@ def tile_location_tc(tile, cache_dir, file_ext, create_dir=False, dimensions=Non
     >>> tile_location_tc(Tile((3, 4, 2)), '/tmp/cache', 'png').replace('\\\\', '/')
     '/tmp/cache/02/000/000/003/000/000/004.png'
     """
-    x, y, z = tile.coord
-    
-    parts = (cache_dir,
-            dimensions_part(dimensions),
-            level_part(z),
-                "%03d" % int(x / 1000000),
-                "%03d" % (int(x / 1000) % 1000),
-                "%03d" % (int(x) % 1000),
-                "%03d" % int(y / 1000000),
-                "%03d" % (int(y / 1000) % 1000),
-                "%03d.%s" % (int(y) % 1000, file_ext))
-    location = os.path.join(*parts)
+    location = tile.location
+    if location is None:
+        x, y, z = tile.coord
+        
+        parts = (cache_dir,
+                dimensions_part(dimensions),
+                level_part(z),
+                    "%03d" % int(x / 1000000),
+                    "%03d" % (int(x / 1000) % 1000),
+                    "%03d" % (int(x) % 1000),
+                    "%03d" % int(y / 1000000),
+                    "%03d" % (int(y / 1000) % 1000),
+                    "%03d.%s" % (int(y) % 1000, file_ext))
+        location = os.path.join(*parts)
     if create_dir:
         ensure_directory(location)
     return location
@@ -127,15 +129,17 @@ def tile_location_mp(tile, cache_dir, file_ext, create_dir=False, dimensions=Non
     >>> tile_location_mp(Tile((12345678, 98765432, 22)), '/tmp/cache', 'png').replace('\\\\', '/')
     '/tmp/cache/22/1234/5678/9876/5432.png'
     """
-    x, y, z = tile.coord
-    parts = (cache_dir,
-            dimensions_part(dimensions),
-            level_part(z),
-                "%04d" % int(x / 10000),
-                "%04d" % (int(x) % 10000),
-                "%04d" % int(y / 10000),
-                "%04d.%s" % (int(y) % 10000, file_ext))
-    location = os.path.join(*parts)
+    location = tile.location
+    if location is None:
+        x, y, z = tile.coord
+        parts = (cache_dir,
+                dimensions_part(dimensions),
+                level_part(z),
+                    "%04d" % int(x / 10000),
+                    "%04d" % (int(x) % 10000),
+                    "%04d" % int(y / 10000),
+                    "%04d.%s" % (int(y) % 10000, file_ext))
+        location = os.path.join(*parts)
     if create_dir:
         ensure_directory(location)
     return location
@@ -153,11 +157,13 @@ def tile_location_tms(tile, cache_dir, file_ext, create_dir=False, dimensions=No
     >>> tile_location_tms(Tile((3, 4, 2)), '/tmp/cache', 'png').replace('\\\\', '/')
     '/tmp/cache/2/3/4.png'
     """
-    x, y, z = tile.coord
-    location = os.path.join(
-        cache_dir,dimensions_part(dimensions) ,level_part(str(z)),
-        str(x), str(y) + '.' + file_ext
-    )
+    location = tile.location
+    if location is None:
+        x, y, z = tile.coord
+        location = os.path.join(
+            cache_dir,dimensions_part(dimensions) ,level_part(str(z)),
+            str(x), str(y) + '.' + file_ext
+        )
     if create_dir:
         ensure_directory(location)
     return location
@@ -175,10 +181,12 @@ def tile_location_reverse_tms(tile, cache_dir, file_ext, create_dir=False, dimen
     >>> tile_location_reverse_tms(Tile((3, 4, 2)), '/tmp/cache', 'png').replace('\\\\', '/')
     '/tmp/cache/4/3/2.png'
     """
-    x, y, z = tile.coord
-    location = os.path.join(
-        cache_dir,dimensions_part(dimensions),str(y), str(x), str(z) + '.' + file_ext
-    )
+    location = tile.location
+    if location is None:
+        x, y, z = tile.coord
+        location = os.path.join(
+            cache_dir,dimensions_part(dimensions),str(y), str(x), str(z) + '.' + file_ext
+        )
     if create_dir:
         ensure_directory(location)
     return location
@@ -199,19 +207,21 @@ def tile_location_quadkey(tile, cache_dir, file_ext, create_dir=False, dimension
     >>> tile_location_quadkey(Tile((3, 4, 2)), '/tmp/cache', 'png').replace('\\\\', '/')
     '/tmp/cache/11.png'
     """
-    x, y, z = tile.coord
-    quadKey = ""
-    for i in range(z,0,-1):
-        digit = 0
-        mask = 1 << (i-1)
-        if (x & mask) != 0:
-            digit += 1
-        if (y & mask) != 0:
-            digit += 2
-        quadKey += str(digit)
-    location = os.path.join(
-        cache_dir, quadKey + '.' + file_ext
-    )
+    location = tile.location
+    if location is None:
+        x, y, z = tile.coord
+        quadKey = ""
+        for i in range(z,0,-1):
+            digit = 0
+            mask = 1 << (i-1)
+            if (x & mask) != 0:
+                digit += 1
+            if (y & mask) != 0:
+                digit += 2
+            quadKey += str(digit)
+        location = os.path.join(
+            cache_dir, quadKey + '.' + file_ext
+        )
     if create_dir:
         ensure_directory(location)
     return location
@@ -233,9 +243,11 @@ def tile_location_arcgiscache(tile, cache_dir, file_ext, create_dir=False, dimen
     >>> tile_location_arcgiscache(Tile((1234567, 87654321, 9)), '/tmp/cache', 'png').replace('\\\\', '/')
     '/tmp/cache/L09/R05397fb1/C0012d687.png'
     """
-    x, y, z = tile.coord
-    parts = (cache_dir, 'L%02d' % z, 'R%08x' % y, 'C%08x.%s' % (x, file_ext))
-    location = os.path.join(*parts)
+    location = tile.location
+    if location is None:
+        x, y, z = tile.coord
+        parts = (cache_dir, 'L%02d' % z, 'R%08x' % y, 'C%08x.%s' % (x, file_ext))
+        location = os.path.join(*parts)
     if create_dir:
         ensure_directory(location)
     return location
