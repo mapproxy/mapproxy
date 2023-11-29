@@ -46,7 +46,7 @@ packaging==23.2
 pluggy==0.13.1
 py==1.11.0
 pyasn1==0.5.1
-pycparser==2.20
+pycparser==2.21
 pyparsing==3.1.1
 pyproj==2.6.1.post1;python_version=="3.8"
 pyproj==3.3.1;python_version in "3.9 3.10"
