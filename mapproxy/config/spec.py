@@ -166,6 +166,7 @@ cache_types = {
         'endpoint_url': str(),
         'access_control_list': str(),
         'tile_lock_dir': str(),
+        'use_http_get': bool(),
      }),
     'riak': combined(cache_commons, {
         'nodes': [riak_node],

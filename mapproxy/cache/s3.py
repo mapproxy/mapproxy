@@ -24,6 +24,8 @@ from mapproxy.cache import path
 from mapproxy.cache.base import tile_buffer, TileCacheBase
 from mapproxy.util import async_
 from mapproxy.util.py import reraise_exception
+from urllib import request as urllib2
+from urllib.error import HTTPError
 
 try:
     import boto3
@@ -51,7 +53,7 @@ class S3Cache(TileCacheBase):
 
     def __init__(self, base_path, file_ext, directory_layout='tms',
                  bucket_name='mapproxy', profile_name=None, region_name=None, endpoint_url=None,
-                 _concurrent_writer=4, access_control_list=None, coverage=None):
+                 _concurrent_writer=4, access_control_list=None, coverage=None, use_http_get=False):
         super(S3Cache, self).__init__(coverage)
         md5 = hashlib.new('md5', base_path.encode('utf-8') + bucket_name.encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = md5.hexdigest()
@@ -60,6 +62,7 @@ class S3Cache(TileCacheBase):
         self.region_name = region_name
         self.endpoint_url = endpoint_url
         self.access_control_list = access_control_list
+        self.use_http_get = use_http_get
 
         try:
             self.bucket = self.conn().head_bucket(Bucket=bucket_name)
@@ -79,6 +82,9 @@ class S3Cache(TileCacheBase):
         self._concurrent_writer = _concurrent_writer
 
         self._tile_location, _ = path.location_funcs(layout=directory_layout)
+
+    def get_bucket_url(self, tile):
+        return "https://{bucket}.s3.{region}.amazonaws.com/{key}".format(bucket=self.bucket_name, region=self.region_name, key=self.tile_key(tile))
 
     def tile_key(self, tile):
         return self._tile_location(tile, self.base_path, self.file_ext).lstrip('/')
@@ -105,14 +111,24 @@ class S3Cache(TileCacheBase):
 
     def is_cached(self, tile, dimensions=None):
         if tile.is_missing():
-            key = self.tile_key(tile)
-            try:
-                r = self.conn().head_object(Bucket=self.bucket_name, Key=key)
-                self._set_metadata(r, tile)
-            except botocore.exceptions.ClientError as e:
-                if e.response['Error']['Code'] in ('404', 'NoSuchKey'):
-                    return False
-                raise
+            if self.use_http_get:
+                try:
+                    req = urllib2.Request(self.get_bucket_url(tile))
+                    response = urllib2.urlopen(req)
+                    self._set_metadata(response.info(), tile)
+                except urllib2.HTTPError as e:
+                    if e.code == 403:
+                        return False
+                    raise
+            else:
+                key = self.tile_key(tile)
+                try:
+                    r = self.conn().head_object(Bucket=self.bucket_name, Key=key)
+                    self._set_metadata(r, tile)
+                except botocore.exceptions.ClientError as e:
+                    if e.response['Error']['Code'] in ('404', 'NoSuchKey'):
+                        return False
+                    raise
 
         return True
 
@@ -127,15 +143,24 @@ class S3Cache(TileCacheBase):
         key = self.tile_key(tile)
         log.debug('S3:load_tile, key: %s' % key)
 
-        try:
-            r  = self.conn().get_object(Bucket=self.bucket_name, Key=key)
-            self._set_metadata(r, tile)
-            tile.source = ImageSource(r['Body'])
-        except botocore.exceptions.ClientError as e:
-            error = e.response.get('Errors', e.response)['Error'] # moto get_object can return Error wrapped in Errors...
-            if error['Code'] in ('404', 'NoSuchKey'):
-                return False
-            raise
+        if self.use_http_get:
+            try:
+                req = urllib2.Request(self.get_bucket_url(tile))
+                tile.source = ImageSource(urllib2.urlopen(req))
+            except urllib2.HTTPError as e:
+                if e.code == 403:
+                    return False
+                raise
+        else:
+            try:
+                r  = self.conn().get_object(Bucket=self.bucket_name, Key=key)
+                self._set_metadata(r, tile)
+                tile.source = ImageSource(r['Body'])
+            except botocore.exceptions.ClientError as e:
+                error = e.response.get('Errors', e.response)['Error'] # moto get_object can return Error wrapped in Errors...
+                if error['Code'] in ('404', 'NoSuchKey'):
+                    return False
+                raise
 
         return True
 
