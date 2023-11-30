@@ -36,7 +36,8 @@ class CompactCacheBase(TileCacheBase):
 
     def __init__(self, cache_dir, coverage=None):
         super(CompactCacheBase, self).__init__(coverage)
-        self.lock_cache_id = 'compactcache-' + hashlib.md5(cache_dir.encode('utf-8')).hexdigest()
+        md5 = hashlib.new('md5', cache_dir.encode('utf-8'), usedforsecurity=False)
+        self.lock_cache_id = 'compactcache-' + md5.hexdigest()
         self.cache_dir = cache_dir
 
     def _get_bundle_fname_and_offset(self, tile_coord):

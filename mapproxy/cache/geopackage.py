@@ -40,7 +40,8 @@ class GeopackageCache(TileCacheBase):
         super(GeopackageCache, self).__init__(coverage)
         self.tile_grid = tile_grid
         self.table_name = self._check_table_name(table_name)
-        self.lock_cache_id = 'gpkg' + hashlib.md5(geopackage_file.encode('utf-8')).hexdigest()
+        md5 = hashlib.new('md5', geopackage_file.encode('utf-8'), usedforsecurity=False)
+        self.lock_cache_id = 'gpkg' + md5.hexdigest()
         self.geopackage_file = geopackage_file
         
         if coverage:
@@ -506,7 +507,8 @@ class GeopackageLevelCache(TileCacheBase):
 
     def __init__(self, geopackage_dir, tile_grid, table_name, timeout=30, wal=False, coverage=None):
         super(GeopackageLevelCache, self).__init__(coverage)
-        self.lock_cache_id = 'gpkg-' + hashlib.md5(geopackage_dir.encode('utf-8')).hexdigest()
+        md5 = hashlib.new('md5', geopackage_dir.encode('utf-8'), usedforsecurity=False)
+        self.lock_cache_id = 'gpkg-' + md5.hexdigest()
         self.cache_dir = geopackage_dir
         self.tile_grid = tile_grid
         self.table_name = table_name

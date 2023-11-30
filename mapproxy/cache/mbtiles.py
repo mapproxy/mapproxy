@@ -44,7 +44,8 @@ class MBTilesCache(TileCacheBase):
 
     def __init__(self, mbtile_file, with_timestamps=False, timeout=30, wal=False, ttl=0, coverage=None):
         super(MBTilesCache, self).__init__(coverage)
-        self.lock_cache_id = 'mbtiles-' + hashlib.md5(mbtile_file.encode('utf-8')).hexdigest()
+        md5 = hashlib.new('md5', mbtile_file.encode('utf-8'), usedforsecurity=False)
+        self.lock_cache_id = 'mbtiles-' + md5.hexdigest()
         self.mbtile_file = mbtile_file
         self.supports_timestamp = with_timestamps
         self.ttl = with_timestamps and ttl or 0
@@ -310,7 +311,8 @@ class MBTilesLevelCache(TileCacheBase):
 
     def __init__(self, mbtiles_dir, timeout=30, wal=False, ttl=0, coverage=None):
         super(MBTilesLevelCache, self).__init__(coverage)
-        self.lock_cache_id = 'sqlite-' + hashlib.md5(mbtiles_dir.encode('utf-8')).hexdigest()
+        md5 = hashlib.new('md5', mbtiles_dir.encode('utf-8'), usedforsecurity=False)
+        self.lock_cache_id = 'sqlite-' + md5.hexdigest()
         self.cache_dir = mbtiles_dir
         self._mbtiles = {}
         self.timeout = timeout

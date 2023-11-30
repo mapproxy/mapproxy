@@ -53,7 +53,8 @@ class S3Cache(TileCacheBase):
                  bucket_name='mapproxy', profile_name=None, region_name=None, endpoint_url=None,
                  _concurrent_writer=4, access_control_list=None, coverage=None):
         super(S3Cache, self).__init__(coverage)
-        self.lock_cache_id = hashlib.md5(base_path.encode('utf-8') + bucket_name.encode('utf-8')).hexdigest()
+        md5 = hashlib.new('md5', base_path.encode('utf-8') + bucket_name.encode('utf-8'), usedforsecurity=False)
+        self.lock_cache_id = md5.hexdigest()
         self.bucket_name = bucket_name
         self.profile_name = profile_name
         self.region_name = region_name
