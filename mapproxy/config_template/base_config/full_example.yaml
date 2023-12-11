@@ -591,3 +591,8 @@ globals:
         encoding_options:
           # jpeg quality [0-100]
           jpeg_quality: 60
+
+  # background map of the demo service
+  background:
+    # tile source in ZXY format
+    url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png" 

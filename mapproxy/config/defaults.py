@@ -26,6 +26,10 @@ wms = dict(
 )
 debug_mode = False
 
+background = dict(
+    url = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+)
+
 srs = dict(
     # user sets
     axis_order_ne = set(),
