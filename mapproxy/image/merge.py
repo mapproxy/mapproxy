@@ -312,5 +312,7 @@ def concat_json_legends(legends):
     for legend in legends:
         legend_str = legend.read().decode('utf-8')
         legend_dict = json.loads(legend_str)
-        legends_dict['Legend'].append(legend_dict['Legend'][0])
+        if 'Legend' in legend_dict:
+            legend_dict = legend_dict['Legend'][0]
+        legends_dict['Legend'].append(legend_dict)
     return json.dumps(legends_dict)
