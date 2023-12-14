@@ -1080,7 +1080,7 @@ class CacheConfiguration(ConfigurationBase):
             lock_dir = os.path.join(self.cache_dir(), 'tile_locks')
         return lock_dir
 
-    def _file_cache(self, grid_conf, file_ext):
+    def _file_cache(self, grid_conf, image_opts):
         from mapproxy.cache.file import FileCache
 
         cache_dir = self.cache_dir()
@@ -1109,13 +1109,14 @@ class CacheConfiguration(ConfigurationBase):
 
         return FileCache(
             cache_dir,
-            file_ext=file_ext,
+            file_ext=image_opts.format.ext,
+            image_opts=image_opts,
             directory_layout=directory_layout,
             link_single_color_images=link_single_color_images,
             coverage=coverage
         )
 
-    def _mbtiles_cache(self, grid_conf, file_ext):
+    def _mbtiles_cache(self, grid_conf, image_opts):
         from mapproxy.cache.mbtiles import MBTilesCache
 
         filename = self.conf['cache'].get('filename')
@@ -1138,7 +1139,7 @@ class CacheConfiguration(ConfigurationBase):
             coverage=coverage
         )
 
-    def _geopackage_cache(self, grid_conf, file_ext):
+    def _geopackage_cache(self, grid_conf, image_opts):
         from mapproxy.cache.geopackage import GeopackageCache, GeopackageLevelCache
 
         filename = self.conf['cache'].get('filename')
@@ -1177,7 +1178,7 @@ class CacheConfiguration(ConfigurationBase):
                 gpkg_file_path, grid_conf.tile_grid(), table_name, coverage=coverage
             )
 
-    def _azureblob_cache(self, grid_conf, file_ext):
+    def _azureblob_cache(self, grid_conf, image_opts):
         from mapproxy.cache.azureblob import AzureBlobCache
 
         container_name = self.context.globals.get_value('cache.container_name', self.conf,
@@ -1201,14 +1202,14 @@ class CacheConfiguration(ConfigurationBase):
 
         return AzureBlobCache(
             base_path=base_path,
-            file_ext=file_ext,
+            file_ext=image_opts.format.ext,
             directory_layout=directory_layout,
             container_name=container_name,
             connection_string=connection_string,
             coverage=coverage
         )
 
-    def _s3_cache(self, grid_conf, file_ext):
+    def _s3_cache(self, grid_conf, image_opts):
         from mapproxy.cache.s3 import S3Cache
 
         bucket_name = self.context.globals.get_value('cache.bucket_name', self.conf,
@@ -1242,7 +1243,7 @@ class CacheConfiguration(ConfigurationBase):
 
         return S3Cache(
             base_path=base_path,
-            file_ext=file_ext,
+            file_ext=image_opts.format.ext,
             directory_layout=directory_layout,
             bucket_name=bucket_name,
             profile_name=profile_name,
@@ -1253,7 +1254,7 @@ class CacheConfiguration(ConfigurationBase):
             use_http_get=use_http_get
         )
 
-    def _sqlite_cache(self, grid_conf, file_ext):
+    def _sqlite_cache(self, grid_conf, image_opts):
         from mapproxy.cache.mbtiles import MBTilesLevelCache
 
         cache_dir = self.conf.get('cache', {}).get('directory')
@@ -1282,7 +1283,7 @@ class CacheConfiguration(ConfigurationBase):
             coverage=coverage
         )
 
-    def _couchdb_cache(self, grid_conf, file_ext):
+    def _couchdb_cache(self, grid_conf, image_opts):
         from mapproxy.cache.couchdb import CouchDBCache, CouchDBMDTemplate
 
         db_name = self.conf['cache'].get('db_name')
@@ -1299,10 +1300,10 @@ class CacheConfiguration(ConfigurationBase):
         coverage = self.coverage()
 
         return CouchDBCache(url=url, db_name=db_name,
-            file_ext=file_ext, tile_grid=grid_conf.tile_grid(),
+            file_ext=image_opts.format.ext, tile_grid=grid_conf.tile_grid(),
             md_template=md_template, tile_id_template=tile_id, coverage=coverage)
 
-    def _riak_cache(self, grid_conf, file_ext):
+    def _riak_cache(self, grid_conf, image_opts):
         from mapproxy.cache.riak import RiakCache
 
         default_ports = self.conf['cache'].get('default_ports', {})
@@ -1336,7 +1337,7 @@ class CacheConfiguration(ConfigurationBase):
             coverage=coverage
         )
 
-    def _redis_cache(self, grid_conf, file_ext):
+    def _redis_cache(self, grid_conf, image_opts):
         from mapproxy.cache.redis import RedisCache
 
         host = self.conf['cache'].get('host', '127.0.0.1')
@@ -1367,7 +1368,7 @@ class CacheConfiguration(ConfigurationBase):
             ssl_ca_certs=ssl_ca_certs
         )
 
-    def _compact_cache(self, grid_conf, file_ext):
+    def _compact_cache(self, grid_conf, image_opts):
         from mapproxy.cache.compact import CompactCacheV1, CompactCacheV2
 
         coverage = self.coverage()
@@ -1390,14 +1391,14 @@ class CacheConfiguration(ConfigurationBase):
 
         raise ConfigurationError("compact cache only supports version 1 or 2")
 
-    def _tile_cache(self, grid_conf, file_ext):
+    def _tile_cache(self, grid_conf, image_opts):
         if self.conf.get('disable_storage', False):
             from mapproxy.cache.dummy import DummyCache
             return DummyCache()
 
         grid_conf.tile_grid() #create to resolve `base` in grid_conf.conf
         cache_type = self.conf.get('cache', {}).get('type', 'file')
-        return getattr(self, '_%s_cache' % cache_type)(grid_conf, file_ext)
+        return getattr(self, '_%s_cache' % cache_type)(grid_conf, image_opts)
 
     def _tile_filter(self):
         filters = []
@@ -1616,7 +1617,7 @@ class CacheConfiguration(ConfigurationBase):
             tile_grid = grid_conf.tile_grid()
             tile_filter = self._tile_filter()
             image_opts = compatible_image_options(source_image_opts, base_opts=base_image_opts)
-            cache = self._tile_cache(grid_conf, image_opts.format.ext)
+            cache = self._tile_cache(grid_conf, image_opts)
             identifier = self.conf['name'] + '_' + tile_grid.name
 
             tile_creator_class = None

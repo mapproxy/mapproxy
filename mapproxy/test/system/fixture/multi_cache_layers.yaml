@@ -40,6 +40,9 @@ layers:
   - name: cache
     title: single cache layer
     sources: [utm_cache]
+  - name: cache_image
+    title: cache layer with image opts
+    sources: [cache_image]
 
 caches:
   utm_cache:
@@ -52,6 +55,14 @@ caches:
     grids: [gk3]
     disable_storage: true
     sources: [utm_cache]
+  cache_image:
+    grids: [GLOBAL_WEBMERCATOR, wmts_incompatible_grid, crs84quad]
+    sources: [wms_source]
+    image:
+      mode: P
+      transparent: true
+      encoding_options:
+        quantizer: fastoctree
 
 sources:
   wms_source:

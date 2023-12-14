@@ -68,6 +68,10 @@ class TestMultiCacheLayer(SysTest):
             ),
         )
 
+    def test_image_config(self, app):
+        resp = app.get("/tms/1.0.0/")
+        assert "http://localhost/tms/1.0.0/cache_image/EPSG25832" in resp
+
     def test_tms_capabilities(self, app):
         resp = app.get("/tms/1.0.0/")
         assert "http://localhost/tms/1.0.0/multi_cache/EPSG25832" in resp
@@ -76,7 +80,7 @@ class TestMultiCacheLayer(SysTest):
         assert "http://localhost/tms/1.0.0/multi_cache/EPSG31467" in resp
         assert "http://localhost/tms/1.0.0/cache/EPSG25832" in resp
         xml = resp.lxml
-        assert xml.xpath("count(//TileMap)") == 5
+        assert xml.xpath("count(//TileMap)") == 8
 
     def test_wmts_capabilities(self, app):
         req = str(self.common_cap_req)
@@ -89,7 +93,7 @@ class TestMultiCacheLayer(SysTest):
         )
         assert set(
             xml.xpath("//wmts:Layer/ows:Identifier/text()", namespaces=ns_wmts)
-        ) == set(["cache", "multi_cache"])
+        ) == set(["cache", "multi_cache", "cache_image"])
         assert set(
             xml.xpath(
                 "//wmts:Contents/wmts:TileMatrixSet/ows:Identifier/text()",
@@ -111,7 +115,7 @@ class TestMultiCacheLayer(SysTest):
         )
 
         layer_names = set(xml.xpath("//Layer/Layer/Name/text()"))
-        expected_names = set(["wms_only", "cache"])
+        expected_names = set(["wms_only", "cache", "cache_image"])
         assert layer_names == expected_names
 
     def test_get_tile_webmerc(self, app):
