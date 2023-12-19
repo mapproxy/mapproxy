@@ -57,7 +57,7 @@ python-jose==3.3.0
 pytz==2023.3.post1
 redis==5.0.1
 requests==2.31.0
-responses==0.23.3
+responses==0.24.1
 riak==2.7.0
 rsa==4.9
 s3transfer==0.8.2
