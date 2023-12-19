@@ -87,7 +87,7 @@ This is the default cache type and it uses a single file for each tile. Availabl
 ``image``:
   See :ref:`image_options` for options.
 
-  .. versionadded:: 1.16.1
+  .. versionadded:: 2.0.0
 
 .. _cache_mbtiles:
 
