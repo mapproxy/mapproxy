@@ -40,14 +40,14 @@ is_win = sys.platform == "win32"
 
 class TestFileLock(Mocker):
 
-    def setup(self):
-        Mocker.setup(self)
+    def setup_method(self):
+        Mocker.setup_method(self)
         self.lock_dir = tempfile.mkdtemp()
         self.lock_file = os.path.join(self.lock_dir, "lock.lck")
 
-    def teardown(self):
+    def teardown_method(self):
         shutil.rmtree(self.lock_dir)
-        Mocker.teardown(self)
+        Mocker.teardown_method(self)
 
     def test_file_lock_timeout(self):
         lock = self._create_lock()
@@ -174,11 +174,11 @@ def assert_locked(lock_file, timeout=0.02, step=0.001):
 
 class TestSemLock(object):
 
-    def setup(self):
+    def setup_method(self):
         self.lock_dir = tempfile.mkdtemp()
         self.lock_file = os.path.join(self.lock_dir, "lock.lck")
 
-    def teardown(self):
+    def teardown_method(self):
         shutil.rmtree(self.lock_dir)
 
     def count_lockfiles(self):
@@ -252,10 +252,10 @@ class TestSemLock(object):
 
 class DirTest(object):
 
-    def setup(self):
+    def setup_method(self):
         self.tmpdir = tempfile.mkdtemp()
 
-    def teardown(self):
+    def teardown_method(self):
         if os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
 
@@ -417,10 +417,10 @@ def _write_atomic_data(i_filename):
 
 class TestWriteAtomic(object):
 
-    def setup(self):
+    def setup_method(self):
         self.dirname = tempfile.mkdtemp()
 
-    def teardown(self):
+    def teardown_method(self):
         if self.dirname:
             shutil.rmtree(self.dirname)
 

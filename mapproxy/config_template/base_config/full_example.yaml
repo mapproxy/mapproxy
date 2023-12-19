@@ -384,7 +384,7 @@ sources:
   osm_source:
     type: tile
     grid: osm_grid
-    url: http://a.tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
+    url: https://tile.openstreetmap.org/%(z)s/%(x)s/%(y)s.png
 
   # limit the source to the given min and max resolution or scale.
   # MapProxy will return a blank image for requests outside of these boundaries

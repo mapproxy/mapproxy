@@ -186,7 +186,8 @@ class TestTileService(SysTest):
             (timestamp, timestamp),
         )
         max_age = base_config.tiles.expires_hours * 60 * 60
-        etag = hashlib.md5((str(timestamp) + str(size)).encode("ascii")).hexdigest()
+        md5 = hashlib.new('md5', (str(timestamp) + str(size)).encode("ascii"), usedforsecurity=False)
+        etag = md5.hexdigest()
         return etag, max_age
 
     def _check_cache_control_headers(self, resp, etag, max_age):

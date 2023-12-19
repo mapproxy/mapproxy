@@ -30,16 +30,18 @@ class FileCache(TileCacheBase):
     This class is responsible to store and load the actual tile data.
     """
     def __init__(self, cache_dir, file_ext, directory_layout='tc',
-                 link_single_color_images=False):
+                 link_single_color_images=False, coverage=None, image_opts=None):
         """
         :param cache_dir: the path where the tile will be stored
         :param file_ext: the file extension that will be appended to
             each tile (e.g. 'png')
         """
-        super(FileCache, self).__init__()
-        self.lock_cache_id = hashlib.md5(cache_dir.encode('utf-8')).hexdigest()
+        super(FileCache, self).__init__(coverage)
+        md5 = hashlib.new('md5', cache_dir.encode('utf-8'), usedforsecurity=False)
+        self.lock_cache_id = md5.hexdigest()
         self.cache_dir = cache_dir
         self.file_ext = file_ext
+        self.image_opts = image_opts
         self.is_mixed = self.file_ext == 'mixed'
         self.link_single_color_images = link_single_color_images
         self._tile_location, self._level_location = path.location_funcs(layout=directory_layout)
@@ -126,7 +128,7 @@ class FileCache(TileCacheBase):
         if os.path.exists(location):
             if with_metadata:
                 self.load_tile_metadata(tile, dimensions=dimensions)
-            tile.source = ImageSource(location)
+            tile.source = ImageSource(location, image_opts=self.image_opts)
             return True
         return False
 

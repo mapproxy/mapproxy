@@ -76,7 +76,8 @@ class TestKML(SysTest):
             (timestamp, timestamp),
         )
         max_age = base_config.tiles.expires_hours * 60 * 60
-        etag = hashlib.md5((str(timestamp) + str(size)).encode("ascii")).hexdigest()
+        md5 = hashlib.new('md5', (str(timestamp) + str(size)).encode("ascii"), usedforsecurity=False)
+        etag = md5.hexdigest()
         return etag, max_age
 
     def _check_cache_control_headers(self, resp, etag, max_age, timestamp=1234567890.0):
@@ -142,7 +143,8 @@ class TestKML(SysTest):
             "http://localhost/kml/wms_cache/EPSG900913/1/1/0.kml",
         ]
 
-        etag = hashlib.md5(resp.body).hexdigest()
+        md5 = hashlib.new('md5', resp.body, usedforsecurity=False)
+        etag = md5.hexdigest()
         max_age = base_config.tiles.expires_hours * 60 * 60
         self._check_cache_control_headers(resp, etag, max_age, None)
 

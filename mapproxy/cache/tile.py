@@ -38,6 +38,7 @@ from functools import partial
 from contextlib import contextmanager
 from mapproxy.grid import MetaGrid
 from mapproxy.image import BlankImageSource
+from mapproxy.image.mask import mask_image_source_from_coverage
 from mapproxy.image.opts import ImageOptions
 from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter, TiledImage
@@ -140,6 +141,12 @@ class TileManager(object):
                 rescale_till_zoom = 0
             if rescale_till_zoom > self.grid.levels:
                 rescale_till_zoom = self.grid.levels
+        
+        # Remove tiles that are not in the cache coverage
+        for t in tiles.tiles:
+            tile_bbox = self.grid.tile_bbox(t.coord)
+            if self.cache.coverage and not self.cache.coverage.intersects(tile_bbox, self.grid.srs):
+                t.coord = None
 
         tiles = self._load_tile_coords(
             tiles, dimensions=dimensions, with_metadata=with_metadata,
@@ -147,10 +154,18 @@ class TileManager(object):
         )
 
         for t in tiles.tiles:
+            # Clip tiles if clipping is enabled for coverage
+            if self.cache.coverage and self.cache.coverage.clip and t.source:
+                tile_bbox = self.grid.tile_bbox(t.coord)
+                coverage = self.cache.coverage
+                
+                if coverage.intersects(tile_bbox, self.grid.srs):
+                    t.source = mask_image_source_from_coverage(
+                            t.source, tile_bbox, self.grid.srs, coverage, ImageOptions(transparent=True, format='png'))
+            
             # Remove our internal marker source, for missing tiles.
             if t.source is RESCALE_TILE_MISSING:
                 t.source = None
-
         return tiles
 
     def _load_tile_coords(self, tiles, dimensions=None, with_metadata=False,

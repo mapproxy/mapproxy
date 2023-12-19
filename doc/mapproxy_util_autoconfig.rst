@@ -26,8 +26,12 @@ Options
 
 .. cmdoption:: --capabilities <url|filename>
 
-  URL or filename of the WMS capabilities document. The tool will add `REQUEST` and `SERVICE` parameters to the URL as necessary.
+  URL or filename of the WMS capabilities document. The tool will add `REQUEST` and `SERVICE` parameters to the URL as necessary.  This option cannot be used with the --geopackage option.
 
+.. cmdoption:: --geopackage <filename>
+
+  Filename of the geopackage file used for configuration, no sources will be added. This option cannot be used with the --capabilities option. 
+  
 .. cmdoption:: --output <filename>
 
   Filename for the created MapProxy configuration.
@@ -73,6 +77,11 @@ Write MapProxy configuration with caches for grids from ``base.yaml``::
         --output mapproxy.yaml \
         --base base.yaml
 
+Write MapProxy configuration with caches based on a geopackage file::
+
+    mapproxy-util autoconfig \
+        --geopackage /path/to/geopackage.gpkg \
+        --output mapproxy.yaml
 
 
 Overwrites

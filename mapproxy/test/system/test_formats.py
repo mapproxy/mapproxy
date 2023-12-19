@@ -37,7 +37,7 @@ def assert_file_format(filename, format):
 
 class TestWMS111(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.common_req = WMS111MapRequest(
             url="/service?", param=dict(service="WMS", version="1.1.1")
         )
@@ -176,7 +176,7 @@ class TestWMS111(SysTest):
 
 class TestTMS(SysTest):
 
-    def setup(self):
+    def setup_method(self):
         self.expected_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256" "&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=256" "&BBOX=0.0,0.0,20037508.3428,20037508.3428"
         self.expected_direct_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=200" "&SRS=EPSG%3A4326&styles=&VERSION=1.1.1&WIDTH=200" "&BBOX=0.0,0.0,10.0,10.0"
 

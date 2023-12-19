@@ -23,6 +23,22 @@ Each backend has a ``type`` and one or more options.
         backendoption1: value
         backendoption2: value
 
+You may add a coverage definition to any cache with the ``coverage`` option under ``cache``.
+
+::
+
+  caches:
+    mycache:
+      sources: [...]
+      grids: [...]
+      cache:
+        type: backendtype
+        backendoption1: value
+        backendoption2: value
+        coverage:
+          bbox: [5, 50, 10, 55]
+          srs: 'EPSG:4326'
+
 
 The following backend types are available.
 
@@ -67,6 +83,11 @@ This is the default cache type and it uses a single file for each tile. Availabl
   Directory where MapProxy should write lock files when it creates new tiles for this cache. Defaults to ``cache_data/tile_locks``.
 
   .. versionadded:: 1.6.0
+
+``image``:
+  See :ref:`image_options` for options.
+
+  .. versionadded:: 2.0.0
 
 .. _cache_mbtiles:
 
@@ -123,6 +144,9 @@ Available options:
   Directory where MapProxy should write lock files when it creates new tiles for this cache. Defaults to ``cache_data/tile_locks``.
 
   .. versionadded:: 1.6.0
+
+``ttl``:
+  The time-to-live of each tile in the cache in seconds. Use 0 (default) to allow unlimited tile reuse.
 
 ::
 
@@ -364,6 +388,12 @@ Available options:
 ``db``:
     Number of the Redis database. Please refer to the Redis documentation. Defaults to `0`.
 
+``username``:
+  Optional authentication username. No defaults.
+
+``password``:
+  Optional authentication password. No defaults.
+
 ``prefix``:
     The prefix added to each tile-key in the Redis cache. Used to distinguish tiles from different caches and grids.  Defaults to ``cache-name_grid-name``.
 
@@ -382,6 +412,8 @@ Example
         grids: [mygrid]
         cache:
           type: redis
+          username: mapproxy
+          password: iamgreatpassword
           default_ttl: 600
 
 
@@ -472,6 +504,9 @@ Available options:
 
 ``directory_layout``:
   Defines the directory layout for the tiles (``12/12345/67890.png``, ``L12/R00010932/C00003039.png``, etc.).  See :ref:`cache_file` for available options. Defaults to ``tms`` (e.g. ``12/12345/67890.png``). This cache cache also supports ``reverse_tms`` where tiles are stored as ``y/x/z.format``. See *note* below.
+
+``use_http_get``:
+  When set to ``true``, requests to S3 ``GetObject`` will be fetched via urllib2 instead of boto, which decreases response times. Defaults to ``false``.
 
 .. note::
   The hierarchical ``directory_layouts`` can hit limitations of S3 *"if you are routinely processing 100 or more requests per second"*. ``directory_layout: reverse_tms`` can work around this limitation. Please read `S3 Request Rate and Performance Considerations <http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html>`_ for more information on this issue.

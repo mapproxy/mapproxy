@@ -31,8 +31,8 @@ class TestAzureBlobCache(TileCacheTestBase):
     always_loads_metadata = True
     uses_utc = True
 
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
 
         self.container = 'mapproxy-azure-unit-test'
         self.base_path = '/mycache/webmercator'
@@ -54,9 +54,12 @@ class TestAzureBlobCache(TileCacheTestBase):
         self.container_client = self.cache.container_client
         self.container_client.create_container()
 
-    def teardown(self):
-        TileCacheTestBase.teardown(self)
+    def teardown_method(self):
+        TileCacheTestBase.teardown_method(self)
         self.container_client.delete_container()
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     @pytest.mark.parametrize('layout,tile_coord,key', [
         ['mp', (12345, 67890, 2), 'mycache/webmercator/02/0001/2345/0006/7890.png'],

@@ -47,12 +47,14 @@ class UnexpectedResponse(CacheBackendError):
 class CouchDBCache(TileCacheBase):
     def __init__(self, url, db_name,
         file_ext, tile_grid, md_template=None,
-        tile_id_template=None):
+        tile_id_template=None, coverage=None):
+        super(CouchDBCache, self).__init__(coverage)
 
         if requests is None:
             raise ImportError("CouchDB backend requires 'requests' package.")
 
-        self.lock_cache_id = 'couchdb-' + hashlib.md5((url + db_name).encode('utf-8')).hexdigest()
+        md5 = hashlib.new('md5', (url + db_name).encode('utf-8'), usedforsecurity=False)
+        self.lock_cache_id = 'couchdb-' + md5.hexdigest()
         self.file_ext = file_ext
         self.tile_grid = tile_grid
         self.md_template = md_template

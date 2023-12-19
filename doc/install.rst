@@ -39,7 +39,7 @@ This will change the ``PATH`` for your `current` session.
 Install Dependencies
 --------------------
 
-MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 3.7 or higher, which should already be installed with most Linux distributions.
+MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 3.8 or higher, which should already be installed with most Linux distributions.
 
 MapProxy requires a few third-party libraries that are required to run. There are different ways to install each dependency. Read :ref:`dependency_details` for a list of all required and optional dependencies.
 
@@ -90,7 +90,7 @@ MapProxy uses YAML for the configuration parsing. It is available as ``python-ya
 
 Shapely and GEOS *(optional)*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-You will need Shapely to use the :doc:`coverage feature <coverages>` of MapProxy. Shapely offers Python bindings for the GEOS library. You need Shapely (``python-shapely``) and GEOS (``libgeos-dev``). You can install Shapely as a Python package with ``pip install Shapely`` if you system does not provide a recent (>= 1.2.0) version of Shapely.
+You will need Shapely to use the :doc:`coverage feature <coverages>` of MapProxy. Shapely offers Python bindings for the GEOS library. You need Shapely (``python-shapely``) and GEOS (``libgeos-dev``). You can install Shapely as a Python package with ``pip install Shapely`` if you system does not provide a recent (>= 1.8) version of Shapely.
 
 GDAL *(optional)*
 ~~~~~~~~~~~~~~~~~

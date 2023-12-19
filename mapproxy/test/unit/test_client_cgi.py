@@ -64,10 +64,10 @@ if not os.path.exists('testfile'):
 @pytest.mark.skipif(sys.platform == 'win32', reason="tests not ported to windows")
 @pytest.mark.skipif(sys.version_info < (3, 0), reason="tests skipped for python 2")
 class TestCGIClient(object):
-    def setup(self):
+    def setup_method(self):
         self.script_dir = tempfile.mkdtemp()
 
-    def teardown(self):
+    def teardown_method(self):
         shutil.rmtree(self.script_dir)
 
     def create_script(self, script=TEST_CGI_SCRIPT, executable=True):

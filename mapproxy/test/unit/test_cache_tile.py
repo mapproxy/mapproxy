@@ -48,10 +48,10 @@ class TileCacheTestBase(object):
 
     cache = None # set by subclasses
 
-    def setup(self):
+    def setup_method(self):
         self.cache_dir = tempfile.mkdtemp()
 
-    def teardown(self):
+    def teardown_method(self):
         if hasattr(self.cache, 'cleanup'):
             self.cache.cleanup()
         if hasattr(self, 'cache_dir') and os.path.exists(self.cache_dir):
@@ -206,9 +206,12 @@ class TileCacheTestBase(object):
         self.cache.store_tile(tile)
 
 class TestFileTileCache(TileCacheTestBase):
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.cache = FileCache(self.cache_dir, 'png')
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_store_tile(self):
         tile = self.create_tile((5, 12, 4))
@@ -350,14 +353,17 @@ class TestFileTileCache(TileCacheTestBase):
             cache.level_location(0)
 
 class TestMBTileCache(TileCacheTestBase):
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.cache = MBTilesCache(os.path.join(self.cache_dir, 'tmp.mbtiles'))
 
-    def teardown(self):
+    def teardown_method(self):
         if self.cache:
             self.cache.cleanup()
-        TileCacheTestBase.teardown(self)
+        TileCacheTestBase.teardown_method(self)
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_load_empty_tileset(self):
         assert self.cache.load_tiles([Tile(None)]) == True
@@ -397,9 +403,12 @@ class TestMBTileCache(TileCacheTestBase):
 
 
 class TestQuadkeyFileTileCache(TileCacheTestBase):
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.cache = FileCache(self.cache_dir, 'png', directory_layout='quadkey')
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_store_tile(self):
         tile = self.create_tile((3, 4, 2))
@@ -411,9 +420,12 @@ class TestQuadkeyFileTileCache(TileCacheTestBase):
 class TestMBTileLevelCache(TileCacheTestBase):
     always_loads_metadata = True
 
-    def setup(self):
-        TileCacheTestBase.setup(self)
+    def setup_method(self):
+        TileCacheTestBase.setup_method(self)
         self.cache = MBTilesLevelCache(self.cache_dir)
+    
+    def test_default_coverage(self):
+        assert self.cache.coverage is None
 
     def test_level_files(self):
         assert_files_in_dir(self.cache_dir, [])

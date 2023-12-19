@@ -1,0 +1,84 @@
+globals:
+
+services:
+  demo:
+  tms:
+  kml:
+  wmts:
+    restful_template: '/myrest/{{Layer}}/{{TileMatrixSet}}/{{TileMatrix}}/{{TileCol}}/{{TileRow}}.{{Format}}'
+  wms:
+    md:
+      title: MapProxy test fixture
+      abstract: This is MapProxy.
+
+layers:
+  - name: bbox_coverage_cache
+    title: bbox_coverage_cache
+    sources: [bbox_coverage_cache]
+  - name: intersection_coverage_cache
+    title: intersection_coverage_cache
+    sources: [intersection_coverage_cache]
+  - name: datasource_coverage_cache
+    title: datasource_coverage_cache
+    sources: [datasource_coverage_cache]
+
+parts:
+  coverages:
+    bbox_coverage: &bbox_coverage
+      bbox: [-50, -50, 50, 50]
+      srs: EPSG:4326
+    intersection_coverage: &intersection_coverage
+      intersection:
+        - bbox: [-50, -57, 53, 59]
+          srs: 'EPSG:4326'
+        - bbox: [-48, -56, 51, 58]
+          srs: 'EPSG:4326'
+    datasource_coverage: &datasource_coverage
+      intersection:
+        - datasource: 'boundary.geojson'
+          srs: 'EPSG:4326'
+        - datasource: 'bbox.geojson'
+          srs: 'EPSG:4326'
+
+caches:
+  bbox_coverage_cache:
+    grids: [crs84quad]
+    sources: [wms_source]
+    cache:
+      type: geopackage
+      filename: test.gpkg
+      table_name: test
+      coverage: *bbox_coverage
+  
+  intersection_coverage_cache:
+    grids: [crs84quad]
+    sources: [wms_source]
+    cache:
+      type: geopackage
+      filename: test.gpkg
+      table_name: test
+      coverage: *intersection_coverage
+  
+  datasource_coverage_cache:
+    grids: [crs84quad]
+    sources: [wms_source]
+    cache:
+      type: geopackage
+      filename: test.gpkg
+      table_name: test
+      coverage: *datasource_coverage
+
+sources:
+  wms_source:
+    type: wms
+    req:
+      url: http://localhost:42423/service
+      layers: foo,bar
+
+grids:
+  crs84quad:
+    name: InspireCrs84Quad
+    srs: 'EPSG:4326'
+    bbox: [-180, -90, 180, 90]
+    origin: 'ul'
+    min_res: 0.703125

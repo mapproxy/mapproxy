@@ -313,7 +313,7 @@ commands = {
     },
     'autoconfig': {
         'func': config_command,
-        'help': 'Create config from WMS capabilities.'
+        'help': 'Create config from WMS capabilities or a Geopackage file.'
     },
     'defrag-compact-cache': {
         'func': defrag_command,

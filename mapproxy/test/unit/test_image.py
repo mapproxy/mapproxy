@@ -21,7 +21,7 @@ from io import BytesIO
 
 import pytest
 
-from mapproxy.compat.image import Image, ImageDraw, PIL_VERSION
+from mapproxy.compat.image import Image, ImageDraw, PIL_VERSION_TUPLE
 from mapproxy.image import (
     BlankImageSource,
     GeoReference,
@@ -61,10 +61,10 @@ TIFF_FORMAT = ImageOptions(format="image/tiff")
 
 class TestImageSource(object):
 
-    def setup(self):
+    def setup_method(self):
         self.tmp_filename = create_tmp_image_file((100, 100))
 
-    def teardown(self):
+    def teardown_method(self):
         os.remove(self.tmp_filename)
 
     def test_from_filename(self):
@@ -112,7 +112,7 @@ class TestImageSource(object):
         assert is_tiff(ir.as_buffer(TIFF_FORMAT))
         assert is_tiff(ir.as_buffer())
 
-    @pytest.mark.skipif(PIL_VERSION < '6.1.0', reason="Pillow 6.1.0 required GeoTIFF")
+    @pytest.mark.skipif(PIL_VERSION_TUPLE < (6, 1, 0), reason="Pillow 6.1.0 required GeoTIFF")
     def test_tiff_compression(self):
         def encoded_size(encoding_options):
             ir = ImageSource(create_debug_img((100, 100)), PNG_FORMAT)
@@ -134,7 +134,7 @@ class TestImageSource(object):
         assert q50 > lzw
 
     @pytest.mark.xfail(
-        PIL_VERSION >= '9.0.0',
+        PIL_VERSION_TUPLE >= (9, 0, 0),
         reason="The palette colors order has been changed in Pillow 9.0.0"
     )
     def test_output_formats_greyscale_png(self):
@@ -156,7 +156,7 @@ class TestImageSource(object):
         assert img.getpixel((0, 0)) == (0, 0)
 
     @pytest.mark.xfail(
-        PIL_VERSION >= '9.0.0',
+        PIL_VERSION_TUPLE >= (9, 0, 0),
         reason="The palette colors order has been changed in Pillow 9.0.0"
     )
     def test_output_formats_png8(self):
@@ -254,7 +254,7 @@ class ROnly(object):
 
 class TestReadBufWrapper(object):
 
-    def setup(self):
+    def setup_method(self):
         rbuf = ROnly()
         self.rbuf_wrapper = ReadBufWrapper(rbuf)
 
@@ -291,7 +291,7 @@ class TestReadBufWrapper(object):
 
 class TestMergeAll(object):
 
-    def setup(self):
+    def setup_method(self):
         self.cleanup_tiles = []
 
     def test_full_merge(self):
@@ -347,7 +347,7 @@ class TestMergeAll(object):
         assert img.size == (100, 100)
         assert img.getcolors() == [(100 * 100, (200, 100, 30, 40))]
 
-    def teardown(self):
+    def teardown_method(self):
         for tile_fname in self.cleanup_tiles:
             if tile_fname and os.path.isfile(tile_fname):
                 os.remove(tile_fname)
@@ -355,13 +355,13 @@ class TestMergeAll(object):
 
 class TestGetCrop(object):
 
-    def setup(self):
+    def setup_method(self):
         self.tmp_file = create_tmp_image_file((100, 100), two_colored=True)
         self.img = ImageSource(
             self.tmp_file, image_opts=ImageOptions(format="image/png"), size=(100, 100)
         )
 
-    def teardown(self):
+    def teardown_method(self):
         if os.path.exists(self.tmp_file):
             os.remove(self.tmp_file)
 
@@ -540,7 +540,7 @@ class TestLayerCompositeMerge(object):
 
 class TestTransform(object):
 
-    def setup(self):
+    def setup_method(self):
         self.src_img = ImageSource(create_debug_img((200, 200), transparent=False))
         self.src_srs = SRS(31467)
         self.dst_size = (100, 150)
@@ -593,7 +593,7 @@ def assert_geotiff_tags(img, expected_origin, expected_pixel_res, srs, projected
     assert tags[TIFF_GEOKEYDIRECTORYTAG][3*4+3] == srs
 
 
-@pytest.mark.skipif(PIL_VERSION < '6.1.0', reason="Pillow 6.1.0 required GeoTIFF")
+@pytest.mark.skipif(PIL_VERSION_TUPLE < (6, 1, 0), reason="Pillow 6.1.0 required GeoTIFF")
 @pytest.mark.parametrize("compression", ['jpeg', 'raw', 'tiff_lzw'])
 class TestGeoTIFF(object):
 
@@ -861,7 +861,7 @@ class TestPeekImageFormat(object):
 
 class TestBandMerge(object):
 
-    def setup(self):
+    def setup_method(self):
         self.img0 = ImageSource(Image.new("RGB", (10, 10), (0, 10, 20)))
         self.img1 = ImageSource(Image.new("RGB", (10, 10), (100, 110, 120)))
         self.img2 = ImageSource(Image.new("RGB", (10, 10), (200, 210, 220)))

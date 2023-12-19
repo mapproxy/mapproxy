@@ -32,7 +32,7 @@ class TestCacheSource(SysTest):
     # test various band merge configurations with
     # cached base tile 0/0/0.png (R: 50 G: 100 B: 200)
 
-    def setup(self):
+    def setup_method(self):
         self.common_cap_req = WMTS100CapabilitiesRequest(
             url="/service?",
             param=dict(service="WMTS", version="1.0.0", request="GetCapabilities"),

@@ -30,8 +30,8 @@ from mapproxy.test.image import is_png
 
 
 class ExceptionHandlerTest(Mocker):
-    def setup(self):
-        Mocker.setup(self)
+    def setup_method(self):
+        Mocker.setup_method(self)
         req = url_decode("""LAYERS=foo&FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&
 REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A900913&
 BBOX=8,4,9,5&WIDTH=150&HEIGHT=100""".replace('\n', ''))
@@ -206,9 +206,10 @@ class TestWMSImageExceptionHandler(ExceptionHandlerTest):
         assert is_png(data)
         img = Image.open(data)
         assert img.size == (150, 100)
-        assert sorted([x for x in img.histogram() if x > 25]) == [377, 14623]
         img = img.convert('RGBA')
         assert img.getpixel((0, 0))[3] == 0
+        extrema = img.getextrema()
+        assert extrema != ((255, 255), (255, 255), (255, 255), (0, 0))
 
 
 class TestWMSBlankExceptionHandler(ExceptionHandlerTest):

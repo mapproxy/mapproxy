@@ -133,7 +133,7 @@ class TestMaskImage(object):
 
 class TestLayerCoverageMerge(object):
 
-    def setup(self):
+    def setup_method(self):
         self.coverage1 = coverage(
             Polygon([(0, 0), (0, 10), (10, 10), (10, 0)]), 3857
         )

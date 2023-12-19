@@ -87,7 +87,7 @@ class Response(object):
         """
         if etag_data:
             hash_src = ''.join((str(x) for x in etag_data)).encode('ascii')
-            self.etag = hashlib.md5(hash_src).hexdigest()
+            self.etag = hashlib.new('md5', hash_src, usedforsecurity=False).hexdigest()
 
         if no_cache:
             assert not timestamp and not max_age

@@ -1,6 +1,28 @@
 Nightly
 ~~~~~~~~~~~~~~~~~
 
+2.0.0 2023-12-19
+~~~~~~~~~~~~~~~~~
+Breaking:
+
+- Removal of old unsupported python versions 3.7
+- Tested python version range is now 3.8 to 3.11
+- Lots of dependency updates
+
+Improvements:
+
+- Add S3 performance option to request via urllib2
+- Allow md5 calls to work in FIPS environments
+- Several Redis Cache enhancements
+- Coverage support for caches
+
+Fixes:
+
+- Configure image options for caches (fixes erratically white tiles when requesting multiple cached layers)
+- Fix for Legends in JSON Format
+- Some more minor fixups
+
+
 1.16.0 2023-04-13
 ~~~~~~~~~~~~~~~~~
 Breaking:

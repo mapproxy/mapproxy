@@ -21,11 +21,11 @@ def package_installed(pkg):
 # depend on PIL if it is installed, otherwise
 # require Pillow
 if package_installed('Pillow'):
-    install_requires.append('Pillow !=2.4.0,!=8.3.0,!=8.3.1,<10.0.0')
+    install_requires.append('Pillow !=2.4.0,!=8.3.0,!=8.3.1')
 elif package_installed('PIL'):
     install_requires.append('PIL>=1.1.6,<1.2.99')
 else:
-    install_requires.append('Pillow !=2.4.0,!=8.3.0,!=8.3.1,<10.0.0')
+    install_requires.append('Pillow !=2.4.0,!=8.3.0,!=8.3.1')
 
 if platform.python_version_tuple() < ('2', '6'):
     # for mapproxy-seed
@@ -54,7 +54,7 @@ def long_description(changelog_releases=10):
 
 setup(
     name='MapProxy',
-    version="1.16.0",
+    version="2.0.0",
     description='An accelerating proxy for tile and web map services',
     long_description=long_description(7),
     author='Oliver Tonnhofer',
@@ -75,7 +75,6 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
