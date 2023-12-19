@@ -20,7 +20,7 @@ cfn-lint==0.80.3
 chardet==5.2.0
 cryptography==41.0.6
 decorator==4.4.2
-docker==6.1.3
+docker==7.0.0
 docutils==0.20.1
 ecdsa==0.18.0
 future==0.18.3
