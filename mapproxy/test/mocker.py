@@ -453,8 +453,12 @@ class MockerTestCase(unittest.TestCase):
     assertNotIsInstance = failIfIsInstance # Poor choice in 2.7/3.2+.
 
     # The following are missing in Python < 2.4.
-    assertTrue = unittest.TestCase.failUnless
-    assertFalse = unittest.TestCase.failIf
+    if sys.version_info < (2, 4):
+        assertTrue = unittest.TestCase.failUnless
+        assertFalse = unittest.TestCase.failIf
+    else:
+        assertTrue = unittest.TestCase.assertTrue
+        assertFalse = unittest.TestCase.assertFalse
 
     # The following is provided for compatibility with Twisted's trial.
     assertIdentical = assertIs
