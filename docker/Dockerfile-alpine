@@ -33,7 +33,7 @@ ENTRYPOINT ["sh", "-c", "/start_alpine.sh development"]
 FROM base AS nginx
 
 # use current version of nginx
-ENV NGINX_VERSION=1.25.3
+ARG NGINX_VERSION=1.25.3
 
 RUN \
   apk --no-cache add build-base linux-headers openssl-dev pcre-dev wget zlib-dev ca-certificates uwsgi uwsgi-python3 supervisor && \
