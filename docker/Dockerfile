@@ -1,8 +1,10 @@
-FROM python:3.10-slim-bullseye AS base
+FROM python:3.10-slim-bookworm AS base
+
+LABEL maintainer="mapproxy.org"
 
 # The MAPPROXY_VERSION argument can be used like this to overwrite the default:
 # docker build --build-arg MAPPROXY_VERSION=1.15.1 [--target base|development|nginx] -t mapproxy:1.15.1 .
-ARG MAPPROXY_VERSION=1.15.1
+ARG MAPPROXY_VERSION=1.16.0
 
 RUN apt update && apt -y install --no-install-recommends \
   python3-pil \
