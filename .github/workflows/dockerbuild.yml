@@ -70,6 +70,34 @@ jobs:
             ghcr.io/${{ github.repository }}/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
           platforms: linux/amd64,linux/arm64
 
+      - name: Build and push base alpine image
+        uses: docker/build-push-action@v5
+        if: ${{ inputs.tags }}
+        with:
+          context: docker/
+          file: ./docker/Dockerfile-alpine
+          push: true
+          build-args: |
+            MAPPROXY_VERSION=${{ inputs.tags }}
+          target: base
+          tags: |
+            ghcr.io/${{ github.repository }}/mapproxy:${{ inputs.tags }}-alpine
+          platforms: linux/amd64,linux/arm64
+
+      - name: Build and push base alpine image
+        uses: docker/build-push-action@v5
+        if: ${{ !inputs.tags }}
+        with:
+          context: docker/
+          file: ./docker/Dockerfile-alpine
+          push: true
+          build-args: |
+            MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          target: base
+          tags: |
+            ghcr.io/${{ github.repository }}/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-alpine
+          platforms: linux/amd64,linux/arm64
+
       - name: Build and push development image
         uses: docker/build-push-action@v5
         if: ${{ inputs.tags }}
@@ -124,4 +152,32 @@ jobs:
           target: nginx
           tags: |
             ghcr.io/${{ github.repository }}/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-nginx
+          platforms: linux/amd64,linux/arm64
+
+      - name: Build and push alpine based nginx image
+        uses: docker/build-push-action@v5
+        if: ${{ inputs.tags }}
+        with:
+          context: docker/
+          file: ./docker/Dockerfile-alpine
+          push: true
+          build-args: |
+            MAPPROXY_VERSION=${{ inputs.tags }}
+          target: nginx
+          tags: |
+            ghcr.io/${{ github.repository }}/mapproxy:${{ inputs.tags }}-alpine-nginx
+          platforms: linux/amd64,linux/arm64
+
+      - name: Build and push alpine based nginx image
+        uses: docker/build-push-action@v5
+        if: ${{ !inputs.tags }}
+        with:
+          context: docker/
+          file: ./docker/Dockerfile-alpine
+          push: true
+          build-args: |
+            MAPPROXY_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          target: nginx
+          tags: |
+            ghcr.io/${{ github.repository }}/mapproxy:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-alpine-nginx
           platforms: linux/amd64,linux/arm64

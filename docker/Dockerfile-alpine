@@ -1,0 +1,70 @@
+FROM python:3.11-alpine AS base
+
+LABEL maintainer="mapproxy.org"
+
+# The MAPPROXY_VERSION argument can be used like this to overwrite the default:
+# docker build -f Dockerfile-alpine --build-arg MAPPROXY_VERSION=1.16.0 [--target base|development|nginx] -t mapproxy-alpine:1.16.0 .
+ARG MAPPROXY_VERSION=1.16.0
+
+RUN apk -U upgrade --update \
+    && apk add g++ py3-pip gdal gdal-dev gdal gdal-dev libxslt-dev libxml2 proj proj-dev proj-util geos geos-dev \
+    && rm -rf /var/cache/apk/* \
+    && pip install numpy pillow pyyaml pyproj lxml shapely \
+    && pip install MapProxy==$MAPPROXY_VERSION
+
+RUN mkdir /mapproxy
+
+WORKDIR /mapproxy
+
+COPY app.py .
+
+COPY start_alpine.sh /start_alpine.sh
+
+ENTRYPOINT ["sh", "-c", "/start_alpine.sh base"]
+
+###### development image ######
+FROM base AS development
+
+EXPOSE 8080
+
+ENTRYPOINT ["sh", "-c", "/start_alpine.sh development"]
+
+##### nginx image ######
+FROM base AS nginx
+
+# use current version of nginx
+ARG NGINX_VERSION=1.25.3
+
+RUN \
+  apk --no-cache add build-base linux-headers openssl-dev pcre-dev wget zlib-dev ca-certificates uwsgi uwsgi-python3 supervisor && \
+  pip install uwsgi && \
+  cd /tmp && \
+  wget https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz && \
+  tar xzf nginx-${NGINX_VERSION}.tar.gz && \
+  cd /tmp/nginx-${NGINX_VERSION} && \
+  ./configure \
+    --prefix=/etc/nginx \
+    --sbin-path=/usr/sbin/nginx \
+    --conf-path=/etc/nginx/nginx.conf \
+    --error-log-path=/var/log/nginx/error.log \
+    --http-log-path=/var/log/nginx/access.log \
+    --pid-path=/var/run/nginx.pid \
+    --lock-path=/var/run/nginx.lock \
+    --http-client-body-temp-path=/var/cache/nginx/client_temp \
+    --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+    --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+    --user=mapproxy \
+    --group=mapproxy && \
+  make && \
+  make install && \
+  sed -i -e 's/#access_log  logs\/access.log  main;/access_log \/dev\/stdout;/' -e 's/#error_log  logs\/error.log  notice;/error_log stderr notice;/' /etc/nginx/nginx.conf && \
+  rm -rf /tmp/* && \
+  apk del build-base linux-headers openssl-dev pcre-dev wget zlib-dev && \
+  rm -rf /var/cache/apk/*
+
+COPY uwsgi.conf .
+COPY nginx-alpine-default.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+
+ENTRYPOINT ["sh", "-c", "/start_alpine.sh nginx"]
