@@ -23,9 +23,13 @@ from mapproxy.image.message import TextDraw, message_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.tilefilter import watermark_filter
 
+import pytest
 
 PNG_FORMAT = ImageOptions(format="image/png")
 
+requires_freetype = pytest.mark.skipif(
+    not isinstance(ImageFont.load_default(), ImageFont.FreeTypeFont),
+    reason="Test expects the default Pillow FreeTypeFont")
 
 class TestTextDraw(object):
 
@@ -38,6 +42,7 @@ class TestTextDraw(object):
         assert total_box == boxes[0]
         assert len(boxes) == 1
 
+    @requires_freetype
     def test_multiline_ul(self):
         font = ImageFont.load_default()
         td = TextDraw("Hello\nWorld", font)
@@ -47,6 +52,7 @@ class TestTextDraw(object):
         assert total_box == (5, 7, 33, 28)
         assert boxes == [(5, 7, 30, 15), (5, 20, 33, 28)]
 
+    @requires_freetype
     def test_multiline_lr(self):
         font = ImageFont.load_default()
         td = TextDraw("Hello\nWorld", font, placement="lr")
@@ -56,6 +62,7 @@ class TestTextDraw(object):
         assert total_box == (67, 76, 95, 97)
         assert boxes == [(67, 76, 92, 84), (67, 89, 95, 97)]
 
+    @requires_freetype
     def test_multiline_center(self):
         font = ImageFont.load_default()
         td = TextDraw("Hello\nWorld", font, placement="cc")
@@ -65,6 +72,7 @@ class TestTextDraw(object):
         assert total_box == (36, 42, 64, 63)
         assert boxes == [(36, 42, 61, 50), (36, 55, 64, 63)]
 
+    @requires_freetype
     def test_unicode(self):
         font = ImageFont.load_default()
         td = TextDraw(u"Héllö\nWørld", font, placement="cc")
@@ -124,6 +132,7 @@ class TestMessageImage(object):
             15000,
         ]
 
+    @requires_freetype
     def test_message(self):
         image_opts = PNG_FORMAT.copy()
         image_opts.bgcolor = "#113399"
