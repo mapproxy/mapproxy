@@ -139,6 +139,25 @@ Example configuration for an OpenStreetMap tile service::
 
 .. note:: Please make sure you are allowed to access the tile service. Commercial tile provider often prohibit the direct access to tiles. The tile service from OpenStreetMap has a strict `Tile Usage Prolicy <http://wiki.openstreetmap.org/wiki/Tile_usage_policy>`_.
 
+
+.. _display_custom_background:
+
+Display custom background map in the map viewer of the demo service
+===================================================================
+
+In order to setup the background displayed in the map viewer of the /demo service of Mapproxy
+you need to add the service of the background map to ``globals``.
+
+Here is a minimal example with the default configuration::
+
+  globals:
+    # background map of the demo service
+    background:
+      # tile source in ZXY format
+      url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png" 
+
+.. note:: URL of the tile service MUST be in XYZ format. Please make sure you are allowed to access the tile service. Commercial tile provider often prohibit the direct access to tiles. The tile service from OpenStreetMap has a strict `Tile Usage Prolicy <http://wiki.openstreetmap.org/wiki/Tile_usage_policy>`_.
+
 .. _overlay_tiles_osm_openlayers:
 
 Overlay tiles with OpenStreetMap or Google Maps in OpenLayers
