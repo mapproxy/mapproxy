@@ -12,7 +12,7 @@ Configuration
 You can configure a backend for each cache with the ``cache`` option.
 Each backend has a ``type`` and one or more options.
 
-::
+.. code-block:: yaml
 
   caches:
     mycache:
@@ -25,7 +25,7 @@ Each backend has a ``type`` and one or more options.
 
 You may add a coverage definition to any cache with the ``coverage`` option under ``cache``.
 
-::
+.. code-block:: yaml
 
   caches:
     mycache:
@@ -109,7 +109,7 @@ Available options:
 
 You can set the ``sources`` to an empty list, if you use an existing MBTiles file and do not have a source.
 
-::
+.. code-block:: yaml
 
   caches:
     mbtiles_cache:
@@ -148,7 +148,7 @@ Available options:
 ``ttl``:
   The time-to-live of each tile in the cache in seconds. Use 0 (default) to allow unlimited tile reuse.
 
-::
+.. code-block:: yaml
 
   caches:
     sqlite_cache:
@@ -165,7 +165,7 @@ Available options:
 
   All tiles from a meta tile request are stored in one transaction into the SQLite file to increase performance. You need to activate the :ref:`bulk_meta_tiles <bulk_meta_tiles>` option to get the same benefit when you are using tiled sources.
 
-  ::
+  .. code-block:: yaml
 
     caches:
       sqlite_cache:
@@ -248,7 +248,7 @@ Available options:
 Example
 -------
 
-::
+.. code-block:: yaml
 
   caches:
     mycouchdbcache:
@@ -269,7 +269,11 @@ Example
 
 
 
-MapProxy will place the JSON document for tile z=3, x=1, y=2 at ``http://localhost:9999/mywms_tiles/mygrid-3-1-2``. The document will look like::
+MapProxy will place the JSON document for tile z=3, x=1, y=2 at ``http://localhost:9999/mywms_tiles/mygrid-3-1-2``. The document will look like:
+
+
+.. code-block:: json
+  
 
   {
       "_attachments": {
@@ -336,7 +340,7 @@ Available options:
 Example
 -------
 
-::
+.. code-block:: yaml
 
   myriakcache:
     sources: [mywms]
@@ -405,7 +409,7 @@ Available options:
 Example
 -------
 
-::
+.. code-block:: yaml
 
     redis_cache:
         sources: [mywms]
@@ -443,7 +447,7 @@ Available options:
 
 You can set the ``sources`` to an empty list, if you use an existing geopackage file and do not have a source.
 
-::
+.. code-block:: yaml
 
   caches:
     geopackage_cache:
@@ -514,7 +518,7 @@ Available options:
 Example
 -------
 
-::
+.. code-block:: yaml
 
   cache:
     my_layer_20110501_epsg_4326_cache_out:
@@ -533,7 +537,7 @@ Example
 Example usage with DigitalOcean Spaces
 --------------------------------------
 
-::
+.. code-block:: yaml
 
   cache:
     my_layer_20110501_epsg_4326_cache_out:
@@ -554,7 +558,7 @@ Example usage with DigitalOcean Spaces
 .. _cache_azureblob:
 
 ``azureblob``
-======
+=============
 
 .. versionadded:: to be released
 
@@ -606,7 +610,7 @@ Available options:
 Example
 -------
 
-::
+.. code-block:: yaml
 
   cache:
     my_layer_20110501_epsg_4326_cache_out:
@@ -653,7 +657,7 @@ You can set the ``sources`` to an empty list, if you use an existing compact cac
 
 The following configuration will load tiles from ``/path/to/cache/L00/R0000C0000.bundle``, etc.
 
-::
+.. code-block:: yaml
 
   caches:
     compact_cache:

@@ -22,7 +22,9 @@ Linked Metadata
 Scenario 1 uses links to existing INSPIRE Discovery Services (CSW). You can link to metadata documents for the service and each layer.
 
 For services you need to use the ``inspire_md`` block inside ``services.wms`` with ``type: linked``.
-For example::
+For example:
+
+.. code-block:: yaml
 
     services:
       wms:
@@ -40,7 +42,9 @@ For example::
 The View Services specification uses the WMS 1.3.0 extended capabilities for the layers metadata.
 Refer to the :ref:`layers metadata documentation<layer_metadata>`.
 
-For example::
+For example:
+
+.. code-block:: yaml
 
     layers:
       - name: example_layer
@@ -57,7 +61,9 @@ Embedded Metadata
 Scenario 2 embeds the metadata directly into the capabilities document.
 Some metadata elements are mapped to an equivalent element in the WMS capabilities. The Resource Title is set with the normal `title` option for example. Other elements need to be configured inside the ``inspire_md`` block with ``type: embedded``.
 
-Here is a full example::
+Here is a full example:
+
+.. code-block:: yaml
 
     services:
       wms:
@@ -120,7 +126,9 @@ You can express all dates as either ``date_of_creation``, ``date_of_publication`
 The View Services specification uses the WMS 1.3.0 extended capabilities for the layers metadata.
 Refer to the :ref:`layers metadata documentation<layer_metadata>` for all available options.
 
-For example::
+For example:
+
+.. code-block:: yaml
 
     layers:
       - name: example_layer
@@ -148,7 +156,7 @@ A View Service always needs to indicate the language of the layer names, abstrac
 You can only configure a single language as MapProxy does not support multi-lingual configurations.
 You need to set the default language as a `ISO 639-2/alpha-3 <https://www.loc.gov/standards/iso639-2/php/code_list.php>`_ code:
 
-::
+.. code-block:: yaml
 
     inspire_md:
       languages:
