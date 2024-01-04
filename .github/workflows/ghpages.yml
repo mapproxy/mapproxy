@@ -21,7 +21,7 @@ jobs:
         git fetch --all
         git reset --hard HEAD
         git checkout gh-pages
-        git rebase origin/master
+        git rebase origin/upgrade-docs
         sphinx-build doc/ docs
         git add docs
         git commit -m "Automated documentation"
