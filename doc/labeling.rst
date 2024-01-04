@@ -59,7 +59,7 @@ But, it only reduces the problem and does not solve it. Nonetheless, it should b
 
 You can configure the meta tile size in the ``globals.cache`` section and for each ``cache``. It defaults to ``[4, 4]``.
 
-::
+.. code-block:: yaml
 
   globals:
     cache:
@@ -92,7 +92,8 @@ A meta buffer of 100 will add 100 pixels at each edge of the request. With a met
 To solve the first issue, the value should be at least half of your longest labels: If you have text labels that are up to 200 pixels wide, than you should use a meta buffer of around 120 pixels.
 
 You can configure the size of the meta buffer in the ``globals.cache`` section and for each ``cache``. It defaults to ``80``.
-::
+
+.. code-block:: yaml
 
   globals:
     cache:
@@ -154,7 +155,9 @@ As described above, you can use a meta buffer to prevent missing labels. You nee
   END
 
 
-``mapproxy.yaml``::
+``mapproxy.yaml``:
+
+.. code-block:: yaml
 
   caches:
     mycache:
@@ -193,7 +196,9 @@ If the ``LABEL_NO_CLIP`` option is used, ``PARTIALS`` should be ``TRUE``. Otherw
     END
   END
 
-``mapproxy.yaml``::
+``mapproxy.yaml``:
+
+.. code-block:: yaml
 
   caches:
     mycache:
@@ -225,7 +230,9 @@ Most of the time, the labels will match at the boundaries of the meta tiles, whe
     END
   END
 
-``mapproxy.yaml``::
+``mapproxy.yaml``:
+
+.. code-block:: yaml
 
   caches:
     mycache:
@@ -247,7 +254,9 @@ You can disable repeated labels with ``PROCESSING LABEL_NO_CLIP="ON"``, if don't
     END
   END
 
-``mapproxy.yaml``::
+``mapproxy.yaml``:
+
+.. code-block:: yaml
 
   caches:
     mycache:
@@ -276,7 +285,9 @@ You need to compensate the meta buffer when you use ``PARTIALS FALSE`` in combin
     END
   END
 
-``mapproxy.yaml``::
+``mapproxy.yaml``:
+
+.. code-block:: yaml
 
   caches:
     mycache:

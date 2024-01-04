@@ -14,7 +14,9 @@ MapProxy supports the following sources:
 
 You need to choose a unique name for each configured source. This name will be used to reference the source in the ``caches`` and ``layers`` configuration.
 
-The sources section looks like::
+The sources section looks like:
+
+.. code-block:: yaml
 
   sources:
     mysource1:
@@ -39,7 +41,8 @@ Use the type ``wms`` to for WMS servers.
 
 This describes the WMS source. The only required options are ``url`` and ``layers``.
 You need to set ``transparent`` to ``true`` if you want to use this source as an overlay.
-::
+
+.. code-block:: yaml
 
   req:
     url: http://example.org/service?
@@ -47,7 +50,8 @@ You need to set ``transparent`` to ``true`` if you want to use this source as an
     transparent: true
 
 All other options are added to the query string of the request.
-::
+
+.. code-block:: yaml
 
   req:
     url: http://example.org/service?
@@ -160,7 +164,7 @@ See :ref:`image_options` for other options.
 
   Tolerance for the ``transparent_color`` substitution. The value defines the tolerance in each direction. E.g. a tolerance of 5 and a color value of 100 will convert colors in the range of 95 to 105.
 
-  ::
+  .. code-block:: yaml
 
     image:
       transparent_color: '#ffffff'
@@ -199,7 +203,9 @@ MapProxy supports tagged source names for most sources. This allows you to defin
 
 Instead of referring to a source by the name alone, you can add a list of comma delimited layers: ``sourcename:lyr1,lyr2``. You need to use quotes for tagged source names.
 
-This works for layers and caches::
+This works for layers and caches:
+
+.. code-block:: yaml
 
   layers:
     - name: test
@@ -248,7 +254,7 @@ You need to enable ``transparent`` for your source, if you use ``on_error`` resp
 
 You need to enable ``transparent`` for your source, if you use ``on_error`` responses with transparency.
 
-::
+.. code-block:: yaml
 
   my_tile_source:
     type: wms
@@ -271,7 +277,9 @@ You need to enable ``transparent`` for your source, if you use ``on_error`` resp
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 
-Minimal example::
+Minimal example:
+
+.. code-block:: yaml
 
   my_minimal_wmssource:
     type: wms
@@ -279,7 +287,9 @@ Minimal example::
       url: http://localhost:8080/service?
       layers: base
 
-Full example::
+Full example:
+
+.. code-block:: yaml
 
   my_wmssource:
     type: wms
@@ -353,7 +363,9 @@ See :ref:`seed_only <wms_seed_only>`
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 
-MapServer example::
+MapServer example:
+
+.. code-block:: yaml
 
   my_minimal_arcgissource:
     type: arcgis
@@ -366,7 +378,9 @@ MapServer example::
         response: transparent
         cache: True
 
-ImageServer example::
+ImageServer example:
+
+.. code-block:: yaml
 
   my_arcgissource:
     type: arcgis
@@ -481,7 +495,7 @@ Each status code takes the following options:
 
 You need to enable ``transparent`` for your source, if you use ``on_error`` responses with transparency.
 
-::
+.. code-block:: yaml
 
   my_tile_source:
     type: tile
@@ -501,7 +515,7 @@ You need to enable ``transparent`` for your source, if you use ``on_error`` resp
 
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
-::
+.. code-block:: yaml
 
   my_tile_source:
     type: tile
@@ -543,7 +557,7 @@ You can also set these options in the :ref:`globals-conf-label` section.
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 
-::
+.. code-block:: yaml
 
   my_ms_source:
     type: mapserver
@@ -608,7 +622,7 @@ Mapnik can be used in multithreading and multiprocessing operation by setting ``
 Example configuration
 ^^^^^^^^^^^^^^^^^^^^^
 
-::
+.. code-block:: yaml
 
   my_mapnik_source:
     type: mapnik
@@ -622,7 +636,9 @@ Debug
 Adds information like resolution and BBOX to the response image.
 This is useful to determine a fixed set of resolutions for the ``res``-parameter. It takes no options.
 
-Example::
+Example:
+
+.. code-block:: yaml
 
   debug_source:
     type: debug

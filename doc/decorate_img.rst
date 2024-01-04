@@ -15,7 +15,9 @@ The callback is registered by assigning a function to the key ``decorate_img`` i
 WSGI Filter Middleware
 ~~~~~~~~~~~~~~~~~~~~~~
 
-A simple middleware that annotates each image with information about the request might look like::
+A simple middleware that annotates each image with information about the request might look like:
+
+.. code-block:: python
 
   from mapproxy.image import ImageSource
   from PIL import ImageColor, ImageDraw, ImageFont
@@ -63,7 +65,9 @@ A simple middleware that annotates each image with information about the request
 
           return self.app(environ, start_response)
 
-You need to wrap the MapProxy application with your custom decorate_img middleware. For deployment scripts it might look like::
+You need to wrap the MapProxy application with your custom decorate_img middleware. For deployment scripts it might look like:
+
+.. code-block:: python
 
     application = make_wsgi_app('./mapproxy.yaml')
     application = RequestInfoFilter(application)
