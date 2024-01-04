@@ -57,6 +57,7 @@ class AzureBlobCache(TileCacheBase):
 
         self.base_path = base_path
         self.file_ext = file_ext
+        self.is_mixed = self.file_ext == 'mixed'
         self._concurrent_writer = _concurrent_writer
         self._concurrent_reader = _concurrent_reader
         self._tile_location, _ = path.location_funcs(layout=directory_layout)
@@ -70,7 +71,16 @@ class AzureBlobCache(TileCacheBase):
         return self._container_client_cache.client
 
     def tile_key(self, tile):
-        return self._tile_location(tile, self.base_path, self.file_ext).lstrip('/')
+        if self.is_mixed:
+            location = self._tile_location(tile, self.base_path, 'jpeg').lstrip('/')
+            blob = self.container_client.get_blob_client(location)
+            if not blob.exists():
+                tile.location = None
+                location = self._tile_location(tile, self.base_path, 'png').lstrip('/')
+        else:
+            location = self._tile_location(tile, self.base_path, self.file_ext).lstrip('/')
+        tile.location = location
+        return location
 
     def load_tile_metadata(self, tile, dimensions=None):
         if tile.timestamp:

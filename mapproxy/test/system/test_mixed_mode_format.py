@@ -85,8 +85,8 @@ class TestWMS(SysTest):
 
         # check cache formats
         for f, format in [
-            ["mixed_cache_EPSG900913/01/000/000/000/000/000/001.mixed", "png"],
-            ["mixed_cache_EPSG900913/01/000/000/001/000/000/001.mixed", "jpeg"],
+            [f"mixed_cache_EPSG900913/01/000/000/000/000/000/001.{req_format}", "png"],
+            [f"mixed_cache_EPSG900913/01/000/000/001/000/000/001.{req_format}", "jpeg"],
         ]:
             assert cache_dir.join(f).check()
             check_format(cache_dir.join(f).read_binary(), format)
@@ -119,10 +119,10 @@ class TestTMS(SysTest):
 
                 assert resp.content_type == "image/jpeg"
         assert cache_dir.join(
-            "mixed_cache_EPSG900913/01/000/000/000/000/000/000.mixed"
+            "mixed_cache_EPSG900913/01/000/000/000/000/000/000.png"
         ).check()
         assert cache_dir.join(
-            "mixed_cache_EPSG900913/01/000/000/001/000/000/000.mixed"
+            "mixed_cache_EPSG900913/01/000/000/001/000/000/000.png"
         ).check()
 
 
@@ -169,10 +169,10 @@ class TestWMTS(SysTest):
                 resp = app.get(self.common_tile_req)
                 assert resp.content_type == "image/jpeg"
         assert cache_dir.join(
-            "mixed_cache_EPSG900913/01/000/000/000/000/000/001.mixed"
+            "mixed_cache_EPSG900913/01/000/000/000/000/000/001.png"
         ).check()
         assert cache_dir.join(
-            "mixed_cache_EPSG900913/01/000/000/001/000/000/001.mixed"
+            "mixed_cache_EPSG900913/01/000/000/001/000/000/001.png"
         ).check()
 
 
