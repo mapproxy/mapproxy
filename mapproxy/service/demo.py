@@ -86,7 +86,7 @@ def static_filename(name):
 class DemoServer(Server):
     names = ('demo',)
     def __init__(self, layers, md, request_parser=None, tile_layers=None,
-                 srs=None, image_formats=None, services=None, restful_template=None):
+                 srs=None, image_formats=None, services=None, restful_template=None, background = None):
         Server.__init__(self)
         self.layers = layers
         self.tile_layers = tile_layers or {}
@@ -100,6 +100,7 @@ class DemoServer(Server):
         self.srs = srs
         self.services = services or []
         self.restful_template = restful_template
+        self.background = background
 
     def handle(self, req):
         if req.path.startswith('/demo/static/'):
@@ -258,13 +259,17 @@ class DemoServer(Server):
         width = bbox[2] - bbox[0]
         height = bbox[3] - bbox[1]
         min_res = max(width/256, height/256)
+        background_url = base_config().background.url
+        if self.background:
+            background_url = self.background["url"]
         return template.substitute(layer=layer,
                                    image_formats=self.image_formats,
                                    format=escape(req.args['format']),
                                    srs=srs,
                                    layer_srs=self.layer_srs,
                                    bbox=bbox,
-                                   res=min_res)
+                                   res=min_res,
+                                   background_url = background_url)
 
     def _render_tms_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
@@ -288,13 +293,17 @@ class DemoServer(Server):
             add_res_to_options = True
         else:
             add_res_to_options = False
+        background_url = base_config().background.url
+        if self.background:
+            background_url = self.background["url"]
         return template.substitute(layer=tile_layer,
                                    srs=escape(req.args['srs']),
                                    format=escape(req.args['format']),
                                    resolutions=res,
                                    units=units,
                                    add_res_to_options=add_res_to_options,
-                                   all_tile_layers=self.tile_layers)
+                                   all_tile_layers=self.tile_layers,
+                                   background_url = background_url)
 
     def _render_wmts_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
@@ -312,6 +321,9 @@ class DemoServer(Server):
             units = 'degree'
         else:
             units = 'm'
+        background_url = base_config().background.url
+        if self.background:
+            background_url = self.background["url"]
         return template.substitute(layer=wmts_layer,
                                    matrix_set=wmts_layer.grid.name,
                                    format=escape(req.args['format']),
@@ -319,7 +331,8 @@ class DemoServer(Server):
                                    resolutions=wmts_layer.grid.resolutions,
                                    units=units,
                                    all_tile_layers=self.tile_layers,
-                                   restful_url=restful_url)
+                                   restful_url=restful_url,
+                                   background_url = background_url)
 
     def _render_capabilities_template(self, template, xmlfile, service, url):
         template = get_template(template, default_inherit="demo/static.html")

@@ -2208,9 +2208,10 @@ class ServiceConfiguration(ConfigurationBase):
                 services.append('wms_111')
 
         layers = odict(sorted(layers.items(), key=lambda x: x[1].name))
+        background =  self.context.globals.get_value('background', conf)
 
         return DemoServer(layers, md, tile_layers=tile_layers,
-            image_formats=image_formats, srs=srs, services=services, restful_template=restful_template)
+            image_formats=image_formats, srs=srs, services=services, restful_template=restful_template, background = background)
 
 
 def load_plugins():

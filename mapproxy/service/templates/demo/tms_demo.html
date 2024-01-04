@@ -42,9 +42,13 @@ jscript_functions=None
             maxResolution: {{resolutions[0]}}
         });
 
+        const background_source = new ol.source.XYZ({
+            url: "{{background_url}}"
+        });
+
         const layers = [
             new ol.layer.Tile({
-                source: new ol.source.OSM()
+                source: background_source
             }),
             new ol.layer.Tile({source})
         ];
