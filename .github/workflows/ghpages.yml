@@ -3,6 +3,9 @@ name: Build and deploy documentation on github pages
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:  
   build:
     runs-on: ubuntu-20.04
@@ -14,15 +17,10 @@ jobs:
     - name: Install dependencies ⏬
       run: pip install sphinx sphinx-book-theme sphinx-copybutton
 
-    - name: Run documentation build and publish 🏗️
-      run: |
-        git config --global user.name 'ghpages'
-        git config --global user.email 'ghpages@users.noreply.github.com'
-        git fetch --all
-        git reset --hard HEAD
-        git checkout gh-pages
-        git rebase origin/upgrade-docs
-        sphinx-build doc/ docs
-        git add docs
-        git commit -m "Automated documentation"
-        git push -f origin gh-pages
+    - name: Run documentation build
+      run: sphinx-build doc/ docs
+
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4.5.0
+      with:
+        folder: docs
