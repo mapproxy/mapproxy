@@ -194,7 +194,7 @@ For multiple levels as MapProxy configuration snippet:
 
   mapproxy-util scales -l 4 --as-res-config 100000
 
-::
+.. code-block:: yaml
 
     res: [
          #  res            level        scale
@@ -212,7 +212,7 @@ With multiple scale values and custom DPI:
   mapproxy-util scales --dpi 96 --as-res-config \
       100000 50000 25000 10000
 
-::
+.. code-block:: yaml
 
   res: [
        #  res            level        scale
@@ -251,7 +251,8 @@ Example
 -------
 
 With the following MapProxy layer configuration:
-::
+
+.. code-block:: yaml
 
   layers:
     - name: osm
@@ -272,7 +273,7 @@ Parsed capabilities document:
 
   mapproxy-util wms-capabilities http://127.0.0.1:8080/service?REQUEST=GetCapabilities
 
-::
+.. code-block:: yaml
 
   Capabilities Document Version 1.1.1
   Root-Layer:
@@ -381,7 +382,7 @@ Example
 -------
 
 With the following MapProxy grid configuration:
-::
+.. code-block:: yaml
 
   grids:
     localgrid:
@@ -414,7 +415,7 @@ Display detailed information for one specific grid:
 
   mapproxy-util grids --grid localgrid --mapproxy-conf /path/to/mapproxy.yaml
 
-::
+.. code-block:: yaml
 
     localgrid:
         Configuration:

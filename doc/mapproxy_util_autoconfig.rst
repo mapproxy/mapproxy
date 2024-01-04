@@ -96,7 +96,9 @@ The overwrites are applied independently for each ``services``, ``sources``, ``c
 Example
 ~~~~~~~
 
-Created configuration::
+Created configuration:
+
+.. code-block:: yaml
 
     sources:
       mysource_wms:
@@ -105,7 +107,9 @@ Created configuration::
             url: http://example.org
             layers: a
 
-Overwrite file::
+Overwrite file:
+
+.. code-block:: yaml
 
     sources:
       mysource_wms:
@@ -114,7 +118,9 @@ Overwrite file::
             layers: a,b  # overwrite existing value
             custom_param: 42  #  new value
 
-Actual configuration written to ``--output``::
+Actual configuration written to ``--output``:
+
+.. code-block:: yaml
 
     sources:
       mysource_wms:
@@ -160,7 +166,9 @@ Wildcard
 
 The values of keys starting or ending with three underscores (``___``) will be merged with values where the key matches the suffix or prefix.
 
-For example, to set ``levels`` for ``osm_webmercator`` and ``aerial_webmercator`` and to set ``refresh_before`` for ``osm_webmercator`` and ``osm_utm32``::
+For example, to set ``levels`` for ``osm_webmercator`` and ``aerial_webmercator`` and to set ``refresh_before`` for ``osm_webmercator`` and ``osm_utm32``:
+
+.. code-block:: yaml
 
     seeds:
         ____webmercator:

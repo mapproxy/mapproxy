@@ -26,7 +26,9 @@ If you want to use polygons to define a coverage, instead of simple bounding box
 
 MapProxy requires Shapely 1.2.0 or later and GEOS 3.1.0 or later.
 
-On Debian::
+On Debian:
+
+.. code-block:: sh
 
   sudo aptitude install libgeos-dev libgdal-dev
   pip install Shapely
@@ -153,7 +155,7 @@ sources
 
 Use the ``coverage`` option to define a coverage for a WMS or tile source.
 
-::
+.. code-block:: yaml
 
   sources:
     mywms:
@@ -166,7 +168,9 @@ Use the ``coverage`` option to define a coverage for a WMS or tile source.
         srs: 'EPSG:4326'
 
 
-Example of an intersection coverage with clipping::
+Example of an intersection coverage with clipping:
+
+.. code-block:: yaml
 
   sources:
     mywms:
@@ -188,7 +192,7 @@ caches
 
 Use the ``coverage`` option to define a coverage for any cache.
 
-::
+.. code-block:: yaml
 
   caches:
     mycache:
@@ -207,9 +211,10 @@ Use the ``coverage`` option to define a coverage for any cache.
   You may define a ``coverage`` for both a ``source`` and the ``cache`` defined on that source, in this case the ``intersection`` of both ``coverages`` will be used.
   The ``coverage`` of a ``cache`` is meant to be contained in the ``coverage`` of it's ``source``, in other cases where it either intersects or has no intersection, there may be unexpected bahaviour.
 
-  ::
+    Example for defining coverages for source and corresponding cache:
 
-    Example for defining coverages for source and corresponding cache::
+    .. code-block:: yaml
+
       caches:
         mycache:
           grids: [GLOBAL_GEODETIC]
@@ -237,7 +242,7 @@ mapproxy-seed
 
 To define a seed-area in the ``seed.yaml``, add the coverage directly to the view.
 
-::
+.. code-block:: yaml
 
   coverages:
     germany:
@@ -247,7 +252,9 @@ To define a seed-area in the ``seed.yaml``, add the coverage directly to the vie
 
 .. index:: PostGIS, PostgreSQL
 
-Here is the same example with a PostGIS source::
+Here is the same example with a PostGIS source:
+
+.. code-block:: yaml
 
   coverages:
     germany:
@@ -259,7 +266,9 @@ Here is the same example with a PostGIS source::
 
 .. index:: GeoJSON
 
-And here is an example with a GeoJSON source::
+And here is an example with a GeoJSON source:
+
+.. code-block:: yaml
 
   coverages:
     germany:
