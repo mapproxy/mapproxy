@@ -24,4 +24,3 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@v4.5.0
       with:
         folder: docs
-        target-folder: docs
