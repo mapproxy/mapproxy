@@ -31,9 +31,12 @@ html_logo = "_static/logo.png"
 html_last_updated_fmt = ""
 html_favicon = "_static/logo-square.svg"
 html_theme_options = {
+    "path_to_docs": "./",
     "repository_url": "https://github.com/mapproxy/mapproxy",
     "repository_branch": "master",
     "show_navbar_depth": 2,
     "use_fullscreen_button": False,
+    "use_download_button": False,
+    "use_repository_button": True,
     "toc_title": ""
  }
