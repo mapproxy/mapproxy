@@ -1,6 +1,20 @@
 Nightly
 ~~~~~~~~~~~~~~~~~
 
+2.0.1 2024-01-05
+~~~~~~~~~~~~~~~~~
+Improvements:
+
+- Alpine based docker images have been added
+- Added parameter to change background map source in layer preview
+- Dependency updates
+
+Fixes:
+
+- Rendering issue: Check for existing tile coordinates before using them
+- Fix mixed image format for file, S3 and azureblob caches
+
+
 2.0.0 2023-12-19
 ~~~~~~~~~~~~~~~~~
 Breaking:
