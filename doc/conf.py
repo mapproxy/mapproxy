@@ -27,9 +27,9 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 html_theme = 'sphinx_book_theme'
 html_static_path = ['_static']
 html_css_files = ["mapproxy.css"]
-html_logo = "_static/logo.png"
+html_logo = "_static/logo_title.png"
 html_last_updated_fmt = ""
-html_favicon = "_static/logo-square.svg"
+html_favicon = "_static/mapproxy-favicon.ico"
 html_theme_options = {
     "path_to_docs": "./",
     "repository_url": "https://github.com/mapproxy/mapproxy",
