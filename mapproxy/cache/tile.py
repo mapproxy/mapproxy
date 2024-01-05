@@ -143,10 +143,12 @@ class TileManager(object):
                 rescale_till_zoom = self.grid.levels
         
         # Remove tiles that are not in the cache coverage
-        for t in tiles.tiles:
-            tile_bbox = self.grid.tile_bbox(t.coord)
-            if self.cache.coverage and not self.cache.coverage.intersects(tile_bbox, self.grid.srs):
-                t.coord = None
+        if self.cache.coverage:
+            for t in tiles.tiles:
+                if t.coord:
+                    tile_bbox = self.grid.tile_bbox(t.coord)
+                    if not self.cache.coverage.intersects(tile_bbox, self.grid.srs):
+                        t.coord = None
 
         tiles = self._load_tile_coords(
             tiles, dimensions=dimensions, with_metadata=with_metadata,
@@ -155,7 +157,7 @@ class TileManager(object):
 
         for t in tiles.tiles:
             # Clip tiles if clipping is enabled for coverage
-            if self.cache.coverage and self.cache.coverage.clip and t.source:
+            if t.coord and self.cache.coverage and self.cache.coverage.clip and t.source:
                 tile_bbox = self.grid.tile_bbox(t.coord)
                 coverage = self.cache.coverage
                 
