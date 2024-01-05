@@ -6,7 +6,6 @@
 .. Welcome to demo's documentation!
 .. ================================
 
-
 MapProxy Documentation
 ======================
 

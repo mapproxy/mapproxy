@@ -52,7 +52,13 @@ For example:
           mycoverage: &mycoverage
             bbox: [0, 0, 10, 10]
             srs: 'EPSG:4326'
-
+    sources:
+      mysource1:
+        coverage: *mycoverage
+        ...
+      mysource2:
+        coverage: *mycoverage
+        ...
 
 
 ``base``
@@ -1219,7 +1225,6 @@ Here is an example that defines a custom format:
           mode: P
           transparent: true
 
-
 You can also modify existing image formats:
 
 .. code-block:: yaml
@@ -1230,7 +1235,6 @@ You can also modify existing image formats:
         image/png:
           encoding_options:
             quantizer: fastoctree
-
 
 MapProxy will use your image formats when you are using the format name as the ``format`` of any source or cache.
 
@@ -1244,12 +1248,10 @@ For example:
       sources: [source1, source2]
       grids: [my_grid]
 
-
 Local
 """""
 
 You can change all options individually for each cache or source. You can do this by choosing a base format and changing some options:
-
 
 .. code-block:: yaml
 
@@ -1274,7 +1276,6 @@ You can also configure the format from scratch:
       sources: [source1, source2]
       grids: [my_grid]
 
-
 Notes
 -----
 
@@ -1291,7 +1292,6 @@ You can convert between scales and resolutions with the :ref:`mapproxy-util scal
 
 
 MapProxy will use the OCG value (0.28mm/px) if it's necessary to use a scale value (e.g. MinScaleDenominator in WMS 1.3.0 capabilities), but you should always use resolutions within MapProxy.
-
 
 WMS ScaleHint
 ^^^^^^^^^^^^^
