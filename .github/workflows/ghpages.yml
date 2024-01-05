@@ -2,6 +2,9 @@ name: Build and deploy documentation on github pages
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - '*'
 
 permissions:
   contents: write
