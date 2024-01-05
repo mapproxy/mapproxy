@@ -8,7 +8,16 @@
 
 project = 'MapProxy Docs'
 copyright = "2024"
-author = 'MapProxy Community'
+author = 'MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>'
+
+# The version info for the project you're documenting, acts as replacement for
+# |version| and |release|, also used in various other places throughout the
+# built documents.
+#
+# The short X.Y version.
+version = '2.0'
+# The full version, including alpha/beta/rc tags.
+release = '2.0.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
