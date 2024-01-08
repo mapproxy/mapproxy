@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Caching Dimensions &#8212; MapProxy 1.16.0 Docs</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-sphinx.css?v=fadd4351" />
+    <script src="_static/documentation_options.js?v=e2aa0a4e"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+<div id="navbar" class="navbar navbar-default ">
+  <div class="container">
+    <div class="navbar-header">
+      <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="index.html" class="pull-left">
+      </a>
+      <a class="navbar-brand" href="index.html">
+        <span>
+          MapProxy</span>
+        <span>1.16.0</span>
+      </a>
+    </div>
+    <div class="collapse navbar-collapse nav-collapse">
+      
+        
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_2.html">MapProxy 2.0</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-8">
+      
+  <section id="caching-dimensions">
+<h1>Caching Dimensions<a class="headerlink" href="#caching-dimensions" title="Link to this heading">¶</a></h1>
+<p>WMS servers have the capability to offer layers with 1..n dimensions.  A WMS
+layer may provide dimensions such as time, elevation or other axes to be able
+to visualize maps of multidimensional data.  The <a class="reference external" href="https://portal.ogc.org/files/?artifact_id=56394">OGC OGC Best Practice for
+using Web Map Services (WMS) with Time-Dependent or Elevation-Dependent Data</a>
+is an example typically implemented by WMS providers of multidimensional
+data.</p>
+<p>MapProxy supports caching layers with dimensions and making them available
+through standard WMS mechanisms.</p>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">¶</a></h2>
+<p>To enable dimension caching, the underlying WMS layer must have dimensions
+defined and available.  The following properties are required in configuration
+to successfully cache any layer with dimensions:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">forward_req_params</span></code>: list of 1..n query parameter names to send when
+caching the layer, if request by the MapProxy client.  This property is
+specified in a source</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dimensions</span></code>: an object of 1..n keys of dimension definitions. The
+dimension names must match with those specified in <code class="docutils literal notranslate"><span class="pre">forward_req_params</span></code>
+for a given layer/source combination.  Each dimension object requires
+a default dimension (in cases where not specified by the client) as well
+as a list of dimension values.  Dimension lists can be intervals, or a
+a compound value of <code class="docutils literal notranslate"><span class="pre">start-date-time/end-date-time/duration</span></code></p></li>
+</ul>
+<p>An example is shown below:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sources</span><span class="p">:</span>
+<span class="w">     </span><span class="nt">test</span><span class="p">:</span>
+<span class="w">       </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wms</span>
+<span class="w">       </span><span class="nt">req</span><span class="p">:</span>
+<span class="w">         </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://example.org/wms</span>
+<span class="w">         </span><span class="nt">layers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">global-air-temperature-15km</span>
+<span class="w">       </span><span class="nt">forward_req_params</span><span class="p">:</span>
+<span class="w">         </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">time</span>
+<span class="w">         </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dim_reference_time</span>
+</pre></div>
+</div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">layers</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">global-air-temperature-15km</span>
+<span class="w">    </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Global Air Temperature (°C) - 15km</span>
+<span class="w">    </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">test_cache</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">dimensions</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">time</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;2020-09-22T11:20:00Z/2020-09-22T14:20:00Z/PT2H&quot;</span>
+<span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2020-09-22T14:20:00Z&quot;</span>
+<span class="w">      </span><span class="nt">dim_reference_time</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">values</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;2020-09-22T11:20:00Z/2020-09-22T14:20:00Z/PT2H&quot;</span>
+<span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2020-09-22T14:20:00Z&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="iso-8601-interval">
+<h2>ISO 8601 Interval<a class="headerlink" href="#iso-8601-interval" title="Link to this heading">¶</a></h2>
+<dl class="simple">
+<dt>For example:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">2020-03-25T12:00:00Z/2020-03-27T00:00:00Z/PT12H30M</span></code></p>
+</dd>
+</dl>
+<p>A time interval is the intervening time between two time points. The amount of intervening time is expressed by a duration (as described in the previous section). The two time points (start and end) are expressed by either a combined date and time representation or just a date representation.</p>
+<dl>
+<dt>There are four ways to express a time interval:</dt><dd><ol class="arabic simple">
+<li><p>Start and end, such as “2007-03-01T13:00:00Z/2008-05-11T15:30:00Z”</p></li>
+<li><p>Start and duration, such as “2007-03-01T13:00:00Z/P1Y2M10DT2H30M”</p></li>
+<li><p>Duration and end, such as “P1Y2M10DT2H30M/2008-05-11T15:30:00Z”</p></li>
+<li><p>Duration only, such as “P1Y2M10DT2H30M”, with additional context information</p></li>
+</ol>
+<dl class="simple">
+<dt>P is the duration designator (for period) placed at the start of the duration representation.</dt><dd><ul class="simple">
+<li><p>Y is the year designator that follows the value for the number of years.</p></li>
+<li><p>M is the month designator that follows the value for the number of months.</p></li>
+<li><p>W is the week designator that follows the value for the number of weeks.</p></li>
+<li><p>D is the day designator that follows the value for the number of days.</p></li>
+</ul>
+</dd>
+<dt>T is the time designator that precedes the time components of the representation.</dt><dd><ul class="simple">
+<li><p>H is the hour designator that follows the value for the number of hours.</p></li>
+<li><p>M is the minute designator that follows the value for the number of minutes.</p></li>
+<li><p>S is the second designator that follows the value for the number of seconds.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+<section id="wms-capabilities">
+<h2>WMS Capabilities<a class="headerlink" href="#wms-capabilities" title="Link to this heading">¶</a></h2>
+<p>The following is an example of the resulting WMS capabilities in MapProxy:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
+<span class="nt">&lt;WMS_Capabilities</span><span class="w"> </span><span class="na">xmlns=</span><span class="s">&quot;http://www.opengis.net/wms&quot;</span><span class="w"> </span><span class="na">xmlns:sld=</span><span class="s">&quot;http://www.opengis.net/sld&quot;</span><span class="w"> </span><span class="na">xmlns:xlink=</span><span class="s">&quot;http://www.w3.org/1999/xlink&quot;</span><span class="w"> </span><span class="na">xmlns:xsi=</span><span class="s">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span><span class="w"> </span><span class="na">version=</span><span class="s">&quot;1.3.0&quot;</span><span class="w"> </span><span class="na">xsi:schemaLocation=</span><span class="s">&quot;http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/sld_capabilities.xsd&quot;</span><span class="nt">&gt;</span>
+<span class="w">  </span><span class="nt">&lt;Service&gt;</span>
+<span class="w">    </span><span class="nt">&lt;Name&gt;</span>WMS<span class="nt">&lt;/Name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;Title&gt;</span>Test<span class="w"> </span>Dimension<span class="nt">&lt;/Title&gt;</span>
+<span class="w">    </span><span class="nt">&lt;Abstract/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;OnlineResource</span><span class="w"> </span><span class="na">xmlns:xlink=</span><span class="s">&quot;http://www.w3.org/1999/xlink&quot;</span><span class="w"> </span><span class="na">xlink:href=</span><span class="s">&quot;http://127.0.0.1:8080/service&quot;</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;Fees&gt;</span>none<span class="nt">&lt;/Fees&gt;</span>
+<span class="w">    </span><span class="nt">&lt;AccessConstraints&gt;</span>none<span class="nt">&lt;/AccessConstraints&gt;</span>
+<span class="w">    </span><span class="nt">&lt;MaxWidth&gt;</span>4000<span class="nt">&lt;/MaxWidth&gt;</span>
+<span class="w">    </span><span class="nt">&lt;MaxHeight&gt;</span>4000<span class="nt">&lt;/MaxHeight&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/Service&gt;</span>
+<span class="w">  </span><span class="nt">&lt;Capability&gt;</span>
+<span class="w">    </span><span class="nt">&lt;Request&gt;</span>
+<span class="w">      </span><span class="nt">&lt;GetCapabilities&gt;</span>
+<span class="w">        </span><span class="nt">&lt;Format&gt;</span>text/xml<span class="nt">&lt;/Format&gt;</span>
+<span class="w">        </span><span class="nt">&lt;DCPType&gt;</span>
+<span class="w">          </span><span class="nt">&lt;HTTP&gt;</span>
+<span class="w">            </span><span class="nt">&lt;Get&gt;</span>
+<span class="w">              </span><span class="nt">&lt;OnlineResource</span><span class="w"> </span><span class="na">xlink:href=</span><span class="s">&quot;http://127.0.0.1:8080/service?&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;/Get&gt;</span>
+<span class="w">          </span><span class="nt">&lt;/HTTP&gt;</span>
+<span class="w">        </span><span class="nt">&lt;/DCPType&gt;</span>
+<span class="w">      </span><span class="nt">&lt;/GetCapabilities&gt;</span>
+<span class="w">      </span><span class="nt">&lt;GetMap&gt;</span>
+<span class="w">        </span><span class="nt">&lt;Format&gt;</span>image/png<span class="nt">&lt;/Format&gt;</span>
+<span class="w">        </span><span class="nt">&lt;Format&gt;</span>image/jpeg<span class="nt">&lt;/Format&gt;</span>
+<span class="w">        </span><span class="nt">&lt;Format&gt;</span>image/gif<span class="nt">&lt;/Format&gt;</span>
+<span class="w">        </span><span class="nt">&lt;Format&gt;</span>image/GeoTIFF<span class="nt">&lt;/Format&gt;</span>
+<span class="w">        </span><span class="nt">&lt;Format&gt;</span>image/tiff<span class="nt">&lt;/Format&gt;</span>
+<span class="w">        </span><span class="nt">&lt;DCPType&gt;</span>
+<span class="w">          </span><span class="nt">&lt;HTTP&gt;</span>
+<span class="w">            </span><span class="nt">&lt;Get&gt;</span>
+<span class="w">              </span><span class="nt">&lt;OnlineResource</span><span class="w"> </span><span class="na">xlink:href=</span><span class="s">&quot;http://127.0.0.1:8080/service?&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;/Get&gt;</span>
+<span class="w">          </span><span class="nt">&lt;/HTTP&gt;</span>
+<span class="w">        </span><span class="nt">&lt;/DCPType&gt;</span>
+<span class="w">      </span><span class="nt">&lt;/GetMap&gt;</span>
+<span class="w">      </span><span class="nt">&lt;GetFeatureInfo&gt;</span>
+<span class="w">        </span><span class="nt">&lt;Format&gt;</span>text/plain<span class="nt">&lt;/Format&gt;</span>
+<span class="w">        </span><span class="nt">&lt;Format&gt;</span>text/html<span class="nt">&lt;/Format&gt;</span>
+<span class="w">        </span><span class="nt">&lt;Format&gt;</span>text/xml<span class="nt">&lt;/Format&gt;</span>
+<span class="w">        </span><span class="nt">&lt;DCPType&gt;</span>
+<span class="w">          </span><span class="nt">&lt;HTTP&gt;</span>
+<span class="w">            </span><span class="nt">&lt;Get&gt;</span>
+<span class="w">              </span><span class="nt">&lt;OnlineResource</span><span class="w"> </span><span class="na">xlink:href=</span><span class="s">&quot;http://127.0.0.1:8080/service?&quot;</span><span class="nt">/&gt;</span>
+<span class="w">            </span><span class="nt">&lt;/Get&gt;</span>
+<span class="w">          </span><span class="nt">&lt;/HTTP&gt;</span>
+<span class="w">        </span><span class="nt">&lt;/DCPType&gt;</span>
+<span class="w">      </span><span class="nt">&lt;/GetFeatureInfo&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/Request&gt;</span>
+<span class="w">    </span><span class="nt">&lt;Exception&gt;</span>
+<span class="w">      </span><span class="nt">&lt;Format&gt;</span>XML<span class="nt">&lt;/Format&gt;</span>
+<span class="w">      </span><span class="nt">&lt;Format&gt;</span>INIMAGE<span class="nt">&lt;/Format&gt;</span>
+<span class="w">      </span><span class="nt">&lt;Format&gt;</span>BLANK<span class="nt">&lt;/Format&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/Exception&gt;</span>
+<span class="w">    </span><span class="nt">&lt;Layer&gt;</span>
+<span class="w">      </span><span class="nt">&lt;Name&gt;</span>global-air-temperature-15km<span class="nt">&lt;/Name&gt;</span>
+<span class="w">      </span><span class="nt">&lt;Title&gt;</span>Global<span class="w"> </span>Air<span class="w"> </span>Temperature<span class="w"> </span>(°C)<span class="w"> </span>-<span class="w"> </span>15km<span class="nt">&lt;/Title&gt;</span>
+<span class="w">      </span><span class="nt">&lt;CRS&gt;</span>EPSG:4326<span class="nt">&lt;/CRS&gt;</span>
+<span class="w">      </span><span class="nt">&lt;CRS&gt;</span>EPSG:3857<span class="nt">&lt;/CRS&gt;</span>
+<span class="w">      </span><span class="nt">&lt;EX_GeographicBoundingBox&gt;</span>
+<span class="w">        </span><span class="nt">&lt;westBoundLongitude&gt;</span>-180<span class="nt">&lt;/westBoundLongitude&gt;</span>
+<span class="w">        </span><span class="nt">&lt;eastBoundLongitude&gt;</span>180<span class="nt">&lt;/eastBoundLongitude&gt;</span>
+<span class="w">        </span><span class="nt">&lt;southBoundLatitude&gt;</span>-89.999999<span class="nt">&lt;/southBoundLatitude&gt;</span>
+<span class="w">        </span><span class="nt">&lt;northBoundLatitude&gt;</span>89.999999<span class="nt">&lt;/northBoundLatitude&gt;</span>
+<span class="w">      </span><span class="nt">&lt;/EX_GeographicBoundingBox&gt;</span>
+<span class="w">      </span><span class="nt">&lt;BoundingBox</span><span class="w"> </span><span class="na">CRS=</span><span class="s">&quot;CRS:84&quot;</span><span class="w"> </span><span class="na">minx=</span><span class="s">&quot;-180&quot;</span><span class="w"> </span><span class="na">miny=</span><span class="s">&quot;-89.999999&quot;</span><span class="w"> </span><span class="na">maxx=</span><span class="s">&quot;180&quot;</span><span class="w"> </span><span class="na">maxy=</span><span class="s">&quot;89.999999&quot;</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;BoundingBox</span><span class="w"> </span><span class="na">CRS=</span><span class="s">&quot;EPSG:4326&quot;</span><span class="w"> </span><span class="na">minx=</span><span class="s">&quot;-90.0&quot;</span><span class="w"> </span><span class="na">miny=</span><span class="s">&quot;-180.0&quot;</span><span class="w"> </span><span class="na">maxx=</span><span class="s">&quot;90.0&quot;</span><span class="w"> </span><span class="na">maxy=</span><span class="s">&quot;180.0&quot;</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;BoundingBox</span><span class="w"> </span><span class="na">CRS=</span><span class="s">&quot;EPSG:3857&quot;</span><span class="w"> </span><span class="na">minx=</span><span class="s">&quot;-20037508.342789244&quot;</span><span class="w"> </span><span class="na">miny=</span><span class="s">&quot;-147730762.66992167&quot;</span><span class="w"> </span><span class="na">maxx=</span><span class="s">&quot;20037508.342789244&quot;</span><span class="w"> </span><span class="na">maxy=</span><span class="s">&quot;147730758.19456753&quot;</span><span class="nt">/&gt;</span>
+<span class="w">      </span><span class="nt">&lt;Dimension</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;time&quot;</span><span class="w"> </span><span class="na">default=</span><span class="s">&quot;2020-09-22T14:20:00Z&quot;</span><span class="w"> </span><span class="na">nearestValue=</span><span class="s">&quot;0&quot;</span><span class="w"> </span><span class="na">units=</span><span class="s">&quot;ISO8601&quot;</span><span class="nt">&gt;</span>2020-09-22T11:20:00Z,2020-09-22T13:20:00Z,2020-09-22T15:20:00Z<span class="nt">&lt;/Dimension&gt;</span>
+<span class="w">      </span><span class="nt">&lt;Dimension</span><span class="w"> </span><span class="na">name=</span><span class="s">&quot;dim_reference_time&quot;</span><span class="w"> </span><span class="na">default=</span><span class="s">&quot;2020-09-22T14:20:00Z&quot;</span><span class="w"> </span><span class="na">nearestValue=</span><span class="s">&quot;0&quot;</span><span class="w"> </span><span class="na">units=</span><span class="s">&quot;ISO8601&quot;</span><span class="nt">&gt;</span>2020-09-22T11:20:00Z,2020-09-22T13:20:00Z,2020-09-22T15:20:00Z<span class="nt">&lt;/Dimension&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/Layer&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/Capability&gt;</span>
+<span class="nt">&lt;/WMS_Capabilities&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="known-limitations">
+<h2>Known limitations<a class="headerlink" href="#known-limitations" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>some WMS time-enabled servers provide dimension support for real-time
+data with ongoing updates to retention time.  In this case, a given
+WMS layer’s temporal extent may be updated a few hours after, for
+example.  It is up to the MapProxy configuration to manage dimensions/
+extents accordingly.  This can be done with custom scripts
+to run WMS <code class="docutils literal notranslate"><span class="pre">GetCapabilities</span></code> requests and write the updated temporal
+dimensions into the MapProxy configuration.  An example of such a tool
+is <a class="reference external" href="https://github.com/ECCC-MSC/geomet-mapproxy">geomet-mapproxy</a></p></li>
+<li><p>caches of layers with dimensions need to be cleaned/deleted by the MapProxy
+administrator.  This can typically be done via cron/schedule accordingly</p></li>
+<li><p>dimemsion support is only implemented in the default file cache backend
+at this time</p></li>
+</ul>
+</section>
+<section id="tests">
+<h2>Tests<a class="headerlink" href="#tests" title="Link to this heading">¶</a></h2>
+<p>All tests related to caching layer dimensions: <code class="docutils literal notranslate"><span class="pre">mapproxy/test/system/test_dimensions.py</span></code></p>
+</section>
+</section>
+
+
+    </div>
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p>
+     
+       &copy; Copyright Oliver Tonnhofer, Omniscale, <a href="http://mapproxy.org/about">Legal</a>
+     
+     <br/>
+     
+       Last updated on 2024-01-08
+     <br/>
+
+     
+       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.
+     
+   </p>
+ </div>
+</footer>
+  </body>
+</html>

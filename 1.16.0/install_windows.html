@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Installation on Windows &#8212; MapProxy 1.16.0 Docs</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-sphinx.css?v=fadd4351" />
+    <script src="_static/documentation_options.js?v=e2aa0a4e"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation on OSGeo4W" href="install_osgeo4w.html" />
+    <link rel="prev" title="Installation" href="install.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+<div id="navbar" class="navbar navbar-default ">
+  <div class="container">
+    <div class="navbar-header">
+      <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="index.html" class="pull-left">
+      </a>
+      <a class="navbar-brand" href="index.html">
+        <span>
+          MapProxy</span>
+        <span>1.16.0</span>
+      </a>
+    </div>
+    <div class="collapse navbar-collapse nav-collapse">
+      
+        
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation on Windows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#virtualenv">Virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pip">PIP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#platform-dependent-packages">Platform dependent packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#check-installation">Check installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_docker.html">Installation via Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Writing plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_2.html">MapProxy 2.0</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-8">
+      
+  <section id="installation-on-windows">
+<h1>Installation on Windows<a class="headerlink" href="#installation-on-windows" title="Link to this heading">¶</a></h1>
+<p>At first you need a working Python installation. You can download Python from: <a class="reference external" href="https://www.python.org/download/">https://www.python.org/download/</a>. MapProxy requires Python 3.7 or higher.</p>
+<section id="virtualenv">
+<h2>Virtualenv<a class="headerlink" href="#virtualenv" title="Link to this heading">¶</a></h2>
+<p><em>If</em> you are using your Python installation for other applications as well, then we advise you to install MapProxy into a virtual Python environment to avoid any conflicts with different dependencies. <em>You can skip this if you only use the Python installation for MapProxy.</em>
+<a class="reference external" href="https://virtualenv.pypa.io/en/latest/">Read about virtualenv</a> if you want to know more about the benefits.</p>
+<p>To create a new virtual environment for your MapProxy installation and to activate it go to the command line and call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">Python27</span>\<span class="n">python</span> <span class="n">path</span>\<span class="n">to</span>\<span class="n">virtualenv</span><span class="o">.</span><span class="n">py</span> <span class="n">c</span><span class="p">:</span>\<span class="n">mapproxy_venv</span>
+<span class="n">C</span><span class="p">:</span>\<span class="n">mapproxy_venv</span>\<span class="n">Scripts</span>\<span class="n">activate</span><span class="o">.</span><span class="n">bat</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The last step is required every time you start working with your MapProxy installation. Alternatively you can always explicitly call <code class="docutils literal notranslate"><span class="pre">\mapproxy_venv\Scripts\&lt;command&gt;</span></code>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Apache mod_wsgi does not work well with virtualenv on Windows. If you want to use mod_wsgi for deployment, then you should skip the creation the virtualenv.</p>
+</div>
+<p>After you activated the new environment, you have access to <code class="docutils literal notranslate"><span class="pre">python</span></code> and <code class="docutils literal notranslate"><span class="pre">pip</span></code>.
+To install MapProxy with most dependencies call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">MapProxy</span>
+</pre></div>
+</div>
+<p>This might take a minute. You can skip the next step.</p>
+</section>
+<section id="pip">
+<h2>PIP<a class="headerlink" href="#pip" title="Link to this heading">¶</a></h2>
+<p>MapProxy and most dependencies can be installed with the <code class="docutils literal notranslate"><span class="pre">pip</span></code> command. <code class="docutils literal notranslate"><span class="pre">pip</span></code> is already installed if you are using Python &gt;=2.7.9, or Python &gt;=3.4. <a class="reference external" href="https://pip.pypa.io/en/stable/installing/">Read the pip documentation for more information</a>.</p>
+<p>After that you can install MapProxy with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="p">:</span>\<span class="n">Python27</span>\<span class="n">Scripts</span>\<span class="n">pip</span> <span class="n">install</span> <span class="n">MapProxy</span>
+</pre></div>
+</div>
+<p>This might take a minute.</p>
+</section>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">¶</a></h2>
+<p>Read <a class="reference internal" href="install.html#dependency-details"><span class="std std-ref">Dependency details</span></a> for more information about all dependencies.</p>
+<section id="pillow-and-yaml">
+<h3>Pillow and YAML<a class="headerlink" href="#pillow-and-yaml" title="Link to this heading">¶</a></h3>
+<p>Pillow and PyYAML are installed automatically by <code class="docutils literal notranslate"><span class="pre">pip</span></code>.</p>
+</section>
+<section id="pyproj">
+<h3>PyProj<a class="headerlink" href="#pyproj" title="Link to this heading">¶</a></h3>
+<p>Since PROJ is generally not available on a Windows system, you will also need to install the Python package <code class="docutils literal notranslate"><span class="pre">pyproj</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pyproj</span>
+</pre></div>
+</div>
+<p>See <em>Platform dependent packages</em> below if this installation fails as Windows packages might not be available for pyproj.</p>
+</section>
+<section id="shapely-and-geos-optional">
+<h3>Shapely and GEOS <em>(optional)</em><a class="headerlink" href="#shapely-and-geos-optional" title="Link to this heading">¶</a></h3>
+<p>Shapely can be installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">Shapely</span></code>. This will already include the required <code class="docutils literal notranslate"><span class="pre">geos.dll</span></code>.</p>
+</section>
+<section id="gdal-optional">
+<h3>GDAL <em>(optional)</em><a class="headerlink" href="#gdal-optional" title="Link to this heading">¶</a></h3>
+<p>MapProxy requires GDAL/OGR for coverage support. MapProxy can either load the <code class="docutils literal notranslate"><span class="pre">gdal.dll</span></code> directly or use the <code class="docutils literal notranslate"><span class="pre">osgeo.ogr</span></code> Python package. You can <a class="reference external" href="http://www.gisinternals.com/sdk/">download and install inofficial Windows binaries of GDAL and the Python package</a> (e.g. <cite>gdal-19-xxxx-code.msi</cite>).</p>
+<p>You need to add the installation path to the Windows <code class="docutils literal notranslate"><span class="pre">PATH</span></code> environment variable in both cases.
+You can set the variable temporary on the command line (spaces in the filename need no quotes or escaping):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">PATH</span><span class="o">=%</span><span class="n">PATH</span><span class="o">%</span><span class="p">;</span><span class="n">C</span><span class="p">:</span>\<span class="n">Program</span> <span class="n">Files</span> <span class="p">(</span><span class="n">x86</span><span class="p">)</span>\<span class="n">GDAL</span>
+</pre></div>
+</div>
+<p>Or you can add it to your <a class="reference external" href="http://www.computerhope.com/issues/ch000549.htm">systems environment variables</a>.</p>
+<p>You also need to set <code class="docutils literal notranslate"><span class="pre">GDAL_DRIVER_PATH</span></code> or <code class="docutils literal notranslate"><span class="pre">OGR_DRIVER_PATH</span></code> to the <code class="docutils literal notranslate"><span class="pre">gdalplugins</span></code> directory when you want to use the Oracle plugin (extra download from URL above):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">GDAL_DRIVER_PATH</span><span class="o">=</span><span class="n">C</span><span class="p">:</span>\<span class="n">Program</span> <span class="n">Files</span> <span class="p">(</span><span class="n">x86</span><span class="p">)</span>\<span class="n">GDAL</span>\<span class="n">gdalplugins</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="platform-dependent-packages">
+<span id="win-platform-packages"></span><h2>Platform dependent packages<a class="headerlink" href="#platform-dependent-packages" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span></code> downloads all packages from <a class="reference external" href="https://pypi.org/">https://pypi.org/</a>, but not all platform combinations might be available as a binary package, especially if you run a 64bit version of Python.</p>
+<p>If you run into trouble during installation, because it is trying to compile something (e.g. complaining about <code class="docutils literal notranslate"><span class="pre">vcvarsall.bat</span></code>), you should look at Christoph Gohlke’s <a class="reference external" href="http://www.lfd.uci.edu/~gohlke/pythonlibs/">Unofficial Windows Binaries for Python Extension Packages</a>. This is a reliable site for binary packages for Python. You need to download the right package: The <code class="docutils literal notranslate"><span class="pre">cpxx</span></code> code refers to the Python version (e.g. <code class="docutils literal notranslate"><span class="pre">cp27</span></code> for Python 2.7); <code class="docutils literal notranslate"><span class="pre">win32</span></code> for 32bit Python installations and <code class="docutils literal notranslate"><span class="pre">amd64</span></code> for 64bit.</p>
+<p>You can install the <code class="docutils literal notranslate"><span class="pre">.whl</span></code>, <code class="docutils literal notranslate"><span class="pre">.zip</span></code> or <code class="docutils literal notranslate"><span class="pre">.exe</span></code> packages with <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">path</span>\<span class="n">to</span>\<span class="n">package</span><span class="o">-</span><span class="n">xxx</span><span class="o">.</span><span class="n">whl</span>
+</pre></div>
+</div>
+</section>
+<section id="check-installation">
+<h2>Check installation<a class="headerlink" href="#check-installation" title="Link to this heading">¶</a></h2>
+<p>To check if the MapProxy was successfully installed you can call <code class="docutils literal notranslate"><span class="pre">mapproxy-util</span></code>. You should see the installed version number.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="o">--</span><span class="n">version</span>
+</pre></div>
+</div>
+<p>Now continue with <a class="reference internal" href="install.html#create-configuration"><span class="std std-ref">Create a configuration</span></a> from the installation documentation.</p>
+</section>
+</section>
+
+
+    </div>
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p>
+     
+       &copy; Copyright Oliver Tonnhofer, Omniscale, <a href="http://mapproxy.org/about">Legal</a>
+     
+     <br/>
+     
+       Last updated on 2024-01-08
+     <br/>
+
+     
+       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.
+     
+   </p>
+ </div>
+</footer>
+  </body>
+</html>

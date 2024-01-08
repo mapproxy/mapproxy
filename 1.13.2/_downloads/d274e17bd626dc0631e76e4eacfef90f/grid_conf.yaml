@@ -1,0 +1,45 @@
+services:
+  demo:
+  wms:
+    md:
+      title: MapProxy WMS Proxy
+      abstract: This is the fantastic MapProxy.
+      online_resource: http://mapproxy.org/
+      contact:
+        person: Your Name Here
+        position: Technical Director
+        organization:
+        address: Fakestreet 123
+        city: Somewhere
+        postcode: 12345
+        country: Germany
+        phone: +49(0)000-000000-0
+        fax: +49(0)000-000000-0
+        email: info@omniscale.de
+      access_constraints:
+        Insert license and copyright information for this service.
+      fees: 'None'
+
+sources:
+  test_wms:
+    type: wms
+    req:
+      url: http://osm.omniscale.net/proxy/service?
+      layers: osm
+
+caches:
+  test_wms_cache:
+    sources: [test_wms]
+    grids: [germany]
+
+layers:
+  - name: cached_grid_test
+    title: Cached Grid Test Layer
+    sources: [test_wms_cache]
+
+grids:
+  germany:
+    res: [10000, 7500, 5000, 3500, 2500]
+    srs: 'EPSG:25832'
+    bbox: [6, 47.3, 15.1, 55]
+    bbox_srs: 'EPSG:4326'
