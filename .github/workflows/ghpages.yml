@@ -2,9 +2,6 @@ name: Build and deploy documentation on github pages
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - '*'
 
 permissions:
   contents: write
@@ -27,3 +24,4 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@v4.5.0
       with:
         folder: docs
+        target-folder: latest
