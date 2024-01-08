@@ -51,6 +51,7 @@ html_theme_options = {
     "toc_title": "",
     "navbar_start": ["versions.html"]
 }
+html_baseurl = "/mapproxy/"
 html_context = {
     "docsBaseUrl": "https://hblitza.github.io/mapproxy",
     "current_version" : "2.0.1",
