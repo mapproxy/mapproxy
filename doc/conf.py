@@ -47,5 +47,12 @@ html_theme_options = {
     "use_fullscreen_button": False,
     "use_download_button": False,
     "use_repository_button": True,
-    "toc_title": ""
- }
+    "collapse_navbar": True,
+    "toc_title": "",
+    "navbar_start": ["versions.html"]
+}
+html_context = {
+    "docsBaseUrl": "https://hblitza.github.io/mapproxy",
+    "current_version" : "2.0.1",
+    "versions" : ["2.0.1", "2.0.0", "1.16.1", "1.15.1", "1.14.0", "1.13.2"]
+}
