@@ -38,7 +38,7 @@ from html import escape
 from io import StringIO
 from mapproxy.util.py import reraise
 from mapproxy.util.ext.tempita._looper import looper
-from mapproxy.util.ext.tempita.compat3 import bytes, basestring_, next, is_unicode, coerce_text
+from mapproxy.util.ext.tempita.string_utils import basestring_, is_unicode, coerce_text
 
 from urllib.parse import quote as url_quote
 
@@ -186,7 +186,7 @@ class Template(object):
                 position=None, name=self.name)
         templ = self.get_template(inherit_template, self)
         self_ = TemplateObject(self.name)
-        for name, value in iteritems(defs):
+        for name, value in defs.items():
             setattr(self_, name, value)
         self_.body = body
         ns = ns.copy()
@@ -377,7 +377,7 @@ def paste_script_template_renderer(content, vars, filename=None):
 class bunch(dict):
 
     def __init__(self, **kw):
-        for name, value in iteritems(kw):
+        for name, value in kw.items():
             setattr(self, name, value)
 
     def __setattr__(self, name, value):
@@ -558,7 +558,7 @@ class TemplateDef(object):
                 raise TypeError(
                     'Extra position arguments: %s'
                     % ', '.join(repr(v) for v in args))
-        for name, value_expr in iteritems(defaults):
+        for name, value_expr in defaults.items():
             if name not in values:
                 values[name] = self._template._eval(
                     value_expr, self._ns, self._pos)

@@ -1,4 +1,4 @@
-__all__ = ['b', 'basestring_', 'is_unicode']
+__all__ = ['b', 'basestring_', 'is_unicode', 'coerce_text']
 
 
 def b(s):

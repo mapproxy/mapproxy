@@ -19,7 +19,7 @@ looper you can get a better sense of the context.  Use like::
 """
 
 import sys
-from mapproxy.util.ext.tempita.compat3 import basestring_
+from mapproxy.util.ext.tempita.string_utils import basestring_
 
 __all__ = ['looper']
 
