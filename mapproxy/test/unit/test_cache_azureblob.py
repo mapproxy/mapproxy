@@ -57,7 +57,7 @@ class TestAzureBlobCache(TileCacheTestBase):
     def teardown_method(self):
         TileCacheTestBase.teardown_method(self)
         self.container_client.delete_container()
-    
+
     def test_default_coverage(self):
         assert self.cache.coverage is None
 

@@ -16,6 +16,7 @@
 from mapproxy.cache.base import TileCacheBase
 from mapproxy.util.lock import DummyLock
 
+
 class DummyCache(TileCacheBase):
     def is_cached(self, tile, dimensions=None):
         return False
@@ -28,6 +29,7 @@ class DummyCache(TileCacheBase):
 
     def store_tile(self, tile, dimensions=None):
         pass
+
 
 class DummyLocker(object):
     def lock(self, tile):

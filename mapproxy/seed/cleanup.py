@@ -24,10 +24,10 @@ from mapproxy.seed.seeder import (
     TileWorkerPool, TileWalker, TileCleanupWorker,
     SeedProgress,
 )
-from mapproxy.seed.util import ProgressLog
+
 
 def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
-               verbose=True, progress_logger=None):
+            verbose=True, progress_logger=None):
     for task in tasks:
         print(format_cleanup_task(task))
 
@@ -47,7 +47,7 @@ def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
         if task.complete_extent:
             if callable(getattr(task.tile_manager.cache, 'level_location', None)):
                 simple_cleanup(task, dry_run=dry_run, progress_logger=progress_logger,
-                    cleanup_progress=cleanup_progress)
+                               cleanup_progress=cleanup_progress)
                 task.tile_manager.cleanup()
                 continue
             elif callable(getattr(task.tile_manager.cache, 'remove_level_tiles_before', None)):
@@ -56,10 +56,10 @@ def cleanup(tasks, concurrency=2, dry_run=False, skip_geoms_for_last_levels=0,
                 continue
 
         tilewalker_cleanup(task, dry_run=dry_run, concurrency=concurrency,
-                         skip_geoms_for_last_levels=skip_geoms_for_last_levels,
-                         progress_logger=progress_logger,
-                         seed_progress=seed_progress,
-        )
+                           skip_geoms_for_last_levels=skip_geoms_for_last_levels,
+                           progress_logger=progress_logger,
+                           seed_progress=seed_progress,
+                           )
         task.tile_manager.cleanup()
 
 
@@ -88,7 +88,8 @@ def simple_cleanup(task, dry_run, progress_logger=None, cleanup_progress=None):
                 progress_logger.progress_store.write()
 
         cleanup_directory(level_dir, task.remove_timestamp,
-            file_handler=file_handler, remove_empty_dirs=True)
+                          file_handler=file_handler, remove_empty_dirs=True)
+
 
 def cache_cleanup(task, dry_run, progress_logger=None):
     for level in task.levels:
@@ -97,6 +98,7 @@ def cache_cleanup(task, dry_run, progress_logger=None):
         if not dry_run:
             task.tile_manager.cache.remove_level_tiles_before(level, task.remove_timestamp)
             task.tile_manager.cleanup()
+
 
 def normpath(path):
     # relpath doesn't support UNC
@@ -109,8 +111,9 @@ def normpath(path):
         path = os.path.abspath(path)
     return path
 
+
 def tilewalker_cleanup(task, dry_run, concurrency, skip_geoms_for_last_levels,
-    progress_logger=None, seed_progress=None):
+                       progress_logger=None, seed_progress=None):
     """
     Cleanup tiles with tile traversal.
     """

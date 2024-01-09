@@ -101,7 +101,6 @@ class TestMockServ(object):
             assert resp.status_code == 418
             assert resp.content == b'hello'
 
-
     def test_multiple_requests(self):
         serv = MockServ()
         serv.expects('/test1').returns(body=b'hello1')
@@ -112,7 +111,6 @@ class TestMockServ(object):
             assert resp.content == b'hello1'
             resp = requests.get('http://localhost:%d/test2' % serv.port)
             assert resp.content == b'hello2'
-
 
     def test_too_many_requests(self):
         serv = MockServ()
@@ -190,23 +188,23 @@ class TestMockHttpd(object):
 
     def test_headers_status_body(self):
         with mock_httpd(('localhost', 42423), [
-            ({'path':'/test', 'headers': {'Accept': 'Coffee'}},
+            ({'path': '/test', 'headers': {'Accept': 'Coffee'}},
              {'body': b'ok', 'status': 418})]):
             resp = requests.get('http://localhost:42423/test', headers={'Accept': 'Coffee'})
             assert resp.status_code == 418
 
     def test_auth(self):
         with mock_httpd(('localhost', 42423), [
-            ({'path':'/test', 'headers': {'Accept': 'Coffee'}, 'require_basic_auth': True},
+            ({'path': '/test', 'headers': {'Accept': 'Coffee'}, 'require_basic_auth': True},
              {'body': b'ok', 'status': 418})]):
-                resp = requests.get('http://localhost:42423/test')
-                assert resp.status_code == 401
-                assert resp.content == b'no access'
+            resp = requests.get('http://localhost:42423/test')
+            assert resp.status_code == 401
+            assert resp.content == b'no access'
 
-                resp = requests.get('http://localhost:42423/test', headers={
-                    'Authorization': basic_auth_value('foo', 'bar'), 'Accept': 'Coffee'}
-                )
-                assert resp.content == b'ok'
+            resp = requests.get('http://localhost:42423/test', headers={
+                'Authorization': basic_auth_value('foo', 'bar'), 'Accept': 'Coffee'}
+            )
+            assert resp.content == b'ok'
 
 
 def test_query_eq():

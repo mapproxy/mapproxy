@@ -13,9 +13,8 @@
 
 import re
 import datetime
-from mapproxy.util.ext.wmsparse.duration import parse_datetime,Duration,ISO8601Error
+from mapproxy.util.ext.wmsparse.duration import parse_datetime, Duration, ISO8601Error
 from decimal import Decimal
-import calendar
 
 ISO8601_INTERVAL_REGEX = re.compile(
     r"^(?P<sign>[+-])?"
@@ -58,10 +57,10 @@ def parse_duration(datestring):
                                microseconds=durdt.microsecond,
                                minutes=durdt.minute, hours=durdt.hour,
                                months=durdt.month, years=durdt.year)
-            else:  
+            else:
                 ret = datetime.timedelta(days=durdt.day, seconds=durdt.second,
-                                microseconds=durdt.microsecond,
-                                minutes=durdt.minute, hours=durdt.hour)
+                                         microseconds=durdt.microsecond,
+                                         minutes=durdt.minute, hours=durdt.hour)
             return ret
         raise ISO8601Error("Unable to parse duration string %r" % datestring)
     groups = match.groupdict()
@@ -75,8 +74,8 @@ def parse_duration(datestring):
                 groups[key] = float(groups[key][:-1].replace(',', '.'))
     if groups["years"] == 0 and groups["months"] == 0:
         ret = datetime.timedelta(days=groups["days"], hours=groups["hours"],
-                        minutes=groups["minutes"], seconds=groups["seconds"],
-                        weeks=groups["weeks"])
+                                 minutes=groups["minutes"], seconds=groups["seconds"],
+                                 weeks=groups["weeks"])
         if groups["sign"] == '-':
             ret = datetime.timedelta(0) - ret
     else:
@@ -87,6 +86,7 @@ def parse_duration(datestring):
         if groups["sign"] == '-':
             ret = Duration(0) - ret
     return ret
+
 
 def resolve_ns(xpath, namespaces, default=None):
     """
@@ -106,13 +106,16 @@ def resolve_ns(xpath, namespaces, default=None):
 
     return xpath_elem.sub(repl, xpath)
 
+
 def parse_datetime_range(datetime_range_str):
     """
     Only works for Z and PT??H for now.
     For example:
          2020-03-25T12:00:00Z/2020-03-27T00:00:00Z/PT12H30M
 
-    A time interval is the intervening time between two time points. The amount of intervening time is expressed by a duration (as described in the previous section). The two time points (start and end) are expressed by either a combined date and time representation or just a date representation.
+    A time interval is the intervening time between two time points. The amount of intervening time is expressed by a
+    duration (as described in the previous section). The two time points (start and end) are expressed by either a
+    combined date and time representation or just a date representation.
 
     There are four ways to express a time interval:
         1. Start and end, such as "2007-03-01T13:00:00Z/2008-05-11T15:30:00Z"
@@ -120,7 +123,7 @@ def parse_datetime_range(datetime_range_str):
         3. Duration and end, such as "P1Y2M10DT2H30M/2008-05-11T15:30:00Z"
         4. Duration only, such as "P1Y2M10DT2H30M", with additional context information
 
-        sources: https://www.iso.org/standard/40874.html 
+        sources: https://www.iso.org/standard/40874.html
                  https://en.wikipedia.org/wiki/ISO_8601
 
         P is the duration designator (for period) placed at the start of the duration representation.
@@ -134,14 +137,14 @@ def parse_datetime_range(datetime_range_str):
             S is the second designator that follows the value for the number of seconds.
 
     """
-    #initial values
+    # initial values
     init_str = None
     end_str = None
 
-    datetime_range_str = datetime_range_str.strip() #delete blank spaces
+    datetime_range_str = datetime_range_str.strip()  # delete blank spaces
     splitting = datetime_range_str.split('/')
 
-    values = [] #store final values
+    values = []  # store final values
 
     if len(splitting) == 1:
         # sample: "2020-08-25T00:00:00Z"
@@ -149,32 +152,32 @@ def parse_datetime_range(datetime_range_str):
         values.append(datetime_val.isoformat().replace('+00:00', 'Z'))
         return values
 
-    if len(splitting) == 2 and splitting[1].startswith("P"): 
+    if len(splitting) == 2 and splitting[1].startswith("P"):
         # sample: "2007-03-01T13:00:00Z/P1Y2M10DT2H30M"
-        init_str, interval =  splitting
+        init_str, interval = splitting
 
-    if len(splitting) == 2 and splitting[0].startswith("P"): 
+    if len(splitting) == 2 and splitting[0].startswith("P"):
         # sample: ""P1Y2M10DT2H30M/2008-05-11T15:30:00Z""
-        interval, end_str =  splitting
+        interval, end_str = splitting
 
-    if len(splitting) == 3 and splitting[2].startswith("P"): 
+    if len(splitting) == 3 and splitting[2].startswith("P"):
         # sample: "2020-08-25T00:00:00Z/2020-08-26T00:00:00Z/PT2H30M"
-        init_str, end_str, interval =  splitting
+        init_str, end_str, interval = splitting
 
-    #period, time = interval.split('T')
+    # period, time = interval.split('T')
     delta = parse_duration(interval)
 
-    # missing end 
+    # missing end
     if end_str is None:
         init = parse_datetime(init_str)
         end = init + delta
 
-    #missing init
+    # missing init
     if init_str is None:
         end = parse_datetime(end_str)
         init = end - delta
 
-    if init_str and end_str: 
+    if init_str and end_str:
         init = parse_datetime(init_str)
         end = parse_datetime(end_str)
 

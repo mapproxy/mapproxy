@@ -58,7 +58,7 @@ class TestSeedOnlyWMS(SysTest):
         img = Image.open(data)
         assert img.mode == "RGB"
         # cached image has more that 256 colors, getcolors -> None
-        assert img.getcolors() == None
+        assert img.getcolors() is None
 
     def test_get_map_uncached(self, app):
         self.common_map_req.params["bbox"] = "10,10,20,20"
@@ -81,7 +81,7 @@ class TestSeedOnlyTMS(SysTest):
         img = Image.open(data)
         assert img.mode == "RGB"
         # cached image has more that 256 colors, getcolors -> None
-        assert img.getcolors() == None
+        assert img.getcolors() is None
 
     def test_get_tile_uncached(self, app):
         resp = app.get("/tms/1.0.0/wms_cache/0/0/0.jpeg")

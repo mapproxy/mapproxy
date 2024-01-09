@@ -22,6 +22,7 @@ from mapproxy.request.tile import TileRequest
 from mapproxy.srs import SRS
 from mapproxy.util.coverage import load_limited_to
 
+
 class KMLRequest(TileRequest):
     """
     Class for TMS-like KML requests.
@@ -43,6 +44,7 @@ class KMLRequest(TileRequest):
     @property
     def exception_handler(self):
         return PlainExceptionHandler()
+
 
 class KMLInitRequest(TileRequest):
     """
@@ -67,11 +69,13 @@ class KMLInitRequest(TileRequest):
     def exception_handler(self):
         return PlainExceptionHandler()
 
+
 def kml_request(req):
     if KMLInitRequest.tile_req_re.match(req.path):
         return KMLInitRequest(req)
     else:
         return KMLRequest(req)
+
 
 class KMLServer(Server):
     """
@@ -109,17 +113,17 @@ class KMLServer(Server):
         if 'mapproxy.authorize' in request.http.environ:
             if request.tile:
                 query_extent = (tile_layer.grid.srs.srs_code,
-                    tile_layer.tile_bbox(request, use_profiles=request.use_profiles))
+                                tile_layer.tile_bbox(request, use_profiles=request.use_profiles))
             else:
-                query_extent = None # for layer capabilities
+                query_extent = None  # for layer capabilities
             result = request.http.environ['mapproxy.authorize']('kml', [tile_layer.name],
-                query_extent=query_extent, environ=request.http.environ)
+                                                                query_extent=query_extent, environ=request.http.environ)
             if result['authorized'] == 'unauthenticated':
                 raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
                 return
             if result['authorized'] == 'partial':
-                if result['layers'].get(tile_layer.name, {}).get('tile', False) == True:
+                if result['layers'].get(tile_layer.name, {}).get('tile', False) is True:
                     limited_to = result['layers'][tile_layer.name].get('limited_to')
                     if not limited_to:
                         limited_to = result.get('limited_to')
@@ -128,7 +132,6 @@ class KMLServer(Server):
                     else:
                         return None
             raise RequestError('forbidden', status=403)
-
 
     def _internal_layer(self, tile_request):
         if '_layer_spec' in tile_request.dimensions:
@@ -180,9 +183,9 @@ class KMLServer(Server):
         subtiles = self._get_subtiles(map_request, layer)
         tile_size = layer.grid.tile_size[0]
         url = map_request.http.script_url.rstrip('/')
-        result = KMLRenderer().render(tile=tile, subtiles=subtiles, layer=layer,
-            url=url, name=map_request.layer, format=layer.format, name_path=layer.md['name_path'],
-            initial_level=initial_level, tile_size=tile_size)
+        result = KMLRenderer().render(
+            tile=tile, subtiles=subtiles, layer=layer, url=url, name=map_request.layer, format=layer.format,
+            name_path=layer.md['name_path'], initial_level=initial_level, tile_size=tile_size)
         resp = Response(result, content_type='application/vnd.google-earth.kml+xml')
         resp.cache_headers(etag_data=(result,), max_age=self.max_tile_age)
         resp.make_conditional(map_request.http)
@@ -199,7 +202,8 @@ class KMLServer(Server):
         bbox_, tile_grid_, tiles = layer.grid.get_affected_level_tiles(bbox, level)
         subtiles = []
         for coord in tiles:
-            if coord is None: continue
+            if coord is None:
+                continue
             sub_bbox = layer.grid.tile_bbox(coord)
             if sub_bbox is not None:
                 # only add subtiles where the lower left corner is in the bbox
@@ -216,7 +220,7 @@ class KMLServer(Server):
 
     def _tile_wgs_bbox(self, tile_request, layer, limit=False):
         bbox = layer.tile_bbox(tile_request, use_profiles=tile_request.use_profiles,
-            limit=limit)
+                               limit=limit)
         if bbox is None:
             return None
         return self._tile_bbox_to_wgs(bbox, layer.grid)
@@ -225,9 +229,9 @@ class KMLServer(Server):
         bbox = grid.srs.transform_bbox_to(SRS(4326), src_bbox, with_points=4)
         if grid.srs == SRS(900913):
             bbox = list(bbox)
-            if abs(src_bbox[1] -  -20037508.342789244) < 0.1:
+            if abs(src_bbox[1] - -20037508.342789244) < 0.1:
                 bbox[1] = -90.0
-            if abs(src_bbox[3] -  20037508.342789244) < 0.1:
+            if abs(src_bbox[3] - 20037508.342789244) < 0.1:
                 bbox[3] = 90.0
         return bbox
 
@@ -240,9 +244,11 @@ class SubTile(object):
     """
     Contains the ``bbox`` and ``coord`` of a sub tile.
     """
+
     def __init__(self, coord, bbox):
         self.coord = coord
         self.bbox = bbox
+
 
 class KMLRenderer(object):
     header = """<?xml version="1.0"?>
@@ -303,24 +309,25 @@ class KMLRenderer(object):
     footer = """</Document>
 </kml>
 """
+
     def render(self, tile, subtiles, layer, url, name, name_path, format, initial_level, tile_size):
         response = []
         response.append(self.header % dict(east=tile.bbox[2], south=tile.bbox[1],
-            west=tile.bbox[0], north=tile.bbox[3], layer_name=name))
+                                           west=tile.bbox[0], north=tile.bbox[3], layer_name=name))
 
         name_path = '/'.join(name_path)
         for subtile in subtiles:
             kml_href = '%s/kml/%s/%d/%d/%d.kml' % (url, name_path,
-                subtile.coord[2], subtile.coord[0], subtile.coord[1])
-            response.append(self.network_link % dict(east=subtile.bbox[2], south=subtile.bbox[1],
-                west=subtile.bbox[0], north=subtile.bbox[3], min_lod=tile_size/2, href=kml_href,
-                layer_name=name, coord=subtile.coord))
+                                                   subtile.coord[2], subtile.coord[0], subtile.coord[1])
+            response.append(self.network_link % dict(
+                east=subtile.bbox[2], south=subtile.bbox[1], west=subtile.bbox[0], north=subtile.bbox[3],
+                min_lod=tile_size/2, href=kml_href, layer_name=name, coord=subtile.coord))
 
         for subtile in subtiles:
-            tile_href = '%s/kml/%s/%d/%d/%d.%s' % ( url, name_path,
-                subtile.coord[2], subtile.coord[0], subtile.coord[1], layer.format)
-            response.append(self.ground_overlay % dict(east=subtile.bbox[2], south=subtile.bbox[1],
-                west=subtile.bbox[0], north=subtile.bbox[3], coord=subtile.coord,
-                min_lod=tile_size/2, max_lod=tile_size*3, href=tile_href, level=subtile.coord[2]))
+            tile_href = '%s/kml/%s/%d/%d/%d.%s' % (url, name_path,
+                                                   subtile.coord[2], subtile.coord[0], subtile.coord[1], layer.format)
+            response.append(self.ground_overlay % dict(
+                east=subtile.bbox[2], south=subtile.bbox[1], west=subtile.bbox[0], north=subtile.bbox[3],
+                coord=subtile.coord, min_lod=tile_size/2, max_lod=tile_size*3, href=tile_href, level=subtile.coord[2]))
         response.append(self.footer)
         return ''.join(response)

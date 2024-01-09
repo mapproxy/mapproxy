@@ -24,6 +24,7 @@ from mapproxy.util.fs import ensure_directory, write_atomic
 import logging
 log = logging.getLogger(__name__)
 
+
 def legend_identifier(legends):
     """
     >>> legend_identifier([("http://example/?", "foo"), ("http://example/?", "bar")])
@@ -38,11 +39,13 @@ def legend_identifier(legends):
             parts.append(layer)
     return ''.join(parts)
 
+
 def legend_hash(identifier, scale):
     md5 = hashlib.md5()
     md5.update(identifier.encode('utf-8'))
     md5.update(str(scale).encode('ascii'))
     return md5.hexdigest()
+
 
 class LegendCache(object):
     def __init__(self, cache_dir=None, file_ext='png'):
@@ -73,6 +76,7 @@ class LegendCache(object):
             legend.source = ImageSource(legend.location)
             return True
         return False
+
 
 class Legend(object):
     def __init__(self, source=None, id=None, scale=None):

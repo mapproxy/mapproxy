@@ -40,6 +40,7 @@ def assert_image_mode(img, mode):
 def check_format(img, format):
     assert globals()['is_' + format.lower()](img), 'img is not %s' % format
 
+
 def has_magic_bytes(fileobj, bytes):
     pos = fileobj.tell()
     for magic in bytes:
@@ -50,13 +51,15 @@ def has_magic_bytes(fileobj, bytes):
             return True
     return False
 
-magic_bytes = { 'png': [b"\211PNG\r\n\032\n"],
-                'tiff': [b"MM\x00\x2a", b"II\x2a\x00"],
-                'geotiff': [b"MM\x00\x2a", b"II\x2a\x00"],
-                'gif': [b"GIF87a", b"GIF89a"],
-                'jpeg': [b"\xFF\xD8"],
-                'bmp': [b'BM']
+
+magic_bytes = {'png': [b"\211PNG\r\n\032\n"],
+               'tiff': [b"MM\x00\x2a", b"II\x2a\x00"],
+               'geotiff': [b"MM\x00\x2a", b"II\x2a\x00"],
+               'gif': [b"GIF87a", b"GIF89a"],
+               'jpeg': [b"\xFF\xD8"],
+               'bmp': [b'BM']
                }
+
 
 def create_is_x_functions():
     for type_, magic in magic_bytes.items():
@@ -67,6 +70,7 @@ def create_is_x_functions():
                 return has_magic_bytes(fileobj, magic)
             return is_type
         globals()['is_' + type_] = create_is_type(type_, magic)
+
 
 create_is_x_functions()
 del create_is_x_functions
@@ -101,6 +105,7 @@ def bgcolor_ratio(img_data):
     bgcolor = colors[-1][0]
     return bgcolor/total_colors
 
+
 def create_tmp_image_file(size, two_colored=False):
     fd, out_file = tempfile.mkstemp(suffix='.png')
     os.close(fd)
@@ -108,9 +113,10 @@ def create_tmp_image_file(size, two_colored=False):
     if two_colored:
         draw = ImageDraw.Draw(img)
         draw.rectangle((0, 0, img.size[0]//2, img.size[1]),
-            fill=ImageColor.getrgb('white'))
+                       fill=ImageColor.getrgb('white'))
     img.save(out_file, 'png')
     return out_file
+
 
 def create_image(size, color=None, mode=None):
     if color is not None:
@@ -126,12 +132,14 @@ def create_image(size, color=None, mode=None):
         img = create_debug_img(size)
     return img
 
+
 def create_tmp_image_buf(size, format='png', color=None, mode='RGB'):
     img = create_image(size, color, mode)
     data = BytesIO()
     img.save(data, format)
     data.seek(0)
     return data
+
 
 def create_tmp_image(size, format='png', color=None, mode='RGB'):
     data = create_tmp_image_buf(size, format, color, mode)
@@ -147,6 +155,7 @@ def create_debug_img(size, transparent=True):
     draw = ImageDraw.Draw(img)
     draw_pattern(draw, size)
     return img
+
 
 def draw_pattern(draw, size):
     w, h = size
@@ -196,7 +205,9 @@ def assert_img_colors_eq(img1, img2, delta=1, pixel_delta=1):
         assert abs(n1 - n2) < (total_pixels / 100 * pixel_delta), 'num colors not equal: %r != %r' % (colors1, colors2)
         assert_colors_eq(c1, c2)
 
+
 assert_colors_equal = assert_img_colors_eq
+
 
 def assert_colors_eq(c1, c2, delta=1):
     """

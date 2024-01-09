@@ -15,6 +15,7 @@
 
 from mapproxy.client.http import retrieve_image
 
+
 class TileClient(object):
     def __init__(self, url_template, http_client=None, grid=None):
         self.url_template = url_template
@@ -30,6 +31,7 @@ class TileClient(object):
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.url_template)
+
 
 class TileURLTemplate(object):
     """
@@ -54,8 +56,9 @@ class TileURLTemplate(object):
     'http://foo/tms/1.0.0/lyr/3/7/4.jpeg'
 
     """
+
     def __init__(self, template, format='png'):
-        self.template= template
+        self.template = template
         self.format = format
         self.with_quadkey = True if '%(quadkey)' in template else False
         self.with_tc_path = True if '%(tc_path)' in template else False
@@ -84,6 +87,7 @@ class TileURLTemplate(object):
         return '%s(%r, format=%r)' % (
             self.__class__.__name__, self.template, self.format)
 
+
 def tilecache_path(tile_coord):
     """
     >>> tilecache_path((1234567, 87654321, 9))
@@ -99,6 +103,7 @@ def tilecache_path(tile_coord):
              "%03d" % (int(y) % 1000))
     return '/'.join(parts)
 
+
 def quadkey(tile_coord):
     """
     >>> quadkey((0, 0, 1))
@@ -110,7 +115,7 @@ def quadkey(tile_coord):
     """
     x, y, z = tile_coord
     quadKey = ""
-    for i in range(z,0,-1):
+    for i in range(z, 0, -1):
         digit = 0
         mask = 1 << (i-1)
         if (x & mask) != 0:
@@ -120,6 +125,7 @@ def quadkey(tile_coord):
         quadKey += str(digit)
     return quadKey
 
+
 def tms_path(tile_coord):
     """
     >>> tms_path((1234567, 87654321, 9))
@@ -127,12 +133,14 @@ def tms_path(tile_coord):
     """
     return '%d/%d/%d' % (tile_coord[2], tile_coord[0], tile_coord[1])
 
+
 def arcgiscache_path(tile_coord):
-   """
-   >>> arcgiscache_path((1234567, 87654321, 9))
-   'L09/R05397fb1/C0012d687'
-   """
-   return 'L%02d/R%08x/C%08x' % (tile_coord[2], tile_coord[1], tile_coord[0])
+    """
+    >>> arcgiscache_path((1234567, 87654321, 9))
+    'L09/R05397fb1/C0012d687'
+    """
+    return 'L%02d/R%08x/C%08x' % (tile_coord[2], tile_coord[1], tile_coord[0])
+
 
 def bbox(tile_coord, grid):
     """

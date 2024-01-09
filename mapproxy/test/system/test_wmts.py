@@ -74,6 +74,7 @@ def fi_req():
         ),
     )
 
+
 @pytest.fixture
 def fi_req_with_featurecount():
     return WMTS100FeatureInfoRequest(
@@ -285,7 +286,6 @@ class TestWMTS(SysTest):
             resp = app.get(str(fi_req), status=200)
             assert resp.content_type == "application/json"
 
-
     def test_getfeatureinfo_coverage(self, app, fi_req):
         fi_req.params['layer'] = 'tms_cache'
         fi_req.params['i'] = '250'
@@ -326,7 +326,7 @@ class TestWMTS(SysTest):
             "/service?layers=foo,bar"
             + "&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244"
             + "&width=256&height=256&x=17&y=27&query_layers=foo,bar&format=image%2Fpng&srs=EPSG%3A900913"
-            + "&request=GetFeatureInfo&version=1.1.1&service=WMS&styles=&info_format=application/gml%2bxml%3b%20version=3.1"
+            + "&request=GetFeatureInfo&version=1.1.1&service=WMS&styles=&info_format=application/gml%2bxml%3b%20version=3.1"  # noqa
         )
         serv.returns(b"<root />")
         with serv:

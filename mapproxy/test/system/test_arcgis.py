@@ -57,7 +57,7 @@ class TestArcgisSource(SysTest):
         expected_req = [
             (
                 {
-                    "path": "/arcgis/rest/services/ExampleLayer/ImageServer/exportImage?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512"
+                    "path": "/arcgis/rest/services/ExampleLayer/ImageServer/exportImage?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512"  # noqa
                 },
                 {"body": transp, "headers": {"content-type": "image/png"}},
             )
@@ -76,7 +76,7 @@ class TestArcgisSource(SysTest):
         expected_req = [
             (
                 {
-                    "path": "/arcgis/rest/services/ExampleLayer/MapServer/export?f=image&format=png&layers=show:0,1&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512"
+                    "path": "/arcgis/rest/services/ExampleLayer/MapServer/export?f=image&format=png&layers=show:0,1&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512"  # noqa
                 },
                 {"body": transp, "headers": {"content-type": "image/png"}},
             )
@@ -95,7 +95,7 @@ class TestArcgisSource(SysTest):
         expected_req = [
             (
                 {
-                    "path": "/arcgis/rest/services/NonExistentLayer/ImageServer/exportImage?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512"
+                    "path": "/arcgis/rest/services/NonExistentLayer/ImageServer/exportImage?f=image&format=png&imageSR=900913&bboxSR=900913&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244&size=512,512"  # noqa
                 },
                 {"body": b"", "status": 400},
             )

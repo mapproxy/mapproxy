@@ -603,9 +603,8 @@ class TestGeoTIFF(object):
             (4326, (-180, -90, 180, 90), (360, 180), (1.0, 1.0), (-180, 90), False),
             (4326, (-180, -90, 180, 90), (360, 360), (1.0, 0.5), (-180, 90), False),
             (3857, (10000, 20000, 11000, 22000), (500, 1000), (2.0, 2.0), (10000, 22000), True),
-            (25832, (442691.10009850014,5889716.375224128,447502.95988220774,5894528.235007785),
-             (256, 256), (18.796327, 18.796327), (442691.10009850014, 5894528.235007785), True,
-            ),
+            (25832, (442691.10009850014, 5889716.375224128, 447502.95988220774, 5894528.235007785),
+                (256, 256), (18.796327, 18.796327), (442691.10009850014, 5894528.235007785), True),
         ],
     )
     def test_geotiff_tags(
@@ -614,7 +613,6 @@ class TestGeoTIFF(object):
         compression,
     ):
         img = ImageSource(create_debug_img(size), georef=GeoReference(bbox=bbox, srs=SRS(srs)))
-        fname = os.path.join(str(tmpdir), 'geo.tiff')
 
         img_opts = ImageOptions(format='tiff', encoding_options={'tiff_compression': compression})
         img2 = ImageSource(img.as_buffer(img_opts)).as_image()

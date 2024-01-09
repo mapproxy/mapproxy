@@ -164,7 +164,6 @@ class odict(dict):
     >>> list(d.items())
     [('a', 'b'), ('c', 'd'), ('foo', 'bar'), ('spam', [])]
 
-
     Index based lookup is supported too by `byindex` which returns the
     key/value pair for an index:
 

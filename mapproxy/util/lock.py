@@ -96,7 +96,10 @@ class FileLock(object):
     def __del__(self):
         self.unlock()
 
+
 _cleanup_counter = -1
+
+
 def cleanup_lockdir(lockdir, suffix='.lck', max_lock_time=300, force=True):
     """
     Remove files ending with `suffix` from `lockdir` if they are older then
@@ -136,6 +139,7 @@ class SemLock(FileLock):
     """
     File-lock-based counting semaphore (i.e. this lock can be locked n-times).
     """
+
     def __init__(self, lock_file, n, timeout=60.0, step=0.01):
         FileLock.__init__(self, lock_file, timeout=timeout, step=step)
         self.n = n
@@ -152,12 +156,16 @@ class SemLock(FileLock):
                     raise
             i = (i+1) % self.n
 
+
 class DummyLock(object):
     def __enter__(self):
         pass
+
     def __exit__(self, _exc_type, _exc_value, _traceback):
         pass
+
     def lock(self):
         pass
+
     def unlock(self):
         pass

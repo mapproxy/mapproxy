@@ -36,6 +36,7 @@ def validate_options(conf_dict):
     else:
         return [], True
 
+
 time_spec = {
     'seconds': number(),
     'minutes': number(),
@@ -167,7 +168,7 @@ cache_types = {
         'access_control_list': str(),
         'tile_lock_dir': str(),
         'use_http_get': bool(),
-     }),
+    }),
     'riak': combined(cache_commons, {
         'nodes': [riak_node],
         'protocol': one_of('pbc', 'http', 'https'),
@@ -212,7 +213,6 @@ on_error = {
         'authorize_stale': bool
     }
 }
-
 
 
 inspire_md = {
@@ -371,7 +371,7 @@ band_sources = {
 }
 
 mapproxy_yaml_spec = {
-    '__config_files__': anything(), # only used internaly
+    '__config_files__': anything(),  # only used internaly
     'globals': {
         'image': {
             'resampling_method': 'method',
@@ -521,7 +521,7 @@ mapproxy_yaml_spec = {
                     'featureinfo_out_format': str(),
                 },
                 'image': combined(image_opts, {
-                    'opacity':number(),
+                    'opacity': number(),
                     'transparent_color': one_of(str(), [number()]),
                     'transparent_color_tolerance': number(),
                 }),
@@ -579,7 +579,7 @@ mapproxy_yaml_spec = {
                 'multithreaded': bool(),
             }),
             'arcgis': combined(source_commons, {
-               required('req'): {
+                required('req'): {
                     required('url'): str(),
                     'dpi': int(),
                     'layers': str(),

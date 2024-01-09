@@ -22,12 +22,12 @@ from mapproxy.util.lock import FileLock
 
 def lock(args):
     lock_file, count_file = args
-    l = FileLock(lock_file.strpath, timeout=60)
-    l.lock()
+    x = FileLock(lock_file.strpath, timeout=60)
+    x.lock()
     counter = int(count_file.read())
     count_file.write(str(counter+1))
     time.sleep(0.001)
-    l.unlock()
+    x.unlock()
 
 
 def test_file_lock_load(tmpdir):

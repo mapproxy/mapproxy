@@ -23,7 +23,7 @@ decorator==4.4.2
 docker==7.0.0
 docutils==0.20.1
 ecdsa==0.18.0
-flake8=7.0.0
+flake8==7.0.0
 future==0.18.3
 idna==2.9
 importlib-metadata==7.0.0

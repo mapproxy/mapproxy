@@ -28,7 +28,7 @@ try:
     import mapnik
 except ImportError:
     try:
-        import mapnik2 as mapnik
+        import mapnik2 as mapnik  # noqa
     except ImportError:
         has_mapnik = False
 
@@ -48,7 +48,8 @@ mapnik_xml = (
     </Layer>
     <Style name="marker">
         <Rule>
-            <MarkersSymbolizer fill="transparent" width="10" height="10" stroke="black" stroke-width="3" placement="point" marker-type="ellipse"/>
+            <MarkersSymbolizer fill="transparent" width="10" height="10" stroke="black" stroke-width="3"
+                placement="point" marker-type="ellipse"/>
         </Rule>
     </Style>
 </Map>

@@ -17,7 +17,6 @@ import pytest
 
 from mapproxy.layer import MapExtent
 from mapproxy.srs import SRS
-from mapproxy.util.coverage import coverage
 
 try:
     import boto3
@@ -30,7 +29,9 @@ from mapproxy.cache.s3 import S3Cache
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
 
 
-GLOBAL_WEBMERCATOR_EXTENT = MapExtent((-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244), SRS(3857))
+GLOBAL_WEBMERCATOR_EXTENT = MapExtent(
+    (-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244),
+    SRS(3857))
 
 
 @pytest.mark.skipif(not mock_s3 or not boto3,
@@ -51,17 +52,16 @@ class TestS3Cache(TileCacheTestBase):
         boto3.client("s3").create_bucket(Bucket=self.bucket_name)
 
         self.cache = S3Cache(dir_name,
-            file_ext='png',
-            directory_layout='tms',
-            bucket_name=self.bucket_name,
-            profile_name=None,
-            _concurrent_writer=1, # moto is not thread safe
-        )
-        
+                             file_ext='png',
+                             directory_layout='tms',
+                             bucket_name=self.bucket_name,
+                             profile_name=None,
+                             _concurrent_writer=1,)  # moto is not thread safe
+
     def teardown_method(self):
         self.mock.stop()
         TileCacheTestBase.teardown_method(self)
-    
+
     def test_default_coverage(self):
         assert self.cache.coverage is None
 

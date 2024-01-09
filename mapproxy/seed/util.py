@@ -33,19 +33,23 @@ from mapproxy.util.fs import write_atomic
 import logging
 log = logging.getLogger(__name__)
 
+
 class bidict(dict):
     """
     Simplest bi-directional dictionary.
     """
+
     def __init__(self, iterator):
         for key, val in iterator:
             dict.__setitem__(self, key, val)
             dict.__setitem__(self, val, key)
 
+
 class ProgressStore(object):
     """
     Reads and stores seed progresses to a file.
     """
+
     def __init__(self, filename=None, continue_seed=True):
         self.filename = filename
         if continue_seed:
@@ -58,15 +62,15 @@ class ProgressStore(object):
             pass
         elif os.stat(self.filename).st_mode & stat.S_IWOTH:
             log.error('progress file (%s) is world writable, ignoring file',
-                self.filename)
+                      self.filename)
         else:
             with open(self.filename, 'rb') as f:
                 try:
                     return pickle.load(f)
                 except (pickle.UnpicklingError, AttributeError,
-                    EOFError, ImportError, IndexError):
+                        EOFError, ImportError, IndexError):
                     log.error('unable to read progress file (%s), ignoring file',
-                        self.filename)
+                              self.filename)
 
         return {}
 
@@ -86,6 +90,7 @@ class ProgressStore(object):
 
     def add(self, task_identifier, progress_identifier):
         self.status[task_identifier] = progress_identifier
+
 
 class ProgressLog(object):
     def __init__(self, out=None, silent=False, verbose=True, progress_store=None):
@@ -130,7 +135,7 @@ class ProgressLog(object):
         if log_progess:
             if self.progress_store and self.current_task_id:
                 self.progress_store.add(self.current_task_id,
-                    progress.current_progress_identifier())
+                                        progress.current_progress_identifier())
                 self.progress_store.write()
 
         if self.silent:
@@ -156,11 +161,14 @@ def limit_sub_bbox(bbox, sub_bbox):
     maxy = min(bbox[3], sub_bbox[3])
     return minx, miny, maxx, maxy
 
+
 def timestamp():
     return datetime.now().strftime('%H:%M:%S')
 
+
 def format_bbox(bbox):
     return ('%.5f, %.5f, %.5f, %.5f') % tuple(bbox)
+
 
 def status_symbol(i, total):
     """
@@ -178,11 +186,13 @@ def status_symbol(i, total):
     else:
         return symbols[int(math.ceil(i/(total/4)))]
 
+
 class BackoffError(Exception):
     pass
 
+
 def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
-        exceptions=(Exception,), ignore_exceptions=tuple(), max_backoff=60):
+                exceptions=(Exception,), ignore_exceptions=tuple(), max_backoff=60):
     n = 0
     while True:
         try:
@@ -197,11 +207,12 @@ def exp_backoff(func, args=(), kw={}, max_repeat=10, start_backoff_sec=2,
             if wait_for > max_backoff:
                 wait_for = max_backoff
             print("An error occured. Retry in %d seconds: %r. Retries left: %d" %
-                (wait_for, ex, (max_repeat - n)), file=sys.stderr)
+                  (wait_for, ex, (max_repeat - n)), file=sys.stderr)
             time.sleep(wait_for)
             n += 1
         else:
             return result
+
 
 def format_seed_task(task):
     info = []
@@ -212,7 +223,7 @@ def format_seed_task(task):
         return '\n'.join(info)
 
     info.append("    Seeding cache '%s' with grid '%s' in %s" % (
-                 task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
+        task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:
         info.append('    Limited to coverage in: %s (EPSG:4326)' % (format_bbox(task.coverage.extent.llbbox), ))
     else:
@@ -229,6 +240,7 @@ def format_seed_task(task):
 
     return '\n'.join(info)
 
+
 def format_cleanup_task(task):
     info = []
     info.append('  %s:' % (task.md['name'], ))
@@ -238,7 +250,7 @@ def format_cleanup_task(task):
         return '\n'.join(info)
 
     info.append("    Cleaning up cache '%s' with grid '%s' in %s" % (
-                 task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
+        task.md['cache_name'], task.md['grid_name'], task.grid.srs.srs_code))
     if task.coverage:
         info.append('    Limited to coverage in: %s (EPSG:4326)' % (format_bbox(task.coverage.extent.llbbox), ))
     else:

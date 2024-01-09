@@ -14,18 +14,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from mapproxy.client.http import open_url
+from mapproxy.request.base import BaseRequest, url_decode
+from yaml.resolver import Resolver
+from yaml.representer import SafeRepresenter
+from yaml.emitter import Emitter
+from yaml.nodes import ScalarNode, SequenceNode, MappingNode
+from yaml.serializer import Serializer
 from copy import copy
 from urllib.parse import urlparse
 
 
 __all__ = ['update_config', 'MapProxyYAMLDumper']
 
+
 def update_config(conf, overwrites):
     wildcard_keys = []
     for k, v in overwrites.items():
         if k == '__all__':
             continue
-        if  k.startswith('___') or k.endswith('___'):
+        if k.startswith('___') or k.endswith('___'):
             wildcard_keys.append(k)
             continue
 
@@ -58,10 +66,10 @@ def update_config(conf, overwrites):
             v = overwrites[key]
             if key.startswith('___'):
                 key = key[3:]
-                key_check = lambda x: x.endswith(key)
+                def key_check(x): return x.endswith(key)
             else:
                 key = key[:-3]
-                key_check = lambda x: x.startswith(key)
+                def key_check(x): return x.startswith(key)
             for conf_k, conf_v in conf.items():
                 if not key_check(conf_k):
                     continue
@@ -72,12 +80,6 @@ def update_config(conf, overwrites):
 
     return conf
 
-
-from yaml.serializer import Serializer
-from yaml.nodes import ScalarNode, SequenceNode, MappingNode
-from yaml.emitter import Emitter
-from yaml.representer import SafeRepresenter
-from yaml.resolver import Resolver
 
 class _MixedFlowSortedSerializer(Serializer):
     def serialize_node(self, node, parent, index):
@@ -93,11 +95,15 @@ class _MixedFlowSortedSerializer(Serializer):
             node.value.sort(key=lambda x: x[0].value)
         return Serializer.serialize_node(self, node, parent, index)
 
+
 class _EmptyNoneRepresenter(SafeRepresenter):
     def represent_none(self, data):
         return self.represent_scalar(u'tag:yaml.org,2002:null',
-                u'')
+                                     u'')
+
+
 _EmptyNoneRepresenter.add_representer(type(None), _EmptyNoneRepresenter.represent_none)
+
 
 class MapProxyYAMLDumper(Emitter, _MixedFlowSortedSerializer, _EmptyNoneRepresenter, Resolver):
     """
@@ -105,24 +111,23 @@ class MapProxyYAMLDumper(Emitter, _MixedFlowSortedSerializer, _EmptyNoneRepresen
     node-only sequences. Also sorts dicts by key, prevents `none`
     for empty entries and prevents any anchors.
     """
+
     def __init__(self, stream,
-            default_style=None, default_flow_style=False,
-            canonical=None, indent=None, width=None,
-            allow_unicode=None, line_break=None,
-            encoding=None, explicit_start=None, explicit_end=None,
-            version=None, tags=None, sort_keys=None):
+                 default_style=None, default_flow_style=False,
+                 canonical=None, indent=None, width=None,
+                 allow_unicode=None, line_break=None,
+                 encoding=None, explicit_start=None, explicit_end=None,
+                 version=None, tags=None, sort_keys=None):
         Emitter.__init__(self, stream, canonical=canonical,
-                indent=indent, width=width,
-                allow_unicode=allow_unicode, line_break=line_break)
+                         indent=indent, width=width,
+                         allow_unicode=allow_unicode, line_break=line_break)
         Serializer.__init__(self, encoding=encoding,
-                explicit_start=explicit_start, explicit_end=explicit_end,
-                version=version, tags=tags)
+                            explicit_start=explicit_start, explicit_end=explicit_end,
+                            version=version, tags=tags)
         _EmptyNoneRepresenter.__init__(self, default_style=default_style,
-                default_flow_style=default_flow_style)
+                                       default_flow_style=default_flow_style)
         Resolver.__init__(self)
 
-from mapproxy.request.base import BaseRequest, url_decode
-from mapproxy.client.http import open_url
 
 def wms_capapilities_url(url):
     parsed_url = urlparse(url)
@@ -137,7 +142,7 @@ def wms_capapilities_url(url):
     base_req.params['request'] = 'GetCapabilities'
     return base_req.complete_url
 
+
 def download_capabilities(url):
     capabilities_url = wms_capapilities_url(url)
     return open_url(capabilities_url)
-

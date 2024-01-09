@@ -19,6 +19,7 @@ from urllib.parse import urlsplit, urlunsplit
 from mapproxy.request.base import RequestParams, BaseRequest
 from mapproxy.srs import make_lin_transf
 
+
 class ArcGISExportRequestParams(RequestParams):
     """
     Supported params f, bbox(required), size, dpi, imageSR, bboxSR, format, layerDefs,
@@ -28,11 +29,13 @@ class ArcGISExportRequestParams(RequestParams):
                    four ways to specify layers: show, hide, include, exclude.
                    (ex show:1,2)
     """
+
     def _get_format(self):
         """
         The requested format as string (w/o any 'image/', 'text/', etc prefixes)
         """
         return self["format"]
+
     def _set_format(self, format):
         self["format"] = format.rsplit("/")[-1]
     format = property(_get_format, _set_format)
@@ -47,6 +50,7 @@ class ArcGISExportRequestParams(RequestParams):
             return None
         points = [float(val) for val in self.params['bbox'].split(',')]
         return tuple(points[:4])
+
     def _set_bbox(self, value):
         if value is not None and not isinstance(value, str):
             value = ','.join(str(x) for x in value)
@@ -64,6 +68,7 @@ class ArcGISExportRequestParams(RequestParams):
             return None
         dim = [float(val) for val in self.params['size'].split(',')]
         return tuple(dim[:2])
+
     def _set_size(self, value):
         if value is not None and not isinstance(value, str):
             value = ','.join(str(x) for x in value)
@@ -74,6 +79,7 @@ class ArcGISExportRequestParams(RequestParams):
 
     def _get_srs(self, key):
         return self.params.get(key, None)
+
     def _set_srs(self, srs, key):
         if hasattr(srs, 'srs_code'):
             code = srs.srs_code
@@ -87,13 +93,13 @@ class ArcGISExportRequestParams(RequestParams):
     del _set_srs
 
 
-
 class ArcGISIdentifyRequestParams(ArcGISExportRequestParams):
     def _get_format(self):
         """
         The requested format as string (w/o any 'image/', 'text/', etc prefixes)
         """
         return self["format"]
+
     def _set_format(self, format):
         self["format"] = format.rsplit("/")[-1]
     format = property(_get_format, _set_format)
@@ -108,6 +114,7 @@ class ArcGISIdentifyRequestParams(ArcGISExportRequestParams):
             return None
         points = [float(val) for val in self.params['mapExtent'].split(',')]
         return tuple(points[:4])
+
     def _set_bbox(self, value):
         if value is not None and not isinstance(value, str):
             value = ','.join(str(x) for x in value)
@@ -125,6 +132,7 @@ class ArcGISIdentifyRequestParams(ArcGISExportRequestParams):
             return None
         dim = [float(val) for val in self.params['imageDisplay'].split(',')]
         return tuple(dim[:2])
+
     def _set_size(self, value):
         if value is not None and not isinstance(value, str):
             value = ','.join(str(x) for x in value) + ',96'
@@ -161,6 +169,7 @@ class ArcGISIdentifyRequestParams(ArcGISExportRequestParams):
             code = srs
         self.params['sr'] = code.rsplit(':', 1)[-1]
 
+
 class ArcGISRequest(BaseRequest):
     request_params = ArcGISExportRequestParams
     fixed_params = {"f": "image"}
@@ -184,6 +193,7 @@ class ArcGISRequest(BaseRequest):
 class ArcGISIdentifyRequest(BaseRequest):
     request_params = ArcGISIdentifyRequestParams
     fixed_params = {'geometryType': 'esriGeometryPoint'}
+
     def __init__(self, param=None, url='', validate=False, http=None):
         BaseRequest.__init__(self, param, url, validate, http)
 
@@ -200,7 +210,6 @@ class ArcGISIdentifyRequest(BaseRequest):
         return params.query_string
 
 
-
 def create_identify_request(req_data, param):
     req_data = req_data.copy()
 
@@ -209,6 +218,7 @@ def create_identify_request(req_data, param):
     del req_data['url']
 
     return ArcGISIdentifyRequest(url=url, param=req_data)
+
 
 def create_request(req_data, param):
     req_data = req_data.copy()

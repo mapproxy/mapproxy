@@ -59,9 +59,11 @@ class Response(object):
     status = property(_status_get, _status_set)
 
     def _last_modified_set(self, date):
-        if not date: return
+        if not date:
+            return
         self._timestamp = timestamp(date)
         self.headers['Last-modified'] = format_httpdate(self._timestamp)
+
     def _last_modified_get(self):
         return self.headers.get('Last-modified', None)
 
@@ -112,7 +114,6 @@ class Response(object):
 
         not_modified = False
 
-
         if self.etag == environ.get('HTTP_IF_NONE_MATCH', -1):
             not_modified = True
         elif self._timestamp is not None:
@@ -146,7 +147,7 @@ class Response(object):
     def fixed_headers(self):
         headers = []
         for key, value in self.headers.items():
-            if type(value) != str:
+            if type(value) is not str:
                 # for str subclasses like ImageFormat
                 value = str(value)
             headers.append((key, value))
@@ -157,8 +158,8 @@ class Response(object):
             if ((not hasattr(self.response, 'ok_to_seek') or
                 self.response.ok_to_seek) and
                (hasattr(self.response, 'seek') and
-                hasattr(self.response, 'tell'))):
-                self.response.seek(0, 2) # to EOF
+                    hasattr(self.response, 'tell'))):
+                self.response.seek(0, 2)  # to EOF
                 self.headers['Content-length'] = str(self.response.tell())
                 self.response.seek(0)
             if 'wsgi.file_wrapper' in environ:
@@ -230,6 +231,7 @@ _status_codes = {
     504: 'Gateway Time-out',
     505: 'HTTP Version not supported',
 }
+
 
 def status_code(code):
     return str(code) + ' ' + _status_codes[code]

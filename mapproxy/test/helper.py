@@ -34,21 +34,26 @@ class Mocker(object):
     `setup` will initialize a `mocker.Mocker`. The `teardown` method
     will run ``mocker.verify()``.
     """
+
     def setup_method(self):
         self.mocker = mocker.Mocker()
+
     def expect_and_return(self, mock_call, return_val):
         """
         Register a return value for the mock call.
         :param return_val: The value mock_call should return.
         """
         self.mocker.result(return_val)
+
     def expect(self, mock_call):
         return mocker.expect(mock_call)
+
     def replay(self):
         """
         Finish mock-record phase.
         """
         self.mocker.replay()
+
     def mock(self, base_cls=None):
         """
         Return a new mock object.
@@ -58,8 +63,10 @@ class Mocker(object):
         if base_cls:
             return self.mocker.mock(base_cls)
         return self.mocker.mock()
+
     def teardown_method(self):
         self.mocker.verify()
+
 
 class TempFiles(object):
     """
@@ -71,6 +78,7 @@ class TempFiles(object):
     >>> for f in tmp:
     ...     assert not os.path.exists(f)
     """
+
     def __init__(self, n=1, suffix='', no_create=False):
         self.n = n
         self.suffix = suffix
@@ -92,14 +100,18 @@ class TempFiles(object):
                 os.remove(tmp_file)
         self.tmp_files = []
 
+
 class TempFile(TempFiles):
     def __init__(self, suffix='', no_create=False):
         TempFiles.__init__(self, suffix=suffix, no_create=no_create)
+
     def __enter__(self):
         return TempFiles.__enter__(self)[0]
 
+
 class LogMock(object):
     log_methods = ('info', 'debug', 'warn', 'error', 'fail')
+
     def __init__(self, module, log_name='log'):
         self.module = module
         self.orig_logger = None
@@ -123,7 +135,6 @@ class LogMock(object):
         assert log_type == type, 'expected %s log message, but was %s' % (type, log_type)
         assert msg in log_msg.lower(), "expected string '%s' in log message '%s'" % \
             (msg, log_msg)
-
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.module.log = self.orig_logger
@@ -170,6 +181,7 @@ def validate_with_dtd(doc, dtd_name, dtd_basedir=None):
         print(dtd.error_log.filter_from_errors())
         return is_valid
 
+
 def validate_with_xsd(doc, xsd_name, xsd_basedir=None):
     if xsd_basedir is None:
         xsd_basedir = os.path.join(os.path.dirname(__file__), 'schemas')
@@ -187,6 +199,7 @@ def validate_with_xsd(doc, xsd_name, xsd_basedir=None):
         print(xml_schema.error_log.filter_from_errors())
         return is_valid
 
+
 class XPathValidator(object):
     def __init__(self, doc):
         self.xml = etree.XML(doc)
@@ -198,6 +211,7 @@ class XPathValidator(object):
                 assert expected(self.xml.xpath(xpath)[0])
             else:
                 assert self.xml.xpath(xpath)[0] == expected
+
     def xpath(self, xpath):
         return self.xml.xpath(xpath)
 
@@ -220,7 +234,6 @@ def capture(bytes=False):
     else:
         from io import StringIO
 
-
     backup_stdout = sys.stdout
     backup_stderr = sys.stderr
 
@@ -240,4 +253,3 @@ def capture(bytes=False):
     finally:
         sys.stdout = backup_stdout
         sys.stderr = backup_stderr
-

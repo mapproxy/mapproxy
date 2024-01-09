@@ -31,6 +31,7 @@ class Options(dict):
     >>> o.bar
     'foo'
     """
+
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__, dict.__repr__(self))
 
@@ -67,7 +68,10 @@ class Options(dict):
     def __deepcopy__(self, memo):
         return Options(copy.deepcopy(list(self.items()), memo))
 
+
 _config = LocalStack()
+
+
 def base_config():
     """
     Returns the context-local system-wide configuration.
@@ -76,12 +80,13 @@ def base_config():
     if config is None:
         import warnings
         warnings.warn("calling un-configured base_config",
-            DeprecationWarning, stacklevel=2)
+                      DeprecationWarning, stacklevel=2)
         config = load_default_config()
         config.conf_base_dir = os.getcwd()
         finish_base_config(config)
         _config.push(config)
     return config
+
 
 @contextlib.contextmanager
 def local_base_config(conf):
@@ -100,6 +105,7 @@ def local_base_config(conf):
     finally:
         mapproxy.config.config._config.pop()
 
+
 def _to_options_map(mapping):
     if isinstance(mapping, dict):
         opt = Options()
@@ -110,6 +116,7 @@ def _to_options_map(mapping):
         return [_to_options_map(m) for m in mapping]
     else:
         return mapping
+
 
 def abspath(path, base_path=None):
     """
@@ -145,6 +152,7 @@ def finish_base_config(bc=None):
             if 'lock_dir' in bc.cache:
                 bc.cache.lock_dir = os.path.join(bc.conf_base_dir, bc.cache.lock_dir)
 
+
 def load_base_config(config_file=None, clear_existing=False):
     """
     Load system wide base configuration.
@@ -173,6 +181,7 @@ def load_base_config(config_file=None, clear_existing=False):
 
     bc.conf_base_dir = conf_base_dir
 
+
 def load_default_config():
     from mapproxy.config import defaults
     config_dict = {}
@@ -184,6 +193,7 @@ def load_default_config():
     default_conf = Options()
     load_config(default_conf, config_dict=config_dict)
     return default_conf
+
 
 def load_config(config, config_file=None, config_dict=None, clear_existing=False):
     if clear_existing:

@@ -20,6 +20,7 @@ from urllib.parse import parse_qsl, quote
 
 from mapproxy.util.py import cached_property
 
+
 class NoCaseMultiDict(dict):
     """
     This is a dictionary that allows case insensitive access to values.
@@ -32,6 +33,7 @@ class NoCaseMultiDict(dict):
     >>> 'a' in d and 'b' in d
     True
     """
+
     def _gen_dict(self, mapping=()):
         """A `NoCaseMultiDict` can be constructed from an iterable of
         ``(key, value)`` tuples or a dict.
@@ -176,6 +178,7 @@ def url_decode(qs, charset='utf-8', decode_keys=False, include_empty=True,
         tmp.append((key, value))
     return NoCaseMultiDict(tmp)
 
+
 class Request(object):
     charset = 'utf8'
 
@@ -233,7 +236,7 @@ class Request(object):
             return host
         result = self.environ['SERVER_NAME']
         if ((self.url_scheme, self.environ['SERVER_PORT'])
-            not in (('https', '443'), ('http', '80'))):
+                not in (('https', '443'), ('http', '80'))):
             result += ':' + self.environ['SERVER_PORT']
         return result
 
@@ -260,7 +263,7 @@ class Request(object):
         "Full script URL without trailing /"
         return (self.host_url.rstrip('/') +
                 quote(self.environ.get('SCRIPT_NAME', '/').rstrip('/'))
-               )
+                )
 
     @property
     def server_script_url(self):
@@ -272,7 +275,8 @@ class Request(object):
         return (self.host_url.rstrip('/')
                 + quote(self.environ.get('SCRIPT_NAME', '').rstrip('/'))
                 + quote(self.environ.get('PATH_INFO', ''))
-               )
+                )
+
 
 class RequestParams(object):
     """
@@ -285,6 +289,7 @@ class RequestParams(object):
     :param param: A dict or ``NoCaseMultiDict``.
     """
     params = None
+
     def __init__(self, param=None):
         self.delimiter = ','
 
@@ -342,7 +347,6 @@ class RequestParams(object):
         if key in self:
             del self.params[key]
 
-
     def iteritems(self):
         for key, values in self.params.iteritems():
             yield key, self.delimiter.join((str(x) for x in values))
@@ -377,6 +381,7 @@ class RequestParams(object):
             if value != [None]:
                 new.set(key, value, unpack=True)
         return new
+
 
 class BaseRequest(object):
     """
@@ -416,7 +421,6 @@ class BaseRequest(object):
             params[key] = value
         return params
 
-
     @property
     def query_string(self):
         return self.params.query_string
@@ -447,6 +451,7 @@ class BaseRequest(object):
     def __repr__(self):
         return '%s(param=%r, url=%r)' % (self.__class__.__name__, self.params, self.url)
 
+
 def split_mime_type(mime_type):
     """
     >>> split_mime_type('text/xml; charset=utf-8')
@@ -459,4 +464,3 @@ def split_mime_type(mime_type):
     if ';' in mime_type:
         mime_type, options = [part.strip() for part in mime_type.split(';', 2)]
     return mime_class, mime_type, options
-

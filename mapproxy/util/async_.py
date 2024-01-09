@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-MAX_MAP_ASYNC_THREADS = 20
-
 try:
     import Queue
 except ImportError:
@@ -28,7 +25,11 @@ from mapproxy.config import base_config
 from mapproxy.config import local_base_config
 
 import logging
+
+MAX_MAP_ASYNC_THREADS = 20
+
 log_system = logging.getLogger('mapproxy.system')
+
 
 class AsyncResult(object):
     def __init__(self, result=None, exception=None):
@@ -45,7 +46,7 @@ def _result_iter(results, use_result_objects=False):
         if use_result_objects:
             exception = None
             if (isinstance(result, tuple) and len(result) == 3 and
-                isinstance(result[1], Exception)):
+                    isinstance(result[1], Exception)):
                 exception = result
                 result = None
             yield AsyncResult(result, exception)
@@ -59,6 +60,7 @@ class ThreadWorker(threading.Thread):
         self.task_queue = task_queue
         self.result_queue = result_queue
         self.base_config = base_config()
+
     def run(self):
         with local_base_config(self.base_config):
             while True:
@@ -93,6 +95,7 @@ class ThreadPool(object):
         self.task_queue = Queue.Queue()
         self.result_queue = Queue.Queue()
         self.pool = None
+
     def map_each(self, func_args, raise_exceptions):
         """
         args should be a list of function arg tuples.
@@ -173,8 +176,8 @@ class ThreadPool(object):
         while not self.task_queue.empty() or not self.result_queue.empty():
             task_result = self.result_queue.get()
             if (raise_exceptions and isinstance(task_result[1], tuple) and
-                len(task_result[1]) == 3 and
-                isinstance(task_result[1][1], Exception)):
+                    len(task_result[1]) == 3 and
+                    isinstance(task_result[1][1], Exception)):
                 self.shutdown(force=True)
                 exc_class, exc, tb = task_result[1]
                 raise exc.with_traceback(tb)
@@ -208,13 +211,16 @@ def imap(func, *args):
     pool = ThreadPool(min(len(args[0]), MAX_MAP_ASYNC_THREADS))
     return pool.imap(func, *args)
 
+
 def starmap(func, args):
     pool = ThreadPool(min(len(args[0]), MAX_MAP_ASYNC_THREADS))
     return pool.starmap(func, args)
 
+
 def starcall(args):
     pool = ThreadPool(min(len(args[0]), MAX_MAP_ASYNC_THREADS))
     return pool.starcall(args)
+
 
 def run_non_blocking(func, args, kw={}):
     return func(*args, **kw)

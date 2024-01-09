@@ -15,8 +15,11 @@
 
 import pytest
 
-from mapproxy.service.demo import extra_demo_server_handlers, extra_substitution_handlers, register_extra_demo_server_handler, register_extra_demo_substitution_handler
+from mapproxy.service.demo import (
+    extra_demo_server_handlers, extra_substitution_handlers, register_extra_demo_server_handler,
+    register_extra_demo_substitution_handler)
 from mapproxy.test.system import SysTest
+
 
 def demo_server_handler(demo_server, req):
     if 'my_service' in req.args:
@@ -26,6 +29,7 @@ def demo_server_handler(demo_server, req):
 
 def demo_substitution_handler(demo_server, req, substitutions):
     substitutions['extra_services_html_beginning'] += '<h2>My extra service</h2>'
+
 
 @pytest.fixture(scope="module")
 def config_file():

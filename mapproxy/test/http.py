@@ -29,6 +29,7 @@ from urllib.parse import parse_qsl, urlsplit
 from mapproxy.util.py import reraise
 from http.server import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
 
+
 class RequestsMismatchError(AssertionError):
     def __init__(self, assertions):
         self.assertions = assertions
@@ -39,8 +40,10 @@ class RequestsMismatchError(AssertionError):
             assertions.append(text_indent(str(assertion), '    ', ' -  '))
         return 'requests mismatch:\n' + '\n'.join(assertions)
 
+
 class RequestError(str):
     pass
+
 
 def text_indent(text, indent, first_indent=None):
     if first_indent is None:
@@ -48,6 +51,7 @@ def text_indent(text, indent, first_indent=None):
 
     text = first_indent + text
     return text.replace('\n', '\n' + indent)
+
 
 class RequestMismatch(object):
     def __init__(self, msg, expected, actual):
@@ -57,8 +61,9 @@ class RequestMismatch(object):
 
     def __str__(self):
         return ('requests mismatch (%s), expected:\n' % self.msg +
-            text_indent(str(self.expected), '    ') +
-            '\n  got:\n' + text_indent(str(self.actual), '    '))
+                text_indent(str(self.expected), '    ') +
+                '\n  got:\n' + text_indent(str(self.actual), '    '))
+
 
 class HTTPServer(HTTPServer_):
     allow_reuse_address = True
@@ -71,6 +76,7 @@ class HTTPServer(HTTPServer_):
                 return
         HTTPServer_.handle_error(self, request, client_address)
 
+
 class ThreadedStopableHTTPServer(threading.Thread):
     def __init__(self, address, requests_responses, unordered=False, query_comparator=None):
         threading.Thread.__init__(self, **{'group': None})
@@ -78,8 +84,8 @@ class ThreadedStopableHTTPServer(threading.Thread):
         self.daemon = True
         self.sucess = False
         self.shutdown = False
-        self.httpd = HTTPServer(address,mock_http_handler(requests_responses,
-            unordered=unordered, query_comparator=query_comparator))
+        self.httpd = HTTPServer(address, mock_http_handler(requests_responses,
+                                                           unordered=unordered, query_comparator=query_comparator))
         self.httpd.timeout = 1.0
         self.assertions = self.httpd.assertions = []
 
@@ -89,7 +95,8 @@ class ThreadedStopableHTTPServer(threading.Thread):
 
     def run(self):
         while self.requests_responses:
-            if self.shutdown: break
+            if self.shutdown:
+                break
             self.httpd.handle_request()
         if self.requests_responses:
             missing_req = [req for req, resp in self.requests_responses]
@@ -100,6 +107,7 @@ class ThreadedStopableHTTPServer(threading.Thread):
             self.sucess = True
         # force socket close so next test can bind to same address
         self.httpd.socket.close()
+
 
 class ThreadedSingleRequestHTTPServer(threading.Thread):
     def __init__(self, address, request_handler):
@@ -122,6 +130,7 @@ class ThreadedSingleRequestHTTPServer(threading.Thread):
 def mock_http_handler(requests_responses, unordered=False, query_comparator=None):
     if query_comparator is None:
         query_comparator = query_eq
+
     class MockHTTPHandler(BaseHTTPRequestHandler):
         def do_HEAD(self):
             self.query_data = self.path
@@ -164,7 +173,7 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
                     self.server.shutdown = True
             if req.get('require_basic_auth', False):
                 if 'Authorization' not in self.headers:
-                    requests_responses.insert(0, (req, resp)) # push back
+                    requests_responses.insert(0, (req, resp))  # push back
                     self.send_response(401)
                     self.send_header('WWW-Authenticate', 'Basic realm="Secure Area"')
                     self.end_headers()
@@ -187,7 +196,8 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
                 query_actual = set(query_to_dict(self.query_data).items())
                 query_expected = set(query_to_dict(req['path']).items())
                 self.server.assertions.append(
-                    RequestMismatch('requests params differ', query_expected - query_actual, query_actual - query_expected)
+                    RequestMismatch('requests params differ', query_expected -
+                                    query_actual, query_actual - query_expected)
                 )
                 self.server.shutdown = True
             if 'req_assert_function' in req:
@@ -210,16 +220,19 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
             if not requests_responses:
                 self.server.shutdown = True
             return
+
         def start_response(self, resp):
             self.send_response(int(resp.get('status', '200')))
             if 'headers' in resp:
                 for key, value in resp['headers'].items():
                     self.send_header(key, value)
             self.end_headers()
+
         def log_request(self, code, size=None):
             pass
 
     return MockHTTPHandler
+
 
 class MockServ(object):
     def __init__(self, port=0, host='localhost', unordered=False, bbox_aware_query_comparator=False):
@@ -235,7 +248,7 @@ class MockServ(object):
 
     def _init_thread(self):
         self._thread = ThreadedStopableHTTPServer((self.host, self._requested_port),
-            [], unordered=self.unordered, query_comparator=self.query_comparator)
+                                                  [], unordered=self.unordered, query_comparator=self.query_comparator)
         if self._requested_port == 0:
             self.port = self._thread.http_port
         self.address = (self.host, self.port)
@@ -271,11 +284,12 @@ class MockServ(object):
 
         if not self._thread.sucess and value:
             print('requests to mock httpd did not '
-            'match expectations:\n %s' % RequestsMismatchError(self._thread.assertions))
+                  'match expectations:\n %s' % RequestsMismatchError(self._thread.assertions))
         if value:
             raise reraise((type, value, traceback))
         if not self._thread.sucess:
             raise RequestsMismatchError(self._thread.assertions)
+
 
 def wms_query_eq(expected, actual):
     """
@@ -312,7 +326,9 @@ def wms_query_eq(expected, actual):
 
     return True
 
+
 numbers_only = re.compile(r'^-?\d+\.\d+(,-?\d+\.\d+)*$')
+
 
 def query_eq(expected, actual):
     """
@@ -347,6 +363,7 @@ def query_eq(expected, actual):
 
     return True
 
+
 def float_string_almost_eq(expected, actual):
     """
     Compares if two strings with comma-separated floats are almost equal.
@@ -375,6 +392,7 @@ def float_string_almost_eq(expected, actual):
 
     return True
 
+
 def assert_query_eq(expected, actual, fuzzy_number_compare=False):
     path_actual = path_from_query(actual)
     path_expected = path_from_query(expected)
@@ -390,6 +408,7 @@ def assert_query_eq(expected, actual, fuzzy_number_compare=False):
     assert equal, '%s != %s\t%s|%s' % (
         expected, actual, query_expected - query_actual, query_actual - query_expected)
 
+
 def path_from_query(query):
     """
     >>> path_from_query('/service?foo=bar')
@@ -404,6 +423,7 @@ def path_from_query(query):
     if '?' in query:
         return query.split('?', 1)[0]
     return ''
+
 
 def query_to_dict(query):
     """
@@ -421,6 +441,7 @@ def query_to_dict(query):
         d[key.lower()] = value
     return d
 
+
 def assert_url_eq(url1, url2):
     parts1 = urlsplit(url1)
     parts2 = urlsplit(url2)
@@ -431,6 +452,7 @@ def assert_url_eq(url1, url2):
     assert query_eq(parts1[3], parts2[3]), '%s != %s (%s)' % (url1, url2, 'query')
     assert parts1[4] == parts2[4], '%s != %s (%s)' % (url1, url2, 'fragment')
 
+
 @contextmanager
 def mock_httpd(address, requests_responses, unordered=False, bbox_aware_query_comparator=False):
     if bbox_aware_query_comparator:
@@ -438,11 +460,11 @@ def mock_httpd(address, requests_responses, unordered=False, bbox_aware_query_co
     else:
         query_comparator = query_eq
     t = ThreadedStopableHTTPServer(address, requests_responses, unordered=unordered,
-        query_comparator=query_comparator)
+                                   query_comparator=query_comparator)
     t.start()
     try:
         yield
-    except:
+    except Exception:
         if not t.sucess:
             print(str(RequestsMismatchError(t.assertions)))
         raise
@@ -452,13 +474,14 @@ def mock_httpd(address, requests_responses, unordered=False, bbox_aware_query_co
     if not t.sucess:
         raise RequestsMismatchError(t.assertions)
 
+
 @contextmanager
 def mock_single_req_httpd(address, request_handler):
     t = ThreadedSingleRequestHTTPServer(address, request_handler)
     t.start()
     try:
         yield
-    except:
+    except Exception:
         if not t.sucess:
             print(str(RequestsMismatchError(t.assertions)))
         raise
@@ -470,17 +493,19 @@ def mock_single_req_httpd(address, request_handler):
 
 
 def make_wsgi_env(query_string, extra_environ={}):
-        env = {'QUERY_STRING': query_string,
-               'wsgi.url_scheme': 'http',
-               'HTTP_HOST': 'localhost',
-              }
-        env.update(extra_environ)
-        return env
+    env = {'QUERY_STRING': query_string,
+           'wsgi.url_scheme': 'http',
+           'HTTP_HOST': 'localhost',
+           }
+    env.update(extra_environ)
+    return env
+
 
 def basic_auth_value(username, password):
     return base64.b64encode(('%s:%s' % (username, password)).encode('utf-8'))
 
+
 def assert_no_cache(resp):
     assert resp.headers["Pragma"] == "no-cache"
     assert resp.headers["Expires"] == "-1"
-    assert resp.cache_control.no_store == True
+    assert resp.cache_control.no_store is True

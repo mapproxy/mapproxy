@@ -104,35 +104,33 @@ class TestCacheCoverage(SysTest):
         assert "http://localhost/tms/1.0.0/datasource_coverage_cache/EPSG4326" in resp
         xml = resp.lxml
         assert xml.xpath("count(//TileMap)") == 3
-        
+
         # bbox coverage
         resp = app.get("/tms/1.0.0/bbox_coverage_cache/EPSG4326")
         xml = resp.lxml
-        
+
         assert xml.xpath("//TileMap/BoundingBox/@minx") == ["-50"]
         assert xml.xpath("//TileMap/BoundingBox/@miny") == ["-50"]
         assert xml.xpath("//TileMap/BoundingBox/@maxx") == ["50"]
         assert xml.xpath("//TileMap/BoundingBox/@maxy") == ["50"]
-        
+
         # intersection coverage
         resp = app.get("/tms/1.0.0/intersection_coverage_cache/EPSG4326")
         xml = resp.lxml
-        
+
         assert xml.xpath("//TileMap/BoundingBox/@minx") == ["-48.0"]
         assert xml.xpath("//TileMap/BoundingBox/@miny") == ["-56.0"]
         assert xml.xpath("//TileMap/BoundingBox/@maxx") == ["51.0"]
         assert xml.xpath("//TileMap/BoundingBox/@maxy") == ["58.0"]
-        
+
         # datasource coverage
         resp = app.get("/tms/1.0.0/datasource_coverage_cache/EPSG4326")
         xml = resp.lxml
-        
+
         assert xml.xpath("//TileMap/BoundingBox/@minx") == ["-85.56451604106776"]
         assert xml.xpath("//TileMap/BoundingBox/@miny") == ["25.08"]
         assert xml.xpath("//TileMap/BoundingBox/@maxx") == ["-78.11791218081675"]
         assert xml.xpath("//TileMap/BoundingBox/@maxy") == ["36.17088587412222"]
-        
-        
 
     def test_wmts_capabilities_coverage(self, app):
         req = str(self.common_cap_req)
@@ -143,14 +141,14 @@ class TestCacheCoverage(SysTest):
         assert validate_with_xsd(
             xml, xsd_name="wmts/1.0/wmtsGetCapabilities_response.xsd"
         )
-        
+
         assert set(
             xml.xpath(
                 "//wmts:Contents/wmts:Layer/ows:WGS84BoundingBox/ows:LowerCorner/text()",
                 namespaces=ns_wmts,
             )
         ) == set(["-48.0 -56.0", "-85.56451604106776 25.08", "-50 -50"])
-        
+
         assert set(
             xml.xpath(
                 "//wmts:Contents/wmts:Layer/ows:WGS84BoundingBox/ows:UpperCorner/text()",

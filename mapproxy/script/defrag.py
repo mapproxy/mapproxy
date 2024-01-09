@@ -30,30 +30,32 @@ from mapproxy.config.loader import load_configuration, ConfigurationError
 import logging
 log = logging.getLogger('mapproxy.defrag')
 
+
 def defrag_command(args=None):
     parser = optparse.OptionParser("%prog defrag-compact [options] -f mapproxy_conf")
     parser.add_option("-f", "--mapproxy-conf", dest="mapproxy_conf",
-        help="MapProxy configuration.")
+                      help="MapProxy configuration.")
 
-    parser.add_option("--min-percent", type=float, default=10.0,
+    parser.add_option(
+        "--min-percent", type=float, default=10.0,
         help="Only defrag if fragmentation is larger (10 means at least 10% of the file does not have to be used)")
 
-    parser.add_option("--min-mb", type=float, default=1.0,
+    parser.add_option(
+        "--min-mb", type=float, default=1.0,
         help="Only defrag if fragmentation is larger (2 means at least 2MB the file does not have to be used)")
 
     parser.add_option("--dry-run", "-n", action="store_true",
-        help="Do not de-fragment, only print output")
+                      help="Do not de-fragment, only print output")
 
     parser.add_option("--caches", dest="cache_names", metavar='cache1,cache2,...',
-        help="only defragment the named caches")
-
+                      help="only defragment the named caches")
 
     from mapproxy.script.util import setup_logging
     import logging
     setup_logging(logging.INFO, format="[%(asctime)s] %(msg)s")
 
     if args:
-        args = args[1:] # remove script name
+        args = args[1:]  # remove script name
 
     (options, args) = parser.parse_args(args)
     if not options.mapproxy_conf:
@@ -69,7 +71,6 @@ def defrag_command(args=None):
         print(e, file=sys.stderr)
         print('ERROR: invalid configuration (see above)', file=sys.stderr)
         sys.exit(2)
-
 
     with local_base_config(proxy_configuration.base_config):
         available_caches = OrderedDict()
@@ -95,11 +96,12 @@ def defrag_command(args=None):
             for cache in caches:
                 logger = DefragLog(name)
                 defrag_compact_cache(cache,
-                    min_percent=options.min_percent/100,
-                    min_bytes=options.min_mb*1024*1024,
-                    dry_run=options.dry_run,
-                    log_progress=logger,
-                )
+                                     min_percent=options.min_percent/100,
+                                     min_bytes=options.min_mb*1024*1024,
+                                     dry_run=options.dry_run,
+                                     log_progress=logger,
+                                     )
+
 
 def bundle_offset(fname):
     """
@@ -114,9 +116,11 @@ def bundle_offset(fname):
         c = int(match.group(2), 16)
         return c, r
 
+
 class DefragLog(object):
     def __init__(self, cache_name):
         self.cache_name = cache_name
+
     def log(self, fname, fragmentation, fragmentation_bytes, num, total, defrag):
         msg = "%s: %3d/%d (%s) fragmentation is %.1f%% (%dkb)" % (
             self.cache_name, num, total, fname, fragmentation, fragmentation_bytes/1024
@@ -126,6 +130,7 @@ class DefragLog(object):
         else:
             msg += " - skipping"
         log.info(msg)
+
 
 def defrag_compact_cache(cache, min_percent=0.1, min_bytes=1024*1024, log_progress=None, dry_run=False):
     bundles = glob.glob(os.path.join(cache.cache_dir, 'L??', 'R????C????.bundle'))
@@ -137,7 +142,6 @@ def defrag_compact_cache(cache, min_percent=0.1, min_bytes=1024*1024, log_progre
 
         defrag = 1 - float(size) / file_size
         defrag_bytes = file_size - size
-
 
         skip = False
         if defrag < min_percent or defrag_bytes < min_bytes:
@@ -181,4 +185,3 @@ def defrag_compact_cache(cache, min_percent=0.1, min_bytes=1024*1024, log_progre
                 os.rename(tmp_bundle + '.bundlx', bundle_file[:-1] + 'x')
             if os.path.exists(tmp_bundle + '.lck'):
                 os.unlink(tmp_bundle + '.lck')
-

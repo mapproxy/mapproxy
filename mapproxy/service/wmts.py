@@ -18,8 +18,6 @@ WMS service handler
 """
 from __future__ import print_function
 
-import re
-
 from functools import partial
 
 from mapproxy.request.wmts import (
@@ -36,11 +34,12 @@ from mapproxy.util.coverage import load_limited_to
 from mapproxy.util.ext.odict import odict
 
 from mapproxy.template import template_loader, bunch
+import logging
+
 env = {'bunch': bunch}
 get_template = template_loader(__name__, 'templates', namespace=env)
-
-import logging
 log = logging.getLogger(__name__)
+
 
 class WMTSServer(Server):
     service = 'wmts'
@@ -62,13 +61,13 @@ class WMTSServer(Server):
             grid = layer.grid
             if not grid.supports_access_with_origin('nw'):
                 log.warning("skipping layer '%s' for WMTS, grid '%s' of cache '%s' is not compatible with WMTS",
-                    layer.name, grid.name, layer.md['cache_name'])
+                            layer.name, grid.name, layer.md['cache_name'])
                 continue
             if grid.name not in sets:
                 try:
                     sets[grid.name] = TileMatrixSet(grid)
                 except AssertionError:
-                    continue # TODO
+                    continue  # TODO
             layers_grids.setdefault(layer.name, odict())[grid.name] = layer
         wmts_layers = odict()
         for layer_name, layers in layers_grids.items():
@@ -79,8 +78,8 @@ class WMTSServer(Server):
         service = self._service_md(request)
         layers = self.authorized_tile_layers(request.http.environ)
 
-
-        result = self.capabilities_class(service, layers, self.matrix_sets, info_formats=self.info_formats).render(request)
+        result = self.capabilities_class(service, layers, self.matrix_sets,
+                                         info_formats=self.info_formats).render(request)
         return Response(result, mimetype='application/xml')
 
     def tile(self, request):
@@ -128,7 +127,7 @@ class WMTSServer(Server):
 
         if not tile_layer.info_sources:
             raise RequestError('layer %s not queryable' % str(request.layer),
-                code='OperationNotSupported', request=request)
+                               code='OperationNotSupported', request=request)
 
         if coverage and not coverage.contains(query.coord, query.srs):
             infos = []
@@ -161,13 +160,13 @@ class WMTSServer(Server):
             key = 'featureinfo'
 
         result = request.http.environ['mapproxy.authorize'](service, [tile_layer.name],
-            query_extent=query_extent, environ=request.http.environ)
+                                                            query_extent=query_extent, environ=request.http.environ)
         if result['authorized'] == 'unauthenticated':
             raise RequestError('unauthorized', status=401)
         if result['authorized'] == 'full':
             return
         if result['authorized'] == 'partial':
-            if result['layers'].get(tile_layer.name, {}).get(key, False) == True:
+            if result['layers'].get(tile_layer.name, {}).get(key, False) is True:
                 limited_to = result['layers'][tile_layer.name].get('limited_to')
                 if not limited_to:
                     limited_to = result.get('limited_to')
@@ -179,8 +178,8 @@ class WMTSServer(Server):
 
     def authorized_tile_layers(self, env):
         if 'mapproxy.authorize' in env:
-            result = env['mapproxy.authorize']('wmts', [l for l in self.layers],
-                query_extent=None, environ=env)
+            result = env['mapproxy.authorize']('wmts', [x for x in self.layers],
+                                               query_extent=None, environ=env)
             if result['authorized'] == 'unauthenticated':
                 raise RequestError('unauthorized', status=401)
             if result['authorized'] == 'full':
@@ -199,20 +198,20 @@ class WMTSServer(Server):
         request.make_request()
         if request.layer not in self.layers:
             raise RequestError('unknown layer: ' + str(request.layer),
-                code='InvalidParameterValue', request=request)
+                               code='InvalidParameterValue', request=request)
         if request.tilematrixset not in self.layers[request.layer]:
             raise RequestError('unknown tilematrixset: ' + str(request.tilematrixset),
-                code='InvalidParameterValue', request=request)
+                               code='InvalidParameterValue', request=request)
 
         if info_formats is not None:
             if '/' in request.infoformat:  # mimetype
                 if request.infoformat not in self.info_formats.values():
                     raise RequestError('unknown infoformat: ' + str(request.infoformat),
-                        code='InvalidParameterValue', request=request)
-            else: # RESTful suffix
+                                       code='InvalidParameterValue', request=request)
+            else:  # RESTful suffix
                 if request.infoformat not in self.info_formats:
                     raise RequestError('unknown infoformat: ' + str(request.infoformat),
-                        code='InvalidParameterValue', request=request)
+                                       code='InvalidParameterValue', request=request)
                 # set mimetype as infoformat
                 request.infoformat = self.info_formats[request.infoformat]
 
@@ -246,7 +245,8 @@ class WMTSRestServer(WMTSServer):
         self.url_converter = URLTemplateConverter(self.template)
         self.fi_url_converter = FeatureInfoURLTemplateConverter(self.fi_template)
         self.request_parser = make_wmts_rest_request_parser(self.url_converter, self.fi_url_converter)
-        self.capabilities_class = partial(RestfulCapabilities, url_converter=self.url_converter, fi_url_converter=self.fi_url_converter)
+        self.capabilities_class = partial(
+            RestfulCapabilities, url_converter=self.url_converter, fi_url_converter=self.fi_url_converter)
 
     def check_request_dimensions(self, tile_layer, request):
         # check that unknown dimension for this layer are set to default
@@ -255,13 +255,14 @@ class WMTSRestServer(WMTSServer):
                 dimension = dimension.lower()
                 if dimension not in tile_layer.dimensions and value != 'default':
                     raise RequestError('unknown dimension: ' + str(dimension),
-                        code='InvalidParameterValue', request=request)
+                                       code='InvalidParameterValue', request=request)
 
 
 class Capabilities(object):
     """
     Renders WMS capabilities documents.
     """
+
     def __init__(self, server_md, layers, matrix_sets, info_formats={}):
         self.service = server_md
         self.layers = layers
@@ -282,8 +283,9 @@ class Capabilities(object):
         template = get_template(template)
         doc = template.substitute(**self.template_context())
         # strip blank lines
-        doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())
+        doc = '\n'.join(x for x in doc.split('\n') if x.rstrip())
         return doc
+
 
 class RestfulCapabilities(Capabilities):
     def __init__(self, server_md, layers, matrix_sets, url_converter, fi_url_converter, info_formats={}):
@@ -306,6 +308,7 @@ class RestfulCapabilities(Capabilities):
                     format_info_resource_template=format_info_resource_template,
                     )
 
+
 def format_resource_template(layer, template, service):
     if '{Format}' in template:
         template = template.replace('{Format}', layer.format)
@@ -314,6 +317,7 @@ def format_resource_template(layer, template, service):
         template = template.replace('{Layer}', layer.name)
 
     return service.url + template
+
 
 def format_info_resource_template(layer, template, info_format, service):
     if '{InfoFormat}' in template:
@@ -324,10 +328,12 @@ def format_info_resource_template(layer, template, info_format, service):
 
     return service.url + template
 
+
 class WMTSTileLayer(object):
     """
     Wrap multiple TileLayers for the same cache but with different grids.
     """
+
     def __init__(self, layers):
         self.grids = [lyr.grid for lyr in layers.values()]
         self.layers = layers
@@ -343,14 +349,15 @@ class WMTSTileLayer(object):
         return self.layers[gridname]
 
 
-
 # calculated from well-known scale set GoogleCRS84Quad
 METERS_PER_DEEGREE = 111319.4907932736
+
 
 def meter_per_unit(srs):
     if srs.is_latlong:
         return METERS_PER_DEEGREE
     return 1
+
 
 class TileMatrixSet(object):
     def __init__(self, grid):

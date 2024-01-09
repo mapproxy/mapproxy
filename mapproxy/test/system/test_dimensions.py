@@ -12,8 +12,6 @@
 # limitations under the License.
 
 from __future__ import division
-import functools
-import os 
 import pytest
 from mapproxy.test.image import tmp_image
 from mapproxy.test.http import mock_httpd
@@ -27,20 +25,21 @@ from mapproxy.request.wms import (
     WMS130CapabilitiesRequest,
     WMS100CapabilitiesRequest,
     WMS110MapRequest,
-    WMS110FeatureInfoRequest,
     WMS110CapabilitiesRequest,
 )
 
 expected_dim = {'time': {
-                        'values': '2020-09-22T11:20:00Z,2020-09-22T13:20:00Z,2020-09-22T15:20:00Z', 
-                        'default': '2020-09-22T14:20:00Z'}, 
-                'dim_reference_time': {
-                        'values': '2020-09-22T11:20:00Z,2020-09-22T13:20:00Z,2020-09-22T15:20:00Z', 
-                        'default': '2020-09-22T14:20:00Z'}}
+    'values': '2020-09-22T11:20:00Z,2020-09-22T13:20:00Z,2020-09-22T15:20:00Z',
+    'default': '2020-09-22T14:20:00Z'},
+    'dim_reference_time': {
+    'values': '2020-09-22T11:20:00Z,2020-09-22T13:20:00Z,2020-09-22T15:20:00Z',
+    'default': '2020-09-22T14:20:00Z'}}
+
 
 @pytest.fixture(scope="module")
 def config_file():
     return "dimension.yaml"
+
 
 class TestDimensionsWMS130(SysTest):
 
@@ -65,13 +64,12 @@ class TestDimensionsWMS130(SysTest):
             ),
         )
 
-    def test_get_capabilities_dimension(self,app):
+    def test_get_capabilities_dimension(self, app):
         req = WMS130CapabilitiesRequest(url="/service?").copy_with_request_params(
             self.common_req
         )
         resp = app.get(req)
         xml = resp.lxml
-    
 
         dimensions = xml.xpath('//xmlns:Layer/xmlns:Dimension', namespaces=dict(xmlns="http://www.opengis.net/wms"))
         results = dict()
@@ -81,9 +79,9 @@ class TestDimensionsWMS130(SysTest):
             temp_dict['values'] = dimension.text
             temp_dict['default'] = dimension.attrib['default']
             results[dimension.attrib['name']] = temp_dict
-        
-        assert set(list(expected_dim.keys()))  == set(list(results.keys()))
-        
+
+        assert set(list(expected_dim.keys())) == set(list(results.keys()))
+
         assert expected_dim['time']['default'] == results['time']['default']
         assert expected_dim['dim_reference_time']['default'] == results['dim_reference_time']['default']
         assert expected_dim['time']['values'] == results['time']['values']
@@ -111,6 +109,7 @@ class TestDimensionsWMS130(SysTest):
         assert cache_dir.join(
             "test_cache_EPSG900913/time-2020-09-22T14:20:00Z/01/000/000/001/000/000/001.jpeg"
         ).check()
+
 
 class TestDimensionsWMS111(SysTest):
 
@@ -135,11 +134,11 @@ class TestDimensionsWMS111(SysTest):
             ),
         )
 
-    def test_get_capabilities_dimension(self,app):
+    def test_get_capabilities_dimension(self, app):
         req = WMS111CapabilitiesRequest(url="/service?").copy_with_request_params(
             self.common_req
         )
-        resp = app.get(req)       
+        resp = app.get(req)
         xml = resp.lxml
         dimensions = xml.xpath('//Layer/Dimension')
         results = dict()
@@ -149,9 +148,9 @@ class TestDimensionsWMS111(SysTest):
             temp_dict['values'] = dimension.text
             temp_dict['default'] = dimension.attrib['default']
             results[dimension.attrib['name']] = temp_dict
-        
-        assert set(list(expected_dim.keys()))  == set(list(results.keys()))
-        
+
+        assert set(list(expected_dim.keys())) == set(list(results.keys()))
+
         assert expected_dim['time']['default'] == results['time']['default']
         assert expected_dim['dim_reference_time']['default'] == results['dim_reference_time']['default']
 
@@ -177,6 +176,7 @@ class TestDimensionsWMS111(SysTest):
         assert cache_dir.join(
             "test_cache_EPSG900913/time-2020-09-22T14:20:00Z/01/000/000/001/000/000/001.jpeg"
         ).check()
+
 
 class TestDimensionsWMS110(SysTest):
 
@@ -201,11 +201,11 @@ class TestDimensionsWMS110(SysTest):
             ),
         )
 
-    def test_get_capabilities_dimension(self,app):
+    def test_get_capabilities_dimension(self, app):
         req = WMS110CapabilitiesRequest(url="/service?").copy_with_request_params(
             self.common_req
         )
-        resp = app.get(req)       
+        resp = app.get(req)
         xml = resp.lxml
         dimensions = xml.xpath('//Layer/Dimension')
         results = dict()
@@ -215,8 +215,8 @@ class TestDimensionsWMS110(SysTest):
             temp_dict['values'] = dimension.text
             temp_dict['default'] = dimension.attrib['default']
             results[dimension.attrib['name']] = temp_dict
-        assert set(list(expected_dim.keys()))  == set(list(results.keys()))
-        
+        assert set(list(expected_dim.keys())) == set(list(results.keys()))
+
         assert expected_dim['time']['default'] == results['time']['default']
         assert expected_dim['dim_reference_time']['default'] == results['dim_reference_time']['default']
         assert expected_dim['time']['values'] == results['time']['values']
@@ -247,6 +247,7 @@ class TestDimensionsWMS110(SysTest):
             "test_cache_EPSG900913/time-2020-09-22T14:20:00Z/01/000/000/001/000/000/001.jpeg"
         ).check()
 
+
 class TestDimensionsWMS100(SysTest):
 
     def setup_method(self):
@@ -254,11 +255,11 @@ class TestDimensionsWMS100(SysTest):
             url="/service?", param=dict(service="WMS", wmtver="1.0.0")
         )
 
-    def test_get_capabilities_dimension(self,app):
+    def test_get_capabilities_dimension(self, app):
         req = WMS100CapabilitiesRequest(url="/service?").copy_with_request_params(
             self.common_req
         )
-        resp = app.get(req)       
+        resp = app.get(req)
         xml = resp.lxml
         dimensions = xml.xpath('//Layer/Dimension')
         results = dict()
@@ -269,7 +270,7 @@ class TestDimensionsWMS100(SysTest):
             temp_dict['default'] = dimension.attrib['default']
             results[dimension.attrib['name']] = temp_dict
 
-        assert set(list(expected_dim.keys()))  == set(list(results.keys()))
+        assert set(list(expected_dim.keys())) == set(list(results.keys()))
         assert expected_dim['time']['default'] == results['time']['default']
         assert expected_dim['dim_reference_time']['default'] == results['dim_reference_time']['default']
         assert expected_dim['time']['values'] == results['time']['values']

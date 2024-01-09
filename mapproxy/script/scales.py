@@ -23,6 +23,7 @@ DEFAULT_DPIS = {
     'OGC': 2.54/(0.00028 * 100),
 }
 
+
 def values_from_stdin():
     values = []
     for line in sys.stdin:
@@ -32,19 +33,24 @@ def values_from_stdin():
         values.append(float(line))
     return values
 
+
 def scale_to_res(scale_denom, dpi, unit_factor):
     m_per_px = 2.54 / (dpi * 100)
     return scale_denom * m_per_px / unit_factor
+
 
 def res_to_scale(res, dpi, unit_factor):
     m_per_px = 2.54 / (dpi * 100)
     return res / m_per_px * unit_factor
 
+
 def format_simple(i, scale, res):
     return '%20.10f # %2d %20.8f' % (res, i, scale)
 
+
 def format_list(i, scale, res):
     return '    %20.10f, # %2d %20.8f' % (res, i, scale)
+
 
 def repeated_values(values, n):
     current_factor = 1
@@ -56,6 +62,7 @@ def repeated_values(values, n):
         result.append(value/current_factor)
     return result
 
+
 def fill_values(values, n):
     return values + [values[-1]/(2**x) for x in range(1, n)]
 
@@ -63,22 +70,23 @@ def fill_values(values, n):
 def scales_command(args=None):
     parser = optparse.OptionParser("%prog scales [options] scale/resolution[, ...]")
     parser.add_option("-l", "--levels", default=1, type=int, metavar='1',
-        help="number of resolutions/scales to calculate")
+                      help="number of resolutions/scales to calculate")
     parser.add_option("-d", "--dpi", default='OGC',
-        help="DPI to convert scales (use OGC for .28mm based DPI)")
+                      help="DPI to convert scales (use OGC for .28mm based DPI)")
     parser.add_option("--unit", default='m', metavar='m',
-        help="use resolutions in meter (m) or degrees (d)")
+                      help="use resolutions in meter (m) or degrees (d)")
     parser.add_option("--eval", default=False, action='store_true',
-        help="evaluate args as Python expression. For example: 360/256")
-    parser.add_option("--repeat", default=False, action='store_true',
+                      help="evaluate args as Python expression. For example: 360/256")
+    parser.add_option(
+        "--repeat", default=False, action='store_true',
         help="repeat all values, each time /10. For example: 1000 500 250 results in 1000 500 250 100 50 25 10...")
     parser.add_option("--res-to-scale", default=False, action='store_true',
-        help="convert resolutions to scale")
+                      help="convert resolutions to scale")
     parser.add_option("--as-res-config", default=False, action='store_true',
-        help="output as resolution list for MapProxy grid configuration")
+                      help="output as resolution list for MapProxy grid configuration")
 
     if args:
-        args = args[1:] # remove script name
+        args = args[1:]  # remove script name
     (options, args) = parser.parse_args(args)
     options.levels = max(options.levels, len(args))
 

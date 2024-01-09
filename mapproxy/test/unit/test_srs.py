@@ -67,26 +67,23 @@ class TestSRS(object):
 
         assert srs.get_geographic_srs() == SRS(4326)
 
-
     def test_iau_crs(self):
         try:
-            srs = SRS("IAU:49900") # "Mars (2015) - Sphere / Ocentric"
-        except:
+            srs = SRS("IAU:49900")  # "Mars (2015) - Sphere / Ocentric"
+        except Exception:
             pytest.skip('Requires recent pyproj version')
 
         assert srs.is_latlong
         assert '49900' in str(srs.get_geographic_srs())
 
-
     def test_iau_crs_projected(self):
         try:
-            srs = SRS("IAU:49910") # "Mars (2015) - Sphere / Ocentric / Equirectangular, clon = 0"
-        except:
+            srs = SRS("IAU:49910")  # "Mars (2015) - Sphere / Ocentric / Equirectangular, clon = 0"
+        except Exception:
             pytest.skip('Requires recent pyproj version')
 
         assert not srs.is_latlong
         assert '49900' in str(srs.get_geographic_srs())
-
 
     def test_from_srs(self):
         srs1 = SRS("epsg:4326")
@@ -94,6 +91,8 @@ class TestSRS(object):
         assert srs1 == srs2
 
 # proj_data_dir test relies on old Proj4 epsg files.
+
+
 @pytest.mark.skipif(not proj.USE_PROJ4_API, reason="only for old proj4 lib")
 class Test_0_ProjDefaultDataPath(object):
 
@@ -118,6 +117,7 @@ def custom_proj_data_dir():
     srs.set_datapath(None)
     base_config().srs.proj_data_dir = None
 
+
 @pytest.mark.skipif(not proj.USE_PROJ4_API, reason="only for old proj4 lib")
 @pytest.mark.usefixtures("custom_proj_data_dir")
 class Test_1_ProjDataPath(object):
@@ -128,6 +128,7 @@ class Test_1_ProjDataPath(object):
     def test_unknown_srs(self):
         with pytest.raises(RuntimeError):
             srs.SRS(2339)
+
 
 class TestPreferredSrcSRS(object):
 
@@ -212,4 +213,3 @@ class TestSupportedSRS(object):
         assert supported.best_srs(SRS(25832)) == SRS(25832)
         assert supported.best_srs(SRS(25831)) == SRS(25832)
         assert supported.best_srs(SRS(3857)) == SRS(25832)
-

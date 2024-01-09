@@ -46,11 +46,13 @@ class Context(object):
     def current_pos(self):
         return ''.join(self.obj_pos).lstrip('.') or '.'
 
+
 def validate(spec, data):
     """
     Validate `data` against `spec`.
     """
     return Validator(spec).validate(data)
+
 
 class ValidationError(TypeError):
     def __init__(self, msg, errors=None, informal_only=False):
@@ -58,8 +60,10 @@ class ValidationError(TypeError):
         self.informal_only = informal_only
         self.errors = errors or []
 
+
 class SpecError(TypeError):
     pass
+
 
 class Validator(object):
     def __init__(self, spec, fail_fast=False):
@@ -80,7 +84,7 @@ class Validator(object):
                 raise ValidationError(self.messages[0], self.messages, informal_only=not self.errors)
             else:
                 raise ValidationError('found %d validation errors.' % len(self.messages), self.messages,
-                    informal_only=not self.errors)
+                                      informal_only=not self.errors)
 
     def _validate_part(self, spec, data):
         if hasattr(spec, 'subspec'):
@@ -114,10 +118,10 @@ class Validator(object):
                     return
             else:
                 return self._handle_error("%r in %s not of any type %s" %
-                    (data, self.context.current_pos, ', '.join(map(type_str, spec.specs))))
+                                          (data, self.context.current_pos, ', '.join(map(type_str, spec.specs))))
         elif not type_matches(spec, data):
             return self._handle_error("%r in %s not of type %s" %
-                (data, self.context.current_pos, type_str(spec)))
+                                      (data, self.context.current_pos, type_str(spec)))
 
         # recurse in dicts and lists
         if isinstance(spec, dict):
@@ -132,7 +136,7 @@ class Validator(object):
             if isinstance(k, required):
                 if k not in data:
                     self._handle_error("missing '%s', not in %s" %
-                        (k, self.context.current_pos))
+                                       (k, self.context.current_pos))
             if isinstance(k, anything):
                 accept_any_key = True
                 any_key_spec = spec[k]
@@ -145,7 +149,7 @@ class Validator(object):
             else:
                 if k not in spec:
                     self._handle_error("unknown '%s' in %s" %
-                        (k, self.context.current_pos), info_only=True)
+                                       (k, self.context.current_pos), info_only=True)
                     continue
                 with self.context.pos('.' + str(k)):
                     self._validate_part(spec[k], v)
@@ -164,6 +168,7 @@ class Validator(object):
             raise ValidationError(msg)
         self.messages.append(msg)
 
+
 def type_str(spec):
     if not isinstance(spec, type):
         spec = type(spec)
@@ -178,6 +183,7 @@ def type_str(spec):
 
     return str(type)
 
+
 def type_matches(spec, data):
     if hasattr(spec, 'compare_type'):
         return spec.compare_type(data)
@@ -186,4 +192,3 @@ def type_matches(spec, data):
     else:
         spec_type = type(spec)
     return isinstance(data, spec_type)
-

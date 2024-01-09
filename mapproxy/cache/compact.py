@@ -89,7 +89,6 @@ class CompactCacheBase(TileCacheBase):
                 failed = True
         return not failed
 
-
     def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.source or tile.coord is None:
             return True
@@ -133,8 +132,10 @@ class CompactCacheBase(TileCacheBase):
             return True
         return False
 
+
 BUNDLE_EXT = '.bundle'
 BUNDLEX_V1_EXT = '.bundlx'
+
 
 class BundleV1(object):
     def __init__(self, base_filename, offset):
@@ -194,7 +195,6 @@ class BundleV1(object):
                         idx.update_tile_offset(x, y, offset=offset, size=size)
 
         return True
-
 
     def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.source or tile.coord is None:
@@ -267,6 +267,7 @@ BUNDLEX_V1_FOOTER = b'\x00\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x00\x00\x
 
 INT64LE = struct.Struct('<Q')
 
+
 class BundleIndexV1(object):
     def __init__(self, filename):
         self.filename = filename
@@ -336,27 +337,28 @@ class BundleIndexV1(object):
             b._fh = fh
             yield b
 
+# The bundle file has a header with 15 little-endian long values (60 bytes).
+# NOTE: the fixed values might be some flags for image options (format, aliasing)
+# all files available for testing had the same values however.
 
 
-    # The bundle file has a header with 15 little-endian long values (60 bytes).
-    # NOTE: the fixed values might be some flags for image options (format, aliasing)
-    # all files available for testing had the same values however.
 BUNDLE_V1_HEADER_SIZE = 60
 BUNDLE_V1_HEADER = [
-    3        , # 0,  fixed
-    16384    , # 1,  max. num of tiles 128*128 = 16384
-    16       , # 2,  size of largest tile
-    5        , # 3,  fixed
-    0        , # 4,  num of tiles in bundle (*4)
-    60+65536 , # 5,  bundle size
-    40       , # 6   fixed
-    16       , # 7,  fixed
-    0        , # 8,  y0
-    127      , # 9,  y1
-    0        , # 10, x0
-    127      , # 11, x1
+    3,  # 0,  fixed
+    16384,  # 1,  max. num of tiles 128*128 = 16384
+    16,  # 2,  size of largest tile
+    5,  # 3,  fixed
+    0,  # 4,  num of tiles in bundle (*4)
+    60+65536,  # 5,  bundle size
+    40,  # 6   fixed
+    16,  # 7,  fixed
+    0,  # 8,  y0
+    127,  # 9,  y1
+    0,  # 10, x0
+    127,  # 11, x1
 ]
 BUNDLE_V1_HEADER_STRUCT_FORMAT = '<4I3Q5I'
+
 
 class BundleDataV1(object):
     def __init__(self, filename, tile_offsets):
@@ -372,10 +374,9 @@ class BundleDataV1(object):
         header[10], header[8] = self.tile_offsets
         header[11], header[9] = header[10]+127, header[8]+127
         write_atomic(self.filename,
-            struct.pack(BUNDLE_V1_HEADER_STRUCT_FORMAT, *header) +
-            # zero-size entry for each tile
-            (b'\x00' * (BUNDLEX_V1_GRID_HEIGHT * BUNDLEX_V1_GRID_WIDTH * 4)))
-
+                     struct.pack(BUNDLE_V1_HEADER_STRUCT_FORMAT, *header) +
+                     # zero-size entry for each tile
+                     (b'\x00' * (BUNDLEX_V1_GRID_HEIGHT * BUNDLEX_V1_GRID_WIDTH * 4)))
 
     @contextlib.contextmanager
     def readonly(self):
@@ -420,7 +421,7 @@ class BundleDataV1(object):
         self._fh.seek(0, os.SEEK_END)
         offset = self._fh.tell()
         if offset == 0:
-            self._fh.write(b'\x00' * 16) # header
+            self._fh.write(b'\x00' * 16)  # header
             offset = 16
         self._fh.write(struct.pack('<L', size))
         self._fh.write(data)
@@ -611,7 +612,6 @@ class BundleV2(object):
 
         return True
 
-
     def remove_tile(self, tile, dimensions=None):
         if tile.coord is None:
             return True
@@ -657,10 +657,9 @@ class BundleV2(object):
             yield fh
 
 
-
 class CompactCacheV1(CompactCacheBase):
     bundle_class = BundleV1
 
+
 class CompactCacheV2(CompactCacheBase):
     bundle_class = BundleV2
-

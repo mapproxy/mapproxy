@@ -24,8 +24,10 @@ import mapproxy.service
 from mapproxy.template import template_loader
 get_template = template_loader(mapproxy.service.__name__, 'templates')
 
+
 class WMSXMLExceptionHandler(XMLExceptionHandler):
     template_func = get_template
+
 
 class WMS100ExceptionHandler(WMSXMLExceptionHandler):
     """
@@ -34,12 +36,14 @@ class WMS100ExceptionHandler(WMSXMLExceptionHandler):
     template_file = 'wms100exception.xml'
     content_type = 'text/xml'
 
+
 class WMS110ExceptionHandler(WMSXMLExceptionHandler):
     """
     Exception handler for OGC WMS 1.1.0 ServiceExceptionReports
     """
     template_file = 'wms110exception.xml'
     mimetype = 'application/vnd.ogc.se_xml'
+
 
 class WMS111ExceptionHandler(WMSXMLExceptionHandler):
     """
@@ -48,6 +52,7 @@ class WMS111ExceptionHandler(WMSXMLExceptionHandler):
     template_file = 'wms111exception.xml'
     mimetype = 'application/vnd.ogc.se_xml'
 
+
 class WMS130ExceptionHandler(WMSXMLExceptionHandler):
     """
     Exception handler for OGC WMS 1.3.0 ServiceExceptionReports
@@ -55,10 +60,12 @@ class WMS130ExceptionHandler(WMSXMLExceptionHandler):
     template_file = 'wms130exception.xml'
     mimetype = 'text/xml'
 
+
 class WMSImageExceptionHandler(ExceptionHandler):
     """
     Exception handler for image exceptions.
     """
+
     def render(self, request_error):
         request = request_error.request
         params = request.params
@@ -88,6 +95,7 @@ class WMSImageExceptionHandler(ExceptionHandler):
         else:
             color = '#ffffff'
         return color
+
 
 class WMSBlankExceptionHandler(WMSImageExceptionHandler):
     """

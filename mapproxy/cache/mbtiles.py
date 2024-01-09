@@ -34,11 +34,13 @@ if not hasattr(glob, 'escape'):
     import re
     glob.escape = lambda pathname: re.sub(r'([*?[])', r'[\1]', pathname)
 
+
 def sqlite_datetime_to_timestamp(datetime):
     if datetime is None:
         return None
     d = time.strptime(datetime, "%Y-%m-%d %H:%M:%S")
     return time.mktime(d)
+
 
 class MBTilesCache(TileCacheBase):
     supports_timestamp = False
@@ -73,14 +75,14 @@ class MBTilesCache(TileCacheBase):
     def ensure_mbtile(self):
         if not os.path.exists(self.mbtile_file):
             with FileLock(self.mbtile_file + '.init.lck',
-                remove_on_unlock=REMOVE_ON_UNLOCK):
+                          remove_on_unlock=REMOVE_ON_UNLOCK):
                 if not os.path.exists(self.mbtile_file):
                     ensure_directory(self.mbtile_file)
                     self._initialize_mbtile()
 
     def _initialize_mbtile(self):
         log.info('initializing MBTile file %s', self.mbtile_file)
-        db  = sqlite3.connect(self.mbtile_file)
+        db = sqlite3.connect(self.mbtile_file)
 
         if self.wal:
             db.execute('PRAGMA journal_mode=wal')
@@ -113,7 +115,7 @@ class MBTilesCache(TileCacheBase):
         db.close()
 
     def update_metadata(self, name='', description='', version=1, overlay=True, format='png'):
-        db  = sqlite3.connect(self.mbtile_file)
+        db = sqlite3.connect(self.mbtile_file)
         db.execute("""
             CREATE TABLE IF NOT EXISTS metadata (name text, value text);
         """)
@@ -127,14 +129,14 @@ class MBTilesCache(TileCacheBase):
         db.executemany("""
             INSERT INTO metadata (name, value) VALUES (?,?)
             """,
-            (
-                ('name', name),
-                ('description', description),
-                ('version', version),
-                ('type', layer_type),
-                ('format', format),
-            )
-        )
+                       (
+                           ('name', name),
+                           ('description', description),
+                           ('version', version),
+                           ('type', layer_type),
+                           ('format', format),
+                       )
+                       )
         db.commit()
         db.close()
 
@@ -172,7 +174,8 @@ class MBTilesCache(TileCacheBase):
         cursor = self.db.cursor()
         try:
             if self.supports_timestamp:
-                stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data, last_modified) VALUES (?,?,?,?, datetime(?, 'unixepoch', 'localtime'))"
+                stmt = ("INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data, last_modified)"
+                        " VALUES (?,?,?,?, datetime(?, 'unixepoch', 'localtime'))")
                 cursor.executemany(stmt, records)
             else:
                 stmt = "INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)"
@@ -215,7 +218,7 @@ class MBTilesCache(TileCacheBase):
             return False
 
     def load_tiles(self, tiles, with_metadata=False, dimensions=None):
-        #associate the right tiles with the cursor
+        # associate the right tiles with the cursor
         tile_dict = {}
         coords = []
         for tile in tiles:
@@ -304,6 +307,7 @@ class MBTilesCache(TileCacheBase):
         else:
             self.load_tile(tile, dimensions=dimensions)
 
+
 class MBTilesLevelCache(TileCacheBase):
     supports_timestamp = True
 
@@ -363,7 +367,8 @@ class MBTilesLevelCache(TileCacheBase):
         for level, tiles in groupby(tiles, key=lambda t: t.coord[2]):
             tiles = [t for t in tiles if not t.stored]
             res = self._get_level(level).store_tiles(tiles, dimensions=dimensions)
-            if not res: failed = True
+            if not res:
+                failed = True
         return failed
 
     def load_tile(self, tile, with_metadata=False, dimensions=None):

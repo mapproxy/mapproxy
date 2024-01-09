@@ -19,6 +19,7 @@ from mapproxy.util.ext.dictspec.spec import required
 
 from mapproxy.config.spec import coverage, time_spec
 
+
 def validate_seed_conf(conf_dict):
     """
     Validate `conf_dict` agains seed.yaml spec.
@@ -30,6 +31,7 @@ def validate_seed_conf(conf_dict):
         return ex.errors, ex.informal_only
     else:
         return [], True
+
 
 from_to_spec = {
     'from': number(),

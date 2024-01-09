@@ -16,6 +16,7 @@
 from __future__ import print_function
 import pkg_resources
 
+
 def version_string():
     """
     Return the current version number of MapProxy.
@@ -24,6 +25,7 @@ def version_string():
         return pkg_resources.working_set.by_key['mapproxy'].version
     except KeyError:
         return 'unknown_version'
+
 
 __version__ = version = version_string()
 

@@ -21,10 +21,12 @@ from mapproxy.image.opts import create_image
 import logging
 log = logging.getLogger(__name__)
 
+
 class TileMerger(object):
     """
     Merge multiple tiles into one image.
     """
+
     def __init__(self, tile_grid, tile_size):
         """
         :param tile_grid: the grid size
@@ -64,9 +66,9 @@ class TileMerger(object):
                 result.paste(tile, pos)
                 source.close_buffers()
             except IOError as e:
-                if e.errno is None: # PIL error
+                if e.errno is None:  # PIL error
                     log.warning('unable to load tile %s, removing it (reason was: %s)'
-                             % (source, str(e)))
+                                % (source, str(e)))
                     if getattr(source, 'filename'):
                         if os.path.exists(source.filename):
                             os.remove(source.filename)
@@ -84,7 +86,7 @@ class TileMerger(object):
         Return the image offset (upper-left coord) of the i-th tile,
         where the tiles are ordered row-wise, top to bottom.
         """
-        return (i%self.tile_grid[0]*self.tile_size[0],
+        return (i % self.tile_grid[0]*self.tile_size[0],
                 i//self.tile_grid[0]*self.tile_size[1])
 
 
@@ -92,6 +94,7 @@ class TileSplitter(object):
     """
     Splits a large image into multiple tiles.
     """
+
     def __init__(self, meta_tile, image_opts):
         self.meta_img = meta_tile.as_image()
         self.image_opts = image_opts
@@ -108,7 +111,7 @@ class TileSplitter(object):
         maxy = miny + tile_size[1]
 
         if (minx < 0 or miny < 0 or maxx > self.meta_img.size[0]
-            or maxy > self.meta_img.size[1]):
+                or maxy > self.meta_img.size[1]):
 
             crop = self.meta_img.crop((
                 max(minx, 0),
@@ -127,6 +130,7 @@ class TiledImage(object):
     """
     An image built-up from multiple tiles.
     """
+
     def __init__(self, tiles, tile_grid, tile_size, src_bbox, src_srs):
         """
         :param tiles: all tiles (sorted row-wise, top to bottom)
@@ -164,4 +168,4 @@ class TiledImage(object):
         transformer = ImageTransformer(self.src_srs, req_srs)
         src_img = self.image(image_opts)
         return transformer.transform(src_img, self.src_bbox, out_size, req_bbox,
-            image_opts)
+                                     image_opts)

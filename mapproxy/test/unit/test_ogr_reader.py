@@ -23,6 +23,7 @@ from mapproxy.util.ogr import OGRShapeReader, libgdal
 polygon_shapefile = os.path.join(os.path.dirname(__file__), "polygons", "polygons.shp")
 polygon_geojson = os.path.join(os.path.dirname(__file__), "polygons", "polygons.geojson")
 
+
 @pytest.mark.skipif(not libgdal, reason="libgdal not found")
 class TestOGRShapeReader(object):
 

@@ -27,10 +27,12 @@ from mapproxy.image.mask import mask_image
 import logging
 log = logging.getLogger('mapproxy.image')
 
+
 class LayerMerger(object):
     """
     Merge multiple layers into one image.
     """
+
     def __init__(self):
         self.layers = []
         self.cacheable = True
@@ -61,7 +63,7 @@ class LayerMerger(LayerMerger):
             if (((layer_opts and not layer_opts.transparent) or image_opts.transparent)
                 and (not size or size == layer_img.size)
                 and (not layer_coverage or not layer_coverage.clip)
-                and not coverage):
+                    and not coverage):
                 # layer is opaque, no need to make transparent or add bgcolor
                 return layer_img
 
@@ -135,6 +137,7 @@ class LayerMerger(LayerMerger):
 
 band_ops = namedtuple("band_ops", ["dst_band", "src_img", "src_band", "factor"])
 
+
 class BandMerger(object):
     """
     Merge bands from multiple sources into one image.
@@ -151,6 +154,7 @@ class BandMerger(object):
                {source: dop_cache, band: 2, factor: 0.1},
            ]
     """
+
     def __init__(self, mode=None):
         self.ops = []
         self.cacheable = True
@@ -164,7 +168,7 @@ class BandMerger(object):
             src_img=src_img,
             src_band=src_band,
             factor=factor,
-         ))
+        ))
         # store highest requested band index for each source
         self.max_band[src_img] = max(self.max_band.get(src_img, 0), src_band)
         self.max_src_images = max(src_img+1, self.max_src_images)
@@ -246,7 +250,7 @@ def merge_images(layers, image_opts, size=None, bbox=None, bbox_srs=None, merger
 
     # BandMerger does not have coverage support, passing only images
     if isinstance(merger, BandMerger):
-        sources = [l[0] if isinstance(l, tuple) else l for l in layers]
+        sources = [x[0] if isinstance(x, tuple) else x for x in layers]
         return merger.merge(sources, image_opts=image_opts, size=size, bbox=bbox, bbox_srs=bbox_srs)
 
     for layer in layers:
@@ -268,7 +272,7 @@ def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transpar
     :rtype: `ImageSource`
     """
     if not legends:
-        return BlankImageSource(size=(1,1), image_opts=ImageOptions(bgcolor=bgcolor, transparent=transparent))
+        return BlankImageSource(size=(1, 1), image_opts=ImageOptions(bgcolor=bgcolor, transparent=transparent))
     if len(legends) == 1:
         return legends[0]
 
@@ -278,12 +282,12 @@ def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transpar
         legend_width = 0
         legend_height = 0
         legend_position_y = []
-        #iterate through all legends, last to first, calc img size and remember the y-position
+        # iterate through all legends, last to first, calc img size and remember the y-position
         for legend in legends:
             legend_position_y.append(legend_height)
             tmp_img = legend.as_image()
             legend_width = max(legend_width, tmp_img.size[0])
-            legend_height += tmp_img.size[1] #images shall not overlap themselfs
+            legend_height += tmp_img.size[1]  # images shall not overlap themselfs
 
         size = [legend_width, legend_height]
     bgcolor = ImageColor.getrgb(bgcolor)
@@ -300,6 +304,7 @@ def concat_legends(legends, format='png', size=None, bgcolor='#ffffff', transpar
         else:
             img.paste(legend_img, (0, legend_position_y[i]))
     return ImageSource(img, image_opts=ImageOptions(format=format))
+
 
 def concat_json_legends(legends):
     """

@@ -80,27 +80,27 @@ class TestFileLock(Mocker):
         assert_locked(self.lock_file)
 
         # one lock that will get it after some time
-        l = FileLock(self.lock_file, timeout=0.3, step=0.001)
-        l.lock()
+        x = FileLock(self.lock_file, timeout=0.3, step=0.001)
+        x.lock()
 
         locked_for = time.time() - start_time
         assert locked_for - 0.2 <= 0.1, "locking took to long?! (rerun if not sure)"
 
         # cleanup
-        l.unlock()
+        x.unlock()
         lock_thread.join()
 
     def test_lock_cleanup(self):
         old_lock_file = os.path.join(self.lock_dir, "lock_old.lck")
-        l = FileLock(old_lock_file)
-        l.lock()
-        l.unlock()
+        x = FileLock(old_lock_file)
+        x.lock()
+        x.unlock()
         mtime = os.stat(old_lock_file).st_mtime
         mtime -= 7 * 60
         os.utime(old_lock_file, (mtime, mtime))
 
-        l = self._create_lock()
-        l.unlock()
+        x = self._create_lock()
+        x.unlock()
         assert os.path.exists(old_lock_file)
         assert os.path.exists(self.lock_file)
         cleanup_lockdir(self.lock_dir)
@@ -135,10 +135,10 @@ class TestFileLock(Mocker):
         assert counter == 400, counter
 
     def test_remove_on_unlock(self):
-        l = FileLock(self.lock_file, remove_on_unlock=True)
-        l.lock()
+        x = FileLock(self.lock_file, remove_on_unlock=True)
+        x.lock()
         assert os.path.exists(self.lock_file)
-        l.unlock()
+        x.unlock()
         if is_win:  # not removed on windows
             assert os.path.exists(self.lock_file)
         else:
@@ -148,12 +148,12 @@ class TestFileLock(Mocker):
             # not possible to remove lock file when lock is held
             pass
         else:
-            l.lock()
+            x.lock()
             assert os.path.exists(self.lock_file)
             os.remove(self.lock_file)
             assert not os.path.exists(self.lock_file)
             # ignore removed lock
-            l.unlock()
+            x.unlock()
             assert not os.path.exists(self.lock_file)
 
     def _create_lock(self):
@@ -164,9 +164,9 @@ class TestFileLock(Mocker):
 
 def assert_locked(lock_file, timeout=0.02, step=0.001):
     assert os.path.exists(lock_file)
-    l = FileLock(lock_file, timeout=timeout, step=step)
+    x = FileLock(lock_file, timeout=timeout, step=step)
     try:
-        l.lock()
+        x.lock()
         assert False, "file was not locked"
     except LockTimeout:
         pass
@@ -229,23 +229,23 @@ class TestSemLock(object):
     def test_load(self):
         locks = [SemLock(self.lock_file, 8, timeout=1) for _ in range(20)]
 
-        new_locks = random.sample([l for l in locks if not l._locked], 5)
-        for l in new_locks:
-            l.lock()
+        new_locks = random.sample([x for x in locks if not x._locked], 5)
+        for x in new_locks:
+            x.lock()
 
         for _ in range(20):
-            old_locks = random.sample([l for l in locks if l._locked], 3)
-            for l in old_locks:
-                l.unlock()
-            assert len([l for l in locks if l._locked]) == 2
-            assert len([l for l in locks if not l._locked]) == 18
+            old_locks = random.sample([x for x in locks if x._locked], 3)
+            for x in old_locks:
+                x.unlock()
+            assert len([x for x in locks if x._locked]) == 2
+            assert len([x for x in locks if not x._locked]) == 18
 
-            new_locks = random.sample([l for l in locks if not l._locked], 3)
-            for l in new_locks:
-                l.lock()
+            new_locks = random.sample([x for x in locks if not x._locked], 3)
+            for x in new_locks:
+                x.lock()
 
-            assert len([l for l in locks if l._locked]) == 5
-            assert len([l for l in locks if not l._locked]) == 15
+            assert len([x for x in locks if x._locked]) == 5
+            assert len([x for x in locks if not x._locked]) == 15
 
         assert self.count_lockfiles() == 8
 

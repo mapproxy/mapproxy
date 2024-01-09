@@ -93,7 +93,7 @@ class TestNoCaseMultiDict(object):
 
     def test_get(self):
         nc_dict = NoCaseMultiDict([("foo", "bar"), ("num", "42")])
-        assert nc_dict.get("bar") == None
+        assert nc_dict.get("bar") is None
         assert nc_dict.get("bar", "default_bar") == "default_bar"
         assert nc_dict.get("num") == "42"
         assert nc_dict.get("num", type_func=int) == 42
@@ -137,7 +137,7 @@ class TestNoCaseMultiDict(object):
         nc_dict = NoCaseMultiDict([("foo", "bar"), ("num", "42")])
         assert nc_dict["fOO"] == "bar"
         del nc_dict["FOO"]
-        assert nc_dict.get("foo") == None
+        assert nc_dict.get("foo") is None
 
 
 class DummyRequest(object):
@@ -372,7 +372,7 @@ class TestRequest(object):
         self.env = {
             "HTTP_HOST": "localhost:5050",
             "PATH_INFO": "/service",
-            "QUERY_STRING": "LAYERS=osm_mapnik&FORMAT=image%2Fpng&SPHERICALMERCATOR=true&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_inimage&SRS=EPSG%3A900913&bbox=1013566.9382067363,7051939.297837454,1030918.1436243634,7069577.142111099&WIDTH=908&HEIGHT=923",
+            "QUERY_STRING": "LAYERS=osm_mapnik&FORMAT=image%2Fpng&SPHERICALMERCATOR=true&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_inimage&SRS=EPSG%3A900913&bbox=1013566.9382067363,7051939.297837454,1030918.1436243634,7069577.142111099&WIDTH=908&HEIGHT=923",  # noqa
             "REMOTE_ADDR": "127.0.0.1",
             "REQUEST_METHOD": "GET",
             "SCRIPT_NAME": "",
@@ -480,7 +480,7 @@ class TestWMSMapRequestParams(object):
         assert self.m["width"] == "250"
         assert self.m["height"] == "350"
         del self.m["width"]
-        assert self.m.size == None
+        assert self.m.size is None
 
     def test_format(self):
         assert self.m.format == "png"
@@ -500,9 +500,9 @@ class TestWMSMapRequestParams(object):
         assert self.m.bbox is None
 
     def test_transparent(self):
-        assert self.m.transparent == False
+        assert self.m.transparent is False
         self.m["transparent"] = "trUe"
-        assert self.m.transparent == True
+        assert self.m.transparent is True
 
     def test_transparent_bool(self):
         self.m["transparent"] = True
@@ -712,7 +712,7 @@ class TestTileRequest(object):
         tile_req = tile_request(req)
         assert isinstance(tile_req, TileRequest)
         assert tile_req.tile == (2, 3, 5)
-        assert tile_req.origin == None
+        assert tile_req.origin is None
         assert tile_req.format == "png"
         assert tile_req.layer == "osm"
         assert tile_req.dimensions == {}

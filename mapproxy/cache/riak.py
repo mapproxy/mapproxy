@@ -17,7 +17,6 @@ from __future__ import absolute_import
 
 import threading
 import hashlib
-
 from io import BytesIO
 
 from mapproxy.image import ImageSource
@@ -36,13 +35,15 @@ except TypeError:
 import logging
 log = logging.getLogger(__name__)
 
+
 class UnexpectedResponse(CacheBackendError):
     pass
+
 
 class RiakCache(TileCacheBase):
     def __init__(self, nodes, protocol, bucket, tile_grid, use_secondary_index=False, timeout=60, coverage=None):
         super(RiakCache, self).__init__(coverage)
-        
+
         if riak is None:
             raise ImportError("Riak backend requires 'riak' package.")
 
@@ -84,7 +85,7 @@ class RiakCache(TileCacheBase):
     def _get_timestamp(self, obj):
         metadata = obj.usermeta
         timestamp = metadata.get('timestamp')
-        if timestamp != None:
+        if timestamp is not None:
             return float(timestamp)
 
         obj.usermeta = {'timestamp': '0'}
@@ -115,17 +116,17 @@ class RiakCache(TileCacheBase):
 
         return True
 
-    def store_tile(self, tile,dimensions=None):
+    def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
 
         return self._store_bulk([tile])
 
-    def store_tiles(self, tiles,dimensions=None):
+    def store_tiles(self, tiles, dimensions=None):
         tiles = [t for t in tiles if not t.stored]
         return self._store_bulk(tiles)
 
-    def load_tile_metadata(self, tile,dimensions=None):
+    def load_tile_metadata(self, tile, dimensions=None):
         if tile.timestamp:
             return
 
@@ -186,8 +187,8 @@ class RiakCache(TileCacheBase):
                 start_y = y * chunk_size
                 end_y = start_y + chunk_size - 1
                 query = self.bucket.get_index('tile_coord_bin',
-                    '%02d-%07d-%07d' % (level, start_x, start_y),
-                    '%02d-%07d-%07d' % (level, end_x, end_y))
+                                              '%02d-%07d-%07d' % (level, start_x, start_y),
+                                              '%02d-%07d-%07d' % (level, end_x, end_y))
                 for link in query.run():
                     yield link.get_key()
 

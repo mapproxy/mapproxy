@@ -24,6 +24,7 @@ import mapproxy.service
 from mapproxy.template import template_loader
 get_template = template_loader(mapproxy.service.__name__, 'templates')
 
+
 class TileRequest(object):
     """
     Class for tile requests.
@@ -110,11 +111,13 @@ class TMSRequest(TileRequest):
     def exception_handler(self):
         return TMSExceptionHandler()
 
+
 def tile_request(req):
     if req.path.startswith('/tms'):
         return TMSRequest(req)
     else:
         return TileRequest(req)
+
 
 class TMSExceptionHandler(XMLExceptionHandler):
     template_file = 'tms_exception.xml'

@@ -22,10 +22,10 @@ def test_tile_watermark_placement():
     assert tile_watermark_placement((0, 1, 0)) == "b"
     assert tile_watermark_placement((1, 1, 0)) == "b"
 
-    assert tile_watermark_placement((0, 0, 0), True) == None
+    assert tile_watermark_placement((0, 0, 0), True) is None
     assert tile_watermark_placement((1, 0, 0), True) == "c"
-    assert tile_watermark_placement((2, 0, 0), True) == None
+    assert tile_watermark_placement((2, 0, 0), True) is None
 
     assert tile_watermark_placement((0, 1, 0), True) == "c"
-    assert tile_watermark_placement((1, 1, 0), True) == None
+    assert tile_watermark_placement((1, 1, 0), True) is None
     assert tile_watermark_placement((2, 1, 0), True) == "c"

@@ -28,6 +28,7 @@ The new PROJ >=5 API is only supported via pyproj. See USE_PROJ4_API.
 
 """
 from __future__ import print_function
+import logging
 
 import os
 import sys
@@ -35,20 +36,19 @@ from mapproxy.util.lib import load_library
 
 import ctypes
 from ctypes import (
-   c_void_p,
-   c_char_p,
-   c_int,
-   c_double,
-   c_long,
-   POINTER,
-   create_string_buffer,
-   addressof,
+    c_void_p,
+    c_char_p,
+    c_int,
+    c_double,
+    c_long,
+    POINTER,
+    create_string_buffer,
+    addressof,
 )
 
 c_double_p = POINTER(c_double)
 FINDERCMD = ctypes.CFUNCTYPE(c_char_p, c_char_p)
 
-import logging
 log_system = logging.getLogger('mapproxy.system')
 
 __all__ = ['Proj', 'transform', 'set_datapath', 'ProjError']
@@ -57,18 +57,18 @@ __all__ = ['Proj', 'transform', 'set_datapath', 'ProjError']
 def init_libproj():
     libproj = load_library('libproj')
 
-    if libproj is None: return
+    if libproj is None:
+        return
 
     if hasattr(libproj, 'proj_create'):
-       log_system.warning('Found libproj >=5. Using this library without pyproj is '
-                          'deprecated and not fully supported. Please install pyproj >= 2.')
+        log_system.warning('Found libproj >=5. Using this library without pyproj is '
+                           'deprecated and not fully supported. Please install pyproj >= 2.')
 
     libproj.pj_init_plus.argtypes = [c_char_p]
     libproj.pj_init_plus.restype = c_void_p
 
     libproj.pj_is_latlong.argtypes = [c_void_p]
     libproj.pj_is_latlong.restype = c_int
-
 
     libproj.pj_get_def.argtypes = [c_void_p, c_int]
     libproj.pj_get_def.restype = c_void_p
@@ -93,6 +93,7 @@ def init_libproj():
         libproj.pj_set_finder.argtypes = [FINDERCMD]
 
     return libproj
+
 
 class SearchPath(object):
     def __init__(self):
@@ -121,17 +122,21 @@ class SearchPath(object):
 
         return addressof(result)
 
+
 # search_path and finder_func must be defined in module
 # context to avoid garbage collection
 search_path = SearchPath()
 finder_func = FINDERCMD(search_path.finder)
 _finder_callback_set = False
 
+
 class ProjError(RuntimeError):
     pass
 
+
 class ProjInitError(ProjError):
     pass
+
 
 def try_pyproj4_import():
     try:
@@ -140,6 +145,7 @@ def try_pyproj4_import():
         return False
     log_system.info('using pyproj with old Proj4 API for coordinate transformation')
     return Proj, transform, set_datapath
+
 
 def try_pyproj_import():
     try:
@@ -150,6 +156,7 @@ def try_pyproj_import():
         return False
     log_system.info('using pyproj for coordinate transformation')
     return CRS, Transformer, set_data_dir
+
 
 def try_libproj_import():
     libproj = init_libproj()
@@ -171,7 +178,7 @@ def try_libproj_import():
             if not self._proj:
                 errno = libproj.pj_get_errno_ref().contents
                 raise ProjInitError('error initializing Proj(proj_def=%r, init=%r): %s' %
-                    (proj_def, init, libproj.pj_strerrno(errno)))
+                                    (proj_def, init, libproj.pj_strerrno(errno)))
 
             self.srs = self._srs()
             self._latlong = bool(libproj.pj_is_latlong(self._proj))

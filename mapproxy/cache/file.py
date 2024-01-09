@@ -25,10 +25,12 @@ from mapproxy.cache.base import TileCacheBase, tile_buffer
 import logging
 log = logging.getLogger('mapproxy.cache.file')
 
+
 class FileCache(TileCacheBase):
     """
     This class is responsible to store and load the actual tile data.
     """
+
     def __init__(self, cache_dir, file_ext, directory_layout='tc',
                  link_single_color_images=False, coverage=None, image_opts=None):
         """
@@ -45,10 +47,10 @@ class FileCache(TileCacheBase):
         self.link_single_color_images = link_single_color_images
         self._tile_location, self._level_location = path.location_funcs(layout=directory_layout)
         if self._level_location is None:
-            self.level_location = None # disable level based clean-ups
+            self.level_location = None  # disable level based clean-ups
 
     def tile_location(self, tile, create_dir=False, dimensions=None):
-        if dimensions is not None and len(dimensions)>0:
+        if dimensions is not None and len(dimensions) > 0:
             items = list(dimensions.keys())
             items.sort()
             dimensions_str = ['{key}-{value}'.format(key=i, value=dimensions[i].replace('/', '_')) for i in items]
@@ -88,7 +90,8 @@ class FileCache(TileCacheBase):
             tile.timestamp = stats.st_mtime
             tile.size = stats.st_size
         except OSError as ex:
-            if ex.errno != errno.ENOENT: raise
+            if ex.errno != errno.ENOENT:
+                raise
             tile.timestamp = 0
             tile.size = 0
 
@@ -127,7 +130,8 @@ class FileCache(TileCacheBase):
         try:
             os.remove(location)
         except OSError as ex:
-            if ex.errno != errno.ENOENT: raise
+            if ex.errno != errno.ENOENT:
+                raise
 
     def store_tile(self, tile, dimensions=None):
         """
@@ -192,4 +196,3 @@ class FileCache(TileCacheBase):
 
     def __repr__(self):
         return '%s(%r, %r)' % (self.__class__.__name__, self.cache_dir, self.file_ext)
-

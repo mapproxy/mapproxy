@@ -29,9 +29,10 @@ import logging
 log = logging.getLogger('mapproxy.source.tile')
 log_config = logging.getLogger('mapproxy.config')
 
+
 class TiledSource(MapLayer):
     def __init__(self, grid, client, coverage=None, image_opts=None, error_handler=None,
-        res_range=None):
+                 res_range=None):
         MapLayer.__init__(self, image_opts=image_opts)
         self.grid = grid
         self.client = client
@@ -45,7 +46,7 @@ class TiledSource(MapLayer):
         if self.grid.tile_size != query.size:
             ex = InvalidSourceQuery(
                 'tile size of cache and tile source do not match: %s != %s'
-                 % (self.grid.tile_size, query.size)
+                % (self.grid.tile_size, query.size)
             )
             log_config.error(ex)
             raise ex
@@ -81,11 +82,12 @@ class TiledSource(MapLayer):
             log.warning('could not retrieve tile: %s', e)
             reraise_exception(SourceError(e.args[0]), sys.exc_info())
 
+
 class CacheSource(CacheMapLayer):
     def __init__(self, tile_manager, extent=None, image_opts=None,
-        max_tile_limit=None, tiled_only=False):
+                 max_tile_limit=None, tiled_only=False):
         CacheMapLayer.__init__(self, tile_manager, extent=extent, image_opts=image_opts,
-            max_tile_limit=max_tile_limit)
+                               max_tile_limit=max_tile_limit)
         self.supports_meta_tiles = not tiled_only
         self.tiled_only = tiled_only
 
@@ -93,4 +95,3 @@ class CacheSource(CacheMapLayer):
         if self.tiled_only:
             query.tiled_only = True
         return CacheMapLayer.get_map(self, query)
-

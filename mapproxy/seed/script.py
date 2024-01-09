@@ -32,11 +32,12 @@ from mapproxy.seed.config import load_seed_tasks_conf
 from mapproxy.seed.seeder import seed, SeedInterrupted
 from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.util import (format_seed_task, format_cleanup_task,
-    ProgressLog, ProgressStore)
+                                ProgressLog, ProgressStore)
 from mapproxy.seed.cachelock import CacheLocker
 
 SECONDS_PER_DAY = 60 * 60 * 24
 SECONDS_PER_MINUTE = 60
+
 
 def setup_logging(logging_conf=None):
     if logging_conf is not None:
@@ -64,7 +65,7 @@ def check_duration(option, opt, value, parser):
 
 
 def parse_duration(string):
-    match = re.match(r'^(\d*.?\d+)(s|m|h|d)', string)
+    match = re.match(r'^(\d*.?\d+)([smhd])', string)
     if not match:
         raise ValueError('invalid duration, not in format: 10s, 0.5h, etc.')
     duration = float(match.group(1))
@@ -243,8 +244,8 @@ class SeedScript(object):
                     print('========== Seeding tasks ==========')
                     print('Start seeding process (%d task%s)' % (
                         len(seed_tasks), 's' if len(seed_tasks) > 1 else ''))
-                    logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2,
-                        progress_store=progress)
+                    logger = ProgressLog(verbose=options.quiet == 0, silent=options.quiet >= 2,
+                                         progress_store=progress)
                     seed(seed_tasks, progress_logger=logger, dry_run=options.dry_run,
                          concurrency=options.concurrency, cache_locker=cache_locker,
                          skip_geoms_for_last_levels=options.geom_levels,
@@ -253,9 +254,9 @@ class SeedScript(object):
                     print('========== Cleanup tasks ==========')
                     print('Start cleanup process (%d task%s)' % (
                         len(cleanup_tasks), 's' if len(cleanup_tasks) > 1 else ''))
-                    logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2,
-                        progress_store=progress)
-                    cleanup(cleanup_tasks, verbose=options.quiet==0, dry_run=options.dry_run,
+                    logger = ProgressLog(verbose=options.quiet == 0, silent=options.quiet >= 2,
+                                         progress_store=progress)
+                    cleanup(cleanup_tasks, verbose=options.quiet == 0, dry_run=options.dry_run,
                             concurrency=options.concurrency, progress_logger=logger,
                             skip_geoms_for_last_levels=options.geom_levels)
             except SeedInterrupted:
@@ -283,7 +284,7 @@ class SeedScript(object):
                     print('available seed tasks: %s' % (', '.join(avail_seed_names), ))
                     sys.exit(1)
         elif not options.cleanup_names:
-            seed_names = None # seed all
+            seed_names = None  # seed all
 
         if options.cleanup_names:
             cleanup_names = split_comma_seperated_option(options.cleanup_names)
@@ -297,7 +298,7 @@ class SeedScript(object):
                     print('available cleanup tasks: %s' % (', '.join(avail_cleanup_names), ))
                     sys.exit(1)
         elif not options.seed_names:
-            cleanup_names = None # cleanup all
+            cleanup_names = None  # cleanup all
 
         return seed_names, cleanup_names
 
@@ -342,7 +343,6 @@ class SeedScript(object):
                 # force termination
                 start = 0
 
-
     def interactive(self, seed_tasks, cleanup_tasks):
         selected_seed_tasks = []
         print('========== Select seeding tasks ==========')
@@ -364,6 +364,7 @@ class SeedScript(object):
 
 def main():
     return SeedScript()()
+
 
 def ask_yes_no_question(question):
     while True:

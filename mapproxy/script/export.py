@@ -28,13 +28,17 @@ from mapproxy.config.coverage import load_coverage
 from mapproxy.config.loader import (
     load_configuration, ConfigurationError,
     CacheConfiguration, GridConfiguration,
-    ProxyConfiguration,
+    ProxyConfiguration
 )
-from mapproxy.util.coverage import  BBOXCoverage
+from mapproxy.util.coverage import BBOXCoverage
 from mapproxy.seed.util import ProgressLog, format_bbox
 from mapproxy.seed.seeder import SeedTask, seed_task
 from mapproxy.config import spec as conf_spec
 from mapproxy.util.ext.dictspec.validator import validate, ValidationError
+
+__all__ = [
+    'SRS', 'load_coverage', 'load_configuration', 'ConfigurationError', 'CacheConfiguration', 'GridConfiguration',
+    'ProxyConfiguration', 'BBOXCoverage']
 
 
 def parse_levels(level_str):
@@ -103,8 +107,9 @@ def parse_grid_definition(definition):
     validate(conf_spec.grid_opts, grid_conf)
     return grid_conf
 
+
 def supports_tiled_access(mgr):
-    if len(mgr.sources) == 1 and getattr(mgr.sources[0], 'supports_meta_tiles') == False:
+    if len(mgr.sources) == 1 and getattr(mgr.sources[0], 'supports_meta_tiles') is False:
         return True
     return False
 
@@ -117,68 +122,69 @@ def format_export_task(task, custom_grid):
         grid = "grid '%s'" % task.md['grid_name']
 
     info.append("Exporting cache '%s' to '%s' with %s in %s" % (
-                 task.md['cache_name'], task.md['dest'], grid, task.grid.srs.srs_code))
+        task.md['cache_name'], task.md['dest'], grid, task.grid.srs.srs_code))
     if task.coverage:
         info.append('  Limited to: %s (EPSG:4326)' % (format_bbox(task.coverage.extent.llbbox), ))
     info.append('  Levels: %s' % (task.levels, ))
 
     return '\n'.join(info)
 
+
 def export_command(args=None):
     parser = optparse.OptionParser("%prog export [options] mapproxy_conf")
     parser.add_option("-f", "--mapproxy-conf", dest="mapproxy_conf",
-        help="MapProxy configuration")
+                      help="MapProxy configuration")
 
     parser.add_option("-q", "--quiet",
                       action="count", dest="quiet", default=0,
                       help="reduce number of messages to stdout, repeat to disable progress output")
 
     parser.add_option("--source", dest="source",
-        help="source to export (source or cache)")
+                      help="source to export (source or cache)")
 
     parser.add_option("--grid",
-        help="grid for export. either the name of an existing grid or "
-        "the grid definition as a string")
+                      help="grid for export. either the name of an existing grid or "
+                      "the grid definition as a string")
 
     parser.add_option("--dest",
-        help="destination of the export (directory or filename)")
+                      help="destination of the export (directory or filename)")
 
     parser.add_option("--type",
-        help="type of the export format")
+                      help="type of the export format")
 
     parser.add_option("--levels",
-        help="levels to export: e.g 1,2,3 or 1..10")
+                      help="levels to export: e.g 1,2,3 or 1..10")
 
     parser.add_option("--fetch-missing-tiles", dest="fetch_missing_tiles",
-        action='store_true', default=False,
-        help="if missing tiles should be fetched from the sources")
+                      action='store_true', default=False,
+                      help="if missing tiles should be fetched from the sources")
 
     parser.add_option("--force",
-        action='store_true', default=False,
-        help="overwrite/append to existing --dest files/directories")
+                      action='store_true', default=False,
+                      help="overwrite/append to existing --dest files/directories")
 
     parser.add_option("-n", "--dry-run",
-        action="store_true", default=False,
-        help="do not export, just print output")
+                      action="store_true", default=False,
+                      help="do not export, just print output")
 
     parser.add_option("-c", "--concurrency", type="int",
-        dest="concurrency", default=1,
-        help="number of parallel export processes")
+                      dest="concurrency", default=1,
+                      help="number of parallel export processes")
 
     parser.add_option("--coverage",
-        help="the coverage for the export as a BBOX string, WKT file "
-        "or OGR datasource")
+                      help="the coverage for the export as a BBOX string, WKT file "
+                      "or OGR datasource")
     parser.add_option("--srs",
-        help="the SRS of the coverage")
+                      help="the SRS of the coverage")
     parser.add_option("--where",
-        help="filter for OGR coverages")
+                      help="filter for OGR coverages")
 
     from mapproxy.script.util import setup_logging
     import logging
     setup_logging(logging.WARN)
 
     if args:
-        args = args[1:] # remove script name
+        args = args[1:]  # remove script name
 
     (options, args) = parser.parse_args(args)
 
@@ -205,7 +211,6 @@ def export_command(args=None):
         print(e, file=sys.stderr)
         print('ERROR: invalid configuration (see above)', file=sys.stderr)
         sys.exit(2)
-
 
     if '=' in options.grid:
         try:
@@ -282,7 +287,7 @@ def export_command(args=None):
             'directory_layout': 'arcgis',
             'directory': options.dest,
         }
-    elif options.type in ('tms', None): # default
+    elif options.type in ('tms', None):  # default
         cache_conf['cache'] = {
             'type': 'file',
             'directory_layout': 'tms',
@@ -323,11 +328,10 @@ def export_command(args=None):
 
     print(format_export_task(task, custom_grid=custom_grid))
 
-    logger = ProgressLog(verbose=options.quiet==0, silent=options.quiet>=2)
+    logger = ProgressLog(verbose=options.quiet == 0, silent=options.quiet >= 2)
     try:
         seed_task(task, progress_logger=logger, dry_run=options.dry_run,
-             concurrency=options.concurrency)
+                  concurrency=options.concurrency)
     except KeyboardInterrupt:
         print('stopping...', file=sys.stderr)
         sys.exit(2)
-

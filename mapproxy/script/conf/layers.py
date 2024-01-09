@@ -17,6 +17,7 @@
 def layers(cap, caches):
     return [_layer(cap.layers(), caches)]
 
+
 def _layer(layer, caches):
     name, conf = for_layer(layer, caches)
     child_layers = []
@@ -51,4 +52,3 @@ def for_layer(layer, caches):
         conf['md'] = md
 
     return layer['name'], conf
-

@@ -41,6 +41,7 @@ get_template = template_loader(__name__, 'templates', namespace=env)
 # Used by plugins
 extra_demo_server_handlers = set()
 
+
 def register_extra_demo_server_handler(handler):
     """ Method used by plugins to register a new handler for the demo service.
         The handler passed to this method is invoked by the DemoServer.handle()
@@ -57,6 +58,7 @@ def register_extra_demo_server_handler(handler):
 
 extra_substitution_handlers = set()
 
+
 def register_extra_demo_substitution_handler(handler):
     """ Method used by plugins to register a new handler for doing substitutions
         to the HTML template used by the demo service.
@@ -67,7 +69,8 @@ def register_extra_demo_substitution_handler(handler):
         services.
 
         :param handler: New handler for incoming requests
-        :type handler: function that takes 3 arguments(DemoServer instance, req and a substitutions dictionary argument).
+        :type handler: function that takes 3 arguments(DemoServer instance, req and a substitutions dictionary
+            argument).
     """
 
     extra_substitution_handlers.add(handler)
@@ -79,10 +82,12 @@ def static_filename(name):
     else:
         return pkg_resources.resource_filename(__name__, os.path.join('templates', name))
 
+
 class DemoServer(Server):
     names = ('demo',)
+
     def __init__(self, layers, md, request_parser=None, tile_layers=None,
-                 srs=None, image_formats=None, services=None, restful_template=None, background = None):
+                 srs=None, image_formats=None, services=None, restful_template=None, background=None):
         Server.__init__(self)
         self.layers = layers
         self.tile_layers = tile_layers or {}
@@ -265,7 +270,7 @@ class DemoServer(Server):
                                    layer_srs=self.layer_srs,
                                    bbox=bbox,
                                    res=min_res,
-                                   background_url = background_url)
+                                   background_url=background_url)
 
     def _render_tms_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
@@ -299,7 +304,7 @@ class DemoServer(Server):
                                    units=units,
                                    add_res_to_options=add_res_to_options,
                                    all_tile_layers=self.tile_layers,
-                                   background_url = background_url)
+                                   background_url=background_url)
 
     def _render_wmts_template(self, template, req):
         template = get_template(template, default_inherit="demo/static.html")
@@ -328,13 +333,13 @@ class DemoServer(Server):
                                    units=units,
                                    all_tile_layers=self.tile_layers,
                                    restful_url=restful_url,
-                                   background_url = background_url)
+                                   background_url=background_url)
 
     def _render_capabilities_template(self, template, xmlfile, service, url):
         template = get_template(template, default_inherit="demo/static.html")
-        return template.substitute(capabilities = xmlfile,
-                                   service = service,
-                                   url = url)
+        return template.substitute(capabilities=xmlfile,
+                                   service=service,
+                                   url=url)
 
     def authorized_demo(self, environ):
         if 'mapproxy.authorize' in environ:

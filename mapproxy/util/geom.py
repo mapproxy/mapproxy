@@ -36,14 +36,18 @@ try:
 except ImportError:
     geom_support = False
 
+
 class GeometryError(Exception):
     pass
+
 
 class EmptyGeometryError(Exception):
     pass
 
+
 class CoverageReadError(Exception):
     pass
+
 
 def require_geom_support():
     if not geom_support:
@@ -67,6 +71,7 @@ def load_datasource(datasource, where=None):
             return load_geojson(datasource)
     # otherwise pass to OGR
     return load_ogr_datasource(datasource, where=where)
+
 
 def load_ogr_datasource(datasource, where=None):
     """
@@ -93,11 +98,12 @@ def load_ogr_datasource(datasource, where=None):
                         polygons.append(p)
                 else:
                     log_config.warning('skipping %s geometry from %s: not a Polygon/MultiPolygon',
-                        geom.type, datasource)
+                                       geom.type, datasource)
     except OGRShapeReaderError as ex:
         raise CoverageReadError(ex)
 
     return polygons
+
 
 def load_polygons(geom_files):
     """
@@ -115,6 +121,7 @@ def load_polygons(geom_files):
             polygons.extend(load_polygon_lines(f, source=geom_files))
 
     return polygons
+
 
 def load_geojson(datasource):
     with open(datasource) as f:
@@ -135,7 +142,7 @@ def load_geojson(datasource):
             geometries.append(geojson)
         else:
             log_config.warning('skipping feature of type %s from %s: not a Polygon/MultiPolygon',
-                        t, datasource)
+                               t, datasource)
 
     polygons = []
     for geom in geometries:
@@ -147,9 +154,10 @@ def load_geojson(datasource):
                 polygons.append(p)
         else:
             log_config.warning('ignoring non-polygon geometry (%s) from %s',
-                geom.geom_type, datasource)
+                               geom.type, datasource)
 
     return polygons
+
 
 def load_polygon_lines(line_iter, source='<string>'):
     polygons = []
@@ -164,9 +172,10 @@ def load_polygon_lines(line_iter, source='<string>'):
                 polygons.append(p)
         else:
             log_config.warning('ignoring non-polygon geometry (%s) from %s',
-                geom.type, source)
+                               geom.type, source)
 
     return polygons
+
 
 def build_multipolygon(polygons, simplify=False):
     if not polygons:
@@ -186,6 +195,7 @@ def build_multipolygon(polygons, simplify=False):
 
     return mp.bounds, mp
 
+
 def simplify_geom(geom):
     bounds = geom.bounds
     if not bounds:
@@ -197,6 +207,7 @@ def simplify_geom(geom):
         geom = geom.buffer(0)
     return geom
 
+
 def bbox_polygon(bbox):
     """
     Create Polygon that covers the given bbox.
@@ -206,7 +217,8 @@ def bbox_polygon(bbox):
         (bbox[2], bbox[1]),
         (bbox[2], bbox[3]),
         (bbox[0], bbox[3]),
-        ))
+    ))
+
 
 def transform_geometry(from_srs, to_srs, geometry):
     transf = partial(transform_xy, from_srs, to_srs)
@@ -222,10 +234,12 @@ def transform_geometry(from_srs, to_srs, geometry):
         result = result.buffer(0)
     return result
 
+
 def transform_polygon(transf, polygon):
     ext = transf(polygon.exterior.xy)
     ints = [transf(ring.xy) for ring in polygon.interiors]
     return shapely.geometry.Polygon(ext, ints)
+
 
 def transform_multipolygon(transf, multipolygon):
     transformed_polygons = []
@@ -233,8 +247,10 @@ def transform_multipolygon(transf, multipolygon):
         transformed_polygons.append(transform_polygon(transf, polygon))
     return shapely.geometry.MultiPolygon(transformed_polygons)
 
+
 def transform_xy(from_srs, to_srs, xy):
     return list(from_srs.transform_to(to_srs, list(zip(*xy))))
+
 
 def flatten_to_polygons(geometry):
     """
@@ -244,7 +260,7 @@ def flatten_to_polygons(geometry):
         return [geometry]
 
     if geometry.type == 'MultiPolygon':
-       return list(geometry.geoms)
+        return list(geometry.geoms)
 
     if hasattr(geometry, 'geoms'):
         # GeometryCollection or MultiLineString? return list of all polygons
@@ -257,6 +273,7 @@ def flatten_to_polygons(geometry):
             return geoms
 
     return []
+
 
 def load_expire_tiles(expire_dir, grid=None):
     if grid is None:
@@ -271,7 +288,7 @@ def load_expire_tiles(expire_dir, grid=None):
                         continue
                     tile = tuple(map(int, line.split('/')))
                     tiles.add(tile)
-            except:
+            except Exception:
                 log_config.warning('found error in %s, skipping rest of file', filename)
 
     if os.path.isdir(expire_dir):

@@ -11,9 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-###Disclamer: 
-##This code is based on isodate from: https://github.com/gweis/isodate by  2009, Gerhard Weis 
-##Some functions were extracted and modified from original project. 
+# Disclaimer:
+# This code is based on isodate from: https://github.com/gweis/isodate by  2009, Gerhard Weis
+# Some functions were extracted and modified from original project.
 
 from decimal import Decimal, ROUND_FLOOR
 from datetime import timedelta, tzinfo as tz, date, time, datetime
@@ -31,6 +31,7 @@ TZ_REGEX = r"(?P<tzname>(Z|(?P<tzsign>[+-])"\
 
 TZ_EXT = '%Z'
 ZERO = timedelta(0)
+
 
 def build_date_regexps(yeardigits=4, expanded=False):
     '''
@@ -109,6 +110,7 @@ def build_date_regexps(yeardigits=4, expanded=False):
 
         DATE_REGEX_CACHE[(yeardigits, expanded)] = cache_entry
     return DATE_REGEX_CACHE[(yeardigits, expanded)]
+
 
 def build_time_regexps():
     '''
@@ -201,6 +203,7 @@ class FixedOffset(tz):
         '''
         return "<FixedOffset %r>" % self.__name
 
+
 class Utc(tz):
     '''UTC
     Universal time coordinated time zone.
@@ -226,14 +229,9 @@ class Utc(tz):
         '''
         return ZERO
 
-    def __reduce__(self):
-        '''
-        When unpickling a Utc object, return the default instance below, UTC.
-        '''
-        return _Utc, ()
-
 
 UTC = Utc()
+
 
 def build_tzinfo(tzname, tzsign='+', tzhour=0, tzmin=0):
     '''
@@ -250,12 +248,14 @@ def build_tzinfo(tzname, tzsign='+', tzhour=0, tzmin=0):
     tzsign = ((tzsign == '-') and -1) or 1
     return FixedOffset(tzsign * tzhour, tzsign * tzmin, tzname)
 
+
 def fquotmod(val, low, high):
     a, b = val - low, high - low
     div = (a / b).to_integral(ROUND_FLOOR)
     mod = a - div * b
     mod += low
     return int(div), mod
+
 
 def max_days_in_month(year, month):
     '''
@@ -268,6 +268,7 @@ def max_days_in_month(year, month):
     if ((year % 400) == 0) or ((year % 100) != 0) and ((year % 4) == 0):
         return 29
     return 28
+
 
 class Duration(object):
     '''
@@ -295,11 +296,11 @@ class Duration(object):
         self.__dict__.update(state)
 
     def __getattr__(self, name):
-  
+
         return getattr(self.tdelta, name)
 
     def __str__(self):
-       
+
         params = []
         if self.years:
             params.append('%d years' % self.years)
@@ -312,33 +313,33 @@ class Duration(object):
         return ', '.join(params)
 
     def __repr__(self):
-        
+
         return "%s.%s(%d, %d, %d, years=%d, months=%d)" % (
             self.__class__.__module__, self.__class__.__name__,
             self.tdelta.days, self.tdelta.seconds,
             self.tdelta.microseconds, self.years, self.months)
 
     def __hash__(self):
-        
+
         return hash((self.tdelta, self.months, self.years))
 
     def __neg__(self):
-     
+
         negduration = Duration(years=-self.years, months=-self.months)
         negduration.tdelta = -self.tdelta
         return negduration
 
     def __add__(self, other):
-  
+
         if isinstance(other, Duration):
             newduration = Duration(years=self.years + other.years,
                                    months=self.months + other.months)
             newduration.tdelta = self.tdelta + other.tdelta
             return newduration
         try:
-    
-            if (not(float(self.years).is_integer() and
-                    float(self.months).is_integer())):
+
+            if (not (float(self.years).is_integer() and
+                     float(self.months).is_integer())):
                 raise ValueError('fractional years or months not supported'
                                  ' for date calculations')
             newmonth = other.month + self.months
@@ -350,20 +351,20 @@ class Duration(object):
             else:
                 newday = other.day
             newdt = other.replace(year=newyear, month=newmonth, day=newday)
-            
+
             return self.tdelta + newdt
         except AttributeError:
-            
+
             pass
         try:
-            
+
             newduration = Duration(years=self.years, months=self.months)
             newduration.tdelta = self.tdelta + other
             return newduration
         except AttributeError:
-           
+
             pass
-        
+
         return NotImplemented
 
     __radd__ = __add__
@@ -380,7 +381,7 @@ class Duration(object):
     __rmul__ = __mul__
 
     def __sub__(self, other):
-     
+
         if isinstance(other, Duration):
             newduration = Duration(years=self.years - other.years,
                                    months=self.months - other.months)
@@ -400,8 +401,8 @@ class Duration(object):
             tmpdur.tdelta = other
             return tmpdur - self
         try:
-            if (not(float(self.years).is_integer() and
-                    float(self.months).is_integer())):
+            if (not (float(self.years).is_integer() and
+                     float(self.months).is_integer())):
                 raise ValueError('fractional years or months not supported'
                                  ' for date calculations')
             newmonth = other.month - self.months
@@ -451,6 +452,7 @@ class Duration(object):
             return (start + self) - start
         return end - (end - self)
 
+
 class ISO8601Error(ValueError):
     '''Raised when the given ISO string can not be parsed.'''
 
@@ -470,6 +472,7 @@ def parse_datetime(datetimestring):
     tmpdate = parse_date(datestring)
     tmptime = parse_time(timestring)
     return datetime.combine(tmpdate, tmptime)
+
 
 def parse_date(
         datestring,

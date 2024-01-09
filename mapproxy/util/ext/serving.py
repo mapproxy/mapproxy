@@ -18,6 +18,8 @@ import subprocess
 from itertools import chain
 from urllib.parse import urlparse, unquote
 
+from werkzeug.exceptions import InternalServerError
+
 try:
     import thread
 except ImportError:
@@ -31,6 +33,7 @@ except ImportError:
     from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from mapproxy.util.py import reraise
+import mapproxy.version
 
 
 def wsgi_encoding_dance(s, charset='utf-8', errors='replace'):
@@ -40,13 +43,13 @@ def wsgi_encoding_dance(s, charset='utf-8', errors='replace'):
 
 # from werkzeug.exceptions import InternalServerError, BadRequest
 
-import mapproxy.version
 
 def _log(type, message, *args):
     if args:
         message = message % args
     sys.stderr.write('[%s] %s\n' % (type, message.rstrip()))
     sys.stderr.flush()
+
 
 class WSGIRequestHandler(BaseHTTPRequestHandler, object):
     """A request handler that implements WSGI dispatching."""
@@ -72,8 +75,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler, object):
             'wsgi.multithread':     self.server.multithread,
             'wsgi.multiprocess':    self.server.multiprocess,
             'wsgi.run_once':        False,
-            'werkzeug.server.shutdown':
-                                    shutdown_server,
+            'werkzeug.server.shutdown': shutdown_server,
             'SERVER_SOFTWARE':      self.server_version,
             'REQUEST_METHOD':       self.command,
             'SCRIPT_NAME':          '',
@@ -257,14 +259,14 @@ def select_ip_version(host, port):
     # and various operating systems.  Probably this code also is
     # not supposed to work, but I can't come up with any other
     # ways to implement this.
-    ##try:
-    ##    info = socket.getaddrinfo(host, port, socket.AF_UNSPEC,
-    ##                              socket.SOCK_STREAM, 0,
-    ##                              socket.AI_PASSIVE)
-    ##    if info:
-    ##        return info[0][0]
-    ##except socket.gaierror:
-    ##    pass
+    # try:
+    #     info = socket.getaddrinfo(host, port, socket.AF_UNSPEC,
+    #                               socket.SOCK_STREAM, 0,
+    #                               socket.AI_PASSIVE)
+    #     if info:
+    #         return info[0][0]
+    # except socket.gaierror:
+    #     pass
     if ':' in host and hasattr(socket, 'AF_INET6'):
         return socket.AF_INET6
     return socket.AF_INET
@@ -467,7 +469,7 @@ def run_simple(hostname, port, application, use_reloader=False,
 
     def inner():
         ThreadedWSGIServer(hostname, port, application, request_handler,
-                    passthrough_errors).serve_forever()
+                           passthrough_errors).serve_forever()
 
     if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
         display_hostname = hostname != '*' and hostname or 'localhost'
@@ -475,7 +477,7 @@ def run_simple(hostname, port, application, use_reloader=False,
             display_hostname = '[%s]' % display_hostname
         quit_msg = '(Press CTRL+C to quit)'
         _log('info', ' * Running on http://%s:%d/ %s',
-            display_hostname, port, quit_msg)
+             display_hostname, port, quit_msg)
     if use_reloader:
         # Create and destroy a socket so that any exceptions are raised before
         # we spawn a separate Python interpreter and lose this ability.

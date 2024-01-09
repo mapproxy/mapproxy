@@ -35,6 +35,7 @@ from mapproxy.test.image import tmp_image, create_tmp_image_buf, create_tmp_imag
 
 FIXTURE_DIR = os.path.join(os.path.dirname(__file__), 'fixture')
 
+
 class SeedTestEnvironment(object):
     def setup_method(self):
         self.dir = tempfile.mkdtemp()
@@ -68,11 +69,12 @@ class SeedTestEnvironment(object):
         tile = os.path.join(tile_dir + '%03d.png' % coord[1])
         return os.path.exists(tile)
 
+
 class SeedTestBase(SeedTestEnvironment):
 
     def test_seed_dry_run(self):
         with local_base_config(self.mapproxy_conf.base_config):
-            seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+            seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
             tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
             seed(tasks, dry_run=True)
             cleanup(cleanup_tasks, verbose=False, dry_run=True)
@@ -81,8 +83,8 @@ class SeedTestBase(SeedTestEnvironment):
         with tmp_image((256, 256), format='png') as img:
             img_data = img.read()
             expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
-                                  '&width=256&height=128&srs=EPSG:4326'},
+                             '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                             '&width=256&height=128&srs=EPSG:4326'},
                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
                 with local_base_config(self.mapproxy_conf.base_config):
@@ -126,10 +128,11 @@ class SeedTestBase(SeedTestEnvironment):
         # tile already there.
         self.make_tile((0, 0, 0))
         with local_base_config(self.mapproxy_conf.base_config):
-            seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+            seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
             tasks, cleanup_tasks = seed_conf.seeds(['one']), seed_conf.cleanups()
             seed(tasks, dry_run=False)
             cleanup(cleanup_tasks, verbose=False, dry_run=False)
+
 
 class TestSeedOldConfiguration(SeedTestBase):
     seed_conf_name = 'seed_old.yaml'
@@ -146,11 +149,11 @@ class TestSeedOldConfiguration(SeedTestBase):
         with tmp_image((256, 256), format='png') as img:
             img_data = img.read()
             expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
-                                  '&width=256&height=128&srs=EPSG:4326'},
+                             '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                             '&width=256&height=128&srs=EPSG:4326'},
                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
-                seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+                seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
                 tasks, cleanup_tasks = seed_conf.seeds(), seed_conf.cleanups()
                 seed(tasks, dry_run=False)
                 cleanup(cleanup_tasks, verbose=False, dry_run=False)
@@ -163,13 +166,14 @@ class TestSeedOldConfiguration(SeedTestBase):
 tile_image_buf = create_tmp_image_buf((256, 256), color='blue')
 tile_image = create_tmp_image((256, 256), color='blue')
 
+
 class TestSeed(SeedTestBase):
     seed_conf_name = 'seed.yaml'
     mapproxy_conf_name = 'seed_mapproxy.yaml'
     empty_ogrdata = 'empty_ogrdata.geojson'
 
     def test_cleanup_levels(self):
-        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
         cleanup_tasks = seed_conf.cleanups(['cleanup'])
 
         self.make_tile((0, 0, 0))
@@ -184,10 +188,10 @@ class TestSeed(SeedTestBase):
         assert not self.tile_exists((0, 0, 3))
 
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'one_EPSG4326'),
-            ['02'])
+                            ['02'])
 
     def test_cleanup_remove_all(self):
-        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
         cleanup_tasks = seed_conf.cleanups(['remove_all'])
 
         self.make_tile((0, 0, 0))
@@ -199,7 +203,7 @@ class TestSeed(SeedTestBase):
         self.make_tile((0, 0, 3))
 
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'one_EPSG4326'),
-            ['00', '01', '02', '03'])
+                            ['00', '01', '02', '03'])
 
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
         assert self.tile_exists((0, 0, 0))
@@ -213,7 +217,7 @@ class TestSeed(SeedTestBase):
 
         # remove_all should remove the whole directory
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'one_EPSG4326'),
-            ['00', '02', '03'])
+                            ['00', '02', '03'])
 
     def test_cleanup_coverage(self):
         seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
@@ -236,23 +240,23 @@ class TestSeed(SeedTestBase):
         with tmp_image((256, 256), format='png') as img:
             img_data = img.read()
             expected_req = ({'path': r'/service?LAYERS=bar&SERVICE=WMS&FORMAT=image%2Fpng'
-                                  '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
-                                  '&width=256&height=128&srs=EPSG:4326'},
+                             '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                             '&width=256&height=128&srs=EPSG:4326'},
                             {'body': img_data, 'headers': {'content-type': 'image/png'}})
             with mock_httpd(('localhost', 42423), [expected_req]):
-                seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+                seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
                 tasks, cleanup_tasks = seed_conf.seeds(['mbtile_cache']), seed_conf.cleanups(['cleanup_mbtile_cache'])
                 seed(tasks, dry_run=False)
                 cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
     def create_tile(self, coord=(0, 0, 0)):
         return Tile(coord,
-            ImageSource(tile_image_buf,
-                image_opts=ImageOptions(format='image/png')))
+                    ImageSource(tile_image_buf,
+                                image_opts=ImageOptions(format='image/png')))
 
     def test_reseed_mbtiles(self):
-        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        tasks, cleanup_tasks = seed_conf.seeds(['mbtile_cache']), seed_conf.cleanups(['cleanup_mbtile_cache'])
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        tasks, _ = seed_conf.seeds(['mbtile_cache']), seed_conf.cleanups(['cleanup_mbtile_cache'])
 
         cache = tasks[0].tile_manager.cache
         cache.store_tile(self.create_tile())
@@ -260,22 +264,22 @@ class TestSeed(SeedTestBase):
         seed(tasks, dry_run=False)
 
     def test_reseed_mbtiles_with_refresh(self):
-        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        tasks, cleanup_tasks = seed_conf.seeds(['mbtile_cache_refresh']), seed_conf.cleanups(['cleanup_mbtile_cache'])
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        tasks, _ = seed_conf.seeds(['mbtile_cache_refresh']), seed_conf.cleanups(['cleanup_mbtile_cache'])
 
         cache = tasks[0].tile_manager.cache
         cache.store_tile(self.create_tile())
 
         expected_req = ({'path': r'/service?LAYERS=bar&SERVICE=WMS&FORMAT=image%2Fpng'
-                          '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
-                          '&width=256&height=128&srs=EPSG:4326'},
+                         '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                         '&width=256&height=128&srs=EPSG:4326'},
                         {'body': tile_image, 'headers': {'content-type': 'image/png'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             # mbtiles does not support timestamps, refresh all tiles
             seed(tasks, dry_run=False)
 
     def test_cleanup_mbtiles(self):
-        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
         tasks, cleanup_tasks = seed_conf.seeds(['mbtile_cache_refresh']), seed_conf.cleanups(['cleanup_mbtile_cache'])
 
         cache = tasks[0].tile_manager.cache
@@ -284,7 +288,7 @@ class TestSeed(SeedTestBase):
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
     def test_cleanup_sqlite(self):
-        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
         cleanup_tasks = seed_conf.cleanups(['sqlite_cache'])
 
         cache = cleanup_tasks[0].tile_manager.cache
@@ -294,20 +298,20 @@ class TestSeed(SeedTestBase):
         assert cache.is_cached(Tile((0, 0, 3)))
 
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'),
-            ['2.mbtile', '3.mbtile'],
-            glob='*.mbtile')
+                            ['2.mbtile', '3.mbtile'],
+                            glob='*.mbtile')
 
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
         # 3.mbtile file is still there
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'),
-            ['2.mbtile', '3.mbtile'],
-            glob='*.mbtile')
+                            ['2.mbtile', '3.mbtile'],
+                            glob='*.mbtile')
         assert cache.is_cached(Tile((0, 0, 2)))
         assert not cache.is_cached(Tile((0, 0, 3)))
 
     def test_cleanup_sqlite_remove_all(self):
-        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
         cleanup_tasks = seed_conf.cleanups(['sqlite_cache_remove_all'])
 
         cache = cleanup_tasks[0].tile_manager.cache
@@ -317,15 +321,15 @@ class TestSeed(SeedTestBase):
         assert cache.is_cached(Tile((0, 0, 3)))
 
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'),
-            ['2.mbtile', '3.mbtile'],
-            glob='*.mbtile')
+                            ['2.mbtile', '3.mbtile'],
+                            glob='*.mbtile')
 
         cleanup(cleanup_tasks, verbose=False, dry_run=False)
 
         # 3.mbtile file should be removed completely
         assert_files_in_dir(os.path.join(self.dir, 'cache', 'sqlite_cache', 'GLOBAL_GEODETIC'),
-            ['3.mbtile'],
-            glob='*.mbtile')
+                            ['3.mbtile'],
+                            glob='*.mbtile')
         assert not cache.is_cached(Tile((0, 0, 2)))
         assert cache.is_cached(Tile((0, 0, 3)))
 
@@ -343,17 +347,16 @@ class TestSeed(SeedTestBase):
         timestamp = time.time() - (60*60*30)
         os.utime(self.seed_conf_file, (timestamp, timestamp))
         with local_base_config(self.mapproxy_conf.base_config):
-            seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+            seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
             tasks = seed_conf.seeds(['refresh_from_file'])
             seed(tasks, dry_run=False)
-
 
         # touch the seed_conf file and refresh everything
         os.utime(self.seed_conf_file, None)
         img_data = create_tmp_image((256, 256), format='png')
         expected_req = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                              '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
-                              '&width=256&height=128&srs=EPSG:4326'},
+                         '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
+                         '&width=256&height=128&srs=EPSG:4326'},
                         {'body': img_data, 'headers': {'content-type': 'image/png'}})
         with mock_httpd(('localhost', 42423), [expected_req]):
             # touch the seed_conf file and refresh everything
@@ -361,7 +364,7 @@ class TestSeed(SeedTestBase):
             os.utime(self.seed_conf_file, (timestamp, timestamp))
 
             with local_base_config(self.mapproxy_conf.base_config):
-                seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+                seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
                 tasks = seed_conf.seeds(['refresh_from_file'])
                 seed(tasks, dry_run=False)
 
@@ -372,7 +375,7 @@ class TestSeed(SeedTestBase):
         timestamp = time.time() - 5
         os.utime(self.seed_conf_file, (timestamp, timestamp))
         with local_base_config(self.mapproxy_conf.base_config):
-            seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+            seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
             cleanup_tasks = seed_conf.cleanups(['remove_from_file'])
             cleanup(cleanup_tasks, verbose=False, dry_run=False)
         assert os.path.exists(t000)
@@ -381,10 +384,11 @@ class TestSeed(SeedTestBase):
         timestamp = time.time() + 5
         os.utime(self.seed_conf_file, (timestamp, timestamp))
         with local_base_config(self.mapproxy_conf.base_config):
-            seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+            seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
             cleanup_tasks = seed_conf.cleanups(['remove_from_file'])
             cleanup(cleanup_tasks, verbose=False, dry_run=False)
         assert not os.path.exists(t000)
+
 
 class TestConcurrentRequestsSeed(SeedTestEnvironment):
     seed_conf_name = 'seed_timeouts.yaml'
@@ -395,28 +399,26 @@ class TestConcurrentRequestsSeed(SeedTestEnvironment):
         # test concurrent seeding where seed concurrency is higher than the permitted
         # concurrent_request value of the source and a lock times out
 
-        seed_conf  = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
+        seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
         tasks = seed_conf.seeds(['test'])
 
         expected_req1 = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                           '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
                           '&width=256&height=128&srs=EPSG:4326'},
-                        {'body': tile_image, 'headers': {'content-type': 'image/png'}, 'duration': 0.1})
+                         {'body': tile_image, 'headers': {'content-type': 'image/png'}, 'duration': 0.1})
 
         expected_req2 = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                           '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
                           '&width=512&height=256&srs=EPSG:4326'},
-                        {'body': tile_image, 'headers': {'content-type': 'image/png'}, 'duration': 0.1})
+                         {'body': tile_image, 'headers': {'content-type': 'image/png'}, 'duration': 0.1})
 
         expected_req3 = ({'path': r'/service?LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
                           '&REQUEST=GetMap&VERSION=1.1.1&bbox=-180.0,-90.0,180.0,90.0'
                           '&width=1024&height=512&srs=EPSG:4326'},
-                        {'body': tile_image, 'headers': {'content-type': 'image/png'}, 'duration': 0.1})
-
+                         {'body': tile_image, 'headers': {'content-type': 'image/png'}, 'duration': 0.1})
 
         with mock_httpd(('localhost', 42423), [expected_req1, expected_req2, expected_req3], unordered=True):
             seed(tasks, dry_run=False, concurrency=3)
             # concurrency=3, concurrent_request=1, client_timeout=0.2, response delay=0.1
             # the third request should time out (3x0.1 > 0.2), but exp_backoff() in the seeder ignores this
             # timeout exception and tries a second time
-

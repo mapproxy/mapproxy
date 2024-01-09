@@ -26,16 +26,19 @@ from mapproxy.seed.config import (
     load_seed_tasks_conf, SeedConfigurationError, SeedingConfiguration
 )
 
+
 def format_conf_value(value):
     if isinstance(value, tuple):
         # YAMl only supports lists, convert for clarity
         value = list(value)
     return repr(value)
 
+
 def _area_from_bbox(bbox):
     width = bbox[2] - bbox[0]
     height = bbox[3] - bbox[1]
     return width * height
+
 
 def grid_coverage_ratio(bbox, srs, coverage):
     coverage = coverage.transform_to(srs)
@@ -47,6 +50,7 @@ def grid_coverage_ratio(bbox, srs, coverage):
         coverage_area = _area_from_bbox(coverage.bbox)
 
     return coverage_area / grid_area
+
 
 def display_grid(grid_conf, coverage=None):
     print('%s:' % (grid_conf.conf['name'],))
@@ -82,9 +86,12 @@ def display_grid(grid_conf, coverage=None):
 
         if coverage:
             coverage_tiles = total_tiles * area_ratio
-            print("        %.2d:  %r,%s# %6d * %-6d = %10s (%s)" % (level, res, ' '*spaces, tiles_in_x, tiles_in_y, human_readable_number(total_tiles), human_readable_number(coverage_tiles)))
+            print("        %.2d:  %r,%s# %6d * %-6d = %10s (%s)" % (level, res, ' '*spaces, tiles_in_x,
+                  tiles_in_y, human_readable_number(total_tiles), human_readable_number(coverage_tiles)))
         else:
-            print("        %.2d:  %r,%s# %6d * %-6d = %10s" % (level, res, ' '*spaces, tiles_in_x, tiles_in_y, human_readable_number(total_tiles)))
+            print("        %.2d:  %r,%s# %6d * %-6d = %10s" %
+                  (level, res, ' '*spaces, tiles_in_x, tiles_in_y, human_readable_number(total_tiles)))
+
 
 def human_readable_number(num):
     if num > 10**6:
@@ -93,9 +100,11 @@ def human_readable_number(num):
         return '?'
     return '%d' % int(num)
 
+
 def display_grids_list(grids):
     for grid_name in sorted(grids.keys()):
         print(grid_name)
+
 
 def display_grids(grids, coverage=None):
     for i, grid_name in enumerate(sorted(grids.keys())):
@@ -103,25 +112,29 @@ def display_grids(grids, coverage=None):
             print()
         display_grid(grids[grid_name], coverage=coverage)
 
+
 def grids_command(args=None):
     parser = optparse.OptionParser("%prog grids [options] mapproxy_conf")
     parser.add_option("-f", "--mapproxy-conf", dest="mapproxy_conf",
-        help="MapProxy configuration.")
+                      help="MapProxy configuration.")
     parser.add_option("-g", "--grid", dest="grid_name",
-        help="Display only information about the specified grid.")
+                      help="Display only information about the specified grid.")
     parser.add_option("--all", dest="show_all", action="store_true", default=False,
-        help="Show also grids that are not referenced by any cache.")
-    parser.add_option("-l", "--list", dest="list_grids", action="store_true", default=False, help="List names of configured grids, which are used by any cache")
+                      help="Show also grids that are not referenced by any cache.")
+    parser.add_option("-l", "--list", dest="list_grids", action="store_true", default=False,
+                      help="List names of configured grids, which are used by any cache")
     coverage_group = parser.add_option_group("Approximate the number of tiles within a given coverage")
-    coverage_group.add_option("-s", "--seed-conf", dest="seed_config", help="Seed configuration, where the coverage is defined")
-    coverage_group.add_option("-c", "--coverage-name", dest="coverage", help="Calculate number of tiles when a coverage is given")
+    coverage_group.add_option("-s", "--seed-conf", dest="seed_config",
+                              help="Seed configuration, where the coverage is defined")
+    coverage_group.add_option("-c", "--coverage-name", dest="coverage",
+                              help="Calculate number of tiles when a coverage is given")
 
     from mapproxy.script.util import setup_logging
     import logging
     setup_logging(logging.WARN)
 
     if args:
-        args = args[1:] # remove script name
+        args = args[1:]  # remove script name
 
     (options, args) = parser.parse_args(args)
     if not options.mapproxy_conf:
@@ -162,7 +175,7 @@ def grids_command(args=None):
         if options.coverage and options.seed_config:
             try:
                 seed_conf = load_seed_tasks_conf(options.seed_config, proxy_configuration)
-            except SeedConfigurationError as e:
+            except SeedConfigurationError:
                 print('ERROR: invalid configuration (see above)', file=sys.stderr)
                 sys.exit(2)
 
@@ -183,6 +196,3 @@ def grids_command(args=None):
             display_grids({options.grid_name: grids[options.grid_name]}, coverage=coverage)
         else:
             display_grids(grids, coverage=coverage)
-
-
-

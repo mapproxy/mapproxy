@@ -24,22 +24,28 @@ from mapproxy.image.message import message_image
 from mapproxy.image.opts import ImageOptions
 from mapproxy.srs import SRS
 
+
 class SourceError(MapError):
     pass
+
 
 class SourceBBOXError(SourceError, MapBBOXError):
     pass
 
+
 class InvalidSourceQuery(SourceError):
     pass
+
 
 class InfoSource(InfoLayer):
     def get_info(self, query):
         raise NotImplementedError
 
+
 class LegendSource(object):
     def get_legend(self, query):
         raise NotImplementedError
+
 
 class DebugSource(MapLayer):
     def __init__(self):
@@ -55,7 +61,8 @@ class DebugSource(MapLayer):
         res_y = h/query.size[1]
         debug_info = "bbox: %r\nres: %.8f(%.8f)" % (bbox, res_x, res_y)
         return message_image(debug_info, size=query.size,
-            image_opts=ImageOptions(transparent=True))
+                             image_opts=ImageOptions(transparent=True))
+
 
 class DummySource(MapLayer):
     supports_meta_tiles = True
@@ -65,6 +72,7 @@ class DummySource(MapLayer):
 
     Used internally for 'offline' sources (e.g. seed_only).
     """
+
     def __init__(self, coverage=None):
         MapLayer.__init__(self)
         self.image_opts.transparent = True
