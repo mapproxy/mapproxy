@@ -34,17 +34,13 @@ import re
 import sys
 import os
 import tokenize
-from io import StringIO, BytesIO
-from mapproxy.compat import iteritems, PY2, text_type
-from mapproxy.compat.modules import escape
+from html import escape
+from io import StringIO
 from mapproxy.util.py import reraise
 from mapproxy.util.ext.tempita._looper import looper
 from mapproxy.util.ext.tempita.compat3 import bytes, basestring_, next, is_unicode, coerce_text
 
-if PY2:
-    from urllib import quote as url_quote
-else:
-    from urllib.parse import quote as url_quote
+from urllib.parse import quote as url_quote
 
 __all__ = ['TemplateError', 'Template', 'sub', 'HTMLTemplate',
            'sub_html', 'html', 'bunch']
@@ -322,7 +318,7 @@ class Template(object):
                 return ''
             if self._unicode:
                 try:
-                    value = text_type(value)
+                    value = str(value)
                 except UnicodeDecodeError:
                     value = bytes(value)
             else:
@@ -404,7 +400,7 @@ class bunch(dict):
 
     def __repr__(self):
         items = [
-            (k, v) for k, v in iteritems(self)]
+            (k, v) for k, v in self.items()]
         items.sort()
         return '<%s %s>' % (
             self.__class__.__name__,
@@ -539,7 +535,7 @@ class TemplateDef(object):
         values = {}
         sig_args, var_args, var_kw, defaults = self._func_signature
         extra_kw = {}
-        for name, value in iteritems(kw):
+        for name, value in kw.items():
             if not var_kw and name not in sig_args:
                 raise TypeError(
                     'Unexpected argument %s' % name)
@@ -1003,10 +999,7 @@ def parse_def(tokens, name, context):
 
 
 def parse_signature(sig_text, name, pos):
-    if PY2 and isinstance(sig_text, str):
-        lines = BytesIO(sig_text).readline
-    else:
-        lines = StringIO(sig_text).readline
+    lines = StringIO(sig_text).readline
 
     tokens = tokenize.generate_tokens(lines)
     sig_args = []

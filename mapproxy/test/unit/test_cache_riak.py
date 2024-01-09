@@ -16,11 +16,11 @@
 import os
 import sys
 import random
+from urllib.parse import urlparse
 
 import pytest
 
 from mapproxy.cache.riak import RiakCache
-from mapproxy.compat.modules import urlparse
 from mapproxy.grid import tile_grid
 from mapproxy.test.image import create_tmp_image_buf
 from mapproxy.test.unit.test_cache_tile import TileCacheTestBase
@@ -35,7 +35,7 @@ class RiakCacheTestBase(TileCacheTestBase):
     always_loads_metadata = True
     def setup_method(self):
         url = os.environ[self.riak_url_env]
-        urlparts = urlparse.urlparse(url)
+        urlparts = urlparse(url)
         protocol = urlparts.scheme.lower()
         node = {'host': urlparts.hostname}
         if ':' in urlparts.hostname:

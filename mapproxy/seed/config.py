@@ -22,7 +22,6 @@ import operator
 from functools import reduce
 
 from mapproxy.cache.dummy import DummyCache
-from mapproxy.compat import iteritems, itervalues, iterkeys
 from mapproxy.config import abspath
 from mapproxy.config.loader import ConfigurationError
 from mapproxy.config.coverage import load_coverage
@@ -71,13 +70,13 @@ class LegacySeedingConfiguration(object):
     def __init__(self, seed_conf, mapproxy_conf):
         self.conf = seed_conf
         self.mapproxy_conf = mapproxy_conf
-        self.grids = bidict((name, grid_conf.tile_grid()) for name, grid_conf in iteritems(self.mapproxy_conf.grids))
+        self.grids = bidict((name, grid_conf.tile_grid()) for name, grid_conf in self.mapproxy_conf.grids.items())
         self.seed_tasks = []
         self.cleanup_tasks = []
         self._init_tasks()
 
     def _init_tasks(self):
-        for cache_name, options in iteritems(self.conf['seeds']):
+        for cache_name, options in self.conf['seeds'].items():
             remove_before = None
             if 'remove_before' in options:
                 remove_before = before_timestamp_from_options(options['remove_before'])
@@ -99,8 +98,9 @@ class LegacySeedingConfiguration(object):
                 level = view_conf.get('level', None)
                 assert len(level) == 2
 
-                for grid, tile_mgr in iteritems(caches):
-                    if cache_srs and grid.srs not in cache_srs: continue
+                for grid, tile_mgr in caches.items():
+                    if cache_srs and grid.srs not in cache_srs:
+                        continue
                     md = dict(name=view, cache_name=cache_name, grid_name=self.grids[grid])
                     levels = list(range(level[0], level[1]+1))
                     if coverage:
@@ -140,7 +140,7 @@ class SeedingConfiguration(object):
     def __init__(self, seed_conf, mapproxy_conf):
         self.conf = seed_conf
         self.mapproxy_conf = mapproxy_conf
-        self.grids = bidict((name, grid_conf.tile_grid()) for name, grid_conf in iteritems(self.mapproxy_conf.grids))
+        self.grids = bidict((name, grid_conf.tile_grid()) for name, grid_conf in self.mapproxy_conf.grids.items())
 
     @memoize
     def coverage(self, name):
@@ -256,7 +256,7 @@ class ConfigurationBase(object):
         else:
             # check that all caches have the same grids configured
             last = []
-            for cache_grids in (set(iterkeys(cache)) for cache in itervalues(caches)):
+            for cache_grids in {cache.keys() for cache in caches.values()}:
                 if not last:
                     last = cache_grids
                 else:
@@ -287,7 +287,7 @@ class SeedConfiguration(ConfigurationBase):
 
     def seed_tasks(self):
         for grid_name in self.grids:
-            for cache_name, cache in iteritems(self.caches):
+            for cache_name, cache in self.caches.items():
                 tile_manager = cache[grid_name]
                 grid = self.seeding_conf.grids[grid_name]
                 if self.coverage is False:
@@ -339,7 +339,7 @@ class CleanupConfiguration(ConfigurationBase):
 
     def cleanup_tasks(self):
         for grid_name in self.grids:
-            for cache_name, cache in iteritems(self.caches):
+            for cache_name, cache in self.caches.items():
                 tile_manager = cache[grid_name]
                 grid = self.seeding_conf.grids[grid_name]
                 if self.coverage is False:

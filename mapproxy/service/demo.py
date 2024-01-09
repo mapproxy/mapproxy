@@ -25,7 +25,6 @@ from collections import defaultdict
 
 from mapproxy.config.config import base_config
 from mapproxy.util.ext.odict import odict
-from mapproxy.compat import PY2
 from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
 from mapproxy.response import Response
@@ -33,10 +32,7 @@ from mapproxy.srs import SRS, get_epsg_num
 from mapproxy.layer import SRSConditional, CacheMapLayer, ResolutionConditional
 from mapproxy.source.wms import WMSSource
 
-if PY2:
-    import urllib2
-else:
-    from urllib import request as urllib2
+from urllib import request as urllib2
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}

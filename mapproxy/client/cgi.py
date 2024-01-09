@@ -22,13 +22,13 @@ import os
 import re
 import subprocess
 import time
+from io import BytesIO
+from urllib.parse import urlparse
 
 from mapproxy.source import SourceError
 from mapproxy.image import ImageSource
 from mapproxy.client.http import HTTPClientError
 from mapproxy.client.log import log_request
-from mapproxy.compat.modules import urlparse
-from mapproxy.compat import BytesIO
 
 
 def split_cgi_response(data):
@@ -80,7 +80,7 @@ class CGIClient(object):
     def open(self, url, data=None):
         assert data is None, 'POST requests not supported by CGIClient'
 
-        parsed_url = urlparse.urlparse(url)
+        parsed_url = urlparse(url)
         environ = os.environ.copy()
         environ.update({
             'QUERY_STRING': parsed_url.query,

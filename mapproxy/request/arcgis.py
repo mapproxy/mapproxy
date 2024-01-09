@@ -14,8 +14,8 @@
 # limitations under the License.
 
 from functools import partial as fp
-from mapproxy.compat import string_type
-from mapproxy.compat.modules import urlparse
+from urllib.parse import urlsplit, urlunsplit
+
 from mapproxy.request.base import RequestParams, BaseRequest
 from mapproxy.srs import make_lin_transf
 
@@ -48,7 +48,7 @@ class ArcGISExportRequestParams(RequestParams):
         points = [float(val) for val in self.params['bbox'].split(',')]
         return tuple(points[:4])
     def _set_bbox(self, value):
-        if value is not None and not isinstance(value, string_type):
+        if value is not None and not isinstance(value, str):
             value = ','.join(str(x) for x in value)
         self['bbox'] = value
     bbox = property(_get_bbox, _set_bbox)
@@ -65,7 +65,7 @@ class ArcGISExportRequestParams(RequestParams):
         dim = [float(val) for val in self.params['size'].split(',')]
         return tuple(dim[:2])
     def _set_size(self, value):
-        if value is not None and not isinstance(value, string_type):
+        if value is not None and not isinstance(value, str):
             value = ','.join(str(x) for x in value)
         self['size'] = value
     size = property(_get_size, _set_size)
@@ -109,7 +109,7 @@ class ArcGISIdentifyRequestParams(ArcGISExportRequestParams):
         points = [float(val) for val in self.params['mapExtent'].split(',')]
         return tuple(points[:4])
     def _set_bbox(self, value):
-        if value is not None and not isinstance(value, string_type):
+        if value is not None and not isinstance(value, str):
             value = ','.join(str(x) for x in value)
         self['mapExtent'] = value
     bbox = property(_get_bbox, _set_bbox)
@@ -126,7 +126,7 @@ class ArcGISIdentifyRequestParams(ArcGISExportRequestParams):
         dim = [float(val) for val in self.params['imageDisplay'].split(',')]
         return tuple(dim[:2])
     def _set_size(self, value):
-        if value is not None and not isinstance(value, string_type):
+        if value is not None and not isinstance(value, str):
             value = ','.join(str(x) for x in value) + ',96'
         self['imageDisplay'] = value
     size = property(_get_size, _set_size)
@@ -228,7 +228,7 @@ def create_request(req_data, param):
 
 
 def rest_endpoint(url):
-    parts = urlparse.urlsplit(url)
+    parts = urlsplit(url)
     path = parts.path.rstrip('/').split('/')
 
     if path[-1] in ('export', 'exportImage'):
@@ -242,11 +242,11 @@ def rest_endpoint(url):
         path.append('exportImage')
 
     parts = parts[0], parts[1], '/'.join(path), parts[3], parts[4]
-    return urlparse.urlunsplit(parts)
+    return urlunsplit(parts)
 
 
 def rest_identify_endpoint(url):
-    parts = urlparse.urlsplit(url)
+    parts = urlsplit(url)
     path = parts.path.rstrip('/').split('/')
 
     if path[-1] in ('export', 'exportImage'):
@@ -255,5 +255,4 @@ def rest_identify_endpoint(url):
         path.append('identify')
 
     parts = parts[0], parts[1], '/'.join(path), parts[3], parts[4]
-    return urlparse.urlunsplit(parts)
-
+    return urlunsplit(parts)

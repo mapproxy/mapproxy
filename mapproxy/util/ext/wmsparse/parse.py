@@ -4,7 +4,6 @@ import math
 from .util import resolve_ns
 
 from xml.etree import ElementTree as etree
-from mapproxy.compat import string_type
 from mapproxy.request.wms import switch_bbox_epsg_axis_order
 
 
@@ -288,7 +287,7 @@ def yaml_sources(cap):
 
 
 def parse_capabilities(fileobj):
-    if isinstance(fileobj, string_type):
+    if isinstance(fileobj, str):
         fileobj = open(fileobj, 'rb')
     tree = etree.parse(fileobj)
     root_tag = tree.getroot().tag

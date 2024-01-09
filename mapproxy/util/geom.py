@@ -22,7 +22,6 @@ from functools import partial
 from contextlib import closing
 
 from mapproxy.grid import tile_grid
-from mapproxy.compat import string_type, text_type
 
 import logging
 log_config = logging.getLogger('mapproxy.config.coverage')
@@ -81,7 +80,7 @@ def load_ogr_datasource(datasource, where=None):
     try:
         with closing(OGRShapeReader(datasource)) as reader:
             for wkt in reader.wkts(where):
-                if not isinstance(wkt, text_type):
+                if not isinstance(wkt, str):
                     wkt = wkt.decode()
                 try:
                     geom = shapely.wkt.loads(wkt)
@@ -107,7 +106,7 @@ def load_polygons(geom_files):
     Returns a list of Shapely Polygons.
     """
     polygons = []
-    if isinstance(geom_files, string_type):
+    if isinstance(geom_files, str):
         geom_files = [geom_files]
 
     for geom_file in geom_files:
@@ -148,7 +147,7 @@ def load_geojson(datasource):
                 polygons.append(p)
         else:
             log_config.warning('ignoring non-polygon geometry (%s) from %s',
-                geom.type, datasource)
+                geom.geom_type, datasource)
 
     return polygons
 

@@ -107,8 +107,8 @@
     :license: modified BSD license.
 """
 from __future__ import absolute_import
-from mapproxy.compat import iteritems
-from mapproxy.compat.itertools import izip, imap
+
+from past.builtins import cmp
 from copy import deepcopy
 
 missing = object()
@@ -163,12 +163,7 @@ class odict(dict):
     ['b', 'd', 'bar', []]
     >>> list(d.items())
     [('a', 'b'), ('c', 'd'), ('foo', 'bar'), ('spam', [])]
-    >>> list(d.iterkeys())
-    ['a', 'c', 'foo', 'spam']
-    >>> list(d.itervalues())
-    ['b', 'd', 'bar', []]
-    >>> list(d.iteritems())
-    [('a', 'b'), ('c', 'd'), ('foo', 'bar'), ('spam', [])]
+
 
     Index based lookup is supported too by `byindex` which returns the
     key/value pair for an index:
@@ -258,9 +253,6 @@ class odict(dict):
     def items(self):
         return list(zip(self._keys, self.values()))
 
-    def iteritems(self):
-        return izip(self._keys, self.itervalues())
-
     def keys(self):
         return self._keys[:]
 
@@ -288,7 +280,7 @@ class odict(dict):
         sources = []
         if len(args) == 1:
             if hasattr(args[0], 'iteritems') or hasattr(args[0], 'items'):
-                sources.append(iteritems(args[0]))
+                sources.append(args[0].items())
             else:
                 sources.append(iter(args[0]))
         elif args:
@@ -303,7 +295,7 @@ class odict(dict):
         return map(self.get, self._keys)
 
     def itervalues(self):
-        return imap(self.get, self._keys)
+        return map(self.get, self._keys)
 
     def index(self, item):
         return self._keys.index(item)

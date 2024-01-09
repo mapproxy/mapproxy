@@ -22,7 +22,6 @@ import re
 
 from functools import partial
 
-from mapproxy.compat import iteritems, itervalues, iterkeys
 from mapproxy.request.wmts import (
     wmts_request, make_wmts_rest_request_parser,
     URLTemplateConverter,
@@ -115,12 +114,12 @@ class WMTSServer(Server):
         tile_layer = self.layers[request.layer][request.tilematrixset]
         if not request.format:
             request.format = tile_layer.format
-        
+
         feature_count = None
         # WMTS REST style request do not have request params
         if hasattr(request, 'params'):
             feature_count = request.params.get('feature_count', None)
-        
+
         bbox = tile_layer.grid.tile_bbox(request.tile)
         query = InfoQuery(bbox, tile_layer.grid.tile_size, tile_layer.grid.srs, request.pos,
                           request.infoformat, feature_count=feature_count)
@@ -189,8 +188,8 @@ class WMTSServer(Server):
             if result['authorized'] == 'none':
                 raise RequestError('forbidden', status=403)
             allowed_layers = []
-            for layer in itervalues(self.layers):
-                if result['layers'].get(layer.name, {}).get('tile', False) == True:
+            for layer in self.layers.values():
+                if result['layers'].get(layer.name, {}).get('tile', False):
                     allowed_layers.append(layer)
             return allowed_layers
         else:
@@ -252,7 +251,7 @@ class WMTSRestServer(WMTSServer):
     def check_request_dimensions(self, tile_layer, request):
         # check that unknown dimension for this layer are set to default
         if request.dimensions:
-            for dimension, value in iteritems(request.dimensions):
+            for dimension, value in request.dimensions.items():
                 dimension = dimension.lower()
                 if dimension not in tile_layer.dimensions and value != 'default':
                     raise RequestError('unknown dimension: ' + str(dimension),
@@ -332,7 +331,7 @@ class WMTSTileLayer(object):
     def __init__(self, layers):
         self.grids = [lyr.grid for lyr in layers.values()]
         self.layers = layers
-        self._layer = layers[next(iterkeys(layers))]
+        self._layer = layers[layers.keys()[0]]
 
     def __getattr__(self, name):
         return getattr(self._layer, name)

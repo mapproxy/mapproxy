@@ -15,7 +15,6 @@
 
 from __future__ import absolute_import
 
-from mapproxy.compat import string_type
 import yaml
 
 class YAMLError(Exception):
@@ -25,7 +24,7 @@ def load_yaml_file(file_or_filename):
     """
     Load yaml from file object or filename.
     """
-    if isinstance(file_or_filename, string_type):
+    if isinstance(file_or_filename, str):
         with open(file_or_filename, 'rb') as f:
             return load_yaml(f)
     return load_yaml(file_or_filename)

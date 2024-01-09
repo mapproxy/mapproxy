@@ -24,8 +24,6 @@ import os
 from ctypes import CDLL
 from ctypes.util import find_library as _find_library
 
-from mapproxy.compat import string_type
-
 
 default_locations = dict(
     darwin=dict(
@@ -58,7 +56,7 @@ def load_library(lib_names, locations_conf=default_locations):
 
     Retruns the loaded library or None.
     """
-    if isinstance(lib_names, string_type):
+    if isinstance(lib_names, str):
         lib_names = [lib_names]
 
     for lib_name in lib_names:

@@ -18,14 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from mapproxy.compat import itervalues
-
-import sys
-
-if sys.version_info[0] == 2:
-    number_types = (float, int, long)
-else:
-    number_types = (float, int)
+number_types = (float, int)
 
 class required(str):
     """

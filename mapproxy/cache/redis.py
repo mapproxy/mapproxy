@@ -18,13 +18,13 @@ from __future__ import absolute_import
 import hashlib
 import datetime
 import time
+from io import BytesIO
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import (
     TileCacheBase,
     tile_buffer,
 )
-from mapproxy.compat import BytesIO
 
 try:
     import redis

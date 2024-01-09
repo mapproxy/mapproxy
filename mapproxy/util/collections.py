@@ -15,8 +15,8 @@
 
 from __future__ import absolute_import
 from collections import deque
-from mapproxy.compat.itertools import islice
-from mapproxy.compat import string_type
+from itertools import islice
+
 
 class LRU(object):
     """
@@ -106,7 +106,7 @@ class ImmutableDictList(object):
             self._names.append(name)
 
     def __getitem__(self, name):
-        if isinstance(name, string_type):
+        if isinstance(name, str):
             return self._values[name]
         else:
             return self._values[self._names[name]]

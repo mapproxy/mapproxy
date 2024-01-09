@@ -52,7 +52,7 @@ On a Debian or Ubuntu system, you need to install the following packages::
 
 To get all optional packages::
 
-  sudo apt-get install libgeos-dev python3-lxml libgdal-dev python3-shapely
+  sudo apt-get install libgeos-dev python3-lxml libgdal-dev python3-dev python3-shapely
 
 .. _dependency_details:
 

@@ -20,7 +20,6 @@ from mapproxy.request import Request
 from mapproxy.response import Response
 from mapproxy.util.collections import LRU
 from mapproxy.wsgiapp import make_wsgi_app as make_mapproxy_wsgi_app
-from mapproxy.compat import iteritems
 
 from threading import Lock
 
@@ -177,7 +176,7 @@ class DirectoryConfLoader(ConfLoader):
     def needs_reload(self, app_name, timestamps):
         if not timestamps:
             return True
-        for conf_file, timestamp in iteritems(timestamps):
+        for conf_file, timestamp in timestamps.items():
             m_time = os.path.getmtime(conf_file)
             if m_time > timestamp:
                 return True

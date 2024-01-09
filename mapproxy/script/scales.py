@@ -17,7 +17,7 @@ from __future__ import division, print_function
 
 import sys
 import optparse
-from mapproxy.compat import itertools
+from itertools import cycle
 
 DEFAULT_DPIS = {
     'OGC': 2.54/(0.00028 * 100),
@@ -50,7 +50,7 @@ def repeated_values(values, n):
     current_factor = 1
     step_factor = 10
     result = []
-    for i, value in enumerate(itertools.islice(itertools.cycle(values), n)):
+    for i, value in enumerate(slice(cycle(values), n)):
         if i != 0 and i % len(values) == 0:
             current_factor *= step_factor
         result.append(value/current_factor)

@@ -21,6 +21,7 @@ import socket
 import time
 import hashlib
 import base64
+from io import BytesIO
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import (
@@ -28,7 +29,6 @@ from mapproxy.cache.base import (
     tile_buffer, CacheBackendError,)
 from mapproxy.source import SourceError
 from mapproxy.srs import SRS
-from mapproxy.compat import string_type, iteritems, BytesIO
 
 from threading import Lock
 
@@ -251,7 +251,7 @@ def utc_now_isoformat():
 class CouchDBMDTemplate(object):
     def __init__(self, attributes):
         self.attributes = attributes
-        for key, value in iteritems(attributes):
+        for key, value in attributes.items():
             if value == '{{timestamp}}':
                 self.timestamp_key = key
                 break
@@ -262,8 +262,8 @@ class CouchDBMDTemplate(object):
     def doc(self, tile, grid):
         doc = {}
         x, y, z = tile.coord
-        for key, value in iteritems(self.attributes):
-            if not isinstance(value, string_type) or not value.startswith('{{'):
+        for key, value in self.attributes.items():
+            if not isinstance(value, str) or not value.startswith('{{'):
                 doc[key] = value
                 continue
 

@@ -18,7 +18,8 @@ from __future__ import print_function, division
 import sys
 from collections import deque
 from contextlib import contextmanager
-import time
+from itertools import zip_longest
+
 try:
     import Queue
 except ImportError:
@@ -28,7 +29,6 @@ from mapproxy.config import base_config
 from mapproxy.grid import MetaGrid
 from mapproxy.source import SourceError
 from mapproxy.config import local_base_config
-from mapproxy.compat.itertools import izip_longest
 from mapproxy.util.lock import LockTimeout
 from mapproxy.seed.util import format_seed_task, timestamp
 from mapproxy.seed.cachelock import DummyCacheLocker, CacheLockedError
@@ -247,7 +247,7 @@ class SeedProgress(object):
             return False
         if old_progress == []:
             return True
-        for old, current in izip_longest(old_progress, current_progress, fillvalue=None):
+        for old, current in zip_longest(old_progress, current_progress, fillvalue=None):
             if old is None:
                 return False
             if current is None:

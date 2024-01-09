@@ -24,20 +24,12 @@ from mapproxy.version import version
 from mapproxy.image import ImageSource
 from mapproxy.util.py import reraise_exception
 from mapproxy.client.log import log_request
-from mapproxy.compat import PY2
-from mapproxy.compat.modules import urlparse
 
-if PY2:
-    import urllib2
-    from urllib2 import URLError, HTTPError, HTTPCookieProcessor
-    import httplib
-    from cookielib import CookieJar
-else:
-    from urllib import request as urllib2
-    from urllib.error import URLError, HTTPError
-    from urllib.request import HTTPCookieProcessor
-    from http import client as httplib
-    from http.cookiejar import CookieJar
+from urllib import request as urllib2
+from urllib.error import URLError, HTTPError
+from urllib.request import HTTPCookieProcessor
+from http import client as httplib
+from http.cookiejar import CookieJar
 
 import socket
 import ssl

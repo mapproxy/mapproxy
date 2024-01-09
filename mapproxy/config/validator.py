@@ -14,12 +14,11 @@
 # limitations under the License.
 
 import os.path
-from mapproxy.compat import string_type, iteritems
+import mapproxy.config.defaults
 
 import logging
 log = logging.getLogger('mapproxy.config')
 
-import mapproxy.config.defaults
 
 TAGGED_SOURCE_TYPES = [
     'wms',
@@ -169,7 +168,7 @@ class Validator(object):
             self._validate_tagged_layer_source(name, source.get('layers'), layers)
 
     def _validate_tagged_layer_source(self, name, supported_layers, requested_layers):
-        if isinstance(supported_layers, string_type):
+        if isinstance(supported_layers, str):
             supported_layers = [supported_layers]
         if not set(requested_layers).issubset(set(supported_layers)):
             self.errors.append(
@@ -183,7 +182,7 @@ class Validator(object):
     def _validate_cache(self, name, cache):
         if isinstance(cache.get('sources', []), dict):
             self._validate_bands(name, set(cache['sources'].keys()))
-            for band, confs  in iteritems(cache['sources']):
+            for band, confs in cache['sources'].items():
                 for conf in confs:
                     band_source = conf['source']
                     self._validate_cache_source(name, band_source)

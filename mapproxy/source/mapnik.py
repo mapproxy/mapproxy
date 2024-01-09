@@ -19,6 +19,7 @@ import sys
 import time
 import threading
 import multiprocessing
+from io import BytesIO
 
 from mapproxy.grid import tile_grid
 from mapproxy.image import ImageSource
@@ -28,7 +29,6 @@ from mapproxy.source import  SourceError
 from mapproxy.client.log import log_request
 from mapproxy.util.py import reraise_exception
 from mapproxy.util.async_ import run_non_blocking
-from mapproxy.compat import BytesIO
 
 try:
     import mapnik

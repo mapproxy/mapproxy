@@ -14,10 +14,9 @@
 # limitations under the License.
 
 from mapproxy.template import bunch
-from mapproxy.compat.modules import escape
 
-__all__ = ['escape', 'indent', 'bunch', 'wms100format', 'wms100info_format',
-    'wms111metadatatype']
+__all__ = ['indent', 'bunch', 'wms100format', 'wms100info_format', 'wms111metadatatype']
+
 
 def indent(text, n=2):
   return '\n'.join(' '*n + line for line in text.split('\n'))

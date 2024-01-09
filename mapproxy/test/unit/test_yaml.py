@@ -17,7 +17,6 @@ import os
 import tempfile
 
 from mapproxy.util.yaml import load_yaml, load_yaml_file, YAMLError
-from mapproxy.compat import string_type
 
 
 class TestLoadYAMLFile(object):
@@ -43,7 +42,7 @@ class TestLoadYAMLFile(object):
 
     def test_load_yaml_file_filename(self):
         f = self.yaml_file("hello:\n - 1\n - 2")
-        assert isinstance(f, string_type)
+        assert isinstance(f, str)
         doc = load_yaml_file(f)
         assert doc == {"hello": [1, 2]}
 

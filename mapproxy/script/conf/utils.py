@@ -15,13 +15,14 @@
 # limitations under the License.
 
 from copy import copy
-from mapproxy.compat import iteritems
+from urllib.parse import urlparse
+
 
 __all__ = ['update_config', 'MapProxyYAMLDumper']
 
 def update_config(conf, overwrites):
     wildcard_keys = []
-    for k, v in iteritems(overwrites):
+    for k, v in overwrites.items():
         if k == '__all__':
             continue
         if  k.startswith('___') or k.endswith('___'):
@@ -46,7 +47,7 @@ def update_config(conf, overwrites):
 
     if '__all__' in overwrites:
         v = overwrites['__all__']
-        for conf_k, conf_v in iteritems(conf):
+        for conf_k, conf_v in conf.items():
             if isinstance(conf_v, dict):
                 conf[conf_k] = update_config(conf_v, v)
             else:
@@ -61,7 +62,7 @@ def update_config(conf, overwrites):
             else:
                 key = key[:-3]
                 key_check = lambda x: x.startswith(key)
-            for conf_k, conf_v in iteritems(conf):
+            for conf_k, conf_v in conf.items():
                 if not key_check(conf_k):
                     continue
                 if isinstance(conf_v, dict):
@@ -122,10 +123,9 @@ class MapProxyYAMLDumper(Emitter, _MixedFlowSortedSerializer, _EmptyNoneRepresen
 
 from mapproxy.request.base import BaseRequest, url_decode
 from mapproxy.client.http import open_url
-from mapproxy.compat.modules import urlparse
 
 def wms_capapilities_url(url):
-    parsed_url = urlparse.urlparse(url)
+    parsed_url = urlparse(url)
     base_req = BaseRequest(
         url=url.split('?', 1)[0],
         param=url_decode(parsed_url.query),

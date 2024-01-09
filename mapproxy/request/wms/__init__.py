@@ -22,7 +22,7 @@ from mapproxy.request.wms import exception
 from mapproxy.exception import RequestError
 from mapproxy.srs import SRS, make_lin_transf
 from mapproxy.request.base import RequestParams, BaseRequest, split_mime_type
-from mapproxy.compat import string_type, iteritems
+
 
 import logging
 log = logging.getLogger(__name__)
@@ -59,7 +59,7 @@ class WMSMapRequestParams(RequestParams):
         return tuple(points)
 
     def _set_bbox(self, value):
-        if value is not None and not isinstance(value, string_type):
+        if value is not None and not isinstance(value, str):
             value = ','.join(str(x) for x in value)
         self['bbox'] = value
     bbox = property(_get_bbox, _set_bbox)
@@ -159,7 +159,7 @@ class WMSRequest(BaseRequest):
 
     def adapt_params_to_version(self):
         params = self.params.copy()
-        for key, value in iteritems(self.fixed_params):
+        for key, value in self.fixed_params.items():
             params[key] = value
         if 'styles' not in params:
             params['styles'] = ''
@@ -193,7 +193,7 @@ class WMSMapRequest(WMSRequest):
         self.dimensions = self._get_dimensions(param)
         WMSRequest.__init__(self, param=param, url=url, validate=validate,
                             non_strict=non_strict, **kw)
-    
+
     def _get_dimensions(self, param):
         if param:
             regex = "(?i)%s%s" % (("^%s|" % self.dimension_prefix if self.dimension_prefix else ""),
