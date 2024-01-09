@@ -248,7 +248,7 @@ class ConfigurationBase(object):
 
         if 'grids' in self.conf:
             # grids available for all caches
-            available_grids = reduce(operator.and_, (set(cache) for cache in caches.values()))
+            available_grids = reduce(operator.and_, {cache for cache in caches.values()})
             for grid_name in self.conf['grids']:
                 if grid_name not in available_grids:
                     raise SeedConfigurationError('%s not defined for caches' % grid_name)
