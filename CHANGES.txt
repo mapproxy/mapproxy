@@ -1,6 +1,13 @@
 Nightly
 ~~~~~~~~~~~~~~~~~
 
+2.0.2 2024-01-10
+~~~~~~~~~~~~~~~~
+
+Fixes:
+
+- Revert PR "Fix mixed image format for file, S3 and azureblob caches"
+
 2.0.1 2024-01-05
 ~~~~~~~~~~~~~~~~~
 Improvements:
