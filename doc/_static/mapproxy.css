@@ -32,3 +32,18 @@ a:active
 button.theme-switch-button {
   display: none !important;
 }
+
+.btn-select-version {
+  color: #31A4B5;
+  border-color: #31A4B5;
+}
+
+/* !important is needed to overwrite bootstrap defaults */
+.btn-select-version:hover,
+.btn-select-version:active,
+.btn-select-version:focus
+{
+  color: #ffffff !important;
+  border-color: #31A4B5 !important;
+  background-color: #31A4B5 !important;
+}
