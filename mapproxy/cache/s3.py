@@ -79,7 +79,6 @@ class S3Cache(TileCacheBase):
 
         self.base_path = base_path
         self.file_ext = file_ext
-        self.is_mixed = self.file_ext == 'mixed'
         self._concurrent_writer = _concurrent_writer
 
         self._tile_location, _ = path.location_funcs(layout=directory_layout)
@@ -88,18 +87,7 @@ class S3Cache(TileCacheBase):
         return "https://{bucket}.s3.{region}.amazonaws.com/{key}".format(bucket=self.bucket_name, region=self.region_name, key=self.tile_key(tile))
 
     def tile_key(self, tile):
-        if self.is_mixed:
-            location = self._tile_location(tile, self.base_path, 'jpeg').lstrip('/')
-            try:
-                self.conn().head_object(Bucket=self.bucket_name, Key=location)
-            except botocore.exceptions.ClientError as e:
-                if e.response['Error']['Code'] in ('404', 'NoSuchKey'):
-                    tile.location = None
-                    location = self._tile_location(tile, self.base_path, 'png').lstrip('/')
-        else:
-            location = self._tile_location(tile, self.base_path, self.file_ext).lstrip('/')
-        tile.location = location
-        return location
+        return self._tile_location(tile, self.base_path, self.file_ext).lstrip('/')
 
     def conn(self):
         if boto3 is None:
