@@ -18,7 +18,7 @@ from __future__ import print_function
 import time
 import threading
 
-from mapproxy.util.async_ import ThreadPool
+from mapproxy.util.async_ import ThreadPool, imap
 
 
 class TestThreaded(object):
@@ -27,7 +27,7 @@ class TestThreaded(object):
             time.sleep(0.05)
             return x
         start = time.time()
-        result = list(map(func, list(range(40))))
+        result = list(imap(func, list(range(40))))
         stop = time.time()
 
         duration = stop - start
@@ -40,7 +40,7 @@ class TestThreaded(object):
             raise Exception()
 
         try:
-            list(map(func, list(range(40))))
+            list(imap(func, list(range(40))))
         except Exception:
             pass
         else:
