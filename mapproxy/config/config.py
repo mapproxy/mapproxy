@@ -196,7 +196,7 @@ def load_config(config, config_file=None, config_dict=None, clear_existing=False
     defaults = _to_options_map(config_dict)
 
     if defaults:
-        for key, value in defaults.items(): # todo
+        for key, value in defaults.items():
             if key in config and hasattr(config[key], 'update'):
                 config[key].update(value)
             else:
