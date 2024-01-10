@@ -31,7 +31,7 @@ try:
     import shapely.geometry
     import shapely.ops
     import shapely.prepared
-    from shapely.errors import ReadingError
+    from shapely.errors import ShapelyError
     geom_support = True
 except ImportError:
     geom_support = False
@@ -89,16 +89,16 @@ def load_ogr_datasource(datasource, where=None):
                     wkt = wkt.decode()
                 try:
                     geom = shapely.wkt.loads(wkt)
-                except ReadingError as ex:
+                except ShapelyError as ex:
                     raise GeometryError(ex)
-                if geom.type == 'Polygon':
+                if geom.geom_type == 'Polygon':
                     polygons.append(geom)
-                elif geom.type == 'MultiPolygon':
+                elif geom.geom_type == 'MultiPolygon':
                     for p in geom.geoms:
                         polygons.append(p)
                 else:
                     log_config.warning('skipping %s geometry from %s: not a Polygon/MultiPolygon',
-                                       geom.type, datasource)
+                                       geom.geom_type, datasource)
     except OGRShapeReaderError as ex:
         raise CoverageReadError(ex)
 
@@ -147,14 +147,14 @@ def load_geojson(datasource):
     polygons = []
     for geom in geometries:
         geom = shapely.geometry.shape(geom)
-        if geom.type == 'Polygon':
+        if geom.geom_type == 'Polygon':
             polygons.append(geom)
-        elif geom.type == 'MultiPolygon':
+        elif geom.geom_type == 'MultiPolygon':
             for p in geom.geoms:
                 polygons.append(p)
         else:
             log_config.warning('ignoring non-polygon geometry (%s) from %s',
-                               geom.type, datasource)
+                               geom.geom_type, datasource)
 
     return polygons
 
@@ -165,14 +165,14 @@ def load_polygon_lines(line_iter, source='<string>'):
         if not line.strip():
             continue
         geom = shapely.wkt.loads(line)
-        if geom.type == 'Polygon':
+        if geom.geom_type == 'Polygon':
             polygons.append(geom)
-        elif geom.type == 'MultiPolygon':
+        elif geom.geom_type == 'MultiPolygon':
             for p in geom.geoms:
                 polygons.append(p)
         else:
             log_config.warning('ignoring non-polygon geometry (%s) from %s',
-                               geom.type, source)
+                               geom.geom_type, source)
 
     return polygons
 
@@ -223,12 +223,12 @@ def bbox_polygon(bbox):
 def transform_geometry(from_srs, to_srs, geometry):
     transf = partial(transform_xy, from_srs, to_srs)
 
-    if geometry.type == 'Polygon':
+    if geometry.geom_type == 'Polygon':
         result = transform_polygon(transf, geometry)
-    elif geometry.type == 'MultiPolygon':
+    elif geometry.geom_type == 'MultiPolygon':
         result = transform_multipolygon(transf, geometry)
     else:
-        raise ValueError('cannot transform %s' % geometry.type)
+        raise ValueError('cannot transform %s' % geometry.geom_type)
 
     if not result.is_valid:
         result = result.buffer(0)
@@ -256,10 +256,10 @@ def flatten_to_polygons(geometry):
     """
     Return a list of all polygons of this (multi)`geometry`.
     """
-    if geometry.type == 'Polygon':
+    if geometry.geom_type == 'Polygon':
         return [geometry]
 
-    if geometry.type == 'MultiPolygon':
+    if geometry.geom_type == 'MultiPolygon':
         return list(geometry.geoms)
 
     if hasattr(geometry, 'geoms'):

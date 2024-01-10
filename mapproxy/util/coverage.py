@@ -52,7 +52,7 @@ def load_limited_to(limited_to):
     srs = SRS(limited_to['srs'])
     geom = limited_to['geometry']
 
-    if not hasattr(geom, 'type'):  # not a Shapely geometry
+    if not hasattr(geom, 'geom_type'):  # not a Shapely geometry
         if isinstance(geom, (list, tuple)):
             geom = bbox_polygon(geom)
         else:
@@ -283,7 +283,7 @@ def union_coverage(coverages, clip=None):
             geoms.append(c.geom)
 
     import shapely.ops
-    union = shapely.ops.cascaded_union(geoms)
+    union = shapely.ops.unary_union(geoms)
 
     return GeomCoverage(union, srs=srs, clip=clip)
 
@@ -304,7 +304,7 @@ def diff_coverage(coverages, clip=None):
         else:
             geoms.append(c.geom)
 
-    sub = shapely.ops.cascaded_union(geoms[1:])
+    sub = shapely.ops.unary_union(geoms[1:])
     diff = geoms[0].difference(sub)
 
     if diff.is_empty:

@@ -22,7 +22,7 @@ import shutil
 import pytest
 import shapely
 import shapely.prepared
-from shapely.errors import ReadingError
+from shapely.errors import ShapelyError
 
 from mapproxy.srs import SRS, bbox_equals
 from mapproxy.util.geom import (
@@ -105,7 +105,7 @@ class TestPolygonLoading(object):
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
             assert polygon.is_valid
-            assert polygon.type == 'Polygon'
+            assert polygon.geom_type == 'Polygon'
 
     def test_loading_multipolygon(self):
         with TempFile() as fname:
@@ -116,13 +116,13 @@ class TestPolygonLoading(object):
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
             assert polygon.is_valid
-            assert polygon.type == 'MultiPolygon'
+            assert polygon.geom_type == 'MultiPolygon'
 
     def test_loading_broken(self):
         with TempFile() as fname:
             with open(fname, 'wb') as f:
                 f.write(b"POLYGON((")
-            with pytest.raises(ReadingError):
+            with pytest.raises(ShapelyError):
                 load_polygons(fname)
 
     def test_loading_skip_non_polygon(self):
@@ -133,7 +133,7 @@ class TestPolygonLoading(object):
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
             assert polygon.is_valid
-            assert polygon.type == 'Polygon'
+            assert polygon.geom_type == 'Polygon'
 
     def test_loading_intersecting_polygons(self):
         # check that the self intersection is eliminated
@@ -144,7 +144,7 @@ class TestPolygonLoading(object):
             polygon = load_polygons(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
             assert polygon.is_valid
-            assert polygon.type == 'Polygon'
+            assert polygon.geom_type == 'Polygon'
             assert polygon.equals(shapely.geometry.Polygon([(0, 0), (15, 0), (15, 10), (0, 10)]))
 
 
@@ -170,7 +170,7 @@ class TestGeoJSONLoading(object):
             polygon = load_geojson(fname)
             bbox, polygon = build_multipolygon(polygon, simplify=True)
             assert polygon.is_valid
-            assert polygon.type in ('Polygon', 'MultiPolygon'), polygon.type
+            assert polygon.geom_type in ('Polygon', 'MultiPolygon'), polygon.geom_type
             assert polygon.equals(geometry)
 
 
@@ -207,7 +207,7 @@ class TestTransform(object):
 class TestBBOXPolygon(object):
     def test_bbox_polygon(self):
         p = bbox_polygon([5, 53, 6, 54])
-        assert p.type == 'Polygon'
+        assert p.geom_type == 'Polygon'
 
 
 class TestGeomCoverage(object):
@@ -221,7 +221,7 @@ class TestGeomCoverage(object):
         assert bbox_equals(self.coverage.bbox, [-10, 10, 80, 80], 0.0001)
 
     def test_geom(self):
-        assert self.coverage.geom.type == 'Polygon'
+        assert self.coverage.geom.geom_type == 'Polygon'
 
     def test_contains(self):
         assert self.coverage.contains((15, 15, 20, 20), SRS(4326))
