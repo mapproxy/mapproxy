@@ -16,7 +16,8 @@
 from __future__ import print_function
 
 import os
-from mapproxy.compat.itertools import izip_longest
+from itertools import zip_longest
+
 from mapproxy.seed.util import format_cleanup_task
 from mapproxy.util.fs import cleanup_directory
 from mapproxy.seed.seeder import (
@@ -172,7 +173,7 @@ class DirectoryCleanupProgress(object):
             return False
         if current_dir is None:
             return False
-        for old, current in izip_longest(old_dir.split(os.path.sep), current_dir.split(os.path.sep), fillvalue=None):
+        for old, current in zip_longest(old_dir.split(os.path.sep), current_dir.split(os.path.sep), fillvalue=None):
             if old is None:
                 return False
             if current is None:

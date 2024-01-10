@@ -18,14 +18,13 @@ from io import BytesIO
 from mapproxy.test.helper import Mocker
 from mapproxy.test.mocker import ANY
 from mapproxy.response import Response
-from mapproxy.compat import string_type
 
 
 class TestResponse(Mocker):
 
     def test_str_response(self):
         resp = Response("string content")
-        assert isinstance(resp.response, string_type)
+        assert isinstance(resp.response, str)
         start_response = self.mock()
         self.expect(start_response("200 OK", ANY))
         self.replay()

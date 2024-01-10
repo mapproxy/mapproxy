@@ -19,12 +19,13 @@ import os
 import sqlite3
 import threading
 import time
+from io import BytesIO
+from itertools import groupby
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
 from mapproxy.util.fs import ensure_directory
 from mapproxy.util.lock import FileLock
-from mapproxy.compat import BytesIO, PY2, itertools
 
 import logging
 log = logging.getLogger(__name__)
@@ -161,10 +162,7 @@ class MBTilesCache(TileCacheBase):
         # open during this slow encoding
         for tile in tiles:
             with tile_buffer(tile) as buf:
-                if PY2:
-                    content = buffer(buf.read())
-                else:
-                    content = buf.read()
+                content = buf.read()
                 x, y, level = tile.coord
                 if self.supports_timestamp:
                     records.append((level, x, y, content, time.time()))
@@ -362,7 +360,7 @@ class MBTilesLevelCache(TileCacheBase):
 
     def store_tiles(self, tiles, dimensions=None):
         failed = False
-        for level, tiles in itertools.groupby(tiles, key=lambda t: t.coord[2]):
+        for level, tiles in groupby(tiles, key=lambda t: t.coord[2]):
             tiles = [t for t in tiles if not t.stored]
             res = self._get_level(level).store_tiles(tiles, dimensions=dimensions)
             if not res: failed = True

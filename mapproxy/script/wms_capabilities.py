@@ -17,11 +17,11 @@ from __future__ import print_function
 
 import sys
 import optparse
+from io import BytesIO
+from urllib.parse import urlparse
 
 from xml import etree
 
-from mapproxy.compat import iteritems, BytesIO
-from mapproxy.compat.modules import urlparse
 from mapproxy.client.http import open_url, HTTPClientError
 from mapproxy.request.base import BaseRequest, url_decode
 from mapproxy.util.ext import wmsparse
@@ -46,7 +46,7 @@ class PrettyPrinter(object):
     def _format_output(self, key, value, indent, mark_first=False):
         if key == 'bbox':
             self.print_line(indent, key)
-            for srs_code, bbox in iteritems(value):
+            for srs_code, bbox in value.items():
                 self.print_line(indent+self.indent, srs_code, value=bbox, mark_first=mark_first)
         else:
             if isinstance(value, set):
@@ -74,7 +74,7 @@ class PrettyPrinter(object):
                     else:
                         self._format_output(item, layer[item], indent)
             # print remaining items except sublayers
-            for key, value in iteritems(layer):
+            for key, value in layer.items():
                 if key in self.print_order or key == 'layers':
                     continue
                 self._format_output(key, value, indent)
@@ -87,7 +87,7 @@ def log_error(msg, *args):
     print(msg % args, file=sys.stderr)
 
 def wms_capapilities_url(url, version):
-    parsed_url = urlparse.urlparse(url)
+    parsed_url = urlparse(url)
     base_req = BaseRequest(
         url=url.split('?', 1)[0],
         param=url_decode(parsed_url.query),

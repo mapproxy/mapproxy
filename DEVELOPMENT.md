@@ -4,7 +4,7 @@ Dev Setup
 * Create parent directory for source, applications and the virtual env
 * Clone source into directory mapproxy: `git clone`
 * Install dependencies: <https://mapproxy.org/docs/latest/install.html#install-dependencies>
-* Create virtualenv: `python3.6 -m venv ./venv`
+* Create virtualenv: `python3.12 -m venv ./venv`
 * Activate virtualenv: `source venv/bin/activate`
 * Install mapproxy: `pip install -e mapproxy/`
 * Install dev dependencies: `pip install -r mapproxy/requirements-tests.txt`
@@ -63,7 +63,7 @@ See <https://mapproxy.org/docs/latest/development.html>
 Some incomplete notes about the structure of the software
 ---------------------------------------------------------
 
-A mapproxy app decides on the request-URL which handler it starts. There exist different handlers for WMS, WMTS.
+A mapproxy app decides on the request-URL which handler it starts. There exist different handlers (services) for WMS, WMTS.
 
 Incoming http requests are transformed into own request objects (for example `WMSRequest`).
 

@@ -36,7 +36,6 @@ from .seeds import seeds
 from .utils import update_config, MapProxyYAMLDumper, download_capabilities
 from .geopackage import get_geopackage_configuration_dict
 
-from mapproxy.compat import iteritems
 from mapproxy.config.loader import load_configuration
 from mapproxy.util.ext.wmsparse import parse_capabilities
 
@@ -128,7 +127,7 @@ def config_command(args):
     srs_grids = {}
     if options.base:
         base = load_configuration(options.base)
-        for name, grid_conf in iteritems(base.grids):
+        for name, grid_conf in base.grids.items():
             if name.startswith('GLOBAL_'):
                 continue
             srs_grids[grid_conf.tile_grid().srs.srs_code] = name

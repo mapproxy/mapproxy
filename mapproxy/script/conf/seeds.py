@@ -14,13 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from mapproxy.compat import iteritems
 
 def seeds(cap, caches):
     seeds = {}
     cleanups = {}
 
-    for cache_name, cache in iteritems(caches):
+    for cache_name, cache in caches.items():
         for grid in cache['grids']:
             seeds[cache_name + '_' + grid] = {
                 'caches': [cache_name],

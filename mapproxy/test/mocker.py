@@ -50,7 +50,6 @@ if sys.version_info[0] == 2:
 else:
     import builtins as __builtin__
 
-from mapproxy.compat import iteritems
 
 __all__ = ["Mocker", "Expect", "expect", "IS", "CONTAINS", "IN", "MATCH",
            "ANY", "ARGS", "KWARGS", "MockerTestCase"]
@@ -335,7 +334,7 @@ class MockerTestCase(unittest.TestCase):
         """
         first_methods = dict(inspect.getmembers(first, inspect.ismethod))
         second_methods = dict(inspect.getmembers(second, inspect.ismethod))
-        for name, first_method in iteritems(first_methods):
+        for name, first_method in first_methods.items():
             first_argspec = inspect.getargspec(first_method)
             first_formatted = inspect.formatargspec(*first_argspec)
 
@@ -1282,7 +1281,7 @@ def find_object_name(obj, depth=0):
         frame = sys._getframe(depth+1)
     except:
         return None
-    for name, frame_obj in iteritems(frame.f_locals):
+    for name, frame_obj in frame.f_locals.items():
         if frame_obj is obj:
             return name
     self = frame.f_locals.get("self")
@@ -1557,7 +1556,7 @@ def match_params(args1, kwargs1, args2, kwargs2):
 
     # Either we have the same number of kwargs, or unknown keywords are
     # accepted (KWARGS was used), so check just the ones in kwargs1.
-    for key, arg1 in iteritems(kwargs1):
+    for key, arg1 in kwargs1.items():
         if key not in kwargs2:
             return False
         arg2 = kwargs2[key]

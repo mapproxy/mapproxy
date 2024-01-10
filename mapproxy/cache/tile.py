@@ -648,9 +648,6 @@ class CacheInfo(object):
     def __bool__(self):
         return self.cacheable
 
-    # PY2 compat
-    __nonzero__ = __bool__
-
 class TileCollection(object):
     def __init__(self, tile_coords):
         self.tiles = [Tile(coord) for coord in tile_coords]

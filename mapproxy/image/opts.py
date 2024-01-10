@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import copy
-from mapproxy.compat import string_type
+
 
 class ImageOptions(object):
     def __init__(self, mode=None, transparent=None, opacity=None, resampling=None,
@@ -82,7 +82,7 @@ class ImageFormat(str):
         return ext.strip()
 
     def __eq__(self, other):
-        if isinstance(other, string_type):
+        if isinstance(other, str):
             other = ImageFormat(other)
         elif not isinstance(other, ImageFormat):
             return NotImplemented
@@ -115,7 +115,7 @@ def create_image(size, image_opts=None):
 
         bgcolor = image_opts.bgcolor or (255, 255, 255)
 
-        if isinstance(bgcolor, string_type):
+        if isinstance(bgcolor, str):
             bgcolor = ImageColor.getrgb(bgcolor)
 
         if image_opts.transparent and len(bgcolor) == 3:

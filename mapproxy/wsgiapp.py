@@ -30,7 +30,6 @@ try:
 except ImportError:
     pass
 
-from mapproxy.compat import iteritems
 from mapproxy.request import Request
 from mapproxy.response import Response
 from mapproxy.config import local_base_config
@@ -77,7 +76,7 @@ class ReloaderApp(object):
         self._app_init_lock = threading.Lock()
 
     def _needs_reload(self):
-        for conf_file, timestamp in iteritems(self.app.config_files):
+        for conf_file, timestamp in self.app.config_files.items():
             m_time = os.path.getmtime(conf_file)
             if m_time > timestamp:
                 return True

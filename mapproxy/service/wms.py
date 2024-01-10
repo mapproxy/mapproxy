@@ -16,9 +16,9 @@
 """
 WMS service handler
 """
-from mapproxy.compat import iteritems
-from mapproxy.compat.itertools import chain
 from functools import partial
+from html import escape
+from itertools import chain
 from math import sqrt
 from mapproxy.cache.tile import CacheInfo
 from mapproxy.featureinfo import combine_docs
@@ -175,7 +175,7 @@ class WMSServer(Server):
         # if '__debug__' in map_request.params:
         #     layers = self.layers.values()
         # else:
-        #     layers = [layer for name, layer in iteritems(self.layers)
+        #     layers = [layer for name, layer in self.layers.items()
         #               if name != '__debug__']
 
         if map_request.params.get('tiled', 'false').lower() == 'true':
@@ -335,8 +335,8 @@ class WMSServer(Server):
                 return PERMIT_ALL_LAYERS, None
             layers = {}
             if result['authorized'] == 'partial':
-                for layer_name, permissions in iteritems(result['layers']):
-                    if permissions.get(feature, False) == True:
+                for layer_name, permissions in result['layers'].items():
+                    if permissions.get(feature, False) is True:
                         layers[layer_name] = permissions.get('limited_to')
             limited_to = result.get('limited_to')
             if limited_to:
@@ -482,7 +482,7 @@ class Capabilities(object):
         self.max_output_pixels = max_output_pixels
 
     def layer_srs_bbox(self, layer, epsg_axis_order=False):
-        for srs, extent in iteritems(self.srs_extents):
+        for srs, extent in self.srs_extents.items():
             if srs not in self.srs:
                 continue
 
@@ -535,16 +535,18 @@ class Capabilities(object):
             output_width = output_height = int(sqrt(self.max_output_pixels))
             max_output_size = (output_width, output_height)
 
-        doc = template.substitute(service=bunch(default='', **self.service),
-                                   layers=self.layers,
-                                   formats=self.image_formats,
-                                   info_formats=self.info_formats,
-                                   srs=self.srs,
-                                   tile_layers=self.tile_layers,
-                                   layer_srs_bbox=self.layer_srs_bbox,
-                                   layer_llbbox=self.layer_llbbox,
-                                   inspire_md=inspire_md,
-                                   max_output_size=max_output_size,
+        doc = template.substitute(
+            service=bunch(default='', **self.service),
+            layers=self.layers,
+            formats=self.image_formats,
+            info_formats=self.info_formats,
+            srs=self.srs,
+            tile_layers=self.tile_layers,
+            layer_srs_bbox=self.layer_srs_bbox,
+            layer_llbbox=self.layer_llbbox,
+            inspire_md=inspire_md,
+            max_output_size=max_output_size,
+            escape=escape
         )
         # strip blank lines
         doc = '\n'.join(l for l in doc.split('\n') if l.rstrip())

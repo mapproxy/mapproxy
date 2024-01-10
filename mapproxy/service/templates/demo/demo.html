@@ -1,11 +1,6 @@
 {{py:
 
-from mapproxy.compat import PY2
-
-if PY2:
-    from urllib import quote, quote_plus
-else:
-    from urllib.parse import quote, quote_plus
+from urllib.parse import quote, quote_plus
 from mapproxy.version import version
 
 def strip(s):

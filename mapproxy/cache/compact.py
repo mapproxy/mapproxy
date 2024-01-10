@@ -19,12 +19,12 @@ import hashlib
 import os
 import shutil
 import struct
+from io import BytesIO
 
 from mapproxy.image import ImageSource
 from mapproxy.cache.base import TileCacheBase, tile_buffer
 from mapproxy.util.fs import ensure_directory, write_atomic
 from mapproxy.util.lock import FileLock
-from mapproxy.compat import BytesIO
 
 import logging
 log = logging.getLogger(__name__)

@@ -24,18 +24,10 @@ import errno
 import time
 import base64
 from contextlib import contextmanager
-from mapproxy.util.py import reraise
-from mapproxy.compat import iteritems, PY2
-from mapproxy.compat.modules import urlparse, parse_qsl
-if PY2:
-    from cStringIO import StringIO
-else:
-    from io import StringIO
+from urllib.parse import parse_qsl, urlsplit
 
-if PY2:
-    from BaseHTTPServer import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
-else:
-    from http.server import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
+from mapproxy.util.py import reraise
+from http.server import HTTPServer as HTTPServer_, BaseHTTPRequestHandler
 
 class RequestsMismatchError(AssertionError):
     def __init__(self, assertions):
@@ -221,7 +213,7 @@ def mock_http_handler(requests_responses, unordered=False, query_comparator=None
         def start_response(self, resp):
             self.send_response(int(resp.get('status', '200')))
             if 'headers' in resp:
-                for key, value in iteritems(resp['headers']):
+                for key, value in resp['headers'].items():
                     self.send_header(key, value)
             self.end_headers()
         def log_request(self, code, size=None):
@@ -430,8 +422,8 @@ def query_to_dict(query):
     return d
 
 def assert_url_eq(url1, url2):
-    parts1 = urlparse.urlsplit(url1)
-    parts2 = urlparse.urlsplit(url2)
+    parts1 = urlsplit(url1)
+    parts2 = urlsplit(url2)
 
     assert parts1[0] == parts2[0], '%s != %s (%s)' % (url1, url2, 'schema')
     assert parts1[1] == parts2[1], '%s != %s (%s)' % (url1, url2, 'location')

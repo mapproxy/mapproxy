@@ -19,7 +19,6 @@ from __future__ import division
 import math
 import time
 
-from mapproxy.compat import iteritems, itervalues
 from mapproxy.response import Response
 from mapproxy.exception import RequestError
 from mapproxy.service.base import Server
@@ -153,8 +152,8 @@ class TileServer(Server):
             if result['authorized'] == 'none':
                 raise RequestError('forbidden', status=403)
             allowed_layers = odict()
-            for layer in itervalues(self.layers):
-                if result['layers'].get(layer.name, {}).get('tile', False) == True:
+            for layer in self.layers.values():
+                if result['layers'].get(layer.name, {}).get('tile', False) is True:
                     allowed_layers[layer.name] = layer
             return allowed_layers
         else:
@@ -274,7 +273,7 @@ class TileLayer(object):
     def checked_dimensions(self, tile_request):
         dimensions = {}
 
-        for dimension, values in iteritems(self.dimensions):
+        for dimension, values in self.dimensions.items():
             value = tile_request.dimensions.get(dimension)
             if value in values:
                 dimensions[dimension] = value

@@ -25,7 +25,6 @@ import unittest
 
 from ..validator import validate, ValidationError, SpecError
 from ..spec import required, one_of, number, recursive, type_spec, anything
-from mapproxy.compat import string_type
 
 def raises(exception):
     def wrapper(f):
@@ -73,7 +72,7 @@ class TestSimpleDict(unittest.TestCase):
         validate(spec, {'hello': []})
 
     def test_instances_and_types(self):
-        spec = {'str()': str(), 'string_type': string_type, 'int': int, 'int()': int()}
+        spec = {'str()': str(), 'string_type': str, 'int': int, 'int()': int()}
         validate(spec, {'str()': 'str', 'string_type': u'☃', 'int': 1, 'int()': 1})
 
 
@@ -194,7 +193,7 @@ class TestTypeSpec(unittest.TestCase):
 
 class TestErrors(unittest.TestCase):
     def test_invalid_types(self):
-        spec = {'str': str, 'str()': str(), 'string_type': string_type, '1': 1, 'int': int}
+        spec = {'str': str, 'str()': str(), 'string_type': str, '1': 1, 'int': int}
         try:
             validate(spec, {'str': 1, 'str()': 1, 'string_type': 1, '1': 'a', 'int': 'int'})
         except ValidationError as ex:
@@ -203,9 +202,7 @@ class TestErrors(unittest.TestCase):
             assert ex.errors[1] == "'int' in int not of type int"
             assert ex.errors[2] == '1 in str not of type str'
             assert ex.errors[3] == '1 in str() not of type str'
-            assert ex.errors[4] in (
-                '1 in string_type not of type basestring', #PY2
-                '1 in string_type not of type str') #PY3
+            assert ex.errors[4] == '1 in string_type not of type str'
         else:
             assert False
 
@@ -259,7 +256,7 @@ class TestErrors(unittest.TestCase):
 def test_one_of_with_custom_types():
     # test for fixed validation of one_of specs with values that are
     # not lists or dicts (e.g. recursive)
-    spec = one_of([str], recursive({required('foo'): string_type}))
+    spec = one_of([str], recursive({required('foo'): str}))
     validate(spec, ['foo', 'bar'])
     validate(spec, {'foo': 'bar'})
     try:

@@ -18,7 +18,6 @@ WMS clients for maps and information.
 """
 import sys
 
-from mapproxy.compat import text_type
 from mapproxy.request.base import split_mime_type
 from mapproxy.layer import InfoQuery
 from mapproxy.source import SourceError
@@ -54,7 +53,7 @@ class WMSClient(object):
 
         if request_method == 'POST':
             url, data = self._query_data(query, format)
-            if isinstance(data, text_type):
+            if isinstance(data, str):
                 data = data.encode('utf-8')
         else:
             url = self._query_url(query, format)

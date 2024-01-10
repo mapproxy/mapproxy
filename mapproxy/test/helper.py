@@ -24,7 +24,6 @@ from contextlib import contextmanager
 from lxml import etree
 
 from mapproxy.test import mocker
-from mapproxy.compat import string_type, PY2
 
 
 class Mocker(object):
@@ -163,7 +162,7 @@ def validate_with_dtd(doc, dtd_name, dtd_basedir=None):
     dtd_filename = os.path.join(dtd_basedir, dtd_name)
     with open(dtd_filename, 'rb') as schema:
         dtd = etree.DTD(schema)
-        if isinstance(doc, (string_type, bytes)):
+        if isinstance(doc, (str, bytes)):
             xml = etree.XML(doc)
         else:
             xml = doc
@@ -180,7 +179,7 @@ def validate_with_xsd(doc, xsd_name, xsd_basedir=None):
     with open(xsd_filename, 'rb') as schema:
         xsd = etree.parse(schema)
         xml_schema = etree.XMLSchema(xsd)
-        if isinstance(doc, (string_type, bytes)):
+        if isinstance(doc, (str, bytes)):
             xml = etree.XML(doc)
         else:
             xml = doc
@@ -216,13 +215,10 @@ def strip_whitespace(data):
 
 @contextmanager
 def capture(bytes=False):
-    if PY2:
-        from StringIO import StringIO
+    if bytes:
+        from io import BytesIO as StringIO
     else:
-        if bytes:
-            from io import BytesIO as StringIO
-        else:
-            from io import StringIO
+        from io import StringIO
 
 
     backup_stdout = sys.stdout

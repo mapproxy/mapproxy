@@ -22,9 +22,10 @@ import re
 import sqlite3
 import threading
 import time
+from io import BytesIO
+from itertools import groupby
 
 from mapproxy.cache.base import TileCacheBase, tile_buffer, REMOVE_ON_UNLOCK
-from mapproxy.compat import BytesIO, PY2, itertools
 from mapproxy.image import ImageSource
 from mapproxy.srs import get_epsg_num
 from mapproxy.util.fs import ensure_directory
@@ -43,7 +44,7 @@ class GeopackageCache(TileCacheBase):
         md5 = hashlib.new('md5', geopackage_file.encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = 'gpkg' + md5.hexdigest()
         self.geopackage_file = geopackage_file
-        
+
         if coverage:
             self.bbox = coverage.transform_to(self.tile_grid.srs).bbox
         else:
@@ -395,10 +396,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
         # open during this slow encoding
         for tile in tiles:
             with tile_buffer(tile) as buf:
-                if PY2:
-                    content = buffer(buf.read())
-                else:
-                    content = buf.read()
+                content = buf.read()
                 x, y, level = tile.coord
                 records.append((level, x, y, content))
 
@@ -560,7 +558,7 @@ class GeopackageLevelCache(TileCacheBase):
 
     def store_tiles(self, tiles, dimensions=None):
         failed = False
-        for level, tiles in itertools.groupby(tiles, key=lambda t: t.coord[2]):
+        for level, tiles in groupby(tiles, key=lambda t: t.coord[2]):
             tiles = [t for t in tiles if not t.stored]
             res = self._get_level(level).store_tiles(tiles, dimensions=dimensions)
             if not res: failed = True

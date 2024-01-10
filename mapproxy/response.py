@@ -19,7 +19,7 @@ Service responses.
 
 import hashlib
 from mapproxy.util.times import format_httpdate, parse_httpdate, timestamp
-from mapproxy.compat import PY2, text_type, iteritems
+
 
 class Response(object):
     charset = 'utf-8'
@@ -145,12 +145,10 @@ class Response(object):
     @property
     def fixed_headers(self):
         headers = []
-        for key, value in iteritems(self.headers):
-            if type(value) != text_type:
+        for key, value in self.headers.items():
+            if type(value) != str:
                 # for str subclasses like ImageFormat
                 value = str(value)
-            if PY2 and isinstance(value, unicode):
-                value = value.encode('utf-8')
             headers.append((key, value))
         return headers
 
@@ -169,7 +167,7 @@ class Response(object):
                 resp_iter = iter(lambda: self.response.read(self.block_size), b'')
         elif not self.response:
             resp_iter = iter([])
-        elif isinstance(self.response, text_type):
+        elif isinstance(self.response, str):
             self.response = self.response.encode(self.charset)
             self.headers['Content-length'] = str(len(self.response))
             resp_iter = iter([self.response])
@@ -184,7 +182,7 @@ class Response(object):
 
     def iter_encode(self, chunks):
         for chunk in chunks:
-            if isinstance(chunk, text_type):
+            if isinstance(chunk, str):
                 chunk = chunk.encode(self.charset)
             yield chunk
 

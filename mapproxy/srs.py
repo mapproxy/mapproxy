@@ -21,8 +21,6 @@ from __future__ import division
 
 import math
 import threading
-from mapproxy.compat.itertools import izip
-from mapproxy.compat import string_type
 from mapproxy.proj import USE_PROJ4_API
 # Old Proj.4 API
 from mapproxy.proj import Proj, transform, set_datapath
@@ -45,7 +43,7 @@ def get_epsg_num(epsg_code):
     >>> get_epsg_num('IGNF:ETRS89UTM28') is None
     True
     """
-    if isinstance(epsg_code, string_type):
+    if isinstance(epsg_code, str):
         if ':' in epsg_code and epsg_code.upper().startswith('EPSG'):
             epsg_code = int(epsg_code.split(':')[1])
         elif epsg_code.isdigit():
@@ -59,7 +57,7 @@ def get_authority(srs_code):
     >>> get_authority('IAU:1000')
     ('IAU', '1000')
     """
-    if isinstance(srs_code, string_type) and ':' in srs_code:
+    if isinstance(srs_code, str) and ':' in srs_code:
         auth_name, auth_id = srs_code.rsplit(':', 1)
         return auth_name, auth_id
 
@@ -72,7 +70,7 @@ def _clean_srs_code(code):
     >>> _clean_srs_code('crs:84')
     'CRS:84'
     """
-    if isinstance(code, string_type) and ':' in code:
+    if isinstance(code, str) and ':' in code:
         return code.upper()
     else:
         return 'EPSG:' + str(code)
@@ -172,7 +170,7 @@ class _SRS_Proj4_API(object):
         x = [p[0] for p in points]
         y = [p[1] for p in points]
         transf_pts = transform(self.proj, other_srs.proj, x, y)
-        return izip(transf_pts[0], transf_pts[1])
+        return zip(transf_pts[0], transf_pts[1])
 
     def transform_bbox_to(self, other_srs, bbox, with_points=16):
         """
@@ -384,7 +382,7 @@ class _SRS(object):
         x = [p[0] for p in points]
         y = [p[1] for p in points]
         transf_pts = transformer.transform(x, y)
-        return izip(transf_pts[0], transf_pts[1])
+        return zip(transf_pts[0], transf_pts[1])
 
     def transform_bbox_to(self, other_srs, bbox, with_points=16):
         """

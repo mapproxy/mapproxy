@@ -26,7 +26,6 @@ import threading
 
 from mapproxy.config import base_config
 from mapproxy.config import local_base_config
-from mapproxy.compat import PY2
 
 import logging
 log_system = logging.getLogger('mapproxy.system')
@@ -178,10 +177,7 @@ class ThreadPool(object):
                 isinstance(task_result[1][1], Exception)):
                 self.shutdown(force=True)
                 exc_class, exc, tb = task_result[1]
-                if PY2:
-                    exec('raise exc_class, exc, tb')
-                else:
-                    raise exc.with_traceback(tb)
+                raise exc.with_traceback(tb)
             yield task_result
 
     def shutdown(self, force=False):

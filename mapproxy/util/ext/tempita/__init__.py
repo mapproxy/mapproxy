@@ -34,17 +34,13 @@ import re
 import sys
 import os
 import tokenize
-from io import StringIO, BytesIO
-from mapproxy.compat import iteritems, PY2, text_type
-from mapproxy.compat.modules import escape
+from html import escape
+from io import StringIO
 from mapproxy.util.py import reraise
 from mapproxy.util.ext.tempita._looper import looper
-from mapproxy.util.ext.tempita.compat3 import bytes, basestring_, next, is_unicode, coerce_text
+from mapproxy.util.ext.tempita.string_utils import basestring_, is_unicode, coerce_text
 
-if PY2:
-    from urllib import quote as url_quote
-else:
-    from urllib.parse import quote as url_quote
+from urllib.parse import quote as url_quote
 
 __all__ = ['TemplateError', 'Template', 'sub', 'HTMLTemplate',
            'sub_html', 'html', 'bunch']
@@ -190,7 +186,7 @@ class Template(object):
                 position=None, name=self.name)
         templ = self.get_template(inherit_template, self)
         self_ = TemplateObject(self.name)
-        for name, value in iteritems(defs):
+        for name, value in defs.items():
             setattr(self_, name, value)
         self_.body = body
         ns = ns.copy()
@@ -322,7 +318,7 @@ class Template(object):
                 return ''
             if self._unicode:
                 try:
-                    value = text_type(value)
+                    value = str(value)
                 except UnicodeDecodeError:
                     value = bytes(value)
             else:
@@ -381,7 +377,7 @@ def paste_script_template_renderer(content, vars, filename=None):
 class bunch(dict):
 
     def __init__(self, **kw):
-        for name, value in iteritems(kw):
+        for name, value in kw.items():
             setattr(self, name, value)
 
     def __setattr__(self, name, value):
@@ -404,7 +400,7 @@ class bunch(dict):
 
     def __repr__(self):
         items = [
-            (k, v) for k, v in iteritems(self)]
+            (k, v) for k, v in self.items()]
         items.sort()
         return '<%s %s>' % (
             self.__class__.__name__,
@@ -539,7 +535,7 @@ class TemplateDef(object):
         values = {}
         sig_args, var_args, var_kw, defaults = self._func_signature
         extra_kw = {}
-        for name, value in iteritems(kw):
+        for name, value in kw.items():
             if not var_kw and name not in sig_args:
                 raise TypeError(
                     'Unexpected argument %s' % name)
@@ -562,7 +558,7 @@ class TemplateDef(object):
                 raise TypeError(
                     'Extra position arguments: %s'
                     % ', '.join(repr(v) for v in args))
-        for name, value_expr in iteritems(defaults):
+        for name, value_expr in defaults.items():
             if name not in values:
                 values[name] = self._template._eval(
                     value_expr, self._ns, self._pos)
@@ -1003,10 +999,7 @@ def parse_def(tokens, name, context):
 
 
 def parse_signature(sig_text, name, pos):
-    if PY2 and isinstance(sig_text, str):
-        lines = BytesIO(sig_text).readline
-    else:
-        lines = StringIO(sig_text).readline
+    lines = StringIO(sig_text).readline
 
     tokens = tokenize.generate_tokens(lines)
     sig_args = []

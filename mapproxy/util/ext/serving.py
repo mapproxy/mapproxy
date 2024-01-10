@@ -15,6 +15,8 @@ import sys
 import time
 import signal
 import subprocess
+from itertools import chain
+from urllib.parse import urlparse, unquote
 
 try:
     import thread
@@ -28,27 +30,14 @@ except ImportError:
     from socketserver import ThreadingMixIn
     from http.server import HTTPServer, BaseHTTPRequestHandler
 
-from mapproxy.compat import iteritems, PY2, text_type
-from mapproxy.compat.itertools import chain
 from mapproxy.util.py import reraise
 
-if PY2:
-    def wsgi_encoding_dance(s, charset='utf-8', errors='replace'):
-        if isinstance(s, bytes):
-            return s
-        return s.encode(charset, errors)
-else:
-    def wsgi_encoding_dance(s, charset='utf-8', errors='replace'):
-        if isinstance(s, text_type):
-            s = s.encode(charset)
-        return s.decode('latin1', errors)
 
-try:
-    from urllib.parse import urlparse as url_parse, unquote as url_unquote
-except ImportError:
-    from urlparse import urlparse as url_parse, unquote as url_unquote
+def wsgi_encoding_dance(s, charset='utf-8', errors='replace'):
+    if isinstance(s, str):
+        s = s.encode(charset)
+    return s.decode('latin1', errors)
 
-# from werkzeug.urls import url_parse, url_unquote
 # from werkzeug.exceptions import InternalServerError, BadRequest
 
 import mapproxy.version
@@ -67,13 +56,13 @@ class WSGIRequestHandler(BaseHTTPRequestHandler, object):
         return 'MapProxy/' + mapproxy.version.__version__ + ' (Werkzeug based)'
 
     def make_environ(self):
-        request_url = url_parse(self.path)
+        request_url = urlparse(self.path)
 
         def shutdown_server():
             self.server.shutdown_signal = True
 
         url_scheme = 'http'
-        path_info = url_unquote(request_url.path)
+        path_info = unquote(request_url.path)
 
         environ = {
             'wsgi.version':         (1, 0),
@@ -395,14 +384,6 @@ def restart_with_reloader():
                 args[1] = args[1] + '.exe'
         new_environ = os.environ.copy()
         new_environ['WERKZEUG_RUN_MAIN'] = 'true'
-
-        # a weird bug on windows. sometimes unicode strings end up in the
-        # environment and subprocess.call does not like this, encode them
-        # to latin1 and continue.
-        if os.name == 'nt' and PY2:
-            for key, value in iteritems(new_environ):
-                if isinstance(value, text_type):
-                    new_environ[key] = value.encode('iso-8859-1')
 
         exit_code = subprocess.call(args, env=new_environ)
         if exit_code != 3:

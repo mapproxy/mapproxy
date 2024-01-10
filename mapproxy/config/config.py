@@ -21,7 +21,7 @@ import copy
 import contextlib
 from mapproxy.util.yaml import load_yaml_file
 from mapproxy.util.ext.local import LocalStack
-from mapproxy.compat import iteritems
+
 
 class Options(dict):
     """
@@ -103,7 +103,7 @@ def local_base_config(conf):
 def _to_options_map(mapping):
     if isinstance(mapping, dict):
         opt = Options()
-        for key, value in iteritems(mapping):
+        for key, value in mapping.items():
             opt[key] = _to_options_map(value)
         return opt
     elif isinstance(mapping, list):
@@ -158,8 +158,9 @@ def load_base_config(config_file=None, clear_existing=False):
     if config_file is None:
         from mapproxy.config import defaults
         config_dict = {}
-        for k, v in iteritems(defaults.__dict__):
-            if k.startswith('_'): continue
+        for k, v in defaults.__dict__.items():
+            if k.startswith('_'):
+                continue
             config_dict[k] = v
         conf_base_dir = os.getcwd()
         load_config(base_config(), config_dict=config_dict, clear_existing=clear_existing)
@@ -175,8 +176,9 @@ def load_base_config(config_file=None, clear_existing=False):
 def load_default_config():
     from mapproxy.config import defaults
     config_dict = {}
-    for k, v in iteritems(defaults.__dict__):
-        if k.startswith('_'): continue
+    for k, v in defaults.__dict__.items():
+        if k.startswith('_'):
+            continue
         config_dict[k] = v
 
     default_conf = Options()
@@ -194,7 +196,7 @@ def load_config(config, config_file=None, config_dict=None, clear_existing=False
     defaults = _to_options_map(config_dict)
 
     if defaults:
-        for key, value in iteritems(defaults):
+        for key, value in defaults.items():
             if key in config and hasattr(config[key], 'update'):
                 config[key].update(value)
             else:

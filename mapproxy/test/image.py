@@ -26,8 +26,6 @@ from mapproxy.compat.image import (
     ImageDraw,
     ImageColor,
 )
-from mapproxy.compat import string_type, iteritems
-
 
 
 def assert_image_mode(img, mode):
@@ -61,7 +59,7 @@ magic_bytes = { 'png': [b"\211PNG\r\n\032\n"],
                }
 
 def create_is_x_functions():
-    for type_, magic in iteritems(magic_bytes):
+    for type_, magic in magic_bytes.items():
         def create_is_type(type_, magic):
             def is_type(fileobj):
                 if not hasattr(fileobj, 'read'):
@@ -116,7 +114,7 @@ def create_tmp_image_file(size, two_colored=False):
 
 def create_image(size, color=None, mode=None):
     if color is not None:
-        if isinstance(color, string_type):
+        if isinstance(color, str):
             if mode is None:
                 mode = 'RGB'
             img = Image.new(mode, size, color=color)

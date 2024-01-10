@@ -34,7 +34,6 @@ from mapproxy.seed.cleanup import cleanup
 from mapproxy.seed.util import (format_seed_task, format_cleanup_task,
     ProgressLog, ProgressStore)
 from mapproxy.seed.cachelock import CacheLocker
-from mapproxy.compat import raw_input
 
 SECONDS_PER_DAY = 60 * 60 * 24
 SECONDS_PER_MINUTE = 60
@@ -368,9 +367,12 @@ def main():
 
 def ask_yes_no_question(question):
     while True:
-        resp = raw_input(question).lower()
-        if resp in ('y', 'yes'): return True
-        elif resp in ('n', 'no'): return False
+        resp = input(question).lower()
+        if resp in ('y', 'yes'):
+            return True
+        elif resp in ('n', 'no'):
+            return False
+
 
 def split_comma_seperated_option(option):
     """

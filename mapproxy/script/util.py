@@ -24,7 +24,6 @@ import sys
 import textwrap
 import logging
 
-from mapproxy.compat import iteritems
 from mapproxy.config.loader import load_plugins
 from mapproxy.script.conf.app import config_command
 from mapproxy.script.defrag import defrag_command
@@ -366,7 +365,7 @@ def print_items(data, title='Commands'):
 
     if title:
         print('%s:' % (title, ), file=sys.stdout)
-    for name, item in iteritems(data):
+    for name, item in data.items():
         help = item.get('help', '')
         name = ('%%-%ds' % name_len) % name
         if help:

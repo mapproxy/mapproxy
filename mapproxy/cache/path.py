@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import os
-from mapproxy.compat import string_type
 from mapproxy.util.fs import ensure_directory
 from mapproxy.request.base import NoCaseMultiDict
 
@@ -43,7 +42,7 @@ def level_location(level, cache_dir, dimensions=None):
     """
     dim_path = dimensions_part(dimensions)
 
-    if isinstance(level, string_type):
+    if isinstance(level, str):
         return os.path.join(cache_dir, dim_path, level)
     else:
         return os.path.join(cache_dir, dim_path, "%02d" % level)
@@ -77,7 +76,7 @@ def level_part(level):
     >>> level_part('2')
     '2'
     """
-    if isinstance(level, string_type):
+    if isinstance(level, str):
         return level
     else:
         return "%02d" % level

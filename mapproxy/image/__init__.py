@@ -24,7 +24,6 @@ from mapproxy.compat.image import Image, ImageChops, ImageFileDirectory_v2, Tiff
 from mapproxy.image.opts import create_image, ImageFormat
 from mapproxy.config import base_config
 from mapproxy.srs import make_lin_transf, get_epsg_num
-from mapproxy.compat import string_type
 
 import logging
 from functools import reduce
@@ -138,7 +137,7 @@ class ImageSource(BaseImageSource):
     def source(self, source):
         self._img = None
         self._buf = None
-        if isinstance(source, string_type):
+        if isinstance(source, str):
             self._fname = source
         elif isinstance(source, Image.Image):
             self._img = source
