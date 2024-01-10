@@ -18,8 +18,8 @@ Demo service handler
 """
 from __future__ import division
 
+import importlib_resources
 import os
-import pkg_resources
 import mimetypes
 from collections import defaultdict
 
@@ -36,7 +36,7 @@ from urllib import request as urllib2
 
 from mapproxy.template import template_loader, bunch
 env = {'bunch': bunch}
-get_template = template_loader(__name__, 'templates', namespace=env)
+get_template = template_loader(__package__, 'templates', namespace=env)
 
 # Used by plugins
 extra_demo_server_handlers = set()
@@ -80,7 +80,7 @@ def static_filename(name):
     if base_config().template_dir:
         return os.path.join(base_config().template_dir, name)
     else:
-        return pkg_resources.resource_filename(__name__, os.path.join('templates', name))
+        return importlib_resources.files(__package__).joinpath('templates').joinpath(name)
 
 
 class DemoServer(Server):

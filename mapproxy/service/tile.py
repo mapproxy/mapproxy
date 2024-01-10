@@ -38,7 +38,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-get_template = template_loader(__name__, 'templates')
+get_template = template_loader(__package__, 'templates')
 
 
 class TileServer(Server):

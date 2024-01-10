@@ -16,8 +16,8 @@
 """
 Loading of template files (e.g. capability documents)
 """
+import importlib_resources
 import os
-import pkg_resources
 from mapproxy.util.ext.tempita import Template, bunch
 from mapproxy.config.config import base_config
 
@@ -33,7 +33,7 @@ def template_loader(module_name, location='templates', namespace={}):
             elif base_config().template_dir:
                 template_file = os.path.join(base_config().template_dir, name)
             else:
-                template_file = pkg_resources.resource_filename(module_name, location + '/' + name)
+                template_file = importlib_resources.files(module_name).joinpath(location).joinpath(name)
             return Template.from_filename(template_file, namespace=namespace, encoding='utf-8',
                                           default_inherit=default_inherit, get_template=self)
     return loader()

@@ -14,9 +14,10 @@
 # limitations under the License.
 
 from __future__ import division
+
 import logging
 import os
-import pkg_resources
+import importlib_resources
 
 from mapproxy.config import base_config, abspath
 from mapproxy.compat.image import Image, ImageColor, ImageDraw, ImageFont
@@ -344,7 +345,7 @@ def font_file(font_name):
         abspath(font_dir)
         path = os.path.join(font_dir, font_name + '.ttf')
     else:
-        path = pkg_resources.resource_filename(__name__, 'fonts/' + font_name + '.ttf')
+        path = str(importlib_resources.files(__package__).joinpath('fonts').joinpath(font_name + '.ttf'))
     return path
 
 

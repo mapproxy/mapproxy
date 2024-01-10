@@ -56,7 +56,7 @@ MAX_UNUSED_MAPS = 10
 if mapnik and not hasattr(mapnik, 'Box2d'):
     mapnik.Box2d = mapnik.Envelope
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(__package__)
 
 
 class MapnikSource(MapLayer):
