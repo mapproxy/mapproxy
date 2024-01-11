@@ -20,11 +20,13 @@
 
 number_types = (float, int)
 
+
 class required(str):
     """
     Mark a dictionary key as required.
     """
     pass
+
 
 class anything(object):
     """
@@ -33,8 +35,10 @@ class anything(object):
     >>> from .validator import validate
     >>> validate({anything(): 1}, {'foo': 2, 'bar': 49})
     """
+
     def compare_type(self, data):
         return True
+
 
 class recursive(object):
     """
@@ -44,10 +48,13 @@ class recursive(object):
     >>> spec = recursive({'foo': recursive()})
     >>> validate(spec, {'foo': {'foo': {'foo':{}}}})
     """
+
     def __init__(self, spec=None):
         self.spec = spec
+
     def compare_type(self, data):
         return isinstance(data, type(self.spec))
+
 
 class one_of(object):
     """
@@ -57,11 +64,15 @@ class one_of(object):
     >>> validate(one_of(str(), number()), 'foo')
     >>> validate(one_of(str(), number()), 32)
     """
+
     def __init__(self, *specs):
         self.specs = specs
 
 # typo, backwards compatibility
+
+
 one_off = one_of
+
 
 def combined(*dicts):
     """
@@ -76,6 +87,7 @@ def combined(*dicts):
         result.update(d)
     return result
 
+
 class number(object):
     """
     Any number.
@@ -85,9 +97,11 @@ class number(object):
     >>> validate(number(), -32.0)
     >>> validate(number(), 99999999999999)
     """
+
     def compare_type(self, data):
         # True/False are also instances of int, exclude them
         return isinstance(data, number_types) and not isinstance(data, bool)
+
 
 class type_spec(object):
     def __init__(self, type_key, specs):

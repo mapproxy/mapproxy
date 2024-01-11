@@ -18,6 +18,7 @@ from mapproxy.srs import SRS
 
 import logging
 
+
 def sources(cap):
     sources = {}
     for layer in cap.layers_list():
@@ -26,7 +27,9 @@ def sources(cap):
 
     return sources
 
+
 _checked_srs = {}
+
 
 def check_srs(srs):
     if srs not in _checked_srs:
@@ -38,6 +41,7 @@ def check_srs(srs):
             _checked_srs[srs] = False
 
     return _checked_srs[srs]
+
 
 def for_layer(cap, layer):
     source = {'type': 'wms'}
@@ -82,5 +86,3 @@ def for_layer(cap, layer):
             source['max_res'] = res_hint[1]
 
     return layer['name'], source
-
-

@@ -22,16 +22,16 @@ from mapproxy.test.image import is_png
 class Test_Concat_Legends(object):
     def test_concatenation(self):
         legends = []
-        img_1 = Image.new(mode='RGBA', size=(30,10), color="red")
-        img_2 = Image.new(mode='RGBA', size=(10,10), color="black")
-        img_3 = Image.new(mode='RGBA', size=(50,80), color="blue")
+        img_1 = Image.new(mode='RGBA', size=(30, 10), color="red")
+        img_2 = Image.new(mode='RGBA', size=(10, 10), color="black")
+        img_3 = Image.new(mode='RGBA', size=(50, 80), color="blue")
         legends.append(ImageSource(img_1))
         legends.append(ImageSource(img_2))
         legends.append(ImageSource(img_3))
         source = concat_legends(legends)
         src_img = source.as_image()
-        assert src_img.getpixel((0,90)) == (255,0,0,255)
-        assert src_img.getpixel((0,80)) == (0,0,0,255)
-        assert src_img.getpixel((0,0)) == (0,0,255,255)
-        assert src_img.getpixel((49,99)) == (255,255,255,0)
+        assert src_img.getpixel((0, 90)) == (255, 0, 0, 255)
+        assert src_img.getpixel((0, 80)) == (0, 0, 0, 255)
+        assert src_img.getpixel((0, 0)) == (0, 0, 255, 255)
+        assert src_img.getpixel((49, 99)) == (255, 255, 255, 0)
         assert is_png(source.as_buffer())

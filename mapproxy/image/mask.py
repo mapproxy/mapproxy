@@ -19,8 +19,9 @@ from mapproxy.image import ImageSource
 from mapproxy.image.opts import create_image
 from mapproxy.util.geom import flatten_to_polygons
 
+
 def mask_image_source_from_coverage(img_source, bbox, bbox_srs, coverage,
-    image_opts=None):
+                                    image_opts=None):
     if image_opts is None:
         image_opts = img_source.image_opts
     img = img_source.as_image()
@@ -29,6 +30,7 @@ def mask_image_source_from_coverage(img_source, bbox, bbox_srs, coverage,
     result.paste(img, (0, 0), img)
     return ImageSource(result, image_opts=image_opts)
 
+
 def mask_image(img, bbox, bbox_srs, coverage):
     geom = mask_polygons(bbox, SRS(bbox_srs), coverage)
     mask = image_mask_from_geom(img.size, bbox, geom)
@@ -36,10 +38,12 @@ def mask_image(img, bbox, bbox_srs, coverage):
     img.paste((255, 255, 255, 0), (0, 0), mask)
     return img
 
+
 def mask_polygons(bbox, bbox_srs, coverage):
     coverage = coverage.transform_to(bbox_srs)
     coverage = coverage.intersection(bbox, bbox_srs)
     return flatten_to_polygons(coverage.geom)
+
 
 def image_mask_from_geom(size, bbox, polygons):
     mask = Image.new('L', size, 255)
@@ -62,7 +66,7 @@ def image_mask_from_geom(size, bbox, polygons):
         # little bit smaller polygon does not include touched pixels outside coverage
         buffered = p.buffer(buffer, resolution=1, join_style=2)
 
-        if buffered.is_empty: # can be empty after negative buffer
+        if buffered.is_empty:  # can be empty after negative buffer
             continue
 
         if buffered.type == 'MultiPolygon':

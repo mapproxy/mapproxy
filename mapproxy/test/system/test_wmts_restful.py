@@ -97,7 +97,7 @@ class TestWMTS(SysTest):
                 resourceURLs[2],
                 "application/json",
                 "FeatureInfo",
-                "http://localhost/wmts/myrest/wms_cache/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.geojson",
+                "http://localhost/wmts/myrest/wms_cache/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}/{I}/{J}.geojson",  # noqa
             ],
         ]:
             assert rurl.attrib["format"] == format
@@ -190,7 +190,7 @@ class TestWMTS(SysTest):
             "/service?layers=foo,bar"
             + "&bbox=-20037508.342789244,-20037508.342789244,20037508.342789244,20037508.342789244"
             + "&width=256&height=256&x=17&y=27&query_layers=foo,bar&format=image%2Fpng&srs=EPSG%3A900913"
-            + "&request=GetFeatureInfo&version=1.1.1&service=WMS&styles=&info_format=application/gml%2bxml%3b%20version=3.1"
+            + "&request=GetFeatureInfo&version=1.1.1&service=WMS&styles=&info_format=application/gml%2bxml%3b%20version=3.1"  # noqa
         )
         serv.returns(b"<root />")
         with serv:

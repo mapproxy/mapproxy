@@ -47,6 +47,7 @@ def split_cgi_response(data):
         prev_n = next_n+1
     return {}, data
 
+
 def headers_dict(header_lines):
     headers = {}
     for line in header_lines:
@@ -63,6 +64,7 @@ def headers_dict(header_lines):
         headers[key] = value
     return headers
 
+
 class IOwithHeaders(object):
     def __init__(self, io, headers):
         self.io = io
@@ -70,6 +72,7 @@ class IOwithHeaders(object):
 
     def __getattr__(self, name):
         return getattr(self.io, name)
+
 
 class CGIClient(object):
     def __init__(self, script, no_headers=False, working_directory=None):
@@ -95,9 +98,9 @@ class CGIClient(object):
         start_time = time.time()
         try:
             p = subprocess.Popen([self.script], env=environ,
-                stdout=subprocess.PIPE,
-                cwd=self.working_directory or os.path.dirname(self.script)
-            )
+                                 stdout=subprocess.PIPE,
+                                 cwd=self.working_directory or os.path.dirname(self.script)
+                                 )
         except OSError as ex:
             if ex.errno == errno.ENOENT:
                 raise SourceError('CGI script not found (%s)' % (self.script,))
@@ -110,7 +113,7 @@ class CGIClient(object):
         ret = p.wait()
         if ret != 0:
             raise HTTPClientError('Error during CGI call (exit code: %d)'
-                                              % (ret, ))
+                                  % (ret, ))
 
         if self.no_headers:
             content = stdout
@@ -127,7 +130,7 @@ class CGIClient(object):
         content = IOwithHeaders(BytesIO(content), headers)
 
         log_request('%s:%s' % (self.script, parsed_url.query),
-            status_code, size=size, method='CGI', duration=time.time()-start_time)
+                    status_code, size=size, method='CGI', duration=time.time()-start_time)
         return content
 
     def open_image(self, url, data=None):
@@ -136,4 +139,3 @@ class CGIClient(object):
             if not resp.headers['Content-type'].lower().startswith('image'):
                 raise HTTPClientError('response is not an image: (%s)' % (resp.read()))
         return ImageSource(resp)
-

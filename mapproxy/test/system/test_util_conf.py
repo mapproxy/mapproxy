@@ -223,25 +223,32 @@ class TestMapProxyConfCmd(object):
         with open(self.tmp_filename('mapproxy.yaml'), 'rb') as f:
             conf = load_yaml(f)
 
-            assert conf['grids'] == {'cache_900913': {'origin': 'nw', 'srs': 'EPSG:900913',
-                                 'res': [156543.03392804097, 78271.51696402048, 39135.75848201024, 19567.87924100512,
-                                         9783.93962050256, 4891.96981025128, 2445.98490512564, 1222.99245256282,
-                                         611.49622628141, 305.748113140705, 152.8740565703525, 76.43702828517625,
-                                         38.21851414258813, 19.109257071294063, 9.554628535647032, 4.777314267823516,
-                                         2.388657133911758, 1.194328566955879, 0.5971642834779395],
-                                 'bbox': [-20037508.342789244, -20037508.342789244, 20037508.342789244,
-                                          20037508.342789244], 'tile_size': [256, 256]}}
+            assert conf['grids'] == {'cache_900913': {
+                'origin': 'nw', 'srs': 'EPSG:900913',
+                'res': [
+                    156543.03392804097, 78271.51696402048, 39135.75848201024, 19567.87924100512,
+                    9783.93962050256, 4891.96981025128, 2445.98490512564, 1222.99245256282,
+                    611.49622628141, 305.748113140705, 152.8740565703525, 76.43702828517625,
+                    38.21851414258813, 19.109257071294063, 9.554628535647032, 4.777314267823516,
+                    2.388657133911758, 1.194328566955879, 0.5971642834779395],
+                'bbox': [
+                    -20037508.342789244, -20037508.342789244, 20037508.342789244,
+                    20037508.342789244],
+                'tile_size': [256, 256]}}
 
             conf['caches']['cache_cache']['cache']['filename'] = None
-            assert conf['caches'] == {'cache_cache': {'sources': [], 'cache': {'table_name': 'cache', 'type': 'geopackage',
-                                                         'filename': None},
-                                'grids': ['cache_900913']}
-            }
 
+            assert conf['caches'] == {
+                'cache_cache': {
+                    'sources': [],
+                    'cache': {'table_name': 'cache', 'type': 'geopackage', 'filename': None},
+                    'grids': ['cache_900913']
+                }
+            }
             assert conf['layers'] == [{'sources': ['cache_cache'], 'name': 'cache', 'title': 'cache'}]
 
             assert conf['services'] == {'wms': None, 'demo': None, 'tms': {'origin': 'nw', 'use_grid_names': True},
-                          'kml': {'use_grid_names': True}, 'wmts': None}
+                                        'kml': {'use_grid_names': True}, 'wmts': None}
 
     def test_overwrites(self):
         with capture(bytes=True) as (stdout, stderr):
@@ -354,7 +361,7 @@ class TestMapProxyConfCmd(object):
         expected_results = 900913
         assert expected_results == returned_contents
 
-    def test_get_layer_organization_coordsys_id(self):
+    def test_get_layer_organization_coordsys_id_2(self):
         returned_contents = get_table_tile_matrix(self.get_test_gpkg(), 'cache')
         expected_results = [(0, 1, 1, 256, 256, 156543.03392804097, 156543.03392804097),
                             (1, 2, 2, 256, 256, 78271.51696402048, 78271.51696402048),
@@ -413,15 +420,15 @@ class TestMapProxyConfCmd(object):
         expected_results = {'layers': [{'sources': ['cache_cache'], 'name': 'cache', 'title': 'cache'}],
                             'services': {'wms': None, 'demo': None, 'tms': {'origin': 'nw', 'use_grid_names': True},
                                          'kml': {'use_grid_names': True}, 'wmts': None}, 'grids': {
-                'cache_900913': {'origin': 'nw', 'srs': 'EPSG:900913',
-                                 'res': [156543.03392804097, 78271.51696402048, 39135.75848201024, 19567.87924100512,
-                                         9783.93962050256, 4891.96981025128, 2445.98490512564, 1222.99245256282,
-                                         611.49622628141, 305.748113140705, 152.8740565703525, 76.43702828517625,
-                                         38.21851414258813, 19.109257071294063, 9.554628535647032, 4.777314267823516,
-                                         2.388657133911758, 1.194328566955879, 0.5971642834779395],
-                                 'bbox': [-20037508.342789244, -20037508.342789244, 20037508.342789244,
-                                          20037508.342789244], 'tile_size': [256, 256]}}, 'caches': {
-                'cache_cache': {'sources': [], 'cache': {'table_name': 'cache', 'type': 'geopackage',
-                                                         'filename': None},
-                                'grids': ['cache_900913']}}}
+            'cache_900913': {'origin': 'nw', 'srs': 'EPSG:900913',
+                             'res': [156543.03392804097, 78271.51696402048, 39135.75848201024, 19567.87924100512,
+                                     9783.93962050256, 4891.96981025128, 2445.98490512564, 1222.99245256282,
+                                     611.49622628141, 305.748113140705, 152.8740565703525, 76.43702828517625,
+                                     38.21851414258813, 19.109257071294063, 9.554628535647032, 4.777314267823516,
+                                     2.388657133911758, 1.194328566955879, 0.5971642834779395],
+                             'bbox': [-20037508.342789244, -20037508.342789244, 20037508.342789244,
+                                      20037508.342789244], 'tile_size': [256, 256]}}, 'caches': {
+            'cache_cache': {'sources': [], 'cache': {'table_name': 'cache', 'type': 'geopackage',
+                                                     'filename': None},
+                            'grids': ['cache_900913']}}}
         assert expected_results == returned_contents

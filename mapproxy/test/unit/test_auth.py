@@ -34,22 +34,28 @@ class DummyLayer(MapLayer):
     extent = DefaultMapExtent()
     has_legend = False
     queryable = False
+
     def __init__(self, name):
         MapLayer.__init__(self)
         self.name = name
         self.requested = False
         self.queried = False
+
     def get_map(self, query):
         self.requested = True
+
     def get_info(self, query):
         self.queried = True
+
     def map_layers_for_query(self, query):
         return [(self.name, self)]
+
     def info_layers_for_query(self, query):
         return [(self.name, self)]
 
-MAP_REQ = "FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG%3A4326&BBOX=5,46,8,48&WIDTH=60&HEIGHT=40"
-FI_REQ = "FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&STYLES=&SRS=EPSG%3A4326&BBOX=5,46,8,48&WIDTH=60&HEIGHT=40&X=30&Y=20"
+
+MAP_REQ = "FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG%3A4326&BBOX=5,46,8,48&WIDTH=60&HEIGHT=40"  # noqa
+FI_REQ = "FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&STYLES=&SRS=EPSG%3A4326&BBOX=5,46,8,48&WIDTH=60&HEIGHT=40&X=30&Y=20"  # noqa
 
 
 class TestWMSAuth(object):
@@ -76,7 +82,6 @@ class TestWMSAuth(object):
         wms_layers['layer1'] = WMSGroupLayer('layer1', None, None,
                                              [wms_layers['layer1a'], wms_layers['layer1b']])
 
-
         layers['layer2a'] = DummyLayer('layer2a')
         wms_layers['layer2a'] = WMSLayer('layer2a', None, [layers['layer2a']],
                                          info_layers=[layers['layer2a']])
@@ -90,11 +95,11 @@ class TestWMSAuth(object):
                                              [wms_layers['layer2a'], wms_layers['layer2b']])
 
         root_layer = WMSGroupLayer(None, 'root layer', None, [wms_layers['layer1'],
-                                                  wms_layers['layer2']])
+                                                              wms_layers['layer2']])
         self.wms_layers = wms_layers
         self.layers = layers
         self.server = WMSServer(md={}, root_layer=root_layer, srs=['EPSG:4326'],
-            image_formats={'image/png': ImageOptions(format='image/png')})
+                                image_formats={'image/png': ImageOptions(format='image/png')})
 
 
 # ###
@@ -110,7 +115,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
     def test_allow_all(self):
         def auth(service, layers, **kw):
             assert layers == 'layer1a layer1b'.split()
-            return { 'authorized': 'full' }
+            return {'authorized': 'full'}
         self.server.map(self.map_request('layer1', auth))
         assert self.layers['layer1a'].requested
         assert self.layers['layer1b'].requested
@@ -196,7 +201,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
                 'layers': {
                     'layer1a': {'map': False},
                     # deny is the default
-                    #'layer1b': {'map': False},
+                    # 'layer1b': {'map': False},
                     'layer2a': {'map': True},
                     'layer2b': {'map': False},
                 }
@@ -219,6 +224,7 @@ class TestWMSGetMapAuth(TestWMSAuth):
             assert ex.status == 401, '%s != 401' % (ex.status, )
         else:
             assert False, 'expected RequestError'
+
 
 class TestWMSGetFeatureInfoAuth(TestWMSAuth):
     def fi_request(self, layers, auth):
@@ -307,7 +313,7 @@ class TestWMSGetFeatureInfoAuth(TestWMSAuth):
                 'layers': {
                     'layer1a': {'featureinfo': False},
                     # deny is the default
-                    #'layer1b': {'featureinfo': False},
+                    # 'layer1b': {'featureinfo': False},
                     'layer2a': {'featureinfo': True},
                     'layer2b': {'featureinfo': False},
                 }
@@ -335,8 +341,10 @@ class DummyTileLayer(object):
         resp.timestamp = 0
         return resp
 
+
 class TestTMSAuth(object):
     service = 'tms'
+
     def setup_method(self):
         self.layers = {}
 
@@ -399,6 +407,7 @@ class TestTMSAuth(object):
         self.server.map(self.tile_request('layer1/0/0/0.png', auth))
         assert self.layers['layer1'].requested
 
+
 class TestTileAuth(TestTMSAuth):
     def tile_request(self, tile, auth):
         env = make_wsgi_env('', extra_environ={'mapproxy.authorize': auth,
@@ -406,8 +415,10 @@ class TestTileAuth(TestTMSAuth):
         req = Request(env)
         return tile_request(req)
 
+
 class TestKMLAuth(TestTMSAuth):
     service = 'kml'
+
     def setup_method(self):
         TestTMSAuth.setup_method(self)
         self.server = KMLServer(self.layers, {})

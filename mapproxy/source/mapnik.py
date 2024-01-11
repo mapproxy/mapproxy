@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from __future__ import absolute_import
+import logging
 
 import sys
 import time
@@ -25,7 +26,7 @@ from mapproxy.grid import tile_grid
 from mapproxy.image import ImageSource
 from mapproxy.image.opts import ImageOptions
 from mapproxy.layer import MapExtent, DefaultMapExtent, BlankImage, MapLayer
-from mapproxy.source import  SourceError
+from mapproxy.source import SourceError
 from mapproxy.client.log import log_request
 from mapproxy.util.py import reraise_exception
 from mapproxy.util.async_ import run_non_blocking
@@ -45,21 +46,22 @@ try:
     Queue = queue.Queue
     Empty = queue.Empty
     Full = queue.Full
-except ImportError: # in python2 it is called Queue
+except ImportError:  # in python2 it is called Queue
     import Queue
     Empty = Queue.Empty
     Full = Queue.Full
-MAX_UNUSED_MAPS=10
+MAX_UNUSED_MAPS = 10
 
 # fake 2.0 API for older versions
 if mapnik and not hasattr(mapnik, 'Box2d'):
     mapnik.Box2d = mapnik.Envelope
 
-import logging
 log = logging.getLogger(__name__)
+
 
 class MapnikSource(MapLayer):
     supports_meta_tiles = True
+
     def __init__(self, mapfile, layers=None, image_opts=None, coverage=None,
                  res_range=None, lock=None, reuse_map_objects=False,
                  scale_factor=None, multithreaded=False):
@@ -78,11 +80,11 @@ class MapnikSource(MapLayer):
             self.extent = DefaultMapExtent()
         if multithreaded:
             # global objects allow caching over multiple instances within the same worker process
-            global _map_objs # mapnik map objects by cachekey
+            global _map_objs  # mapnik map objects by cachekey
             _map_objs = {}
             global _map_objs_lock
             _map_objs_lock = threading.Lock()
-            global _map_objs_queues # queues of unused mapnik map objects by PID and mapfile
+            global _map_objs_queues  # queues of unused mapnik map objects by PID and mapfile
             _map_objs_queues = {}
         else:
             # instance variables guarantee separation of caches
@@ -98,6 +100,7 @@ class MapnikSource(MapLayer):
         if self.multithreaded:
             return _map_objs
         return self._map_objs
+
     def _map_cache_lock(self):
         """Get the cache-locks for map objects.
 
@@ -162,7 +165,7 @@ class MapnikSource(MapLayer):
     def _put_unused_map_obj(self, mapfile, m):
         process_id = multiprocessing.current_process()._identity
         queue_cachekey = (process_id, mapfile)
-        if not queue_cachekey in _map_objs_queues:
+        if queue_cachekey not in _map_objs_queues:
             _map_objs_queues[queue_cachekey] = Queue(MAX_UNUSED_MAPS)
         try:
             _map_objs_queues[queue_cachekey].put_nowait(m)
@@ -253,7 +256,7 @@ class MapnikSource(MapLayer):
             if data:
                 size = len(data)
             log_request('%s:%s:%s:%s' % (mapfile, query.bbox, query.srs.srs_code, query.size),
-                status='200' if data else '500', size=size, method='API', duration=time.time()-start_time)
+                        status='200' if data else '500', size=size, method='API', duration=time.time()-start_time)
 
         return ImageSource(BytesIO(data), size=query.size,
-            image_opts=ImageOptions(format=query.format))
+                           image_opts=ImageOptions(format=query.format))

@@ -29,14 +29,16 @@ def parse_httpdate(date):
     if date is None:
         return None
     if date[0] < 1970:
-        date = (date[0] + 2000,) +date[1:]
+        date = (date[0] + 2000,) + date[1:]
     return calendar.timegm(date)
+
 
 def timestamp(date):
     if isinstance(date, datetime.datetime):
         date = mktime(date.timetuple())
     assert isinstance(date, (float, int))
     return date
+
 
 def format_httpdate(date):
     date = timestamp(date)
@@ -56,6 +58,7 @@ def timestamp_before(weeks=0, days=0, hours=0, minutes=0, seconds=0):
     delta = datetime.timedelta(weeks=weeks, days=days, hours=hours, minutes=minutes, seconds=seconds)
     before = datetime.datetime.now() - delta
     return mktime(before.timetuple())
+
 
 def timestamp_from_isodate(isodate):
     """

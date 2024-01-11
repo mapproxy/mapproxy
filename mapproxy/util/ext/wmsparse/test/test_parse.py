@@ -35,21 +35,8 @@ class TestWMS111(object):
         lyrs = cap.layers_list()
         assert len(lyrs) == 2
         assert lyrs[0]["llbbox"] == [-180.0, -85.0511287798, 180.0, 85.0511287798]
-        assert lyrs[0]["srs"] == set(
-            [
-                "EPSG:4326",
-                "EPSG:4258",
-                "CRS:84",
-                "EPSG:900913",
-                "EPSG:31466",
-                "EPSG:31467",
-                "EPSG:31468",
-                "EPSG:25831",
-                "EPSG:25832",
-                "EPSG:25833",
-                "EPSG:3857",
-            ]
-        )
+        assert lyrs[0]["srs"] == {"EPSG:4326", "EPSG:4258", "CRS:84", "EPSG:900913", "EPSG:31466", "EPSG:31467",
+                                  "EPSG:31468", "EPSG:25831", "EPSG:25832", "EPSG:25833", "EPSG:3857"}
         assert len(lyrs[0]["bbox_srs"]) == 1
         assert lyrs[0]["bbox_srs"]["EPSG:4326"] == [
             -180.0,
@@ -63,37 +50,14 @@ class TestWMS111(object):
         lyrs = cap.layers_list()
         assert len(lyrs) == 46
         assert lyrs[0]["llbbox"] == [-10.4, 35.7, 43.0, 74.1]
-        assert lyrs[0]["srs"] == set(
-            [
-                "EPSG:31467",
-                "EPSG:31466",
-                "EPSG:31465",
-                "EPSG:31464",
-                "EPSG:31463",
-                "EPSG:31462",
-                "EPSG:4326",
-                "EPSG:31469",
-                "EPSG:31468",
-                "EPSG:31257",
-                "EPSG:31287",
-                "EPSG:31286",
-                "EPSG:31285",
-                "EPSG:31284",
-                "EPSG:31258",
-                "EPSG:31259",
-                "EPSG:31492",
-                "EPSG:31493",
-                "EPSG:25833",
-                "EPSG:25832",
-                "EPSG:31494",
-                "EPSG:31495",
-                "EPSG:28992",
-            ]
-        )
+        assert lyrs[0]["srs"] == {"EPSG:31467", "EPSG:31466", "EPSG:31465", "EPSG:31464", "EPSG:31463", "EPSG:31462",
+                                  "EPSG:4326", "EPSG:31469", "EPSG:31468", "EPSG:31257", "EPSG:31287", "EPSG:31286",
+                                  "EPSG:31285", "EPSG:31284", "EPSG:31258", "EPSG:31259", "EPSG:31492", "EPSG:31493",
+                                  "EPSG:25833", "EPSG:25832", "EPSG:31494", "EPSG:31495", "EPSG:28992"}
         assert lyrs[1]["name"] == "Grenzen"
         assert (
             lyrs[1]["legend"]["url"]
-            == "http://example.org/service?SERVICE=WMS&version=1.1.1&service=WMS&request=GetLegendGraphic&layer=Grenzen&format=image/png&STYLE=default"
+            == "http://example.org/service?SERVICE=WMS&version=1.1.1&service=WMS&request=GetLegendGraphic&layer=Grenzen&format=image/png&STYLE=default"  # noqa
         )
 
 
@@ -113,25 +77,10 @@ class TestWMS130(object):
         lyrs = cap.layers_list()
         assert len(lyrs) == 2
         assert lyrs[0]["llbbox"] == [-180.0, -85.0511287798, 180.0, 85.0511287798]
-        assert lyrs[0]["srs"] == set(
-            [
-                "EPSG:4326",
-                "EPSG:4258",
-                "CRS:84",
-                "EPSG:900913",
-                "EPSG:31466",
-                "EPSG:31467",
-                "EPSG:31468",
-                "EPSG:25831",
-                "EPSG:25832",
-                "EPSG:25833",
-                "EPSG:3857",
-            ]
-        )
+        assert lyrs[0]["srs"] == {"EPSG:4326", "EPSG:4258", "CRS:84", "EPSG:900913", "EPSG:31466", "EPSG:31467",
+                                  "EPSG:31468", "EPSG:25831", "EPSG:25832", "EPSG:25833", "EPSG:3857"}
         assert len(lyrs[0]["bbox_srs"]) == 4
-        assert set(lyrs[0]["bbox_srs"].keys()) == set(
-            ["CRS:84", "EPSG:900913", "EPSG:4326", "EPSG:3857"]
-        )
+        assert set(lyrs[0]["bbox_srs"].keys()) == {"CRS:84", "EPSG:900913", "EPSG:4326", "EPSG:3857"}
         assert lyrs[0]["bbox_srs"]["EPSG:3857"] == [
             -20037508.3428,
             -20037508.3428,

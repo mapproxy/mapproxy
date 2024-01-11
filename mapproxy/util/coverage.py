@@ -39,18 +39,20 @@ except ImportError:
     # missing Shapely is handled by require_geom_support
     pass
 
+
 def coverage(geom, srs, clip=False):
     if isinstance(geom, (list, tuple)):
         return BBOXCoverage(geom, srs, clip=clip)
     else:
         return GeomCoverage(geom, srs, clip=clip)
 
+
 def load_limited_to(limited_to):
     require_geom_support()
     srs = SRS(limited_to['srs'])
     geom = limited_to['geometry']
 
-    if not hasattr(geom, 'type'): # not a Shapely geometry
+    if not hasattr(geom, 'type'):  # not a Shapely geometry
         if isinstance(geom, (list, tuple)):
             geom = bbox_polygon(geom)
         else:
@@ -62,9 +64,11 @@ def load_limited_to(limited_to):
 
     return GeomCoverage(geom, srs, clip=True)
 
+
 class MultiCoverage(object):
     clip = False
     """Aggregates multiple coverages"""
+
     def __init__(self, coverages):
         self.coverages = coverages
         self.bbox = self.extent.bbox
@@ -105,6 +109,7 @@ class MultiCoverage(object):
 
     def __repr__(self):
         return '<MultiCoverage %r: %r>' % (self.extent.llbbox, self.coverages)
+
 
 class BBOXCoverage(object):
     def __init__(self, bbox, srs, clip=False):
@@ -260,6 +265,7 @@ class GeomCoverage(object):
     def __repr__(self):
         return '<GeomCoverage %r: %r>' % (self.extent.llbbox, self.geom)
 
+
 def union_coverage(coverages, clip=None):
     """
     Create a coverage that is the union of all `coverages`.
@@ -280,6 +286,7 @@ def union_coverage(coverages, clip=None):
     union = shapely.ops.cascaded_union(geoms)
 
     return GeomCoverage(union, srs=srs, clip=clip)
+
 
 def diff_coverage(coverages, clip=None):
     """
@@ -304,6 +311,7 @@ def diff_coverage(coverages, clip=None):
         raise EmptyGeometryError("diff did not return any geometry")
 
     return GeomCoverage(diff, srs=srs, clip=clip)
+
 
 def intersection_coverage(coverages, clip=None):
     """

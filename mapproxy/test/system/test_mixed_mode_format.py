@@ -52,7 +52,7 @@ class TestWMS(SysTest):
                 transparent="true",
             ),
         )
-        self.expected_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256" "&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=512" "&BBOX=-20037508.3428,0.0,20037508.3428,20037508.3428"
+        self.expected_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256" "&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=512" "&BBOX=-20037508.3428,0.0,20037508.3428,20037508.3428"  # noqa
 
     def test_mixed_mode(self, app, cache_dir):
         req_format = "png"
@@ -95,7 +95,7 @@ class TestWMS(SysTest):
 class TestTMS(SysTest):
 
     def setup_method(self):
-        self.expected_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256" "&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=512" "&BBOX=-20037508.3428,-20037508.3428,20037508.3428,0.0"
+        self.expected_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256" "&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=512" "&BBOX=-20037508.3428,-20037508.3428,20037508.3428,0.0"  # noqa
 
     def test_mixed_mode(self, app, cache_dir):
         with create_mixed_mode_img((512, 256)) as img:
@@ -145,7 +145,7 @@ class TestWMTS(SysTest):
                 transparent="True",
             ),
         )
-        self.expected_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256" "&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=512" "&BBOX=-20037508.3428,0.0,20037508.3428,20037508.3428"
+        self.expected_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256" "&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=512" "&BBOX=-20037508.3428,0.0,20037508.3428,20037508.3428"  # noqa
 
     def test_mixed_mode(self, app, cache_dir):
         with create_mixed_mode_img((512, 256)) as img:

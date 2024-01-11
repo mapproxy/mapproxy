@@ -26,13 +26,13 @@ def reraise_exception(new_exc, exc_info):
     _exc_class, _exc, tb = exc_info
     raise new_exc.with_traceback(tb)
 
+
 def reraise(exc_info):
     """
     Reraise exception from exc_info`.
     """
     exc_class, exc, tb = exc_info
     raise exc.with_traceback(tb)
-
 
 
 class cached_property(object):
@@ -61,6 +61,7 @@ class cached_property(object):
         setattr(obj, self.__name__, value)
         return value
 
+
 def memoize(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
@@ -72,4 +73,3 @@ def memoize(func):
             cache[key] = func(self, *args, **kwargs)
         return cache[key]
     return wrapper
-

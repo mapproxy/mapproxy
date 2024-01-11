@@ -1012,7 +1012,6 @@ class TestWMTSAuth(SysTest):
             assert len(layers) == 1
             return {"authorized": "partial", "layers": {"layer1b": {"featureinfo": True}}}
 
-
         serv = MockServ(port=42423)
         serv.expects(
             "/service?request=GetFeatureInfo&service=WMS&Version=1.1.1&SRS=EPSG:900913"
@@ -1054,7 +1053,6 @@ class TestWMTSAuth(SysTest):
             assert len(layers) == 1
             return {"authorized": "partial", "layers": {"layer1b": {"featureinfo": True}}}
 
-
         serv = MockServ(port=42423)
         serv.expects(
             "/service?request=GetFeatureInfo&service=WMS&Version=1.1.1&SRS=EPSG:900913"
@@ -1083,6 +1081,7 @@ class TestWMTSAuth(SysTest):
             extra_environ={"mapproxy.authorize": auth},
             status=403,
         )
+
 
 class TestDemoAuth(SysTest):
 

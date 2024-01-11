@@ -55,7 +55,7 @@ class TestHTTPClient(object):
     def test_head(self):
         with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service', 'method': 'HEAD'},
                                               {'status': '200'})]):
-            self.client.open(TESTSERVER_URL + '/service', method = 'HEAD')
+            self.client.open(TESTSERVER_URL + '/service', method='HEAD')
 
     def test_internal_error_response(self):
         try:
@@ -163,8 +163,6 @@ class TestHTTPClient(object):
     def test_timeouts(self):
         test_req = ({'path': '/', 'req_assert_function': lambda x: time.sleep(0.9) or True},
                     {'body': b'nothing'})
-
-        import mapproxy.client.http
 
         client1 = HTTPClient(timeout=0.1)
         client2 = HTTPClient(timeout=0.5)
@@ -313,6 +311,7 @@ A4GBAFjOKer89961zgK5F7WF0bnj4JXMJTENAKaSbn+2kmOeUJXRmm/kEd5jhW6Y
 -----END CERTIFICATE-----
 """
 
+
 class TestTileClient(object):
     def test_tc_path(self):
         template = TileURLTemplate(TESTSERVER_URL + '/%(tc_path)s.png')
@@ -331,6 +330,7 @@ class TestTileClient(object):
                                                'headers': {'content-type': 'image/png'}})]):
             resp = client.get_tile((5, 13, 9)).source.read()
             assert resp == b'tile'
+
     def test_xyz(self):
         template = TileURLTemplate(TESTSERVER_URL + '/x=%(x)s&y=%(y)s&z=%(z)s&format=%(format)s')
         client = TileClient(template)
@@ -353,7 +353,7 @@ class TestTileClient(object):
         grid = tile_grid(4326)
         template = TileURLTemplate(TESTSERVER_URL + '/service?BBOX=%(bbox)s')
         client = TileClient(template, grid=grid)
-        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?BBOX=-180.00000000,0.00000000,-90.00000000,90.00000000'},
+        with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?BBOX=-180.00000000,0.00000000,-90.00000000,90.00000000'},  # noqa
                                               {'body': b'tile',
                                                'headers': {'content-type': 'image/png'}})]):
             resp = client.get_tile((0, 1, 2)).source.read()
@@ -363,17 +363,16 @@ class TestTileClient(object):
 class TestWMSClient(object):
     def test_no_image(self, caplog):
         try:
-            with mock_httpd(TESTSERVER_ADDRESS, [({'path': '/service?map=foo&layers=foo&transparent=true&bbox=-200000,-200000,200000,200000&width=512&height=512&srs=EPSG%3A900913&format=image%2Fpng&request=GetMap&version=1.1.1&service=WMS&styles='},
-                                                  {'status': '200', 'body': b'x' * 1000,
-                                                   'headers': {'content-type': 'application/foo'},
-                                                  })]):
+            with mock_httpd(TESTSERVER_ADDRESS, [({
+                    'path': '/service?map=foo&layers=foo&transparent=true&bbox=-200000,-200000,200000,200000&width=512&height=512&srs=EPSG%3A900913&format=image%2Fpng&request=GetMap&version=1.1.1&service=WMS&styles='},  # noqa
+                    {'status': '200', 'body': b'x' * 1000, 'headers': {'content-type': 'application/foo'}, })]):
                 req = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
-                                        param={'layers':'foo', 'transparent': 'true'})
+                                       param={'layers': 'foo', 'transparent': 'true'})
                 query = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
-                wms = WMSClient(req).retrieve(query, 'png')
+                WMSClient(req).retrieve(query, 'png')
         except SourceError:
             assert len(caplog.record_tuples) == 1
-            assert ("'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' [output truncated]"
+            assert ("'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' [output truncated]"  # noqa
                 in caplog.record_tuples[0][2])
         else:
             assert False, 'expected no image returned error'
@@ -382,12 +381,13 @@ class TestWMSClient(object):
 class TestCombinedWMSClient(object):
     def setup_method(self):
         self.http = MockHTTPClient()
+
     def test_combine(self):
         req1 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
-                                    param={'layers':'foo', 'transparent': 'true'})
+                                param={'layers': 'foo', 'transparent': 'true'})
         wms1 = WMSClient(req1, http_client=self.http)
         req2 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
-                                    param={'layers':'bar', 'transparent': 'true'})
+                                param={'layers': 'bar', 'transparent': 'true'})
         wms2 = WMSClient(req2, http_client=self.http)
 
         req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
@@ -398,10 +398,10 @@ class TestCombinedWMSClient(object):
 
     def test_combine_different_url(self):
         req1 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=bar',
-                                    param={'layers':'foo', 'transparent': 'true'})
+                                param={'layers': 'foo', 'transparent': 'true'})
         wms1 = WMSClient(req1, http_client=self.http)
         req2 = WMS111MapRequest(url=TESTSERVER_URL + '/service?map=foo',
-                                    param={'layers':'bar', 'transparent': 'true'})
+                                param={'layers': 'bar', 'transparent': 'true'})
         wms2 = WMSClient(req2, http_client=self.http)
 
         req = MapQuery((-200000, -200000, 200000, 200000), (512, 512), SRS(900913), 'png')
@@ -409,9 +409,10 @@ class TestCombinedWMSClient(object):
         combined = wms1.combined_client(wms2, req)
         assert combined is None
 
+
 class TestWMSInfoClient(object):
     def test_transform_fi_request_supported_srs(self):
-        req = WMS111FeatureInfoRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo'})
+        req = WMS111FeatureInfoRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers': 'foo'})
         http = MockHTTPClient()
         wms = WMSInfoClient(req, http_client=http, supported_srs=SupportedSRS([SRS(25832)]))
         fi_req = InfoQuery((8, 50, 9, 51), (512, 512),
@@ -420,14 +421,15 @@ class TestWMSInfoClient(object):
         wms.get_info(fi_req)
 
         assert wms_query_eq(http.requested[0],
-            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                           '&REQUEST=GetFeatureInfo&SRS=EPSG%3A25832&info_format=text/plain'
-                           '&query_layers=foo'
-                           '&VERSION=1.1.1&WIDTH=512&HEIGHT=797&STYLES=&x=135&y=101'
-                           '&BBOX=428333.552496,5538630.70275,500000.0,5650300.78652'), http.requested[0]
+                            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                            '&REQUEST=GetFeatureInfo&SRS=EPSG%3A25832&info_format=text/plain'
+                            '&query_layers=foo'
+                            '&VERSION=1.1.1&WIDTH=512&HEIGHT=797&STYLES=&x=135&y=101'
+                            '&BBOX=428333.552496,5538630.70275,500000.0,5650300.78652'), http.requested[0]
 
     def test_transform_fi_request(self):
-        req = WMS111FeatureInfoRequest(url=TESTSERVER_URL + '/service?map=foo', param={'layers':'foo', 'srs': 'EPSG:25832'})
+        req = WMS111FeatureInfoRequest(
+            url=TESTSERVER_URL + '/service?map=foo', param={'layers': 'foo', 'srs': 'EPSG:25832'})
         http = MockHTTPClient()
         wms = WMSInfoClient(req, http_client=http)
         fi_req = InfoQuery((8, 50, 9, 51), (512, 512),
@@ -436,44 +438,56 @@ class TestWMSInfoClient(object):
         wms.get_info(fi_req)
 
         assert wms_query_eq(http.requested[0],
-            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
-                           '&REQUEST=GetFeatureInfo&SRS=EPSG%3A25832&info_format=text/plain'
-                           '&query_layers=foo'
-                           '&VERSION=1.1.1&WIDTH=512&HEIGHT=797&STYLES=&x=135&y=101'
-                           '&BBOX=428333.552496,5538630.70275,500000.0,5650300.78652'), http.requested[0]
+                            TESTSERVER_URL+'/service?map=foo&LAYERS=foo&SERVICE=WMS&FORMAT=image%2Fpng'
+                            '&REQUEST=GetFeatureInfo&SRS=EPSG%3A25832&info_format=text/plain'
+                            '&query_layers=foo'
+                            '&VERSION=1.1.1&WIDTH=512&HEIGHT=797&STYLES=&x=135&y=101'
+                            '&BBOX=428333.552496,5538630.70275,500000.0,5650300.78652'), http.requested[0]
+
 
 class TestWMSMapRequest100(object):
     def setup_method(self):
         self.r = WMS100MapRequest(param=dict(layers='foo', version='1.1.1', request='GetMap'))
         self.r.params = self.r.adapt_params_to_version()
+
     def test_version(self):
         assert self.r.params['WMTVER'] == '1.0.0'
         assert 'VERSION' not in self.r.params
+
     def test_service(self):
         assert 'SERVICE' not in self.r.params
+
     def test_request(self):
         assert self.r.params['request'] == 'map'
+
     def test_str(self):
         assert_query_eq(str(self.r.params), 'layers=foo&styles=&request=map&wmtver=1.0.0')
+
 
 class TestWMSMapRequest130(object):
     def setup_method(self):
         self.r = WMS130MapRequest(param=dict(layers='foo', WMTVER='1.0.0'))
         self.r.params = self.r.adapt_params_to_version()
+
     def test_version(self):
         assert self.r.params['version'] == '1.3.0'
         assert 'WMTVER' not in self.r.params
+
     def test_service(self):
         assert self.r.params['service'] == 'WMS'
+
     def test_request(self):
         assert self.r.params['request'] == 'GetMap'
+
     def test_str(self):
         query_eq(str(self.r.params), 'layers=foo&styles=&service=WMS&request=GetMap&version=1.3.0')
+
 
 class TestWMSMapRequest111(object):
     def setup_method(self):
         self.r = WMS111MapRequest(param=dict(layers='foo', WMTVER='1.0.0'))
         self.r.params = self.r.adapt_params_to_version()
+
     def test_version(self):
         assert self.r.params['version'] == '1.1.1'
         assert 'WMTVER' not in self.r.params

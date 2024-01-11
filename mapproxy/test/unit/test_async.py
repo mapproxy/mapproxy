@@ -18,9 +18,7 @@ from __future__ import print_function
 import time
 import threading
 
-import pytest
-
-from mapproxy.util.async_ import imap, ThreadPool
+from mapproxy.util.async_ import ThreadPool, imap
 
 
 class TestThreaded(object):
@@ -55,14 +53,13 @@ class CommonPoolTests(object):
         assert result == [3]
 
     def test_single_argument(self):
-        f1 = lambda x, y: x+y
+        def f1(x, y): return x+y
         pool = self.mk_pool()
         check = self._check_single_arg
         check(lambda: pool.map(f1, [1], [2]))
         check(lambda: pool.imap(f1, [1], [2]))
         check(lambda: pool.starmap(f1, [(1, 2)]))
         check(lambda: pool.starcall([(f1, 1, 2)]))
-
 
     def _check_single_arg_raise(self, func):
         try:
@@ -84,7 +81,7 @@ class CommonPoolTests(object):
 
     def _check_single_arg_result_object(self, func):
         result = list(func())
-        assert result[0].result == None
+        assert result[0].result is None
         assert isinstance(result[0].exception[1], ValueError)
 
     def test_single_argument_result_object(self):
@@ -97,13 +94,12 @@ class CommonPoolTests(object):
         check(lambda: pool.starmap(f1, [(1, 2)], use_result_objects=True))
         check(lambda: pool.starcall([(f1, 1, 2)], use_result_objects=True))
 
-
     def _check_multiple_args(self, func):
         result = list(func())
         assert result == [3, 5]
 
     def test_multiple_arguments(self):
-        f1 = lambda x, y: x+y
+        def f1(x, y): return x+y
         pool = self.mk_pool()
         check = self._check_multiple_args
         check(lambda: pool.map(f1, [1, 2], [2, 3]))
@@ -114,7 +110,7 @@ class CommonPoolTests(object):
     def _check_multiple_args_with_exceptions_result_object(self, func):
         result = list(func())
         assert result[0].result == 3
-        assert type(result[1].exception[1]) == ValueError
+        assert isinstance(result[1].exception[1], ValueError)
         assert result[2].result == 7
 
     def test_multiple_arguments_exceptions_result_object(self):
@@ -160,7 +156,6 @@ class CommonPoolTests(object):
         check(lambda: pool.imap(f1, [1, 2, 3], [2, 3, 4]))
         check(lambda: pool.starmap(f1, [(1, 2), (2, 3), (3, 4)]))
         check(lambda: pool.starcall([(f1, 1, 2), (f1, 2, 3), (f1, 3, 4)]))
-
 
 
 class TestThreadPool(CommonPoolTests):
@@ -221,11 +216,13 @@ class TestThreadPool(CommonPoolTests):
 class DummyException(Exception):
     pass
 
+
 class TestThreadedExecutorException(object):
     def setup_method(self):
         self.lock = threading.Lock()
         self.exec_count = 0
         self.te = ThreadPool(size=2)
+
     def execute(self, x):
         time.sleep(0.005)
         with self.lock:
@@ -233,6 +230,7 @@ class TestThreadedExecutorException(object):
             if self.exec_count == 7:
                 raise DummyException()
         return x
+
     def test_execute_w_exception(self):
         try:
             self.te.map(self.execute, list(range(100)))
@@ -242,4 +240,3 @@ class TestThreadedExecutorException(object):
                                                'soon (exec_count should be 7+(max(3)))'
         else:
             assert False, 'expected DummyException'
-

@@ -24,6 +24,7 @@ import random
 import errno
 import shutil
 
+
 def swap_dir(src_dir, dst_dir, keep_old=False, backup_ext='.tmp'):
     """
     Rename `src_dir` to `dst_dir`. The `dst_dir` is first renamed to
@@ -40,6 +41,7 @@ def swap_dir(src_dir, dst_dir, keep_old=False, backup_ext='.tmp'):
     if os.path.exists(tmp_dir) and not keep_old:
         shutil.rmtree(tmp_dir)
 
+
 def _force_rename_dir(src_dir, dst_dir):
     """
     Rename `src_dir` to `dst_dir`. If `dst_dir` exists, it will be removed.
@@ -53,18 +55,19 @@ def _force_rename_dir(src_dir, dst_dir):
         except OSError as ex:
             if ex.errno == errno.ENOTEMPTY or ex.errno == errno.EEXIST:
                 if rename_tries > 0:
-                    time.sleep(2**rename_tries / 100.0) # from 10ms to 5s
+                    time.sleep(2**rename_tries / 100.0)  # from 10ms to 5s
                 rename_tries += 1
                 shutil.rmtree(dst_dir)
             else:
                 raise
         else:
-            break # on success
+            break  # on success
+
 
 def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
                       file_handler=None):
     if file_handler is None:
-        if before_timestamp == 0 and remove_empty_dirs == True and os.path.exists(directory):
+        if before_timestamp == 0 and remove_empty_dirs is True and os.path.exists(directory):
             shutil.rmtree(directory, ignore_errors=True)
             return
 
@@ -74,7 +77,7 @@ def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
         for dirpath, dirnames, filenames in os.walk(directory, topdown=False):
             if not filenames:
                 if (remove_empty_dirs and not os.listdir(dirpath)
-                    and dirpath != directory):
+                        and dirpath != directory):
                     os.rmdir(dirpath)
                 continue
             for filename in filenames:
@@ -85,7 +88,8 @@ def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
                     if os.lstat(filename).st_mtime < before_timestamp:
                         file_handler(filename)
                 except OSError as ex:
-                    if ex.errno != errno.ENOENT: raise
+                    if ex.errno != errno.ENOENT:
+                        raise
 
             if remove_empty_dirs:
                 remove_dir_if_emtpy(dirpath)
@@ -93,11 +97,14 @@ def cleanup_directory(directory, before_timestamp, remove_empty_dirs=True,
         if remove_empty_dirs:
             remove_dir_if_emtpy(directory)
 
+
 def remove_dir_if_emtpy(directory):
     try:
         os.rmdir(directory)
     except OSError as ex:
-        if ex.errno != errno.ENOENT and ex.errno != errno.ENOTEMPTY: raise
+        if ex.errno != errno.ENOENT and ex.errno != errno.ENOTEMPTY:
+            raise
+
 
 def ensure_directory(file_name):
     """
@@ -110,6 +117,7 @@ def ensure_directory(file_name):
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise e
+
 
 def write_atomic(filename, data):
     """

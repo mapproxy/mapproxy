@@ -35,6 +35,7 @@ from mapproxy.util.coverage import (
 
 bbox_string_re = re.compile(r'[-+]?\d*.?\d+,[-+]?\d*.?\d+,[-+]?\d*.?\d+,[-+]?\d*.?\d+')
 
+
 def load_coverage(conf, base_path=None):
     clip = False
     if 'clip' in conf:

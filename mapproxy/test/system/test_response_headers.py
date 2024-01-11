@@ -22,7 +22,7 @@ from mapproxy.test.system import SysTest
 
 class TestResponseHeaders(SysTest):
     """
-    Check if the vary header is set for text / xml content like capabilities 
+    Check if the vary header is set for text / xml content like capabilities
     """
     @pytest.fixture(scope='class')
     def config_file(self):
@@ -34,7 +34,7 @@ class TestResponseHeaders(SysTest):
 
     def test_wms(self, app):
         resp = app.get('http://localhost/service?SERVICE=WMS&REQUEST=GetCapabilities'
-                            '&VERSION=1.1.0')
+                       '&VERSION=1.1.0')
         assert resp.vary == ('X-Script-Name', 'X-Forwarded-Host', 'X-Forwarded-Proto')
 
     def test_wmts(self, app):
@@ -51,4 +51,4 @@ class TestResponseHeaders(SysTest):
 
     def test_image_response(self, app):
         resp = app.get('http://localhost/tms/1.0.0/layer1a/EPSG900913/0/0/0.png')
-        assert resp.vary == None
+        assert resp.vary is None

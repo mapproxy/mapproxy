@@ -10,9 +10,11 @@ Last update: 2011-03-15 9ada59c958b2edbb9739fb55a6b32ef4a97dac07
 :copyright: (c) 2010 by the Werkzeug Team, see AUTHORS for more details.
 :license: BSD, see LICENSE for more details.
 """
+from werkzeug.local import LocalProxy
+
 try:
     from greenlet import getcurrent as get_current_greenlet
-except ImportError: # pragma: no cover
+except ImportError:  # pragma: no cover
     try:
         from py.magic import greenlet
         get_current_greenlet = greenlet.getcurrent
@@ -22,20 +24,20 @@ except ImportError: # pragma: no cover
         get_current_greenlet = int
 try:
     from _thread import get_ident as get_current_thread, allocate_lock
-except ImportError: # pragma: no cover
+except ImportError:  # pragma: no cover
     try:
         from thread import get_ident as get_current_thread, allocate_lock
-    except ImportError: # pragma: no cover
+    except ImportError:  # pragma: no cover
         from dummy_thread import get_ident as get_current_thread, allocate_lock
 
 
 # get the best ident function.  if greenlets are not installed we can
 # safely just use the builtin thread function and save a python methodcall
 # and the cost of calculating a hash.
-if get_current_greenlet is int: # pragma: no cover
+if get_current_greenlet is int:  # pragma: no cover
     get_ident = get_current_thread
 else:
-    get_ident = lambda: (get_current_thread(), get_current_greenlet())
+    def get_ident(): return (get_current_thread(), get_current_greenlet())  # noqa
 
 
 def release_local(local):
@@ -142,6 +144,7 @@ class LocalStack(object):
 
     def _get__ident_func__(self):
         return self._local.__ident_func__
+
     def _set__ident_func__(self, value):
         object.__setattr__(self._local, '__ident_func__', value)
     __ident_func__ = property(_get__ident_func__, _set__ident_func__)
@@ -193,4 +196,3 @@ class LocalStack(object):
             return self._local.stack[-1]
         except (AttributeError, IndexError):
             return None
-

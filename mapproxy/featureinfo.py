@@ -23,7 +23,6 @@ try:
     from lxml import etree, html
 
     has_xslt_support = True
-    etree, html  # prevent pyflakes warning
 except ImportError:
     has_xslt_support = False
     etree = html = None
@@ -180,6 +179,7 @@ def create_featureinfo_doc(content, info_format):
 
     return TextFeatureInfoDoc(content)
 
+
 def featureinfo_type(info_format):
     info_format = info_format.split(";", 1)[
         0
@@ -243,5 +243,5 @@ def combine_docs(docs, transformer=None):
 
         if transformer:
             doc = transformer(doc)
-            infotype = None # defined by transformer
+            infotype = None  # defined by transformer
     return doc.as_string(), infotype

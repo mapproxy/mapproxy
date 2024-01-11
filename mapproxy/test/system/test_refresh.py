@@ -13,18 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import time
-import hashlib
 
 from io import BytesIO
 import pytest
 
 from mapproxy.compat.image import Image
-from mapproxy.test.image import is_jpeg, tmp_image
+from mapproxy.test.image import tmp_image
 from mapproxy.test.http import mock_httpd
 from mapproxy.test.system import SysTest
 from mapproxy.util.times import timestamp_from_isodate
+
 
 @pytest.fixture(scope="module")
 def config_file():

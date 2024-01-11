@@ -22,10 +22,12 @@ from ctypes import c_void_p, c_char_p, c_int
 
 from mapproxy.util.lib import load_library
 
+
 def init_libgdal():
     libgdal = load_library(['libgdal', 'libgdal1', 'gdal110', 'gdal19', 'gdal18', 'gdal17'])
 
-    if not libgdal: return
+    if not libgdal:
+        return
 
     libgdal.OGROpen.argtypes = [c_char_p, c_int, c_void_p]
     libgdal.OGROpen.restype = c_void_p
@@ -37,7 +39,7 @@ def init_libgdal():
         libgdal.CPLGetLastErrorMsg = getattr(libgdal, '_CPLGetLastErrorMsg@0')
 
     if hasattr(libgdal, 'CPLGetLastErrorMsg'):
-        libgdal.CPLGetLastErrorMsg.argtypes	= []
+        libgdal.CPLGetLastErrorMsg.argtypes = []
         libgdal.CPLGetLastErrorMsg.restype = c_char_p
     else:
         libgdal.CPLGetLastErrorMsg = None
@@ -75,8 +77,10 @@ def init_libgdal():
 
     return libgdal
 
+
 class OGRShapeReaderError(Exception):
     pass
+
 
 class CtypesOGRShapeReader(object):
     def __init__(self, datasource):
@@ -84,7 +88,8 @@ class CtypesOGRShapeReader(object):
         self._ds = None
 
     def open(self):
-        if self._ds: return
+        if self._ds:
+            return
         self._ds = libgdal.OGROpen(self.datasource.encode(sys.getdefaultencoding()), False, None)
         if self._ds is None:
             msg = None
@@ -95,7 +100,8 @@ class CtypesOGRShapeReader(object):
             raise OGRShapeReaderError(msg)
 
     def wkts(self, where=None):
-        if not self._ds: self.open()
+        if not self._ds:
+            self.open()
 
         if where:
             if not where.lower().startswith('select'):
@@ -145,7 +151,8 @@ class OSGeoOGRShapeReader(object):
         self._ds = None
 
     def open(self):
-        if self._ds: return
+        if self._ds:
+            return
         self._ds = ogr.Open(self.datasource, False)
         if self._ds is None:
             msg = gdal.GetLastErrorMsg()
@@ -154,7 +161,8 @@ class OSGeoOGRShapeReader(object):
             raise OGRShapeReaderError(msg)
 
     def wkts(self, where=None):
-        if not self._ds: self.open()
+        if not self._ds:
+            self.open()
 
         if where:
             if not where.lower().startswith('select'):
@@ -182,21 +190,29 @@ class OSGeoOGRShapeReader(object):
 
 
 ogr = gdal = None
+
+
 def try_osgeoogr_import():
     global ogr, gdal
     try:
-        from osgeo import ogr; ogr
-        from osgeo import gdal; gdal
+        from osgeo import ogr
+        ogr
+        from osgeo import gdal
+        gdal
     except ImportError:
         return
     return OSGeoOGRShapeReader
 
+
 libgdal = None
+
+
 def try_libogr_import():
     global libgdal
     libgdal = init_libgdal()
     if libgdal is not None:
         return CtypesOGRShapeReader
+
 
 ogr_imports = []
 if 'MAPPROXY_USE_OSGEOOGR' in os.environ:

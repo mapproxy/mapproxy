@@ -13,41 +13,42 @@
 
 from __future__ import division
 import pytest
-from mapproxy.util.ext.wmsparse.util import parse_datetime_range,parse_duration
+from mapproxy.util.ext.wmsparse.util import parse_datetime_range, parse_duration
 from mapproxy.util.ext.wmsparse.duration import parse_datetime
 
 expected_dim = {'time': {
-                        'values': '2020-09-22T11:20:00Z,2020-09-22T13:20:00Z,2020-09-22T15:20:00Z', 
-                        'default': '2020-09-22T14:20:00Z'}, 
-                'dim_reference_time': {
-                        'values': '2020-09-22T11:20:00Z,2020-09-22T13:20:00Z,2020-09-22T15:20:00Z', 
-                        'default': '2020-09-22T14:20:00Z'}}
+    'values': '2020-09-22T11:20:00Z,2020-09-22T13:20:00Z,2020-09-22T15:20:00Z',
+    'default': '2020-09-22T14:20:00Z'},
+    'dim_reference_time': {
+    'values': '2020-09-22T11:20:00Z,2020-09-22T13:20:00Z,2020-09-22T15:20:00Z',
+    'default': '2020-09-22T14:20:00Z'}}
+
 
 @pytest.fixture(scope="module")
 def config_file():
     return "dimension.yaml"
 
+
 class TestIsoDate(object):
 
-    @pytest.mark.parametrize("test_input,expected_value", [ 
+    @pytest.mark.parametrize("test_input,expected_value", [
 
-        # test_input should be string 
-        #expected array ==> [year,month,day,hour,mins,secs,tz]
+        # test_input should be string
+        # expected array ==> [year,month,day,hour,mins,secs,tz]
 
         ("2020-08-01T12:43:38Z", [2020, 8, 1, 12, 43, 38]),
 
         ("1999-12-30T01:59:03Z", [1999, 12, 30, 1, 59, 3]),
 
-        ])
-    def test_parsing_datetime(self,test_input,expected_value):
-        #test = "2020-08-01T12:43:38Z"
+    ])
+    def test_parsing_datetime(self, test_input, expected_value):
+        # test = "2020-08-01T12:43:38Z"
         expected_year = expected_value[0]
-        expected_month =  expected_value[1]
-        expected_day =  expected_value[2]
-        expected_hour =  expected_value[3]
+        expected_month = expected_value[1]
+        expected_day = expected_value[2]
+        expected_hour = expected_value[3]
         expected_mins = expected_value[4]
-        expected_secs =  expected_value[5]
-     
+        expected_secs = expected_value[5]
 
         result = parse_datetime(test_input)
         test_tz = result.tzinfo
@@ -61,23 +62,20 @@ class TestIsoDate(object):
         assert result.second == expected_secs
         assert test_tz == "UTC"
 
-    
-    @pytest.mark.parametrize("test_input,only_time,expected_values", [ 
+    @pytest.mark.parametrize("test_input,only_time,expected_values", [
 
-        # test_input should be string 
-        #only_time flag to indicate only time parsing 
-        #expected array ==> [year,month,day,secs]
+        # test_input should be string
+        # only_time flag to indicate only time parsing
+        # expected array ==> [year,month,day,secs]
 
-        ("PT1H", True, [0,0,0,3600]),
-        ("PT1H30M45S", True ,[0,0,0,5445]),
-        ("P6MT", False ,[0,6,0,0]),
-        ("P1MT", False ,[0,1,0,0]),
-        ("P1Y2M1W3DT", False ,[1,2,10,0]),
-        ])
-
-    def test_parse_duration(self,test_input,only_time,expected_values):
-
-        if only_time: 
+        ("PT1H", True, [0, 0, 0, 3600]),
+        ("PT1H30M45S", True, [0, 0, 0, 5445]),
+        ("P6MT", False, [0, 6, 0, 0]),
+        ("P1MT", False, [0, 1, 0, 0]),
+        ("P1Y2M1W3DT", False, [1, 2, 10, 0]),
+    ])
+    def test_parse_duration(self, test_input, only_time, expected_values):
+        if only_time:
             expect = expected_values[-1]
             result = parse_duration(test_input).seconds
             assert expect == result
@@ -100,23 +98,21 @@ class TestIsoDate(object):
             assert expected_days == result_days
             assert expected_seconds == result_seconds
 
+    @pytest.mark.parametrize("test_input,exp_values", [
 
-    @pytest.mark.parametrize("test_input,exp_values", [ 
+        # test_input should be string
+        # only_time flag to indicate only time parsing
+        # exp_values array ==> [time range values]
+        ("2020-09-22T00:00:00Z/2020-09-23T00:00:00Z/PT12H", ['2020-09-22T00:00:00Z',
+                                                             '2020-09-22T12:00:00Z', '2020-09-23T00:00:00Z']),
+        ("2020-08-01T00:00:00Z/P1DT2H30M", ['2020-08-01T00:00:00Z',
+                                            '2020-08-02T02:30:00Z']),
+        ("P1DT2H30M/2020-08-30T00:00:00Z", ['2020-08-28T21:30:00Z',
+                                            '2020-08-30T00:00:00Z'])
+    ])
+    def test_parse_datetime_range(self, test_input, exp_values):
 
-        # test_input should be string 
-        #only_time flag to indicate only time parsing 
-        #exp_values array ==> [time range values]
-        ("2020-09-22T00:00:00Z/2020-09-23T00:00:00Z/PT12H",['2020-09-22T00:00:00Z', 
-                            '2020-09-22T12:00:00Z', '2020-09-23T00:00:00Z']),
-        ("2020-08-01T00:00:00Z/P1DT2H30M",['2020-08-01T00:00:00Z', 
-                                                '2020-08-02T02:30:00Z']),
-        ("P1DT2H30M/2020-08-30T00:00:00Z",['2020-08-28T21:30:00Z',
-                                             '2020-08-30T00:00:00Z'])
-        ])
-  
-    def test_parse_datetime_range(self,test_input,exp_values):
-               
         exp_values = set(exp_values)
-        result  = set(parse_datetime_range(test_input))
+        result = set(parse_datetime_range(test_input))
 
         assert exp_values == result

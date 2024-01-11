@@ -41,6 +41,7 @@ class WMTS100ExceptionHandler(XMLExceptionHandler):
         'OperationNotSupported': 501
     }
 
+
 class WMTSTileRequestParams(RequestParams):
     """
     This class represents key-value parameters for WMTS map requests.
@@ -62,6 +63,7 @@ class WMTSTileRequestParams(RequestParams):
         y = int(self['tilerow'])
         z = self['tilematrix']
         return x, y, z
+
     def _set_coord(self, value):
         x, y, z = value
         self['tilecol'] = x
@@ -70,7 +72,6 @@ class WMTSTileRequestParams(RequestParams):
     coord = property(_get_coord, _set_coord)
     del _get_coord
     del _set_coord
-
 
     def _get_format(self):
         """
@@ -95,7 +96,7 @@ class WMTSTileRequestParams(RequestParams):
     @property
     def dimensions(self):
         expected_param = set(['version', 'request', 'layer', 'style', 'tilematrixset',
-            'tilematrix', 'tilerow', 'tilecol', 'format', 'service'])
+                              'tilematrix', 'tilerow', 'tilecol', 'format', 'service'])
         dimensions = {}
         for key, value in self.iteritems():
             if key not in expected_param:
@@ -112,7 +113,6 @@ class WMTSRequest(BaseRequest):
     fixed_params = {}
     expected_param = []
     non_strict_params = set()
-    #pylint: disable=E1102
     xml_exception_handler = None
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
@@ -122,10 +122,10 @@ class WMTSRequest(BaseRequest):
     def validate(self):
         pass
 
-
     @property
     def query_string(self):
         return self.params.query_string
+
 
 class WMTS100TileRequest(WMTSRequest):
     """
@@ -142,16 +142,15 @@ class WMTS100TileRequest(WMTSRequest):
     xml_exception_handler = WMTS100ExceptionHandler
     expected_param = ['version', 'request', 'layer', 'style', 'tilematrixset',
                       'tilematrix', 'tilerow', 'tilecol', 'format']
-    #pylint: disable=E1102
 
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
         WMTSRequest.__init__(self, param=param, url=url, validate=validate,
-                            non_strict=non_strict, **kw)
+                             non_strict=non_strict, **kw)
 
     def make_request(self):
         self.layer = self.params.layer
         self.tilematrixset = self.params.tilematrixset
-        self.format = self.params.format # TODO
+        self.format = self.params.format  # TODO
         self.tile = (int(self.params.coord[0]), int(self.params.coord[1]), int(self.params.coord[2]))
         self.origin = 'nw'
         self.dimensions = self.params.dimensions
@@ -179,7 +178,6 @@ class WMTS100TileRequest(WMTSRequest):
                 raise RequestError('unsupported styles: ' + self.params['styles'],
                                    code='StyleNotDefined', request=self)
 
-
     @property
     def exception_handler(self):
         return self.xml_exception_handler()
@@ -188,14 +186,15 @@ class WMTS100TileRequest(WMTSRequest):
         return self.__class__(param=self.params.copy(), url=self.url)
 
 
-
 class WMTSFeatureInfoRequestParams(WMTSTileRequestParams):
     """
     RequestParams for WMTS GetFeatureInfo requests.
     """
+
     def _get_pos(self):
         """x, y query image coordinates (in pixel)"""
         return int(self['i']), int(self['j'])
+
     def _set_pos(self, value):
         self['i'] = str(int(round(value[0])))
         self['j'] = str(int(round(value[1])))
@@ -217,21 +216,22 @@ class WMTS100FeatureInfoRequest(WMTS100TileRequest):
         self.infoformat = self.params.infoformat
         self.pos = self.params.pos
 
+
 class WMTS100CapabilitiesRequest(WMTSRequest):
     request_handler_name = 'capabilities'
     capabilities_template = 'wmts100capabilities.xml'
     exception_handler = None
     mime_type = 'text/xml'
     fixed_params = {}
+
     def __init__(self, param=None, url='', validate=False, non_strict=False, **kw):
         WMTSRequest.__init__(self, param=param, url=url, validate=validate, **kw)
 
 
-
-request_mapping = { 'featureinfo': WMTS100FeatureInfoRequest,
-                    'tile': WMTS100TileRequest,
-                    'capabilities': WMTS100CapabilitiesRequest
-}
+request_mapping = {'featureinfo': WMTS100FeatureInfoRequest,
+                   'tile': WMTS100TileRequest,
+                   'capabilities': WMTS100CapabilitiesRequest
+                   }
 
 
 def _parse_request_type(req):
@@ -256,6 +256,7 @@ def wmts_request(req, validate=True):
         raise RequestError("unknown WMTS request type '%s'" % req_type, request=dummy_req)
     return req_class(param=req.args, url=req.base_url, validate=True, http=req)
 
+
 def create_request(req_data, param, req_type='tile'):
     url = req_data['url']
     req_data = req_data.copy()
@@ -274,6 +275,7 @@ def create_request(req_data, param, req_type='tile'):
 
 class InvalidWMTSTemplate(Exception):
     pass
+
 
 class URLTemplateConverter(object):
     var_re = re.compile(r'(?:\\{)?\\{(\w+)\\}(?:\\})?')
@@ -313,7 +315,6 @@ class URLTemplateConverter(object):
         self.found.add(var)
         return r'(?P<%s>%s)' % (var, var_type_re)
 
-
     def regexp(self):
         if self._regexp:
             return self._regexp
@@ -321,12 +322,14 @@ class URLTemplateConverter(object):
         wmts_re = re.compile(r'/wmts' + converted_re)
         if not self.found.issuperset(self.required):
             raise InvalidWMTSTemplate('missing required variables in WMTS restful template: %s' %
-                self.required.difference(self.found))
+                                      self.required.difference(self.found))
         self._regexp = wmts_re
         return wmts_re
 
+
 class FeatureInfoURLTemplateConverter(URLTemplateConverter):
     required = set(['TileCol', 'TileRow', 'TileMatrix', 'TileMatrixSet', 'Layer', 'I', 'J'])
+
 
 class WMTS100RestTileRequest(TileRequest):
     """
@@ -360,6 +363,7 @@ class WMTS100RestTileRequest(TileRequest):
     @property
     def exception_handler(self):
         return self.xml_exception_handler()
+
 
 class WMTS100RestFeatureInfoRequest(TileRequest):
     """
@@ -395,7 +399,9 @@ class WMTS100RestFeatureInfoRequest(TileRequest):
     def exception_handler(self):
         return self.xml_exception_handler()
 
+
 RESTFUL_CAPABILITIES_PATH = '/1.0.0/WMTSCapabilities.xml'
+
 
 class WMTS100RestCapabilitiesRequest(object):
     """

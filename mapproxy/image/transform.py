@@ -19,6 +19,7 @@ from mapproxy.compat.image import Image, transform_uses_center
 from mapproxy.image import ImageSource, image_filter
 from mapproxy.srs import make_lin_transf, bbox_equals
 
+
 class ImageTransformer(object):
     """
     Transform images between different bbox and spatial reference systems.
@@ -47,6 +48,7 @@ class ImageTransformer(object):
             ---------------.
             large src image                   large dst image
     """
+
     def __init__(self, src_srs, dst_srs, max_px_err=1):
         """
         :param src_srs: the srs of the source image
@@ -81,7 +83,7 @@ class ImageTransformer(object):
 
         if self.src_srs == self.dst_srs:
             result = self._transform_simple(src_img, src_bbox, dst_size, dst_bbox,
-                image_opts)
+                                            image_opts)
         else:
             result = self._transform(src_img, src_bbox, dst_size, dst_bbox, image_opts)
 
@@ -105,7 +107,7 @@ class ImageTransformer(object):
         tenth_px_res = (abs(dst_res[0]/(dst_size[0]*10)),
                         abs(dst_res[1]/(dst_size[1]*10)))
         if (abs(src_res[0]-dst_res[0]) < tenth_px_res[0] and
-            abs(src_res[1]-dst_res[1]) < tenth_px_res[1]):
+                abs(src_res[1]-dst_res[1]) < tenth_px_res[1]):
             # rounding might result in subpixel inaccuracy
             # this exact resolutioni match should only happen in clients with
             # fixed resolutions like OpenLayers
@@ -116,8 +118,8 @@ class ImageTransformer(object):
         else:
             img = img_for_resampling(src_img.as_image(), image_opts.resampling)
             result = img.transform(dst_size, Image.EXTENT,
-                                                  (minx, miny, maxx, maxy),
-                                                  image_filter[image_opts.resampling])
+                                   (minx, miny, maxx, maxy),
+                                   image_filter[image_opts.resampling])
         return ImageSource(result, size=dst_size, image_opts=image_opts)
 
     def _transform(self, src_img, src_bbox, dst_size, dst_bbox, image_opts):
@@ -145,7 +147,7 @@ class ImageTransformer(object):
 
         img = img_for_resampling(src_img.as_image(), image_opts.resampling)
         result = img.transform(dst_size, Image.MESH, meshes,
-                                              image_filter[image_opts.resampling])
+                               image_filter[image_opts.resampling])
 
         if False:
             # draw mesh for debuging
@@ -155,7 +157,6 @@ class ImageTransformer(object):
                 draw.rectangle(g, fill=None, outline=(255, 0, 0))
 
         return ImageSource(result, size=dst_size, image_opts=image_opts)
-
 
     def _no_transformation_needed(self, src_size, src_bbox, dst_size, dst_bbox):
         """
@@ -176,11 +177,11 @@ class ImageTransformer(object):
 
 
 def transform_meshes(
-        src_size, src_bbox, src_srs,
-        dst_size, dst_bbox, dst_srs,
-        max_px_err=1,
-        use_center_px=False,
-    ):
+    src_size, src_bbox, src_srs,
+    dst_size, dst_bbox, dst_srs,
+    max_px_err=1,
+    use_center_px=False,
+):
     """
     transform_meshes creates a list of QUAD transformation parameters for PIL's
     MESH image transformation.
@@ -214,7 +215,7 @@ def transform_meshes(
     def dst_quad_to_src(quad):
         src_quad = []
         for dst_px in [(quad[0], quad[1]), (quad[0], quad[3]),
-                        (quad[2], quad[3]), (quad[2], quad[1])]:
+                       (quad[2], quad[3]), (quad[2], quad[1])]:
             dst_w = to_dst_w(
                 (dst_px[0] + px_offset, dst_px[1] + px_offset))
             src_w = dst_srs.transform_to(src_srs, dst_w)
@@ -245,7 +246,6 @@ def transform_meshes(
 
         err = max(abs(dst_w[0] - real_dst_w[0]), abs(dst_w[1] - real_dst_w[1]))
         return err < max_err
-
 
     # recursively add meshes. divide each quad into four sub quad till
     # accuracy is good enough.
@@ -302,7 +302,7 @@ def img_for_resampling(img, resampling):
     """
     resampling = image_filter[resampling]
     if img.mode == 'P' and resampling != Image.NEAREST:
-        img.load() # load to get actual palette mode
+        img.load()  # load to get actual palette mode
         if img.palette is not None:
             # palette can still be None for cropped images
             img = img.convert(img.palette.mode)

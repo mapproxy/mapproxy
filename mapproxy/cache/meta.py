@@ -3,18 +3,19 @@ import struct
 from mapproxy.cache.base import tile_buffer
 from mapproxy.image import ImageSource
 
+
 class MetaTileFile(object):
     def __init__(self, meta_tile):
         self.meta_tile = meta_tile
 
     def write_tiles(self, tiles):
         tile_positions = []
-        count = len(tiles) # self.meta_tile.grid_size[0]
+        count = len(tiles)  # self.meta_tile.grid_size[0]
         header_size = (
-              4   # META
+            4   # META
             + 4   # metasize**2
-            + 3*4 # x, y, z
-            + count * 8 #offset/size * tiles
+            + 3*4  # x, y, z
+            + count * 8  # offset/size * tiles
         )
         with open('/tmp/foo.metatile', 'wb') as f:
             f.write("META")
@@ -54,6 +55,7 @@ class MetaTileFile(object):
                 # img = ImageSource(BytesIO(f.read(size)))
                 open('/tmp/img-%02d.png' % i, 'wb').write(f.read(size))
 
+
 if __name__ == '__main__':
     from io import BytesIO
     from mapproxy.cache.tile import Tile
@@ -75,4 +77,4 @@ if __name__ == '__main__':
     x = y = 0
     METATILE = 8
     for meta in range(METATILE ** 2):
-        print(x + (meta / METATILE), y + (meta % METATILE));
+        print(x + (meta / METATILE), y + (meta % METATILE))

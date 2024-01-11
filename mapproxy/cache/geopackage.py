@@ -34,10 +34,12 @@ from mapproxy.util.lock import FileLock
 
 log = logging.getLogger(__name__)
 
+
 class GeopackageCache(TileCacheBase):
     supports_timestamp = False
 
-    def __init__(self, geopackage_file, tile_grid, table_name, with_timestamps=False, timeout=30, wal=False, coverage=None):
+    def __init__(
+            self, geopackage_file, tile_grid, table_name, with_timestamps=False, timeout=30, wal=False, coverage=None):
         super(GeopackageCache, self).__init__(coverage)
         self.tile_grid = tile_grid
         self.table_name = self._check_table_name(table_name)
@@ -134,8 +136,7 @@ class GeopackageCache(TileCacheBase):
 
     def _verify_gpkg_contents(self):
         with sqlite3.connect(self.geopackage_file) as db:
-            cur = db.execute("""SELECT * FROM gpkg_contents WHERE table_name = ?"""
-                             , (self.table_name,))
+            cur = db.execute("""SELECT * FROM gpkg_contents WHERE table_name = ?""", (self.table_name,))
 
         results = cur.fetchone()
         if not results:
@@ -143,8 +144,7 @@ class GeopackageCache(TileCacheBase):
             return False
         gpkg_data_type = results[1]
         gpkg_srs_id = results[9]
-        cur = db.execute("""SELECT * FROM gpkg_spatial_ref_sys WHERE srs_id = ?"""
-                         , (gpkg_srs_id,))
+        cur = db.execute("""SELECT * FROM gpkg_spatial_ref_sys WHERE srs_id = ?""", (gpkg_srs_id,))
 
         gpkg_coordsys_id = cur.fetchone()[3]
         if gpkg_data_type.lower() != "tiles":
@@ -152,9 +152,9 @@ class GeopackageCache(TileCacheBase):
             raise ValueError("table_name is improperly configured.")
         if gpkg_coordsys_id != get_epsg_num(self.tile_grid.srs.srs_code):
             log.info(
-                "The geopackage {0} table name {1} already exists and has an SRS of {2}, which does not match the configured" \
-                " Mapproxy SRS of {3}.".format(self.geopackage_file, self.table_name, gpkg_coordsys_id,
-                                              get_epsg_num(self.tile_grid.srs.srs_code)))
+                f"The geopackage {self.geopackage_file} table name {self.table_name} already exists and has an SRS of"
+                f" {gpkg_coordsys_id}, which does not match the configured Mapproxy SRS of"
+                f" {get_epsg_num(self.tile_grid.srs.srs_code)}.")
             raise ValueError("srs is improperly configured.")
         return True
 
@@ -177,25 +177,16 @@ class GeopackageCache(TileCacheBase):
         resolution = self.tile_grid.resolution(gpkg_zoom_level)
         if gpkg_tile_width != tile_size[0] or gpkg_tile_height != tile_size[1]:
             log.info(
-                "The geopackage {0} table name {1} already exists and has tile sizes of ({2},{3})"
-                " which is different than the configure tile sizes of ({4},{5}).".format(self.geopackage_file,
-                                                                                       self.table_name,
-                                                                                       gpkg_tile_width,
-                                                                                       gpkg_tile_height,
-                                                                                       tile_size[0],
-                                                                                       tile_size[1]))
+                f"The geopackage {self.geopackage_file} table name {self.table_name} already exists and has tile sizes"
+                f" of ({gpkg_tile_width},{gpkg_tile_height}) which is different than the configure tile sizes of"
+                f" ({tile_size[0]},{tile_size[1]}).")
             log.info("The current mapproxy configuration is invalid for this geopackage.")
             raise ValueError("tile_size is improperly configured.")
         if not is_close(gpkg_pixel_x_size, resolution) or not is_close(gpkg_pixel_y_size, resolution):
             log.info(
-                "The geopackage {0} table name {1} already exists and level {2} a resolution of ({3:.13f},{4:.13f})"
-                " which is different than the configured resolution of ({5:.13f},{6:.13f}).".format(self.geopackage_file,
-                                                                                                  self.table_name,
-                                                                                                  gpkg_zoom_level,
-                                                                                                  gpkg_pixel_x_size,
-                                                                                                  gpkg_pixel_y_size,
-                                                                                                  resolution,
-                                                                                                  resolution))
+                f"The geopackage {self.geopackage_file} table name {self.table_name} already exists and level"
+                f" {gpkg_zoom_level} a resolution of ({gpkg_pixel_x_size:.13f},{gpkg_pixel_y_size:.13f})"
+                f" which is different than the configured resolution of ({resolution:.13f},{resolution:.13f}).")
             log.info("The current mapproxy configuration is invalid for this geopackage.")
             raise ValueError("res is improperly configured.")
         return True
@@ -208,31 +199,53 @@ class GeopackageCache(TileCacheBase):
             db.execute('PRAGMA journal_mode=wal')
 
         proj = get_epsg_num(self.tile_grid.srs.srs_code)
-        stmts = ["""
-                CREATE TABLE IF NOT EXISTS gpkg_contents
-                    (table_name  TEXT     NOT NULL PRIMARY KEY,                                    -- The name of the tiles, or feature table
-                     data_type   TEXT     NOT NULL,                                                -- Type of data stored in the table: "features" per clause Features (http://www.geopackage.org/spec/#features), "tiles" per clause Tiles (http://www.geopackage.org/spec/#tiles), or an implementer-defined value for other data tables per clause in an Extended GeoPackage
-                     identifier  TEXT     UNIQUE,                                                  -- A human-readable identifier (e.g. short name) for the table_name content
-                     description TEXT     DEFAULT '',                                              -- A human-readable description for the table_name content
-                     last_change DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')), -- Timestamp value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
-                     min_x       DOUBLE,                                                           -- Bounding box minimum easting or longitude for all content in table_name
-                     min_y       DOUBLE,                                                           -- Bounding box minimum northing or latitude for all content in table_name
-                     max_x       DOUBLE,                                                           -- Bounding box maximum easting or longitude for all content in table_name
-                     max_y       DOUBLE,                                                           -- Bounding box maximum northing or latitude for all content in table_name
-                     srs_id      INTEGER,                                                          -- Spatial Reference System ID: gpkg_spatial_ref_sys.srs_id; when data_type is features, SHALL also match gpkg_geometry_columns.srs_id; When data_type is tiles, SHALL also match gpkg_tile_matrix_set.srs.id
-                     CONSTRAINT fk_gc_r_srs_id FOREIGN KEY (srs_id) REFERENCES gpkg_spatial_ref_sys(srs_id))
-                """,
-                 """
-                 CREATE TABLE IF NOT EXISTS gpkg_spatial_ref_sys
-                     (srs_name                 TEXT    NOT NULL,             -- Human readable name of this SRS (Spatial Reference System)
-                      srs_id                   INTEGER NOT NULL PRIMARY KEY, -- Unique identifier for each Spatial Reference System within a GeoPackage
-                      organization             TEXT    NOT NULL,             -- Case-insensitive name of the defining organization e.g. EPSG or epsg
-                      organization_coordsys_id INTEGER NOT NULL,             -- Numeric ID of the Spatial Reference System assigned by the organization
-                      definition               TEXT    NOT NULL,             -- Well-known Text representation of the Spatial Reference System
-                      description              TEXT)
-                  """,
-                 """
-                 CREATE TABLE IF NOT EXISTS gpkg_tile_matrix
+        stmts = [
+            """
+                CREATE TABLE IF NOT EXISTS gpkg_contents(
+                    table_name  TEXT     NOT NULL PRIMARY KEY,
+                        -- The name of the tiles, or feature table
+                    data_type   TEXT     NOT NULL,
+                        -- Type of data stored in the table: "features" per clause Features
+                        -- (http://www.geopackage.org/spec/#features), "tiles" per clause Tiles
+                        -- (http://www.geopackage.org/spec/#tiles), or an implementer-defined value for other data
+                        -- tables per clause in an Extended GeoPackage
+                    identifier  TEXT     UNIQUE,
+                        -- A human-readable identifier (e.g. short name) for the table_name content
+                    description TEXT     DEFAULT '',
+                        -- A human-readable description for the table_name content
+                    last_change DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+                        -- Timestamp value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ
+                        -- format string applied to the current time
+                    min_x       DOUBLE,
+                        -- Bounding box minimum easting or longitude for all content in table_name
+                    min_y       DOUBLE,
+                        -- Bounding box minimum northing or latitude for all content in table_name
+                    max_x       DOUBLE,
+                        -- Bounding box maximum easting or longitude for all content in table_name
+                    max_y       DOUBLE,
+                        -- Bounding box maximum northing or latitude for all content in table_name
+                    srs_id      INTEGER,
+                        -- Spatial Reference System ID: gpkg_spatial_ref_sys.srs_id; when data_type is features,
+                        -- SHALL also match gpkg_geometry_columns.srs_id; When data_type is tiles, SHALL also match
+                        -- gpkg_tile_matrix_set.srs.id
+                    CONSTRAINT fk_gc_r_srs_id FOREIGN KEY (srs_id) REFERENCES gpkg_spatial_ref_sys(srs_id))
+            """,
+            """
+                CREATE TABLE IF NOT EXISTS gpkg_spatial_ref_sys(
+                    srs_name                 TEXT    NOT NULL,
+                      -- Human readable name of this SRS (Spatial Reference System)
+                    srs_id                   INTEGER NOT NULL PRIMARY KEY,
+                      -- Unique identifier for each Spatial Reference System within a GeoPackage
+                    organization             TEXT    NOT NULL,
+                      -- Case-insensitive name of the defining organization e.g. EPSG or epsg
+                    organization_coordsys_id INTEGER NOT NULL,
+                      -- Numeric ID of the Spatial Reference System assigned by the organization
+                    definition               TEXT    NOT NULL,
+                      -- Well-known Text representation of the Spatial Reference System
+                    description              TEXT)
+            """,
+            """
+                CREATE TABLE IF NOT EXISTS gpkg_tile_matrix
                      (table_name    TEXT    NOT NULL, -- Tile Pyramid User Data Table Name
                       zoom_level    INTEGER NOT NULL, -- 0 <= zoom_level <= max_level for table_name
                       matrix_width  INTEGER NOT NULL, -- Number of columns (>= 1) in tile matrix at this zoom level
@@ -241,28 +254,37 @@ class GeopackageCache(TileCacheBase):
                       tile_height   INTEGER NOT NULL, -- Tile height in pixels (>= 1) for this zoom level
                       pixel_x_size  DOUBLE  NOT NULL, -- In t_table_name srid units or default meters for srid 0 (>0)
                       pixel_y_size  DOUBLE  NOT NULL, -- In t_table_name srid units or default meters for srid 0 (>0)
-                      CONSTRAINT pk_ttm PRIMARY KEY (table_name, zoom_level), CONSTRAINT fk_tmm_table_name FOREIGN KEY (table_name) REFERENCES gpkg_contents(table_name))
-                  """,
-                 """
-                         CREATE TABLE IF NOT EXISTS gpkg_tile_matrix_set
-                 (table_name TEXT    NOT NULL PRIMARY KEY, -- Tile Pyramid User Data Table Name
-                  srs_id     INTEGER NOT NULL,             -- Spatial Reference System ID: gpkg_spatial_ref_sys.srs_id
-                  min_x      DOUBLE  NOT NULL,             -- Bounding box minimum easting or longitude for all content in table_name
-                  min_y      DOUBLE  NOT NULL,             -- Bounding box minimum northing or latitude for all content in table_name
-                  max_x      DOUBLE  NOT NULL,             -- Bounding box maximum easting or longitude for all content in table_name
-                  max_y      DOUBLE  NOT NULL,             -- Bounding box maximum northing or latitude for all content in table_name
-                  CONSTRAINT fk_gtms_table_name FOREIGN KEY (table_name) REFERENCES gpkg_contents(table_name), CONSTRAINT fk_gtms_srs FOREIGN KEY (srs_id) REFERENCES gpkg_spatial_ref_sys (srs_id))
-                  """,
-                 """
-                 CREATE TABLE IF NOT EXISTS [{0}]
+                      CONSTRAINT pk_ttm PRIMARY KEY (table_name, zoom_level),
+                      CONSTRAINT fk_tmm_table_name FOREIGN KEY (table_name) REFERENCES gpkg_contents(table_name))
+            """,
+            """
+                CREATE TABLE IF NOT EXISTS gpkg_tile_matrix_set(
+                    table_name TEXT    NOT NULL PRIMARY KEY,
+                        -- Tile Pyramid User Data Table Name
+                    srs_id     INTEGER NOT NULL,
+                        -- Spatial Reference System ID: gpkg_spatial_ref_sys.srs_id
+                    min_x      DOUBLE  NOT NULL,
+                        -- Bounding box minimum easting or longitude for all content in table_name
+                    min_y      DOUBLE  NOT NULL,
+                        -- Bounding box minimum northing or latitude for all content in table_name
+                    max_x      DOUBLE  NOT NULL,
+                        -- Bounding box maximum easting or longitude for all content in table_name
+                    max_y      DOUBLE  NOT NULL,
+                        -- Bounding box maximum northing or latitude for all content in table_name
+                    CONSTRAINT fk_gtms_table_name FOREIGN KEY (table_name) REFERENCES gpkg_contents(table_name),
+                    CONSTRAINT fk_gtms_srs FOREIGN KEY (srs_id) REFERENCES gpkg_spatial_ref_sys (srs_id))
+            """,
+            """
+                CREATE TABLE IF NOT EXISTS [{0}]
                     (id          INTEGER PRIMARY KEY AUTOINCREMENT, -- Autoincrement primary key
-                     zoom_level  INTEGER NOT NULL,                  -- min(zoom_level) <= zoom_level <= max(zoom_level) for t_table_name
+                     zoom_level  INTEGER NOT NULL,                  -- min(zoom_level) <= zoom_level <= max(zoom_level)
+                        -- for t_table_name
                      tile_column INTEGER NOT NULL,                  -- 0 to tile_matrix matrix_width - 1
                      tile_row    INTEGER NOT NULL,                  -- 0 to tile_matrix matrix_height - 1
-                     tile_data   BLOB    NOT NULL,                  -- Of an image MIME type specified in clauses Tile Encoding PNG, Tile Encoding JPEG, Tile Encoding WEBP
+                     tile_data   BLOB    NOT NULL,                  -- Of an image MIME type specified in clauses Tile
+                        -- Encoding PNG, Tile Encoding JPEG, Tile Encoding WEBP
                      UNIQUE (zoom_level, tile_column, tile_row))
-                  """.format(self.table_name)
-                 ]
+            """.format(self.table_name)]
 
         for stmt in stmts:
             db.execute(stmt)
@@ -312,7 +334,7 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
             try:
                 db.execute(wkt_statement, (wkt_entry[0], wkt_entry[1], wkt_entry[2], wkt_entry[3], wkt_entry[4]))
             except sqlite3.IntegrityError:
-                log.info("srs_id already exists.".format(wkt_entry[0]))
+                log.info("srs_id already exists.")
         db.commit()
 
         last_change = datetime.datetime.utcfromtimestamp(
@@ -362,11 +384,10 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
         tile_size = self.tile_grid.tile_size
         for grid, resolution, level in zip(self.tile_grid.grid_sizes,
                                            self.tile_grid.resolutions, range(20)):
-            db.execute("""INSERT OR REPLACE INTO gpkg_tile_matrix
-                              (table_name, zoom_level, matrix_width, matrix_height, tile_width, tile_height, pixel_x_size, pixel_y_size)
-                              VALUES(?, ?, ?, ?, ?, ?, ?, ?)
-                              """,
-                       (self.table_name, level, grid[0], grid[1], tile_size[0], tile_size[1], resolution, resolution))
+            db.execute(
+                """INSERT OR REPLACE INTO gpkg_tile_matrix (table_name, zoom_level, matrix_width, matrix_height,
+                 tile_width, tile_height, pixel_x_size, pixel_y_size) VALUES(?, ?, ?, ?, ?, ?, ?, ?)""",
+                (self.table_name, level, grid[0], grid[1], tile_size[0], tile_size[1], resolution, resolution))
         db.commit()
         db.close()
 
@@ -378,7 +399,6 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
 
         return self.load_tile(tile, dimensions=dimensions)
 
-
     def store_tile(self, tile, dimensions=None):
         if tile.stored:
             return True
@@ -387,7 +407,6 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
     def store_tiles(self, tiles, dimensions=None):
         tiles = [t for t in tiles if not t.stored]
         return self._store_bulk(tiles)
-
 
     def _store_bulk(self, tiles):
         records = []
@@ -402,8 +421,8 @@ AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]\
 
         cursor = self.db.cursor()
         try:
-            stmt = "INSERT OR REPLACE INTO [{0}] (zoom_level, tile_column, tile_row, tile_data) VALUES (?,?,?,?)".format(
-                    self.table_name)
+            stmt = (f"INSERT OR REPLACE INTO [{self.table_name}] (zoom_level, tile_column, tile_row, tile_data)"
+                    f" VALUES (?,?,?,?)")
             cursor.executemany(stmt, records)
             self.db.commit()
         except sqlite3.OperationalError as ex:
@@ -561,10 +580,11 @@ class GeopackageLevelCache(TileCacheBase):
         for level, tiles in groupby(tiles, key=lambda t: t.coord[2]):
             tiles = [t for t in tiles if not t.stored]
             res = self._get_level(level).store_tiles(tiles, dimensions=dimensions)
-            if not res: failed = True
+            if not res:
+                failed = True
         return failed
 
-    def load_tile(self, tile, with_metadata=False,dimensions=None):
+    def load_tile(self, tile, with_metadata=False, dimensions=None):
         if tile.source or tile.coord is None:
             return True
 

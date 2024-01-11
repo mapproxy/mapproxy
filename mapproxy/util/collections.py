@@ -31,6 +31,7 @@ class LRU(object):
     Get/Set existing: O(1) newest to O(n) for oldest entry
     Contains: O(1)
     """
+
     def __init__(self, size=100):
         self.size = size
         self.values = {}
@@ -49,7 +50,7 @@ class LRU(object):
 
         return '<LRU size=%d values=%s%s>' % (
             self.size, repr(last_values)[:-1],
-            ', ...]' if len(self)>10 else ']')
+            ', ...]' if len(self) > 10 else ']')
 
     def __getitem__(self, key):
         result = self.values[key]
@@ -98,6 +99,7 @@ class ImmutableDictList(object):
     >>> d[0], d[1]
     (23, 24)
     """
+
     def __init__(self, items):
         self._names = []
         self._values = {}

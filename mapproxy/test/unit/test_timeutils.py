@@ -31,7 +31,7 @@ class TestHTTPDate(object):
 
     def test_parse_invalid(self):
         for date in (None, "foobar", "4823764923", "Fri, 13 Foo 2009 23:31:30 GMT"):
-            assert parse_httpdate(date) == None
+            assert parse_httpdate(date) is None
 
     def test_format_httpdate(self):
         assert (

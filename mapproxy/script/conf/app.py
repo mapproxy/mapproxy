@@ -39,6 +39,7 @@ from .geopackage import get_geopackage_configuration_dict
 from mapproxy.config.loader import load_configuration
 from mapproxy.util.ext.wmsparse import parse_capabilities
 
+
 def setup_logging(level=logging.INFO):
     mapproxy_log = logging.getLogger('mapproxy')
     mapproxy_log.setLevel(level)
@@ -54,6 +55,7 @@ def setup_logging(level=logging.INFO):
         "[%(asctime)s] %(name)s - %(levelname)s - %(message)s")
     ch.setFormatter(formatter)
     mapproxy_log.addHandler(ch)
+
 
 def write_header(f, capabilities):
     print('# MapProxy configuration automatically generated from:', file=f)
@@ -79,11 +81,12 @@ def file_or_stdout(name):
         with open(name, 'wb') as f:
             yield codecs.getwriter('utf-8')(f)
 
+
 def config_command(args):
     parser = optparse.OptionParser("usage: %prog autoconfig [options]")
 
     parser.add_option('--capabilities',
-        help="URL or filename of WMS 1.1.1/1.3.0 capabilities document")
+                      help="URL or filename of WMS 1.1.1/1.3.0 capabilities document")
     parser.add_option('--geopackage',
                       help="Filename of a geopackage file")
     parser.add_option('--output', help="filename for created MapProxy config [default: -]", default="-")
@@ -92,12 +95,12 @@ def config_command(args):
     parser.add_option('--base', help='base config to include in created MapProxy config')
 
     parser.add_option('--overwrite',
-        help='YAML file with overwrites for the created MapProxy config')
+                      help='YAML file with overwrites for the created MapProxy config')
     parser.add_option('--overwrite-seed',
-        help='YAML file with overwrites for the created seeding config')
+                      help='YAML file with overwrites for the created seeding config')
 
     parser.add_option('--force', default=False, action='store_true',
-        help="overwrite existing files")
+                      help="overwrite existing files")
 
     options, args = parser.parse_args(args)
 
@@ -206,7 +209,6 @@ def config_command(args):
         seed_conf['seeds'], seed_conf['cleanups'] = seeds(cap, conf['caches'])
     if overwrite_seed:
         seed_conf = update_config(seed_conf, overwrite_seed)
-
 
     if options.output:
         with file_or_stdout(options.output) as f:

@@ -26,7 +26,7 @@ import time
 try:
     # time.strptime is thread-safe, but not the first call.
     # Import _strptime as a workaround. See: http://bugs.python.org/issue7980
-    import _strptime
+    import _strptime  # noqa
 except ImportError:
     pass
 
@@ -48,8 +48,8 @@ def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True, 
     """
 
     if reloader:
-        make_app = lambda: make_wsgi_app(services_conf=services_conf, debug=debug,
-            reloader=False)
+        def make_app():
+            make_wsgi_app(services_conf=services_conf, debug=debug, reloader=False)
         return ReloaderApp(services_conf, make_app)
 
     try:
@@ -67,6 +67,7 @@ def make_wsgi_app(services_conf=None, debug=False, ignore_config_warnings=True, 
 
     app.config_files = config_files
     return app
+
 
 class ReloaderApp(object):
     def __init__(self, timestamp_file, make_app_func):
@@ -94,6 +95,7 @@ class ReloaderApp(object):
 
         return self.app(environ, start_response)
 
+
 def wrap_wsgi_debug(app, conf):
     conf.base_config.debug_mode = True
     try:
@@ -108,11 +110,13 @@ def wrap_wsgi_debug(app, conf):
 
     return app
 
+
 class MapProxyApp(object):
     """
     The MapProxy WSGI application.
     """
     handler_path_re = re.compile(r'^/(\w+)')
+
     def __init__(self, services, base_config):
         self.handlers = {}
         self.base_config = base_config
@@ -127,6 +131,7 @@ class MapProxyApp(object):
 
         if self.cors_origin:
             orig_start_response = start_response
+
             def start_response(status, headers, exc_info=None):
                 headers.append(('Access-control-allow-origin', self.cors_origin))
                 return orig_start_response(status, headers, exc_info)

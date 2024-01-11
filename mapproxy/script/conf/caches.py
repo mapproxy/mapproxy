@@ -25,6 +25,7 @@ def caches(cap, sources, srs_grids):
 
     return caches
 
+
 def for_source(name, source, srs_grids):
     cache = {
         'sources': [name]
@@ -41,4 +42,3 @@ def for_source(name, source, srs_grids):
     cache['grids'] = grids
 
     return cache
-

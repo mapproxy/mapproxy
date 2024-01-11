@@ -33,6 +33,7 @@ tile_image2 = create_tmp_image_buf((256, 256), color='red')
 @pytest.mark.skipif(sys.version_info > (3, 7), reason="riak is not compatible with this Python version")
 class RiakCacheTestBase(TileCacheTestBase):
     always_loads_metadata = True
+
     def setup_method(self):
         url = os.environ[self.riak_url_env]
         urlparts = urlparse(url)
@@ -56,7 +57,7 @@ class RiakCacheTestBase(TileCacheTestBase):
         for k in bucket.get_keys():
             riak.RiakObject(self.cache.connection, bucket, k).delete()
         TileCacheTestBase.teardown_method(self)
-    
+
     def test_default_coverage(self):
         assert self.cache.coverage is None
 

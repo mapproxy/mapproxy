@@ -20,6 +20,7 @@ from html import escape
 
 from mapproxy.response import Response
 
+
 class RequestError(Exception):
     """
     Exception for all request related errors.
@@ -27,6 +28,7 @@ class RequestError(Exception):
     :ivar internal: True if the error was an internal error, ie. the request itself
                     was valid (e.g. the source server is unreachable
     """
+
     def __init__(self, message, code=None, request=None, internal=False, status=None):
         Exception.__init__(self, message)
         self.msg = message
@@ -62,6 +64,7 @@ class ExceptionHandler(object):
     """
     Base class for exception handler.
     """
+
     def render(self, request_error):
         """
         Return a response with the rendered exception.
@@ -72,8 +75,10 @@ class ExceptionHandler(object):
         """
         raise NotImplementedError()
 
+
 def _not_implemented(*args, **kw):
     raise NotImplementedError()
+
 
 class XMLExceptionHandler(ExceptionHandler):
     """
@@ -102,7 +107,7 @@ class XMLExceptionHandler(ExceptionHandler):
     mimetype = None
     """
     The mime type of the exception response. (use this or content_type).
-    A character encoding might be added to the mimetype (like text/xml;charset=UTF-8) 
+    A character encoding might be added to the mimetype (like text/xml;charset=UTF-8)
     """
 
     template_func = _not_implemented
@@ -131,6 +136,7 @@ class XMLExceptionHandler(ExceptionHandler):
         The template for this ExceptionHandler.
         """
         return self.template_func(self.template_file)
+
 
 class PlainExceptionHandler(ExceptionHandler):
     mimetype = 'text/plain'

@@ -40,7 +40,7 @@ class TestCompactCacheV1(TileCacheTestBase):
         self.cache = CompactCacheV1(
             cache_dir=self.cache_dir,
         )
-    
+
     def test_default_coverage(self):
         assert self.cache.coverage is None
 
@@ -98,7 +98,6 @@ class TestCompactCacheV1(TileCacheTestBase):
         self.cache.remove_level_tiles_before(12, 0)
         assert not os.path.exists(os.path.join(self.cache_dir, 'L12'))
 
-
     def test_bundle_header(self):
         t = Tile((5000, 1000, 12), ImageSource(BytesIO(b'a' * 4000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
@@ -128,8 +127,7 @@ class TestCompactCacheV1(TileCacheTestBase):
 
         t = Tile((5000, 1001, 12), ImageSource(BytesIO(b'a' * 3000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
-        assert_header([4000 + 4, 6000 + 4 + 3000 + 4, 1000 + 4], 6000) # still contains bytes from overwritten tile
-
+        assert_header([4000 + 4, 6000 + 4 + 3000 + 4, 1000 + 4], 6000)  # still contains bytes from overwritten tile
 
 
 class TestCompactCacheV2(TileCacheTestBase):
@@ -141,7 +139,7 @@ class TestCompactCacheV2(TileCacheTestBase):
         self.cache = CompactCacheV2(
             cache_dir=self.cache_dir,
         )
-    
+
     def test_default_coverage(self):
         assert self.cache.coverage is None
 
@@ -188,7 +186,6 @@ class TestCompactCacheV2(TileCacheTestBase):
         self.cache.remove_level_tiles_before(12, 0)
         assert not os.path.exists(os.path.join(self.cache_dir, 'L12'))
 
-
     def test_bundle_header(self):
         t = Tile((5000, 1000, 12), ImageSource(BytesIO(b'a' * 4000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
@@ -214,7 +211,7 @@ class TestCompactCacheV2(TileCacheTestBase):
 
         t = Tile((5000, 1001, 12), ImageSource(BytesIO(b'a' * 3000), image_opts=ImageOptions(format='image/png')))
         self.cache.store_tile(t)
-        assert_header([4000 + 4, 6000 + 4 + 3000 + 4, 1000 + 4], 6000) # still contains bytes from overwritten tile
+        assert_header([4000 + 4, 6000 + 4 + 3000 + 4, 1000 + 4], 6000)  # still contains bytes from overwritten tile
 
 
 class mockProgressLog(object):
@@ -232,6 +229,7 @@ class mockProgressLog(object):
         })
         self.logs.sort(key=lambda x: (x['fname'], 'num'))
 
+
 class DefragmentationTestBase(object):
     def setup_method(self):
         self.cache_dir = tempfile.mkdtemp()
@@ -244,7 +242,7 @@ class DefragmentationTestBase(object):
         cache = self.cache_class(self.cache_dir)
 
         t = Tile((5000, 1000, 12),
-            ImageSource(BytesIO(b'a' * 60*1024), image_opts=ImageOptions(format='image/png')))
+                 ImageSource(BytesIO(b'a' * 60*1024), image_opts=ImageOptions(format='image/png')))
         cache.store_tile(t)
         cache.remove_tile(t)
 
@@ -261,7 +259,7 @@ class DefragmentationTestBase(object):
 
         for _ in range(2):
             t = Tile((5000, 1000, 12),
-                ImageSource(BytesIO(b'a' * 60*1024), image_opts=ImageOptions(format='image/png')))
+                     ImageSource(BytesIO(b'a' * 60*1024), image_opts=ImageOptions(format='image/png')))
             cache.store_tile(t)
 
         logger = mockProgressLog()
@@ -269,7 +267,7 @@ class DefragmentationTestBase(object):
         before = os.path.getsize(fname)
         defrag_compact_cache(cache, log_progress=logger)
         assert len(logger.logs) == 1
-        assert logger.logs[0]['defrag'] == False
+        assert logger.logs[0]['defrag'] is False
         after = os.path.getsize(fname)
         assert before == after
 
@@ -277,7 +275,7 @@ class DefragmentationTestBase(object):
         before = os.path.getsize(fname)
         defrag_compact_cache(cache, min_bytes=50000, log_progress=logger)
         assert len(logger.logs) == 1
-        assert logger.logs[0]['defrag'] == True
+        assert logger.logs[0]['defrag'] is True
         after = os.path.getsize(fname)
         assert after < before
 
@@ -285,17 +283,17 @@ class DefragmentationTestBase(object):
         cache = self.cache_class(self.cache_dir)
 
         t = Tile((10000, 2000, 13),
-                        ImageSource(
-                            BytesIO(b'a' * 120 * 1024),
-                            image_opts=ImageOptions(format='image/png')))
+                 ImageSource(
+            BytesIO(b'a' * 120 * 1024),
+            image_opts=ImageOptions(format='image/png')))
         cache.store_tile(t)
 
         for x in range(100):
             for _ in range(2 if x < 10 else 1):
                 t = Tile((5000+x, 1000, 12),
-                        ImageSource(
-                            BytesIO(b'a' * 120 * 1024),
-                            image_opts=ImageOptions(format='image/png')))
+                         ImageSource(
+                    BytesIO(b'a' * 120 * 1024),
+                    image_opts=ImageOptions(format='image/png')))
                 cache.store_tile(t)
 
         logger = mockProgressLog()
@@ -303,8 +301,8 @@ class DefragmentationTestBase(object):
         before = os.path.getsize(fname)
         defrag_compact_cache(cache, log_progress=logger)
         assert len(logger.logs) == 2
-        assert logger.logs[0]['defrag'] == False
-        assert logger.logs[1]['defrag'] == False
+        assert logger.logs[0]['defrag'] is False
+        assert logger.logs[1]['defrag'] is False
         after = os.path.getsize(fname)
         assert before == after
 
@@ -312,14 +310,15 @@ class DefragmentationTestBase(object):
         before = os.path.getsize(fname)
         defrag_compact_cache(cache, min_percent=0.08, log_progress=logger)
         assert len(logger.logs) == 2
-        assert logger.logs[0]['defrag'] == True
-        assert logger.logs[1]['defrag'] == False
+        assert logger.logs[0]['defrag'] is True
+        assert logger.logs[1]['defrag'] is False
         after = os.path.getsize(fname)
         assert after < before
 
 
 class TestDefragmentationV1(DefragmentationTestBase):
     cache_class = CompactCacheV1
+
 
 class TestDefragmentationV2(DefragmentationTestBase):
     cache_class = CompactCacheV2

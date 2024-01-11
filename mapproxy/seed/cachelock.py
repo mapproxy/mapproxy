@@ -20,8 +20,10 @@ import sqlite3
 import time
 from contextlib import contextmanager
 
+
 class CacheLockedError(Exception):
     pass
+
 
 class CacheLocker(object):
     def __init__(self, lockfile, polltime=0.1):
@@ -30,7 +32,7 @@ class CacheLocker(object):
         self._initialize_lockfile()
 
     def _initialize_lockfile(self):
-        db  = sqlite3.connect(self.lockfile)
+        db = sqlite3.connect(self.lockfile)
         db.execute("""
             CREATE TABLE IF NOT EXISTS cache_locks (
                 cache_name TEXT NOT NULL,
@@ -43,7 +45,7 @@ class CacheLocker(object):
 
     @contextmanager
     def _exclusive_db_cursor(self):
-        db  = sqlite3.connect(self.lockfile, isolation_level="EXCLUSIVE")
+        db = sqlite3.connect(self.lockfile, isolation_level="EXCLUSIVE")
         db.row_factory = sqlite3.Row
         cur = db.cursor()
 
@@ -92,15 +94,18 @@ class CacheLocker(object):
     def _add_lock(self, cur, cache_name, pid):
         cur.execute("SELECT count(*) from cache_locks WHERE cache_name = ? AND pid = ?", (cache_name, pid))
         if cur.fetchone()[0] == 0:
-            cur.execute("INSERT INTO cache_locks (cache_name, pid, created) VALUES (?, ?, ?)", (cache_name, pid, time.time()))
+            cur.execute("INSERT INTO cache_locks (cache_name, pid, created) VALUES (?, ?, ?)",
+                        (cache_name, pid, time.time()))
 
     def _remove_lock(self, cur, cache_name, pid):
         cur.execute("DELETE FROM cache_locks WHERE cache_name = ?  AND pid = ?", (cache_name, pid))
+
 
 class DummyCacheLocker(object):
     @contextmanager
     def lock(self, cache_name, no_block=False):
         yield
+
 
 def is_running(pid):
     try:
@@ -114,6 +119,7 @@ def is_running(pid):
             raise err
     else:
         return True
+
 
 if __name__ == '__main__':
     locker = CacheLocker('/tmp/cachelock_test')

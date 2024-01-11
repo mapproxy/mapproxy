@@ -53,7 +53,7 @@ class TestLRU(object):
     def test_get_default(self):
         lru = LRU(10)
         lru['foo1'] = 1
-        assert lru.get('foo2') == None
+        assert lru.get('foo2') is None
         assert lru.get('foo2', 2) == 2
 
     def test_delitem(self):
@@ -65,9 +65,9 @@ class TestLRU(object):
 
     def test_empty(self):
         lru = LRU(10)
-        assert bool(lru) == False
+        assert bool(lru) is False
         lru['foo1'] = '1'
-        assert bool(lru) == True
+        assert bool(lru) is True
 
     def test_setitem_overflow(self):
         lru = LRU(2)

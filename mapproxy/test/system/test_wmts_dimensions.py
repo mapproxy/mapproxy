@@ -83,8 +83,8 @@ class TestWMTS(SysTest):
             )
         ) == set(
             [
-                "http://localhost/wmts/dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png",
-                "http://localhost/wmts/no_dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png",
+                "http://localhost/wmts/dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png",  # noqa
+                "http://localhost/wmts/no_dimension_layer/{TileMatrixSet}/{Time}/{Elevation}/{TileMatrix}/{TileCol}/{TileRow}.png",  # noqa
             ]
         )
 

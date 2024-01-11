@@ -86,8 +86,8 @@ class TestWMS111(SysTest):
                 srs="EPSG:900913",
             ),
         )
-        self.expected_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256" "&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=256" "&BBOX=0.0,0.0,20037508.3428,20037508.3428"
-        self.expected_direct_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=200" "&SRS=EPSG%3A4326&styles=&VERSION=1.1.1&WIDTH=200" "&BBOX=0.0,0.0,10.0,10.0"
+        self.expected_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256" "&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=256" "&BBOX=0.0,0.0,20037508.3428,20037508.3428"  # noqa
+        self.expected_direct_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=200" "&SRS=EPSG%3A4326&styles=&VERSION=1.1.1&WIDTH=200" "&BBOX=0.0,0.0,10.0,10.0"  # noqa
 
     @pytest.mark.parametrize(
         "layer,source,wms_format,cache_format,req_format",
@@ -177,8 +177,8 @@ class TestWMS111(SysTest):
 class TestTMS(SysTest):
 
     def setup_method(self):
-        self.expected_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256" "&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=256" "&BBOX=0.0,0.0,20037508.3428,20037508.3428"
-        self.expected_direct_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=200" "&SRS=EPSG%3A4326&styles=&VERSION=1.1.1&WIDTH=200" "&BBOX=0.0,0.0,10.0,10.0"
+        self.expected_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=256" "&SRS=EPSG%3A900913&styles=&VERSION=1.1.1&WIDTH=256" "&BBOX=0.0,0.0,20037508.3428,20037508.3428"  # noqa
+        self.expected_direct_base_path = "/service?SERVICE=WMS&REQUEST=GetMap&HEIGHT=200" "&SRS=EPSG%3A4326&styles=&VERSION=1.1.1&WIDTH=200" "&BBOX=0.0,0.0,10.0,10.0"  # noqa
 
     @pytest.mark.parametrize(
         "layer,source,tms_format,cache_format,req_format",

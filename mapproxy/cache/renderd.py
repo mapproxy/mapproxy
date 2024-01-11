@@ -17,12 +17,14 @@ import time
 import hashlib
 
 try:
-    import json; json
+    import json
+    json
 except ImportError:
     json = None
 
 try:
-    import requests; requests
+    import requests
+    requests
 except ImportError:
     requests = None
 
@@ -31,10 +33,12 @@ from mapproxy.cache.tile import TileCreator, Tile
 from mapproxy.source import SourceError
 from mapproxy.util.lock import LockTimeout
 
+
 def has_renderd_support():
     if not json or not requests:
         return False
     return True
+
 
 class RenderdTileCreator(TileCreator):
     def __init__(self, renderd_address, tile_mgr, dimensions=None, priority=100, tile_locker=None):
@@ -66,14 +70,15 @@ class RenderdTileCreator(TileCreator):
         duration = time.time()-start_time
 
         address = '%s:%s:%r' % (self.renderd_address,
-            self.tile_mgr.identifier, tile_coord)
+                                self.tile_mgr.identifier, tile_coord)
 
         if result['status'] == 'error':
             log_request(address, 500, None, duration=duration, method='RENDERD')
             raise SourceError("Error from renderd: %s" % result.get('error_message', 'unknown error from renderd'))
         elif result['status'] == 'lock':
             log_request(address, 503, None, duration=duration, method='RENDERD')
-            raise LockTimeout("Lock timeout from renderd: %s" % result.get('error_message', 'unknown lock timeout error from renderd'))
+            raise LockTimeout("Lock timeout from renderd: %s" % result.get(
+                'error_message', 'unknown lock timeout error from renderd'))
 
         log_request(address, 200, None, duration=duration, method='RENDERD')
 

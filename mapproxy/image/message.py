@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from __future__ import division
+import logging
 import os
 import pkg_resources
 
@@ -25,8 +26,8 @@ from mapproxy.image.opts import create_image, ImageOptions
 _pil_ttf_support = True
 
 
-import logging
 log_system = logging.getLogger('mapproxy.system')
+
 
 def message_image(message, size, image_opts, bgcolor='#ffffff',
                   transparent=False):
@@ -47,6 +48,7 @@ def message_image(message, size, image_opts, bgcolor='#ffffff',
     eimg = ExceptionImage(message, image_opts=image_opts)
     return eimg.draw(size=size)
 
+
 def attribution_image(message, size, image_opts=None, inverse=False):
     """
     Creates an image with text attribution (`message`).
@@ -64,6 +66,7 @@ def attribution_image(message, size, image_opts=None, inverse=False):
     aimg = AttributionImage(message, image_opts=image_opts,
                             inverse=inverse)
     return aimg.draw(size=size)
+
 
 class MessageImage(object):
     """
@@ -95,11 +98,11 @@ class MessageImage(object):
             if self.font_name != 'default' and _pil_ttf_support:
                 try:
                     self._font = ImageFont.truetype(font_file(self.font_name),
-                        self.font_size)
+                                                    self.font_size)
                 except ImportError:
                     _pil_ttf_support = False
                     log_system.warning("Couldn't load TrueType fonts, "
-                        "PIL needs to be build with freetype support.")
+                                       "PIL needs to be build with freetype support.")
                 except IOError:
                     _pil_ttf_support = False
                     log_system.warning("Couldn't load find TrueType font ", self.font_name)
@@ -164,6 +167,7 @@ class ExceptionImage(MessageImage):
     """
     font_name = 'default'
     font_size = 9
+
     def __init__(self, message, image_opts):
         MessageImage.__init__(self, message, image_opts=image_opts.copy())
         if not self.image_opts.bgcolor:
@@ -258,7 +262,7 @@ class TextDraw(object):
             total_bbox, boxes = self._relative_text_boxes(draw)
         except UnicodeEncodeError:
             # raised if font does not support unicode
-            self.text = [l.encode('ascii', 'replace') for l in self.text]
+            self.text = [x.encode('ascii', 'replace') for x in self.text]
             total_bbox, boxes = self._relative_text_boxes(draw)
         return self._place_boxes(total_bbox, boxes, size)
 
@@ -293,9 +297,8 @@ class TextDraw(object):
                           min(total_bbox[1], text_box[1]),
                           max(total_bbox[2], text_box[2]),
                           max(total_bbox[3], text_box[3]),
-                         )
+                          )
 
-            
         return total_bbox, boxes
 
     def _move_bboxes(self, boxes, offsets):
@@ -332,6 +335,7 @@ class TextDraw(object):
 
         offsets = x_offset, y_offset
         return self._move_bboxes([total_bbox], offsets)[0], self._move_bboxes(boxes, offsets)
+
 
 def font_file(font_name):
     font_dir = base_config().image.font_dir

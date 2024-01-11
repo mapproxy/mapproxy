@@ -41,13 +41,15 @@ except ImportError:
 import logging
 log = logging.getLogger(__name__)
 
+
 class UnexpectedResponse(CacheBackendError):
     pass
 
+
 class CouchDBCache(TileCacheBase):
     def __init__(self, url, db_name,
-        file_ext, tile_grid, md_template=None,
-        tile_id_template=None, coverage=None):
+                 file_ext, tile_grid, md_template=None,
+                 tile_id_template=None, coverage=None):
         super(CouchDBCache, self).__init__(coverage)
 
         if requests is None:
@@ -117,7 +119,6 @@ class CouchDBCache(TileCacheBase):
             return False
         raise SourceError('%r: %r' % (resp.status_code, resp.content))
 
-
     def _tile_doc(self, tile):
         tile_id = self.document_url(tile.coord, relative=True)
         if self.md_template:
@@ -160,7 +161,8 @@ class CouchDBCache(TileCacheBase):
         doc = {'docs': list(tile_docs.values())}
         data = json.dumps(doc)
         self.init_db()
-        resp = self.req_session.post(self.couch_url + '/_bulk_docs', data=data, headers={'Content-type': 'application/json'})
+        resp = self.req_session.post(self.couch_url + '/_bulk_docs', data=data,
+                                     headers={'Content-type': 'application/json'})
         if resp.status_code != 201:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
 
@@ -182,7 +184,8 @@ class CouchDBCache(TileCacheBase):
         keys_doc = {'keys': list(tile_docs.keys())}
         data = json.dumps(keys_doc)
         self.init_db()
-        resp = self.req_session.post(self.couch_url + '/_all_docs', data=data, headers={'Content-type': 'application/json'})
+        resp = self.req_session.post(self.couch_url + '/_all_docs', data=data,
+                                     headers={'Content-type': 'application/json'})
         if resp.status_code != 200:
             raise UnexpectedResponse('got unexpected resp (%d) from CouchDB: %s' % (resp.status_code, resp.content))
 
@@ -247,6 +250,7 @@ def utc_now_isoformat():
     # remove milliseconds, add Zulu timezone
     now = now.rsplit('.', 1)[0] + 'Z'
     return now
+
 
 class CouchDBMDTemplate(object):
     def __init__(self, attributes):

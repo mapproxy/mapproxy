@@ -30,14 +30,18 @@ import logging
 from functools import reduce
 log = logging.getLogger(__name__)
 
+
 class BlankImage(Exception):
     pass
+
 
 class MapError(Exception):
     pass
 
+
 class MapBBOXError(Exception):
     pass
+
 
 class MapLayer(object):
     supports_meta_tiles = False
@@ -71,7 +75,7 @@ class MapLayer(object):
 
     def check_res_range(self, query):
         if (self.res_range and
-          not self.res_range.contains(query.bbox, query.size, query.srs)):
+                not self.res_range.contains(query.bbox, query.size, query.srs)):
             raise BlankImage()
 
     def get_map(self, query):
@@ -80,11 +84,13 @@ class MapLayer(object):
     def combined_layer(self, other, query):
         return None
 
+
 class LimitedLayer(object):
     """
     Wraps an existing layer temporary and stores additional
     attributes for geographical limits.
     """
+
     def __init__(self, layer, coverage):
         self._layer = layer
         self.coverage = coverage
@@ -105,14 +111,17 @@ class LimitedLayer(object):
                 return None
         return self._layer.get_info(query)
 
+
 class InfoLayer(object):
     def get_info(self, query):
         raise NotImplementedError
+
 
 class MapQuery(object):
     """
     Internal query for a map with a specific extent, size, srs, etc.
     """
+
     def __init__(self, bbox, size, srs, format='image/png', transparent=False,
                  tiled_only=False, dimensions=None):
         self.bbox = bbox
@@ -138,12 +147,13 @@ class MapQuery(object):
         info = self.__dict__
         serialized_dimensions = ", ".join(["'%s': '%s'" % (key, value) for (key, value) in self.dimensions.items()])
         info["serialized_dimensions"] = serialized_dimensions
-        return "MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s, dimensions={%(serialized_dimensions)s)}" % info
+        return ("MapQuery(bbox=%(bbox)s, size=%(size)s, srs=%(srs)r, format=%(format)s,"
+                " dimensions={%(serialized_dimensions)s)}") % info
 
 
 class InfoQuery(object):
     def __init__(self, bbox, size, srs, pos, info_format, format=None,
-        feature_count=None):
+                 feature_count=None):
         self.bbox = bbox
         self.size = size
         self.srs = srs
@@ -156,10 +166,12 @@ class InfoQuery(object):
     def coord(self):
         return make_lin_transf((0, 0, self.size[0], self.size[1]), self.bbox)(self.pos)
 
+
 class LegendQuery(object):
     def __init__(self, format, scale):
         self.format = format
         self.scale = scale
+
 
 class Dimension(list):
     def __init__(self, identifier, values, default=None):
@@ -180,6 +192,7 @@ def map_extent_from_grid(grid):
     """
     return MapExtent(grid.bbox, grid.srs)
 
+
 class MapExtent(object):
     """
     >>> me = MapExtent((5, 45, 15, 55), SRS(4326))
@@ -191,6 +204,7 @@ class MapExtent(object):
     [5, 45, 15, 55]
     """
     is_default = False
+
     def __init__(self, bbox, srs):
         self._llbbox = None
         self.bbox = bbox
@@ -225,12 +239,12 @@ class MapExtent(object):
 
     def __ne__(self, other):
         if not isinstance(other, MapExtent):
-            return NotImplemented
+            raise NotImplementedError
         return not self.__eq__(other)
 
     def __add__(self, other):
         if not isinstance(other, MapExtent):
-            raise NotImplemented
+            raise NotImplementedError
         if other.is_default:
             return self
         if self.is_default:
@@ -239,7 +253,7 @@ class MapExtent(object):
 
     def contains(self, other):
         if not isinstance(other, MapExtent):
-            raise NotImplemented
+            raise NotImplementedError
         if self.is_default:
             # DefaultMapExtent contains everything
             return True
@@ -247,7 +261,7 @@ class MapExtent(object):
 
     def intersects(self, other):
         if not isinstance(other, MapExtent):
-            raise NotImplemented
+            raise NotImplementedError
         return bbox_intersects(self.bbox, other.bbox_for(self.srs))
 
     def intersection(self, other):
@@ -274,6 +288,7 @@ class MapExtent(object):
     def transform(self, srs):
         return MapExtent(self.bbox_for(srs), srs)
 
+
 class DefaultMapExtent(MapExtent):
     """
     Default extent that covers the whole world.
@@ -288,8 +303,10 @@ class DefaultMapExtent(MapExtent):
     (0, 0, 10, 10)
     """
     is_default = True
+
     def __init__(self):
         MapExtent.__init__(self, (-180, -90, 180, 90), SRS(4326))
+
 
 def merge_layer_extents(layers):
     if not layers:
@@ -300,8 +317,10 @@ def merge_layer_extents(layers):
         extent = extent + layer.extent
     return extent
 
+
 class ResolutionConditional(MapLayer):
     supports_meta_tiles = True
+
     def __init__(self, one, two, resolution, srs, extent, opacity=None):
         MapLayer.__init__(self)
         self.one = one
@@ -329,13 +348,14 @@ class ResolutionConditional(MapLayer):
         else:
             return self.two.get_map(query)
 
+
 class SRSConditional(MapLayer):
     supports_meta_tiles = True
 
     def __init__(self, layers, extent, opacity=None, preferred_srs=None):
         MapLayer.__init__(self)
         self.srs_map = {}
-        self.res_range = merge_layer_res_ranges([l[0] for l in layers])
+        self.res_range = merge_layer_res_ranges([x[0] for x in layers])
 
         supported_srs = []
         for layer, srs in layers:
@@ -353,6 +373,7 @@ class SRSConditional(MapLayer):
     def _select_layer(self, query_srs):
         srs = self.supported_srs.best_srs(query_srs)
         return self.srs_map[srs]
+
 
 class DirectMapLayer(MapLayer):
     supports_meta_tiles = True
@@ -382,7 +403,7 @@ class CacheMapLayer(MapLayer):
     supports_meta_tiles = True
 
     def __init__(self, tile_manager, extent=None, image_opts=None,
-        max_tile_limit=None):
+                 max_tile_limit=None):
         MapLayer.__init__(self, image_opts=image_opts)
         self.tile_manager = tile_manager
         self.grid = tile_manager.grid
@@ -408,7 +429,7 @@ class CacheMapLayer(MapLayer):
             src_query = MapQuery(bbox, size, query.srs, query.format, dimensions=query.dimensions)
             resp = self._image(src_query)
             result = SubImageSource(resp, size=query.size, offset=offset, image_opts=self.image_opts,
-                cacheable=resp.cacheable)
+                                    cacheable=resp.cacheable)
         else:
             result = self._image(query)
         return result
@@ -439,11 +460,12 @@ class CacheMapLayer(MapLayer):
                 raise MapBBOXError("not a single tile")
             bbox = query.bbox
             if not bbox_equals(bbox, src_bbox, abs((bbox[2]-bbox[0])/query.size[0]/10),
-                                               abs((bbox[3]-bbox[1])/query.size[1]/10)):
+                               abs((bbox[3]-bbox[1])/query.size[1]/10)):
                 raise MapBBOXError("query does not align to tile boundaries")
 
         with self.tile_manager.session():
-            tile_collection = self.tile_manager.load_tile_coords(affected_tile_coords, with_metadata=query.tiled_only, dimensions=query.dimensions)
+            tile_collection = self.tile_manager.load_tile_coords(
+                affected_tile_coords, with_metadata=query.tiled_only, dimensions=query.dimensions)
 
         if tile_collection.empty:
             raise BlankImage()
@@ -456,14 +478,12 @@ class CacheMapLayer(MapLayer):
 
         tile_sources = [tile.source for tile in tile_collection]
         tiled_image = TiledImage(tile_sources, src_bbox=src_bbox, src_srs=self.grid.srs,
-                          tile_grid=tile_grid, tile_size=self.grid.tile_size)
+                                 tile_grid=tile_grid, tile_size=self.grid.tile_size)
         try:
             return tiled_image.transform(query.bbox, query.srs, query.size,
-                self.tile_manager.image_opts)
+                                         self.tile_manager.image_opts)
         except ProjError:
             raise MapBBOXError("could not transform query BBOX")
         except IOError as ex:
             from mapproxy.source import SourceError
             raise SourceError("unable to transform image: %s" % ex)
-
-

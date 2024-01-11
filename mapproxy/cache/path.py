@@ -17,6 +17,7 @@ import os
 from mapproxy.util.fs import ensure_directory
 from mapproxy.request.base import NoCaseMultiDict
 
+
 def location_funcs(layout):
     if layout == 'tc':
         return tile_location_tc, level_location
@@ -33,6 +34,7 @@ def location_funcs(layout):
     else:
         raise ValueError('unknown directory_layout "%s"' % layout)
 
+
 def level_location(level, cache_dir, dimensions=None):
     """
     Return the path where all tiles for `level` will be stored.
@@ -47,13 +49,14 @@ def level_location(level, cache_dir, dimensions=None):
     else:
         return os.path.join(cache_dir, dim_path, "%02d" % level)
 
+
 def dimensions_part(dimensions):
     """
     Return the subpath where all tiles for `dimensions` will be stored.
     Dimensions prefixed with "dim_" are sorted after the predefined elevation and time dimensions
     >>> dimensions_part({'time': '2020-08-25T00:00:00Z'})
     'time-2020-08-25T00:00:00Z'
-    >>> dimensions_part({'time': '2020-08-25T00:00:00Z', 'dim_reference_time': '2020-08-25T00:00:00Z', 'dim_level': '700'})
+    >>> dimensions_part({'time': '2020-08-25T00:00:00Z', 'dim_reference_time': '2020-08-25T00:00:00Z', 'dim_level': '700'})  # noqa
     'time-2020-08-25T00:00:00Z/dim_level-700/dim_reference_time-2020-08-25T00:00:00Z'
 
     """
@@ -66,6 +69,7 @@ def dimensions_part(dimensions):
         return os.path.join(*(map(lambda k: k + "-" + str(dims.get(k, 'default')), dim_keys)))
     else:
         return ""
+
 
 def level_part(level):
     """
@@ -97,10 +101,10 @@ def tile_location_tc(tile, cache_dir, file_ext, create_dir=False, dimensions=Non
     """
     if tile.location is None:
         x, y, z = tile.coord
-        
+
         parts = (cache_dir,
-                dimensions_part(dimensions),
-                level_part(z),
+                 dimensions_part(dimensions),
+                 level_part(z),
                  "%03d" % int(x / 1000000),
                  "%03d" % (int(x / 1000) % 1000),
                  "%03d" % (int(x) % 1000),
@@ -111,6 +115,7 @@ def tile_location_tc(tile, cache_dir, file_ext, create_dir=False, dimensions=Non
     if create_dir:
         ensure_directory(tile.location)
     return tile.location
+
 
 def tile_location_mp(tile, cache_dir, file_ext, create_dir=False, dimensions=None):
     """
@@ -130,8 +135,8 @@ def tile_location_mp(tile, cache_dir, file_ext, create_dir=False, dimensions=Non
     if tile.location is None:
         x, y, z = tile.coord
         parts = (cache_dir,
-                dimensions_part(dimensions),
-                level_part(z),
+                 dimensions_part(dimensions),
+                 level_part(z),
                  "%04d" % int(x / 10000),
                  "%04d" % (int(x) % 10000),
                  "%04d" % int(y / 10000),
@@ -140,6 +145,7 @@ def tile_location_mp(tile, cache_dir, file_ext, create_dir=False, dimensions=Non
     if create_dir:
         ensure_directory(tile.location)
     return tile.location
+
 
 def tile_location_tms(tile, cache_dir, file_ext, create_dir=False, dimensions=None):
     """
@@ -157,12 +163,13 @@ def tile_location_tms(tile, cache_dir, file_ext, create_dir=False, dimensions=No
     if tile.location is None:
         x, y, z = tile.coord
         tile.location = os.path.join(
-            cache_dir,dimensions_part(dimensions) ,level_part(str(z)),
+            cache_dir, dimensions_part(dimensions), level_part(str(z)),
             str(x), str(y) + '.' + file_ext
         )
     if create_dir:
         ensure_directory(tile.location)
     return tile.location
+
 
 def tile_location_reverse_tms(tile, cache_dir, file_ext, create_dir=False, dimensions=None):
     """
@@ -180,14 +187,16 @@ def tile_location_reverse_tms(tile, cache_dir, file_ext, create_dir=False, dimen
     if tile.location is None:
         x, y, z = tile.coord
         tile.location = os.path.join(
-            cache_dir,dimensions_part(dimensions),str(y), str(x), str(z) + '.' + file_ext
+            cache_dir, dimensions_part(dimensions), str(y), str(x), str(z) + '.' + file_ext
         )
     if create_dir:
         ensure_directory(tile.location)
     return tile.location
 
+
 def level_location_tms(level, cache_dir, dimensions=None):
     return level_location(str(level), cache_dir=cache_dir)
+
 
 def tile_location_quadkey(tile, cache_dir, file_ext, create_dir=False, dimensions=None):
     """
@@ -205,7 +214,7 @@ def tile_location_quadkey(tile, cache_dir, file_ext, create_dir=False, dimension
     if tile.location is None:
         x, y, z = tile.coord
         quadKey = ""
-        for i in range(z,0,-1):
+        for i in range(z, 0, -1):
             digit = 0
             mask = 1 << (i-1)
             if (x & mask) != 0:
@@ -220,9 +229,11 @@ def tile_location_quadkey(tile, cache_dir, file_ext, create_dir=False, dimension
         ensure_directory(tile.location)
     return tile.location
 
+
 def no_level_location(level, cache_dir, dimensions=None):
     # dummy for quadkey cache which stores all tiles in one directory
     raise NotImplementedError('cache does not have any level location')
+
 
 def tile_location_arcgiscache(tile, cache_dir, file_ext, create_dir=False, dimensions=None):
     """
@@ -244,6 +255,7 @@ def tile_location_arcgiscache(tile, cache_dir, file_ext, create_dir=False, dimen
     if create_dir:
         ensure_directory(tile.location)
     return tile.location
+
 
 def level_location_arcgiscache(z, cache_dir, dimensions=None):
     return level_location('L%02d' % z, cache_dir=cache_dir, dimensions=dimensions)

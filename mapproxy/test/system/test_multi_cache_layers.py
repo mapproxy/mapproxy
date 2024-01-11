@@ -16,8 +16,6 @@
 
 from __future__ import division
 
-import functools
-
 from io import BytesIO
 
 import pytest
@@ -121,7 +119,7 @@ class TestMultiCacheLayer(SysTest):
     def test_get_tile_webmerc(self, app):
         serv = MockServ(42423, bbox_aware_query_comparator=True)
         serv.expects(
-            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=-20037508.3428,0.0,0.0,20037508.3428&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A3857&request=GetMap&height=256"
+            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=-20037508.3428,0.0,0.0,20037508.3428&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A3857&request=GetMap&height=256"  # noqa
         ).returns(TEST_TILE)
         with serv:
             resp = app.get(str(self.common_tile_req))
@@ -132,7 +130,7 @@ class TestMultiCacheLayer(SysTest):
     def test_get_tile_utm(self, app):
         serv = MockServ(42423, bbox_aware_query_comparator=True)
         serv.expects(
-            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=-46133.17,5675047.40429,580038.965712,6301219.54&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"
+            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=-46133.17,5675047.40429,580038.965712,6301219.54&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"  # noqa
         ).returns(TEST_TILE)
         self.common_tile_req.params["tilematrixset"] = "utm32"
 
@@ -146,22 +144,22 @@ class TestMultiCacheLayer(SysTest):
         serv = MockServ(42423, bbox_aware_query_comparator=True, unordered=True)
         # gk3 cache requests UTM tiles
         serv.expects(
-            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=423495.931784,5596775.88732,501767.448748,5675047.40429&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"
+            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=423495.931784,5596775.88732,501767.448748,5675047.40429&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"  # noqa
         ).returns(TEST_TILE)
         serv.expects(
-            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=345224.41482,5596775.88732,423495.931784,5675047.40429&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"
+            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=345224.41482,5596775.88732,423495.931784,5675047.40429&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"  # noqa
         ).returns(TEST_TILE)
         serv.expects(
-            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=345224.41482,5518504.37036,423495.931784,5596775.88732&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"
+            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=345224.41482,5518504.37036,423495.931784,5596775.88732&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"  # noqa
         ).returns(TEST_TILE)
         serv.expects(
-            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=423495.931784,5518504.37036,501767.448748,5596775.88732&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"
+            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=423495.931784,5518504.37036,501767.448748,5596775.88732&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"  # noqa
         ).returns(TEST_TILE)
         serv.expects(
-            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=345224.41482,5440232.8534,423495.931784,5518504.37036&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"
+            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=345224.41482,5440232.8534,423495.931784,5518504.37036&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"  # noqa
         ).returns(TEST_TILE)
         serv.expects(
-            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=423495.931784,5440232.8534,501767.448748,5518504.37036&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"
+            "/service?layers=foo,bar&width=256&version=1.1.1&bbox=423495.931784,5440232.8534,501767.448748,5518504.37036&service=WMS&format=image%2Fpng&styles=&srs=EPSG%3A25832&request=GetMap&height=256"  # noqa
         ).returns(TEST_TILE)
         self.common_tile_req.params["tilematrixset"] = "gk3"
         with serv:

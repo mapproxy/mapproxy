@@ -83,8 +83,10 @@ class PrettyPrinter(object):
                 self.print_line(indent, 'layers')
                 self.print_layers(layer, indent=indent+self.indent)
 
+
 def log_error(msg, *args):
     print(msg % args, file=sys.stderr)
+
 
 def wms_capapilities_url(url, version):
     parsed_url = urlparse(url)
@@ -98,15 +100,19 @@ def wms_capapilities_url(url, version):
     base_req.params['request'] = 'GetCapabilities'
     return base_req.complete_url
 
+
 def parse_capabilities(fileobj, version='1.1.1'):
     try:
         return wmsparse.parse_capabilities(fileobj)
     except ValueError as ex:
-        log_error('%s\n%s\n%s\n%s\nNot a capabilities document: %s', 'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
+        log_error('%s\n%s\n%s\n%s\nNot a capabilities document: %s',
+                  'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
         sys.exit(1)
     except etree.ElementTree.ParseError as ex:
-        log_error('%s\n%s\n%s\n%s\nCould not parse the document: %s', 'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
+        log_error('%s\n%s\n%s\n%s\nCould not parse the document: %s',
+                  'Recieved document:', '-'*80, fileobj.getvalue(), '-'*80, ex.args[0])
         sys.exit(1)
+
 
 def parse_capabilities_url(url, version='1.1.1'):
     try:
@@ -120,18 +126,20 @@ def parse_capabilities_url(url, version='1.1.1'):
     capabilities = BytesIO(capabilities_response.read())
     return parse_capabilities(capabilities, version=version)
 
+
 def wms_capabilities_command(args=None):
     parser = optparse.OptionParser("%prog wms-capabilities [options] URL",
-        description="Read and parse WMS 1.1.1 capabilities and print out"
-        " information about each layer. It does _not_ return a valid"
-        " MapProxy configuration.")
+                                   description="Read and parse WMS 1.1.1 capabilities and print out"
+                                   " information about each layer. It does _not_ return a valid"
+                                   " MapProxy configuration.")
     parser.add_option("--host", dest="capabilities_url",
-        help="WMS Capabilites URL")
-    parser.add_option("--version", dest="version",
-        choices=['1.1.1', '1.3.0'], default='1.1.1', help="Request GetCapabilities-document in version 1.1.1 or 1.3.0", metavar="<1.1.1 or 1.3.0>")
+                      help="WMS Capabilites URL")
+    parser.add_option(
+        "--version", dest="version", choices=['1.1.1', '1.3.0'], default='1.1.1',
+        help="Request GetCapabilities-document in version 1.1.1 or 1.3.0", metavar="<1.1.1 or 1.3.0>")
 
     if args:
-        args = args[1:] # remove script name
+        args = args[1:]  # remove script name
 
     (options, args) = parser.parse_args(args)
     if not options.capabilities_url:

@@ -37,9 +37,11 @@ log = logging.getLogger(__name__)
 
 
 class RedisCache(TileCacheBase):
-    def __init__(self, host, port, prefix, ttl=0, db=0, username=None, password=None, coverage=None, ssl_certfile=None, ssl_keyfile=None, ssl_ca_certs=None):
+    def __init__(
+            self, host, port, prefix, ttl=0, db=0, username=None, password=None, coverage=None, ssl_certfile=None,
+            ssl_keyfile=None, ssl_ca_certs=None):
         super(RedisCache, self).__init__(coverage)
-        
+
         if redis is None:
             raise ImportError("Redis backend requires 'redis' package.")
 
@@ -52,7 +54,8 @@ class RedisCache(TileCacheBase):
         md5 = hashlib.new('md5', (host + str(port) + prefix + str(db)).encode('utf-8'), usedforsecurity=False)
         self.lock_cache_id = 'redis-' + md5.hexdigest()
         self.ttl = ttl
-        # Enable SSL only if certificate and key are provided (CA certificates are not mandatory, but if provided use them)
+        # Enable SSL only if certificate and key are provided (CA certificates are not mandatory, but if provided use
+        # them)
         ssl_enabled = all([self.ssl_certfile, self.ssl_keyfile])
         ssl_certfile = self.ssl_certfile if ssl_enabled else None
         ssl_keyfile = self.ssl_keyfile if ssl_enabled else None
@@ -69,7 +72,6 @@ class RedisCache(TileCacheBase):
             ssl=ssl_enabled
         )
 
-
     def _key(self, tile):
         x, y, z = tile.coord
         return self.prefix + '-%d-%d-%d' % (z, x, y)
@@ -84,7 +86,7 @@ class RedisCache(TileCacheBase):
             return self.r.exists(key)
         except redis.exceptions.ConnectionError as e:
             log.error('Error during connection %s' % e)
-            return False  
+            return False
         except Exception as e:
             log.error('REDIS:exists_key error  %s' % e)
             return False
@@ -102,12 +104,11 @@ class RedisCache(TileCacheBase):
             r = self.r.set(key, data)
         except redis.exceptions.ConnectionError as e:
             log.error('Error during connection %s' % e)
-            return False  
+            return False
         except Exception as e:
             log.error('REDIS:store_key error  %s' % e)
             return False
 
-        
         if self.ttl:
             # use ms expire times for unit-tests
             self.r.pexpire(key, int(self.ttl * 1000))
@@ -137,7 +138,7 @@ class RedisCache(TileCacheBase):
             return False
         except redis.exceptions.ConnectionError as e:
             log.error('Error during connection %s' % e)
-            return False  
+            return False
         except Exception as e:
             log.error('REDIS:get_key error  %s' % e)
             return False

@@ -29,8 +29,10 @@ from mapproxy.util.py import reraise_exception
 import logging
 log = logging.getLogger('mapproxy.source.wms')
 
+
 class WMSSource(MapLayer):
     supports_meta_tiles = True
+
     def __init__(self, client, image_opts=None, coverage=None, res_range=None,
                  transparent_color=None, transparent_color_tolerance=None,
                  supported_srs=None, supported_formats=None, fwd_req_params=None,
@@ -106,7 +108,8 @@ class WMSSource(MapLayer):
         if self.supported_formats and format not in self.supported_formats:
             format = self.supported_formats[0]
         if self.supported_srs:
-            # srs can be equal while still having a different srs_code (EPSG:3857/900913), make sure to use a supported srs_code
+            # srs can be equal while still having a different srs_code (EPSG:3857/900913),
+            # make sure to use a supported srs_code
             request_srs = None
             for srs in self.supported_srs:
                 if query.srs == srs:
@@ -142,7 +145,7 @@ class WMSSource(MapLayer):
         if xres < yres:
             src_size = dst_size[0], int(dst_size[0]/ratio + 0.5)
         else:
-            src_size = int(dst_size[1]*ratio +0.5), dst_size[1]
+            src_size = int(dst_size[1]*ratio + 0.5), dst_size[1]
 
         src_query = MapQuery(src_bbox, src_size, src_srs, format, dimensions=query.dimensions)
 
@@ -153,7 +156,7 @@ class WMSSource(MapLayer):
             img = ImageSource(resp, size=src_size, image_opts=self.image_opts)
 
         img = ImageTransformer(src_srs, dst_srs).transform(img, src_bbox,
-            query.size, dst_bbox, self.image_opts)
+                                                           query.size, dst_bbox, self.image_opts)
 
         img.format = format
         return img
@@ -180,9 +183,8 @@ class WMSSource(MapLayer):
         if self.coverage != other.coverage:
             return False
 
-
         if (query.dimensions_for_params(self.fwd_req_params) !=
-            query.dimensions_for_params(other.fwd_req_params)):
+                query.dimensions_for_params(other.fwd_req_params)):
             return False
 
         return True
@@ -196,14 +198,15 @@ class WMSSource(MapLayer):
             return None
 
         return WMSSource(client, image_opts=self.image_opts,
-            transparent_color=self.transparent_color,
-            transparent_color_tolerance=self.transparent_color_tolerance,
-            supported_srs=self.supported_srs,
-            supported_formats=self.supported_formats,
-            res_range=None, # layer outside res_range should already be filtered out
-            coverage=self.coverage,
-            fwd_req_params=self.fwd_req_params,
-        )
+                         transparent_color=self.transparent_color,
+                         transparent_color_tolerance=self.transparent_color_tolerance,
+                         supported_srs=self.supported_srs,
+                         supported_formats=self.supported_formats,
+                         res_range=None,  # layer outside res_range should already be filtered out
+                         coverage=self.coverage,
+                         fwd_req_params=self.fwd_req_params,
+                         )
+
 
 class WMSInfoSource(InfoSource):
     def __init__(self, client, fi_transformer=None, coverage=None):

@@ -7,6 +7,7 @@ install_requires = [
     'PyYAML>=3.0',
 ]
 
+
 def package_installed(pkg):
     """Check if package is installed"""
     req = pkg_resources.Requirement.parse(pkg)
@@ -16,6 +17,7 @@ def package_installed(pkg):
         return False
     else:
         return True
+
 
 # depend on Pillow if it is installed, otherwise
 # depend on PIL if it is installed, otherwise
@@ -30,6 +32,7 @@ else:
 if platform.python_version_tuple() < ('2', '6'):
     # for mapproxy-seed
     install_requires.append('multiprocessing>=2.6')
+
 
 def long_description(changelog_releases=10):
     import re
@@ -52,6 +55,7 @@ def long_description(changelog_releases=10):
         '''))
     return readme + ''.join(changes)
 
+
 setup(
     name='MapProxy',
     version="2.0.2",
@@ -63,13 +67,13 @@ setup(
     license='Apache Software License 2.0',
     packages=find_packages(),
     include_package_data=True,
-    entry_points = {
+    entry_points={
         'console_scripts': [
             'mapproxy-seed = mapproxy.seed.script:main',
             'mapproxy-util = mapproxy.script.util:main',
         ],
     },
-    package_data = {'': ['*.xml', '*.yaml', '*.ttf', '*.wsgi', '*.ini']},
+    package_data={'': ['*.xml', '*.yaml', '*.ttf', '*.wsgi', '*.ini']},
     install_requires=install_requires,
     classifiers=[
         "Development Status :: 5 - Production/Stable",

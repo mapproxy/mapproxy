@@ -31,6 +31,7 @@ requires_freetype = pytest.mark.skipif(
     not isinstance(ImageFont.load_default(), ImageFont.FreeTypeFont),
     reason="Test expects the default Pillow FreeTypeFont")
 
+
 class TestTextDraw(object):
 
     def test_ul(self):

@@ -42,17 +42,18 @@ class TestCouchDBCache(TileCacheTestBase):
 
         TileCacheTestBase.setup_method(self)
 
-        md_template = CouchDBMDTemplate({'row': '{{y}}', 'tile_column': '{{x}}',
+        md_template = CouchDBMDTemplate({
+            'row': '{{y}}', 'tile_column': '{{x}}',
             'zoom': '{{level}}', 'time': '{{timestamp}}', 'coord': '{{wgs_tile_centroid}}'})
         self.cache = CouchDBCache(couch_address, db_name,
-            file_ext='png', tile_grid=tile_grid(3857, name='global-webmarcator'),
-            md_template=md_template)
+                                  file_ext='png', tile_grid=tile_grid(3857, name='global-webmarcator'),
+                                  md_template=md_template)
 
     def teardown_method(self):
         import requests
         requests.delete(self.cache.couch_url)
         TileCacheTestBase.teardown_method(self)
-    
+
     def test_default_coverage(self):
         assert self.cache.coverage is None
 
@@ -101,8 +102,8 @@ class TestCouchDBMDTemplate(object):
 
     def test_template_values(self):
         template = CouchDBMDTemplate({'row': '{{y}}', 'tile_column': '{{x}}',
-            'zoom': '{{level}}', 'time': '{{timestamp}}', 'coord': '{{wgs_tile_centroid}}',
-            'datetime': '{{utc_iso}}', 'coord_webmerc': '{{tile_centroid}}'})
+                                      'zoom': '{{level}}', 'time': '{{timestamp}}', 'coord': '{{wgs_tile_centroid}}',
+                                      'datetime': '{{utc_iso}}', 'coord_webmerc': '{{tile_centroid}}'})
         doc = template.doc(Tile((1, 0, 2)), tile_grid(3857))
 
         assert doc['time'] == pytest.approx(time.time(), 0.1)

@@ -543,7 +543,7 @@ class TestWMS111(SysTest):
     def test_get_map_invalid_bbox(self, app):
         # min x larger than max x
         url = (
-            """/service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&BBOX=7,2,-9,10&SRS=EPSG:4326&WIDTH=164&HEIGHT=388&LAYERS=wms_cache&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""
+            """/service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&BBOX=7,2,-9,10&SRS=EPSG:4326&WIDTH=164&HEIGHT=388&LAYERS=wms_cache&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""  # noqa
         )
         resp = app.get(url)
         is_111_exception(resp.lxml, "invalid bbox 7,2,-9,10")
@@ -551,7 +551,7 @@ class TestWMS111(SysTest):
     def test_get_map_invalid_bbox2(self, app):
         # broken bbox for the requested srs
         url = (
-            """/service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&BBOX=-72988843.697212,-255661507.634227,142741550.188860,255661507.634227&SRS=EPSG:25833&WIDTH=164&HEIGHT=388&LAYERS=wms_cache_100&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""
+            """/service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&BBOX=-72988843.697212,-255661507.634227,142741550.188860,255661507.634227&SRS=EPSG:25833&WIDTH=164&HEIGHT=388&LAYERS=wms_cache_100&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""  # noqa
         )
         resp = app.get(url)
         # result depends on proj version
@@ -562,7 +562,7 @@ class TestWMS111(SysTest):
 
     def test_get_map_broken_bbox(self, app):
         url = (
-            """/service?VERSION=1.1.11&REQUEST=GetMap&SRS=EPSG:31468&BBOX=-20000855.0573254,2847125.18913603,-19329367.42767611,4239924.78564583&WIDTH=130&HEIGHT=62&LAYERS=wms_cache&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""
+            """/service?VERSION=1.1.11&REQUEST=GetMap&SRS=EPSG:31468&BBOX=-20000855.0573254,2847125.18913603,-19329367.42767611,4239924.78564583&WIDTH=130&HEIGHT=62&LAYERS=wms_cache&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"""  # noqa
         )
         resp = app.get(url)
         is_111_exception(resp.lxml, "Could not transform BBOX: Invalid result.")
@@ -1072,9 +1072,9 @@ class TestWMS110(SysTest):
             return True
 
         url = (r"/service?LAYERs=layer1&SERVICE=WMS&FORMAT=image%2Fpng"
-                "&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913"
-                "&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles="
-                "&WIDTH=200&QUERY_LAYERS=layer1&X=10&Y=20")
+               "&REQUEST=GetFeatureInfo&HEIGHT=200&SRS=EPSG%3A900913"
+               "&VERSION=1.1.1&BBOX=1000.0,400.0,2000.0,1400.0&styles="
+               "&WIDTH=200&QUERY_LAYERS=layer1&X=10&Y=20")
         # First response has a Set-Cookie => with managed_cookies=True, mapproxy should send the
         # cookie in the second request
         expected_requests = [
