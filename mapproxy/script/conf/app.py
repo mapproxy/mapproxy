@@ -147,7 +147,7 @@ def config_command(args):
             cap = parse_capabilities(BytesIO(cap_doc))
         except (xml.etree.ElementTree.ParseError, ValueError) as ex:
             print(ex, file=sys.stderr)
-            print(cap_doc[:1000] + ('...' if len(cap_doc) > 1000 else ''), file=sys.stderr)
+            print(f"{cap_doc[:1000]} {'...' if len(cap_doc) > 1000 else ''}", file=sys.stderr)
             return 3
     elif gpkg:
         if os.path.isfile(gpkg):
