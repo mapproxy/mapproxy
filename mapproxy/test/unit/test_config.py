@@ -18,10 +18,6 @@ from mapproxy.config import Options, base_config, load_base_config
 from mapproxy.test.helper import TempFiles
 
 
-def teardown_module():
-    load_base_config(clear_existing=True)
-
-
 class TestOptions(object):
     def test_update_overwrite(self):
         d = Options(foo='bar', baz=4)
@@ -51,6 +47,9 @@ class TestOptions(object):
 
 
 class TestDefaultsLoading(object):
+    def teardown_method(self):
+        load_base_config(clear_existing=True)
+
     defaults_yaml = b"""
     foo:
         bar:
@@ -97,9 +96,8 @@ class TestDefaultsLoading(object):
 
 
 class TestSRSConfig(object):
-    def setup_method(self):
-        import mapproxy.config.config
-        mapproxy.config.config._config.pop()
+    def teardown_method(self):
+        load_base_config(clear_existing=True)
 
     def test_user_srs_definitions(self):
         user_yaml = b"""
