@@ -256,7 +256,8 @@ class TestSeed(SeedTestBase):
 
     def test_reseed_mbtiles(self):
         seed_conf = load_seed_tasks_conf(self.seed_conf_file, self.mapproxy_conf)
-        tasks, _ = seed_conf.seeds(['mbtile_cache']), seed_conf.cleanups(['cleanup_mbtile_cache'])
+        tasks = seed_conf.seeds(['mbtile_cache'])
+        seed_conf.cleanups(['cleanup_mbtile_cache'])
 
         cache = tasks[0].tile_manager.cache
         cache.store_tile(self.create_tile())
