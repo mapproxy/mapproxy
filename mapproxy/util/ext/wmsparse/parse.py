@@ -295,8 +295,10 @@ def parse_capabilities(fileobj):
         return WMS111Capabilities(tree)
     elif root_tag == '{http://www.opengis.net/wms}WMS_Capabilities':
         return WMS130Capabilities(tree)
+    elif root_tag.startswith('{http://www.opengis.net/wmts'):
+        raise ValueError('Parsing of WMTS capabilities is not supported')
     else:
-        raise ValueError('unknown start tag in capabilities: ' + root_tag)
+        raise ValueError(f'Unknown start tag in capabilities: {root_tag}')
 
 
 if __name__ == '__main__':
