@@ -20,7 +20,7 @@ import time
 
 import pytest
 
-from mapproxy.client.http import HTTPClient, HTTPClientError, supports_ssl_default_context
+from mapproxy.client.http import HTTPClient, HTTPClientError
 from mapproxy.client.tile import TileClient, TileURLTemplate
 from mapproxy.client.wms import WMSClient, WMSInfoClient
 from mapproxy.grid import tile_grid
@@ -111,8 +111,6 @@ class TestHTTPClient(object):
 
     @pytest.mark.online
     def test_https_untrusted_root(self):
-        if not supports_ssl_default_context:
-            raise pytest.skip("old python versions require ssl_ca_certs")
         self.client = HTTPClient('https://untrusted-root.badssl.com/')
         try:
             self.client.open('https://untrusted-root.badssl.com/')
@@ -141,9 +139,6 @@ class TestHTTPClient(object):
 
     @pytest.mark.online
     def test_https_valid_default_cert(self):
-        # modern python should verify by default
-        if not supports_ssl_default_context:
-            raise pytest.skip("old python versions require ssl_ca_certs")
         self.client = HTTPClient('https://www.google.com/')
         self.client.open('https://www.google.com/')
 

@@ -33,11 +33,6 @@ from http.cookiejar import CookieJar
 import socket
 import ssl
 
-supports_ssl_default_context = False
-if hasattr(ssl, 'create_default_context'):
-    # Python >=2.7.9 and >=3.4.0
-    supports_ssl_default_context = True
-
 
 class HTTPClientError(Exception):
     def __init__(self, arg, response_code=None, full_msg=None):
@@ -47,24 +42,15 @@ class HTTPClientError(Exception):
 
 
 def build_https_handler(ssl_ca_certs, insecure):
-    if supports_ssl_default_context:
-        # python >=2.7.9 and >=3.4 supports ssl context in
-        # HTTPSHandler use this
-        if insecure:
-            ctx = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-            ctx.verify_mode = ssl.CERT_NONE
-        elif ssl_ca_certs:
-            ctx = ssl.create_default_context(cafile=ssl_ca_certs)
-        else:
-            ctx = ssl.create_default_context()
-        return urllib2.HTTPSHandler(context=ctx)
+    if insecure:
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+    elif ssl_ca_certs:
+        ctx = ssl.create_default_context(cafile=ssl_ca_certs)
     else:
-        if insecure:
-            return None
-        else:
-            connection_class = verified_https_connection_with_ca_certs(
-                ssl_ca_certs)
-            return VerifiedHTTPSHandler(connection_class=connection_class)
+        ctx = ssl.create_default_context()
+    return urllib2.HTTPSHandler(context=ctx)
 
 
 class VerifiedHTTPSConnection(httplib.HTTPSConnection):
@@ -168,9 +154,6 @@ class HTTPClient(object):
         if url and url.startswith('https'):
             if insecure:
                 ssl_ca_certs = None
-            elif ssl_ca_certs is None and not supports_ssl_default_context:
-                raise HTTPClientError('No ca_certs file set (http.ssl_ca_certs). '
-                                      'Set file or disable verification with http.ssl_no_cert_checks option.')
 
         self.opener = create_url_opener(ssl_ca_certs, url, username, password,
                                         insecure=insecure, manage_cookies=manage_cookies)

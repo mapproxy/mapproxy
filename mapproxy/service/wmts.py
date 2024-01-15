@@ -37,7 +37,7 @@ from mapproxy.template import template_loader, bunch
 import logging
 
 env = {'bunch': bunch}
-get_template = template_loader(__name__, 'templates', namespace=env)
+get_template = template_loader(__package__, 'templates', namespace=env)
 log = logging.getLogger(__name__)
 
 

@@ -25,7 +25,7 @@ from mapproxy.exception import XMLExceptionHandler
 from mapproxy.template import template_loader
 
 import mapproxy.service
-get_template = template_loader(mapproxy.service.__name__, 'templates')
+get_template = template_loader(mapproxy.service.__package__, 'templates')
 
 
 class WMTS100ExceptionHandler(XMLExceptionHandler):

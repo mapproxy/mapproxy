@@ -1,6 +1,7 @@
 import platform
+import importlib.metadata
+
 from setuptools import setup, find_packages
-import pkg_resources
 
 
 install_requires = [
@@ -10,10 +11,9 @@ install_requires = [
 
 def package_installed(pkg):
     """Check if package is installed"""
-    req = pkg_resources.Requirement.parse(pkg)
     try:
-        pkg_resources.get_provider(req)
-    except pkg_resources.DistributionNotFound:
+        importlib.metadata.version(pkg)
+    except importlib.metadata.PackageNotFoundError:
         return False
     else:
         return True
@@ -83,6 +83,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Internet :: Proxy Servers",
         "Topic :: Internet :: WWW/HTTP :: WSGI",
         "Topic :: Scientific/Engineering :: GIS",

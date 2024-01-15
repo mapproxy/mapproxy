@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from __future__ import print_function
-import pkg_resources
+import importlib.metadata
 
 
 def version_string():
@@ -22,7 +22,7 @@ def version_string():
     Return the current version number of MapProxy.
     """
     try:
-        return pkg_resources.working_set.by_key['mapproxy'].version
+        return importlib.metadata.version('mapproxy')
     except KeyError:
         return 'unknown_version'
 

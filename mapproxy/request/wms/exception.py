@@ -22,7 +22,7 @@ from mapproxy.image.message import message_image
 from mapproxy.image.opts import ImageOptions
 import mapproxy.service
 from mapproxy.template import template_loader
-get_template = template_loader(mapproxy.service.__name__, 'templates')
+get_template = template_loader(mapproxy.service.__package__, 'templates')
 
 
 class WMSXMLExceptionHandler(XMLExceptionHandler):

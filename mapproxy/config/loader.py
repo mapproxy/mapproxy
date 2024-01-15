@@ -2249,15 +2249,12 @@ class ServiceConfiguration(ConfigurationBase):
 
 def load_plugins():
     """ Locate plugins that belong to the 'mapproxy' group and load them """
-    if sys.version_info >= (3, 8):
-        from importlib import metadata as importlib_metadata
-    else:
-        try:
-            import importlib_metadata
-        except ImportError:
-            return
+    try:
+        import importlib.metadata
+    except ImportError:
+        return
 
-    for dist in importlib_metadata.distributions():
+    for dist in importlib.metadata.distributions():
         for ep in dist.entry_points:
             if ep.group == 'mapproxy':
                 log.info('Loading plugin from package %s' % dist.metadata['name'])

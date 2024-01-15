@@ -15,7 +15,6 @@ Dev Setup
 * Create an application: `mapproxy-util create -t base-config apps/base`
 
 * Start a dev server in debug mode: `mapproxy-util serve-develop apps/base/mapproxy.yaml --debug`
-
 Coding Style
 ------------
 
