@@ -2,6 +2,9 @@ name: Build and deploy documentation on github pages
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - '*'
 
 permissions:
   contents: write
@@ -13,6 +16,8 @@ jobs:
     steps:
     - name: Checkout sources
       uses: actions/checkout@v4
+      with:
+        ref: upgrade-docs
 
     - name: Install dependencies ⏬
       run: pip install sphinx sphinx-book-theme sphinx-copybutton
@@ -20,7 +25,13 @@ jobs:
     - name: Run documentation build
       run: sphinx-build doc/ docs
 
-    - name: Deploy to GitHub Pages
+    - name: Deploy to GitHub Pages with new tag
+      uses: JamesIves/github-pages-deploy-action@v4.5.0
+      with:
+        folder: docs
+        target-folder: ${{ github.ref_name }}
+
+    - name: Deploy to GitHub Pages to latest folder
       uses: JamesIves/github-pages-deploy-action@v4.5.0
       with:
         folder: docs
