@@ -1,0 +1,12 @@
+seeds:
+  test_cache_seed:
+    caches: [test_wms_cache]
+    levels:
+      from: 6
+      to: 16
+    coverages: [germany]
+
+coverages:
+  germany:
+    polygons: ./GM.txt
+    polygons_srs: EPSG:900913

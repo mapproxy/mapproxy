@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>MapProxy 2.0 &#8212; MapProxy 1.11.1 Docs</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-sphinx.css?v=fadd4351" />
+    <script src="_static/documentation_options.js?v=c8897f99"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Development" href="development.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+<div id="navbar" class="navbar navbar-default ">
+  <div class="container">
+    <div class="navbar-header">
+      <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="index.html" class="pull-left">
+      </a>
+      <a class="navbar-brand" href="index.html">
+        <span>
+          MapProxy</span>
+        <span>1.11.1</span>
+      </a>
+    </div>
+    <div class="collapse navbar-collapse nav-collapse">
+      
+        
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MapProxy 2.0</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#grids">Grids</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#wms">WMS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#other">Other</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-8">
+      
+  <section id="mapproxy-2-0">
+<h1>MapProxy 2.0<a class="headerlink" href="#mapproxy-2-0" title="Link to this heading">¶</a></h1>
+<p>MapProxy will change a few defaults in the configuration between 1.8 and 2.0. You might need to adapt your configuration to have MapProxy 2.0 work the same as MapProxy 1.8 or 1.7.</p>
+<p>Most changes are made to make things more consistent, to make it easier for new users and to discourage a few deprecated things.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Please read this document carefully. Also check all warnings that the latest 1.8 version of <cite>mapproxy-util serve-develop</cite> will generate with your configuration before upgrading to 2.0.</p>
+</div>
+<section id="grids">
+<h2>Grids<a class="headerlink" href="#grids" title="Link to this heading">¶</a></h2>
+<section id="new-default-tile-grid">
+<h3>New default tile grid<a class="headerlink" href="#new-default-tile-grid" title="Link to this heading">¶</a></h3>
+<p>MapProxy now uses GLOBAL_WEBMERCATOR as the default grid, when no grids are configured for a cache or a tile source. This grid is compatible with Google Maps and OpenStreetMap, and uses the same tile origin as the WMTS standard.</p>
+<p>The old default GLOBAL_MERCATOR uses a different tile origin (lower-left instead of upper-left) and you need to set this grid if you upgrade from MapProxy 1 and have caches or tile sources without an explicit grid configured.</p>
+<p>MapProxy used the lower-left tile in a tile grid as the origin. This is the same origin as the TMS standard uses. Google Maps, OpenStreetMap and now also WMTS are counting tiles from the upper-left tile. MapProxy changes</p>
+</section>
+<section id="default-origin">
+<h3>Default origin<a class="headerlink" href="#default-origin" title="Link to this heading">¶</a></h3>
+<p>The default origin changes from ‘ll’ (lower-left) to ‘ul’ (upper-left). You need to set the origin explicitly if you use custom grids. The origin will stay the same if your custom grid is <cite>base`d on the `GLOBAL_*</cite> grids.</p>
+</section>
+</section>
+<section id="wms">
+<h2>WMS<a class="headerlink" href="#wms" title="Link to this heading">¶</a></h2>
+<section id="srs">
+<h3>SRS<a class="headerlink" href="#srs" title="Link to this heading">¶</a></h3>
+<p>The WMS does not support EPSG:900913 by default anymore to discourage the use of this deprecated EPSG code. Please use EPSG:3857 instead or add it back to the WMS configuration (see <a class="reference internal" href="services.html#wms-srs"><span class="std std-ref">srs</span></a>).</p>
+</section>
+<section id="image-formats">
+<h3>Image formats<a class="headerlink" href="#image-formats" title="Link to this heading">¶</a></h3>
+<p>PNG and JPEG are the right image formats for almost all use cases. GIF and TIFF are therefore no longer enabled by default. You can enable them back in the WMS configuration if you need them (<a class="reference internal" href="services.html#wms-image-formats"><span class="std std-ref">image_formats</span></a>)</p>
+</section>
+</section>
+<section id="other">
+<h2>Other<a class="headerlink" href="#other" title="Link to this heading">¶</a></h2>
+<p>This document will be extended.</p>
+</section>
+</section>
+
+
+    </div>
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p>
+     
+       &copy; Copyright Oliver Tonnhofer, Omniscale, <a href="http://mapproxy.org/about">Legal</a>
+     
+     <br/>
+     
+       Last updated on 2024-01-19
+     <br/>
+
+     
+       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.
+     
+   </p>
+ </div>
+</footer>
+  </body>
+</html>
