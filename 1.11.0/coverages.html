@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Coverages &#8212; MapProxy 1.11.0 Docs</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-sphinx.css?v=fadd4351" />
+    <script src="_static/documentation_options.js?v=6cf1fb80"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="mapproxy-util" href="mapproxy_util.html" />
+    <link rel="prev" title="Seeding" href="seed.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+<div id="navbar" class="navbar navbar-default ">
+  <div class="container">
+    <div class="navbar-header">
+      <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="index.html" class="pull-left">
+      </a>
+      <a class="navbar-brand" href="index.html">
+        <span>
+          MapProxy</span>
+        <span>1.11.0</span>
+      </a>
+    </div>
+    <div class="collapse navbar-collapse nav-collapse">
+      
+        
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Coverages</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#coverage-types">Coverage Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#clipping">Clipping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_2.html">MapProxy 2.0</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-8">
+      
+  <section id="coverages">
+<span id="id1"></span><h1>Coverages<a class="headerlink" href="#coverages" title="Link to this heading">¶</a></h1>
+<p>With coverages you can define areas where data is available or where data you are interested in is.
+MapProxy supports coverages for <a class="reference internal" href="sources.html"><span class="doc">sources</span></a> and in the <a class="reference internal" href="seed.html"><span class="doc">mapproxy-seed tool</span></a>. Refer to the corresponding section in the documentation.</p>
+<p>There are five different ways to describe a coverage:</p>
+<ul class="simple">
+<li><p>a simple rectangular bounding box,</p></li>
+<li><p>a text file with one or more (multi)polygons in WKT format,</p></li>
+<li><p>a GeoJSON file with (multi)polygons features,</p></li>
+<li><p>(multi)polygons from any data source readable with OGR (e.g. Shapefile, GeoJSON, PostGIS),</p></li>
+<li><p>a file with webmercator tile coordinates.</p></li>
+</ul>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.</span></p>
+</div>
+<p>You can also build intersections, unions and differences between multiple coverages.</p>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading">¶</a></h2>
+<p>If you want to use polygons to define a coverage, instead of simple bounding boxes, you will also need Shapely and GEOS. For loading polygons from shapefiles you’ll also need GDAL/OGR.</p>
+<p>MapProxy requires Shapely 1.2.0 or later and GEOS 3.1.0 or later.</p>
+<p>On Debian:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">aptitude</span> <span class="n">install</span> <span class="n">libgeos</span><span class="o">-</span><span class="n">dev</span> <span class="n">libgdal</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">Shapely</span>
+</pre></div>
+</div>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">¶</a></h2>
+<p>All coverages are configured by defining the source of the coverage and the SRS.
+The configuration of the coverage depends on the type. The SRS can allways be configured with the <code class="docutils literal notranslate"><span class="pre">srs</span></code> option.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0: </span>MapProxy can autodetect the type of the coverage. You can now use <code class="docutils literal notranslate"><span class="pre">coverage</span></code> instead of the <code class="docutils literal notranslate"><span class="pre">bbox</span></code>, <code class="docutils literal notranslate"><span class="pre">polygons</span></code> or <code class="docutils literal notranslate"><span class="pre">ogr_datasource</span></code> option.
+The old options are still supported.</p>
+</div>
+</section>
+<section id="coverage-types">
+<h2>Coverage Types<a class="headerlink" href="#coverage-types" title="Link to this heading">¶</a></h2>
+<section id="bounding-box">
+<h3>Bounding box<a class="headerlink" href="#bounding-box" title="Link to this heading">¶</a></h3>
+<p>For simple box coverages.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">bbox</span></code> or <code class="docutils literal notranslate"><span class="pre">datasource</span></code>:</dt><dd><p>A simple BBOX as a list of minx, miny, maxx, maxy, e.g: <cite>[4, -30, 10, -28]</cite> or as a string <cite>4,-30,10,-28</cite>.</p>
+</dd>
+</dl>
+</section>
+<section id="polygon-file">
+<h3>Polygon file<a class="headerlink" href="#polygon-file" title="Link to this heading">¶</a></h3>
+<p>Text files with one WKT polygon or multi-polygon per line.
+You can create your own files or use <a class="reference external" href="http://mapproxy.org/static/polygons/">one of the files we provide for every country</a>. Read <a class="reference external" href="http://mapproxy.org/static/polygons/0-fips-codes.txt">the index</a> to find your country.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">datasource</span></code>:</dt><dd><p>The path to the polygon file. Should be relative to the proxy configuration or absolute.</p>
+</dd>
+</dl>
+</section>
+<section id="geojson">
+<h3>GeoJSON<a class="headerlink" href="#geojson" title="Link to this heading">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10: </span>Previous versions required OGR/GDAL for reading GeoJSON.</p>
+</div>
+<p>You can use GeoJSON files with Polygon and MultiPolygons geometries. FeatureCollections and Features of these geometries are suppored as well. MapProxy uses OGR to read GeoJSON files if you define a <code class="docutils literal notranslate"><span class="pre">where</span></code> filter.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">datasource</span></code>:</dt><dd><p>The path to the GeoJSON file. Should be relative to the proxy configuration or absolute.</p>
+</dd>
+</dl>
+</section>
+<section id="ogr-datasource">
+<h3>OGR datasource<a class="headerlink" href="#ogr-datasource" title="Link to this heading">¶</a></h3>
+<p>Any polygon datasource that is supported by OGR (e.g. Shapefile, GeoJSON, PostGIS).</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">datasource</span></code>:</dt><dd><p>The name of the datasource. Refer to the <a class="reference external" href="http://www.gdal.org/ogr/ogr_formats.html">OGR format page</a> for a list of all supported
+datasources. File paths should be relative to the proxy configuration or absolute.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">where</span></code>:</dt><dd><p>Restrict which polygons should be loaded from the datasource. Either a simple where
+statement (e.g. <code class="docutils literal notranslate"><span class="pre">'CNTRY_NAME=&quot;Germany&quot;'</span></code>) or a full select statement. Refer to the
+<a class="reference external" href="http://www.gdal.org/ogr/ogr_sql.html">OGR SQL support documentation</a>. If this
+option is unset, the first layer from the datasource will be used.</p>
+</dd>
+</dl>
+</section>
+<section id="expire-tiles">
+<h3>Expire tiles<a class="headerlink" href="#expire-tiles" title="Link to this heading">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.</span></p>
+</div>
+<p>Text file with webmercator tile coordinates. The tiles should be in <code class="docutils literal notranslate"><span class="pre">z/x/y</span></code> format (e.g. <code class="docutils literal notranslate"><span class="pre">14/1283/6201</span></code>),
+with one tile coordinate per line. Only tiles in the webmercator grid are supported (origin is always <cite>nw</cite>).</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">expire_tiles</span></code>:</dt><dd><p>File or directory with expire tile files. Directories are loaded recursive.</p>
+</dd>
+</dl>
+</section>
+<section id="union">
+<h3>Union<a class="headerlink" href="#union" title="Link to this heading">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.</span></p>
+</div>
+<p>A union coverage contains the combined coverage of one or more sub-coverages. This can be used to combine multiple coverages a single source. Each sub-coverage can be of any supported type and SRS.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">union</span></code>:</dt><dd><p>A list of multiple coverages.</p>
+</dd>
+</dl>
+</section>
+<section id="difference">
+<h3>Difference<a class="headerlink" href="#difference" title="Link to this heading">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.</span></p>
+</div>
+<p>A difference coverage subtracts the coverage of other sub-coverages from the first coverage. This can be used to exclude parts from a coverage. Each sub-coverage can be of any supported type and SRS.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">difference</span></code>:</dt><dd><p>A list of multiple coverages.</p>
+</dd>
+</dl>
+</section>
+<section id="intersection">
+<h3>Intersection<a class="headerlink" href="#intersection" title="Link to this heading">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.</span></p>
+</div>
+<p>An intersection coverage contains only areas that are covered by all sub-coverages. This can be used to limit a larger coverage to a smaller area. Each sub-coverage can be of any supported type and SRS.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">difference</span></code>:</dt><dd><p>A list of multiple coverages.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="clipping">
+<h2>Clipping<a class="headerlink" href="#clipping" title="Link to this heading">¶</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.0.</span></p>
+</div>
+<p>By default MapProxy tries to get and serve full source image even if a coverage only touches it.
+Clipping by coverage can be enabled by setting <code class="docutils literal notranslate"><span class="pre">clip:</span> <span class="pre">true</span></code>. If enabled, all areas outside the coverage will be converted to transparent pixels.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">clip</span></code> option is only active for source coverages and not for seeding coverages.</p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h2>
+<section id="sources">
+<h3>sources<a class="headerlink" href="#sources" title="Link to this heading">¶</a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">coverage</span></code> option to define a coverage for a WMS or tile source.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sources:
+  mywms:
+    type: wms
+    req:
+      url: http://example.com/service?
+      layers: base
+    coverage:
+      bbox: [5, 50, 10, 55]
+      srs: &#39;EPSG:4326&#39;
+</pre></div>
+</div>
+<p>Example of an intersection coverage with clipping:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sources:
+  mywms:
+    type: wms
+    req:
+      url: http://example.com/service?
+      layers: base
+    coverage:
+      clip: true
+      intersection:
+        - bbox: [5, 50, 10, 55]
+          srs: &#39;EPSG:4326&#39;
+        - datasource: coverage.geojson
+          srs: &#39;EPSG:4326&#39;
+</pre></div>
+</div>
+</section>
+<section id="mapproxy-seed">
+<h3>mapproxy-seed<a class="headerlink" href="#mapproxy-seed" title="Link to this heading">¶</a></h3>
+<p>To define a seed-area in the <code class="docutils literal notranslate"><span class="pre">seed.yaml</span></code>, add the coverage directly to the view.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coverages</span><span class="p">:</span>
+  <span class="n">germany</span><span class="p">:</span>
+    <span class="n">datasource</span><span class="p">:</span> <span class="s1">&#39;shps/world_boundaries_m.shp&#39;</span>
+    <span class="n">where</span><span class="p">:</span> <span class="s1">&#39;CNTRY_NAME = &quot;Germany&quot;&#39;</span>
+    <span class="n">srs</span><span class="p">:</span> <span class="s1">&#39;EPSG:900913&#39;</span>
+</pre></div>
+</div>
+<p id="index-0">Here is the same example with a PostGIS source:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coverages</span><span class="p">:</span>
+  <span class="n">germany</span><span class="p">:</span>
+    <span class="n">datasource</span><span class="p">:</span> <span class="s2">&quot;PG: dbname=&#39;db&#39; host=&#39;host&#39; user=&#39;user&#39;</span>
+  <span class="n">password</span><span class="o">=</span><span class="s1">&#39;password&#39;</span><span class="s2">&quot;</span>
+    <span class="n">where</span><span class="p">:</span> <span class="s2">&quot;select * from coverages where country=&#39;germany&#39;&quot;</span>
+    <span class="n">srs</span><span class="p">:</span> <span class="s1">&#39;EPSG:900913&#39;</span>
+</pre></div>
+</div>
+<p id="index-1">And here is an example with a GeoJSON source:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coverages</span><span class="p">:</span>
+  <span class="n">germany</span><span class="p">:</span>
+    <span class="n">datasource</span><span class="p">:</span> <span class="s1">&#39;boundary.geojson&#39;</span>
+    <span class="n">srs</span><span class="p">:</span> <span class="s1">&#39;EPSG:4326&#39;</span>
+</pre></div>
+</div>
+<p>See <a class="reference external" href="http://www.gdal.org/ogr/ogr_formats.html">the OGR driver list</a> for all supported formats.</p>
+</section>
+</section>
+</section>
+
+
+    </div>
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p>
+     
+       &copy; Copyright Oliver Tonnhofer, Omniscale, <a href="http://mapproxy.org/about">Legal</a>
+     
+     <br/>
+     
+       Last updated on 2024-01-19
+     <br/>
+
+     
+       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.
+     
+   </p>
+ </div>
+</footer>
+  </body>
+</html>

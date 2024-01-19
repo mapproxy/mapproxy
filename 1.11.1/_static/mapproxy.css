@@ -1,0 +1,62 @@
+body {
+  font-family: Verdana, sans-serif;
+}
+
+h1, .h1 {
+  margin-top: 10px;
+}
+
+a:link,
+a:visited,
+a:hover,
+a:active
+{
+  color: #2e3436;
+  color: #31A4B5;
+  text-decoration: none;
+}
+
+code {
+  color: #3a3740;
+  font-size: 75%;
+  background: inherit;
+  padding: 0;
+}
+
+.footer a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.bs-sidenav {
+  margin-top: 5px;
+}
+
+.bs-sidenav.affix {
+  top: 5px;
+}
+
+.bs-sidenav .nav > li > a {
+  padding: 3px 20px;
+}
+
+.toctree-l1 .current {
+  font-weight: bold;
+}
+
+.nav-list li.toctree-l2 {
+  background-color: #F5F5F5;
+}
+
+.navbar-default, .footer, .bs-sidenav {
+  background-color: #ececec;
+}
+
+.section h2 {
+  margin-top: 30px;
+  padding-top: 10px;
+}
+
+.alert-warning, .alert-success, .alert-info {
+  background-image: none;
+}

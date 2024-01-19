@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>MapProxy Documentation &#8212; MapProxy 1.10.1 Docs</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-sphinx.css?v=fadd4351" />
+    <script src="_static/documentation_options.js?v=b95c35c0"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="install.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+<div id="navbar" class="navbar navbar-default ">
+  <div class="container">
+    <div class="navbar-header">
+      <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="#" class="pull-left">
+      </a>
+      <a class="navbar-brand" href="#">
+        <span>
+          MapProxy</span>
+        <span>1.10.1</span>
+      </a>
+    </div>
+    <div class="collapse navbar-collapse nav-collapse">
+      
+        
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_2.html">MapProxy 2.0</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-8">
+      
+  <section id="mapproxy-documentation">
+<h1>MapProxy Documentation<a class="headerlink" href="#mapproxy-documentation" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#create-a-new-virtual-environment">Create a new virtual environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#install-dependencies">Install Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#install-mapproxy">Install MapProxy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#create-a-configuration">Create a configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#start-the-test-server">Start the test server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#upgrade">Upgrade</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install_windows.html#virtualenv">Virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install_windows.html#pip">PIP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install_windows.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install_windows.html#platform-dependent-packages">Platform dependent packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install_windows.html#check-installation">Check installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install_osgeo4w.html#check-installation">Check installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install_osgeo4w.html#unattended-osgeo4w-environment">Unattended OSGeo4W environment</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#configuration-format">Configuration format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#configuration-layout">Configuration Layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#example-configuration">Example Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#mapproxy-yaml">mapproxy.yaml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#services">services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#layers">layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#caches">caches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#id6">grids</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#sources-conf-label">sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#globals">globals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#image-format-options">Image Format Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#notes">Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="services.html#web-map-service-ogc-wms">Web Map Service (OGC WMS)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="services.html#tiled-map-services-tms">Tiled Map Services (TMS)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="services.html#keyhole-markup-language-ogc-kml">Keyhole Markup Language (OGC KML)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="services.html#web-map-tile-services-wmts">Web Map Tile Services (WMTS)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="services.html#mapproxy-demo-service">MapProxy Demo Service</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sources.html#wms">WMS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sources.html#arcgis-rest-api">ArcGIS REST API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sources.html#tiles">Tiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sources.html#mapserver">Mapserver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sources.html#mapnik">Mapnik</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sources.html#debug">Debug</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="caches.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="caches.html#file"><code class="docutils literal notranslate"><span class="pre">file</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="caches.html#mbtiles"><code class="docutils literal notranslate"><span class="pre">mbtiles</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="caches.html#sqlite"><code class="docutils literal notranslate"><span class="pre">sqlite</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="caches.html#couchdb"><code class="docutils literal notranslate"><span class="pre">couchdb</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="caches.html#riak"><code class="docutils literal notranslate"><span class="pre">riak</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="caches.html#redis"><code class="docutils literal notranslate"><span class="pre">redis</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="caches.html#geopackage"><code class="docutils literal notranslate"><span class="pre">geopackage</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="caches.html#s3"><code class="docutils literal notranslate"><span class="pre">s3</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="caches.html#compact"><code class="docutils literal notranslate"><span class="pre">compact</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="seed.html#mapproxy-seed">mapproxy-seed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="seed.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="seed.html#seeds"><code class="docutils literal notranslate"><span class="pre">seeds</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="seed.html#cleanups"><code class="docutils literal notranslate"><span class="pre">cleanups</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="seed.html#id7"><code class="docutils literal notranslate"><span class="pre">coverages</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="seed.html#example-background-seeding">Example: Background seeding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="seed.html#old-configuration">Old Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="coverages.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coverages.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coverages.html#coverage-types">Coverage Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coverages.html#clipping">Clipping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coverages.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mapproxy_util.html#create"><code class="docutils literal notranslate"><span class="pre">create</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mapproxy_util.html#serve-develop"><code class="docutils literal notranslate"><span class="pre">serve-develop</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mapproxy_util.html#serve-multiapp-develop"><code class="docutils literal notranslate"><span class="pre">serve-multiapp-develop</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mapproxy_util.html#scales"><code class="docutils literal notranslate"><span class="pre">scales</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mapproxy_util.html#wms-capabilities"><code class="docutils literal notranslate"><span class="pre">wms-capabilities</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mapproxy_util.html#grids"><code class="docutils literal notranslate"><span class="pre">grids</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mapproxy_util.html#export"><code class="docutils literal notranslate"><span class="pre">export</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mapproxy_util_autoconfig.html#options">Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mapproxy_util_autoconfig.html#overwrites">Overwrites</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#testing">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#production">Production</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#apache-mod-wsgi">Apache mod_wsgi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#behind-http-server-or-proxy">Behind HTTP server or proxy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#other-deployment-options">Other deployment options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#performance">Performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#load-balancing-and-high-availablity">Load Balancing and High Availablity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#logging">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#multimapproxy">MultiMapProxy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#merge-multiple-layers">Merge multiple layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#access-local-servers">Access local servers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#create-wms-from-existing-tile-server">Create WMS from existing tile server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#overlay-tiles-with-openstreetmap-or-google-maps-in-openlayers">Overlay tiles with OpenStreetMap or Google Maps in OpenLayers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#using-existing-caches">Using existing caches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#reprojecting-tiles">Reprojecting Tiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#create-grayscale-images">Create grayscale images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#cache-raster-data">Cache raster data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#cache-vector-data">Cache vector data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#wms-sources-with-styled-layer-description-sld">WMS Sources with Styled Layer Description (SLD)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#add-highly-dynamic-layers">Add highly dynamic layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#reproject-wms-layers">Reproject WMS layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#featureinformation">FeatureInformation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#wmts-service-with-dimensions">WMTS service with dimensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#wms-layers-with-http-authentication">WMS layers with HTTP Authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#access-sources-through-http-proxy">Access sources through HTTP proxy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#serve-multiple-mapproxy-instances">Serve multiple MapProxy instances</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#generate-static-quadkey-virtual-earth-cache-for-use-on-multitouch-table">Generate static quadkey / virtual earth cache for use on Multitouch table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#hq-retina-tiles">HQ/Retina tiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#serve-multiple-caches-for-a-single-layer">Serve multiple caches for a single layer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="inspire.html#inspire-metadata">INSPIRE Metadata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="inspire.html#languages">Languages</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="labeling.html#the-problem">The Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="labeling.html#mapproxy-options">MapProxy Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="labeling.html#wms-server-options">WMS Server Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="labeling.html#mapserver-options">MapServer Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="labeling.html#other-wms-servers">Other WMS Servers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="auth.html#authentication-authorization-middleware">Authentication/Authorization Middleware</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auth.html#mapproxy-authorization-api">MapProxy Authorization API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auth.html#wms-service">WMS Service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auth.html#tms-tile-service">TMS/Tile Service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auth.html#kml-service">KML Service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auth.html#wmts-service">WMTS Service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auth.html#demo-service">Demo Service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auth.html#multimapproxy">MultiMapProxy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="decorate_img.html#decorate-image-middleware">Decorate Image Middleware</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decorate_img.html#mapproxy-decorate-image-api">MapProxy Decorate Image API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="development.html#source">Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#issue-tracker">Issue Tracker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#tests">Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#communication">Communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#tips-on-development">Tips on development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#coding-style-guide">Coding Style Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_2.html">MapProxy 2.0</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mapproxy_2.html#grids">Grids</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mapproxy_2.html#wms">WMS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mapproxy_2.html#other">Other</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+    </div>
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p>
+     
+       &copy; Copyright Oliver Tonnhofer, Omniscale, <a href="http://mapproxy.org/about">Legal</a>
+     
+     <br/>
+     
+       Last updated on 2024-01-19
+     <br/>
+
+     
+       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.
+     
+   </p>
+ </div>
+</footer>
+  </body>
+</html>

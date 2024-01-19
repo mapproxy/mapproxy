@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Seeding &#8212; MapProxy 1.11.1 Docs</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-sphinx.css?v=fadd4351" />
+    <script src="_static/documentation_options.js?v=c8897f99"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Coverages" href="coverages.html" />
+    <link rel="prev" title="Caches" href="caches.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+<script type="text/javascript" src="_static/bootstrap-3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+
+  </head><body>
+
+<div id="navbar" class="navbar navbar-default ">
+  <div class="container">
+    <div class="navbar-header">
+      <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="index.html" class="pull-left">
+      </a>
+      <a class="navbar-brand" href="index.html">
+        <span>
+          MapProxy</span>
+        <span>1.11.1</span>
+      </a>
+    </div>
+    <div class="collapse navbar-collapse nav-collapse">
+      
+        
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install_osgeo4w.html">Installation on OSGeo4W</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caches.html">Caches</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Seeding</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#mapproxy-seed">mapproxy-seed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#seeds"><code class="docutils literal notranslate"><span class="pre">seeds</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cleanups"><code class="docutils literal notranslate"><span class="pre">cleanups</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id7"><code class="docutils literal notranslate"><span class="pre">coverages</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-background-seeding">Example: Background seeding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#old-configuration">Old Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util.html">mapproxy-util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_util_autoconfig.html">mapproxy-util autoconfig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspire.html">INSPIRE View Service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="labeling.html">WMS Labeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication and Authorization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decorate_img.html">Decorate Image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mapproxy_2.html">MapProxy 2.0</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="col-md-8">
+      
+  <section id="seeding">
+<h1>Seeding<a class="headerlink" href="#seeding" title="Link to this heading">¶</a></h1>
+<p>The MapProxy creates all tiles on demand. To improve the performance for commonly
+requested views it is possible to pre-generate these tiles. The <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> script does this task.</p>
+<p>The tool can seed one or more polygon or BBOX areas for each cached layer.</p>
+<p>MapProxy does not seed the tile pyramid level by level, but traverses the tile pyramid depth-first, from bottom to top. This is optimized to work <cite>with</cite> the caches of your operating system and geospatial database, and not against.</p>
+<section id="mapproxy-seed">
+<h2>mapproxy-seed<a class="headerlink" href="#mapproxy-seed" title="Link to this heading">¶</a></h2>
+<p>The command line script expects a seed configuration that describes which tiles from which layer should be generated. See <a class="reference internal" href="#configuration">configuration</a> for the format of the file.</p>
+<section id="options">
+<h3>Options<a class="headerlink" href="#options" title="Link to this heading">¶</a></h3>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-s">
+<span id="cmdoption-seed-conf"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;seed.yaml&gt;</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--seed-conf</span></span><span class="sig-prename descclassname"><span class="pre">==&lt;seed.yaml&gt;</span></span><a class="headerlink" href="#cmdoption-s" title="Link to this definition">¶</a></dt>
+<dd><p>The seed configuration. You can also pass the configuration as the last argument to <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code></p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-f">
+<span id="cmdoption-proxy-conf"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;mapproxy.yaml&gt;</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--proxy-conf</span></span><span class="sig-prename descclassname"><span class="pre">=&lt;mapproxy.yaml&gt;</span></span><a class="headerlink" href="#cmdoption-f" title="Link to this definition">¶</a></dt>
+<dd><p>The MapProxy configuration to use. This file should describe all caches and grids that the seed configuration references.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-c">
+<span id="cmdoption-concurrency"></span><span class="sig-name descname"><span class="pre">-c</span></span><span class="sig-prename descclassname"> <span class="pre">N</span></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--concurrency</span></span><span class="sig-prename descclassname"> <span class="pre">N</span></span><a class="headerlink" href="#cmdoption-c" title="Link to this definition">¶</a></dt>
+<dd><p>The number of concurrent seed worker. Some parts of the seed tool are CPU intensive
+(image splitting and encoding), use this option to distribute that load across multiple
+CPUs. To limit the concurrent requests to the source WMS see
+<a class="reference internal" href="sources.html#wms-source-concurrent-requests-label"><span class="std std-ref">concurrent_requests</span></a></p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-n">
+<span id="cmdoption-dry-run"></span><span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--dry-run</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-n" title="Link to this definition">¶</a></dt>
+<dd><p>This will simulate the seed/cleanup process without requesting, creating or removing any tiles.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-summary">
+<span class="sig-name descname"><span class="pre">--summary</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-summary" title="Link to this definition">¶</a></dt>
+<dd><p>Print a summary of all seeding and cleanup tasks and exit.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-i">
+<span id="cmdoption-interactive"></span><span class="sig-name descname"><span class="pre">-i</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--interactive</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-i" title="Link to this definition">¶</a></dt>
+<dd><p>Print a summary of each seeding and cleanup task and ask if <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> should seed/cleanup that task. It will query for each task before it starts.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-seed">
+<span class="sig-name descname"><span class="pre">--seed</span></span><span class="sig-prename descclassname"><span class="pre">=&lt;task1,task2,..&gt;</span></span><a class="headerlink" href="#cmdoption-seed" title="Link to this definition">¶</a></dt>
+<dd><p>Only seed the named seeding tasks. You can select multiple tasks with a list of comma seperated names, or you can use the <code class="docutils literal notranslate"><span class="pre">--seed</span></code> option multiple times.
+You can use <code class="docutils literal notranslate"><span class="pre">ALL</span></code> to select all tasks.
+This disables all cleanup tasks unless you also use the <code class="docutils literal notranslate"><span class="pre">--cleanup</span></code> option.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cleanup">
+<span class="sig-name descname"><span class="pre">--cleanup</span></span><span class="sig-prename descclassname"><span class="pre">=&lt;task1,task2,..&gt;</span></span><a class="headerlink" href="#cmdoption-cleanup" title="Link to this definition">¶</a></dt>
+<dd><p>Only cleanup the named tasks. You can select multiple tasks with a list of comma seperated names, or you can use the <code class="docutils literal notranslate"><span class="pre">--cleanup</span></code> option multiple times.
+You can use <code class="docutils literal notranslate"><span class="pre">ALL</span></code> to select all tasks.
+This disables all seeding tasks unless you also use the <code class="docutils literal notranslate"><span class="pre">--seed</span></code> option.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-continue">
+<span class="sig-name descname"><span class="pre">--continue</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-continue" title="Link to this definition">¶</a></dt>
+<dd><p>Continue an interrupted seed progress. MapProxy will start the seeding progress at the begining if the progress file (<code class="docutils literal notranslate"><span class="pre">--progress-file</span></code>) was not found.  MapProxy can only continue if the previous seed was started with the <code class="docutils literal notranslate"><span class="pre">--progress-file</span></code> or <code class="docutils literal notranslate"><span class="pre">--continue</span></code> option.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-progress-file">
+<span class="sig-name descname"><span class="pre">--progress-file</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-progress-file" title="Link to this definition">¶</a></dt>
+<dd><p>Filename where MapProxy stores the seeding progress for the <code class="docutils literal notranslate"><span class="pre">--continue</span></code> option. Defaults to <code class="docutils literal notranslate"><span class="pre">.mapproxy_seed_progress</span></code> in the current working directory. MapProxy will remove that file after a successful seed.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-duration">
+<span class="sig-name descname"><span class="pre">--duration</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-duration" title="Link to this definition">¶</a></dt>
+<dd><p>Stop seeding process after this duration. This option accepts duration in the following format: 120s, 15m, 4h, 0.5d
+Use this option in combination with <code class="docutils literal notranslate"><span class="pre">--continue</span></code> to be able to resume the seeding. By default,</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-reseed-file">
+<span class="sig-name descname"><span class="pre">--reseed-file</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-reseed-file" title="Link to this definition">¶</a></dt>
+<dd><p>File created by <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> at the start of a new seeding.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-reseed-interval">
+<span class="sig-name descname"><span class="pre">--reseed-interval</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-reseed-interval" title="Link to this definition">¶</a></dt>
+<dd><p>Only start seeding if <code class="docutils literal notranslate"><span class="pre">--reseed-file</span></code> is older then this duration.
+This option accepts duration in the following format: 120s, 15m, 4h, 0.5d
+Use this option in combination with <code class="docutils literal notranslate"><span class="pre">--continue</span></code> to be able to resume the seeding. By default,</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-use-cache-lock">
+<span class="sig-name descname"><span class="pre">--use-cache-lock</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-use-cache-lock" title="Link to this definition">¶</a></dt>
+<dd><p>Lock each cache to prevent multiple parallel <cite>mapproxy-seed</cite> calls to work on the same cache.
+It does not lock normal operation of MapProxy.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-log-config">
+<span class="sig-name descname"><span class="pre">--log-config</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-log-config" title="Link to this definition">¶</a></dt>
+<dd><p>The logging configuration file to use.</p>
+</dd></dl>
+
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.5.0: </span><code class="docutils literal notranslate"><span class="pre">--continue</span></code> and <code class="docutils literal notranslate"><span class="pre">--progress-file</span></code> option</p>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.7.0: </span><code class="docutils literal notranslate"><span class="pre">--log-config</span></code> option</p>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.0: </span><code class="docutils literal notranslate"><span class="pre">--duration</span></code>, <code class="docutils literal notranslate"><span class="pre">--reseed-file</span></code> and <code class="docutils literal notranslate"><span class="pre">--reseed-interval</span></code> option</p>
+</div>
+</section>
+<section id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h3>
+<p>Seed with concurrency of 4:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">seed</span> <span class="o">-</span><span class="n">f</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> <span class="o">-</span><span class="n">c</span> <span class="mi">4</span> <span class="n">seed</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+<p>Print summary of all seed tasks and exit:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">seed</span> <span class="o">-</span><span class="n">f</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> <span class="o">-</span><span class="n">s</span> <span class="n">seed</span><span class="o">.</span><span class="n">yaml</span> <span class="o">--</span><span class="n">summary</span> <span class="o">--</span><span class="n">seed</span> <span class="n">ALL</span>
+</pre></div>
+</div>
+<p>Interactively select which tasks should be seeded:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">seed</span> <span class="o">-</span><span class="n">f</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> <span class="o">-</span><span class="n">s</span> <span class="n">seed</span><span class="o">.</span><span class="n">yaml</span> <span class="o">-</span><span class="n">i</span>
+</pre></div>
+</div>
+<p>Seed task1 and task2 and cleanup task3 with concurrency of 2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">seed</span> <span class="o">-</span><span class="n">f</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> <span class="o">-</span><span class="n">s</span> <span class="n">seed</span><span class="o">.</span><span class="n">yaml</span> <span class="o">-</span><span class="n">c</span> <span class="mi">2</span> <span class="o">--</span><span class="n">seed</span> <span class="n">task1</span><span class="p">,</span><span class="n">task2</span> \
+ <span class="o">--</span><span class="n">cleanup</span> <span class="n">task3</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The configuration changed with MapProxy 1.0.0, the old format with <code class="docutils literal notranslate"><span class="pre">seeds</span></code> and <code class="docutils literal notranslate"><span class="pre">views</span></code> is still supported but will be deprecated in the future. See <a class="reference internal" href="#seed-old-configuration"><span class="std std-ref">below</span></a> for information about the old format.</p>
+</div>
+<p>The configuration is a YAML file with three sections:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">seeds</span></code></dt><dd><p>Configure seeding tasks.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">cleanups</span></code></dt><dd><p>Configure cleanup tasks.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">coverages</span></code></dt><dd><p>Configure coverages for seeding and cleanup tasks.</p>
+</dd>
+</dl>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">seeds</span><span class="p">:</span>
+  <span class="n">myseed1</span><span class="p">:</span>
+    <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+  <span class="n">myseed2</span>
+    <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+
+<span class="n">cleanups</span><span class="p">:</span>
+  <span class="n">mycleanup1</span><span class="p">:</span>
+    <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+  <span class="n">mycleanup2</span><span class="p">:</span>
+    <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+
+<span class="n">coverages</span><span class="p">:</span>
+  <span class="n">mycoverage1</span><span class="p">:</span>
+    <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+  <span class="n">mycoverage2</span><span class="p">:</span>
+    <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="seeds">
+<h2><code class="docutils literal notranslate"><span class="pre">seeds</span></code><a class="headerlink" href="#seeds" title="Link to this heading">¶</a></h2>
+<p>Here you can define multiple seeding tasks. A task defines <em>what</em> should be seeded. Each task is configured as a dictionary with the name of the task as the key. You can use the names to select single tasks on the command line of <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> will always process one tile pyramid after the other. Each tile pyramid is defined by a cache and a corresponding grid. A cache with multiple grids consists of multiple tile pyramids. You can configure which tile pyramid you want to seed with the <code class="docutils literal notranslate"><span class="pre">caches</span></code> and <code class="docutils literal notranslate"><span class="pre">grids</span></code> options.</p>
+<p>You can further limit the part of the tile pyramid with the <code class="docutils literal notranslate"><span class="pre">levels</span></code> and <code class="docutils literal notranslate"><span class="pre">coverages</span></code> options.</p>
+<p>Each seed tasks takes the following options:</p>
+<section id="caches">
+<h3><code class="docutils literal notranslate"><span class="pre">caches</span></code><a class="headerlink" href="#caches" title="Link to this heading">¶</a></h3>
+<p>A list with the caches that should be seeded for this task. The names should match the cache names in your MapProxy configuration.</p>
+</section>
+<section id="grids">
+<h3><code class="docutils literal notranslate"><span class="pre">grids</span></code><a class="headerlink" href="#grids" title="Link to this heading">¶</a></h3>
+<p>A list with the grid names that should be seeded for the <code class="docutils literal notranslate"><span class="pre">caches</span></code>.
+The names should match the grid names in your mapproxy configuration.
+All caches of this tasks need to support the grids you specify here.
+By default, the grids that are common to all configured caches will be seeded.</p>
+</section>
+<section id="levels">
+<h3><code class="docutils literal notranslate"><span class="pre">levels</span></code><a class="headerlink" href="#levels" title="Link to this heading">¶</a></h3>
+<p>Either a list of levels that should be seeded, or a dictionary with <code class="docutils literal notranslate"><span class="pre">from</span></code> and <code class="docutils literal notranslate"><span class="pre">to</span></code> that define a range of levels. You can omit <code class="docutils literal notranslate"><span class="pre">from</span></code> to start at level 0, or you can omit <code class="docutils literal notranslate"><span class="pre">to</span></code> to seed till the last level.
+By default, all levels will be seeded.</p>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># seed multiple levels</span>
+<span class="n">levels</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span>
+
+<span class="c1"># seed a single level</span>
+<span class="n">levels</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+<span class="c1"># seed from level 0 to 10 (including level 10)</span>
+<span class="n">levels</span><span class="p">:</span>
+  <span class="n">to</span><span class="p">:</span> <span class="mi">10</span>
+
+<span class="c1"># seed from level 3 to 6 (including level 3 and 6)</span>
+<span class="n">levels</span><span class="p">:</span>
+  <span class="n">from</span><span class="p">:</span> <span class="mi">3</span>
+  <span class="n">to</span><span class="p">:</span> <span class="mi">6</span>
+</pre></div>
+</div>
+</section>
+<section id="coverages">
+<h3><code class="docutils literal notranslate"><span class="pre">coverages</span></code><a class="headerlink" href="#coverages" title="Link to this heading">¶</a></h3>
+<p>A list with coverage names. Limits the seed area to the coverages. By default, the whole coverage of the grids will be seeded.</p>
+</section>
+<section id="refresh-before">
+<h3><code class="docutils literal notranslate"><span class="pre">refresh_before</span></code><a class="headerlink" href="#refresh-before" title="Link to this heading">¶</a></h3>
+<p>Regenerate all tiles that are older than the given date. The date can either be absolute or relative. By default, existing tiles will not be refreshed.</p>
+<p>MapProxy can also use the last modification time of a file. File paths should be relative to the proxy configuration or absolute.</p>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># absolute as ISO time</span>
+<span class="n">refresh_before</span><span class="p">:</span>
+  <span class="n">time</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">21</span><span class="n">T12</span><span class="p">:</span><span class="mi">35</span><span class="p">:</span><span class="mi">00</span>
+
+<span class="c1"># relative from the start time of the seed process</span>
+<span class="n">refresh_before</span><span class="p">:</span>
+  <span class="n">weeks</span><span class="p">:</span> <span class="mi">1</span>
+  <span class="n">days</span><span class="p">:</span> <span class="mi">7</span>
+  <span class="n">hours</span><span class="p">:</span> <span class="mi">4</span>
+  <span class="n">minutes</span><span class="p">:</span> <span class="mi">15</span>
+
+<span class="c1"># modification time of a given file</span>
+<span class="n">refresh_before</span><span class="p">:</span>
+  <span class="n">mtime</span><span class="p">:</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">file</span>
+</pre></div>
+</div>
+</section>
+<section id="id1">
+<h3>Example<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">seeds</span><span class="p">:</span>
+  <span class="n">myseed1</span><span class="p">:</span>
+    <span class="n">caches</span><span class="p">:</span> <span class="p">[</span><span class="n">osm_cache</span><span class="p">]</span>
+    <span class="n">coverages</span><span class="p">:</span> <span class="p">[</span><span class="n">germany</span><span class="p">]</span>
+    <span class="n">grids</span><span class="p">:</span> <span class="p">[</span><span class="n">GLOBAL_MERCATOR</span><span class="p">]</span>
+    <span class="n">levels</span><span class="p">:</span>
+      <span class="n">to</span><span class="p">:</span> <span class="mi">10</span>
+
+  <span class="n">myseed2</span>
+    <span class="n">caches</span><span class="p">:</span> <span class="p">[</span><span class="n">osm_cache</span><span class="p">]</span>
+    <span class="n">coverages</span><span class="p">:</span> <span class="p">[</span><span class="n">niedersachsen</span><span class="p">,</span> <span class="n">bremen</span><span class="p">,</span> <span class="n">hamburg</span><span class="p">]</span>
+    <span class="n">grids</span><span class="p">:</span> <span class="p">[</span><span class="n">GLOBAL_MERCATOR</span><span class="p">]</span>
+    <span class="n">refresh_before</span><span class="p">:</span>
+      <span class="n">weeks</span><span class="p">:</span> <span class="mi">3</span>
+    <span class="n">levels</span><span class="p">:</span>
+      <span class="n">from</span><span class="p">:</span> <span class="mi">11</span>
+      <span class="n">to</span><span class="p">:</span> <span class="mi">15</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="cleanups">
+<h2><code class="docutils literal notranslate"><span class="pre">cleanups</span></code><a class="headerlink" href="#cleanups" title="Link to this heading">¶</a></h2>
+<p>Here you can define multiple cleanup tasks. Each task is configured as a dictionary with the name of the task as the key. You can use the names to select single tasks on the command line of <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code>.</p>
+<section id="id2">
+<h3><code class="docutils literal notranslate"><span class="pre">caches</span></code><a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<p>A list with the caches where you want to cleanup old tiles. The names should match the cache names in your mapproxy configuration.</p>
+</section>
+<section id="id3">
+<h3><code class="docutils literal notranslate"><span class="pre">grids</span></code><a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<p>A list with the grid names for the <code class="docutils literal notranslate"><span class="pre">caches</span></code> where you want to cleanup.
+The names should match the grid names in your mapproxy configuration.
+All caches of this tasks need to support the grids you specify here.
+By default, the grids that are common to all configured caches will be used.</p>
+</section>
+<section id="id4">
+<h3><code class="docutils literal notranslate"><span class="pre">levels</span></code><a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+<p>Either a list of levels that should be cleaned up, or a dictionary with <code class="docutils literal notranslate"><span class="pre">from</span></code> and <code class="docutils literal notranslate"><span class="pre">to</span></code> that define a range of levels. You can omit <code class="docutils literal notranslate"><span class="pre">from</span></code> to start at level 0, or you can omit <code class="docutils literal notranslate"><span class="pre">to</span></code> to cleanup till the last level.
+By default, all levels will be cleaned up.</p>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># cleanup multiple levels</span>
+<span class="n">levels</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span>
+
+<span class="c1"># cleanup a single level</span>
+<span class="n">levels</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+<span class="c1"># cleanup from level 0 to 10 (including level 10)</span>
+<span class="n">levels</span><span class="p">:</span>
+  <span class="n">to</span><span class="p">:</span> <span class="mi">10</span>
+
+<span class="c1"># cleanup from level 3 to 6 (including level 3 and 6)</span>
+<span class="n">levels</span><span class="p">:</span>
+  <span class="n">from</span><span class="p">:</span> <span class="mi">3</span>
+  <span class="n">to</span><span class="p">:</span> <span class="mi">6</span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3><code class="docutils literal notranslate"><span class="pre">coverages</span></code><a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<p>A list with coverage names. Limits the cleanup area to the coverages. By default, the whole coverage of the grids will be cleaned up.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Be careful when cleaning up caches with large coverages and levels with lots of tiles (&gt;14).
+Without <code class="docutils literal notranslate"><span class="pre">coverages</span></code>, the seed tool works on the file system level and it only needs to check for existing tiles if they should be removed. With <code class="docutils literal notranslate"><span class="pre">coverages</span></code>, the seed tool traverses the whole tile pyramid and needs to check every posible tile if it exists and if it should be removed. This is much slower.</p>
+</div>
+</section>
+<section id="remove-all">
+<h3><code class="docutils literal notranslate"><span class="pre">remove_all</span></code><a class="headerlink" href="#remove-all" title="Link to this heading">¶</a></h3>
+<p>When set to true, remove all tiles regardless of the time they were created. You still limit the tiles with the <code class="docutils literal notranslate"><span class="pre">levels</span></code> and <code class="docutils literal notranslate"><span class="pre">coverage</span></code> options. MapProxy will try to remove tiles in a more efficient way with this option. For example: It will remove complete level directories for <code class="docutils literal notranslate"><span class="pre">file</span></code> caches instead of comparing each tile with a timestamp.</p>
+</section>
+<section id="remove-before">
+<h3><code class="docutils literal notranslate"><span class="pre">remove_before</span></code><a class="headerlink" href="#remove-before" title="Link to this heading">¶</a></h3>
+<p>Remove all tiles that are older than the given date. The date can either be absolute or relative. <code class="docutils literal notranslate"><span class="pre">remove_before</span></code> defaults to the start time of the seed process, so that newly created tile will not be removed.</p>
+<p>MapProxy can also use the last modification time of a file. File paths should be relative to the proxy configuration or absolute.</p>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># absolute as ISO time</span>
+<span class="n">remove_before</span><span class="p">:</span>
+  <span class="n">time</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">21</span><span class="n">T12</span><span class="p">:</span><span class="mi">35</span><span class="p">:</span><span class="mi">00</span>
+
+<span class="c1"># relative from the start time of the seed process</span>
+<span class="n">remove_before</span><span class="p">:</span>
+  <span class="n">weeks</span><span class="p">:</span> <span class="mi">1</span>
+  <span class="n">days</span><span class="p">:</span> <span class="mi">7</span>
+  <span class="n">hours</span><span class="p">:</span> <span class="mi">4</span>
+  <span class="n">minutes</span><span class="p">:</span> <span class="mi">15</span>
+
+<span class="c1"># modification time of a given file</span>
+<span class="n">remove_before</span><span class="p">:</span>
+  <span class="n">mtime</span><span class="p">:</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">file</span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h3>Example<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cleanups</span><span class="p">:</span>
+  <span class="n">highres</span><span class="p">:</span>
+    <span class="n">caches</span><span class="p">:</span> <span class="p">[</span><span class="n">osm_cache</span><span class="p">]</span>
+    <span class="n">grids</span><span class="p">:</span> <span class="p">[</span><span class="n">GLOBAL_MERCATOR</span><span class="p">,</span> <span class="n">GLOBAL_SPERICAL</span><span class="p">]</span>
+    <span class="n">remove_before</span><span class="p">:</span>
+      <span class="n">days</span><span class="p">:</span> <span class="mi">14</span>
+    <span class="n">levels</span><span class="p">:</span>
+      <span class="n">from</span><span class="p">:</span> <span class="mi">16</span>
+  <span class="n">old_project</span><span class="p">:</span>
+    <span class="n">caches</span><span class="p">:</span> <span class="p">[</span><span class="n">osm_cache</span><span class="p">]</span>
+    <span class="n">grids</span><span class="p">:</span> <span class="p">[</span><span class="n">GLOBAL_MERCATOR</span><span class="p">]</span>
+    <span class="n">coverages</span><span class="p">:</span> <span class="p">[</span><span class="n">mypolygon</span><span class="p">]</span>
+    <span class="n">levels</span><span class="p">:</span>
+      <span class="n">from</span><span class="p">:</span> <span class="mi">14</span>
+      <span class="n">to</span><span class="p">:</span> <span class="mi">18</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id7">
+<h2><code class="docutils literal notranslate"><span class="pre">coverages</span></code><a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<p>There are three different ways to describe the extent of a seeding or cleanup task.</p>
+<ul class="simple">
+<li><p>a simple rectangular bounding box,</p></li>
+<li><p>a text file with one or more polygons in WKT format,</p></li>
+<li><p>polygons from any data source readable with OGR (e.g. Shapefile, GeoJSON, PostGIS)</p></li>
+</ul>
+<p>Read the <a class="reference internal" href="coverages.html"><span class="doc">coverage documentation</span></a> for more information.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You will need to install additional dependencies, if you want to use polygons to define your geographical extent of the seeding area, instead of simple bounding boxes. See <a class="reference internal" href="coverages.html"><span class="doc">coverage documentation</span></a>.</p>
+</div>
+<p>Each coverage has a name that is used in the seed and cleanup task configuration. If you don’t specify a coverage for a task, then the BBOX of the grid will be used.</p>
+<section id="id8">
+<h3>Example<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coverages</span><span class="p">:</span>
+  <span class="n">germany</span><span class="p">:</span>
+    <span class="n">datasource</span><span class="p">:</span> <span class="s1">&#39;shps/world_boundaries_m.shp&#39;</span>
+    <span class="n">where</span><span class="p">:</span> <span class="s1">&#39;CNTRY_NAME = &quot;Germany&quot;&#39;</span>
+    <span class="n">srs</span><span class="p">:</span> <span class="s1">&#39;EPSG:900913&#39;</span>
+  <span class="n">switzerland</span><span class="p">:</span>
+    <span class="n">datasource</span><span class="p">:</span> <span class="s1">&#39;polygons/SZ.txt&#39;</span>
+    <span class="n">srs</span><span class="p">:</span> <span class="s1">&#39;EPSG:900913&#39;</span>
+  <span class="n">austria</span><span class="p">:</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="p">[</span><span class="mf">9.36</span><span class="p">,</span> <span class="mf">46.33</span><span class="p">,</span> <span class="mf">17.28</span><span class="p">,</span> <span class="mf">49.09</span><span class="p">]</span>
+    <span class="n">srs</span><span class="p">:</span> <span class="s1">&#39;EPSG:4326&#39;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="example-background-seeding">
+<span id="background-seeding"></span><h2>Example: Background seeding<a class="headerlink" href="#example-background-seeding" title="Link to this heading">¶</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.10.0.</span></p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">--duration</span></code> option allows you run MapProxy seeding for a limited time. In combination with the <code class="docutils literal notranslate"><span class="pre">--continue</span></code> option, you can resume the seeding process at a later time.
+You can use this to call <code class="docutils literal notranslate"><span class="pre">mapproxy-seed</span></code> with <code class="docutils literal notranslate"><span class="pre">cron</span></code> to seed in the off-hours.</p>
+<p>However, this will restart the seeding process from the begining everytime the is seeding completed.
+You can prevent this with the <code class="docutils literal notranslate"><span class="pre">--reeseed-interval</span></code> and <code class="docutils literal notranslate"><span class="pre">--reseed-file</span></code> option.
+The follwing example starts seeding for six hours. It will seed for another six hours, everytime you call this command again. Once all seed and cleanup tasks were proccessed the command will exit immediately everytime you call it within 14 days after the first call. After 14 days, the modification time of the <code class="docutils literal notranslate"><span class="pre">reseed.time</span></code> file will be updated and the re-seeding process starts again.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">seed</span> <span class="o">-</span><span class="n">f</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> <span class="o">-</span><span class="n">s</span> <span class="n">seed</span><span class="o">.</span><span class="n">yaml</span>  \
+  <span class="o">--</span><span class="n">reseed</span><span class="o">-</span><span class="n">interval</span> <span class="mi">14</span><span class="n">d</span> <span class="o">--</span><span class="n">duration</span> <span class="mi">6</span><span class="n">h</span> <span class="o">--</span><span class="n">reseed</span><span class="o">-</span><span class="n">file</span> <span class="n">reseed</span><span class="o">.</span><span class="n">time</span> \
+  <span class="o">--</span><span class="k">continue</span> <span class="o">--</span><span class="n">progress</span><span class="o">-</span><span class="n">file</span> <span class="o">.</span><span class="n">mapproxy_seed_progress</span>
+</pre></div>
+</div>
+<p>You can use the <code class="docutils literal notranslate"><span class="pre">--reseed-file</span></code> as a <code class="docutils literal notranslate"><span class="pre">refresh_before</span></code> and <code class="docutils literal notranslate"><span class="pre">remove_before</span></code> <code class="docutils literal notranslate"><span class="pre">mtime</span></code>-file.</p>
+</section>
+<section id="old-configuration">
+<span id="seed-old-configuration"></span><h2>Old Configuration<a class="headerlink" href="#old-configuration" title="Link to this heading">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The following description is for the old seed configuration.</p>
+</div>
+<p>The configuration contains two keys: <code class="docutils literal notranslate"><span class="pre">views</span></code> and <code class="docutils literal notranslate"><span class="pre">seeds</span></code>. <code class="docutils literal notranslate"><span class="pre">views</span></code> describes
+the geographical extents that should be seeded. <code class="docutils literal notranslate"><span class="pre">seeds</span></code> links actual layers with
+those <code class="docutils literal notranslate"><span class="pre">views</span></code>.</p>
+<section id="id9">
+<h3>Seeds<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
+<p>Contains a dictionary with layer/view mapping.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">seeds</span><span class="p">:</span>
+    <span class="n">cache1</span><span class="p">:</span>
+        <span class="n">views</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;world&#39;</span><span class="p">,</span> <span class="s1">&#39;germany&#39;</span><span class="p">,</span> <span class="s1">&#39;oldb&#39;</span><span class="p">]</span>
+    <span class="n">cache2</span><span class="p">:</span>
+        <span class="n">views</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;world&#39;</span><span class="p">,</span> <span class="s1">&#39;germany&#39;</span><span class="p">]</span>
+        <span class="n">remove_before</span><span class="p">:</span>
+            <span class="n">time</span><span class="p">:</span> <span class="s1">&#39;2009-04-01T14:45:00&#39;</span>
+            <span class="c1"># or</span>
+            <span class="n">minutes</span><span class="p">:</span> <span class="mi">15</span>
+            <span class="n">hours</span><span class="p">:</span> <span class="mi">4</span>
+            <span class="n">days</span><span class="p">:</span> <span class="mi">9</span>
+            <span class="n">weeks</span><span class="p">:</span> <span class="mi">8</span>
+</pre></div>
+</div>
+<dl>
+<dt><cite>remove_before</cite>:</dt><dd><p>If present, recreate tiles if they are older than the date or time delta. At the
+end of the seeding process all tiles that are older will be removed.</p>
+<p>You can either define a fixed time or a time delta. The <cite>time</cite> is a ISO-like date
+string (no time-zones, no abbreviations). To define time delta use one or more
+<cite>seconds</cite>, <cite>minutes</cite>, <cite>hours</cite>, <cite>days</cite> or <cite>weeks</cite> entries.</p>
+</dd>
+</dl>
+</section>
+<section id="views">
+<h3>Views<a class="headerlink" href="#views" title="Link to this heading">¶</a></h3>
+<p>Contains a dictionary with all views. Each view describes a coverage/geographical extent and the levels that should be seeded.</p>
+<section id="id10">
+<h4>Coverages<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h4>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You will need to install additional dependencies, if you want to use polygons to define your geographical extent of the seeding area, instead of simple bounding boxes. See <a class="reference internal" href="coverages.html"><span class="doc">coverage documentation</span></a>.</p>
+</div>
+<p>There are three different ways to describe the extent of the seed view.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>a simple rectangular bounding box,</p></li>
+<li><p>a text file with one or more polygons in WKT format,</p></li>
+<li><p>polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)</p></li>
+</ul>
+</div></blockquote>
+<p>Read the <a class="reference internal" href="coverages.html"><span class="doc">coverage documentation</span></a> for more information.</p>
+</section>
+</section>
+<section id="other-options">
+<h3>Other options<a class="headerlink" href="#other-options" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">srs</span></code>:</dt><dd><p>A list with SRSs. If the layer contains caches for multiple SRS, only the caches
+that match one of the SRS in this list will be seeded.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">res</span></code>:</dt><dd><p>Seed until this resolution is cached.</p>
+</dd>
+</dl>
+<p>or</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">level</span></code>:</dt><dd><p>A number until which this layer is cached, or a tuple with a range of
+levels that should be cached.</p>
+</dd>
+</dl>
+<section id="example-configuration">
+<h4>Example configuration<a class="headerlink" href="#example-configuration" title="Link to this heading">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">views</span><span class="p">:</span>
+  <span class="n">germany</span><span class="p">:</span>
+    <span class="n">datasource</span><span class="p">:</span> <span class="s1">&#39;shps/world_boundaries_m.shp&#39;</span>
+    <span class="n">where</span><span class="p">:</span> <span class="s1">&#39;CNTRY_NAME = &quot;Germany&quot;&#39;</span>
+    <span class="n">srs</span><span class="p">:</span> <span class="s1">&#39;EPSG:900913&#39;</span>
+    <span class="n">level</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">]</span>
+    <span class="n">srs</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;EPSG:900913&#39;</span><span class="p">,</span> <span class="s1">&#39;EPSG:4326&#39;</span><span class="p">]</span>
+  <span class="n">switzerland</span><span class="p">:</span>
+    <span class="n">datasource</span><span class="p">:</span> <span class="s1">&#39;polygons/SZ.txt&#39;</span>
+    <span class="n">srs</span><span class="p">:</span> <span class="n">EPSG</span><span class="p">:</span><span class="mi">900913</span>
+    <span class="n">level</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">]</span>
+    <span class="n">srs</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;EPSG:900913&#39;</span><span class="p">]</span>
+  <span class="n">austria</span><span class="p">:</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="p">[</span><span class="mf">9.36</span><span class="p">,</span> <span class="mf">46.33</span><span class="p">,</span> <span class="mf">17.28</span><span class="p">,</span> <span class="mf">49.09</span><span class="p">]</span>
+    <span class="n">srs</span><span class="p">:</span> <span class="n">EPSG</span><span class="p">:</span><span class="mi">4326</span>
+    <span class="n">level</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">]</span>
+    <span class="n">srs</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;EPSG:900913&#39;</span><span class="p">]</span>
+
+<span class="n">seeds</span><span class="p">:</span>
+  <span class="n">osm</span><span class="p">:</span>
+    <span class="n">views</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;germany&#39;</span><span class="p">,</span> <span class="s1">&#39;switzerland&#39;</span><span class="p">,</span> <span class="s1">&#39;austria&#39;</span><span class="p">]</span>
+    <span class="n">remove_before</span><span class="p">:</span>
+      <span class="n">time</span><span class="p">:</span> <span class="s1">&#39;2010-02-20T16:00:00&#39;</span>
+  <span class="n">osm_roads</span><span class="p">:</span>
+    <span class="n">views</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;germany&#39;</span><span class="p">]</span>
+    <span class="n">remove_before</span><span class="p">:</span>
+      <span class="n">days</span><span class="p">:</span> <span class="mi">30</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+    </div>
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+    </p>
+    <p>
+     
+       &copy; Copyright Oliver Tonnhofer, Omniscale, <a href="http://mapproxy.org/about">Legal</a>
+     
+     <br/>
+     
+       Last updated on 2024-01-19
+     <br/>
+
+     
+       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.
+     
+   </p>
+ </div>
+</footer>
+  </body>
+</html>
