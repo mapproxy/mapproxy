@@ -1,0 +1,261 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Seeding &mdash; MapProxy v0.8.4 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.8.4',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MapProxy v0.8.4 documentation" href="index.html" />
+    <link rel="next" title="Configuration examples" href="configuration_examples.html" />
+    <link rel="prev" title="Services" href="services.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="configuration_examples.html" title="Configuration examples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="services.html" title="Services"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.8.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="seeding">
+<h1>Seeding<a class="headerlink" href="#seeding" title="Permalink to this headline">¶</a></h1>
+<p>The MapProxy creates all tiles on demand. To improve the performance for commonly
+requested views it is possible to pre-generate these tiles. The <tt class="docutils literal"><span class="pre">mapproxy-seed</span></tt> script does
+this task.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><tt class="docutils literal"><span class="pre">mapproxy-seed</span></tt> is a new version of the seed tool. The old <tt class="docutils literal"><span class="pre">proxy_seed</span></tt> tool is deprecated and will be removed in 0.9.0. The configuration is upward compatible.</p>
+</div>
+<div class="section" id="mapproxy-seed">
+<h2>mapproxy-seed<a class="headerlink" href="#mapproxy-seed" title="Permalink to this headline">¶</a></h2>
+<p>The command line script expects a seed configuration that describes which tiles from which layer should be generated. See <a class="reference internal" href="#configuration">configuration</a> for the format of the file.</p>
+<p>Use the <tt class="docutils literal"><span class="pre">-f</span></tt> option to specify the proxy configuration.</p>
+<div class="highlight-python"><pre>mapproxy-seed -f etc/proxy.yaml etc/seed.yaml</pre>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>The configuration contains two keys: <tt class="docutils literal"><span class="pre">views</span></tt> and <tt class="docutils literal"><span class="pre">seeds</span></tt>. <tt class="docutils literal"><span class="pre">views</span></tt> describes
+geographical extends that should be seeded. <tt class="docutils literal"><span class="pre">seeds</span></tt> links actual layers with
+those <tt class="docutils literal"><span class="pre">views</span></tt>.</p>
+<div class="section" id="seeds">
+<h3>Seeds<a class="headerlink" href="#seeds" title="Permalink to this headline">¶</a></h3>
+<p>Contains a dictionary with layer/view mapping.:</p>
+<div class="highlight-python"><pre>seeds:
+    cache1:
+        views: ['world', 'germany', 'oldb']
+    cache2:
+        views: ['world', 'germany']
+        remove_before:
+            time: '2009-04-01T14:45:00'
+            # or
+            minutes: 15
+            hours: 4
+            days: 9
+            weeks: 8</pre>
+</div>
+<dl class="docutils">
+<dt><cite>remove_before</cite>:</dt>
+<dd><p class="first">If present, recreate tiles if they are older than the date or time delta. At the
+end of the seeding process all tiles that are older will be removed.</p>
+<p class="last">You can either define a fixed time or a time delta. The <cite>time</cite> is a ISO-like date
+string (no time-zones, no abbreviations). To define time delta use one or more
+<cite>minutes</cite>, <cite>hours</cite>, <cite>days</cite>, <cite>weeks</cite> entries.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="views">
+<h3>Views<a class="headerlink" href="#views" title="Permalink to this headline">¶</a></h3>
+<p>Contains a dictionary with all views. Each view describes a geographical extend.</p>
+<div class="section" id="geographical-extend">
+<h4>Geographical extend<a class="headerlink" href="#geographical-extend" title="Permalink to this headline">¶</a></h4>
+<p>There are three different ways to describe the extend of the seed view.</p>
+<blockquote>
+<ul class="simple">
+<li>a simple rectangular bounding box,</li>
+<li>a text file with one or more polygons in WKT format,</li>
+<li>polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)</li>
+</ul>
+</blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The last two variants require <a class="reference external" href="http://pypi.python.org/pypi/Shapely">Shapely</a>. Make sure it is available (e.g. <tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">Shapely</span></tt>). Shapely itself needs GEOS and the OGR reader needs GDAL/OGR. On Debian/Ubuntu these libraries are in the <tt class="docutils literal"><span class="pre">libgeos-dev</span></tt> and <tt class="docutils literal"><span class="pre">libgdal-dev</span></tt> packages.</p>
+</div>
+<div class="section" id="bounding-box">
+<h5>Bounding box<a class="headerlink" href="#bounding-box" title="Permalink to this headline">¶</a></h5>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">bbox</span></tt>:</dt>
+<dd>The BBOX that should be cached. If omitted, the whole BBOX of the layer is used.</dd>
+<dt><tt class="docutils literal"><span class="pre">bbox_srs</span></tt>:</dt>
+<dd>The SRS of the BBOX.</dd>
+</dl>
+</div>
+<div class="section" id="polygon-file">
+<h5>Polygon file<a class="headerlink" href="#polygon-file" title="Permalink to this headline">¶</a></h5>
+<p>
+<span class="versionmodified">New in version 0.8.3.</span></p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">polygons</span></tt>:</dt>
+<dd>Path to a text file with one WKT polygon per line. The path should be relative to
+the proxy configuration or absolute. <a class="reference external" href="http://mapproxy.org/static/polygons/">We provide polygons for every country</a>. <a class="reference external" href="http://mapproxy.org/static/polygons/0-fips-codes.txt">Read the index</a> to find your country. You can use these or create your own.</dd>
+<dt><tt class="docutils literal"><span class="pre">polygons_srs</span></tt>:</dt>
+<dd>The SRS of the polygons.</dd>
+</dl>
+</div>
+<div class="section" id="ogr-datasource">
+<h5>OGR datasource<a class="headerlink" href="#ogr-datasource" title="Permalink to this headline">¶</a></h5>
+<p>
+<span class="versionmodified">New in version 0.8.3.</span></p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">ogr_datasource</span></tt>:</dt>
+<dd>The name of the datasource. Refer to the <a class="reference external" href="http://www.gdal.org/ogr/ogr_formats.html">OGR format page</a> for a list of all supported
+datasources. File paths should be relative to the proxy configuration or absolute.</dd>
+<dt><tt class="docutils literal"><span class="pre">ogr_where</span></tt>:</dt>
+<dd>Restrict which polygons should be loaded from the datasource. Either a simple where
+statement (e.g. &#8216;CNTRY_NAME=&#8221;Germany&#8221;&#8217;) or a full select statement. Refer to the
+<a class="reference external" href="http://www.gdal.org/ogr/ogr_sql.html">OGR SQL support documentation</a>. If this
+option is unset, the first layer from the datasource will be used.</dd>
+<dt><tt class="docutils literal"><span class="pre">ogr_srs</span></tt>:</dt>
+<dd>The SRS of the polygons.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="other-options">
+<h4>Other options<a class="headerlink" href="#other-options" title="Permalink to this headline">¶</a></h4>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">srs</span></tt>:</dt>
+<dd>A list with SRSs. If the layer contains caches for multiple SRS, only the caches
+that match one of the SRS in this list will be seeded.</dd>
+<dt><tt class="docutils literal"><span class="pre">res</span></tt>:</dt>
+<dd>Seed until this resolution is cached.</dd>
+</dl>
+<p>or</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">level</span></tt>:</dt>
+<dd>A number until which this layer is cached, or a tuple with a range of
+levels that should be cached.</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python"><pre>views:
+    world: # cache whole layer from level 0 to 3
+        level: 3
+    germany: # seed a fixed bbox, from level 4 to 10
+        bbox:  [5.40731, 46.8447, 15.5072, 55.4314]
+        bbox_srs: EPSG:4326
+        level: (4, 10)
+    oldb: # seed around bbox until resolution of 4m/px
+        bbox: [904500, 7000800, 925700, 7020400]
+        bbox_srs: EPSG:900913
+        srs: ['EPSG:4326', 'EPSG:900913']
+        res: 4</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Seeding</a><ul>
+<li><a class="reference external" href="#mapproxy-seed">mapproxy-seed</a></li>
+<li><a class="reference external" href="#configuration">Configuration</a><ul>
+<li><a class="reference external" href="#seeds">Seeds</a></li>
+<li><a class="reference external" href="#views">Views</a><ul>
+<li><a class="reference external" href="#geographical-extend">Geographical extend</a><ul>
+<li><a class="reference external" href="#bounding-box">Bounding box</a></li>
+<li><a class="reference external" href="#polygon-file">Polygon file</a></li>
+<li><a class="reference external" href="#ogr-datasource">OGR datasource</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#other-options">Other options</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="services.html"
+                                  title="previous chapter">Services</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="configuration_examples.html"
+                                  title="next chapter">Configuration examples</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/seed.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="configuration_examples.html" title="Configuration examples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="services.html" title="Services"
+             >previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.8.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Oliver Tonnhofer, Omniscale.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,252 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Services &mdash; MapProxy v0.9.0 documentation</title>
+    <link rel="stylesheet" href="_static/mapproxy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MapProxy v0.9.0 documentation" href="index.html" />
+    <link rel="next" title="Sources" href="sources.html" />
+    <link rel="prev" title="Configuration" href="configuration.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="sources.html" title="Sources"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="services">
+<h1>Services<a class="headerlink" href="#services" title="Permalink to this headline">¶</a></h1>
+<p>The following services are available:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#wms-service-label"><em>Web Map Service (OGC WMS)</em></a> and <a class="reference internal" href="#wmsc-service-label"><em>WMS-C</em></a></li>
+<li><a class="reference internal" href="#tms-service-label"><em>Tiled Map Services (TMS)</em></a></li>
+<li><a class="reference internal" href="#kml-service-label"><em>Keyhole Markup Language (OGC KML)</em></a></li>
+<li><a class="reference internal" href="#demo-service-label"><em>MapProxy Demo Service</em></a></li>
+</ul>
+<p>You need to add the service to the <tt class="docutils literal"><span class="pre">services</span></tt> section of your MapProxy configuration to enable it. Some services take additional options.</p>
+<div class="highlight-python"><pre>services:
+  tms:
+  kml:
+  wms:
+    wmsoption1: xxx
+    wmsoption2: xxx</pre>
+</div>
+<div class="section" id="web-map-service-ogc-wms">
+<span id="wms-service-label"></span><span id="index-0"></span><h2>Web Map Service (OGC WMS)<a class="headerlink" href="#web-map-service-ogc-wms" title="Permalink to this headline">¶</a></h2>
+<p>The WMS server is accessible at <tt class="docutils literal"><span class="pre">/service</span></tt> and it supports the WMS versions 1.0.0, 1.1.1 and 1.3.0. The service takes the following additional option.</p>
+<div class="section" id="attribution">
+<h3><tt class="docutils literal"><span class="pre">attribution</span></tt><a class="headerlink" href="#attribution" title="Permalink to this headline">¶</a></h3>
+<p>Adds an attribution (copyright) line to all WMS requests.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">text</span></tt></dt>
+<dd>The text line of the attribution (e.g. some copyright notice, etc).</dd>
+</dl>
+</div>
+<div class="section" id="md">
+<h3><tt class="docutils literal"><span class="pre">md</span></tt><a class="headerlink" href="#md" title="Permalink to this headline">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">md</span></tt> is for metadata. These fields are used for the WMS <tt class="docutils literal"><span class="pre">GetCapabilities</span></tt> responses. See the example below for all supported keys.</p>
+</div>
+<div class="section" id="srs">
+<h3><tt class="docutils literal"><span class="pre">srs</span></tt><a class="headerlink" href="#srs" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="docutils literal"><span class="pre">srs</span></tt> option defines which SRS the WMS service supports.:</p>
+<div class="highlight-python"><pre>srs: ['EPSG:4326', 'CRS:84', 'EPSG:900913']</pre>
+</div>
+<p>See <a class="reference internal" href="configuration.html#axis-order"><em>axis order</em></a> for further configuration that might be needed for WMS 1.3.0.</p>
+</div>
+<div class="section" id="image-formats">
+<h3><tt class="docutils literal"><span class="pre">image_formats</span></tt><a class="headerlink" href="#image-formats" title="Permalink to this headline">¶</a></h3>
+<p>A list of image mime types the server should support.</p>
+</div>
+<div class="section" id="strict">
+<h3><tt class="docutils literal"><span class="pre">strict</span></tt><a class="headerlink" href="#strict" title="Permalink to this headline">¶</a></h3>
+<p>Some WMS clients do not send all required parameters in feature info requests, MapProxy ignores these errors unless you set <tt class="docutils literal"><span class="pre">strict</span></tt> to <tt class="docutils literal"><span class="pre">true</span></tt>.</p>
+</div>
+<div class="section" id="full-example">
+<h3>Full example<a class="headerlink" href="#full-example" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>services:
+  wms:
+    srs: ['EPSG:4326', 'CRS:83', 'EPSG:900913']
+    image_formats: ['image/png', 'image/jpeg']
+    attribution:
+      text: "© MyCompany"
+    md:
+      title: MapProxy WMS Proxy
+      abstract: This is the fantastic MapProxy.
+      online_resource: http://mapproxy.org/
+      contact:
+        person: Your Name Here
+        position: Technical Director
+        organization:
+        address: Fakestreet 123
+        city: Somewhere
+        postcode: 12345
+        country: Germany
+        phone: +49(0)000-000000-0
+        fax: +49(0)000-000000-0
+        email: you@example.org
+      access_constraints: This service is intended for private and evaluation use only.
+      fees: 'None'</pre>
+</div>
+</div>
+<div class="section" id="wms-c">
+<span id="wmsc-service-label"></span><span id="index-1"></span><h3>WMS-C<a class="headerlink" href="#wms-c" title="Permalink to this headline">¶</a></h3>
+<p>The MapProxy WMS service also supports the <a class="reference external" href="http://wiki.osgeo.org/wiki/WMS_Tiling_Client_Recommendation">WMS Tiling Client Recommendation</a> from OSGeo.</p>
+<p>If you add <tt class="docutils literal"><span class="pre">tiled=true</span></tt> to the GetCapabilities request, MapProxy will add metadata about the internal tile structure to the WMS capabilities document. Clients that support WMS-C can use this information to request tiles at the exact tile boundaries. MapProxy can return the tile as-it-is for these requests, the performace is on par with the TMS service.</p>
+<p>MapProxy will limit the WMS support when <tt class="docutils literal"><span class="pre">tiled=true</span></tt> is added to the <cite>GetMap</cite> requests and it will return WMS service exceptions for requests that do not match the exact tile boundaries.</p>
+</div>
+</div>
+<div class="section" id="tiled-map-services-tms">
+<span id="tms-service-label"></span><span id="index-2"></span><h2>Tiled Map Services (TMS)<a class="headerlink" href="#tiled-map-services-tms" title="Permalink to this headline">¶</a></h2>
+<p>MapProxy supports the <a class="reference external" href="http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification">Tile Map Service Specification</a> from the OSGeo. The TMS is available at <tt class="docutils literal"><span class="pre">/tms/1.0.0</span></tt>.</p>
+<p>Here is an example TMS request: <tt class="docutils literal"><span class="pre">/tms/1.0.0/base_EPSG900913/3/1/0.png</span></tt>. <tt class="docutils literal"><span class="pre">png</span></tt> is the internal format of the cached tiles. <tt class="docutils literal"><span class="pre">base</span></tt> is the name of the layer and <tt class="docutils literal"><span class="pre">EPSG900913</span></tt> is the SRS of the layer. You can only select a SRS that your layer is caching.</p>
+<p>A request to <tt class="docutils literal"><span class="pre">/tms/1.0.0</span></tt> will return the TMS metadata as XML. <tt class="docutils literal"><span class="pre">/tms/1.0.0/layername</span></tt> will return information about the bounding box, resolutions and tile size of this specific layer.</p>
+<p>This service takes no further options:</p>
+<div class="highlight-python"><pre>services:
+  tms:</pre>
+</div>
+<div class="section" id="openlayers">
+<span id="index-3"></span><h3>OpenLayers<a class="headerlink" href="#openlayers" title="Permalink to this headline">¶</a></h3>
+<p>When you create a map in OpenLayers with an explicit <tt class="docutils literal"><span class="pre">mapExtent</span></tt>, it will request only a single tile for the first (z=0) level.
+TMS begins with two or four tiles by default, depending on the SRS. MapProxy supports a different TMS mode to support this use-case. MapProxy will start with a single-tile level if you request <tt class="docutils literal"><span class="pre">/tiles</span></tt> instead of <tt class="docutils literal"><span class="pre">/tms</span></tt>.</p>
+<p>Alternatively, you can use the OpenLayers TMS option <tt class="docutils literal"><span class="pre">zoomOffset</span></tt> to compensate the difference. The option is available since OpenLayers 2.10.</p>
+</div>
+<div class="section" id="google-maps">
+<span id="index-4"></span><h3>Google Maps<a class="headerlink" href="#google-maps" title="Permalink to this headline">¶</a></h3>
+<p>The TMS standard counts tiles starting from the lower left corner of the tile grid, while Google Maps starts at the upper left corner. The <tt class="docutils literal"><span class="pre">/tiles</span></tt> service accepts an <tt class="docutils literal"><span class="pre">origin</span></tt> parameter that flips the y-axis accordingly. You can set it to either <tt class="docutils literal"><span class="pre">sw</span></tt> (south-west), the default, or to <tt class="docutils literal"><span class="pre">nw</span></tt> (north-west), required for Google Maps.</p>
+<p>Example:</p>
+<div class="highlight-python"><pre>http://localhost:8080/tiles/osm_EPSG900913/1/0/1.png?origin=nw</pre>
+</div>
+</div>
+</div>
+<div class="section" id="keyhole-markup-language-ogc-kml">
+<span id="kml-service-label"></span><span id="index-5"></span><h2>Keyhole Markup Language (OGC KML)<a class="headerlink" href="#keyhole-markup-language-ogc-kml" title="Permalink to this headline">¶</a></h2>
+<p>MapProxy supports KML version 2.2 for integration into Google Earth. Each layer is available as a Super Overlay – image tiles are loaded on demand when the user zooms to a specific region. The initial KML file is available at <tt class="docutils literal"><span class="pre">/kml/layername/0/0/0.kml</span></tt>.</p>
+<p>This service takes no further options:</p>
+<div class="highlight-python"><pre>services:
+  kml:</pre>
+</div>
+</div>
+<div class="section" id="mapproxy-demo-service">
+<span id="demo-service-label"></span><span id="index-6"></span><h2>MapProxy Demo Service<a class="headerlink" href="#mapproxy-demo-service" title="Permalink to this headline">¶</a></h2>
+<p>MapProxy comes with a demo service that lists all configured WMS and TMS layers. You can test each layer with a simple OpenLayers client.</p>
+<p>The service is available at <tt class="docutils literal"><span class="pre">/demo/</span></tt>.</p>
+<p>This service takes no further options:</p>
+<div class="highlight-python"><pre>services:
+    demo:</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Services</a><ul>
+<li><a class="reference internal" href="#web-map-service-ogc-wms">Web Map Service (OGC WMS)</a><ul>
+<li><a class="reference internal" href="#attribution"><tt class="docutils literal"><span class="pre">attribution</span></tt></a></li>
+<li><a class="reference internal" href="#md"><tt class="docutils literal"><span class="pre">md</span></tt></a></li>
+<li><a class="reference internal" href="#srs"><tt class="docutils literal"><span class="pre">srs</span></tt></a></li>
+<li><a class="reference internal" href="#image-formats"><tt class="docutils literal"><span class="pre">image_formats</span></tt></a></li>
+<li><a class="reference internal" href="#strict"><tt class="docutils literal"><span class="pre">strict</span></tt></a></li>
+<li><a class="reference internal" href="#full-example">Full example</a></li>
+<li><a class="reference internal" href="#wms-c">WMS-C</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tiled-map-services-tms">Tiled Map Services (TMS)</a><ul>
+<li><a class="reference internal" href="#openlayers">OpenLayers</a></li>
+<li><a class="reference internal" href="#google-maps">Google Maps</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#keyhole-markup-language-ogc-kml">Keyhole Markup Language (OGC KML)</a></li>
+<li><a class="reference internal" href="#mapproxy-demo-service">MapProxy Demo Service</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="configuration.html"
+                        title="previous chapter">Configuration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sources.html"
+                        title="next chapter">Sources</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/services.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="sources.html" title="Sources"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration"
+             >previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Oliver Tonnhofer, Omniscale.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

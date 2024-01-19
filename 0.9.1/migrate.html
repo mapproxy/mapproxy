@@ -1,0 +1,214 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Migration from 0.8.x to 0.9.x &mdash; MapProxy v0.9.1 documentation</title>
+    <link rel="stylesheet" href="_static/mapproxy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MapProxy v0.9.1 documentation" href="index.html" />
+    <link rel="next" title="Deployment" href="deployment.html" />
+    <link rel="prev" title="Configuration examples" href="configuration_examples.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="deployment.html" title="Deployment"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="configuration_examples.html" title="Configuration examples"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="migration-from-0-8-x-to-0-9-x">
+<h1>Migration from 0.8.x to 0.9.x<a class="headerlink" href="#migration-from-0-8-x-to-0-9-x" title="Permalink to this headline">¶</a></h1>
+<p>MapProxy changed the configuration format with the 0.9.0 release in a backwards incompatible way. The format still uses YAML/JSON syntax but it is now more structured and more flexible.</p>
+<p>This guide should help you to migrate your existing MapProxy configuration to the new format.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can skip this document if you create a new project with <tt class="docutils literal"><span class="pre">paster</span> <span class="pre">create</span> <span class="pre">-t</span> <span class="pre">mapproxy_conf</span></tt>.</p>
+</div>
+<div class="section" id="develop-ini-and-config-ini">
+<h2>develop.ini and config.ini<a class="headerlink" href="#develop-ini-and-config-ini" title="Permalink to this headline">¶</a></h2>
+<p>We removed the distinction between the services (<tt class="docutils literal"><span class="pre">service.yaml</span></tt>) and global (<tt class="docutils literal"><span class="pre">proxy.yaml</span></tt>) configuration. There is now a single configuration file wich is named <tt class="docutils literal"><span class="pre">mapproxy.yaml</span></tt> by default.</p>
+<p>You need to update your <tt class="docutils literal"><span class="pre">develop.ini</span></tt> and <tt class="docutils literal"><span class="pre">config.ini</span></tt> if you use <tt class="docutils literal"><span class="pre">paster</span> <span class="pre">serve</span></tt> for deployment or testing and point MapProxy to the new configuration.</p>
+<div class="highlight-python"><pre>[app:main]
+use = egg:MapProxy#app
+mapproxy_conf = %(here)s/mapproxy.yaml</pre>
+</div>
+</div>
+<div class="section" id="proxy-yaml">
+<h2>proxy.yaml<a class="headerlink" href="#proxy-yaml" title="Permalink to this headline">¶</a></h2>
+<p>Most options from the <tt class="docutils literal"><span class="pre">proxy.yaml</span></tt> defined global settings of MapProxy. These global options are now placed in the <cite>globals</cite> section of the <tt class="docutils literal"><span class="pre">mapproxy.yaml</span></tt>. See <a class="reference internal" href="configuration.html#globals-conf-label"><em>globals configuration</em></a> for all available options.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Some of the global options are know also available on cache/layer/grid level (e.g. <tt class="docutils literal"><span class="pre">image.resampling_method</span></tt> or <tt class="docutils literal"><span class="pre">cache.meta_size</span></tt>). Refer to the <a class="reference internal" href="configuration.html"><em>configuration documentation</em></a>.</p>
+</div>
+<p>The services (WMS/TMS/KML) are know configured in the <tt class="docutils literal"><span class="pre">services</span></tt> section. See <a class="reference internal" href="services.html"><em>services documentation</em></a>.</p>
+</div>
+<div class="section" id="services-yaml">
+<h2>services.yaml<a class="headerlink" href="#services-yaml" title="Permalink to this headline">¶</a></h2>
+<p>With 0.8.x you had to configure each layer independently and you could not reuse anything. The new configuration separates the source, grid, cache and layers configuration.</p>
+<p>You now only need to define your grids once. It is also possible to define complete different grids (<tt class="docutils literal"><span class="pre">srs</span></tt>, <tt class="docutils literal"><span class="pre">bbox</span></tt>, <tt class="docutils literal"><span class="pre">tile_size</span></tt>, etc.) and use them within the same cache. All sources and caches can also be used in multiple layers.</p>
+<div class="section" id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<p>Here is a configuration example from 0.8:</p>
+<div class="highlight-python"><pre>layers:
+  - osm:
+      md:
+          title: Omniscale OSM WMS - osm.omniscale.net
+      param:
+          # cache tiles in format:
+          format: image/png
+
+          # cache projected and geographical SRS
+          srs: ['EPSG:4326', 'EPSG:900913']
+
+          # request all data in this format:
+          request_format: image/tiff
+
+          # use a tile size of:
+          tile_size: [256, 256]
+      sources:
+      - type: cache_wms
+        req:
+          url: http://osm.omniscale.net/proxy/service?
+          layers: osm</pre>
+</div>
+<p>Enhanced with some more options this becomes:</p>
+<div class="highlight-python"><pre>layers:
+  - osm:
+    title: Omniscale OSM WMS - osm.omniscale.net
+    sources: [osm_cache]
+
+caches:
+  osm_cache:
+    grids: [GLOBAL_MERCATOR, GLOBAL_GEODETIC]
+    sources: [osm_wms]
+    format: image/png
+    request_format: image/tiff
+    meta_size: [6, 6]
+    meta_buffer: 100
+
+sources:
+  osm_wms:
+    type: wms
+    req:
+      url: http://osm.omniscale.net/proxy/service?
+      layers: osm</pre>
+</div>
+<p>We used the predefined grids <tt class="docutils literal"><span class="pre">GLOBAL_GEODETIC</span></tt> (EPSG:4326) and <tt class="docutils literal"><span class="pre">GLOBAL_MERCATOR</span></tt> (EPSG:900913) in this case, but it is easy to define custom grids:</p>
+<div class="highlight-python"><pre>grids:
+  my_grid_4326:
+    bbox: [5, 50, 10, 55]
+    bbox_srs: 'EPSG:4326'
+    srs: 'EPSG:4326'
+    num_levels: 10
+    tile_size: [512, 512]
+  my_grid_900913:
+    base: my_grid_4326
+    srs: 'EPSG:900913'</pre>
+</div>
+<p>The default configuration of MapProxy contains more examples. To create a new one:</p>
+<div class="highlight-python"><pre>paster create -t mapproxy_conf /tmp/mapproxy_example</pre>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Migration from 0.8.x to 0.9.x</a><ul>
+<li><a class="reference internal" href="#develop-ini-and-config-ini">develop.ini and config.ini</a></li>
+<li><a class="reference internal" href="#proxy-yaml">proxy.yaml</a></li>
+<li><a class="reference internal" href="#services-yaml">services.yaml</a><ul>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="configuration_examples.html"
+                        title="previous chapter">Configuration examples</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="deployment.html"
+                        title="next chapter">Deployment</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/migrate.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="deployment.html" title="Deployment"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="configuration_examples.html" title="Configuration examples"
+             >previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Oliver Tonnhofer, Omniscale.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

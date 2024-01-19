@@ -1,0 +1,213 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Coverages &mdash; MapProxy v0.9.1 documentation</title>
+    <link rel="stylesheet" href="_static/mapproxy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MapProxy v0.9.1 documentation" href="index.html" />
+    <link rel="next" title="Configuration examples" href="configuration_examples.html" />
+    <link rel="prev" title="Seeding" href="seed.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="configuration_examples.html" title="Configuration examples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="seed.html" title="Seeding"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="coverages">
+<h1>Coverages<a class="headerlink" href="#coverages" title="Permalink to this headline">¶</a></h1>
+<p>With coverages you can define areas where data is available or where data you are interested in is.
+MapProxy supports coverages for <a class="reference internal" href="sources.html"><em>sources</em></a> and in the <a class="reference internal" href="seed.html"><em>mapproxy-seed tool</em></a>. Refer to the corresponding section in the documentation.</p>
+<p>There are three different ways to describe a coverage.</p>
+<blockquote>
+<ul class="simple">
+<li>a simple rectangular bounding box,</li>
+<li>a text file with one or more polygons in WKT format,</li>
+<li>polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)</li>
+</ul>
+</blockquote>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>If you want to use polygons to define a coverage, instead of simple bounding boxes, you will also need Shapely and GEOS. For loading polygons from shapefiles you&#8217;ll also need GDAL/OGR.</p>
+<p>MapProxy requires Shapely 1.2.0 or later and GEOS 3.1.0 or later.</p>
+<p>On Debian:</p>
+<div class="highlight-python"><pre>sudo aptitude install libgeos-dev libgdal-dev
+pip install Shapely</pre>
+</div>
+</div>
+<div class="section" id="coverage-types">
+<h2>Coverage Types<a class="headerlink" href="#coverage-types" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="bounding-box">
+<h3>Bounding box<a class="headerlink" href="#bounding-box" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">bbox</span></tt>:</dt>
+<dd>A simple BBOX as a list, e.g: <cite>[4, -30, 10, -28]</cite>.</dd>
+<dt><tt class="docutils literal"><span class="pre">bbox_srs</span></tt>:</dt>
+<dd>The SRS of the BBOX.</dd>
+</dl>
+</div>
+<div class="section" id="polygon-file">
+<h3>Polygon file<a class="headerlink" href="#polygon-file" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">polygons</span></tt>:</dt>
+<dd>Path to a text file with one WKT polygon per line. The path should be relative to
+the proxy configuration or absolute. You can create your own files or use <a class="reference external" href="http://mapproxy.org/static/polygons/">one of the files we provide for every country</a>. Read <a class="reference external" href="http://mapproxy.org/static/polygons/0-fips-codes.txt">the index</a> to find your country.</dd>
+<dt><tt class="docutils literal"><span class="pre">polygons_srs</span></tt>:</dt>
+<dd>The SRS of the polygons.</dd>
+</dl>
+</div>
+<div class="section" id="ogr-datasource">
+<h3>OGR datasource<a class="headerlink" href="#ogr-datasource" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">ogr_datasource</span></tt>:</dt>
+<dd>The name of the datasource. Refer to the <a class="reference external" href="http://www.gdal.org/ogr/ogr_formats.html">OGR format page</a> for a list of all supported
+datasources. File paths should be relative to the proxy configuration or absolute.</dd>
+<dt><tt class="docutils literal"><span class="pre">ogr_where</span></tt>:</dt>
+<dd>Restrict which polygons should be loaded from the datasource. Either a simple where
+statement (e.g. <tt class="docutils literal"><span class="pre">'CNTRY_NAME=&quot;Germany&quot;'</span></tt>) or a full select statement. Refer to the
+<a class="reference external" href="http://www.gdal.org/ogr/ogr_sql.html">OGR SQL support documentation</a>. If this
+option is unset, the first layer from the datasource will be used.</dd>
+<dt><tt class="docutils literal"><span class="pre">ogr_srs</span></tt>:</dt>
+<dd>The SRS of the polygons.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="sources">
+<h3>sources<a class="headerlink" href="#sources" title="Permalink to this headline">¶</a></h3>
+<p>Use the <tt class="docutils literal"><span class="pre">coverage</span></tt> option to define a coverage for a WMS or tile source.</p>
+<div class="highlight-python"><pre>sources:
+  mywms:
+    type: wms
+    req:
+      url: http://example.com/service?
+      layers: base
+    coverage:
+      bbox: [5, 50, 10, 55]
+      bbox_srs: 'EPSG:4326'</pre>
+</div>
+</div>
+<div class="section" id="mapproxy-seed">
+<h3>mapproxy-seed<a class="headerlink" href="#mapproxy-seed" title="Permalink to this headline">¶</a></h3>
+<p>To define a seed-area in the <tt class="docutils literal"><span class="pre">seed.yaml</span></tt>, add the coverage directly to the views.</p>
+<div class="highlight-python"><pre>views:
+  germany:
+    ogr_datasource: 'shps/world_boundaries_m.shp'
+    ogr_where: 'CNTRY_NAME = "Germany"'
+    ogr_srs: 'EPSG:900913'
+    level: [0, 14]
+    srs: ['EPSG:900913', 'EPSG:4326']</pre>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Coverages</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#coverage-types">Coverage Types</a><ul>
+<li><a class="reference internal" href="#bounding-box">Bounding box</a></li>
+<li><a class="reference internal" href="#polygon-file">Polygon file</a></li>
+<li><a class="reference internal" href="#ogr-datasource">OGR datasource</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#sources">sources</a></li>
+<li><a class="reference internal" href="#mapproxy-seed">mapproxy-seed</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="seed.html"
+                        title="previous chapter">Seeding</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="configuration_examples.html"
+                        title="next chapter">Configuration examples</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/coverages.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="configuration_examples.html" title="Configuration examples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="seed.html" title="Seeding"
+             >previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Oliver Tonnhofer, Omniscale.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

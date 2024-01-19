@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Services &mdash; MapProxy v0.8.3 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.8.3',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MapProxy v0.8.3 documentation" href="index.html" />
+    <link rel="next" title="Seeding" href="seed.html" />
+    <link rel="prev" title="Configuration" href="configuration.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="seed.html" title="Seeding"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.8.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="services">
+<h1>Services<a class="headerlink" href="#services" title="Permalink to this headline">¶</a></h1>
+<p>By default MapProxy handles WMS, TMS and KML requests. To change which services should be started you can change your proxy configuration (<tt class="docutils literal"><span class="pre">proxy.yaml</span></tt>). For a WMS and TMS server:</p>
+<div class="highlight-python"><pre>server: ['wms', 'tms']</pre>
+</div>
+<div class="section" id="web-map-service-ogc-wms">
+<h2>Web Map Service (OGC WMS)<a class="headerlink" href="#web-map-service-ogc-wms" title="Permalink to this headline">¶</a></h2>
+<p>The WMS server is accessible at <cite>/service</cite>. The server supports the WMS versions 1.0.0, 1.1.1 and 1.3.0.</p>
+<div class="section" id="srs">
+<h3>SRS<a class="headerlink" href="#srs" title="Permalink to this headline">¶</a></h3>
+<p>The <cite>wms.srs</cite> option defines which SRS the WMS service supports. If you need other systems than the default, uncomment the lines in the proxy configuration and add all your EPSG codes:</p>
+<div class="highlight-python"><pre>wms:
+  srs: ['EPSG:4326', 'CRS:84', 'EPSG:900913']</pre>
+</div>
+<p>See <a class="reference external" href="configuration.html#axis-order"><em>axis order</em></a> for further configuration that might be needed for WMS 1.3.0.</p>
+</div>
+</div>
+<div class="section" id="tiled-map-services-tms">
+<h2>Tiled Map Services (TMS)<a class="headerlink" href="#tiled-map-services-tms" title="Permalink to this headline">¶</a></h2>
+<p>MapProxy supports the <a class="reference external" href="http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification">Tile Map Service Specification</a> from the OSGeo. The TMS is available at <cite>/tms/1.0.0</cite>. A request to this URL will return some metadata in XML format.</p>
+<p>Here is an example TMS request: <tt class="docutils literal"><span class="pre">/tms/1.0.0/base_EPSG900913/3/1/0.png</span></tt>. <tt class="docutils literal"><span class="pre">png</span></tt> is the internal format of the cached tiles. <tt class="docutils literal"><span class="pre">base</span></tt> is the name of the layer and <tt class="docutils literal"><span class="pre">EPSG900913</span></tt> is the SRS of the layer. You can only select a SRS that your layer is caching. You can omit the SRS for EPSG900913.</p>
+<div class="section" id="openlayers">
+<h3>OpenLayers<a class="headerlink" href="#openlayers" title="Permalink to this headline">¶</a></h3>
+<p>When you create a map in OpenLayers with an explicit <tt class="docutils literal"><span class="pre">mapExtend</span></tt>, it will request only a single tile for the first (z=0) level.
+TMS begins with two or four tiles by default, depending on the SRS. MapProxy supports a different TMS mode to support this use-case. MapProxy will start with a single-tile level if you request <tt class="docutils literal"><span class="pre">/tiles</span></tt> instead of <tt class="docutils literal"><span class="pre">/tms</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="keyhole-markup-language-ogc-kml">
+<h2>Keyhole Markup Language (OGC KML)<a class="headerlink" href="#keyhole-markup-language-ogc-kml" title="Permalink to this headline">¶</a></h2>
+<p>MapProxy supports KML version 2.2 for integration into Google Earth. Each layer is available as a Super Overlay – image tiles are loaded on demand when the user zooms to a specific region. The initial KML file  is available at <cite>/kml/layername/0/0/0.kml</cite>.</p>
+<p>To start the KML server, you have to add it to your <cite>proxy.yaml</cite>:</p>
+<div class="highlight-python"><pre>server: ['kml']</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Services</a><ul>
+<li><a class="reference external" href="#web-map-service-ogc-wms">Web Map Service (OGC WMS)</a><ul>
+<li><a class="reference external" href="#srs">SRS</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#tiled-map-services-tms">Tiled Map Services (TMS)</a><ul>
+<li><a class="reference external" href="#openlayers">OpenLayers</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#keyhole-markup-language-ogc-kml">Keyhole Markup Language (OGC KML)</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="configuration.html"
+                                  title="previous chapter">Configuration</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="seed.html"
+                                  title="next chapter">Seeding</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/services.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="seed.html" title="Seeding"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration"
+             >previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.8.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Oliver Tonnhofer, Omniscale.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,194 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation &mdash; MapProxy v0.9.0 documentation</title>
+    <link rel="stylesheet" href="_static/mapproxy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MapProxy v0.9.0 documentation" href="index.html" />
+    <link rel="next" title="Installation on Windows" href="install_windows.html" />
+    <link rel="prev" title="MapProxy Documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="install_windows.html" title="Installation on Windows"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="MapProxy Documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial guides you to the MapProxy installation process on Unix systems. For Windows refer to <a class="reference internal" href="install_windows.html"><em>Installation on Windows</em></a>.</p>
+<p>This tutorial was created and tested with Debian 5.0, if you&#8217;re installing MapProxy on a different system you might need to change some package names.</p>
+<p>MapProxy is <a class="reference external" href="http://pypi.python.org/pypi/MapProxy">registered at the Python Package Index</a> (PyPI). If you have installed Python setuptools (<tt class="docutils literal"><span class="pre">python-setuptools</span></tt> on Debian) you can install MapProxy with <tt class="docutils literal"><span class="pre">sudo</span> <span class="pre">easy_install</span> <span class="pre">MapProxy</span></tt>. This is really easy <cite>but</cite> we recommend to <strong>not</strong> use this method.</p>
+<p>We highly advise you to install MapProxy into a <a class="reference external" href="http://guide.python-distribute.org/virtualenv.html">virtual Python environment</a>.
+<a class="reference external" href="http://virtualenv.openplans.org/#what-it-does">Read about virtualenv</a> if you want to know more about the benefits.</p>
+<div class="section" id="create-a-new-virtual-environment">
+<h2>Create a new virtual environment<a class="headerlink" href="#create-a-new-virtual-environment" title="Permalink to this headline">¶</a></h2>
+<p>If you don&#8217;t have <cite>virtualenv</cite> installed, you can download a self-contained version:</p>
+<div class="highlight-python"><pre>wget http://bitbucket.org/ianb/virtualenv/raw/1.4.8/virtualenv.py</pre>
+</div>
+<p>Next we create a new virtual environment for our proxy installation. It is a good idea to organize all your environments into a single directory. I use <tt class="docutils literal"><span class="pre">~/venv</span></tt> for that. To create a new environment with the name <tt class="docutils literal"><span class="pre">mapproxy</span></tt> and to activate it call:</p>
+<div class="highlight-python"><pre>python virtualenv.py --distribute ~/venv/mapproxy
+source ~/venv/mapproxy/bin/activate</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The last step is required every time you start working with your MapProxy installation.</p>
+</div>
+</div>
+<div class="section" id="install-mapproxy">
+<h2>Install MapProxy<a class="headerlink" href="#install-mapproxy" title="Permalink to this headline">¶</a></h2>
+<p>MapProxy is written in Python, thus you will need a working Python installation. MapProxy works with Python 2.5, 2.6 and 2.7.</p>
+<p>MapProxy has some dependencies, other libraries that are required to run. Most dependencies are small Python libraries that will be installed automatically when you install MapProxy. There are two exceptions: libproj and PIL</p>
+<div class="section" id="libproj">
+<h3>libproj<a class="headerlink" href="#libproj" title="Permalink to this headline">¶</a></h3>
+<p>MapProxy uses the Proj4 C Library for all coordinate transformation tasks. Most distributions offer this library as a binary package. On Debian or Ubuntu you can install it with:</p>
+<div class="highlight-python"><pre>sudo aptitude install libproj0</pre>
+</div>
+</div>
+<div class="section" id="pil">
+<h3>PIL<a class="headerlink" href="#pil" title="Permalink to this headline">¶</a></h3>
+<p>The Python Image Library (PIL) is also included in most distributions. On Debian or Ubuntu you can install it with:</p>
+<div class="highlight-python"><pre>sudo aptitude install python-imaging</pre>
+</div>
+</div>
+<div class="section" id="id1">
+<h3>Installation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Your virtual environment should already contain <a class="reference external" href="http://pip.openplans.org/">pip</a>, a tool to install Python packages. If not, <tt class="docutils literal"><span class="pre">easy_install</span> <span class="pre">pip</span></tt> is enough to get it.</p>
+<p>To install you need to call:</p>
+<div class="highlight-python"><pre>pip install MapProxy</pre>
+</div>
+<p>You specify the release version of MapProxy. E.g.:</p>
+<div class="highlight-python"><pre>pip install MapProxy==0.9.0</pre>
+</div>
+<p>or to get the latest 0.9 version:</p>
+<div class="highlight-python"><pre>pip install "MapProxy&gt;=0.9.0,&lt;=0.9.99"</pre>
+</div>
+<p>To check if the MapProxy was successfully installed, you can directly call the <cite>version</cite> module. You should see the installed version number.</p>
+<div class="highlight-python"><pre>python -m mapproxy.version</pre>
+</div>
+</div>
+</div>
+<div class="section" id="create-a-configuration">
+<span id="create-configuration"></span><h2>Create a configuration<a class="headerlink" href="#create-a-configuration" title="Permalink to this headline">¶</a></h2>
+<p>To create a new set of configuration files for MapProxy call:</p>
+<div class="highlight-python"><pre>paster create -t mapproxy_conf mymapproxy</pre>
+</div>
+<p>This will create a <tt class="docutils literal"><span class="pre">mymapproxy</span></tt> directory with an <tt class="docutils literal"><span class="pre">etc</span></tt>, <tt class="docutils literal"><span class="pre">var</span></tt> and <tt class="docutils literal"><span class="pre">tmp</span></tt> directory.
+The <tt class="docutils literal"><span class="pre">etc</span></tt> directory contains all configuration files. Refer to the configuration documentation for more information. With the default configuration all log files and the cached data will be placed in the <tt class="docutils literal"><span class="pre">var</span></tt> directory.</p>
+</div>
+<div class="section" id="start-the-test-server">
+<h2>Start the test server<a class="headerlink" href="#start-the-test-server" title="Permalink to this headline">¶</a></h2>
+<p>To start a test server:</p>
+<div class="highlight-python"><pre>cd mymapproxy
+paster serve etc/develop.ini --reload</pre>
+</div>
+<p>There is already a test layer configured that obtains data from the <a class="reference external" href="http://osm.omniscale.net/">Omniscale OpenStreetMap WMS</a>. Feel free to use this service for testing.</p>
+<p>MapProxy comes with a demo service that lists all configured WMS and TMS layers. You can access that service at <a class="reference external" href="http://localhost:8080/demo/">http://localhost:8080/demo/</a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation</a><ul>
+<li><a class="reference internal" href="#create-a-new-virtual-environment">Create a new virtual environment</a></li>
+<li><a class="reference internal" href="#install-mapproxy">Install MapProxy</a><ul>
+<li><a class="reference internal" href="#libproj">libproj</a></li>
+<li><a class="reference internal" href="#pil">PIL</a></li>
+<li><a class="reference internal" href="#id1">Installation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#create-a-configuration">Create a configuration</a></li>
+<li><a class="reference internal" href="#start-the-test-server">Start the test server</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">MapProxy Documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install_windows.html"
+                        title="next chapter">Installation on Windows</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/install.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="install_windows.html" title="Installation on Windows"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="MapProxy Documentation"
+             >previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Oliver Tonnhofer, Omniscale.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

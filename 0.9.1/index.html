@@ -1,0 +1,190 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>MapProxy Documentation &mdash; MapProxy v0.9.1 documentation</title>
+    <link rel="stylesheet" href="_static/mapproxy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MapProxy v0.9.1 documentation" href="#" />
+    <link rel="next" title="Installation" href="install.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">MapProxy v0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="mapproxy-documentation">
+<h1>MapProxy Documentation<a class="headerlink" href="#mapproxy-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#create-a-new-virtual-environment">Create a new virtual environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#install-mapproxy">Install MapProxy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#create-a-configuration">Create a configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#start-the-test-server">Start the test server</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install_windows.html">Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#mapproxy-yaml">mapproxy.yaml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#notes">Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="services.html">Services</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="services.html#web-map-service-ogc-wms">Web Map Service (OGC WMS)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="services.html#tiled-map-services-tms">Tiled Map Services (TMS)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="services.html#keyhole-markup-language-ogc-kml">Keyhole Markup Language (OGC KML)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="services.html#mapproxy-demo-service">MapProxy Demo Service</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Sources</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sources.html#wms">WMS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sources.html#tiles">Tiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sources.html#debug">Debug</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="seed.html">Seeding</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="seed.html#mapproxy-seed">mapproxy-seed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="seed.html#configuration">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="coverages.html">Coverages</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="coverages.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coverages.html#coverage-types">Coverage Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coverages.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_examples.html">Configuration examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#merge-multiple-layers">Merge multiple layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#access-local-servers">Access local servers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#cache-raster-data">Cache raster data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#cache-vector-data">Cache vector data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#wms-sources-with-styled-layer-description-sld">WMS Sources with Styled Layer Description (SLD)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#add-highly-dynamic-layers">Add highly dynamic layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#reproject-wms-layers">Reproject WMS layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#wms-layers-with-http-basic-authentication">WMS layers with HTTP Basic Authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_examples.html#serve-multiple-mapproxy-instances">Serve multiple MapProxy instances</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="migrate.html">Migration from 0.8.x to 0.9.x</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="migrate.html#develop-ini-and-config-ini">develop.ini and config.ini</a></li>
+<li class="toctree-l2"><a class="reference internal" href="migrate.html#proxy-yaml">proxy.yaml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="migrate.html#services-yaml">services.yaml</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#testing">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#production">Production</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#multimapproxy">MultiMapProxy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="development.html#source">Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#issue-tracker">Issue Tracker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#tests">Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#communication">Communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#tips-on-development">Tips on development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#coding-style-guide">Coding Style Guide</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+<p>Documentation build on 2011-01-10.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">MapProxy Documentation</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="next chapter">Installation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             >next</a> |</li>
+        <li><a href="#">MapProxy v0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Oliver Tonnhofer, Omniscale.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

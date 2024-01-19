@@ -1,0 +1,216 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Deployment &mdash; MapProxy v0.9.0 documentation</title>
+    <link rel="stylesheet" href="_static/mapproxy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MapProxy v0.9.0 documentation" href="index.html" />
+    <link rel="next" title="Development" href="development.html" />
+    <link rel="prev" title="Migration from 0.8.x to 0.9.x" href="migrate.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="development.html" title="Development"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="migrate.html" title="Migration from 0.8.x to 0.9.x"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="deployment">
+<h1>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h1>
+<p>There are different ways to deploy Python web applications. MapProxy implements the Web Server Gateway Interface (WSGI) which is for Python what the Servlet API is for Java.</p>
+<p>The WSGI standard allows to choose between a wide range of servers and server integration components.</p>
+<p>MapProxy uses <tt class="docutils literal"><span class="pre">paster</span> <span class="pre">serve</span></tt>, a tool included as a dependency, to start these servers with a configured MapProxy application.</p>
+<p>Paster needs a configuration where the application (MapProxy in this case) and the server are defined. The <tt class="docutils literal"><span class="pre">etc/</span></tt> directory created with <tt class="docutils literal"><span class="pre">paster</span> <span class="pre">create</span></tt> (see <a class="reference internal" href="install.html"><em>Installation</em></a>) already contains two example configurations.
+Both configurations define MapProxy as the WSGI application to start and setup some configuration options.</p>
+<div class="section" id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">develop.ini</span></tt> uses the Paster HTTP Server as the WSGI server. This server already implements HTTP so you can directly access the MapProxy with your Web or GIS client on port 8080.</p>
+<p>With the <tt class="docutils literal"><span class="pre">--reload</span></tt> option of <tt class="docutils literal"><span class="pre">paster</span> <span class="pre">serve</span></tt> MapProxy will take notice when you change any configuration and will reload these files.</p>
+<p>This server is sufficient for local testing of the configuration. For production deployment we recommend other solutions.</p>
+</div>
+<div class="section" id="production">
+<h2>Production<a class="headerlink" href="#production" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="http://www.fastcgi.com/">FastCGI</a> is a protocol to integrate web applications into web servers.
+FastCGI is language-independent and implemented by most popular web servers like Apache, Lighttpd or Nginx. The applications run isolated from the web server. In this case you do not start MapProxy as an HTTP server but as a FastCGI server.</p>
+<p>The example paster configuration <tt class="docutils literal"><span class="pre">config.ini</span></tt> does this. By default the configured server listens on a socket file (<tt class="docutils literal"><span class="pre">var/fcgi-socket</span></tt>) to which you should point your web server. But you can also use TCP/IP with the <tt class="docutils literal"><span class="pre">host</span></tt> and <tt class="docutils literal"><span class="pre">port</span></tt> option.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You need to install <a class="reference external" href="http://pypi.python.org/pypi/flup/">flup</a> to run MapProxy as a FastCGI server:
+<tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">flup</span></tt></p>
+</div>
+<p>To start MapProxy as a FastCGI server:</p>
+<div class="highlight-python"><pre>paster serve etc/config.ini</pre>
+</div>
+<p>Next you must configure you web server to talk to this FastCGI server.</p>
+<div class="section" id="lighttpd">
+<h3>Lighttpd<a class="headerlink" href="#lighttpd" title="Permalink to this headline">¶</a></h3>
+<p>Here is an example Lighttpd configuration:</p>
+<div class="highlight-python"><pre>$HTTP["host"] == "example.org" {
+  fastcgi.server += (
+    "/proxy" =&gt; ((
+      "check-local" =&gt; "disable",
+      "socket"      =&gt; "/path/to/mymapproxy/var/fcgi-socket"
+    ))
+  )
+}</pre>
+</div>
+<p>The first line restricts this configuration to the <tt class="docutils literal"><span class="pre">example.org</span></tt> hostname. In the third line you set the URL path where MapProxy should listen. The <tt class="docutils literal"><span class="pre">socket</span></tt> option should point to the <tt class="docutils literal"><span class="pre">fcgi-socket</span></tt> file that is used to communicate with the MapProxy FastCGI server.</p>
+<p>With this configuration you can access the MapProxy WMS at <a class="reference external" href="http://example.org/proxy/service">http://example.org/proxy/service</a>?</p>
+</div>
+<div class="section" id="apache-mod-fastcgi">
+<h3>Apache mod_fastcgi<a class="headerlink" href="#apache-mod-fastcgi" title="Permalink to this headline">¶</a></h3>
+<p>You can use the following snippet to add the MapProxy FastCGI to an Apache installation:</p>
+<div class="highlight-python"><pre>LoadModule fastcgi_module modules/mod_fastcgi.so
+
+&lt;IfModule mod_fastcgi.c&gt;
+ FastCGIExternalServer /tmp/madeup -socket /path/to/mymapproxy/var/fcgi-socket
+ Alias /proxy /tmp/madeup
+&lt;/IfModule&gt;</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><tt class="docutils literal"><span class="pre">/tmp/madeup</span></tt> is just a dummy value and you can choose any path you want, the only limitation is that the directory must exist but not the file. In this example there must be a <tt class="docutils literal"><span class="pre">/tmp</span></tt> directory but the file <tt class="docutils literal"><span class="pre">madeup</span></tt> should not exist.</p>
+</div>
+</div>
+<div class="section" id="nginx">
+<h3>nginx<a class="headerlink" href="#nginx" title="Permalink to this headline">¶</a></h3>
+<p>The following snippet adds MapProxy to an nginx installation. Note that you need to split the URI manually if you use an nginx version before 0.7.31. If you have a more recent version, you can use <a class="reference external" href="http://wiki.nginx.org/NginxHttpFcgiModule#fastcgi_split_path_info">fastcgi_split_path_info</a>.</p>
+<div class="highlight-python"><pre>server {
+  # server options
+  # ...
+
+  location /proxy {
+    if ($uri ~ "^(/proxy)(/.*)$") {
+      set $script_name  $1;
+      set $path_info  $2;
+    }
+    fastcgi_pass   unix:/path/to/mymapproxy/var/fcgi-socket;
+    include fastcgi_params;
+    fastcgi_param  SCRIPT_NAME $script_name;
+    fastcgi_param  PATH_INFO   $path_info;
+  }
+}</pre>
+</div>
+</div>
+<div class="section" id="other-deployment-options">
+<h3>Other deployment options<a class="headerlink" href="#other-deployment-options" title="Permalink to this headline">¶</a></h3>
+<p>Refer to <a class="reference external" href="http://wsgi.org/wsgi/Servers">http://wsgi.org/wsgi/Servers</a> for a list of some available WSGI servers.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Because of the way Python handles threads in computing heavy applications (like MapProxy WMS is), you should choose a (pre)forking-based server for best performance.</p>
+</div>
+<div class="section" id="apache-mod-wsgi">
+<h4>Apache mod_wsgi<a class="headerlink" href="#apache-mod-wsgi" title="Permalink to this headline">¶</a></h4>
+<p>If you use Apache then you can integrate MapProxy with <a class="reference external" href="http://code.google.com/p/modwsgi/">mod_wsgi</a>.
+We will not go into detail about the installation here, but you can read more about <a class="reference external" href="http://code.google.com/p/modwsgi/wiki/InstallationInstructions">mod_wsgi installation</a> and then loosely follow the <a class="reference external" href="http://code.google.com/p/modwsgi/wiki/IntegrationWithPylons">Pylons integration</a> instructions. Pylons is a web framework that also uses paster for WSGI application configuration and deployment, so the steps are similar.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Deployment</a><ul>
+<li><a class="reference internal" href="#testing">Testing</a></li>
+<li><a class="reference internal" href="#production">Production</a><ul>
+<li><a class="reference internal" href="#lighttpd">Lighttpd</a></li>
+<li><a class="reference internal" href="#apache-mod-fastcgi">Apache mod_fastcgi</a></li>
+<li><a class="reference internal" href="#nginx">nginx</a></li>
+<li><a class="reference internal" href="#other-deployment-options">Other deployment options</a><ul>
+<li><a class="reference internal" href="#apache-mod-wsgi">Apache mod_wsgi</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="migrate.html"
+                        title="previous chapter">Migration from 0.8.x to 0.9.x</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="development.html"
+                        title="next chapter">Development</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/deployment.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="development.html" title="Development"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="migrate.html" title="Migration from 0.8.x to 0.9.x"
+             >previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Oliver Tonnhofer, Omniscale.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

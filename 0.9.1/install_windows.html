@@ -1,0 +1,142 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation on Windows &mdash; MapProxy v0.9.1 documentation</title>
+    <link rel="stylesheet" href="_static/mapproxy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MapProxy v0.9.1 documentation" href="index.html" />
+    <link rel="next" title="Configuration" href="configuration.html" />
+    <link rel="prev" title="Installation" href="install.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation-on-windows">
+<h1>Installation on Windows<a class="headerlink" href="#installation-on-windows" title="Permalink to this headline">¶</a></h1>
+<p>At frist you need a working Python installation. You can download Python from: <a class="reference external" href="http://www.python.org/download/">http://www.python.org/download/</a>. MapProxy requires Python 2.5, 2.6 or 2.7, it is <em>not</em> compatible with Python 3.</p>
+<p>We advise you to install MapProxy into a <a class="reference external" href="http://guide.python-distribute.org/virtualenv.html">virtual Python environment</a>.
+<a class="reference external" href="http://virtualenv.openplans.org/#what-it-does">Read about virtualenv</a> if you want to now more about the benefits.</p>
+<p>A self-contained version of virtualenv is available at:
+<a class="reference external" href="http://bitbucket.org/ianb/virtualenv/raw/1.5.1/virtualenv.py">http://bitbucket.org/ianb/virtualenv/raw/1.5.1/virtualenv.py</a></p>
+<p>To create a new virtual environment for our proxy installation and to activate it go to the command line and call:</p>
+<div class="highlight-python"><pre>C:\Python26\python path\to\virtualenv.py c:\mapproxy_venv
+C:\mapproxy_venv\Scripts\activate.bat</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The last step is required every time you start working with your MapProxy installation. Alternatively you can always explicitly call <tt class="docutils literal"><span class="pre">\mapproxy_venv\Scripts\&lt;command&gt;</span></tt>.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Apache mod_wsgi does not work with virtualenv on Windows. If you want to use mod_wsgi for deployment, then you should skip the creation the virtualenv. You need to <a class="reference external" href="http://pypi.python.org/pypi/distribute#distribute-setup-py">install the distribute package</a> to get the <tt class="docutils literal"><span class="pre">easy_install</span></tt> command.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you put you virtual environment in a directory that contains a space in the name (e.g. &#8220;Documents and Settings&#8221; or &#8220;Program Files&#8221;), you will not be able to use the <tt class="docutils literal"><span class="pre">--reload</span></tt> option of <cite>paster</cite> unless you <a class="reference external" href="http://sourceforge.net/projects/pywin32/files/">install the appropriate win32api module</a>.</p>
+</div>
+<p>After you activated the new environment, you have access to <tt class="docutils literal"><span class="pre">python</span></tt> and <tt class="docutils literal"><span class="pre">easy_install</span></tt>.
+To install MapProxy with most dependencies call:</p>
+<div class="highlight-python"><pre>easy_install MapProxy</pre>
+</div>
+<p>This might take some minutes.</p>
+<p>Since libproj4 is generally not available on a Windows system, you will also need to install the Python package <tt class="docutils literal"><span class="pre">pyproj</span></tt>.</p>
+<div class="highlight-python"><pre>easy_install pyproj</pre>
+</div>
+<p>To check if the MapProxy was successfully installed you can directly call the <cite>version</cite> module. You should see the installed version number.</p>
+<div class="highlight-python"><pre>python -m mapproxy.version</pre>
+</div>
+<p>Now continue with <a class="reference internal" href="install.html#create-configuration"><em>Create a configuration</em></a> from the installation documentation.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="previous chapter">Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="configuration.html"
+                        title="next chapter">Configuration</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/install_windows.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             >previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Oliver Tonnhofer, Omniscale.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

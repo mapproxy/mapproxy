@@ -1,0 +1,542 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configuration &mdash; MapProxy v0.8.4 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.8.4',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MapProxy v0.8.4 documentation" href="index.html" />
+    <link rel="next" title="Services" href="services.html" />
+    <link rel="prev" title="Installation on Windows" href="install_windows.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="services.html" title="Services"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install_windows.html" title="Installation on Windows"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.8.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<p>There are a few different configuration files used by MapProxy. Some are required and some are optional.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">services.yaml</span></tt></dt>
+<dd>This file configures which services and layers the proxy should offer. You can
+define from where the proxy should get which data. You can also set metadata like
+contact information for the Capabilities documents.</dd>
+<dt><tt class="docutils literal"><span class="pre">proxy.yaml</span></tt></dt>
+<dd>This is the main configuration of the proxy. Configure which servers should be
+started, where the cached data should be stored, etc.</dd>
+<dt><tt class="docutils literal"><span class="pre">seed.yaml</span></tt></dt>
+<dd>This file is the configuration for the <tt class="docutils literal"><span class="pre">mapproxy-seed</span></tt> tool.</dd>
+<dt><tt class="docutils literal"><span class="pre">develop.ini</span></tt> and <tt class="docutils literal"><span class="pre">config.ini</span></tt></dt>
+<dd>These are the paster configuration files that are used to start the proxy in development or production mode.</dd>
+</dl>
+<div class="section" id="services-yaml">
+<h2>services.yaml<a class="headerlink" href="#services-yaml" title="Permalink to this headline">¶</a></h2>
+<p>All layers the proxy offers are configured in this file. The configuration uses the YAML format.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The indentation is significant and shall only contain space characters. Tabulators are <strong>not</strong> permitted for indentation.</p>
+</div>
+<p>The configuration contains the keys <tt class="docutils literal"><span class="pre">service</span></tt> and <tt class="docutils literal"><span class="pre">layers</span></tt>.</p>
+<div class="section" id="service">
+<h3>service<a class="headerlink" href="#service" title="Permalink to this headline">¶</a></h3>
+<p>Here is an example for the <tt class="docutils literal"><span class="pre">service</span></tt> part:</p>
+<div class="highlight-python"><pre>service:
+    attribution:
+        text: "© MyCompany"
+    md:
+        title: MapProxy WMS Proxy
+        abstract: This is the fantastic MapProxy.
+        online_resource: http://mapproxy.org/
+        contact:
+            person: Your Name Here
+            position: Technical Director
+            organization:
+            address: Fakestreet 123
+            city: Somewhere
+            postcode: 12345
+            country: Germany
+            phone: +49(0)000-000000-0
+            fax: +49(0)000-000000-0
+            email: you@example.org
+        access_constraints: This service is intended for private and evaluation use only.
+        fees: 'None'</pre>
+</div>
+<div class="section" id="attribution">
+<h4>attribution<a class="headerlink" href="#attribution" title="Permalink to this headline">¶</a></h4>
+<p>Adds an attribution (copyright) line to all WMS requests.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">text</span></tt></dt>
+<dd>The text line of the attribution (e.g. some copyright notice, etc).</dd>
+</dl>
+</div>
+<div class="section" id="md">
+<h4>md<a class="headerlink" href="#md" title="Permalink to this headline">¶</a></h4>
+<p><tt class="docutils literal"><span class="pre">md</span></tt> is for metadata. These fields are used for the WMS <tt class="docutils literal"><span class="pre">GetCapabilities</span></tt> responses. See the above example for all supported keys.</p>
+</div>
+</div>
+<div class="section" id="layers">
+<h3>layers<a class="headerlink" href="#layers" title="Permalink to this headline">¶</a></h3>
+<p>Here you can define all layers the proxy should offer. Each layer configuration is a YAML dictionary. The key of each layer is also the name of the layer, i.e. the name used in WMS layers argument. If MapProxy should use the same ordering of the layers for capability responses, you should put the definitions in a list (prepend a <tt class="docutils literal"><span class="pre">-</span></tt> before the key).</p>
+<div class="highlight-python"><pre>layers:
+  - layer1:
+    option1: aaa
+    option2: bbb
+  - layer2:
+    option1: xxx
+    option2: yyy</pre>
+</div>
+<p>Each configuration item contains information about the layer (e.g. name), how the layer is cached (e.g. in which SRS) and where the data comes from (e.g. which WMS-Server).</p>
+<div class="section" id="id1">
+<h4>md<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>Metadata for this layer. At the moment only <tt class="docutils literal"><span class="pre">title</span></tt> ist supported. It will be used as the human readable name for WMS layers.</p>
+</div>
+<div class="section" id="param">
+<h4>param<a class="headerlink" href="#param" title="Permalink to this headline">¶</a></h4>
+<p>With <tt class="docutils literal"><span class="pre">param</span></tt> you can set the parameters of the data-source and cache.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">format</span></tt></dt>
+<dd>This is the internal image format for the cache. The default is <tt class="docutils literal"><span class="pre">image/png</span></tt>.</dd>
+<dt><tt class="docutils literal"><span class="pre">request_format</span></tt></dt>
+<dd>This format is used to request new tiles. If the bandwidth to the WMS server is high
+(e.g. localhost or LAN) you should use <tt class="docutils literal"><span class="pre">image/tiff</span></tt> here. That prevents unnecessary
+encoding and decoding of the images. If unset <tt class="docutils literal"><span class="pre">format</span></tt> is used.</dd>
+<dt><tt class="docutils literal"><span class="pre">srs</span></tt></dt>
+<dd><p class="first">The spatial reference system used for the internal cache. You can define multiple SRSs
+here. One cache is created for each.:</p>
+<div class="highlight-python"><pre>srs: EPSG:4326
+  or
+srs: ['EPSG:4326', 'EPSG:900913']</pre>
+</div>
+<p>MapProxy supports on-the-fly transformation of requests between different SRSs. So
+it is not required to add an extra cache for each supported SRS. For best performance
+only the SRS most requests are in should be used.</p>
+<p class="last">There is some special handling layers that need geographical and projected coordinate
+systems. If you set both <tt class="docutils literal"><span class="pre">EPSG:4326</span></tt> and <tt class="docutils literal"><span class="pre">EPSG:900913</span></tt> all requests with projected
+SRS will access the <tt class="docutils literal"><span class="pre">EPSG:900913</span></tt> cache, requests with geographical SRS will use
+<tt class="docutils literal"><span class="pre">EPSG:4326</span></tt>. The distortions from the transformation should be acceptable these to cached SRS.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">bbox</span></tt></dt>
+<dd>The bounding box of the layer.</dd>
+<dt><tt class="docutils literal"><span class="pre">res</span></tt></dt>
+<dd><p class="first">The resolution for which MapProxy should cache tiles.
+For requests with no matching cached resolution the next best resolution is used and MapProxy will transform the result. There are three ways to configure the resolutions.</p>
+<p>1. A factor between each resolution. With each step the resolution is multiplied by this
+factor. Defaults to 2.</p>
+<p>2. A list with resolutions in units per pixel (degrees or meter per pixel). The units
+from the first configured <tt class="docutils literal"><span class="pre">srs</span></tt> are used.</p>
+<p class="last">3. The term <tt class="docutils literal"><span class="pre">sqrt2</span></tt>. This option is a shorthand for a resolution factor of 1.4142 (i.e.
+square root of two). With this factor the resolution doubles every second level. Compared
+to the default factor 2 you will get another cached level between all standard levels.
+This is suited for free zooming in vector-based layers where the results might look to
+blurry/pixelated in some resolutions.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">concurrent_requests</span></tt></dt>
+<dd>This limits the number of parallel requests MapProxy will issue to the source server. It
+even works across multiple WMS sources as long as all have the same
+<tt class="docutils literal"><span class="pre">concurrent_requests</span></tt> and <tt class="docutils literal"><span class="pre">req.url</span></tt> parameter.</dd>
+</dl>
+</div>
+<div class="section" id="sources">
+<h4>sources<a class="headerlink" href="#sources" title="Permalink to this headline">¶</a></h4>
+<p>You define the data sources of each layer here. The configuration <a class="reference internal" href="#sources-conf-label"><em>is explained below</em></a>.</p>
+</div>
+<div class="section" id="id2">
+<h4>attribution<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<p>Overwrite the system-wide attribution line for this layer.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">inverse</span></tt></dt>
+<dd>If this option is set to <tt class="docutils literal"><span class="pre">true</span></tt>, the colors of the attribution will be inverted. Use this if the normal attribution is hard to on this layer (i.e. on aerial imagery).</dd>
+</dl>
+</div>
+<div class="section" id="watermark">
+<h4>watermark<a class="headerlink" href="#watermark" title="Permalink to this headline">¶</a></h4>
+<p>Add a watermark right into the cached data. The watermark is thus also present in TMS or KML requests.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">text</span></tt></dt>
+<dd>The watermark text. Should be short.</dd>
+<dt><tt class="docutils literal"><span class="pre">opacity</span></tt></dt>
+<dd>The opacity of the watermark (from 0 transparent to 255 full opaque).
+Use a value between 3 and 10 for unobtrusive watermarks.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="sources-conf-label">
+<span id="id3"></span><h3>sources<a class="headerlink" href="#sources-conf-label" title="Permalink to this headline">¶</a></h3>
+<p>Every layer contains one or more sources. The sources define where the proxy should get the data for this layer. Each layer has a type.</p>
+<p>MapProxy support the following types:</p>
+<div class="section" id="cache-wms">
+<h4><tt class="docutils literal"><span class="pre">cache_wms</span></tt><a class="headerlink" href="#cache-wms" title="Permalink to this headline">¶</a></h4>
+<p>The <tt class="docutils literal"><span class="pre">cache_wms</span></tt> source passes requests to a WMS server and caches all data for further requests.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">req</span></tt></dt>
+<dd><tt class="docutils literal"><span class="pre">req</span></tt> contains the source WMS URL and the layers.
+For transparent layers the option <tt class="docutils literal"><span class="pre">transparent</span></tt> should be set to <tt class="docutils literal"><span class="pre">'true'</span></tt>.</dd>
+<dt><tt class="docutils literal"><span class="pre">wms_opts</span></tt></dt>
+<dd><p class="first">This option affects what request the proxy sends to the source WMS server.</p>
+<p class="last"><tt class="docutils literal"><span class="pre">version</span></tt> is the WMS version number used for requests (supported: 1.0.0, 1.1.1,
+1.3.0). If <tt class="docutils literal"><span class="pre">featureinfo</span></tt> is true, MapProxy will mark the layer as queryable and
+incoming <cite>GetFeatureInfo</cite> requests will be forwarded to the source server.</p>
+</dd>
+</dl>
+<dl class="docutils" id="supported-srs-label">
+<dt><tt class="docutils literal"><span class="pre">supported_srs</span></tt></dt>
+<dd><blockquote class="first last">
+<p>A list with SRSs that the WMS source supports. If the layer caches data in an SRS that
+the source does not provide, MapProxy will use one of the configured <cite>supported_srs</cite>
+to request images and will then transform the result back to the cache SRS.</p>
+<p>If you have multiple <cite>supported_srs</cite>, MapProxy will use the fist projected SRS for
+requests in projected SRS, and vice versa for geographic SRS. E.g when <cite>supported_srs</cite>
+is <tt class="docutils literal"><span class="pre">['EPSG:4326',</span> <span class="pre">'EPSG:31467']</span></tt> caches for EPSG:900913 will use EPSG:32467.</p>
+</blockquote>
+</dd>
+</dl>
+<p>Minimal example:</p>
+<div class="highlight-python"><pre>- type: cache_wms
+  req:
+    url: http://localhost:8080/service?
+    layers: base</pre>
+</div>
+<p>Full example:</p>
+<div class="highlight-python"><pre>- type: cache_wms
+  wms_opts:
+    version: 1.0.0
+    featureinfo: True
+  supported_srs: ['EPSG:4326', 'EPSG:31467']
+  req:
+    url: http://localhost:8080/service?mycustomparam=42
+    layers: roads
+    transparent: 'true'</pre>
+</div>
+</div>
+<div class="section" id="cache-tiles">
+<h4><tt class="docutils literal"><span class="pre">cache_tiles</span></tt><a class="headerlink" href="#cache-tiles" title="Permalink to this headline">¶</a></h4>
+<p>The <tt class="docutils literal"><span class="pre">cache_tiles</span></tt> source can retrieve data from existing tile servers. This source takes a
+<tt class="docutils literal"><span class="pre">url</span></tt> option that contains a URL template. The template format is <tt class="docutils literal"><span class="pre">%(key_name)s</span></tt>. MapProxy
+supports the following named variables in the URL:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">x</span></tt>, <tt class="docutils literal"><span class="pre">y</span></tt>, <tt class="docutils literal"><span class="pre">z</span></tt></dt>
+<dd>The tile coordinate.</dd>
+<dt><tt class="docutils literal"><span class="pre">format</span></tt></dt>
+<dd>The format of the tile.</dd>
+<dt><tt class="docutils literal"><span class="pre">quadkey</span></tt></dt>
+<dd>Quadkey for the tile as described in <a class="reference external" href="http://msdn.microsoft.com/en-us/library/bb259689.aspx">http://msdn.microsoft.com/en-us/library/bb259689.aspx</a></dd>
+<dt><tt class="docutils literal"><span class="pre">tc_path</span></tt></dt>
+<dd>TileCache path like <tt class="docutils literal"><span class="pre">09/000/000/264/000/000/345</span></tt>. Note that it does not contain any format
+extension.</dd>
+</dl>
+<p>Additionally you can specify the origin of the tile grid with the <tt class="docutils literal"><span class="pre">origin</span></tt> option. Supported
+values are <tt class="docutils literal"><span class="pre">sw</span></tt> for south-west (lower-left) origin or <tt class="docutils literal"><span class="pre">nw</span></tt> for north-west (upper-left)
+origin. <tt class="docutils literal"><span class="pre">sw</span></tt> is the default.</p>
+<p>Example:</p>
+<div class="highlight-python"><pre>- type: cache_tiles
+  url: http://localhost:8080/tile?x=%(x)s&amp;y=%(y)s&amp;z=%(z)s&amp;format=%(format)s
+  origin: ``nw``</pre>
+</div>
+</div>
+<div class="section" id="direct">
+<h4><tt class="docutils literal"><span class="pre">direct</span></tt><a class="headerlink" href="#direct" title="Permalink to this headline">¶</a></h4>
+<p>A <tt class="docutils literal"><span class="pre">direct</span></tt> source passes all requests to the configured WMS server and does <em>not</em> cache any data.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">req</span></tt></dt>
+<dd>Defines the source WMS URL and the layers that should be requested. This is similar to
+the <tt class="docutils literal"><span class="pre">cache_wms.req</span></tt> parameter.</dd>
+<dt><tt class="docutils literal"><span class="pre">supported_srs</span></tt></dt>
+<dd>A list of the SRS the source WMS supportes. Other requests for other SRS will be transformed. See <tt class="docutils literal"><span class="pre">supported_srs</span></tt> for <a class="reference internal" href="#supported-srs-label"><em>cache_wms.supported_srs</em></a>.</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python"><pre>- type: direct
+  req:
+    url: http://servername/service
+    layers: poi,roads</pre>
+</div>
+</div>
+<div class="section" id="debug">
+<h4><tt class="docutils literal"><span class="pre">debug</span></tt><a class="headerlink" href="#debug" title="Permalink to this headline">¶</a></h4>
+<p>Adds information like resolution and bbox to the response image.
+This is useful to determine a fixed set of resolutions for the <tt class="docutils literal"><span class="pre">res</span></tt>-parameter.</p>
+</div>
+</div>
+</div>
+<div class="section" id="proxy-yaml">
+<h2>proxy.yaml<a class="headerlink" href="#proxy-yaml" title="Permalink to this headline">¶</a></h2>
+<p>This file configures some internals of MapProxy.</p>
+<div class="section" id="wms">
+<h3><tt class="docutils literal"><span class="pre">wms</span></tt><a class="headerlink" href="#wms" title="Permalink to this headline">¶</a></h3>
+<p>This configures the MapProxy WMS server. Here you can configure the image formats and SRS your MapProxy should offer in the WMS capabilities.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">image_formats</span></tt></dt>
+<dd>A list of image mime types.</dd>
+<dt><tt class="docutils literal"><span class="pre">srs</span></tt></dt>
+<dd>A list of supported SRS. MapProxy will only accept request for these SRS.</dd>
+</dl>
+</div>
+<div class="section" id="image">
+<h3><tt class="docutils literal"><span class="pre">image</span></tt><a class="headerlink" href="#image" title="Permalink to this headline">¶</a></h3>
+<p>Here you can define some options that affect the way MapProxy generates image results.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">resampling_method</span></tt></dt>
+<dd><p class="first">The resampling method used when results need to be rescaled or transformed.
+You can use one of nearest, bilinear or bicubic. Nearest is the fastest and
+bicubic the slowest. The results will look best with bilinear or bicubic.
+Bicubic enhances the contrast at edges and should be used for vector images.</p>
+<p>With <cite>bilinear</cite> you should get about 2/3 of the <cite>nearest</cite> performance, with
+<cite>bicubic</cite> 1/3.</p>
+<p>See the examples below for results of <cite>nearest</cite>, <cite>bilinear</cite> and <cite>bicubic</cite>.</p>
+<img alt="_images/nearest.png" src="_images/nearest.png" />
+<img alt="_images/bilinear.png" src="_images/bilinear.png" />
+<img alt="_images/bicubic.png" class="last" src="_images/bicubic.png" />
+</dd>
+</dl>
+<dl class="docutils" id="jpeg-quality">
+<dt><tt class="docutils literal"><span class="pre">jpeg_quality</span></tt></dt>
+<dd>An integer value from 0 to 100. Larger values result in slower performance,
+larger file sizes but better image quality. You should try values between 75
+and 90 for good compromise between performance and quality.</dd>
+<dt><tt class="docutils literal"><span class="pre">stretch_factor</span></tt></dt>
+<dd><p class="first">MapProxy chooses the <cite>optimal</cite> cached level for requests that do not exactly
+match any cached resolution. MapProxy will stretch or shrink images to the
+requested resolution. The <cite>stretch_factor</cite> defines the maximum factor
+MapProxy is allowed to stretch images. Stretched images result in better
+performance but will look blurry when the value is to large (&gt; 1.2).</p>
+<p class="last">Example: Your MapProxy caches 10m and 5m resolutions. Requests with 9m
+resolution will be generated from the 10m level, requests for 8m from the 5m
+level.</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">max_shrink_factor</span></tt></dt>
+<dd><p class="first">This factor only applies for the first level and defines the maximum factor
+that MapProxy will shrink images.</p>
+<p class="last">Example: Your MapProxy layer starts with 1km resolution. Requests with 3km
+resolution will get a result, requests with 5km will get a blank response.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="cache">
+<h3><tt class="docutils literal"><span class="pre">cache</span></tt><a class="headerlink" href="#cache" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">meta_size</span></tt></dt>
+<dd>MapProxy does not make a single request for every tile but will request a large meta-tile that consist of multiple tiles. <tt class="docutils literal"><span class="pre">meta_size</span></tt> defines how large a meta-tile is. A <tt class="docutils literal"><span class="pre">meta_size</span></tt> of <tt class="docutils literal"><span class="pre">[4,</span> <span class="pre">4]</span></tt> will request 64 tiles in one pass. With a tile size of 256x256 this will result in 1024x1024 requests to the source WMS.</dd>
+<dt><tt class="docutils literal"><span class="pre">meta_buffer</span></tt></dt>
+<dd>MapProxy will increase the size of each meta-tile request by this number of
+pixels in each direction. This can solve cases where labels are cut-off at
+the edge of tiles.</dd>
+<dt><tt class="docutils literal"><span class="pre">base_dir</span></tt></dt>
+<dd>The base directory where all cached tiles will be stored. The path can
+either be absolute (e.g. <tt class="docutils literal"><span class="pre">/var/mapproxy/cache</span></tt>) or relative to the
+proxy.yaml file.</dd>
+<dt><tt class="docutils literal"><span class="pre">lock_dir</span></tt></dt>
+<dd><p class="first">MapProxy uses locking to prevent multiple request for the same meta-tile.
+This option defines where the temporary lock files will be stored. The path
+can either be absolute (e.g. <tt class="docutils literal"><span class="pre">/tmp/lock/mapproxy</span></tt>) or relative to the
+proxy.yaml file.</p>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Old locks will not be removed immediately but when new locks are created.
+So you will always find some old lock files in this directory.</p>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="srs">
+<h3><tt class="docutils literal"><span class="pre">srs</span></tt><a class="headerlink" href="#srs" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">proj_data_dir</span></tt></dt>
+<dd><p class="first">MapProxy uses Proj4 for all coordinate transformations. If you need custom projections
+or need to tweak existing definitions (e.g. add towgs parameter set) you can point
+MapProxy yo your own set of proj4 init files. The path should contain a <tt class="docutils literal"><span class="pre">epsg</span></tt> file
+with the EPSG definitions.</p>
+<p class="last">The configured path can be absolute or relative to the proxy.yaml.</p>
+</dd>
+</dl>
+<dl class="docutils" id="axis-order">
+<dt><tt class="docutils literal"><span class="pre">axis_order_ne</span></tt> and <tt class="docutils literal"><span class="pre">axis_order_ne</span></tt></dt>
+<dd><p class="first">The axis ordering defines in which order coordinates are given, i.e. lon/lat or lat/lon.
+The ordering is dependent to the SRS. Most clients and servers did not respected the
+ordering and everyone used lon/lat ordering. With the WMS 1.3.0 specification the OGC
+emphasized that the axis ordering of the SRS should be used.</p>
+<p>Here you can define the axis ordering of your SRS. This might be required for proper
+WMS 1.3.0 support if you use any SRS that is not in the default configuration.</p>
+<p>By default MapProxy assumes lat/long (north/east) order for all geographic and x/y
+(east/north) order for all projected SRS.</p>
+<p>If that is not the case for your SRS you need to add the SRS name to the appropriate
+parameter:</p>
+<div class="last highlight-python"><pre>srs:
+  # for North/East ordering
+  axis_order_ne: ['EPSG:9999', 'EPSG:9998']
+  # for East/North ordering
+  axis_order_en: ['EPSG:0000', 'EPSG:0001']</pre>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="http-ssl">
+<span id="id4"></span><h3><tt class="docutils literal"><span class="pre">http.ssl</span></tt><a class="headerlink" href="#http-ssl" title="Permalink to this headline">¶</a></h3>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You need Python 2.6 or the <a class="reference external" href="http://pypi.python.org/pypi/ssl">SSL module</a> for this feature.</p>
+</div>
+<p>MapProxy supports access to HTTPS servers. Just use <tt class="docutils literal"><span class="pre">https</span></tt> instead of <tt class="docutils literal"><span class="pre">http</span></tt> when
+defining the URL of a source. MapProxy needs a file that contains the root and CA
+certificates. See the <a class="reference external" href="http://docs.python.org/dev/library/ssl.html#ssl-certificates">Python SSL documentation</a> for more information
+about the format.</p>
+<div class="highlight-python"><pre>http:
+  ssl:
+    ca_certs: ./certs_file</pre>
+</div>
+<p>If you want to use SSL but do not need certificate verification, then you can disable it with the <tt class="docutils literal"><span class="pre">insecure</span></tt> option.</p>
+<div class="highlight-python"><pre>http:
+  ssl:
+    insecure: True</pre>
+</div>
+</div>
+<div class="section" id="tile-creator-pool-size">
+<h3><tt class="docutils literal"><span class="pre">tile_creator_pool_size</span></tt><a class="headerlink" href="#tile-creator-pool-size" title="Permalink to this headline">¶</a></h3>
+<p>This limits the number of parallel requests MapProxy will make to a source WMS. This limit is per request and not for all MapProxy requests.</p>
+<p>Example: A request in an uncached region requires MapProxy to fetch four meta-tiles. A tile_creator_pool_size of two allows MapProxy to make two requests to the source WMS request in parallel.</p>
+</div>
+<div class="section" id="http-client-timeout">
+<h3><tt class="docutils literal"><span class="pre">http_client_timeout</span></tt><a class="headerlink" href="#http-client-timeout" title="Permalink to this headline">¶</a></h3>
+<p>This defines how long MapProxy should wait for data from source servers. Increase this value if your source servers are slower.</p>
+</div>
+<div class="section" id="tiles">
+<h3><tt class="docutils literal"><span class="pre">tiles</span></tt><a class="headerlink" href="#tiles" title="Permalink to this headline">¶</a></h3>
+<p>Configuration options for the TMS/Tile service.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">expires_hours</span></tt></dt>
+<dd>The number of hours a Tile is valid. TMS clients like web browsers will
+cache the tile for this time. Clients will try to refresh the tiles after
+that time. MapProxy supports the ETag and Last-Modified headers and will
+respond with the appropriate HTTP <cite>&#8216;304 Not modified&#8217;</cite> response if the tile
+was not changed.</dd>
+</dl>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Configuration</a><ul>
+<li><a class="reference external" href="#services-yaml">services.yaml</a><ul>
+<li><a class="reference external" href="#service">service</a><ul>
+<li><a class="reference external" href="#attribution">attribution</a></li>
+<li><a class="reference external" href="#md">md</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#layers">layers</a><ul>
+<li><a class="reference external" href="#id1">md</a></li>
+<li><a class="reference external" href="#param">param</a></li>
+<li><a class="reference external" href="#sources">sources</a></li>
+<li><a class="reference external" href="#id2">attribution</a></li>
+<li><a class="reference external" href="#watermark">watermark</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#sources-conf-label">sources</a><ul>
+<li><a class="reference external" href="#cache-wms"><tt class="docutils literal"><span class="pre">cache_wms</span></tt></a></li>
+<li><a class="reference external" href="#cache-tiles"><tt class="docutils literal"><span class="pre">cache_tiles</span></tt></a></li>
+<li><a class="reference external" href="#direct"><tt class="docutils literal"><span class="pre">direct</span></tt></a></li>
+<li><a class="reference external" href="#debug"><tt class="docutils literal"><span class="pre">debug</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference external" href="#proxy-yaml">proxy.yaml</a><ul>
+<li><a class="reference external" href="#wms"><tt class="docutils literal"><span class="pre">wms</span></tt></a></li>
+<li><a class="reference external" href="#image"><tt class="docutils literal"><span class="pre">image</span></tt></a></li>
+<li><a class="reference external" href="#cache"><tt class="docutils literal"><span class="pre">cache</span></tt></a></li>
+<li><a class="reference external" href="#srs"><tt class="docutils literal"><span class="pre">srs</span></tt></a></li>
+<li><a class="reference external" href="#http-ssl"><tt class="docutils literal"><span class="pre">http.ssl</span></tt></a></li>
+<li><a class="reference external" href="#tile-creator-pool-size"><tt class="docutils literal"><span class="pre">tile_creator_pool_size</span></tt></a></li>
+<li><a class="reference external" href="#http-client-timeout"><tt class="docutils literal"><span class="pre">http_client_timeout</span></tt></a></li>
+<li><a class="reference external" href="#tiles"><tt class="docutils literal"><span class="pre">tiles</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="install_windows.html"
+                                  title="previous chapter">Installation on Windows</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="services.html"
+                                  title="next chapter">Services</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/configuration.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="services.html" title="Services"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="install_windows.html" title="Installation on Windows"
+             >previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.8.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Oliver Tonnhofer, Omniscale.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

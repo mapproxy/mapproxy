@@ -1,0 +1,264 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Seeding &mdash; MapProxy v0.9.1 documentation</title>
+    <link rel="stylesheet" href="_static/mapproxy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MapProxy v0.9.1 documentation" href="index.html" />
+    <link rel="next" title="Coverages" href="coverages.html" />
+    <link rel="prev" title="Sources" href="sources.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="coverages.html" title="Coverages"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sources.html" title="Sources"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="seeding">
+<h1>Seeding<a class="headerlink" href="#seeding" title="Permalink to this headline">¶</a></h1>
+<p>The MapProxy creates all tiles on demand. To improve the performance for commonly
+requested views it is possible to pre-generate these tiles. The <tt class="docutils literal"><span class="pre">mapproxy-seed</span></tt> script does this task.</p>
+<p>The tool can seed one or more polygon or BBOX areas for each cached layer.</p>
+<p>MapProxy does not seed the image pyramid level by level, but traverses the pyramid depth-first, from bottom to top. This is optimized to work <cite>with</cite> the caches of your operating system and geospatial database, and not against.</p>
+<div class="section" id="mapproxy-seed">
+<h2>mapproxy-seed<a class="headerlink" href="#mapproxy-seed" title="Permalink to this headline">¶</a></h2>
+<p>The command line script expects a seed configuration that describes which tiles from which layer should be generated. See <a class="reference external" href="#configuration">configuration</a> for the format of the file.</p>
+<div class="section" id="options">
+<h3>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h3>
+<dl class="option">
+<dt id="cmdoption-f">
+<tt class="descname">-f</tt><tt class="descclassname"> &lt;mapproxy.yaml&gt;</tt><a class="headerlink" href="#cmdoption-f" title="Permalink to this definition">¶</a></dt>
+<dd><p>The MapProxy configuration to use.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-c">
+<tt class="descname">-c</tt><tt class="descclassname"> N</tt><tt class="descclassname">, </tt><tt class="descname">--concurrency</tt><tt class="descclassname"> N</tt><a class="headerlink" href="#cmdoption-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of concurrent seed worker. Some parts of the seed tool are CPU intensive
+(image splitting and encoding), use this option to distribute that load across multiple
+CPUs. To limit the concurrent requests to the source WMS see
+<a class="reference internal" href="sources.html#wms-source-concurrent-requests-label"><em>concurrent_requests</em></a></p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-n">
+<tt class="descname">-n</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--dry-run</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the seed tool without requesting, creating or removing any tiles.</p>
+</dd></dl>
+
+<p>Example:</p>
+<div class="highlight-python"><pre>mapproxy-seed -f etc/mapproxy.yaml -c 4 etc/seed.yaml</pre>
+</div>
+<div class="admonition note" id="seed-installation-label">
+<p class="first admonition-title">Note</p>
+<p class="last">You will need aditional dependencies, if you want to use polygons to define your geographical extent of the seeding area, instead of simple bounding boxes. See <a class="reference internal" href="coverages.html"><em>coverage documentation</em></a>.</p>
+</div>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>The configuration contains two keys: <tt class="docutils literal"><span class="pre">views</span></tt> and <tt class="docutils literal"><span class="pre">seeds</span></tt>. <tt class="docutils literal"><span class="pre">views</span></tt> describes
+the geographical extents that should be seeded. <tt class="docutils literal"><span class="pre">seeds</span></tt> links actual layers with
+those <tt class="docutils literal"><span class="pre">views</span></tt>.</p>
+<div class="section" id="seeds">
+<h3>Seeds<a class="headerlink" href="#seeds" title="Permalink to this headline">¶</a></h3>
+<p>Contains a dictionary with layer/view mapping.:</p>
+<div class="highlight-python"><pre>seeds:
+    cache1:
+        views: ['world', 'germany', 'oldb']
+    cache2:
+        views: ['world', 'germany']
+        remove_before:
+            time: '2009-04-01T14:45:00'
+            # or
+            minutes: 15
+            hours: 4
+            days: 9
+            weeks: 8</pre>
+</div>
+<dl class="docutils">
+<dt><cite>remove_before</cite>:</dt>
+<dd><p class="first">If present, recreate tiles if they are older than the date or time delta. At the
+end of the seeding process all tiles that are older will be removed.</p>
+<p class="last">You can either define a fixed time or a time delta. The <cite>time</cite> is a ISO-like date
+string (no time-zones, no abbreviations). To define time delta use one or more
+<cite>minutes</cite>, <cite>hours</cite>, <cite>days</cite>, <cite>weeks</cite> entries.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="views">
+<h3>Views<a class="headerlink" href="#views" title="Permalink to this headline">¶</a></h3>
+<p>Contains a dictionary with all views. Each view describes a coverage/geographical extent and the levels that should be seeded.</p>
+<div class="section" id="coverages">
+<h4>Coverages<a class="headerlink" href="#coverages" title="Permalink to this headline">¶</a></h4>
+<p>There are three different ways to describe the extent of the seed view.</p>
+<blockquote>
+<ul class="simple">
+<li>a simple rectangular bounding box,</li>
+<li>a text file with one or more polygons in WKT format,</li>
+<li>polygons from any data source readable with OGR (e.g. Shapefile, PostGIS)</li>
+</ul>
+</blockquote>
+<p>Read the <a class="reference internal" href="coverages.html"><em>coverage documentation</em></a> for more information.</p>
+</div>
+<div class="section" id="other-options">
+<h4>Other options<a class="headerlink" href="#other-options" title="Permalink to this headline">¶</a></h4>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">srs</span></tt>:</dt>
+<dd>A list with SRSs. If the layer contains caches for multiple SRS, only the caches
+that match one of the SRS in this list will be seeded.</dd>
+<dt><tt class="docutils literal"><span class="pre">res</span></tt>:</dt>
+<dd>Seed until this resolution is cached.</dd>
+</dl>
+<p>or</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">level</span></tt>:</dt>
+<dd>A number until which this layer is cached, or a tuple with a range of
+levels that should be cached.</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="example-configuration">
+<h3>Example configuration<a class="headerlink" href="#example-configuration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>views:
+  germany:
+    ogr_datasource: 'shps/world_boundaries_m.shp'
+    ogr_where: 'CNTRY_NAME = "Germany"'
+    ogr_srs: 'EPSG:900913'
+    level: [0, 14]
+    srs: ['EPSG:900913', 'EPSG:4326']
+  switzerland:
+    polygons: 'polygons/SZ.txt'
+    polygons_srs: EPSG:900913
+    level: [0, 14]
+    srs: ['EPSG:900913']
+  austria:
+    bbox: [9.36, 46.33, 17.28, 49.09]
+    bbox_srs: EPSG:4326
+    level: [0, 14]
+    srs: ['EPSG:900913']
+
+seeds:
+  osm:
+    views: ['germany', 'switzerland', 'austria']
+    remove_before:
+      time: '2010-02-20T16:00:00'
+  osm_roads:
+    views: ['germany']
+    remove_before:
+      days: 30</pre>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Seeding</a><ul>
+<li><a class="reference internal" href="#mapproxy-seed">mapproxy-seed</a><ul>
+<li><a class="reference internal" href="#options">Options</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li><a class="reference internal" href="#seeds">Seeds</a></li>
+<li><a class="reference internal" href="#views">Views</a><ul>
+<li><a class="reference internal" href="#coverages">Coverages</a></li>
+<li><a class="reference internal" href="#other-options">Other options</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#example-configuration">Example configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="sources.html"
+                        title="previous chapter">Sources</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="coverages.html"
+                        title="next chapter">Coverages</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/seed.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="coverages.html" title="Coverages"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sources.html" title="Sources"
+             >previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Oliver Tonnhofer, Omniscale.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

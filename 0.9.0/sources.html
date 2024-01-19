@@ -1,0 +1,264 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Sources &mdash; MapProxy v0.9.0 documentation</title>
+    <link rel="stylesheet" href="_static/mapproxy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="MapProxy v0.9.0 documentation" href="index.html" />
+    <link rel="next" title="Seeding" href="seed.html" />
+    <link rel="prev" title="Services" href="services.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="seed.html" title="Seeding"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="services.html" title="Services"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="sources">
+<h1>Sources<a class="headerlink" href="#sources" title="Permalink to this headline">¶</a></h1>
+<p>MapProxy supports the following sources:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#wms-label"><em>WMS</em></a></li>
+<li><a class="reference internal" href="#tiles-label"><em>Tiles</em></a></li>
+<li><a class="reference internal" href="#debug-label"><em>Debug</em></a></li>
+</ul>
+<p>You need to choose a unique name for each configured source. This name will be used to reference the source in the <tt class="docutils literal"><span class="pre">caches</span></tt> and <tt class="docutils literal"><span class="pre">layers</span></tt> configuration.</p>
+<p>The sources section looks like:</p>
+<div class="highlight-python"><pre>sources:
+  mysource1:
+    type: xxx
+    type_dependend_option1: a
+    type_dependend_option2: b
+  mysource2:
+    type: yyy
+    type_dependend_option3: c</pre>
+</div>
+<p>See below for a detailed description of each service.</p>
+<div class="section" id="wms">
+<span id="wms-label"></span><h2>WMS<a class="headerlink" href="#wms" title="Permalink to this headline">¶</a></h2>
+<p>Use the type <tt class="docutils literal"><span class="pre">wms</span></tt> to for WMS servers.</p>
+<div class="section" id="req">
+<h3><tt class="docutils literal"><span class="pre">req</span></tt><a class="headerlink" href="#req" title="Permalink to this headline">¶</a></h3>
+<p>This describes the WMS source. The only required options are <tt class="docutils literal"><span class="pre">url</span></tt> and <tt class="docutils literal"><span class="pre">layers</span></tt>.
+You need to set <tt class="docutils literal"><span class="pre">transparent</span></tt> to <tt class="docutils literal"><span class="pre">true</span></tt> if you want to use this source as an overlay.</p>
+<div class="highlight-python"><pre>req:
+  url: http://example.org/service?
+  layers: base,roads
+  transparent: true</pre>
+</div>
+<p>All other options are added to the query string of the request.</p>
+<div class="highlight-python"><pre>req:
+  url: http://example.org/service?
+  layers: roads
+  styles: simple
+  map: /path/to/mapfile</pre>
+</div>
+</div>
+<div class="section" id="wms-opts">
+<h3><tt class="docutils literal"><span class="pre">wms_opts</span></tt><a class="headerlink" href="#wms-opts" title="Permalink to this headline">¶</a></h3>
+<p>This option affects what request MapProxy sends to the source WMS server.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">version</span></tt></dt>
+<dd>The WMS version number used for requests (supported: 1.0.0, 1.1.1, 1.3.0). Defaults to 1.1.1.</dd>
+<dt><tt class="docutils literal"><span class="pre">featureinfo</span></tt></dt>
+<dd>If this is set to <tt class="docutils literal"><span class="pre">true</span></tt>, MapProxy will mark the layer as queryable and incoming <cite>GetFeatureInfo</cite> requests will be forwarded to the source server.</dd>
+</dl>
+</div>
+<div class="section" id="supported-srs">
+<span id="supported-srs-label"></span><h3><tt class="docutils literal"><span class="pre">supported_srs</span></tt><a class="headerlink" href="#supported-srs" title="Permalink to this headline">¶</a></h3>
+<p>A list with SRSs that the WMS source supports. MapProxy will only query the source in these SRSs. It will reproject data if it needs to get data from this layer in any other SRS.</p>
+<p>You don&#8217;t need to configure this if you only use this WMS as a cache source and the WMS supports all SRS of the cache.</p>
+<p>If MapProxy needs to reproject and the source has multiple <tt class="docutils literal"><span class="pre">supported_srs</span></tt>, then it will use the fist projected SRS for requests in projected SRS, or the fist geographic SRS for requests in geographic SRS. E.g when <cite>supported_srs</cite> is <tt class="docutils literal"><span class="pre">['EPSG:4326',</span> <span class="pre">'EPSG:31467']</span></tt> caches with EPSG:900913 will use EPSG:32467.</p>
+<blockquote>
+</blockquote>
+</div>
+<div class="section" id="supported-format">
+<h3><tt class="docutils literal"><span class="pre">supported_format</span></tt><a class="headerlink" href="#supported-format" title="Permalink to this headline">¶</a></h3>
+<p>Use this option to specify which image formats you source WMS supports. MapProxy only requests images in one of these formats, and will convert any image if it needs another format. If you do not supply this options, MapProxy assumes that the source supports all formats.</p>
+</div>
+<div class="section" id="concurrent-requests">
+<span id="wms-source-concurrent-requests-label"></span><h3><tt class="docutils literal"><span class="pre">concurrent_requests</span></tt><a class="headerlink" href="#concurrent-requests" title="Permalink to this headline">¶</a></h3>
+<p>This limits the number of parallel requests MapProxy will issue to the source server.
+It even works across multiple WMS sources as long as all have the same <tt class="docutils literal"><span class="pre">concurrent_requests</span></tt> and <tt class="docutils literal"><span class="pre">req.url</span></tt> parameter.</p>
+</div>
+<div class="section" id="http-ssl-no-cert-check">
+<span id="wms-source-ssl-no-cert-check"></span><h3><tt class="docutils literal"><span class="pre">http.ssl_no_cert_check</span></tt><a class="headerlink" href="#http-ssl-no-cert-check" title="Permalink to this headline">¶</a></h3>
+<p>MapProxy checks the SSL server certificates for any <tt class="docutils literal"><span class="pre">req.url</span></tt> that use HTTPS. You need to supply a file (see) that includes that certificate, otherwise MapProxy will fail to establish the connection. You can set the <tt class="docutils literal"><span class="pre">http.ssl_no_cert_check</span></tt> options to <tt class="docutils literal"><span class="pre">true</span></tt> to disable this verification.</p>
+</div>
+<div class="section" id="example-configuration">
+<h3>Example configuration<a class="headerlink" href="#example-configuration" title="Permalink to this headline">¶</a></h3>
+<p>Minimal example:</p>
+<div class="highlight-python"><pre>my_minimal_wmssource:
+  type: wms
+  req:
+    url: http://localhost:8080/service?
+    layers: base</pre>
+</div>
+<p>Full example:</p>
+<div class="highlight-python"><pre>my_wmssource:
+  type: wms
+  wms_opts:
+    version: 1.0.0
+    featureinfo: True
+  supported_srs: ['EPSG:4326', 'EPSG:31467']
+  req:
+    url: http://localhost:8080/service?mycustomparam=foo
+    layers: roads
+    another_param: bar
+    transparent: true</pre>
+</div>
+</div>
+</div>
+<div class="section" id="tiles">
+<span id="tiles-label"></span><h2>Tiles<a class="headerlink" href="#tiles" title="Permalink to this headline">¶</a></h2>
+<p>Use the type <tt class="docutils literal"><span class="pre">tile</span></tt> to request data from from existing tile servers like TileCache and GeoWebCache. You can also use this source cascade MapProxy installations.</p>
+<div class="section" id="url">
+<h3><tt class="docutils literal"><span class="pre">url</span></tt><a class="headerlink" href="#url" title="Permalink to this headline">¶</a></h3>
+<p>This source takes a <tt class="docutils literal"><span class="pre">url</span></tt> option that contains a URL template. The template format is <tt class="docutils literal"><span class="pre">%(key_name)s</span></tt>. MapProxy supports the following named variables in the URL:</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">x</span></tt>, <tt class="docutils literal"><span class="pre">y</span></tt>, <tt class="docutils literal"><span class="pre">z</span></tt></dt>
+<dd>The tile coordinate.</dd>
+<dt><tt class="docutils literal"><span class="pre">format</span></tt></dt>
+<dd>The format of the tile.</dd>
+<dt><tt class="docutils literal"><span class="pre">quadkey</span></tt></dt>
+<dd>Quadkey for the tile as described in <a class="reference external" href="http://msdn.microsoft.com/en-us/library/bb259689.aspx">http://msdn.microsoft.com/en-us/library/bb259689.aspx</a></dd>
+<dt><tt class="docutils literal"><span class="pre">tc_path</span></tt></dt>
+<dd>TileCache path like <tt class="docutils literal"><span class="pre">09/000/000/264/000/000/345</span></tt>. Note that it does not contain any format
+extension.</dd>
+</dl>
+<p>Additionally you can specify the origin of the tile grid with the <tt class="docutils literal"><span class="pre">origin</span></tt> option.
+Supported values are <tt class="docutils literal"><span class="pre">sw</span></tt> for south-west (lower-left) origin or <tt class="docutils literal"><span class="pre">nw</span></tt> for north-west
+(upper-left) origin. <tt class="docutils literal"><span class="pre">sw</span></tt> is the default.</p>
+</div>
+<div class="section" id="id1">
+<h3>Example configuration<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>my_tile_source:
+  type: tile
+  url: http://localhost:8080/tile?x=%(x)s&amp;y=%(y)s&amp;z=%(z)s&amp;format=%(format)s
+  origin: nw</pre>
+</div>
+</div>
+</div>
+<div class="section" id="debug">
+<span id="debug-label"></span><h2>Debug<a class="headerlink" href="#debug" title="Permalink to this headline">¶</a></h2>
+<p>Adds information like resolution and BBOX to the response image.
+This is useful to determine a fixed set of resolutions for the <tt class="docutils literal"><span class="pre">res</span></tt>-parameter. It takes no options.</p>
+<p>Example:</p>
+<div class="highlight-python"><pre>debug_source:
+  type: debug</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Sources</a><ul>
+<li><a class="reference internal" href="#wms">WMS</a><ul>
+<li><a class="reference internal" href="#req"><tt class="docutils literal"><span class="pre">req</span></tt></a></li>
+<li><a class="reference internal" href="#wms-opts"><tt class="docutils literal"><span class="pre">wms_opts</span></tt></a></li>
+<li><a class="reference internal" href="#supported-srs"><tt class="docutils literal"><span class="pre">supported_srs</span></tt></a></li>
+<li><a class="reference internal" href="#supported-format"><tt class="docutils literal"><span class="pre">supported_format</span></tt></a></li>
+<li><a class="reference internal" href="#concurrent-requests"><tt class="docutils literal"><span class="pre">concurrent_requests</span></tt></a></li>
+<li><a class="reference internal" href="#http-ssl-no-cert-check"><tt class="docutils literal"><span class="pre">http.ssl_no_cert_check</span></tt></a></li>
+<li><a class="reference internal" href="#example-configuration">Example configuration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tiles">Tiles</a><ul>
+<li><a class="reference internal" href="#url"><tt class="docutils literal"><span class="pre">url</span></tt></a></li>
+<li><a class="reference internal" href="#id1">Example configuration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#debug">Debug</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="services.html"
+                        title="previous chapter">Services</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="seed.html"
+                        title="next chapter">Seeding</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/sources.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="seed.html" title="Seeding"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="services.html" title="Services"
+             >previous</a> |</li>
+        <li><a href="index.html">MapProxy v0.9.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Oliver Tonnhofer, Omniscale.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>
