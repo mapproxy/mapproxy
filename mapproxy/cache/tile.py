@@ -168,6 +168,16 @@ class TileManager(object):
                 t.source = None
         return tiles
 
+    def _is_tile_missing(self, tile, cache_only, dimensions=None):
+        if tile.coord is None:
+            return False
+        if cache_only:
+            # in cache_only mode, we already fetched the tile from cache
+            return tile.is_missing()
+        else:
+            # missing or staled
+            return not self.is_cached(tile, dimensions=dimensions)
+
     def _load_tile_coords(self, tiles, dimensions=None, with_metadata=False,
                           rescale_till_zoom=None, rescaled_tiles=None
                           ):
@@ -182,18 +192,13 @@ class TileManager(object):
         self.cache.load_tiles(tiles, with_metadata, dimensions=dimensions)
 
         # if no real source, we are running in cache_only mode
-        cache_only = len(self.sources) == 1 and isinstance(self.sources[0], DummySource)
+        cache_only = self.sources == [] or (len(self.sources) == 1 and isinstance(self.sources[0], DummySource))
         # if no rescale_tiles and cache_only, we dont have any additional processing to do
         if (self.rescale_tiles == 0 and cache_only):
             return tiles
 
         for tile in tiles:
-            # in cache_only mode, we already fetched the tile from cache
-            if tile.coord is not None and (
-                (cache_only and tile.is_missing()) or
-                (not cache_only and not self.is_cached(tile, dimensions=dimensions))
-            ):
-                # missing or staled
+            if self._is_tile_missing(tile, cache_only, dimensions=dimensions):
                 uncached_tiles.append(tile)
 
         if uncached_tiles:
