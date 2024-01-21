@@ -43,7 +43,7 @@ from mapproxy.image.opts import ImageOptions
 from mapproxy.image.merge import merge_images
 from mapproxy.image.tile import TileSplitter, TiledImage
 from mapproxy.layer import MapQuery, BlankImage
-from mapproxy.source import SourceError
+from mapproxy.source import SourceError, DummySource
 from mapproxy.util import async_
 from mapproxy.util.py import reraise, reraise_exception
 import sys
@@ -181,8 +181,18 @@ class TileManager(object):
         # load all in batch
         self.cache.load_tiles(tiles, with_metadata, dimensions=dimensions)
 
+        # if no real source, we are running in cache_only mode
+        cache_only = len(self.sources) == 1 and isinstance(self.sources[0], DummySource)
+        # if no rescale_tiles and cache_only, we dont have any additional processing to do
+        if (self.rescale_tiles == 0 and cache_only):
+            return tiles
+
         for tile in tiles:
-            if tile.coord is not None and not self.is_cached(tile, dimensions=dimensions):
+            # in cache_only mode, we already fetched the tile from cache
+            if tile.coord is not None and (
+                (cache_only and tile.is_missing()) or
+                (not cache_only and not self.is_cached(tile, dimensions=dimensions))
+            ):
                 # missing or staled
                 uncached_tiles.append(tile)
 
