@@ -47,7 +47,7 @@ services:
         country: Germany
         phone: +49(0)000-000000-0
         fax: +49(0)000-000000-0
-        email: info@omniscale.de
+        email: info@example.org
       # multiline strings are possible with the right indention
       access_constraints:
         Insert license and copyright information for this service.
@@ -68,7 +68,7 @@ services:
 
     # add attribution text in the lower-right corner.
     attribution:
-      text: '(c) Omniscale'
+      text: '(c) Acme'
 
     # return an OGC service exception when one or more sources return errors
     # or no response at all (e.g. timeout)
@@ -101,7 +101,7 @@ services:
         country: Germany
         phone: +49(0)000-000000-0
         fax: +49(0)000-000000-0
-        email: info@omniscale.de
+        email: info@example.org
       # multiline strings are possible with the right indention
       access_constraints:
         Insert license and copyright information for this service.
@@ -110,12 +110,12 @@ services:
 layers:
   # layer with minimal options
   - name: osm
-    title: Omniscale OSM WMS - osm.omniscale.net
+    title: OSM
     sources: [osm_cache]
 
   # layer with multiple sources
   - name: merged_layer
-    title: Omniscale OSM WMS - osm.omniscale.net
+    title: OSM merged
     sources: [osm_cache, osm_cache_full_example]
 
   # these layers supports the GetLegendGraphicRequest
@@ -351,7 +351,7 @@ sources:
   osm_wms:
     type: wms
     req:
-      url: https://maps.omniscale.net/v2/demo/style.default/service?
+      url: http://example.org/service?
       layers: osm
 
   # WMS source for use with tagged sources

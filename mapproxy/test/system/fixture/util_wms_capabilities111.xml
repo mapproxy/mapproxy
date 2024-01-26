@@ -25,7 +25,7 @@
       </ContactAddress>
       <ContactVoiceTelephone>+49(0)000-000000-0</ContactVoiceTelephone>
       <ContactFacsimileTelephone>+49(0)000-000000-0</ContactFacsimileTelephone>
-      <ContactElectronicMailAddress>info@omniscale.de</ContactElectronicMailAddress>
+      <ContactElectronicMailAddress>info@example.org</ContactElectronicMailAddress>
   </ContactInformation>
   <Fees>None</Fees>
   <AccessConstraints>Here be dragons.</AccessConstraints>
@@ -85,7 +85,7 @@
     <BoundingBox SRS="EPSG:4326" minx="-180.0" miny="-85.0511287798" maxx="180.0" maxy="85.0511287798" />
     <Layer>
       <Name>osm</Name>
-      <Title>Omniscale OSM WMS - osm.omniscale.net</Title>
+      <Title>ACME OSM WMS</Title>
       <LatLonBoundingBox minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />
       <BoundingBox SRS="EPSG:900913" minx="-20037508.3428" miny="-20037508.3428" maxx="20037508.3428" maxy="20037508.3428" />
       <BoundingBox SRS="EPSG:4326" minx="-180.0" miny="-85.0511287798" maxx="180.0" maxy="85.0511287798" />

@@ -10,28 +10,28 @@ def local_filename(filename):
 class TestWMS111(object):
 
     def test_parse_metadata(self):
-        cap = parse_capabilities(local_filename("wms-omniscale-111.xml"))
+        cap = parse_capabilities(local_filename("wms-example-111.xml"))
         md = cap.metadata()
         assert md["name"] == "OGC:WMS"
-        assert md["title"] == "Omniscale OpenStreetMap WMS"
+        assert md["title"] == "ACME OpenStreetMap WMS"
         assert md["access_constraints"] == "Here be dragons."
         assert md["fees"] == "none"
-        assert md["online_resource"] == "http://omniscale.de/"
-        assert md["abstract"] == "Omniscale OpenStreetMap WMS (powered by MapProxy)"
+        assert md["online_resource"] == "http://example.org/"
+        assert md["abstract"] == "ACME OpenStreetMap WMS (powered by MapProxy)"
 
-        assert md["contact"]["person"] == "Oliver Tonnhofer"
-        assert md["contact"]["organization"] == "Omniscale"
+        assert md["contact"]["person"] == "Bob Mustermann"
+        assert md["contact"]["organization"] == "ACME"
         assert md["contact"]["position"] == "Technical Director"
-        assert md["contact"]["address"] == "Nadorster Str. 60"
-        assert md["contact"]["city"] == "Oldenburg"
-        assert md["contact"]["postcode"] == "26123"
+        assert md["contact"]["address"] == "Fakestreet 123"
+        assert md["contact"]["city"] == "Fakecity"
+        assert md["contact"]["postcode"] == "12345"
         assert md["contact"]["country"] == "Germany"
-        assert md["contact"]["phone"] == "+49(0)441-9392774-0"
-        assert md["contact"]["fax"] == "+49(0)441-9392774-9"
-        assert md["contact"]["email"] == "osm@omniscale.de"
+        assert md["contact"]["phone"] == "0123456789"
+        assert md["contact"]["fax"] == "0123456789"
+        assert md["contact"]["email"] == "info@example.org"
 
     def test_parse_layer(self):
-        cap = parse_capabilities(local_filename("wms-omniscale-111.xml"))
+        cap = parse_capabilities(local_filename("wms-example-111.xml"))
         lyrs = cap.layers_list()
         assert len(lyrs) == 2
         assert lyrs[0]["llbbox"] == [-180.0, -85.0511287798, 180.0, 85.0511287798]
@@ -64,16 +64,16 @@ class TestWMS111(object):
 class TestWMS130(object):
 
     def test_parse_metadata(self):
-        cap = parse_capabilities(local_filename("wms-omniscale-130.xml"))
+        cap = parse_capabilities(local_filename("wms-example-130.xml"))
         md = cap.metadata()
         assert md["name"] == "WMS"
-        assert md["title"] == "Omniscale OpenStreetMap WMS"
+        assert md["title"] == "ACME OpenStreetMap WMS"
 
         req = cap.requests()
-        assert req["GetMap"] == "http://osm.omniscale.net/proxy/service?"
+        assert req["GetMap"] == "http://example.org/service"
 
     def test_parse_layer(self):
-        cap = parse_capabilities(local_filename("wms-omniscale-130.xml"))
+        cap = parse_capabilities(local_filename("wms-example-130.xml"))
         lyrs = cap.layers_list()
         assert len(lyrs) == 2
         assert lyrs[0]["llbbox"] == [-180.0, -85.0511287798, 180.0, 85.0511287798]

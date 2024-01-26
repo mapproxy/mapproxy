@@ -14,7 +14,7 @@ services:
             country: Germany
             phone: +49(0)000-000000-0
             fax: +49(0)000-000000-0
-            email: info@omniscale.de
+            email: email@example.org
         access_constraints:
             This service is intended for private and
             evaluation use only. The data is licensed
@@ -28,7 +28,7 @@ sources:
   test_wms:
     type: wms
     req:
-      url: http://osm.omniscale.net/proxy/service?
+      url: http://example.org/service?
       layers: osm
   #end source
 #start caches
@@ -69,12 +69,12 @@ sources:
   test_wms:
     type: wms
     req:
-      url: http://osm.omniscale.net/proxy/service?
+      url: http://example.org/service?
       layers: osm
   roads_wms:
     type: wms
     req:
-      url: http://osm.omniscale.net/proxy/service?
+      url: http://example.org/service?
       layers: osm_roads
       transparent: true
 
@@ -93,7 +93,7 @@ sources:
   test_wms:
     type: wms
     req:
-      url: http://osm.omniscale.net/proxy/service?
+      url: http://example.org/service?
       layers: osm
     coverage:
       bbox: [5.5, 47.4, 15.2, 54.8]

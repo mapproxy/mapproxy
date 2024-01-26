@@ -255,7 +255,7 @@ With the following MapProxy layer configuration:
 
   layers:
     - name: osm
-      title: Omniscale OSM WMS - osm.omniscale.net
+      title: My OSM Layer
       sources: [osm_cache]
     - name: foo
       title: Group Layer
@@ -288,7 +288,7 @@ Parsed capabilities document:
       llbbox: [-180.0, -85.0511287798, 180.0, 85.0511287798]
       layers:
         - name: osm
-          title: Omniscale OSM WMS - osm.omniscale.net
+          title: My OSM Layer
           url: http://127.0.0.1:8080/service?
           opaque: False
           srs: ['EPSG:31467', 'EPSG:31466', 'EPSG:25832', 'EPSG:25831', 'EPSG:25833',

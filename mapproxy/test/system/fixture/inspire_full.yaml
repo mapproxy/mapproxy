@@ -30,16 +30,16 @@ services:
       abstract: This is MapProxy.
       online_resource: http://mapproxy.org/
       contact:
-        person: Oliver Tonnhofer
+        person: Bob Mustermann
         position: Technical Director
-        organization: Omniscale
-        address: Nadorster Str. 60
-        city: Oldenburg
-        postcode: 26123
+        organisation: Acme
+        address: Fakestreet 123
+        city: Fakecity
+        postcode: 12345
         country: Germany
-        phone: +49(0)441-9392774-0
-        fax: +49(0)441-9392774-9
-        email: info@omniscale.de
+        phone: 0123456789
+        fax: 0123456789
+        email: info@example.org
       access_constraints:
         Here be dragons.
       keyword_list:
