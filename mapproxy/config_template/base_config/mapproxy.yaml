@@ -38,7 +38,7 @@ services:
 
 layers:
   - name: osm
-    title: Omniscale OSM WMS - osm.omniscale.net
+    title: OSM
     sources: [osm_cache]
 
 caches:
@@ -50,7 +50,7 @@ sources:
   osm_wms:
     type: wms
     req:
-      url: https://maps.omniscale.net/v2/demo/style.default/service?
+      url: http://example.org/service?
       layers: osm
 
 grids:

@@ -6,26 +6,26 @@
 <WMT_MS_Capabilities version="1.1.1">
 <Service>
   <Name>OGC:WMS</Name>
-  <Title>Omniscale OpenStreetMap WMS</Title>
-  <Abstract>Omniscale OpenStreetMap WMS (powered by MapProxy)</Abstract>
-  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://omniscale.de/"/>
+  <Title>ACME OpenStreetMap WMS</Title>
+  <Abstract>ACME OpenStreetMap WMS (powered by MapProxy)</Abstract>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/"/>
   <ContactInformation>
       <ContactPersonPrimary>
-        <ContactPerson>Oliver Tonnhofer</ContactPerson>
-        <ContactOrganization>Omniscale</ContactOrganization>
+        <ContactPerson>Bob Mustermann</ContactPerson>
+        <ContactOrganization>ACME</ContactOrganization>
       </ContactPersonPrimary>
       <ContactPosition>Technical Director</ContactPosition>
       <ContactAddress>
         <AddressType>postal</AddressType>
-        <Address>Nadorster Str. 60</Address>
-        <City>Oldenburg</City>
+        <Address>Fakestreet 123</Address>
+        <City>Fakecity</City>
         <StateOrProvince></StateOrProvince>
-        <PostCode>26123</PostCode>
+        <PostCode>12345</PostCode>
         <Country>Germany</Country>
       </ContactAddress>
-      <ContactVoiceTelephone>+49(0)441-9392774-0</ContactVoiceTelephone>
-      <ContactFacsimileTelephone>+49(0)441-9392774-9</ContactFacsimileTelephone>
-      <ContactElectronicMailAddress>osm@omniscale.de</ContactElectronicMailAddress>
+      <ContactVoiceTelephone>0123456789</ContactVoiceTelephone>
+      <ContactFacsimileTelephone>0123456789</ContactFacsimileTelephone>
+      <ContactElectronicMailAddress>info@example.org</ContactElectronicMailAddress>
   </ContactInformation>
   <Fees>none</Fees>
   <AccessConstraints>Here be dragons.</AccessConstraints>
@@ -36,7 +36,7 @@
       <Format>application/vnd.ogc.wms_xml</Format>
       <DCPType>
         <HTTP>
-          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://osm.omniscale.net/proxy/service?"/></Get>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service"/></Get>
         </HTTP>
       </DCPType>
     </GetCapabilities>
@@ -48,7 +48,7 @@
         <Format>image/tiff</Format>
       <DCPType>
         <HTTP>
-          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://osm.omniscale.net/proxy/service?"/></Get>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service"/></Get>
         </HTTP>
       </DCPType>
     </GetMap>
@@ -58,7 +58,7 @@
       <Format>application/vnd.ogc.gml</Format>
       <DCPType>
         <HTTP>
-          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://osm.omniscale.net/proxy/service?"/></Get>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/service"/></Get>
         </HTTP>
       </DCPType>
     </GetFeatureInfo>
@@ -69,7 +69,7 @@
     <Format>application/vnd.ogc.se_blank</Format>
   </Exception>
   <Layer>
-    <Title>Omniscale OpenStreetMap WMS</Title>
+    <Title>ACME OpenStreetMap WMS</Title>
     <SRS>EPSG:4326 EPSG:4258 CRS:84 EPSG:900913 EPSG:31466 EPSG:31467 EPSG:31468 EPSG:25831 EPSG:25832 EPSG:25833 EPSG:3857</SRS>
     <LatLonBoundingBox minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />
     <BoundingBox SRS="EPSG:4326" minx="-180" miny="-85.0511287798" maxx="180" maxy="85.0511287798" />

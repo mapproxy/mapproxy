@@ -15,7 +15,7 @@ services:
         country: Germany
         phone: +49(0)000-000000-0
         fax: +49(0)000-000000-0
-        email: info@omniscale.de
+        email: info@example.org
       access_constraints:
         Insert license and copyright information for this service.
       fees: 'None'
@@ -24,12 +24,12 @@ sources:
   test_wms:
     type: wms
     req:
-      url: http://osm.omniscale.net/proxy/service?
+      url: http://example.org/service
       layers: osm
   roads_wms:
     type: wms
     req:
-      url: http://osm.omniscale.net/proxy/service?
+      url: http://example.org/service
       layers: osm_roads
       transparent: true
 

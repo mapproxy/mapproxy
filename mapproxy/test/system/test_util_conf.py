@@ -104,7 +104,7 @@ class TestMapProxyConfCmd(object):
                     ],
                     "req": {
                         "layers": "osm_roads",
-                        "url": "http://osm.omniscale.net/proxy/service?",
+                        "url": "http://example.org/service",
                         "transparent": True,
                     },
                     "type": "wms",
@@ -129,7 +129,7 @@ class TestMapProxyConfCmd(object):
                     ],
                     "req": {
                         "layers": "osm",
-                        "url": "http://osm.omniscale.net/proxy/service?",
+                        "url": "http://example.org/service",
                         "transparent": True,
                     },
                     "type": "wms",
@@ -142,7 +142,7 @@ class TestMapProxyConfCmd(object):
 
             assert conf["layers"] == [
                 {
-                    "title": "Omniscale OpenStreetMap WMS",
+                    "title": "ACME OpenStreetMap WMS",
                     "layers": [
                         {
                             "name": "osm",
@@ -195,7 +195,7 @@ class TestMapProxyConfCmd(object):
 
             assert conf["layers"] == [
                 {
-                    "title": "Omniscale OpenStreetMap WMS",
+                    "title": "ACME OpenStreetMap WMS",
                     "layers": [
                         {
                             "name": "osm",
@@ -280,7 +280,7 @@ class TestMapProxyConfCmd(object):
                     "supported_srs": ["EPSG:3857"],
                     "req": {
                         "layers": "osm_roads",
-                        "url": "http://osm.omniscale.net/proxy/service?",
+                        "url": "http://example.org/service",
                         "transparent": True,
                         "param": 42,
                     },
@@ -303,7 +303,7 @@ class TestMapProxyConfCmd(object):
                     ],
                     "req": {
                         "layers": "osm",
-                        "url": "http://osm.omniscale.net/proxy/service?",
+                        "url": "http://example.org/service",
                         "transparent": True,
                         "param": 42,
                     },
@@ -330,7 +330,7 @@ class TestMapProxyConfCmd(object):
 
             assert conf["layers"] == [
                 {
-                    "title": "Omniscale OpenStreetMap WMS",
+                    "title": "ACME OpenStreetMap WMS",
                     "layers": [
                         {
                             "name": "osm",

@@ -23,13 +23,13 @@
 
 
 
-        // var overlay_layer = new OpenLayers.Layer.TMS('TMS street_layer', 'http://x.osm.omniscale.net/proxy/tiles/',
+        // var overlay_layer = new OpenLayers.Layer.TMS('TMS street_layer', 'http://127.0.0.1:8080/tiles/',
         //     {layername: 'osm_roads_EPSG900913', type: 'png',
         //      isBaseLayer: false
         // });
 
         var overlay_layer = new OpenLayers.Layer.OSM("OSM osm_layer",
-            "http://x.osm.omniscale.net/proxy/tiles/osm_roads_EPSG900913/${z}/${x}/${y}.png?origin=nw",
+            "http://127.0.0.1:8080/tiles/osm_roads_EPSG900913/${z}/${x}/${y}.png?origin=nw",
             {isBaseLayer: false, tileOptions: {crossOriginKeyword: null}}
         );
 

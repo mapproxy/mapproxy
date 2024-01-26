@@ -2,26 +2,26 @@
 <WMS_Capabilities xmlns="http://www.opengis.net/wms" xmlns:sld="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.3.0" xsi:schemaLocation="http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd">
 <Service>
   <Name>WMS</Name>
-  <Title>Omniscale OpenStreetMap WMS</Title>
-  <Abstract>Omniscale OpenStreetMap WMS (powered by MapProxy)</Abstract>
-  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://omniscale.de/"/>
+  <Title>ACME OpenStreetMap WMS</Title>
+  <Abstract>ACME OpenStreetMap WMS (powered by MapProxy)</Abstract>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://example.org/"/>
   <ContactInformation>
       <ContactPersonPrimary>
-        <ContactPerson>Oliver Tonnhofer</ContactPerson>
-        <ContactOrganization>Omniscale</ContactOrganization>
+        <ContactPerson>Bob Mustermann</ContactPerson>
+        <ContactOrganization>ACME</ContactOrganization>
       </ContactPersonPrimary>
       <ContactPosition>Technical Director</ContactPosition>
       <ContactAddress>
         <AddressType>postal</AddressType>
-        <Address>Nadorster Str. 60</Address>
-        <City>Oldenburg</City>
+        <Address>Fakestreet 123</Address>
+        <City>Fakecity</City>
         <StateOrProvince></StateOrProvince>
-        <PostCode>26123</PostCode>
+        <PostCode>12345</PostCode>
         <Country>Germany</Country>
       </ContactAddress>
-      <ContactVoiceTelephone>+49(0)441-9392774-0</ContactVoiceTelephone>
-      <ContactFacsimileTelephone>+49(0)441-9392774-9</ContactFacsimileTelephone>
-      <ContactElectronicMailAddress>osm@omniscale.de</ContactElectronicMailAddress>
+      <ContactVoiceTelephone>0123456789</ContactVoiceTelephone>
+      <ContactFacsimileTelephone>0123456789</ContactFacsimileTelephone>
+      <ContactElectronicMailAddress>info@example.org</ContactElectronicMailAddress>
   </ContactInformation>
     <Fees>none</Fees>
     <AccessConstraints>This service is intended for private and evaluation use only. The data is licensed as Open Data Commons Open Database License (ODbL 1.0) (http://opendatacommons.org/licenses/odbl/1.0/)</AccessConstraints>
@@ -32,7 +32,7 @@
       <Format>text/xml</Format>
       <DCPType>
         <HTTP>
-          <Get><OnlineResource xlink:href="http://osm.omniscale.net/proxy/service?"/></Get>
+          <Get><OnlineResource xlink:href="http://example.org/service"/></Get>
         </HTTP>
       </DCPType>
     </GetCapabilities>
@@ -44,7 +44,7 @@
       <Format>image/GeoTIFF</Format>
       <DCPType>
         <HTTP>
-          <Get><OnlineResource xlink:href="http://osm.omniscale.net/proxy/service?"/></Get>
+          <Get><OnlineResource xlink:href="http://example.org/service"/></Get>
         </HTTP>
       </DCPType>
     </GetMap>
@@ -54,7 +54,7 @@
       <Format>text/xml</Format>
       <DCPType>
         <HTTP>
-          <Get><OnlineResource xlink:href="http://osm.omniscale.net/proxy/service?"/></Get>
+          <Get><OnlineResource xlink:href="http://example.org/service"/></Get>
         </HTTP>
       </DCPType>
     </GetFeatureInfo>
@@ -65,7 +65,7 @@
     <Format>BLANK</Format>
   </Exception>
   <Layer>
-    <Title>Omniscale OpenStreetMap WMS</Title>
+    <Title>ACME OpenStreetMap WMS</Title>
     <CRS>EPSG:4326</CRS>
     <CRS>EPSG:4258</CRS>
     <CRS>CRS:84</CRS>

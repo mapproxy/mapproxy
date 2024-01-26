@@ -61,19 +61,19 @@ Example
 Print configuration on console::
 
     mapproxy-util autoconfig \
-        --capabilities http://osm.omniscale.net/proxy/service
+        --capabilities http://example.org/service
 
 Write MapProxy and MapProxy-seeding configuration to files::
 
     mapproxy-util autoconfig \
-        --capabilities http://osm.omniscale.net/proxy/service \
+        --capabilities http://example.org/service \
         --output mapproxy.yaml \
         --output-seed seed.yaml
 
 Write MapProxy configuration with caches for grids from ``base.yaml``::
 
     mapproxy-util autoconfig \
-        --capabilities http://osm.omniscale.net/proxy/service \
+        --capabilities http://example.org/service \
         --output mapproxy.yaml \
         --base base.yaml
 
