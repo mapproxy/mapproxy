@@ -544,10 +544,7 @@ Explanation::
   refresh_before:
     mtime: path/to/file
 
-Example
-~~~~~~~~
-
-::
+Here is an example that refreshes tiles everyday::
 
    caches:
      osm_cache:
