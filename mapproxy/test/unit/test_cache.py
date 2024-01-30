@@ -125,6 +125,7 @@ class RecordFileCache(FileCache):
         super(RecordFileCache, self).__init__(*args, **kw)
         self.stored_tiles = set()
         self.loaded_tiles = counting_set([])
+        self.is_cached_call_count = 0
 
     def store_tile(self, tile, dimensions=None):
         assert tile.coord not in self.stored_tiles
@@ -141,6 +142,7 @@ class RecordFileCache(FileCache):
         return FileCache.load_tile(self, tile, with_metadata, dimensions=dimensions)
 
     def is_cached(self, tile, dimensions=None):
+        self.is_cached_call_count += 1
         return tile.coord in self.stored_tiles
 
 
@@ -1234,6 +1236,7 @@ class TestTileManagerRescaleTiles(object):
 
         assert file_cache.stored_tiles == set(store)
         assert file_cache.loaded_tiles == counting_set(expected_load)
+        assert file_cache.is_cached_call_count == 0
 
 
 class TileCacheTestBase(object):
@@ -1272,6 +1275,7 @@ class TestTileManagerCacheBboxCoverage(TileCacheTestBase):
 
         all(t.coord in self.cache.stored_tiles for t in collection)
         assert self.cache.loaded_tiles == counting_set(coords)
+        assert self.cache.is_cached_call_count == 0
 
     def test_empty_tiles_outside_coverage(self, tile_locker):
         grid = TileGrid(SRS(4326), bbox=[-180, -90, 180, 90], origin='ul')
