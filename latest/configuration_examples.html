@@ -53,7 +53,7 @@
     <link rel="prev" title="Deployment" href="deployment.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Jan 19, 2024"/>
+    <meta name="docbuild:last-update" content="Mar 13, 2024"/>
   </head>
   
   
@@ -115,28 +115,31 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">2.0.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">2.0.2</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
     </button>
-    <ul class="dropdown-menu">
-        
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/2.0.1/">2.0.1</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/2.0.0/">2.0.0</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/1.16.1/">1.16.1</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/1.15.1/">1.15.1</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/1.14.0/">1.14.0</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/1.13.2/">1.13.2</a></li>
-        
-        
+    <ul id="versions-menu" class="dropdown-menu">
     </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
 </div></div>
     
   </div>
@@ -321,6 +324,7 @@ document.write(`
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#access-local-servers">Access local servers</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-wms-from-existing-tile-server">Create WMS from existing tile server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#display-custom-background-map-in-the-map-viewer-of-the-demo-service">Display custom background map in the map viewer of the demo service</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overlay-tiles-with-openstreetmap-or-google-maps-in-openlayers">Overlay tiles with OpenStreetMap or Google Maps in OpenLayers</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-existing-caches">Using existing caches</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reprojecting-tiles">Reprojecting Tiles</a></li>
@@ -507,6 +511,23 @@ Other tile services might use different SRS, bounding boxes or resolutions. You 
 <p>Please make sure you are allowed to access the tile service. Commercial tile provider often prohibit the direct access to tiles. The tile service from OpenStreetMap has a strict <a class="reference external" href="http://wiki.openstreetmap.org/wiki/Tile_usage_policy">Tile Usage Prolicy</a>.</p>
 </div>
 </section>
+<section id="display-custom-background-map-in-the-map-viewer-of-the-demo-service">
+<span id="display-custom-background"></span><h2>Display custom background map in the map viewer of the demo service<a class="headerlink" href="#display-custom-background-map-in-the-map-viewer-of-the-demo-service" title="Permalink to this heading">#</a></h2>
+<p>In order to setup the background displayed in the map viewer of the /demo service of Mapproxy
+you need to add the service of the background map to <code class="docutils literal notranslate"><span class="pre">globals</span></code>.</p>
+<p>Here is a minimal example with the default configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">globals</span><span class="p">:</span>
+  <span class="c1"># background map of the demo service</span>
+  <span class="n">background</span><span class="p">:</span>
+    <span class="c1"># tile source in ZXY format</span>
+    <span class="n">url</span><span class="p">:</span> <span class="s2">&quot;https://tile.openstreetmap.org/</span><span class="si">{z}</span><span class="s2">/</span><span class="si">{x}</span><span class="s2">/</span><span class="si">{y}</span><span class="s2">.png&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>URL of the tile service MUST be in XYZ format. Please make sure you are allowed to access the tile service. Commercial tile provider often prohibit the direct access to tiles. The tile service from OpenStreetMap has a strict <a class="reference external" href="http://wiki.openstreetmap.org/wiki/Tile_usage_policy">Tile Usage Prolicy</a>.</p>
+</div>
+</section>
 <section id="overlay-tiles-with-openstreetmap-or-google-maps-in-openlayers">
 <span id="overlay-tiles-osm-openlayers"></span><h2>Overlay tiles with OpenStreetMap or Google Maps in OpenLayers<a class="headerlink" href="#overlay-tiles-with-openstreetmap-or-google-maps-in-openlayers" title="Permalink to this heading">#</a></h2>
 <p>You need to take care of a few options when you want to overlay your MapProxy tiles in OpenLayers with existing OpenStreetMap or Google Maps tiles.</p>
@@ -523,7 +544,7 @@ Other tile services might use different SRS, bounding boxes or resolutions. You 
 <span class="nt">sources</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">street_tile_source</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tile</span>
-<span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://osm.omniscale.net/proxy/tiles/ \</span>
+<span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://example.org/tiles/ \</span>
 <span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">1.0.0/osm_roads_EPSG900913/%(z)s/%(x)s/%(y)s.png</span>
 <span class="w">    </span><span class="nt">transparent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </pre></div>
@@ -560,7 +581,7 @@ The first example creates a simple OpenLayers map in webmercator projection, add
 <p>The following example uses the class OpenLayers.Layer.OSM:</p>
 <blockquote>
 <div><div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span><span class="w"> </span><span class="nx">overlay_layer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">OpenLayers</span><span class="p">.</span><span class="nx">Layer</span><span class="p">.</span><span class="nx">OSM</span><span class="p">(</span><span class="s2">&quot;OSM osm_layer&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;http://x.osm.omniscale.net/proxy/tiles/ \</span>
+<span class="w">    </span><span class="s2">&quot;http://example.org/tiles/ \</span>
 <span class="s2">    osm_roads_EPSG900913/${z}/${x}/${y}.png?origin=nw&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="p">{</span><span class="nx">isBaseLayer</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nx">tileOptions</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="nx">crossOriginKeyword</span><span class="o">:</span><span class="w"> </span><span class="kc">null</span><span class="p">}}</span>
 <span class="p">);</span>
@@ -571,7 +592,7 @@ The first example creates a simple OpenLayers map in webmercator projection, add
 You can change the default origin of all MapProxy tile layers by using the <code class="docutils literal notranslate"><span class="pre">origin</span></code> option of the <code class="docutils literal notranslate"><span class="pre">tms</span></code> service. See the <a class="reference internal" href="services.html#google-maps-label"><span class="std std-ref">TMS standard tile origin</span></a> for more informations.</p>
 </section>
 <section id="using-existing-caches">
-<span id="id2"></span><h2>Using existing caches<a class="headerlink" href="#using-existing-caches" title="Permalink to this heading">#</a></h2>
+<span id="id3"></span><h2>Using existing caches<a class="headerlink" href="#using-existing-caches" title="Permalink to this heading">#</a></h2>
 <div class="versionadded">
 <p><span class="versionmodified added">New in version 1.5.0.</span></p>
 </div>
@@ -710,7 +731,7 @@ With TMS or WMTS you can only request PNG tiles, but the actual response image i
 <h2>Cache vector data<a class="headerlink" href="#cache-vector-data" title="Permalink to this heading">#</a></h2>
 <p>You have a WMS server that renders vector data like road maps.</p>
 <section id="cache-resolutions">
-<span id="id3"></span><h3>Cache resolutions<a class="headerlink" href="#cache-resolutions" title="Permalink to this heading">#</a></h3>
+<span id="id4"></span><h3>Cache resolutions<a class="headerlink" href="#cache-resolutions" title="Permalink to this heading">#</a></h3>
 <p>By default MapProxy caches traditional power-of-two image pyramids, the resolutions between each pyramid level doubles. For example if the first level has a resolution of 10km, it would also cache resolutions of 5km, 2.5km, 1.125km etc. Requests with a resolution of 7km would be generated from cached data with a resolution of 10km. The problem with this approach is, that everything needs to be scaled down, lines will get thin and text labels will become unreadable. The solution is simple: Just add more levels to the pyramid. There are three options to do this.</p>
 <p>You can set every cache resolution in the <code class="docutils literal notranslate"><span class="pre">res</span></code> option of a layer.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">caches</span><span class="p">:</span>
@@ -1045,7 +1066,7 @@ on subsequent calls. This is useful for sources that use cookie for session mana
 </section>
 <section id="serve-multiple-mapproxy-instances">
 <span id="paster-urlmap"></span><h2>Serve multiple MapProxy instances<a class="headerlink" href="#serve-multiple-mapproxy-instances" title="Permalink to this heading">#</a></h2>
-<p>It is possible to load multiple MapProxy instances into a single process. Each MapProxy can have a different global configuration and different services and caches. <a class="footnote-reference brackets" href="#f1" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>  You can use <a class="reference internal" href="deployment.html#multimapproxy"><span class="std std-ref">MultiMapProxy</span></a> to load multiple MapProxy configurations on-demand.</p>
+<p>It is possible to load multiple MapProxy instances into a single process. Each MapProxy can have a different global configuration and different services and caches. <a class="footnote-reference brackets" href="#f1" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>  You can use <a class="reference internal" href="deployment.html#multimapproxy"><span class="std std-ref">MultiMapProxy</span></a> to load multiple MapProxy configurations on-demand.</p>
 <p>Example <code class="docutils literal notranslate"><span class="pre">config.py</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mapproxy.multiapp</span> <span class="kn">import</span> <span class="n">make_wsgi_app</span>
 <span class="n">application</span> <span class="o">=</span> <span class="n">make_wsgi_app</span><span class="p">(</span><span class="s1">&#39;/path/to/projects&#39;</span><span class="p">,</span> <span class="n">allow_listing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1060,7 +1081,7 @@ on subsequent calls. This is useful for sources that use cookie for session mana
 </div>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="f1" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">1</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">1</a><span class="fn-bracket">]</span></span>
 <p>This does not apply to <cite>srs.proj_data_dir</cite>, because it affects the proj4 library directly.</p>
 </aside>
 </aside>
@@ -1235,6 +1256,7 @@ However, this is limited to a single cache for each layer. You can’t reuse the
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#access-local-servers">Access local servers</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-wms-from-existing-tile-server">Create WMS from existing tile server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#display-custom-background-map-in-the-map-viewer-of-the-demo-service">Display custom background map in the map viewer of the demo service</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overlay-tiles-with-openstreetmap-or-google-maps-in-openlayers">Overlay tiles with OpenStreetMap or Google Maps in OpenLayers</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-existing-caches">Using existing caches</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reprojecting-tiles">Reprojecting Tiles</a></li>
@@ -1305,7 +1327,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jan 19, 2024.
+  Last updated on Mar 13, 2024.
   <br/>
 </p>
   </div>

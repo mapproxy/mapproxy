@@ -53,7 +53,7 @@
     <link rel="prev" title="mapproxy-util" href="mapproxy_util.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Jan 19, 2024"/>
+    <meta name="docbuild:last-update" content="Mar 13, 2024"/>
   </head>
   
   
@@ -115,28 +115,31 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">2.0.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">2.0.2</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
     </button>
-    <ul class="dropdown-menu">
-        
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/2.0.1/">2.0.1</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/2.0.0/">2.0.0</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/1.16.1/">1.16.1</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/1.15.1/">1.15.1</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/1.14.0/">1.14.0</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/1.13.2/">1.13.2</a></li>
-        
-        
+    <ul id="versions-menu" class="dropdown-menu">
     </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
 </div></div>
     
   </div>
@@ -405,19 +408,19 @@ Please make sure you understand the configuration and check the documentation fo
 <h3>Example<a class="headerlink" href="#example" title="Permalink to this heading">#</a></h3>
 <p>Print configuration on console:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">autoconfig</span> \
-    <span class="o">--</span><span class="n">capabilities</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">osm</span><span class="o">.</span><span class="n">omniscale</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">proxy</span><span class="o">/</span><span class="n">service</span>
+    <span class="o">--</span><span class="n">capabilities</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">example</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">service</span>
 </pre></div>
 </div>
 <p>Write MapProxy and MapProxy-seeding configuration to files:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">autoconfig</span> \
-    <span class="o">--</span><span class="n">capabilities</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">osm</span><span class="o">.</span><span class="n">omniscale</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">proxy</span><span class="o">/</span><span class="n">service</span> \
+    <span class="o">--</span><span class="n">capabilities</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">example</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">service</span> \
     <span class="o">--</span><span class="n">output</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> \
     <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">seed</span> <span class="n">seed</span><span class="o">.</span><span class="n">yaml</span>
 </pre></div>
 </div>
 <p>Write MapProxy configuration with caches for grids from <code class="docutils literal notranslate"><span class="pre">base.yaml</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mapproxy</span><span class="o">-</span><span class="n">util</span> <span class="n">autoconfig</span> \
-    <span class="o">--</span><span class="n">capabilities</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">osm</span><span class="o">.</span><span class="n">omniscale</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">proxy</span><span class="o">/</span><span class="n">service</span> \
+    <span class="o">--</span><span class="n">capabilities</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">example</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">service</span> \
     <span class="o">--</span><span class="n">output</span> <span class="n">mapproxy</span><span class="o">.</span><span class="n">yaml</span> \
     <span class="o">--</span><span class="n">base</span> <span class="n">base</span><span class="o">.</span><span class="n">yaml</span>
 </pre></div>
@@ -601,7 +604,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jan 19, 2024.
+  Last updated on Mar 13, 2024.
   <br/>
 </p>
   </div>

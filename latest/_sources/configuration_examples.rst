@@ -154,6 +154,25 @@ Example configuration for an OpenStreetMap tile service:
 
 .. note:: Please make sure you are allowed to access the tile service. Commercial tile provider often prohibit the direct access to tiles. The tile service from OpenStreetMap has a strict `Tile Usage Prolicy <http://wiki.openstreetmap.org/wiki/Tile_usage_policy>`_.
 
+
+.. _display_custom_background:
+
+Display custom background map in the map viewer of the demo service
+===================================================================
+
+In order to setup the background displayed in the map viewer of the /demo service of Mapproxy
+you need to add the service of the background map to ``globals``.
+
+Here is a minimal example with the default configuration::
+
+  globals:
+    # background map of the demo service
+    background:
+      # tile source in ZXY format
+      url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png" 
+
+.. note:: URL of the tile service MUST be in XYZ format. Please make sure you are allowed to access the tile service. Commercial tile provider often prohibit the direct access to tiles. The tile service from OpenStreetMap has a strict `Tile Usage Prolicy <http://wiki.openstreetmap.org/wiki/Tile_usage_policy>`_.
+
 .. _overlay_tiles_osm_openlayers:
 
 Overlay tiles with OpenStreetMap or Google Maps in OpenLayers
@@ -177,7 +196,7 @@ The basic configuration for this use-case with MapProxy may look like this:
   sources:
     street_tile_source:
       type: tile
-      url: http://osm.omniscale.net/proxy/tiles/ \
+      url: http://example.org/tiles/ \
         1.0.0/osm_roads_EPSG900913/%(z)s/%(x)s/%(y)s.png
       transparent: true
 
@@ -220,7 +239,7 @@ The following example uses the class OpenLayers.Layer.OSM:
   .. code-block:: js
 
     var overlay_layer = new OpenLayers.Layer.OSM("OSM osm_layer",
-        "http://x.osm.omniscale.net/proxy/tiles/ \
+        "http://example.org/tiles/ \
         osm_roads_EPSG900913/${z}/${x}/${y}.png?origin=nw",
         {isBaseLayer: false, tileOptions: {crossOriginKeyword: null}}
     );

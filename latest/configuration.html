@@ -53,7 +53,7 @@
     <link rel="prev" title="Tutorial" href="tutorial.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Jan 19, 2024"/>
+    <meta name="docbuild:last-update" content="Mar 13, 2024"/>
   </head>
   
   
@@ -115,28 +115,31 @@
   <div class="col-lg-3 navbar-header-items__start">
     
       <div class="navbar-item"><div class="btn-group">
-    <button type="button" class="btn btn-outline-info btn-select-version">2.0.1</button>
+    <button type="button" class="btn btn-outline-info btn-select-version">2.0.2</button>
     <button type="button" class="btn btn-outline-info btn-select-version dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
     </button>
-    <ul class="dropdown-menu">
-        
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/2.0.1/">2.0.1</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/2.0.0/">2.0.0</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/1.16.1/">1.16.1</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/1.15.1/">1.15.1</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/1.14.0/">1.14.0</a></li>
-        
-        <li><a class="dropdown-item" href="https://hblitza.github.io/mapproxy/1.13.2/">1.13.2</a></li>
-        
-        
+    <ul id="versions-menu" class="dropdown-menu">
     </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `https://mapproxy.github.io/mapproxy/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
 </div></div>
     
   </div>
@@ -378,6 +381,7 @@ document.write(`
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sources-conf-label">sources</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#globals">globals</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#background"><code class="docutils literal notranslate"><span class="pre">background</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#globals-cache"><code class="docutils literal notranslate"><span class="pre">cache</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14"><code class="docutils literal notranslate"><span class="pre">srs</span></code></a></li>
@@ -1080,6 +1084,15 @@ resolution will get a result, requests with 5km will get a blank response.</p>
 <section id="globals">
 <span id="globals-conf-label"></span><span id="index-11"></span><h2>globals<a class="headerlink" href="#globals" title="Permalink to this heading">#</a></h2>
 <p>Here you can define some internals of MapProxy and default values that are used in the other configuration directives.</p>
+<section id="background">
+<span id="globals-background"></span><h3><code class="docutils literal notranslate"><span class="pre">background</span></code><a class="headerlink" href="#background" title="Permalink to this heading">#</a></h3>
+<p>Configuration of the background displayed in the map viewer. This background map can be observed in the /demo service
+of MapProxy, in any of the three types of service (WMS, WMTS and TMS).</p>
+<dl class="simple" id="background-url">
+<dt><code class="docutils literal notranslate"><span class="pre">url</span></code></dt><dd><p>URL of the tile service (it MUST be a service that offers tiles in XYZ format e.g. “<a class="reference external" href="https://tile.openstreetmap.org">https://tile.openstreetmap.org</a>/{z}/{x}/{y}.png”)</p>
+</dd>
+</dl>
+</section>
 <section id="id11">
 <h3><code class="docutils literal notranslate"><span class="pre">image</span></code><a class="headerlink" href="#id11" title="Permalink to this heading">#</a></h3>
 <p>Here you can define some options that affect the way MapProxy generates image results.</p>
@@ -1542,6 +1555,7 @@ The quantizing is done by the Python Image Library (PIL). <code class="docutils 
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sources-conf-label">sources</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#globals">globals</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#background"><code class="docutils literal notranslate"><span class="pre">background</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11"><code class="docutils literal notranslate"><span class="pre">image</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#globals-cache"><code class="docutils literal notranslate"><span class="pre">cache</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14"><code class="docutils literal notranslate"><span class="pre">srs</span></code></a></li>
@@ -1612,7 +1626,7 @@ By MapProxy Community, <a href="http://mapproxy.org/about">Legal</a>
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jan 19, 2024.
+  Last updated on Mar 13, 2024.
   <br/>
 </p>
   </div>

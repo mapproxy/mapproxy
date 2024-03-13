@@ -841,6 +841,18 @@ globals
 
 Here you can define some internals of MapProxy and default values that are used in the other configuration directives.
 
+.. _globals_background:
+
+``background``
+""""""""""""""
+
+Configuration of the background displayed in the map viewer. This background map can be observed in the /demo service 
+of MapProxy, in any of the three types of service (WMS, WMTS and TMS).
+
+.. _background_url:
+
+``url``
+  URL of the tile service (it MUST be a service that offers tiles in XYZ format e.g. "https://tile.openstreetmap.org/{z}/{x}/{y}.png")
 
 ``image``
 """""""""
