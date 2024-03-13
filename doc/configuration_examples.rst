@@ -15,7 +15,9 @@ You have two WMS and want to offer a single layer with data from both servers. E
 
 The sources should be defined from bottom to top. All sources except the bottom source needs to be transparent.
 
-Example::
+Example:
+
+.. code-block:: yaml
 
   layers:
     - name: combined_layer
@@ -48,7 +50,9 @@ Example::
 Merge tile sources
 ------------------
 
-You can also merge multiple tile sources. You need to tell MapProxy that all overlay sources are transparent::
+You can also merge multiple tile sources. You need to tell MapProxy that all overlay sources are transparent:
+
+.. code-block:: yaml
 
   sources:
     tileoverlay:
@@ -61,7 +65,9 @@ Access local servers
 
 By default MapProxy will request data in the same format it uses to cache the data, if you cache files in PNG MapProxy will request all images from the source WMS in PNG. This encoding is quite CPU intensive for your WMS server but reduces the amount of data than needs to be transfered between you WMS and MapProxy. You can use uncompressed TIFF as the request format, if both servers are on the same host or if they are connected with high bandwidth.
 
-Example::
+Example:
+
+.. code-block:: yaml
 
   sources:
     fast_source:
@@ -80,6 +86,9 @@ You can use MapProxy to create a WMS server with data from an existing tile serv
 
 Here is a minimal example::
 
+
+.. code-block:: yaml
+
  layers:
   - name: my_layer
     title: WMS layer from tiles
@@ -97,7 +106,10 @@ Here is a minimal example::
 
 You need to modify the ``url`` template parameter to match the URLs of your server. You can use ``x``, ``y``, ``z`` variables in the template, but MapProxy also supports the ``quadkey`` variable for Bing compatible tile service and ``bbox`` for WMS-C services. See the :ref:`tile source documentation <tiles_label>` for all possible template values.
 
-Here is an example of a WMTS source::
+Here is an example of a WMTS source:
+
+
+.. code-block:: yaml
 
  sources:
    my_tile_source:
@@ -115,7 +127,10 @@ Other tile services might use different SRS, bounding boxes or resolutions. You 
 
 You also need to create your own grid when you want to change the name of it, which will appear in the WMTS or TMS URL.
 
-Example configuration for an OpenStreetMap tile service::
+Example configuration for an OpenStreetMap tile service:
+
+
+.. code-block:: yaml
 
   layers:
     - name: my_layer
@@ -165,7 +180,9 @@ Overlay tiles with OpenStreetMap or Google Maps in OpenLayers
 
 You need to take care of a few options when you want to overlay your MapProxy tiles in OpenLayers with existing OpenStreetMap or Google Maps tiles.
 
-The basic configuration for this use-case with MapProxy may look like this::
+The basic configuration for this use-case with MapProxy may look like this:
+
+.. code-block:: yaml
 
   layers:
     - name: street_layer
@@ -184,7 +201,9 @@ The basic configuration for this use-case with MapProxy may look like this::
       transparent: true
 
 All you need to do now is to configure your OpenLayers client.
-The first example creates a simple OpenLayers map in webmercator projection, adds an OSM base layer and a TMS overlay layer with our MapProxy tile service.::
+The first example creates a simple OpenLayers map in webmercator projection, adds an OSM base layer and a TMS overlay layer with our MapProxy tile service.:
+
+.. code-block:: html
 
   <script src="http://openlayers.org/api/OpenLayers.js"></script>
   <script type="text/javascript">
@@ -215,13 +234,16 @@ Also remember that OpenStreetMap and Google Maps tiles have the origin in the up
 
 You can change how MapProxy calculates the origin of the tile coordinates, if you want to use your MapProxy tile service with the OpenLayers OSM layer class or if you want to use a client that does not have a TMS layer.
 
-The following example uses the class OpenLayers.Layer.OSM::
+The following example uses the class OpenLayers.Layer.OSM:
+
+  .. code-block:: js
 
     var overlay_layer = new OpenLayers.Layer.OSM("OSM osm_layer",
         "http://example.org/tiles/ \
         osm_roads_EPSG900913/${z}/${x}/${y}.png?origin=nw",
         {isBaseLayer: false, tileOptions: {crossOriginKeyword: null}}
     );
+
 
 The origin parameter at the end of the URL tells MapProxy that the client expects the origin in the upper left corner (north/west).
 You can change the default origin of all MapProxy tile layers by using the ``origin`` option of the ``tms`` service. See the :ref:`TMS standard tile origin<google_maps_label>` for more informations.
@@ -238,7 +260,7 @@ to cover a larger bounding box, or to support tile clients that expect a differe
 
 Here is an example of a cache in UTM that uses data from an existing cache in web-mercator projection.
 
-::
+.. code-block:: yaml
 
     layers:
       - name: lyr1
@@ -274,7 +296,7 @@ Here is an example that uses OSM tiles as a source and offers them in UTM projec
 
 Here is an example that makes OSM tiles available as tiles in UTM. Note that reprojecting vector data results in quality loss. For better results you need to find similar resolutions between both grids.
 
-::
+.. code-block:: yaml
 
     layers:
       - name: osm
@@ -314,7 +336,9 @@ Create grayscale images
 
 You can create a grayscale layer from an existing source by creating a cache that merges multiple bands into a single band.
 The band sources can come from caches, but also from any direct source. You can ``disable_storage`` to make this conversion on-the-fly.
-The following example mixes the RGB bands of a source with factors that matches the intensity perception of most humans::
+The following example mixes the RGB bands of a source with factors that matches the intensity perception of most humans:
+
+.. code-block:: yaml
 
   caches:
    grayscale_cache:
@@ -333,7 +357,9 @@ Cache raster data
 You have a WMS server that offers raster data like aerial images. By default MapProxy uses PNG images as the caching format. The encoding process for PNG files is very CPU intensive and thus the caching process itself takes longer. For aerial images the quality of loss-less image formats like PNG is often not required. For best performance you should use JPEG as the cache format.
 
 By default MapProxy uses `bicubic` resampling. This resampling method also sharpens the image which is important for vector images. Aerial images do not need this, so you can use `bilinear` or even Nearest Neighbor (`nearest`) resampling.
-::
+
+
+.. code-block:: yaml
 
   caches:
     aerial_images_cache:
@@ -360,7 +386,7 @@ MapProxy :ref:`has a mixed image format <mixed_image_format>` for this case. Wit
 
 .. note:: The source of your cache must support transparent images and you need to set the corresponding options.
 
-::
+.. code-block:: yaml
 
   caches:
     mixed_cache:
@@ -393,7 +419,9 @@ By default MapProxy caches traditional power-of-two image pyramids, the resoluti
 
 
 You can set every cache resolution in the ``res`` option of a layer.
-::
+
+
+.. code-block:: yaml
 
   caches:
     custom_res_cache:
@@ -405,7 +433,9 @@ You can set every cache resolution in the ``res`` option of a layer.
       srs: 'EPSG:31467'
       res: [10000, 7500, 5000, 3500, 2500]
 
-You can specify a different factor that is used to calculate the resolutions. By default a factor of 2 is used (10, 5, 2.5,…) but you can set smaller values like 1.6 (10, 6.25, 3.9,…)::
+You can specify a different factor that is used to calculate the resolutions. By default a factor of 2 is used (10, 5, 2.5,…) but you can set smaller values like 1.6 (10, 6.25, 3.9,…):
+
+.. code-block:: yaml
 
   grids:
     custom_factor:
@@ -413,7 +443,7 @@ You can specify a different factor that is used to calculate the resolutions. By
 
 The third options is a convenient variation of the previous option. A factor of 1.41421, the square root of two, would get resolutions of 10, 7.07, 5, 3.54, 2.5,…. Notice that every second resolution is identical to the power-of-two resolutions. This comes in handy if you use the layer not only in classic WMS clients but also want to use it in tile-based clients like OpenLayers, which only request in these resolutions.
 
-::
+.. code-block:: yaml
 
   grids:
     sqrt2:
@@ -424,7 +454,9 @@ The third options is a convenient variation of the previous option. A factor of 
 Resampling method
 -----------------
 
-You can configure the method MapProxy uses for resampling when it scales or transforms data. For best results with vector data – from a viewers perspective – you should use bicubic resampling. You can configure this for each cache or in the globals section::
+You can configure the method MapProxy uses for resampling when it scales or transforms data. For best results with vector data – from a viewers perspective – you should use bicubic resampling. You can configure this for each cache or in the globals section:
+
+.. code-block:: yaml
 
   caches:
     vector_cache:
@@ -446,7 +478,7 @@ WMS Sources with Styled Layer Description (SLD)
 
 You can configure SLDs for your WMS sources.
 
-::
+.. code-block:: yaml
 
   sources:
     sld_example:
@@ -461,7 +493,7 @@ The path can either be absolute (e.g. ``file:///path/to/sld.xml``) or relative (
 
 You can also configure the raw SLD with the ``sld_body`` option. You need to indent whole SLD string.
 
-::
+.. code-block:: yaml
 
   sources:
     sld_example:
@@ -490,7 +522,7 @@ If you do not want to cache data but still want to use MapProxy's ability to rep
 
 You should explicitly define the SRS the source WMS supports. Requests in other SRS will be reprojected. You should specify at least one geographic and one projected SRS to limit the distortions from reprojection.
 
-::
+.. code-block:: yaml
 
   layers:
     - name: direct_layer
@@ -510,8 +542,9 @@ You should explicitly define the SRS the source WMS supports. Requests in other 
 FeatureInformation
 ==================
 
-MapProxy can pass-through FeatureInformation requests to your WMS sources. You need to enable each source::
+MapProxy can pass-through FeatureInformation requests to your WMS sources. You need to enable each source:
 
+.. code-block:: yaml
 
   sources:
     fi_source:
@@ -539,16 +572,21 @@ HTML
 
 Multiple HTML documents are put into the HTML ``body`` of the first document.
 MapProxy creates the HTML skeleton if it is missing.
-::
+
+
+.. code-block:: html
 
   <p>FI1</p>
 
 and
-::
+
+.. code-block:: html
 
   <p>FI2</p>
 
-will result in::
+will result in:
+
+.. code-block:: html
 
   <html>
     <body>
@@ -563,20 +601,23 @@ XML
 
 Multiple XML documents are put in the root of the first document.
 
-::
+.. code-block:: xml
 
   <root>
     <a>FI1</a>
   </root>
 
 and
-::
+
+.. code-block:: xml
 
   <other_root>
     <b>FI2</b>
   </other_root>
 
-will result in::
+will result in:
+
+.. code-block:: xml
 
   <root>
     <a>FI1</a>
@@ -598,7 +639,7 @@ Lets assume we have two WMS sources where we have no control over the format of 
 
 One source only offers HTML feature information. The XSLT script extracts data from a table. We force the WMS ``INFO_FORMAT`` to HTML with the ``featureinfo_format`` option, so that MapProxy will not query another format. The XSLT script returns XML and not HTML. We configure this with the ``featureinfo_out_format`` option.
 
-::
+.. code-block:: yaml
 
     fi_source:
       type: wms
@@ -612,7 +653,7 @@ One source only offers HTML feature information. The XSLT script extracts data f
 
 The second source supports XML feature information. The script converts the XML data to the same format as the HTML script. This service uses WMS 1.3.0 and the format is ``text/xml``.
 
-::
+.. code-block:: yaml
 
     fi_source:
       type: wms
@@ -626,7 +667,7 @@ The second source supports XML feature information. The script converts the XML 
 
 We then define two outgoing XSLT scripts that transform our intermediate format to the final result. We can define scripts for different formats. MapProxy chooses the right script depending on the WMS version and the ``INFO_FORMAT`` of the request.
 
-::
+.. code-block:: yaml
 
   wms:
     featureinfo_xslt:
@@ -644,7 +685,9 @@ WMTS service with dimensions
 
 The dimension support in MapProxy is still limited, but you can use it to create a WMTS front-end for a multi-dimensional WMS service.
 
-First you need to add the WMS source and configure all dimensions that MapProxy should forward to the service::
+First you need to add the WMS source and configure all dimensions that MapProxy should forward to the service:
+
+.. code-block:: yaml
 
   temperature_source:
     type: wms
@@ -656,7 +699,7 @@ First you need to add the WMS source and configure all dimensions that MapProxy 
 
 We need to create a cache since we want to access the source from a tiled service (WMTS). Actual caching is not possible at the moment, so it is necessary to disable it with ``disable_storage: true``.
 
-::
+.. code-block:: yaml
 
     caches:
       temperature:
@@ -666,7 +709,9 @@ We need to create a cache since we want to access the source from a tiled servic
         meta_size: [1, 1]
         meta_buffer: 0
 
-Then we can add a layer with all available dimensions::
+Then we can add a layer with all available dimensions:
+
+.. code-block:: yaml
 
     layers:
       - name: temperature
@@ -687,7 +732,9 @@ Then we can add a layer with all available dimensions::
             default: 0
 
 You can now access this layer with the elevation and time dimensions via the WMTS KVP service.
-The RESTful service requires a custom URL template that contains the dimensions. For example::
+The RESTful service requires a custom URL template that contains the dimensions. For example:
+
+.. code-block:: yaml
 
     services:
       wmts:
@@ -706,7 +753,9 @@ You have a WMS source that requires authentication. MapProxy has support for HTT
 Authentication and HTTP Digest Authentication. You just need to add the username and password to the URL. Since the Basic and Digest authentication
 are not really secure, you should use this feature in combination with HTTPS.
 You need to configure the SSL certificates to allow MapProxy to verify the HTTPS connection. See :ref:`HTTPS configuration for more information <http_ssl>`.
-::
+
+
+.. code-block:: yaml
 
   secure_source:
     type: wms
@@ -717,7 +766,8 @@ You need to configure the SSL certificates to allow MapProxy to verify the HTTPS
 MapProxy removes the username and password before the URL gets logged or inserted into service exceptions.
 
 You can disable the certificate verification if you you don't need it.
-::
+
+.. code-block:: yaml
 
   secure_source:
     type: wms
@@ -766,7 +816,9 @@ Cookie Management
 =================
 
 MapProxy can handle server cookies of HTTP sources, like browsers do. That is, MapProxy accepts cookies and passes them back
-on subsequent calls. This is useful for sources that use cookie for session management or rate-limiting for example::
+on subsequent calls. This is useful for sources that use cookie for session management or rate-limiting for example:
+
+.. code-block:: yaml
 
   sources:
     wms_with_session_management:
@@ -841,7 +893,9 @@ HQ/Retina tiles
 
 MapProxy has no native support for delivering high-resolution tiles, but you can create a second tile layer with HQ tiles, if your source supports rendering with different scale-factor or DPI.
 
-At first you need two grids. One regular grid and one with half the resolution but twice the tile size. The following example configures two webmercator compatible grids::
+At first you need two grids. One regular grid and one with half the resolution but twice the tile size. The following example configures two webmercator compatible grids:
+
+.. code-block:: yaml
 
   grids:
     webmercator:
@@ -854,7 +908,9 @@ At first you need two grids. One regular grid and one with half the resolution b
       min_res: 78271.51696402048
       tile_size: [512, 512]
 
-Then you need two layers and two caches::
+Then you need two layers and two caches:
+
+.. code-block:: yaml
 
   layers:
     - name: map
@@ -874,7 +930,7 @@ Then you need two layers and two caches::
 
 And finally two sources. The source for the HQ tiles needs to render images with a higher scale/DPI setting. The ``mapnik`` source supports this with the ``scale_factor`` option. MapServer for example supports a ``map_resolution`` request parameter.
 
-::
+.. code-block:: yaml
 
   sources:
     map_source:
@@ -905,7 +961,9 @@ Serve multiple caches for a single layer
 
 You have a data set that you need to serve with different grids (i.e. WMTS tile matrix sets).
 
-You can create a cache with multiple grids and use this as a layers source::
+You can create a cache with multiple grids and use this as a layers source:
+
+.. code-block:: yaml
 
   layers:
     - name: map
@@ -923,7 +981,9 @@ However, this is limited to a single cache for each layer. You can't reuse the t
 You need to use ``tile_sources`` to make multiple caches available as a single layer.
 ``tile_sources`` allows you to override ``sources`` for tile services. This allows you to `use caches that build up on other caches  <using_existing_caches>`_.
 
-For example::
+For example:
+
+.. code-block:: yaml
 
   layers:
     - name: map
@@ -939,5 +999,3 @@ For example::
       grids: [sub_grid]
       sources: [full_cache]
       disable_storage: true
-
-

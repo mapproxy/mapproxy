@@ -38,7 +38,7 @@ def long_description(changelog_releases=10):
     import re
     import textwrap
 
-    readme = open('README.rst').read()
+    readme = open('README.md').read()
     changes = ['Changes\n-------\n']
     version_line_re = re.compile(r'^\d\.\d+\.\d+\S*\s20\d\d-\d\d-\d\d')
     for line in open('CHANGES.txt'):

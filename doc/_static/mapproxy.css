@@ -16,47 +16,34 @@ a:active
   text-decoration: none;
 }
 
-code {
-  color: #3a3740;
-  font-size: 75%;
-  background: inherit;
-  padding: 0;
-}
-
 .footer a {
   color: inherit;
   text-decoration: underline;
 }
 
-.bs-sidenav {
-  margin-top: 5px;
-}
-
-.bs-sidenav.affix {
-  top: 5px;
-}
-
-.bs-sidenav .nav > li > a {
-  padding: 3px 20px;
-}
-
-.toctree-l1 .current {
-  font-weight: bold;
-}
-
-.nav-list li.toctree-l2 {
-  background-color: #F5F5F5;
-}
-
-.navbar-default, .footer, .bs-sidenav {
+/* .bd-sidebar-primary, .bd-footer-content, .bd-sidebar-secondary {
   background-color: #ececec;
-}
-
-.section h2 {
-  margin-top: 30px;
-  padding-top: 10px;
-}
+} */
 
 .alert-warning, .alert-success, .alert-info {
   background-image: none;
+}
+
+button.theme-switch-button {
+  display: none !important;
+}
+
+.btn-select-version {
+  color: #31A4B5;
+  border-color: #31A4B5;
+}
+
+/* !important is needed to overwrite bootstrap defaults */
+.btn-select-version:hover,
+.btn-select-version:active,
+.btn-select-version:focus
+{
+  color: #ffffff !important;
+  border-color: #31A4B5 !important;
+  background-color: #31A4B5 !important;
 }
