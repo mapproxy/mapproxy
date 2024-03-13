@@ -467,7 +467,7 @@ You can also add the limit to the layer and mix it with properties used for the 
     'layers': {
       'layer1': {
         'tile': true,
-        'map': frue,
+        'map': true,
         'limited_to': {
           'geometry': shapely.geometry.Polygon(
             [(-10, 0), (30, -5), (30, 50), (20, 50)]),
