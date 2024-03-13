@@ -53,7 +53,5 @@ html_theme_options = {
 }
 html_baseurl = "/mapproxy/"
 html_context = {
-    "docsBaseUrl": "https://hblitza.github.io/mapproxy",
-    "current_version" : "2.0.1",
-    "versions" : ["2.0.1", "2.0.0", "1.16.1", "1.15.1", "1.14.0", "1.13.2"]
+    "docsBaseUrl": "https://hblitza.github.io/mapproxy"
 }

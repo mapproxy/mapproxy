@@ -4,11 +4,24 @@
         aria-expanded="false">
         <span class="visually-hidden">toggle</span>
     </button>
-    <ul class="dropdown-menu">
-        {% if versions|length >= 1 %}
-        {% for the_version in versions %}
-        <li><a class="dropdown-item" href="{{ docsBaseUrl}}/{{ the_version }}/">{{ the_version }}</a></li>
-        {% endfor %}
-        {% endif %}
+    <ul id="versions-menu" class="dropdown-menu">
     </ul>
+    <script>
+        fetch('../config/versions.json')
+            .then(response => {
+                return response.json();
+            })
+            .then(versions => {
+                const menu = document.querySelector('#versions-menu');
+                for (const version of versions) {
+                    const a = document.createElement('a');
+                    a.classList.add("dropdown-item");
+                    a.href = `{{ docsBaseUrl}}/${version}/`;
+                    a.textContent = version;
+                    const li = document.createElement('li');
+                    li.append(a);
+                    menu.append(li);
+                }
+            });
+    </script>
 </div>
